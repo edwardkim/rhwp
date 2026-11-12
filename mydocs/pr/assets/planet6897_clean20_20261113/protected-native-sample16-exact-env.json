@@ -1,0 +1,1766 @@
+{
+  "status": "sample16 3종의 Native 보호 전쪽 통과. 전체18조건·fresh WASM 수용 완료를 뜻하지 않음.",
+  "records": [
+    {
+      "key": "sample16-hwp2022",
+      "head": "676e3900c6490657229f9781e34f89c65c7126da",
+      "pages": 64,
+      "minimum": 100.0,
+      "declines": [],
+      "protected_pass": true,
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/protected/native/sample16-hwp2022.tsv",
+      "tsv_sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+      "sweep_manifest_sha256": "cd91bf4d3358a77f51f042dcc5ee1eefecd83ab95e811e78181391a716ff4ca3",
+      "provenance": {
+        "hwp": {
+          "path": "samples/hwp3-sample16-hwp5-2022.hwp",
+          "sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe"
+        },
+        "pdf": {
+          "path": "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+          "sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33"
+        },
+        "git_head": "676e3900c6490657229f9781e34f89c65c7126da",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+          "executable_sha256": "87d4df53fd91304be5bac391fb204643c36b7df2023c04a0953bcbc7d4fdf634",
+          "library": "output/pr-review/planet6897-clean20-integration-20261113/visual-venv/lib/python3.14/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+          "version": "153.0.7999.0",
+          "wrapper_version": "5.13.0",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "output/pr-review/planet6897-clean20-integration-20261113/bin/candidate-native",
+          "path": "output/pr-review/planet6897-clean20-integration-20261113/bin/candidate-native",
+          "sha256": "fb8402518e435467bdc4ee8b23ee57e2ee6f63804a6cbd87ecfadb54f7b80ccf"
+        },
+        "native_webfont_fallback": {
+          "registry_sha256": "35f3e1ac64348a6497b50cc98c7235a8adcb4c99bfa78fec6302bde6f525a299",
+          "mappings": {},
+          "document_glyph_fallbacks": [],
+          "unmapped_sources": [],
+          "local_document_substitutes": [],
+          "resources": [],
+          "module_sha256": "604d15d877f3a60d6cb2444fafefd3057fc5d595d402f06bb08748c9fe28c1cf"
+        },
+        "raster_backend": "native-skia",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2022",
+        "font_environment": {
+          "path": "mydocs/pr/assets/pr8896/font-supply/sample16-hwp2022-font-environment.json",
+          "sha256": "e64dc04a55787efcbd55dcddd9f7a9fc8454a1df06a20c4cd9e99c9dd88de36b"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "explicit",
+          "files": [
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0000-ENGGT.otf",
+              "sha256": "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0001-ENGRP.otf",
+              "sha256": "472830cfd4f5edc2d9dc9d0a8e3078839977c4bb0e317b198549ce278075bd26"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0002-ENGS.otf",
+              "sha256": "ed503552219ae16332e595c4b2999a3462d55509a4032dfce29c5ee4d0407346"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0003-ENJGT.otf",
+              "sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0004-ENMJ.otf",
+              "sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0005-ENSMJ.otf",
+              "sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0006-ENSMJI.otf",
+              "sha256": "6f63dc09433ea5cb856020e68e9e9a94ad847504487710c3769e67708eb5cf0b"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0007-ENSS.otf",
+              "sha256": "dbdf067e6e1d40bb8baeae72ca06289a4b8be15ded97f831262f28e8901ee54f"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0008-FLMJ.otf",
+              "sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0009-FLSMJ.otf",
+              "sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0010-HCENGRP.otf",
+              "sha256": "a953806c6ec22f68e9c636efe875b4d83e9306ac29391f0f105214a00e5a57d6"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0011-HCENTGT.otf",
+              "sha256": "da4f226e7df89a487af199b836be7d8ea90704330d44b7dbd14dc85d960c4859"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0012-HCHGGRP.otf",
+              "sha256": "d33ce840dd69a599a9e2cd4e1b06129b817b2bb3679375adde95ea131c9ce679"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0013-HCHGTGT.otf",
+              "sha256": "fc0a42f9de898629e3c0e18ba59b7f243deba0ab2595425a760e2344195034cf"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0014-HCHJTGT.otf",
+              "sha256": "8db67a2414128fff3b26353393d8f49fb1851cf846947293eed79bde926cc426"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0015-HCJPTGT.otf",
+              "sha256": "2b97862b3496d11adce1c77ef1eca63b4bd15cb188d9a408b29c189bab024882"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0016-HCSPGRP.otf",
+              "sha256": "9332b9367ca26fd755c4a8c49097768b3caffb9336de499e0fb44056426aa68c"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0017-HCSPTGT.otf",
+              "sha256": "869158e2be56c343baf14e40c32d8497b8de3f691747d3ae38b555b606788d07"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0018-HGGGT.otf",
+              "sha256": "da42e4819214f960b3561d4acf51571ad0c887f258e3dc034f5c2fae5c842a68"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0019-HGGRP.otf",
+              "sha256": "85a60f7efbc9926e8a634e702442edc0245e86874af3efe640f6402ae56e36f7"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0020-HGGS.otf",
+              "sha256": "b654b6944b6c45a5581d218b8aa0e2e4125a7f348b9f8f91803831f29ce37040"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0021-HGMJ.otf",
+              "sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0022-HGSMJ.otf",
+              "sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0023-HJJGT.otf",
+              "sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0024-HJMJ.otf",
+              "sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0025-HJSMJ.otf",
+              "sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0026-HMEHL.otf",
+              "sha256": "4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0027-HMEPO.otf",
+              "sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0028-HMKMG.otf",
+              "sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0029-HMKOLD.otf",
+              "sha256": "f2122c5200148d46a3f13b703e27536748fc5abf912a9b44d8ccd0f2b7f4ce97"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0030-HMKSM.otf",
+              "sha256": "99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0031-JPJGT.otf",
+              "sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0032-JPMJ.otf",
+              "sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0033-JPSMJ.otf",
+              "sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0034-SPJGT.otf",
+              "sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0035-SPMJ.otf",
+              "sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0036-SPSMJ.otf",
+              "sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0037-TAENMREN.otf",
+              "sha256": "aef1b4e32ba55e42764385e1042b0bc5fbb51998571a380ce7b5e63a0a82c4b2"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0038-TAENMRKR.otf",
+              "sha256": "691205fe589ff8e46e7c840304316ea6d0459e54259b16eef6e49dfa66018e2a"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0039-TESEMEN.otf",
+              "sha256": "464e83498110c175392228b406fef6c3c86a54464700fb03cc993f7aae7b8a06"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0040-TESEMHG.otf",
+              "sha256": "d475b282463329667b2f7018812556c143e1b07bad31f07287600ef78997af27"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0041-TESEMHJ.otf",
+              "sha256": "4287579604bb420cf62906b885228b070f2a093b3fb09dfa617822862a0c7d3d"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0042-TESMJEN.otf",
+              "sha256": "1d7e232e98ba8a11e763ea69ff7be6cf36b2fc2c2d632a6b3115c4723969f0e9"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0043-TESMJHG.otf",
+              "sha256": "3f13c08d9c437a79e27f359dc8f6931aa1a82718ebede2b83a9a51c3cb0c3963"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0044-TESMJJP.otf",
+              "sha256": "91839ccb18c63ab15463648c4927429c9b098bf422dcab55269a55314cdcccfd"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0045-TESSMEN.otf",
+              "sha256": "7c073a836d6837771668cc5be0f1816f502e54d5397f8e05e7b2f0281647219a"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0046-TESSMHG.otf",
+              "sha256": "49bfc7e5f23e6dc28a687bcd671e2eba5fa15bbae8b46aff5a64fca97931b269"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0047-TETGTEN.otf",
+              "sha256": "201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0048-TETGTHG.otf",
+              "sha256": "dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0049-TETGTHJ.otf",
+              "sha256": "99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0050-TETGTJP.otf",
+              "sha256": "0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0051-USER.otf",
+              "sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0052-HBATANG.TTF",
+              "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0053-HMKMM.TTF",
+              "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0054-batang.ttc",
+              "sha256": "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0059-gulim.ttc",
+              "sha256": "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0060-times.ttf",
+              "sha256": "d713af89fbadd537f4bdf217f43a16dd11e9ec21f371e82ad93898afbb35374e"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/0065-HYHWPEQ.TTF",
+              "sha256": "c4f768c176ce26de91d6115bfb30c2d87c43c03d054f79e909fd340b1e46740a"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/RHWPLegacyEquation-Original.otf",
+              "sha256": "f92ff78fe7eaf2914e9879966e6a8383d3c525242339b781a117b755df70034a"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2022/poppy-original-complete-symbols.otf",
+              "sha256": "ad78b2ee6458dcbef0b373b1ca7b3ddfb6ddd1610eda331ebd88d486e0556341"
+            },
+            {
+              "path": "ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+              "sha256": "67b4003e2be99ea44a7c957e4b35acde1b5e6e82a54fe195c5598c3c617bc2e3"
+            },
+            {
+              "path": "ttfs/opensource/NotoSansKR-Regular.ttf",
+              "sha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74"
+            },
+            {
+              "path": "ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+              "sha256": "876598db5f1e3bef2bc77c4d94c5b0d5d2c1620be4878a06f18fb5434e331688"
+            },
+            {
+              "path": "ttfs/opensource/RHWPOldHangul-Regular.otf",
+              "sha256": "0a32ff354d11c955f819d84d91e695927d41aca0fd74b4a286b6235345101af4"
+            },
+            {
+              "path": "ttfs/opensource/RHWPPublicBatang-Regular.ttf",
+              "sha256": "7e3aee5ee1d8f44cc37d35dbd07e5f66414fee5ce552ebda6b4347643d9d0b78"
+            }
+          ]
+        }
+      },
+      "font_environment": "mydocs/pr/assets/pr8896/font-supply/sample16-hwp2022-font-environment.json",
+      "font_environment_sha256": "e64dc04a55787efcbd55dcddd9f7a9fc8454a1df06a20c4cd9e99c9dd88de36b",
+      "original_font_programs": [
+        {
+          "name": "0000-ENGGT.otf",
+          "sha256": "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9"
+        },
+        {
+          "name": "0001-ENGRP.otf",
+          "sha256": "472830cfd4f5edc2d9dc9d0a8e3078839977c4bb0e317b198549ce278075bd26"
+        },
+        {
+          "name": "0002-ENGS.otf",
+          "sha256": "ed503552219ae16332e595c4b2999a3462d55509a4032dfce29c5ee4d0407346"
+        },
+        {
+          "name": "0003-ENJGT.otf",
+          "sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659"
+        },
+        {
+          "name": "0004-ENMJ.otf",
+          "sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f"
+        },
+        {
+          "name": "0005-ENSMJ.otf",
+          "sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+        },
+        {
+          "name": "0006-ENSMJI.otf",
+          "sha256": "6f63dc09433ea5cb856020e68e9e9a94ad847504487710c3769e67708eb5cf0b"
+        },
+        {
+          "name": "0007-ENSS.otf",
+          "sha256": "dbdf067e6e1d40bb8baeae72ca06289a4b8be15ded97f831262f28e8901ee54f"
+        },
+        {
+          "name": "0008-FLMJ.otf",
+          "sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e"
+        },
+        {
+          "name": "0009-FLSMJ.otf",
+          "sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b"
+        },
+        {
+          "name": "0010-HCENGRP.otf",
+          "sha256": "a953806c6ec22f68e9c636efe875b4d83e9306ac29391f0f105214a00e5a57d6"
+        },
+        {
+          "name": "0011-HCENTGT.otf",
+          "sha256": "da4f226e7df89a487af199b836be7d8ea90704330d44b7dbd14dc85d960c4859"
+        },
+        {
+          "name": "0012-HCHGGRP.otf",
+          "sha256": "d33ce840dd69a599a9e2cd4e1b06129b817b2bb3679375adde95ea131c9ce679"
+        },
+        {
+          "name": "0013-HCHGTGT.otf",
+          "sha256": "fc0a42f9de898629e3c0e18ba59b7f243deba0ab2595425a760e2344195034cf"
+        },
+        {
+          "name": "0014-HCHJTGT.otf",
+          "sha256": "8db67a2414128fff3b26353393d8f49fb1851cf846947293eed79bde926cc426"
+        },
+        {
+          "name": "0015-HCJPTGT.otf",
+          "sha256": "2b97862b3496d11adce1c77ef1eca63b4bd15cb188d9a408b29c189bab024882"
+        },
+        {
+          "name": "0016-HCSPGRP.otf",
+          "sha256": "9332b9367ca26fd755c4a8c49097768b3caffb9336de499e0fb44056426aa68c"
+        },
+        {
+          "name": "0017-HCSPTGT.otf",
+          "sha256": "869158e2be56c343baf14e40c32d8497b8de3f691747d3ae38b555b606788d07"
+        },
+        {
+          "name": "0018-HGGGT.otf",
+          "sha256": "da42e4819214f960b3561d4acf51571ad0c887f258e3dc034f5c2fae5c842a68"
+        },
+        {
+          "name": "0019-HGGRP.otf",
+          "sha256": "85a60f7efbc9926e8a634e702442edc0245e86874af3efe640f6402ae56e36f7"
+        },
+        {
+          "name": "0020-HGGS.otf",
+          "sha256": "b654b6944b6c45a5581d218b8aa0e2e4125a7f348b9f8f91803831f29ce37040"
+        },
+        {
+          "name": "0021-HGMJ.otf",
+          "sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287"
+        },
+        {
+          "name": "0022-HGSMJ.otf",
+          "sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0"
+        },
+        {
+          "name": "0023-HJJGT.otf",
+          "sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1"
+        },
+        {
+          "name": "0024-HJMJ.otf",
+          "sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba"
+        },
+        {
+          "name": "0025-HJSMJ.otf",
+          "sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9"
+        },
+        {
+          "name": "0026-HMEHL.otf",
+          "sha256": "4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52"
+        },
+        {
+          "name": "0027-HMEPO.otf",
+          "sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385"
+        },
+        {
+          "name": "0028-HMKMG.otf",
+          "sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9"
+        },
+        {
+          "name": "0029-HMKOLD.otf",
+          "sha256": "f2122c5200148d46a3f13b703e27536748fc5abf912a9b44d8ccd0f2b7f4ce97"
+        },
+        {
+          "name": "0030-HMKSM.otf",
+          "sha256": "99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d"
+        },
+        {
+          "name": "0031-JPJGT.otf",
+          "sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63"
+        },
+        {
+          "name": "0032-JPMJ.otf",
+          "sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c"
+        },
+        {
+          "name": "0033-JPSMJ.otf",
+          "sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a"
+        },
+        {
+          "name": "0034-SPJGT.otf",
+          "sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480"
+        },
+        {
+          "name": "0035-SPMJ.otf",
+          "sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834"
+        },
+        {
+          "name": "0036-SPSMJ.otf",
+          "sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497"
+        },
+        {
+          "name": "0037-TAENMREN.otf",
+          "sha256": "aef1b4e32ba55e42764385e1042b0bc5fbb51998571a380ce7b5e63a0a82c4b2"
+        },
+        {
+          "name": "0038-TAENMRKR.otf",
+          "sha256": "691205fe589ff8e46e7c840304316ea6d0459e54259b16eef6e49dfa66018e2a"
+        },
+        {
+          "name": "0039-TESEMEN.otf",
+          "sha256": "464e83498110c175392228b406fef6c3c86a54464700fb03cc993f7aae7b8a06"
+        },
+        {
+          "name": "0040-TESEMHG.otf",
+          "sha256": "d475b282463329667b2f7018812556c143e1b07bad31f07287600ef78997af27"
+        },
+        {
+          "name": "0041-TESEMHJ.otf",
+          "sha256": "4287579604bb420cf62906b885228b070f2a093b3fb09dfa617822862a0c7d3d"
+        },
+        {
+          "name": "0042-TESMJEN.otf",
+          "sha256": "1d7e232e98ba8a11e763ea69ff7be6cf36b2fc2c2d632a6b3115c4723969f0e9"
+        },
+        {
+          "name": "0043-TESMJHG.otf",
+          "sha256": "3f13c08d9c437a79e27f359dc8f6931aa1a82718ebede2b83a9a51c3cb0c3963"
+        },
+        {
+          "name": "0044-TESMJJP.otf",
+          "sha256": "91839ccb18c63ab15463648c4927429c9b098bf422dcab55269a55314cdcccfd"
+        },
+        {
+          "name": "0045-TESSMEN.otf",
+          "sha256": "7c073a836d6837771668cc5be0f1816f502e54d5397f8e05e7b2f0281647219a"
+        },
+        {
+          "name": "0046-TESSMHG.otf",
+          "sha256": "49bfc7e5f23e6dc28a687bcd671e2eba5fa15bbae8b46aff5a64fca97931b269"
+        },
+        {
+          "name": "0047-TETGTEN.otf",
+          "sha256": "201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3"
+        },
+        {
+          "name": "0048-TETGTHG.otf",
+          "sha256": "dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3"
+        },
+        {
+          "name": "0049-TETGTHJ.otf",
+          "sha256": "99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27"
+        },
+        {
+          "name": "0050-TETGTJP.otf",
+          "sha256": "0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631"
+        },
+        {
+          "name": "0051-USER.otf",
+          "sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece"
+        },
+        {
+          "name": "0052-HBATANG.TTF",
+          "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+        },
+        {
+          "name": "0053-HMKMM.TTF",
+          "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+        },
+        {
+          "name": "0054-batang.ttc",
+          "sha256": "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8"
+        },
+        {
+          "name": "0059-gulim.ttc",
+          "sha256": "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c"
+        },
+        {
+          "name": "0060-times.ttf",
+          "sha256": "d713af89fbadd537f4bdf217f43a16dd11e9ec21f371e82ad93898afbb35374e"
+        },
+        {
+          "name": "0065-HYHWPEQ.TTF",
+          "sha256": "c4f768c176ce26de91d6115bfb30c2d87c43c03d054f79e909fd340b1e46740a"
+        },
+        {
+          "name": "RHWPLegacyEquation-Original.otf",
+          "sha256": "f92ff78fe7eaf2914e9879966e6a8383d3c525242339b781a117b755df70034a"
+        },
+        {
+          "name": "poppy-original-complete-symbols.otf",
+          "sha256": "ad78b2ee6458dcbef0b373b1ca7b3ddfb6ddd1610eda331ebd88d486e0556341"
+        }
+      ]
+    },
+    {
+      "key": "sample16-hwp2024",
+      "head": "676e3900c6490657229f9781e34f89c65c7126da",
+      "pages": 64,
+      "minimum": 99.99065,
+      "declines": [],
+      "protected_pass": true,
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/protected/native/sample16-hwp2024.tsv",
+      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "sweep_manifest_sha256": "3153ed3700cdd8ea9291ffafeafcc7fca971946b8df4af21a288ae439399d574",
+      "provenance": {
+        "hwp": {
+          "path": "samples/hwp3-sample16-hwp5-2024.hwp",
+          "sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d"
+        },
+        "pdf": {
+          "path": "pdf/hwp3-sample16-hwp5-2024-hwp-2024.pdf",
+          "sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b"
+        },
+        "git_head": "676e3900c6490657229f9781e34f89c65c7126da",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+          "executable_sha256": "87d4df53fd91304be5bac391fb204643c36b7df2023c04a0953bcbc7d4fdf634",
+          "library": "output/pr-review/planet6897-clean20-integration-20261113/visual-venv/lib/python3.14/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+          "version": "153.0.7999.0",
+          "wrapper_version": "5.13.0",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "output/pr-review/planet6897-clean20-integration-20261113/bin/candidate-native",
+          "path": "output/pr-review/planet6897-clean20-integration-20261113/bin/candidate-native",
+          "sha256": "fb8402518e435467bdc4ee8b23ee57e2ee6f63804a6cbd87ecfadb54f7b80ccf"
+        },
+        "native_webfont_fallback": {
+          "registry_sha256": "35f3e1ac64348a6497b50cc98c7235a8adcb4c99bfa78fec6302bde6f525a299",
+          "mappings": {},
+          "document_glyph_fallbacks": [],
+          "unmapped_sources": [],
+          "local_document_substitutes": [],
+          "resources": [],
+          "module_sha256": "604d15d877f3a60d6cb2444fafefd3057fc5d595d402f06bb08748c9fe28c1cf"
+        },
+        "raster_backend": "native-skia",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2024",
+        "font_environment": {
+          "path": "mydocs/pr/assets/pr8896/font-supply/sample16-hwp2024-font-environment.json",
+          "sha256": "4fb70119f4959fb6461ed304d4b166c499b58caab0cc428f9fbab5fb2ef79b8b"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "explicit",
+          "files": [
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0000-ENGGT.otf",
+              "sha256": "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0001-ENGRP.otf",
+              "sha256": "472830cfd4f5edc2d9dc9d0a8e3078839977c4bb0e317b198549ce278075bd26"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0002-ENGS.otf",
+              "sha256": "ed503552219ae16332e595c4b2999a3462d55509a4032dfce29c5ee4d0407346"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0003-ENJGT.otf",
+              "sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0004-ENMJ.otf",
+              "sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0005-ENSMJ.otf",
+              "sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0006-ENSMJI.otf",
+              "sha256": "6f63dc09433ea5cb856020e68e9e9a94ad847504487710c3769e67708eb5cf0b"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0007-ENSS.otf",
+              "sha256": "dbdf067e6e1d40bb8baeae72ca06289a4b8be15ded97f831262f28e8901ee54f"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0008-FLMJ.otf",
+              "sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0009-FLSMJ.otf",
+              "sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0010-HCENGRP.otf",
+              "sha256": "a953806c6ec22f68e9c636efe875b4d83e9306ac29391f0f105214a00e5a57d6"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0011-HCENTGT.otf",
+              "sha256": "da4f226e7df89a487af199b836be7d8ea90704330d44b7dbd14dc85d960c4859"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0012-HCHGGRP.otf",
+              "sha256": "d33ce840dd69a599a9e2cd4e1b06129b817b2bb3679375adde95ea131c9ce679"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0013-HCHGTGT.otf",
+              "sha256": "fc0a42f9de898629e3c0e18ba59b7f243deba0ab2595425a760e2344195034cf"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0014-HCHJTGT.otf",
+              "sha256": "8db67a2414128fff3b26353393d8f49fb1851cf846947293eed79bde926cc426"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0015-HCJPTGT.otf",
+              "sha256": "2b97862b3496d11adce1c77ef1eca63b4bd15cb188d9a408b29c189bab024882"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0016-HCSPGRP.otf",
+              "sha256": "9332b9367ca26fd755c4a8c49097768b3caffb9336de499e0fb44056426aa68c"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0017-HCSPTGT.otf",
+              "sha256": "869158e2be56c343baf14e40c32d8497b8de3f691747d3ae38b555b606788d07"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0018-HGGGT.otf",
+              "sha256": "da42e4819214f960b3561d4acf51571ad0c887f258e3dc034f5c2fae5c842a68"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0019-HGGRP.otf",
+              "sha256": "85a60f7efbc9926e8a634e702442edc0245e86874af3efe640f6402ae56e36f7"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0020-HGGS.otf",
+              "sha256": "b654b6944b6c45a5581d218b8aa0e2e4125a7f348b9f8f91803831f29ce37040"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0021-HGMJ.otf",
+              "sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0022-HGSMJ.otf",
+              "sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0023-HJJGT.otf",
+              "sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0024-HJMJ.otf",
+              "sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0025-HJSMJ.otf",
+              "sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0026-HMEHL.otf",
+              "sha256": "4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0027-HMEPO.otf",
+              "sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0028-HMKMG.otf",
+              "sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0029-HMKOLD.otf",
+              "sha256": "f2122c5200148d46a3f13b703e27536748fc5abf912a9b44d8ccd0f2b7f4ce97"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0030-HMKSM.otf",
+              "sha256": "99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0031-JPJGT.otf",
+              "sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0032-JPMJ.otf",
+              "sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0033-JPSMJ.otf",
+              "sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0034-SPJGT.otf",
+              "sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0035-SPMJ.otf",
+              "sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0036-SPSMJ.otf",
+              "sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0037-TAENMREN.otf",
+              "sha256": "aef1b4e32ba55e42764385e1042b0bc5fbb51998571a380ce7b5e63a0a82c4b2"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0038-TAENMRKR.otf",
+              "sha256": "691205fe589ff8e46e7c840304316ea6d0459e54259b16eef6e49dfa66018e2a"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0039-TESEMEN.otf",
+              "sha256": "464e83498110c175392228b406fef6c3c86a54464700fb03cc993f7aae7b8a06"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0040-TESEMHG.otf",
+              "sha256": "d475b282463329667b2f7018812556c143e1b07bad31f07287600ef78997af27"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0041-TESEMHJ.otf",
+              "sha256": "4287579604bb420cf62906b885228b070f2a093b3fb09dfa617822862a0c7d3d"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0042-TESMJEN.otf",
+              "sha256": "1d7e232e98ba8a11e763ea69ff7be6cf36b2fc2c2d632a6b3115c4723969f0e9"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0043-TESMJHG.otf",
+              "sha256": "3f13c08d9c437a79e27f359dc8f6931aa1a82718ebede2b83a9a51c3cb0c3963"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0044-TESMJJP.otf",
+              "sha256": "91839ccb18c63ab15463648c4927429c9b098bf422dcab55269a55314cdcccfd"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0045-TESSMEN.otf",
+              "sha256": "7c073a836d6837771668cc5be0f1816f502e54d5397f8e05e7b2f0281647219a"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0046-TESSMHG.otf",
+              "sha256": "49bfc7e5f23e6dc28a687bcd671e2eba5fa15bbae8b46aff5a64fca97931b269"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0047-TETGTEN.otf",
+              "sha256": "201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0048-TETGTHG.otf",
+              "sha256": "dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0049-TETGTHJ.otf",
+              "sha256": "99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0050-TETGTJP.otf",
+              "sha256": "0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0051-USER.otf",
+              "sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0052-HBATANG.TTF",
+              "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0053-HMKMM.TTF",
+              "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0054-batang.ttc",
+              "sha256": "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0059-gulim.ttc",
+              "sha256": "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0060-times.ttf",
+              "sha256": "d713af89fbadd537f4bdf217f43a16dd11e9ec21f371e82ad93898afbb35374e"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/0065-HYHWPEQ.TTF",
+              "sha256": "c4f768c176ce26de91d6115bfb30c2d87c43c03d054f79e909fd340b1e46740a"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/RHWPLegacyEquation-Original.otf",
+              "sha256": "f92ff78fe7eaf2914e9879966e6a8383d3c525242339b781a117b755df70034a"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwp2024/poppy-original-complete-symbols.otf",
+              "sha256": "ad78b2ee6458dcbef0b373b1ca7b3ddfb6ddd1610eda331ebd88d486e0556341"
+            },
+            {
+              "path": "ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+              "sha256": "67b4003e2be99ea44a7c957e4b35acde1b5e6e82a54fe195c5598c3c617bc2e3"
+            },
+            {
+              "path": "ttfs/opensource/NotoSansKR-Regular.ttf",
+              "sha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74"
+            },
+            {
+              "path": "ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+              "sha256": "876598db5f1e3bef2bc77c4d94c5b0d5d2c1620be4878a06f18fb5434e331688"
+            },
+            {
+              "path": "ttfs/opensource/RHWPOldHangul-Regular.otf",
+              "sha256": "0a32ff354d11c955f819d84d91e695927d41aca0fd74b4a286b6235345101af4"
+            },
+            {
+              "path": "ttfs/opensource/RHWPPublicBatang-Regular.ttf",
+              "sha256": "7e3aee5ee1d8f44cc37d35dbd07e5f66414fee5ce552ebda6b4347643d9d0b78"
+            }
+          ]
+        }
+      },
+      "font_environment": "mydocs/pr/assets/pr8896/font-supply/sample16-hwp2024-font-environment.json",
+      "font_environment_sha256": "4fb70119f4959fb6461ed304d4b166c499b58caab0cc428f9fbab5fb2ef79b8b",
+      "original_font_programs": [
+        {
+          "name": "0000-ENGGT.otf",
+          "sha256": "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9"
+        },
+        {
+          "name": "0001-ENGRP.otf",
+          "sha256": "472830cfd4f5edc2d9dc9d0a8e3078839977c4bb0e317b198549ce278075bd26"
+        },
+        {
+          "name": "0002-ENGS.otf",
+          "sha256": "ed503552219ae16332e595c4b2999a3462d55509a4032dfce29c5ee4d0407346"
+        },
+        {
+          "name": "0003-ENJGT.otf",
+          "sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659"
+        },
+        {
+          "name": "0004-ENMJ.otf",
+          "sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f"
+        },
+        {
+          "name": "0005-ENSMJ.otf",
+          "sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+        },
+        {
+          "name": "0006-ENSMJI.otf",
+          "sha256": "6f63dc09433ea5cb856020e68e9e9a94ad847504487710c3769e67708eb5cf0b"
+        },
+        {
+          "name": "0007-ENSS.otf",
+          "sha256": "dbdf067e6e1d40bb8baeae72ca06289a4b8be15ded97f831262f28e8901ee54f"
+        },
+        {
+          "name": "0008-FLMJ.otf",
+          "sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e"
+        },
+        {
+          "name": "0009-FLSMJ.otf",
+          "sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b"
+        },
+        {
+          "name": "0010-HCENGRP.otf",
+          "sha256": "a953806c6ec22f68e9c636efe875b4d83e9306ac29391f0f105214a00e5a57d6"
+        },
+        {
+          "name": "0011-HCENTGT.otf",
+          "sha256": "da4f226e7df89a487af199b836be7d8ea90704330d44b7dbd14dc85d960c4859"
+        },
+        {
+          "name": "0012-HCHGGRP.otf",
+          "sha256": "d33ce840dd69a599a9e2cd4e1b06129b817b2bb3679375adde95ea131c9ce679"
+        },
+        {
+          "name": "0013-HCHGTGT.otf",
+          "sha256": "fc0a42f9de898629e3c0e18ba59b7f243deba0ab2595425a760e2344195034cf"
+        },
+        {
+          "name": "0014-HCHJTGT.otf",
+          "sha256": "8db67a2414128fff3b26353393d8f49fb1851cf846947293eed79bde926cc426"
+        },
+        {
+          "name": "0015-HCJPTGT.otf",
+          "sha256": "2b97862b3496d11adce1c77ef1eca63b4bd15cb188d9a408b29c189bab024882"
+        },
+        {
+          "name": "0016-HCSPGRP.otf",
+          "sha256": "9332b9367ca26fd755c4a8c49097768b3caffb9336de499e0fb44056426aa68c"
+        },
+        {
+          "name": "0017-HCSPTGT.otf",
+          "sha256": "869158e2be56c343baf14e40c32d8497b8de3f691747d3ae38b555b606788d07"
+        },
+        {
+          "name": "0018-HGGGT.otf",
+          "sha256": "da42e4819214f960b3561d4acf51571ad0c887f258e3dc034f5c2fae5c842a68"
+        },
+        {
+          "name": "0019-HGGRP.otf",
+          "sha256": "85a60f7efbc9926e8a634e702442edc0245e86874af3efe640f6402ae56e36f7"
+        },
+        {
+          "name": "0020-HGGS.otf",
+          "sha256": "b654b6944b6c45a5581d218b8aa0e2e4125a7f348b9f8f91803831f29ce37040"
+        },
+        {
+          "name": "0021-HGMJ.otf",
+          "sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287"
+        },
+        {
+          "name": "0022-HGSMJ.otf",
+          "sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0"
+        },
+        {
+          "name": "0023-HJJGT.otf",
+          "sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1"
+        },
+        {
+          "name": "0024-HJMJ.otf",
+          "sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba"
+        },
+        {
+          "name": "0025-HJSMJ.otf",
+          "sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9"
+        },
+        {
+          "name": "0026-HMEHL.otf",
+          "sha256": "4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52"
+        },
+        {
+          "name": "0027-HMEPO.otf",
+          "sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385"
+        },
+        {
+          "name": "0028-HMKMG.otf",
+          "sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9"
+        },
+        {
+          "name": "0029-HMKOLD.otf",
+          "sha256": "f2122c5200148d46a3f13b703e27536748fc5abf912a9b44d8ccd0f2b7f4ce97"
+        },
+        {
+          "name": "0030-HMKSM.otf",
+          "sha256": "99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d"
+        },
+        {
+          "name": "0031-JPJGT.otf",
+          "sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63"
+        },
+        {
+          "name": "0032-JPMJ.otf",
+          "sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c"
+        },
+        {
+          "name": "0033-JPSMJ.otf",
+          "sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a"
+        },
+        {
+          "name": "0034-SPJGT.otf",
+          "sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480"
+        },
+        {
+          "name": "0035-SPMJ.otf",
+          "sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834"
+        },
+        {
+          "name": "0036-SPSMJ.otf",
+          "sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497"
+        },
+        {
+          "name": "0037-TAENMREN.otf",
+          "sha256": "aef1b4e32ba55e42764385e1042b0bc5fbb51998571a380ce7b5e63a0a82c4b2"
+        },
+        {
+          "name": "0038-TAENMRKR.otf",
+          "sha256": "691205fe589ff8e46e7c840304316ea6d0459e54259b16eef6e49dfa66018e2a"
+        },
+        {
+          "name": "0039-TESEMEN.otf",
+          "sha256": "464e83498110c175392228b406fef6c3c86a54464700fb03cc993f7aae7b8a06"
+        },
+        {
+          "name": "0040-TESEMHG.otf",
+          "sha256": "d475b282463329667b2f7018812556c143e1b07bad31f07287600ef78997af27"
+        },
+        {
+          "name": "0041-TESEMHJ.otf",
+          "sha256": "4287579604bb420cf62906b885228b070f2a093b3fb09dfa617822862a0c7d3d"
+        },
+        {
+          "name": "0042-TESMJEN.otf",
+          "sha256": "1d7e232e98ba8a11e763ea69ff7be6cf36b2fc2c2d632a6b3115c4723969f0e9"
+        },
+        {
+          "name": "0043-TESMJHG.otf",
+          "sha256": "3f13c08d9c437a79e27f359dc8f6931aa1a82718ebede2b83a9a51c3cb0c3963"
+        },
+        {
+          "name": "0044-TESMJJP.otf",
+          "sha256": "91839ccb18c63ab15463648c4927429c9b098bf422dcab55269a55314cdcccfd"
+        },
+        {
+          "name": "0045-TESSMEN.otf",
+          "sha256": "7c073a836d6837771668cc5be0f1816f502e54d5397f8e05e7b2f0281647219a"
+        },
+        {
+          "name": "0046-TESSMHG.otf",
+          "sha256": "49bfc7e5f23e6dc28a687bcd671e2eba5fa15bbae8b46aff5a64fca97931b269"
+        },
+        {
+          "name": "0047-TETGTEN.otf",
+          "sha256": "201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3"
+        },
+        {
+          "name": "0048-TETGTHG.otf",
+          "sha256": "dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3"
+        },
+        {
+          "name": "0049-TETGTHJ.otf",
+          "sha256": "99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27"
+        },
+        {
+          "name": "0050-TETGTJP.otf",
+          "sha256": "0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631"
+        },
+        {
+          "name": "0051-USER.otf",
+          "sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece"
+        },
+        {
+          "name": "0052-HBATANG.TTF",
+          "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+        },
+        {
+          "name": "0053-HMKMM.TTF",
+          "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+        },
+        {
+          "name": "0054-batang.ttc",
+          "sha256": "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8"
+        },
+        {
+          "name": "0059-gulim.ttc",
+          "sha256": "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c"
+        },
+        {
+          "name": "0060-times.ttf",
+          "sha256": "d713af89fbadd537f4bdf217f43a16dd11e9ec21f371e82ad93898afbb35374e"
+        },
+        {
+          "name": "0065-HYHWPEQ.TTF",
+          "sha256": "c4f768c176ce26de91d6115bfb30c2d87c43c03d054f79e909fd340b1e46740a"
+        },
+        {
+          "name": "RHWPLegacyEquation-Original.otf",
+          "sha256": "f92ff78fe7eaf2914e9879966e6a8383d3c525242339b781a117b755df70034a"
+        },
+        {
+          "name": "poppy-original-complete-symbols.otf",
+          "sha256": "ad78b2ee6458dcbef0b373b1ca7b3ddfb6ddd1610eda331ebd88d486e0556341"
+        }
+      ]
+    },
+    {
+      "key": "sample16-hwpx",
+      "head": "676e3900c6490657229f9781e34f89c65c7126da",
+      "pages": 64,
+      "minimum": 99.99065,
+      "declines": [],
+      "protected_pass": true,
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/protected/native/sample16-hwpx.tsv",
+      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "sweep_manifest_sha256": "33f012cb391eb7318b6eddb66ca91fb38e04e2a0dec27d5baf667a8a9431e0e9",
+      "provenance": {
+        "hwp": {
+          "path": "samples/hwp3-sample16-hwp5.hwpx",
+          "sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c"
+        },
+        "pdf": {
+          "path": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+          "sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee"
+        },
+        "git_head": "676e3900c6490657229f9781e34f89c65c7126da",
+        "sweep_script": {
+          "path": "scripts/visual_sweep.py",
+          "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+        },
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        },
+        "svg_rasterizer": null,
+        "pdf_rasterizer": {
+          "program": "pypdfium2",
+          "backend": "pdfium",
+          "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+          "antialias": {
+            "text": true,
+            "image": true,
+            "path": true
+          },
+          "coordinate_transform": {
+            "scale": "dpi/72 on both axes",
+            "buffer_extent": "ceil(page_points*dpi/72)",
+            "annotations": true
+          },
+          "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+          "available": true,
+          "executable": "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+          "executable_sha256": "87d4df53fd91304be5bac391fb204643c36b7df2023c04a0953bcbc7d4fdf634",
+          "library": "output/pr-review/planet6897-clean20-integration-20261113/visual-venv/lib/python3.14/site-packages/pypdfium2_raw/libpdfium.dylib",
+          "library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+          "version": "153.0.7999.0",
+          "wrapper_version": "5.13.0",
+          "version_exit_code": 0
+        },
+        "comparison_profile": "print",
+        "rhwp_binary": {
+          "configured": "output/pr-review/planet6897-clean20-integration-20261113/bin/candidate-native",
+          "path": "output/pr-review/planet6897-clean20-integration-20261113/bin/candidate-native",
+          "sha256": "fb8402518e435467bdc4ee8b23ee57e2ee6f63804a6cbd87ecfadb54f7b80ccf"
+        },
+        "native_webfont_fallback": {
+          "registry_sha256": "35f3e1ac64348a6497b50cc98c7235a8adcb4c99bfa78fec6302bde6f525a299",
+          "mappings": {},
+          "document_glyph_fallbacks": [],
+          "unmapped_sources": [],
+          "local_document_substitutes": [],
+          "resources": [],
+          "module_sha256": "604d15d877f3a60d6cb2444fafefd3057fc5d595d402f06bb08748c9fe28c1cf"
+        },
+        "raster_backend": "native-skia",
+        "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+        "layout_generation": "2024",
+        "font_environment": {
+          "path": "mydocs/pr/assets/pr8896/font-supply/sample16-hwpx-font-environment.json",
+          "sha256": "300d7233a5527172ad4df993214d791fe214a69cf6e36017a637ca7cb928d183"
+        },
+        "font_supply": {
+          "mode": "direct-font-programs",
+          "source": "explicit",
+          "files": [
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0000-ENGGT.otf",
+              "sha256": "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0001-ENGRP.otf",
+              "sha256": "472830cfd4f5edc2d9dc9d0a8e3078839977c4bb0e317b198549ce278075bd26"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0002-ENGS.otf",
+              "sha256": "ed503552219ae16332e595c4b2999a3462d55509a4032dfce29c5ee4d0407346"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0003-ENJGT.otf",
+              "sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0004-ENMJ.otf",
+              "sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0005-ENSMJ.otf",
+              "sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0006-ENSMJI.otf",
+              "sha256": "6f63dc09433ea5cb856020e68e9e9a94ad847504487710c3769e67708eb5cf0b"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0007-ENSS.otf",
+              "sha256": "dbdf067e6e1d40bb8baeae72ca06289a4b8be15ded97f831262f28e8901ee54f"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0008-FLMJ.otf",
+              "sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0009-FLSMJ.otf",
+              "sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0010-HCENGRP.otf",
+              "sha256": "a953806c6ec22f68e9c636efe875b4d83e9306ac29391f0f105214a00e5a57d6"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0011-HCENTGT.otf",
+              "sha256": "da4f226e7df89a487af199b836be7d8ea90704330d44b7dbd14dc85d960c4859"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0012-HCHGGRP.otf",
+              "sha256": "d33ce840dd69a599a9e2cd4e1b06129b817b2bb3679375adde95ea131c9ce679"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0013-HCHGTGT.otf",
+              "sha256": "fc0a42f9de898629e3c0e18ba59b7f243deba0ab2595425a760e2344195034cf"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0014-HCHJTGT.otf",
+              "sha256": "8db67a2414128fff3b26353393d8f49fb1851cf846947293eed79bde926cc426"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0015-HCJPTGT.otf",
+              "sha256": "2b97862b3496d11adce1c77ef1eca63b4bd15cb188d9a408b29c189bab024882"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0016-HCSPGRP.otf",
+              "sha256": "9332b9367ca26fd755c4a8c49097768b3caffb9336de499e0fb44056426aa68c"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0017-HCSPTGT.otf",
+              "sha256": "869158e2be56c343baf14e40c32d8497b8de3f691747d3ae38b555b606788d07"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0018-HGGGT.otf",
+              "sha256": "da42e4819214f960b3561d4acf51571ad0c887f258e3dc034f5c2fae5c842a68"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0019-HGGRP.otf",
+              "sha256": "85a60f7efbc9926e8a634e702442edc0245e86874af3efe640f6402ae56e36f7"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0020-HGGS.otf",
+              "sha256": "b654b6944b6c45a5581d218b8aa0e2e4125a7f348b9f8f91803831f29ce37040"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0021-HGMJ.otf",
+              "sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0022-HGSMJ.otf",
+              "sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0023-HJJGT.otf",
+              "sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0024-HJMJ.otf",
+              "sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0025-HJSMJ.otf",
+              "sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0026-HMEHL.otf",
+              "sha256": "4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0027-HMEPO.otf",
+              "sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0028-HMKMG.otf",
+              "sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0029-HMKOLD.otf",
+              "sha256": "f2122c5200148d46a3f13b703e27536748fc5abf912a9b44d8ccd0f2b7f4ce97"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0030-HMKSM.otf",
+              "sha256": "99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0031-JPJGT.otf",
+              "sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0032-JPMJ.otf",
+              "sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0033-JPSMJ.otf",
+              "sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0034-SPJGT.otf",
+              "sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0035-SPMJ.otf",
+              "sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0036-SPSMJ.otf",
+              "sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0037-TAENMREN.otf",
+              "sha256": "aef1b4e32ba55e42764385e1042b0bc5fbb51998571a380ce7b5e63a0a82c4b2"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0038-TAENMRKR.otf",
+              "sha256": "691205fe589ff8e46e7c840304316ea6d0459e54259b16eef6e49dfa66018e2a"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0039-TESEMEN.otf",
+              "sha256": "464e83498110c175392228b406fef6c3c86a54464700fb03cc993f7aae7b8a06"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0040-TESEMHG.otf",
+              "sha256": "d475b282463329667b2f7018812556c143e1b07bad31f07287600ef78997af27"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0041-TESEMHJ.otf",
+              "sha256": "4287579604bb420cf62906b885228b070f2a093b3fb09dfa617822862a0c7d3d"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0042-TESMJEN.otf",
+              "sha256": "1d7e232e98ba8a11e763ea69ff7be6cf36b2fc2c2d632a6b3115c4723969f0e9"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0043-TESMJHG.otf",
+              "sha256": "3f13c08d9c437a79e27f359dc8f6931aa1a82718ebede2b83a9a51c3cb0c3963"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0044-TESMJJP.otf",
+              "sha256": "91839ccb18c63ab15463648c4927429c9b098bf422dcab55269a55314cdcccfd"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0045-TESSMEN.otf",
+              "sha256": "7c073a836d6837771668cc5be0f1816f502e54d5397f8e05e7b2f0281647219a"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0046-TESSMHG.otf",
+              "sha256": "49bfc7e5f23e6dc28a687bcd671e2eba5fa15bbae8b46aff5a64fca97931b269"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0047-TETGTEN.otf",
+              "sha256": "201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0048-TETGTHG.otf",
+              "sha256": "dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0049-TETGTHJ.otf",
+              "sha256": "99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0050-TETGTJP.otf",
+              "sha256": "0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0051-USER.otf",
+              "sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0052-HBATANG.TTF",
+              "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0053-HMKMM.TTF",
+              "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0054-batang.ttc",
+              "sha256": "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0059-gulim.ttc",
+              "sha256": "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0060-times.ttf",
+              "sha256": "d713af89fbadd537f4bdf217f43a16dd11e9ec21f371e82ad93898afbb35374e"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/0065-HYHWPEQ.TTF",
+              "sha256": "c4f768c176ce26de91d6115bfb30c2d87c43c03d054f79e909fd340b1e46740a"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/RHWPLegacyEquation-Original.otf",
+              "sha256": "f92ff78fe7eaf2914e9879966e6a8383d3c525242339b781a117b755df70034a"
+            },
+            {
+              "path": "output/pr-review/planet6897-clean20-integration-20261113/protected-font-programs/sample16-hwpx/poppy-original-complete-symbols.otf",
+              "sha256": "ad78b2ee6458dcbef0b373b1ca7b3ddfb6ddd1610eda331ebd88d486e0556341"
+            },
+            {
+              "path": "ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+              "sha256": "67b4003e2be99ea44a7c957e4b35acde1b5e6e82a54fe195c5598c3c617bc2e3"
+            },
+            {
+              "path": "ttfs/opensource/NotoSansKR-Regular.ttf",
+              "sha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74"
+            },
+            {
+              "path": "ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+              "sha256": "876598db5f1e3bef2bc77c4d94c5b0d5d2c1620be4878a06f18fb5434e331688"
+            },
+            {
+              "path": "ttfs/opensource/RHWPOldHangul-Regular.otf",
+              "sha256": "0a32ff354d11c955f819d84d91e695927d41aca0fd74b4a286b6235345101af4"
+            },
+            {
+              "path": "ttfs/opensource/RHWPPublicBatang-Regular.ttf",
+              "sha256": "7e3aee5ee1d8f44cc37d35dbd07e5f66414fee5ce552ebda6b4347643d9d0b78"
+            }
+          ]
+        }
+      },
+      "font_environment": "mydocs/pr/assets/pr8896/font-supply/sample16-hwpx-font-environment.json",
+      "font_environment_sha256": "300d7233a5527172ad4df993214d791fe214a69cf6e36017a637ca7cb928d183",
+      "original_font_programs": [
+        {
+          "name": "0000-ENGGT.otf",
+          "sha256": "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9"
+        },
+        {
+          "name": "0001-ENGRP.otf",
+          "sha256": "472830cfd4f5edc2d9dc9d0a8e3078839977c4bb0e317b198549ce278075bd26"
+        },
+        {
+          "name": "0002-ENGS.otf",
+          "sha256": "ed503552219ae16332e595c4b2999a3462d55509a4032dfce29c5ee4d0407346"
+        },
+        {
+          "name": "0003-ENJGT.otf",
+          "sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659"
+        },
+        {
+          "name": "0004-ENMJ.otf",
+          "sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f"
+        },
+        {
+          "name": "0005-ENSMJ.otf",
+          "sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+        },
+        {
+          "name": "0006-ENSMJI.otf",
+          "sha256": "6f63dc09433ea5cb856020e68e9e9a94ad847504487710c3769e67708eb5cf0b"
+        },
+        {
+          "name": "0007-ENSS.otf",
+          "sha256": "dbdf067e6e1d40bb8baeae72ca06289a4b8be15ded97f831262f28e8901ee54f"
+        },
+        {
+          "name": "0008-FLMJ.otf",
+          "sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e"
+        },
+        {
+          "name": "0009-FLSMJ.otf",
+          "sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b"
+        },
+        {
+          "name": "0010-HCENGRP.otf",
+          "sha256": "a953806c6ec22f68e9c636efe875b4d83e9306ac29391f0f105214a00e5a57d6"
+        },
+        {
+          "name": "0011-HCENTGT.otf",
+          "sha256": "da4f226e7df89a487af199b836be7d8ea90704330d44b7dbd14dc85d960c4859"
+        },
+        {
+          "name": "0012-HCHGGRP.otf",
+          "sha256": "d33ce840dd69a599a9e2cd4e1b06129b817b2bb3679375adde95ea131c9ce679"
+        },
+        {
+          "name": "0013-HCHGTGT.otf",
+          "sha256": "fc0a42f9de898629e3c0e18ba59b7f243deba0ab2595425a760e2344195034cf"
+        },
+        {
+          "name": "0014-HCHJTGT.otf",
+          "sha256": "8db67a2414128fff3b26353393d8f49fb1851cf846947293eed79bde926cc426"
+        },
+        {
+          "name": "0015-HCJPTGT.otf",
+          "sha256": "2b97862b3496d11adce1c77ef1eca63b4bd15cb188d9a408b29c189bab024882"
+        },
+        {
+          "name": "0016-HCSPGRP.otf",
+          "sha256": "9332b9367ca26fd755c4a8c49097768b3caffb9336de499e0fb44056426aa68c"
+        },
+        {
+          "name": "0017-HCSPTGT.otf",
+          "sha256": "869158e2be56c343baf14e40c32d8497b8de3f691747d3ae38b555b606788d07"
+        },
+        {
+          "name": "0018-HGGGT.otf",
+          "sha256": "da42e4819214f960b3561d4acf51571ad0c887f258e3dc034f5c2fae5c842a68"
+        },
+        {
+          "name": "0019-HGGRP.otf",
+          "sha256": "85a60f7efbc9926e8a634e702442edc0245e86874af3efe640f6402ae56e36f7"
+        },
+        {
+          "name": "0020-HGGS.otf",
+          "sha256": "b654b6944b6c45a5581d218b8aa0e2e4125a7f348b9f8f91803831f29ce37040"
+        },
+        {
+          "name": "0021-HGMJ.otf",
+          "sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287"
+        },
+        {
+          "name": "0022-HGSMJ.otf",
+          "sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0"
+        },
+        {
+          "name": "0023-HJJGT.otf",
+          "sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1"
+        },
+        {
+          "name": "0024-HJMJ.otf",
+          "sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba"
+        },
+        {
+          "name": "0025-HJSMJ.otf",
+          "sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9"
+        },
+        {
+          "name": "0026-HMEHL.otf",
+          "sha256": "4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52"
+        },
+        {
+          "name": "0027-HMEPO.otf",
+          "sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385"
+        },
+        {
+          "name": "0028-HMKMG.otf",
+          "sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9"
+        },
+        {
+          "name": "0029-HMKOLD.otf",
+          "sha256": "f2122c5200148d46a3f13b703e27536748fc5abf912a9b44d8ccd0f2b7f4ce97"
+        },
+        {
+          "name": "0030-HMKSM.otf",
+          "sha256": "99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d"
+        },
+        {
+          "name": "0031-JPJGT.otf",
+          "sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63"
+        },
+        {
+          "name": "0032-JPMJ.otf",
+          "sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c"
+        },
+        {
+          "name": "0033-JPSMJ.otf",
+          "sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a"
+        },
+        {
+          "name": "0034-SPJGT.otf",
+          "sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480"
+        },
+        {
+          "name": "0035-SPMJ.otf",
+          "sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834"
+        },
+        {
+          "name": "0036-SPSMJ.otf",
+          "sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497"
+        },
+        {
+          "name": "0037-TAENMREN.otf",
+          "sha256": "aef1b4e32ba55e42764385e1042b0bc5fbb51998571a380ce7b5e63a0a82c4b2"
+        },
+        {
+          "name": "0038-TAENMRKR.otf",
+          "sha256": "691205fe589ff8e46e7c840304316ea6d0459e54259b16eef6e49dfa66018e2a"
+        },
+        {
+          "name": "0039-TESEMEN.otf",
+          "sha256": "464e83498110c175392228b406fef6c3c86a54464700fb03cc993f7aae7b8a06"
+        },
+        {
+          "name": "0040-TESEMHG.otf",
+          "sha256": "d475b282463329667b2f7018812556c143e1b07bad31f07287600ef78997af27"
+        },
+        {
+          "name": "0041-TESEMHJ.otf",
+          "sha256": "4287579604bb420cf62906b885228b070f2a093b3fb09dfa617822862a0c7d3d"
+        },
+        {
+          "name": "0042-TESMJEN.otf",
+          "sha256": "1d7e232e98ba8a11e763ea69ff7be6cf36b2fc2c2d632a6b3115c4723969f0e9"
+        },
+        {
+          "name": "0043-TESMJHG.otf",
+          "sha256": "3f13c08d9c437a79e27f359dc8f6931aa1a82718ebede2b83a9a51c3cb0c3963"
+        },
+        {
+          "name": "0044-TESMJJP.otf",
+          "sha256": "91839ccb18c63ab15463648c4927429c9b098bf422dcab55269a55314cdcccfd"
+        },
+        {
+          "name": "0045-TESSMEN.otf",
+          "sha256": "7c073a836d6837771668cc5be0f1816f502e54d5397f8e05e7b2f0281647219a"
+        },
+        {
+          "name": "0046-TESSMHG.otf",
+          "sha256": "49bfc7e5f23e6dc28a687bcd671e2eba5fa15bbae8b46aff5a64fca97931b269"
+        },
+        {
+          "name": "0047-TETGTEN.otf",
+          "sha256": "201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3"
+        },
+        {
+          "name": "0048-TETGTHG.otf",
+          "sha256": "dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3"
+        },
+        {
+          "name": "0049-TETGTHJ.otf",
+          "sha256": "99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27"
+        },
+        {
+          "name": "0050-TETGTJP.otf",
+          "sha256": "0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631"
+        },
+        {
+          "name": "0051-USER.otf",
+          "sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece"
+        },
+        {
+          "name": "0052-HBATANG.TTF",
+          "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+        },
+        {
+          "name": "0053-HMKMM.TTF",
+          "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+        },
+        {
+          "name": "0054-batang.ttc",
+          "sha256": "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8"
+        },
+        {
+          "name": "0059-gulim.ttc",
+          "sha256": "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c"
+        },
+        {
+          "name": "0060-times.ttf",
+          "sha256": "d713af89fbadd537f4bdf217f43a16dd11e9ec21f371e82ad93898afbb35374e"
+        },
+        {
+          "name": "0065-HYHWPEQ.TTF",
+          "sha256": "c4f768c176ce26de91d6115bfb30c2d87c43c03d054f79e909fd340b1e46740a"
+        },
+        {
+          "name": "RHWPLegacyEquation-Original.otf",
+          "sha256": "f92ff78fe7eaf2914e9879966e6a8383d3c525242339b781a117b755df70034a"
+        },
+        {
+          "name": "poppy-original-complete-symbols.otf",
+          "sha256": "ad78b2ee6458dcbef0b373b1ca7b3ddfb6ddd1610eda331ebd88d486e0556341"
+        }
+      ]
+    }
+  ]
+}

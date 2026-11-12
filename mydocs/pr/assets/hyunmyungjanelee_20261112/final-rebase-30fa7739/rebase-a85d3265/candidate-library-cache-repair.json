@@ -1,0 +1,10 @@
+{
+  "recorded_at": "2026-11-12T14:20:15.468976+00:00",
+  "source_file": "src/lib.rs",
+  "source_sha256_before_and_after": "02049d37656973486cfee45609728847ef415c9836bac1afdf29d6e4c222d737",
+  "mtime_before_ns": 1794292286274232000,
+  "mtime_after_ns": 1794493215468055000,
+  "action": "공유 Native 라이브러리에 남은 다른 worktree 산출물을 현재 source로 재컴파일하기 위해 내용 변경 없이 mtime만 갱신했다. 공유 target 삭제·검사 변경·기대값 변경은 하지 않았다.",
+  "evidence": "shared-library-owner-before.json의 rlib/dylib가 base-source 경로를 포함하며, 실패 검사 빌드보다 이전 시각이다. 최초 130PASS/34FAIL을 성공 근거로 사용하지 않는다.",
+  "rerun_scope": "실패한 후보 집중 164건과 이후 아직 실행하지 않은 필수 게이트. base23건은 재실행하지 않는다."
+}

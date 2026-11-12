@@ -145,9 +145,9 @@ pub(crate) fn export_kitty(args: &[String]) -> i32 {
                 }
             };
             let name = if single_page {
-                format!("{stem}.kitty")
+                super::output_file_name(stem, ".kitty")
             } else {
-                format!("{stem}_{:03}.kitty", page + 1)
+                super::output_file_name(stem, &format!("_{:03}.kitty", page + 1))
             };
             let path = directory.join(name);
             let saved = std::fs::File::create(&path).and_then(|file| {

@@ -23,7 +23,7 @@
 //! 표 포맷/분할 본체와 나머지 float 경로는 상위 구현에 남아 있다.
 
 mod composed_tail;
-mod decoration_host;
+pub(super) mod decoration_host;
 pub(super) mod decoration_table;
 pub(super) mod deferred;
 pub(super) mod deferred_picture;

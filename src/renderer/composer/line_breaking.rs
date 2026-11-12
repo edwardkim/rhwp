@@ -2722,6 +2722,7 @@ fn fill_one_interval(
                                 tokens,
                                 text_chars,
                                 break_token_idx,
+                                cursor.line_start_idx,
                                 eff_w(false),
                             );
                             if let Some(tail) = detached_tail {
@@ -3221,16 +3222,21 @@ fn recalc_space_savings_hwp(
     w
 }
 
-/// 끊는 자리 토큰 끝의 줄머리 금칙 묶음이 시작하는 글자 위치.
+/// 뒤 ASCII 낱말이 한 줄을 넘을 때 끊는 자리 토큰 끝의 줄머리 금칙 묶음 앞에서 줄을 끝낼
+/// 글자 위치.
 ///
 /// 줄머리 금칙 문자는 평소 앞 글자에 붙는다. 한컴 engine 2020 Print에서 `카.a`·`카.)`·
 /// `카.)***` 는 앞 글자와 함께 다음 줄로 가지만, 뒤의 ASCII 낱말이 한 줄을 넘으면
 /// 금칙 묶음이 그 낱말 쪽으로 떨어진다(`나` / `.****…`, `한다.111…` #2214).
-/// 뒤 낱말이 한 줄 폭 안이면 `None` 이다.
+/// 앞 글자가 줄 첫 글자가 아니면 그 앞 글자도 금칙 묶음과 함께 다음 줄로 가고, 다음 줄에서
+/// 홀로 남는다 — 낱말 단위 `가나다만,***…` 는 `가나다` / `만` / `,***…`, 글자 단위
+/// `가나다라나.***…` 는 `가나다라` / `나` / `.***…` 다(#8950). 앞 글자가 줄 첫 글자이면
+/// 금칙 묶음 앞에서 끝낸다. 뒤 낱말이 한 줄 폭 안이면 `None` 이다.
 fn forbidden_tail_before_oversized_run(
     tokens: &[BreakToken],
     text_chars: &[char],
     break_token_idx: usize,
+    line_start_idx: usize,
     line_width_hwp: i32,
 ) -> Option<usize> {
     let BreakToken::Text {
@@ -3265,7 +3271,11 @@ fn forbidden_tail_before_oversized_run(
         }
         run_width_hwp += to_hwp(*base_width);
     }
-    (run_width_hwp > line_width_hwp).then_some(tail)
+    if run_width_hwp <= line_width_hwp {
+        return None;
+    }
+    let head = tail - 1;
+    Some(if head > line_start_idx { head } else { tail })
 }
 
 /// `boundary` 를 끝내지 않은 첫 토큰의 위치.
@@ -3340,13 +3350,33 @@ fn char_level_break_hwp(
 /// 0 으로 떨어지고, 그러면 줄간격 기준이 12px 하드코딩으로 내려간다. 한컴은 그 문단의
 /// 글자모양 높이를 그대로 줄간격 기준으로 쓴다(실측: 14pt 문단 표 줄 spacing 912 HU, 12px 폴백은 585).
 fn paragraph_font_size_px(para: &Paragraph, styles: &ResolvedStyleSet) -> Option<f64> {
-    para.char_shapes
+    let largest = para
+        .char_shapes
         .iter()
         .filter_map(|cs| styles.char_styles.get(cs.char_shape_id as usize))
         .map(|style| style.font_size)
         .filter(|fs| *fs > 0.0)
         .fold(None, |acc: Option<f64>, fs| {
             Some(acc.map_or(fs, |a| a.max(fs)))
+        });
+    if largest.is_none() && explicit_zero_size_paragraph(para, styles) {
+        return Some(0.0);
+    }
+    largest
+}
+
+/// 문단의 글자 모양이 모두 명시적 크기 0 인지 본다.
+///
+/// 한컴은 크기 0 글자만 든 문단의 글자 높이를 0 으로 잡는다. 비율 줄간격이면 줄 높이가 0 이 되고
+/// (100·160·300% 모두 앞뒤 문단 간격 변화 0), 고정·최소 줄간격은 그 값, 여백 줄간격은 여백만
+/// 남는다. 대체 크기(12px)는 크기를 알 수 없는 문단에만 쓴다.
+fn explicit_zero_size_paragraph(para: &Paragraph, styles: &ResolvedStyleSet) -> bool {
+    !para.char_shapes.is_empty()
+        && para.char_shapes.iter().all(|cs| {
+            styles
+                .char_styles
+                .get(cs.char_shape_id as usize)
+                .is_some_and(|style| style.font_size == 0.0)
         })
 }
 
@@ -4854,12 +4884,17 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
             letter_spacing_px[control.char_position] = 0.0;
         }
     }
+    // 글자 토큰은 크기 0 을 대체 크기(12px)로 세므로, 모든 글자가 크기 0 인 문단은
+    // 줄의 글자 높이를 0 으로 되돌린다(한컴: 이 문단은 줄간격 설정만 남는다).
+    let zero_size_paragraph = explicit_zero_size_paragraph(para, styles);
     let fallback_font_size = if para.text.is_empty() {
         para.char_shapes
             .first()
             .and_then(|char_shape| styles.char_styles.get(char_shape.char_shape_id as usize))
             .map(|style| style.font_size)
             .unwrap_or(12.0)
+    } else if zero_size_paragraph {
+        0.0
     } else {
         12.0
     };
@@ -5075,7 +5110,9 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
                         filled
                     };
                     let line = &filled.line;
-                    maximum_font_size = maximum_font_size.max(line.max_font_size);
+                    if !zero_size_paragraph {
+                        maximum_font_size = maximum_font_size.max(line.max_font_size);
+                    }
                     if filled.termination == FillTermination::ParagraphEnd {
                         maximum_font_size = maximum_font_size.max(paragraph_end_font_size);
                     }
@@ -6194,11 +6231,14 @@ fn try_reflow_line_segs_impl<S: Storage>(
 
     // 줄별 max_font_size에 따라 line_height/text_height/baseline_distance를 계산
     // 한컴은 줄마다 최대 폰트 크기에 맞게 다른 치수를 사용
+    let zero_size_paragraph = explicit_zero_size_paragraph(para, styles);
     let make_line_seg = |utf16_start: u32, max_font_size: f64| -> LineSeg {
         let max_font_size =
             list_marker_metrics::include_marker(para, styles, utf16_start == 0, max_font_size);
         let fs = if max_font_size > 0.0 {
             max_font_size
+        } else if zero_size_paragraph {
+            0.0
         } else {
             12.0
         };
@@ -6678,7 +6718,7 @@ fn try_reflow_line_segs_impl<S: Storage>(
                 _ => line_start_utf16_offset(para, lb.start_idx, &inline_controls),
             }
         };
-        let fs = if lb.max_font_size > 0.0 {
+        let fs = if lb.max_font_size > 0.0 && !zero_size_paragraph {
             lb.max_font_size
         } else {
             paragraph_font_size_px(para, styles).unwrap_or(12.0)

@@ -3177,13 +3177,6 @@ export class CanvasKitLayerRenderer {
       replayCodePoints.push(character);
     }
     const style = op.style ?? {};
-    // 줄 방향 문맥을 가진 legacy run은 기존 complex-script fallback을 사용한다.
-    // 명시적 glyphRun의 위치는 producer가 이미 해소하므로 이 분기를 거치지 않는다.
-    if (style.bidiLayout) {
-      this.unsupportedOps.add('textRun:scriptTextRequiresShaping');
-      return;
-    }
-    if (this.recordTextRunCoverageGaps(op, replayCodePoints)) return;
     const ratio = style.ratio ?? 1;
     const outlineType = style.outlineType ?? 0;
     const shadowType = style.shadowType ?? 0;
@@ -3193,13 +3186,17 @@ export class CanvasKitLayerRenderer {
     const baseFontSize = style.fontSize ?? Math.max(1, op.bbox.height || 12);
     const baseline = op.baseline ?? baseFontSize;
     const rotation = op.rotation ?? 0;
+    // 원문·caret 상자는 남지만 크기와 모든 전진이 0이면 그릴 잉크가 없다.
+    // 크기가 있는 장평 0, 음수·비유한 값과 비어 있지 않은 전진은 이 경로로 구제하지 않는다.
+    const zeroSizeNoInk = baseFontSize === 0 && ratio >= 0 && op.bbox.width === 0
+      && replayPositions?.length === replayCodePoints.length + 1
+      && replayPositions.every(position => position === 0);
     if (![op.bbox.x, op.bbox.y, op.bbox.width, op.bbox.height, ratio, outlineType,
       shadowType, shadowOffsetX, shadowOffsetY, baseFontSize, baseline, rotation]
       .every(Number.isFinite)
       || op.bbox.width < 0
       || op.bbox.height < 0
-      || ratio <= 0
-      || baseFontSize <= 0
+      || (!zeroSizeNoInk && (ratio <= 0 || baseFontSize <= 0))
       || !Number.isInteger(outlineType)
       || outlineType < 0
       || !Number.isInteger(shadowType)
@@ -3220,6 +3217,14 @@ export class CanvasKitLayerRenderer {
         return;
       }
     }
+    if (zeroSizeNoInk) return;
+    // 줄 방향 문맥을 가진 legacy run은 기존 complex-script fallback을 사용한다.
+    // 명시적 glyphRun의 위치는 producer가 이미 해소하므로 이 분기를 거치지 않는다.
+    if (style.bidiLayout) {
+      this.unsupportedOps.add('textRun:scriptTextRequiresShaping');
+      return;
+    }
+    if (this.recordTextRunCoverageGaps(op, replayCodePoints)) return;
     const verticalPresentationText = op.isVertical
       && op.orientation !== 'vertical-sideways'
       ? VERTICAL_PRESENTATION_BASE_TEXT.get(replayText)

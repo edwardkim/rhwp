@@ -1019,8 +1019,16 @@ impl TypesetEngine {
         // 그렇지 않으면 컷은 여백을 빼고 정해지지만 괘선은 여백만큼 위에 그려진다.
         fragment_placement = fragment_placement.or_else(|| {
             (crate::renderer::para_has_no_stored_line_segs(para)
-                && !para_has_non_whitespace_text(para)
-                && para.controls.len() == 1
+                && ((!para_has_non_whitespace_text(para) && para.controls.len() == 1)
+                    // 계산한 글자·공백 host도 같은 그림 행의 원점을 소유한다.
+                    // 첫 opening은 host 줄과 같은 원점을 공유한다. 이어받은 조각은
+                    // 기존 조각 배치가 위 여백을 소비하므로 host의 NextLine 점유까지
+                    // 다시 전달하면 종료 뒤 본문에 그 여백이 한 번 더 붙는다.
+                    || (!is_continuation
+                        && crate::renderer::is_unstored_whitespace_object_host(para)
+                        && table.cells.iter().any(
+                            crate::renderer::height_measurer::unstored_square_picture_cell_owns_padding,
+                        )))
                 && !table.common.treat_as_char
                 && crate::renderer::typeset::is_para_topbottom_float(&table.common)
                 && table.caption.is_none())

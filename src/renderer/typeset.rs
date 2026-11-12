@@ -772,6 +772,7 @@ fn para_has_non_whitespace_text(para: &Paragraph) -> bool {
     para.text
         .chars()
         .any(|c| c > '\u{001F}' && c != '\u{FFFC}' && !c.is_whitespace())
+        || crate::renderer::is_unstored_whitespace_object_host(para)
 }
 
 fn take_strict_plain_text_fit_after_empty_host_float_once(
@@ -5541,6 +5542,35 @@ impl TypesetEngine {
             && is_first_table
             && pre_height <= 0.0
             && (fmt.square_host_plan.is_some() || no_lineseg_square_band.is_some());
+        if is_wrap_around_table
+            && crate::renderer::para_has_no_stored_line_segs(para)
+            && matches!(
+                table.common.vert_rel_to,
+                crate::model::shape::VertRelTo::Para
+            )
+            && matches!(
+                table.common.horz_rel_to,
+                crate::model::shape::HorzRelTo::Column | crate::model::shape::HorzRelTo::Para
+            )
+            && matches!(
+                table.common.horz_align,
+                crate::model::shape::HorzAlign::Left
+            )
+        {
+            let column = st.inline_flow_column();
+            let x0 =
+                column.x + hwpunit_to_px(signed_hwpunit(table.common.horizontal_offset), self.dpi);
+            let x1 = x0
+                + hwpunit_to_px(table.common.width as i32, self.dpi)
+                + hwpunit_to_px(i32::from(table.outer_margin_left), self.dpi)
+                + hwpunit_to_px(i32::from(table.outer_margin_right), self.dpi);
+            let top = para_start_height + hwpunit_to_px(signed_vertical_offset, self.dpi);
+            let bottom = top
+                + hwpunit_to_px(i32::from(table.outer_margin_top), self.dpi)
+                + hwpunit_to_px(table.common.height as i32, self.dpi)
+                + hwpunit_to_px(i32::from(table.outer_margin_bottom), self.dpi);
+            st.record_unstored_square_box(para_idx, x0..x1, top..bottom);
+        }
         // 저장 줄이 없는 **빈** host 의 전폭 Square 표: 표는 오프셋·바깥여백 위 아래에
         // 놓이고 host 빈 줄은 표 아래로 내려간다(layout 과 같은 helper).
         let empty_square_host_geometry = (is_wrap_around_table && is_first_table)
@@ -5603,6 +5633,11 @@ impl TypesetEngine {
         } else if is_wrap_around_table && pre_height > 0.0 {
             let v_off_px = crate::renderer::hwpunit_to_px(vertical_offset as i32, self.dpi);
             let table_bottom = v_off_px + table_total_height;
+            // 표 옆 차선에 흡수되는 뒤 문단의 저장 줄은 host 줄 원점에서 잰다. 그 줄이
+            // 표 바닥보다 아래까지 이어지면 띠도 그 끝까지 늘어나야 하므로, 앞 글자가
+            // 있는 host 도 같은 원점으로 띠를 등록한다(흐름 전진은 그대로).
+            let host_origin = st.current_height;
+            st.register_square_band(host_origin, host_origin + pre_height.max(table_bottom));
             st.advance_flow_by(pre_height.max(table_bottom));
         } else if is_visible_para_float {
             // 통째 배치의 fit 판정에서 확정한 결과를 그대로 소비한다.

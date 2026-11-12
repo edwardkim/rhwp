@@ -67,6 +67,9 @@ pub(in crate::renderer::typeset) struct StateView {
     /// [#5699 H1] 이 쪽에서 사다리-미계상 표 밴드 교정으로 확보한 흐름 바닥(px).
     /// 후속 문단의 저장 vpos 후방 스냅이 교정분을 되돌리지 못한다. 쪽 단위 리셋.
     pub(in crate::renderer::typeset) ladder_band_floor: f64,
+    /// [#8948] 같은 문단 블록 표가 측정 높이로 자라 흐름 끝을 TAC 상한보다 실제로 밀어 올린
+    /// 쪽(`pages.len()` 기준). 그 쪽 다음 쪽에서만 옛 저장 쪽 경계를 넘침으로 건넌 것으로 본다.
+    pub(in crate::renderer::typeset) block_table_growth_page: Option<usize>,
     /// [#5699 H1] 이번 단에서 교정 판별이 발동한 표 (para, ctrl) — 단 flush 시
     /// 소속 페이지의 `ladder_band_tables` 로 이관해 렌더러와 판정을 공유한다.
     pub(in crate::renderer::typeset) current_ladder_band_tables: Vec<(usize, usize)>,
@@ -150,6 +153,10 @@ pub(in crate::renderer::typeset) struct StateView {
     pub(in crate::renderer::typeset) page_anchored_bands: Vec<VisibleFloatExclusion>,
     /// [#7696] 쪽·종이 기준 밴드가 밀어 확정한 문단 시작(단 상대 px). 배치가 같은 값을 쓴다.
     pub(in crate::renderer::typeset) page_band_flow_starts: std::collections::HashMap<usize, f64>,
+    /// 저장 줄 없는 host 의 문단·단 기준 어울림 표 바깥 상자(쪽 번호, 단, 문단, x0, x1, 위, 아래 —
+    /// 단 흐름 px). 뒤 문단의 문단 기준 자리차지 표가 이 상자와 겹치면 표만 아래로 내린다.
+    pub(in crate::renderer::typeset) unstored_square_boxes:
+        Vec<(usize, u16, usize, f64, f64, f64, f64)>,
     /// 현재 쪽에 실제 배치된 그림의 점유 영역(용지 좌표). 다음 단에도 간섭할 수 있다.
     pub(in crate::renderer::typeset) side_wrap_exclusions:
         std::collections::BTreeMap<(usize, usize), crate::renderer::layout_frame::FrameExclusion>,

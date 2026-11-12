@@ -1,0 +1,28 @@
+<HWPML Version="2.91"><HEAD/><BODY><SECTION>
+  <P><TEXT><TABLE RowCount="1" ColCount="2">
+    <SHAPEOBJECT><SIZE Width="12000" Height="4000"/></SHAPEOBJECT>
+    <ROW>
+    <CELL ColAddr="0" RowAddr="0" Width="3000" Height="4000"><PARALIST>
+      <P><TEXT><CHAR>목표 2026년 8월 2일</CHAR></TEXT></P>
+    </PARALIST></CELL>
+    <CELL ColAddr="1" RowAddr="0" Width="9000" Height="4000"><PARALIST>
+      <P><TEXT><CHAR>안내</CHAR></TEXT></P>
+      <P><TEXT><TABLE RowCount="1" ColCount="3">
+        <SHAPEOBJECT><SIZE Width="9000" Height="3000"/></SHAPEOBJECT>
+        <ROW>
+        <CELL ColAddr="0" RowAddr="0" Width="3000" Height="3000"><PARALIST>
+          <P><TEXT><CHAR>교육인원</CHAR></TEXT></P>
+          <P><TEXT><CHAR>42,360명</CHAR></TEXT></P>
+        </PARALIST></CELL>
+        <CELL ColAddr="1" RowAddr="0" Width="3000" Height="3000"><PARALIST>
+          <P><TEXT><CHAR>4,676건</CHAR></TEXT></P>
+        </PARALIST></CELL>
+        <CELL ColAddr="2" RowAddr="0" Width="3000" Height="3000"><PARALIST>
+          <P><TEXT><CHAR>예산 1,234,000원</CHAR></TEXT></P>
+        </PARALIST></CELL>
+        </ROW>
+      </TABLE></TEXT></P>
+    </PARALIST></CELL>
+    </ROW>
+  </TABLE></TEXT></P>
+</SECTION></BODY><TAIL/></HWPML>

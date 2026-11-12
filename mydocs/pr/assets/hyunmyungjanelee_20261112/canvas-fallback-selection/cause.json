@@ -1,0 +1,70 @@
+{
+  "diagnosis_only": true,
+  "source_head": "0c9819d698bcbe3e3d83f563a0154ccb00eb6f07",
+  "unchanged_reference": true,
+  "unchanged_font_bytes": true,
+  "original_actual_supplier": {
+    "name": "actual",
+    "font": "26.667px 한양신명조, HYSinMyeongJo, HY신명조, HYSinMyeongJo-Medium, Myeongjo, Batang, \"Haansoft Batang\", Batang, 바탕, \"Nanum Myeongjo\", AppleMyungjo, \"Noto Serif KR\", \"Noto Serif CJK KR\", \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"RHWP Old Hangul\", \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", serif",
+    "width": 26.659988403320312,
+    "left": -1.3017578125,
+    "right": 25.488418579101562,
+    "top": 21.47900390625,
+    "bottom": 2.4212703704833984,
+    "platform": {
+      "fonts": [
+        {
+          "familyName": "HYSinMyeongJo-Medium",
+          "postScriptName": "H2mjsM",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ]
+    }
+  },
+  "alias_filtered_supplier": {
+    "name": "actual",
+    "font": "26.667px 한양신명조, Myeongjo, Batang, \"Haansoft Batang\", Batang, 바탕, \"Nanum Myeongjo\", AppleMyungjo, \"Noto Serif KR\", \"Noto Serif CJK KR\", \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"RHWP Old Hangul\", \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", serif",
+    "width": 26.659988403320312,
+    "left": -5.0387396812438965,
+    "right": 21.647918701171875,
+    "top": 17.6489200592041,
+    "bottom": -0.9597587585449219,
+    "platform": {
+      "fonts": [
+        {
+          "familyName": "Myeongjo",
+          "postScriptName": "Myeongjo-SPMJ",
+          "isCustomFont": true,
+          "glyphCount": 1
+        }
+      ]
+    }
+  },
+  "filtered_pages": [
+    {
+      "page": 51,
+      "raw": 100.0
+    },
+    {
+      "page": 61,
+      "raw": 100.0
+    },
+    {
+      "page": 62,
+      "raw": 100.0
+    },
+    {
+      "page": 63,
+      "raw": 100.0
+    }
+  ],
+  "rejected_name_substitution": {
+    "file": "postscript-binding-diagnosis.json",
+    "reason": "Native 51/61/62쪽도 변경되어 동일 출력 조건이 아니므로 채택하지 않음"
+  },
+  "intended_fix": "명시적 glyphFallbacks의 실제 공급자가 주 face 뒤에서 OS 별칭보다 먼저 선택되도록 공통 Canvas 측정/paint descriptor 보정",
+  "font_binary_commit": false,
+  "baseline_sha256": "ee41455cf7f05585487d92961ccb9fd8160d5d1e15c3567019ea89e2b7bf2aeb",
+  "evidence_status": "원인 분리 완료; 정본 도구와 수정 코드의 전쪽 검증 전"
+}

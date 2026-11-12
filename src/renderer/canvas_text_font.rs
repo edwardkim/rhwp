@@ -87,7 +87,13 @@ impl CanvasTextFont {
 /// 원 face에 없는 글리프는 뒤의 원래 사다리에서 bold fallback을 사용한다.
 /// 명시적 bold는 별칭을 사용하지 않아 추가 굵기 요청을 보존한다.
 pub(crate) fn family_chain(style: &TextStyle) -> String {
-    let mut fallback = canvas_font_family_chain(&style.font_family);
+    let mut fallback = if style.glyph_fallback_advance_explicit {
+        // style resolver가 명시한 공급 체인을 Canvas의 OS 별칭 확장이 선점하지 않는다.
+        // 측정과 paint가 같은 descriptor를 소비하며 원본 TTF 별칭은 아래에서 유지한다.
+        super::canvas_font_family_chain_for_selection(&style.font_family, true)
+    } else {
+        canvas_font_family_chain(&style.font_family)
+    };
     let primary = super::internal_font_family_members(&style.font_family);
     let Some(primary) = primary.first() else {
         return fallback;

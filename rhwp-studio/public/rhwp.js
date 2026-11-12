@@ -3477,6 +3477,10 @@ export class HwpDocument {
     /**
      * 경로 기반 셀 정보 조회 (중첩 표용).
      *
+     * `path_json`: `[{"controlIndex":N,"cellIndex":N,"cellParaIndex":N}, ...]`. 마지막 단계의
+     * `controlIndex`가 표, `cellIndex`가 조회할 칸이며 세 필드가 모두 필요하다. 형식과 중첩
+     * 예시는 `getTableDimensionsByPath` 설명을 본다.
+     *
      * 반환: JSON `{"row":N,"col":N,"rowSpan":N,"colSpan":N}`
      * @param {number} section_idx
      * @param {number} parent_para_idx
@@ -3601,6 +3605,9 @@ export class HwpDocument {
     }
     /**
      * 경로 기반: 셀/글상자 내 문단 수를 반환한다 (중첩 표/글상자 지원).
+     *
+     * `path_json`: `[{"controlIndex":N,"cellIndex":N,"cellParaIndex":N}, ...]`. 마지막 단계의
+     * `cellIndex`가 셀을 고른다. 형식과 중첩 예시는 `getTableDimensionsByPath` 설명을 본다.
      * @param {number} section_idx
      * @param {number} parent_para_idx
      * @param {string} path_json
@@ -3633,6 +3640,9 @@ export class HwpDocument {
     }
     /**
      * 경로 기반: 셀 내 문단의 글자 수를 반환한다 (중첩 표 지원).
+     *
+     * `path_json`: `[{"controlIndex":N,"cellIndex":N,"cellParaIndex":N}, ...]`. 마지막 단계가
+     * 셀과 그 셀의 문단을 고른다. 형식과 중첩 예시는 `getTableDimensionsByPath` 설명을 본다.
      * @param {number} section_idx
      * @param {number} parent_para_idx
      * @param {string} path_json
@@ -7344,6 +7354,9 @@ export class HwpDocument {
     /**
      * 경로 기반 표 셀 바운딩박스 조회 (중첩 표용).
      *
+     * `path_json` 형식은 `getTableDimensionsByPath`와 같다. 표 자체를 가리키므로 마지막 단계에는
+     * `controlIndex`만 필요하고 `cellIndex`·`cellParaIndex`는 생략할 수 있다(주어져도 쓰지 않음).
+     *
      * 반환: JSON 배열 `[{"cellIdx":N,"row":N,"col":N,...,"x":F,"y":F,"w":F,"h":F}, ...]`
      * @param {number} section_idx
      * @param {number} parent_para_idx
@@ -7399,6 +7412,19 @@ export class HwpDocument {
     }
     /**
      * 경로 기반 표 차원 조회 (중첩 표용).
+     *
+     * `path_json`은 본문 문단 `parent_para_idx`에서 시작해 표까지 내려가는 단계의 배열이다.
+     * `[{"controlIndex":N,"cellIndex":N,"cellParaIndex":N}, ...]`
+     * - `controlIndex`: 현재 문단의 컨트롤 번호(표·글상자 등).
+     * - `cellIndex`: 그 표의 칸 번호(행 우선, 0부터). 글상자는 글상자 번호(독립 글상자는 0).
+     * - `cellParaIndex`: 그 칸(글상자) 안 문단 번호.
+     *
+     * 이 API는 표 자체를 가리키므로 **마지막 단계에는 `controlIndex`만 필요**하다. 마지막 단계의
+     * `cellIndex`·`cellParaIndex`는 생략할 수 있고, 주어져도 쓰지 않는다. 앞 단계(바깥 표의 칸을
+     * 지나는 단계)는 세 필드가 모두 필요하다.
+     *
+     * 예: 본문 문단 3의 컨트롤 1(바깥 표) → 그 표 칸 2의 문단 0에 든 컨트롤 0(안쪽 표)
+     * `getTableDimensionsByPath(0, 3, '[{"controlIndex":1,"cellIndex":2,"cellParaIndex":0},{"controlIndex":0}]')`
      *
      * 반환: JSON `{"rowCount":N,"colCount":N,"cellCount":N}`
      * @param {number} section_idx
@@ -7526,6 +7552,11 @@ export class HwpDocument {
         }
     }
     /**
+     * 경로 기반: 셀/글상자 문단의 글자를 반환한다 (중첩 표/글상자 지원).
+     *
+     * `path_json`: `[{"controlIndex":N,"cellIndex":N,"cellParaIndex":N}, ...]` — 본문 문단
+     * `parent_para_idx`에서 시작해 바깥부터 한 단계씩 적는다. 마지막 단계가 읽을 칸과 칸 문단이다.
+     * 형식과 중첩 예시는 `getTableDimensionsByPath` 설명을 본다.
      * @param {number} section_idx
      * @param {number} parent_para_idx
      * @param {string} path_json

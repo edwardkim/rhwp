@@ -1,0 +1,29 @@
+{
+  "head": "8fe7d1fb8bc5024d0377ff7aa37d98c78e8f071a",
+  "build": "macOS locked wrapper --no-opt local substitute",
+  "optimized": false,
+  "root_pkg_equals_studio_public": true,
+  "frozen_package": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v8/candidate-pkg",
+  "artifacts": [
+    {
+      "file": "rhwp.js",
+      "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+      "bytes": 581315
+    },
+    {
+      "file": "rhwp_bg.wasm",
+      "sha256": "eb24edf2895f723d19cddca9403673f3728f15f39016bb7b2f5ca09b7dd8b595",
+      "bytes": 31816267
+    },
+    {
+      "file": "rhwp.d.ts",
+      "sha256": "d5a3572f326fc6353cff5eecfa222af3a27b612813049a601be316b693b78732",
+      "bytes": 232723
+    },
+    {
+      "file": "rhwp_bg.wasm.d.ts",
+      "sha256": "9d21217c454fa8f1757e7f08e26b27d00c564bcc0be2a228b75bb0dae08aa738",
+      "bytes": 80530
+    }
+  ]
+}

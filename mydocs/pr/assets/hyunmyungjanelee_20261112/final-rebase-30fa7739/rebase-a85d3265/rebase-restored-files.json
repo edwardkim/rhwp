@@ -1,0 +1,1134 @@
+[
+  {
+    "path": "mydocs/pr/archives/pr_8895_review.md",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/archives/pr_8897_review.md",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/archives/pr_8900_review.md",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/archives/pr_8916_review.md",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/archives/pr_8918_review.md",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/archives/pr_8920_review.md",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/README.md",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-print-d66568ef/protected-wasm-validation.json",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-print-d66568ef/protected/wasm/angle-narrow.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-print-d66568ef/protected/wasm/handbook-hwp.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-print-d66568ef/protected/wasm/handbook-hwpx.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-print-d66568ef/protected/wasm/issue7905.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-print-d66568ef/protected/wasm/issue8040-insert-delete.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-print-d66568ef/protected/wasm/issue8040-insert.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-print-d66568ef/protected/wasm/nested.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-print-d66568ef/protected/wasm/outline.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-print-d66568ef/protected/wasm/sample10.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-print-d66568ef/protected/wasm/sample16-hwp2022.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-print-d66568ef/protected/wasm/sample16-hwp2024.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-print-d66568ef/protected/wasm/sample16-hwpx.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-print-d66568ef/protected/wasm/seo-body-list-typed.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-print-d66568ef/protected/wasm/seo-helvetica-styles.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-print-d66568ef/protected/wasm/seo-pic-crop-01.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-print-d66568ef/protected/wasm/seo-re-03-latin.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-print-d66568ef/protected/wasm/seo-shape-group-02.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-print-d66568ef/protected/wasm/yeongwol.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/chart-auto/compat-overlay.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/chart-auto/compat-print.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/chart-auto/compat-review.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/chart-auto/compat-screen.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/chart-auto/default-overlay.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/chart-auto/default-print.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/chart-auto/default-review.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/chart-auto/default-screen.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/chart-auto/validation.json",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/chart-capability-scope.json",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/page-boundary-text/canvas2d-print.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/page-boundary-text/canvas2d-screen.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/page-boundary-text/canvaskit-compat-print-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/page-boundary-text/canvaskit-compat-screen-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/page-boundary-text/canvaskit-default-print-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/page-boundary-text/canvaskit-default-screen-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8895-title_line_overflows/canvas2d-print.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8895-title_line_overflows/canvas2d-screen.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8895-title_line_overflows/canvaskit-compat-print-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8895-title_line_overflows/canvaskit-compat-screen-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8895-title_line_overflows/canvaskit-default-print-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8895-title_line_overflows/canvaskit-default-screen-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8897-whitespace-host-square-then-topbottom-push/canvas2d-print.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8897-whitespace-host-square-then-topbottom-push/canvas2d-screen.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8897-whitespace-host-square-then-topbottom-push/canvaskit-compat-print-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8897-whitespace-host-square-then-topbottom-push/canvaskit-compat-screen-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8897-whitespace-host-square-then-topbottom-push/canvaskit-default-print-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8897-whitespace-host-square-then-topbottom-push/canvaskit-default-screen-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8897-whitespace-host-topbottom-stacked-zones/canvas2d-print.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8897-whitespace-host-topbottom-stacked-zones/canvas2d-screen.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8897-whitespace-host-topbottom-stacked-zones/canvaskit-compat-print-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8897-whitespace-host-topbottom-stacked-zones/canvaskit-compat-screen-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8897-whitespace-host-topbottom-stacked-zones/canvaskit-default-print-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8897-whitespace-host-topbottom-stacked-zones/canvaskit-default-screen-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8900-bar_axis_floor/canvas2d-print.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8900-bar_axis_floor/canvas2d-screen.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8900-bar_axis_floor/canvaskit-compat-print-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8900-bar_axis_floor/canvaskit-compat-screen-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8900-bar_axis_floor/canvaskit-default-print-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8900-bar_axis_floor/canvaskit-default-screen-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8916-zero_size_para_before_table/canvas2d-print.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8916-zero_size_para_before_table/canvas2d-screen.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8916-zero_size_para_before_table/canvaskit-compat-print-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8916-zero_size_para_before_table/canvaskit-compat-screen-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8916-zero_size_para_before_table/canvaskit-default-print-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8916-zero_size_para_before_table/canvaskit-default-screen-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8918-wingdings_pua_symbols/canvas2d-print.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8918-wingdings_pua_symbols/canvas2d-screen.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8918-wingdings_pua_symbols/canvaskit-compat-print-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8918-wingdings_pua_symbols/canvaskit-compat-screen-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8918-wingdings_pua_symbols/canvaskit-default-print-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8918-wingdings_pua_symbols/canvaskit-default-screen-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8920-float_line_rowspan_infront_center/canvas2d-print.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8920-float_line_rowspan_infront_center/canvas2d-screen.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8920-float_line_rowspan_infront_center/canvaskit-compat-print-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8920-float_line_rowspan_infront_center/canvaskit-compat-screen-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8920-float_line_rowspan_infront_center/canvaskit-default-print-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/pr8920-float_line_rowspan_infront_center/canvaskit-default-screen-software.png",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/print-vs-reference.json",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/report.json",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/actual-backends/summary.json",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/browser-runtime-result.json",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/direct-exporter-rebase-overlap-audit.json",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/fixed-base-render-equivalence.json",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/focused-validation.json",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/fresh-wasm-result.json",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/gates-validation.json",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/incoming-base-validation.json",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/minimal-font-verification.json",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/native-comparison.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/native-handbook-gate.json",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/native-handbook-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/native-rebase-output-identity.json",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/native-validation.json",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8895/pr8895-title_line_fits/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8895/pr8895-title_line_fits/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8895/pr8895-title_line_fits/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8895/pr8895-title_line_fits/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8895/pr8895-title_line_overflows/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8895/pr8895-title_line_overflows/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8895/pr8895-title_line_overflows/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8895/pr8895-title_line_overflows/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/page-boundary-empty/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/page-boundary-empty/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/page-boundary-empty/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/page-boundary-empty/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/page-boundary-spaces/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/page-boundary-spaces/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/page-boundary-spaces/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/page-boundary-spaces/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/page-boundary-text/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/page-boundary-text/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/page-boundary-text/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/page-boundary-text/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-empty-host-split-table/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-empty-host-split-table/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-empty-host-split-table/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-empty-host-split-table/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-empty-host-square-band-1430-below/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-empty-host-square-band-1430-below/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-empty-host-square-band-1430-below/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-empty-host-square-band-1430-below/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-empty-host-square-band-1450-beside/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-empty-host-square-band-1450-beside/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-empty-host-square-band-1450-beside/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-empty-host-square-band-1450-beside/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-empty-host-square-band-600-no-extra-line/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-empty-host-square-band-600-no-extra-line/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-empty-host-square-band-600-no-extra-line/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-empty-host-square-band-600-no-extra-line/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-empty-host-square-beside-line/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-empty-host-square-beside-line/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-empty-host-square-beside-line/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-empty-host-square-beside-line/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-empty-host-square-then-topbottom-push/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-empty-host-square-then-topbottom-push/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-empty-host-square-then-topbottom-push/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-empty-host-square-then-topbottom-push/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-text-host-split-table/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-text-host-split-table/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-text-host-split-table/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-text-host-split-table/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-text-host-square-paper-companion-beside-line/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-text-host-square-paper-companion-beside-line/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-text-host-square-paper-companion-beside-line/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-text-host-square-paper-companion-beside-line/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-text-host-square-then-topbottom-push/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-text-host-square-then-topbottom-push/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-text-host-square-then-topbottom-push/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-text-host-square-then-topbottom-push/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-text-host-topbottom-line-below/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-text-host-topbottom-line-below/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-text-host-topbottom-line-below/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-text-host-topbottom-line-below/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-whitespace-host-negative-offset-table/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-whitespace-host-negative-offset-table/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-whitespace-host-negative-offset-table/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-whitespace-host-negative-offset-table/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-whitespace-host-split-table/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-whitespace-host-split-table/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-whitespace-host-split-table/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-whitespace-host-split-table/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-whitespace-host-square-then-topbottom-push/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-whitespace-host-square-then-topbottom-push/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-whitespace-host-square-then-topbottom-push/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-whitespace-host-square-then-topbottom-push/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-whitespace-host-topbottom-line-below/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-whitespace-host-topbottom-line-below/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-whitespace-host-topbottom-line-below/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-whitespace-host-topbottom-line-below/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-whitespace-host-topbottom-stacked-zones/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-whitespace-host-topbottom-stacked-zones/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-whitespace-host-topbottom-stacked-zones/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-whitespace-host-topbottom-stacked-zones/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-whitespace-host-two-tables-negative-offset/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-whitespace-host-two-tables-negative-offset/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-whitespace-host-two-tables-negative-offset/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/pr8897-whitespace-host-two-tables-negative-offset/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/short-empty/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/short-empty/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/short-empty/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/short-empty/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/short-spaces/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/short-spaces/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/short-spaces/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/short-spaces/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/short-text/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/short-text/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/short-text/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8897/short-text/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8900/pr8900-bar_axis_floor/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8900/pr8900-bar_axis_floor/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8900/pr8900-bar_axis_floor/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8900/pr8900-bar_axis_floor/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8900/pr8900-column_axis_floor/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8900/pr8900-column_axis_floor/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8900/pr8900-column_axis_floor/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8900/pr8900-column_axis_floor/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8900/pr8900-column_axis_floor_large/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8900/pr8900-column_axis_floor_large/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8900/pr8900-column_axis_floor_large/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8900/pr8900-column_axis_floor_large/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8900/pr8900-column_axis_step_tall/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8900/pr8900-column_axis_step_tall/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8900/pr8900-column_axis_step_tall/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8900/pr8900-column_axis_step_tall/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8916/pr8916-zero_size_para_before_table/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8916/pr8916-zero_size_para_before_table/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8916/pr8916-zero_size_para_before_table/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8916/pr8916-zero_size_para_before_table/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8918/pr8918-wingdings_pua_symbols/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8918/pr8918-wingdings_pua_symbols/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8918/pr8918-wingdings_pua_symbols/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8918/pr8918-wingdings_pua_symbols/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8920/pr8920-float_line_rowspan_infront_center/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8920/pr8920-float_line_rowspan_infront_center/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8920/pr8920-float_line_rowspan_infront_center/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8920/pr8920-float_line_rowspan_infront_center/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8920/pr8920-float_line_rowspan_infront_top/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8920/pr8920-float_line_rowspan_infront_top/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8920/pr8920-float_line_rowspan_infront_top/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8920/pr8920-float_line_rowspan_infront_top/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8920/pr8920-float_line_valign_center/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8920/pr8920-float_line_valign_center/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8920/pr8920-float_line_valign_center/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8920/pr8920-float_line_valign_center/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8920/pr8920-float_line_valign_top/native/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8920/pr8920-float_line_valign_top/native/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8920/pr8920-float_line_valign_top/wasm/base-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/pr8920/pr8920-float_line_valign_top/wasm/candidate-silhouette.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected-native-validation.json",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected-wasm-validation.json",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/native/angle-narrow.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/native/handbook-hwp.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/native/handbook-hwpx.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/native/issue7905.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/native/issue8040-insert-delete.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/native/issue8040-insert.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/native/nested.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/native/outline.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/native/sample10.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/native/sample16-hwp2022.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/native/sample16-hwp2024.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/native/sample16-hwpx.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/native/seo-body-list-typed.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/native/seo-helvetica-styles.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/native/seo-pic-crop-01.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/native/seo-re-03-latin.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/native/seo-shape-group-02.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/native/yeongwol.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/wasm/angle-narrow.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/wasm/handbook-hwp.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/wasm/handbook-hwpx.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/wasm/issue7905.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/wasm/issue8040-insert-delete.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/wasm/issue8040-insert.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/wasm/nested.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/wasm/outline.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/wasm/sample10.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/wasm/sample16-hwp2022.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/wasm/sample16-hwp2024.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/wasm/sample16-hwpx.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/wasm/seo-body-list-typed.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/wasm/seo-helvetica-styles.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/wasm/seo-pic-crop-01.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/wasm/seo-re-03-latin.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/wasm/seo-shape-group-02.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/protected/wasm/yeongwol.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/rebase-commit-map.json",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/rebase-read-path-audit.md",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/rebase-result.json",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/render-input-tree-equivalence.json",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/restored-native-owner-result.json",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/studio-validation.json",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/wasm-comparison.tsv",
+    "same": true
+  },
+  {
+    "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/wasm-validation.json",
+    "same": true
+  },
+  {
+    "path": "rhwp-studio/public/rhwp.js",
+    "same": true
+  }
+]

@@ -1,0 +1,397 @@
+{
+  "product_code_head": "d0cc46573c7505633721c19062e504faff017d59",
+  "input": "mydocs/pr/assets/planet6897_clean20_20261113/counterexamples/3930000-201800017-health-report.hwp",
+  "pdf": "pdf/issue8939/3930000-201800017-health-report-2020.pdf",
+  "regression_pages": [
+    5,
+    6
+  ],
+  "pixel_fixed_page": 6,
+  "expected_title_top_96dpi": 109.63997,
+  "tolerance_px": 2,
+  "whole_document_pass": false,
+  "scope_note": "추가 검사는 이월 경계5·6쪽만 보호한다. 기존1쪽 미달·전체7쪽 품질을 정상 golden으로 고정하지 않는다.",
+  "backends": {
+    "native": {
+      "all_pages_metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 80.50731,
+          "silhouette_raw_unmatched_pixels": 12895,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 66153,
+          "tolerant_content_match_percent": 80.50731
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.9991,
+          "silhouette_raw_unmatched_pixels": 1,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 110641,
+          "tolerant_content_match_percent": 99.9991
+        },
+        {
+          "page": 3,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99515,
+          "silhouette_raw_unmatched_pixels": 10,
+          "silhouette_boundary_reconciled_pixels": 5,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 206340,
+          "tolerant_content_match_percent": 99.99758
+        },
+        {
+          "page": 4,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.6777,
+          "silhouette_raw_unmatched_pixels": 366,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 113559,
+          "tolerant_content_match_percent": 99.6777
+        },
+        {
+          "page": 5,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.91223,
+          "silhouette_raw_unmatched_pixels": 91,
+          "silhouette_boundary_reconciled_pixels": 2,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 103677,
+          "tolerant_content_match_percent": 99.91416
+        },
+        {
+          "page": 6,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.98623,
+          "silhouette_raw_unmatched_pixels": 10,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 72626,
+          "tolerant_content_match_percent": 99.98623
+        },
+        {
+          "page": 7,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.97289,
+          "silhouette_raw_unmatched_pixels": 8,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 29514,
+          "tolerant_content_match_percent": 99.97289
+        }
+      ],
+      "counts": {
+        "rhwp": 7,
+        "pdf": 7
+      },
+      "related_minimum": 99.91223,
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/maintainer-repair/health-native-whole.tsv",
+      "tsv_sha256": "a70f8ed43a5aee86e19f4dac73f1af074195e0a858b1571832d2fa120af4f219"
+    },
+    "wasm": {
+      "all_pages_metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 80.51907,
+          "silhouette_raw_unmatched_pixels": 12933,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 66388,
+          "tolerant_content_match_percent": 80.51907
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 110443,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 3,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99709,
+          "silhouette_raw_unmatched_pixels": 6,
+          "silhouette_boundary_reconciled_pixels": 5,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 206193,
+          "tolerant_content_match_percent": 99.99952
+        },
+        {
+          "page": 4,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.67738,
+          "silhouette_raw_unmatched_pixels": 366,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 113446,
+          "tolerant_content_match_percent": 99.67738
+        },
+        {
+          "page": 5,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.91211,
+          "silhouette_raw_unmatched_pixels": 91,
+          "silhouette_boundary_reconciled_pixels": 2,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 103540,
+          "tolerant_content_match_percent": 99.91404
+        },
+        {
+          "page": 6,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99723,
+          "silhouette_raw_unmatched_pixels": 2,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 72249,
+          "tolerant_content_match_percent": 99.99723
+        },
+        {
+          "page": 7,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 29303,
+          "tolerant_content_match_percent": 100.0
+        }
+      ],
+      "counts": {
+        "rhwp": 7,
+        "pdf": 7
+      },
+      "related_minimum": 99.91211,
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/maintainer-repair/health-wasm-whole.tsv",
+      "tsv_sha256": "68b55cae26228b6dd3ad0ee05e4e6a10cd2b41429a51e50accee4ff76cf8957b"
+    }
+  },
+  "direct_reading": [
+    {
+      "backend": "native",
+      "page": 5,
+      "metric": 99.91223,
+      "read_by_reviewer": true,
+      "observation": "5쪽의 표 이어받기·본문·그림과 종료 경계,6쪽의 제목 표·요약·추진사항 목록·오른쪽 날짜열의 순서와 위치를 직접 대조했다. 제목 이월 누락·중복이나 앞당겨진 블록을 관찰하지 않았다. raw는2px 이웃 허용값으로 엄격 RGB 일치와 구분한다.",
+      "raw": "mydocs/pr/assets/planet6897_clean20_20261113/maintainer-repair/health-png/native/raw-p005.png",
+      "raw_sha256": "b4de7cacafdfbf9c6a5af0e6f51674d812bef7e5a89eb33871b5a60ab8edbe51",
+      "pdf": "mydocs/pr/assets/planet6897_clean20_20261113/maintainer-repair/health-png/native/pdf-p005.png",
+      "pdf_sha256": "10a043d436410d574e03fdecde465cb58cf51e3dfcf6dddbddb66508b2d60a6b",
+      "review": "mydocs/pr/assets/planet6897_clean20_20261113/maintainer-repair/health-png/native/review-p005.png",
+      "review_sha256": "ab709eb049c9153be1b3317a56737862b8370dadc94661e6c9dbc3b9edfdb8f5",
+      "overlay": "mydocs/pr/assets/planet6897_clean20_20261113/maintainer-repair/health-png/native/overlay-p005.png",
+      "overlay_sha256": "9416d7c459d20cace75f92f497a7605aff70a59ac94a4183ba7b4c0d97666fb8"
+    },
+    {
+      "backend": "native",
+      "page": 6,
+      "metric": 99.98623,
+      "read_by_reviewer": true,
+      "observation": "5쪽의 표 이어받기·본문·그림과 종료 경계,6쪽의 제목 표·요약·추진사항 목록·오른쪽 날짜열의 순서와 위치를 직접 대조했다. 제목 이월 누락·중복이나 앞당겨진 블록을 관찰하지 않았다. raw는2px 이웃 허용값으로 엄격 RGB 일치와 구분한다.",
+      "raw": "mydocs/pr/assets/planet6897_clean20_20261113/maintainer-repair/health-png/native/raw-p006.png",
+      "raw_sha256": "60faee84b4ab27a3068b376d13c2ad1c9298d88695ee2efadd87f535d4a38427",
+      "pdf": "mydocs/pr/assets/planet6897_clean20_20261113/maintainer-repair/health-png/native/pdf-p006.png",
+      "pdf_sha256": "94e1eed088685c5ff47a1665540289d8255279be0c4edfe53291fd21e28a4a63",
+      "review": "mydocs/pr/assets/planet6897_clean20_20261113/maintainer-repair/health-png/native/review-p006.png",
+      "review_sha256": "966249c4bc42afb801a5467edaeced465575a639b022ba3ef79eee607dfca09e",
+      "overlay": "mydocs/pr/assets/planet6897_clean20_20261113/maintainer-repair/health-png/native/overlay-p006.png",
+      "overlay_sha256": "0fa6e3c8b5f1a6386decc9cffc0167f8d6bdea83f0d3d8d4050dd64d0a04435e"
+    },
+    {
+      "backend": "wasm",
+      "page": 5,
+      "metric": 99.91211,
+      "read_by_reviewer": true,
+      "observation": "5쪽의 표 이어받기·본문·그림과 종료 경계,6쪽의 제목 표·요약·추진사항 목록·오른쪽 날짜열의 순서와 위치를 직접 대조했다. 제목 이월 누락·중복이나 앞당겨진 블록을 관찰하지 않았다. raw는2px 이웃 허용값으로 엄격 RGB 일치와 구분한다.",
+      "raw": "mydocs/pr/assets/planet6897_clean20_20261113/maintainer-repair/health-png/wasm/raw-p005.png",
+      "raw_sha256": "ea9bddc84718bd65ebd5f249faa2f4d46133a0fd3b366f04275b1abce752dd15",
+      "pdf": "mydocs/pr/assets/planet6897_clean20_20261113/maintainer-repair/health-png/wasm/pdf-p005.png",
+      "pdf_sha256": "10a043d436410d574e03fdecde465cb58cf51e3dfcf6dddbddb66508b2d60a6b",
+      "review": "mydocs/pr/assets/planet6897_clean20_20261113/maintainer-repair/health-png/wasm/review-p005.png",
+      "review_sha256": "adfd6d19bdbaf36b0ea2942b65a151390a181eb172b9414fafe6f60e317a9ab6",
+      "overlay": "mydocs/pr/assets/planet6897_clean20_20261113/maintainer-repair/health-png/wasm/overlay-p005.png",
+      "overlay_sha256": "2e175043a01146e968c472b3360ccfff7b9d94cb3e1dbe9da9be96d1f0539c36"
+    },
+    {
+      "backend": "wasm",
+      "page": 6,
+      "metric": 99.99723,
+      "read_by_reviewer": true,
+      "observation": "5쪽의 표 이어받기·본문·그림과 종료 경계,6쪽의 제목 표·요약·추진사항 목록·오른쪽 날짜열의 순서와 위치를 직접 대조했다. 제목 이월 누락·중복이나 앞당겨진 블록을 관찰하지 않았다. raw는2px 이웃 허용값으로 엄격 RGB 일치와 구분한다.",
+      "raw": "mydocs/pr/assets/planet6897_clean20_20261113/maintainer-repair/health-png/wasm/raw-p006.png",
+      "raw_sha256": "ec5a736523eb7f61e9cc496e0af987704822784ce78e64cde3eb33df7348ebad",
+      "pdf": "mydocs/pr/assets/planet6897_clean20_20261113/maintainer-repair/health-png/wasm/pdf-p006.png",
+      "pdf_sha256": "94e1eed088685c5ff47a1665540289d8255279be0c4edfe53291fd21e28a4a63",
+      "review": "mydocs/pr/assets/planet6897_clean20_20261113/maintainer-repair/health-png/wasm/review-p006.png",
+      "review_sha256": "d2c50c7708d717e986fb440cc5fc9830dfb4a68dbfc5c26c6c5ef7b78431b2ef",
+      "overlay": "mydocs/pr/assets/planet6897_clean20_20261113/maintainer-repair/health-png/wasm/overlay-p006.png",
+      "overlay_sha256": "85ec58cc71a0fd233479d5060e0aa9fe7cfd525f5dff7ec82570e1837e0f90c9"
+    }
+  ],
+  "input_sha256": "6f7734dfd51d9b0196a5f13706393756d3d9a73b2e17bd9314b61a852c8292aa",
+  "pdf_sha256": "630019bac17826f6fb1ffeab096566df9a7e9b04af7f9cee74bc34401f24693c",
+  "independent_pdf_objects": [
+    {
+      "object": 12,
+      "type": 2,
+      "bbox96dpi": {
+        "x": 170.148,
+        "y": 109.15999,
+        "w": 528.51598,
+        "h": 0.95996
+      }
+    },
+    {
+      "object": 14,
+      "type": 2,
+      "bbox96dpi": {
+        "x": 170.148,
+        "y": 145.60002,
+        "w": 528.51598,
+        "h": 0.95996
+      }
+    },
+    {
+      "object": 18,
+      "type": 2,
+      "bbox96dpi": {
+        "x": 170.148,
+        "y": 145.60002,
+        "w": 528.51598,
+        "h": 0.95996
+      }
+    },
+    {
+      "object": 19,
+      "type": 2,
+      "bbox96dpi": {
+        "x": 170.148,
+        "y": 109.15999,
+        "w": 528.51598,
+        "h": 0.95996
+      }
+    },
+    {
+      "object": 21,
+      "type": 2,
+      "bbox96dpi": {
+        "x": 179.264,
+        "y": 161.74406,
+        "w": 177.50399,
+        "h": 28.92798
+      }
+    },
+    {
+      "object": 827,
+      "type": 2,
+      "bbox96dpi": {
+        "x": 178.624,
+        "y": 161.2627,
+        "w": 179.42397,
+        "h": 0.95996
+      }
+    },
+    {
+      "object": 828,
+      "type": 2,
+      "bbox96dpi": {
+        "x": 177.66534,
+        "y": 189.2334,
+        "w": 181.34133,
+        "h": 2.87728
+      }
+    },
+    {
+      "object": 2653,
+      "type": 2,
+      "bbox96dpi": {
+        "x": 178.624,
+        "y": 161.2627,
+        "w": 179.42397,
+        "h": 0.95996
+      }
+    }
+  ],
+  "before_after_diagnosis": [
+    {
+      "role": "before",
+      "render_tree": "output/pr-review/planet6897-clean20-integration-20261113/known-counterexample-focus/candidate/health3930000/render_tree/render_tree_006.json",
+      "sha256": "d8c89361100df19b33b172025f625da36a5004964da6b82aee7cbfc04ab7d70e",
+      "tables": {
+        "32": {
+          "x": 88.8,
+          "y": 96.4,
+          "w": 609.4,
+          "h": 36.4
+        },
+        "33": {
+          "x": 88.8,
+          "y": 142.5,
+          "w": 619.5,
+          "h": 397.9
+        },
+        "34": {
+          "x": 88.8,
+          "y": 560.2,
+          "w": 272.6,
+          "h": 36.7
+        },
+        "35": {
+          "x": 111.0,
+          "y": 609.7,
+          "w": 601.0,
+          "h": 376.3
+        }
+      },
+      "status": "FAIL",
+      "errors": [
+        "pi32: 96.4 vs PDF 109.63997 ±2px",
+        "pi33: 142.5 vs PDF 161.74406 ±2px"
+      ],
+      "method": "독립 Print 경로의 실제 96dpi 경계와 ±2px 비교. 이 기록은 output 진단이며 아직 정식 Rust 회귀를 추가한 것이 아니다."
+    },
+    {
+      "role": "after",
+      "render_tree": "output/pr-review/planet6897-clean20-integration-20261113/footnote-frame-scope-native/health3930000/render_tree/render_tree_006.json",
+      "sha256": "a76504c2b3cef14d4b1655de06864c21788ae1ca7ef7580c51d13c1bea3c8f27",
+      "tables": {
+        "32": {
+          "x": 88.8,
+          "y": 109.7,
+          "w": 609.4,
+          "h": 36.4
+        },
+        "33": {
+          "x": 88.8,
+          "y": 161.9,
+          "w": 619.5,
+          "h": 397.9
+        },
+        "34": {
+          "x": 88.8,
+          "y": 579.5,
+          "w": 272.6,
+          "h": 36.7
+        },
+        "35": {
+          "x": 111.0,
+          "y": 629.1,
+          "w": 601.0,
+          "h": 376.3
+        }
+      },
+      "status": "PASS",
+      "errors": [],
+      "method": "독립 Print 경로의 실제 96dpi 경계와 ±2px 비교. 이 기록은 output 진단이며 아직 정식 Rust 회귀를 추가한 것이 아니다."
+    }
+  ]
+}

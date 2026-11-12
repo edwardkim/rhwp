@@ -15,6 +15,14 @@ pub(crate) fn implicit_symbol_advance_em(character: char) -> Option<f64> {
     }
     match character {
         '\u{F09E}' | '\u{F0A0}' => Some(312.0 / 1000.0),
+        // 웹한글기안기 인쇄는 Wingdings 원문자·흰 원·체크 상자를 문서 글꼴과
+        // 상관없이 Haan Wings로 그린다. 내장 글꼴 폭: 0x80~0x95·0xA1 /W891,
+        // 0xFE /W892 (1000 단위). 표시용 ①·○·☑ 의 전각 폭을 빌리지 않는다.
+        '\u{F080}'..='\u{F095}' | '\u{F0A1}' => Some(891.0 / 1000.0),
+        '\u{F0FE}' => Some(892.0 / 1000.0),
+        // 독립 한컴 2020 Print issue8680: Wingdings-Regular CID9 /W385.
+        // 표시용 U+1F8AD를 공급하는 Noto 글꼴의 356/1000 폭으로 바꾸지 않는다.
+        '\u{F0FA}' => Some(385.0 / 1000.0),
         // 독립 한컴2020 Print의 원본 책괄호는 Haansoft Batang
         // A854/A855 프로그램을 사용한다. /W512, UPEM1024이며 표시용
         // 전각 흰 겹낫표의 폭으로 원본 반각 전진을 덮어쓰지 않는다.

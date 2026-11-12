@@ -6520,10 +6520,11 @@ impl ParagraphFloatPlacement {
         let position = *para.control_text_positions().get(control_index)?;
         (position == 0
             && !para.text.contains('\n')
-            && para
+            && (para
                 .text
                 .chars()
-                .any(|ch| !ch.is_whitespace() && !ch.is_control() && ch != '\u{FFFC}'))
+                .any(|ch| !ch.is_whitespace() && !ch.is_control() && ch != '\u{FFFC}')
+                || crate::renderer::is_unstored_whitespace_object_host(para)))
         .then_some(position)
     }
 
@@ -6534,10 +6535,10 @@ impl ParagraphFloatPlacement {
         }
         let position = *para.control_text_positions().get(control_index)?;
         (position == text_len
-            && para.text.rsplit('\n').next().is_some_and(|line| {
+            && (para.text.rsplit('\n').next().is_some_and(|line| {
                 line.chars()
                     .any(|ch| !ch.is_whitespace() && !ch.is_control() && ch != '\u{FFFC}')
-            }))
+            }) || crate::renderer::is_unstored_whitespace_object_host(para)))
         .then_some(position)
     }
 
@@ -8258,6 +8259,36 @@ pub(crate) fn clear_topbottom_bands(
     origin
 }
 
+/// 어울림(Square) 그림 옆에는 남은 폭에 들어가는 줄만 놓인다. 쪼갤 수 없는 `required_width`
+/// 폭의 줄(TAC 표)이 `line_y`에서 그림 세로 범위와 겹치는데 그림 왼쪽·오른쪽 어느 틈에도
+/// 들어가지 않으면 줄 시작을 그 그림의 아래끝으로 내린다. 내린 자리에서 다른 그림과 다시
+/// 겹칠 수 있으므로 더 내려가지 않을 때까지 반복한다. 틈에 들어가는 줄은 그 자리에 둔다.
+pub(crate) fn clear_square_floats_for_unbreakable_line(
+    floats: &[LayoutRect],
+    area: &LayoutRect,
+    line_y: f64,
+    required_width: f64,
+) -> f64 {
+    let mut y = line_y;
+    loop {
+        let mut next_y = y;
+        for float in floats {
+            if float.height <= 0.0 || y < float.y - 0.5 || y >= float.y + float.height - 0.5 {
+                continue;
+            }
+            let left_gap = (float.x - area.x).max(0.0);
+            let right_gap = (area.x + area.width - (float.x + float.width)).max(0.0);
+            if required_width > left_gap.max(right_gap) + 0.5 {
+                next_y = next_y.max(float.y + float.height);
+            }
+        }
+        if next_y <= y {
+            return y;
+        }
+        y = next_y;
+    }
+}
+
 /// 흐름 표는 나란함/적층을 따르지만 배경의 시각 높이는 같은 앵커에서 최댓값으로 합친다.
 /// 측정과 셀 정렬이 같은 결과를 소비하며 배경을 뒤에 놓인 새 흐름으로 더하지 않는다.
 pub(crate) fn nested_group_occupied_height(
@@ -9560,6 +9591,7 @@ fn para_has_non_whitespace_text(para: &Paragraph) -> bool {
     para.text
         .chars()
         .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace())
+        || crate::renderer::is_unstored_whitespace_object_host(para)
 }
 
 /// A saved empty line that ends before a paragraph-relative table offset

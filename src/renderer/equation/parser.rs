@@ -188,6 +188,11 @@ impl EqParser {
         self.stopped_document_input
             || self.pos >= self.tokens.len()
             || self.current_type() == TokenType::Eof
+            // 문서 항은 바깥 괄호·인자 경계(term_limit)에서 토큰을 소비하지 않고
+            // 멈춘다(parse_element_term). 그 경계를 입력 끝으로 보지 않으면 짝이
+            // 어긋난 `(x - bar{x) ^{2}}` 처럼 경계가 중괄호 안에 있을 때 그룹
+            // 루프가 Empty 를 무한히 쌓아 수십 GB 를 할당한다.
+            || (self.document_terms && self.pos >= self.term_limit)
     }
 
     fn advance(&mut self) -> Option<&Token> {

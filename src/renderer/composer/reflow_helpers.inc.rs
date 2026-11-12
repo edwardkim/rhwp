@@ -591,6 +591,7 @@ pub(crate) fn recompose_horizontal_cell_lines_for_width(
     stored_geometry_policy: impl Into<crate::model::provenance::StoredGeometryPolicy>,
     repair_stored_overflow: bool,
     overflow_cache: &SingleLineOverflowCache,
+    line_wrap_squeeze: bool,
 ) {
     match recompose_horizontal_cell_lines_for_width_with_storage(
         composed,
@@ -601,6 +602,7 @@ pub(crate) fn recompose_horizontal_cell_lines_for_width(
         stored_geometry_policy,
         repair_stored_overflow,
         overflow_cache,
+        line_wrap_squeeze,
         &crate::storage::Unbounded,
     ) {
         Ok(value) => value,
@@ -617,6 +619,8 @@ pub(crate) fn recompose_horizontal_cell_lines_for_width_with_storage<S: crate::s
     stored_geometry_policy: impl Into<crate::model::provenance::StoredGeometryPolicy>,
     repair_stored_overflow: bool,
     overflow_cache: &SingleLineOverflowCache,
+    // 칸의 "한 줄로 입력"(SQUEEZE). 저장 줄이 넘쳐도 다시 나누지 않는다.
+    line_wrap_squeeze: bool,
     storage: &S,
 ) -> Result<(), S::Error> {
     let _: () = {
@@ -628,13 +632,14 @@ pub(crate) fn recompose_horizontal_cell_lines_for_width_with_storage<S: crate::s
                 cell_inner_width_px,
                 styles.para_styles.get(para.para_shape_id as usize),
                 dpi,
-            ),
+            )
+            .with_line_wrap_squeeze(line_wrap_squeeze),
             styles,
             dpi,
             stored_geometry_policy,
             storage,
         )?;
-        if repair_stored_overflow {
+        if repair_stored_overflow && !line_wrap_squeeze {
             recompose_stored_single_line_if_overflowing_cached_with_storage(
                 composed,
                 para,
@@ -700,12 +705,14 @@ pub(crate) fn stored_rows_are_stale(
     para: &Paragraph,
     inner_width_px: f64,
     styles: &ResolvedStyleSet,
+    line_wrap_squeeze: bool,
 ) -> bool {
     match stored_rows_are_stale_with_storage(
         composed,
         para,
         inner_width_px,
         styles,
+        line_wrap_squeeze,
         &crate::storage::Unbounded,
     ) {
         Ok(value) => value,
@@ -718,10 +725,16 @@ pub(crate) fn stored_rows_are_stale_with_storage<S: crate::storage::Storage>(
     para: &Paragraph,
     inner_width_px: f64,
     styles: &ResolvedStyleSet,
+    // "한 줄로 입력"(SQUEEZE) 칸. 한/글은 저장 줄 하나에 글을 밀어 넣고 넘치면 겹쳐 찍으므로
+    // 과밀만으로는 저장 줄 나눔이 낡았다고 보지 않는다.
+    line_wrap_squeeze: bool,
     storage: &S,
 ) -> Result<bool, S::Error> {
     Ok({
         if !para.line_segs.is_empty() && para.stored_text_partition_is_dirty() {
+            return Ok(true);
+        }
+        if !para.line_segs.is_empty() && para.stored_rows_include_hidden_guide() {
             return Ok(true);
         }
         let stored = !para.line_segs.is_empty()
@@ -751,7 +764,10 @@ pub(crate) fn stored_rows_are_stale_with_storage<S: crate::storage::Storage>(
         // 한/글은 그 줄을 한 줄로 두고 넘치는 점을 자른다. 채움을 걷어낸 내용이 상자 안에
         // 들어갈 때만 저장을 믿는다 — `#2525`(hwpx-02 p5 135자)·`#2291`(task2287 r183c8
         // 76자)처럼 채움 없이 넘치는 줄은 종전대로 부실 저장이다.
-        for l in &composed.lines {
+        // [#SQUEEZE] "한 줄로 입력" 칸은 과밀 저장 줄이 정상이다(36481164 「건 명」 칸:
+        // 저장 한 줄 19808HU 에 글 약 1.9배 — 한컴 Print 는 한 줄에 겹쳐 찍는다). #2525 의 근거
+        // (hwpx-02 5쪽 135자)는 본문 문단이라 이 예외와 겹치지 않는다.
+        for l in composed.lines.iter().filter(|_| !line_wrap_squeeze) {
             if estimate_composed_line_width_with_storage(l, styles, storage)? > inner_width_px * 1.8
                 && !line_overflow_is_leader_fill_with_storage(l, styles, inner_width_px, storage)?
             {

@@ -113,24 +113,90 @@ impl ValueScale {
     }
 }
 
+/// 양수 값이 최댓값 근처에 몰려 있으면 한컴 자동 축은 0이 아닌 값에서 시작한다.
+///
+/// 웹한글기안기 실측(묶은 세로 막대, 값만 바꾼 합성 문서):
+/// - 값이 모두 같거나 `(최대-최소)/최대 >= 0.2` 이면 0부터 시작한다
+///   (16,20→0~25, 80,100→0~150, 3,3→0~4). 엑셀의 1/6 기준과 다르다(83,100→70~110).
+/// - 그 밖에는 `최소 - 최대×0.1` 을 눈금 단위로 내린 값에서 시작한다
+///   (2.9,3→2.6, 4.65,4.95→4, 19,20→17, 차트 높이를 바꿔도 시작값은 같음).
+/// - 최댓값이 100 이상이고 `(최대-최소)/최대 < 1/6` 이면 시작값을 최솟값 바로 아래로
+///   붙인다(`최소 - 차이×0.05`; 99,100→98.5, 190,200→185, 950,980→940).
+fn positive_axis_floor(data_min: f64, max: f64) -> Option<f64> {
+    if !(data_min > 0.0 && max > data_min) {
+        return None;
+    }
+    let spread = max - data_min;
+    let ratio = spread / max;
+    if ratio >= 0.2 {
+        None
+    } else if max >= 100.0 && ratio < 1.0 / 6.0 {
+        Some(data_min - spread * 0.05)
+    } else {
+        Some(data_min - max * 0.1)
+    }
+}
+
 /// 두 글줄 사이에 들어가는 눈금 수와 양 끝을 포함해 원 데이터에 최대 열 칸을 배정한다.
 /// 10% 범위 여유는 표시 범위에 포함하며 원 데이터의 최대값을 축 끝에 붙이지 않는다.
-fn automatic_scale(min: f64, max: f64, length: f64, font: f64) -> ValueScale {
+/// `data_min` 은 0으로 내리기 전의 원 최솟값이다. 값이 몰린 양수 축은
+/// [`positive_axis_floor`] 에서 시작하고, 끝은 올린 눈금이 최댓값에 단위의 0.2 이내로
+/// 붙을 때만 한 칸 더 둔다(4.65,4.95→4~5, 98,99→85~105).
+///
+/// 0이 아닌 값에서 시작하는 세로 값축(`vertical`)의 칸 수는 그림 영역 높이에서 글줄 3.1개를
+/// 뺀 길이를 글줄 1.35개로 나눈 값(2~9칸)이고, 간격은 그 칸 수로 나눈 값 **이상**의 가장
+/// 작은 1·2·5 단위다. 웹한글기안기에서 같은 값의 차트 높이만 13000~45000 HU 로 바꿔 잰
+/// 값과 맞춘 것이다(2.9,3: 0.2→0.1→0.05, 4.65~4.95: 0.5→0.2→0.1). 0부터 시작하는 축과
+/// 가로 값축은 종전 예산을 그대로 쓴다.
+fn automatic_scale(
+    data_min: f64,
+    min: f64,
+    max: f64,
+    length: f64,
+    font: f64,
+    vertical: bool,
+) -> ValueScale {
     if length.abs() <= f64::EPSILON {
         return ValueScale::from_tuple((0.0, 0.0, 1.0));
     }
-    let min = min.min(0.0);
+    let floor = positive_axis_floor(data_min, max);
+    let min = floor.unwrap_or(min.min(0.0));
     let max = max.max(0.0);
     let span = (max - min).max(f64::EPSILON);
     let line_height = axis_line_height(font);
-    let budget = (1.0 + (length.abs() / (line_height * 2.0)).round()).clamp(3.0, 10.0);
+    let floored_vertical = vertical && floor.is_some();
+    let budget = if floored_vertical {
+        ((length.abs() - line_height * 3.1) / (line_height * 1.35))
+            .round()
+            .clamp(2.0, 9.0)
+    } else {
+        (1.0 + (length.abs() / (line_height * 2.0)).round()).clamp(3.0, 10.0)
+    };
     let raw_step = span / budget;
     let magnitude = 10.0_f64.powf(raw_step.log10().floor());
     let step = [1.0, 2.0, 5.0, 10.0]
         .into_iter()
         .map(|n| n * magnitude)
-        .find(|n| *n > raw_step * (1.0 + 1e-9))
+        .find(|n| {
+            if floored_vertical {
+                *n >= raw_step * (1.0 - 1e-9)
+            } else {
+                *n > raw_step * (1.0 + 1e-9)
+            }
+        })
         .unwrap_or(magnitude * 20.0);
+    if floor.is_some() {
+        let top = (max / step - 1e-9).ceil() * step;
+        return ValueScale {
+            min: (min / step + 1e-9).floor() * step,
+            max: if top - max <= step * (0.2 + 1e-9) {
+                top + step
+            } else {
+                top
+            },
+            step,
+        };
+    }
     let padding = span * 0.1;
     ValueScale {
         min: if min < 0.0 {
@@ -227,19 +293,22 @@ impl ChartScales {
                 )),
             };
         }
-        let mut primary = automatic_scale(min, max, height, font);
+        let data_min = raw_data_min(chart.series.iter());
+        let mut primary = automatic_scale(data_min, min, max, height, font, true);
         let secondary = if chart.is_combo() || chart.has_secondary_axis {
             let pri: Vec<_> = chart.series.iter().filter(|s| s.axis_group == 0).collect();
             let sec: Vec<_> = chart.series.iter().filter(|s| s.axis_group == 1).collect();
             if !pri.is_empty() {
+                let data_min = raw_data_min(pri.iter().copied());
                 let (min, max) = raw_value_bounds(pri.into_iter());
-                primary = automatic_scale(min, max, height, font);
+                primary = automatic_scale(data_min, min, max, height, font, true);
             }
             if sec.is_empty() {
                 ValueScale::from_tuple((0.0, 1.0, 0.2))
             } else {
+                let data_min = raw_data_min(sec.iter().copied());
                 let (min, max) = raw_value_bounds(sec.into_iter());
-                automatic_scale(min, max, height, font)
+                automatic_scale(data_min, min, max, height, font, true)
             }
         } else {
             let bars = matches!(
@@ -283,7 +352,14 @@ impl ChartScales {
                     let (min, max, step) = nice_axis(0.0, positive.max(1.0), ticks);
                     ValueScale::from_tuple((min, max + if horizontal { 0.0 } else { step }, step))
                 } else {
-                    automatic_scale(negative, positive.max(f64::EPSILON), length, font)
+                    automatic_scale(
+                        0.0,
+                        negative,
+                        positive.max(f64::EPSILON),
+                        length,
+                        font,
+                        !horizontal,
+                    )
                 };
             } else if chart.is_3d && bars {
                 primary = if horizontal {
@@ -295,7 +371,7 @@ impl ChartScales {
                 let (min, max, step) = nice_axis_no_headroom(min, max, VERTICAL_AXIS_TICKS);
                 primary = ValueScale::from_tuple((min, max + step, step));
             } else if horizontal {
-                primary = automatic_scale(min, max, length, font);
+                primary = automatic_scale(data_min, min, max, length, font, false);
             }
             // 저장 범위는 측정 뒤 paint에서 덮어쓰지 않고 이 결과에서 확정한다.
             if bars {

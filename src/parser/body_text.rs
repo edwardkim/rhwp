@@ -388,6 +388,29 @@ const UNPAIRED_SURROGATE_CHAR: char = '\u{25A1}';
 
 thread_local! {
     static HWP5_SECTION_DEPTH: std::cell::Cell<u32> = const { std::cell::Cell::new(0) };
+    static RHWP_LINE_SEG_TAGS: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+/// 이 구역의 `PARA_LINE_SEG` tag bit 31 을 rhwp 합성 줄 표지로 읽는 범위(#8939).
+///
+/// rhwp 저장 표지(`model::line_seg_tags`)가 이 구역 바이트를 인증할 때만 연다. 그 밖의
+/// 구역에서 bit 31 은 한/글이 저장 줄에 싣는 「구현 편의 property」이며 IR 의 합성 표지가
+/// 아니므로 `parse_paragraph` 가 지운다. 범위는 Drop 으로 닫혀 오류 전파에도 새지 않는다.
+pub(crate) struct RhwpLineSegTagScope {
+    previous: bool,
+}
+
+impl RhwpLineSegTagScope {
+    pub(crate) fn enter() -> Self {
+        let previous = RHWP_LINE_SEG_TAGS.with(|flag| flag.replace(true));
+        Self { previous }
+    }
+}
+
+impl Drop for RhwpLineSegTagScope {
+    fn drop(&mut self) {
+        RHWP_LINE_SEG_TAGS.with(|flag| flag.set(self.previous));
+    }
 }
 
 /// `parse_paragraph` 진입 시 재귀 깊이를 +1 하고 이탈(Drop, 오류 전파·조기 반환 포함) 시
@@ -469,6 +492,12 @@ pub fn parse_paragraph(records: &[Record]) -> Result<Paragraph, BodyTextError> {
             }
             tags::HWPTAG_PARA_LINE_SEG => {
                 para.line_segs = parse_para_line_seg(&record.data);
+                if !RHWP_LINE_SEG_TAGS.with(std::cell::Cell::get) {
+                    // 한/글 저장 줄의 bit 31 은 rhwp 합성 표지가 아니다(#8939).
+                    for seg in &mut para.line_segs {
+                        seg.tag &= !LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+                    }
+                }
             }
             tags::HWPTAG_PARA_RANGE_TAG => {
                 para.range_tags = parse_para_range_tag(&record.data);

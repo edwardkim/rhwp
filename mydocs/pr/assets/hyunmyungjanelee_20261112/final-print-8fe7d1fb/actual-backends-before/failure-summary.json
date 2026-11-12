@@ -1,0 +1,473 @@
+{
+  "code_head": "8fe7d1fb8bc5024d0377ff7aa37d98c78e8f071a",
+  "recorded_at": "2026-11-12T10:57:38.220166+00:00",
+  "status": "failed consumer validation, not acceptance evidence",
+  "captures": 48,
+  "hard_gate_violations": [
+    {
+      "sampleId": "pr8916-zero_size_para_before_table",
+      "backend": "canvaskit-compat",
+      "profile": "screen",
+      "code": "runtimeUnexpectedUnsupportedOps",
+      "detail": "[\"textRun:invalidGeometry\"]"
+    },
+    {
+      "sampleId": "pr8916-zero_size_para_before_table",
+      "backend": "canvaskit-default",
+      "profile": "screen",
+      "code": "runtimeUnexpectedUnsupportedOps",
+      "detail": "[\"textRun:invalidGeometry\"]"
+    },
+    {
+      "sampleId": "pr8916-zero_size_para_before_table",
+      "backend": "canvaskit-compat",
+      "profile": "print",
+      "code": "runtimeUnexpectedUnsupportedOps",
+      "detail": "[\"textRun:invalidGeometry\"]"
+    },
+    {
+      "sampleId": "pr8916-zero_size_para_before_table",
+      "backend": "canvaskit-default",
+      "profile": "print",
+      "code": "runtimeUnexpectedUnsupportedOps",
+      "detail": "[\"textRun:invalidGeometry\"]"
+    },
+    {
+      "sampleId": "pr8918-wingdings_pua_symbols",
+      "backend": "canvaskit-compat",
+      "profile": "screen",
+      "code": "runtimeUnexpectedUnsupportedOps",
+      "detail": "[\"textRun:glyphMapping\"]"
+    },
+    {
+      "sampleId": "pr8918-wingdings_pua_symbols",
+      "backend": "canvaskit-default",
+      "profile": "screen",
+      "code": "runtimeUnexpectedUnsupportedOps",
+      "detail": "[\"textRun:glyphMapping\"]"
+    },
+    {
+      "sampleId": "pr8918-wingdings_pua_symbols",
+      "backend": "canvaskit-compat",
+      "profile": "print",
+      "code": "runtimeUnexpectedUnsupportedOps",
+      "detail": "[\"textRun:glyphMapping\"]"
+    },
+    {
+      "sampleId": "pr8918-wingdings_pua_symbols",
+      "backend": "canvaskit-default",
+      "profile": "print",
+      "code": "runtimeUnexpectedUnsupportedOps",
+      "detail": "[\"textRun:glyphMapping\"]"
+    }
+  ],
+  "parity": {
+    "total": 32,
+    "compared": 32,
+    "passed": 16,
+    "failed": 16,
+    "missing": 0,
+    "errors": 0,
+    "identityMismatches": 0
+  },
+  "reference": "current 34 Windows desktop Print public cases; separate Native and fresh WASM sweep passed",
+  "zero_size_source_run": {
+    "text_length": 137,
+    "bbox": {
+      "x": 75.587,
+      "y": 115.8,
+      "width": 0,
+      "height": 12
+    },
+    "font_size": 0,
+    "ratio": 0,
+    "positions_all_zero": true
+  },
+  "glyph_mapping_cause": "F0FA is suspected based on missing box in screenshot; not yet isolated by a controlled replay",
+  "artifact_hashes": [
+    {
+      "file": "pr8895-title_line_overflows/canvas2d-screen.png",
+      "sha256": "7117f6b4a5c498386f1fd7dcb46dd1fb20bc77f2be85c17fa002fac7b4757213",
+      "sample": "pr8895-title_line_overflows",
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "screen"
+    },
+    {
+      "file": "pr8895-title_line_overflows/canvaskit-compat-screen-software.png",
+      "sha256": "094577fc8de9f2629cb43f960b4f75ac6a251d6065c99b1f36419998661485d4",
+      "sample": "pr8895-title_line_overflows",
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "screen"
+    },
+    {
+      "file": "pr8895-title_line_overflows/canvaskit-default-screen-software.png",
+      "sha256": "af57a3edc1cf146b6f2dbc177543cda76d2b622307af253dfe38e8c6e0898985",
+      "sample": "pr8895-title_line_overflows",
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "screen"
+    },
+    {
+      "file": "pr8895-title_line_overflows/canvas2d-print.png",
+      "sha256": "af50ba8fca7d30084b27097abae61bcfa87e2c1a9fa358299077fcb7c7770a2c",
+      "sample": "pr8895-title_line_overflows",
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print"
+    },
+    {
+      "file": "pr8895-title_line_overflows/canvaskit-compat-print-software.png",
+      "sha256": "6f137eb5704df2633e6440f868b8266e5ff764ebdf8ccd19413f805e5d6125d0",
+      "sample": "pr8895-title_line_overflows",
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "print"
+    },
+    {
+      "file": "pr8895-title_line_overflows/canvaskit-default-print-software.png",
+      "sha256": "6f137eb5704df2633e6440f868b8266e5ff764ebdf8ccd19413f805e5d6125d0",
+      "sample": "pr8895-title_line_overflows",
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "print"
+    },
+    {
+      "file": "pr8897-whitespace-host-square-then-topbottom-push/canvas2d-screen.png",
+      "sha256": "077abf0c91053205586edc0c104d63222668fe87cea6d339e4621b13f6df519e",
+      "sample": "pr8897-whitespace-host-square-then-topbottom-push",
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "screen"
+    },
+    {
+      "file": "pr8897-whitespace-host-square-then-topbottom-push/canvaskit-compat-screen-software.png",
+      "sha256": "39a47d3e515c49b932d9b8a6d135fc5cb83d045825e51601b1d16856a509edbb",
+      "sample": "pr8897-whitespace-host-square-then-topbottom-push",
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "screen"
+    },
+    {
+      "file": "pr8897-whitespace-host-square-then-topbottom-push/canvaskit-default-screen-software.png",
+      "sha256": "39a47d3e515c49b932d9b8a6d135fc5cb83d045825e51601b1d16856a509edbb",
+      "sample": "pr8897-whitespace-host-square-then-topbottom-push",
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "screen"
+    },
+    {
+      "file": "pr8897-whitespace-host-square-then-topbottom-push/canvas2d-print.png",
+      "sha256": "943b29620783bd8afa4254e6767181659e4d63ffbbe5523a92f3e8046e18a9cf",
+      "sample": "pr8897-whitespace-host-square-then-topbottom-push",
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print"
+    },
+    {
+      "file": "pr8897-whitespace-host-square-then-topbottom-push/canvaskit-compat-print-software.png",
+      "sha256": "5811576aec5cb74f2f9129a52226723b0c2dbdcc47a55cd73a8694d31735b221",
+      "sample": "pr8897-whitespace-host-square-then-topbottom-push",
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "print"
+    },
+    {
+      "file": "pr8897-whitespace-host-square-then-topbottom-push/canvaskit-default-print-software.png",
+      "sha256": "5811576aec5cb74f2f9129a52226723b0c2dbdcc47a55cd73a8694d31735b221",
+      "sample": "pr8897-whitespace-host-square-then-topbottom-push",
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "print"
+    },
+    {
+      "file": "pr8900-bar_axis_floor/canvas2d-screen.png",
+      "sha256": "937e69925070617960fe28a7cd58cdd04d9a40bf545fdfceb187c7effc2403fe",
+      "sample": "pr8900-bar_axis_floor",
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "screen"
+    },
+    {
+      "file": "pr8900-bar_axis_floor/canvaskit-compat-screen-software.png",
+      "sha256": "97af23ee41a2c8be192973cabab9db0680d19b5cebbf81ae24cf2591c687b5dd",
+      "sample": "pr8900-bar_axis_floor",
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "screen"
+    },
+    {
+      "file": "pr8900-bar_axis_floor/canvaskit-default-screen-software.png",
+      "sha256": "97af23ee41a2c8be192973cabab9db0680d19b5cebbf81ae24cf2591c687b5dd",
+      "sample": "pr8900-bar_axis_floor",
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "screen"
+    },
+    {
+      "file": "pr8900-bar_axis_floor/canvas2d-print.png",
+      "sha256": "04c3c7f6ecea7656e2e86ac0955b82de669172b3dccb482d40b67dd8d89e1f97",
+      "sample": "pr8900-bar_axis_floor",
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print"
+    },
+    {
+      "file": "pr8900-bar_axis_floor/canvaskit-compat-print-software.png",
+      "sha256": "0a2783828a444947d5da0af1c06dee45a1ec273ec80f84b1b1aeae2bda0fcb60",
+      "sample": "pr8900-bar_axis_floor",
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "print"
+    },
+    {
+      "file": "pr8900-bar_axis_floor/canvaskit-default-print-software.png",
+      "sha256": "0a2783828a444947d5da0af1c06dee45a1ec273ec80f84b1b1aeae2bda0fcb60",
+      "sample": "pr8900-bar_axis_floor",
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "print"
+    },
+    {
+      "file": "pr8916-zero_size_para_before_table/canvas2d-screen.png",
+      "sha256": "7d6eea06656d9cba98ac166c43aef94fa3ec281805fdbac3e1576eb0d303c608",
+      "sample": "pr8916-zero_size_para_before_table",
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "screen"
+    },
+    {
+      "file": "pr8916-zero_size_para_before_table/canvaskit-compat-screen-software.png",
+      "sha256": "62862e64a1609dbdb5729dc80ef94c7e05b23722a88f06cf43fa3dabf110b992",
+      "sample": "pr8916-zero_size_para_before_table",
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "screen"
+    },
+    {
+      "file": "pr8916-zero_size_para_before_table/canvaskit-default-screen-software.png",
+      "sha256": "62862e64a1609dbdb5729dc80ef94c7e05b23722a88f06cf43fa3dabf110b992",
+      "sample": "pr8916-zero_size_para_before_table",
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "screen"
+    },
+    {
+      "file": "pr8916-zero_size_para_before_table/canvas2d-print.png",
+      "sha256": "1a12531db594c7cb08df5301aec6845ea85055790b07994f99b63f633ee5829d",
+      "sample": "pr8916-zero_size_para_before_table",
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print"
+    },
+    {
+      "file": "pr8916-zero_size_para_before_table/canvaskit-compat-print-software.png",
+      "sha256": "dd3b4a25971376f623bc4e806b3bae8f7f606f61e8a290422b8de16e19899281",
+      "sample": "pr8916-zero_size_para_before_table",
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "print"
+    },
+    {
+      "file": "pr8916-zero_size_para_before_table/canvaskit-default-print-software.png",
+      "sha256": "dd3b4a25971376f623bc4e806b3bae8f7f606f61e8a290422b8de16e19899281",
+      "sample": "pr8916-zero_size_para_before_table",
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "print"
+    },
+    {
+      "file": "pr8918-wingdings_pua_symbols/canvas2d-screen.png",
+      "sha256": "ab2d1678f56cf8fe2ecab46ad9c64d788a305debb7a81fbd17dd86f323d9f179",
+      "sample": "pr8918-wingdings_pua_symbols",
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "screen"
+    },
+    {
+      "file": "pr8918-wingdings_pua_symbols/canvaskit-compat-screen-software.png",
+      "sha256": "20217319a51a401e09a8b4a97d30c1fdd6d3c1b418c957ddf1baa60723548a61",
+      "sample": "pr8918-wingdings_pua_symbols",
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "screen"
+    },
+    {
+      "file": "pr8918-wingdings_pua_symbols/canvaskit-default-screen-software.png",
+      "sha256": "20217319a51a401e09a8b4a97d30c1fdd6d3c1b418c957ddf1baa60723548a61",
+      "sample": "pr8918-wingdings_pua_symbols",
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "screen"
+    },
+    {
+      "file": "pr8918-wingdings_pua_symbols/canvas2d-print.png",
+      "sha256": "43d7f11fc47cf3a6ab30b990f7747b8e0bc55200de7f6db18f593aacb1605b0f",
+      "sample": "pr8918-wingdings_pua_symbols",
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print"
+    },
+    {
+      "file": "pr8918-wingdings_pua_symbols/canvaskit-compat-print-software.png",
+      "sha256": "58f9a74f51353908d276e39aba5bf62a0604e555ced575317a51d7d8c429e01f",
+      "sample": "pr8918-wingdings_pua_symbols",
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "print"
+    },
+    {
+      "file": "pr8918-wingdings_pua_symbols/canvaskit-default-print-software.png",
+      "sha256": "58f9a74f51353908d276e39aba5bf62a0604e555ced575317a51d7d8c429e01f",
+      "sample": "pr8918-wingdings_pua_symbols",
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "print"
+    },
+    {
+      "file": "pr8920-float_line_rowspan_infront_center/canvas2d-screen.png",
+      "sha256": "90998349c3e450b5d93f773a044ef3a87f226b9de33b188480cc13a13c06a5f1",
+      "sample": "pr8920-float_line_rowspan_infront_center",
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "screen"
+    },
+    {
+      "file": "pr8920-float_line_rowspan_infront_center/canvaskit-compat-screen-software.png",
+      "sha256": "a6f34c9f16e5bf7afee0f89551d12d0c1dd6483a9e4fa4e5720e9caa53b6b7aa",
+      "sample": "pr8920-float_line_rowspan_infront_center",
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "screen"
+    },
+    {
+      "file": "pr8920-float_line_rowspan_infront_center/canvaskit-default-screen-software.png",
+      "sha256": "a6f34c9f16e5bf7afee0f89551d12d0c1dd6483a9e4fa4e5720e9caa53b6b7aa",
+      "sample": "pr8920-float_line_rowspan_infront_center",
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "screen"
+    },
+    {
+      "file": "pr8920-float_line_rowspan_infront_center/canvas2d-print.png",
+      "sha256": "ed273ea2f8dedb55c92b7e71edc4ed8e5e07888fa3336f285608937000c4063b",
+      "sample": "pr8920-float_line_rowspan_infront_center",
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print"
+    },
+    {
+      "file": "pr8920-float_line_rowspan_infront_center/canvaskit-compat-print-software.png",
+      "sha256": "e5a52cc3d6ae5acaec7958e01756a485edb758d961cc81e35502d601f9b6717f",
+      "sample": "pr8920-float_line_rowspan_infront_center",
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "print"
+    },
+    {
+      "file": "pr8920-float_line_rowspan_infront_center/canvaskit-default-print-software.png",
+      "sha256": "e5a52cc3d6ae5acaec7958e01756a485edb758d961cc81e35502d601f9b6717f",
+      "sample": "pr8920-float_line_rowspan_infront_center",
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "print"
+    },
+    {
+      "file": "page-boundary-text/canvas2d-screen.png",
+      "sha256": "e369165017fcf3286691fcab732d9facdebbae9545d9b85db37050c751fe86fe",
+      "sample": "page-boundary-text",
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "screen"
+    },
+    {
+      "file": "page-boundary-text/canvaskit-compat-screen-software.png",
+      "sha256": "0879c24ce4f02f659d9f014864646ff4efbb1aaf45ea3244f16ab75951a29b1e",
+      "sample": "page-boundary-text",
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "screen"
+    },
+    {
+      "file": "page-boundary-text/canvaskit-default-screen-software.png",
+      "sha256": "bdd43a005248db2276e10da64b26908bc12f1452b0f3c12b373632e5e94e1e38",
+      "sample": "page-boundary-text",
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "screen"
+    },
+    {
+      "file": "page-boundary-text/canvas2d-print.png",
+      "sha256": "36e013f039e6d03443355753346f75d190aa87c74655bfe50dabf2eee99bdb01",
+      "sample": "page-boundary-text",
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print"
+    },
+    {
+      "file": "page-boundary-text/canvaskit-compat-print-software.png",
+      "sha256": "da3772f75ac41d5cf828c568b6894a01dd158a5e96c57b9090ac54549a3a92b6",
+      "sample": "page-boundary-text",
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "print"
+    },
+    {
+      "file": "page-boundary-text/canvaskit-default-print-software.png",
+      "sha256": "da3772f75ac41d5cf828c568b6894a01dd158a5e96c57b9090ac54549a3a92b6",
+      "sample": "page-boundary-text",
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "print"
+    },
+    {
+      "file": "pr8897-whitespace-host-topbottom-stacked-zones/canvas2d-screen.png",
+      "sha256": "e22f49a76a94efb4e9935a342d5e6bb71c736e0133ddd054ff4d30da23bf3e7b",
+      "sample": "pr8897-whitespace-host-topbottom-stacked-zones",
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "screen"
+    },
+    {
+      "file": "pr8897-whitespace-host-topbottom-stacked-zones/canvaskit-compat-screen-software.png",
+      "sha256": "590adf704453e5e33a1a0d71a32d0019b9f1131df06e6b6842b3ce0aab76aae1",
+      "sample": "pr8897-whitespace-host-topbottom-stacked-zones",
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "screen"
+    },
+    {
+      "file": "pr8897-whitespace-host-topbottom-stacked-zones/canvaskit-default-screen-software.png",
+      "sha256": "590adf704453e5e33a1a0d71a32d0019b9f1131df06e6b6842b3ce0aab76aae1",
+      "sample": "pr8897-whitespace-host-topbottom-stacked-zones",
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "screen"
+    },
+    {
+      "file": "pr8897-whitespace-host-topbottom-stacked-zones/canvas2d-print.png",
+      "sha256": "c3f9350677026b20dd7b129edc854f78b2ab05df1b9e271b890be24a2d1958c3",
+      "sample": "pr8897-whitespace-host-topbottom-stacked-zones",
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print"
+    },
+    {
+      "file": "pr8897-whitespace-host-topbottom-stacked-zones/canvaskit-compat-print-software.png",
+      "sha256": "f5aadd4e5ef86c0697d1690cb2ef8f00475b8112443022d1c033c5618d279938",
+      "sample": "pr8897-whitespace-host-topbottom-stacked-zones",
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "print"
+    },
+    {
+      "file": "pr8897-whitespace-host-topbottom-stacked-zones/canvaskit-default-print-software.png",
+      "sha256": "f5aadd4e5ef86c0697d1690cb2ef8f00475b8112443022d1c033c5618d279938",
+      "sample": "pr8897-whitespace-host-topbottom-stacked-zones",
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "print"
+    }
+  ]
+}

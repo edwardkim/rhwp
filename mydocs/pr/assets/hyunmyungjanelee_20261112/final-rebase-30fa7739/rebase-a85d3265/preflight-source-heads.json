@@ -1,0 +1,48 @@
+{
+  "recorded_at": "2026-11-12T15:24:21.154Z",
+  "own_open_prs": [],
+  "source_prs": [
+    {
+      "i": 1,
+      "pr": 8895,
+      "state": "open",
+      "merged": false,
+      "head": "c60c1a140dacd635a7bf257d6a4839baea72bebf"
+    },
+    {
+      "i": 2,
+      "pr": 8897,
+      "state": "open",
+      "merged": false,
+      "head": "e263b59c25ae949065dec6726978c9fe2751e4d4"
+    },
+    {
+      "i": 3,
+      "pr": 8900,
+      "state": "open",
+      "merged": false,
+      "head": "b215fce8179da1b5ed1a3c3c889388611a87c093"
+    },
+    {
+      "i": 4,
+      "pr": 8916,
+      "state": "open",
+      "merged": false,
+      "head": "6ad97a9ae8bd230b1e2fd2d7a61764423e0c2b3b"
+    },
+    {
+      "i": 5,
+      "pr": 8918,
+      "state": "open",
+      "merged": false,
+      "head": "9400d7748457089509d7e5a55477dc0016d96c28"
+    },
+    {
+      "i": 6,
+      "pr": 8920,
+      "state": "open",
+      "merged": false,
+      "head": "5037330c850e041591cbee1745120e98cf95e12c"
+    }
+  ]
+}

@@ -5,7 +5,7 @@
 use crate::document_core::DocumentCore;
 use crate::model::control::Control;
 use crate::model::document::Document;
-use crate::model::paragraph::{LineSeg, Paragraph};
+use crate::model::paragraph::Paragraph;
 use crate::model::table::Table;
 use crate::renderer::height_measurer::{HeightMeasurer, MeasuredTable};
 use crate::renderer::px_to_hwpunit;
@@ -19,8 +19,15 @@ fn grown(declared: u32, content: u32) -> Option<u32> {
     (content > declared).then_some(content)
 }
 
-/// rhwp가 다시 짠 칸 문단이 있는 표인가. 한컴이 저장한 줄을 그대로 가진 표는 그 높이(sz)가
-/// 한컴 조판값이므로 rhwp 측정으로 덮어쓰지 않는다. 본문 표는 이번 편집의 재조판 표시도 본다.
+/// rhwp가 이번 세션에 다시 짠 칸 문단이 있는 표인가. 한컴이 저장한 줄을 그대로 가진 표는 그
+/// 높이(sz)가 한컴 조판값이므로 rhwp 측정으로 덮어쓰지 않는다. 본문 표는 이번 편집의 재조판
+/// 표시도 본다.
+///
+/// 파일에서 읽은 상태만으로는 다시 짠 증거가 되지 않는다 — 저장 줄이 없거나 옛 rhwp 줄
+/// 표지(bit 31)를 지닌 칸 문단이라도 편집하지 않았으면 원본 높이를 쓴다. 한컴 2020은 이런
+/// HWP 를 편집 없이 HWPX 로 저장해도 칸 줄을 새로 쓰지 않고 표 높이를 원본 그대로 둔다
+/// (#8996, `samples/80168_regulatory_analysis.hwp` 표 184개 전부). rhwp 측정 높이로 키우면
+/// 다시 열 때 그 선언 높이로 표를 통째로 다음 쪽에 넘겨 쪽 수가 157→159 로 갈렸다.
 fn has_reflowed_cell_text(table: &Table) -> bool {
     table
         .cells
@@ -34,11 +41,6 @@ fn has_reflowed_cell_text(table: &Table) -> bool {
                 .iter()
                 .zip(&paragraph.line_segs)
                 .any(|((start, _), line)| *start == line.text_start)
-                || paragraph.line_segs.is_empty()
-                || paragraph
-                    .line_segs
-                    .iter()
-                    .any(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
         })
 }
 

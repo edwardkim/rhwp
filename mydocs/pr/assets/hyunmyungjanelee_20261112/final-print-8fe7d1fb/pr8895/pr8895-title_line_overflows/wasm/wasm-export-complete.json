@@ -1,0 +1,99 @@
+{
+  "pageCount": 2,
+  "layoutGeneration": "2024",
+  "comparisonProfile": "print",
+  "rasterBackend": "wasm-canvas2d",
+  "protocolTimeoutMs": 600000,
+  "pngBackground": "opaque-white-print-paper",
+  "captureCanvasPolicy": "fresh-per-page-after-font-and-image-preparation",
+  "fontEnvironment": {
+    "source": "preparedPrograms",
+    "environment": null,
+    "programs": [],
+    "loaded": []
+  },
+  "pages": [
+    {
+      "page": 1,
+      "pngSha256": "17e49fcfed0fe51793f3f50f4a3c79b90cf419ffa6c64004637ee2bc3e842032",
+      "width": 794,
+      "height": 1122,
+      "canvasContext": {
+        "alpha": true,
+        "colorSpace": "srgb",
+        "colorType": "unorm8",
+        "desynchronized": false,
+        "toneMapping": {
+          "mode": "standard"
+        },
+        "willReadFrequently": true
+      }
+    },
+    {
+      "page": 2,
+      "pngSha256": "2b9106a4e79885b821c317352e967a6b19e9e0a2c93541a5d5a13e7accaad8ea",
+      "width": 794,
+      "height": 1122,
+      "canvasContext": {
+        "alpha": true,
+        "colorSpace": "srgb",
+        "colorType": "unorm8",
+        "desynchronized": false,
+        "toneMapping": {
+          "mode": "standard"
+        },
+        "willReadFrequently": true
+      }
+    }
+  ],
+  "workers": [
+    {
+      "index": 0,
+      "pages": [
+        1
+      ],
+      "fonts": {
+        "requested": [
+          "함초롬바탕",
+          "rhwp old hangul"
+        ],
+        "loaded": [
+          {
+            "family": "RHWP Old Hangul",
+            "registeredFamily": "RHWP Old Hangul",
+            "sourceSha256": "0a32ff354d11c955f819d84d91e695927d41aca0fd74b4a286b6235345101af4",
+            "sha256": "0a32ff354d11c955f819d84d91e695927d41aca0fd74b4a286b6235345101af4",
+            "textProgramSha256": "0a32ff354d11c955f819d84d91e695927d41aca0fd74b4a286b6235345101af4",
+            "faceIndex": 0,
+            "weight": 400,
+            "style": "normal",
+            "repairs": [],
+            "sourceKind": "external"
+          }
+        ]
+      },
+      "nativePuaFonts": [],
+      "hftOtfFonts": [],
+      "observedFonts": [],
+      "fontEnvironment": {
+        "source": "preparedPrograms",
+        "environment": null,
+        "programs": [],
+        "loaded": []
+      },
+      "screenCanvasMetricsActive": false,
+      "canvasMetricsActive": false,
+      "canvasContext": {
+        "alpha": true,
+        "colorSpace": "srgb",
+        "colorType": "unorm8",
+        "desynchronized": false,
+        "toneMapping": {
+          "mode": "standard"
+        },
+        "willReadFrequently": true
+      },
+      "browser": "Chrome/157.0.8103.51"
+    }
+  ]
+}
