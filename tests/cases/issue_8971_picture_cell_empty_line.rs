@@ -1,5 +1,5 @@
 //! 관계형·고정형 — [#8971] 저장 줄 없는 그림 칸의 빈 문단 자리 줄은 그림 행 높이에 더해지지 않는다.
-//! 주석 갱신: MEASURE_PENDING
+//! 주석 갱신: 2026-11-12 10:20 KST (새 파일)
 //!
 //! 입력: 강동구 「2026 강동 환경 한마당 행사 결과보고」(한/글 2020 저장, 6쪽)의 그림 25개를 같은
 //! 비율의 회색 단색 PNG 로만 바꾼 축소본 `samples/issue8971/36400701-picture-cell-empty-line.hwpx`.
@@ -13,7 +13,16 @@
 //! - 관계형: 6쪽 사진 표 높이 = 표 선언 높이(23393HU, 저장 줄 높이와 같음), 0행 높이 = 칸 위·아래
 //!   여백 + 세로 오프셋 + 그림 높이(±1px). 원본 저장값에서 정한 값이다.
 //!
-//! MEASURE_PENDING
+//! 기준: 이 축소본을 한컴 engine 2020 Print 로 출력한 `pdf/issue8971/36400701-picture-cell-empty-line-2020.pdf`(6쪽).
+//!
+//! 측정(2026-11-12, 이 파일과 같은 커밋의 코드, base = upstream/devel eb84afc036,
+//! `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`, raw =
+//! `silhouette_raw_match_percent`, 글꼴 `ttfs/opensource` — 문서 본 글꼴 없는 환경):
+//! - Native: 6쪽 / 6쪽, 6쪽 91.62(base 80.05), 1~5쪽 99.32~99.92, 최저 91.62
+//! - fresh WASM(`scripts/wasm-pack-locked.sh --target web`): 6쪽 / 6쪽, 6쪽 90.64, 1~5쪽 97.61~99.97, 최저 90.64
+//! - 증거: `mydocs/pr/assets/issue_8971/`(native·wasm TSV, review·overlay PNG)
+//! - 남은 차이는 가로 글자 폭(공개 글꼴)과 쪽 전체가 약 4px 위인 별개 차이다. 사진 표 높이와
+//!   표 아래 「3 소요예산」 이하의 세로 간격은 PDF 와 겹친다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
