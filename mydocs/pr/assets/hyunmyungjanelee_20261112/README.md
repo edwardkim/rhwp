@@ -1,10 +1,18 @@
 # hyunmyungJaneLee 6개 PR 통합 검토 증적
 
-현재 후보 소스는 `8fe7d1fb8bc5024d0377ff7aa37d98c78e8f071a`, 검증 base는
-`80b1c354c29b7a02fb2b3c14a274da7f5b653ada`다. Native 공개 검증은 34종·46쪽 전체 90% 이상이며,
-같은 입력·PDF의 devel 대비 2%p 초과 하락은 없다. 단 구역 간격 보정의 최소 글꼴 집중 검사 4건은
-모두 통과했다. 최소 글꼴 Native 집중 검사 126건·공개 fresh WASM 34종 46쪽과 정본 Native 18종 1,771쪽도 완료했다.
-최소 글꼴 [전체 회귀](final-print-8fe7d1fb/full-nextest-validation.json)는 **13,356 PASS / 0 FAIL / 45 skipped**(774.340초), fmt는 PASS다. Native·WASM·workspace all-target Clippy와 workspace build도 모두 PASS다. 정본 fresh WASM 18종·1,771쪽도 공식 표시값 하락·누락·추가 0쪽이다. 추가 Native Skia·suite/단위 정책과 실제 Studio 소비 경로는 현재 이 소스로 검증 중이다. 이전 head의 통과 결과로 이 후보의 완료를 대신하지 않는다.
+최신 보정 source는 `d66568ef247859a9c184546cad3ba42b06e806e1`, base는
+`80b1c354c29b7a02fb2b3c14a274da7f5b653ada`다. [U+F0FA 보정](wingdings-arrow-shaft-repair/cause.md)의
+최소 글꼴 집중 검사 5건·Studio 실행형 계약을 통과했다. 같은 원본의 Native는 99.54%→99.76%,
+fresh WASM은 99.50%→99.73%로 개선됐다. 크기 0 문단과 기호 문서의 실제 Studio 12캡처에서
+런타임 계약 위반은 0건이다. [집중 소비 검증](wingdings-arrow-shaft-repair/actual-consumers/summary.json)의
+report-only 픽셀 차이와 전체 PR 검증 완료를 구분한다. 새 소스의 전쪽·정본 보호·전체 회귀·전체
+실제 소비 경로를 갱신 중이며 아직 PR 제출 완료로 표시하지 않는다.
+
+보정 전 source `8fe7d1fb8bc5024d0377ff7aa37d98c78e8f071a`의 공개 Native/fresh WASM은
+각 34종·46쪽 모두 90% 이상이고, 정본 보호는 각 18종·1,771쪽에서 공식 표시값 하락·누락·추가 0쪽이다.
+그 소스의 최소 글꼴 전체 회귀는 13,356 PASS / 0 FAIL / 45 skipped, Rust 게이트 13단계도 모두 PASS다.
+그러나 실제 소비 48캡처에서 크기 0·F0FA 결함이 확인돼 보정했다. 이 결과는 이력이며 최신 source의
+전체 검증을 대신하지 않는다.
 
 ## 기준 PDF와 검증 입력
 

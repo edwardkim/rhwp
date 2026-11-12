@@ -25,3 +25,10 @@ Rust 정책과 Studio nominal replay는 단독 U+1F8AD를 허용하지만 변형
 공개 글꼴과 원 Wingdings는 같은 의미의 서로 다른 글리프 프로그램이며 윤곽 완전 일치를 주장하지 않는다.
 
 집중 검사·실제 재출력 결과는 이 폴더의 검증 기록에 연결한다. 보정 전 증거와 새 소스 검증을 구분한다.
+
+보정 source `d66568ef247859a9c184546cad3ba42b06e806e1`의 최소 글꼴 집중 검사 5건은 모두 통과했다.
+같은 공식 Print 1쪽 Native raw는 99.54%→99.76%, fresh WASM은 99.50%→99.73%다.
+실제 Studio Canvas2D·CanvasKit compat/default의 screen/print를 두 입력에서 12번 캡처했으며
+런타임 계약 위반은 0건이다. Canvas2D·CanvasKit의 report-only 픽셀 비교 8건 중 4건은
+기존 문턱을 넘는 차이를 기록했다. 이를 전체 픽셀 동등성 통과로 바꾸지 않았다.
+[Native](native-validation.json)·[fresh WASM](wasm-validation.json)·[실제 소비 경로](actual-consumers/summary.json)를 구분한다.

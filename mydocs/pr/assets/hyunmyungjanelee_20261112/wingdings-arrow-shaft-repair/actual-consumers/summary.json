@@ -1,0 +1,22 @@
+{
+  "source_head": "d66568ef247859a9c184546cad3ba42b06e806e1",
+  "capture_count": 12,
+  "hard_gate_violations": 0,
+  "requested_equals_actual_backend": true,
+  "unsupported_operations": [],
+  "parity_report_only": {
+    "total": 8,
+    "compared": 8,
+    "passed": 4,
+    "failed": 4,
+    "missing": 0,
+    "errors": 0,
+    "identityMismatches": 0
+  },
+  "parity_thresholds_unchanged": {
+    "ignoreChannelDelta": 8,
+    "maxDiffRatio": 0.005
+  },
+  "scope": "크기 0 문단과 U+F0FA의 소비 경로 집중 검증. 전체 PR·보호 문서 검증을 대체하지 않는다.",
+  "direct_reading": "CanvasKit default print와 Canvas2D print를 직접 열어 U+1F8AD 기호의 표시를 확인했다. 본문 글리프·백엔드 간 픽셀 차이는 report-only 비교에 남겨 동일 PNG라고 주장하지 않는다."
+}
