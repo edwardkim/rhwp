@@ -1783,11 +1783,13 @@ fn collect_extra_streams(
     // 을 미러링하여 계산한다. 이 집합에 들어가지 않는 /BinData 스트림은 대응 BinData
     // 레코드가 없는 "고아 스트림"(예: img-start-001 의 20개 BIN, interview.hwp 의 BIN0001)
     // 이며, 그대로 두면 저장 시 통째 드롭된다. extra_streams 로 원본 바이트를 보존한다.
+    // CFB 디렉터리 이름은 대소문자를 가리지 않는다(읽기도 같은 규칙으로 찾는다). DocInfo
+    // 확장자 `JPG` 와 저장 스트림 `BIN0001.jpg` 는 같은 항목이므로 대문자로 맞춰 비교한다.
     let emitted_bin_paths: std::collections::HashSet<String> = bin_data_content
         .iter()
         .map(|c| {
             let (storage_id, ext) = serialized_bin_name(bin_data_list, c);
-            format!("/BinData/BIN{:04X}.{}", storage_id, ext)
+            format!("/BinData/BIN{:04X}.{}", storage_id, ext).to_uppercase()
         })
         .collect();
 
@@ -1805,7 +1807,7 @@ fn collect_extra_streams(
         }
 
         // /BinData 는 직렬화기가 재생성하는 스트림만 제외하고, 고아 스트림은 보존
-        if path.starts_with("/BinData/") && emitted_bin_paths.contains(path) {
+        if path.starts_with("/BinData/") && emitted_bin_paths.contains(&path.to_uppercase()) {
             continue;
         }
 
