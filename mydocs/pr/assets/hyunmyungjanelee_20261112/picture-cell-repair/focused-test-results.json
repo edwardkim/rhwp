@@ -1,0 +1,25 @@
+{
+  "source_parent": "226b420d0d5a92c3805c068993589f8980f750a1",
+  "before": {
+    "passed": 0,
+    "failed": 3,
+    "elapsed_seconds": 0.02
+  },
+  "first_repair": {
+    "passed": 2,
+    "failed": 1,
+    "elapsed_seconds": 0.02,
+    "remaining": "page ownership: images [20,0] versus independent Print [19,1]"
+  },
+  "second_repair": {
+    "passed": 3,
+    "failed": 0,
+    "elapsed_seconds": 0.034
+  },
+  "font_scope": "macOS OS-only CoreText; private/user fonts denied by existing verified sandbox profile",
+  "source_sha256_after_format": {
+    "src/renderer/height_measurer.rs": "92ec31754988bccae9d6b7de66cbc5b05aa683904b5a5dd25a40d4bb49a382f1",
+    "src/renderer/typeset/table/block/whole_fit.rs": "05a6680e4541535c3672e4ed3d16e95e445202f976979ddd9510546440d6fd0b"
+  },
+  "final_native_fresh_wasm_and_full_regression": "pending; earlier source 0c9819d6 results are not this repaired source results"
+}
