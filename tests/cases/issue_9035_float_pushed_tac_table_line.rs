@@ -11,6 +11,11 @@
 //!   「장례지도사교육기관의 장」 줄이 아래에 따로 놓인다.
 //! - 수정 전 rhwp(devel)는 뒤 문단의 표 원점을 밀리기 전 문단 시작에서 재어 두 서명 줄이 같은
 //!   y 에 완전히 겹쳤다(layout-anomaly textOverlap 2건, 겹침 높이 21.3px).
+//! - 측정: 2026-11-13, code `c031fa633d`, `scripts/visual_sweep.py --silhouette-only --compat 2022
+//!   --dpi 96` 의 `silhouette_raw_match_percent`(색상 경계 보정 전 2px 내용 실루엣).
+//!   Native 1쪽 100.00, fresh WASM 1쪽 100.00, 전체 1쪽 = 한컴 1쪽, 전쪽 최저 Native 100.00 /
+//!   WASM 100.00. 남은 차이: 제목 「현장실습확인서」 굵기(비범위). 편람 `--handbook-gate` 통과
+//!   (383쪽, 하락 0). 증거 `mydocs/pr/assets/issue_9035/{native,wasm,handbook}/`.
 //!
 //! 검사: 두 서명 글 줄이 위아래 순서로 놓이고 세로로 겹치지 않으며, 전체 쪽수 = 한컴 Print 1쪽.
 #![cfg(not(target_arch = "wasm32"))]
