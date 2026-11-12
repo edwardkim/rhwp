@@ -13,8 +13,8 @@
 //!
 //! 측정: 2026-11-12, `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`(4열
 //! `silhouette_raw_match_percent`, 색상 경계 보정 전 2px 실루엣). 전체 1쪽 = 한/글 1쪽.
-//! 수정 후(devel `80b1c354c2` 기준) 1쪽 Native 99.99%, fresh WASM 은 `mydocs/pr/assets/issue_8995/wasm/`
-//! TSV 참조(두 경로 전쪽 최저값 = 1쪽 값). 수정 전 Native 78.38%.
+//! 수정 후(devel `80b1c354c2` 기준) 1쪽 Native 99.99%, fresh WASM 99.99%(두 경로 전쪽 최저값도
+//! 같음). 수정 전 Native 78.38%.
 //! 증거: `mydocs/pr/assets/issue_8995/{native,wasm,base-native}/`.
 //!
 //! 검사: 원본 계약(칸 문단 3 은 저장 줄 없음, 공백 뒤 TAC 표), 쪽수 1 = 한/글(고정형),
@@ -26,7 +26,7 @@
 //! 줄 소속(항상 0)을 그대로 쓰면 펜이 첫 줄 글자 폭만큼 밀려 표가 쪽 오른쪽 밖(x 288.7)으로 나간다.
 //! 독립 기준 `pdf/issue8995/36358528_gyeoljae-2020.pdf`(한/글 2022 12.0.0.4547 Print, 1쪽, 로컬
 //! 오라클 engine 2020). 같은 측정 방법 1쪽 Native: devel `80b1c354c2` 99.98%, 줄 소속을 고치지
-//! 않은 중간 시안 78.64%, 최종 수정 99.98%. 검사: 쪽수 1(고정형), 표가 첫 줄 아래·첫 줄 글자 끝
+//! 않은 중간 시안 78.64%, 최종 수정 Native 99.98%·fresh WASM 99.99%. 검사: 쪽수 1(고정형), 표가 첫 줄 아래·첫 줄 글자 끝
 //! 앞에서 시작하고 단 안에 머문다(관계형).
 #![cfg(not(target_arch = "wasm32"))]
 
