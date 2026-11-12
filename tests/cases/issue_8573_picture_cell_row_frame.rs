@@ -10,6 +10,7 @@
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
+use rhwp::model::control::Control;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 fn load(layout: &str, host: &str) -> DocumentCore {
@@ -84,6 +85,14 @@ fn boundary_rows_and_following_text_keep_independent_print_page_ownership() {
     for host in ["empty", "spaces", "text"] {
         let core = load("page-boundary", host);
         assert_eq!(core.page_count(), 2, "독립 Print의 두 쪽: {host}");
+        let outer_top = core.document().sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .find_map(|control| match control {
+                Control::Table(table) => Some(f64::from(table.outer_margin_top) * 96.0 / 7200.0),
+                _ => None,
+            })
+            .expect("원본 표의 위 바깥 여백");
         let mut images = [0usize; 2];
         let mut after = [0usize; 2];
         let mut end = 0;
@@ -91,6 +100,19 @@ fn boundary_rows_and_following_text_keep_independent_print_page_ownership() {
             let tree = core.build_page_render_tree(page as u32).expect("각 쪽");
             let mut nodes = Vec::new();
             visit(&tree.root, &mut nodes);
+            let column = nodes
+                .iter()
+                .find(|node| matches!(node.node_type, RenderNodeType::Column(_)))
+                .expect("그림 표의 단");
+            let table = nodes
+                .iter()
+                .find(|node| matches!(node.node_type, RenderNodeType::Table(_)))
+                .expect("각 쪽의 표 조각");
+            assert!(
+                (table.bbox.y - column.bbox.y - outer_top).abs() <= 0.5,
+                "{host} {}쪽: 예약한 원본 위 바깥 여백을 실제 첫 괘선에서도 소비해야 한다",
+                page + 1
+            );
             for node in nodes {
                 match &node.node_type {
                     RenderNodeType::Image(_) => images[page] += 1,
@@ -109,5 +131,35 @@ fn boundary_rows_and_following_text_keep_independent_print_page_ownership() {
         );
         assert_eq!(after, [0, 1], "표 뒤 본문은 다음 쪽에 한 번: {host}");
         assert_eq!(end, 1, "마지막 문구 보존: {host}");
+    }
+}
+
+#[test]
+fn continuation_preserves_the_same_host_gap_after_the_last_picture_row() {
+    // 독립 Print에서 같은 host의 종료 간격은 짧은 표와 이어받은 표에서 같다.
+    // 절대 좌표 대신 같은 내용·안/바깥 여백이 소유하는 앞뒤 간격을 대조한다.
+    for host in ["empty", "spaces", "text"] {
+        let gap = |layout: &str, page: u32| {
+            let core = load(layout, host);
+            let tree = core.build_page_render_tree(page).expect("표 종료 쪽");
+            let mut nodes = Vec::new();
+            visit(&tree.root, &mut nodes);
+            let table = nodes
+                .iter()
+                .find(|node| matches!(node.node_type, RenderNodeType::Table(_)))
+                .expect("종료 표 조각");
+            let after = nodes
+                .iter()
+                .find(|node| {
+                    matches!(&node.node_type, RenderNodeType::TextRun(run)
+                    if run.text.starts_with("AFTER TABLE"))
+                })
+                .expect("표 뒤 본문");
+            after.bbox.y - table.bbox.y - table.bbox.height
+        };
+        assert!(
+            (gap("short", 0) - gap("page-boundary", 1)).abs() <= 0.5,
+            "{host}: 이어받은 표의 위 바깥 여백을 뒤 본문에 다시 소비하면 안 된다"
+        );
     }
 }
