@@ -2,7 +2,7 @@
 
 ## 목표와 승인 범위
 
-Ready인 #8952·#8953·#8954를 검토하며 Draft #8962–#8967은 제외한다. 기본 경로는 maintainer 일반이며 intake·local validation·multi PR·시각 증적·후속 절차를 적용한다. 현재 승인은 접수·로컬 검토이며 공개 댓글·push·승인 리뷰·merge는 별도다.
+Ready인 #8952·#8953·#8954를 검토하며 Draft #8962–#8967은 제외한다. 기본 경로는 maintainer 일반이며 intake·local validation·multi PR·시각 증적·후속 절차를 적용한다. 현재 승인은 접수·로컬 검토와 Windows 메인터너 보정·필수 재검증이며 공개 댓글·push·승인 리뷰·merge는 별도다.
 
 작업지시자는 “macOS 쪽은 기여자의 주장을 수용하면서 진행합니다. 현재 메인테이너가 macOS 테스트 환경을 제공할 수 없기 때문입니다.”라고 결정했다. 이번 #8952 및 다른 두 PR의 macOS 관련 주장에 이 결정을 적용한다. 메인테이너의 Apple SDK·Metal/AppKit·ScreenCaptureKit 실기 검증은 미실행으로 구분하고 portable/SDK 계획 검사를 실제 Mac 실행 증거로 확대하지 않는다. 실행으로 검출한 코드 결함과 Linux·Windows 필수 검증은 별도로 판단한다. 같은 Mac 결정을 재확인하지 않는다.
 
@@ -31,3 +31,7 @@ Ready인 #8952·#8953·#8954를 검토하며 Draft #8962–#8967은 제외한다
 4. #8954는 실제 collector·stored evidence 정렬/전이 반례와 Dart/Native probe를 검증한다. Windows SDK·desktop·descriptor opening·viewport CPU 대조·종료/복구 및 실제 DPR 조건을 확인하며 주입·portable 검사를 실제 OS/GPU 검증으로 바꾸어 쓰지 않는다.
 5. package/example analyze·관련 Python/C++/Flutter 테스트와 수정 범위의 필수 게이트를 완료한다. Rust/공통 조판 생산자 변경 여부를 코드로 판정하고 실제 producer/Native source·기본 출력 무회귀와 플랫폼 실제 화면을 연결한다. 새로운 source 보정이 필요하면 사유·소유자·필수 검증을 구체화한다.
 6. 개별 원 PR review에 판정·해제 조건·검증과 댓글 계획을 남기고, 승인 가능한 실제 후보의 원격 처리 범위만 별도로 요청한다. #536·#8701 전체 로드맵은 OPEN을 유지한다.
+
+## 2026-11-13 승인 범위 완료
+
+Windows 보정·필수 재검증 승인을 적용했다. 최신 base `41c889cfd8`를 merge하고 원 SHA를 보존했다. CMake junction, 실제 실행 파일 stat 경계와 종료 시 messenger 접근을 공통 경로에서 수정했다. 최종 Windows runner·4단계 타일·이동 참조앱 정상 종료와 Linux 대조, 최신 Native/fresh WASM 및 새 devel 기능 보존을 [최종 원장](assets/seo-rii-20261112/windows-correction-20261113/README.md)에 기록했다. 초기 실패를 현재 미완료로 남기지 않으며 원격 처리·해당 head CI는 별도 승인 단계다.

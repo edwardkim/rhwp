@@ -21,7 +21,7 @@
 
 ## 2026-11-13 승인
 
-작업지시자가 “메인테이너 보정·필수 재검증 승인 (권장)”으로 위 보정과 실제 재검증을 승인했다. Windows CMake의 공통 경로 보정을 적용하고 실제 runner·두 타일·이동 참조앱을 검증한다. 기존 macOS 수용 결정은 유지하며 원격 source push·PR·merge는 이번 범위에 포함하지 않는다. [승인 범위](assets/seo-rii-20261112/windows-correction-approval.json)를 보존했다.
+작업지시자가 “메인테이너 보정·필수 재검증 승인 (권장)”으로 위 보정과 실제 재검증을 승인했다. Windows CMake의 공통 경로 보정을 적용하고 실제 runner·두 타일·이동 참조앱을 검증한다. 기존 macOS 수용 결정은 유지하며 원격 source push·PR·merge는 이번 범위에 포함하지 않는다. [승인 범위](assets/seo-rii-20261112/windows-correction-20261113/validation-record.md)를 보존했다.
 
 ## 실제 Windows 참조앱에서 추가 확인한 파일 metadata 경계
 
@@ -38,3 +38,7 @@ CMake 보정 후 실제 Windows 두 타일·편집·resize·복구·종료는 �
 Windows Application Error는 `flutter_windows.dll`의 access violation `0xc0000005`, RVA `0x1551f`를 기록했다. 실제 DLL export에서 `FlutterDesktopMessengerSetCallback`은 RVA `0x154f9`이며, plugin 소멸자의 무조건적인 `SetMethodCallHandler(nullptr)` 호출과 연결된다. 고정 Flutter SDK의 `PluginRegistrar::~PluginRegistrar`는 plugin부터 제거하지만 `BinaryMessengerImpl`은 C messenger의 비소유 참조다. 엔진 종료 뒤 unregister는 이미 무효화한 engine을 호출한다. 원 소스 `a92974dca48d` 이후의 plugin lifetime 경로를 함께 대조했다.
 
 C SDK의 AddRef/Release·Lock/Unlock·IsAvailable 계약을 사용해 messenger 수명을 소유하고, 소멸자에서는 살아 있는 engine일 때만 handler를 제거한다. texture owner의 기존 close·retirement 처리는 유지한다. 승인된 실제 Windows 종료 검증을 완성하기 위한 공통 plugin 보정이며, raw pointer를 잡아 두거나 오류 종료를 정상 종료로 허용하지 않는다. 실제 runner를 다시 만들어 최초·편집·resize·복구·자원 종료와 이동 참조앱의 WM_CLOSE exit 0을 재검증한다.
+
+## 최종 재검증 완료
+
+`4ab994ee67`에서 실제 Windows reference release·타일 runner를 새로 빌드했다. 타일 collector 4단계는 `windows-two-tile-consumer-passed`·exit 0이며, 이동 번들은 실제 두 문서 열기·1→6쪽 이동·문서 닫기·WM_CLOSE exit 0을 확인했다. 최초 C1083·`.exe` metadata 거부·messenger 종료 fault를 모두 해소했다. 관련 Linux 검사 50개와 Windows portable bridge도 통과했다. 실제 SDK·DPR·카운터·module mapping·전쪽 Native/WASM 결과는 [최종 검증 원장](assets/seo-rii-20261112/windows-correction-20261113/README.md)에 연결했다. 원격 처리는 아직 수행하지 않았다.
