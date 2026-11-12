@@ -1,0 +1,336 @@
+{
+  "product_code": "d0cc46573c7505633721c19062e504faff017d59",
+  "base": "31a422575722f634cfc2d9eb97e708da58aea188",
+  "reason": "local_validation 4.3.1의 신규 samples/PDF 쌍 등록. 기존 원장 값·문턱은 그대로 두고 실제 전쪽 Native/fresh WASM과 독립 Print 쪽수가 같고 정본 pick_oracles가 선택한 쌍만 추가한다. 형식 표기가 없어 정본 선택기가 제외하는 기존 Print는 시각 비교의 명시적 입력·SHA로만 사용하고 자동 원장에 강제 등록하지 않는다.",
+  "existing_rows_changed": 0,
+  "new_rows": [],
+  "before_sha256": "c7c4f11156757a8a7ba34d873b0a84b41963dc309ca808209fd8ebffcfe8cc80",
+  "after_sha256": "c7c4f11156757a8a7ba34d873b0a84b41963dc309ca808209fd8ebffcfe8cc80",
+  "inputs": [
+    {
+      "input": "samples/issue7620/b-rowbreak-bottom-margin-overflow.hwp",
+      "input_sha256": "30f3c33d36eaa908ceff5090215a9a0773f3306929b7a908e01ae9f2ab895c20",
+      "page_count": 2,
+      "nup": false,
+      "saved_product": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.2129"
+      },
+      "action": "주장별 새 PDF 쌍 없음: 기존 독립 검사·전쪽 회귀를 유지"
+    },
+    {
+      "input": "samples/issue7620/c-rowbreak-table-moves-next-page.hwp",
+      "input_sha256": "f67b9fd296f16b0c99262cc640dbae73fd1a8619c7605be82adfb4c0712c5f41",
+      "page_count": 2,
+      "nup": false,
+      "saved_product": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.2129"
+      },
+      "action": "주장별 새 PDF 쌍 없음: 기존 독립 검사·전쪽 회귀를 유지"
+    },
+    {
+      "input": "samples/issue7620/d-rowbreak-splits-at-row-boundary.hwp",
+      "input_sha256": "878b2c0db5888b44391414f4db32314643ddefd6afc5155188bfa38b407a09bd",
+      "page_count": 2,
+      "nup": false,
+      "saved_product": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.2129"
+      },
+      "action": "주장별 새 PDF 쌍 없음: 기존 독립 검사·전쪽 회귀를 유지"
+    },
+    {
+      "input": "samples/issue8168/multiline_tac_picture_para_topandbottom_offset_above.hwp",
+      "input_sha256": "9164bd4efd2f753072e49119a2b59c92502dd8e29c4e8669d398e61096960ed5",
+      "page_count": 1,
+      "nup": false,
+      "saved_product": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.2129"
+      },
+      "action": "주장별 새 PDF 쌍 없음: 기존 독립 검사·전쪽 회귀를 유지"
+    },
+    {
+      "input": "samples/issue8168/multiline_tac_picture_para_topandbottom_offset_below.hwp",
+      "input_sha256": "c95fa47e655441ca05a174bbf717aa6c77ad208c64feec885f8d97c0cf331f1c",
+      "page_count": 1,
+      "nup": false,
+      "saved_product": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.2129"
+      },
+      "action": "주장별 새 PDF 쌍 없음: 기존 독립 검사·전쪽 회귀를 유지"
+    },
+    {
+      "input": "samples/issue8168/tac_picture_with_page_relative_topandbottom_textbox.hwp",
+      "input_sha256": "e91d902eaa31f7945d8bc6d50a515d5ddf846943dea67a5e6bfe170408ac7cc0",
+      "page_count": 1,
+      "nup": false,
+      "saved_product": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.2129"
+      },
+      "action": "주장별 새 PDF 쌍 없음: 기존 독립 검사·전쪽 회귀를 유지"
+    },
+    {
+      "input": "samples/issue8931/36341965-cell-square-picture-tac-title.hwpx",
+      "input_sha256": "2fd2d841ce212c319960b1955fec32effeb55f6a1323c98422f13992446f7da3",
+      "page_count": 8,
+      "nup": false,
+      "saved_product": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.8227"
+      },
+      "action": "공식 oracle 선택기가 형식·엔진 canonical 이름으로 선택하지 않는 PDF: 강제 등록하지 않음",
+      "pdf": "pdf/issue8931/36341965-cell-square-picture-tac-title-2020.pdf",
+      "pdf_sha256": "3c7601f12e29cc7e87fe2d799823ba25b28aef5d42a982274be7fa58729b3a66",
+      "visual_pair_explicitly_verified": true
+    },
+    {
+      "input": "samples/issue8934/square_host_lane_tail.hwp",
+      "input_sha256": "33d4311c6c99b961dc6096152e1404b46d02d29d98291c9de0bccefa7162c946",
+      "page_count": 1,
+      "nup": true,
+      "saved_product": {
+        "confidence": "metadata",
+        "product": "hancom-office-2022",
+        "version": "12.0.0.4547"
+      },
+      "action": "원본 printMethod4/5: 정본 oracle 원장의 모아 찍기 제외 계약 유지",
+      "pdf": "pdf/issue8934/square_host_lane_tail-2020.pdf",
+      "visual_pair_explicitly_verified": true
+    },
+    {
+      "input": "samples/issue8935/36454139-reflowed-cell-row-growth.hwpx",
+      "input_sha256": "dad39e1c5ddf8a290420b0158b6a5a7185a406847ab0c8e53fbab382fbbc7dff",
+      "page_count": 2,
+      "nup": false,
+      "saved_product": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.8227"
+      },
+      "action": "공식 oracle 선택기가 형식·엔진 canonical 이름으로 선택하지 않는 PDF: 강제 등록하지 않음",
+      "pdf": "pdf/issue8935/36454139-reflowed-cell-row-growth-2020.pdf",
+      "pdf_sha256": "b11d7d1ae9eaaf0920991a81e64504d9a34131d917cdb80e594c6a49b9b2f917",
+      "visual_pair_explicitly_verified": true
+    },
+    {
+      "input": "samples/issue8939/attach_form_reset.hwp",
+      "input_sha256": "49fdefd36c8555fa39029ce2dc1f783c6f753c8d7a11b9075d116fa69ccc7e68",
+      "page_count": 2,
+      "nup": true,
+      "saved_product": {
+        "confidence": "metadata",
+        "product": "hancom-office-2022",
+        "version": "12.0.0.4547"
+      },
+      "action": "원본 printMethod4/5: 정본 oracle 원장의 모아 찍기 제외 계약 유지",
+      "pdf": "pdf/issue8939/attach_form_reset-2020.pdf",
+      "visual_pair_explicitly_verified": true
+    },
+    {
+      "input": "samples/issue8947/36481164-squeeze-title-cell.hwpx",
+      "input_sha256": "7cb752425acbb9eaebb144e6f27a895d2d3eabc6fbc6b3059d0c9dce6c46640b",
+      "page_count": 2,
+      "nup": false,
+      "saved_product": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.8227"
+      },
+      "action": "공식 oracle 선택기가 형식·엔진 canonical 이름으로 선택하지 않는 PDF: 강제 등록하지 않음",
+      "pdf": "pdf/issue8947/36481164-squeeze-title-cell-2020.pdf",
+      "pdf_sha256": "defb28623048ced692c66fb99542d490de7018678bc02493a842344191ce6b1a",
+      "visual_pair_explicitly_verified": true
+    },
+    {
+      "input": "samples/issue8950/36421178-variants.hwpx",
+      "input_sha256": "9bb1572d98d58ba66da8c4614c73ddb63b5096dba903823382063e14bde0afca",
+      "page_count": 2,
+      "nup": false,
+      "saved_product": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.8227"
+      },
+      "action": "공식 oracle 선택기가 형식·엔진 canonical 이름으로 선택하지 않는 PDF: 강제 등록하지 않음",
+      "pdf": "pdf/issue8950/36421178-variants-2020.pdf",
+      "pdf_sha256": "f3162386bf46007110758c410a1908ac42f6b9939298428f2812396d2c6fd7d4",
+      "visual_pair_explicitly_verified": true
+    },
+    {
+      "input": "samples/issue8950/36446447-forbidden-head-before-long-run.hwpx",
+      "input_sha256": "5b58a630c7c0fbc038692686589d8926b6a9b70b74d49071f5a0ea6bb5a6eae2",
+      "page_count": 2,
+      "nup": false,
+      "saved_product": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.8227"
+      },
+      "action": "공식 oracle 선택기가 형식·엔진 canonical 이름으로 선택하지 않는 PDF: 강제 등록하지 않음",
+      "pdf": "pdf/issue8950/36446447-forbidden-head-2020.pdf",
+      "pdf_sha256": "5451086b76fd3f3ec3d67691bf8f1f40298a43d04b3641df2d024cbb1522867b",
+      "visual_pair_explicitly_verified": true
+    },
+    {
+      "input": "samples/issue8950/36446447-variants.hwpx",
+      "input_sha256": "d68b79eafe3e4025bc0c4293416afa679cca7610ba6df087963090d73ec1c8ea",
+      "page_count": 3,
+      "nup": false,
+      "saved_product": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.8227"
+      },
+      "action": "공식 oracle 선택기가 형식·엔진 canonical 이름으로 선택하지 않는 PDF: 강제 등록하지 않음",
+      "pdf": "pdf/issue8950/36446447-variants-2020.pdf",
+      "pdf_sha256": "305efa417f770291344db55d89d08e9134d46db9667076aef7106520adc4134f",
+      "visual_pair_explicitly_verified": true
+    },
+    {
+      "input": "samples/issue8968/stored_rows_reflowed_cell.hwpx",
+      "input_sha256": "bd0ebc3237c97826b3921040e7da93a3d585c1e27e7dac71f7511d59b4190f18",
+      "page_count": 1,
+      "nup": false,
+      "saved_product": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.8227"
+      },
+      "action": "공식 oracle 선택기가 형식·엔진 canonical 이름으로 선택하지 않는 PDF: 강제 등록하지 않음",
+      "pdf": "pdf/issue8968/stored_rows_reflowed_cell-2020.pdf",
+      "pdf_sha256": "11ca7cf057169cdf51c169a3bb7a97dd813f64af266e1d518a17950872707628",
+      "visual_pair_explicitly_verified": true
+    },
+    {
+      "input": "samples/issue8971/36400701-picture-cell-empty-line.hwpx",
+      "input_sha256": "d3be7513fa996f26ef95166ffa9b4a679905bc117c59e39dde827238db23ea01",
+      "page_count": 6,
+      "nup": false,
+      "saved_product": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.8227"
+      },
+      "action": "공식 oracle 선택기가 형식·엔진 canonical 이름으로 선택하지 않는 PDF: 강제 등록하지 않음",
+      "pdf": "pdf/issue8971/36400701-picture-cell-empty-line-2020.pdf",
+      "pdf_sha256": "d7ca1129962060d3c90a8a4d7adfa31018da9ad0636409ab5d0a8b69f92d440e",
+      "visual_pair_explicitly_verified": true
+    },
+    {
+      "input": "samples/issue8981/overlap_spacer_paragraph_bands.hwp",
+      "input_sha256": "fbef5ac8925ca8ce2cad2eb21c249b87f5f188475b00da251f3680bbb8c93a77",
+      "page_count": 1,
+      "nup": false,
+      "saved_product": {
+        "confidence": "metadata",
+        "product": null,
+        "version": "6.7.8.1045"
+      },
+      "action": "공식 oracle 선택기가 형식·엔진 canonical 이름으로 선택하지 않는 PDF: 강제 등록하지 않음",
+      "pdf": "pdf/issue8981/overlap_spacer_paragraph_bands-2020.pdf",
+      "pdf_sha256": "0b325abb69ed801351fdbf1f64ee6fdcbdc6a95d55021e444732f868713957cb",
+      "visual_pair_explicitly_verified": true
+    },
+    {
+      "input": "samples/issue8985/3066825-plain-command-guides.hwpx",
+      "input_sha256": "ac4d8559dc21acbf7df551e1d188d5649073206e4fa29e614509026f5ef5bfa1",
+      "page_count": 1,
+      "nup": false,
+      "saved_product": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.7936"
+      },
+      "action": "공식 oracle 선택기가 형식·엔진 canonical 이름으로 선택하지 않는 PDF: 강제 등록하지 않음",
+      "pdf": "pdf/issue8985/3066825-2020.pdf",
+      "pdf_sha256": "c7a9aa080afc3243c6c01b58891fc7726e1b75e0a96648634ef977208ac8cff7",
+      "visual_pair_explicitly_verified": true
+    },
+    {
+      "input": "samples/issue8985/36385713-plain-command-guide.hwpx",
+      "input_sha256": "b2b8e6eb29da8dc82bd302694f01232ab6f9131292f0c6410d74f58105e9087f",
+      "page_count": 2,
+      "nup": false,
+      "saved_product": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.8227"
+      },
+      "action": "공식 oracle 선택기가 형식·엔진 canonical 이름으로 선택하지 않는 PDF: 강제 등록하지 않음",
+      "pdf": "pdf/issue8985/36385713-2020.pdf",
+      "pdf_sha256": "e4a2515feaa46c88c5e6dbeb4dae36ca48eae682c46fb1c37a4b632d2be29c00",
+      "visual_pair_explicitly_verified": true
+    },
+    {
+      "input": "samples/issue8986/36325899-nested-table-top-border.hwpx",
+      "input_sha256": "ac7d16633d39eed788c65b305613471c709622f698a228bd7bc1008d605fee86",
+      "page_count": 2,
+      "nup": false,
+      "saved_product": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.8227"
+      },
+      "action": "공식 oracle 선택기가 형식·엔진 canonical 이름으로 선택하지 않는 PDF: 강제 등록하지 않음",
+      "pdf": "pdf/issue8986/36325899-2020.pdf",
+      "pdf_sha256": "11187f270723648d0693e249877f3fea3bd983ce73f7667519e7f4f6e594b26b",
+      "visual_pair_explicitly_verified": true
+    },
+    {
+      "input": "samples/issue8993/31675-rowbreak-overflowing-frame.hwp",
+      "input_sha256": "03c35242f6d88dd33bde907b64b31b061e600f54ee5e66758e3b5a8c18d84a84",
+      "page_count": 19,
+      "nup": false,
+      "saved_product": {
+        "confidence": "metadata",
+        "product": null,
+        "version": "7.5.8.527"
+      },
+      "action": "공식 oracle 선택기가 형식·엔진 canonical 이름으로 선택하지 않는 PDF: 강제 등록하지 않음",
+      "pdf": "pdf/issue8993/31675-rowbreak-overflowing-frame-2020.pdf",
+      "pdf_sha256": "abad2bc7b5691e5bd6c4b3a5fbaae0eb95b21662f6bc5a3a7472d9027acbb73d",
+      "visual_pair_explicitly_verified": true
+    },
+    {
+      "input": "samples/issue8995/reflowed_cell_tac_after_spaces.hwpx",
+      "input_sha256": "bab55a32bb1a4b5e248bda6d11d77d4c0ed31f42a0174a1a0cdcb23d5e915ac8",
+      "page_count": 1,
+      "nup": false,
+      "saved_product": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.8227"
+      },
+      "action": "공식 oracle 선택기가 형식·엔진 canonical 이름으로 선택하지 않는 PDF: 강제 등록하지 않음",
+      "pdf": "pdf/issue8995/reflowed_cell_tac_after_spaces-2020.pdf",
+      "pdf_sha256": "b7f4292e735594a310fab692420378ba29844f6ffe168a89478c83e67923ad07",
+      "visual_pair_explicitly_verified": true
+    },
+    {
+      "input": "samples/issue9009/1430000-column-break-after-table-continuation.hwp",
+      "input_sha256": "88482013fb80aa95d994489b44559f2bb53ef3e292a1ea3c3273567a00f83a6a",
+      "page_count": 8,
+      "nup": false,
+      "saved_product": {
+        "confidence": "metadata",
+        "product": null,
+        "version": "9.1.1.5499"
+      },
+      "action": "공식 oracle 선택기가 형식·엔진 canonical 이름으로 선택하지 않는 PDF: 강제 등록하지 않음",
+      "pdf": "pdf/issue9009/1430000-column-break-after-table-continuation-2020.pdf",
+      "pdf_sha256": "66c18d4b85e52aafe7b63e6885eea8a1b26e62dcee78577ece62f0ec007781f3",
+      "visual_pair_explicitly_verified": true
+    }
+  ]
+}
