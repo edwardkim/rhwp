@@ -45,3 +45,5 @@ PDFium 96 DPI, 색상 경계 보정 전 2px `silhouette_raw_match_percent`이며
 
 전체 회귀·lint·Native Skia 공식 3종·최종 편람 383쪽 게이트는 작업 기록에서 별도로 판정한다.
 이 표지 측정만으로 PR 제출 준비 완료를 주장하지 않는다.
+
+최종 코드 head `87a4acee56`의 재출력·편람·전체 회귀 결과는 [최종 검증](../final-validation/README.md)을 따른다.

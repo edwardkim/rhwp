@@ -1,5 +1,19 @@
 # #8957 연결 그림 인쇄 계약과 제출 검증
 
+## 최종 코드 검증 결과
+
+코드 head `87a4acee56c4d39c290777a9b6c4bd6f3edbbe57`에서 전체 회귀 13,320개와 필수 lint,
+Native Skia 공식 3종, 최적화 fresh WASM을 통과했다. 표지 4종은 각 전체 1쪽에서 양쪽 raw
+100.00%이며 최종 PNG도 기존 직접 판독 PNG와 같다. 원본 763쪽 HWPX의 표지 1쪽도 대응 대조본과
+같다. 원본 전체 763쪽을 시각 검증한 것으로 표현하지 않는다.
+
+편람 Native 383쪽 `--handbook-gate`는 최저 99.96%, 정본 대비 하락 0쪽으로 통과했다.
+최종 14자 SVG 원점·기준선·크기·Print 행렬을 다시 확인해 −4.26pt 정렬을 보존했다.
+독립 PDF·직접 판독·전쪽 TSV·실행 요약은 [최종 근거](../pr/assets/issue8957/final-validation/README.md),
+기존 개선 108조건/212개 검증 페이지의 보존 근거는 [대조 원장](../pr/assets/issue8957/preservation/README.md)에 있다.
+드라이버 차이는 공통 조판에 반영하지 않았다. 아래 절은 구현·검증 순서별 기록이다.
+
+
 이전 후보 `26bd8f6dc896292674899de8439513bf1e63c698`, 이전 base `4c876654d86d071d342fc78706c51cfff6ddbde4`.
 새 base `80b1c354c29b7a02fb2b3c14a274da7f5b653ada`에 충돌 없이 rebase한 후보는
 `4e66e76981dca50fe866d6bc3e591ccfcd9bc169`다. 이전 실행은 역사 자료이며 새 head 검증으로 대신하지 않는다.
