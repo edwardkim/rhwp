@@ -35,7 +35,7 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
         ),
         tool_with_optional_args(
             "hwp_insert_picture",
-            "문단 좌표(search 와 같은 section/paragraph/offset, 0 기준)에 본문 그림을 끼운다. 도장·서명용 쪽 좌표 insert-image 와 다르다. 코어 insert_picture_native 배선. 그림 바이트는 파일 그대로 넘긴다. 결과의 section/paragraph/ctrl 이 넣은 그림의 자리이며 hwp_set_picture·hwp_delete_picture 에 그대로 넘긴다 (dryRun 이면 ctrl 은 null).",
+            "문단 좌표(search 와 같은 section/paragraph/offset, 0 기준)에 본문 그림을 끼운다. 도장·서명용 쪽 좌표 insert-image 와 다르다. 코어 insert_picture_native 배선. 그림 바이트는 파일 그대로 넘긴다. 결과의 section/paragraph/ctrl 이 넣은 그림의 자리이며 hwp_set_picture·hwp_delete_picture 에 그대로 넘긴다 (dryRun 이면 ctrl 은 null). table/row/col 을 주면 그 표 칸 문단 안에 넣어 그림이 칸과 함께 움직이고, 이때 ctrl 은 null 이며 칸 문단 안 번호는 cellCtrl 에 싣는다.",
             serde_json::json!({
                 "type": "object",
                 "properties": {
@@ -44,7 +44,11 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
                     "section": { "type": "integer", "minimum": 0, "description": "구역 번호 (0부터). 생략하면 0" },
                     "paragraph": { "type": "integer", "minimum": 0, "description": "문단 번호 (0부터). 생략하면 0" },
                     "offset": { "type": "integer", "minimum": 0, "description": "문단 안 문자 오프셋 (0부터). 생략하면 0" },
-                    "x": { "type": "integer", "minimum": 0, "description": "용지 가로 위치 (HWPUNIT). 생략하면 0" },
+                    "table": { "type": "integer", "minimum": 0, "description": "본문 최상위 표 번호 (export-tables 의 index). 주면 그 표 칸 문단 안에 넣고 section/paragraph 는 쓰지 않는다" },
+                    "row": { "type": "integer", "minimum": 0, "description": "table 의 행 (0부터)" },
+                    "col": { "type": "integer", "minimum": 0, "description": "table 의 열 (0부터)" },
+                    "cellPara": { "type": "integer", "minimum": 0, "description": "칸 안 문단 번호 (0부터). 생략하면 0" },
+                    "x": { "type": "integer", "minimum": 0, "description": "용지 가로 위치 (HWPUNIT). 생략하면 0. 칸 안에 넣으면 칸 문단 기준" },
                     "y": { "type": "integer", "minimum": 0, "description": "용지 세로 위치 (HWPUNIT). 생략하면 0" },
                     "width": { "type": "integer", "minimum": 1, "description": "그림 너비 (HWPUNIT). 생략하면 원본 픽셀 × 75" },
                     "height": { "type": "integer", "minimum": 1, "description": "그림 높이 (HWPUNIT). 생략하면 원본 픽셀 × 75" },
@@ -59,6 +63,10 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
                 { "when": "section", "args": ["--section", "{section}"] },
                 { "when": "paragraph", "args": ["--para", "{paragraph}"] },
                 { "when": "offset", "args": ["--offset", "{offset}"] },
+                { "when": "table", "args": ["--table", "{table}"] },
+                { "when": "row", "args": ["--row", "{row}"] },
+                { "when": "col", "args": ["--col", "{col}"] },
+                { "when": "cellPara", "args": ["--cell-para", "{cellPara}"] },
                 { "when": "x", "args": ["--x", "{x}"] },
                 { "when": "y", "args": ["--y", "{y}"] },
                 { "when": "width", "args": ["--width", "{width}"] },
@@ -66,7 +74,7 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
                 { "when": "output", "args": ["-o", "{output}"] },
                 { "when": "dryRun", "args": ["--dry-run"] }
             ]),
-            &["schemaVersion", "source", "image", "section", "paragraph", "offset", "x", "y", "width", "height", "binDataId", "ctrl", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+            &["schemaVersion", "source", "image", "section", "paragraph", "offset", "x", "y", "width", "height", "binDataId", "ctrl", "table", "row", "col", "cellPara", "cellCtrl", "dryRun", "changedPages", "output", "outputFormat", "verify"],
         ),
         tool_with_optional_args(
             "hwp_delete_picture",

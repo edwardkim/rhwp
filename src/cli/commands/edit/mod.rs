@@ -56,7 +56,10 @@ use header_footer_content::{
 use header_footer_properties::{
     edit_apply_hf_template, edit_apply_para_format_in_hf, edit_set_hf_picture, edit_toggle_hide_hf,
 };
-use media::{edit_delete_picture, edit_insert_image, edit_insert_picture, edit_set_picture};
+use media::{
+    edit_delete_picture, edit_insert_image, edit_insert_picture, edit_move_picture,
+    edit_set_picture,
+};
 use note_content::{
     edit_apply_endnote_shape, edit_apply_para_format_in_footnote, edit_delete_text_in_footnote,
     edit_insert_footnote_text, edit_merge_paragraph_in_footnote, edit_split_paragraph_in_footnote,
@@ -64,7 +67,9 @@ use note_content::{
 use notes::{edit_delete_footnote, edit_insert_endnote, edit_insert_footnote};
 use page::{edit_set_column_def, edit_set_page_def, edit_set_page_hide, edit_set_section_def};
 use privacy::{edit_redact, edit_sanitize};
-use shapes::{edit_delete_shape, edit_group_shapes, edit_insert_shape, edit_ungroup_shape};
+use shapes::{
+    edit_delete_shape, edit_group_shapes, edit_insert_shape, edit_set_shape, edit_ungroup_shape,
+};
 use tables::{
     edit_delete_col, edit_delete_row, edit_delete_table, edit_fit_table, edit_insert_col,
     edit_insert_row, edit_insert_table, edit_merge_cells, edit_merge_table, edit_move_table,
@@ -80,7 +85,7 @@ use text::edit_replace_text;
 /// **실패 시 원본 불변**(하나라도 실패하면 출력 파일을 쓰지 않는다).
 pub(crate) fn run(args: &[String]) -> i32 {
     const USAGE: &str =
-        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text-in-cell|delete-text-in-cell|insert-text|delete-text|insert-paragraph|delete-paragraph|merge-paragraph|insert-page-break|insert-column-break|insert-table|set-numbering-restart|insert-row|insert-col|delete-row|delete-col|merge-cells|split-cell|split-cell-into|split-table|fit-table|resize-table|resize-table-cell|set-cell-props|set-table-props|move-table|merge-table|set-column-widths|insert-footnote|insert-endnote|insert-equation|delete-footnote|delete-text-in-footnote|insert-footnote-text|split-paragraph-in-footnote|merge-paragraph-in-footnote|apply-para-format-in-footnote|add-bookmark|delete-bookmark|delete-table|rename-bookmark|delete-header-footer|insert-header-footer-text|set-header-footer-text|delete-hf-text|set-hf-picture|apply-hf-template|split-paragraph-in-hf|merge-paragraph-in-hf|apply-para-format-in-hf|toggle-hide-hf|split-paragraph-in-cell|merge-paragraph-in-cell|apply-char-format|apply-para-format|apply-style|apply-cell-style|apply-para-format-in-cell|apply-char-format-in-cell|delete-control|insert-header-footer|insert-field-in-hf|set-column-def|delete-equation|split-paragraph|set-page-hide|transpose-table|set-equation-properties|insert-image|group-shapes|set-page-def|set-section-def|apply-endnote-shape|insert-picture|delete-picture|set-picture|set-page-border-fill|redact|sanitize|set-chart-data|insert-number|insert-shape|delete-shape|set-form-value|set-form-value-in-cell|ungroup-shape> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
+        "사용법: rhwp edit <fill-fields|replace-text|set-cell|insert-text-in-cell|delete-text-in-cell|insert-text|delete-text|insert-paragraph|delete-paragraph|merge-paragraph|insert-page-break|insert-column-break|insert-table|set-numbering-restart|insert-row|insert-col|delete-row|delete-col|merge-cells|split-cell|split-cell-into|split-table|fit-table|resize-table|resize-table-cell|set-cell-props|set-table-props|move-table|merge-table|set-column-widths|insert-footnote|insert-endnote|insert-equation|delete-footnote|delete-text-in-footnote|insert-footnote-text|split-paragraph-in-footnote|merge-paragraph-in-footnote|apply-para-format-in-footnote|add-bookmark|delete-bookmark|delete-table|rename-bookmark|delete-header-footer|insert-header-footer-text|set-header-footer-text|delete-hf-text|set-hf-picture|apply-hf-template|split-paragraph-in-hf|merge-paragraph-in-hf|apply-para-format-in-hf|toggle-hide-hf|split-paragraph-in-cell|merge-paragraph-in-cell|apply-char-format|apply-para-format|apply-style|apply-cell-style|apply-para-format-in-cell|apply-char-format-in-cell|delete-control|insert-header-footer|insert-field-in-hf|set-column-def|delete-equation|split-paragraph|set-page-hide|transpose-table|set-equation-properties|insert-image|group-shapes|set-page-def|set-section-def|apply-endnote-shape|insert-picture|delete-picture|set-picture|move-picture|set-page-border-fill|redact|sanitize|set-chart-data|insert-number|insert-shape|delete-shape|set-shape|set-form-value|set-form-value-in-cell|ungroup-shape> <파일.hwp|파일.hwpx> [옵션] (rhwp --help 참조)";
 
     match args.first().map(String::as_str) {
         Some("fill-fields") => edit_fill_fields(&args[1..]),
@@ -161,10 +166,12 @@ pub(crate) fn run(args: &[String]) -> i32 {
         Some("insert-picture") => edit_insert_picture(&args[1..]),
         Some("delete-picture") => edit_delete_picture(&args[1..]),
         Some("set-picture") => edit_set_picture(&args[1..]),
+        Some("move-picture") => edit_move_picture(&args[1..]),
         Some("set-chart-data") => edit_set_chart_data(&args[1..]),
         Some("insert-number") => edit_insert_number(&args[1..]),
         Some("insert-shape") => edit_insert_shape(&args[1..]),
         Some("delete-shape") => edit_delete_shape(&args[1..]),
+        Some("set-shape") => edit_set_shape(&args[1..]),
         Some("set-form-value") => edit_set_form_value(&args[1..]),
         Some("set-form-value-in-cell") => edit_set_form_value_in_cell(&args[1..]),
         Some("ungroup-shape") => edit_ungroup_shape(&args[1..]),

@@ -105,6 +105,75 @@ pub(crate) const PICTURE_PROPS: &[PropSpec] = &[
     caption_prop("captionIncludeMargin", PropKind::Bool),
 ];
 
+const DROP_CAP_STYLE: &[&str] = &["None", "DoubleLine", "TripleLine", "Margin"];
+const FILL_TYPE: &[&str] = &["none", "solid", "gradient", "image"];
+const TEXT_BOX_VERT_ALIGN: &[&str] = &["Top", "Center", "Bottom"];
+const COLOR: PropKind = PropKind::Int(0, i32::MAX as i64);
+const BITS4: PropKind = PropKind::Int(0, 0x0F);
+const BITS6: PropKind = PropKind::Int(0, 0x3F);
+
+/// `set_shape_properties_native` 가 읽는 키와 값 형식. 공통 배치는
+/// `apply_common_obj_attr_from_json`, 캡션은 `apply_shape_caption_props` 가 읽는다.
+pub(crate) const SHAPE_PROPS: &[PropSpec] = &[
+    prop("width", U32),
+    prop("height", U32),
+    prop("restoreStoredZero", PropKind::Bool),
+    prop("treatAsChar", PropKind::Bool),
+    prop("vertRelTo", PropKind::Enum(VERT_REL_TO)),
+    prop("horzRelTo", PropKind::Enum(HORZ_REL_TO)),
+    prop("vertAlign", PropKind::Enum(VERT_ALIGN)),
+    prop("horzAlign", PropKind::Enum(HORZ_ALIGN)),
+    prop("textWrap", PropKind::Enum(TEXT_WRAP)),
+    prop("dropCapStyle", PropKind::Enum(DROP_CAP_STYLE)),
+    prop("restrictInPage", PropKind::Bool),
+    prop("allowOverlap", PropKind::Bool),
+    prop("sizeProtect", PropKind::Bool),
+    prop("vertOffset", U32),
+    prop("horzOffset", U32),
+    prop("outerMarginLeft", I16),
+    prop("outerMarginTop", I16),
+    prop("outerMarginRight", I16),
+    prop("outerMarginBottom", I16),
+    prop("description", PropKind::Str),
+    prop("rotationAngle", I16),
+    prop("horzFlip", PropKind::Bool),
+    prop("vertFlip", PropKind::Bool),
+    prop("borderColor", COLOR),
+    prop("borderWidth", I32),
+    prop("lineType", BITS6),
+    prop("lineEndShape", BITS4),
+    prop("arrowStart", BITS6),
+    prop("arrowEnd", BITS6),
+    prop("arrowStartSize", BITS4),
+    prop("arrowEndSize", BITS4),
+    prop("fillType", PropKind::Enum(FILL_TYPE)),
+    prop("fillBgColor", COLOR),
+    prop("fillPatColor", COLOR),
+    prop("fillPatType", I32),
+    prop("fillAlpha", PropKind::Int(0, u8::MAX as i64)),
+    prop("gradientType", I16),
+    prop("gradientAngle", I16),
+    prop("gradientCenterX", I16),
+    prop("gradientCenterY", I16),
+    prop("gradientBlur", I16),
+    prop("shadowType", U32),
+    prop("shadowColor", COLOR),
+    prop("shadowOffsetX", I32),
+    prop("shadowOffsetY", I32),
+    prop("tbMarginLeft", I16),
+    prop("tbMarginRight", I16),
+    prop("tbMarginTop", I16),
+    prop("tbMarginBottom", I16),
+    prop("tbVerticalAlign", PropKind::Enum(TEXT_BOX_VERT_ALIGN)),
+    prop("roundRate", PropKind::Int(0, u8::MAX as i64)),
+    prop("hasCaption", PropKind::Bool),
+    caption_prop("captionDirection", PropKind::Enum(CAPTION_DIRECTION)),
+    caption_prop("captionVertAlign", PropKind::Enum(CAPTION_VERT_ALIGN)),
+    caption_prop("captionWidth", U32),
+    caption_prop("captionSpacing", I16),
+    caption_prop("captionIncludeMargin", PropKind::Bool),
+];
+
 /// 속성 JSON 이 `specs` 에 맞는지 검사한다. 문제가 있으면 사람이 읽을 오류 문장을 돌려준다.
 ///
 /// 빈 객체는 바꿀 것이 없으므로 거부한다. 키 하나라도 맞지 않으면 전체를 거부해, 일부만
@@ -211,22 +280,66 @@ mod tests {
         }
     }
 
+    #[test]
+    fn shape_props_follow_the_same_rules() {
+        let shape = |json: &str| check_props(json, SHAPE_PROPS, "도형");
+        assert!(
+            shape(r#"{"textWrap":"TopAndBottom","horzOffset":1000,"fillType":"solid"}"#).is_ok()
+        );
+        for json in [
+            r#"{"horzOffset":-1}"#,
+            r#"{"fillType":"Solid"}"#,
+            r#"{"lineType":64}"#,
+            r#"{"brightness":10}"#,
+        ] {
+            assert!(shape(json).is_err(), "거부해야 함: {json}");
+        }
+    }
+
+    /// `src` 에서 `fn name` 으로 시작하는 함수 본문(다음 함수 정의 앞까지)을 잘라 낸다.
+    fn fn_body<'a>(src: &'a str, name: &str) -> &'a str {
+        let start = src
+            .find(&format!("fn {name}("))
+            .unwrap_or_else(|| panic!("함수 {name} 이 없다"));
+        let rest = &src[start + 3..];
+        let end = ["\n    pub fn ", "\n    pub(crate) fn ", "\n    fn "]
+            .iter()
+            .filter_map(|marker| rest.find(marker))
+            .min()
+            .unwrap_or(rest.len());
+        &src[start..start + 3 + end]
+    }
+
     /// 목록에 적은 키를 setter 가 실제로 읽는지 확인한다. 목록에만 있고 setter 가 읽지 않는 키는
     /// 검사를 통과한 뒤 다시 조용히 건너뛰어지기 때문이다.
     #[test]
     fn every_listed_key_is_read_by_the_setter() {
-        let start = include_str!("picture.rs")
-            .find("fn apply_picture_props_inner")
-            .expect("setter");
-        let setter = &include_str!("picture.rs")[start..];
-        let end = setter.find("caption_created\n    }").expect("setter end");
-        let setter = &setter[..end];
-        for spec in PICTURE_PROPS {
-            assert!(
-                setter.contains(&format!("props_json, \"{}\")", spec.key)),
-                "setter 가 읽지 않는 키: {}",
-                spec.key
-            );
+        let picture = include_str!("picture.rs");
+        let shape = include_str!("shape.rs");
+        let common = include_str!("common.rs");
+        let cases: [(&[PropSpec], Vec<&str>); 2] = [
+            (
+                PICTURE_PROPS,
+                vec![fn_body(picture, "apply_picture_props_inner")],
+            ),
+            (
+                SHAPE_PROPS,
+                vec![
+                    fn_body(shape, "set_shape_properties_native"),
+                    fn_body(shape, "apply_shape_caption_props"),
+                    fn_body(common, "apply_common_obj_attr_from_json"),
+                ],
+            ),
+        ];
+        for (specs, bodies) in cases {
+            for spec in specs {
+                let needle = format!("props_json, \"{}\")", spec.key);
+                assert!(
+                    bodies.iter().any(|body| body.contains(&needle)),
+                    "setter 가 읽지 않는 키: {}",
+                    spec.key
+                );
+            }
         }
     }
 }

@@ -565,7 +565,11 @@ pub(super) fn print() {
     println!();
     println!("      --image <경로>            png·jpg·jpeg·bmp·tif·tiff (그 밖은 인자 오류)");
     println!("      --section/--para/--offset 구역·문단·문자 오프셋 (0부터, 기본 0)");
-    println!("      --x/--y <값>              용지 기준 위치 HWPUNIT (기본 0)");
+    println!("      --table/--row/--col       본문 최상위 표 칸 문단 안에 넣는다 (--section/--para 대신)");
+    println!("      --cell-para <번호>        칸 안 문단 번호 (0부터, 기본 0)");
+    println!(
+        "      --x/--y <값>              용지 기준 위치 HWPUNIT (기본 0, 칸 안이면 칸 문단 기준)"
+    );
     println!("      --width/--height <값>     그림 크기 (생략: 원본 픽셀 ×75, 한쪽만: 비율 유지)");
     println!("      -o, --output <파일>       출력 파일 (기본: 입력명_picture.<확장자>)");
     println!("      --dry-run/--json          형제 edit 과 같음");
@@ -597,11 +601,38 @@ pub(super) fn print() {
     println!("      -o, --output <파일>       출력 파일 (기본: 입력명_setpic.<확장자>)");
     println!("      --dry-run/--json          형제 edit 과 같음");
     println!();
+    println!("  edit move-picture <파일> --section N --para N --ctrl N <옮길 자리> [옵션]");
+    println!("      본문의 떠 있는 그림을 다른 본문 문단이나 표 칸 문단으로 옮긴다");
+    println!();
+    println!("      --section/--para/--ctrl   옮길 그림의 자리 (0부터, 필수)");
+    println!("      --to-para <번호>          옮길 본문 문단 (--to-section 생략 시 같은 구역)");
+    println!("      --table/--row/--col       옮길 표 칸 (--cell-para 로 칸 안 문단 지정)");
+    println!("      --to-offset <번호>        옮길 문단 안 문자 오프셋 (기본 0)");
+    println!("      --x/--y <값>              기준 위치에서의 거리 HWPUNIT");
+    println!("                                (생략: 본문 문단이면 기존 값, 표 칸이면 0)");
+    println!(
+        "      글자처럼 취급하는 그림은 옮기지 않는다 (set-picture 로 treatAsChar 를 먼저 끈다)"
+    );
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_movepic.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
     println!("  edit delete-shape <파일> --section N --para N --ctrl N [옵션]");
     println!("      본문 도형 컨트롤을 지운다");
     println!();
     println!("      --section/--para/--ctrl   구역·문단·컨트롤 인덱스 (0부터, 필수)");
     println!("      -o, --output <파일>       출력 파일 (기본: 입력명_delshape.<확장자>)");
+    println!("      --dry-run/--json          형제 edit 과 같음");
+    println!();
+    println!("  edit set-shape <파일> --section N --para N --ctrl N --props <JSON> [옵션]");
+    println!("      본문 도형 속성을 바꾼다");
+    println!();
+    println!("      --section/--para/--ctrl   구역·문단·컨트롤 인덱스 (0부터, 필수)");
+    println!("      --props <JSON>            도형 속성 JSON 객체 (필수). 배치 키는 set-picture 와 같고,");
+    println!("                                선·채우기·그림자·글상자 여백 등 도형 키를 더 받는다");
+    println!(
+        "      모르는 키나 허용하지 않는 값이 하나라도 있으면 파일을 쓰지 않고 exit 2 로 끝난다"
+    );
+    println!("      -o, --output <파일>       출력 파일 (기본: 입력명_setshape.<확장자>)");
     println!("      --dry-run/--json          형제 edit 과 같음");
     println!();
     println!("  edit ungroup-shape <파일> --section N --para N --ctrl N [옵션]");

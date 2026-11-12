@@ -26,6 +26,11 @@ pub fn check_picture_props(props_json: &str) -> Result<(), String> {
     props_check::check_props(props_json, props_check::PICTURE_PROPS, "그림")
 }
 
+/// 도형 속성 JSON 이 `set_shape_properties_native` 가 읽는 키·값만 담는지 (#9020).
+pub fn check_shape_props(props_json: &str) -> Result<(), String> {
+    props_check::check_props(props_json, props_check::SHAPE_PROPS, "도형")
+}
+
 /// 도형 최소 크기 (HWPUNIT).
 /// 0으로 내려가면 Rectangle은 x_coords=[0,0,0,0]이 되고,
 /// Group은 current/original 스케일이 0이 되어 자식이 전부 사라진다.

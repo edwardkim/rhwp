@@ -171,6 +171,71 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
             &["schemaVersion", "source", "section", "paragraph", "ctrl", "dryRun", "changedPages", "output", "outputFormat", "verify"],
         ),
         tool_with_optional_args(
+            "hwp_move_picture",
+            "본문의 떠 있는 그림(글자처럼 취급 아님)을 다른 본문 문단(toParagraph)이나 표 칸 문단(table/row/col)으로 옮긴다. 그림이 놓인 자리의 기준 문단(조판 부호)이 바뀌므로 그림이 그 문단·칸과 함께 움직인다. 코어 relocate_floating_picture_native 배선. x/y 는 그림의 가로·세로 기준에서의 거리(HWPUNIT)이며, 생략하면 본문 문단으로 옮길 때는 기존 값을 쓰고 표 칸으로 옮길 때는 0 이다. 표 칸으로 옮기면 세로 기준이 문단, 가로 기준이 단으로 바뀐다. 결과의 toSection/toParagraph/toCtrl 이 옮긴 뒤의 자리이고, 칸으로 옮기면 toCtrl 대신 cellCtrl 에 칸 문단 안 번호를 싣는다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0, "description": "옮길 그림의 구역" },
+                    "paragraph": { "type": "integer", "minimum": 0, "description": "옮길 그림의 본문 문단" },
+                    "ctrl": { "type": "integer", "minimum": 0, "description": "옮길 그림의 컨트롤 번호" },
+                    "toSection": { "type": "integer", "minimum": 0, "description": "옮길 본문 구역. 생략하면 section" },
+                    "toParagraph": { "type": "integer", "minimum": 0, "description": "옮길 본문 문단" },
+                    "toOffset": { "type": "integer", "minimum": 0, "description": "옮길 문단 안 문자 오프셋. 생략하면 0" },
+                    "table": { "type": "integer", "minimum": 0, "description": "옮길 본문 최상위 표 번호. toParagraph 대신 쓴다" },
+                    "row": { "type": "integer", "minimum": 0 },
+                    "col": { "type": "integer", "minimum": 0 },
+                    "cellPara": { "type": "integer", "minimum": 0, "description": "칸 안 문단 번호. 생략하면 0" },
+                    "x": { "type": "integer", "description": "가로 기준에서의 거리 HWPUNIT" },
+                    "y": { "type": "integer", "description": "세로 기준에서의 거리 HWPUNIT" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "section", "paragraph", "ctrl"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "move-picture", "{path}", "--section", "{section}", "--para", "{paragraph}", "--ctrl", "{ctrl}", "--json"]),
+            serde_json::json!([
+                { "when": "toSection", "args": ["--to-section", "{toSection}"] },
+                { "when": "toParagraph", "args": ["--to-para", "{toParagraph}"] },
+                { "when": "toOffset", "args": ["--to-offset", "{toOffset}"] },
+                { "when": "table", "args": ["--table", "{table}"] },
+                { "when": "row", "args": ["--row", "{row}"] },
+                { "when": "col", "args": ["--col", "{col}"] },
+                { "when": "cellPara", "args": ["--cell-para", "{cellPara}"] },
+                { "when": "x", "args": ["--x", "{x}"] },
+                { "when": "y", "args": ["--y", "{y}"] },
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "ctrl", "toSection", "toParagraph", "toOffset", "toCtrl", "table", "row", "col", "cellPara", "cellCtrl", "x", "y", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
+            "hwp_set_shape",
+            "본문 도형(사각형·타원·선·글상자 등) 속성을 JSON 으로 바꾼다. section/para/ctrl 은 0 기준. 코어 set_shape_properties_native 배선. 받는 키: width·height, treatAsChar, textWrap(Square|Tight|Through|TopAndBottom|BehindText|InFrontOfText), vertRelTo(Paper|Page|Para), horzRelTo(Paper|Page|Column|Para), vertAlign(Top|Center|Bottom), horzAlign(Left|Center|Right), vertOffset·horzOffset(0 이상), restrictInPage, allowOverlap, sizeProtect, dropCapStyle(None|DoubleLine|TripleLine|Margin), outerMargin*, description, rotationAngle, horzFlip, vertFlip, borderColor, borderWidth, lineType, lineEndShape, arrowStart, arrowEnd, arrowStartSize, arrowEndSize, fillType(none|solid|gradient|image), fillBgColor, fillPatColor, fillPatType, fillAlpha, gradientType·gradientAngle·gradientCenterX·gradientCenterY·gradientBlur, shadowType·shadowColor·shadowOffsetX·shadowOffsetY, 글상자 tbMargin*·tbVerticalAlign(Top|Center|Bottom), 사각형 roundRate, hasCaption 과 caption* 키(hasCaption:true 와 함께). 모르는 키나 허용하지 않는 값이 하나라도 있으면 문서를 쓰지 않고 인자 오류로 끝난다.",
+            serde_json::json!({
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string" },
+                    "section": { "type": "integer", "minimum": 0 },
+                    "paragraph": { "type": "integer", "minimum": 0 },
+                    "ctrl": { "type": "integer", "minimum": 0 },
+                    "props": { "type": "string", "description": "도형 속성 JSON 객체 (예: {\"textWrap\":\"TopAndBottom\",\"horzOffset\":1000}). 받는 키와 값은 도구 설명 참조" },
+                    "output": { "type": "string" },
+                    "dryRun": { "type": "boolean" }
+                },
+                "required": ["path", "section", "paragraph", "ctrl", "props"],
+            }),
+            "edit",
+            serde_json::json!(["edit", "set-shape", "{path}", "--section", "{section}", "--para", "{paragraph}", "--ctrl", "{ctrl}", "--props", "{props}", "--json"]),
+            serde_json::json!([
+                { "when": "output", "args": ["-o", "{output}"] },
+                { "when": "dryRun", "args": ["--dry-run"] }
+            ]),
+            &["schemaVersion", "source", "section", "paragraph", "ctrl", "dryRun", "changedPages", "output", "outputFormat", "verify"],
+        ),
+        tool_with_optional_args(
             "hwp_set_form_value",
             "본문 양식 컨트롤의 값을 JSON으로 바꾼다. section/para/ctrl 은 0 기준.",
             serde_json::json!({

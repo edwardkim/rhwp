@@ -118,6 +118,8 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | 본문 문단 좌표에 그림 넣기 | `edit insert-picture` (`hwp_insert_picture`) | `binDataId`·`section`/`paragraph`/`ctrl`/`offset` | [CLI 매뉴얼](cli_commands.md) §edit insert-picture |
 | 본문 그림 지우기 | `edit delete-picture` (`hwp_delete_picture`) | `section`/`paragraph`/`ctrl` | [CLI 매뉴얼](cli_commands.md) §edit delete-picture |
 | 본문 그림 속성 바꾸기 | `edit set-picture` (`hwp_set_picture`) | `section`/`paragraph`/`ctrl` | [CLI 매뉴얼](cli_commands.md) §edit set-picture |
+| 떠 있는 그림을 다른 문단·표 칸으로 옮기기 | `edit move-picture` (`hwp_move_picture`) | `toSection`/`toParagraph`/`toCtrl`·`cellCtrl` | [CLI 매뉴얼](cli_commands.md) §edit move-picture |
+| 본문 도형 속성 바꾸기 | `edit set-shape` (`hwp_set_shape`) | `section`/`paragraph`/`ctrl` | [CLI 매뉴얼](cli_commands.md) §edit set-shape |
 | 없는 자리에 글자 넣기 | `edit insert-text` (`hwp_insert_text`) | `insertedChars`·`section`/`paragraph`/`offset` | [CLI 매뉴얼](cli_commands.md) §edit insert-text |
 | 개인정보 마스킹 | `edit redact` (`hwp_redact`) | `findingCount`·`redactedCount` | [보안 소비자 가이드](../tech/agent_security/consumer_guide.md) |
 | 메타데이터 제거 | `edit sanitize` (`hwp_sanitize`) | `removedCount`·`removed[]` | 같은 문서 |
