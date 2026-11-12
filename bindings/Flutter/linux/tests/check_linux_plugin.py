@@ -26,6 +26,9 @@ def main():
     tiles = output / "bounded-tile-group-test"
     run(common + [str(source.parent / "common/bounded_tile_group_test.cc"), "-o", str(tiles)])
     run([str(tiles)])
+    events = output / "producer-ready-test"
+    run(common + [str(source.parent / "common/producer_ready_test.cc"), "-o", str(events)])
+    run([str(events)])
     if not args.flutter_engine:
         return
     includes = ["-I" + str(args.flutter_engine.resolve())]

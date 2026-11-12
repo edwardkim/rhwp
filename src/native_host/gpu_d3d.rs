@@ -4,6 +4,7 @@
 //! Successful return includes a checked D3D12 queue fence and COMMON decay; it
 //! is not a Flutter D3D11 consumer-completion or target-recycling fence.
 
+use std::cell::RefCell;
 use std::ffi::c_void;
 use std::marker::PhantomData;
 use std::rc::Rc;
@@ -19,6 +20,11 @@ use skia_safe::{
     gpu, AlphaType, BlendMode, Color, ColorSpace, ColorType, ImageInfo, Paint, Surface,
 };
 
+use super::gpu_tiles::frame_resources::FrameResources;
+use super::gpu_tiles::{
+    CachedTile, ManagedTarget, TargetAllocation, TargetBudget, TileCache, TileConfig,
+    TilePlacement, TilePlan, TileTarget,
+};
 use super::presentation::{
     NativePresentationId, NativePresentationRegistry, NativePresentationSnapshotBorrow,
     NativePresentationStamp,
@@ -105,6 +111,11 @@ pub struct NativeD3dPresenterConfig {
     pub max_renderer_font_bytes: usize,
     pub renderer_cache_bytes: usize,
     pub resource_cache_bytes: usize,
+    pub tile_size: usize,
+    pub max_cached_tiles: usize,
+    pub max_tile_bytes: usize,
+    pub max_managed_targets: usize,
+    pub max_managed_target_bytes: usize,
 }
 
 impl Default for NativeD3dPresenterConfig {
@@ -117,6 +128,11 @@ impl Default for NativeD3dPresenterConfig {
             max_renderer_font_bytes: 64 * MIB,
             renderer_cache_bytes: 8 * MIB,
             resource_cache_bytes: 32 * MIB,
+            tile_size: 512,
+            max_cached_tiles: 64,
+            max_tile_bytes: 16 * MIB,
+            max_managed_targets: 66,
+            max_managed_target_bytes: 48 * MIB,
         }
     }
 }
@@ -130,6 +146,11 @@ impl NativeD3dPresenterConfig {
             || !(1..=64 * MIB).contains(&self.max_renderer_font_bytes)
             || self.renderer_cache_bytes > 8 * MIB
             || self.resource_cache_bytes > 32 * MIB
+            || ![128, 256, 512, 1024].contains(&self.tile_size)
+            || self.max_cached_tiles > 64
+            || self.max_tile_bytes > 64 * MIB
+            || !(1..=66).contains(&self.max_managed_targets)
+            || !(1..=96 * MIB).contains(&self.max_managed_target_bytes)
         {
             return Err(invalid("invalid D3d presenter limits"));
         }
@@ -150,8 +171,21 @@ impl NativeD3dPresenterConfig {
             .checked_mul(target.height as usize)
             .filter(|pixels| *pixels <= self.max_pixels)
             .and_then(|pixels| pixels.checked_mul(4))
-            .filter(|bytes| *bytes <= self.max_target_bytes)
+            .filter(|bytes| {
+                *bytes <= self.max_target_bytes && *bytes <= self.max_managed_target_bytes
+            })
             .ok_or_else(|| limit("D3d target pixel/byte quota exceeded"))
+    }
+
+    fn tile_config(self) -> TileConfig {
+        TileConfig {
+            max_dimension: self.max_dimension,
+            max_pixels: self.max_pixels,
+            max_target_bytes: self.max_target_bytes,
+            tile_size: self.tile_size,
+            max_cached_tiles: self.max_cached_tiles,
+            max_tile_bytes: self.max_tile_bytes,
+        }
     }
 }
 
@@ -224,12 +258,6 @@ pub struct NativeD3dFrame {
     pub whole_frame_readbacks: u64,
 }
 
-struct Scratch {
-    surface: Surface,
-    width: i32,
-    height: i32,
-    bytes: usize,
-}
 struct Renderer {
     renderer: SkiaLayerRenderer,
     fingerprint: String,
@@ -245,12 +273,15 @@ pub struct NativeD3dPresenter {
     fence_value: u64,
     credit: ContextCredit,
     pending_gpu: bool,
+    frame_active: bool,
     suspended: bool,
     quarantine_leaked: bool,
-    quarantine_surface: Option<Surface>,
-    quarantine_inputs: Vec<NativePresentationSnapshotBorrow>,
+    quarantine_surface: Option<Rc<RefCell<Surface>>>,
+    frame_inputs: Option<Rc<Vec<NativePresentationSnapshotBorrow>>>,
     config: NativeD3dPresenterConfig,
-    scratch: Option<Scratch>,
+    resources: FrameResources<RefCell<ManagedTarget>, CachedTile>,
+    target_budget: TargetBudget,
+    tiles: TileCache,
     renderer: Option<Renderer>,
     context: Option<gpu::DirectContext>,
     submissions: u64,
@@ -317,12 +348,18 @@ impl NativeD3dPresenter {
             fence_value: 0,
             credit,
             pending_gpu: false,
+            frame_active: false,
             suspended: false,
             quarantine_leaked: false,
             quarantine_surface: None,
-            quarantine_inputs: Vec::new(),
+            frame_inputs: None,
             config,
-            scratch: None,
+            resources: FrameResources::default(),
+            target_budget: TargetBudget::new(
+                config.max_managed_targets,
+                config.max_managed_target_bytes,
+            ),
+            tiles: TileCache::default(),
             renderer: None,
             context: Some(context),
             submissions: 0,
@@ -334,7 +371,12 @@ impl NativeD3dPresenter {
         if thread::current().id() != self.owner {
             return Err(invalid("D3d presenter belongs to another thread"));
         }
-        if generation != self.generation || self.context.is_none() || self.suspended {
+        if generation != self.generation
+            || self.context.is_none()
+            || self.suspended
+            || self.frame_active
+            || self.pending_gpu
+        {
             return Err(invalid("D3d presenter/device generation is no longer live"));
         }
         Ok(())
@@ -346,14 +388,17 @@ impl NativeD3dPresenter {
         }
         Ok(serde_json::json!({
             "backend":"d3d12Ganesh", "deviceGeneration":self.generation,
-            "config":self.config, "scratchTargets":usize::from(self.scratch.is_some()),
-            "scratchEstimatedBytes":self.scratch.as_ref().map_or(0, |v|v.bytes),
+            "config":self.config, "scratchTargets":usize::from(self.resources.scratch.is_some()),
+            "scratchEstimatedBytes":self.resources.scratch.as_ref().map_or(0, |v|v.borrow().bytes()),
+            "managedTargets":self.target_budget.stats(), "tileCache":self.tiles.stats(),
+            "workingTargets":self.resources.working_count(),
+            "frameTilePins":self.resources.tile_count(),
             "rendererFontEstimatedBytes":self.renderer.as_ref().map_or(0, |v|v.font_bytes),
             "framesSubmitted":self.submissions, "wholeFrameReadbacks":0,
             "consumerRetirement":false, "hardwareAccelerationVerified":false,
             "state":if self.suspended {"quarantined"} else {"active"},
             "contextCredits":context_credits(),
-            "quarantinedSnapshots":self.quarantine_inputs.len(),
+            "quarantinedSnapshots":self.frame_inputs.as_ref().map_or(0, |v|v.len()),
         }))
     }
 
@@ -401,15 +446,45 @@ impl NativeD3dPresenter {
         &mut self,
         target: NativeD3dTarget,
         bytes: usize,
-    ) -> Result<Scratch, NativeHostError> {
-        if let Some(scratch) = self.scratch.take() {
-            if scratch.width == target.width && scratch.height == target.height {
-                return Ok(scratch);
+    ) -> Result<Rc<RefCell<ManagedTarget>>, NativeHostError> {
+        if let Some(scratch) = &self.resources.scratch {
+            if scratch.borrow().width == target.width && scratch.borrow().height == target.height {
+                return Ok(Rc::clone(scratch));
             }
-            // Drop old allocation before creating its replacement.
         }
+        // The previous frame completed before another render is admitted.
+        // Drop its old dimensions before charging the replacement.
+        self.resources.scratch.take();
+        if !self.ensure_target_room(1, bytes) {
+            return Err(limit("D3D scratch managed target quota exceeded"));
+        }
+        let allocation = self.target_budget.reserve(bytes)?;
+        let scratch = Rc::new(RefCell::new(self.allocate_target(
+            target.width,
+            target.height,
+            allocation,
+        )?));
+        self.resources.scratch = Some(Rc::clone(&scratch));
+        Ok(scratch)
+    }
+
+    fn ensure_target_room(&mut self, count: usize, bytes: usize) -> bool {
+        while !self.target_budget.can_reserve(count, bytes) {
+            if !self.tiles.evict_idle() {
+                return false;
+            }
+        }
+        true
+    }
+
+    fn allocate_target(
+        &mut self,
+        width: i32,
+        height: i32,
+        allocation: TargetAllocation,
+    ) -> Result<ManagedTarget, NativeHostError> {
         let info = ImageInfo::new(
-            (target.width, target.height),
+            (width, height),
             ColorType::BGRA8888,
             AlphaType::Premul,
             ColorSpace::new_srgb(),
@@ -424,13 +499,8 @@ impl NativeD3dPresenter {
             false,
             None,
         )
-        .ok_or_else(|| unsupported("Skia could not allocate a D3d scratch target"))?;
-        Ok(Scratch {
-            surface,
-            width: target.width,
-            height: target.height,
-            bytes,
-        })
+        .ok_or_else(|| unsupported("Skia could not allocate a D3d managed target"))?;
+        Ok(ManagedTarget::new(surface, width, height, allocation))
     }
 
     fn finish_gpu(&mut self, surface: &mut Surface) -> Result<(), NativeHostError> {
@@ -566,15 +636,21 @@ impl NativeD3dPresenter {
         if self.submissions == u64::MAX || self.fence_value == u64::MAX {
             return Err(limit("D3d submission sequence exhausted"));
         }
+        // Keep immutable input and every GPU surface in the owner before any
+        // work is recorded, including through a caught Rust panic.
+        let inputs = Rc::new(inputs);
+        self.frame_inputs = Some(Rc::clone(&inputs));
+        self.frame_active = true;
         self.pending_gpu = true;
-        let mut scratch = match self.scratch(target, bytes) {
+        let scratch = match self.scratch(target, bytes) {
             Ok(scratch) => scratch,
             Err(error) => {
                 self.suspend();
                 return Err(error);
             }
         };
-        let result = self.replay_and_publish(
+        let mut scratch = scratch.borrow_mut();
+        let mut result = self.replay_and_publish(
             &mut scratch,
             stamp,
             texture,
@@ -583,18 +659,21 @@ impl NativeD3dPresenter {
             &inputs,
             clear_color,
         );
-        if result.is_err() && self.pending_gpu && !self.suspended {
-            // A strict rejection can leave scratch uploads/draw work recorded.
-            // Drain that work without touching the publication target.
-            let _ = self.finish_gpu(&mut scratch.surface);
+        if result.is_err() && !self.suspended {
+            // A later canonical completion can clear pending_gpu while an
+            // earlier tile is still recorded on scratch. Always drain failed
+            // scratch work before releasing its pins; never publish it.
+            if let Err(error) = self.finish_gpu(&mut scratch.surface) {
+                // Never return staleFrame's safe-discard receipt when the
+                // producer's cleanup completion became unknown.
+                result = Err(error);
+            }
         }
-        if self.context.is_some() {
-            self.scratch = Some(scratch);
-        }
-        if self.suspended {
-            // Pin immutable font/resource payload and registry quota while any
-            // unproven producer GPU work can still reference its resources.
-            self.quarantine_inputs = inputs;
+        if !self.suspended && !self.pending_gpu {
+            self.resources.complete_frame();
+            self.frame_inputs.take();
+            self.quarantine_surface.take();
+            self.frame_active = false;
         }
         result
     }
@@ -602,7 +681,7 @@ impl NativeD3dPresenter {
     #[allow(clippy::too_many_arguments)]
     fn replay_and_publish(
         &mut self,
-        scratch: &mut Scratch,
+        scratch: &mut ManagedTarget,
         stamp: NativePresentationStamp,
         texture: *const c_void,
         target: NativeD3dTarget,
@@ -613,16 +692,28 @@ impl NativeD3dPresenter {
         self.pending_gpu = true;
         scratch.surface.canvas().clear(Color::from(clear_color));
         for (placement, input) in placements.iter().zip(inputs) {
-            self.renderer(input.snapshot())?.render_to_surface_strict(
+            if !self.replay_tiles(
                 &mut scratch.surface,
-                input.snapshot().tree(),
-                SkiaSurfaceRenderOptions {
-                    scale: placement.scale,
-                    origin_x: placement.origin_x,
-                    origin_y: placement.origin_y,
-                    background_color: placement.background_color,
-                },
-            )?;
+                stamp,
+                target,
+                *placement,
+                input,
+                clear_color,
+            )? {
+                self.tiles.observations.viewport_fallbacks =
+                    self.tiles.observations.viewport_fallbacks.saturating_add(1);
+                self.pending_gpu = true;
+                self.renderer(input.snapshot())?.render_to_surface_strict(
+                    &mut scratch.surface,
+                    input.snapshot().tree(),
+                    SkiaSurfaceRenderOptions {
+                        scale: placement.scale,
+                        origin_x: placement.origin_x,
+                        origin_y: placement.origin_y,
+                        background_color: placement.background_color,
+                    },
+                )?;
+            }
         }
         self.finish_gpu(&mut scratch.surface)?;
         let image = scratch.surface.image_snapshot();
@@ -642,7 +733,7 @@ impl NativeD3dPresenter {
             protected: gpu::Protected::No,
         };
         let backend = gpu::backend_render_targets::make_d3d((target.width, target.height), &info);
-        let mut visible = gpu::surfaces::wrap_backend_render_target(
+        let visible = gpu::surfaces::wrap_backend_render_target(
             self.context.as_mut().expect("checked live"),
             &backend,
             gpu::SurfaceOrigin::TopLeft,
@@ -654,17 +745,16 @@ impl NativeD3dPresenter {
         for input in inputs {
             input.validate_current(stamp)?;
         }
+        let visible = Rc::new(RefCell::new(visible));
+        self.quarantine_surface = Some(Rc::clone(&visible));
         let mut copy = Paint::default();
         copy.set_blend_mode(BlendMode::Src);
-        visible.canvas().draw_image(&image, (0.0, 0.0), Some(&copy));
-        if let Err(error) = self.finish_gpu(&mut visible) {
-            self.quarantine_surface = Some(visible);
-            return Err(error);
-        }
-        if let Err(error) = self.wait_producer_fence() {
-            self.quarantine_surface = Some(visible);
-            return Err(error);
-        }
+        visible
+            .borrow_mut()
+            .canvas()
+            .draw_image(&image, (0.0, 0.0), Some(&copy));
+        self.finish_gpu(&mut visible.borrow_mut())?;
+        self.wait_producer_fence()?;
         // ALLOW_SIMULTANEOUS_ACCESS textures decay to COMMON when ExecuteCommandLists
         // completes, even after explicit transitions. The queue fence proves that
         // completion before another D3D11 device opens/reads this shared resource.
@@ -691,9 +781,199 @@ impl NativeD3dPresenter {
         })
     }
 
+    #[allow(clippy::too_many_arguments)]
+    fn replay_tiles(
+        &mut self,
+        scratch: &mut Surface,
+        stamp: NativePresentationStamp,
+        target: NativeD3dTarget,
+        placement: NativeD3dPlacement,
+        input: &NativePresentationSnapshotBorrow,
+        clear_color: u32,
+    ) -> Result<bool, NativeHostError> {
+        let Some(plan) = TilePlan::new(
+            self.config.tile_config(),
+            stamp,
+            TileTarget {
+                context_id: self.generation,
+                width: target.width,
+                height: target.height,
+            },
+            TilePlacement {
+                scale: placement.scale,
+                origin_x: placement.origin_x,
+                origin_y: placement.origin_y,
+                background_color: placement.background_color,
+            },
+            input.snapshot(),
+            clear_color,
+        ) else {
+            return Ok(false);
+        };
+        let mut found: Vec<_> = plan.keys.iter().map(|key| self.tiles.get(key)).collect();
+        let missing_count = found.iter().filter(|tile| tile.is_none()).count();
+        if missing_count != 0 {
+            let missing_bytes: usize = plan
+                .keys
+                .iter()
+                .zip(&found)
+                .filter(|(_, tile)| tile.is_none())
+                .map(|(key, _)| key.region.bytes())
+                .sum();
+            while !self.tiles.has_room(
+                self.config.max_cached_tiles,
+                self.config.max_tile_bytes,
+                missing_count,
+                missing_bytes,
+            ) {
+                if !self.tiles.evict_idle() {
+                    self.tiles.observations.pinned_admission_fallbacks = self
+                        .tiles
+                        .observations
+                        .pinned_admission_fallbacks
+                        .saturating_add(1);
+                    return Ok(false);
+                }
+            }
+            let working_bytes = plan
+                .canonical_bytes
+                .checked_add(missing_bytes)
+                .ok_or_else(|| limit("D3D tile working target byte overflow"))?;
+            if !self.ensure_target_room(missing_count + 1, working_bytes) {
+                self.tiles.observations.target_admission_fallbacks = self
+                    .tiles
+                    .observations
+                    .target_admission_fallbacks
+                    .saturating_add(1);
+                return Ok(false);
+            }
+            let canonical_allocation = self.target_budget.reserve(plan.canonical_bytes)?;
+            let allocations: Vec<_> = plan
+                .keys
+                .iter()
+                .zip(&found)
+                .filter(|(_, tile)| tile.is_none())
+                .map(|(key, _)| self.target_budget.reserve(key.region.bytes()))
+                .collect::<Result<_, _>>()?;
+            let canonical = Rc::new(RefCell::new(self.allocate_target(
+                plan.width,
+                plan.height,
+                canonical_allocation,
+            )?));
+            self.resources.pin_working(&canonical);
+            self.pending_gpu = true;
+            canonical
+                .borrow_mut()
+                .surface
+                .canvas()
+                .clear(Color::TRANSPARENT);
+            self.tiles.observations.canonical_replays =
+                self.tiles.observations.canonical_replays.saturating_add(1);
+            let replay = self.renderer(input.snapshot()).and_then(|renderer| {
+                renderer
+                    .render_to_surface_strict(
+                        &mut canonical.borrow_mut().surface,
+                        input.snapshot().tree(),
+                        SkiaSurfaceRenderOptions {
+                            scale: placement.scale,
+                            origin_x: plan.phase_x,
+                            origin_y: plan.phase_y,
+                            background_color: placement.background_color,
+                        },
+                    )
+                    .map_err(NativeHostError::from)
+            });
+            if let Err(error) = replay {
+                // A full-page staging failure must not break the previously
+                // valid viewport path. Drain before allowing that fallback.
+                self.finish_gpu(&mut canonical.borrow_mut().surface)?;
+                self.resources.complete_working();
+                if matches!(
+                    error,
+                    NativeHostError::Core(_)
+                        | NativeHostError::InvalidArgument(_)
+                        | NativeHostError::LimitExceeded(_)
+                ) {
+                    self.tiles.observations.canonical_failures =
+                        self.tiles.observations.canonical_failures.saturating_add(1);
+                    return Ok(false);
+                }
+                return Err(error);
+            }
+            self.finish_gpu(&mut canonical.borrow_mut().surface)?;
+            let image = canonical.borrow_mut().surface.image_snapshot();
+            if !image.is_texture_backed() {
+                return Err(unsupported("D3D canonical tile input is not GPU backed"));
+            }
+            let mut copy = Paint::default();
+            copy.set_blend_mode(BlendMode::Src);
+            let mut prepared = Vec::with_capacity(missing_count);
+            let mut allocations = allocations.into_iter();
+            for (index, key) in plan.keys.iter().enumerate() {
+                if found[index].is_some() {
+                    continue;
+                }
+                let region = key.region;
+                let tile = Rc::new(RefCell::new(
+                    self.allocate_target(
+                        region.width,
+                        region.height,
+                        allocations
+                            .next()
+                            .expect("one reservation per missing tile"),
+                    )?,
+                ));
+                self.resources.pin_working(&tile);
+                self.pending_gpu = true;
+                tile.borrow_mut().surface.canvas().draw_image(
+                    &image,
+                    (-region.x as f32, -region.y as f32),
+                    Some(&copy),
+                );
+                self.finish_gpu(&mut tile.borrow_mut().surface)?;
+                prepared.push((
+                    index,
+                    Rc::new(CachedTile {
+                        key: key.clone(),
+                        target: tile,
+                    }),
+                ));
+            }
+            input.validate_current(stamp)?;
+            // Neither an incomplete canonical replay nor one copied tile may
+            // become a cache hit. All entries share the same current input.
+            for (index, tile) in prepared {
+                found[index] = Some(Rc::clone(&tile));
+                self.tiles.insert(tile);
+            }
+            self.resources.complete_working();
+        }
+        // A cache key intentionally survives view-generation changes for
+        // integer scrolling; the full current stamp is still mandatory.
+        input.validate_current(stamp)?;
+        for tile in found.into_iter().flatten() {
+            self.resources.pin_tile(&tile);
+            let image = tile.target.borrow_mut().surface.image_snapshot();
+            if !image.is_texture_backed() {
+                return Err(unsupported("cached D3D tile is not GPU backed"));
+            }
+            self.pending_gpu = true;
+            scratch.canvas().draw_image(
+                &image,
+                (
+                    (plan.integer_x + tile.key.region.x) as f32,
+                    (plan.integer_y + tile.key.region.y) as f32,
+                ),
+                None,
+            );
+        }
+        Ok(true)
+    }
+
     pub fn release(&mut self) -> Result<(), NativeHostError> {
         self.live(self.generation)?;
-        self.scratch.take();
+        self.resources.clear_completed();
+        self.tiles.clear();
         self.renderer.take();
         if let Some(context) = &mut self.context {
             context.release_resources_and_abandon();
@@ -703,7 +983,7 @@ impl NativeD3dPresenter {
     }
 
     pub fn abandon(&mut self) {
-        if self.pending_gpu || self.suspended {
+        if self.pending_gpu || self.suspended || self.frame_active {
             self.suspend();
             if self.quarantine_leaked {
                 return;
@@ -711,10 +991,10 @@ impl NativeD3dPresenter {
             self.quarantine_leaked = true;
             // D3D12 does not retain application resources until GPU completion.
             // Keep this bounded opaque state alive through process lifetime.
-            std::mem::forget(self.scratch.take());
+            std::mem::forget(std::mem::take(&mut self.tiles));
             std::mem::forget(self.renderer.take());
             std::mem::forget(self.quarantine_surface.take());
-            std::mem::forget(std::mem::take(&mut self.quarantine_inputs));
+            std::mem::forget(self.frame_inputs.take());
             std::mem::forget(self.context.take());
             std::mem::forget(self.backend.clone());
             std::mem::forget(self.fence.clone());
@@ -723,13 +1003,15 @@ impl NativeD3dPresenter {
         if let Some(context) = &mut self.context {
             context.abandon();
         }
-        self.scratch.take();
+        self.resources.clear_completed();
+        self.tiles.clear();
         self.renderer.take();
         self.context.take();
     }
 
     fn suspend(&mut self) {
         self.suspended = true;
+        self.resources.quarantine();
         self.credit.quarantine();
     }
 }

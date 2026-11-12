@@ -10,6 +10,7 @@
 #include <wrl/client.h>
 #include <atomic>
 #include <condition_variable>
+#include <functional>
 #include <map>
 #include <vector>
 
@@ -78,6 +79,8 @@ struct State : std::enable_shared_from_this<State> {
   Stamp accepted_stamp;
   std::vector<uint64_t> accepted_ids;
   uint64_t accepted_serial = 0, stale_drops = 0;
+  // Installed before starting the owner; invoked only after a current publish.
+  std::function<void(uint64_t, const Stamp&)> producer_ready;
   bool accept(const std::shared_ptr<Job>& job);
   static bool accept_group(const std::shared_ptr<State>& first, const std::shared_ptr<State>& second,
                            const std::shared_ptr<Job>& a, const std::shared_ptr<Job>& b);

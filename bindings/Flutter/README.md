@@ -31,6 +31,10 @@ CPU RGBA 표시와 종료를 연결한다. 문서 편집·IME·접근성·GPU te
 Flutter 3.47 이상·Dart 3.13 이상과 C11 compiler가 필요하다. Native shared library는 기존 Native 빌드에서 준비한다.
 이 패키지는 rhwp 자체를 자동 빌드하거나 다운로드하지 않는다.
 
+기존 참조앱의 OS runner 빌드와 이동 가능한 실행 패키지는
+[실행 번들 가이드](RUNTIME_BUNDLE.md#기존-참조앱-빌드와-실행)의 `reference_app.py build/run`을
+사용한다. 생성된 앱은 이동 후에도 실행 파일을 기준으로 자신의 Native·owner 번들을 찾는다.
+
 ```bash
 python3 tool/build_dispatcher.py --output /absolute/path/librhwp_flutter_owner.so
 flutter pub get

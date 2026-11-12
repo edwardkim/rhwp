@@ -4,6 +4,9 @@
 `NSView`를 배치하는 명시적인 실험 경로입니다. 기존 `texture_macos`의 불변
 CVPixelBuffer backend와 Metal feature default는 유지합니다.
 
+같은 두 producer/view 슬롯을 사용하는 선택적 두 타일 API와 실제 target 실행은
+[P117 타일 그룹](TILE_GROUPS.md)에 정리되어 있습니다. 아래의 단일 view 호출 형식도 유지합니다.
+
 macOS platform view는 [공식 Flutter hybrid composition 경로](https://docs.flutter.dev/platform-integration/macos/platform-views)입니다.
 현재 Flutter의 macOS gesture 지원에는 제한이 있으므로 이 view는 `hitTest:`에서
 nil을 반환하고 first responder를 얻지 않습니다. 문서 입력·선택·IME의 소유자는

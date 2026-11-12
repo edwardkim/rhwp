@@ -14,6 +14,12 @@ pub mod gpu_d3d;
 pub mod gpu_gl;
 #[cfg(all(feature = "native-skia-metal", target_os = "macos"))]
 pub mod gpu_metal;
+#[cfg(any(
+    all(feature = "native-skia-gl", target_os = "linux"),
+    all(feature = "native-skia-metal", target_os = "macos"),
+    all(feature = "native-skia-d3d", target_os = "windows"),
+))]
+pub(crate) mod gpu_tiles;
 pub mod presentation;
 #[cfg(feature = "native-skia")]
 pub mod region_cache;
