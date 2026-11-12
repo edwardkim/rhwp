@@ -11,8 +11,14 @@
 //! - 수정 전 rhwp(devel `31a4225757`)는 `레코드 데이터 부족: tag=0, 필요=480, 가용=31` 로
 //!   문서 전체를 거부했다.
 //!
+//! - 같은 문서의 DocInfo 그림 확장자는 `JPG`, 저장 스트림은 `BIN0001.jpg` 다. CFB 이름은
+//!   대소문자를 가리지 않는데 재생성 대상 판정이 대소문자를 가려, 저장하면 원본 스트림을
+//!   고아로 보존한 `BIN0001.jpg` 와 재생성한 `BIN0001.JPG` 가 함께 쓰여 다시 열 수 없었다
+//!   (`Malformed directory (name ordering…)`).
+//!
 //! 검사: 문서 열기 성공, 잔여 바이트 앞의 DocInfo 레코드(글꼴·BinData)가 보존되고, 전체
-//! 쪽수 = 한컴 Print 1쪽, 그 쪽에 스캔 그림이 그려진다.
+//! 쪽수 = 한컴 Print 1쪽, 그 쪽에 스캔 그림이 그려진다. HWP5 저장 뒤 다시 열어 IR·BinData
+//! 가 보존된다(`baseline_check`).
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
@@ -53,4 +59,12 @@ fn reserved_tag_tail_after_valid_docinfo_records_still_opens_the_document() {
     assert_eq!(core.page_count(), PRINT_PAGES, "한컴 Print 의 전체 쪽수");
     let tree = core.build_page_render_tree(0).expect("1쪽");
     assert_eq!(images(&tree.root), 1, "쪽 전체 스캔 그림 한 장");
+}
+
+#[test]
+fn saving_keeps_one_bindata_stream_when_docinfo_extension_case_differs() {
+    let bytes =
+        std::fs::read(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(SOURCE)).expect(SOURCE);
+    rhwp::diagnostics::hwp5_roundtrip_batch::baseline_check(&bytes)
+        .expect("저장 뒤 다시 열고 IR·BinData 를 보존한다");
 }
