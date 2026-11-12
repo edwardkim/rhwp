@@ -337,11 +337,12 @@ fn fill_background(
 ///
 /// 채우기가 아예 없으면 뒤에 무엇이 있는지 알 수 없으므로 `Unknown` 이다 — 쪽 바탕으로
 /// 내려가면 "투명 글상자 뒤가 흰 종이"라고 단정하게 되는데, 그림 위에 놓인 글상자에서
-/// 그 단정은 그대로 오탐이 된다.
+/// 그 단정은 그대로 오탐이 된다. 무늬가 있으면 글자 뒤가 면 색인지 무늬 선인지 알 수 없으므로
+/// 이것도 `Unknown` 이다.
 fn shape_background(drawing: &DrawingObjAttr) -> Background {
     match drawing.fill.fill_type {
         FillType::Solid => match drawing.fill.solid.as_ref() {
-            Some(solid) if solid.pattern_type == 0 => match opaque_rgb(solid.background_color) {
+            Some(solid) if solid.hatch().is_none() => match opaque_rgb(solid.background_color) {
                 Some(color) => Background::Known {
                     color,
                     source: BackgroundSource::TextBox,

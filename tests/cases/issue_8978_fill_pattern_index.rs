@@ -1,5 +1,5 @@
-//! 관계형·고정형: 칸 배경 무늬의 위→아래 순서(관계), 한컴 출력·저장에서 정한 무늬 번호와 `hatchStyle` 목록(고정).
-//! 주석 갱신: 2026-11-12T14:49:09+09:00.
+//! 관계형·고정형: 칸 배경 무늬의 위→아래 순서와 글상자 무늬 유무에 따른 숨은 글자 판정(관계), 한컴 출력·저장에서 정한 무늬 번호와 `hatchStyle` 목록(고정).
+//! 주석 갱신: 2026-11-12T21:51:27+09:00.
 //! 2026-11-12 측정 raw(96dpi, pypdfium2): fill-patterns-0-6.hwp 1쪽 Native 99.97% / fresh WASM 99.99%,
 //! fill-patterns-0-6.hancom2024.hwpx 1쪽 Native 99.97% / fresh WASM 99.99% (각 전1쪽);
 //! hwpspec.hwp 23쪽 Native 99.98762% / fresh WASM 99.99085%, 전178쪽 최저 97.08% / 97.08%.
@@ -11,9 +11,11 @@
 //! HWPX `hatchStyle`은 한글 저장 결과를 따라 2 = `SLASH`, 3 = `BACK_SLASH`다.
 use std::io::Read;
 
+use rhwp::document_core::queries::hidden_text::{BackgroundSource, HiddenKind, HiddenTextOptions};
 use rhwp::document_core::DocumentCore;
 use rhwp::model::control::Control;
 use rhwp::model::document::Document;
+use rhwp::model::style::HatchStyle;
 use rhwp::model::table::Table;
 use rhwp::wasm_api::HwpDocument;
 use serde_json::Value;
@@ -252,6 +254,70 @@ fn hwpspec_record_header_and_data_rows_keep_their_diagonals() {
     let core = DocumentCore::from_bytes(&read("samples/hwpspec.hwp")).unwrap();
     let svg = core.render_page_svg_native(22).unwrap();
     assert_eq!(hatches_top_to_bottom(&svg), [Hatch::Rising, Hatch::Falling]);
+}
+
+/// 검정 면에 검정 글자를 넣은 글상자. 무늬는 흰 선이다.
+fn black_textbox(pattern_type: i32) -> HwpDocument {
+    let mut doc = HwpDocument::create_empty();
+    doc.create_blank_document().unwrap();
+    let created: Value = serde_json::from_str(
+        &doc.create_shape_control(
+            r#"{"sectionIdx":0,"paraIdx":0,"charOffset":0,"width":8504,"height":4252,"shapeType":"textbox"}"#,
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    let para = created["paraIdx"].as_u64().unwrap() as u32;
+    let ctrl = created["controlIdx"].as_u64().unwrap() as u32;
+    let fill = serde_json::json!({
+        "fillType": "solid",
+        "fillBgColor": 0,
+        "fillPatColor": 0x00FF_FFFF,
+        "fillPatType": pattern_type,
+    });
+    doc.set_shape_properties(0, para, ctrl, &fill.to_string())
+        .unwrap();
+    doc.insert_text_in_cell(0, para, ctrl, 0, 0, 0, "글상자")
+        .unwrap();
+    doc
+}
+
+fn textbox_hidden_text(bytes: &[u8]) -> Vec<(HiddenKind, Option<BackgroundSource>)> {
+    DocumentCore::from_bytes(bytes)
+        .unwrap()
+        .detect_hidden_text(&HiddenTextOptions::default())
+        .hidden_text
+        .into_iter()
+        .filter(|f| f.textbox.is_some())
+        .map(|f| (f.kind, f.detail.background_source))
+        .collect()
+}
+
+/// 숨은 글자 판정은 무늬 없는 단색 글상자만 면 색으로 본다. 가로 무늬(0)가 있으면
+/// 글자 뒤가 면 색인지 무늬 선인지 알 수 없으므로 판정하지 않는다.
+#[test]
+fn hidden_text_judges_only_unhatched_textbox_fills() {
+    for (pattern_type, hatched) in [(HatchStyle::NONE, false), (0, true)] {
+        let doc = black_textbox(pattern_type);
+        for (format, bytes) in [
+            ("HWP", doc.export_hwp().unwrap()),
+            ("HWPX", doc.export_hwpx().unwrap()),
+        ] {
+            let found = textbox_hidden_text(&bytes);
+            if hatched {
+                assert_eq!(found, [], "{format} 무늬 {pattern_type}");
+            } else {
+                assert_eq!(
+                    found,
+                    [(
+                        HiddenKind::SameAsBackground,
+                        Some(BackgroundSource::TextBox)
+                    )],
+                    "{format} 무늬 없음"
+                );
+            }
+        }
+    }
 }
 
 fn cell_props(doc: &HwpDocument, at: (u32, u32)) -> Value {
