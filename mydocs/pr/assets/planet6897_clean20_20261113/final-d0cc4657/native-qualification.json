@@ -15722,5 +15722,9 @@
       ]
     }
   ],
-  "fresh_wasm": "same product source build completed; whole claims/protection in progress, not accepted by this record"
+  "fresh_wasm": {
+    "state": "complete",
+    "evidence": "whole-visual-qualification.json",
+    "wasm_sha256": "c8596bc0a3d2a4097d4f2f0dedf2ca53ac160444f555e12c8366ca1f1d1efdfb"
+  }
 }

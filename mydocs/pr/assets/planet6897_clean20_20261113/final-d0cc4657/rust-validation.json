@@ -405,6 +405,5 @@
     "completed_at": "2026-11-12T20:09:46.081297+00:00",
     "result_scope": "새 회귀 1건을 포함한 관련 모듈 4+15=19건 실제 PASS. 기존 전체13420에 포함되었다고 합산하지 않는다. 제품 소스 d0cc는 변경 없음."
   },
-  "scope_note": "제품 소스 d0cc 이후는 테스트·증적·리뷰 변경이다. 모든 로그는 ignored output에만 보존하고 실제 종료코드·SHA를 기록한다.",
-  "new_sample_security": "new-sample-security.json"
+  "scope_note": "제품 소스 d0cc 이후는 테스트·증적·리뷰 변경이다. 모든 로그는 ignored output에만 보존하고 실제 종료코드·SHA를 기록한다."
 }

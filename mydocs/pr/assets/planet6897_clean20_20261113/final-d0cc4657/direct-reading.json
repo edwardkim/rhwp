@@ -738,8 +738,44 @@
       "overlay_sha256": "66b50d526ebf50e142d79ad24308cb85ac7daffa01a5f81ad94a09be614c7258",
       "observation": "HWPX 저장본의 목적·수단 본문 줄 끝·영향평가 표·해당없음과쪽번호를 독립 Print와 대조했다.",
       "reading_provenance": "최종 fresh WASM review·overlay를 직접 열어 판독"
+    },
+    {
+      "backend": "native",
+      "key": "pr8999",
+      "page": 2,
+      "raw_match": 100.0,
+      "same_png_as_initial_reading": true,
+      "read_by_reviewer": true,
+      "raw": "mydocs/pr/assets/planet6897_clean20_20261113/final-d0cc4657/panels/native/pr8999/raw-p002.png",
+      "raw_sha256": "27f42bebadc9925c0cb90b12ec20375345962c7b2f25e952cf19f53e3fbd6516",
+      "pdf": "mydocs/pr/assets/planet6897_clean20_20261113/final-d0cc4657/panels/native/pr8999/pdf-p002.png",
+      "pdf_sha256": "ec2081894c9dbc072ec77453c75989db220b4af4b78307d8685b16c5bd1e7dd6",
+      "review": "mydocs/pr/assets/planet6897_clean20_20261113/final-d0cc4657/panels/native/pr8999/review-p002.png",
+      "review_sha256": "86dd72775b42f9de06aed4314441f2f335bda6707c95aa6c02cc9b06a7ffd700",
+      "overlay": "mydocs/pr/assets/planet6897_clean20_20261113/final-d0cc4657/panels/native/pr8999/overlay-p002.png",
+      "overlay_sha256": "7995f9242adf782bee586003f1a1172f301e5b3453419891c51d70d71f1c9f33",
+      "observation": "원 PR이 지적한2쪽 하단 발신명의 표의 위 괘선·칸 경계·글자가 독립 Print와 대응한다. 1쪽은 정상 대조군이며 문제 페이지의 증거로 대체하지 않는다.",
+      "reading_provenance": "최종 같은 쪽 Native/fresh WASM review·overlay 직접 판독"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8999",
+      "page": 2,
+      "raw_match": 100.0,
+      "same_png_as_initial_reading": true,
+      "read_by_reviewer": true,
+      "raw": "mydocs/pr/assets/planet6897_clean20_20261113/final-d0cc4657/panels/wasm/pr8999/raw-p002.png",
+      "raw_sha256": "81c5da6a37589001a22778ffbeb13a440a8442fb0ba4b0a4d9dd2df08baf3cac",
+      "pdf": "mydocs/pr/assets/planet6897_clean20_20261113/final-d0cc4657/panels/wasm/pr8999/pdf-p002.png",
+      "pdf_sha256": "ec2081894c9dbc072ec77453c75989db220b4af4b78307d8685b16c5bd1e7dd6",
+      "review": "mydocs/pr/assets/planet6897_clean20_20261113/final-d0cc4657/panels/wasm/pr8999/review-p002.png",
+      "review_sha256": "5a584cf6a95e2786add34850ebb94a7f917d2dcce051f6520f9ef05e159ee847",
+      "overlay": "mydocs/pr/assets/planet6897_clean20_20261113/final-d0cc4657/panels/wasm/pr8999/overlay-p002.png",
+      "overlay_sha256": "6d9014a773328c34962e1f359da79ed530b22191b26fb61298fbda35c8d053ab",
+      "observation": "원 PR이 지적한2쪽 하단 발신명의 표의 위 괘선·칸 경계·글자가 독립 Print와 대응한다. 1쪽은 정상 대조군이며 문제 페이지의 증거로 대체하지 않는다.",
+      "reading_provenance": "최종 같은 쪽 Native/fresh WASM review·overlay 직접 판독"
     }
   ],
-  "unread_panels": 49,
+  "unread_panels": 47,
   "note": "모든90쌍을 직접 판독했다고 주장하지 않는다. 직접 판독한 PR별 대표 페이지와 전쪽 정량 TSV를 구분한다."
 }
