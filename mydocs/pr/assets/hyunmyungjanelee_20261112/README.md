@@ -1,68 +1,74 @@
 # hyunmyungJaneLee 6개 PR 통합 검토 증적
 
-최신 보정 source는 `d66568ef247859a9c184546cad3ba42b06e806e1`, base는
-`80b1c354c29b7a02fb2b3c14a274da7f5b653ada`다. [U+F0FA 보정](wingdings-arrow-shaft-repair/cause.md)의
-최소 글꼴 집중 검사 5건·Studio 실행형 계약을 통과했다. 같은 원본의 Native는 99.54%→99.76%,
-fresh WASM은 99.50%→99.73%로 개선됐다. 크기 0 문단과 기호 문서의 실제 Studio 12캡처에서
-런타임 계약 위반은 0건이다. [집중 소비 검증](wingdings-arrow-shaft-repair/actual-consumers/summary.json)의
-report-only 픽셀 차이와 전체 PR 검증 완료를 구분한다. 새 소스의 전쪽·정본 보호·전체 회귀·전체
-실제 소비 경로를 갱신 중이며 아직 PR 제출 완료로 표시하지 않는다.
+시각·기존 회귀 검증 source는 `30fa7739f0340f2a248b22542c7dd36d9354f056`, base는
+`1a3ed4a7cd76701085a24ac81d30bc5fb31942c1`(#8956)다. 원 PR은 #8895·#8897·#8900·#8916·#8918·#8920으로 고정한다.
+[44개 커밋의 리베이스 대응](final-rebase-30fa7739/rebase-commit-map.json)에서 patch-id가 모두 동일함을 확인했다.
 
-보정 전 source `8fe7d1fb8bc5024d0377ff7aa37d98c78e8f071a`의 공개 Native/fresh WASM은
-각 34종·46쪽 모두 90% 이상이고, 정본 보호는 각 18종·1,771쪽에서 공식 표시값 하락·누락·추가 0쪽이다.
-그 소스의 최소 글꼴 전체 회귀는 13,356 PASS / 0 FAIL / 45 skipped, Rust 게이트 13단계도 모두 PASS다.
-그러나 실제 소비 48캡처에서 크기 0·F0FA 결함이 확인돼 보정했다. 이 결과는 이력이며 최신 source의
-전체 검증을 대신하지 않는다.
+현재 완료한 결과는 최소 글꼴 Native 집중 141 PASS, 실제 브라우저 ByPath API 11 PASS,
+최소 글꼴 전체 회귀 **13,365 PASS / 0 FAIL / 45 skipped**(실행 468.702초)다.
+Native/fresh WASM 공개 입력 34종·46쪽을 각각 새로 출력했고 90% 미만·새 하락은 없다.
+raw·PDF·review·overlay 368개가 이전 직접 판독 증적과 바이트까지 같아 중복 PNG를 만들지 않았다.
+Studio 2,784 PASS / 2 skipped·production build·실행형 renderer 계약도 통과했다. Native Skia lib 3,852 PASS / 12 ignored와 보조 lib 182 PASS, placeholder 2 PASS, direct PDF 36 PASS 및 필수 16단계 게이트를 모두 통과했다. 새 #8956 base Native 4건·후보 4건과 실제 브라우저 API 11건도 통과했다. [게이트 원장](final-rebase-30fa7739/gates-validation.json)을 보존한다.
 
-## 기준 PDF와 검증 입력
+현재 #9017을 반영한 후보는 `73d06ed0b18df7c222a850bb5d9340c9b7de2bcc`, base는 `a85d3265dd10b316d1a0ae029ca3f67245b38b77`다. 기존 전쪽 TSV·PNG·독립 Print·변경 없는 Studio 전체 검사를 재사용한다. 44개 patch ID·13개 핵심 경로·기존 입력/PDF 동일성과 [재사용 경계](final-rebase-30fa7739/rebase-a85d3265/README.md)를 확인했고, 새 붙여넣기 기능과 Rust 필수 검사는 별도로 실행한다. 기존 source의 실행 기록을 새 head 완료 결과로 표시하지 않는다. 현재 제품 source `73d06ed0b1`의 추가 필수 실행을 완료했다. 최소 글꼴 Native 집중 164건·전체 13,380건이 통과했고, 새 base/후보 HTML 23건·실제 브라우저 6사례/24회 저장/API11건도 통과했다. [현재 실행 원장](final-rebase-30fa7739/rebase-a85d3265/gates-validation.json)을 기존 producer의 시각 증적과 구분한다.
 
-원 PR 6개는 본문에 웹한글기안기 PDF를 기준이라고 명시했다. 그 PDF와 Cairo 기반의 이전 점수는
-현재 판정에서 제외했다. 동일 입력의 **Windows 데스크톱 한컴 Print PDF 34종**을 보존한다.
-MCP Print는 33종이며, 실제 출력 제품별로 한컴 2020 11.0.0.9136이 25종,
-한컴 2024 13.0.0.3901이 8종이다. 나머지 1종은 사용자가 제공하고 Print 경로라고 확인한
-한컴 2024 출력이다. 저장 제품 연도를 Print 제품 연도로 바꾸어 쓰지 않는다.
+## 기준 PDF와 입력
 
-- [공식 Print 영수증](mcp-print-reference/receipts.json): 입력·이전 PDF·현재 PDF 해시, MCP 작업과 실제 제품·버전·출력 방식, 수동 Print 확인.
-- [체리픽 적용 기록](cherry-pick-result.json) · [충돌 해소 기록](conflicts.json): 원 PR head와 실제 누적 적용 순서.
-- [정본 Native 보호](final-print-8fe7d1fb/protected-native-validation.json) · [정본 fresh WASM 보호](final-print-8fe7d1fb/protected-wasm-validation.json): 각 18종·1,771쪽, 공식 표시값 하락 0쪽.
-- [현재 fresh WASM 전쪽 비교](final-print-8fe7d1fb/wasm-comparison.tsv) · [빌드·실제 초기화 응답](final-print-8fe7d1fb/wasm-validation.json) · [대표 review·overlay 직접 판독](final-print-8fe7d1fb/wasm-direct-reading.json).
-- [현재 Native 전쪽 비교](final-print-8fe7d1fb/native-comparison.tsv) · [생산 SHA·소스 동일성·PNG 해시](final-print-8fe7d1fb/native-validation.json).
+원 PR 6개는 웹한글기안기 PDF를 기준이라고 명시했다. 이 검토는 해당 PDF와 Cairo 점수를 제외하고,
+동일 원본의 **Windows 데스크톱 한컴 Print PDF 34종**을 사용한다. MCP Print 33종의 실제 제품은
+한컴 2020 11.0.0.9136이 25종, 한컴 2024 13.0.0.3901이 8종이다. 나머지 1종은 사용자가
+Print 출력임을 확인한 한컴 2024 PDF다. 저장 제품과 Print 제품을 구분하며 공식 경로의 PDF를 커밋했다.
+[입력·PDF SHA와 Print 영수증](mcp-print-reference/receipts.json)을 보존한다.
 
-기존 base 출력에 없던 `page-boundary-text`의 2쪽은 0점으로 채우지 않고 구조 복원으로 구분했다.
-원본·PDF·판정 문턱을 바꾸어 점수를 맞추지 않았다.
+## PR별 공개 검증
 
-## PR별 공개 검증 범위
+| PR | 입력 | 전체 쪽수 | Native 최저 | fresh WASM 최저 | 개별 리뷰 |
+| --- | ---: | ---: | ---: | ---: | --- |
+| #8895 | 2 | 4 | 98.00% | 97.94% | [개별 리뷰](../../archives/pr_8895_review.md) |
+| #8897 | 22 | 28 | 97.18% | 97.18% | [개별 리뷰](../../archives/pr_8897_review.md) |
+| #8900 | 4 | 4 | 95.91% | 95.08% | [개별 리뷰](../../archives/pr_8900_review.md) |
+| #8916 | 1 | 1 | 99.75% | 99.72% | [개별 리뷰](../../archives/pr_8916_review.md) |
+| #8918 | 1 | 1 | 99.76% | 99.73% | [개별 리뷰](../../archives/pr_8918_review.md) |
+| #8920 | 4 | 8 | 100.00% | 100.00% | [개별 리뷰](../../archives/pr_8920_review.md) |
 
-| PR | 입력 | 전체 쪽수 | Native 최저 | fresh WASM | 개별 리뷰 |
-| --- | ---: | ---: | ---: | --- | --- |
-| #8895 | 2 | 4 | 98.00% | 97.94% | [리뷰](../../archives/pr_8895_review.md) |
-| #8897 | 22 | 28 | 97.18% | 97.18% | [리뷰](../../archives/pr_8897_review.md) |
-| #8900 | 4 | 4 | 95.91% | 95.08% | [리뷰](../../archives/pr_8900_review.md) |
-| #8916 | 1 | 1 | 99.75% | 99.72% | [리뷰](../../archives/pr_8916_review.md) |
-| #8918 | 1 | 1 | 99.54% | 99.50% | [리뷰](../../archives/pr_8918_review.md) |
-| #8920 | 4 | 8 | 100.00% | 100.00% | [리뷰](../../archives/pr_8920_review.md) |
+- [현재 Native 전쪽 비교 TSV](final-rebase-30fa7739/native-comparison.tsv) · [검증·이미지 해시](final-rebase-30fa7739/native-validation.json)
+- [현재 fresh WASM 전쪽 비교 TSV](final-rebase-30fa7739/wasm-comparison.tsv) · [검증·이미지 해시](final-rebase-30fa7739/wasm-validation.json)
+- [실제 초기화 응답과 ByPath API](final-rebase-30fa7739/browser-runtime-result.json) · [최소 글꼴 환경](final-rebase-30fa7739/minimal-font-verification.json)
+- [현재 Native 편람 383쪽 gate](final-rebase-30fa7739/native-handbook-gate.json): 최저 표시값 99.96%, 공식 표시값 하락 0쪽.
+- [Native 보호 18종·1771쪽](final-rebase-30fa7739/protected-native-validation.json) · [WASM 보호 18종·1771쪽](final-rebase-30fa7739/protected-wasm-validation.json): 현재 canonical로 전쪽 TSV를 다시 계산해 최저 98.36%, 하락·누락·추가 0쪽.
 
-## 메인터너 보정과 수용 경계
+정본 재계산은 원 PNG의 SHA와 producer를 보존한다. Native 편람은 새 source에서 직접 출력했고,
+나머지 정본 PNG의 render producer는 d66568ef다. renderer·입력·글꼴·exporter 소비 경로 동일성과
+새 공개 캡처 368개 동일성을 근거로 재사용했다. [리베이스 소비 경로 감사](final-rebase-30fa7739/rebase-read-path-audit.md)를
+연결하며, 이전 PNG를 새 source의 재캡처라고 표시하지 않는다. 기존 base에 없던 page-boundary-text의
+2쪽은 0점으로 채우지 않고 내용·쪽 소속의 복원으로 구분했다.
 
-- #8897: [그림 전용 칸 높이](picture-cell-repair/cause.md)는 사용자 지시에 따라 공개 합성 6종으로 대조했다. 미공개 원본 3건을 직접 검증했다고 쓰지 않는다. [단 구역 후행 간격](stacked-zone-spacing-repair/cause.md)은 실제 3 PASS / 1 FAIL → 4 PASS, Native 99.06% → 100.00%로 복원했다.
-- [명시적 글리프 공급 순서](canvas-fallback-selection/cause.md): 보호 sample16의 원 글꼴 윤곽을 설치 별칭이 가로채던 공통 Canvas 경로를 보정했다. 새 head의 정본 Native/fresh WASM 전쪽에서 확인한다.
-- #8920: [저장 줄 없는 도형 문단의 줄 상자](partial-table-line-repair/cause.md)를 복구하여 일반·병합 칸의 위·가운데 정렬 4종 Native 8쪽은 모두 100%다.
-- #8895의 기존 도장 차이는 원 메인터너의 제한된 수용 범위를 유지한다. 제목 이월 개선이 도장 이월까지 해결했다고 쓰지 않는다.
-- #8900은 공개 4종의 값축 시작값·눈금 간격 범위다. 차트 전체 피델리티나 모든 데이터 조합의 해결로 확대하지 않으며 #8678은 OPEN을 유지한다.
-- #8916은 MCP 2020의 문서 열기 거절과 사용자 제공 2024 Print를 구분한다. #8918의 범위 밖 F0FA를 해결했다고 쓰지 않는다.
+## 실제 소비 경로와 지원 경계
 
-## 최종 검증과 증적 역할
+실제 Studio 48개 강제 진단 캡처를 보존했다. 현재 hard-gate 집계는 0건이지만, 이 값만으로 내용
+보존을 판정하지 않았다. CanvasKit 지원 캡처는 28개이며, 기존 미지원 RawSvg를 강제한 차트
+4개는 차트가 없으므로 **CanvasKit 지원 통과에 포함하지 않는다**. 정상 auto 선택은 사전 검사로
+Canvas2D에 전환한다. 양 모드 screen/print 4캡처에서 차트를 보존했고 두 Print는 각각 95.08%다.
+기존 preflight·지원 판정·문턱을 바꾸지 않았다. [실제 소비 요약](final-rebase-30fa7739/actual-backends/summary.json),
+[정상 auto 전환](final-rebase-30fa7739/actual-backends/chart-auto/validation.json),
+[기존 지원 계약과 실행 회귀](final-rebase-30fa7739/actual-backends/chart-capability-scope.json)를 확인한다.
+백엔드 간 report-only 픽셀 비교 32건 중 16건은 기존 문턱을 넘으며 픽셀 동등성을 주장하지 않는다.
 
-정본 보호는 [공식 보호 TSV](../visual-protected-baseline/final.tsv)의 두 자리 표시값을 페이지별로
-대조한다. 18종·1,771쪽의 Native와 fresh WASM을 각각 확인하고, HWPX 편람의 Native
-`--handbook-gate`도 실제 실행한다. 일반 공개 검증의 90%·devel 대비 2%p 기준과 이 특별 보호
-기준은 서로 대체하지 않는다.
+## 메인터너 보정과 남은 범위
 
-최소 글꼴 회귀는 Mac 사용자 글꼴을 변경하지 않는 sandbox에서 실행한다. 현재 head에서
-CoreText 528 face가 모두 OS 경로임을 확인했고, 사용자 글꼴 목록 1,701 face는 검증 전후 동일하다.
-이 격리 사실을 브라우저의 OS CSS 글꼴 격리라고 확대하지 않는다. Mac fresh WASM은 locked wrapper의
-`--target web --out-dir pkg --no-opt` 로컬 대체 빌드로 기록하며 Docker 최적화 성공으로 쓰지 않는다.
+- #8897: 미공개 원본 3건은 확보하지 못했다. 사용자 지시로 공개 합성 6종을 만들고 각 원본의
+  독립 desktop Print를 확보해 그림 전용 칸의 첫 opening·continuation·종료와 뒤 본문을 보정했다.
+  미공개 원본을 직접 검증했다고 쓰지 않는다. 쌓인 단 구역의 줄간격 중복도 보정했다.
+- #8920: 저장 줄 없는 빈 도형 문단의 줄 상자와 최종 셀 원점을 연결해 일반/병합 칸의 위/가운데
+  정렬 4종·8쪽을 Native/fresh WASM 100.00%로 확인했다. 실제 분할 행의 별도 잔여까지 해결했다고 쓰지 않는다.
+- #8916: 크기 0 원문을 잉크 없는 명령으로 보존하고 CanvasKit geometry 거부를 보정했다.
+- #8918: 원문자·흰 원·체크의 원 전진과 원 프로그램을 유지했다. 사용자 요청 F0FA는 독립 Print의
+  Wingdings bdash2와 385/1000 전진을 확인하고 U+1F8AD·기존 공개 Noto 프로그램으로 보완했다.
+  private 글꼴 추출물은 Git에 넣지 않는다.
+- #8895의 기존 도장 차이 등 별개 증상은 제목 글줄 이월 해결과 구분한다.
+- #8900은 공개 값축 4종의 범위다. #8678의 다른 값 조합·작은 차트·눈금 잔여는 미완료이므로 OPEN을 유지한다.
 
-`final-print-8fe7d1fb/`가 현재 후보의 공개 비교 자료다. 그 밖의 과거 head·Cairo 진단 자료는 원인
-추적 이력이며 현재 수용 근거가 아니다. 각 입력의 같은 페이지 raw·독립 PDF PNG·review·overlay를
-함께 보존한다. 최종 CI·통합 PR·원 PR 및 이슈 후속 처리는 검증 완료 뒤 확정한다.
+이전 8fe7d1fb·d66568ef의 기록은 원인과 실행 출처 이력이다. 현재 검증은 final-rebase-30fa7739의
+source·명령·입력/PNG hash와 각 결과를 기준으로 읽는다. Mac fresh WASM은 locked wrapper의
+--target web --out-dir pkg --no-opt 로컬 대체 빌드이며 Docker 최적화 통과로 표시하지 않는다.
+최종 로컬 게이트를 완료했고 개별 6개 리뷰와 PR 제출 자료를 확정했다. 원격 CI·병합·후속 처리 결과는 실제 완료 뒤 연결한다.
