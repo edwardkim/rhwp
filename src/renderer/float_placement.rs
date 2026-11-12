@@ -5890,7 +5890,8 @@ pub(crate) fn stored_background_picture_next_page_placement(
 
 /// 표의 캡션 포함 바깥 상자와 뒤 본문의 저장 재시작 원점이 일치하면
 /// 표만 다음 쪽을 소유한다. 재시작 전 본문/빈 줄은 원래 쪽에 보존한다.
-/// 두 번째 값은 `following` 안의 재시작 문단 위치이며, 그 문단은 표와 같은 다음 쪽에서 시작한다.
+/// 두 번째 값은 재시작이 문단 첫 줄일 때 `following` 안의 그 문단 위치다. 그 문단은 표와 같은
+/// 다음 쪽에서 시작한다. 문단 안쪽 줄에서 재시작하면 그 문단이 스스로 나뉘므로 묶지 않는다.
 pub(crate) fn stored_table_next_page_placement(
     para: &Paragraph,
     following: &[Paragraph],
@@ -5901,7 +5902,7 @@ pub(crate) fn stored_table_next_page_placement(
     actual_host_flow_y: f64,
     available_height: f64,
     dpi: f64,
-) -> Option<(ParagraphFloatPlacement, usize)> {
+) -> Option<(ParagraphFloatPlacement, Option<usize>)> {
     use crate::model::paragraph::LineSeg;
     let host = para.line_segs.first()?;
     let visible_host = para_has_non_whitespace_text(para);
@@ -6094,7 +6095,7 @@ pub(crate) fn stored_table_next_page_placement(
                         table_top: top,
                         occupied_bottom: bottom,
                     },
-                    next_index,
+                    (line_index == 0).then_some(next_index),
                 ));
             }
             // 문단 경계의 저장 사다리는 줄간격 외에 앞뒤 문단 간격도 소비한다.

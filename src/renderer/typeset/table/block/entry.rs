@@ -244,7 +244,11 @@ impl TypesetEngine {
                 )
                 // 재시작 문단은 표와 같은 다음 쪽에서 시작한다(저장 사다리의 쪽 되감김).
                 .map(|(placement, reset)| {
-                    (placement, Some((reset, Some(st.pages.len() + 1))), false)
+                    (
+                        placement,
+                        reset.map(|index| (index, Some(st.pages.len() + 1))),
+                        false,
+                    )
                 })
                 .or_else(|| {
                     crate::renderer::float_placement::stored_whole_header_next_page_placement(
