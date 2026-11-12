@@ -1,4 +1,9 @@
 {
-  "status": "incomplete",
-  "remaining": "canonical protected corpus font supply and remaining measurements"
+  "status": "re_review_required",
+  "measured_pages": 3542,
+  "protected_fall_rows": 35,
+  "remaining": "35 document/backend/page rows below unchanged official protection values; missing HY headline font and remaining font/spacing verification. Windows font backup requested.",
+  "product_code_changed": false,
+  "fonts_local_only": true,
+  "font_binaries_published": false
 }

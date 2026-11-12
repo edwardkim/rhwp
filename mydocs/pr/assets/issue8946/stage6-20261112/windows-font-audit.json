@@ -1,0 +1,83 @@
+{
+  "local_only": true,
+  "system_install": false,
+  "publish_binaries": false,
+  "fonts": [
+    {
+      "name": "batang.ttc",
+      "source": "$USER_HOME/Downloads/batang.ttc",
+      "path": "$T7/DeveloperArtifacts/rhwp/workspaces/rhwp-task8946-c6f1b14c/output/issue8946/stage6/windows-fonts/batang.ttc",
+      "sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+      "bytes": 16271112,
+      "matches_reference_program": false,
+      "faces": [
+        {
+          "index": 0,
+          "families": [
+            "Batang",
+            "바탕"
+          ]
+        },
+        {
+          "index": 1,
+          "families": [
+            "BatangChe",
+            "바탕체"
+          ]
+        },
+        {
+          "index": 2,
+          "families": [
+            "Gungsuh",
+            "궁서"
+          ]
+        },
+        {
+          "index": 3,
+          "families": [
+            "GungsuhChe",
+            "궁서체"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "gulim.ttc",
+      "source": "$USER_HOME/Downloads/gulim.ttc",
+      "path": "$T7/DeveloperArtifacts/rhwp/workspaces/rhwp-task8946-c6f1b14c/output/issue8946/stage6/windows-fonts/gulim.ttc",
+      "sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+      "bytes": 13531200,
+      "matches_reference_program": false,
+      "faces": [
+        {
+          "index": 0,
+          "families": [
+            "Gulim",
+            "굴림"
+          ]
+        },
+        {
+          "index": 1,
+          "families": [
+            "GulimChe",
+            "굴림체"
+          ]
+        },
+        {
+          "index": 2,
+          "families": [
+            "Dotum",
+            "돋움"
+          ]
+        },
+        {
+          "index": 3,
+          "families": [
+            "DotumChe",
+            "돋움체"
+          ]
+        }
+      ]
+    }
+  ]
+}
