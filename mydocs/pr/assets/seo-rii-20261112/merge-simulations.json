@@ -1,0 +1,23 @@
+[
+  {
+    "PR": 8952,
+    "base": "a85d3265dd10b316d1a0ae029ca3f67245b38b77",
+    "head": "3077c620f3ec7c09cd93c2b79e7ea0825be12488",
+    "returncode": 0,
+    "result": "ac442f94c89778236104f3be2a82f92349653ee5"
+  },
+  {
+    "PR": 8953,
+    "base": "a85d3265dd10b316d1a0ae029ca3f67245b38b77",
+    "head": "9cfe2754d92a720135445aed285ff91c0c75dc7e",
+    "returncode": 0,
+    "result": "a92b065ececa709d9cddde354407855f0db01c6c"
+  },
+  {
+    "PR": 8954,
+    "base": "a85d3265dd10b316d1a0ae029ca3f67245b38b77",
+    "head": "1e14e4b8466b7ce46d9016faf1824bc05c9789de",
+    "returncode": 0,
+    "result": "9011f49ef154122e599f0b4b9a82cd1e978c586f"
+  }
+]

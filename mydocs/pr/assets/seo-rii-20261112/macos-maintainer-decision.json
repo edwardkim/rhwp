@@ -1,0 +1,6 @@
+{
+  "decided_at": "2026-11-12T13:54:41.063308+00:00",
+  "source": "User instruction in this session",
+  "instruction": "macOS 쪽은 기여자의 주장을 수용하면서 진행합니다. 현재 메인테이너가 macOS 테스트 환경을 제공할 수 없기 때문입니다.",
+  "scope": "Accept contributor macOS claims without maintainer Apple SDK or macOS runtime execution; retain distinction between executed portable/local checks and unexecuted real macOS checks. Does not waive reproduced source bugs, Windows/Linux gates, exact-head CI, or separate remote mutation approval."
+}

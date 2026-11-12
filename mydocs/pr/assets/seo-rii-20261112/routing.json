@@ -1,0 +1,35 @@
+{
+  "base_route": "maintainer_general",
+  "modifiers": [
+    "intake_and_review",
+    "local_validation",
+    "multi_pr_update_branch",
+    "visual_fixture_evidence",
+    "post_merge"
+  ],
+  "loaded_documents": [
+    "pr_review_workflow.md",
+    "pr_review/README.md",
+    "pr_review/maintainer_general.md",
+    "pr_review/intake_and_review.md",
+    "pr_review/local_validation.md",
+    "pr_review/multi_pr_update_branch.md",
+    "pr_review/visual_fixture_evidence.md",
+    "pr_review/post_merge.md"
+  ],
+  "selected_PRs": [
+    8952,
+    8953,
+    8954
+  ],
+  "excluded_drafts": [
+    8962,
+    8963,
+    8964,
+    8965,
+    8966,
+    8967
+  ],
+  "base": "a85d3265dd10b316d1a0ae029ca3f67245b38b77",
+  "remote_scope": "intake metadata only; no comments, push, approval review or merge authorized for this new batch"
+}
