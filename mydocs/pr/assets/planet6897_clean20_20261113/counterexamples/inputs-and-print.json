@@ -1,0 +1,99 @@
+{
+  "code_head": "676e3900c6490657229f9781e34f89c65c7126da",
+  "records": [
+    {
+      "source_pr": 8959,
+      "role": "원 PR 본문에 공개된 악화 사례의 독립 대조. 수용 완료나 해결 판정 아님.",
+      "source_original_name": "3930000-201800017_D0150004-1-001_『 안산시 제7기 지역보건의료계획 』연구용역 최종보고회 결과보고.hwp",
+      "input": "mydocs/pr/assets/planet6897_clean20_20261113/counterexamples/3930000-201800017-health-report.hwp",
+      "input_bytes": 868864,
+      "input_sha256": "6f7734dfd51d9b0196a5f13706393756d3d9a73b2e17bd9314b61a852c8292aa",
+      "pdf": "pdf/issue8939/3930000-201800017-health-report-2020.pdf",
+      "pdf_bytes": 367189,
+      "pdf_sha256": "630019bac17826f6fb1ffeab096566df9a7e9b04af7f9cee74bc34401f24693c",
+      "print_receipt": {
+        "job_id": "0bef5d55-9897-427a-b6a7-8d1263a0ad73",
+        "status": "success",
+        "engine": "2020",
+        "engine_profile": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "input_format": "hwp",
+        "format": "pdf",
+        "bytes": 367189,
+        "pdf_page_count": 7,
+        "elapsed_ms": 32113,
+        "input_preprocess": "scripts_disabled",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "before_info": {
+        "base": {
+          "exit": 0,
+          "pageCount": 7,
+          "lastSavedWith": {
+            "confidence": "metadata",
+            "product": "hancom-office-2010",
+            "version": "8.5.8.1584"
+          }
+        },
+        "candidate": {
+          "exit": 0,
+          "pageCount": 7,
+          "lastSavedWith": {
+            "confidence": "metadata",
+            "product": "hancom-office-2010",
+            "version": "8.5.8.1584"
+          }
+        }
+      }
+    },
+    {
+      "source_pr": 9001,
+      "role": "원 PR 본문에 공개된 악화 사례의 독립 대조. 수용 완료나 해결 판정 아님.",
+      "source_original_name": "1543000-202100035_D0150014-1-001_(발송용)1507_210901_식량자급률 설정 연구_중간보고.hwp",
+      "input": "mydocs/pr/assets/planet6897_clean20_20261113/counterexamples/1543000-202100035-food-security-report.hwp",
+      "input_bytes": 2528256,
+      "input_sha256": "8cc9b219a5c54fdc2324f63da32b224a1ac23877c6c92976c407e6c42475317c",
+      "pdf": "pdf/issue8997/1543000-202100035-food-security-report-2020.pdf",
+      "pdf_bytes": 1894417,
+      "pdf_sha256": "4c2d909332e5fe3be5044a76cc9d5448e29e98087b4688907fdf1ce093dccc04",
+      "print_receipt": {
+        "job_id": "d77d36b2-2f9e-4616-84fb-9326a6ba740f",
+        "status": "success",
+        "engine": "2020",
+        "engine_profile": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "input_format": "hwp",
+        "format": "pdf",
+        "bytes": 1894417,
+        "pdf_page_count": 141,
+        "elapsed_ms": 77995,
+        "input_preprocess": "scripts_disabled",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "before_info": {
+        "base": {
+          "exit": 0,
+          "pageCount": 143,
+          "lastSavedWith": {
+            "confidence": "metadata",
+            "product": "hancom-office-2018",
+            "version": "10.0.0.10990"
+          }
+        },
+        "candidate": {
+          "exit": 0,
+          "pageCount": 144,
+          "lastSavedWith": {
+            "confidence": "metadata",
+            "product": "hancom-office-2018",
+            "version": "10.0.0.10990"
+          }
+        }
+      }
+    }
+  ]
+}

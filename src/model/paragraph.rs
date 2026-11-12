@@ -983,6 +983,24 @@ impl Paragraph {
         &self.line_segs[..source_len]
     }
 
+    /// [#9005] 저장 줄이 미기입 누름틀 안내문까지 담아 나눈 사다리인가.
+    ///
+    /// 한/글은 미기입 누름틀의 안내문을 문단 글자로 저장하고, 저장 줄(LineSeg)도 그 글자를
+    /// 넣고 나눈다. 적재 정규화(`initial_fields::clear`)는 안내문을 값에서 빼고
+    /// `guide_residue` 로만 남긴다(저장할 때 되살리는 용도). 그러면 저장 줄의 문자 분할은
+    /// 지금 문단에 없는 글자를 기준으로 나뉜 것이다. 한/글 Print 도 안내문을 그리지 않고
+    /// 남은 글자로 다시 나눈다 — `issue-986-receipt` 의 「야간 □ 공휴일 □」 칸은 저장 줄이
+    /// 2줄(안내문 17자 포함)인데 한/글 PDF 는 1줄 행 높이로 인쇄한다.
+    ///
+    /// 저장 줄은 파일 데이터로 남긴다(저장할 때 안내문과 함께 그대로 쓴다). 배치만 다시 나눈다.
+    pub fn stored_rows_include_hidden_guide(&self) -> bool {
+        !self.line_segs.is_empty()
+            && self.controls.iter().any(|control| {
+                matches!(control, crate::model::control::Control::Field(field)
+                    if field.guide_residue.as_ref().is_some_and(|residue| !residue.text.is_empty()))
+            })
+    }
+
     /// Invalidate every layout result derived from text or CharShapeRef input.
     /// Existing rows remain as edit-reflow metric templates, but cannot be
     /// admitted or serialized as the current text partition.

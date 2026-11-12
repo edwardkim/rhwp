@@ -1,5 +1,7 @@
 //! 관계형·고정형: Print의 소수 원점과 Screen 격자를 합성 glyph로 대조한다.
-//! 주석 갱신: 2026-10-30T14:56:45+09:00; 직전 파일 커밋: 2026-10-30T14:55:31+09:00 (80ca89e99f).
+//! 주석 갱신: 2026-11-12T15:30:00+09:00; 직전 파일 커밋: 2026-10-30T19:50:11+09:00 (c417310cab).
+//! [#8986] Print 장치 clip 은 인쇄 세대와 무관하다 — 기준 raster(PDFium)가 2020 Print PDF 의 축 정렬
+//! clip 도 바깥 화소로 넓힌다(36325899 2쪽 칸 위끝 중첩 표 테두리). 글자 기하만 세대별로 남는다.
 //! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
 //! 이 검사는 합성 입력을 사용하며 아래 수치는 관련 편람의 별도 시각 검증이다.
 //! 관련 실사례 HWP 79쪽 Native 100.00% / fresh WASM 100.00%.
@@ -35,10 +37,13 @@ fn explicit_print_generation_survives_layer_cache_transitions() {
             .build_page_layer_tree_with_profile(0, RenderProfile::Print)
             .unwrap();
         assert_eq!(print.preserves_raster_text_geometry(), enabled);
-        assert_eq!(print.uses_raster_clip_coverage(), enabled);
+        assert!(
+            print.uses_raster_clip_coverage(),
+            "Print 장치 clip 은 세대와 무관"
+        );
         let exported: serde_json::Value = serde_json::from_str(&print.to_json()).unwrap();
         assert_eq!(exported["rasterTextGeometry"], enabled);
-        assert_eq!(exported["rasterClipCoverage"], enabled);
+        assert_eq!(exported["rasterClipCoverage"], true);
         let screen = core
             .build_page_layer_tree_with_profile(0, RenderProfile::Screen)
             .unwrap();
@@ -83,7 +88,7 @@ fn print_generation_uses_distinct_native_picture_cache_entries() {
         );
         tree.text_sources = Default::default();
         assert_eq!(tree.preserves_raster_text_geometry(), enabled);
-        assert_eq!(tree.uses_raster_clip_coverage(), enabled);
+        assert!(tree.uses_raster_clip_coverage());
         trees.push(tree);
     }
     let renderer = SkiaLayerRenderer::new();

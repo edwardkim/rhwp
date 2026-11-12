@@ -1,0 +1,189 @@
+{
+  "phase": "complete",
+  "pid": 18184,
+  "product_code": "d0cc46573c7505633721c19062e504faff017d59",
+  "head": "6bed258bc182c227e9c62bc0af88326082cb9805",
+  "test_diff_sha256": "6243052f526e82848462c561ff3faeb8c899ec3a92b82aeeb89dd88a095d0795",
+  "results": [
+    {
+      "label": "issue_8939_stored_bit31_cell_flow",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/minimal-font.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8939_stored_bit31_cell_flow",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--build-jobs",
+        "8",
+        "--test-threads",
+        "8"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 347.194,
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/added-issue_8939_stored_bit31_cell_flow.log",
+      "log_sha256": "5c335062f93d02199bdbef5fa7013a0fa8f094e84e86f6d961d30afee6eb7ac8"
+    },
+    {
+      "label": "issue_2792_search_nested_tables",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/minimal-font.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2792_search_nested_tables",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--build-jobs",
+        "8",
+        "--test-threads",
+        "8"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 51.614,
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/added-issue_2792_search_nested_tables.log",
+      "log_sha256": "3cc8af1bf71761f8ae5d0df4c3349c3cf513e4e6f940148380644128d68e3756"
+    },
+    {
+      "label": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 49.174,
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/added-fmt.log",
+      "log_sha256": "5fcb04dce61431e03194e48dc201c4f32c352e4a96d055e73ed0191c5364579a"
+    },
+    {
+      "label": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 15.451,
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/added-clippy-native.log",
+      "log_sha256": "10e0f3c8a3e7d398298c90e6255652baf778283e3d4cc3a001dce7e4f3df7a3d"
+    },
+    {
+      "label": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 1.11,
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/added-clippy-wasm.log",
+      "log_sha256": "61316199b357136450bf92e882e4401211257c9618843bf6d7542d1633838bd1"
+    },
+    {
+      "label": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--jobs",
+        "8"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 7.908,
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/added-workspace-build.log",
+      "log_sha256": "c7bbdf6865a01be87443ab5d138ff6bb0f14f00e7a2ce7e1c7f27793b82d22bd"
+    },
+    {
+      "label": "clippy-all-targets",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 24.158,
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/added-clippy-all-targets-after-comment-fix.log",
+      "log_sha256": "0b78fdd8d6001d7d8088e8c003ea675c1b967397e9ce9a37f897cdfee460658a"
+    },
+    {
+      "label": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "31a422575722f634cfc2d9eb97e708da58aea188"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 1.23,
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/added-manifest-after-comment-fix.log",
+      "log_sha256": "b40271f5073e323ecf473645070ffb5fc1e7867efeaa14a84efb0733eb748105"
+    }
+  ],
+  "current": null,
+  "failed_attempts": [
+    {
+      "label": "clippy-all-targets",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 101,
+      "elapsed_seconds": 52.418,
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/added-clippy-all-targets.log",
+      "log_sha256": "0bc8e4c94988e8d96b3cf7827d2c17d21fa1b0a9f4a2a64ff60496e7ba8783a8"
+    }
+  ],
+  "comment_correction": "문서 주석 목록 뒤 문단 구분만 추가. assertion·제품 소스·fixture 바이트는 그대로다.",
+  "final_test_sources": {
+    "tests/cases/issue_8939_stored_bit31_cell_flow.rs": "163e55371ee290baca14cf2f4a25343179a0fb71dd1d4111ab876a784e6f6fb3",
+    "tests/cases/issue_2792_search_nested_tables.rs": "169a66ddec95eb5f58d66b7de52682f27d89195746596d9a19a3d648921f9b09"
+  },
+  "completed_at": "2026-11-12T20:09:46.081297+00:00",
+  "result_scope": "새 회귀 1건을 포함한 관련 모듈 4+15=19건 실제 PASS. 기존 전체13420에 포함되었다고 합산하지 않는다. 제품 소스 d0cc는 변경 없음."
+}

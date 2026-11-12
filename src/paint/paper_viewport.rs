@@ -119,7 +119,8 @@ impl PagePaintContext {
         {
             return;
         }
-        fn publish(node: &mut LayerNode, table_owned: bool, sx: f64, sy: f64) {
+        /// 표가 직접 발행한 괘선을 물리 프레임으로 옮기고, 옮긴 괘선이 하나라도 있으면 `true`.
+        fn publish(node: &mut LayerNode, table_owned: bool, sx: f64, sy: f64) -> bool {
             match &mut node.kind {
                 LayerNodeKind::Group {
                     children,
@@ -129,14 +130,35 @@ impl PagePaintContext {
                     // 소유를 모든 자손에 상속하면 셀 본문의 도형까지 표 괘선으로
                     // 바뀐다. 표가 직접 발행한 선만 같은 물리 프레임을 소비한다.
                     let table = matches!(group_kind, crate::paint::layer_tree::GroupKind::Table(_));
+                    let mut moved = false;
                     for child in children {
-                        publish(child, table, sx, sy);
+                        moved |= publish(child, table, sx, sy);
                     }
+                    moved
                 }
-                LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
-                    publish(child, table_owned, sx, sy)
+                LayerNodeKind::ClipRect {
+                    clip,
+                    child,
+                    clip_kind,
+                } => {
+                    let moved = publish(child, table_owned, sx, sy);
+                    // 칸 clip 은 논리 조판 프레임이다. 그 안에서 물리 프레임으로 옮긴 괘선(중첩
+                    // 표 테두리)이 있으면 clip 도 그 괘선을 담아야 한다 — 괘선만 옮기면 칸
+                    // 위끝에 걸친 중첩 표 테두리가 clip 밖으로 밀려 잘린다(#8986, 36325899 2쪽 —
+                    // 한컴 PDF 는 clip 과 선이 같은 좌표). 칸 본문 글자는 논리 프레임에 남으므로
+                    // 두 프레임의 합을 쓰고, 옮긴 괘선이 없는 칸 clip 은 그대로 둔다.
+                    if moved && *clip_kind == crate::paint::layer_tree::ClipKind::TableCell {
+                        let left = clip.x.min(clip.x * sx);
+                        let top = clip.y.min(clip.y * sy);
+                        let right = (clip.x + clip.width).max((clip.x + clip.width) * sx);
+                        let bottom = (clip.y + clip.height).max((clip.y + clip.height) * sy);
+                        *clip = BoundingBox::new(left, top, right - left, bottom - top);
+                    }
+                    moved
                 }
+                LayerNodeKind::ClipPath { child, .. } => publish(child, table_owned, sx, sy),
                 LayerNodeKind::Leaf { ops } if table_owned => {
+                    let mut moved = false;
                     for op in ops {
                         if let PaintOp::Line { bbox, line } = op {
                             line.x1 *= sx;
@@ -144,10 +166,12 @@ impl PagePaintContext {
                             line.y1 *= sy;
                             line.y2 *= sy;
                             *bbox = line.ink_bbox();
+                            moved = true;
                         }
                     }
+                    moved
                 }
-                LayerNodeKind::Leaf { .. } => {}
+                LayerNodeKind::Leaf { .. } => false,
             }
         }
         publish(node, false, sx, sy);

@@ -3581,11 +3581,10 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
         area: &LayoutRect,
     ) -> Option<f64> {
-        if para.stored_text_partition_is_dirty()
-            || para.cell_format_vpos_dirty
-            || (super::super::para_has_no_stored_line_segs(para)
-                && !composed.frame_owns_inline_table(control_index))
-        {
+        // [#8995] 저장 줄이 없는 재조판 문단도 composed 줄이 개체의 줄 소속과 앞 글자 폭을
+        // 담으므로 같은 펜 계산을 쓴다. 그 문단을 빼면 표 앞 공백 폭이 사라져 TAC 표가 줄
+        // 맨 앞에서 시작한다(공개 결재 문서 본문 칸: 공백 2칸 15px 왼쪽).
+        if para.stored_text_partition_is_dirty() || para.cell_format_vpos_dirty {
             return None;
         }
         // Preserve the original PARA_TEXT axis. Projecting controls onto

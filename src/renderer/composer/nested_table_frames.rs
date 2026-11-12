@@ -24,6 +24,7 @@ pub(crate) fn recompose_cell_lines_with_nested_tables(
     stored_geometry_policy: impl Into<crate::model::provenance::StoredGeometryPolicy>,
     native_hwp5: bool,
     cache: &SingleLineOverflowCache,
+    line_wrap_squeeze: bool,
     mut nested_height: impl FnMut(&Table) -> f64,
 ) {
     match recompose_cell_lines_with_nested_tables_with_storage(
@@ -35,6 +36,7 @@ pub(crate) fn recompose_cell_lines_with_nested_tables(
         stored_geometry_policy,
         native_hwp5,
         cache,
+        line_wrap_squeeze,
         |table| Ok(nested_height(table)),
         &crate::storage::Unbounded,
     ) {
@@ -52,6 +54,8 @@ pub(crate) fn recompose_cell_lines_with_nested_tables_with_storage<S: crate::sto
     stored_geometry_policy: impl Into<crate::model::provenance::StoredGeometryPolicy>,
     native_hwp5: bool,
     cache: &SingleLineOverflowCache,
+    // 칸의 "한 줄로 입력"(SQUEEZE). 측정·배치가 같은 값을 넘긴다.
+    line_wrap_squeeze: bool,
     mut nested_height: impl FnMut(&Table) -> Result<f64, S::Error>,
     storage: &S,
 ) -> Result<(), S::Error> {
@@ -177,6 +181,7 @@ pub(crate) fn recompose_cell_lines_with_nested_tables_with_storage<S: crate::sto
             stored_geometry_policy,
             native_hwp5,
             cache,
+            line_wrap_squeeze,
             storage,
         )?;
     }

@@ -264,6 +264,12 @@ rhwp --password '문서비밀번호' export-text protected.hwp -o output/
 
 ## 1. 내보내기 (Export)
 
+쪽별 산출 파일 이름은 `<원본 stem>_<NNN>.<확장자>`(한 쪽이면 `<원본 stem>.<확장자>`)다.
+`export-svg`·`export-png`·`export-text`·`export-markdown`(이미지 폴더 `_assets` 포함)·
+`export-kitty`·`export-sixel`·`thumbnail`·`export-pdf` 기본 이름은 접미사·확장자를 보존한 채
+전체가 255바이트(ext4·APFS 이름 한도) 안에 들도록 stem 을 UTF-8 문자 경계에서 줄인다(#9010).
+같은 입력이면 같은 이름이다.
+
 ### `export-svg <파일> [옵션]`
 HWP/HWPX → SVG.
 - `--json` (#3287): 산출물 **매니페스트**를 stdout 에 JSON 으로 출력한다(렌더 동작 무변경).
@@ -1002,9 +1008,13 @@ rhwp explore 편람.hwp --json | jq -r '.menu[0] | "\(.command)  # \(.why)"'
 평문을 뽑아 외부에서 찾으면 주소가 소멸해 근거 제시가 불가능한데, rhwp 는 조판 엔진이
 있어 "몇 쪽"에 답할 수 있다. 파서/렌더 무변경 읽기 질의.
 - `--json` 봉투: `{"schemaVersion":"1.0","source","query","caseSensitive","matchCount","totalMatchCount","truncated","omittedCount","matches":[…]}`
-- 매치: `{section,paragraph,page?,charOffset,length,text,context,cell?}`
+- 매치: `{section,paragraph,page?,charOffset,length,text,context,cell?,textbox?,nestedDepth?,cellPath?}`
   - `page` 는 0부터 시작하는 글로벌 페이지. 조판에 배치되지 않은 문단이면 생략된다.
-  - `cell` 은 표 셀 안의 매치일 때 `{control,cell,paragraph}` 좌표
+  - `cell` 은 표 셀 안의 매치일 때 `{control,cell,paragraph}` 좌표. 표 안의 표 매치면
+    **최외곽 칸 문단**이다(`nestedDepth` ≥ 1 로 표시)
+  - `cellPath` 는 표 안의 표·글상자 안 표 매치의 정확한 칸 경로(#8989). 바깥 → 안쪽 순서의
+    `[{kind:"tableCell"|"textBox",control,cell?,paragraph}]` 로, `fields` 의 `location.nested`
+    와 같은 꼴이다. 마지막 단계가 매치가 든 칸과 그 칸 문단이다. 본문 표 한 단계 매치에는 없다
   - `context` 는 매치 앞뒤 발췌(각 40자)
 - 검색 범위는 본문 + 표 셀 + 글상자 (`search_query::search_all` 과 동일)
 - **매치 0건은 오류가 아니다** — `matchCount:0`, 종료 코드 0 (1은 런타임 실패 전용)
@@ -1038,7 +1048,7 @@ rhwp export-png 편람.hwp -p "$(rhwp search 편람.hwp "위임전결" --json | 
 `search` 가 검색어에 대해 한 일을 데이터 값에 대해 한다 — 평문을 뽑아 밖에서 정규식을
 돌리면 값은 얻어도 주소가 소멸해 근거 제시가 불가능하다. 파서/렌더 무변경 읽기 질의.
 - `--json` 봉투: `{"schemaVersion":"1.0","source","kind","itemCount","totalItemCount","truncated","counts","items":[…]}`
-- 항목: `{kind,raw,normalized,currency?,unit?,section,paragraph,page?,charOffset,length,cell?,textbox?}`
+- 항목: `{kind,raw,normalized,currency?,unit?,section,paragraph,page?,charOffset,length,cell?,textbox?,nestedDepth?,cellPath?}`
   - `raw` 는 문서에 적힌 그대로, `normalized` 는 기계용 값이다
   - `counts` 는 **요청한 종류의 문서 전체 건수**(`--limit` 절단 전). 요청하지 않은
     종류의 키는 넣지 않는다 — `"amount":0` 은 "금액이 없다"로 오독되기 때문이다
@@ -1058,8 +1068,9 @@ rhwp export-png 편람.hwp -p "$(rhwp search 편람.hwp "위임전결" --json | 
     (`'26.8.2`)는 세기를 추정하지 않고, 한글 수사 금액(`일금 백이십삼만원`)은 v1 범위 밖이다
   - 금액은 정수 연산으로만 배수를 반영한다(`1.5억원` → `150000000`). 정수로 떨어지지
     않으면 추정하지 않고 `null` 이다
-- 추출 범위는 본문 + 표 셀 + 글상자. 표 셀·글상자 값에는 `cell`/`textbox` 좌표가 붙고,
-  분할 표는 그 행이 실제로 렌더되는 쪽을 쓴다(#3403). 페이지 인덱스는 `search` 와 같은
+- 추출 범위는 본문 + 표 셀(표 안의 표 포함) + 글상자(글상자 안 표 포함). 표 셀·글상자 값에는
+  `cell`/`textbox` 좌표가 붙는다. 중첩 칸 값은 `search` 와 같이 `cell` 이 최외곽 칸이고
+  `nestedDepth`·`cellPath`(#8989)로 정확한 칸을 준다. 분할 표는 그 행이 실제로 렌더되는 쪽을 쓴다(#3403). 페이지 인덱스는 `search` 와 같은
   `build_paragraph_page_index` 를 재사용한다
 - **0건은 오류가 아니다** — `itemCount:0`, 종료 코드 0 (1은 런타임 실패 전용)
 - `--limit N` 은 컨텍스트 상한이다. 절단돼도 `totalItemCount`·`truncated:true` 로 총량이 보인다

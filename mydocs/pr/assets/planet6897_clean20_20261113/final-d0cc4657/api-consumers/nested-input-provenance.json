@@ -1,0 +1,9 @@
+{
+  "input": "tests/fixtures/issue8989/nested-values.hml",
+  "sha256": "005bb353af0ea5ff4788eb31a34d0f4bbcb55848838b0ccb787e4942e3e521e6",
+  "source": "tests/cases/issue_2792_search_nested_tables.rs",
+  "source_constant": "NESTED_VALUES_HML",
+  "source_code_head": "d0cc46573c7505633721c19062e504faff017d59",
+  "byte_equal": true,
+  "scope": "search/extract-data 공개 CLI의 중첩 cellPath·값 추출 API 검증. 시각 배치나 독립 PDF 일치율을 주장하는 fixture가 아니다."
+}

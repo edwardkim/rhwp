@@ -980,6 +980,19 @@ HWPX 파서·직렬화기도 같은 scalar 순서를 소비한다. 이미 보존
 [보정 계획](../pr/archives/pr_8615_review_impl.md#자동-분할-경계선의-메인터너-보정-계획)을 따른다.
 이 정정 자체는 최종 Native/fresh WASM 전쪽 시각 검증 통과를 뜻하지 않는다.
 
+## 39. HWPX 누름틀 평문 command — 첫 `;` 항목이 안내문
+
+| 항목 | 내용 |
+|------|------|
+| 스펙 위치 | OWPML `hp:fieldBegin` `CLICK_HERE` 의 `hp:parameters`, §19 의 command 구조 |
+| 스펙 기술 | 누름틀 command 는 §19 의 `Clickhere:set:{len}:Direction:wstring:{n}:{안내문} …` 꼴만 기술 |
+| 실제 저장 | 한컴 HWPX 에 `<hp:stringParam name="Command">본문내용을 입력하세요;</hp:stringParam>` 같은 평문 꼴이 있다. `;` 로 끝나는 항목을 늘어놓고 첫 항목이 안내문이다(`0000.00.00.;0000.00.00.\;charshape=b;` — `\;` 는 항목 안의 `;`) |
+| 한컴 동작 | engine 2020 Print 는 미기입(`dirty="0"`) 누름틀의 내용이 첫 항목과 같으면 안내문으로 보고 그리지 않는다. 같은 쪽의 `dirty="1"` 누름틀 값은 그린다 |
+| 검증 방법 | `samples/issue8985/36385713-plain-command-guide.hwpx` 2쪽(「본문내용을 입력하세요」), `samples/issue8985/3066825-plain-command-guides.hwpx` 1쪽(「0000」「0000.00.00.」「계급」, 대조군 dirty 「성명」) — `pdf/issue8985/*-2020.pdf` |
+| 분포 | 10k 코퍼스 HWPX 3,418건 중 평문 command 의 `dirty="0"`·내용=첫 항목 누름틀은 3건 5필드, `dirty="1"` 평문 command 는 918필드 |
+| 수정 파일 | `src/model/control.rs` (`guide_text()`) |
+| 발견일 | 2026-11-12 (#8985) |
+
 ## 검증 원칙
 
 1. **사양 우선·불일치 교차 검증**: 공식 사양의 단위·속성·규칙을 먼저 따른다. 실제 결과가

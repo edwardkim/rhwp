@@ -127,7 +127,11 @@ pub(crate) fn project_first_rowspan_frame(
 }
 
 /// 모든 저장 행이 실제 측정 결과와 같으면 더 큰 개체 캐시로 다시 늘리지 않는다.
-/// 보호 크기, 병합 행, 실제 행 성장 및 저장 줄 없는 재조판은 기존 계약을 유지한다.
+/// 보호 크기, 병합 행, 실제 행 성장과 편집으로 무효가 된 칸은 기존 계약을 유지한다.
+///
+/// 칸 문단에 저장 줄이 없어(HWPX `linesegarray` 생략) rhwp 가 줄을 계산했더라도, 판정의
+/// 근거는 측정 행과 칸 선언의 일치다([#8968]). 계산한 줄이 칸 선언을 넘으면 행이 자라
+/// 아래 비교에서 빠지고, 선언 안에 들면 행은 선언 높이 그대로다.
 pub(crate) fn stored_rows_own_body(table: &Table, rows: &[f64], dpi: f64) -> bool {
     if !dpi.is_finite()
         || dpi <= 0.0
@@ -143,9 +147,7 @@ pub(crate) fn stored_rows_own_body(table: &Table, rows: &[f64], dpi: f64) -> boo
                 || cell.dirty_flag
                 || cell.paragraphs.is_empty()
                 || cell.paragraphs.iter().any(|para| {
-                    para.stored_text_partition_is_dirty()
-                        || para.cell_format_vpos_dirty
-                        || crate::renderer::para_has_no_stored_line_segs(para)
+                    para.stored_text_partition_is_dirty() || para.cell_format_vpos_dirty
                 })
         })
     {

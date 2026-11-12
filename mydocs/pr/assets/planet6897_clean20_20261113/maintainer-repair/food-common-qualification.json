@@ -1,0 +1,95 @@
+{
+  "product_code_head": "d0cc46573c7505633721c19062e504faff017d59",
+  "base": "31a422575722f634cfc2d9eb97e708da58aea188",
+  "scope": "동일 원본의 독립 Print 전141쪽 공통 대조. devel/후보의 기존 여분2쪽 및 143↔141 불일치를 숨기지 않는다. #8997 전체 해결 판정이 아니다.",
+  "whole_document_pass": false,
+  "existing_issue": "https://github.com/edwardkim/rhwp/issues/8997",
+  "comparisons": [
+    {
+      "backend": "native",
+      "maximum_decline": {
+        "page": 7,
+        "base": 19.5978,
+        "candidate": 18.93984,
+        "decline_pp": 0.65796
+      },
+      "declines_gt_2pp": [],
+      "page_count_before_maintainer_correction": 144,
+      "page_count_after": 143,
+      "fixed_base_page_count": 143,
+      "independent_pdf_pages": 141
+    },
+    {
+      "backend": "wasm",
+      "maximum_decline": {
+        "page": 7,
+        "base": 19.58418,
+        "candidate": 18.92977,
+        "decline_pp": 0.65441
+      },
+      "declines_gt_2pp": [],
+      "page_count_before_maintainer_correction": 144,
+      "page_count_after": 143,
+      "fixed_base_page_count": 143,
+      "independent_pdf_pages": 141
+    }
+  ],
+  "runs": [
+    {
+      "backend": "native",
+      "role": "base",
+      "pages_compared": 141,
+      "counts": {
+        "rhwp": 143,
+        "pdf": 141
+      },
+      "gate": "re_review_required",
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/maintainer-repair/food-common/native/base.tsv",
+      "tsv_sha256": "73e6564a1d14864c579ff367c13a6cd281545ce183d065a557ffd42ca9449279",
+      "manifest_sha256": "9c61ae7c12418a143fef8605d94b92a16baab53bdde12f2da9a62cb01f785f11",
+      "minimum": 1.42381
+    },
+    {
+      "backend": "native",
+      "role": "candidate",
+      "pages_compared": 141,
+      "counts": {
+        "rhwp": 143,
+        "pdf": 141
+      },
+      "gate": "re_review_required",
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/maintainer-repair/food-common/native/candidate.tsv",
+      "tsv_sha256": "92b73989997c3e5dfe909247ff7643eede84bea48e5359bf690abe5038ad8539",
+      "manifest_sha256": "9b19df21866a7c4de98443ab25c18f433c216fca5875c7b2b4014f126deb652f",
+      "minimum": 1.42379
+    },
+    {
+      "backend": "wasm",
+      "role": "base",
+      "pages_compared": 141,
+      "counts": {
+        "rhwp": 143,
+        "pdf": 141
+      },
+      "gate": "re_review_required",
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/maintainer-repair/food-common/wasm/base.tsv",
+      "tsv_sha256": "37402e2f853355e16cebdb7179f40c353e7f1e5cfbf5ba32fbd8b7c957690066",
+      "manifest_sha256": "03aea0aaa10d2d2de2ab1230fe3ae1e2dd96d7569cab7d643a5fd21a59619ab9",
+      "minimum": 1.41886
+    },
+    {
+      "backend": "wasm",
+      "role": "candidate",
+      "pages_compared": 141,
+      "counts": {
+        "rhwp": 143,
+        "pdf": 141
+      },
+      "gate": "re_review_required",
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/maintainer-repair/food-common/wasm/candidate.tsv",
+      "tsv_sha256": "324307e0532b91124b5d63571a5745afe808891d65ed3ede1ad34f9f7a30280c",
+      "manifest_sha256": "57d1ef40a0af2982542852b0089be81bc3c20fc1ca1b59beacfe607ab1f4ced6",
+      "minimum": 1.41884
+    }
+  ]
+}

@@ -1147,6 +1147,27 @@ impl TypesetEngine {
             const DECLARED_FLOAT_FIT_TOLERANCE_PX: f64 = 1.0;
             let has_internal_saved_vpos_reset = rowbreak_table_has_internal_saved_vpos_reset(table);
             let measured_fits_current = st.current_height + table_total <= available;
+            // 첫 행이 남은 칸에 들어가는가 — RowBreak 표를 이 자리에서 나눌 수 있는 최소 조건.
+            // 위 캡션은 첫 조각 앞에 놓이므로 캡션과 캡션 간격도 함께 들어가야 한다
+            // (prepare 의 `caption_overhead` 와 같은 정의).
+            let top_caption_px = table
+                .caption
+                .as_ref()
+                .filter(|caption| {
+                    matches!(
+                        caption.direction,
+                        crate::model::shape::CaptionDirection::Top
+                    )
+                })
+                .map_or(0.0, |caption| {
+                    ft.caption_height + hwpunit_to_px(caption.spacing as i32, self.dpi)
+                });
+            let first_row_fits_current = mt
+                .and_then(|m| m.row_heights.first().copied())
+                .is_some_and(|first_row| {
+                    st.current_height + ft.host_spacing.before + top_caption_px + first_row
+                        <= available
+                });
             let declared_overflows_current = st.current_height + declared_total > available;
             let measured_declared_excess = (table_total - declared_total).max(0.0);
             // [#5941] `anchor_delay <= measured_declared_excess` 는 둘 다 0 인 정상 형상에서
@@ -1546,7 +1567,26 @@ impl TypesetEngine {
                 && !single_row_object_declared_fits_current
                 && !native_hwp5_large_single_cell_rowbreak_needs_fragment_scan
                 && !native_hwp5_stored_rowbreak_needs_fragment_scan
-                && (saved_span.is_some() || measured_fits_current)
+                // 저장 프레임이 그 쪽 본문을 넘으면 원본도 그 자리에서 행을 나눈 것이라 통째
+                // 이월의 근거가 아니다. 한/글은 RowBreak 표를 남은 칸에 첫 행이 들어가는 한 그
+                // 자리에서 나누고, 첫 행도 못 들어갈 때만 통째 넘긴다(#8149 headerrow H04).
+                // 원본 프레임의 본문 경계에는 이미 놓인 각주만 예약한다. 아직 어떤
+                // 조각에 속할지 결정하지 않은 표 각주 전체를 빼면, 다음 쪽에 이어지는
+                // 각주 때문에 원래 들어가는 첫 프레임을 본문 밖으로 오판한다.
+                // 새 각주의 실제 수용은 뒤 조각 스캔·각주 예약이 그대로 판정한다.
+                && (saved_span.is_some_and(|(_, _, bottom_px)| {
+                    bottom_px <= (st.base_available_height()
+                        - st.current_footnote_height
+                        - st.current_zone_y_offset
+                        - st.current_bottom_fixed_exclusion).max(0.0)
+                        + DECLARED_FLOAT_FIT_TOLERANCE_PX
+                        || !first_row_fits_current
+                        || matches!(
+                            table.layout_page_break(),
+                            crate::model::table::TablePageBreak::None
+                        )
+                })
+                    || measured_fits_current)
                 && declared_total <= available
                 // [편집 세션] 이 통째-이월(keep-together)의 근거(saved_span:
                 // 저장에서 한 쪽에 있었음)는 편집으로 앞 내용이 밀리면 낡는다 —

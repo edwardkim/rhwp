@@ -481,9 +481,9 @@ pub(crate) fn export_svg(args: &[String]) -> i32 {
                     svg = insert_grid_overlay(&svg, mm, origin_mm);
                 }
                 let svg_filename = if page_count == 1 {
-                    format!("{}.svg", file_stem)
+                    super::output_file_name(&file_stem, ".svg")
                 } else {
-                    format!("{}_{:03}.svg", file_stem, page_num + 1)
+                    super::output_file_name(&file_stem, &format!("_{:03}.svg", page_num + 1))
                 };
                 let svg_path = output_path.join(&svg_filename);
 
