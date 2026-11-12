@@ -40,8 +40,7 @@ impl DocumentCore {
 
         // `<table border="1">` 은 CSS 없이도 칸마다 1px 실선을 그린다 (HTML 표 속성).
         // 칸의 `border` CSS 가 있으면 그 값이 이긴다.
-        let table_tag = &table_html[..table_html.find('>').map_or(0, |gt| gt + 1)];
-        let attr_border_pt = match parse_html_attr_f64(table_tag, "border") {
+        let attr_border_pt = match parse_html_attr_f64(table_html, "border") {
             Some(width) if width > 0.0 => 0.75,
             _ => 0.0,
         };
@@ -1095,17 +1094,7 @@ pub(crate) fn html_img_src(img_tag: &str) -> Option<&str> {
 
 /// 태그에서 속성 문자열을 그대로 뽑는다(따옴표 양쪽 지원).
 pub(crate) fn extract_html_attr(tag: &str, attr: &str) -> Option<String> {
-    let lower = tag.to_lowercase();
-    for quote in ['"', '\''] {
-        let needle = format!("{}={}", attr, quote);
-        if let Some(start) = lower.find(&needle) {
-            let after = &tag[start + needle.len()..];
-            if let Some(end) = after.find(quote) {
-                return Some(after[..end].to_string());
-            }
-        }
-    }
-    None
+    html_quoted_attribute(tag, attr).map(str::to_owned)
 }
 
 /// PNG·JPEG·BMP·GIF 헤더에서 원본 픽셀 크기를 읽는다.
