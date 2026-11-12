@@ -9,6 +9,11 @@
 //!   (Hwp 2022 12.0.0.4547 Print, Hancom PDF 1.3.0.547) 4쪽.
 //! - 수정 전 rhwp(devel `31a4225757`)는 날짜 코드를 4 hchar 로 세어 문단 끝 뒤 바이트를
 //!   글자로 읽었고, 본문이 어긋나 `failed to fill whole buffer` 로 문서 전체를 거부했다.
+//! - 측정: 2026-11-13, code `b4e3309dc0`, `scripts/visual_sweep.py --silhouette-only --compat 2022
+//!   --dpi 96` 의 `silhouette_raw_match_percent`(색상 경계 보정 전 2px 내용 실루엣).
+//!   Native 1~4쪽 97.90/98.87/97.78/98.78, fresh WASM 97.88/98.93/97.86/98.82, 전체 4쪽 = 한컴
+//!   4쪽, 전쪽 최저 Native 97.78 / WASM 97.86. 남은 차이: 한컴은 머리말(날짜 코드) 자리에 원본
+//!   파일 이름을 인쇄하고 rhwp 는 비워 둔다. 증거 `mydocs/pr/assets/issue_9032/{native,wasm}/`.
 //!
 //! 검사: 문서 열기 성공, 머리말 문단 리스트가 날짜 코드 문단 하나로 끝나고, 본문에 한컴
 //! Print 의 서식 제목·작성요령이 순서대로 있으며, 전체 쪽수 = 한컴 Print 4쪽.
@@ -69,10 +74,7 @@ fn date_code_counts_its_whole_structure_in_the_paragraph_char_count() {
     let last = text
         .find("유를해당항목에기재합니다")
         .expect("작성요령 마지막 항목");
-    assert!(
-        title < heading && heading < last,
-        "한컴 Print 와 같은 순서"
-    );
+    assert!(title < heading && heading < last, "한컴 Print 와 같은 순서");
 
     let core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
     assert_eq!(core.page_count(), PRINT_PAGES, "한컴 Print 의 전체 쪽수");
