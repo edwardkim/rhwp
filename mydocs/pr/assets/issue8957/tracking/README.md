@@ -56,7 +56,7 @@ PDFium, 96 DPI, `silhouette_raw_match_percent`의 색상 경계 보정 전 2px �
 
 새 관계형 2개를 포함해 실제 주 프로그램 소유, 저장 줄·그림 여백, 원본 HFT Print 프레임,
 Native 글꼴 등록과 윤곽의 집중 회귀 **57개가 모두 통과**했다. 원본 기대값은 변경하지 않았다.
-실행 대상과 개별 결과는 `focused-regressions.txt`에 있다. `cargo fmt --all -- --check`와 수정 라이브러리/신규 suite의 Clippy(`-D warnings`)도 통과했다.
+개별 실행 로그는 비공개 `output/issue8957/`에만 보관한다. `cargo fmt --all -- --check`와 수정 라이브러리/신규 suite의 Clippy(`-D warnings`)도 통과했다.
 
 최소 글꼴 환경에서 사용자·공유 글꼴 파일과 Font Registry 조회를 프로세스에 한정해 차단했다.
 CoreText 격리 목록 528 URL, system_profiler 237개 기록 모두 OS 기본 글꼴 경로였다.
