@@ -1,0 +1,14 @@
+{
+  "decision_date": "2026-11-13",
+  "timezone": "Asia/Seoul",
+  "approved": "메인테이너 보정·필수 재검증 승인 (권장)",
+  "scope": [
+    "Windows CMake junction header resolution",
+    "actual runner build",
+    "two tile revision resize recovery",
+    "relocated Windows reference app"
+  ],
+  "macos_decision_preserved": true,
+  "remote_source_push_pr_merge_authorized": false,
+  "observed_devel": "41c889cfd8a869ad23199d6018f8b569879a575c"
+}
