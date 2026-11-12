@@ -1,0 +1,54 @@
+[
+  {
+    "name": "matrix",
+    "source": "0aa25a66345edbf36aee45bf953611fe041350e0",
+    "command": [
+      "cargo",
+      "--offline",
+      "run",
+      "--manifest-path",
+      "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/diagnostic-probe/Cargo.toml",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--bin",
+      "matrix-probe",
+      "--",
+      "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/matrix"
+    ],
+    "returncode": 0,
+    "seconds": 1.817
+  },
+  {
+    "name": "native-build",
+    "source": "0aa25a66345edbf36aee45bf953611fe041350e0",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--lib",
+      "--bin",
+      "rhwp"
+    ],
+    "returncode": 0,
+    "seconds": 322.366
+  },
+  {
+    "name": "wasm-build",
+    "source": "0aa25a66345edbf36aee45bf953611fe041350e0",
+    "command": [
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "pkg"
+    ],
+    "returncode": 0,
+    "seconds": 796.273
+  }
+]
