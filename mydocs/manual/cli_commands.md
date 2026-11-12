@@ -264,6 +264,12 @@ rhwp --password '문서비밀번호' export-text protected.hwp -o output/
 
 ## 1. 내보내기 (Export)
 
+쪽별 산출 파일 이름은 `<원본 stem>_<NNN>.<확장자>`(한 쪽이면 `<원본 stem>.<확장자>`)다.
+`export-svg`·`export-png`·`export-text`·`export-markdown`(이미지 폴더 `_assets` 포함)·
+`export-kitty`·`export-sixel`·`thumbnail`·`export-pdf` 기본 이름은 접미사·확장자를 보존한 채
+전체가 255바이트(ext4·APFS 이름 한도) 안에 들도록 stem 을 UTF-8 문자 경계에서 줄인다(#9010).
+같은 입력이면 같은 이름이다.
+
 ### `export-svg <파일> [옵션]`
 HWP/HWPX → SVG.
 - `--json` (#3287): 산출물 **매니페스트**를 stdout 에 JSON 으로 출력한다(렌더 동작 무변경).

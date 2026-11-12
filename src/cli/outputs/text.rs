@@ -188,9 +188,9 @@ pub(crate) fn export_text(args: &[String]) -> i32 {
                 }
 
                 let txt_filename = if page_count == 1 {
-                    format!("{}.txt", file_stem)
+                    super::output_file_name(&file_stem, ".txt")
                 } else {
-                    format!("{}_{:03}.txt", file_stem, page_num + 1)
+                    super::output_file_name(&file_stem, &format!("_{:03}.txt", page_num + 1))
                 };
                 let txt_path = output_path.join(&txt_filename);
 
@@ -611,7 +611,7 @@ pub(crate) fn export_markdown(args: &[String]) -> i32 {
         .and_then(|s| s.to_str())
         .unwrap_or("page");
 
-    let assets_dir_name = format!("{}_assets", file_stem);
+    let assets_dir_name = super::output_file_name(&file_stem, "_assets");
     let assets_dir_path = output_path.join(&assets_dir_name);
     let mut written_image_count: usize = 0;
     // [#2707] 요청한 페이지 수가 아니라 실제로 저장에 성공한 MD 페이지 수를 센다.
@@ -664,12 +664,9 @@ pub(crate) fn export_markdown(args: &[String]) -> i32 {
                     }
 
                     let ext = mime_to_ext(&mime);
-                    let image_filename = format!(
-                        "{}_p{:03}_img{:03}.{}",
-                        file_stem,
-                        page_num + 1,
-                        img_idx + 1,
-                        ext
+                    let image_filename = super::output_file_name(
+                        &file_stem,
+                        &format!("_p{:03}_img{:03}.{}", page_num + 1, img_idx + 1, ext),
                     );
                     let image_path = assets_dir_path.join(&image_filename);
 
@@ -694,9 +691,9 @@ pub(crate) fn export_markdown(args: &[String]) -> i32 {
                 }
 
                 let md_filename = if page_count == 1 {
-                    format!("{}.md", file_stem)
+                    super::output_file_name(&file_stem, ".md")
                 } else {
-                    format!("{}_{:03}.md", file_stem, page_num + 1)
+                    super::output_file_name(&file_stem, &format!("_{:03}.md", page_num + 1))
                 };
                 let md_path = output_path.join(&md_filename);
 
