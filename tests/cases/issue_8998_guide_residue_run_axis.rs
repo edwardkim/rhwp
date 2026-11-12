@@ -8,6 +8,12 @@
 //! 뒤로 직렬화 위치만 밀리고 경계는 IR 위치 그대로라 두 번째 누름틀 시작 컨트롤보다 경계 27 이 먼저
 //! 잘렸다 — 다시 열면 `(19,17) (19,5)` 로 옮겨지고 두 번째 잔재의 글자 모양이 17 → 5 로 바뀌었다.
 //! 기대값은 원본 HWP 를 읽은 IR 이다(저장→적재 고정점). 시각 출력과 무관한 저장 계약 검사다.
+//!
+//! 측정(2026-11-12, 코드 head d257f9401f, base 80b1c354c2, `scripts/visual_sweep.py --silhouette-only --dpi 96`,
+//! raw = `silhouette_raw_match_percent`, `RHWP_FONT_PATH` 글꼴 공급, `--compat 2022`, 한컴 engine 2020 Print):
+//! - 내보낸 HWPX Native 1쪽 / 1쪽: 57.09, fresh WASM 1쪽 / 1쪽: 57.63. 원본 HWP 를 devel 로 그려도
+//!   57.09 인 기존 미달(큰 표 칸 경계)이라 #9005 로 분리했다. 이 검사는 쪽 배치가 아니라 저장 계약만 본다.
+//! - 증거: `mydocs/pr/assets/issue_8998/`, 기준 PDF `pdf/issue8998/`
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
