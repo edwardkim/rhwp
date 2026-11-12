@@ -118,7 +118,7 @@ class MetalReceiptContracts(unittest.TestCase):
         self.assertEqual(cargo[cargo.index("--features") + 1], "native-skia-metal")
         self.assertEqual(artifacts["native"], Path("/private/probe/native-target/aarch64-apple-darwin/debug/librhwp_native_ffi.dylib"))
         compilers = [command for command in commands if command[0] == "/Xcode/clang++"]
-        self.assertEqual(len(compilers), 4)
+        self.assertEqual(len(compilers), 5)
         self.assertLess(max(commands.index(command) for command in compilers), commands.index(cargo))
         cv_status = next(command for command in compilers if any(value.endswith("cv_closed_status_sdk_test.mm") for value in command))
         self.assertNotIn("-dynamiclib", cv_status)
@@ -128,6 +128,10 @@ class MetalReceiptContracts(unittest.TestCase):
         self.assertNotIn("-dynamiclib", animation)
         self.assertLess(commands.index(animation), commands.index([str(artifacts["metalViewAnimationPolicy"])]))
         self.assertLess(commands.index([str(artifacts["metalViewAnimationPolicy"])]), commands.index(cargo))
+        tile_group = next(command for command in compilers if any(value.endswith("metal_tile_group_sdk_test.mm") for value in command))
+        self.assertNotIn("-dynamiclib", tile_group)
+        self.assertLess(commands.index(tile_group), commands.index([str(artifacts["metalTileGroupBridge"])]))
+        self.assertLess(commands.index([str(artifacts["metalTileGroupBridge"])]), commands.index(cargo))
         for command in compilers:
             self.assertIn("-fobjc-arc", command)
             self.assertIn("-fblocks", command)
@@ -146,9 +150,10 @@ class MetalReceiptContracts(unittest.TestCase):
             Path("/FlutterMacOS.framework"), "arm64", "1.93.1", native)
         self.assertEqual(artifacts["native"], native)
         self.assertFalse(any("cargo" in command for command in commands))
-        self.assertEqual(sum(command[0] == "/Xcode/clang++" for command in commands), 4)
+        self.assertEqual(sum(command[0] == "/Xcode/clang++" for command in commands), 5)
         self.assertIn([str(artifacts["cvCloseStatus"])], commands)
         self.assertIn([str(artifacts["metalViewAnimationPolicy"])], commands)
+        self.assertIn([str(artifacts["metalTileGroupBridge"])], commands)
         producer = commands[-1]
         self.assertIn(str(native), producer)
         self.assertIn("--native-source-head", producer)
