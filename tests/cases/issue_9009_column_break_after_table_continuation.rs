@@ -15,8 +15,8 @@
 //! 측정(2026-11-12, 이 파일과 같은 커밋의 코드, base = upstream/devel 80b1c354c2,
 //! `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`, raw =
 //! `silhouette_raw_match_percent`, 글꼴 `ttfs/opensource` — 문서 본 글꼴 없는 환경):
-//! - Native: 8쪽 / 8쪽, 8쪽 99.73(base 0.00, base 9쪽), 최저 MEASURE_NATIVE
-//! - fresh WASM(`scripts/wasm-pack-locked.sh --target web`): 8쪽 / 8쪽, 8쪽 MEASURE_WASM8, 최저 MEASURE_WASM
+//! - Native: 8쪽 / 8쪽, 8쪽 99.73(base 0.00, base 9쪽), 최저 94.06(6쪽, base 와 같음)
+//! - fresh WASM(`scripts/wasm-pack-locked.sh --target web`): 8쪽 / 8쪽, 8쪽 99.93, 최저 93.99(6쪽)
 //! - 증거: `mydocs/pr/assets/issue_9009/`(native·wasm TSV, review·overlay PNG)
 #![cfg(not(target_arch = "wasm32"))]
 
