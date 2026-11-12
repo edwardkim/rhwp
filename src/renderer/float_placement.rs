@@ -5960,7 +5960,6 @@ pub(crate) fn stored_table_next_page_placement(
                     + i64::from(lines[0].line_height)
                     + i64::from(lines[0].line_spacing)
         })
-        || table.layout_page_break() != TablePageBreak::None
         || table.common.treat_as_char
         || (!group && !is_para_topbottom_float(&table.common))
         || !table.common.flow_with_text
@@ -6042,9 +6041,9 @@ pub(crate) fn stored_table_next_page_placement(
         || (!group && offset < 0.0)
         || bottom > available_height
         || (group && !tables.iter().all(|member| member_overflows(member)))
-        || (!visible_host && (actual_host_flow_y - host_y).abs() > dpi / 7200.0)
+        || (!visible_host && actual_host_flow_y + dpi / 7200.0 < host_y)
         || (visible_host && actual_host_flow_y + offset + bottom <= available_height)
-        || host_y + offset + bottom <= available_height
+        || host_y.max(actual_host_flow_y) + offset + bottom <= available_height
     {
         return None;
     }
@@ -6071,8 +6070,16 @@ pub(crate) fn stored_table_next_page_placement(
                             s.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0 && s.line_height > 0
                         })
                 });
+                let inline_object_restart = line_index == 0
+                    && next.controls.iter().any(|control| match control {
+                        Control::Table(inline) => inline.common.treat_as_char,
+                        _ => false,
+                    });
                 if i64::from(line.vertical_pos) != frame_height_hu
-                    || !(para_has_non_whitespace_text(next) || terminal_blank_tail || group)
+                    || !(para_has_non_whitespace_text(next)
+                        || terminal_blank_tail
+                        || group
+                        || inline_object_restart)
                 {
                     return None;
                 }

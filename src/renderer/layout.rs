@@ -15061,6 +15061,14 @@ impl LayoutEngine {
                     let wrap_text_bottom = table_y_before + wrap_bottom;
                     if wrap_text_bottom > y_offset {
                         y_offset = wrap_text_bottom;
+                        // 띠 문단의 저장 줄 끝은 마지막 줄간격과 문단 경계 간격까지 지난
+                        // 다음 흐름 원점이다. host 의 뒤 간격·끝 줄간격을 다시 더하지 않는다.
+                        let mut consumed = self.paragraph_spacing_consumed.borrow_mut();
+                        let entry = consumed
+                            .entry((page_content.section_index, para_index))
+                            .or_default();
+                        entry.1 = true;
+                        entry.2 = true;
                     }
                 }
             }
@@ -17459,9 +17467,14 @@ impl LayoutEngine {
             let Some(para) = paragraphs.get(wp.para_index) else {
                 continue;
             };
+            // 띠에 흡수된 줄 범위만 띠 바닥을 정한다. 같은 문단의 뒤 줄이 전체 폭으로
+            // 이어지면 그 줄은 띠 아래 일반 흐름이다.
             let para_bottom = para
                 .line_segs
                 .iter()
+                .enumerate()
+                .filter(|(index, _)| *index >= wp.start_line && *index < wp.end_line)
+                .map(|(_, seg)| seg)
                 .filter(|seg| {
                     seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
                 })
