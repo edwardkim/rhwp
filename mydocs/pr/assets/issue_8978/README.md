@@ -74,11 +74,12 @@ HWP 무늬 종류를 0~5로 해석하는 수정의 Native/fresh WASM Visual Swee
 
 ## 편람 gate
 
-`python scripts/visual_sweep.py --handbook-gate --rhwp-bin <후보 rhwp.exe>` (Windows 11, 지원 웹폰트 공급).
+`python scripts/visual_sweep.py --handbook-gate --rhwp-bin <후보 rhwp>`, 지원 웹폰트 공급.
 
-- 383/383쪽, 최저 99.96%(130쪽, 알려진 WMF 차이), 100.00%는 365쪽. 90% 미만 없음.
-- `pr_review_gate`: `re_review_required`. 기준 대비 하락은 9쪽 하나(100.00 → 99.99)다.
-- 같은 명령의 export 인자로 base `rhwp.exe`도 383쪽을 출력했다. 383쪽 모두 후보와 PNG SHA-256이 같다.
-  9쪽 차이는 제목 글자의 안티앨리어싱이며 이 변경과 무관하다. 편람에는 `hatchStyle`이 없다.
+- Ubuntu 24.04(WSL2), 후보 `rhwp` SHA-256 `7207ba495752cb01ce487045b0e89625e3adccdd343e8cec5ad2a9e04882b6c3`
+  (`cargo build --locked --release --features native-skia --bin rhwp`).
+- `passed`. 383/383쪽, 최저 99.96%(130쪽, 알려진 WMF 차이), 100.00%는 370쪽. 기준 대비 하락 없음.
 - 원본 TSV: [native/handbook-hwpx_silhouette.tsv](native/handbook-hwpx_silhouette.tsv)
-  (SHA-256 `9410ba06506c6fc30c084c6e5233efa4611025f9a9d9a3312fcc6ae92ba81d22`).
+  (SHA-256 `d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308`).
+- 같은 gate를 Windows 11 `rhwp.exe`로 돌리면 9쪽만 100.00 → 99.99(제목 글자 안티앨리어싱)다.
+  base `rhwp.exe`도 383쪽 PNG가 후보와 SHA-256까지 같아 Windows 글꼴 래스터 차이다.
