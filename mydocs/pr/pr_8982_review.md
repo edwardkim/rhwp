@@ -1,42 +1,34 @@
-# PR #8982 리뷰 — HTML 표 border 속성
+# PR #8982 검토 — HTML 표 border 속성
 
 ## 최종 판정
 
-**머지 보류 — 필수 시각 증적·정식 회귀 보완이 필요하다.** 원 주장은 최신 devel에서도 재현됐고 코드 검토상 수정 방향은 해당 원인과 연결된다. 이를 구현 거부나 새 회귀 검출과 혼동하지 않는다. 원 head의 공개 시각 증거가 없으며, 검사 파일의 첫머리에도 정식 측정 근거가 없다.
+**수용 권고.** 승인받은 메인테이너 보완과 필수 로컬 검증을 완료했다. 원격 처리 승인을 기다린다.
 
-## 접수·검토 경로
+## 원 기여와 메인테이너 보완
 
-- 원 [PR #8982](https://github.com/edwardkim/rhwp/pull/8982), 관련 [이슈 #8942](https://github.com/edwardkim/rhwp/issues/8942), 첫 기여자 `Bongseop-Kim`, draft 아님.
-- 고정 원 head `db88c6180c9ae66a1270937a181e749ce48a0f7d`, fork `Bongseop-Kim/rhwp`, branch `fix/paste-html-table-border-attr`. reviewer `edwardkim` 지정 후 API로 확인했다.
-- 최신 base `80b1c354c29b7a02fb2b3c14a274da7f5b653ada`, 공통 로컬 누적 코드 `cc6103f1a82149f2d3ae1b49d86a81698df1841a`. 원 head 두 개를 그대로 ancestor로 보존한 clean merge이며 메인터너 코드 보정은 아직 없다.
-- 기본 `maintainer_general.md`; 보조 `intake_and_review.md`, `local_validation.md`, `multi_pr_update_branch.md`, `visual_fixture_evidence.md`, `first_time_contributor.md`, `post_merge.md`를 적용한다. 각 원 PR의 판정·원격 조치는 분리한다.
-- 기본 작업공간과 다른 worktree는 보존한다. Cargo target은 `/home/edward/mygithub/rhwp/target/pr-review`를 공용으로 순차 사용한다. 원격 reviewer 지정 외 댓글·approve·push·merge·close는 수행하지 않았다.
+원 head `db88c6180c9ae66a1270937a181e749ce48a0f7d`를 merge 이력으로 보존했다. 최신 devel에도 남은 #8942의 명시적 `border` 속성 선 누락을 실제로 고친다. 무테두리 표의 기본값 변경 제안 #7992는 다루지 않는다.
 
-## 현재 CI와 근거의 경계
+원 코드를 누적 적용하면 `data-border="1"` 또는 다른 속성 값 안의 `border="1"`도 실선이 되는 새 결함을 재현했다. 승인 후 숫자 속성과 기존 이미지 style 추출이 같은 따옴표 속성 lexer를 소비하도록 보정했다. 이름·값 경계를 읽고 기존 단위·따옴표 지원 범위와 셀 CSS 우선순위를 보존한다. span·그림 단위와 실제 style 속성의 소비 경로도 정식 API 회귀로 보호했다.
 
-원 code head의 Build & Test, Rust CodeQL 분석, Adapter·Proptest 및 정책 status는 success다. CodeQL 종합 check는 non-Rust 구성 세 개 미발견으로 neutral이며 성공으로 바꾸어 기록하지 않는다. 원 head CI를 로컬 누적 코드의 새 CI로 표시하지 않는다.
+제품 보정 source `0aa25a6634`, 최종 회귀 source `39f0ac0477` 사이 제품 파일 변경은 없다. 원 기여 및 그 개선을 유지하면서 불충분했던 인쇄/브라우저/저장 검증을 보완했다.
 
-원 PR은 실제 출력에 영향을 주는 변경을 시각 비해당으로 적었다. BorderFill·CharShapeRef를 실제 paint가 소비하므로 Native/fresh WASM·독립 한컴 Print·전쪽 TSV·직접 판독이 필요하다. 원본·PDF가 없다는 사실을 비해당 근거로 쓰지 않는다. 독립 자료 확보 전에는 새 렌더링 회귀의 측정 header나 기대값을 임의로 만들지 않는다.
+## 공통 검증과 독립 근거
 
-## 실제 재현·검증
+- 최소 글꼴 환경의 집중 23개: #8982 9개, #8983 6개, 선행 #7516 8개. 전체 Rust 회귀 13,341개·Native 공식 3종 4,073개·모든 Rust lint·workspace build가 통과했다. 기존 skip/ignored와 세션 수집기의 종료 상태는 원장에 구분했다.
+- 주요 12문서와 선행 #7521 원 사례를 포함한 Native/fresh WASM 각 13쪽은 모두 raw 100.00%다. 독립 한컴 2020 Print의 method 0·one-up·11.0.0.9136을 확인했다. source로 만든 HWP/HWPX와 그 동일 저장본의 Print를 연결했으며 RHWP가 생성한 문서를 한컴 저장본이라고 부르지 않았다.
+- 기준 devel `80b1c354c29b`와 후보가 같은 저장본을 열어 만든 PNG 26개가 모두 같다. 브라우저에서는 별도로 base/head의 실제 공개 HTML paste API를 실행해 원 실패와 보정 후 정상 상태를 확인했다. 수정 전 저장 결과는 진단이며 정상 golden으로 등록하지 않았다.
+- Studio 실제 paste 이벤트 6개와 HWP/HWPX 두 차례 저장·재열기 24개 비교가 통과했다. 본문·셀의 서식 있는 삽입점과 복합 입력·속성 별칭을 포함한다.
+- 정본 보호 3,542행 공식 값 하락 0, 필수 Native HWPX 편람 383쪽 gate passed. 예외를 적용하지 않았다.
+- [정식 원장](assets/bongseop-kim-20261112/README.md), [검사 집계](assets/bongseop-kim-20261112/validation.json), [전체 보호 비교](assets/bongseop-kim-20261112/protected-comparison.tsv).
 
-- 원 PR의 4개/3개 검사와 기존 #7516의 8개를 고정한 최신 base의 공개 DocumentCore API에 같은 소스 그대로 연결했다. base는 11 PASS·4 FAIL이며 두 원 버그를 재현했다.
-- 로컬 누적 코드 `cc6103f1a82149f2d3ae1b49d86a81698df1841a`에서 같은 15개는 모두 PASS다. 원 두 버그를 해결하며 기존 #7516의 8개도 보존했다.
-- 표·서식·두 기능 혼합의 세 입력에서 HWP/HWPX 각각 저장 → 재열기 → 재저장 → 재열기, 합계 12개 검사 지점을 모두 통과했다. 본문·칸·테두리 종류·글자별 서식 보존을 비교했다. 이 임시 진단은 기존 정식 회귀의 1회 HWPX 저장 보호 범위를 자동 확대하지 않으며, 새 시각 일치 증거도 아니다.
-- 원 PR 테스트 7개는 Git blob을 그대로 가져와 진단 crate에 연결했고 기존 #7516의 8개도 현재 소스를 그대로 사용했다. 실제 package·source·명령·exit를 구분했으며 이 재현을 전체 suite 실행으로 표현하지 않는다.
-- 실행 원시 자료는 Git에서 제외된 `output/pr-review/bongseop-kim-20261112/`에만 둔다. 실행 로그·중간 JSON은 커밋하지 않는다.
+## 조판 원칙 준수와 입력 커밋 확인
 
-## 해제 조건과 다음 범위
+HTML 속성/문자 범위 → Document IR의 border fill/CharShapeRef → 공통 측정·paint → 실제 Native·Canvas 출력을 추적했다. 조판 높이·좌표·pagination 공식을 변경하지 않아 분할/이어받기 알고리즘 변경은 비해당이다. 문서 ID·우연한 숫자 보정·clamp·backend별 예외를 추가하지 않았다. 실제 변경한 회귀는 문자·서식·소유·내용 보존 관계이며 px·쪽수 pin은 없다. 원 두 파일과 기존 #7516의 검증 목적을 재점검했다.
 
-[공통 보완 계획](bongseop_kim_20261112_review_plan.md)의 원칙에 따라 원 기여를 보존하고, 필요한 보정·정식 회귀·독립 Print·Native/fresh WASM·반복 저장 검증을 끝낸 뒤 다시 판정한다. 보정 담당 또는 공개 댓글은 작업지시자 결정 전 실행하지 않는다.
+수용 근거의 새 입력/PDF는 samples·pdf·mydocs/pr/assets의 검토 commit에 포함한다. 대상 font 프로그램·SVG font payload는 넣지 않는다. 실제 실행 입력 hash·인쇄 경로·producer·전쪽 TSV·직접 확대 판독·반복 저장을 원장에 연결했다. 기존 보호 입력/PDF 36개 조합의 hash도 정본과 모두 같다.
 
-## 실행으로 확인한 새 속성 오인
+## 원격 상태와 다음 절차
 
-```html
-<table data-border="1"><tr><td>가</td></tr></table>
-<table data-border="1" border="0"><tr><td>가</td></tr></table>
-```
+원 PR의 CI는 원 기여 head의 증거다. 당시 Rust 분석은 성공했으나 CodeQL composite는 configuration 3개 누락의 neutral임을 구분했다. 그 결과를 새 보정/test head의 CI로 재사용하지 않는다. 새 수용 PR의 exact-head 필수 CI와 self-review가 필요하다.
 
-두 경우 모두 실제 `border`는 부재 또는 0이므로 선 없는 칸이어야 한다. 실제 Chrome 157 DOM의 border 속성은 각각 null/"0", 셀 테두리는 none/0px다. 최신 base는 두 경우 모두 `BorderLineType::None`을 유지하지만, 누적 후보는 각각 한 칸의 네 변이 `Solid`로 바뀐다. 실제 `border="0"`만 있는 대조군은 양쪽 모두 None이다.
-
-원인은 `parse_html_attr_f64`가 태그 전체에서 `border="` 문자열을 찾아 `data-border`의 접미부도 속성으로 수용하는 것이다. 해당 helper는 기존 것이지만 이 PR이 표 border의 기본값에 연결하면서 새 입력의 보이는 선 속성이 달라진다. 일반 test 15 PASS와 별도로 재현된 결함이며, 새 시각 회귀를 통과했다고 쓰지 않는다. 두 예의 전체 출력이 아니라 공개 API의 유효 셀 테두리 속성과 실제 브라우저 DOM을 대조했다. 원 구현과 기여자의 기존 제약은 구분한다.
+원 fork는 실제 push=false이므로 upstream 통합 수용 PR 경로를 제안한다. 원격 push·PR·공개 댓글·merge는 이번 로컬 승인에 포함되지 않아 수행하지 않았다. 새 원격 처리안은 검증 완료 후보로 따로 승인받는다. 원 fork branch·다른 작업은 보존한다.

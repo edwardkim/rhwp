@@ -1,35 +1,34 @@
-# PR #8983 리뷰 — HTML 첫 서식 앞 평문
+# PR #8983 검토 — 첫 서식 앞 평문 구간
 
 ## 최종 판정
 
-**머지 보류 — 필수 시각 증적·정식 회귀 보완이 필요하다.** 원 주장은 최신 devel에서도 재현됐고 코드 검토상 수정 방향은 해당 원인과 연결된다. 이를 구현 거부나 새 회귀 검출과 혼동하지 않는다. 원 head의 공개 시각 증거가 없으며, 검사 파일의 첫머리에도 정식 측정 근거가 없다.
+**수용 권고.** 원 수정을 유지하고 부족한 필수 로컬 검증을 완료했다. 원격 처리 승인을 기다린다.
 
-## 접수·검토 경로
+## 원 기여와 선행 해결 추적
 
-- 원 [PR #8983](https://github.com/edwardkim/rhwp/pull/8983), 관련 [이슈 #8943](https://github.com/edwardkim/rhwp/issues/8943), 첫 기여자 `Bongseop-Kim`, draft 아님.
-- 고정 원 head `9d1f6248c4ffd9365c9a0aab79d949fabde5c567`, fork `Bongseop-Kim/rhwp`, branch `fix/paste-html-leading-plain-run`. reviewer `edwardkim` 지정 후 API로 확인했다.
-- 최신 base `80b1c354c29b7a02fb2b3c14a274da7f5b653ada`, 공통 로컬 누적 코드 `cc6103f1a82149f2d3ae1b49d86a81698df1841a`. 원 head 두 개를 그대로 ancestor로 보존한 clean merge이며 메인터너 코드 보정은 아직 없다.
-- 기본 `maintainer_general.md`; 보조 `intake_and_review.md`, `local_validation.md`, `multi_pr_update_branch.md`, `visual_fixture_evidence.md`, `first_time_contributor.md`, `post_merge.md`를 적용한다. 각 원 PR의 판정·원격 조치는 분리한다.
-- 기본 작업공간과 다른 worktree는 보존한다. Cargo target은 `/home/edward/mygithub/rhwp/target/pr-review`를 공용으로 순차 사용한다. 원격 reviewer 지정 외 댓글·approve·push·merge·close는 수행하지 않았다.
+원 head `9d1f6248c4ffd9365c9a0aab79d949fabde5c567`를 merge 이력으로 보존했다. 최신 devel에서도 첫 CharShapeRef가 뒤에서 시작하면 그 서식이 앞 평문까지 적용되는 #8943을 재현했다. 원 기여의 0 시작 평문 run은 원인을 바로잡는다.
 
-## 현재 CI와 근거의 경계
+선행 #7516 → 원 PR #7521 → 통합 #7601 → 실제 적용 `cb2bd912d5afc28e01015d79caf839664c942e63`과 현재 base의 포함을 확인했다. 기존 8개 검사와 독립 Print 원 사례를 유지했다. 원 기여에서 추가 제품 보정은 필요하지 않았다. 본문/셀의 기울임꼴 삽입점, 목록·여러 문단·Unicode/그림 경계와 혼합 입력·HWP/HWPX 두 차례 저장을 확인했다.
 
-원 code head의 Build & Test, Rust CodeQL 분석, Adapter·Proptest 및 정책 status는 success다. CodeQL 종합 check는 non-Rust 구성 세 개 미발견으로 neutral이며 성공으로 바꾸어 기록하지 않는다. 원 head CI를 로컬 누적 코드의 새 CI로 표시하지 않는다.
+원 기여의 한 번 HWPX 재열기 외에 두 형식의 반복 저장과 실제 Studio 경로를 보완했고 source/test의 최종 필수 게이트를 완료했다.
 
-원 PR은 실제 출력에 영향을 주는 변경을 시각 비해당으로 적었다. BorderFill·CharShapeRef를 실제 paint가 소비하므로 Native/fresh WASM·독립 한컴 Print·전쪽 TSV·직접 판독이 필요하다. 원본·PDF가 없다는 사실을 비해당 근거로 쓰지 않는다. 독립 자료 확보 전에는 새 렌더링 회귀의 측정 header나 기대값을 임의로 만들지 않는다.
+## 공통 검증과 독립 근거
 
-## 실제 재현·검증
+- 최소 글꼴 환경의 집중 23개: #8982 9개, #8983 6개, 선행 #7516 8개. 전체 Rust 회귀 13,341개·Native 공식 3종 4,073개·모든 Rust lint·workspace build가 통과했다. 기존 skip/ignored와 세션 수집기의 종료 상태는 원장에 구분했다.
+- 주요 12문서와 선행 #7521 원 사례를 포함한 Native/fresh WASM 각 13쪽은 모두 raw 100.00%다. 독립 한컴 2020 Print의 method 0·one-up·11.0.0.9136을 확인했다. source로 만든 HWP/HWPX와 그 동일 저장본의 Print를 연결했으며 RHWP가 생성한 문서를 한컴 저장본이라고 부르지 않았다.
+- 기준 devel `80b1c354c29b`와 후보가 같은 저장본을 열어 만든 PNG 26개가 모두 같다. 브라우저에서는 별도로 base/head의 실제 공개 HTML paste API를 실행해 원 실패와 보정 후 정상 상태를 확인했다. 수정 전 저장 결과는 진단이며 정상 golden으로 등록하지 않았다.
+- Studio 실제 paste 이벤트 6개와 HWP/HWPX 두 차례 저장·재열기 24개 비교가 통과했다. 본문·셀의 서식 있는 삽입점과 복합 입력·속성 별칭을 포함한다.
+- 정본 보호 3,542행 공식 값 하락 0, 필수 Native HWPX 편람 383쪽 gate passed. 예외를 적용하지 않았다.
+- [정식 원장](assets/bongseop-kim-20261112/README.md), [검사 집계](assets/bongseop-kim-20261112/validation.json), [전체 보호 비교](assets/bongseop-kim-20261112/protected-comparison.tsv).
 
-- 원 PR의 4개/3개 검사와 기존 #7516의 8개를 고정한 최신 base의 공개 DocumentCore API에 같은 소스 그대로 연결했다. base는 11 PASS·4 FAIL이며 두 원 버그를 재현했다.
-- 로컬 누적 코드 `cc6103f1a82149f2d3ae1b49d86a81698df1841a`에서 같은 15개는 모두 PASS다. 원 두 버그를 해결하며 기존 #7516의 8개도 보존했다.
-- 표·서식·두 기능 혼합의 세 입력에서 HWP/HWPX 각각 저장 → 재열기 → 재저장 → 재열기, 합계 12개 검사 지점을 모두 통과했다. 본문·칸·테두리 종류·글자별 서식 보존을 비교했다. 이 임시 진단은 기존 정식 회귀의 1회 HWPX 저장 보호 범위를 자동 확대하지 않으며, 새 시각 일치 증거도 아니다.
-- 원 PR 테스트 7개는 Git blob을 그대로 가져와 진단 crate에 연결했고 기존 #7516의 8개도 현재 소스를 그대로 사용했다. 실제 package·source·명령·exit를 구분했으며 이 재현을 전체 suite 실행으로 표현하지 않는다.
-- 실행 원시 자료는 Git에서 제외된 `output/pr-review/bongseop-kim-20261112/`에만 둔다. 실행 로그·중간 JSON은 커밋하지 않는다.
+## 조판 원칙 준수와 입력 커밋 확인
 
-## 해제 조건과 다음 범위
+HTML 속성/문자 범위 → Document IR의 border fill/CharShapeRef → 공통 측정·paint → 실제 Native·Canvas 출력을 추적했다. 조판 높이·좌표·pagination 공식을 변경하지 않아 분할/이어받기 알고리즘 변경은 비해당이다. 문서 ID·우연한 숫자 보정·clamp·backend별 예외를 추가하지 않았다. 실제 변경한 회귀는 문자·서식·소유·내용 보존 관계이며 px·쪽수 pin은 없다. 원 두 파일과 기존 #7516의 검증 목적을 재점검했다.
 
-[공통 보완 계획](bongseop_kim_20261112_review_plan.md)의 원칙에 따라 원 기여를 보존하고, 필요한 보정·정식 회귀·독립 Print·Native/fresh WASM·반복 저장 검증을 끝낸 뒤 다시 판정한다. 보정 담당 또는 공개 댓글은 작업지시자 결정 전 실행하지 않는다.
+수용 근거의 새 입력/PDF는 samples·pdf·mydocs/pr/assets의 검토 commit에 포함한다. 대상 font 프로그램·SVG font payload는 넣지 않는다. 실제 실행 입력 hash·인쇄 경로·producer·전쪽 TSV·직접 확대 판독·반복 저장을 원장에 연결했다. 기존 보호 입력/PDF 36개 조합의 hash도 정본과 모두 같다.
 
-## 적용 경계
+## 원격 상태와 다음 절차
 
-새 코드의 첫 0 위치 구간은 기존 CharShapeRef 조회의 앞 글자 fallback을 해결한다. 공개 빈 문서의 첫/둘째 문단·목록·서식 뒤 평문과 이전 #7516의 긴 문자열·그림 경계를 포함한 15개에서 새 실패는 없다. 기존 문서의 비기본 caret 서식과 실제 `paste_html_in_cell_native` 진입점은 아직 별도 검증하지 않았다. 첫 문단 앞 평문의 caret 상속이 기본 서식으로 달라지는 사실을 숨기지 않고 다음 검증에 포함한다.
+원 PR의 CI는 원 기여 head의 증거다. 당시 Rust 분석은 성공했으나 CodeQL composite는 configuration 3개 누락의 neutral임을 구분했다. 그 결과를 새 보정/test head의 CI로 재사용하지 않는다. 새 수용 PR의 exact-head 필수 CI와 self-review가 필요하다.
+
+원 fork는 실제 push=false이므로 upstream 통합 수용 PR 경로를 제안한다. 원격 push·PR·공개 댓글·merge는 이번 로컬 승인에 포함되지 않아 수행하지 않았다. 새 원격 처리안은 검증 완료 후보로 따로 승인받는다. 원 fork branch·다른 작업은 보존한다.

@@ -1,0 +1,33 @@
+[
+  {
+    "name": "base-native-build",
+    "source": "80b1c354c29b7a02fb2b3c14a274da7f5b653ada",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--lib",
+      "--bin",
+      "rhwp"
+    ],
+    "returncode": 0,
+    "seconds": 384.606
+  },
+  {
+    "name": "base-wasm-build",
+    "source": "80b1c354c29b7a02fb2b3c14a274da7f5b653ada",
+    "command": [
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/producers/pkg-base"
+    ],
+    "returncode": 0,
+    "seconds": 927.901
+  }
+]

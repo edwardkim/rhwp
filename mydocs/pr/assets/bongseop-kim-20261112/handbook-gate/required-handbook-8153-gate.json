@@ -1,0 +1,22 @@
+{
+  "status": "passed",
+  "baseline": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
+  "baseline_sha256": "ee41455cf7f05585487d92961ccb9fd8160d5d1e15c3567019ea89e2b7bf2aeb",
+  "metric": "silhouette_raw_match_percent",
+  "backend": "native-skia",
+  "precision": "0.01 percentage points",
+  "pages": 383,
+  "regressions": [],
+  "webfont_fallback": [
+    {
+      "family": "HCR Batang",
+      "style": "Regular",
+      "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff",
+      "source_sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+      "native_path": "/home/edward/mygithub/rhwp-worktrees/review-integration-8942-bongseop-html-clipboard/output/pr-review/handbook-8153-webfont-cache/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/HANBatang.woff.ttf",
+      "native_sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee"
+    }
+  ],
+  "manifest": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/handbook-gate/required-handbook-8153-native/silhouette_manifest.json",
+  "elapsed_seconds": 408.994
+}

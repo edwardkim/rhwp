@@ -1,0 +1,21 @@
+[RustTestSuite] issue_7516_html_paste_loose_inline_format -> regression_suite_014::issue_7516_html_paste_loose_inline_format
+[RustTestSuite] cargo nextest run --locked --test regression_suite_014 -E test(/(^|::)issue_7516_html_paste_loose_inline_format::/) --cargo-profile release-test
+warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137
+warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped
+   Compiling rhwp v0.9.0 (/home/edward/mygithub/rhwp-worktrees/review-integration-8942-bongseop-html-clipboard)
+    Finished `release-test` profile [optimized] target(s) in 11.55s
+────────────
+ Nextest run ID 62b9c842-8c15-4294-93d5-b76938032a24 with nextest profile: default
+    Starting 8 tests across 1 binary (335 tests skipped)
+        PASS [   0.013s] (1/8) rhwp::regression_suite_014 issue_7516_html_paste_loose_inline_format::line_break_inside_a_format_keeps_lines_and_format
+        PASS [   0.015s] (2/8) rhwp::regression_suite_014 issue_7516_html_paste_loose_inline_format::text_after_a_format_does_not_inherit_it
+        PASS [   0.016s] (3/8) rhwp::regression_suite_014 issue_7516_html_paste_loose_inline_format::loose_inline_formats_stay_in_one_paragraph
+        PASS [   0.017s] (4/8) rhwp::regression_suite_014 issue_7516_html_paste_loose_inline_format::span_inside_a_paragraph_keeps_inner_formats_and_images
+        PASS [   0.017s] (5/8) rhwp::regression_suite_014 issue_7516_html_paste_loose_inline_format::google_docs_normal_weight_wrapper_stays_normal
+        PASS [   0.017s] (6/8) rhwp::regression_suite_014 issue_7516_html_paste_loose_inline_format::numeric_bold_weights_stay_bold
+        PASS [   0.131s] (7/8) rhwp::regression_suite_014 issue_7516_html_paste_loose_inline_format::long_loose_inline_keeps_images_on_the_correct_side_of_the_cut
+        PASS [   0.503s] (8/8) rhwp::regression_suite_014 issue_7516_html_paste_loose_inline_format::long_loose_inline_preserves_content_and_styles_at_the_existing_limit
+────────────
+     Summary [   0.504s] 8 tests run: 8 passed, 335 skipped
+warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137
+info: update nextest with cargo nextest self update, or bypass check with --override-version-check
