@@ -15,7 +15,7 @@
         "Pages": "2",
         "Page size": "595 x 842 pts (A4)"
       },
-      "pdf": "pdf/issue8573/empty-host-split-table-2020.pdf",
+      "pdf": "pdf/issue8573/empty-host-split-table-hwp-2020.pdf",
       "pdf_sha256": "c8fcd259e7b8909e477d7f143dbfea6141117c993c789b54aeb80c00ca64a11f",
       "origin": {
         "kind": "MCP Print",
@@ -36,7 +36,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 15072
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/empty-host-split-table-2020.pdf"
     },
     {
       "key": "pr8897-empty-host-square-band-1430-below",
@@ -49,7 +50,7 @@
         "Pages": "1",
         "Page size": "595 x 842 pts (A4)"
       },
-      "pdf": "pdf/issue8573/empty-host-square-band-1430-below-2020.pdf",
+      "pdf": "pdf/issue8573/empty-host-square-band-1430-below-hwp-2020.pdf",
       "pdf_sha256": "1d73e593be48c03af0d2fcc83070598e8bde0f6717b1a98bb4dfc0b9d335cc1a",
       "origin": {
         "kind": "MCP Print",
@@ -70,7 +71,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 10443
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/empty-host-square-band-1430-below-2020.pdf"
     },
     {
       "key": "pr8897-empty-host-square-band-1450-beside",
@@ -83,7 +85,7 @@
         "Pages": "1",
         "Page size": "595 x 842 pts (A4)"
       },
-      "pdf": "pdf/issue8573/empty-host-square-band-1450-beside-2020.pdf",
+      "pdf": "pdf/issue8573/empty-host-square-band-1450-beside-hwp-2020.pdf",
       "pdf_sha256": "02c2be8a1129815143a247c6a941bd193aabb3775c2399608e227ba3e16e4218",
       "origin": {
         "kind": "MCP Print",
@@ -104,7 +106,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 10442
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/empty-host-square-band-1450-beside-2020.pdf"
     },
     {
       "key": "pr8897-empty-host-square-band-600-no-extra-line",
@@ -117,7 +120,7 @@
         "Pages": "1",
         "Page size": "595 x 842 pts (A4)"
       },
-      "pdf": "pdf/issue8573/empty-host-square-band-600-no-extra-line-2020.pdf",
+      "pdf": "pdf/issue8573/empty-host-square-band-600-no-extra-line-hwp-2020.pdf",
       "pdf_sha256": "a54f77962a36c41acec936f4b52fda6061538b3bbdf7c67aed24a2c037f0d5f7",
       "origin": {
         "kind": "MCP Print",
@@ -138,7 +141,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 10440
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/empty-host-square-band-600-no-extra-line-2020.pdf"
     },
     {
       "key": "pr8897-empty-host-square-beside-line",
@@ -151,7 +155,7 @@
         "Pages": "1",
         "Page size": "595 x 842 pts (A4)"
       },
-      "pdf": "pdf/issue8573/empty-host-square-beside-line-2020.pdf",
+      "pdf": "pdf/issue8573/empty-host-square-beside-line-hwp-2020.pdf",
       "pdf_sha256": "13945fbd0b2fc917edffb75de82a7d897e19f03bb7dde7102d7f094cdb26461c",
       "origin": {
         "kind": "MCP Print",
@@ -172,7 +176,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 13859
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/empty-host-square-beside-line-2020.pdf"
     },
     {
       "key": "pr8897-empty-host-square-then-topbottom-push",
@@ -185,7 +190,7 @@
         "Pages": "1",
         "Page size": "595 x 842 pts (A4)"
       },
-      "pdf": "pdf/issue8573/empty-host-square-then-topbottom-push-2020.pdf",
+      "pdf": "pdf/issue8573/empty-host-square-then-topbottom-push-hwp-2020.pdf",
       "pdf_sha256": "6e8264d8402a757cdb34de9727350773018fa218e002824f731da2cd583fc614",
       "origin": {
         "kind": "MCP Print",
@@ -206,7 +211,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 13860
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/empty-host-square-then-topbottom-push-2020.pdf"
     },
     {
       "key": "pr8897-text-host-split-table",
@@ -219,7 +225,7 @@
         "Pages": "2",
         "Page size": "595 x 842 pts (A4)"
       },
-      "pdf": "pdf/issue8573/text-host-split-table-2020.pdf",
+      "pdf": "pdf/issue8573/text-host-split-table-hwp-2020.pdf",
       "pdf_sha256": "0683de7c2cb1b6504fb93216a19e914500d5592af59db0299d882c258fac39d3",
       "origin": {
         "kind": "MCP Print",
@@ -240,7 +246,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 15318
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/text-host-split-table-2020.pdf"
     },
     {
       "key": "pr8897-text-host-square-paper-companion-beside-line",
@@ -253,7 +260,7 @@
         "Pages": "1",
         "Page size": "595 x 842 pts (A4)"
       },
-      "pdf": "pdf/issue8573/text-host-square-paper-companion-beside-line-2020.pdf",
+      "pdf": "pdf/issue8573/text-host-square-paper-companion-beside-line-hwp-2020.pdf",
       "pdf_sha256": "ad616ac4f9851ef0702a9c21fb27ba93d36229a2b51e9c23bc5aeada64161a72",
       "origin": {
         "kind": "MCP Print",
@@ -274,7 +281,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 13872
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/text-host-square-paper-companion-beside-line-2020.pdf"
     },
     {
       "key": "pr8897-text-host-square-then-topbottom-push",
@@ -287,7 +295,7 @@
         "Pages": "1",
         "Page size": "595 x 842 pts (A4)"
       },
-      "pdf": "pdf/issue8573/text-host-square-then-topbottom-push-2020.pdf",
+      "pdf": "pdf/issue8573/text-host-square-then-topbottom-push-hwp-2020.pdf",
       "pdf_sha256": "3418120390f6480dd0c9cbfb7f5368660b9c088a4114526b8563880868fd43fa",
       "origin": {
         "kind": "MCP Print",
@@ -308,7 +316,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 11067
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/text-host-square-then-topbottom-push-2020.pdf"
     },
     {
       "key": "pr8897-text-host-topbottom-line-below",
@@ -321,7 +330,7 @@
         "Pages": "1",
         "Page size": "595 x 842 pts (A4)"
       },
-      "pdf": "pdf/issue8573/text-host-topbottom-line-below-2020.pdf",
+      "pdf": "pdf/issue8573/text-host-topbottom-line-below-hwp-2020.pdf",
       "pdf_sha256": "483fdc57d7c4c93fde069a00a4f44d69fc9b4d1ee6a0b2e7e6c71a757874cb29",
       "origin": {
         "kind": "MCP Print",
@@ -342,7 +351,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 10098
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/text-host-topbottom-line-below-2020.pdf"
     },
     {
       "key": "pr8897-whitespace-host-negative-offset-table",
@@ -355,7 +365,7 @@
         "Pages": "1",
         "Page size": "595 x 842 pts (A4)"
       },
-      "pdf": "pdf/issue8573/whitespace-host-negative-offset-table-2020.pdf",
+      "pdf": "pdf/issue8573/whitespace-host-negative-offset-table-hwp-2020.pdf",
       "pdf_sha256": "1fe6711eb710dd8c2abe34c982c2fa84b866202874a4b719cfc9774d50949739",
       "origin": {
         "kind": "MCP Print",
@@ -376,7 +386,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 10201
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/whitespace-host-negative-offset-table-2020.pdf"
     },
     {
       "key": "pr8897-whitespace-host-split-table",
@@ -389,7 +400,7 @@
         "Pages": "2",
         "Page size": "595 x 842 pts (A4)"
       },
-      "pdf": "pdf/issue8573/whitespace-host-split-table-2020.pdf",
+      "pdf": "pdf/issue8573/whitespace-host-split-table-hwp-2020.pdf",
       "pdf_sha256": "573adcc18805f1256b0258f894e3332bbe909389ba334e279b0219e9814c88cb",
       "origin": {
         "kind": "MCP Print",
@@ -410,7 +421,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 15092
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/whitespace-host-split-table-2020.pdf"
     },
     {
       "key": "pr8897-whitespace-host-square-then-topbottom-push",
@@ -423,7 +435,7 @@
         "Pages": "1",
         "Page size": "595 x 842 pts (A4)"
       },
-      "pdf": "pdf/issue8573/whitespace-host-square-then-topbottom-push-2020.pdf",
+      "pdf": "pdf/issue8573/whitespace-host-square-then-topbottom-push-hwp-2020.pdf",
       "pdf_sha256": "d1a1f924975f33a0b29810642d2f34f59027e9904d00a8f85370739658f4b3ca",
       "origin": {
         "kind": "MCP Print",
@@ -444,7 +456,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 11079
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/whitespace-host-square-then-topbottom-push-2020.pdf"
     },
     {
       "key": "pr8897-whitespace-host-topbottom-line-below",
@@ -457,7 +470,7 @@
         "Pages": "1",
         "Page size": "595 x 842 pts (A4)"
       },
-      "pdf": "pdf/issue8573/whitespace-host-topbottom-line-below-2020.pdf",
+      "pdf": "pdf/issue8573/whitespace-host-topbottom-line-below-hwp-2020.pdf",
       "pdf_sha256": "7cc39698a47c8228e85a782c029efb389835b8eaf8047898fc42b6523bd34912",
       "origin": {
         "kind": "MCP Print",
@@ -478,7 +491,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 9873
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/whitespace-host-topbottom-line-below-2020.pdf"
     },
     {
       "key": "pr8897-whitespace-host-topbottom-stacked-zones",
@@ -491,7 +505,7 @@
         "Pages": "1",
         "Page size": "595 x 842 pts (A4)"
       },
-      "pdf": "pdf/issue8573/whitespace-host-topbottom-stacked-zones-2020.pdf",
+      "pdf": "pdf/issue8573/whitespace-host-topbottom-stacked-zones-hwp-2020.pdf",
       "pdf_sha256": "98c5bee22b4ff94013f5b0253b643a4650d8554298fd7a196fab35e882a44b6c",
       "origin": {
         "kind": "MCP Print",
@@ -512,7 +526,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 11147
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/whitespace-host-topbottom-stacked-zones-2020.pdf"
     },
     {
       "key": "pr8897-whitespace-host-two-tables-negative-offset",
@@ -525,7 +540,7 @@
         "Pages": "1",
         "Page size": "595 x 842 pts (A4)"
       },
-      "pdf": "pdf/issue8573/whitespace-host-two-tables-negative-offset-2020.pdf",
+      "pdf": "pdf/issue8573/whitespace-host-two-tables-negative-offset-hwp-2020.pdf",
       "pdf_sha256": "c2fbeda6f372592d74b7664e77d0690a1cf6adf094a44f0f3a562df0cc205aea",
       "origin": {
         "kind": "MCP Print",
@@ -546,7 +561,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 10099
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/whitespace-host-two-tables-negative-offset-2020.pdf"
     },
     {
       "key": "pr8916-zero_size_para_before_table",
@@ -559,7 +575,7 @@
         "Pages": "1",
         "Page size": "595 x 842 pts (A4)"
       },
-      "pdf": "pdf/issue8664/zero_size_para_before_table-2024.pdf",
+      "pdf": "pdf/issue8664/zero_size_para_before_table-hwp-2024.pdf",
       "pdf_sha256": "b46b42542293a39defb63e80a15ca81e33b6f38f5b59cf34e884e53cd949ab95",
       "origin": {
         "kind": "user-provided manual Print",
@@ -571,7 +587,8 @@
           "job_id": "038f5505-9a97-45a7-9040-4ef6d7021c77",
           "error": "HANCOM_DOCUMENT_OPEN_REJECTED: Hancom 2020 warned that the document may be damaged or altered; unattended conversion was stopped."
         }
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8664/zero_size_para_before_table-2024.pdf"
     },
     {
       "key": "pr8895-title_line_fits",
@@ -584,7 +601,7 @@
         "Pages": "2",
         "Page size": "595 x 842 pts (A4)"
       },
-      "pdf": "pdf/issue8665/title_line_fits-2024.pdf",
+      "pdf": "pdf/issue8665/title_line_fits-hwpx-2024.pdf",
       "pdf_sha256": "c4d1ef4d2c1b0aa95abf762791af4358daae0ffb4ed8e14f726000975b16d437",
       "origin": {
         "kind": "MCP Print",
@@ -605,7 +622,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 13446
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8665/title_line_fits-2024.pdf"
     },
     {
       "key": "pr8895-title_line_overflows",
@@ -618,7 +636,7 @@
         "Pages": "2",
         "Page size": "595 x 842 pts (A4)"
       },
-      "pdf": "pdf/issue8665/title_line_overflows-2024.pdf",
+      "pdf": "pdf/issue8665/title_line_overflows-hwpx-2024.pdf",
       "pdf_sha256": "6a4d9c305218687056b77d97f40c2798ecc98661597578c87453a87df8a24b4b",
       "origin": {
         "kind": "MCP Print",
@@ -639,7 +657,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 13538
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8665/title_line_overflows-2024.pdf"
     },
     {
       "key": "pr8900-bar_axis_floor",
@@ -652,7 +671,7 @@
         "Pages": "1",
         "Page size": "595 x 842 pts (A4)"
       },
-      "pdf": "pdf/issue8678/bar_axis_floor-2020.pdf",
+      "pdf": "pdf/issue8678/bar_axis_floor-hwpx-2020.pdf",
       "pdf_sha256": "2fbb02306e0e8999686b712cc1c79f83bff50d39311a89fb367ab1d23a8b194e",
       "origin": {
         "kind": "MCP Print",
@@ -673,7 +692,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 246905
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8678/bar_axis_floor-2020.pdf"
     },
     {
       "key": "pr8900-column_axis_floor",
@@ -686,7 +706,7 @@
         "Pages": "1",
         "Page size": "595 x 842 pts (A4)"
       },
-      "pdf": "pdf/issue8678/column_axis_floor-2020.pdf",
+      "pdf": "pdf/issue8678/column_axis_floor-hwpx-2020.pdf",
       "pdf_sha256": "ec2e8e61964d89a2415c1e0ed22c5b65ca193de58772789774938d07e5b24ce0",
       "origin": {
         "kind": "MCP Print",
@@ -707,7 +727,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 235201
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8678/column_axis_floor-2020.pdf"
     },
     {
       "key": "pr8900-column_axis_floor_large",
@@ -720,7 +741,7 @@
         "Pages": "1",
         "Page size": "595 x 842 pts (A4)"
       },
-      "pdf": "pdf/issue8678/column_axis_floor_large-2020.pdf",
+      "pdf": "pdf/issue8678/column_axis_floor_large-hwpx-2020.pdf",
       "pdf_sha256": "3afb095dbab90fa6b6bba65e198324c741a7aca4d0ebd0425cf8ef1431477a36",
       "origin": {
         "kind": "MCP Print",
@@ -741,7 +762,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 300888
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8678/column_axis_floor_large-2020.pdf"
     },
     {
       "key": "pr8900-column_axis_step_tall",
@@ -754,7 +776,7 @@
         "Pages": "1",
         "Page size": "595 x 842 pts (A4)"
       },
-      "pdf": "pdf/issue8678/column_axis_step_tall-2020.pdf",
+      "pdf": "pdf/issue8678/column_axis_step_tall-hwpx-2020.pdf",
       "pdf_sha256": "a942a5fbc65f78bba87796b8983485ef0890e3961cc106bedd83044c32b60a98",
       "origin": {
         "kind": "MCP Print",
@@ -775,7 +797,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 351557
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8678/column_axis_step_tall-2020.pdf"
     },
     {
       "key": "pr8918-wingdings_pua_symbols",
@@ -788,7 +811,7 @@
         "Pages": "1",
         "Page size": "595 x 842 pts (A4)"
       },
-      "pdf": "pdf/issue8680/wingdings_pua_symbols-2020.pdf",
+      "pdf": "pdf/issue8680/wingdings_pua_symbols-hwpx-2020.pdf",
       "pdf_sha256": "99d96e65b8ad607e662e4408b256fd9f64920e0ccd9caa6a20c24e1e41a3a876",
       "origin": {
         "kind": "MCP Print",
@@ -809,7 +832,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 25608
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8680/wingdings_pua_symbols-2020.pdf"
     },
     {
       "key": "pr8920-float_line_rowspan_infront_center",
@@ -822,7 +846,7 @@
         "Pages": "2",
         "Page size": "595 x 842 pts (A4)"
       },
-      "pdf": "pdf/issue8690/float_line_rowspan_infront_center-2020.pdf",
+      "pdf": "pdf/issue8690/float_line_rowspan_infront_center-hwp-2020.pdf",
       "pdf_sha256": "6cd25f5e58614129f9904b00fbd48c2358ce9b4bf8b61ab18a3c5925b4070b8c",
       "origin": {
         "kind": "MCP Print",
@@ -843,7 +867,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 29063
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8690/float_line_rowspan_infront_center-2020.pdf"
     },
     {
       "key": "pr8920-float_line_rowspan_infront_top",
@@ -856,7 +881,7 @@
         "Pages": "2",
         "Page size": "595 x 842 pts (A4)"
       },
-      "pdf": "pdf/issue8690/float_line_rowspan_infront_top-2020.pdf",
+      "pdf": "pdf/issue8690/float_line_rowspan_infront_top-hwp-2020.pdf",
       "pdf_sha256": "b63473cdc359fb90d5b423cac252feec6fbb0c4df7d8e7c13e65e4d98857cbe1",
       "origin": {
         "kind": "MCP Print",
@@ -877,7 +902,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 29106
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8690/float_line_rowspan_infront_top-2020.pdf"
     },
     {
       "key": "pr8920-float_line_valign_center",
@@ -890,7 +916,7 @@
         "Pages": "2",
         "Page size": "595 x 842 pts (A4)"
       },
-      "pdf": "pdf/issue8690/float_line_valign_center-2020.pdf",
+      "pdf": "pdf/issue8690/float_line_valign_center-hwp-2020.pdf",
       "pdf_sha256": "5085071ec9c6c14f6f40b53cc62ac5169c75d9b0e39f5111f057649219239d0d",
       "origin": {
         "kind": "MCP Print",
@@ -911,7 +937,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 32640
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8690/float_line_valign_center-2020.pdf"
     },
     {
       "key": "pr8920-float_line_valign_top",
@@ -924,7 +951,7 @@
         "Pages": "2",
         "Page size": "595 x 842 pts (A4)"
       },
-      "pdf": "pdf/issue8690/float_line_valign_top-2020.pdf",
+      "pdf": "pdf/issue8690/float_line_valign_top-hwp-2020.pdf",
       "pdf_sha256": "e18e2e917c8dff0fdd4703d461c11ce627eb48a752147a12fa0aaf91036fe556",
       "origin": {
         "kind": "MCP Print",
@@ -945,7 +972,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 32743
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8690/float_line_valign_top-2020.pdf"
     },
     {
       "key": "short-empty",
@@ -959,7 +987,7 @@
         "Pages": "1",
         "Page size": "595 x 841 pts (A4)"
       },
-      "pdf": "pdf/issue8573/picture-cell-short-empty-2024.pdf",
+      "pdf": "pdf/issue8573/picture-cell-short-empty-hwpx-2024.pdf",
       "pdf_sha256": "614596ac63e865caa84ef54cf7ceb029e555e46432c5fc1b42893e9a4c9e655c",
       "origin": {
         "kind": "MCP Print",
@@ -980,7 +1008,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 15220
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/picture-cell-short-empty-2024.pdf"
     },
     {
       "key": "short-spaces",
@@ -994,7 +1023,7 @@
         "Pages": "1",
         "Page size": "595 x 841 pts (A4)"
       },
-      "pdf": "pdf/issue8573/picture-cell-short-spaces-2024.pdf",
+      "pdf": "pdf/issue8573/picture-cell-short-spaces-hwpx-2024.pdf",
       "pdf_sha256": "a9e8972b356ed052c2df0d00ff7f3ee6b7668db738759c157e9a24b30f35823d",
       "origin": {
         "kind": "MCP Print",
@@ -1015,7 +1044,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 15234
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/picture-cell-short-spaces-2024.pdf"
     },
     {
       "key": "short-text",
@@ -1029,7 +1059,7 @@
         "Pages": "1",
         "Page size": "595 x 841 pts (A4)"
       },
-      "pdf": "pdf/issue8573/picture-cell-short-text-2024.pdf",
+      "pdf": "pdf/issue8573/picture-cell-short-text-hwpx-2024.pdf",
       "pdf_sha256": "e0a7b19ed5d28cc9e5687285fdd5c4836cfa5df5692e793b65eb20705c162b2d",
       "origin": {
         "kind": "MCP Print",
@@ -1050,7 +1080,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 15449
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/picture-cell-short-text-2024.pdf"
     },
     {
       "key": "page-boundary-empty",
@@ -1064,7 +1095,7 @@
         "Pages": "2",
         "Page size": "595 x 841 pts (A4)"
       },
-      "pdf": "pdf/issue8573/picture-cell-page-boundary-empty-2024.pdf",
+      "pdf": "pdf/issue8573/picture-cell-page-boundary-empty-hwpx-2024.pdf",
       "pdf_sha256": "9ac8409b6935303944c5d36333af4d99049a7ed3936081dc4cc4a2e2ea519abd",
       "origin": {
         "kind": "MCP Print",
@@ -1085,7 +1116,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 16339
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/picture-cell-page-boundary-empty-2024.pdf"
     },
     {
       "key": "page-boundary-spaces",
@@ -1099,7 +1131,7 @@
         "Pages": "2",
         "Page size": "595 x 841 pts (A4)"
       },
-      "pdf": "pdf/issue8573/picture-cell-page-boundary-spaces-2024.pdf",
+      "pdf": "pdf/issue8573/picture-cell-page-boundary-spaces-hwpx-2024.pdf",
       "pdf_sha256": "2bff84c3969c4cddd8e64873dcf6e8d69198ecb43c751b907b32675ca1730c0e",
       "origin": {
         "kind": "MCP Print",
@@ -1120,7 +1152,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 16357
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/picture-cell-page-boundary-spaces-2024.pdf"
     },
     {
       "key": "page-boundary-text",
@@ -1134,7 +1167,7 @@
         "Pages": "2",
         "Page size": "595 x 841 pts (A4)"
       },
-      "pdf": "pdf/issue8573/picture-cell-page-boundary-text-2024.pdf",
+      "pdf": "pdf/issue8573/picture-cell-page-boundary-text-hwpx-2024.pdf",
       "pdf_sha256": "baba21dff9905ffffc30a4f772cf81632907df0b7affcffb74bb746a0c78533d",
       "origin": {
         "kind": "MCP Print",
@@ -1155,7 +1188,8 @@
           "Page size": "595 x 841 pts (A4)"
         },
         "bytes": 16570
-      }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/picture-cell-page-boundary-text-2024.pdf"
     }
   ]
 }
