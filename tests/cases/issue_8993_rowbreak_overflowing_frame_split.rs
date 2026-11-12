@@ -1,5 +1,5 @@
 //! 관계형·고정형 — [#8993] 저장 프레임이 본문을 넘는 RowBreak 표는 남은 칸에서 나뉘어 앞 쪽을 비우지 않는다.
-//! 주석 갱신: MEASURE_PENDING
+//! 주석 갱신: 2026-11-12 16:00 KST (새 파일)
 //!
 //! 입력: 행정안전부령 「지방자치단체 회계기준에 관한 규칙」(부령 제124호, 2009.12.31, HWP, 19쪽)
 //! `samples/issue8993/31675-rowbreak-overflowing-frame.hwp`.
@@ -13,7 +13,13 @@
 //! - 관계형: 14쪽은 표 머리(「별지 제1호 서식」)와 「장기차입부채」를 담고 「기타비유동부채」를
 //!   담지 않는다. 15쪽은 「기타비유동부채」·「부채와 순자산 총계」를 담고 표 머리를 다시 담지 않는다.
 //!
-//! MEASURE_PENDING
+//! 측정(2026-11-12, 이 파일과 같은 커밋의 코드, base = upstream/devel eb84afc036,
+//! `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`, raw =
+//! `silhouette_raw_match_percent`, 글꼴 `ttfs/opensource` — 문서 본 글꼴 없는 환경):
+//! - Native: 19쪽 / 19쪽, 14쪽 99.83 · 15쪽 99.80(base 0.00 · 14.63), 최저 96.44(13쪽, base 와 같음)
+//! - fresh WASM(`scripts/wasm-pack-locked.sh --target web`): 19쪽 / 19쪽, 14쪽 99.85 · 15쪽 99.78, 최저 95.69(13쪽)
+//! - 증거: `mydocs/pr/assets/issue_8993/`(native·wasm TSV, review·overlay PNG)
+//! - 표 외곽·행 경계·쪽 나뉨 위치는 PDF 와 겹친다. 남은 차이는 공개 대체 글꼴의 글자 모양이다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
