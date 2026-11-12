@@ -111,6 +111,69 @@ void main() {
     await temporary.delete(recursive: true);
   });
 
+  test(
+    'discovers moved runtime without environment or source directory',
+    () async {
+      root = await root.rename('${temporary.path}/self contained app');
+      final bundle = await NativeRuntimeBundle.forExecutable(
+        executable: file('app/runner'),
+      );
+      expect(bundle!.root.path, root.path);
+      expect(bundle.nativeLibrary.path, file('native/$nativeName').path);
+    },
+  );
+
+  test(
+    'discovers nested macOS app layout and binds the actual executable',
+    () async {
+      const runtime = 'app/Reference.app/Contents/MacOS/runner';
+      final files = manifest['files']! as Map<String, Object?>;
+      for (final directory in [
+        'app/Reference.app',
+        'app/Reference.app/Contents',
+        'app/Reference.app/Contents/MacOS',
+      ]) {
+        files[directory] = {'kind': 'directory'};
+      }
+      await member(runtime, header(false));
+      manifest['runtime'] = runtime;
+      await save();
+      expect(
+        (await NativeRuntimeBundle.forExecutable(executable: file(runtime)))!
+            .executable
+            .path,
+        file(runtime).path,
+      );
+      // A different listed binary is not the manifest's runtime entry point.
+      await expectLater(
+        NativeRuntimeBundle.forExecutable(executable: file('app/runner')),
+        throwsA(isA<NativeCallException>()),
+      );
+    },
+  );
+
+  test(
+    'absent bundle allows development but malformed bundle fails closed',
+    () async {
+      await file(NativeRuntimeBundle.manifestName).delete();
+      expect(
+        await NativeRuntimeBundle.forExecutable(executable: file('app/runner')),
+        isNull,
+      );
+      await file(NativeRuntimeBundle.manifestName).writeAsString('{}');
+      await expectLater(
+        NativeRuntimeBundle.forExecutable(executable: file('app/runner')),
+        throwsA(isA<NativeCallException>()),
+      );
+      expect(
+        await NativeRuntimeBundle.forExecutable(
+          executable: File('${temporary.path}/development/runner'),
+        ),
+        isNull,
+      );
+    },
+  );
+
   test('resolves all supplied libraries after bundle moves with no source tree', () async {
     root = await root.rename('${temporary.path}/relocated with spaces');
     final bundle = await NativeRuntimeBundle.load(root);

@@ -1,4 +1,5 @@
-// Actual GTK/Flutter compositor probe. Each native snapshot is captured once;
+// Actual Flutter compositor probe (GTK by default, Windows via its wrapper).
+// Each native snapshot is captured once;
 // independent CPU replays use bounded strips of that same immutable snapshot.
 import 'dart:async';
 import 'dart:convert';
@@ -42,31 +43,38 @@ class ObservedPresentation implements NativePresentation {
 }
 
 class RecordedGroupChannel extends MethodChannel {
-  RecordedGroupChannel() : super('rhwp_native/texture_linux');
-  Map<String, Object?>? submitted;
+  RecordedGroupChannel(NativeTexturePlatform platform)
+    : super(platform.channelName);
+  Map<String, Object?>? submitted, acceptance;
   int calls = 0, submits = 0;
   @override
-  Future<T?> invokeMethod<T>(String method, [dynamic arguments]) {
+  Future<T?> invokeMethod<T>(String method, [dynamic arguments]) async {
     require(++calls <= 1024, 'bounded platform polling');
-    if (method == 'submitGroup') {
+    final reply = await super.invokeMethod<T>(method, arguments);
+    if (method == 'submitGroup' && reply is Map && reply['accepted'] == true) {
       ++submits;
       submitted = Map<String, Object?>.from(arguments as Map);
+      acceptance = Map<String, Object?>.from(reply);
     }
-    return super.invokeMethod<T>(method, arguments);
+    return reply;
   }
 }
 
 void main() => runApp(const MaterialApp(home: TileProbe()));
 
 class TileProbe extends StatefulWidget {
-  const TileProbe({super.key});
+  const TileProbe({super.key, this.platform = NativeTexturePlatform.linux});
+  final NativeTexturePlatform platform;
   @override
   State<TileProbe> createState() => _TileProbeState();
 }
 
 class _TileProbeState extends State<TileProbe> {
   final textureKey = GlobalKey();
-  final channel = RecordedGroupChannel();
+  late final RecordedGroupChannel channel;
+  NativeGpuSession? session;
+  Map<String, Object?>? recoveryRetirement;
+  bool get windows => widget.platform == NativeTexturePlatform.windows;
   NativeDocument? document;
   NativeTextureController? controller;
   NativePageViewport? viewport;
@@ -80,6 +88,8 @@ class _TileProbeState extends State<TileProbe> {
   @override
   void initState() {
     super.initState();
+    channel = RecordedGroupChannel(widget.platform);
+    if (windows) physical = const Size(1026, 480);
     watchdog = Timer(const Duration(seconds: 280), () {
       stderr.writeln('RHWP_TILE_GROUP_PROBE watchdog at $stage');
       exit(124);
@@ -139,6 +149,17 @@ class _TileProbeState extends State<TileProbe> {
       WidgetsBinding.instance.scheduleFrame();
       await WidgetsBinding.instance.endOfFrame;
     }
+    if (windows) {
+      await until(() async {
+        final value = await status();
+        return (value['members']! as List).every((item) {
+          final member = item as Map;
+          return member['hasFrame'] == true &&
+              member['acceptedSerial'] == member['renderedSerial'] &&
+              member['acceptedSerial'] == member['descriptorOpenedSerial'];
+        });
+      }, 'both actual Windows texture descriptors opened');
+    }
     final raw = await status();
     final members = raw['members']! as List;
     final submission = channel.submitted!;
@@ -171,11 +192,14 @@ class _TileProbeState extends State<TileProbe> {
     final dpr = MediaQuery.devicePixelRatioOf(context);
     // Keep the complete document and native seam inside one independently
     // observable strip. Its 2x 4096-by-at-most-992 source stays below 16 MiB.
-    for (final bounds in [
-      (0, 1024),
-      (1024, 2048),
-      (3072, physical.width.toInt() - 3072),
-    ]) {
+    for (final bounds
+        in windows
+            ? [(0, physical.width.toInt())]
+            : [
+                (0, 1024),
+                (1024, 2048),
+                (3072, physical.width.toInt() - 3072),
+              ]) {
       final (left, width) = bounds;
       final view = NativePageViewport.placed(
         viewport!.page,
@@ -233,6 +257,18 @@ class _TileProbeState extends State<TileProbe> {
       'nonce': nonce,
       'pid': pid,
       'index': index,
+      if (windows) ...{
+        'platform': 'windows',
+        'stage': ['initial', 'revision', 'resize', 'recovered'][index - 1],
+        'flutterView': {
+          'width': View.of(context).physicalSize.width.round(),
+          'height': View.of(context).physicalSize.height.round(),
+          'deviceScale': View.of(context).devicePixelRatio,
+        },
+        'acceptance': channel.acceptance,
+        if (recoveryRetirement != null)
+          'recoveryRetirement': recoveryRetirement,
+      },
       'width': physical.width.toInt(),
       'height': physical.height.toInt(),
       'physicalOffset': [origin.dx.round(), origin.dy.round()],
@@ -278,6 +314,12 @@ class _TileProbeState extends State<TileProbe> {
       );
       final config = jsonDecode(await configFile.readAsString()) as Map;
       require(config['protocol'] == 1, 'probe protocol');
+      require(
+        windows
+            ? Platform.isWindows && config['backend'] == 'windowsTwoTileGroup'
+            : Platform.isLinux,
+        'tile probe backend must match the actual desktop OS',
+      );
       nonce = config['nonce']! as String;
       output = Directory(config['output']! as String);
       final native = await File(config['native']! as String)
@@ -307,23 +349,51 @@ class _TileProbeState extends State<TileProbe> {
       );
       require(metadata!.available, 'full-stamp metadata capability');
       oracle = DesktopConsumerOracle(native);
-      controller = NativeTextureController(
+      NativeTextureController createController() => NativeTextureController(
         document: document!,
         presentation: metadata!,
-        platform: NativeTexturePlatform.linux,
+        platform: widget.platform,
         channel: channel,
         useTileGroups: true,
+        allowImmutableOwnershipTransfer: windows,
         operationTimeout: const Duration(seconds: 8),
       );
+      controller = createController();
+      if (windows) {
+        session = NativeGpuSession(
+          initialController: controller!,
+          createController: createController,
+        );
+      }
       viewport = placed(await document!.pageSize(0));
       setState(() {});
       await publication(1);
       await document!.request('pasteText', {'text': '\n\n\n\n\n\n'});
       await publication(2);
-      physical = const Size(4097, 496);
+      physical = windows ? const Size(1025, 496) : const Size(4097, 496);
       viewport = placed(await document!.pageSize(0));
       setState(() {});
       await publication(3);
+      if (windows) {
+        stage = 'recover';
+        final previous = controller!;
+        await previous.close();
+        require(
+          previous.phase == NativeTexturePhase.closed &&
+              !previous.retirementPending,
+          'old tile pair retired before recovery',
+        );
+        recoveryRetirement = await status();
+        require(await session!.recover(), 'explicit renderer recovery');
+        controller = session!.controller;
+        require(
+          !identical(controller, previous) &&
+              identical(controller!.document, document),
+          'fresh renderer, same editor owner',
+        );
+        setState(() {});
+        await publication(4);
+      }
       stage = 'retire';
       await controller!.close();
       require(
@@ -335,9 +405,15 @@ class _TileProbeState extends State<TileProbe> {
       for (final member in closed['members']! as List) {
         final state = member as Map;
         require(
-          state['registered'] == false && state['cleanupComplete'] == true,
+          state['registered'] == false &&
+              (windows
+                  ? state['closed'] == true &&
+                        state['ownerFinished'] == true &&
+                        state['unregistered'] == true
+                  : state['cleanupComplete'] == true),
           'each native registration retired',
         );
+        if (windows) continue;
         for (final key in [
           'liveRasterSlots',
           'pendingRetireSlots',
@@ -349,6 +425,13 @@ class _TileProbeState extends State<TileProbe> {
         ]) {
           require(state[key] == 0, 'native tile teardown $key');
         }
+      }
+      if (session != null) {
+        require(
+          await session!.close(),
+          'session confirms both native owners retired',
+        );
+        session!.dispose();
       }
       await document!.dispose();
       final stats = oracle!.call({'op': 'stats'})['stats']! as Map;
@@ -374,7 +457,10 @@ class _TileProbeState extends State<TileProbe> {
         'protocol': 1,
         'nonce': nonce,
         'ok': true,
-        'publications': 3,
+        'publications': windows ? 4 : 3,
+        if (windows) 'platform': 'windows',
+        if (recoveryRetirement != null)
+          'recoveryRetirement': recoveryRetirement,
         'closed': closed,
         'stats': stats,
         'checks': metadata!.checks,

@@ -2,6 +2,7 @@
 """Portable rejection tests; no Apple SDK or Metal device is executed here."""
 
 import base64
+import copy
 import importlib.util
 import json
 import os
@@ -25,6 +26,7 @@ def module(name, path):
 
 
 producer = module("producer_contract", HERE / "native_metal_sdk_contract.py")
+tile_contract = module("metal_tile_contract", HERE / "metal_tile_cache_contract.py")
 builder = module("sdk_builder", HERE.parents[1] / "tool/check_macos_metal_sdk.py")
 STAMP = {"documentId": 1, "revision": 0, "fontGeneration": 0,
          "viewGeneration": 1, "deviceGeneration": 1, "deviceScale": 1.0}
@@ -118,7 +120,7 @@ class MetalReceiptContracts(unittest.TestCase):
         self.assertEqual(cargo[cargo.index("--features") + 1], "native-skia-metal")
         self.assertEqual(artifacts["native"], Path("/private/probe/native-target/aarch64-apple-darwin/debug/librhwp_native_ffi.dylib"))
         compilers = [command for command in commands if command[0] == "/Xcode/clang++"]
-        self.assertEqual(len(compilers), 4)
+        self.assertEqual(len(compilers), 5)
         self.assertLess(max(commands.index(command) for command in compilers), commands.index(cargo))
         cv_status = next(command for command in compilers if any(value.endswith("cv_closed_status_sdk_test.mm") for value in command))
         self.assertNotIn("-dynamiclib", cv_status)
@@ -128,6 +130,10 @@ class MetalReceiptContracts(unittest.TestCase):
         self.assertNotIn("-dynamiclib", animation)
         self.assertLess(commands.index(animation), commands.index([str(artifacts["metalViewAnimationPolicy"])]))
         self.assertLess(commands.index([str(artifacts["metalViewAnimationPolicy"])]), commands.index(cargo))
+        tile_group = next(command for command in compilers if any(value.endswith("metal_tile_group_sdk_test.mm") for value in command))
+        self.assertNotIn("-dynamiclib", tile_group)
+        self.assertLess(commands.index(tile_group), commands.index([str(artifacts["metalTileGroupBridge"])]))
+        self.assertLess(commands.index([str(artifacts["metalTileGroupBridge"])]), commands.index(cargo))
         for command in compilers:
             self.assertIn("-fobjc-arc", command)
             self.assertIn("-fblocks", command)
@@ -146,9 +152,10 @@ class MetalReceiptContracts(unittest.TestCase):
             Path("/FlutterMacOS.framework"), "arm64", "1.93.1", native)
         self.assertEqual(artifacts["native"], native)
         self.assertFalse(any("cargo" in command for command in commands))
-        self.assertEqual(sum(command[0] == "/Xcode/clang++" for command in commands), 4)
+        self.assertEqual(sum(command[0] == "/Xcode/clang++" for command in commands), 5)
         self.assertIn([str(artifacts["cvCloseStatus"])], commands)
         self.assertIn([str(artifacts["metalViewAnimationPolicy"])], commands)
+        self.assertIn([str(artifacts["metalTileGroupBridge"])], commands)
         producer = commands[-1]
         self.assertIn(str(native), producer)
         self.assertIn("--native-source-head", producer)
@@ -294,6 +301,89 @@ class SourceAndProcessContracts(unittest.TestCase):
                                      env=os.environ.copy(), log_path=self.root / "invalid.log",
                                      step={}, record=lambda: None, timeout=timeout)
         self.assertFalse((self.root / "invalid.log").exists())
+
+
+class MetalTileCacheReceiptContracts(unittest.TestCase):
+    def fixture(self):
+        output = {}
+        for name, config in tile_contract.CONFIGS.items():
+            frames = []
+            for index, request in enumerate(tile_contract.requests(STAMP, 1)):
+                cached = name == "cached"
+                frames.append({"ok": True, "consumerGpuCompletionVerified": False,
+                    "hostVerificationReadbacks": 1, "width": 32, "height": 24,
+                    "bgraBase64": base64.b64encode(bytes([30, 20, 10, 255]) * 768).decode(),
+                    "native": {"ok": True, "frame": {"backend": "metalGanesh", "stamp": dict(STAMP),
+                        "target": request["target"], "submission": index + 1, "producerGpuComplete": True,
+                        "consumerGpuComplete": False, "wholeFrameReadbacks": 0}},
+                    "info": {"state": "active", "scratchTargets": 1, "workingTargets": 0,
+                        "frameTilePins": 0, "quarantinedSnapshots": 0,
+                        "managedTargets": {"targets": 1, "peakTargets": 1,
+                            "estimatedBytes": 3072, "peakEstimatedBytes": 3072},
+                        "tiles": {"cachedTiles": int(cached), "cachedBytes": 65536 if cached else 0,
+                            "canonicalReplays": [1, 1, 1, 2, 2, 3, 4, 5][index] if cached else 0,
+                            "hits": 3 if cached else 0, "evictions": 3 if cached else 0,
+                            "viewportFallbacks": 0 if cached else index + 1,
+                            "targetAdmissionFallbacks": index + 1 if name == "targetLimited" else 0}}})
+            output[name] = {"ok": True, "ownerReleased": True, "consumerGpuCompletionVerified": False,
+                            "afterRelease": {"ok": False, "code": "invalidArgument"}, "results": frames}
+        return output
+
+    def test_valid_bounded_receipt_admits_all_three_real_probe_modes(self):
+        checked = tile_contract.validate_responses(self.fixture(), STAMP)
+        self.assertEqual(checked["maxChannelDifference"], 0)
+        self.assertEqual(checked["ownersReleased"], 3)
+
+    def test_pixel_mismatch_is_not_hidden_by_correct_cache_observations(self):
+        value = self.fixture()
+        value["cached"]["results"][3]["bgraBase64"] = base64.b64encode(bytes([255]) * 3072).decode()
+        with self.assertRaisesRegex(ValueError, "pixels differ"):
+            tile_contract.validate_responses(value, STAMP)
+
+    def test_missing_completion_or_full_stamp_rejects(self):
+        for update in [{"producerGpuComplete": False}, {"consumerGpuComplete": True},
+                       {"wholeFrameReadbacks": 1}, {"stamp": dict(STAMP, revision=2)}, {"submission": 2}]:
+            value = self.fixture()
+            value["cached"]["results"][0]["native"]["frame"].update(update)
+            with self.assertRaises(ValueError):
+                tile_contract.validate_responses(value, STAMP)
+
+    def test_count_byte_and_peak_bounds_are_checked(self):
+        for field, amount in [("targets", 5), ("peakTargets", 5),
+                              ("estimatedBytes", 2097153), ("peakEstimatedBytes", 2097153)]:
+            value = self.fixture()
+            value["cached"]["results"][0]["info"]["managedTargets"][field] = amount
+            with self.assertRaisesRegex(ValueError, "bound"):
+                tile_contract.validate_responses(value, STAMP)
+        for field, amount in [("cachedTiles", 3), ("cachedBytes", 131073)]:
+            value = self.fixture()
+            value["cached"]["results"][0]["info"]["tiles"][field] = amount
+            with self.assertRaisesRegex(ValueError, "bound"):
+                tile_contract.validate_responses(value, STAMP)
+
+    def test_working_pins_and_unsafe_release_do_not_qualify(self):
+        for field in ("workingTargets", "frameTilePins", "quarantinedSnapshots"):
+            value = self.fixture()
+            value["cached"]["results"][0]["info"][field] = 1
+            with self.assertRaises(ValueError):
+                tile_contract.validate_responses(value, STAMP)
+        for update in ({"ownerReleased": False}, {"afterRelease": {"ok": True}}):
+            value = self.fixture()
+            value["cached"].update(update)
+            with self.assertRaises(ValueError):
+                tile_contract.validate_responses(value, STAMP)
+
+    def test_reuse_invalidation_eviction_and_fallback_must_be_observed(self):
+        cases = [("cached", 1, "canonicalReplays", 2), ("cached", 3, "canonicalReplays", 1),
+                 ("cached", 7, "evictions", 0), ("cached", 7, "hits", 0),
+                 ("disabled", 7, "viewportFallbacks", 0),
+                 ("targetLimited", 7, "targetAdmissionFallbacks", 0)]
+        original = self.fixture()
+        for name, index, field, amount in cases:
+            value = copy.deepcopy(original)
+            value[name]["results"][index]["info"]["tiles"][field] = amount
+            with self.assertRaises(ValueError):
+                tile_contract.validate_responses(value, STAMP)
 
 
 if __name__ == "__main__":

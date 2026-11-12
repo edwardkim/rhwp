@@ -6,6 +6,7 @@
 
 #include "MetalFrameLifetime.hpp"
 #include "TextureCloseRouting.hpp"
+#include "RhwpProducerReadyEvents.hpp"
 #include <atomic>
 #include <condition_variable>
 #include <cstdio>
@@ -154,6 +155,7 @@ struct State {
   Stamp acceptedStamp;
   std::vector<uint64_t> acceptedSnapshots;
   std::function<void()> notify;
+  std::function<void(uint64_t, const Stamp&)> producerReady;
 
   bool enqueue(const std::shared_ptr<Job>& job) {
     std::shared_ptr<Job> oldPending;
@@ -324,10 +326,14 @@ void RunProducer(const std::shared_ptr<State>& state) {
       // Evict unused cache bindings after local unpublished resources drop;
       // published/quarantined CVMetalTexture references remain strongly held.
       CVMetalTextureCacheFlush(cache, 0);
+      bool published = false;
       {
         std::lock_guard<std::mutex> lock(state->mutex);
         state->inFlight = false;
+        published = !state->closed && state->current && state->current->job == job &&
+            state->gate.current(job->sequence, job->stamp);
       }
+      if (published && state->producerReady) state->producerReady(job->sequence, job->stamp);
       if (state->notify) state->notify();
     }
     if (presenter) {
@@ -508,6 +514,7 @@ NSDictionary* CVClosedStatus(const CVCloseReceipt& receipt) {
 
 @implementation RhwpMetalPlugin {
   id<FlutterTextureRegistry> _registry;
+  RhwpProducerReadyEvents* _readyEvents;
   NSMutableDictionary<NSNumber*, RhwpMetalTexture*>* _textures;
   std::shared_ptr<State> _lastClosed;
   uint64_t _lastClosedId;
@@ -518,6 +525,8 @@ NSDictionary* CVClosedStatus(const CVCloseReceipt& receipt) {
   RhwpMetalPlugin* plugin = [[RhwpMetalPlugin alloc] init];
   plugin->_registry = registrar.textures;
   plugin->_textures = [NSMutableDictionary dictionary];
+  plugin->_readyEvents = [[RhwpProducerReadyEvents alloc] initWithMessenger:registrar.messenger
+      name:@"rhwp_native/texture_macos/events"];
   FlutterMethodChannel* channel = [FlutterMethodChannel methodChannelWithName:@"rhwp_native/texture_macos"
       binaryMessenger:registrar.messenger];
   [registrar addMethodCallDelegate:plugin channel:channel];
@@ -570,6 +579,7 @@ NSDictionary* CVClosedStatus(const CVCloseReceipt& receipt) {
     const int64_t textureId = [_registry registerTexture:texture];
     if (!textureId) {state->close();result([FlutterError errorWithCode:@"registration" message:@"Flutter rejected the texture registration." details:nil]);return;}
     try {
+      state->producerReady = ProducerReadyCallback(_readyEvents, uint64_t(textureId));
       if (negotiated && !_closeRecords.insert(generation,
           std::make_shared<CVCloseState>(CVCloseState{static_cast<uint64_t>(textureId),state})))
         throw std::runtime_error("bounded texture close registry is full");
@@ -602,6 +612,7 @@ NSDictionary* CVClosedStatus(const CVCloseReceipt& receipt) {
       throw;
     }
     result(@{@"textureId":@(textureId),@"deviceGeneration":@(generation),@"initializing":@YES,
+      @"producerReadyEvents":@YES,
       @"closeAcknowledgementRequired":@(negotiated),@"limits":CVLimits(negotiated)});
     return;
   }
@@ -688,6 +699,7 @@ NSDictionary* CVClosedStatus(const CVCloseReceipt& receipt) {
   } else {result(FlutterMethodNotImplemented);}
 }
 - (void)dealloc {
+  [_readyEvents shutdown];
   NSDictionary<NSNumber*, RhwpMetalTexture*>* textures = [_textures copy];
   id<FlutterTextureRegistry> registry = _registry;
   for (RhwpMetalTexture* texture in textures.allValues) ([texture state])->close();

@@ -1,5 +1,6 @@
 #include "rhwp_native_reference/rhwp_d3d_plugin.h"
 #include "Producer.h"
+#include "ProducerReadyEvents.h"
 #include "CloseRecordRegistry.h"
 #include "../common/bounded_tile_group.h"
 #include <optional>
@@ -94,6 +95,14 @@ Value limits(PublicationMode mode = PublicationMode::LegacyImmutable, bool close
       {Value("maxRetainedCloseRecords"), Value(2)}, {Value("maxClosedReceipts"), Value(2)},
       {Value("consumerRetirement"), Value(false)}, {Value("continuousPresentationSupported"), Value(transfer)},
       {Value("consumerGpuCompletionVerified"), Value(false)}, {Value("targetReuse"), Value(false)},
+      {Value("privateTargetReuse"), Value(true)}, {Value("maxPrivateTargets"), Value(4)},
+      {Value("maxIdlePrivateTargets"), Value(2)},
+      {Value("privateTargets"), unsigned_value(stats.private_targets)},
+      {Value("privateTargetBytes"), unsigned_value(stats.private_bytes)},
+      {Value("frameReservedBytes"), unsigned_value(stats.bytes - stats.private_bytes)},
+      {Value("idlePrivateTargets"), unsigned_value(stats.private_idle)},
+      {Value("idlePrivateTargetBytes"), unsigned_value(stats.private_idle_bytes)},
+      {Value("privateTargetReuses"), unsigned_value(stats.private_reuses)},
       {Value("backpressureRetryable"), Value(transfer && stats.permanent < 4)},
       {Value("frameAccountingScope"), Value("legacyRetainedAndPluginOwnedReferences")},
       {Value("consumerAndDriverMemoryIncluded"), Value(false)},
@@ -123,6 +132,7 @@ Value status(const std::shared_ptr<State>& state) {
   const bool has_frame = state->current && state->error.empty() &&
       state->gate.current(state->current->job->serial, state->current->job->stamp);
   Map value{{Value("textureId"), Value(state->texture_id)}, {Value("deviceGeneration"), unsigned_value(state->generation)},
+      {Value("producerReadyEvents"), Value(bool(state->producer_ready))},
       {Value("publicationMode"), Value(publication_mode_name(state->publication_mode))},
       {Value("closeAcknowledgementRequired"), Value(state->close_ack_required)},
       {Value("ready"), Value(state->ready && !state->closed)}, {Value("closed"), Value(state->closed)},
@@ -187,6 +197,7 @@ class RhwpD3dPlugin final : public flutter::Plugin {
   RhwpD3dPlugin(flutter::PluginRegistrarWindows* registrar,
       FlutterDesktopTextureRegistrarRef texture_registrar) : registrar_(registrar),
       texture_registrar_(texture_registrar) {
+    ready_events_ = std::make_shared<ProducerReadyEvents>(registrar->messenger());
     channel_ = std::make_unique<flutter::MethodChannel<Value>>(registrar->messenger(), "rhwp_native/texture_windows",
         &flutter::StandardMethodCodec::GetInstance());
     channel_->SetMethodCallHandler([this](const auto& call, auto result) {
@@ -197,6 +208,7 @@ class RhwpD3dPlugin final : public flutter::Plugin {
     });
   }
   ~RhwpD3dPlugin() override {
+    ready_events_->stop();
     channel_->SetMethodCallHandler(nullptr);
     for (auto& item : textures_.records()) close(item.second);
   }
@@ -206,6 +218,7 @@ class RhwpD3dPlugin final : public flutter::Plugin {
   flutter::PluginRegistrarWindows* registrar_;
   FlutterDesktopTextureRegistrarRef texture_registrar_;
   std::unique_ptr<flutter::MethodChannel<Value>> channel_;
+  std::shared_ptr<ProducerReadyEvents> ready_events_;
   CloseRecordRegistry<Record, ClosedReceipt> textures_;
   struct TileGroup { rhwp::tiles::Identity identity; Value terminal; };
   std::optional<TileGroup> group_;
@@ -396,6 +409,14 @@ class RhwpD3dPlugin final : public flutter::Plugin {
       }
       Record inserted{state, cookie.release()};
       try {
+        if (ready_events_->available()) {
+          std::weak_ptr<ProducerReadyEvents> events = ready_events_;
+          const auto id = uint64_t(state->texture_id);
+          state->producer_ready = [events, id](uint64_t serial, const Stamp& stamp) {
+            if (auto ready = events.lock()) ready->offer({id, stamp.device, serial,
+                stamp.document, stamp.revision, stamp.font, stamp.view, stamp.scale});
+          };
+        }
         if (!textures_.insert(state->texture_id, inserted))
           throw MethodError("backpressure", "texture ID is retained by an unacknowledged owner");
         std::thread([state] { run_producer(state); }).detach();

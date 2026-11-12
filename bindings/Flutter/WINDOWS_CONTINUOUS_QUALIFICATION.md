@@ -64,3 +64,6 @@ python3 -B bindings/Flutter/test/desktop_qualification_contract.py
 
 portable 검사는 protocol·소유권·한도·pixel 거절 계약을 확인한다. 실제 32회 화면·닫기 검증의 완료는
 진짜 Windows에서 생성한 `receipt.json`의 성공 결과와 artifact를 확인한 뒤에만 기록한다.
+
+두 타일의 경계·실제 Win32 resize·같은 문서의 renderer 복구·실제 DPR 대조는
+[Windows 두 타일 소비 경로 검증](WINDOWS_TILE_QUALIFICATION.md)을 별도로 실행한다.
