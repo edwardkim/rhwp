@@ -1,0 +1,322 @@
+{
+  "documentGlyphFallbacks": [
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 10,
+      "languageSlot": 0,
+      "source": "-윤고딕130"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 11,
+      "languageSlot": 0,
+      "source": "-윤고딕150"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 12,
+      "languageSlot": 0,
+      "source": "-윤고딕160"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 13,
+      "languageSlot": 0,
+      "source": "-윤고딕340"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 14,
+      "languageSlot": 0,
+      "source": "-윤명조140"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 13,
+      "languageSlot": 1,
+      "source": "-윤고딕130"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 14,
+      "languageSlot": 1,
+      "source": "-윤고딕150"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 15,
+      "languageSlot": 1,
+      "source": "-윤고딕160"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 16,
+      "languageSlot": 1,
+      "source": "-윤고딕340"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 17,
+      "languageSlot": 1,
+      "source": "-윤명조140"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 9,
+      "languageSlot": 2,
+      "source": "-윤고딕130"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 10,
+      "languageSlot": 2,
+      "source": "-윤고딕150"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 11,
+      "languageSlot": 2,
+      "source": "-윤고딕160"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 12,
+      "languageSlot": 2,
+      "source": "-윤고딕340"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 13,
+      "languageSlot": 2,
+      "source": "-윤명조140"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 10,
+      "languageSlot": 3,
+      "source": "-윤고딕130"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 11,
+      "languageSlot": 3,
+      "source": "-윤고딕150"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 12,
+      "languageSlot": 3,
+      "source": "-윤고딕160"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 13,
+      "languageSlot": 3,
+      "source": "-윤고딕340"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 14,
+      "languageSlot": 3,
+      "source": "-윤명조140"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 8,
+      "languageSlot": 4,
+      "source": "-윤고딕130"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 9,
+      "languageSlot": 4,
+      "source": "-윤고딕150"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 10,
+      "languageSlot": 4,
+      "source": "-윤고딕160"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 11,
+      "languageSlot": 4,
+      "source": "-윤고딕340"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 12,
+      "languageSlot": 4,
+      "source": "-윤명조140"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 9,
+      "languageSlot": 5,
+      "source": "-윤고딕130"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 10,
+      "languageSlot": 5,
+      "source": "-윤고딕150"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 11,
+      "languageSlot": 5,
+      "source": "-윤고딕160"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 12,
+      "languageSlot": 5,
+      "source": "-윤고딕340"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 13,
+      "languageSlot": 5,
+      "source": "-윤명조140"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 6,
+      "languageSlot": 6,
+      "source": "-윤고딕130"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 7,
+      "languageSlot": 6,
+      "source": "-윤고딕150"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 8,
+      "languageSlot": 6,
+      "source": "-윤고딕160"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 9,
+      "languageSlot": 6,
+      "source": "-윤고딕340"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 10,
+      "languageSlot": 6,
+      "source": "-윤명조140"
+    }
+  ],
+  "documentSubstitutions": [],
+  "id": "native-webfont-1870d5008497942606aaa7d9",
+  "preserveSourceMetrics": true,
+  "selectedPrograms": {
+    "Times New Roman": {
+      "family": "Times New Roman",
+      "openTypeCff": false,
+      "programId": "05431e66ef394384694c35739bcff3bd67242cc74aca1f13b54c7a92822f0fde",
+      "query": "Times New Roman",
+      "trueType": true
+    }
+  },
+  "substitutions": {
+    "-윤고딕130": "NotoSansKR-Regular",
+    "-윤고딕150": "NotoSansKR-Regular",
+    "-윤고딕160": "NotoSansKR-Regular",
+    "-윤고딕340": "NotoSansKR-Regular",
+    "-윤명조140": "NotoSansKR-Regular",
+    "Calibri": "NotoSansKR-Regular",
+    "HCI Poppy": "NotoSerifKRExtraLight-Regular",
+    "Times New Roman": "Times New Roman",
+    "굴림": "NotoSansKRExtraLight",
+    "맑은 고딕": "Pretendard-Regular",
+    "명조": "NotoSerifKRExtraLight-Bold",
+    "바탕": "NotoSerifKRExtraLight-Regular",
+    "바탕체": "NotoSerifKRExtraLight-Regular",
+    "신명 신명조": "NotoSerifKRExtraLight-Regular",
+    "신명 신문명조": "NotoSerifKRExtraLight-Regular",
+    "신명 중고딕": "NotoSansKR-Regular",
+    "한양신명조": "NotoSansKR-Regular",
+    "한양중고딕": "NotoSansKR-Regular",
+    "함초롬바탕": "HCRBatang",
+    "휴먼명조": "NotoSansKR-Regular"
+  },
+  "trueTypeFaces": [
+    "HCR Batang",
+    "Times New Roman"
+  ]
+}

@@ -1,5 +1,11 @@
 # PR #8896 메인테이너 검증 증거
 
+현재 기준은 최신 devel `eb84afc0364c51031bb07cbbb013476293367990`이다.
+[최신 통합 검증 원장](latest-eb84/README.md)에서 진행·완료를 구분한다.
+아래는 이전 고정 base에서 실제 완료한 선행 검증이며 최신 source의 실행으로 계상하지 않는다.
+
+## 이전 고정 base의 선행 검증
+
 원 기여 head `51a960e392a3d79a4d28f78fa90a2aa88ad8c0d7`, 기준 devel
 `4c876654d86d071d342fc78706c51cfff6ddbde4`를 보존한다. 최종 실제 Native·fresh 최적화 WASM의
 제품 source는 `ae5c72c710ac116132d2b9dcf62078bbc884beff`다.

@@ -1,0 +1,399 @@
+{
+  "source": "759212053e4b289db93034c7b2b32f5b50bdcd4e",
+  "old_files": 22,
+  "current_files": 44,
+  "new_references": [
+    "src/parser/hwp3/mod.rs",
+    "src/renderer/hancom_pua.rs",
+    "src/renderer/typeset/section/stored_reset.rs",
+    "tests/anchor_contract.rs",
+    "tests/audit_contract.rs",
+    "tests/audit_standard_contract.rs",
+    "tests/bundle_contract.rs",
+    "tests/disclose_contract.rs",
+    "tests/gate_contract.rs",
+    "tests/harness_contract.rs",
+    "tests/issue_2007_nested_cell_pagination.rs",
+    "tests/issue_3385b_text_surface_full_pua.rs",
+    "tests/issue_4252_nested_partial_table_cell_path.rs",
+    "tests/issue_4272_nested_cell_text_selection.rs",
+    "tests/issue_4488_4495_body_provenance.rs",
+    "tests/lineage_contract.rs",
+    "tests/render_p37_direct_pdf_export.rs",
+    "tests/replay_contract.rs",
+    "tests/run_plan_cas_contract.rs",
+    "tests/run_plan_journal_hash_chain_contract.rs",
+    "tests/settle_contract.rs",
+    "tests/signing_contract.rs"
+  ],
+  "devel_changed_existing": [],
+  "rows": [
+    {
+      "path": "src/parser/hwp3/mod.rs",
+      "sha256": "eecb17a72eaba544d2afbaa7b1aa21c736fbefb5c54fe52bf4d4ac1a920eea84",
+      "referenced_targets": [
+        "hwp3-sample16-hwp5.hwpx"
+      ]
+    },
+    {
+      "path": "src/renderer/hancom_pua.rs",
+      "sha256": "75f45984553f628cc7a5926492c259e8b7e7e098536e84754f4b0d69fde2e154",
+      "referenced_targets": [
+        "issue2007_nested_cell_pagination_42065.hwp"
+      ]
+    },
+    {
+      "path": "src/renderer/typeset/section/stored_reset.rs",
+      "sha256": "bed3cedb80cd9581633544504b8b62d7e9404e056c2cb72b8ccbe9e7d4d8da07",
+      "referenced_targets": [
+        "hwp3-sample16-hwp5.hwpx"
+      ]
+    },
+    {
+      "path": "tests/anchor_contract.rs",
+      "sha256": "ad20daf7190294f3f035dfa743eceef2e5610779c9e9b2a54ef3be58f57d00f1",
+      "referenced_targets": [
+        "issue2007_nested_cell_pagination_42065.hwp"
+      ]
+    },
+    {
+      "path": "tests/audit_contract.rs",
+      "sha256": "0b0bb9fffee0b05d87c64b50b0087b3b993f5d778bae72afe124319b425399e1",
+      "referenced_targets": [
+        "issue2007_nested_cell_pagination_42065.hwp"
+      ]
+    },
+    {
+      "path": "tests/audit_standard_contract.rs",
+      "sha256": "dec2562876557b4d2c2701b46a6b7fa31e4a68ed57d93585917d6ee5cbbfbb79",
+      "referenced_targets": [
+        "issue2007_nested_cell_pagination_42065.hwp"
+      ]
+    },
+    {
+      "path": "tests/bundle_contract.rs",
+      "sha256": "6dae09fec790c4b9a6a4a26c620e21cd6b40adfeab3ed7ad0ea6976c01cfca28",
+      "referenced_targets": [
+        "issue2007_nested_cell_pagination_42065.hwp"
+      ]
+    },
+    {
+      "path": "tests/cases/hwp3_table_grid_left_edges.rs",
+      "sha256": "1266d304dc23222c96cc1ded0567504bda9a08620bff248bf7e1b32d45c15f92",
+      "referenced_targets": [
+        "hwp3-sample16-hwp5.hwpx"
+      ]
+    },
+    {
+      "path": "tests/cases/issue_4068_unclipped_cell_honors_valign.rs",
+      "sha256": "5b88a9eaeb897a280428d272473478a1325bac17d2891b28e9643065f0456009",
+      "referenced_targets": [
+        "issue2007_nested_cell_pagination_42065.hwp"
+      ]
+    },
+    {
+      "path": "tests/cases/issue_8160_equation_reading_order.rs",
+      "sha256": "10e51a9517fbec1164cbde2588d283ab9967fe93d35f287da75cc52237c03ffe",
+      "referenced_targets": [
+        "hwp3-sample16-hwp5.hwpx"
+      ]
+    },
+    {
+      "path": "tests/cases/issue_8160_fullwidth_cjk_quote.rs",
+      "sha256": "63b411df5bc99b218117077a2227679fdf01e36d1443a6e8a99f6fc246097142",
+      "referenced_targets": [
+        "hwp3-sample16-hwp5.hwpx"
+      ]
+    },
+    {
+      "path": "tests/cases/issue_8160_gradient_and_font_mapping.rs",
+      "sha256": "62b20550294515a28bd4c9995d168b7fb3851662e6ef0dc4056085decc05e136",
+      "referenced_targets": [
+        "hwp3-sample16-hwp5.hwpx"
+      ]
+    },
+    {
+      "path": "tests/cases/issue_8160_hft_print_frame.rs",
+      "sha256": "749d590c9cd1dc0f5f378a86963fb44cabdeca50c347f6a3dd8004b25f03ae41",
+      "referenced_targets": [
+        "hwp3-sample16-hwp5.hwpx"
+      ]
+    },
+    {
+      "path": "tests/cases/issue_8160_hwp2022_paragraph_relations.rs",
+      "sha256": "27db07fba4a45bf3fcfad7dd45f31b9c721aa7247e221f6d2c3c35b31d86f334",
+      "referenced_targets": [
+        "hwp3-sample16-hwp5-2022.hwp"
+      ]
+    },
+    {
+      "path": "tests/cases/issue_8160_hwpx_stored_page_ownership.rs",
+      "sha256": "15b74ba0060ab2954bb77a3f5d8b51b123b9705774956d795b33e4c9b2cb3b30",
+      "referenced_targets": [
+        "hwp3-sample16-hwp5.hwpx"
+      ]
+    },
+    {
+      "path": "tests/cases/issue_8160_save_version_metadata.rs",
+      "sha256": "4da3e6fb51f9416530efaa1f1904dd81160c684a646a32ed673eb407dea60d7a",
+      "referenced_targets": [
+        "hwp3-sample16-hwp5-2022.hwp",
+        "hwp3-sample16-hwp5-2024.hwp"
+      ]
+    },
+    {
+      "path": "tests/cases/issue_8160_saved_page_boundaries.rs",
+      "sha256": "18c4cb8f3d6d61c1fbb617ded766ea6d264e25ef903238c035c780eaafafd9cd",
+      "referenced_targets": [
+        "hwp3-sample16-hwp5-2022.hwp",
+        "hwp3-sample16-hwp5-2024.hwp"
+      ]
+    },
+    {
+      "path": "tests/cases/issue_8160_stored_shape_host_physical_frame.rs",
+      "sha256": "aa73b00921885709de632cb353ab97979f942aabf44a0b8482417c99ecf3c0ce",
+      "referenced_targets": [
+        "hwp3-sample16-hwp5.hwpx"
+      ]
+    },
+    {
+      "path": "tests/cases/issue_8160_terminal_style_cell_frame.rs",
+      "sha256": "fde9e8802e2168c0f9a2f9eab45804fbe3cd5e9015f3984b7ea2baf150e22ea5",
+      "referenced_targets": [
+        "hwp3-sample16-hwp5.hwpx"
+      ]
+    },
+    {
+      "path": "tests/cases/issue_8160_toc_and_latin_font.rs",
+      "sha256": "7a774844613e945626bdc83bdaa2b578987b12ae8fffa4d2411c140833846fa2",
+      "referenced_targets": [
+        "hwp3-sample16-hwp5-2022.hwp"
+      ]
+    },
+    {
+      "path": "tests/cases/issue_8201_seal_pua.rs",
+      "sha256": "f23d3a3b1eb35a3878fa8ce78c02ef70d1b2918bafa4a4d591c25034e76976fa",
+      "referenced_targets": [
+        "issue2007_nested_cell_pagination_42065.hwp"
+      ]
+    },
+    {
+      "path": "tests/cases/issue_8306_hwpx_verify_normalization.rs",
+      "sha256": "3abcaea6e93582db8a7982573c1d57bfa0ce7307d87513262cfaaa04061283f0",
+      "referenced_targets": [
+        "issue2007_nested_cell_pagination_42065.hwp"
+      ]
+    },
+    {
+      "path": "tests/cases/issue_8479_stored_ladder_missing_content.rs",
+      "sha256": "fc02aa87992db637a84726a23732c9acc298d22dd1b4cde679fd600c81f99e1a",
+      "referenced_targets": [
+        "hwp3-sample16-hwp5.hwpx"
+      ]
+    },
+    {
+      "path": "tests/cases/issue_8896_legacy_font_family_contract.rs",
+      "sha256": "d0f715f5dda758b505f2520d56cdfd14da7668552f22bdabcc22458437648f7c",
+      "referenced_targets": [
+        "hwp3-sample16-hwp5-2022.hwp"
+      ]
+    },
+    {
+      "path": "tests/cases/native_pua_host_font_protocol.rs",
+      "sha256": "85ffb2bef84f47900b320d37562f27abd45c56b2cf888c70bdec4cc925c9b063",
+      "referenced_targets": [
+        "issue2007_nested_cell_pagination_42065.hwp"
+      ]
+    },
+    {
+      "path": "tests/cases/nested_declared_word_space_budget.rs",
+      "sha256": "9e4dcb96195ff4b7bb9e50559a9335e86b760a585725deaf14278e456686e78f",
+      "referenced_targets": [
+        "issue2007_nested_cell_pagination_42065.hwp"
+      ]
+    },
+    {
+      "path": "tests/cases/nested_table_height_cache_contract.rs",
+      "sha256": "f337874242e1ff3fe04104b8685f732f03b62acb79da56cb106208d272532fee",
+      "referenced_targets": [
+        "issue2007_nested_cell_pagination_42065.hwp"
+      ]
+    },
+    {
+      "path": "tests/cases/off_canvas_baseline.rs",
+      "sha256": "c6b2bbd0a0dd209d0effb593c15b3bc8b31542987c04a365227bc912d8cfa438",
+      "referenced_targets": [
+        "issue2007_nested_cell_pagination_42065.hwp"
+      ]
+    },
+    {
+      "path": "tests/cases/source_frame_control_ownership.rs",
+      "sha256": "e09c31b30b9948baa3581d608ae062d6b3a59bd2db5ac4d89ce583626406dda3",
+      "referenced_targets": [
+        "issue2007_nested_cell_pagination_42065.hwp"
+      ]
+    },
+    {
+      "path": "tests/disclose_contract.rs",
+      "sha256": "6b4dd4d7d334f90c111c2eceeb034f807a4c660a84bb035befc034d152747ca3",
+      "referenced_targets": [
+        "issue2007_nested_cell_pagination_42065.hwp"
+      ]
+    },
+    {
+      "path": "tests/gate_contract.rs",
+      "sha256": "6b62b37a64aaf938b0737c2bdb39e4f6cddeea527afd690ed19a0b6f70c2e11c",
+      "referenced_targets": [
+        "issue2007_nested_cell_pagination_42065.hwp"
+      ]
+    },
+    {
+      "path": "tests/harness_contract.rs",
+      "sha256": "3d66907d86f2150c29d9ac884be618374fd0776b933ff2902de2f71f7eb89abc",
+      "referenced_targets": [
+        "issue2007_nested_cell_pagination_42065.hwp"
+      ]
+    },
+    {
+      "path": "tests/issue_2007_nested_cell_pagination.rs",
+      "sha256": "9da5049f495299611f400328e40071adcc1d7ab4c081195060d16900e26f754a",
+      "referenced_targets": [
+        "issue2007_nested_cell_pagination_42065.hwp"
+      ]
+    },
+    {
+      "path": "tests/issue_3385b_text_surface_full_pua.rs",
+      "sha256": "a1cc6d2e05f8d5a3be205ce713024defdb66b513e87cc133aa33ecc3949e3a39",
+      "referenced_targets": [
+        "issue2007_nested_cell_pagination_42065.hwp"
+      ]
+    },
+    {
+      "path": "tests/issue_4252_nested_partial_table_cell_path.rs",
+      "sha256": "170b8e2469a0e54e322478f788068789e2905497eb1cd6e2310d62e641e763cd",
+      "referenced_targets": [
+        "issue2007_nested_cell_pagination_42065.hwp"
+      ]
+    },
+    {
+      "path": "tests/issue_4272_nested_cell_text_selection.rs",
+      "sha256": "5afc31c68f85b833afeae4730f607dd7142ea864d32147df7b7232db55e2162d",
+      "referenced_targets": [
+        "issue2007_nested_cell_pagination_42065.hwp"
+      ]
+    },
+    {
+      "path": "tests/issue_4488_4495_body_provenance.rs",
+      "sha256": "3e3db24184d1bc23f3558eff7f53859df1377c234f54cb2f5ea363fe781bd6c2",
+      "referenced_targets": [
+        "issue2007_nested_cell_pagination_42065.hwp"
+      ]
+    },
+    {
+      "path": "tests/lineage_contract.rs",
+      "sha256": "7935467a54e2843f19bd12b3bb054e7ed16caeba8563dc59c7090a9184dbb9e3",
+      "referenced_targets": [
+        "issue2007_nested_cell_pagination_42065.hwp"
+      ]
+    },
+    {
+      "path": "tests/render_p37_direct_pdf_export.rs",
+      "sha256": "75df5752bf49ccfdfe7f89634da1c04a0eabc1d2ba773f2d095ab9613b5e0848",
+      "referenced_targets": [
+        "hwp3-sample16-hwp5-2022.hwp"
+      ]
+    },
+    {
+      "path": "tests/replay_contract.rs",
+      "sha256": "02d384c4991ae3ea134b7a24ff1020be9c119faae40f2762c66898cdf8e7ecd1",
+      "referenced_targets": [
+        "issue2007_nested_cell_pagination_42065.hwp"
+      ]
+    },
+    {
+      "path": "tests/run_plan_cas_contract.rs",
+      "sha256": "d30bde29d9e9780874deb8f711518ba08890685e29b66585bd15a77e852111f4",
+      "referenced_targets": [
+        "issue2007_nested_cell_pagination_42065.hwp"
+      ]
+    },
+    {
+      "path": "tests/run_plan_journal_hash_chain_contract.rs",
+      "sha256": "1790da80dfe1360d621e8f4c2f991179326993f5149fab16e98aa56be360cb39",
+      "referenced_targets": [
+        "issue2007_nested_cell_pagination_42065.hwp"
+      ]
+    },
+    {
+      "path": "tests/settle_contract.rs",
+      "sha256": "41e1c29695ef67d2d94a5bef93c1f19bac39dcab9c35a4d45850ad58a8e786d3",
+      "referenced_targets": [
+        "issue2007_nested_cell_pagination_42065.hwp"
+      ]
+    },
+    {
+      "path": "tests/signing_contract.rs",
+      "sha256": "1837ae0e98098d77886c88d34ac4d398b62565c2340b0333954312b2495fe7c9",
+      "referenced_targets": [
+        "issue2007_nested_cell_pagination_42065.hwp"
+      ]
+    }
+  ],
+  "devel_changed_additional_references": [],
+  "reference_scope_note": "22 focused-case audit files are unchanged by the new devel; broad source/root contract references are separately listed without treating every reference as a new layout assertion. The Native exporter test header was added by this task.",
+  "source_initial": "68e8190d334fccc5a2846dcfead4a7c60330774a",
+  "additional_root_contract_geometry_search": [
+    {
+      "path": "tests/anchor_contract.rs",
+      "geometry_search_hits": []
+    },
+    {
+      "path": "tests/audit_contract.rs",
+      "geometry_search_hits": []
+    },
+    {
+      "path": "tests/audit_standard_contract.rs",
+      "geometry_search_hits": []
+    },
+    {
+      "path": "tests/bundle_contract.rs",
+      "geometry_search_hits": []
+    },
+    {
+      "path": "tests/disclose_contract.rs",
+      "geometry_search_hits": []
+    },
+    {
+      "path": "tests/gate_contract.rs",
+      "geometry_search_hits": []
+    },
+    {
+      "path": "tests/harness_contract.rs",
+      "geometry_search_hits": []
+    },
+    {
+      "path": "tests/lineage_contract.rs",
+      "geometry_search_hits": []
+    },
+    {
+      "path": "tests/replay_contract.rs",
+      "geometry_search_hits": []
+    },
+    {
+      "path": "tests/run_plan_cas_contract.rs",
+      "geometry_search_hits": []
+    },
+    {
+      "path": "tests/run_plan_journal_hash_chain_contract.rs",
+      "geometry_search_hits": []
+    },
+    {
+      "path": "tests/settle_contract.rs",
+      "geometry_search_hits": []
+    },
+    {
+      "path": "tests/signing_contract.rs",
+      "geometry_search_hits": []
+    }
+  ]
+}

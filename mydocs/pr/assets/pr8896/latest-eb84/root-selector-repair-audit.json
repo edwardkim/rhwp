@@ -1,0 +1,22 @@
+{
+  "source": "759212053e4b289db93034c7b2b32f5b50bdcd4e",
+  "path": "tests/issue_2007_nested_cell_pagination.rs",
+  "sha256": "9da5049f495299611f400328e40071adcc1d7ab4c081195060d16900e26f754a",
+  "previous_file_commit": "dc3e31be542bcdaea0aa28187d46a60f4792da02",
+  "changed_tests": 2,
+  "selectors_removed": [
+    "y > 820",
+    "width > 500",
+    "height <= 2",
+    "x < 80",
+    "width > 650"
+  ],
+  "preserved": [
+    "no terminal border on physical page 2",
+    "one owned terminal border on physical page 3",
+    "whole stroke inside all ancestor cell clips"
+  ],
+  "new_check": "SVG consumes the selected source-owned line and clipped cell bounds",
+  "focused_passed": 9,
+  "production_source_changed": false
+}

@@ -1,0 +1,24 @@
+{
+  "source": "1749b66d704b3ea0443ae9792ff8a1d65e26a9c1",
+  "command": [
+    "cargo",
+    "build",
+    "--locked",
+    "--profile",
+    "release-test",
+    "--features",
+    "native-skia",
+    "--lib",
+    "--bin",
+    "rhwp",
+    "-vv"
+  ],
+  "returncode": 0,
+  "seconds": 281.59,
+  "forced_source_stamp": [
+    "src/lib.rs",
+    "src/main.rs"
+  ],
+  "sha256": "961cb8f2e09dade36dbad4a35d102922dd1949a36ccd95ad4cc45992b2eb837f",
+  "candidate_family_chain_present": true
+}

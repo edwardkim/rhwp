@@ -1,0 +1,356 @@
+{
+  "documentGlyphFallbacks": [
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 18,
+      "languageSlot": 0,
+      "source": "-윤명조320"
+    },
+    {
+      "faces": [
+        "NotoSansKRExtraLight",
+        "HCRBatang"
+      ],
+      "fontId": 19,
+      "languageSlot": 0,
+      "source": "KoPub돋움체 Light"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 20,
+      "languageSlot": 0,
+      "source": "뫼비우스 Regular"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 21,
+      "languageSlot": 0,
+      "source": "-윤명조120"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 22,
+      "languageSlot": 0,
+      "source": "-윤고딕120"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 23,
+      "languageSlot": 0,
+      "source": "-윤고딕150"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 19,
+      "languageSlot": 1,
+      "source": "산돌명조 L"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 20,
+      "languageSlot": 1,
+      "source": "KoPub돋움체 Light"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 21,
+      "languageSlot": 1,
+      "source": "뫼비우스 Regular"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 22,
+      "languageSlot": 1,
+      "source": "-윤고딕120"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 23,
+      "languageSlot": 1,
+      "source": "-윤고딕150"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 17,
+      "languageSlot": 2,
+      "source": "-윤명조320"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 18,
+      "languageSlot": 2,
+      "source": "KoPub돋움체 Light"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 19,
+      "languageSlot": 2,
+      "source": "뫼비우스 Regular"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 20,
+      "languageSlot": 2,
+      "source": "-윤고딕120-90%"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 21,
+      "languageSlot": 2,
+      "source": "-윤고딕150"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 17,
+      "languageSlot": 3,
+      "source": "-윤명조320"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 18,
+      "languageSlot": 3,
+      "source": "KoPub돋움체 Light"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 19,
+      "languageSlot": 3,
+      "source": "뫼비우스 Regular"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 20,
+      "languageSlot": 3,
+      "source": "-윤고딕120-90%"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 21,
+      "languageSlot": 3,
+      "source": "-윤고딕150"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 12,
+      "languageSlot": 4,
+      "source": "-윤명조320"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 13,
+      "languageSlot": 4,
+      "source": "KoPub돋움체 Light"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 14,
+      "languageSlot": 4,
+      "source": "뫼비우스 Regular"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 15,
+      "languageSlot": 4,
+      "source": "-윤고딕120"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 16,
+      "languageSlot": 4,
+      "source": "-윤고딕150"
+    },
+    {
+      "faces": [
+        "Noto Serif",
+        "HCRBatang"
+      ],
+      "fontId": 15,
+      "languageSlot": 5,
+      "source": "KoPub바탕체 Light"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 16,
+      "languageSlot": 5,
+      "source": "KoPub돋움체 Light"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 17,
+      "languageSlot": 5,
+      "source": "뫼비우스 Regular"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 18,
+      "languageSlot": 5,
+      "source": "-윤고딕120"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 19,
+      "languageSlot": 5,
+      "source": "-윤고딕150"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 11,
+      "languageSlot": 6,
+      "source": "-윤명조320"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 12,
+      "languageSlot": 6,
+      "source": "KoPub돋움체 Light"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 13,
+      "languageSlot": 6,
+      "source": "뫼비우스 Regular"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 14,
+      "languageSlot": 6,
+      "source": "-윤고딕120-90%"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 15,
+      "languageSlot": 6,
+      "source": "-윤고딕150"
+    }
+  ],
+  "documentSubstitutions": [],
+  "id": "native-webfont-c0df297968774a9c569e1b44",
+  "preserveSourceMetrics": true,
+  "selectedPrograms": {
+    "KoPub돋움체 Light": {
+      "family": "KoPubDotum Light",
+      "openTypeCff": false,
+      "programId": "6d6953f3c854de69eb2b947d2abbdd108512617b3cd542cde6d00a1dd496824b",
+      "query": "KoPub돋움체 Light",
+      "trueType": true
+    },
+    "KoPub바탕체 Light": {
+      "family": "KoPubBatang Light",
+      "openTypeCff": false,
+      "programId": "3518b7160348c029ed9ba9fcbfb7c2e73ee60259e4b4ac93e321b802105bdb12",
+      "query": "KoPub바탕체 Light",
+      "trueType": true
+    }
+  },
+  "substitutions": {
+    "#세명조": "NotoSansKR-Regular",
+    "#신명조": "NotoSansKR-Regular",
+    "#중고딕": "NotoSansKRExtraLight",
+    "-윤고딕120": "NotoSansKR-Regular",
+    "-윤고딕120-90%": "NotoSansKR-Regular",
+    "-윤고딕150": "NotoSansKR-Regular",
+    "-윤명조120": "NotoSansKR-Regular",
+    "-윤명조320": "NotoSansKR-Regular",
+    "HCI Poppy": "NotoSerifKRExtraLight-Regular",
+    "HCI Tulip": "NotoSerifKRExtraLight-Bold",
+    "HY견고딕": "NotoSansKRThin-Bold",
+    "HY헤드라인M": "NotoSansKRThin-Bold",
+    "KoPub돋움체 Light": "KoPubDotumLight",
+    "KoPub바탕체 Light": "KoPubBatang-Light",
+    "고딕": "NotoSansKRExtraLight",
+    "굴림": "NotoSansKRExtraLight",
+    "돋움": "NotoSansKRExtraLight",
+    "맑은 고딕": "Pretendard-Regular",
+    "명조": "NotoSerifKRExtraLight-Bold",
+    "뫼비우스 Regular": "NotoSansKR-Regular",
+    "바탕": "NotoSerifKRExtraLight-Regular",
+    "바탕체": "NotoSerifKRExtraLight-Regular",
+    "산돌명조 L": "NotoSansKR-Regular",
+    "산세리프": "NotoSansKR-Regular",
+    "신명 세명조": "NotoSerifKRExtraLight-Regular",
+    "신명 신명조": "NotoSerifKRExtraLight-Regular",
+    "신명 신신명조": "NotoSerifKRExtraLight-Regular",
+    "신명 중고딕": "NotoSansKR-Regular",
+    "태 나무": "NotoSansKR-Regular",
+    "한양신명조": "NotoSansKR-Regular",
+    "한양중고딕": "NotoSansKR-Regular",
+    "한컴바탕": "HCRBatang",
+    "함초롬돋움": "HCRDotum",
+    "함초롬바탕": "HCRBatang",
+    "휴먼명조": "NotoSansKR-Regular"
+  },
+  "trueTypeFaces": [
+    "HCR Batang",
+    "HCR Dotum",
+    "KoPubBatang Light",
+    "KoPubDotum Light"
+  ]
+}

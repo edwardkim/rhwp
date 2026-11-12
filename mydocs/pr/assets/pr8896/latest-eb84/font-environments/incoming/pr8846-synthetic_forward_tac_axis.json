@@ -1,0 +1,107 @@
+{
+  "documentGlyphFallbacks": [
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 3,
+      "languageSlot": 0,
+      "source": "HY신명조"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 4,
+      "languageSlot": 0,
+      "source": "HY중고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 4,
+      "languageSlot": 1,
+      "source": "HY신명조"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 5,
+      "languageSlot": 1,
+      "source": "HY중고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 3,
+      "languageSlot": 2,
+      "source": "HY신명조"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 4,
+      "languageSlot": 2,
+      "source": "HY중고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 3,
+      "languageSlot": 3,
+      "source": "HY신명조"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 4,
+      "languageSlot": 3,
+      "source": "HY중고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 3,
+      "languageSlot": 4,
+      "source": "HY신명조"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 3,
+      "languageSlot": 5,
+      "source": "HY신명조"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 4,
+      "languageSlot": 5,
+      "source": "HY중고딕"
+    }
+  ],
+  "documentSubstitutions": [],
+  "id": "native-webfont-4e91d29cabf6ea954b973e77",
+  "preserveSourceMetrics": true,
+  "substitutions": {
+    "HY견고딕": "NotoSansKRThin-Bold",
+    "HY견명조": "NotoSerifKRExtraLight-Bold",
+    "HY신명조": "NotoSerifKRExtraLight-Regular",
+    "HY중고딕": "NotoSansKR-Regular",
+    "굴림체": "D2Coding",
+    "맑은 고딕": "Pretendard-Regular",
+    "한컴바탕": "HCRBatang"
+  },
+  "trueTypeFaces": [
+    "HCR Batang"
+  ]
+}

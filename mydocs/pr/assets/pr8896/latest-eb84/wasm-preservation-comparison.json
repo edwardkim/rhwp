@@ -1,0 +1,358 @@
+{
+  "paired_document_counts": [
+    {
+      "key": "pr8691-ai_procurement_appendix",
+      "base": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "head": {
+        "rhwp": 4,
+        "pdf": 4
+      }
+    },
+    {
+      "key": "pr8691-artifact_loan_form",
+      "base": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head": {
+        "rhwp": 1,
+        "pdf": 1
+      }
+    },
+    {
+      "key": "pr8691-rental_approval_form",
+      "base": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head": {
+        "rhwp": 1,
+        "pdf": 1
+      }
+    },
+    {
+      "key": "pr8752-wide_paper_table_two_columns",
+      "base": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head": {
+        "rhwp": 2,
+        "pdf": 2
+      }
+    },
+    {
+      "key": "pr8774-4680000-202100038_research_review_request",
+      "base": {
+        "rhwp": 6,
+        "pdf": 6
+      },
+      "head": {
+        "rhwp": 6,
+        "pdf": 6
+      }
+    },
+    {
+      "key": "pr8892-36384898-unstored-next-float-bottom-margin",
+      "base": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head": {
+        "rhwp": 2,
+        "pdf": 2
+      }
+    },
+    {
+      "key": "pr8911-36376635-synthetic-tail-saved-reset",
+      "base": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "head": {
+        "rhwp": 3,
+        "pdf": 3
+      }
+    }
+  ],
+  "nonfont_receipt_entries": [],
+  "scope": "preservation",
+  "backend": "wasm",
+  "base_source": "eb84afc0364c51031bb07cbbb013476293367990",
+  "head_source": "68e8190d334fccc5a2846dcfead4a7c60330774a",
+  "datasets": 7,
+  "pages": 19,
+  "png_equal": 18,
+  "changed": [
+    {
+      "key": "pr8774-4680000-202100038_research_review_request",
+      "backend": "wasm",
+      "page": 2,
+      "input_path": "samples/issue8770/4680000-202100038_research_review_request.hwp",
+      "base_raw": 98.59046,
+      "head_raw": 98.59155,
+      "delta_pp": "0.00109",
+      "base_png_sha256": "9b654401841cc9972c2d5bed5ea6c962b035ea11653175304ec54e5b14a48673",
+      "head_png_sha256": "170d13e68f1c6c92a508ad5902ac41b5cc0af5fd8422366c881c39fa9cab8669",
+      "png_equal": false,
+      "head_below_90": false
+    }
+  ],
+  "minimum": 92.65775,
+  "minimum_delta_pp": "0.00000",
+  "drops_over_2pp": 0,
+  "head_below_90": 0,
+  "protected_declines": 0,
+  "rows": [
+    {
+      "key": "pr8691-ai_procurement_appendix",
+      "backend": "wasm",
+      "page": 1,
+      "input_path": "samples/issue8682/ai_procurement_appendix.hwp",
+      "base_raw": 99.98546,
+      "head_raw": 99.98546,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "91792f9d214f98cfdda499aa806e03b5d5aa3eeec644a7d6888a879495d00805",
+      "head_png_sha256": "91792f9d214f98cfdda499aa806e03b5d5aa3eeec644a7d6888a879495d00805",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8691-ai_procurement_appendix",
+      "backend": "wasm",
+      "page": 2,
+      "input_path": "samples/issue8682/ai_procurement_appendix.hwp",
+      "base_raw": 99.61491,
+      "head_raw": 99.61491,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "07f55f29a44db260fc82f4bbc365344c3f57e1cb4db40765918ece761b51e900",
+      "head_png_sha256": "07f55f29a44db260fc82f4bbc365344c3f57e1cb4db40765918ece761b51e900",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8691-ai_procurement_appendix",
+      "backend": "wasm",
+      "page": 3,
+      "input_path": "samples/issue8682/ai_procurement_appendix.hwp",
+      "base_raw": 97.42883,
+      "head_raw": 97.42883,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "e0738e0ee581ba74c331e8047715e68d853231e7befb23017709ff14c3ceb95b",
+      "head_png_sha256": "e0738e0ee581ba74c331e8047715e68d853231e7befb23017709ff14c3ceb95b",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8691-ai_procurement_appendix",
+      "backend": "wasm",
+      "page": 4,
+      "input_path": "samples/issue8682/ai_procurement_appendix.hwp",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": "0.0",
+      "base_png_sha256": "6ff412c6a8b032f98746ad34ae4d76b8080f9c16ccc912dc699fb3576788da1e",
+      "head_png_sha256": "6ff412c6a8b032f98746ad34ae4d76b8080f9c16ccc912dc699fb3576788da1e",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8691-artifact_loan_form",
+      "backend": "wasm",
+      "page": 1,
+      "input_path": "samples/issue8682/artifact_loan_form.hwp",
+      "base_raw": 99.99664,
+      "head_raw": 99.99664,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "ca4ba388e4347be5c9660f195624c5c9a784f34fe901adee373f765f58506994",
+      "head_png_sha256": "ca4ba388e4347be5c9660f195624c5c9a784f34fe901adee373f765f58506994",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8691-rental_approval_form",
+      "backend": "wasm",
+      "page": 1,
+      "input_path": "samples/issue8682/rental_approval_form.hwp",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": "0.0",
+      "base_png_sha256": "c12861480e8f2a62c205796c560a1d8b67f9090a2dfcc43bb9c9b15940a6af77",
+      "head_png_sha256": "c12861480e8f2a62c205796c560a1d8b67f9090a2dfcc43bb9c9b15940a6af77",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8752-wide_paper_table_two_columns",
+      "backend": "wasm",
+      "page": 1,
+      "input_path": "samples/issue7282/wide_paper_table_two_columns.hwp",
+      "base_raw": 92.65775,
+      "head_raw": 92.65775,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "70273a7d64ba1b566dd46d51b9472bfef51b6b4b512a3414c5420a403ae97362",
+      "head_png_sha256": "70273a7d64ba1b566dd46d51b9472bfef51b6b4b512a3414c5420a403ae97362",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8752-wide_paper_table_two_columns",
+      "backend": "wasm",
+      "page": 2,
+      "input_path": "samples/issue7282/wide_paper_table_two_columns.hwp",
+      "base_raw": 99.99805,
+      "head_raw": 99.99805,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "a270bb131ed367038ed96f470869a4455e107047feeac40c6c766c9931a8f5f9",
+      "head_png_sha256": "a270bb131ed367038ed96f470869a4455e107047feeac40c6c766c9931a8f5f9",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8774-4680000-202100038_research_review_request",
+      "backend": "wasm",
+      "page": 1,
+      "input_path": "samples/issue8770/4680000-202100038_research_review_request.hwp",
+      "base_raw": 99.97872,
+      "head_raw": 99.97872,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "a2e4f3e440b2b44916d13619b3d71c614285736121000ba6cb9c65b5d0d8dee7",
+      "head_png_sha256": "a2e4f3e440b2b44916d13619b3d71c614285736121000ba6cb9c65b5d0d8dee7",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8774-4680000-202100038_research_review_request",
+      "backend": "wasm",
+      "page": 2,
+      "input_path": "samples/issue8770/4680000-202100038_research_review_request.hwp",
+      "base_raw": 98.59046,
+      "head_raw": 98.59155,
+      "delta_pp": "0.00109",
+      "base_png_sha256": "9b654401841cc9972c2d5bed5ea6c962b035ea11653175304ec54e5b14a48673",
+      "head_png_sha256": "170d13e68f1c6c92a508ad5902ac41b5cc0af5fd8422366c881c39fa9cab8669",
+      "png_equal": false,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8774-4680000-202100038_research_review_request",
+      "backend": "wasm",
+      "page": 3,
+      "input_path": "samples/issue8770/4680000-202100038_research_review_request.hwp",
+      "base_raw": 99.99812,
+      "head_raw": 99.99812,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "24eaa006752a4e630bb2abf3a5140fb74be25d3443851b403368d398d1a53ae4",
+      "head_png_sha256": "24eaa006752a4e630bb2abf3a5140fb74be25d3443851b403368d398d1a53ae4",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8774-4680000-202100038_research_review_request",
+      "backend": "wasm",
+      "page": 4,
+      "input_path": "samples/issue8770/4680000-202100038_research_review_request.hwp",
+      "base_raw": 99.98336,
+      "head_raw": 99.98336,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "fa5964514b0e40552348ecb93f477c00938e86718d370325b16d5c98cc5e2097",
+      "head_png_sha256": "fa5964514b0e40552348ecb93f477c00938e86718d370325b16d5c98cc5e2097",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8774-4680000-202100038_research_review_request",
+      "backend": "wasm",
+      "page": 5,
+      "input_path": "samples/issue8770/4680000-202100038_research_review_request.hwp",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": "0.0",
+      "base_png_sha256": "40ade04683c8fbda57352c303bf5c39b5329040c22830207f894c82b1ec38826",
+      "head_png_sha256": "40ade04683c8fbda57352c303bf5c39b5329040c22830207f894c82b1ec38826",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8774-4680000-202100038_research_review_request",
+      "backend": "wasm",
+      "page": 6,
+      "input_path": "samples/issue8770/4680000-202100038_research_review_request.hwp",
+      "base_raw": 99.66888,
+      "head_raw": 99.66888,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "8ce00927acb7fe39a39cdf3a262ead6b32df84083628a6af617f9d1aeec72724",
+      "head_png_sha256": "8ce00927acb7fe39a39cdf3a262ead6b32df84083628a6af617f9d1aeec72724",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8892-36384898-unstored-next-float-bottom-margin",
+      "backend": "wasm",
+      "page": 1,
+      "input_path": "samples/issue8888/36384898-unstored-next-float-bottom-margin.hwpx",
+      "base_raw": 99.60402,
+      "head_raw": 99.60402,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "c3504a228058acc4dc9d4463872dfe3c3b00bb467da6a61caa724c3bcffa6add",
+      "head_png_sha256": "c3504a228058acc4dc9d4463872dfe3c3b00bb467da6a61caa724c3bcffa6add",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8892-36384898-unstored-next-float-bottom-margin",
+      "backend": "wasm",
+      "page": 2,
+      "input_path": "samples/issue8888/36384898-unstored-next-float-bottom-margin.hwpx",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": "0.0",
+      "base_png_sha256": "e630705586968a120bfb57bdfbdf39572e7bd0725f3da5fc7392ec1e1a2d2546",
+      "head_png_sha256": "e630705586968a120bfb57bdfbdf39572e7bd0725f3da5fc7392ec1e1a2d2546",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8911-36376635-synthetic-tail-saved-reset",
+      "backend": "wasm",
+      "page": 1,
+      "input_path": "samples/issue8904/36376635-synthetic-tail-saved-reset.hwpx",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": "0.0",
+      "base_png_sha256": "e382b8af3667c211a5cb64dcbe07f7a8b731bb3ea122bbf806360d996fe76f39",
+      "head_png_sha256": "e382b8af3667c211a5cb64dcbe07f7a8b731bb3ea122bbf806360d996fe76f39",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8911-36376635-synthetic-tail-saved-reset",
+      "backend": "wasm",
+      "page": 2,
+      "input_path": "samples/issue8904/36376635-synthetic-tail-saved-reset.hwpx",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": "0.0",
+      "base_png_sha256": "dd12f0cb71fa10cc223706cdff9c3f93c2ed2e6a2e965fb93c951017e1e39832",
+      "head_png_sha256": "dd12f0cb71fa10cc223706cdff9c3f93c2ed2e6a2e965fb93c951017e1e39832",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8911-36376635-synthetic-tail-saved-reset",
+      "backend": "wasm",
+      "page": 3,
+      "input_path": "samples/issue8904/36376635-synthetic-tail-saved-reset.hwpx",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": "0.0",
+      "base_png_sha256": "ee986db6ae14f3736824a89ff947e27267afc3fbb6690109d10714529e5df150",
+      "head_png_sha256": "ee986db6ae14f3736824a89ff947e27267afc3fbb6690109d10714529e5df150",
+      "png_equal": true,
+      "head_below_90": false
+    }
+  ]
+}
