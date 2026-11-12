@@ -1,6 +1,6 @@
 # planet6897 무충돌 PR 20개 통합 검토
 
-`review/integration-20261113-planet6897-clean20`에서 원 PR53개 고유 커밋을 누적 적용했다. 중복9개는 다시 적용하지 않았고, 충돌 PR #8937·#8972·#8976은 제외했다. 원 contributor branch는 변경하지 않았다.
+`review/integration-20261113-planet6897-clean20`에서 원 PR 20개의 고유 커밋 53개을 누적 적용했다. 중복9개는 다시 적용하지 않았고, 충돌 PR #8937·#8972·#8976은 제외했다. 원 contributor branch는 변경하지 않았다.
 
 - 고정 base `31a422575722f634cfc2d9eb97e708da58aea188`, 최종 검증 제품 code `d0cc46573c7505633721c19062e504faff017d59`.
 - 최소 글꼴 macOS 전체 nextest **13,420 PASS / 0 FAIL / 45 skip**, 이후 새 회귀1건 포함 관련19건 및 lint·manifest PASS. 중복 수를 합산하지 않는다.
@@ -9,6 +9,8 @@
 - 정본 보호18조건1,771쪽을 양쪽 각각 검증해 공식 두 자리 표시값 하락0. 별도 Native `--handbook-gate`383쪽 PASS.
 - 실제 일반 browser48건과 문제 페이지 추가12건을 확인했다. 실제 CK 지원 사례와 글꼴/기존 preflight 한도로 대체된 Canvas2D를 구분한다. 일반·추가 observer 각각 종료1·기존 미지원 CK 요청의8개 hard violation을 보존하며 전체 observer 통과/CK60건 통과로 주장하지 않는다. 실제 WASM 수신66건과 독립 JS 초기화6건의 해시 출처를 확인했다.
 - fresh WASM은 Mac locked wrapper `--target web --out-dir pkg --no-opt` 로컬 대체 빌드이며 Docker 최적화 통과가 아니다.
+
+- 첫 CI의 옛 실제 Canvas clip 기대값을 보정한 [원인·FAIL→PASS](final-d0cc4657/canvas-print-clip-contract-repair.json): 제품 source 변경 없이 동일 브라우저 entry19 PASS. #8999는 이 검사 보정까지 포함해 수용하며 새 head CI를 재확인한다.
 
 ## 최종 검증과 개별 리뷰
 

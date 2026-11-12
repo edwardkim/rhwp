@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**승인 — 명시한 통합 제품 code에서 원 PR 주장 범위의 로컬 검증을 완료했다.** 통합 PR의 최신 head CI·mergeability를 확인한 뒤 승인된 병합을 진행한다. 원 PR 직접 병합·원격 게시 완료를 뜻하지 않는다.
+**메인터너 보정 후 수용 가능 — 원 PR 제품 동작과 보정한 실제 Canvas 검사에서 주장 범위의 로컬 검증을 완료했다.** 통합 PR의 최신 head CI·mergeability를 확인한 뒤 승인된 병합을 진행한다. 원 PR 직접 병합·원격 게시 완료를 뜻하지 않는다.
 
 ## 접수 정보
 
@@ -20,6 +20,14 @@
 
 검토 소스: `src/model/control.rs`, `src/paint/layer_tree.rs`, `src/paint/paper_viewport.rs`.
 수치·문서 ID를 맞추는 예외 대신 원본 줄·칸·개체 속성과 공통 측정·배치 소비를 확인했다.
+
+## 실제 Canvas 검사 계약 보정
+
+첫 통합 CI의 실제 Canvas 검사에서 `rasterClipCoverage`를 2024 Print에서만 켜야 한다는 이전 기대값이 남아 실패했다. 원 PR 구현 `e3427b7b`·Rust 검사 `49418126`의 세대 무관 Print clip 변경과 독립 2020 Print 근거를 대조했다. 제품 오류나 환경 추정으로 처리하지 않고 기존 검사로 현재 WASM의 실제 FAIL을 재현했다.
+
+메인터너 보정 `c72b10990938a6f1f84f1477c48d461ee7140d4a`는 `scripts/tests/print-text-geometry.browser.mjs`에서 글자 기하와 장치 clip의 독립 기대값을 분리한다. Screen clip은 비적용, 2022/2024 Print clip은 적용, 글자 기하는 2024 Print만 적용하며 실제 `ctx.rect`와 `fillText` 소비까지 검사한다. 검사 제거·문턱 완화·제품 변경은 없다. 같은 CI entry 실제19 PASS/0 FAIL, 고정 base의 2022 Print 누락은 새 검사에서 의도한 FAIL이다. 추가 macOS sandbox Chrome 초기화 오류는 별도 미성립 실행으로 남기며 통과 결과로 세지 않는다.
+
+[원인·실행·해시 근거](../assets/planet6897_clean20_20261113/final-d0cc4657/canvas-print-clip-contract-repair.json). 제품 code `d0cc4657`·WASM SHA는 변하지 않아 기존 전쪽 TSV·Native/fresh WASM·실제 backend 증적은 그대로 유효하다. 새 통합 head의 CI 성공은 별도로 확인한다.
 
 ## 실제 회귀·제품 경로 검증
 
@@ -95,7 +103,7 @@ Native 정본 보호18조건1,771쪽은 공식 두 자리 표시값 하락0이�
 
 ## Merge 후 contributor PR comment 계획
 
-통합 PR의 최신 head CI 성공과 실제 병합 뒤에만 원 PR에 한국어 존댓말로 결과·통합 PR·merge SHA를 안내하고 close한다. 이 문서의 판정과 원격 조치를 구분한다. 원 PR 주장 범위와 검증한 실제 동작을 설명한다.
+통합 PR의 최신 head CI 성공과 실제 병합 뒤에만 원 PR에 한국어 존댓말로 결과·통합 PR·merge SHA를 안내하고 close한다. 이 문서의 판정과 원격 조치를 구분한다. 원 PR의 clip 구현·독립 Print 근거와 실제 Canvas 검사 보정 SHA·FAIL→PASS를 구분해 설명한다.
 Visual Sweep 정본: [GitHub merge comment](../../manual/verification/visual_sweep_guide.md#github-merge-comment).
 같은 주장 페이지의 raw·PDF PNG·review·overlay를 `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/` 아래의 `mydocs/pr/assets/planet6897_clean20_20261113/final-d0cc4657/panels/native/pr8999` 자산으로 **Markdown 이미지** 표시한다. 웹한글기안기 PDF와 데스크톱 Print를 혼동하지 않고 실제 Creator를 함께 안내한다.
 여러 단락은 UTF-8 본문 파일로 게시하고 API로 실제 본문·이미지 URL을 재조회한다. 원 contributor fork branch는 삭제하지 않는다.
