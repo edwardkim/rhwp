@@ -468,6 +468,7 @@ impl DocumentCore {
             layer_tree_json_cache: RefCell::new(Vec::new()),
             page_layer_tree_cache: RefCell::new(Vec::new()),
             bin_data_epoch: 0,
+            loaded_unreferenced_bin_data: std::collections::BTreeSet::new(),
             batch_mode: false,
             pending_cell_format_vpos: false,
             event_log: Vec::new(),
@@ -3252,6 +3253,22 @@ impl DocumentCore {
             &crate::model::document::Document,
         ) -> Result<T, crate::serializer::SerializeError>,
     ) -> Result<T, HwpError> {
+        // [#8941] 편집으로 참조가 끊긴 그림은 저장 파일에 넣지 않는다. live IR 은 그대로
+        // 둔다 — 잘라낸 그림을 붙여 넣거나 되돌리기가 같은 순번을 다시 가리키기 때문이다.
+        // 불러올 때부터 참조가 없던 항목은 원본 보존을 위해 남긴다.
+        let keep = &self.loaded_unreferenced_bin_data;
+        let serialize = |document: &Document| {
+            if document
+                .bin_data_content
+                .iter()
+                .all(|c| keep.contains(&c.id))
+            {
+                return serialize(document);
+            }
+            let mut pruned = document.clone();
+            super::bin_data_prune::prune_unreferenced_bin_data_except(&mut pruned, keep);
+            serialize(&pruned)
+        };
         let hwp3_origin = matches!(self.source_format, crate::parser::FileFormat::Hwp3)
             || self.document.provenance.hwp3_lineage;
         let lower_markers = |doc: &mut Document| {
