@@ -2120,8 +2120,8 @@ impl SvgRenderer {
         if img.crop.is_some_and(|(l, t, r, b)| r <= l || b <= t) {
             return;
         }
-        // [#8858] 외부 경로 없는 그림 미지정은 `#2225` 대체 노드와 같은 계약 — 인쇄 등가 출력은 생략.
-        if img.is_missing_picture() && !self.show_missing_picture_placeholder {
+        // 공통 인쇄 계약: 그림 미지정과 미해결 연결 그림의 편집용 대체 표시는 생략.
+        if img.is_nonprinting_picture_placeholder() && !self.show_missing_picture_placeholder {
             return;
         }
         // [Task #741] 빈 binary 데이터 (외부 file path 그림 등) 도 placeholder 처리.
