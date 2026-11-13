@@ -17816,6 +17816,19 @@ impl LayoutEngine {
                         matches!(c, Control::Table(_))
                             .then(|| crate::renderer::float_placement::block_table_trailing_whitespace_line_hu(p, nt, ci))
                             .flatten()
+                    }).or_else(|| {
+                        (!text_reflowed
+                            && (self.profile.get().hwp5_stored_pagination_layout()
+                                || self.profile.get().hwpx_stored_layout()))
+                            .then(|| {
+                                crate::renderer::float_placement::stored_empty_host_line_after_band(
+                                    &cell.paragraphs,
+                                    pi,
+                                    styles,
+                                    self.dpi,
+                                )
+                            })
+                            .flatten()
                     });
                     let (om_top, terminal_band) = stored_frame
                         .filter(|frame| {

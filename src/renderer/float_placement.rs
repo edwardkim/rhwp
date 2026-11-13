@@ -361,7 +361,10 @@ pub(crate) fn stored_table_terminal_suffix_start(
 }
 
 mod empty_successor;
-pub(crate) use empty_successor::{stored_empty_successor_advance, stored_empty_successor_geometry};
+pub(crate) use empty_successor::{
+    stored_empty_host_line_after_band, stored_empty_successor_advance,
+    stored_empty_successor_geometry,
+};
 
 /// Inline picture ink can contain subsequent empty lines through signed saved
 /// spacing. A closed source boundary owns advance independently of picture ink.
