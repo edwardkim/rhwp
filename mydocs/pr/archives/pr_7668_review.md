@@ -63,3 +63,13 @@ Native Skia 및 fresh WASM Canvas 직접 PNG, `compat=2022`, 96 DPI, 색상 경�
 최신 코드의 fresh WASM을 다시 빌드해 root pkg·Studio public·실제 초기화 응답의 JS/WASM을 확인했다. Vite의 WASM URL 변환과 source map 외 JS 본문 변경도 없었다. 대표 5입력의 Canvas2D·CanvasKit software 화면/인쇄 20건, Native SVG browser 화면/인쇄 10건, Native Skia 화면 5건을 통과했다. 두 본문 대조군은 밝기를 17로 편집한 뒤 HWP/HWPX 각 3회 반복 저장·재열기에서 편집값·개체 수·전체 프레임 비겹침을 보존했다. [실제 결과](../assets/jeong_sik_integration_20261114/actual/results.json) · [완료](../assets/jeong_sik_integration_20261114/actual/completion.json) · [전체 검증](../assets/jeong_sik_integration_20261114/README.md).
 
 공통 조판 원칙은 충족한다. 원본 기하·논리 점유·내부 표시를 구분하고 측정·배치·paint가 같은 프레임 계약을 소비한다. 문서명·쪽수·점수에 따른 예외, baseline 완화, 오류를 숨기는 fallback 우회는 추가하지 않았다. 원 PR의 plain cell 사례만으로 모든 부분 분할 행을 증명했다고 하지 않으며, 기존 분할·저장 경로는 전체 회귀와 보호 문서에서 별도로 확인했다.
+
+## 통합 code head CI와 병합 전 조건
+
+[통합 PR #9061](https://github.com/edwardkim/rhwp/pull/9061)의 정확한 code head `f1d210ac0d177173b9fd5806fff358aab24732d2`에서 [CI](https://github.com/edwardkim/rhwp/actions/runs/43485406390)·CodeQL·Adapter·Proptest·Render Diff·최종 정책 감사가 모두 성공했다. `MERGEABLE / CLEAN`을 API로 확인했다. [실제 실행 원장](../assets/jeong_sik_integration_20261114/code-ci.json)을 보존한다. 이번 trailing은 review·오늘할일·CI 증적만 추가하며 source·test·fixture·workflow·baseline은 바꾸지 않는다. 새 trailing head의 필수 검사와 merge 직전 상태를 다시 확인한다.
+
+## Merge 후 contributor PR comment 계획
+
+이 원 PR의 공개 9종 결과와 대응 입력 `pr7668-mixed` 1쪽을 사용한다. 같은 쪽의 Native/fresh WASM raw·한컴 Print PNG·review·overlay **8개를 실제 Markdown 이미지로 표시**하고 원 PR의 주장·메인터너 댓글·기여/보정 범위와 연결한다. 공개31종 최저99.97213%와 별도 본문 대조군2종100%는 구분해 적는다.
+
+원 PR의 WebHwp 캔버스·PDF 대신 **동일 입력의 한컴 2020 Desktop 11.0.0.9136 Print**를 사용했음을 분명히 알린다. 정확한 통합 merge SHA의 asset이 devel에 존재하고 HTTP PNG 응답·해시가 원본과 같음을 확인한 뒤 [Visual Sweep 댓글 절차](../../manual/verification/visual_sweep_guide.md#github-merge-comment)에 따라 존댓말로 게시한다. code/trailing CI와 통합 PR·merge SHA·개별 리뷰를 연결하고, 중복 병합을 피하려고 원 PR을 close한다. 기여자 fork 브랜치를 삭제하거나 별도 이슈를 임의로 닫지 않는다.

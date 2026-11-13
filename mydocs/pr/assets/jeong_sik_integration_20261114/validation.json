@@ -64,7 +64,13 @@
     "editSaveInputs": 2
   },
   "local_lint_build": "fmt, native/wasm/all-target clippy, workspace build PASS",
-  "ci": "not yet submitted; no remote CI success claimed",
+  "ci": {
+    "pr": 9061,
+    "code_head": "f1d210ac0d177173b9fd5806fff358aab24732d2",
+    "all_required_and_applicable_workflows": "success",
+    "record": "code-ci.json",
+    "trailing": "verify exact trailing head before merge"
+  },
   "actual_print_comparison": {
     "cases": 15,
     "minimum": 100.0,
