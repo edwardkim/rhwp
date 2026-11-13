@@ -2491,7 +2491,7 @@ fn stored_inline_host_has_separate_float_frame(para: &Paragraph, table: &Table) 
                 inline_band = Some(inline_band.map_or(band, |previous: i64| previous.max(band)));
             }
             Control::Table(_) => float_count += 1,
-            Control::SectionDef(_) | Control::ColumnDef(_) => {}
+            Control::SectionDef(_) | Control::ColumnDef(_) | Control::PageNumberPos(_) => {}
             _ => return false,
         }
     }

@@ -1134,6 +1134,74 @@ impl TypesetEngine {
             && table_total <= declared_object_total * SINGLE_ROW_DECLARED_TRUST_MAX_RATIO
             && st.current_height + declared_object_total <= available;
 
+        // The emitted inline line already advanced the cursor. Fit its
+        // sibling float from that line's original pen and reserve only the
+        // float's own outside margins. Use the accepted frame for paint too.
+        if declared_empty_para_float_total.is_some()
+            && st.col_count == 1
+            && st.profile.hwp5_stored_pagination_layout()
+            && !st.profile.session_edited()
+            && !ft.strict_following_plain_text_fit
+            && ft.table_footnotes.is_empty()
+            && table.caption.is_none()
+            && table.common.flow_with_text
+            && table.common.vert_align == crate::model::shape::VertAlign::Top
+            && table.outer_margin_top >= 0
+            && table.outer_margin_bottom >= 0
+            && !table.common.allow_overlap
+            && !self.render_normalization.table_text_reflowed(table)
+            && (ft.effective_height - hwpunit_to_px(signed_hwpunit(table.common.height), self.dpi))
+                .abs()
+                <= self.dpi / 7200.0
+        {
+            if let [PageItem::Table {
+                para_index,
+                control_index,
+            }] = st.current_items.as_slice()
+            {
+                let origin = (*para_index == para_idx && *control_index != ctrl_idx)
+                    .then(|| st.inline_placements.get(&(*para_index, *control_index)))
+                    .flatten()
+                    .map(|inline| inline.y);
+                if let Some(frame) =
+                    crate::renderer::float_placement::ParagraphFloatPlacement::from_stored_inline_host(
+                        para,
+                        table,
+                        origin,
+                        ft.effective_height,
+                        hwpunit_to_px(i32::from(table.outer_margin_top), self.dpi),
+                        hwpunit_to_px(i32::from(table.outer_margin_bottom), self.dpi),
+                        self.dpi,
+                    )
+                    .filter(|frame| {
+                        frame.table_top >= st.current_height && frame.occupied_bottom <= available
+                    })
+                {
+                    st.record_paragraph_float_placement((para_idx, ctrl_idx), frame);
+                    self.place_table_with_text(
+                        st,
+                        para_idx,
+                        ctrl_idx,
+                        para,
+                        table,
+                        fmt,
+                        frame.anchor_y,
+                        frame.occupied_bottom - st.current_height,
+                        is_first_placed,
+                        is_last_placed,
+                        ft.strict_following_plain_text_fit,
+                        styles,
+                    );
+                    // The paragraph's inline height cap must retain the body
+                    // reservation that the accepted title line also anchors.
+                    st.record_inline_flow_bottom(
+                        st.inline_box_flow_bottom.max(frame.occupied_bottom),
+                    );
+                    return None;
+                }
+            }
+        }
+
         let mut source_anchor_splits_here = false;
         if let Some(declared_total) = declared_empty_para_float_total {
             // 빈 host 문단의 자리차지 RowBreak 표는 렌더러가 문서에 저장된 표 선언
