@@ -4886,7 +4886,14 @@ impl LayoutEngine {
                                             },
                                         )
                                     } else {
-                                        NestedTableOrigin::Paragraph(inner_area.y)
+                                        // 문단 기준 표는 호스트 문단의 시작에 놓인다. 같은 조각의
+                                        // 앞 문단이 전진시킨 흐름만큼 칸 위끝에서 내려간다
+                                        // (docs#715 9쪽: 빈 줄 두 개 뒤의 조직도). 조각의 첫
+                                        // 문단이면 종전과 같이 칸 위끝이다.
+                                        NestedTableOrigin::Paragraph(
+                                            inner_area.y
+                                                + (para_y_before_compose - text_y_start).max(0.0),
+                                        )
                                     };
                                     let owns_nested_start = owns_paragraph_entry;
                                     let nested_y = nested_origin.resolve(

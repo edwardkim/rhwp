@@ -99,7 +99,11 @@ pub(crate) fn stored_empty_successor_geometry(
         .para_styles
         .get(next.para_shape_id as usize)?
         .spacing_before;
-    let advance = hwpunit_to_px(delta, dpi) - before;
+    // 다음 문단이 빈 자리차지 표 호스트이고 저장 호스트 줄이 이 줄 끝 + 표 바깥
+    // 상자에 정확히 놓였으면, 그 띠는 호스트 표가 소유한다. 빈 줄이 띠까지 전진하면
+    // 호스트 표의 행 유닛과 이중으로 계상된다(docs#715 9쪽 조직도: 377px + 353px).
+    let band = host_table_band_after(line, next, next_line, current, styles, dpi).unwrap_or(0);
+    let advance = hwpunit_to_px(delta.checked_sub(band)?, dpi) - before;
     // 저장 차이는 현재 줄의 상단부터 시작하지만 소비자는 문단 앞 간격을
     // 적용하기 전 커서를 넘긴다. 뒤 문단의 앞 간격은 그 배치에서 소비하므로
     // 제외하고, 현재 문단의 흐름 앞 간격은 측정과 같이 한 번 포함한다.
@@ -131,4 +135,104 @@ pub(crate) fn stored_empty_successor_geometry(
         advance: current_before + advance,
         trailing,
     })
+}
+
+/// 빈 줄 끝과 다음 빈 호스트 줄 사이를 그 호스트의 문단 기준 자리차지 표 바깥 상자가
+/// 정확히 닫으면 그 상자 높이(HWPUNIT)를 돌려준다. 줄 끝·문단 간격·바깥 여백을 모두
+/// 저장값으로 대조하며 2HU 를 넘는 어긋남은 띠의 근거로 쓰지 않는다.
+fn host_table_band_after(
+    line: &crate::model::paragraph::LineSeg,
+    next: &Paragraph,
+    next_line: &crate::model::paragraph::LineSeg,
+    current: &Paragraph,
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    dpi: f64,
+) -> Option<i32> {
+    let [Control::Table(table)] = next.controls.as_slice() else {
+        return None;
+    };
+    if table.caption.is_some() || table.common.height > i32::MAX as u32 {
+        return None;
+    }
+    let after = styles
+        .para_styles
+        .get(current.para_shape_id as usize)
+        .map_or(0.0, |style| style.spacing_after);
+    let before = styles
+        .para_styles
+        .get(next.para_shape_id as usize)
+        .map_or(0.0, |style| style.spacing_before);
+    let band = i32::from(table.outer_margin_top)
+        .checked_add(table.common.height as i32)?
+        .checked_add(i32::from(table.outer_margin_bottom))?;
+    let line_end = line
+        .vertical_pos
+        .checked_add(line.line_height)?
+        .checked_add(line.line_spacing)?;
+    let host = line_end
+        .checked_add(crate::renderer::px_to_hwpunit(after + before, dpi))?
+        .checked_add(band)?;
+    (host.abs_diff(next_line.vertical_pos) <= 2).then_some(band)
+}
+
+/// 앞 줄 끝 + 표 바깥 상자 = 빈 호스트 줄, 호스트 줄 + 줄 전진 = 뒤 문단 줄이 모두
+/// 저장값으로 닫히면 표 뒤의 호스트 줄은 자기 줄 상자를 소유한다(HWPUNIT 전진량).
+/// 같은 축의 세 줄만 대조하므로 그보다 앞선 쪽 프레임 되감김과 무관하다.
+pub(crate) fn stored_empty_host_line_after_band(
+    paragraphs: &[Paragraph],
+    host_index: usize,
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    dpi: f64,
+) -> Option<i32> {
+    use crate::model::paragraph::LineSeg;
+    let previous = paragraphs.get(host_index.checked_sub(1)?)?;
+    let host = paragraphs.get(host_index)?;
+    let next = paragraphs.get(host_index + 1)?;
+    let [host_line] = host.line_segs.as_slice() else {
+        return None;
+    };
+    let previous_line = previous.line_segs.last()?;
+    let next_line = next.line_segs.first()?;
+    let original = |line: &LineSeg| {
+        line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            && line.vertical_pos >= 0
+            && line.line_height > 0
+            && line.line_spacing >= 0
+    };
+    if !host.text.trim().is_empty()
+        || !previous.controls.is_empty()
+        || [previous, host, next]
+            .iter()
+            .any(|p| p.stored_text_partition_is_dirty() || p.cell_format_vpos_dirty)
+        || !original(previous_line)
+        || !original(host_line)
+        || !original(next_line)
+    {
+        return None;
+    }
+    let [Control::Table(table)] = host.controls.as_slice() else {
+        return None;
+    };
+    if table.common.treat_as_char
+        || table.common.vert_rel_to != VertRelTo::Para
+        || table.common.vert_align != VertAlign::Top
+        || table.common.vertical_offset != 0
+    {
+        return None;
+    }
+    host_table_band_after(previous_line, host, host_line, previous, styles, dpi)?;
+    let advance = host_line.line_height.checked_add(host_line.line_spacing)?;
+    let after = styles
+        .para_styles
+        .get(host.para_shape_id as usize)
+        .map_or(0.0, |style| style.spacing_after);
+    let before = styles
+        .para_styles
+        .get(next.para_shape_id as usize)
+        .map_or(0.0, |style| style.spacing_before);
+    let expected = host_line
+        .vertical_pos
+        .checked_add(advance)?
+        .checked_add(crate::renderer::px_to_hwpunit(after + before, dpi))?;
+    (expected.abs_diff(next_line.vertical_pos) <= 2).then_some(advance)
 }
