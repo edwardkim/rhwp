@@ -396,24 +396,63 @@ impl LayoutEngine {
         // [#6284] 캡션 문단 조판에 필요하다.
         styles: &ResolvedStyleSet,
     ) {
+        self.layout_picture_full_in_frame(
+            tree,
+            parent_node,
+            picture,
+            container,
+            bin_data_content,
+            alignment,
+            section_index,
+            para_index,
+            control_index,
+            header_footer_ref,
+            cell_ctx,
+            styles,
+            None,
+        );
+    }
+
+    /// 측정이 확정한 흐름 프레임만 전달하며 저장 그림의 내부 기하는 수정하지 않는다.
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn layout_picture_full_in_frame(
+        &self,
+        tree: &mut PageLayoutContext,
+        parent_node: &mut RenderNode,
+        picture: &crate::model::image::Picture,
+        container: &LayoutRect,
+        bin_data_content: &[BinDataContent],
+        alignment: Alignment,
+        section_index: Option<usize>,
+        para_index: Option<usize>,
+        control_index: Option<usize>,
+        header_footer_ref: Option<crate::renderer::render_tree::HeaderFooterImageRef>,
+        cell_ctx: Option<&crate::renderer::layout::CellContext>,
+        // [#6284] 캡션 문단 조판에 필요하다.
+        styles: &ResolvedStyleSet,
+        flow_frame_hu: Option<(i32, i32)>,
+    ) {
         // 그림 크기 (HWPUNIT → 픽셀)
         // 회전 picture에서 common.width/height는 한컴이 저장한 회전 후 외접 프레임이고
         // current_width/current_height는 실제로 회전시킬 원본 표시 크기다. common 프레임을
         // 다시 회전시키면 다단/셀 경계를 침범하므로, current 이미지를 common 프레임 중앙에 둔다.
         let rotation = picture.shape_attr.rotation_angle.rem_euclid(360);
-        let uses_rotated_frame = rotation != 0
+        let uses_rotated_frame = flow_frame_hu.is_none()
+            && rotation != 0
             && picture.shape_attr.current_width > 0
             && picture.shape_attr.current_height > 0
             && picture.common.width > 0
             && picture.common.height > 0;
-        let (pic_width_hu, pic_height_hu) = if uses_rotated_frame {
-            (
-                picture.shape_attr.current_width as i32,
-                picture.shape_attr.current_height as i32,
-            )
-        } else {
-            picture_display_size_hu(picture)
-        };
+        let (pic_width_hu, pic_height_hu) = flow_frame_hu.unwrap_or_else(|| {
+            if uses_rotated_frame {
+                (
+                    picture.shape_attr.current_width as i32,
+                    picture.shape_attr.current_height as i32,
+                )
+            } else {
+                picture_display_size_hu(picture)
+            }
+        });
         let mut pic_width = hwpunit_to_px(pic_width_hu, self.dpi);
         let mut pic_height = hwpunit_to_px(pic_height_hu, self.dpi);
         let mut frame_width = if uses_rotated_frame {

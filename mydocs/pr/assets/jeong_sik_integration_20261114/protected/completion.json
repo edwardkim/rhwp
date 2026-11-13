@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "documents": 18,
+  "datasets": 36,
+  "pages_per_backend": 1771,
+  "rows": 3542,
+  "regressions": 0,
+  "required_handbook_gate": "passed",
+  "table_sha256": "fa7ed3d4d006d2fb69f27f68286fdf70088a4f47ce8c0414eb8822376501d944",
+  "condition": "normal installed fonts; original approved per-document environments; Decimal official 2 decimal strings"
+}

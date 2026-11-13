@@ -1,0 +1,927 @@
+[
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/owner-hwp/canvas2d-print.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/owner-hwp/canvaskit-print.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/owner-hwp/native-svg-browser-print.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/owner-hwpx/canvas2d-print.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/owner-hwpx/canvaskit-print.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/owner-hwpx/native-svg-browser-print.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/pr7668-mixed/canvas2d-print.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/pr7668-mixed/canvaskit-print.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/pr7668-mixed/native-svg-browser-print.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/pr7675-all-inline/canvas2d-print.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/pr7675-all-inline/canvaskit-print.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/pr7675-all-inline/native-svg-browser-print.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/pr7682-two-paras/canvas2d-print.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/pr7682-two-paras/canvaskit-print.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/pr7682-two-paras/native-svg-browser-print.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/base-candidate-comparison.tsv",
+    "sha256": "1ac74bdba5f070443c24096900c42338a86472c042f98b9cde1537c3dc437be5",
+    "bytes": 9469
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/owner-hwp/native/base-silhouette.tsv",
+    "sha256": "dd24a63d02d55d2fd238dc574d559fdb251dbeac7b444621780bb4849462442a",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/owner-hwp/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/owner-hwp/wasm/base-silhouette.tsv",
+    "sha256": "dd24a63d02d55d2fd238dc574d559fdb251dbeac7b444621780bb4849462442a",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/owner-hwp/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/owner-hwpx/native/base-silhouette.tsv",
+    "sha256": "dd24a63d02d55d2fd238dc574d559fdb251dbeac7b444621780bb4849462442a",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/owner-hwpx/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/owner-hwpx/wasm/base-silhouette.tsv",
+    "sha256": "dd24a63d02d55d2fd238dc574d559fdb251dbeac7b444621780bb4849462442a",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/owner-hwpx/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-bottom/native/base-silhouette.tsv",
+    "sha256": "69e8870fbb363a8e5ad9dcbcc0579ce60065615a4e8914fe41b39b96de09b7f9",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-bottom/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-bottom/wasm/base-silhouette.tsv",
+    "sha256": "69e8870fbb363a8e5ad9dcbcc0579ce60065615a4e8914fe41b39b96de09b7f9",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-bottom/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-following/native/base-silhouette.tsv",
+    "sha256": "717964a46cf1f5483b421f2e4b8524a57764f0e3858051945fba83aac16996fe",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-following/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-following/wasm/base-silhouette.tsv",
+    "sha256": "717964a46cf1f5483b421f2e4b8524a57764f0e3858051945fba83aac16996fe",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-following/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-grid-soft-hancom/native/base-silhouette.tsv",
+    "sha256": "561d4d47f78b0b8ae70ad6ec8d29c3a170ad0b344a57e00d42aeefb8a4787c99",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-grid-soft-hancom/native/silhouette.tsv",
+    "sha256": "561d4d47f78b0b8ae70ad6ec8d29c3a170ad0b344a57e00d42aeefb8a4787c99",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-grid-soft-hancom/wasm/base-silhouette.tsv",
+    "sha256": "561d4d47f78b0b8ae70ad6ec8d29c3a170ad0b344a57e00d42aeefb8a4787c99",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-grid-soft-hancom/wasm/silhouette.tsv",
+    "sha256": "561d4d47f78b0b8ae70ad6ec8d29c3a170ad0b344a57e00d42aeefb8a4787c99",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-mixed/native/base-silhouette.tsv",
+    "sha256": "bcafc2ec3f9860e05f1ee8694c70eb366d808dfd0ef67758c9fbaada30e731aa",
+    "bytes": 128
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-mixed/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-mixed/wasm/base-silhouette.tsv",
+    "sha256": "bcafc2ec3f9860e05f1ee8694c70eb366d808dfd0ef67758c9fbaada30e731aa",
+    "bytes": 128
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-mixed/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-one-float/native/base-silhouette.tsv",
+    "sha256": "3e3b19048e951c55b97e4eebbeac9cbcd0689069e5c4d9fa9daa928cc3cca781",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-one-float/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-one-float/wasm/base-silhouette.tsv",
+    "sha256": "3e3b19048e951c55b97e4eebbeac9cbcd0689069e5c4d9fa9daa928cc3cca781",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-one-float/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-positive/native/base-silhouette.tsv",
+    "sha256": "a8132bdcb5a320596d5e7520d2782438326f75ff6ca71297b8a0af8096fe86e3",
+    "bytes": 128
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-positive/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-positive/wasm/base-silhouette.tsv",
+    "sha256": "a8132bdcb5a320596d5e7520d2782438326f75ff6ca71297b8a0af8096fe86e3",
+    "bytes": 128
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-positive/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-short-inline/native/base-silhouette.tsv",
+    "sha256": "bcafc2ec3f9860e05f1ee8694c70eb366d808dfd0ef67758c9fbaada30e731aa",
+    "bytes": 128
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-short-inline/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-short-inline/wasm/base-silhouette.tsv",
+    "sha256": "bcafc2ec3f9860e05f1ee8694c70eb366d808dfd0ef67758c9fbaada30e731aa",
+    "bytes": 128
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-short-inline/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-stale-height/native/base-silhouette.tsv",
+    "sha256": "a0e4454b04b58079f2b84dfe2f3091a2d3d35f001ace22f21604ab7fc1ed704d",
+    "bytes": 128
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-stale-height/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-stale-height/wasm/base-silhouette.tsv",
+    "sha256": "a0e4454b04b58079f2b84dfe2f3091a2d3d35f001ace22f21604ab7fc1ed704d",
+    "bytes": 128
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-stale-height/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-top/native/base-silhouette.tsv",
+    "sha256": "49269957bd7e0dbb404513df7010223926131434d22b4944104e745111399149",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-top/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-top/wasm/base-silhouette.tsv",
+    "sha256": "49269957bd7e0dbb404513df7010223926131434d22b4944104e745111399149",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-top/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-all-inline/native/base-silhouette.tsv",
+    "sha256": "1be9a1ca7be20d0e46e190a31834fa08dccd48b349237710c9961c2d82b4cf50",
+    "bytes": 128
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-all-inline/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-all-inline/wasm/base-silhouette.tsv",
+    "sha256": "1be9a1ca7be20d0e46e190a31834fa08dccd48b349237710c9961c2d82b4cf50",
+    "bytes": 128
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-all-inline/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-bottom/native/base-silhouette.tsv",
+    "sha256": "98ca37700a16a2715803a75e7cef64901778e56c8eaba09a85c99eadc401ebff",
+    "bytes": 128
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-bottom/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-bottom/wasm/base-silhouette.tsv",
+    "sha256": "98ca37700a16a2715803a75e7cef64901778e56c8eaba09a85c99eadc401ebff",
+    "bytes": 128
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-bottom/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-center/native/base-silhouette.tsv",
+    "sha256": "bcafc2ec3f9860e05f1ee8694c70eb366d808dfd0ef67758c9fbaada30e731aa",
+    "bytes": 128
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-center/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-center/wasm/base-silhouette.tsv",
+    "sha256": "bcafc2ec3f9860e05f1ee8694c70eb366d808dfd0ef67758c9fbaada30e731aa",
+    "bytes": 128
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-center/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-following/native/base-silhouette.tsv",
+    "sha256": "364baa4bd4f6c66aff20aefb5d4557ef162a0bdd1b7bcddc77877a98a5c68d75",
+    "bytes": 128
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-following/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-following/wasm/base-silhouette.tsv",
+    "sha256": "364baa4bd4f6c66aff20aefb5d4557ef162a0bdd1b7bcddc77877a98a5c68d75",
+    "bytes": 128
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-following/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-left/native/base-silhouette.tsv",
+    "sha256": "1be9a1ca7be20d0e46e190a31834fa08dccd48b349237710c9961c2d82b4cf50",
+    "bytes": 128
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-left/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-left/wasm/base-silhouette.tsv",
+    "sha256": "1be9a1ca7be20d0e46e190a31834fa08dccd48b349237710c9961c2d82b4cf50",
+    "bytes": 128
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-left/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-no-indent/native/base-silhouette.tsv",
+    "sha256": "bcafc2ec3f9860e05f1ee8694c70eb366d808dfd0ef67758c9fbaada30e731aa",
+    "bytes": 128
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-no-indent/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-no-indent/wasm/base-silhouette.tsv",
+    "sha256": "bcafc2ec3f9860e05f1ee8694c70eb366d808dfd0ef67758c9fbaada30e731aa",
+    "bytes": 128
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-no-indent/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-one-row/native/base-silhouette.tsv",
+    "sha256": "9f45acbb55470cfd632d9820ca6ffe4265499f43da51cc3320bc1c72d6f47f56",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-one-row/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-one-row/wasm/base-silhouette.tsv",
+    "sha256": "9f45acbb55470cfd632d9820ca6ffe4265499f43da51cc3320bc1c72d6f47f56",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-one-row/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-positive-indent/native/base-silhouette.tsv",
+    "sha256": "245c0fa699ddaac43b4a2ff56cce61c0140e3bc91ab6269becc2f2fd94743f28",
+    "bytes": 128
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-positive-indent/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-positive-indent/wasm/base-silhouette.tsv",
+    "sha256": "245c0fa699ddaac43b4a2ff56cce61c0140e3bc91ab6269becc2f2fd94743f28",
+    "bytes": 128
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-positive-indent/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-right/native/base-silhouette.tsv",
+    "sha256": "86efa69fa91705a43f894d4a62de4558de4921bc0ffecc73e47c1b05bc255399",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-right/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-right/wasm/base-silhouette.tsv",
+    "sha256": "86efa69fa91705a43f894d4a62de4558de4921bc0ffecc73e47c1b05bc255399",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-right/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-short/native/base-silhouette.tsv",
+    "sha256": "094ae2414c021a297ab795390aefb2eb4c0ecc99ac48167921adc81378ef4aa6",
+    "bytes": 128
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-short/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-short/wasm/base-silhouette.tsv",
+    "sha256": "094ae2414c021a297ab795390aefb2eb4c0ecc99ac48167921adc81378ef4aa6",
+    "bytes": 128
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-short/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-stale-height/native/base-silhouette.tsv",
+    "sha256": "1eb50f5eefccbd3db5ff8eea44fe23415f315f342c3a19f5c37cb850588d5c2c",
+    "bytes": 128
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-stale-height/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-stale-height/wasm/base-silhouette.tsv",
+    "sha256": "1eb50f5eefccbd3db5ff8eea44fe23415f315f342c3a19f5c37cb850588d5c2c",
+    "bytes": 128
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-stale-height/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-top/native/base-silhouette.tsv",
+    "sha256": "cd8fa2d1a2ab051b66fc44536e1a10e8d53c49d22aafa6782b214cbc3926f63d",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-top/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-top/wasm/base-silhouette.tsv",
+    "sha256": "cd8fa2d1a2ab051b66fc44536e1a10e8d53c49d22aafa6782b214cbc3926f63d",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-top/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-bottom/native/base-silhouette.tsv",
+    "sha256": "df42770bfc77ead97e9b44debb118f209d9fd1b2ae3a793d1b63748d85bb5f70",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-bottom/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-bottom/wasm/base-silhouette.tsv",
+    "sha256": "5feb96d99e33760fed67ffc371e1bc214898e87982c8614cf6cf8cf3ccc5029f",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-bottom/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-center/native/base-silhouette.tsv",
+    "sha256": "1a282de534bdfef7b94dc7165e93d6521af763e5b6a2f8aa13876e5a9f219686",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-center/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-center/wasm/base-silhouette.tsv",
+    "sha256": "66e401e1743f969d7635e5752f5dc03712062cf515b519c901f5e2d08e671c93",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-center/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-compact/native/base-silhouette.tsv",
+    "sha256": "1a282de534bdfef7b94dc7165e93d6521af763e5b6a2f8aa13876e5a9f219686",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-compact/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-compact/wasm/base-silhouette.tsv",
+    "sha256": "66e401e1743f969d7635e5752f5dc03712062cf515b519c901f5e2d08e671c93",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-compact/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-para-spacing/native/base-silhouette.tsv",
+    "sha256": "1a282de534bdfef7b94dc7165e93d6521af763e5b6a2f8aa13876e5a9f219686",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-para-spacing/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-para-spacing/wasm/base-silhouette.tsv",
+    "sha256": "66e401e1743f969d7635e5752f5dc03712062cf515b519c901f5e2d08e671c93",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-para-spacing/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-right/native/base-silhouette.tsv",
+    "sha256": "35fd6931587c0ecbe9f4d6d46c8b1ac876711e77c968704a6bfbc93ed45c0e3a",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-right/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-right/wasm/base-silhouette.tsv",
+    "sha256": "edfeb94c96226f6454e2b3509c473a316b854bd5303a0d8777c8ac7cabc91af4",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-right/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-three-paras/native/base-silhouette.tsv",
+    "sha256": "d8626fe728e3baa76a070799f86045bc35746e3def6a5efa82591a23ea487bc4",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-three-paras/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-three-paras/wasm/base-silhouette.tsv",
+    "sha256": "b21c6223ab68228f4379486507e5c88fca06ab1c1f1f7ca06b508cce32960899",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-three-paras/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-top/native/base-silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-top/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-top/wasm/base-silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-top/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-two-paras/native/base-silhouette.tsv",
+    "sha256": "aa5bd553e68e591507547620d38e9b8b4bf0f396917da9c105ffce43894c5153",
+    "bytes": 128
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-two-paras/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-two-paras/wasm/base-silhouette.tsv",
+    "sha256": "e831927c53899dbea52679fd95560a7de99db7c4aa324f7f91b160952ea7f21c",
+    "bytes": 128
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-two-paras/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-unequal/native/base-silhouette.tsv",
+    "sha256": "093493211bb24d564739c8ca7055a6ebbd48fdc586a15571fc21ef66c67badac",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-unequal/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-unequal/wasm/base-silhouette.tsv",
+    "sha256": "926f4e60c85c1fd32718e14117db6cd213315dc78ef9e024fd69a2cbffc725dd",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-unequal/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-wrapped/native/base-silhouette.tsv",
+    "sha256": "5081845921c8aca9d8764956e71799223251f02d89000cd659281495a03a171d",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-wrapped/native/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-wrapped/wasm/base-silhouette.tsv",
+    "sha256": "03916917cb740e7f3428fae99541edfe3e41f68a095ddeaabe6a597db0015573",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-wrapped/wasm/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/comparison.tsv",
+    "sha256": "fa7ed3d4d006d2fb69f27f68286fdf70088a4f47ce8c0414eb8822376501d944",
+    "bytes": 203161
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/native/angle-narrow.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/native/handbook-hwp.tsv",
+    "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+    "bytes": 8428
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/native/handbook-hwpx.tsv",
+    "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+    "bytes": 8428
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/native/issue7905.tsv",
+    "sha256": "b828c10e23bcef9c5e7078451d3c8d92e1cb9811a7ac3a952c084a741f6ac6fe",
+    "bytes": 220
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/native/issue8040-insert-delete.tsv",
+    "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+    "bytes": 190
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/native/issue8040-insert.tsv",
+    "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+    "bytes": 190
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/native/nested.tsv",
+    "sha256": "e924de82c02cb4d1e782542f088bbf8c26a97aa3e594b8b05b4061e87f3fb4f2",
+    "bytes": 430
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/native/outline.tsv",
+    "sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+    "bytes": 292
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/native/sample10.tsv",
+    "sha256": "712a287536ded13276b98665341c1ca0e5420a81a82310f5d9cdf7de30f94363",
+    "bytes": 16746
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/native/sample16-hwp2022.tsv",
+    "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+    "bytes": 1447
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/native/sample16-hwp2024.tsv",
+    "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+    "bytes": 1447
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/native/sample16-hwpx.tsv",
+    "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+    "bytes": 1447
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/native/seo-body-list-typed.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/native/seo-helvetica-styles.tsv",
+    "sha256": "46ccdd2e0e2dfdec7bc1366e2418de12c83faf6bf5b872b9be8ee71fe24a7f46",
+    "bytes": 130
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/native/seo-pic-crop-01.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/native/seo-re-03-latin.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/native/seo-shape-group-02.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/native/yeongwol.tsv",
+    "sha256": "b6b1ffe9fea23444d7678ec5e5cb78474d71569b3fee154d962ad95b9adf5f60",
+    "bytes": 190
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/wasm/angle-narrow.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/wasm/handbook-hwp.tsv",
+    "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+    "bytes": 8428
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/wasm/handbook-hwpx.tsv",
+    "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+    "bytes": 8428
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/wasm/issue7905.tsv",
+    "sha256": "086c2d6d0017f63a3d77a9232166de5591ebcf46884461b77c4bf2c153bbeee6",
+    "bytes": 228
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/wasm/issue8040-insert-delete.tsv",
+    "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+    "bytes": 190
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/wasm/issue8040-insert.tsv",
+    "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+    "bytes": 190
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/wasm/nested.tsv",
+    "sha256": "71e5a6578deeb5f4f545554dcd4af8d82f2cdfeb2559f2e5a074cdf8e89e2b8d",
+    "bytes": 430
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/wasm/outline.tsv",
+    "sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+    "bytes": 292
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/wasm/sample10.tsv",
+    "sha256": "e5623efdcc4d4dcb4e1d0504ea383c867c5e40973a3bfcb0b93335f5bd38d912",
+    "bytes": 16754
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/wasm/sample16-hwp2022.tsv",
+    "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+    "bytes": 1447
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/wasm/sample16-hwp2024.tsv",
+    "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+    "bytes": 1447
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/wasm/sample16-hwpx.tsv",
+    "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+    "bytes": 1447
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/wasm/seo-body-list-typed.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/wasm/seo-helvetica-styles.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/wasm/seo-pic-crop-01.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/wasm/seo-re-03-latin.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/wasm/seo-shape-group-02.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/protected/wasm/yeongwol.tsv",
+    "sha256": "b6b1ffe9fea23444d7678ec5e5cb78474d71569b3fee154d962ad95b9adf5f60",
+    "bytes": 190
+  }
+]

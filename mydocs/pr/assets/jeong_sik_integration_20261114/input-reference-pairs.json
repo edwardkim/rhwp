@@ -1,0 +1,634 @@
+{
+  "created_at": "2026-11-14T01:53:54.177942+09:00",
+  "source_heads": {
+    "7668": "e9f43c0ce5876c08106547781888c4ab6a41ec8b",
+    "7675": "fb6e03c2dbd3f1c0d2d17702479d18b2e3ced51c",
+    "7682": "9f2556c092a76fc66eaa123480ffaeedaeaed22c"
+  },
+  "reference_policy": "Same input Hancom 2020 Desktop Print; WebHwp screen/PDF is not the acceptance reference.",
+  "rows": [
+    {
+      "key": "pr7668-bottom",
+      "pr": 7668,
+      "input": "mydocs/pr/assets/picture-effect-reflow/bottom.hwp",
+      "input_sha256": "0103fcfee29af8066e6133b8b3170e9c4cf020c677bd71e4cf202d49c4f50a1e",
+      "pdf": "pdf/jeong-sik-picture-integration-20261114/pr7668-bottom-2020.pdf",
+      "reused": false,
+      "pdf_sha256": "dea6450dc4cb0036612cc8407e2dae35f6538e62393f5a608713befc2d740423",
+      "print_receipt": {
+        "job_id": "ff94c417-edcb-4222-8a65-6d7a47b8ff70",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    {
+      "key": "pr7668-following",
+      "pr": 7668,
+      "input": "mydocs/pr/assets/picture-effect-reflow/following.hwp",
+      "input_sha256": "850a55c98535b0d61babfc3572e08c2df2094af437b6588166d3805845afaaad",
+      "pdf": "pdf/jeong-sik-picture-integration-20261114/pr7668-following-2020.pdf",
+      "reused": false,
+      "pdf_sha256": "e6daf36d7726a0decc2156d2edb1fce8f1c29f9e90c97f5e06d45f341d6746f1",
+      "print_receipt": {
+        "job_id": "772f7cae-0233-49b5-aa48-75f4c9bcbc4e",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    {
+      "key": "pr7668-grid-soft-hancom",
+      "pr": 7668,
+      "input": "mydocs/pr/assets/picture-effect-reflow/grid-soft-hancom.hwp",
+      "input_sha256": "da9debd67b7bdf141281645c5b013e03f4be52f8bafb2251cef69562ecb15c01",
+      "pdf": "pdf/jeong-sik-develop-audit-20261114/pr7668-grid-soft-hancom-2020.pdf",
+      "pdf_sha256": "708a3278ecff8ebd97c9078bad81b0077a5dc411977a049cc6a1aac1cf446d5f",
+      "print_receipt": {
+        "job_id": "948b16e2-6c64-420c-b8be-06d798673d22",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      },
+      "reused": true
+    },
+    {
+      "key": "pr7668-mixed",
+      "pr": 7668,
+      "input": "mydocs/pr/assets/picture-effect-reflow/mixed.hwp",
+      "input_sha256": "fdff394269be5191acdc9aced62da202e64cfe655e4c2775319edab3531f4126",
+      "pdf": "pdf/jeong-sik-develop-audit-20261114/pr7668-mixed-2020.pdf",
+      "pdf_sha256": "c159df1abd5356dded5f76b263ed9b5bdb18fafb93e62aec259fd471662bb767",
+      "print_receipt": {
+        "job_id": "7fe7e678-c431-458f-a5e6-d71ca55cda9e",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      },
+      "reused": true
+    },
+    {
+      "key": "pr7668-one-float",
+      "pr": 7668,
+      "input": "mydocs/pr/assets/picture-effect-reflow/one-float.hwp",
+      "input_sha256": "d9930da258e6b7a7d1e4fb4d1fd1e2dc769c141b08d96de092fb2e0a6da12cfa",
+      "pdf": "pdf/jeong-sik-picture-integration-20261114/pr7668-one-float-2020.pdf",
+      "reused": false,
+      "pdf_sha256": "ee6fe3134dc12c8c8428f01ce7ab65ddffcedca39060ca46ad729286901c5286",
+      "print_receipt": {
+        "job_id": "addd2cbe-cf25-4515-ae0e-5a394d120f2d",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    {
+      "key": "pr7668-positive",
+      "pr": 7668,
+      "input": "mydocs/pr/assets/picture-effect-reflow/positive.hwp",
+      "input_sha256": "345b366011e37404c19ddcac9a2f68ad06f09d7b73fa733ce2d10b8545a60489",
+      "pdf": "pdf/jeong-sik-picture-integration-20261114/pr7668-positive-2020.pdf",
+      "reused": false,
+      "pdf_sha256": "a6d47c274d8bb089328db89714838248efb1e6665c9ea3e3fd9b4dc64d5fb1ce",
+      "print_receipt": {
+        "job_id": "976f6b26-862c-40c9-8401-9cd7ee6d2906",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    {
+      "key": "pr7668-short-inline",
+      "pr": 7668,
+      "input": "mydocs/pr/assets/picture-effect-reflow/short-inline.hwp",
+      "input_sha256": "926427e29c2ae450a5e1561277f282ae216c6678ff7cf5a09a1a51705e6fa914",
+      "pdf": "pdf/jeong-sik-picture-integration-20261114/pr7668-short-inline-2020.pdf",
+      "reused": false,
+      "pdf_sha256": "d3c2f0be5c0795d9311bc7d7295b98b31c963222dd2079791f381687becb1a21",
+      "print_receipt": {
+        "job_id": "1df48c16-a302-40c7-8018-896f46ed86f8",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    {
+      "key": "pr7668-stale-height",
+      "pr": 7668,
+      "input": "mydocs/pr/assets/picture-effect-reflow/stale-height.hwp",
+      "input_sha256": "46685edb0c804f422350f86c477874a4bb6bfa4897a611a7f3359623c392a4b7",
+      "pdf": "pdf/jeong-sik-picture-integration-20261114/pr7668-stale-height-2020.pdf",
+      "reused": false,
+      "pdf_sha256": "de562ef20bb8eb38896e85306737d2c1cc78a8110fd080cc55cb2fffc106dcb1",
+      "print_receipt": {
+        "job_id": "2d8874de-3b74-4277-8d91-60504ff0c869",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    {
+      "key": "pr7668-top",
+      "pr": 7668,
+      "input": "mydocs/pr/assets/picture-effect-reflow/top.hwp",
+      "input_sha256": "63ab3740c16e1de5276f67725360608677c5fd4baba6f7f8f1f7511e7059eb39",
+      "pdf": "pdf/jeong-sik-picture-integration-20261114/pr7668-top-2020.pdf",
+      "reused": false,
+      "pdf_sha256": "e2fb31cec9d6d1b1394e61e3fcd4b67ef59ebcff2d2d17e2c518440e4af31938",
+      "print_receipt": {
+        "job_id": "aef219c7-ce39-4844-880b-0a0a1ff739ec",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    {
+      "key": "pr7675-all-inline",
+      "pr": 7675,
+      "input": "mydocs/pr/assets/inline-picture-cell-flow/all-inline.hwp",
+      "input_sha256": "9da935ce21128324c7b5d4f799678bcb69b0c24369c1875243fd89dfa330b196",
+      "pdf": "pdf/jeong-sik-develop-audit-20261114/pr7675-all-inline-2020.pdf",
+      "pdf_sha256": "327925263fef709ac4c4341d5691cda66cf53b18b0501acf41ac056883e9a2ad",
+      "print_receipt": {
+        "job_id": "ebfd7bf0-9ec7-41b0-8815-bc77b7be90d9",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      },
+      "reused": true
+    },
+    {
+      "key": "pr7675-bottom",
+      "pr": 7675,
+      "input": "mydocs/pr/assets/inline-picture-cell-flow/bottom.hwp",
+      "input_sha256": "5eb48a1dc3b6cdde2cb55f88eb05a23248a010fd25d0e8facd70b7e19d9daa34",
+      "pdf": "pdf/jeong-sik-develop-audit-20261114/pr7675-bottom-2020.pdf",
+      "pdf_sha256": "7936a91782a4af40812d5f2fae63fa4f299a29f5740cdfa085af62a08b40a8cb",
+      "print_receipt": {
+        "job_id": "fff4de84-6db9-4ef3-8650-21685ed38efc",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      },
+      "reused": true
+    },
+    {
+      "key": "pr7675-center",
+      "pr": 7675,
+      "input": "mydocs/pr/assets/inline-picture-cell-flow/center.hwp",
+      "input_sha256": "b4bff67dc6ee706c556679ae13783c680ed9a6bf36c7cf5e88fea6f2b147b2ed",
+      "pdf": "pdf/jeong-sik-picture-integration-20261114/pr7675-center-2020.pdf",
+      "reused": false,
+      "pdf_sha256": "fb368da38687ab97ad4009b4b8484c35c996e16aee24079e8df699583f29a1c0",
+      "print_receipt": {
+        "job_id": "db45834b-96a7-415b-ac5e-4e88af97283d",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    {
+      "key": "pr7675-following",
+      "pr": 7675,
+      "input": "mydocs/pr/assets/inline-picture-cell-flow/following.hwp",
+      "input_sha256": "99b77cd4ccfc7cddbf7c976fa38a70e32c7cb926b5c8ab59a20fdbfacca45a4b",
+      "pdf": "pdf/jeong-sik-picture-integration-20261114/pr7675-following-2020.pdf",
+      "reused": false,
+      "pdf_sha256": "a27bde067fd3b3f1c41b942929af901f858db4bb4fac8a10e1fb42cff21b0413",
+      "print_receipt": {
+        "job_id": "3c2bad88-57b2-4c2c-99f4-2de01db2c6b0",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    {
+      "key": "pr7675-left",
+      "pr": 7675,
+      "input": "mydocs/pr/assets/inline-picture-cell-flow/left.hwp",
+      "input_sha256": "be7b6abf8b3d975a7c5ebdd67a1da3b5c1f9e76045aa5c5d8891f75c62e24f58",
+      "pdf": "pdf/jeong-sik-picture-integration-20261114/pr7675-left-2020.pdf",
+      "reused": false,
+      "pdf_sha256": "92ba3be9f4408473594e68cb32efcaaebfc4933c77f40b0cfadd657f1dd86e6a",
+      "print_receipt": {
+        "job_id": "ed306816-0e1b-4c98-9ee1-841f329bec70",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    {
+      "key": "pr7675-no-indent",
+      "pr": 7675,
+      "input": "mydocs/pr/assets/inline-picture-cell-flow/no-indent.hwp",
+      "input_sha256": "ec829cbe34a2f2079de2d7df81311e832d97c044698fc1a64eaaa3fc65d184d9",
+      "pdf": "pdf/jeong-sik-picture-integration-20261114/pr7675-no-indent-2020.pdf",
+      "reused": false,
+      "pdf_sha256": "ec38fda8a17d97aa78f322e1ed0cbb0fe169723a84e3cb810f00306e85d5412c",
+      "print_receipt": {
+        "job_id": "0f99383a-392a-48de-a296-e63fc784b8cd",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    {
+      "key": "pr7675-one-row",
+      "pr": 7675,
+      "input": "mydocs/pr/assets/inline-picture-cell-flow/one-row.hwp",
+      "input_sha256": "81133f713f8dcb90ecdf723ac72112dcd7e69d85b3e920ca4f10aaff343dcb02",
+      "pdf": "pdf/jeong-sik-picture-integration-20261114/pr7675-one-row-2020.pdf",
+      "reused": false,
+      "pdf_sha256": "1c16677df04e3f5897f43c11bfec1e191c4fbf96a1ed3d944c501d2adddf8955",
+      "print_receipt": {
+        "job_id": "96b672b0-8ab4-47d8-ac5f-61660a3e1f8b",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    {
+      "key": "pr7675-positive-indent",
+      "pr": 7675,
+      "input": "mydocs/pr/assets/inline-picture-cell-flow/positive-indent.hwp",
+      "input_sha256": "21bc42d41217a09a7d218d8fd499fafcc66cb08b48038adf535c15eca5e2dbec",
+      "pdf": "pdf/jeong-sik-picture-integration-20261114/pr7675-positive-indent-2020.pdf",
+      "reused": false,
+      "pdf_sha256": "9f70f447305752702ae93a1e216326738b0da4dcbc73898a13b8f76cbb64e066",
+      "print_receipt": {
+        "job_id": "2ce9d33f-5458-48e3-babd-ae68a83afcf2",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    {
+      "key": "pr7675-right",
+      "pr": 7675,
+      "input": "mydocs/pr/assets/inline-picture-cell-flow/right.hwp",
+      "input_sha256": "cbcff43cc2bcf26d1d5c693ed1050e36844ae4f04fcc5ca5b6eb33d57d997294",
+      "pdf": "pdf/jeong-sik-picture-integration-20261114/pr7675-right-2020.pdf",
+      "reused": false,
+      "pdf_sha256": "c237c54b18a2d94b699b3c9d6273b9b5bc4f4f950e353a429c046c15e2880471",
+      "print_receipt": {
+        "job_id": "d11731da-1997-4bac-87c9-f2e0ba2137b0",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    {
+      "key": "pr7675-short",
+      "pr": 7675,
+      "input": "mydocs/pr/assets/inline-picture-cell-flow/short.hwp",
+      "input_sha256": "80f21091fec5f70f63ea8bec92332be78cabe3019d5c518821b7acabd56d839e",
+      "pdf": "pdf/jeong-sik-picture-integration-20261114/pr7675-short-2020.pdf",
+      "reused": false,
+      "pdf_sha256": "c3b81dee731d677d08f6dd206c1dd020f2103f6bf7e2aec0c9504ef3db1c4c91",
+      "print_receipt": {
+        "job_id": "e741ecc2-d1d1-429b-9225-f74e17469066",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    {
+      "key": "pr7675-stale-height",
+      "pr": 7675,
+      "input": "mydocs/pr/assets/inline-picture-cell-flow/stale-height.hwp",
+      "input_sha256": "082a93b5fe6d8f6f04db417787749b2bbe95f3dfa43bb2b7470587d7cb367d65",
+      "pdf": "pdf/jeong-sik-picture-integration-20261114/pr7675-stale-height-2020.pdf",
+      "reused": false,
+      "pdf_sha256": "5d041887b5312f51cf3baed99bf9e782c723073d3a2a429d94ac22387f3d2cbe",
+      "print_receipt": {
+        "job_id": "617a2cf1-41a2-499a-9c9b-7d6cc0a76081",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    {
+      "key": "pr7675-top",
+      "pr": 7675,
+      "input": "mydocs/pr/assets/inline-picture-cell-flow/top.hwp",
+      "input_sha256": "6cd0cb148604ae8f01e78350e8f2b600fbeada23e8472e2a4998422f0eff5b29",
+      "pdf": "pdf/jeong-sik-picture-integration-20261114/pr7675-top-2020.pdf",
+      "reused": false,
+      "pdf_sha256": "b5b43f0c63d8aefb0ae560b59cfb392c65b627e65d6949f0c702768a484646d4",
+      "print_receipt": {
+        "job_id": "d596a70f-3093-4801-917b-661eab910dd4",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    {
+      "key": "pr7682-bottom",
+      "pr": 7682,
+      "input": "mydocs/pr/assets/picture-cell-paragraph-flow/bottom.hwp",
+      "input_sha256": "106787de5e3437b8859756edba7c36c51996625d2cb9296f7e0da4d2166abb28",
+      "pdf": "pdf/jeong-sik-develop-audit-20261114/pr7682-bottom-2020.pdf",
+      "pdf_sha256": "48eee219369c1f0ee271338b4c168f06bed9255463ea196d7a701118f90decb6",
+      "print_receipt": {
+        "job_id": "85a4d0df-0e69-45ee-b881-bd016c733668",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      },
+      "reused": true
+    },
+    {
+      "key": "pr7682-center",
+      "pr": 7682,
+      "input": "mydocs/pr/assets/picture-cell-paragraph-flow/center.hwp",
+      "input_sha256": "679288dd54fa4cef42a3a584026aa1177847aa1fb0d91a9df2334c929f465270",
+      "pdf": "pdf/jeong-sik-picture-integration-20261114/pr7682-center-2020.pdf",
+      "reused": false,
+      "pdf_sha256": "ea0e3e81a19d6dd3a40ca14edfeee148c2a612bb0fb3a066a237b644d44675cc",
+      "print_receipt": {
+        "job_id": "c88a335d-c1e2-4c43-87e5-b1fac59bc967",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    {
+      "key": "pr7682-compact",
+      "pr": 7682,
+      "input": "mydocs/pr/assets/picture-cell-paragraph-flow/compact.hwp",
+      "input_sha256": "4256cb3f985c8e6c4d9c2c06fd8521e4dae9628e74bad8daa2b04f5e1cb8e27f",
+      "pdf": "pdf/jeong-sik-picture-integration-20261114/pr7682-compact-2020.pdf",
+      "reused": false,
+      "pdf_sha256": "2a3192cb401a12cd0054dd67fce136fb95368c8489a53928a524f9ef1330cb76",
+      "print_receipt": {
+        "job_id": "8ae2daf5-46f9-4865-b3a8-eb244d3ac71a",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    {
+      "key": "pr7682-para-spacing",
+      "pr": 7682,
+      "input": "mydocs/pr/assets/picture-cell-paragraph-flow/para-spacing.hwp",
+      "input_sha256": "4bb2c83a979015c24b646a859dd1d67f0c6edd4e2b72d54bf870a631c69cdf32",
+      "pdf": "pdf/jeong-sik-picture-integration-20261114/pr7682-para-spacing-2020.pdf",
+      "reused": false,
+      "pdf_sha256": "cf8334606e243b02ebe78d11bdd7f54fc5870a60949a6cf9467deb6252a5074b",
+      "print_receipt": {
+        "job_id": "fc0d3419-b2d5-4f71-97fb-428e68a85376",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    {
+      "key": "pr7682-right",
+      "pr": 7682,
+      "input": "mydocs/pr/assets/picture-cell-paragraph-flow/right.hwp",
+      "input_sha256": "f3d57cda2e1fbb68a4cd7d8e8d06c4e1f7b06579ec31215c2405b5a3ab085433",
+      "pdf": "pdf/jeong-sik-picture-integration-20261114/pr7682-right-2020.pdf",
+      "reused": false,
+      "pdf_sha256": "11d080910bc7b24d3cd32d24deeadfe8ee2d4238ace2ac781651f67b1c5f05f6",
+      "print_receipt": {
+        "job_id": "d58379ab-3e75-4be5-a592-8bfbfd944a51",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    {
+      "key": "pr7682-three-paras",
+      "pr": 7682,
+      "input": "mydocs/pr/assets/picture-cell-paragraph-flow/three-paras.hwp",
+      "input_sha256": "6a0780cd89bccf6e7442ce23e01ac1977dc6c0b73660a00ffb3b690132e4a3fa",
+      "pdf": "pdf/jeong-sik-picture-integration-20261114/pr7682-three-paras-2020.pdf",
+      "reused": false,
+      "pdf_sha256": "6d43fba3161c564ba1d0ab726acc23171e1eaef4492bafd5cb7bd3ac13485b7b",
+      "print_receipt": {
+        "job_id": "924c86b0-a393-4fcc-b732-eba58ead8531",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    {
+      "key": "pr7682-top",
+      "pr": 7682,
+      "input": "mydocs/pr/assets/picture-cell-paragraph-flow/top.hwp",
+      "input_sha256": "90a12a27419c85f98b1620d769269ae278bf1fa5c0cdb07db499273c86df1d82",
+      "pdf": "pdf/jeong-sik-picture-integration-20261114/pr7682-top-2020.pdf",
+      "reused": false,
+      "pdf_sha256": "f7d9ef26905a8051fdba1356944307727ad62c89c4a1b9cc4df826fe19f33069",
+      "print_receipt": {
+        "job_id": "5c29ece2-7f12-405e-999e-bbe7d7ad0f32",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    {
+      "key": "pr7682-two-paras",
+      "pr": 7682,
+      "input": "mydocs/pr/assets/picture-cell-paragraph-flow/two-paras.hwp",
+      "input_sha256": "b40fa498c4f2bc31d488c911f76dda1ae61709567cf5f373b6aa25bd37352dcf",
+      "pdf": "pdf/jeong-sik-develop-audit-20261114/pr7682-two-paras-2020.pdf",
+      "pdf_sha256": "7f4835cbd9285b20c9bd70f5bcbfd5bee5474a14d78f76e64eea764ebb62bdd7",
+      "print_receipt": {
+        "job_id": "e89e7c72-6b4b-47c2-a0df-3fb2a7ed20bf",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      },
+      "reused": true
+    },
+    {
+      "key": "pr7682-unequal",
+      "pr": 7682,
+      "input": "mydocs/pr/assets/picture-cell-paragraph-flow/unequal.hwp",
+      "input_sha256": "1ce0092f3fa6201a2d4ec73ad24976c51b0385810dedb76726ecf68f3b1b44c0",
+      "pdf": "pdf/jeong-sik-picture-integration-20261114/pr7682-unequal-2020.pdf",
+      "reused": false,
+      "pdf_sha256": "ad7a87d551af180d42a0b8ccbf22b087abe315febabd0151cf9a7a1a96d89878",
+      "print_receipt": {
+        "job_id": "c1028e6f-f569-4d6a-a090-1783421b5cfc",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    {
+      "key": "pr7682-wrapped",
+      "pr": 7682,
+      "input": "mydocs/pr/assets/picture-cell-paragraph-flow/wrapped.hwp",
+      "input_sha256": "9651afa266be86b905d0f18f797233180269d0f9aa44472ae565e490148e51ef",
+      "pdf": "pdf/jeong-sik-develop-audit-20261114/pr7682-wrapped-2020.pdf",
+      "pdf_sha256": "d91841d338dfc7ba855e61fd387d9b82e2b9ae0ed8c967c7f191ce6cdb3e5d87",
+      "print_receipt": {
+        "job_id": "7ae443e6-46ce-4b99-a610-8cd5b8a71395",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      },
+      "reused": true
+    },
+    {
+      "key": "owner-hwp",
+      "input": "mydocs/pr/assets/jeong_sik_integration_20261114/input/img_cmp_01.hwp",
+      "input_sha256": "75064576801c3eafe2464c847935144e46d6eff6c0cfdd55b7754b5e1bc99cf7",
+      "pdf": "pdf/jeong-sik-picture-integration-20261114/owner-hwp-2020.pdf",
+      "pdf_sha256": "ad524df3b3688ba97d0fb917e1c1c3aaaa249fb22a738c93ee88b719ee573167",
+      "print_receipt": {
+        "job_id": "737b0cff-146d-4c79-9a87-7beafc4620d0",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    {
+      "key": "owner-hwpx",
+      "input": "mydocs/pr/assets/jeong_sik_integration_20261114/input/img_cmp_01.hwpx",
+      "input_sha256": "859024af08422f08a29bef7cd3ebccbb8edb648ac2cb5042df66cb03144e2a08",
+      "pdf": "pdf/jeong-sik-picture-integration-20261114/owner-hwpx-2020.pdf",
+      "pdf_sha256": "3cd9d4c058768541bdbf4e1cc181038fe50270590053596097af413042356077",
+      "print_receipt": {
+        "job_id": "f59c3df6-5a54-4521-9764-9cbe6707597a",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "none"
+      }
+    }
+  ]
+}
