@@ -81,6 +81,7 @@ impl TypesetState {
                 deferred_table_controls: Vec::new(),
                 deferred_column_shapes: Vec::new(),
                 deferred_table_successor_start: None,
+                page_band_host_line: None,
                 pending_table_terminal_gap: None,
                 deferred_next_page_square_pictures: Vec::new(),
                 page_start_square_pictures: Vec::new(),

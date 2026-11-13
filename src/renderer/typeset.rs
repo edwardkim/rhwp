@@ -5960,6 +5960,19 @@ impl TypesetEngine {
                         })
                 })
                 .flatten();
+            // 쪽 기준 자리차지 표 띠에 걸린 빈 host 줄은 띠 아래의 독립 줄이다([#8554] 배치와
+            // 같은 판정). 흐름이 아직 띠 아래끝에 이르지 않았을 때만 띠 끝으로 옮긴다.
+            let page_band_host_line = (!table.common.treat_as_char
+                && is_first_placed
+                && is_last_placed
+                && pre_height <= 0.0)
+                .then(|| {
+                    st.page_band_host_line
+                        .filter(|(para, ctrl, ..)| *para == para_idx && *ctrl == ctrl_idx)
+                        .map(|(_, _, band_bottom, advance)| (band_bottom, advance))
+                })
+                .flatten()
+                .filter(|(band_bottom, _)| st.current_height + 0.5 < *band_bottom);
             if hwp3_topbottom_no_reserve {
                 st.advance_flow_by(pre_height + stored_host_line_px.unwrap_or(0.0));
             } else if hangul_flowed_beside_table {
@@ -5972,6 +5985,11 @@ impl TypesetEngine {
                     band_top,
                     frame.map_or(band_top + table_total_height, |frame| frame.occupied_bottom),
                 );
+            } else if let Some((band_bottom, host_advance_hu)) = page_band_host_line {
+                // 배치는 host 에 이르면 띠 아래끝으로 점프하고(`calculate_shape_reserved_heights`)
+                // 그 아래에 host 줄을 둔다. 조판도 같은 끝점까지 흐름을 옮긴다.
+                st.align_flow_to(band_bottom);
+                st.advance_flow_by(hwpunit_to_px(host_advance_hu, self.dpi));
             } else if let Some(extras_hu) = empty_host_physical_extras_hu {
                 st.advance_flow_by(
                     pre_height + table_total_height + hwpunit_to_px(extras_hu as i32, self.dpi),

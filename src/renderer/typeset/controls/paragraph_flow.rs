@@ -119,6 +119,20 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
         composed_all,
     } = input;
     st.trace_table_paragraph_entry(para_idx);
+    let page_band_host_line = para.controls.iter().enumerate().find_map(|(ci, control)| {
+        let Control::Table(table) = control else {
+            return None;
+        };
+        crate::renderer::float_placement::page_band_pushed_empty_host_line(
+            para,
+            next_para,
+            table,
+            st.base_available_height(),
+            engine.dpi,
+        )
+        .map(|(band_bottom, advance)| (para_idx, ci, band_bottom, advance))
+    });
+    st.set_page_band_host_line(page_band_host_line);
     // [#2322] 자리차지 float(양수 v_off) 표가 만든 배타 영역을 표 문단 경로도
     // 소비한다 — 종전에는 텍스트 경로(typeset_paragraph)만 소비해, 후속 표
     // 문단의 블록 표 fit 이 존 위에 겹쳐 배치됐다 (19439117: 870px 서식 표

@@ -517,6 +517,14 @@ pub(super) fn prepare_computed(
             crate::model::paragraph::ColumnBreakType::Page
                 | crate::model::paragraph::ColumnBreakType::Section
         );
+    // 저장 줄이 없어 합성한 표 줄이 단 맨 위에서 이어진 재조판 흐름 안에 있으면, 그 줄의 프레임
+    // 원점은 단 위끝에서 잰 현재 흐름 거리다(합성 vpos 는 앞 쪽 누적값이라 근거가 아니다). 다음
+    // 원본 줄이 그 원점에서 `lh + ls + 문단 간격` 뒤에 있으면 한/글은 간격 전량을 남긴 것이다
+    // (36400525 2쪽: 저장 줄 없는 표 문단 둘 9287 + 5413 + 1120 = 다음 빈 문단 vpos 15820).
+    let origin_hu = crate::renderer::px_to_hwpunit(origin, dpi);
+    let follows_reflowed_frame = computed
+        && origin_hu > 1
+        && seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0;
     let full_trailing_spacing = next_para.is_some_and(|next| {
         next.line_segs.first().is_some_and(|next_seg| {
             let closing_advance = seg
@@ -531,6 +539,16 @@ pub(super) fn prepare_computed(
                     && next_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
                         == 0
                     && next_seg.vertical_pos == closing_advance)
+                || (follows_reflowed_frame
+                    && closing_advance > 0
+                    && !next.stored_text_partition_is_dirty()
+                    && next_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                        == 0
+                    && (i64::from(next_seg.vertical_pos)
+                        - i64::from(origin_hu)
+                        - i64::from(closing_advance))
+                    .abs()
+                        <= 1)
         })
     });
     // 원본 저장 줄은 다음 줄 원점까지 후행 간격을 전량 소유한다.

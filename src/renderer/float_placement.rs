@@ -9483,6 +9483,41 @@ pub(crate) fn absolute_topbottom_table_band_bottom_px(
     Some(absolute_table_vertical_geometry(table, ref_y, ref_h, height, dpi).1)
 }
 
+/// 쪽 기준 자리차지(비-TAC) 표의 띠에 저장 줄이 걸린 빈 host — 다음 문단의 저장 첫 줄이
+/// 「띠 아래끝 + host 줄 전진」에 있으면 한/글은 host 줄을 띠 아래의 독립 줄로 뒀다([#8554]
+/// 배치 규칙). 조판이 같은 줄을 흐름에 싣도록 띠 아래끝(본문 위끝 기준 px)과 host 줄
+/// 전진(`줄높이 + 줄간격`, HU)을 돌려준다.
+///
+/// 36400525 결재문서 1쪽: 쪽 기준 머리 표(오프셋 2 + 바깥 위 138 + 높이 26454 + 바깥 아래
+/// 138 = 26732)의 빈 host 줄은 저장 vpos 0(띠 안)이고, 다음 문단 저장 vpos 는
+/// 28332 = 26732 + 1000 + 600 이다. 다음 문단이 띠 아래끝에 바로 붙는 문서(쪽 아래 고정 틀
+/// 등)는 host 줄이 띠 아래로 가지 않았으므로 해당하지 않는다.
+pub(crate) fn page_band_pushed_empty_host_line(
+    para: &Paragraph,
+    next: Option<&Paragraph>,
+    table: &Table,
+    body_height: f64,
+    dpi: f64,
+) -> Option<(f64, i32)> {
+    let stored = |seg: &&crate::model::paragraph::LineSeg| {
+        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+    };
+    if !matches!(table.common.vert_rel_to, VertRelTo::Page)
+        || para_has_non_whitespace_text(para)
+        || para.line_segs.len() != 1
+    {
+        return None;
+    }
+    let seg = para.line_segs.first().filter(stored)?;
+    let successor = next?.line_segs.first().filter(stored)?;
+    let band_bottom = absolute_topbottom_table_band_bottom_px(table, 0.0, body_height, 0.0, dpi)?;
+    let advance = seg.line_height.max(0) + seg.line_spacing.max(0);
+    let expected = crate::renderer::px_to_hwpunit(band_bottom, dpi) + advance;
+    (hwpunit_to_px(seg.vertical_pos, dpi) + 0.5 < band_bottom
+        && (successor.vertical_pos - expected).abs() <= 2)
+        .then_some((band_bottom, advance))
+}
+
 /// [#8859] 뒤 문단의 저장 첫 줄이 빈 host 의 저장 줄 끝(`vpos + 줄 높이 + 줄간격`)에서
 /// 바로 시작하는가. 저장 사다리가 뒤 글을 host 줄 바로 아래 — 양수 오프셋 표 위 틈 — 에
 /// 두었다는 증거다.
