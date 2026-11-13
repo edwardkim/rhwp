@@ -5892,8 +5892,10 @@ pub(crate) fn stored_background_picture_next_page_placement(
     None
 }
 
-/// 나누지 않는 표의 캡션 포함 바깥 상자와 뒤 본문의 저장 재시작 원점이 일치하면
+/// 표의 캡션 포함 바깥 상자와 뒤 본문의 저장 재시작 원점이 일치하면
 /// 표만 다음 쪽을 소유한다. 재시작 전 본문/빈 줄은 원래 쪽에 보존한다.
+/// 두 번째 값은 재시작이 문단 첫 줄일 때 `following` 안의 그 문단 위치다. 그 문단은 표와 같은
+/// 다음 쪽에서 시작한다. 문단 안쪽 줄에서 재시작하면 그 문단이 스스로 나뉘므로 묶지 않는다.
 pub(crate) fn stored_table_next_page_placement(
     para: &Paragraph,
     following: &[Paragraph],
@@ -5904,7 +5906,7 @@ pub(crate) fn stored_table_next_page_placement(
     actual_host_flow_y: f64,
     available_height: f64,
     dpi: f64,
-) -> Option<ParagraphFloatPlacement> {
+) -> Option<(ParagraphFloatPlacement, Option<usize>)> {
     use crate::model::paragraph::LineSeg;
     let host = para.line_segs.first()?;
     let visible_host = para_has_non_whitespace_text(para);
@@ -5964,7 +5966,6 @@ pub(crate) fn stored_table_next_page_placement(
                     + i64::from(lines[0].line_height)
                     + i64::from(lines[0].line_spacing)
         })
-        || table.layout_page_break() != TablePageBreak::None
         || table.common.treat_as_char
         || (!group && !is_para_topbottom_float(&table.common))
         || !table.common.flow_with_text
@@ -6046,9 +6047,9 @@ pub(crate) fn stored_table_next_page_placement(
         || (!group && offset < 0.0)
         || bottom > available_height
         || (group && !tables.iter().all(|member| member_overflows(member)))
-        || (!visible_host && (actual_host_flow_y - host_y).abs() > dpi / 7200.0)
+        || (!visible_host && actual_host_flow_y + dpi / 7200.0 < host_y)
         || (visible_host && actual_host_flow_y + offset + bottom <= available_height)
-        || host_y + offset + bottom <= available_height
+        || host_y.max(actual_host_flow_y) + offset + bottom <= available_height
     {
         return None;
     }
@@ -6075,20 +6076,33 @@ pub(crate) fn stored_table_next_page_placement(
                             s.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0 && s.line_height > 0
                         })
                 });
+                let inline_object_restart = line_index == 0
+                    && next.controls.iter().any(|control| match control {
+                        Control::Table(inline) => inline.common.treat_as_char,
+                        _ => false,
+                    });
                 if i64::from(line.vertical_pos) != frame_height_hu
-                    || !(para_has_non_whitespace_text(next) || terminal_blank_tail || group)
+                    || !(para_has_non_whitespace_text(next)
+                        || terminal_blank_tail
+                        || group
+                        || inline_object_restart)
                 {
                     return None;
                 }
-                return Some(ParagraphFloatPlacement {
-                    flow: ParagraphFloatFlow::NextLine,
-                    anchor_y: 0.0,
-                    stored_host_origin: None,
-                    stored_successor_line_origin: None,
-                    table_left: None,
-                    table_top: top,
-                    occupied_bottom: bottom,
-                });
+                return Some((
+                    ParagraphFloatPlacement {
+                        flow: ParagraphFloatFlow::NextLine,
+                        anchor_y: 0.0,
+                        stored_host_origin: None,
+                        // 재시작 줄 = 바깥 상자 아래끝이 저장 사다리로 입증됐다. host 의 뒤
+                        // 간격은 앞 쪽 host 줄에 남고 새 쪽의 재시작 줄 앞에 다시 붙지 않는다.
+                        stored_successor_line_origin: Some(bottom),
+                        table_left: None,
+                        table_top: top,
+                        occupied_bottom: bottom,
+                    },
+                    (line_index == 0).then_some(next_index),
+                ));
             }
             // 문단 경계의 저장 사다리는 줄간격 외에 앞뒤 문단 간격도 소비한다.
             // 조판과 같은 해석된 스타일을 사용하며 문단 안쪽 줄에는 더하지 않는다.

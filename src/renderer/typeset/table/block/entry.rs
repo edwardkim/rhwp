@@ -242,7 +242,14 @@ impl TypesetEngine {
                     st.available_height(),
                     self.dpi,
                 )
-                .map(|placement| (placement, None, false))
+                // 재시작 문단은 표와 같은 다음 쪽에서 시작한다(저장 사다리의 쪽 되감김).
+                .map(|(placement, reset)| {
+                    (
+                        placement,
+                        reset.map(|index| (index, Some(st.pages.len() + 1))),
+                        false,
+                    )
+                })
                 .or_else(|| {
                     crate::renderer::float_placement::stored_whole_header_next_page_placement(
                         para,
@@ -254,7 +261,9 @@ impl TypesetEngine {
                         st.available_height(),
                         self.dpi,
                     )
-                    .map(|(placement, following)| (placement, following, true))
+                    .map(|(placement, following)| {
+                        (placement, following.map(|index| (index, None)), true)
+                    })
                 })
             {
                 // 저장 사다리가 뒤 inline 표의 시작을 호스트 줄 다음으로 인증하면,
@@ -265,12 +274,13 @@ impl TypesetEngine {
                     || self.pre_emit_deferred_host_lines(st, para_idx, para, composed_all, styles)
                 {
                     st.defer_stored_frame(crate::renderer::typeset::DeferredStoredFrameControl {
-                        target_page: None,
+                        target_page: following_body.and_then(|(_, page)| page),
                         kind: crate::renderer::typeset::DeferredStoredFrameKind::Table,
                         para_index: para_idx,
                         control_index: ctrl_idx,
                         placement,
-                        following_body_para_index: following_body.map(|index| para_idx + 1 + index),
+                        following_body_para_index: following_body
+                            .map(|(index, _)| para_idx + 1 + index),
                     });
                     return None;
                 }
