@@ -196,6 +196,52 @@ impl TypesetState {
         self.data.vpos_col_anchor = self.data.current_height;
     }
 
+    /// [#8660] 쪽 영역 안 제한 개체의 다음 쪽 이월 판정에 쓸 기준 문단 위 끝 y.
+    ///
+    /// 한컴이 저장한 첫 줄 위치(`vertical_pos`)가 있으면 흐름 누적과 저장 위치 중 작은
+    /// 쪽을 쓴다. 어울림 표 옆 글줄처럼 흐름 누적이 한컴보다 커지는 경우가 있다(실측 33px).
+    /// 저장 줄이 없는 문서는 rhwp 가 다시 조판한 흐름 위치를 쓰되, 이 단에서 기준 문단
+    /// 앞에 놓인 항목이 모두 문단 항목(글줄·글자처럼 개체)일 때만 쓴다. 앞에 떠 있는
+    /// 표·개체 항목이 있으면 그 둘레 글 흐름 재계산이 한컴과 어긋날 수 있어(실측 14~70px)
+    /// 이월을 판정하지 않고 기존 같은 쪽 하단 끌어올림을 유지한다.
+    pub(in crate::renderer::typeset) fn restricted_object_host_top(
+        &self,
+        para_index: usize,
+        para: &Paragraph,
+        flow_y: f64,
+        dpi: f64,
+    ) -> Option<f64> {
+        let profile = &self.data.profile;
+        if profile.session_edited() {
+            return None;
+        }
+        let stored_layout = profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout();
+        if let (true, Some(seg)) = (stored_layout, para.line_segs.first()) {
+            let stored_y = crate::renderer::hwpunit_to_px(
+                seg.vertical_pos
+                    .saturating_sub(self.data.vpos_page_base.unwrap_or(0)),
+                dpi,
+            );
+            return (stored_y.is_finite() && stored_y >= 0.0).then(|| flow_y.min(stored_y));
+        }
+        if !para.line_segs.is_empty() {
+            return None;
+        }
+        let text_only_before = self
+            .data
+            .current_items
+            .iter()
+            .filter(|item| item.para_index() < para_index)
+            .all(|item| {
+                matches!(
+                    item,
+                    crate::renderer::pagination::PageItem::FullParagraph { .. }
+                        | crate::renderer::pagination::PageItem::PartialParagraph { .. }
+                )
+            });
+        text_only_before.then_some(flow_y)
+    }
+
     /// 사용 가능한 본문 높이 (각주, 존 오프셋 차감)
     pub(in crate::renderer::typeset) fn available_height(&self) -> f64 {
         let base = self.base_available_height();

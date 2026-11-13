@@ -538,6 +538,31 @@ pub(super) fn place_table_host_shape_with_storage<S: crate::storage::Storage>(
     if st.has_spilled_page_tail_float(para_idx, ctrl_idx) {
         return Ok(());
     }
+    // [#8660] 쪽 영역 안으로 제한한 문단 기준 개체가 본문 아래 끝을 넘으면 개체만 다음 쪽
+    // 본문 맨 위에 놓는다. 표를 품은 기준 문단도 본문 문단과 같다(표 칸 안 개체는 무관).
+    if st.col_count == 1 {
+        if let Some(placement) = st
+            .restricted_object_host_top(para_idx, para, para_start_height, dpi)
+            .and_then(|host_top| {
+                crate::renderer::float_placement::overflow_para_object_next_page_placement(
+                    ctrl,
+                    host_top,
+                    st.available_height(),
+                    dpi,
+                )
+            })
+        {
+            st.defer_stored_frame(super::DeferredStoredFrameControl {
+                following_body_para_index: None,
+                kind: super::DeferredStoredFrameKind::Picture,
+                para_index: para_idx,
+                control_index: ctrl_idx,
+                placement,
+                target_page: None,
+            });
+            return Ok(());
+        }
+    }
     let mut flow = shape_flow::prepare(ctrl, para, ctrl_idx, dpi);
     // [#8458] 자기 줄이 이미 글줄 항목으로 이 쪽에 놓였으면 그 줄 높이는 소비됐다.
     // 글자처럼 취급한 개체는 그 줄 안에 있으므로 줄 높이를 다시 판정·누적하지 않는다
