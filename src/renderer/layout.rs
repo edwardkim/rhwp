@@ -13064,6 +13064,20 @@ impl LayoutEngine {
             let raw_mt = measured_tables
                 .iter()
                 .find(|mt| mt.para_index == para_index && mt.control_index == control_index);
+            // format·저장과 같은 닫힌 행 프레임을 실제 paint에도 전달한다.
+            // 본문 셀의 가로 편집만으로 미변경 공동 앵커의 끝 행을 다시 늘리지 않는다.
+            let closed_coanchored_mt = (self.profile.get().hwp5_stored_pagination_layout()
+                && !self.render_normalization.borrow().table_text_reflowed(t)
+                && super::float_placement::stored_inline_host_has_separate_float_frame(para, t))
+            .then(|| {
+                raw_mt.and_then(|measured| {
+                    super::height_measurer::fit_measured_table_declared_tail_to_declared_height(
+                        measured, t, self.dpi,
+                    )
+                })
+            })
+            .flatten();
+            let raw_mt = closed_coanchored_mt.as_ref().or(raw_mt);
             let fitted_visible_mt = if is_current_visible_para_float {
                 raw_mt.map(|measured| {
                     if self.profile.get().session_edited()
