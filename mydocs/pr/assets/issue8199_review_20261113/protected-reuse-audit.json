@@ -1,20 +1,109 @@
 {
-  "base": "6217d3cbedc9aba707812e5d4e5ea2a1ed53845a",
-  "current_head": "2baa9606abeba33838c72cf719b355f40ece66a6",
-  "reviewed_production_diff": [
-    "src/model/paragraph.rs"
+  "base": "fa32a1633b0677f3dc48ea5cc99a4cab309361b6",
+  "head": "cc6c60381dfeff9b7892e836b8bf01803d0a5c1a",
+  "prior_base": "6217d3cbedc9aba707812e5d4e5ea2a1ed53845a",
+  "prior_producer": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+  "policy": "Reuse existing complete per-document Native/WASM TSVs, retaining producer and font environments; not a current-head recapture",
+  "dataset_count": 36,
+  "pages_per_backend": 1771,
+  "official_display_declines": 0,
+  "own_product_delta": "Only mutating inline-control insertion metadata; no fixed-input parse/read-only render call site",
+  "incoming_pr": 9012,
+  "incoming_product_files": [
+    "src/paint/builder.rs",
+    "src/renderer/legacy_font_advances.rs",
+    "src/renderer/native_pua_fonts.rs",
+    "src/renderer/render_tree.rs",
+    "src/renderer/svg.rs"
   ],
-  "reason": "Only control insertion into empty paragraphs changes in production. All shift_for_inline_control_insert call sites are mutating edit commands; existing document parse/load/read-only Native/WASM export does not invoke insertion. No parser/serializer/font/paint/export changes. Visual Sweep change is only annotation font selection, outside document bitmap and score computation. Protected inputs/PDFs and ordered 1208 font programs are byte-identical. Original/edited direct controls freshly re-exported per backend have identical base/head PNGs and TSV values. Existing protected measurements are retained with original producer identity; mandatory current Native handbook is executed separately.",
-  "unchanged_export_trees": [
-    "src/renderer",
-    "src/parser",
-    "src/serializer",
-    "src/storage",
-    "src/wasm_api",
-    "rhwp-shared",
-    "assets/fonts"
+  "incoming_font_scope": [
+    {
+      "input": "sample10",
+      "strawberry_font_ids": {
+        "HANGUL": [
+          "7"
+        ]
+      },
+      "bold_strawberry_style_ids": [
+        "49"
+      ],
+      "used_run_count": 1,
+      "used_runs": [
+        {
+          "section": "Contents/section0.xml",
+          "style": "49"
+        }
+      ]
+    },
+    {
+      "input": "yeongwol",
+      "strawberry_font_ids": {
+        "HANGUL": [
+          "99"
+        ]
+      },
+      "bold_strawberry_style_ids": [],
+      "used_run_count": 0,
+      "used_runs": []
+    }
   ],
-  "font_conditions": {
+  "source_type_guard": {
+    "sample10": "Used Strawberry style 49 is declared TTF, so alt_type == 2 is false. HWPX exporter font_type_str preserves this discriminator; the new verified-family branch is gated by this source condition.",
+    "yeongwol": "No used bold Strawberry run. Other 16 documents do not declare Strawberry."
+  },
+  "incoming_external_image_scope": {
+    "documents": 18,
+    "documents_with_external_refs": [
+      "samples/hwp3-sample10.hwp"
+    ],
+    "source_images": {
+      "supplied": [
+        {
+          "path": "samples/oracle.gif",
+          "bytes": 1813,
+          "sha256": "464e863dd2c1650fc6997b03a5d96c9413e61bbabaf7337c783db27203cc2761"
+        },
+        {
+          "path": "samples/rdb02.gif",
+          "bytes": 6098,
+          "sha256": "bfadf4cdbbeeb5f3d8632cb54c8c3696977f405204b651f99a7a24c8f39532cf"
+        },
+        {
+          "path": "samples/s1.jpg",
+          "bytes": 16744,
+          "sha256": "77dea18ce7f8f93b0931e133dec222aec642eef0ed87b8f2031b94dcbea5c514"
+        }
+      ],
+      "references": [
+        {
+          "key": "binData:1",
+          "binDataId": 1,
+          "originalPath": "/Users/tsjang/rhwp/samples/oracle.gif",
+          "basename": "oracle.gif",
+          "extension": "gif",
+          "loaded": true
+        },
+        {
+          "key": "binData:2",
+          "binDataId": 2,
+          "originalPath": "/Users/tsjang/rhwp/samples/rdb02.gif",
+          "basename": "rdb02.gif",
+          "extension": "gif",
+          "loaded": true
+        },
+        {
+          "key": "binData:3",
+          "binDataId": 3,
+          "originalPath": "/Users/tsjang/rhwp/samples/s1.jpg",
+          "basename": "s1.jpg",
+          "extension": "jpg",
+          "loaded": true
+        }
+      ]
+    },
+    "predicate": "All three linked programs are supplied with unchanged committed bytes. ImageNode external_path + data.is_empty is false. Remaining 17 inputs have no external references."
+  },
+  "font_program_identity": {
     "current_user_font_files": 1208,
     "current_unique_sha256": 1208,
     "prior_default_font_entries": 1208,
@@ -22,10 +111,7 @@
     "exact_sha256_multiset_equal": true,
     "lexical_file_order_equal_prior_program_order": true
   },
-  "prior_report": "mydocs/pr/assets/planet6897_open5_20261113/protected-candidate-qualification.json",
-  "prior_report_sha256": "b1b0bd1d6459eb9eef3104d4e926e4eaf6f1041d3605c90cf9edf9be779c666f",
-  "prior_official_declines": 0,
-  "datasets": [
+  "dataset_reuse": [
     {
       "key": "yeongwol",
       "backend": "native",
@@ -711,5 +797,42 @@
       "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
     }
   ],
-  "new_full_protected_capture_performed": false
+  "boundaries": [
+    "No page-wise best-value mixing",
+    "No thresholds or PDF changes",
+    "Pre-rebase 383-page current gate retained as history; final-head mandatory Native handbook rerun separately"
+  ],
+  "incoming_font_scope_declarations": [
+    {
+      "input": "sample10",
+      "serialization_sha256": "0795f26c5d2230179d57f99cb91e7e5b7d371f3d05cd2857561736c5d8f0fbf9",
+      "declared_faces": [
+        {
+          "language": "HANGUL",
+          "id": "7",
+          "face": "딸기",
+          "type": "TTF",
+          "isEmbedded": "0"
+        }
+      ]
+    },
+    {
+      "input": "yeongwol",
+      "serialization_sha256": "0c56adaa38cfb8ebcd9cacaf383b774bd0ad28f5633bf97224df8772e6f669b7",
+      "declared_faces": [
+        {
+          "language": "HANGUL",
+          "id": "99",
+          "face": "딸기",
+          "type": "TTF",
+          "isEmbedded": "0"
+        }
+      ]
+    }
+  ],
+  "scope_audit_producer": {
+    "wasm_sha256": "4a8bfa9288eb195653e62e2e2b81c47cb54c58d9b371d4cd8ea78678982803ff",
+    "head": "8d5ec9013f22500de558df93f8a24dc90cde423c",
+    "basis": "Parser and serializer are unchanged by incoming #9012; this scope audit is not a fresh visual capture."
+  }
 }

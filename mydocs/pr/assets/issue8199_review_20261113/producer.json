@@ -1,12 +1,12 @@
 {
   "source_pr": 9018,
   "source_head": "be67439b02f42779b50361ace7b8a47dd0d1439a",
-  "base": "6217d3cbedc9aba707812e5d4e5ea2a1ed53845a",
-  "review_head": "2baa9606abeba33838c72cf719b355f40ece66a6",
-  "rust_producer_head": "8d5ec9013f22500de558df93f8a24dc90cde423c",
-  "native_sha256": "0c4365a8f66970e002fca36a80fffb664450b0f6b2924e849ee822720276da6a",
+  "base": "fa32a1633b0677f3dc48ea5cc99a4cab309361b6",
+  "review_head": "cc6c60381dfeff9b7892e836b8bf01803d0a5c1a",
+  "rust_producer_head": "cc6c60381dfeff9b7892e836b8bf01803d0a5c1a",
+  "native_sha256": "7913c88c21b9948bd849f2943cd21c1e7e2fb34aa277eb4d14f9776fe31da804",
   "base_native_sha256": "86e3bca885a698a8d1be33b4b0eface1830f0d7b2be9e33da4a5ca4b08a76b16",
-  "wasm_sha256": "4a8bfa9288eb195653e62e2e2b81c47cb54c58d9b371d4cd8ea78678982803ff",
+  "wasm_sha256": "f0153ed0410ba4acb2fb50a3cf030214457d500c66d722db6648381168c7d57d",
   "base_wasm_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
   "wasm_build": "Mac locked wrapper --target web --out-dir pkg --no-opt; local substitute, not Docker optimized",
   "visual_tool_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
@@ -27,9 +27,14 @@
     "missing_after": 0,
     "raw_metric_changed": false
   },
-  "captured_at_kst": "2026-11-13T19:10:40.290823+09:00",
   "python_tests_windows": {
     "passed": 89,
     "failed": 0
-  }
+  },
+  "base_capture_head": "6217d3cbedc9aba707812e5d4e5ea2a1ed53845a",
+  "base_reuse_qualification": "rebase-scope.json and protected-reuse-audit.json; incoming paths inactive for passport inputs, own changes affect edit commands only",
+  "page_captures": "Fresh at code head cc6c60381d, normal font environment",
+  "prior_generated_file_identical": true,
+  "prior_capture_at_kst": "2026-11-13T19:10:40.290823+09:00",
+  "collected_at_kst": "2026-11-13T20:22:07.182874+09:00"
 }

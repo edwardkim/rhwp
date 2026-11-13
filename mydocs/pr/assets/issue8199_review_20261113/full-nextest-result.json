@@ -1,0 +1,11 @@
+{
+  "head": "cc6c60381dfeff9b7892e836b8bf01803d0a5c1a",
+  "base": "fa32a1633b0677f3dc48ea5cc99a4cab309361b6",
+  "runtime_seconds": 410.498,
+  "run": 13446,
+  "passed": 13446,
+  "failed": 0,
+  "skipped": 45,
+  "environment": "sandbox-exec minimal-font.sb",
+  "log_sha256": "acb23e8842da1c42e5ee42afe067531ad7d5411eafbd3afa040f5273fd3ff821"
+}
