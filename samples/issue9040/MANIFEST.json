@@ -1,0 +1,25 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 9040,
+  "title": "나뉜 칸의 빈 문단 뒤 자리차지 중첩 표 띠가 이중 계상되고 표가 칸 위끝에 붙는다",
+  "entries": [
+    {
+      "path": "samples/issue9040/1371000-policy-research-application.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/9040",
+      "originalFilename": "1371000-201200075_D0150010-1-000_정책연구용역과제 신청서.hwp",
+      "bytes": 51712,
+      "sha256": "23793d8619351b9c9eb07b07790329a53865449263385cb766f0b465309eead8",
+      "lastSavedWith": {
+        "product": null,
+        "version": "5.7.6.3019"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/issue9040/1371000-policy-research-application-2020.pdf",
+      "referencePdfSha256": "3743187b2091bf8a90c2166b1a85020fd0b0160051873470d1c164fbfd99ba93",
+      "referencePdfPageCount": 10,
+      "contract": "pi=107 의 5×4 RowBreak 표 4행 둘째 칸은 7~9쪽에 나뉜다. 9쪽 조각은 쪽 되감김 문단 p40 에서 열리고, 빈 줄 p40·p41 뒤에 글자 없는 p42 의 자리차지 조직도 표(23×9), 그 아래 p42 호스트 줄과 빈 줄 p43 이 온다. 조각은 표 띠를 한 번만 담고 조직도는 p41 아래에서 시작한다. 9쪽은 「2. 유사 용역실적」 표의 「창의도시 정책」 행까지, 10쪽은 「Pension Policies」 행부터 담는다. 전체 10쪽으로 한/글 engine 2020 Print 와 같다."
+    }
+  ]
+}
