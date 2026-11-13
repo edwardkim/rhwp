@@ -1,8 +1,8 @@
 # PR #9042 리뷰 — 같은 문단의 제목·본문 표 배치
 
-## 최종 판정: 메인테이너 보정 후 수용 가능
+## 최종 판정
 
-**승인된 로컬 보완과 후보의 필수 검증, 추가된 최신 CLI base의 실제 병합 결과 검증을 완료했다. 기존 차이 예외는 적용하지 않았다. 원격 처리는 승인 대기다.**
+**메인테이너 보정 후 수용 가능.** 승인된 로컬 보완·필수 검증과 최신 base의 실제 병합 검증을 완료했다. [수용 PR #9066](https://github.com/edwardkim/rhwp/pull/9066)의 code head `4cf0b66548`에서 모든 GitHub 검사도 성공했다. 사용자 원격 승인은 받았으며 문서-only trailing head 확인·병합·후속 처리가 남았다. 기존 차이 예외는 없다.
 
 원 기여의 같은 문단에 앵커된 제목·본문 표가 3쪽으로 밀리는 문제를 재현했고 2쪽으로 개선됨을 확인했다. 메인테이너가 Header/Footer 경계, 실제 저장 중첩 표의 여백, 원 합성본의 오래된 저장 줄과 실제 편집·반복 저장까지 보완했다. [상세 보완과 소비 경로](pr_9042_review_impl.md), [최종 전쪽·빌드·검사 원장](assets/pr9042/final-validation/README.md).
 
@@ -12,7 +12,7 @@
 - 원 head `3ae4eeb332c3b0edbb3a8fbe334daf2b0a48115b`, 원 base `180a4ec97205b67c4dc4f90416063c01ecfdf396`. 원 PR의 base ref는 devel이며 API의 오래된 base SHA로 최신 devel을 대체하지 않았다.
 - 검증 제품 `d66d5f05f9efa4d182228494cd970614d479fb7a`, 후보의 통합 기준 devel `959300e66c58241a47e6d46030b4b0854e59604b`. 작업 branch는 `review/pr-9042-coanchored-table-pagination`이다.
 - 원 기여를 적용한 `637410dbfa`와 메인테이너 보정을 분리했다. 원 ref·작성자뿐 아니라 원 SHA 자체도 조상으로 보존했다. 이미 반영한 원 기여를 이력에 연결한 `495787589a` 전후 tree는 같다. [실제 이력 연결 증거](assets/pr9042/final-validation/original-ancestry-preservation.json).
-- fork `puckqook/rhwp`의 repository `push=false`와 PR의 `maintainer_can_modify=true`를 확인했다. 이 두 값만으로 branch별 push 가능 여부를 단정하지 않는다. 최신 devel 이력을 통합한 후보는 upstream 수용 PR로 제출하며 원 fork branch를 보존한다. 현재 원격 mutation은 접수 때 승인받아 지정한 reviewer edwardkim뿐이다.
+- fork `puckqook/rhwp`의 repository `push=false`와 PR의 `maintainer_can_modify=true`를 확인했다. 이 두 값만으로 branch별 push 가능 여부를 단정하지 않는다. 최신 devel 이력을 통합한 후보는 upstream 수용 PR로 제출하며 원 fork branch를 보존한다. 접수 때 reviewer edwardkim을 지정했고, 사용자 승인 뒤 upstream branch push와 Open 수용 PR #9066 생성을 완료했다. 원 fork에는 push하지 않았다.
 - 기본 maintainer_general과 보조 intake_and_review·local_validation·visual_fixture_evidence·post_merge·first_time_contributor를 적용했다. 최초 사전 조회/fetch가 reviewer 지정 전에 실행된 순서 누락도 접수 기록에 보존했다.
 
 ## 조판 원칙·원인과 공통 결과
@@ -68,8 +68,17 @@
 
 원 head CI·CodeQL의 Rust 분석 성공은 접수 근거다. 종합 neutral의 미실행 언어 구성 안내를 오류나 새 취약점으로 판정하지 않았으며 경고 분류·재실행은 하지 않았다. 이 원 CI를 메인테이너 새 후보의 CI 성공으로 재사용하지 않는다.
 
-원격 승인 후 upstream 수용 branch push → devel 대상 Open PR → exact-head 필수 CI 성공·self-review → 원 기여를 보존하는 merge → 원 PR 완료 확인·존댓말 감사 댓글·운영 기록·동기화·종료 정리 순서다. 아직 해당 원격 동작은 실행하지 않았다. 직접 연결된 해결 이슈는 없으므로 관계없는 이슈를 닫지 않는다.
+원격 승인 후 upstream 수용 branch push → devel 대상 Open PR → exact-head 필수 CI 성공·self-review → 원 기여를 보존하는 merge → 원 PR 완료 확인·존댓말 감사 댓글·운영 기록·동기화·종료 정리 순서다. upstream push·Open 수용 PR 생성과 exact code-head CI 확인을 완료했다. [CI 영수증](assets/pr9042/final-validation/pr9066-code-ci.json)과 [self-review](archives/pr_9066_review.md)에 연결한다. 문서-only 최신 head 검사와 실제 병합·후속 처리는 남았다. 직접 연결된 해결 이슈는 없으므로 관계없는 이슈를 닫지 않는다.
 
 ## 원격 처리 승인 뒤 최신 base 추가 확인
 
-사용자가 push·Open 수용 PR·해당 head CI·self-review·merge·후속 처리를 승인했다. devel `9e27947967`의 실제 병합 tree에서 Rust 집중 49건·호스트 글꼴 40건을 통과했고 Native 6쪽이 모두 100.00%다. 원본/BodyX 4쪽 RGB도 이전 직접 판독 출력과 같다. [범위와 실제 증거](assets/pr9042/final-validation/postapproval-base-merge/README.md). 후보 제품·테스트를 재작성하지 않았으며 추가 결과를 전체 또는 fresh WASM 재실행으로 표시하지 않는다. 새 수용 PR의 GitHub CI와 self-review·병합은 아직 실행 전이다.
+사용자가 push·Open 수용 PR·해당 head CI·self-review·merge·후속 처리를 승인했다. devel `9e27947967`의 실제 병합 tree에서 Rust 집중 49건·호스트 글꼴 40건을 통과했고 Native 6쪽이 모두 100.00%다. 원본/BodyX 4쪽 RGB도 이전 직접 판독 출력과 같다. [범위와 실제 증거](assets/pr9042/final-validation/postapproval-base-merge/README.md). 후보 제품·테스트를 재작성하지 않았으며 추가 결과를 전체 또는 fresh WASM 재실행으로 표시하지 않는다. 새 수용 PR의 code-head GitHub CI는 성공했고 self-review를 기록했다. 문서-only 최신 head 검사와 실제 병합은 남았다.
+
+## Merge 후 contributor PR comment 계획
+
+- 대상은 puckqook의 원 PR #9042이며 직접 연결된 해결 issue는 없다. 원 기여 SHA `3ae4eeb332`의 이력 보존과 실제 간접 MERGED 반영을 먼저 확인한다. fork branch는 삭제하지 않는다.
+- 입력은 원 PR의 `float-pagination.hwp`, 기준은 같은 문서의 독립 macOS 한컴 Print PDF다. 두 쪽을 Native/fresh 최적화 WASM 후보 각 1개로 비교했으며 flagged는 각각 0/2, 전쪽 raw는 모두 100.00%다.
+- 같은 페이지의 pixel match / 내용 픽셀 중심 보조값은 Native p1 99.04998% / 27.06845%, p2 99.76168% / 27.02610%; WASM p1 99.06164% / 28.03819%, p2 99.76684% / 28.65477%다. [페이지별 실제 수치](assets/pr9042/final-validation/representative/native/page-metrics.json)와 [WASM 수치](assets/pr9042/final-validation/representative/wasm/page-metrics.json)를 사용한다.
+- 첫 댓글부터 위 입력·p1/p2의 `representative/{native,wasm}/{review,overlay}_00{1,2}.png` 8개를 실제 자산을 포함한 merge SHA에 고정해 표시한다. 게시 전 이미지 응답·바이트 해시, 게시 후 API 본문·실제 화면 표시를 확인한다.
+- 사람의 결론은 제목·본문 표가 첫 쪽에서 순서대로 놓이고 다음 표는 2쪽에 있으며, End of body 하강부·괘선·Body end·후속 내용의 포함/순서를 실제 384 DPI로 확인했다는 것이다. raw·전체 픽셀·내용 잉크 보조값을 구분하고 수치를 사람의 판정 정확도로 설명하지 않는다.
+- 원 기여의 개선을 먼저 인정하고, Header/Footer·실제 저장 중첩 표·오래된 관리 줄·편집/저장 보완의 이유를 존댓말로 설명한다. 실제 수용 PR·CI·merge SHA, devel의 archive 검토 기록과 Visual Sweep 정본을 연결하고 첫 기여 환영과 감사를 남긴다.
