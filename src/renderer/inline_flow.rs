@@ -575,6 +575,10 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
     };
     let mut row = Vec::new();
     let mut row_metrics = RowMetrics::default();
+    // 이 줄 끝에 더 걸 수 있는 부동 앵커 앞 꼬리 공백 수(넘친 첫 공백에서 정한다).
+    let mut float_tail_hang: Option<usize> = None;
+    // 이 줄에서 건 꼬리 공백이 시작하는 줄 안 위치.
+    let mut float_tail_hung_from: Option<usize> = None;
     for atom in atoms {
         match atom {
             Atom::Float(exclusion) => {
@@ -587,6 +591,7 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
                     style,
                     frame.dpi,
                     RowEnding::Forced(&chars),
+                    float_tail_hung_from,
                     storage,
                 )?
                 else {
@@ -607,6 +612,7 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
                     style,
                     frame.dpi,
                     RowEnding::Forced(&chars),
+                    float_tail_hung_from,
                     storage,
                 )?
                 else {
@@ -631,6 +637,65 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
                 let row_horizontal =
                     paragraph_row_horizontal(&horizontal, style, result.boxes.is_empty());
                 let row_width = row_horizontal.end - row_horizontal.start;
+                if row.is_empty() {
+                    float_tail_hang = None;
+                    float_tail_hung_from = None;
+                }
+                // 부동 앵커만 뒤에 남은 꼬리 공백은 일반 글줄의 공백 걸기를 따른다(#7168·#8639).
+                // 넘친 첫 공백을 줄 끝에 걸고, 바로 앞이 글자나 글자처럼 개체면 하나 더 건다.
+                // 나머지는 다음 줄로 넘긴다. 한/글은 이 공백 글자 크기로 다음 줄 높이를 정한다.
+                if let InlineFlowContent::Text { range, .. } = &item.content {
+                    if spaces.float_tail.contains(&range.start)
+                        && row_metrics.width + item.width > row_width + 0.01
+                        && separator_spaces::has_flow_content(&row, &chars)
+                    {
+                        let left = *float_tail_hang.get_or_insert_with(|| {
+                            let after_object = matches!(
+                                row.last().map(|last| &last.content),
+                                Some(
+                                    InlineFlowContent::Table { .. }
+                                        | InlineFlowContent::Picture { .. }
+                                )
+                            );
+                            let after_char = range
+                                .start
+                                .checked_sub(1)
+                                .is_some_and(|previous| !chars[previous].is_whitespace());
+                            if after_object || after_char {
+                                2
+                            } else {
+                                1
+                            }
+                        });
+                        if left > 0 {
+                            float_tail_hung_from.get_or_insert(row.len());
+                            item.width = 0.0;
+                            row_metrics = row_metrics.with(&item);
+                            storage.push(&mut row, item)?;
+                            float_tail_hang = Some(left - 1);
+                            if left == 1 {
+                                let Some(()) = finish_row_with_storage(
+                                    &mut result,
+                                    &mut row,
+                                    &horizontal,
+                                    &exclusions,
+                                    style,
+                                    frame.dpi,
+                                    RowEnding::Soft(&chars),
+                                    float_tail_hung_from,
+                                    storage,
+                                )?
+                                else {
+                                    return Ok(None);
+                                };
+                                row_metrics = RowMetrics::default();
+                                float_tail_hang = None;
+                                float_tail_hung_from = None;
+                            }
+                            continue;
+                        }
+                    }
+                }
                 // 개체 앞 작성 공백 그룹의 첫 공백만 우단 밖으로 전진한다.
                 // 그룹의 후속 공백이 처음 넘쳤다는 이유로 hanging하지 않는다.
                 let object_separator = matches!(&item.content, InlineFlowContent::Text { range, .. }
@@ -698,6 +763,7 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
                             style,
                             frame.dpi,
                             RowEnding::Soft(&chars),
+                            float_tail_hung_from,
                             storage,
                         )?
                         else {
@@ -767,6 +833,7 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
                         style,
                         frame.dpi,
                         RowEnding::Soft(&chars),
+                        float_tail_hung_from,
                         storage,
                     )?
                     else {
@@ -787,6 +854,7 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
         style,
         frame.dpi,
         RowEnding::ParagraphEnd(&chars),
+        float_tail_hung_from,
         storage,
     )?
     else {
@@ -803,6 +871,10 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
     Ok((result.start.is_finite() && result.end.is_finite()).then_some(result))
 }
 
+/// `hung_from`: 줄 끝에 건 부동 앵커 앞 꼬리 공백이 시작하는 줄 안 위치. 건 공백은 줄간격
+/// 글자 크기를 키울 수만 있고 줄이지는 않는다. 웹한글기안기 인쇄 실측(`samples/tac_space_tail`):
+/// 16pt 런의 글자처럼 표 줄에 13pt 공백을 걸어도 줄간격은 16pt, 20pt 공백을 걸면 20pt 다.
+#[allow(clippy::too_many_arguments)]
 fn finish_row_with_storage<S: crate::storage::Storage>(
     plan: &mut InlineFlowPlan,
     row: &mut Vec<InlineFlowBox>,
@@ -811,6 +883,7 @@ fn finish_row_with_storage<S: crate::storage::Storage>(
     style: &ResolvedParaStyle,
     dpi: f64,
     ending: RowEnding<'_>,
+    hung_from: Option<usize>,
     storage: &S,
 ) -> Result<Option<()>, S::Error> {
     if row.is_empty() {
@@ -872,21 +945,27 @@ fn finish_row_with_storage<S: crate::storage::Storage>(
     let has_table = row
         .iter()
         .any(|b| matches!(b.content, InlineFlowContent::Table { .. }));
-    let row_font_size = row
+    let spacing_font = |item: &InlineFlowBox| {
+        matches!(
+            item.content,
+            InlineFlowContent::Text { .. }
+                | InlineFlowContent::Picture {
+                    affect_line_spacing: true,
+                    ..
+                }
+        )
+        .then_some(item.height)
+    };
+    let hung_from = hung_from.unwrap_or(row.len()).min(row.len());
+    let row_font_size = row[..hung_from]
         .iter()
-        .filter(|item| {
-            matches!(
-                item.content,
-                InlineFlowContent::Text { .. }
-                    | InlineFlowContent::Picture {
-                        affect_line_spacing: true,
-                        ..
-                    }
-            )
-        })
-        .map(|item| item.height)
+        .filter_map(spacing_font)
         .reduce(f64::max)
         .unwrap_or(plan.fallback_font_size);
+    let row_font_size = row[hung_from..]
+        .iter()
+        .filter_map(spacing_font)
+        .fold(row_font_size, f64::max);
     let first_box = plan.boxes.len();
     let row_x = x;
     for (index, mut item) in row.drain(..).enumerate() {
