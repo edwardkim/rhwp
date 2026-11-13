@@ -1,0 +1,15 @@
+--- a/src/renderer/float_placement.rs
++++ b/src/renderer/float_placement.rs
+@@ -2491,7 +2491,11 @@
+                 inline_band = Some(inline_band.map_or(band, |previous: i64| previous.max(band)));
+             }
+             Control::Table(_) => float_count += 1,
+-            Control::SectionDef(_) | Control::ColumnDef(_) | Control::PageNumberPos(_) => {}
++            Control::SectionDef(_)
++            | Control::ColumnDef(_)
++            | Control::PageNumberPos(_)
++            | Control::Header(_)
++            | Control::Footer(_) => {}
+             _ => return false,
+         }
+     }
