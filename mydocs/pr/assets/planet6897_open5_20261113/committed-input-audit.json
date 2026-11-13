@@ -1,0 +1,87 @@
+[
+  {
+    "issue": "8960",
+    "path": "samples/issue8960/36439173-empty-tac-line-baseline.hwpx",
+    "bytes": 13565,
+    "sha256": "23c994d726238de000fc06cfec794142cbe1710472b837bc25034b282f6676e8",
+    "blob": "b68c355e48ddfacf97846404398d81e2ca4954f4",
+    "at_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3"
+  },
+  {
+    "issue": "8960",
+    "path": "pdf/issue8960/36439173-empty-tac-line-baseline-2020.pdf",
+    "bytes": 105116,
+    "sha256": "ebbb58a6454508fc9bb4bc55b305bdaf1aa0fdd9d8783cf590275e7ccaa7fa94",
+    "blob": "f06523a42cb01db58f031ab5dedf2365522b66bd",
+    "at_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+    "metadata": "Author:          planet\nCreator:         Hwp 2022 12.0.0.4547\nProducer:        Hancom PDF 1.3.0.547\nCreationDate:    Sun Nov  1 22:51:42 2026 KST\nModDate:         Sun Nov  1 22:51:42 2026 KST\nCustom Metadata: yes\nMetadata Stream: yes\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           2\nEncrypted:       no\nPage size:       595 x 841 pts (A4)\nPage rot:        0\nFile size:       105116 bytes\nOptimized:       no\nPDF version:     1.4\n"
+  },
+  {
+    "issue": "9027",
+    "path": "samples/issue9027/1312000-201400081_2015_senior_policy_course.hwp",
+    "bytes": 69632,
+    "sha256": "93d3c39fec006a1a27deff66c5ce7c71bbc361b040c12583c83395dcf7ad120f",
+    "blob": "68b24a2663f2054528c7fe7b929580bf4292a58c",
+    "at_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3"
+  },
+  {
+    "issue": "9027",
+    "path": "pdf/issue9027/1312000-201400081_2015_senior_policy_course-hwp-2020.pdf",
+    "bytes": 187701,
+    "sha256": "29c3e37689d5f2769f6db9824afe97c680197b53355c74160f12fa3d315ceafc",
+    "blob": "ae50e5ea8e96fffde643634615239d714d69867a",
+    "at_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+    "metadata": "Author:          planet\nCreator:         Hwp 2022 12.0.0.4547\nProducer:        Hancom PDF 1.3.0.547\nCreationDate:    Sun Nov  1 20:37:50 2026 KST\nModDate:         Sun Nov  1 20:37:50 2026 KST\nCustom Metadata: yes\nMetadata Stream: yes\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           2\nEncrypted:       no\nPage size:       595 x 841 pts (A4)\nPage rot:        0\nFile size:       187701 bytes\nOptimized:       no\nPDF version:     1.4\n"
+  },
+  {
+    "issue": "9029",
+    "path": "samples/issue9029/seal_registration_docinfo_tail.hwp",
+    "bytes": 254976,
+    "sha256": "36fb81b86cc8240b2f4f332934b53ee9b560940ad8fcba201336f6a4e5f29a71",
+    "blob": "5b01f26fed928dddc1009c613bcc186faec622b5",
+    "at_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3"
+  },
+  {
+    "issue": "9029",
+    "path": "pdf/issue9029/seal_registration_docinfo_tail-print-2022.pdf",
+    "bytes": 138883,
+    "sha256": "59dc43ac37507bff738b16d775ce7f8bc9c3bf32c2f83c92a2923bb129735244",
+    "blob": "03181d6febb1a4211af34ddbd08073ef47b806c4",
+    "at_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+    "metadata": "Author:          planet\nCreator:         Hwp 2022 12.0.0.4547\nProducer:        Hancom PDF 1.3.0.547\nCreationDate:    Thu Nov 12 07:02:27 2026 KST\nModDate:         Thu Nov 12 07:02:27 2026 KST\nCustom Metadata: yes\nMetadata Stream: yes\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           1\nEncrypted:       no\nPage size:       595 x 841 pts (A4)\nPage rot:        0\nFile size:       138883 bytes\nOptimized:       no\nPDF version:     1.4\n"
+  },
+  {
+    "issue": "9032",
+    "path": "samples/issue9032/tax_relief_form_date_code.hwp",
+    "bytes": 31716,
+    "sha256": "7c24931d2889c35b23531fe15e465d9181321d68ce84e110417ef187a505bdb2",
+    "blob": "cd4a2973a61dec30f337d1118dfecbf34363755f",
+    "at_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3"
+  },
+  {
+    "issue": "9032",
+    "path": "pdf/issue9032/tax_relief_form_date_code-print-2022.pdf",
+    "bytes": 162409,
+    "sha256": "b338f7e5a0b0df65b65d509ee743fe9ded3a2ae2ade681302c65e2f7f03241ff",
+    "blob": "dbcc0bdecf086f7075a8a6d46b3ff73ebcd47c18",
+    "at_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+    "metadata": "Author:          planet\nCreator:         Hwp 2022 12.0.0.4547\nProducer:        Hancom PDF 1.3.0.547\nCreationDate:    Thu Nov 12 07:02:34 2026 KST\nModDate:         Thu Nov 12 07:02:34 2026 KST\nCustom Metadata: yes\nMetadata Stream: yes\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           4\nEncrypted:       no\nPage size:       595 x 841 pts (A4)\nPage rot:        0\nFile size:       162409 bytes\nOptimized:       no\nPDF version:     1.4\n"
+  },
+  {
+    "issue": "9035",
+    "path": "samples/issue9035/field_practice_confirmation_signature.hwp",
+    "bytes": 15360,
+    "sha256": "fd66b8b7f4976f6633cdb4cec3d7b3876271a74882951d02dc7cbebd41f060d8",
+    "blob": "7983418a7dcbbb92364b5874ef76f8b6c655ed22",
+    "at_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3"
+  },
+  {
+    "issue": "9035",
+    "path": "pdf/issue9035/field_practice_confirmation_signature-print-2022.pdf",
+    "bytes": 36726,
+    "sha256": "09bd4b14ec6ff032d7c6cd8c5ba310349c07b24e40823e9f4fc7a0c43eb89e63",
+    "blob": "d95398738726ae3d129815a2fe01ed25658a2268",
+    "at_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+    "metadata": "Author:          planet\nCreator:         Hwp 2022 12.0.0.4547\nProducer:        Hancom PDF 1.3.0.547\nCreationDate:    Thu Nov 12 07:15:05 2026 KST\nModDate:         Thu Nov 12 07:15:05 2026 KST\nCustom Metadata: yes\nMetadata Stream: yes\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           1\nEncrypted:       no\nPage size:       595 x 841 pts (A4)\nPage rot:        0\nFile size:       36726 bytes\nOptimized:       no\nPDF version:     1.4\n"
+  }
+]

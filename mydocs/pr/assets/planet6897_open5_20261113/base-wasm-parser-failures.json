@@ -1,0 +1,129 @@
+{
+  "kind": "actual base WASM loading original bytes directly, without a Native preflight substituting for the parser result",
+  "passed_negative_contracts": 2,
+  "results": [
+    {
+      "pr": 9030,
+      "source": "samples/issue9029/seal_registration_docinfo_tail.hwp",
+      "source_sha256": "36fb81b86cc8240b2f4f332934b53ee9b560940ad8fcba201336f6a4e5f29a71",
+      "fixed_base": "1003349996897c6ff097271e7296ae4d1a3d807f",
+      "command": [
+        "node",
+        "--import",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/observe-initial-responses.mjs",
+        "<repo>/scripts/export-wasm-png-for-sweep.mjs",
+        "--pkg",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/base-pkg",
+        "--input",
+        "<repo>/samples/issue9029/seal_registration_docinfo_tail.hwp",
+        "--out",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/base-parser-direct/pr9030",
+        "--fonts",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/visual/candidate/wasm/claims/pr9030/pr9030/silhouette-parts/p0001-0001/font-catalog.json",
+        "--options",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/visual/candidate/wasm/claims/pr9030/pr9030/silhouette-parts/p0001-0001/canvas-options.json"
+      ],
+      "exit": 1,
+      "classification": "expected_actual_fixed_base_wasm_parser_failure",
+      "error_markers": [
+        "DocInfo",
+        "tag=0"
+      ],
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/logs/base-parser-direct-pr9030.log",
+      "log_sha256": "eca07929b8178b87e0a0d72f4ded49c02263004b5f640220eb239cfd2aafd201",
+      "initialization": {
+        "kind": "actual initializer HTTP responses observed before module import",
+        "observer_network_buffer_mib": 128,
+        "extra_fetch": false,
+        "draw_code_changed": false,
+        "expected": {
+          "/rhwp.js": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+          "/rhwp_bg.wasm": "c85fab1a5bbe8abaae98609009c86f169baac2d6b6aa697b65ec4614e1910551"
+        },
+        "records": [
+          {
+            "url": "http://127.0.0.1:60157/rhwp.js",
+            "pathname": "/rhwp.js",
+            "status": 200,
+            "fromServiceWorker": false,
+            "at": "2026-11-13T08:22:53.571Z",
+            "bytes": 583724,
+            "sha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094"
+          },
+          {
+            "url": "http://127.0.0.1:60157/rhwp_bg.wasm",
+            "pathname": "/rhwp_bg.wasm",
+            "status": 200,
+            "fromServiceWorker": false,
+            "at": "2026-11-13T08:22:53.599Z",
+            "bytes": 31836675,
+            "sha256": "c85fab1a5bbe8abaae98609009c86f169baac2d6b6aa697b65ec4614e1910551"
+          }
+        ],
+        "valid": true
+      },
+      "numeric_before_score": null
+    },
+    {
+      "pr": 9034,
+      "source": "samples/issue9032/tax_relief_form_date_code.hwp",
+      "source_sha256": "7c24931d2889c35b23531fe15e465d9181321d68ce84e110417ef187a505bdb2",
+      "fixed_base": "1003349996897c6ff097271e7296ae4d1a3d807f",
+      "command": [
+        "node",
+        "--import",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/observe-initial-responses.mjs",
+        "<repo>/scripts/export-wasm-png-for-sweep.mjs",
+        "--pkg",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/base-pkg",
+        "--input",
+        "<repo>/samples/issue9032/tax_relief_form_date_code.hwp",
+        "--out",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/base-parser-direct/pr9034",
+        "--fonts",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/visual/candidate/wasm/claims/pr9034/pr9034/silhouette-parts/p0001-0001/font-catalog.json",
+        "--options",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/visual/candidate/wasm/claims/pr9034/pr9034/silhouette-parts/p0001-0001/canvas-options.json"
+      ],
+      "exit": 1,
+      "classification": "expected_actual_fixed_base_wasm_parser_failure",
+      "error_markers": [
+        "failed to fill whole buffer"
+      ],
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/logs/base-parser-direct-pr9034.log",
+      "log_sha256": "aa66b473346af1d1804909d851a796c3b8775df90342b141b46f2688b4c38b46",
+      "initialization": {
+        "kind": "actual initializer HTTP responses observed before module import",
+        "observer_network_buffer_mib": 128,
+        "extra_fetch": false,
+        "draw_code_changed": false,
+        "expected": {
+          "/rhwp.js": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+          "/rhwp_bg.wasm": "c85fab1a5bbe8abaae98609009c86f169baac2d6b6aa697b65ec4614e1910551"
+        },
+        "records": [
+          {
+            "url": "http://127.0.0.1:60174/rhwp.js",
+            "pathname": "/rhwp.js",
+            "status": 200,
+            "fromServiceWorker": false,
+            "at": "2026-11-13T08:22:54.891Z",
+            "bytes": 583724,
+            "sha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094"
+          },
+          {
+            "url": "http://127.0.0.1:60174/rhwp_bg.wasm",
+            "pathname": "/rhwp_bg.wasm",
+            "status": 200,
+            "fromServiceWorker": false,
+            "at": "2026-11-13T08:22:54.924Z",
+            "bytes": 31836675,
+            "sha256": "c85fab1a5bbe8abaae98609009c86f169baac2d6b6aa697b65ec4614e1910551"
+          }
+        ],
+        "valid": true
+      },
+      "numeric_before_score": null
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "minimal-font-qualification.json": {
+    "normal_faces": 1875,
+    "isolated_faces": 528,
+    "isolated_non_os": [],
+    "profile_source": "mydocs/pr/assets/issue8856/final-20261110/minimal-font.sb"
+  },
+  "minimal-font-file-access.json": [
+    {
+      "path": "<home>/Library/Fonts/ENJGT.otf",
+      "readable": false,
+      "expected": false
+    },
+    {
+      "path": "/Library/Fonts/Arial Unicode.ttf",
+      "readable": false,
+      "expected": false
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Arial.ttf",
+      "readable": true,
+      "expected": true
+    },
+    {
+      "path": "<repo>/ttfs/opensource/RHWPPublicBatang-Regular.ttf",
+      "readable": true,
+      "expected": true
+    }
+  ],
+  "scope": "Rust regression isolation only. Visual Sweep and actual Studio captures use the normal font environment."
+}

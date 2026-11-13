@@ -9940,6 +9940,33 @@ impl LayoutEngine {
                                             .flatten()
                                     })
                                     .or_else(|| para.line_segs.last());
+                                // 같은 문단의 자리차지 개체가 문단 시작을 차지해 첫 저장 줄을
+                                // 아래로 밀었다면(`pushed_line_origin` 과 같은 판정) 표 줄의
+                                // 저장 위치를 칸 글 시작에서 직접 잰다. 이때 문단 원점
+                                // (`para_y_before_compose`)은 첫 문단이면 밀린 첫 줄, 뒤
+                                // 문단이면 앞 문단 끝(밀리기 전 문단 시작)이라 어느 쪽도
+                                // 첫 줄 기준 상대값의 바탕이 되지 못한다 — 뒤 문단에서는 표가
+                                // 개체와 같은 y 에 겹쳤다(18083483 서명란 두 줄).
+                                let float_pushed_table_line = (fragment_cut_units.is_none()
+                                    && !self.profile.get().session_edited()
+                                    && (self.profile.get().hwp5_stored_pagination_layout()
+                                        || self.profile.get().hwpx_stored_layout())
+                                    && para.controls.iter().any(|control| {
+                                        let common = match control {
+                                            Control::Table(t) => &t.common,
+                                            Control::Picture(p) => &p.common,
+                                            Control::Shape(shape) => shape.common(),
+                                            _ => return false,
+                                        };
+                                        crate::renderer::float_placement::stored_cell_picture_pushed_line_origin_hu(
+                                            &cell.paragraphs,
+                                            cp_idx,
+                                            common,
+                                        )
+                                        .is_some()
+                                    }))
+                                .then(|| table_seg.map(|seg| seg.vertical_pos))
+                                .flatten();
                                 let table_anchor_y = if own_line.is_some()
                                     || (has_preceding_text && para.line_segs.len() > 1)
                                 {
@@ -9952,6 +9979,10 @@ impl LayoutEngine {
                                 } else {
                                     para_y_before_compose
                                 };
+                                let table_anchor_y = float_pushed_table_line
+                                    .map_or(table_anchor_y, |vpos| {
+                                        text_y_start + hwpunit_to_px(vpos, self.dpi)
+                                    });
                                 // 빈 TAC 호스트도 실제 줄 상자를 갖는다. 문단 위 간격을
                                 // 적용하기 전 커서로 표 원점을 다시 추측하지 않고,
                                 // 같은 저장 줄의 실제 배치 결과를 소비한다.
