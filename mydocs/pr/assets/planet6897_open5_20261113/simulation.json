@@ -1,0 +1,229 @@
+{
+  "base": "1003349996897c6ff097271e7296ae4d1a3d807f",
+  "individual": [
+    {
+      "exit": 1,
+      "tree": "a1baaa9a22f779499b3b7d80e4e4a46c686d8399",
+      "conflicts": [
+        "CONFLICT (content): Merge conflict in src/renderer/float_placement.rs",
+        "CONFLICT (content): Merge conflict in src/renderer/layout/table_layout.rs",
+        "CONFLICT (content): Merge conflict in src/renderer/typeset/controls/paragraph_flow.rs",
+        "CONFLICT (content): Merge conflict in src/renderer/typeset/section.rs",
+        "CONFLICT (content): Merge conflict in src/renderer/typeset/section/controls.rs",
+        "CONFLICT (content): Merge conflict in tests/fixtures/body_overflow_baseline.tsv",
+        "CONFLICT (content): Merge conflict in tests/fixtures/off_canvas_baseline.tsv",
+        "CONFLICT (content): Merge conflict in tests/security_corpus_regression.rs"
+      ],
+      "log": "simulation/base-pr8937.log",
+      "pr": 8937,
+      "head": "3778d8e8b55475dd4b26bbb0fc559f84b201d2fa"
+    },
+    {
+      "exit": 0,
+      "tree": "fa0f176007d1684912a21339061143a551f55590",
+      "conflicts": [],
+      "log": "simulation/base-pr8972.log",
+      "pr": 8972,
+      "head": "9149db3e0c71c565f30779914bf58dad95c90f30"
+    },
+    {
+      "exit": 1,
+      "tree": "3be498d758f89d6783620738b895eb25ec0348c9",
+      "conflicts": [
+        "CONFLICT (content): Merge conflict in tests/security_corpus_regression.rs"
+      ],
+      "log": "simulation/base-pr8976.log",
+      "pr": 8976,
+      "head": "72d4db63fbeb5e0c1fe047df48c5d2dc5ce1f903"
+    },
+    {
+      "exit": 0,
+      "tree": "2ab450925da6d88333c3e678a1acd6237fb3e0af",
+      "conflicts": [],
+      "log": "simulation/base-pr9030.log",
+      "pr": 9030,
+      "head": "829245078e6f1191e79fed3e4239a2a5996319ac"
+    },
+    {
+      "exit": 0,
+      "tree": "a221d2aaa6dc1c9d411a353c382e188f66ae173f",
+      "conflicts": [],
+      "log": "simulation/base-pr9034.log",
+      "pr": 9034,
+      "head": "79ba431b70a2625f644918f7a6dbcfe7e9d9298c"
+    },
+    {
+      "exit": 0,
+      "tree": "c56767175aee867191fac949108a152300580e3a",
+      "conflicts": [],
+      "log": "simulation/base-pr9036.log",
+      "pr": 9036,
+      "head": "8716bcb3a4b26862e9b724c7e3f851a2669954d3"
+    },
+    {
+      "exit": 0,
+      "tree": "590f0d415276e63738a5ff5a1319cb79b2c765b0",
+      "conflicts": [],
+      "log": "simulation/base-pr9041.log",
+      "pr": 9041,
+      "head": "3bfcd54a2a6767b1d29962ae1845b9d8868d2abc"
+    }
+  ],
+  "pairwise": [
+    {
+      "exit": 0,
+      "tree": "3f459f5a8d72e4252827e0e8d775c9e29514cd30",
+      "conflicts": [],
+      "log": "simulation/pr8972-pr9030.log",
+      "prs": [
+        8972,
+        9030
+      ]
+    },
+    {
+      "exit": 0,
+      "tree": "49023f4fbaf952944e1dd754c2838ccb16952972",
+      "conflicts": [],
+      "log": "simulation/pr8972-pr9034.log",
+      "prs": [
+        8972,
+        9034
+      ]
+    },
+    {
+      "exit": 0,
+      "tree": "2a6d5e5368d774ede96be69dd7228b28e114b80b",
+      "conflicts": [],
+      "log": "simulation/pr8972-pr9036.log",
+      "prs": [
+        8972,
+        9036
+      ]
+    },
+    {
+      "exit": 0,
+      "tree": "169c3293163d943c1974d818ff1907a2b4d3ca98",
+      "conflicts": [],
+      "log": "simulation/pr8972-pr9041.log",
+      "prs": [
+        8972,
+        9041
+      ]
+    },
+    {
+      "exit": 0,
+      "tree": "372509bfd9f0c56f9b80645c100ab9ea4570a2df",
+      "conflicts": [],
+      "log": "simulation/pr9030-pr9034.log",
+      "prs": [
+        9030,
+        9034
+      ]
+    },
+    {
+      "exit": 0,
+      "tree": "66670d61eef5e01a48c75acd3ed7e55f91b1097d",
+      "conflicts": [],
+      "log": "simulation/pr9030-pr9036.log",
+      "prs": [
+        9030,
+        9036
+      ]
+    },
+    {
+      "exit": 0,
+      "tree": "3e187910afdd8028a68fe2be307aa19be94a6aa6",
+      "conflicts": [],
+      "log": "simulation/pr9030-pr9041.log",
+      "prs": [
+        9030,
+        9041
+      ]
+    },
+    {
+      "exit": 0,
+      "tree": "ad6647922dabbaad2ab725a8536ef7f6d1aff3f4",
+      "conflicts": [],
+      "log": "simulation/pr9034-pr9036.log",
+      "prs": [
+        9034,
+        9036
+      ]
+    },
+    {
+      "exit": 0,
+      "tree": "32ad99267cde90ec0864e4efdffbf47b2f73c890",
+      "conflicts": [],
+      "log": "simulation/pr9034-pr9041.log",
+      "prs": [
+        9034,
+        9041
+      ]
+    },
+    {
+      "exit": 0,
+      "tree": "63e3f7fd804a26cd2e353ca977c15bb64eabe97e",
+      "conflicts": [],
+      "log": "simulation/pr9036-pr9041.log",
+      "prs": [
+        9036,
+        9041
+      ]
+    }
+  ],
+  "cumulative": [
+    {
+      "exit": 0,
+      "tree": "fa0f176007d1684912a21339061143a551f55590",
+      "conflicts": [],
+      "log": "simulation/cumulative-pr8972.log",
+      "pr": 8972,
+      "previous": "1003349996897c6ff097271e7296ae4d1a3d807f",
+      "simulation_commit": "2b72f4c1ee4703f4d8ab916dc270804a10beed30"
+    },
+    {
+      "exit": 0,
+      "tree": "3380313b8b811873c8cace8a6275d6eba7360e71",
+      "conflicts": [],
+      "log": "simulation/cumulative-pr9030.log",
+      "pr": 9030,
+      "previous": "2b72f4c1ee4703f4d8ab916dc270804a10beed30",
+      "simulation_commit": "43550eb2a77ba4aa36f5c44924c0fe99b2ae5066"
+    },
+    {
+      "exit": 0,
+      "tree": "844069e243a298d484bb946231c181f3f7fb0bbd",
+      "conflicts": [],
+      "log": "simulation/cumulative-pr9034.log",
+      "pr": 9034,
+      "previous": "43550eb2a77ba4aa36f5c44924c0fe99b2ae5066",
+      "simulation_commit": "5fab1f68a7fa5adc3a2b220c3ea8ab4bf87ccc17"
+    },
+    {
+      "exit": 0,
+      "tree": "3ec5a29d323b93409db0ef639b85d50154285f50",
+      "conflicts": [],
+      "log": "simulation/cumulative-pr9036.log",
+      "pr": 9036,
+      "previous": "5fab1f68a7fa5adc3a2b220c3ea8ab4bf87ccc17",
+      "simulation_commit": "3f1aa5e6bc6c62f6070132856ad0258211c97c6b"
+    },
+    {
+      "exit": 0,
+      "tree": "0ee6c365fd391db1a14f33d28a70d3ce2defa576",
+      "conflicts": [],
+      "log": "simulation/cumulative-pr9041.log",
+      "pr": 9041,
+      "previous": "3f1aa5e6bc6c62f6070132856ad0258211c97c6b",
+      "simulation_commit": "2ca9bcd901538e239258cfbfe579ca3267fcb349"
+    }
+  ],
+  "created": "2026-11-13T14:49:29.779051",
+  "selected": [
+    8972,
+    9030,
+    9034,
+    9036,
+    9041
+  ]
+}

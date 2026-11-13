@@ -252,6 +252,63 @@ fn stored_empty_full_band_tac_table_top(
         .then(|| col_area.y + stored_y + hwpunit_to_px(table.outer_margin_top as i32, dpi))
 }
 
+/// 글자 없는 host 의 저장 줄 하나에 TAC 표 하나만 있고, 그 줄의 글자 높이가 표 띠
+/// (`표 높이 + 위·아래 바깥 여백`)보다 큰 경우 표 아래끝을 그 줄의 기준선에 둔다.
+///
+/// 줄 높이는 글자와 개체 중 큰 쪽이 정하고 개체 아래끝은 기준선에 놓인다. 개체가 줄을
+/// 정한 줄은 한컴이 `text_height`를 표 띠로 저장하므로(같은 쪽의 결재 표 lh=th=7432)
+/// 이 조건에 들지 않는다. 문단 글자 크기가 표보다 큰 빈 문단(36439173: 13pt 빈 줄의
+/// 482HU 구분선 표, lh=th=1300·bl=1105)은 표 위끝이 `bl - 띠`만큼 내려가고 줄은 저장
+/// `line_height` 를 끝까지 점유한다. 반환값은 (줄 맨 위→표 띠 위끝, 줄 높이) px.
+/// `measured_height_px` 를 주면 실측 표 높이가 선언 높이와 같을 때만 저장 줄을 믿는다.
+fn text_dominant_empty_tac_line(
+    para: &Paragraph,
+    control_index: usize,
+    table: &crate::model::table::Table,
+    measured_height_px: Option<f64>,
+    dpi: f64,
+) -> Option<(f64, f64)> {
+    if para_has_non_whitespace_text(para)
+        || !table.common.treat_as_char
+        || table.caption.is_some()
+        || para.stored_text_partition_is_dirty()
+        || para.cell_format_vpos_dirty
+        || para.line_segs.len() != 1
+        || table.common.height >= 0x8000_0000
+    {
+        return None;
+    }
+    let tac_tables = para
+        .controls
+        .iter()
+        .filter(|control| matches!(control, Control::Table(t) if t.common.treat_as_char))
+        .count();
+    if tac_tables != 1 || !matches!(para.controls.get(control_index), Some(Control::Table(_))) {
+        return None;
+    }
+    let seg = para.line_segs.first()?;
+    if seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0 {
+        return None;
+    }
+    let band_hu = i64::from(table.common.height)
+        + i64::from(table.outer_margin_top)
+        + i64::from(table.outer_margin_bottom);
+    let declared_px = hwpunit_to_px(table.common.height as i32, dpi);
+    if band_hu <= 0
+        || i64::from(seg.text_height) <= band_hu
+        || i64::from(seg.baseline_distance) < band_hu
+        || seg.line_height < seg.text_height
+        || measured_height_px.is_some_and(|measured| (measured - declared_px).abs() > 0.5)
+    {
+        return None;
+    }
+    let lead_hu = i64::from(seg.baseline_distance) - band_hu;
+    Some((
+        hwpunit_to_px(lead_hu as i32, dpi),
+        hwpunit_to_px(seg.line_height, dpi),
+    ))
+}
+
 /// [#8507] 글자 없는 host 의 개체 줄을 rhwp 가 재조판했을 때, 표가 첫 줄이 아닌 자기 줄에
 /// 놓인 만큼의 세로 오프셋. 줄 재조판은 필드 시작 뒤 줄 폭에 들지 않는 표를 다음 줄로
 /// 넘기고(한/글 2020 합성 field_over19: 빈 필드 줄 1600HU 아래), 저장본이라면
@@ -14122,6 +14179,22 @@ impl LayoutEngine {
                     } else {
                         None
                     };
+                let text_dominant_tac_line = (is_tac
+                    && inline_pos.is_none()
+                    && flow_placement.is_none()
+                    && !self.profile.get().session_edited()
+                    && (self.profile.get().hwp5_stored_pagination_layout()
+                        || self.profile.get().hwpx_stored_layout()))
+                .then(|| {
+                    text_dominant_empty_tac_line(
+                        para,
+                        control_index,
+                        t,
+                        mt.map(|measured| measured.total_height),
+                        self.dpi,
+                    )
+                })
+                .flatten();
                 let table_y_start = if is_tac && inline_pos.is_none() && flow_placement.is_none() {
                     // 확정된 줄 원점에는 그 줄까지의 오프셋이 이미 포함되어 있다.
                     stored_empty_full_band_tac_table_top(para, control_index, t, col_area, self.dpi)
@@ -14129,6 +14202,7 @@ impl LayoutEngine {
                             composed_empty_host_tac_line_offset(para, control_index, self.dpi)
                                 .map(|offset| table_y_start + offset)
                         })
+                        .or_else(|| text_dominant_tac_line.map(|(lead, _)| table_y_start + lead))
                         .unwrap_or(table_y_start)
                 } else {
                     table_y_start
@@ -14716,6 +14790,26 @@ impl LayoutEngine {
                                     y_offset = anchor_line_end;
                                 }
                             }
+                        } else if let Some((_, line_height)) = (inline_pos.is_none()
+                            && flow_placement.is_none()
+                            && !self.profile.get().session_edited()
+                            && (self.profile.get().hwp5_stored_pagination_layout()
+                                || self.profile.get().hwpx_stored_layout()))
+                        .then(|| {
+                            text_dominant_empty_tac_line(para, control_index, t, None, self.dpi)
+                        })
+                        .flatten()
+                        .filter(|(lead, _)| {
+                            (table_y_end
+                                - tac_table_y_before
+                                - lead
+                                - hwpunit_to_px(t.common.height as i32, self.dpi))
+                            .abs()
+                                <= 0.5
+                        }) {
+                            // 글자 높이가 정한 줄은 표 아래끝이 아니라 저장 줄 끝까지 점유한다.
+                            // 줄간격은 뒤의 TAC 줄 처리가 한 번 더한다.
+                            y_offset = tac_table_y_before + line_height;
                         } else {
                             let clamped = line_end.min(table_y_end);
                             let max_correction =
@@ -14967,6 +15061,14 @@ impl LayoutEngine {
                     let wrap_text_bottom = table_y_before + wrap_bottom;
                     if wrap_text_bottom > y_offset {
                         y_offset = wrap_text_bottom;
+                        // 띠 문단의 저장 줄 끝은 마지막 줄간격과 문단 경계 간격까지 지난
+                        // 다음 흐름 원점이다. host 의 뒤 간격·끝 줄간격을 다시 더하지 않는다.
+                        let mut consumed = self.paragraph_spacing_consumed.borrow_mut();
+                        let entry = consumed
+                            .entry((page_content.section_index, para_index))
+                            .or_default();
+                        entry.1 = true;
+                        entry.2 = true;
                     }
                 }
             }
@@ -17365,9 +17467,14 @@ impl LayoutEngine {
             let Some(para) = paragraphs.get(wp.para_index) else {
                 continue;
             };
+            // 띠에 흡수된 줄 범위만 띠 바닥을 정한다. 같은 문단의 뒤 줄이 전체 폭으로
+            // 이어지면 그 줄은 띠 아래 일반 흐름이다.
             let para_bottom = para
                 .line_segs
                 .iter()
+                .enumerate()
+                .filter(|(index, _)| *index >= wp.start_line && *index < wp.end_line)
+                .map(|(_, seg)| seg)
                 .filter(|seg| {
                     seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
                 })

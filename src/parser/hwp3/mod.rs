@@ -2427,6 +2427,19 @@ fn parse_object_control_char(
     if let Some(break_char_loop) = early_return {
         return Ok((i, utf16_len, break_char_loop));
     }
+    // 날짜 코드(8, 표 38, 96바이트)는 문단 리스트·별도 정보 없이 문단 글자 배열 안에
+    // 통째로 실린 고정 크기 특수 문자라, 문단 정보의 글자 수(hchar 단위)가 구조체 전체
+    // (48 hchar)를 센다 — 한/글 저장본 41868(국세청 서식)의 머리말 문단이 글자 수 49 =
+    // 날짜 코드 48 + 문단 끝 1 이다. 위 8바이트 머리(4 hchar)만 세면 문단 끝 뒤의 바이트를
+    // 글자로 읽어 본문 전체가 어긋난다. 날짜 형식(7)은 같은 모양이지만 한/글 저장본
+    // 근거가 아직 없어 종전 계산을 둔다.
+    let fixed_hchars = if ch == 8 { 96 / 2 } else { 4 };
+    // 여기서 `i` 는 머리 4 hchar 다음 자리다. 나머지 hchar 도 같은 IR 위치에 묶는다.
+    let rest = fixed_hchars - 4;
+    for slot in hwp3_char_to_utf16_pos.iter_mut().skip(i).take(rest) {
+        *slot = utf16_len;
+    }
+    i += rest;
 
     let is_non_tac_table = ch == 10
         && parsed_table

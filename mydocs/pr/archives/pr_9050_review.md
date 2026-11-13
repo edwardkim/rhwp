@@ -25,8 +25,8 @@ merge `c680b2a58eaade4f3185880fd21d72c2480c4f0a`로 통합했다(2026-11-13 15:1
 
 병합 후 [duration 갱신](https://github.com/edwardkim/rhwp/actions/runs/43377144591)은 ready:true·successful-pr-worker-measurements와 게시 성공을 확인했다. source PR/run은 9050/43373482321, attempt 1이며 게시 commit은 50d327549214e9cbe13c6b3f33d64614f489189b다.
 제품 CI를 병합 후 다시 시작하지 않았다. 옵션 M으로 archive·asset·오늘할일만 직접 반영한다.
-그 뒤 원 #8975의 두 대조군에 해당하는 inline 비교 PNG와 감사 댓글을 게시·API 확인한다.
+원 #8975의 두 대조군 전 4쪽 inline 비교 PNG·[감사 댓글](https://github.com/edwardkim/rhwp/pull/8975#issuecomment-6845852907)을 게시하고 API 본문과 실제 브라우저 이미지 표시를 확인했다.
 원 #8951의 [감사 댓글](https://github.com/edwardkim/rhwp/pull/8951#issuecomment-6844996591)은 이미 게시·확인했다.
 #7620은 전체 실물 잔여 범위를 재판정하지 않아 OPEN을 유지한다.
-[정리 로그](../assets/sacru2red-20261113/cleanup-9047.md)에 자체 branch/worktree·루트 output 전체·공용 debug의 실제 종료 정리를 남긴다.
+[정리 로그](../assets/sacru2red-20261113/cleanup-9047.md)에 자체 branch/worktree·루트 output 전체·공용 debug의 실제 종료 정리 완료를 기록했다.
 원 fork·다른 worktree·사용자 글꼴·로컬 crates.io 소비 환경은 보존한다.

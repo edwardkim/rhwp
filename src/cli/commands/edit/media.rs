@@ -350,6 +350,7 @@ pub(super) fn edit_insert_image(args: &[String]) -> i32 {
     };
 
     let mut bin_data_id = serde_json::Value::Null;
+    let mut ctrl_value = serde_json::Value::Null;
     if !dry_run {
         // 그림 설명(대체 텍스트)은 파일명 — 한컴이 개체 속성에 보여 주는 값이다.
         let description = Path::new(image_path)
@@ -383,15 +384,18 @@ pub(super) fn edit_insert_image(args: &[String]) -> i32 {
         let ctrl_idx = serde_json::from_str::<serde_json::Value>(&inserted)
             .ok()
             .and_then(|v| v["controlIdx"].as_u64())
-            .unwrap_or_default() as usize;
-        if let Some(rhwp::model::control::Control::Picture(picture)) = doc
-            .document()
-            .sections
-            .get(sec)
-            .and_then(|s| s.paragraphs.get(para))
-            .and_then(|p| p.controls.get(ctrl_idx))
+            .map(|v| v as usize);
+        if let Some(rhwp::model::control::Control::Picture(picture)) =
+            ctrl_idx.and_then(|ctrl_idx| {
+                doc.document()
+                    .sections
+                    .get(sec)
+                    .and_then(|s| s.paragraphs.get(para))
+                    .and_then(|p| p.controls.get(ctrl_idx))
+            })
         {
             bin_data_id = serde_json::json!(picture.image_attr.bin_data_id);
+            ctrl_value = serde_json::json!(ctrl_idx);
         }
     }
 
@@ -454,6 +458,9 @@ pub(super) fn edit_insert_image(args: &[String]) -> i32 {
             "width": width_hu,
             "height": height_hu,
             "binDataId": bin_data_id,
+            "section": sec,
+            "paragraph": para,
+            "ctrl": ctrl_value,
             "dryRun": dry_run,
             "changedPages": changed_pages,
             "overflow": overflow.clone().map(|o| vec![o]).unwrap_or_default(),
@@ -517,11 +524,13 @@ pub(super) fn edit_insert_image(args: &[String]) -> i32 {
 /// `edit insert-picture` — 문단 좌표에 본문 그림을 끼운다. 코어 `insert_picture_native`.
 /// `insert-image`(도장·서명, 쪽 좌표) 와 다르다.
 pub(super) fn edit_insert_picture(args: &[String]) -> i32 {
-    const USAGE: &str = "사용법: rhwp edit insert-picture <파일> --image <그림> [--section N] [--para N] [--offset N] [--width N] [--height N] [--x N] [--y N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    const USAGE: &str = "사용법: rhwp edit insert-picture <파일> --image <그림> [--section N --para N | --table N --row N --col N [--cell-para N]] [--offset N] [--width N] [--height N] [--x N] [--y N] [-o <출력>] [--dry-run] [--verify] [--json]";
     let mut file_path: Option<&str> = None;
     let mut image_path: Option<&str> = None;
     let mut section: usize = 0;
     let mut para: usize = 0;
+    let mut body_target_given = false;
+    let mut cell_args = CellTargetArgs::default();
     let mut offset: usize = 0;
     let mut x_hu: u32 = 0;
     let mut y_hu: u32 = 0;
@@ -551,6 +560,9 @@ pub(super) fn edit_insert_picture(args: &[String]) -> i32 {
                     eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
                     return EXIT_USAGE;
                 };
+                if matches!(name.as_str(), "--section" | "--para") {
+                    body_target_given = true;
+                }
                 match name.as_str() {
                     "--section" => match v.parse::<usize>() {
                         Ok(n) => section = n,
@@ -605,6 +617,13 @@ pub(super) fn edit_insert_picture(args: &[String]) -> i32 {
                             return EXIT_USAGE;
                         }
                     },
+                }
+            }
+            "--table" | "--row" | "--col" | "--cell-para" => {
+                let name = args[i].clone();
+                i += 1;
+                if let Err(code) = cell_args.parse(&name, args.get(i)) {
+                    return code;
                 }
             }
             "-o" | "--output" => {
@@ -714,6 +733,15 @@ pub(super) fn edit_insert_picture(args: &[String]) -> i32 {
         Ok(d) => d,
         Err(e) => return e.report(),
     };
+    let cell_path = match cell_args.resolve(&doc, body_target_given) {
+        Ok(Some((sec, host_para, path))) => {
+            section = sec;
+            para = host_para;
+            path
+        }
+        Ok(None) => Vec::new(),
+        Err(code) => return code,
+    };
     let section_count = doc.document().sections.len();
     if section >= section_count {
         eprintln!(
@@ -731,26 +759,47 @@ pub(super) fn edit_insert_picture(args: &[String]) -> i32 {
         return EXIT_USAGE;
     }
     let mut bin_data_id = serde_json::Value::Null;
+    let mut ctrl_value = serde_json::Value::Null;
+    let mut cell_ctrl_value = serde_json::Value::Null;
     if !dry_run {
         let description = Path::new(image_path)
             .file_name()
             .map(|n| n.to_string_lossy().to_string())
             .unwrap_or_default();
-        let inserted = match doc.insert_picture_native(
-            section,
-            para,
-            offset,
-            &[],
-            &image_bytes,
-            width_hu,
-            height_hu,
-            natural_w_px,
-            natural_h_px,
-            &image_ext,
-            &description,
-            Some(x_hu as i32),
-            Some(y_hu as i32),
-        ) {
+        let inserted = if cell_path.is_empty() {
+            doc.insert_picture_native(
+                section,
+                para,
+                offset,
+                &[],
+                &image_bytes,
+                width_hu,
+                height_hu,
+                natural_w_px,
+                natural_h_px,
+                &image_ext,
+                &description,
+                Some(x_hu as i32),
+                Some(y_hu as i32),
+            )
+        } else {
+            doc.insert_picture_in_cell_native(
+                section,
+                para,
+                offset,
+                &cell_path,
+                &image_bytes,
+                width_hu,
+                height_hu,
+                natural_w_px,
+                natural_h_px,
+                &image_ext,
+                &description,
+                Some(x_hu as i32),
+                Some(y_hu as i32),
+            )
+        };
+        let inserted = match inserted {
             Ok(v) => v,
             Err(e) => {
                 eprintln!("오류: 그림 삽입 실패 - {e}");
@@ -760,15 +809,20 @@ pub(super) fn edit_insert_picture(args: &[String]) -> i32 {
         let ctrl_idx = serde_json::from_str::<serde_json::Value>(&inserted)
             .ok()
             .and_then(|v| v["controlIdx"].as_u64())
-            .unwrap_or_default() as usize;
-        if let Some(rhwp::model::control::Control::Picture(picture)) = doc
-            .document()
-            .sections
-            .get(section)
-            .and_then(|s| s.paragraphs.get(para))
-            .and_then(|p| p.controls.get(ctrl_idx))
+            .map(|v| v as usize);
+        if let Some(rhwp::model::control::Control::Picture(picture)) =
+            ctrl_idx.and_then(|ctrl_idx| {
+                paragraph_at(doc.document(), section, para, &cell_path)
+                    .and_then(|p| p.controls.get(ctrl_idx))
+            })
         {
             bin_data_id = serde_json::json!(picture.image_attr.bin_data_id);
+            // 칸 안 그림의 번호는 칸 문단 안 번호라 본문 문단 기준인 ctrl 에 싣지 않는다.
+            if cell_path.is_empty() {
+                ctrl_value = serde_json::json!(ctrl_idx);
+            } else {
+                cell_ctrl_value = serde_json::json!(ctrl_idx);
+            }
         }
     }
     finish_edit_write(
@@ -790,6 +844,12 @@ pub(super) fn edit_insert_picture(args: &[String]) -> i32 {
             "width": width_hu,
             "height": height_hu,
             "binDataId": bin_data_id,
+            "ctrl": ctrl_value,
+            "table": cell_args.table,
+            "row": cell_args.row,
+            "col": cell_args.col,
+            "cellPara": cell_args.table.map(|_| cell_args.cell_para),
+            "cellCtrl": cell_ctrl_value,
         }),
         &[(section, para)],
         &format!(
@@ -972,10 +1032,13 @@ pub(super) fn edit_set_picture(args: &[String]) -> i32 {
         eprintln!("{USAGE}");
         return EXIT_USAGE;
     };
-    if props.trim().is_empty() {
-        eprintln!("오류: --props 는 비어 있을 수 없습니다.");
-        return EXIT_USAGE;
-    }
+    let props = match rhwp::document_core::check_picture_props(&props) {
+        Ok(props) => props,
+        Err(e) => {
+            eprintln!("오류: {e}");
+            return EXIT_USAGE;
+        }
+    };
     let bytes = match fs::read(file_path) {
         Ok(d) => d,
         Err(e) => {
@@ -1006,5 +1069,314 @@ pub(super) fn edit_set_picture(args: &[String]) -> i32 {
         &[(section, para)],
         &format!("그림 속성 변경 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl}"),
         &format!("그림 속성 변경 완료: {file_path}"),
+    )
+}
+
+/// `--table N --row N --col N [--cell-para N]` 칸 지정 인자 (#9020).
+#[derive(Default)]
+struct CellTargetArgs {
+    table: Option<usize>,
+    row: Option<u16>,
+    col: Option<u16>,
+    cell_para: usize,
+    cell_para_given: bool,
+}
+
+impl CellTargetArgs {
+    /// `name` 옵션의 값을 읽는다. 실패하면 사용법 오류 종료 코드를 돌려준다.
+    fn parse(&mut self, name: &str, value: Option<&String>) -> Result<(), i32> {
+        let Some(v) = value else {
+            eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+            return Err(EXIT_USAGE);
+        };
+        let bad = || {
+            eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+            EXIT_USAGE
+        };
+        match name {
+            "--table" => self.table = Some(v.parse().map_err(|_| bad())?),
+            "--row" => self.row = Some(v.parse().map_err(|_| bad())?),
+            "--col" => self.col = Some(v.parse().map_err(|_| bad())?),
+            _ => {
+                self.cell_para = v.parse().map_err(|_| bad())?;
+                self.cell_para_given = true;
+            }
+        }
+        Ok(())
+    }
+
+    /// 칸 지정을 (구역, 표를 담은 본문 문단, 칸 문단 경로) 로 바꾼다. 칸 지정이 없으면 `None`.
+    ///
+    /// `body_target_given` 은 같은 명령에 본문 문단 지정(`--section`/`--para` 등)이 함께 왔는지다.
+    #[allow(clippy::type_complexity)]
+    fn resolve(
+        &self,
+        doc: &rhwp::wasm_api::HwpDocument,
+        body_target_given: bool,
+    ) -> Result<Option<(usize, usize, Vec<(usize, usize, usize)>)>, i32> {
+        let Some(table_no) = self.table else {
+            if self.row.is_some() || self.col.is_some() || self.cell_para_given {
+                eprintln!("오류: --row/--col/--cell-para 는 --table 과 함께 써야 합니다.");
+                return Err(EXIT_USAGE);
+            }
+            return Ok(None);
+        };
+        if body_target_given {
+            eprintln!("오류: --table 칸 지정과 본문 문단 지정은 함께 쓸 수 없습니다.");
+            return Err(EXIT_USAGE);
+        }
+        let (Some(row), Some(col)) = (self.row, self.col) else {
+            eprintln!("오류: --table 을 쓰면 --row 와 --col 도 필요합니다.");
+            return Err(EXIT_USAGE);
+        };
+        let (sec, para, ctrl, cell_idx, para_lens, _) =
+            match super::resolve_table_cell(doc.document(), table_no, row, col) {
+                Ok(v) => v,
+                Err(super::CellResolveError::Usage(msg)) => {
+                    eprintln!("{msg}");
+                    return Err(EXIT_USAGE);
+                }
+                Err(super::CellResolveError::Runtime(msg)) => {
+                    eprintln!("{msg}");
+                    return Err(EXIT_RUNTIME);
+                }
+            };
+        if self.cell_para >= para_lens.len() {
+            eprintln!(
+                "오류: --cell-para 가 범위를 벗어났습니다 (칸 문단 0~{}): {}",
+                para_lens.len().saturating_sub(1),
+                self.cell_para
+            );
+            return Err(EXIT_USAGE);
+        }
+        Ok(Some((sec, para, vec![(ctrl, cell_idx, self.cell_para)])))
+    }
+}
+
+/// 본문 문단 `para` 에서 `path`(표 컨트롤·칸·칸 문단 번호)를 따라간 문단.
+fn paragraph_at<'a>(
+    document: &'a rhwp::model::document::Document,
+    section: usize,
+    para: usize,
+    path: &[(usize, usize, usize)],
+) -> Option<&'a rhwp::model::paragraph::Paragraph> {
+    use rhwp::model::control::Control;
+    let mut current = document.sections.get(section)?.paragraphs.get(para)?;
+    for &(ctrl, cell, cell_para) in path {
+        current = match current.controls.get(ctrl)? {
+            Control::Table(table) => table.cells.get(cell)?.paragraphs.get(cell_para)?,
+            _ => return None,
+        };
+    }
+    Some(current)
+}
+
+/// `edit move-picture` — 본문의 떠 있는 그림을 다른 본문 문단이나 표 칸 문단으로 옮긴다 (#9020).
+/// 코어 `relocate_floating_picture_native`.
+pub(super) fn edit_move_picture(args: &[String]) -> i32 {
+    const USAGE: &str = "사용법: rhwp edit move-picture <파일> --section N --para N --ctrl N (--to-para N [--to-section N] | --table N --row N --col N [--cell-para N]) [--to-offset N] [--x N] [--y N] [-o <출력>] [--dry-run] [--verify] [--json]";
+    let mut file_path: Option<&str> = None;
+    let mut section: Option<usize> = None;
+    let mut para: Option<usize> = None;
+    let mut ctrl: Option<usize> = None;
+    let mut to_section: Option<usize> = None;
+    let mut to_para: Option<usize> = None;
+    let mut to_offset: usize = 0;
+    let mut x_arg: Option<i32> = None;
+    let mut y_arg: Option<i32> = None;
+    let mut cell_args = CellTargetArgs::default();
+    let mut out_path: Option<String> = None;
+    let mut dry_run = false;
+    let mut json_mode = false;
+    let mut verify_mode = false;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--section" | "--para" | "--ctrl" | "--to-section" | "--to-para" | "--to-offset" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(v) = args.get(i) else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다.");
+                    return EXIT_USAGE;
+                };
+                let Ok(n) = v.parse::<usize>() else {
+                    eprintln!("오류: {name} 뒤에 0 이상의 정수가 필요합니다: {v}");
+                    return EXIT_USAGE;
+                };
+                match name.as_str() {
+                    "--section" => section = Some(n),
+                    "--para" => para = Some(n),
+                    "--ctrl" => ctrl = Some(n),
+                    "--to-section" => to_section = Some(n),
+                    "--to-para" => to_para = Some(n),
+                    _ => to_offset = n,
+                }
+            }
+            "--x" | "--y" => {
+                let name = args[i].clone();
+                i += 1;
+                let Some(Ok(n)) = args.get(i).map(|v| v.parse::<i32>()) else {
+                    eprintln!("오류: {name} 뒤에 정수가 필요합니다 (HWPUNIT).");
+                    return EXIT_USAGE;
+                };
+                if name == "--x" {
+                    x_arg = Some(n);
+                } else {
+                    y_arg = Some(n);
+                }
+            }
+            "--table" | "--row" | "--col" | "--cell-para" => {
+                let name = args[i].clone();
+                i += 1;
+                if let Err(code) = cell_args.parse(&name, args.get(i)) {
+                    return code;
+                }
+            }
+            "-o" | "--output" => {
+                i += 1;
+                match args.get(i) {
+                    Some(v) => out_path = Some(v.clone()),
+                    None => {
+                        eprintln!("오류: -o 뒤에 출력 파일 경로가 필요합니다.");
+                        return EXIT_USAGE;
+                    }
+                }
+            }
+            "--dry-run" => dry_run = true,
+            "--json" => json_mode = true,
+            "--verify" => verify_mode = true,
+            other if other.starts_with('-') => {
+                eprintln!("알 수 없는 옵션: {other}");
+                return EXIT_USAGE;
+            }
+            other => {
+                if file_path.replace(other).is_some() {
+                    eprintln!("오류: 입력 파일은 하나만 지정할 수 있습니다: {other}");
+                    return EXIT_USAGE;
+                }
+            }
+        }
+        i += 1;
+    }
+    let (Some(file_path), Some(section), Some(para), Some(ctrl)) = (file_path, section, para, ctrl)
+    else {
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    };
+    if to_para.is_none() && cell_args.table.is_none() {
+        eprintln!("오류: 옮길 자리로 --to-para 나 --table/--row/--col 중 하나가 필요합니다.");
+        eprintln!("{USAGE}");
+        return EXIT_USAGE;
+    }
+    let bytes = match fs::read(file_path) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("오류: 파일을 읽을 수 없습니다 - {}: {}", file_path, e);
+            return EXIT_RUNTIME;
+        }
+    };
+    let mut doc = match load_document(&bytes) {
+        Ok(d) => d,
+        Err(e) => return e.report(),
+    };
+    let body_target_given = to_para.is_some() || to_section.is_some();
+    let (dst_section, dst_para, dst_path) = match cell_args.resolve(&doc, body_target_given) {
+        Ok(Some(target)) => target,
+        Ok(None) => (
+            to_section.unwrap_or(section),
+            to_para.unwrap_or(0),
+            Vec::new(),
+        ),
+        Err(code) => return code,
+    };
+    if paragraph_at(doc.document(), dst_section, dst_para, &dst_path).is_none() {
+        eprintln!("오류: 옮길 자리 구역 {dst_section} 문단 {dst_para} 가 없습니다.");
+        return EXIT_USAGE;
+    }
+    // 옮길 그림의 현재 위치. 본문 문단으로 옮기면서 --x/--y 를 생략하면 그대로 쓴다.
+    let current_offsets = match doc
+        .document()
+        .sections
+        .get(section)
+        .and_then(|s| s.paragraphs.get(para))
+        .and_then(|p| p.controls.get(ctrl))
+    {
+        Some(rhwp::model::control::Control::Picture(pic)) if !pic.common.treat_as_char => (
+            pic.common.horizontal_offset as i32,
+            pic.common.vertical_offset as i32,
+        ),
+        Some(rhwp::model::control::Control::Picture(_)) => {
+            eprintln!("오류: 글자처럼 취급하는 그림은 옮길 수 없습니다. set-picture 로 treatAsChar 를 끈 뒤 옮기세요.");
+            return EXIT_RUNTIME;
+        }
+        _ => {
+            eprintln!("오류: 구역 {section} 문단 {para} 컨트롤 {ctrl} 은 그림이 아닙니다.");
+            return EXIT_RUNTIME;
+        }
+    };
+    // 표 칸 문단으로 옮기면 기준이 칸 문단으로 바뀌므로, 생략한 거리는 0 으로 둔다.
+    let default_offsets = if dst_path.is_empty() {
+        current_offsets
+    } else {
+        (0, 0)
+    };
+    let x = x_arg.unwrap_or(default_offsets.0);
+    let y = y_arg.unwrap_or(default_offsets.1);
+    let mut new_ctrl = serde_json::Value::Null;
+    if !dry_run {
+        let moved = match doc.relocate_floating_picture_native(
+            section,
+            para,
+            &[],
+            ctrl,
+            dst_section,
+            dst_para,
+            to_offset,
+            &dst_path,
+            x,
+            y,
+        ) {
+            Ok(v) => v,
+            Err(e) => {
+                eprintln!("오류: 그림 옮기기 실패 - {e}");
+                return EXIT_RUNTIME;
+            }
+        };
+        new_ctrl = serde_json::from_str::<serde_json::Value>(&moved)
+            .ok()
+            .map(|v| v["controlIdx"].clone())
+            .unwrap_or(serde_json::Value::Null);
+    }
+    let into_cell = !dst_path.is_empty();
+    finish_edit_write(
+        &mut doc,
+        &bytes,
+        file_path,
+        out_path,
+        "movepic",
+        dry_run,
+        json_mode,
+        verify_mode,
+        serde_json::json!({
+            "section": section,
+            "paragraph": para,
+            "ctrl": ctrl,
+            "toSection": dst_section,
+            "toParagraph": dst_para,
+            "toOffset": to_offset,
+            "toCtrl": if into_cell { serde_json::Value::Null } else { new_ctrl.clone() },
+            "table": cell_args.table,
+            "row": cell_args.row,
+            "col": cell_args.col,
+            "cellPara": cell_args.table.map(|_| cell_args.cell_para),
+            "cellCtrl": if into_cell { new_ctrl } else { serde_json::Value::Null },
+            "x": x,
+            "y": y,
+        }),
+        &[(section, para), (dst_section, dst_para)],
+        &format!(
+            "그림 옮기기 예정: {file_path} 구역 {section} 문단 {para} 컨트롤 {ctrl} → 구역 {dst_section} 문단 {dst_para}"
+        ),
+        &format!("그림 옮기기 완료: {file_path}"),
     )
 }

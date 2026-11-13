@@ -66,3 +66,5 @@ SHA와 보정 전후 비교는 위 최종 원장에 구분했다.
 
 
 [감사 댓글](https://github.com/edwardkim/rhwp/pull/8951#issuecomment-6844996591) 게시 완료. 고정 merge SHA의 footer 11쪽 PNG 형식·SHA와 게시 본문을 API 재확인했다.
+
+실제 GitHub 페이지의 footer 11쪽 이미지도 브라우저에서 2382×1160으로 정상 로드됨을 확인했다.

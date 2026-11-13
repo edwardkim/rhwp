@@ -1,0 +1,10 @@
+{
+  "producer": "cc6c60381dfeff9b7892e836b8bf01803d0a5c1a",
+  "comparison_base": "5cbcc9b451cf286e1b7c680426c857dc802e50f3",
+  "code_paths_changed": [],
+  "native_executable_reused": false,
+  "wasm_sha256": "f0153ed0410ba4acb2fb50a3cf030214457d500c66d722db6648381168c7d57d",
+  "raw_js_sha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+  "actual_studio_wasm_sha256": "f0153ed0410ba4acb2fb50a3cf030214457d500c66d722db6648381168c7d57d",
+  "actual_studio_js": "Vite transforms JS; response digest retained separately in actual Studio receipts, mapped to root pkg"
+}

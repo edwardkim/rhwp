@@ -1,0 +1,25 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 8960,
+  "title": "글자 높이가 표보다 큰 빈 문단의 TAC 표를 줄 맨 위에 두고 줄 끝을 표 아래끝으로 잘라 다음 문단이 올라옴",
+  "entries": [
+    {
+      "path": "samples/issue8960/36439173-empty-tac-line-baseline.hwpx",
+      "format": "hwpx",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/8960",
+      "originalFilename": "36439173_후보자 등록 신청서 및 후보자 사퇴서(의장 부의장 선거).hwpx",
+      "bytes": 13565,
+      "sha256": "23c994d726238de000fc06cfec794142cbe1710472b837bc25034b282f6676e8",
+      "lastSavedWith": {
+        "product": "hancom-office-2020",
+        "version": "11.0.0.8227"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/issue8960/36439173-empty-tac-line-baseline-2020.pdf",
+      "referencePdfSha256": "ebbb58a6454508fc9bb4bc55b305bdaf1aa0fdd9d8783cf590275e7ccaa7fa94",
+      "referencePdfPageCount": 2,
+      "contract": "각 쪽의 구분선(13pt 빈 문단 lh=th=1300·bl=1105 줄의 482HU 1×1 TAC 표)은 아래끝이 그 줄 기준선에 놓이고, 다음 「접수」 줄은 구분선 줄의 저장 줄 높이 1300 과 줄간격 392 뒤에서 시작한다. 전체 2쪽으로 한/글 engine 2020 Print 와 같다."
+    }
+  ]
+}

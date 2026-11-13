@@ -92,6 +92,13 @@ pub(super) fn edit_set_hf_picture(args: &[String]) -> i32 {
         eprintln!("{USAGE}");
         return EXIT_USAGE;
     };
+    let props = match rhwp::document_core::check_picture_props(props) {
+        Ok(props) => props,
+        Err(e) => {
+            eprintln!("오류: {e}");
+            return EXIT_USAGE;
+        }
+    };
     let bytes = match fs::read(file_path) {
         Ok(d) => d,
         Err(e) => {
@@ -105,7 +112,7 @@ pub(super) fn edit_set_hf_picture(args: &[String]) -> i32 {
     };
     if !dry_run {
         if let Err(e) = doc.set_header_footer_picture_properties_native(
-            section, para, ctrl, inner_para, inner_ctrl, props,
+            section, para, ctrl, inner_para, inner_ctrl, &props,
         ) {
             eprintln!("오류: 머리말/꼬리말 그림 속성 변경 실패 - {e}");
             return EXIT_RUNTIME;

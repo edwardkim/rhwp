@@ -697,8 +697,9 @@ cargo build --locked --target-dir /home/tsjang/rhwp/target/pr-review -j 8 --feat
 ```
 
 다른 host에서는 해당 host의 기본 rhwp 작업공간 아래 공용 `target/pr-review`로 바꾼다.
-Native PNG에는 Node·Chrome·SVG 임베딩 검사가 필요 없다. WASM PNG에는 Node·Chrome과
-외부 공급 글꼴 catalogue용 Python `fonttools`가 필요하다. SVG 진단의 필수 도구는 다음과 같다.
+Native PNG에는 Node·Chrome·SVG 임베딩 검사가 필요 없다. 한글 라벨의 cmap 확인에는
+Native·WASM 모두 Python `fonttools`가 필요하다(`python -m pip install fonttools`).
+WASM PNG에는 Node·Chrome과 외부 공급 글꼴 catalogue도 필요하다. SVG 진단의 필수 도구는 다음과 같다.
 
 스크립트는 실행 시작 시 다음 CLI와 Python 패키지가 있는지 확인한다.
 
@@ -743,6 +744,13 @@ which pdftotext
 ```
 
 ## 폰트 환경
+
+review·overlay의 한글 범례와 판정 문구는 문서 본문과 별도의 라벨 글꼴로 그린다.
+`RHWP_VISUAL_SWEEP_LABEL_FONT` 후보, Fontconfig 및 OS 기본 후보를 순서대로 확인하되,
+로드에 성공해도 범례에 필요한 Unicode 글리프가 없으면 건너뛴다. 지원하는 설치 글꼴이
+없으면 저장소의 공개 `ttfs/opensource/NotoSansKR-Regular.ttf`를 사용한다. 이 글꼴도
+없거나 사용할 수 없으면 두부 문자를 포함한 증적을 만들지 않고 오류를 알린다.
+이 선택은 라벨에만 적용하며 문서의 글꼴·래스터·일치율 계산은 바꾸지 않는다.
 
 visual sweep은 직접 PNG 또는 명시적인 SVG raster와 한컴 기준 PDF raster를 비교한다. 따라서
 폰트 환경이 다르면 실제 레이아웃 회귀가 없어도 `line`, `column`, `order` 후보가

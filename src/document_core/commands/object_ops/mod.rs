@@ -13,11 +13,23 @@ mod footnote_shape;
 mod note;
 mod picture;
 mod picture_inline_migration;
+/// 개체 속성 JSON 입구 검사 (#9019).
+mod props_check;
 mod shape;
 mod table;
 mod table_creation;
 
 pub use table_creation::{TableColumnWidths, TableCreationOptions};
+
+/// 그림 속성을 검사하고 setter에 전달할 정규화 JSON을 반환한다 (#9019).
+pub fn check_picture_props(props_json: &str) -> Result<String, String> {
+    props_check::check_props(props_json, props_check::PICTURE_PROPS, "그림")
+}
+
+/// 도형 속성을 검사하고 setter에 전달할 정규화 JSON을 반환한다 (#9020).
+pub fn check_shape_props(props_json: &str) -> Result<String, String> {
+    props_check::check_props(props_json, props_check::SHAPE_PROPS, "도형")
+}
 
 /// 도형 최소 크기 (HWPUNIT).
 /// 0으로 내려가면 Rectangle은 x_coords=[0,0,0,0]이 되고,
