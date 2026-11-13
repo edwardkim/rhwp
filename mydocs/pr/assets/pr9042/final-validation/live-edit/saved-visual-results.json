@@ -1,0 +1,250 @@
+{
+  "source": "d66d5f05f9efa4d182228494cd970614d479fb7a",
+  "results": [
+    {
+      "key": "edited-5d554c7bfa7f",
+      "backend": "native",
+      "input_sha256": "5d554c7bfa7f80307648651b5d1b264f7e65d0a1972dcbfad81e2590b16d1439",
+      "aliases": [
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/native-hwp-1.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/native-hwp-2.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/original-1.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/original-2.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/normalized-1.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/normalized-2.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-history-probe/original-1.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-history-probe/original-2.hwp"
+      ],
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "edited-5d554c7bfa7f",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/native-hwp-1.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/edited-models/pdfs/edited-body-small-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-save-visual/native/edited-5d554c7bfa7f",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only",
+        "--font-environment",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/environments/5fbcf3e65349c804ee9da2ec15c402501c0418c2cd8632d35a4506224eba46c5.json",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c"
+      ],
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-save-visual/native/edited-5d554c7bfa7f/edited-5d554c7bfa7f/silhouette.tsv",
+      "source": "d66d5f05f9efa4d182228494cd970614d479fb7a",
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/live-edit/saved/native/edited-5d554c7bfa7f.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "edited-5d554c7bfa7f",
+      "backend": "wasm",
+      "input_sha256": "5d554c7bfa7f80307648651b5d1b264f7e65d0a1972dcbfad81e2590b16d1439",
+      "aliases": [
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/native-hwp-1.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/native-hwp-2.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/original-1.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/original-2.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/normalized-1.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/normalized-2.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-history-probe/original-1.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-history-probe/original-2.hwp"
+      ],
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "edited-5d554c7bfa7f",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/native-hwp-1.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/edited-models/pdfs/edited-body-small-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-save-visual/wasm/edited-5d554c7bfa7f",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only",
+        "--font-environment",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/environments/5fbcf3e65349c804ee9da2ec15c402501c0418c2cd8632d35a4506224eba46c5.json",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+        "--wasm-pkg",
+        "/home/edward/mygithub/rhwp/pkg"
+      ],
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-save-visual/wasm/edited-5d554c7bfa7f/edited-5d554c7bfa7f/silhouette.tsv",
+      "source": "d66d5f05f9efa4d182228494cd970614d479fb7a",
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/live-edit/saved/wasm/edited-5d554c7bfa7f.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "edited-ec88ca41d2c3",
+      "backend": "native",
+      "input_sha256": "ec88ca41d2c3fcc69fc6b6c63efed4cea786b59e744497c8a3667a86bc52ce1d",
+      "aliases": [
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/native-hwpx-2.hwpx",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/native-hwpx-1.hwpx",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/original-1.hwpx",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/original-2.hwpx",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/normalized-1.hwpx",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/normalized-2.hwpx",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-history-probe/original-1.hwpx",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-history-probe/original-2.hwpx"
+      ],
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "edited-ec88ca41d2c3",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/native-hwpx-1.hwpx",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/edited-models/pdfs/edited-body-small-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-save-visual/native/edited-ec88ca41d2c3",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only",
+        "--font-environment",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/environments/5fbcf3e65349c804ee9da2ec15c402501c0418c2cd8632d35a4506224eba46c5.json",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c"
+      ],
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-save-visual/native/edited-ec88ca41d2c3/edited-ec88ca41d2c3/silhouette.tsv",
+      "source": "d66d5f05f9efa4d182228494cd970614d479fb7a",
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/live-edit/saved/native/edited-ec88ca41d2c3.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "edited-ec88ca41d2c3",
+      "backend": "wasm",
+      "input_sha256": "ec88ca41d2c3fcc69fc6b6c63efed4cea786b59e744497c8a3667a86bc52ce1d",
+      "aliases": [
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/native-hwpx-2.hwpx",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/native-hwpx-1.hwpx",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/original-1.hwpx",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/original-2.hwpx",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/normalized-1.hwpx",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/normalized-2.hwpx",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-history-probe/original-1.hwpx",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-history-probe/original-2.hwpx"
+      ],
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "edited-ec88ca41d2c3",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/native-hwpx-1.hwpx",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/edited-models/pdfs/edited-body-small-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-save-visual/wasm/edited-ec88ca41d2c3",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only",
+        "--font-environment",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/environments/5fbcf3e65349c804ee9da2ec15c402501c0418c2cd8632d35a4506224eba46c5.json",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+        "--wasm-pkg",
+        "/home/edward/mygithub/rhwp/pkg"
+      ],
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-save-visual/wasm/edited-ec88ca41d2c3/edited-ec88ca41d2c3/silhouette.tsv",
+      "source": "d66d5f05f9efa4d182228494cd970614d479fb7a",
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/live-edit/saved/wasm/edited-ec88ca41d2c3.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    }
+  ],
+  "public_browser_saves": {
+    "browser": "Chrome/156.0.8078.47",
+    "results": [
+      {
+        "key": "original",
+        "format": "hwp",
+        "cycle": 1,
+        "pages": 2,
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/original-1.hwp"
+      },
+      {
+        "key": "original",
+        "format": "hwp",
+        "cycle": 2,
+        "pages": 2,
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/original-2.hwp"
+      },
+      {
+        "key": "original",
+        "format": "hwpx",
+        "cycle": 1,
+        "pages": 2,
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/original-1.hwpx"
+      },
+      {
+        "key": "original",
+        "format": "hwpx",
+        "cycle": 2,
+        "pages": 2,
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/original-2.hwpx"
+      },
+      {
+        "key": "normalized",
+        "format": "hwp",
+        "cycle": 1,
+        "pages": 2,
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/normalized-1.hwp"
+      },
+      {
+        "key": "normalized",
+        "format": "hwp",
+        "cycle": 2,
+        "pages": 2,
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/normalized-2.hwp"
+      },
+      {
+        "key": "normalized",
+        "format": "hwpx",
+        "cycle": 1,
+        "pages": 2,
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/normalized-1.hwpx"
+      },
+      {
+        "key": "normalized",
+        "format": "hwpx",
+        "cycle": 2,
+        "pages": 2,
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/normalized-2.hwpx"
+      }
+    ]
+  }
+}

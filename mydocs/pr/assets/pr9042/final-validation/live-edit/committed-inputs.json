@@ -1,0 +1,30 @@
+[
+  {
+    "input_sha256": "5d554c7bfa7f80307648651b5d1b264f7e65d0a1972dcbfad81e2590b16d1439",
+    "committed_input": "mydocs/pr/assets/pr9042/final-validation/live-edit/inputs/5d554c7bfa7f.hwp",
+    "executed_aliases": [
+      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/native-hwp-1.hwp",
+      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/native-hwp-2.hwp",
+      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/original-1.hwp",
+      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/original-2.hwp",
+      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/normalized-1.hwp",
+      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/normalized-2.hwp",
+      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-history-probe/original-1.hwp",
+      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-history-probe/original-2.hwp"
+    ]
+  },
+  {
+    "input_sha256": "ec88ca41d2c3fcc69fc6b6c63efed4cea786b59e744497c8a3667a86bc52ce1d",
+    "committed_input": "mydocs/pr/assets/pr9042/final-validation/live-edit/inputs/ec88ca41d2c3.hwpx",
+    "executed_aliases": [
+      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/native-hwpx-2.hwpx",
+      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/native-hwpx-1.hwpx",
+      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/original-1.hwpx",
+      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/original-2.hwpx",
+      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/normalized-1.hwpx",
+      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-edited-saves/wasm/normalized-2.hwpx",
+      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-history-probe/original-1.hwpx",
+      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-history-probe/original-2.hwpx"
+    ]
+  }
+]

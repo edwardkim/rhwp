@@ -1,0 +1,9 @@
+use rhwp::{document_core::DocumentCore,model::{control::Control,header_footer::{Header,Footer},paragraph::Paragraph}};
+fn main(){
+ let p="mydocs/pr/assets/coanchored-table-pagination/float-pagination.hwp";let b=std::fs::read(p).unwrap();
+ for k in ["unchanged","empty-header","empty-footer"] {
+  let mut c=DocumentCore::from_bytes(&b).unwrap();let mut d=c.document().clone();
+  match k {"empty-header"=>d.sections[0].paragraphs[0].controls.push(Control::Header(Box::new(Header { paragraphs: vec![Paragraph::default()], ..Header::default() }))),"empty-footer"=>d.sections[0].paragraphs[0].controls.push(Control::Footer(Box::new(Footer { paragraphs: vec![Paragraph::default()], ..Footer::default() }))),_=>{}}
+  if k!="unchanged" { d.sections[0].paragraphs[0].char_count+=8; d.sections[0].paragraphs[0].align_ctrl_data_records(); d.sections[0].raw_stream=None; } c.set_document(d);let pages=c.page_count();let saved=c.export_hwp_native().unwrap();let reopened=DocumentCore::from_bytes(&saved).unwrap();println!("{k}\tIR pages={pages}\tsaved pages={}\tcontrols={}",reopened.page_count(),reopened.document().sections[0].paragraphs[0].controls.len());std::fs::write(format!("output/pr-review/pr9042/{k}.hwp"),saved).unwrap();
+ }
+}

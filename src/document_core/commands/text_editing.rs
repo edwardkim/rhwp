@@ -2910,6 +2910,18 @@ impl DocumentCore {
         cell_idx: usize,
         cell_para_idx: usize,
     ) -> Result<&mut crate::model::paragraph::Paragraph, HwpError> {
+        if self
+            .get_cell_paragraph_ref(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                cell_para_idx,
+            )
+            .is_some()
+        {
+            self.materialize_managed_cell_metrics_for_edit(section_idx);
+        }
         if section_idx >= self.document.sections.len() {
             return Err(HwpError::RenderError(format!(
                 "구역 인덱스 {} 범위 초과",
@@ -6432,6 +6444,12 @@ impl DocumentCore {
         parent_para_idx: usize,
         path: &[(usize, usize, usize)],
     ) -> Result<&mut Paragraph, HwpError> {
+        if self
+            .resolve_paragraph_by_path(section_idx, parent_para_idx, path)
+            .is_ok()
+        {
+            self.materialize_managed_cell_metrics_for_edit(section_idx);
+        }
         if path.is_empty() {
             return Err(HwpError::RenderError("경로가 비어있습니다".to_string()));
         }
