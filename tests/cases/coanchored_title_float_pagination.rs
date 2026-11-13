@@ -1,13 +1,14 @@
 //! 검사 유형: 관계형·고정형(독립 Print의 전쪽 쪽수).
-//! 주석 갱신: 2026-11-13T21:04:18+09:00.
-//! 직전 파일 변경: 7f555caba1b74ddf8a3fe6c51d44523fcb0d5e6d 2026-11-13T18:52:20+09:00.
+//! 주석 갱신: 2026-11-13T22:39:25+09:00.
+//! 직전 파일 변경: 62742884777cd8a07b431ead5bb4338520f590f7 2026-11-13T21:04:19+09:00.
 //! 측정: 2026-11-13, 96 DPI·PDFium·색상 경계 보정 전 2px raw 실루엣, Native Skia/fresh 최적화 WASM Canvas.
 //! 원 Mac Print 사례 전 2쪽 최저: Native 100.00% / WASM 100.00%.
-//! 무변경 저장·빈 머리말·빈 꼬리말 각각 전 2쪽 최저: Native 100.00% / WASM 99.59%.
-//! 실제 한컴 재저장 원 사례와 중첩 한 문단·바깥 여백·두 문단 각각 전 2쪽 최저: Native 100.00% / WASM 99.59%.
-//! 제품 소스 47d5b71f32f6b26702768927d21ba34cde441959; 전쪽 TSV·PNG: mydocs/pr/assets/pr9042/final-validation/.
-//! 독립 기준·직접 판독·입력 생성 구분: mydocs/pr/assets/pr9042/native-nested-validation/README.md.
-//! 실제 편집 후 저장의 2→3쪽 경계는 현재 추가 보완 중이며 이 측정으로 면제하지 않는다.
+//! 무변경 저장·빈 머리말·빈 꼬리말 각각 전 2쪽 최저: Native 100.00% / WASM 100.00%.
+//! 실제 한컴 재저장 원 사례와 중첩 한 문단·바깥 여백·두 문단 각각 전 2쪽 최저: Native 100.00% / WASM 100.00%.
+//! 실제 BodyX 편집 전 2쪽 최저: Native 100.00% / WASM 100.00%; 양쪽 한컴 2020 Print 쪽수와 일치.
+//! 제품 소스 1506a1c34672931c4f5aa5cb6363fba776225949; 전쪽 TSV·PNG: mydocs/pr/assets/pr9042/final-validation/.
+//! 양쪽에 같은 HCRDotum/HCRBatang 프로그램을 공급하고 384 DPI 재출력으로 괘선·글자 하강부를 직접 판독했다.
+//! 독립 기준·실제/합성 저장 입력 구분: mydocs/pr/assets/pr9042/native-nested-validation/README.md 및 final-validation/live-edit/README.md.
 
 use rhwp::document_core::DocumentCore;
 use rhwp::model::{control::Control, table::Table};
@@ -430,4 +431,68 @@ fn coanchored_nested_box_admission_rejects_unproved_occupancy() {
             "synthetic contract {variant}: no whole-box proof; do not reclaim the band"
         );
     }
+}
+
+#[test]
+fn coanchored_same_line_edit_keeps_the_live_and_saved_physical_frame() {
+    let normalized = DocumentCore::from_bytes(SOURCE)
+        .unwrap()
+        .export_hwp_native()
+        .unwrap();
+    for input in [SOURCE, normalized.as_slice()] {
+        let mut core = DocumentCore::from_bytes(input).unwrap();
+        let before = rendered_body(&core);
+        let original_lines = count_lines(&before);
+        let original_height = source_body(core.document()).common.height;
+        core.insert_text_in_cell_native(0, 0, 3, 0, 0, 4, "X")
+            .unwrap();
+        assert_edited_frame(&core, &before, original_lines, original_height);
+        for format in ["hwp", "hwpx"] {
+            let mut current = None;
+            // Use the original live edited document for the first save in each format.
+            for _cycle in 0..2 {
+                let source = current.as_ref().unwrap_or(&core);
+                let bytes = if format == "hwp" {
+                    source.export_hwp_native().unwrap()
+                } else {
+                    source.export_hwpx_native().unwrap()
+                };
+                current = Some(DocumentCore::from_bytes(&bytes).unwrap());
+                assert_edited_frame(
+                    current.as_ref().unwrap(),
+                    &before,
+                    original_lines,
+                    original_height,
+                );
+            }
+        }
+    }
+}
+
+fn assert_edited_frame(core: &DocumentCore, before: &RenderNode, lines: usize, height: u32) {
+    // Independent Print: adding X to the first short line retains both table frames
+    // and the explicit page break; it does not remove the 32 intentional empty lines.
+    assert_eq!(core.page_count(), 2);
+    assert_eq!(source_body(core.document()).common.height, height);
+    let first = core.build_page_render_tree(0).unwrap();
+    let second = core.build_page_render_tree(1).unwrap();
+    let mut tables = Vec::new();
+    top_level_tables(&first.root, &mut tables);
+    let [title, body] = tables.as_slice() else {
+        panic!("title and edited body share page 1")
+    };
+    let mut body_text = String::new();
+    text(body, &mut body_text);
+    assert_eq!(body_text, "BodyXEnd of bodyBody end");
+    assert_eq!(count_lines(body), lines);
+    contents_stay_in_cells(body, None);
+    assert!(title.bbox.y + title.bbox.height <= body.bbox.y);
+    assert!((body.bbox.y - before.bbox.y).abs() < 1.0);
+    assert!((body.bbox.height - before.bbox.height).abs() < 1.0);
+    let mut following = Vec::new();
+    top_level_tables(&second.root, &mut following);
+    assert_eq!(following.len(), 1);
+    let mut next = String::new();
+    text(following[0], &mut next);
+    assert_eq!(next, "Next page");
 }
