@@ -1,13 +1,13 @@
 //! 관계형·고정형: 칸 배경 무늬의 위→아래 순서와 글상자 무늬 유무에 따른 숨은 글자 판정(관계), 한컴 출력·저장에서 정한 무늬 번호와 `hatchStyle` 목록(고정).
-//! 주석 갱신: 2026-11-12T21:51:27+09:00.
-//! 2026-11-12 측정 raw(96dpi, pypdfium2): fill-patterns-0-6.hwp 1쪽 Native 99.97% / fresh WASM 99.99%,
+//! 주석 갱신: 2026-11-13T11:56:04+09:00.
+//! 2026-11-13 측정 raw(96dpi, pypdfium2, head 7de77727c): fill-patterns-0-6.hwp 1쪽 Native 99.97% / fresh WASM 99.99%,
 //! fill-patterns-0-6.hancom2024.hwpx 1쪽 Native 99.97% / fresh WASM 99.99% (각 전1쪽);
-//! hwpspec.hwp 23쪽 Native 99.98762% / fresh WASM 99.99085%, 전178쪽 최저 97.08% / 97.08%.
+//! hwpspec.hwp 23쪽 Native 99.99% / fresh WASM 99.99%, 전178쪽 최저 97.08% / 97.08%.
 //! 입력·기준: `samples/issue8978/fill-patterns-0-6.hwp`와 한글 2024 Print `pdf/issue8978/fill-patterns-0-6-2024.pdf`,
 //! 같은 한글이 저장한 `samples/issue8978/fill-patterns-0-6.hancom2024.hwpx`, `samples/hwpspec.hwp`와 `pdf/hwpspec-2024.pdf`.
 //! 근거: mydocs/pr/assets/issue_8978/README.md.
 #![cfg(not(target_arch = "wasm32"))]
-//! HWP 채우기 무늬 종류는 0~5다(#8978). 0 ─, 1 │, 2 ＼, 3 ／, 4 ＋, 5 ×이고 -1과 6은 무늬가 없다.
+//! HWP 채우기 무늬 종류는 0부터 5까지다(#8978). 0 ─, 1 │, 2 ＼, 3 ／, 4 ＋, 5 ×이고 -1과 6은 무늬가 없다.
 //! HWPX `hatchStyle`은 한글 저장 결과를 따라 2 = `SLASH`, 3 = `BACK_SLASH`다.
 use std::io::Read;
 
