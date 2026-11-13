@@ -26,6 +26,7 @@ use crate::cache::MutexExt;
 use crate::error::Result;
 use crate::import_limits::ImportBudget;
 use regex::Regex;
+use std::borrow::Cow;
 use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
@@ -653,10 +654,10 @@ fn parse_tounicode_cmap_impl(data: &[u8], budget: Option<&ImportBudget>) -> Resu
             BfSectionKind::Range => {
                 // Format: <srcCodeLo> <srcCodeHi> [<dstString0> <dstString1> ... <dstStringN>]
                 //     or: <srcCodeLo> <srcCodeHi> <dstString>
-                for line in section.lines() {
+                for entry in range_entries(section, budget)? {
                     let mappings = match budget {
-                        Some(budget) => parse_bfrange_line_with_budget(line, Some(budget)),
-                        None => parse_bfrange_line(line),
+                        Some(budget) => parse_bfrange_line_with_budget(&entry, Some(budget)),
+                        None => parse_bfrange_line(&entry),
                     };
                     if let Some(budget) = budget {
                         budget.check()?;
@@ -680,10 +681,11 @@ fn parse_tounicode_cmap_impl(data: &[u8], budget: Option<&ImportBudget>) -> Resu
     // Format: <srcCodeLo> <srcCodeHi> <dstString>
     // Maps a range of codes to a single Unicode character (fallback for unmapped codes)
     for section in extract_sections(&content, "beginnotdefrange", "endnotdefrange") {
-        for line in section.lines() {
+        // A notdefrange has no array form, so a bracketed entry is not one.
+        for entry in range_entries(section, budget)?.filter(|entry| !entry.ends_with(']')) {
             let mappings = match budget {
-                Some(budget) => parse_notdefrange_line_with_budget(line, Some(budget)),
-                None => parse_notdefrange_line(line),
+                Some(budget) => parse_notdefrange_line_with_budget(&entry, Some(budget)),
+                None => parse_notdefrange_line(&entry),
             };
             if let Some(budget) = budget {
                 budget.check()?;
@@ -745,6 +747,166 @@ fn bf_sections_in_document_order<'a>(
             remaining = after;
         }
     })
+}
+
+/// The entries of a `bfrange` or `notdefrange` section, one
+/// `<lo> <hi> <dst>` or `<lo> <hi> [<dst0> <dst1> ...]` at a time.
+///
+/// A CMap is PostScript, so a line break is white space like any other (ISO
+/// 32000-1:2008 §9.10.3, Adobe Technical Note #5014). Writers wrap long
+/// destination arrays over many lines, and reading such a section line by
+/// line takes a continuation line `<2135> <D835DC9C> <212C>` for a range of
+/// 3.6 billion codes. Entries are therefore cut by token, the way pdf.js,
+/// MuPDF, and Poppler read them, and each item holds exactly one entry
+/// whatever lines it sits on.
+///
+/// A `%` outside a string starts a comment that runs to the end of the line
+/// (PostScript Language Reference, 3rd ed., §3.2.2). A comment is white space
+/// too: its strings and brackets belong to no entry, and an entry with a
+/// comment inside is handed on with the comment taken out. A literal string
+/// `(...)` is a string like `<...>`, so a `%` in it is text; the entry parsers
+/// read only hex strings, so an entry with one maps nothing, as before.
+struct RangeEntries<'a> {
+    section: &'a str,
+    pos: usize,
+}
+
+fn range_entries<'a>(section: &'a str, budget: Option<&ImportBudget>) -> Result<RangeEntries<'a>> {
+    if let Some(budget) = budget {
+        // One more pass over the section, on top of what `cmap_source` charged.
+        budget.charge_cmap_scan(section.len())?;
+    }
+    Ok(RangeEntries { section, pos: 0 })
+}
+
+impl<'a> Iterator for RangeEntries<'a> {
+    type Item = Cow<'a, str>;
+
+    fn next(&mut self) -> Option<Cow<'a, str>> {
+        let bytes = self.section.as_bytes();
+        let mut start = 0;
+        // Strings read so far for this entry: `<lo>`, `<hi>`, then `<dst>`.
+        let mut operands = 0;
+        // Inside the destination array of this entry.
+        let mut in_array = false;
+        // Inside a bracket that follows no `<lo> <hi>`; its strings belong to no entry.
+        let mut stray_array = false;
+        // A comment sits inside this entry.
+        let mut commented = false;
+
+        while self.pos < bytes.len() {
+            let at = self.pos;
+            match bytes[at] {
+                b'%' => {
+                    self.pos = comment_end(bytes, at);
+                    commented |= operands > 0;
+                },
+                b'<' | b'(' => {
+                    // An unterminated string ends the section.
+                    self.pos = string_end(bytes, at)?;
+                    if in_array || stray_array {
+                        continue;
+                    }
+                    if operands == 0 {
+                        start = at;
+                        commented = false;
+                    }
+                    operands += 1;
+                    if operands == 3 {
+                        return Some(self.entry(start, commented));
+                    }
+                },
+                b'[' => {
+                    self.pos = at + 1;
+                    if in_array {
+                        continue;
+                    }
+                    if operands == 2 {
+                        in_array = true;
+                    } else {
+                        stray_array = true;
+                        operands = 0;
+                    }
+                },
+                b']' => {
+                    self.pos = at + 1;
+                    if in_array {
+                        return Some(self.entry(start, commented));
+                    }
+                    stray_array = false;
+                    operands = 0;
+                },
+                _ => self.pos = at + 1,
+            }
+        }
+        None
+    }
+}
+
+impl<'a> RangeEntries<'a> {
+    /// The entry from `start` up to where the reader stands, without its comments.
+    fn entry(&self, start: usize, commented: bool) -> Cow<'a, str> {
+        let entry: &'a str = &self.section[start..self.pos];
+        if !commented {
+            return Cow::Borrowed(entry);
+        }
+        let bytes = entry.as_bytes();
+        let mut text = String::with_capacity(entry.len());
+        let mut copied = 0;
+        let mut pos = 0;
+        while pos < bytes.len() {
+            match bytes[pos] {
+                b'%' => {
+                    text.push_str(&entry[copied..pos]);
+                    // The line end stays, as the white space the comment was.
+                    pos = comment_end(bytes, pos);
+                    copied = pos;
+                },
+                // The entry was read to its end, so its strings are closed.
+                b'<' | b'(' => pos = string_end(bytes, pos).unwrap_or(bytes.len()),
+                _ => pos += 1,
+            }
+        }
+        text.push_str(&entry[copied..]);
+        Cow::Owned(text)
+    }
+}
+
+/// Where a comment that starts at `at` ends: at the next CR or LF, or at the end.
+fn comment_end(bytes: &[u8], at: usize) -> usize {
+    bytes[at..]
+        .iter()
+        .position(|&byte| byte == b'\r' || byte == b'\n')
+        .map_or(bytes.len(), |len| at + len)
+}
+
+/// Where the string that starts at `at`, `<...>` or `(...)`, ends, just past
+/// its closing byte; `None` if it is not closed. A literal string holds
+/// balanced parentheses, and `\` escapes the byte after it.
+fn string_end(bytes: &[u8], at: usize) -> Option<usize> {
+    if bytes[at] == b'<' {
+        return bytes[at..]
+            .iter()
+            .position(|&byte| byte == b'>')
+            .map(|len| at + len + 1);
+    }
+    let mut depth = 0usize;
+    let mut pos = at;
+    while pos < bytes.len() {
+        match bytes[pos] {
+            b'\\' => pos += 1,
+            b'(' => depth += 1,
+            b')' => {
+                depth -= 1;
+                if depth == 0 {
+                    return Some(pos + 1);
+                }
+            },
+            _ => {},
+        }
+        pos += 1;
+    }
+    None
 }
 
 /// Extract sections between begin and end markers.
@@ -1064,6 +1226,12 @@ fn parse_bfrange_line_with_budget(
             result.push((src, dst));
         }
         return Some(result);
+    }
+
+    // An array entry that did not read as one is not a sequential range
+    // either: three strings of its body are destinations, not `<lo> <hi> <dst>`.
+    if line.contains('[') {
+        return None;
     }
 
     // Try format 1 (sequential format)
