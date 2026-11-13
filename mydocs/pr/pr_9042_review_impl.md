@@ -1,6 +1,6 @@
 # PR #9042 메인테이너 보완 제안
 
-상태: **담당 승인 대기 — 제품 코드에 적용하지 않음.**
+상태: **2026-11-13 메인테이너 보완·필수 검증 승인. 공통 판정 보정을 적용하고 검증 진행 중.**
 원 기여 `3ae4eeb332c3b0edbb3a8fbe334daf2b0a48115b`와 검토 제품 head
 `637410dbfa8deb060d1c8739b0bf5e7ae8286c89`를 보존한다.
 
@@ -11,7 +11,8 @@
 
 1. 공통 `stored_inline_host_has_separate_float_frame`의 Header/Footer 분류를
    `prepare_coanchored_first_line`과 일치시킨다. [한 파일 보정 초안](assets/pr9042/proposed-header-footer.patch)은
-   `git apply --check`만 통과했으며 실행 검증 전이다. 문서 ID·특정 높이·px 보정은 추가하지 않는다.
+   승인 후 적용했다. Native 선행 검증에서 빈 머리말·꼬리말을 포함한 5종 모두 독립 PDF와 같은 2쪽이다.
+   최종 fresh WASM·전체 검증은 계속한다. 문서 ID·특정 높이·px 보정은 추가하지 않는다.
 2. 원 사례, 무변경 저장, 빈 머리말·꼬리말, 한컴 재저장 대조군에서 제목·본문·다음 표의 쪽 소속,
    순서·겹침·내용 보존을 실제 Native/fresh WASM과 저장·재열기로 확인한다.
 3. 중첩 TAC tail 변경은 원 기여를 보존하며 실제 발동 입력·독립 한컴 Print와 비적용 대조군을 보강한다.
