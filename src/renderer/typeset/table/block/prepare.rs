@@ -694,18 +694,19 @@ impl TypesetEngine {
                 let host_trailing_spacing =
                     fmt.line_spacings.last().copied().unwrap_or(0.0).max(0.0);
                 st.record_pre_emitted_host_height(para_idx, host_h, host_h - host_trailing_spacing);
-                if let Some(table_top) = fragment_host_placement.as_ref().map(|p| p.table_top) {
-                    self.fill_float_band_gap_successors(
-                        st,
-                        para_idx,
-                        para,
-                        table,
-                        table_top,
-                        paragraphs_all,
-                        composed_all,
-                        styles,
-                    );
-                }
+            }
+            // host 줄을 같은 문단의 앞 형제(글자처럼 취급 표 등)가 이미 냈어도 표 위 틈은 같다.
+            if let Some(table_top) = fragment_host_placement.as_ref().map(|p| p.table_top) {
+                self.fill_float_band_gap_successors(
+                    st,
+                    para_idx,
+                    para,
+                    table,
+                    table_top,
+                    paragraphs_all,
+                    composed_all,
+                    styles,
+                );
             }
             st.mark_pre_emitted_host(para_idx);
         }

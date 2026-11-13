@@ -10299,13 +10299,30 @@ impl LayoutEngine {
                 item,
                 PageItem::FullParagraph { .. } | PageItem::PartialParagraph { start_line: 0, .. }
             ) {
-                if let Some(origin) = col_content.paragraph_float_placements.iter().find_map(
-                    |(&(pi, _), placement)| {
+                if let Some(origin) = col_content
+                    .paragraph_float_placements
+                    .iter()
+                    .find_map(|(&(pi, _), placement)| {
                         (pi == item_para)
                             .then_some(placement.stored_host_origin)
                             .flatten()
-                    },
-                ) {
+                    })
+                    // 같은 문단의 글자처럼 취급 표가 바로 앞에서 이 host 줄을 놓았으면 흐름은 이미
+                    // 그 줄 끝에 있다. 원점으로 되돌리면 표 위 틈의 후속 문단이 그 줄과 겹친다.
+                    .filter(|_| {
+                        !item_ordinal
+                            .checked_sub(1)
+                            .and_then(|previous| col_content.items.get(previous))
+                            .is_some_and(|previous| {
+                                matches!(previous, PageItem::Table { para_index, control_index }
+                                if *para_index == item_para
+                                    && matches!(
+                                        paragraphs[item_para].controls.get(*control_index),
+                                        Some(Control::Table(table)) if table.common.treat_as_char
+                                    ))
+                            })
+                    })
+                {
                     let spacing_before = styles
                         .para_styles
                         .get(paragraphs[item_para].para_shape_id as usize)
