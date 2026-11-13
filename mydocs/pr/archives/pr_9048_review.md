@@ -4,7 +4,7 @@
 
 **승인 — 통합 후보에서 본문 빈 문단 캐럿 정렬 범위의 로컬 검증 완료.**
 
-최종 통합 PR의 code CI·기록 trailing head checks·mergeability는 병합 전 확인한다.
+[통합 PR #9054](https://github.com/edwardkim/rhwp/pull/9054)의 정확한 code head CI가 성공했다. 문서-only trailing head의 required checks·mergeability를 확인한 뒤 병합한다.
 
 라우팅은 `collaborator_external_pr` 9.1.1이며 `intake_and_review`, `local_validation`, `multi_pr_update_branch`, `post_merge`와 review template을 적용했다.
 
@@ -34,6 +34,14 @@
 수정 값은 편집 캐럿 질의 결과이며 기존 TextRun 앵커를 사용한다. 레이아웃 계산·본문 paint·직렬화는 이 PR에서 변경하지 않는다. Native 관계 검사와 실제 Studio의 캐럿 DOM·글자 입력 결과를 대조한다. 캐럿이 인쇄되지 않으므로 빈 페이지 PDF 일치율로 판정하지 않는다.
 
 같은 가운데·오른쪽 빈 문단의 수정 전후 raw Studio screenshot과 확대 screenshot을 보존한다. 실제 초기화 응답 JS/WASM, root pkg 및 Studio public 파일 hash를 구분한다. Vite가 변환한 JS 응답은 raw binding 파일과 구분해 기록한다.
+
+## 통합 PR의 실제 CI 결과
+
+- 통합 code CI head: `0ae35de66d950bc58fa6c8320b0d20e944c691d4`. 검증 소스 `89701eb34a` 이후 Rust·test·script·Cargo는 동일하다.
+- [CI 실행](https://github.com/edwardkim/rhwp/actions/runs/43432704579)의 Archive A~E 합계 **13,270 PASS / 0 FAIL / 45 skip**. 로컬 workspace 13,455건과 합산하지 않는다.
+- exact head의 lint·Rust CodeQL/GHAS·Adapter·Proptest 및 최종 CI Impact Policy를 확인했다. 전체 check 결과는 29 SUCCESS / 7 SKIPPED / 1 NEUTRAL이며 미완료·실패 0개다.
+- CI 정책은 `mode=selective;rfp=0;rust=1;fe=none;render=0;skia=0;ql=rs`다. 실제 영향에 맞춘 Rust 실행이며 모든 제품 영역의 Full 실행으로 표시하지 않는다.
+- [CI 영수증](../assets/bongseop_20261113/ci9054-code-complete.json)에 exact SHA·run/attempt·job·실제 worker summary와 원 로그 hash를 기록했다. 최종 정책의 `workflow_run`은 기본 branch 실행이며 대상 candidate status와 구분한다.
 
 ## 통합·후속 처리 계획
 

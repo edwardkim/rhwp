@@ -25,3 +25,9 @@
 Mac fresh WASM은 사용자가 지정한 `scripts/wasm-pack-locked.sh --target web --out-dir pkg --no-opt` 로컬 대체 빌드다. Docker 또는 wasm-opt 최적화 성공으로 보고하지 않는다. root pkg와 Studio public의 JS/WASM 실행 파일 해시를 확인했고 실제 Vite 초기화 응답의 JS·WASM을 별도 기록했다. Vite가 변환한 JS 응답은 raw JS binding과 구분한다.
 
 `.log`, 임시 Python/Node driver, runtime 저장 ZIP, Chrome profile, package 바이너리는 ignored output 또는 로컬 빌드 경로에만 둔다. 최종 증거만 이 디렉터리에 보존한다. 원 PR fork branch는 그대로 두고 통합 PR merge 후 원 PR과 #8941·#8944를 후속 처리한다.
+
+## 통합 PR CI
+
+[PR #9054](https://github.com/edwardkim/rhwp/pull/9054)의 exact code head `0ae35de66d950bc58fa6c8320b0d20e944c691d4`에서 필요한 CI가 모두 성공했다. [정식 영수증](ci9054-code-complete.json): Archive A~E 합계 13,270 PASS / 0 FAIL / 45 skip, 전체 check는 29 SUCCESS / 7 SKIPPED / 1 NEUTRAL이다. `selective / rfp=0 / rust=1 / fe=none / render=0 / skia=0 / ql=rs` 실행으로, 모든 영역 Full 실행을 뜻하지 않는다. 로컬 workspace 13,455건과 별도로 기록한다.
+
+이번 후행 기록은 mydocs 문서·증적만 바꾸며 제품·검사·CI 정의를 바꾸지 않는다. 최신 trailing head의 checks·병합 가능 상태와 실제 병합 결과는 후속 단계에서 확인한다.
