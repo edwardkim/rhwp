@@ -15893,6 +15893,17 @@ impl LayoutEngine {
                         let body_bottom = layout.body_area.y + layout.body_area.height;
                         tbl_y < layout.body_area.y || tbl_y + tbl_h > body_bottom
                     }
+                    // [#9055] 쪽 기준 띠 안에 저장 줄을 둔 빈 host 는 띠 아래의 독립 줄을 가진다
+                    // (조판의 `page_band_pushed_empty_host_line` 과 같은 판정). 그 줄의 전진은
+                    // 본문 흐름이 소유한다.
+                    && crate::renderer::float_placement::page_band_pushed_empty_host_line(
+                        para,
+                        paragraphs.get(para_index + 1),
+                        t,
+                        layout.body_area.height,
+                        self.dpi,
+                    )
+                    .is_none()
             } else {
                 false
             };
