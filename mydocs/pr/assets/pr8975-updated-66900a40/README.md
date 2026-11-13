@@ -81,3 +81,11 @@ Windows Hancom 2020 `11.0.0.9136`의 실제 완료·다운로드와 입력/출�
 | 실제 한컴 재저장 f | Print | `e3af86ac-6fb2-4d7e-9f78-aa20ab27180d` |
 
 SVG snapshot 4건도 최소 글꼴 환경에서 통과했다. 프로세스 내 반복 출력 결정성 검사를 포함하며 golden을 다시 생성하지 않았다.
+
+
+## 원격 수용 완료
+
+후속 수용 [#9050](https://github.com/edwardkim/rhwp/pull/9050)은 제출 head `2201c894aa527661d2a28ad194688b2738196070`의
+전체 CI·셀프 리뷰 뒤 `c680b2a58eaade4f3185880fd21d72c2480c4f0a`로 merge됐다. 원 #8975의 최신 head도 MERGED다.
+GitHub A–E는 13,239 PASS·45 정상 skip, 전체 check는 31 SUCCESS·정상 SKIP 5건이다. 실패·재실행·예외는 없다.
+실제 로그·보안 0건·최신 base/동일 merge tree와 결과는 [archive](../../archives/pr_8975_review.md)에 기록했다.

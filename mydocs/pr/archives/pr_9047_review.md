@@ -4,8 +4,8 @@
 
 **승인 — 병합 완료.** exact head `68c2441bfd947609676b841e7ff43bf1c64983ab`의 모든 필수 CI와
 셀프 리뷰를 확인하고 merge commit `a785e23f6838d5452e8904cae82f81eb5e185efc`로 devel에 통합했다.
-원 #8951은 MERGED이며 #8975의 새 head `66900a40be` 추가분은 별도 로컬 검토 중이다.
-이 기록은 그 추가분의 수용 완료를 주장하지 않는다.
+원 #8951은 MERGED이며 #8975의 새 head `66900a40be` 추가분도 후속 #9050으로 수용했다.
+이 기록의 주된 검증 범위는 구 head이며 최신 head의 근거는 [#8975 최종 기록](pr_8975_review.md)으로 구분한다.
 
 ## source·검증·승인
 
@@ -32,7 +32,7 @@
 ## 후속 처리
 
 CI 실행 정의 변경이 없으므로 옵션 M으로 이 archive·원 #8951 archive·오늘할일을 보존한다.
-그 뒤 원 #8951에 해당 footer 11쪽의 inline 증적·감사 댓글을 게시한다. #8975는 최신 head 검토를 계속한다.
+원 #8951의 footer 11쪽 inline 증적·[감사 댓글](https://github.com/edwardkim/rhwp/pull/8951#issuecomment-6844996591)을 게시하고 API 본문을 재확인했다. #8975는 #9050 merge로 최신 head까지 MERGED다.
 #7620은 기존 56345 실물 문서 등 전체 잔여 범위를 모두 재판정하지 않아 OPEN을 유지한다.
-새 head의 검증이 실제 output·공용 target을 사용 중이므로 전체 종료 정리는 아직 완료로 표시하지 않는다.
+전체 종료 정리는 [정리 로그](../assets/sacru2red-20261113/cleanup-9047.md)에 실제 삭제와 최종 확인을 기록한다.
 다른 worktree·원 fork·사용자 글꼴·로컬 crates.io 소비 검증 환경은 보존한다.

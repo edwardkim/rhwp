@@ -63,3 +63,6 @@ SHA와 보정 전후 비교는 위 최종 원장에 구분했다.
 - inline PNG는 같은 footer 11쪽의 `mydocs/pr/assets/sacru2red-20261113/final/footer-p011-three-way.png`다. 독립 Desktop Print·Native·fresh WASM을 같은 배율로 대조한 이미지이며, 게시 직전 merge SHA raw 응답의 PNG magic·SHA를 Git bytes와 비교한다.
 - 사람의 판정은 표 아래 괘선·본문 바닥·쪽 번호의 보존과 overflow 0건이다. 수치를 사람 판정 정확도나 RGB 완전 동일로 설명하지 않는다.
 - 공개 댓글은 이 archive·운영 기록의 devel 반영 후 게시하고 본문 일치·한글·BOM·줄바꿈을 API로 확인한다. 원 fork branch는 보존하며 #7620은 기존 전체 잔여 범위로 OPEN을 유지한다.
+
+
+[감사 댓글](https://github.com/edwardkim/rhwp/pull/8951#issuecomment-6844996591) 게시 완료. 고정 merge SHA의 footer 11쪽 PNG 형식·SHA와 게시 본문을 API 재확인했다.
