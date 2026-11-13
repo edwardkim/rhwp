@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**승인 — 제출 code head의 로컬 검증과 GitHub CI를 완료했다.** 작성자 edwardkim의 self-review 기록이며 GitHub 자기 승인 review가 아니다. 사용자가 push·Open PR·CI·self-review·merge·후속 처리를 승인했다. 남은 조건은 이 기록을 포함한 문서-only trailing head의 실제 검사와 최신 base 병합 가능성 확인이다.
+**승인** — 수용 완료. 작성자 edwardkim의 self-review 기록이며 GitHub 자기 승인 review가 아니다. code head `4cf0b66548`의 전체 검사와 문서 head `4d6274f8ad`의 실제 fast-pass·최신 check·MERGEABLE/CLEAN·최신 base 시뮬레이션을 확인한 뒤 사용자 승인 범위에서 merge commit `5f78bb8d0297b499043dc4c45d76996549c0b2ef`로 통합했다(2026-11-14 08:41:04 KST).
 
 ## 문제와 변경 결과
 
@@ -29,7 +29,7 @@
 | 일반성·보안 | 문서 ID·목표 px·임의 상수·좌표 clamp·출력 숨김이 없다. 새 소유 digest 비교는 길이·형식을 검사하고 할당 없이 수행한다. Storage 경로는 같은 budgeted 복제 API를 사용한다. |
 | 회귀·직접 판독 | 원 사례/반례의 최종 출력 소속·순서·보존·포함/겹침을 검증했다. 같은 범위의 원본·독립 PDF·Native/fresh WASM과 실제 384 DPI를 직접 대조했다. baseline 완화·예외·검사 이관은 없다. |
 
-실제 소비 위치와 적용·비적용 경계는 [원 PR 보완 기록](../pr_9042_review_impl.md), 최종 수용 판단은 [원 PR 검토](../pr_9042_review.md)에 연결한다. 이 재검토에서 추가 제품 보정이 필요한 새 결함은 발견하지 않았다.
+실제 소비 위치와 적용·비적용 경계는 [원 PR 보완 기록](pr_9042_review_impl.md), 최종 수용 판단은 [원 PR 검토](pr_9042_review.md)에 연결한다. 이 재검토에서 추가 제품 보정이 필요한 새 결함은 발견하지 않았다.
 
 ## 완료된 로컬 검증
 
@@ -47,8 +47,8 @@
 - [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/43523106808), [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/43523106818), [Adapter](https://github.com/edwardkim/rhwp/actions/runs/43523106889), [Proptest](https://github.com/edwardkim/rhwp/actions/runs/43523106955): 모두 success.
 - 최종 CI Impact Policy도 success다. [실제 PR 화면](../assets/pr9042/final-validation/pr9066-browser-display.json)에서 SHA 고정 대표 이미지 4개의 로드를 확인했고 raw PNG 해시도 commit과 같았다.
 
-## 남은 병합 조건과 후속 처리
+## 병합 확인과 후속 처리
 
-제품·테스트를 바꾸지 않는 이 trailing commit의 merge tree·링크·기존 오늘할일 보존을 push 전에 검증한다. 이후 실제 fast-pass·최신 check와 mergeability를 확인하고 원 기여 이력을 보존하는 merge commit으로 통합한다. 아직 trailing head 성공이나 merge 완료를 단정하지 않는다.
+제품·테스트가 같은 문서 head `4d6274f8ad`는 CI·CodeQL·Render Diff의 preflight가 모두 `fast_pass=true`, candidate `4cf0b66548`을 실제 채택했다. 최신 head 13 SUCCESS·정상 skip 24건, 실패·대기 0건이며 최종 정책 감사도 성공했다. [실제 재사용·집계](../assets/pr9042/final-validation/pr9066-trailing-ci.json), [최종 병합·사전 tree 일치](../assets/pr9042/final-validation/pr9066-merge.json).
 
-병합 뒤 duration 갱신의 성공 또는 보류 사유를 확인한다. 운영 기록과 원 PR 검토 archive를 devel에 반영·동기화한 뒤 #9042의 간접 MERGED 상태, 첫 기여 감사 댓글의 실제 증거·화면을 확인한다. 직접 연결된 해결 issue는 없다. 전용 branch·임시 worktree·루트 output 전체와 유휴 shared debug를 정리하며 원 fork·다른 작업공간·사용자 글꼴·local crates 소비 환경은 보존한다.
+merge 뒤 #9042의 간접 MERGED 반영을 확인했다. 직접 연결된 해결 issue는 없다. [duration 갱신](../assets/pr9042/final-validation/pr9066-duration-refresh.json)은 ready:true·published:true다. maintainer 운영 기록을 devel에 반영·동기화한 뒤 원 PR의 첫 기여 감사 댓글과 branch·output·유휴 debug 정리를 수행한다. 원 fork·다른 작업공간·사용자 글꼴·local crates 소비 환경은 보존한다. 최종 로컬 종료 로그는 `local/pr-cleanup/pr9066.json`에 기록한다.

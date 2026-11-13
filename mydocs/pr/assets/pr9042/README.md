@@ -6,7 +6,7 @@
 
 2026-11-13 검토. 제품 source는 원 head `3ae4eeb332c3b0edbb3a8fbe334daf2b0a48115b`를
 devel `00d09f773a2f6c21604a4e6394df7152bbb26e8c`에 적용한 `637410dbfa8deb060d1c8739b0bf5e7ae8286c89`다.
-[상위 검토](../../pr_9042_review.md)와 [실제 해시·producer·독립 작업](evidence.json)을 따른다.
+[상위 검토](../../archives/pr_9042_review.md)와 [실제 해시·producer·독립 작업](evidence.json)을 따른다.
 측정은 Native Skia Print, 96 DPI, compat 2022다. **접수·경계 조사 자료이며 최종 수용 검증 완료 자료가 아니다.**
 
 ## 입력·기준 PDF의 출처

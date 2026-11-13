@@ -10,7 +10,7 @@
 다른 문서의 기존 조판 차이까지 수정 범위를 확장하지 않는다.
 
 1. 공통 `stored_inline_host_has_separate_float_frame`의 Header/Footer 분류를
-   `prepare_coanchored_first_line`과 일치시킨다. [한 파일 보정 초안](assets/pr9042/proposed-header-footer.patch)은
+   `prepare_coanchored_first_line`과 일치시킨다. [한 파일 보정 초안](../assets/pr9042/proposed-header-footer.patch)은
    승인 후 적용했다. Native 선행 검증에서 빈 머리말·꼬리말을 포함한 5종 모두 독립 PDF와 같은 2쪽이다.
    최종 fresh WASM·전체 검증은 계속한다. 문서 ID·특정 높이·px 보정은 추가하지 않는다.
 2. 원 사례, 무변경 저장, 빈 머리말·꼬리말, 한컴 재저장 대조군에서 제목·본문·다음 표의 쪽 소속,
@@ -21,7 +21,7 @@
    실제 한컴 저장본에서 내용과 칸·자식 상자 높이가 정확히 같아야 한다는 기존 가정의 오류를 확인했다.
    칸의 최소 선언과 실제 상자를 구분하고, 여백·저장 줄 폭·되감기 없는 문단 사다리의 포함 관계로 보완했다.
    한 문단·바깥 여백·두 문단의 실제 저장본 전 6쪽 Native가 모두 100.00%다.
-   [입력·독립 Print·수정 전후 TSV](assets/pr9042/native-nested-validation/README.md)를 보존했다.
+   [입력·독립 Print·수정 전후 TSV](../assets/pr9042/native-nested-validation/README.md)를 보존했다.
 4. 검증한 경계는 정식 suite의 관계형 회귀에 반영한다. 기존 원 사례 검사의 유효한 내용 보호는 유지하고,
    신규 파일 첫머리는 최종 양쪽 전쪽 측정 뒤 실제 수치·시각·증거로 보완한다.
 
@@ -99,4 +99,4 @@
 
 ## 최종 완료 판정
 
-승인된 모든 보완과 새 devel 기능 보존 검증을 완료했다. 실제 최종 수치·명령·입력·전체 TSV·직접 판독은 [최종 검토](pr_9042_review.md)와 [검증 원장](assets/pr9042/final-validation/README.md)을 따른다. 위의 “계속한다/미검증” 문구는 각 보완 시점의 경계 기록이며 최종 판정으로 사용하지 않는다. 원격 처리는 별도 승인 대기다.
+승인된 모든 보완과 새 devel 기능 보존 검증을 완료했다. 실제 최종 수치·명령·입력·전체 TSV·직접 판독은 [최종 검토](pr_9042_review.md)와 [검증 원장](../assets/pr9042/final-validation/README.md)을 따른다. 위의 “계속한다/미검증” 문구는 각 보완 시점의 경계 기록이며 최종 판정으로 사용하지 않는다. 사용자 승인 뒤 수용 PR #9066의 code/문서 head CI·self-review와 merge `5f78bb8d02`를 완료했고 원 PR #9042도 간접 MERGED로 반영됐다.
