@@ -259,8 +259,10 @@ fn project(
     match project_with_storage(
         paragraph,
         cell,
-        hwpx_cells,
-        false,
+        MetricScope::Render {
+            hwpx_cells,
+            owned_hwp5_cells: false,
+        },
         styles,
         dpi,
         &crate::storage::Unbounded,
@@ -269,17 +271,33 @@ fn project(
         Err(never) => match never {},
     }
 }
+#[derive(Clone, Copy)]
+enum MetricScope {
+    Render {
+        hwpx_cells: bool,
+        owned_hwp5_cells: bool,
+    },
+    ManagedCellsForExport,
+}
+
 fn project_with_storage<S: crate::storage::Storage>(
     paragraph: &Paragraph,
     cell: bool,
-    hwpx_cells: bool,
-    owned_hwp5_cells: bool,
+    scope: MetricScope,
     styles: &ResolvedStyleSet,
     dpi: f64,
     storage: &S,
 ) -> Result<Option<Paragraph>, S::Error> {
-    let eligible =
-        floating_text_host(paragraph) || (cell && hwpx_cells && paragraph.controls.is_empty());
+    let eligible = matches!(scope, MetricScope::Render { hwpx_cells, .. }
+        if floating_text_host(paragraph) || (cell && hwpx_cells && paragraph.controls.is_empty()));
+    let owned_hwp5_cells = matches!(
+        scope,
+        MetricScope::ManagedCellsForExport
+            | MetricScope::Render {
+                owned_hwp5_cells: true,
+                ..
+            }
+    );
     let mut projected = eligible
         .then(|| projected_line(paragraph, styles, dpi))
         .flatten()
@@ -314,15 +332,8 @@ fn project_with_storage<S: crate::storage::Storage>(
                 }
             }
             for (paragraph_index, child) in cell.paragraphs.iter().enumerate() {
-                if let Some(child) = project_with_storage(
-                    child,
-                    true,
-                    hwpx_cells,
-                    owned_hwp5_cells,
-                    styles,
-                    dpi,
-                    storage,
-                )? {
+                if let Some(child) = project_with_storage(child, true, scope, styles, dpi, storage)?
+                {
                     if projected.is_none() {
                         projected = Some(storage.clone_paragraph(paragraph)?);
                     }
@@ -364,17 +375,46 @@ pub(crate) fn normalize_with_storage<S: crate::storage::Storage>(
     owned_hwp5_cells: bool,
     storage: &S,
 ) -> Result<Option<Vec<Paragraph>>, S::Error> {
-    let mut result = None;
-    for (index, paragraph) in paragraphs.iter().enumerate() {
-        if let Some(projected) = project_with_storage(
-            paragraph,
-            false,
+    normalize_in_scope(
+        paragraphs,
+        styles,
+        dpi,
+        MetricScope::Render {
             hwpx_cells,
             owned_hwp5_cells,
-            styles,
-            dpi,
-            storage,
-        )? {
+        },
+        storage,
+    )
+}
+
+/// 저장은 표시용 보정 전체가 아니라 같은 생산자의 관리 캐시만 발행한다.
+pub(crate) fn managed_cells_for_export_with_storage<S: crate::storage::Storage>(
+    paragraphs: &[Paragraph],
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    storage: &S,
+) -> Result<Option<Vec<Paragraph>>, S::Error> {
+    normalize_in_scope(
+        paragraphs,
+        styles,
+        dpi,
+        MetricScope::ManagedCellsForExport,
+        storage,
+    )
+}
+
+fn normalize_in_scope<S: crate::storage::Storage>(
+    paragraphs: &[Paragraph],
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    scope: MetricScope,
+    storage: &S,
+) -> Result<Option<Vec<Paragraph>>, S::Error> {
+    let mut result = None;
+    for (index, paragraph) in paragraphs.iter().enumerate() {
+        if let Some(projected) =
+            project_with_storage(paragraph, false, scope, styles, dpi, storage)?
+        {
             if result.is_none() {
                 result = Some(
                     storage.try_collect(paragraphs.iter().map(|p| storage.clone_paragraph(p)))?,

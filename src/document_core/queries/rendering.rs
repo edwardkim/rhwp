@@ -6394,13 +6394,7 @@ impl DocumentCore {
                     storage,
                 )?;
             let text_metrics = if !profile.hwp3_layout() {
-                let owned_hwp5_cells = profile.hwp5_stored_pagination_layout()
-                    && section.raw_stream.as_deref().is_some_and(|body| {
-                        self.document.extra_streams.iter().any(|(path, marker)| {
-                            path == crate::model::line_seg_tags::HWP_STREAM
-                                && crate::model::line_seg_tags::authenticates_section(marker, body)
-                        })
-                    });
+                let owned_hwp5_cells = self.owns_section_line_cache(idx);
                 crate::renderer::render_normalization::stored_text_metrics::normalize_with_storage(
                     math_textboxes
                         .as_deref()
