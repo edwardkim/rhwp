@@ -1,0 +1,92 @@
+{
+  "head": "89701eb34af54502e94afa6319240596e98a1367",
+  "alignment": [
+    {
+      "alignment": "left",
+      "rect": {
+        "pageIndex": 0,
+        "x": 113.4,
+        "y": 132.3,
+        "height": 13.3
+      }
+    },
+    {
+      "alignment": "center",
+      "rect": {
+        "pageIndex": 0,
+        "x": 396.9,
+        "y": 132.3,
+        "height": 13.3
+      }
+    },
+    {
+      "alignment": "right",
+      "rect": {
+        "pageIndex": 0,
+        "x": 680.3,
+        "y": 132.3,
+        "height": 13.3
+      }
+    }
+  ],
+  "saved_files": [
+    {
+      "file": "loaded-bullet-round1.hwpx",
+      "resources": {
+        "BinData/image2.png": "fce481932ea5d07a91c7991c09fdadb4bf78f9b4cc8f927188384231f9d12679"
+      },
+      "sha256": "9ca5b4b331a7077d442bf6a91f6bf23807ae9a8879fe519ed9035c43ec1803c6",
+      "bullet_reference": {
+        "id": "image2",
+        "href": "BinData/image2.png",
+        "bytes_preserved": true
+      }
+    },
+    {
+      "file": "loaded-bullet-round2.hwpx",
+      "resources": {
+        "BinData/image1.png": "fce481932ea5d07a91c7991c09fdadb4bf78f9b4cc8f927188384231f9d12679"
+      },
+      "sha256": "018d70580d389fdaf5cbcef33503851c0484c1d27ab1fe452c38e67bb7e95829",
+      "bullet_reference": {
+        "id": "image1",
+        "href": "BinData/image1.png",
+        "bytes_preserved": true
+      }
+    },
+    {
+      "file": "picture-before.hwpx",
+      "resources": {
+        "BinData/image1.png": "b1ff9c8ea3a780bad09b346c423d2d0e46815926879b18e841d928376a946640"
+      },
+      "sha256": "c562c187f4e34ac56c1f1e4c852f76809cc22408b638e6b5be546b57ee3b99a9"
+    },
+    {
+      "file": "picture-deleted-round2.hwpx",
+      "resources": {},
+      "sha256": "775dc6f2b6d53d679c466b0b550d7e7d8d337de1945660255fa4fe54ecc48341"
+    },
+    {
+      "file": "picture-deleted.hwpx",
+      "resources": {},
+      "sha256": "775dc6f2b6d53d679c466b0b550d7e7d8d337de1945660255fa4fe54ecc48341"
+    },
+    {
+      "file": "unreferenced-round1.hwpx",
+      "resources": {
+        "BinData/image1.jpg": "3bdba8cdd985df984cdb8dae9a5da9cb90dd1ada772c92cf813b88c8a6062b86",
+        "BinData/image2.jpg": "3bdba8cdd985df984cdb8dae9a5da9cb90dd1ada772c92cf813b88c8a6062b86"
+      },
+      "sha256": "ac783aa26dff4cbc2b3eb74880a0d65a79aad56093d6a41440b4e56ec7c78d15"
+    },
+    {
+      "file": "unreferenced-round2.hwpx",
+      "resources": {
+        "BinData/image1.jpg": "3bdba8cdd985df984cdb8dae9a5da9cb90dd1ada772c92cf813b88c8a6062b86",
+        "BinData/image2.jpg": "3bdba8cdd985df984cdb8dae9a5da9cb90dd1ada772c92cf813b88c8a6062b86"
+      },
+      "sha256": "ac783aa26dff4cbc2b3eb74880a0d65a79aad56093d6a41440b4e56ec7c78d15"
+    }
+  ],
+  "unreferenced_original_payloads_preserved": 2
+}

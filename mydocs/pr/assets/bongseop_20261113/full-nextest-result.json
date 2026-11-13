@@ -1,0 +1,27 @@
+{
+  "head": "89701eb34af54502e94afa6319240596e98a1367",
+  "base": "5cbcc9b451cf286e1b7c680426c857dc802e50f3",
+  "runtime_seconds": 323.601,
+  "run": 13455,
+  "passed": 13455,
+  "failed": 0,
+  "skipped": 45,
+  "log_sha256": "999e72ddc5cc8829906edceb11cbbe9049b2ea1ce032852faa5f93fad5f85b61",
+  "environment": "macOS sandbox-exec minimal-font.sb + fresh XDG/webfont cache",
+  "generated_harness": "Recreated from final test source, manifest check passed",
+  "incoming_pr9053_positive_controls": [
+    "PASS [   0.044s] ( 9171/13455) rhwp::regression_suite_016 issue_8199_control_only_para_line_seg::bookmark_keeps_line_membership",
+    "PASS [   0.060s] ( 9172/13455) rhwp::regression_suite_016 issue_8199_control_only_para_line_seg::char_overlap_keeps_line_membership",
+    "PASS [   0.074s] ( 9174/13455) rhwp::regression_suite_016 issue_8199_control_only_para_line_seg::endnote_keeps_line_membership",
+    "PASS [   0.053s] ( 9175/13455) rhwp::regression_suite_016 issue_8199_control_only_para_line_seg::field_end_does_not_move_an_earlier_line_when_picture_is_appended",
+    "PASS [   0.054s] ( 9176/13455) rhwp::regression_suite_016 issue_8199_control_only_para_line_seg::footnote_keeps_line_membership",
+    "PASS [   0.056s] ( 9177/13455) rhwp::regression_suite_016 issue_8199_control_only_para_line_seg::new_number_keeps_line_membership",
+    "PASS [   0.036s] ( 9179/13455) rhwp::regression_suite_016 issue_8199_control_only_para_line_seg::original_hancom_save_starts_second_line_at_second_table",
+    "PASS [   0.049s] ( 9181/13455) rhwp::regression_suite_016 issue_8199_control_only_para_line_seg::picture_after_both_tables_leaves_line_starts_alone",
+    "PASS [   0.045s] ( 9182/13455) rhwp::regression_suite_016 issue_8199_control_only_para_line_seg::picture_between_tables_keeps_line_membership",
+    "PASS [   0.068s] ( 9183/13455) rhwp::regression_suite_016 issue_8199_control_only_para_line_seg::picture_before_first_table_keeps_line_membership",
+    "PASS [   0.050s] ( 9184/13455) rhwp::regression_suite_016 issue_8199_control_only_para_line_seg::ruby_keeps_line_membership",
+    "PASS [   0.033s] ( 9185/13455) rhwp::regression_suite_016 issue_8199_control_only_para_line_seg::section_split_keeps_line_membership_of_moved_paragraph",
+    "PASS [   0.044s] ( 9186/13455) rhwp::regression_suite_016 issue_8199_control_only_para_line_seg::shape_keeps_line_membership"
+  ]
+}

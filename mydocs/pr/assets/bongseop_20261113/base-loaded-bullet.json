@@ -1,0 +1,16 @@
+[
+  {
+    "file": "output/pr-review/bongseop-integration-20261113/base-probe-v3/loaded-bullet-round1.hwpx",
+    "reference": "image2",
+    "path": "BinData/image2.png",
+    "sha256": "fce481932ea5d07a91c7991c09fdadb4bf78f9b4cc8f927188384231f9d12679",
+    "bin_data_count": 2
+  },
+  {
+    "file": "output/pr-review/bongseop-integration-20261113/base-probe-v3/loaded-bullet-round2.hwpx",
+    "reference": "image2",
+    "path": "BinData/image2.png",
+    "sha256": "fce481932ea5d07a91c7991c09fdadb4bf78f9b4cc8f927188384231f9d12679",
+    "bin_data_count": 2
+  }
+]
