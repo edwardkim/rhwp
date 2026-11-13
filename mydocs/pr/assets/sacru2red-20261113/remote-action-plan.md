@@ -44,5 +44,5 @@
 최신 원 head `66900a40be`를 검증한 후속 [#9050](https://github.com/edwardkim/rhwp/pull/9050)도
 `c680b2a58eaade4f3185880fd21d72c2480c4f0a`로 통합했다. 원 PR 두 건은 모두 MERGED다.
 최신 입력 6개·전쪽 12쪽씩과 셀 순서·소유 검사를 확인했으며 [원장](../pr8975-updated-66900a40/README.md)에 구분했다.
-#7620은 OPEN을 유지한다. #8951 감사 댓글은 게시·재확인했고 #8975 댓글은 운영 기록 반영 뒤 게시한다.
-[정리 로그](cleanup-9047.md)에 별도 원격·로컬 브랜치와 worktree/output/debug의 실제 삭제 결과를 남긴다.
+#7620은 OPEN을 유지한다. #8951 감사 댓글을 게시·재확인했고 #8975도 운영 기록 반영 뒤 [감사 댓글](https://github.com/edwardkim/rhwp/pull/8975#issuecomment-6845852907)을 게시·API/브라우저 확인했다.
+[정리 로그](cleanup-9047.md)에 별도 원격·로컬 브랜치와 worktree/output/debug의 실제 삭제 완료 결과를 기록했다.

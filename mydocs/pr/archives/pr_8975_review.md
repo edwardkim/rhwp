@@ -91,3 +91,8 @@ merge는 `c680b2a58eaade4f3185880fd21d72c2480c4f0a`, 시각은 2026-11-13 15:12:
 운영 기록 보존·devel 동기화 뒤 위 계획의 감사 댓글을 게시하고 실제 종료 정리를 완료한다.
 
 병합 후 duration 갱신 43377144591도 ready:true·게시 성공이며 데이터 commit은 `50d327549214e9cbe13c6b3f33d64614f489189b`다. 제품 CI를 병합 후 재실행하지 않았다.
+
+
+## 후속 처리 완료
+
+운영 기록을 devel에 보존한 뒤 [감사 댓글](https://github.com/edwardkim/rhwp/pull/8975#issuecomment-6845852907)을 게시했다. UTF-8 본문을 API 재조회로 대조하고, merge SHA 고정 PNG 4개의 bytes·SHA·이미지 형식을 확인했다. 실제 GitHub 페이지에서 e/f 각 1·2쪽 이미지 4개가 각각 2382×1146으로 표시되는 것도 브라우저에서 확인했다. 원 PR은 최신 head까지 MERGED이며 #7620은 OPEN이다. 전용 원격/로컬 branch와 worktree·루트 output 전체·공용 debug는 [정리 로그](../assets/sacru2red-20261113/cleanup-9047.md)와 같이 제거했다.
