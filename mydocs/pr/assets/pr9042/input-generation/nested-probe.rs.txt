@@ -1,0 +1,62 @@
+use rhwp::document_core::DocumentCore;
+use rhwp::model::control::Control;
+use rhwp::renderer::height_measurer::fit_stored_declared_tail_row_heights;
+
+fn main() {
+    let bytes = std::fs::read("mydocs/pr/assets/coanchored-table-pagination/float-pagination.hwp").unwrap();
+    for (name, two_paragraphs, margin) in [
+        ("nested-tail-single-line", false, 0i16),
+        ("nested-tail-margins", false, 283i16),
+        ("nested-tail-two-paragraphs", true, 0i16),
+    ] {
+        let mut core = DocumentCore::from_bytes(&bytes).unwrap();
+        let mut doc = core.document().clone();
+        let host = &mut doc.sections[0].paragraphs[0];
+        host.controls.truncate(4);
+        host.char_count -= 8;
+        host.align_ctrl_data_records();
+        let Control::Table(body) = &mut host.controls[3] else { panic!() };
+        let original_text = body.cells[1].paragraphs[0].clone();
+        let mut child_paragraphs = vec![original_text.clone()];
+        if two_paragraphs {
+            let mut next = original_text.clone();
+            next.line_segs[0].vertical_pos += next.line_segs[0].line_height;
+            next.source_line_seg_vertical_pos = Some(vec![next.line_segs[0].vertical_pos]);
+            child_paragraphs.push(next);
+        }
+        let Control::Table(mut child) = core.document().sections[0].paragraphs[1].controls[0].clone() else { panic!() };
+        let line_end = child_paragraphs.last().unwrap().line_segs.last().unwrap();
+        let child_height = (line_end.vertical_pos + line_end.line_height
+            + child.cells[0].effective_vertical_padding_hu(&child.padding)) as u32;
+        child.common.width = 12000;
+        child.common.height = child_height;
+        child.common.flow_with_text = true;
+        child.outer_margin_top = margin;
+        child.outer_margin_bottom = margin;
+        child.common.margin.top = margin;
+        child.common.margin.bottom = margin;
+        child.cells[0].width = child.common.width;
+        child.cells[0].height = child_height;
+        child.cells[0].paragraphs = child_paragraphs;
+        let mut nested_host = original_text;
+        nested_host.text.clear();
+        nested_host.char_offsets.clear();
+        nested_host.char_count = 9;
+        nested_host.controls = vec![Control::Table(child)];
+        nested_host.align_ctrl_data_records();
+        nested_host.line_segs[0].line_height = child_height as i32 + 2 * i32::from(margin);
+        nested_host.line_segs[0].text_height = nested_host.line_segs[0].line_height;
+        nested_host.line_segs[0].baseline_distance = nested_host.line_segs[0].line_height;
+        nested_host.source_line_seg_vertical_pos = None;
+        body.cells[1].paragraphs = vec![nested_host];
+        doc.sections[0].raw_stream = None;
+        core.set_document(doc);
+        let out = core.export_hwp_native().unwrap();
+        std::fs::write(format!("output/pr-review/pr9042/{name}.hwp"), &out).unwrap();
+        let parsed = DocumentCore::from_bytes(&out).unwrap();
+        let Control::Table(body) = &parsed.document().sections[0].paragraphs[0].controls[3] else { panic!() };
+        let rows = [700.0, f64::from(body.cells[1].height) / 75.0];
+        let fit = fit_stored_declared_tail_row_heights(&rows, f64::from(body.cell_spacing)/75.0, body,96.0);
+        println!("{name}\tpages={}\tfit={fit:?}\tchild_height={child_height}",parsed.page_count());
+    }
+}

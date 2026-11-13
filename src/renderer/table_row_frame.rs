@@ -243,6 +243,21 @@ fn clean_single_saved_line(para: &Paragraph) -> Option<&LineSeg> {
     .then_some(line)
 }
 
+/// 서로 다른 문단의 지역 원점을 한 셀의 누적 끝점으로 오인하지 않는다.
+/// 닫힌 저장 줄 사다리만 내용 하한의 근거로 사용한다.
+fn saved_single_line_ladder_end(paragraphs: &[Paragraph]) -> Option<i64> {
+    let mut end = None;
+    for paragraph in paragraphs {
+        let line = clean_single_saved_line(paragraph)?;
+        let top = i64::from(line.vertical_pos);
+        if end.is_some_and(|previous| top < previous) {
+            return None;
+        }
+        end = Some(top + i64::from(line.line_height));
+    }
+    end
+}
+
 /// The host line owns the child's complete painted box, including outside margins.
 fn stored_inline_tail_table_fits_line(para: &Paragraph) -> bool {
     let [Control::Table(child)] = para.controls.as_slice() else {
@@ -262,6 +277,18 @@ fn stored_inline_tail_table_fits_line(para: &Paragraph) -> bool {
         || child.cell_spacing < 0
         || child.common.width > i32::MAX as u32
         || height == 0
+        || [
+            child.outer_margin_left,
+            child.outer_margin_right,
+            child.outer_margin_top,
+            child.outer_margin_bottom,
+        ]
+        .iter()
+        .any(|&margin| margin < 0)
+        || i64::from(child.common.width)
+            + i64::from(child.outer_margin_left)
+            + i64::from(child.outer_margin_right)
+            > i64::from(line.segment_width)
         || height + i64::from(child.outer_margin_top) + i64::from(child.outer_margin_bottom)
             != i64::from(line.line_height)
     {
@@ -270,24 +297,30 @@ fn stored_inline_tail_table_fits_line(para: &Paragraph) -> bool {
 
     let mut width = u64::from(child.cell_spacing as u16) * (child.cells.len() - 1) as u64;
     for (col, cell) in child.cells.iter().enumerate() {
-        let [para] = cell.paragraphs.as_slice() else {
+        let Some(content_end) = saved_single_line_ladder_end(&cell.paragraphs) else {
             return false;
         };
-        let Some(line) = clean_single_saved_line(para) else {
-            return false;
-        };
+        let padding = cell.effective_padding(&child.padding);
+        let inside_width =
+            i64::from(cell.width) - i64::from(padding.left) - i64::from(padding.right);
         if cell.dirty_flag
             || cell.row != 0
             || usize::from(cell.col) != col
             || cell.row_span != 1
             || cell.col_span != 1
             || cell.width == 0
-            || cell.height != child.common.height
-            || !para.controls.is_empty()
-            || i64::from(line.vertical_pos)
-                + i64::from(line.line_height)
-                + i64::from(cell.effective_vertical_padding_hu(&child.padding))
-                != height
+            || cell.height > child.common.height
+            || [padding.left, padding.right, padding.top, padding.bottom]
+                .iter()
+                .any(|&value| value < 0)
+            || cell.paragraphs.iter().any(|paragraph| {
+                let line = &paragraph.line_segs[0];
+                !paragraph.controls.is_empty()
+                    || line.column_start < 0
+                    || i64::from(line.column_start) + i64::from(line.segment_width) > inside_width
+            })
+            // 빈 공간도 자식의 선언 상자가 소유한다. 내용이 상자를 채울 필요는 없다.
+            || content_end + i64::from(padding.top) + i64::from(padding.bottom) > height
         {
             return false;
         }
@@ -357,6 +390,7 @@ pub(crate) fn declared_tail_row_height(
         {
             return None;
         }
+        let mut cell_has_inline_tail_table = false;
         for paragraph in &cell.paragraphs {
             if !paragraph
                 .controls
@@ -369,14 +403,18 @@ pub(crate) fn declared_tail_row_height(
                 return None;
             }
             has_inline_tail_table = true;
+            cell_has_inline_tail_table = true;
         }
-        let content_hu = cell
-            .paragraphs
-            .iter()
-            .flat_map(|paragraph| paragraph.line_segs.iter())
-            .map(|seg| i64::from(seg.vertical_pos) + i64::from(seg.line_height))
-            .max()
-            .unwrap_or(0);
+        let content_hu = if cell_has_inline_tail_table {
+            saved_single_line_ladder_end(&cell.paragraphs)?
+        } else {
+            cell.paragraphs
+                .iter()
+                .flat_map(|paragraph| paragraph.line_segs.iter())
+                .map(|seg| i64::from(seg.vertical_pos) + i64::from(seg.line_height))
+                .max()
+                .unwrap_or(0)
+        };
         let pad = hwpunit_to_px(cell.effective_vertical_padding_hu(&table.padding), dpi);
         let floor = hwpunit_to_px(content_hu as i32, dpi) + pad;
         if floor > content_floor {
