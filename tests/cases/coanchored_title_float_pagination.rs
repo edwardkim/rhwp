@@ -1,13 +1,13 @@
 //! 검사 유형: 관계형·고정형(독립 Print의 전쪽 쪽수).
-//! 주석 갱신: 2026-11-13T18:45:00+09:00.
-//! 직전 파일 변경: 637410dbfa8deb060d1c8739b0bf5e7ae8286c89, 2026-11-13T15:49:10+09:00.
+//! 주석 갱신: 2026-11-13T21:04:18+09:00.
+//! 직전 파일 변경: 7f555caba1b74ddf8a3fe6c51d44523fcb0d5e6d 2026-11-13T18:52:20+09:00.
 //! 측정: 2026-11-13, 96 DPI·PDFium·색상 경계 보정 전 2px raw 실루엣, Native Skia/fresh 최적화 WASM Canvas.
-//! 원 Mac Print 사례 전 2쪽 최저: Native 94.20% / WASM 94.38%.
-//! 무변경 저장·빈 머리말·빈 꼬리말 각각 전 2쪽 최저: Native 96.04% / WASM 96.72%.
+//! 원 Mac Print 사례 전 2쪽 최저: Native 100.00% / WASM 100.00%.
+//! 무변경 저장·빈 머리말·빈 꼬리말 각각 전 2쪽 최저: Native 100.00% / WASM 99.59%.
 //! 실제 한컴 재저장 원 사례와 중첩 한 문단·바깥 여백·두 문단 각각 전 2쪽 최저: Native 100.00% / WASM 99.59%.
-//! 제품 소스 fedc716cbe810985c798254b370962e24aa4ffcf; 전쪽 TSV: mydocs/pr/assets/pr9042/final-visual/.
+//! 제품 소스 47d5b71f32f6b26702768927d21ba34cde441959; 전쪽 TSV·PNG: mydocs/pr/assets/pr9042/final-validation/.
 //! 독립 기준·직접 판독·입력 생성 구분: mydocs/pr/assets/pr9042/native-nested-validation/README.md.
-//! 원 Mac 사례의 기존 글줄/괘선 차이는 위 수치로 면제하지 않는다. 이 파일은 그 픽셀을 고정하지 않는다.
+//! 실제 편집 후 저장의 2→3쪽 경계는 현재 추가 보완 중이며 이 측정으로 면제하지 않는다.
 
 use rhwp::document_core::DocumentCore;
 use rhwp::model::{control::Control, table::Table};
@@ -66,7 +66,234 @@ fn assert_coanchored_tables(bytes: &[u8]) {
         let mut actual = String::new();
         text(table, &mut actual);
         assert_eq!(actual, expected);
+        contents_stay_in_cells(table, None);
     }
+}
+
+fn source_body(document: &rhwp::model::document::Document) -> &Table {
+    document.sections[0].paragraphs[0]
+        .controls
+        .iter()
+        .find_map(|control| match control {
+            Control::Table(table) if table.row_count == 2 => Some(table.as_ref()),
+            _ => None,
+        })
+        .unwrap()
+}
+
+fn rendered_body(core: &DocumentCore) -> RenderNode {
+    let tree = core.build_page_render_tree(0).unwrap();
+    let mut tables = Vec::new();
+    top_level_tables(&tree.root, &mut tables);
+    let body = tables
+        .into_iter()
+        .find(|table| {
+            let mut content = String::new();
+            text(table, &mut content);
+            content.starts_with("BodyEnd of body")
+        })
+        .unwrap();
+    (*body).clone()
+}
+
+fn count_lines(node: &RenderNode) -> usize {
+    usize::from(matches!(node.node_type, RenderNodeType::TextLine(_)))
+        + node.children.iter().map(count_lines).sum::<usize>()
+}
+
+#[test]
+fn coanchored_stale_metrics_keep_source_and_all_empty_paragraphs() {
+    let source = rhwp::parser::parse_hwp(SOURCE).unwrap();
+    let core = DocumentCore::from_bytes(SOURCE).unwrap();
+    let body = rendered_body(&core);
+    let first_cell = body
+        .children
+        .iter()
+        .find(|node| matches!(node.node_type, RenderNodeType::TableCell(_)))
+        .unwrap();
+    let paragraphs = &source_body(&source).cells[0].paragraphs;
+    assert_eq!(
+        count_lines(first_cell),
+        paragraphs.len(),
+        "empty paragraphs retain their real lines"
+    );
+    for (original, current) in paragraphs
+        .iter()
+        .zip(&source_body(core.document()).cells[0].paragraphs)
+    {
+        assert_eq!(original.text, current.text);
+        assert_eq!(original.line_segs.len(), current.line_segs.len());
+        for (original, current) in original.line_segs.iter().zip(&current.line_segs) {
+            assert_eq!(
+                (
+                    original.vertical_pos,
+                    original.line_height,
+                    original.text_height,
+                    original.baseline_distance,
+                    original.line_spacing
+                ),
+                (
+                    current.vertical_pos,
+                    current.line_height,
+                    current.text_height,
+                    current.baseline_distance,
+                    current.line_spacing
+                ),
+                "the renderer projects current geometry without rewriting source IR"
+            );
+        }
+    }
+}
+
+#[test]
+fn coanchored_managed_cache_survives_public_save_and_reopen_paths() {
+    let core = DocumentCore::from_bytes(SOURCE).unwrap();
+    let before = rendered_body(&core);
+    let original = source_body(core.document()).cells[0].paragraphs.clone();
+    for bytes in [
+        core.export_hwp_native().unwrap(),
+        core.export_hwp_with_adapter().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ] {
+        assert_coanchored_tables(&bytes);
+        let reopened = DocumentCore::from_bytes(&bytes).unwrap();
+        let after = rendered_body(&reopened);
+        if bytes.starts_with(b"PK") {
+            use rhwp::serializer::hwpx::roundtrip::{
+                diff_exported_hwpx_documents, hwpx_export_expected_document,
+                strip_hwp_to_hwpx_noise,
+            };
+            let expected = hwpx_export_expected_document(&core.hwpx_export_expected_document());
+            let actual = hwpx_export_expected_document(reopened.document());
+            assert!(
+                strip_hwp_to_hwpx_noise(diff_exported_hwpx_documents(&expected, &actual))
+                    .is_empty()
+            );
+            let mut corrupted = actual.clone();
+            let table = corrupted.sections[0].paragraphs[0]
+                .controls
+                .iter_mut()
+                .find_map(|control| match control {
+                    Control::Table(table) if table.row_count == 2 => Some(table),
+                    _ => None,
+                })
+                .unwrap();
+            table.cells[0].paragraphs[0].line_segs[0].baseline_distance += 1;
+            assert!(
+                !strip_hwp_to_hwpx_noise(diff_exported_hwpx_documents(&expected, &corrupted))
+                    .is_empty(),
+                "verification still detects a real saved baseline corruption"
+            );
+        }
+        assert_eq!(count_lines(&before), count_lines(&after));
+        assert!(
+            (last_text_baseline(&before) - last_text_baseline(&after)).abs() < 1e-6,
+            "the saved cache retains the same current baseline"
+        );
+    }
+    for (before, after) in original
+        .iter()
+        .zip(&source_body(core.document()).cells[0].paragraphs)
+    {
+        assert_eq!(
+            before.line_segs[0].baseline_distance,
+            after.line_segs[0].baseline_distance
+        );
+        assert_eq!(
+            before.line_segs[0].vertical_pos,
+            after.line_segs[0].vertical_pos
+        );
+    }
+}
+
+fn last_text_baseline(node: &RenderNode) -> f64 {
+    if let RenderNodeType::TextRun(run) = &node.node_type {
+        if run.text == "End of body" {
+            return run.baseline;
+        }
+    }
+    node.children
+        .iter()
+        .map(last_text_baseline)
+        .fold(0.0, f64::max)
+}
+
+#[test]
+fn coanchored_cache_refresh_requires_the_current_section_receipt() {
+    let current = DocumentCore::from_bytes(SOURCE).unwrap();
+    let mut foreign = current.document().clone();
+    let marker = &mut foreign
+        .extra_streams
+        .iter_mut()
+        .find(|(name, _)| name == "/RhwpLineSegTags")
+        .unwrap()
+        .1;
+    *marker.last_mut().unwrap() ^= 1;
+    let mut core = DocumentCore::from_bytes(SOURCE).unwrap();
+    core.set_document(foreign);
+    let stored = source_body(core.document()).cells[0]
+        .paragraphs
+        .last()
+        .unwrap()
+        .line_segs[0]
+        .baseline_distance;
+    let before = last_text_baseline(&rendered_body(&core));
+    assert!(
+        (before - f64::from(stored) / 75.0).abs() < 1e-6,
+        "an unauthenticated cache follows the original stored-frame contract"
+    );
+    assert!(
+        last_text_baseline(&rendered_body(&current)) < before,
+        "current styles replace the old baseline only in the managed cache"
+    );
+}
+
+#[test]
+fn coanchored_large_empty_struts_with_current_fixed_advance_are_retained() {
+    let mut core = DocumentCore::from_bytes(SOURCE).unwrap();
+    let mut document = core.document().clone();
+    let body = document.sections[0].paragraphs[0]
+        .controls
+        .iter_mut()
+        .find_map(|control| match control {
+            Control::Table(table) if table.row_count == 2 => Some(table.as_mut()),
+            _ => None,
+        })
+        .unwrap();
+    let style_id = usize::from(body.cells[0].paragraphs[0].para_shape_id);
+    // Independent synthetic contract: larger blank em boxes can be intentional.
+    // The current fixed advance agrees with their cached height + trailing gap.
+    let advance = body.cells[0].paragraphs[1].line_segs[0].line_height
+        + body.cells[0].paragraphs[1].line_segs[0].line_spacing;
+    let last = body.cells[0].paragraphs.last_mut().unwrap();
+    last.line_segs[0].line_spacing = advance - last.line_segs[0].line_height;
+    let style = &mut document.doc_info.para_shapes[style_id];
+    assert_eq!(
+        style.line_spacing_type,
+        rhwp::model::style::LineSpacingType::Fixed
+    );
+    style.line_spacing = advance * 2;
+    style.line_spacing_v2 = (advance * 2) as u32;
+    style.raw_data = None;
+    document.doc_info.raw_stream = None;
+    document.sections[0].raw_stream = None;
+    core.set_document(document);
+    let bytes = core.export_hwp_native().unwrap();
+    let reopened = DocumentCore::from_bytes(&bytes).unwrap();
+    let paragraphs = &source_body(reopened.document()).cells[0].paragraphs;
+    let stored = paragraphs.last().unwrap().line_segs[0].baseline_distance;
+    assert!(
+        (last_text_baseline(&rendered_body(&reopened)) - f64::from(stored) / 75.0).abs() < 1e-6,
+        "a larger cache is preserved when current paragraph properties still own its advance"
+    );
+    assert_eq!(
+        count_lines(&rendered_body(&reopened)),
+        source_body(reopened.document())
+            .cells
+            .iter()
+            .map(|cell| cell.paragraphs.len())
+            .sum::<usize>()
+    );
 }
 
 #[test]
