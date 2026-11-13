@@ -10,10 +10,10 @@ devel `00d09f773a2f6c21604a4e6394df7152bbb26e8c`에 적용한 `637410dbfa8deb060
 | 입력 | 생성 | 독립 기준 |
 | --- | --- | --- |
 | [원 공개 HWP](../coanchored-table-pagination/float-pagination.hwp) | 기여자가 RHWP 빈 문서에서 생성한 합성 입력. 본문 중첩 표 없음 | [원 Mac Viewer Print](../../../../pdf/coanchored-table-pagination/float-pagination-hancom-mac-viewer-12.31.9-print.pdf), Viewer 12.31.9(6544), macOS 27.0.1, 2쪽 |
-| [무변경 직렬화](../../../../samples/pr9042/metadata-unchanged.hwp) | 아래 생성기의 unchanged, export_hwp_native 후 재열기 | [한컴 2020 Print](../../../../pdf/pr9042/pr9042-unchanged-2020.pdf), 2쪽 |
-| [빈 머리말](../../../../samples/pr9042/metadata-empty-header.hwp) | 같은 원본에 빈 문단 1개를 가진 Header 추가, char_count·control records 갱신, 저장·재열기 | [한컴 2020 Print](../../../../pdf/pr9042/pr9042-empty-header-2020.pdf), 2쪽 |
-| [빈 꼬리말](../../../../samples/pr9042/metadata-empty-footer.hwp) | 같은 방식으로 Footer 추가 | [한컴 2020 Print](../../../../pdf/pr9042/pr9042-empty-footer-2020.pdf), 2쪽 |
-| [한컴 재저장 HWP](../../../../samples/pr9042/pr9042-hancom-saved.hwp) | 원 합성 HWP를 실제 한컴 2020 SaveAs | [해당 저장본의 Print](../../../../pdf/pr9042/pr9042-hancom-saved-2020.pdf), 2쪽 |
+| [무변경 직렬화](../../../../samples/pr9042/metadata-unchanged.hwp) | 아래 생성기의 unchanged, export_hwp_native 후 재열기 | [한컴 2020 Print](../../../../pdf/pr9042/metadata-unchanged-hwp-2020.pdf), 2쪽 |
+| [빈 머리말](../../../../samples/pr9042/metadata-empty-header.hwp) | 같은 원본에 빈 문단 1개를 가진 Header 추가, char_count·control records 갱신, 저장·재열기 | [한컴 2020 Print](../../../../pdf/pr9042/metadata-empty-header-hwp-2020.pdf), 2쪽 |
+| [빈 꼬리말](../../../../samples/pr9042/metadata-empty-footer.hwp) | 같은 방식으로 Footer 추가 | [한컴 2020 Print](../../../../pdf/pr9042/metadata-empty-footer-hwp-2020.pdf), 2쪽 |
+| [한컴 재저장 HWP](../../../../samples/pr9042/pr9042-hancom-saved.hwp) | 원 합성 HWP를 실제 한컴 2020 SaveAs | [해당 저장본의 Print](../../../../pdf/pr9042/pr9042-hancom-saved-hwp-2020.pdf), 2쪽 |
 
 Windows 기준은 hwp-convert MCP의 engine 2020, 실제 한컴 `11.0.0.9136`,
 `pdf_print_method=0`, `hancom2020_pdf_driver_one_up`이다. 각 작업은 terminal succeeded와 result success를 확인했다.

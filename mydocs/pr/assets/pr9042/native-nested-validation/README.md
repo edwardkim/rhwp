@@ -5,9 +5,9 @@
 
 | 실제 한컴 저장 입력 | 독립 한컴 Print | 원 기여+Header/Footer 보정 Native | 상자 점유 보완 Native |
 | --- | --- | --- | --- |
-| [한 문단 자식 표](../../../../../samples/pr9042/nested-tail-single-line-hancom.hwp) | [전 2쪽](../../../../../pdf/pr9042/nested-tail-single-line-hancom-2020.pdf) | 78.47%, 100.00% | 100.00%, 100.00% |
-| [바깥 여백이 있는 자식 표](../../../../../samples/pr9042/nested-tail-margins-hancom.hwp) | [전 2쪽](../../../../../pdf/pr9042/nested-tail-margins-hancom-2020.pdf) | 78.85%, 100.00% | 100.00%, 100.00% |
-| [두 문단 자식 표](../../../../../samples/pr9042/nested-tail-two-paragraphs-hancom.hwp) | [전 2쪽](../../../../../pdf/pr9042/nested-tail-two-paragraphs-hancom-2020.pdf) | 79.06%, 100.00% | 100.00%, 100.00% |
+| [한 문단 자식 표](../../../../../samples/pr9042/nested-tail-single-line-hancom.hwp) | [전 2쪽](../../../../../pdf/pr9042/nested-tail-single-line-hancom-hwp-2020.pdf) | 78.47%, 100.00% | 100.00%, 100.00% |
+| [바깥 여백이 있는 자식 표](../../../../../samples/pr9042/nested-tail-margins-hancom.hwp) | [전 2쪽](../../../../../pdf/pr9042/nested-tail-margins-hancom-hwp-2020.pdf) | 78.85%, 100.00% | 100.00%, 100.00% |
+| [두 문단 자식 표](../../../../../samples/pr9042/nested-tail-two-paragraphs-hancom.hwp) | [전 2쪽](../../../../../pdf/pr9042/nested-tail-two-paragraphs-hancom-hwp-2020.pdf) | 79.06%, 100.00% | 100.00%, 100.00% |
 
 각 `*-before.tsv`·`*-after.tsv`는 같은 입력/PDF의 전쪽 Native TSV 원본이다.
 96 DPI·compat 2022·Native Skia Print·PDFium·색상 경계 보정 전 2px raw다.
