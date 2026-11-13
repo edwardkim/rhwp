@@ -1,5 +1,7 @@
 //! 본문에서 지운 그림은 HWPX 저장 파일의 `BinData/` 에도 남지 않는다.
 //! 불러올 때부터 참조가 없던 항목은 원본 그대로 옮긴다.
+//! 검사 유형: 구조·관계형 — 저장 패키지의 자원 소유·바이트 보존·참조 정합을 검사한다.
+//! PDF 일치율은 비해당: 그림의 화면 좌표나 모양을 고정하지 않는 직렬화 계약이다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::io::{Cursor, Read};
@@ -164,4 +166,85 @@ fn picture_bullet_follows_its_image_when_an_earlier_picture_is_dropped() {
         .image_reference();
     let content = &document.bin_data_content[usize::from(image.expect("bullet image")) - 1];
     assert_eq!(content.data.load(), BLUE_PNG);
+}
+
+/// 그림 컨트롤이 실제로 소유하는 바이트를 모은다. 저장 순번 자체를 기대값으로 고정하지 않는다.
+fn owned_picture_bytes(core: &DocumentCore) -> Vec<Vec<u8>> {
+    core.document()
+        .sections
+        .iter()
+        .flat_map(|section| &section.paragraphs)
+        .flat_map(|paragraph| &paragraph.controls)
+        .filter_map(|control| match control {
+            Control::Picture(picture) => Some(
+                core.document().bin_data_content[usize::from(picture.image_attr.bin_data_id - 1)]
+                    .data
+                    .load()
+                    .to_vec(),
+            ),
+            _ => None,
+        })
+        .collect()
+}
+
+#[test]
+fn remaining_picture_survives_two_saves_in_both_formats_without_mutating_live_resources() {
+    for hwpx in [true, false] {
+        let mut core = blank();
+        insert_picture(&mut core, RED_PNG);
+        insert_picture(&mut core, BLUE_PNG);
+        let red = picture_controls(&core)
+            .into_iter()
+            .find(|&index| {
+                matches!(&core.document().sections[0].paragraphs[0].controls[index],
+                Control::Picture(picture) if picture.image_attr.bin_data_id == 1)
+            })
+            .expect("first picture owns the red payload");
+        core.delete_picture_control_native(0, 0, red)
+            .expect("delete first picture");
+        let live_resources = core.document().bin_data_content.len();
+        assert_eq!(owned_picture_bytes(&core), vec![BLUE_PNG.to_vec()]);
+        let save = |document: &DocumentCore| {
+            if hwpx {
+                document.export_hwpx_native().expect("save HWPX")
+            } else {
+                document.export_hwp_native().expect("save HWP")
+            }
+        };
+        let bytes = save(&core);
+        assert_eq!(core.document().bin_data_content.len(), live_resources);
+        if hwpx {
+            assert_eq!(saved_bin_data(&bytes), vec![BLUE_PNG.to_vec()]);
+        }
+        let reopened = DocumentCore::from_bytes(&bytes).expect("first reopen");
+        assert_eq!(owned_picture_bytes(&reopened), vec![BLUE_PNG.to_vec()]);
+        let second = save(&reopened);
+        if hwpx {
+            assert_eq!(saved_bin_data(&second), vec![BLUE_PNG.to_vec()]);
+        }
+        let reopened_twice = DocumentCore::from_bytes(&second).expect("second reopen");
+        assert_eq!(
+            owned_picture_bytes(&reopened_twice),
+            vec![BLUE_PNG.to_vec()]
+        );
+    }
+}
+
+#[test]
+fn saving_after_deletion_keeps_the_internal_clipboard_picture_available() {
+    let mut core = blank();
+    insert_picture(&mut core, RED_PNG);
+    let red = picture_controls(&core)[0];
+    core.copy_control_native(0, 0, &[], red)
+        .expect("copy picture");
+    core.delete_picture_control_native(0, 0, red)
+        .expect("delete copied picture");
+    assert!(saved_bin_data(&core.export_hwpx_native().expect("save after deletion")).is_empty());
+    core.paste_control_native(0, 0, 0)
+        .expect("paste after save");
+    assert_eq!(owned_picture_bytes(&core), vec![RED_PNG.to_vec()]);
+    let saved = core.export_hwpx_native().expect("save restored picture");
+    assert_eq!(saved_bin_data(&saved), vec![RED_PNG.to_vec()]);
+    let reopened = DocumentCore::from_bytes(&saved).expect("reopen restored picture");
+    assert_eq!(owned_picture_bytes(&reopened), vec![RED_PNG.to_vec()]);
 }
