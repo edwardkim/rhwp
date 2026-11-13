@@ -23,3 +23,16 @@
 생성 대조군의 통과를 한컴 저장본 일반의 시각 일치로 보고하지 않습니다. 입력과 PDF의 SHA-256은 `MANIFEST.json`에 고정했습니다.
 
 b·c·d 세 파일에는 #8939 에서 `/RhwpLineSegTags` 표지 스트림만 더했습니다(다른 스트림 바이트 동일). rhwp 가 계산한 합성 줄의 LineSeg tag bit 31 을 한/글 저장 줄의 bit 31 과 구별하는 표지이며, 생성 직후 해시는 `MANIFEST.json`의 `generated_sha256`에 남겼습니다. 이 head 이후의 WASM으로 다시 생성하면 표지가 함께 쓰입니다.
+
+## 셀 단위 나눔 대조군 (`generate-cellbreak.mjs`)
+
+`e-cellbreak-row-moves-next-page.hwp`·`f-rowbreak-row-splits-at-line.hwp`는 `devel` `4ab860651`(src 동일 트리)의 web WASM으로 `generate-cellbreak.mjs`를 실행해 만든 **생성 대조군**입니다. 한컴 저장본이 아니며, 같은 패키지로 다시 실행하면 바이트가 같습니다.
+
+두 문서는 앞 문단 30개 · 표 문단 · 빈 문단 · 뒤 문단입니다. 표는 3×2, 비TAC, `TopAndBottom`, 세로 문단 기준 오프셋 0, 바깥 여백 기본값이고 셀마다 한 줄짜리 문단 6개를 넣었습니다. e는 쪽 경계 나눔 «셀 단위로 나눔»(CellBreak, 1), f는 «나눔»(RowBreak, 2)이며 나머지는 같습니다.
+
+현재 기준 PDF는 `pdf/issue7620/*-2020.pdf`이며 동일 입력을 Windows Hancom 2020 `11.0.0.9136`의 MCP Print(method 0, one-up)로 2026-11-13 출력했습니다. 원 기여의 `*-hancomdocs.pdf`는 웹 인쇄 이력으로 보존하고 데스크톱 Print 판정에서 제외합니다. 행 이월은 데스크톱에서도 같으며, 메인테이너가 빈 문단의 후행 간격 중복 역산을 보정한 뒤 두 입력 전 4쪽의 Native/fresh WASM raw는 모두 100.00%입니다.
+
+- e: 1행은 1쪽, 쪽 바닥에 걸린 2행은 6줄 전부와 3행이 2쪽에 있습니다. 한컴은 행을 자르지 않고 통째로 넘깁니다.
+- f: 같은 자리에서 2행을 글줄 경계에서 나눠 1쪽에 1–5줄, 2쪽에 6줄째와 3행을 둡니다(대조군).
+
+TAC 표의 같은 계약은 `tests/cases/issue_7288_cell_unit_row_is_atomic.rs`가 다룹니다. 생성 대조군의 통과를 한컴 저장본 일반의 시각 일치로 보고하지 않습니다.
