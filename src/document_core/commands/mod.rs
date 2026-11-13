@@ -10,6 +10,9 @@ mod clone_identity;
 // 덧말·글자 겹침 넣기와 고치기.
 mod compose_controls;
 pub use compose_controls::ComposeHost;
+// 한컴 조판 부호 지우기·찾아가기의 갈래별 자리.
+mod control_codes;
+pub use control_codes::ControlCode;
 // [#5769] 삭제의 참 역연산 — 조각 저장소. DeleteFragment 타입이 DocumentCore
 // 필드로 쓰이므로 pub(crate).
 pub(crate) mod delete_fragment;
