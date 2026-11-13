@@ -1,12 +1,16 @@
-# PR #9042 최종 보완 검증
+# PR #9042 보완 검증 원장
 
-상태: Native 대상·공개 CLI 저장 검증 완료, 최적화 WASM·필수 회귀와 lint 진행 중. 이 파일은 아직 제출 완료 판정이 아니다.
+제품 source `1506a1c34672931c4f5aa5cb6363fba776225949`, 테스트 source
+`3eaf74839d8f5e0d9744bb6fe401fc8e3727f1e2`, 기준 devel
+`5cbcc9b451cf286e1b7c680426c857dc802e50f3`의 완료 측정이다.
+이후 병합된 #9054의 저장·캐럿 기능 통합과 해당 최종 source 재검증은 별도 기록한다.
 
-제품 source: `47d5b71f32f6b26702768927d21ba34cde441959`. 최신 devel 기준은 `6217d3cbedc9aba707812e5d4e5ea2a1ed53845a`다. 측정은 96 DPI·Print·compat 2022·색상 경계 보정 전 2px raw 실루엣이며, Native는 Skia 직접 PNG다.
+- 목표 8종 전 16쪽은 Native/fresh 최적화 WASM 모두 raw 100.00%다. 전체 대상 22종 전 40쪽씩은 양쪽 모두 90% 이상이다.
+- [전쪽 결과와 명령](completion-page-results.json), [Native base 보존](rebase-preservation-native.json), [보호 3,542쪽](protected/results.json), [편람 383쪽](handbook/gate.json)을 보존한다. 보호 공식값 하락과 기존 source 대비 RGB 차이는 모두 0건이다.
+- 공개 CLI·브라우저 무편집 저장 36건, 실제 편집 저장 12건, 두 형식 반복 저장과 내용 보존을 확인했다. [무편집 저장](roundtrip/results.json)·[편집 화면과 저장](live-edit/README.md)을 구분한다. 실제 직렬화 입력은 hash 별로 같은 디렉터리에 커밋했다.
+- [로컬 필수 검사](local-gates.json): 전체 회귀 13,464건, Native 공식 4,073건, 집중 28건, fmt·Native/WASM/workspace lint·build·suite check 모두 통과했다. 구성상 제외 45건은 성공 건수에 넣지 않았다.
+- [최적화 WASM 빌드](wasm-build.json)는 실제 wrapper와 wasm-opt를 실행하고 Studio 공개 산출물 4개 hash 일치를 확인했다.
+- 목표 문서는 양쪽 같은 HCR 프로그램을 공급했다. 초기 Noto 대체 캡처를 완료 근거로 사용하지 않는다. [저장 줄 원인·글꼴 정정](../source-line-cache/README.md)을 따른다.
+- 96 DPI·Print·compat 2022(새 인쇄 대조군은 2024)·색상 경계 보정 전 2px raw다. 원본과 BodyX는 384 DPI로 독립 Print/Native/WASM을 실제 재출력해 글자의 하강부·괘선·후속 내용 포함을 직접 판독했다.
 
-- 목표 8종 전 16쪽 Native 최저 100.00%. 원본, 무변경 저장, 빈 머리말·꼬리말, 실제 한컴 재저장본, 실제 저장 중첩 3종을 각각 전쪽 비교했다.
-- #8682 대조군 3종 전 6쪽과 최신 devel 기능 5종 전 10쪽도 전쪽 비교했다. Native TSV 16개를 보존했다.
-- 최신 devel을 별도 빌드하고 같은 글꼴 공급으로 비교한 새 기능 5종은 Native PNG 전 10쌍이 동일하다. 기존 환경에서의 90.01% 등 값을 이번 변경의 악화로 판정하지 않았다.
-- 공개 CLI HWP/HWPX 저장 18건은 IR 차이 0건·2→2쪽이다. 원본 2차 반복 저장도 포함한다. 재열기 픽셀과 실제 브라우저 API의 저장 검증은 계속한다.
-
-원본·독립 PDF·합성/실제 저장 입력 구분은 [상위 원장](../README.md), 저장 줄 원인과 승인 범위는 [추적 기록](../source-line-cache/README.md), 실제 중첩 상자는 [독립 한컴 검증](../native-nested-validation/README.md)을 따른다.
+원본·독립 PDF·합성/실제 저장 입력 구분은 [상위 원장](../README.md), 중첩 상자는 [독립 한컴 검증](../native-nested-validation/README.md)을 따른다.

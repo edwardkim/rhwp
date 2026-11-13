@@ -1,0 +1,28 @@
+{
+  "build": {
+    "name": "completion-wasm-build",
+    "source": "1506a1c34672931c4f5aa5cb6363fba776225949",
+    "command": [
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "pkg"
+    ],
+    "exit": 0,
+    "seconds": 1066.707,
+    "artifacts": {
+      "rhwp.js": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+      "rhwp_bg.wasm": "3a09d369551df7d3e419233883412487a5feb17ffec8770fc19fd6d44dbd1457",
+      "rhwp.d.ts": "0c02b535ff3d0458c0c12b25b5f46d68e49be482d32aec9e5d8db03d1f33c2f0",
+      "rhwp_bg.wasm.d.ts": "9d21217c454fa8f1757e7f08e26b27d00c564bcc0be2a228b75bb0dae08aa738"
+    }
+  },
+  "pkg_public_four_file_sha256": {
+    "rhwp.js": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+    "rhwp_bg.wasm": "3a09d369551df7d3e419233883412487a5feb17ffec8770fc19fd6d44dbd1457",
+    "rhwp.d.ts": "0c02b535ff3d0458c0c12b25b5f46d68e49be482d32aec9e5d8db03d1f33c2f0",
+    "rhwp_bg.wasm.d.ts": "9d21217c454fa8f1757e7f08e26b27d00c564bcc0be2a228b75bb0dae08aa738"
+  },
+  "tracked_declarations": "Generated API declarations are outside this PR scope and restored after this consistency check."
+}

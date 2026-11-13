@@ -1,5 +1,9 @@
 # PR #9042 독립 검토 증거
 
+현재 제품의 전쪽·반복 저장·보호 검증은 [최종 원장](final-validation/README.md)을 따른다.
+아래는 접수 시점의 수정 전 증거다. 초기 WASM의 실제 글꼴 공급 설명은
+[저장 줄 추적 기록](source-line-cache/README.md#글꼴-공급과-직접-판독)에서 정정했다.
+
 2026-11-13 검토. 제품 source는 원 head `3ae4eeb332c3b0edbb3a8fbe334daf2b0a48115b`를
 devel `00d09f773a2f6c21604a4e6394df7152bbb26e8c`에 적용한 `637410dbfa8deb060d1c8739b0bf5e7ae8286c89`다.
 [상위 검토](../../pr_9042_review.md)와 [실제 해시·producer·독립 작업](evidence.json)을 따른다.
