@@ -232,12 +232,14 @@ fn project_lists(nodes: &mut Vec<Node>, visibility: &Visibility) -> Result<(), H
     *nodes = output;
     Ok(())
 }
-/// Hidden ranges of one paragraph. Hancom can repeat a range end at a later
-/// run split; a repeated end of a closed range adds no content boundary.
+/// Hidden ranges open in one paragraph. Only an open range hides content.
+/// Hancom can store an end that closes no open range: a repeat at a later run
+/// split, or an end whose begin is absent from the whole document. Such an
+/// end encloses nothing, so it adds no content boundary (Hancom Print keeps
+/// the text before it).
 #[derive(Default)]
 struct Ranges {
     active: HashSet<(String, String)>,
-    closed: HashSet<(String, String)>,
 }
 fn project_content(
     nodes: &mut Vec<Node>,
@@ -272,12 +274,9 @@ fn project_content(
                         }
                     } else {
                         if !ranges.active.remove(&key) {
-                            if ranges.closed.contains(&key) {
-                                continue;
-                            }
-                            return Err(structure("hidden range end without begin"));
+                            // Encloses no open range: no boundary, no paragraph-end merge.
+                            continue;
                         }
-                        ranges.closed.insert(key);
                         hidden_end |= matches!(
                             attribute(element, b"paraend")?.as_deref(),
                             Some("1" | "true")
