@@ -12,8 +12,10 @@
 
 ## 기준 PDF
 
-- `pdf/issue9021/textbox_tac_tables_two_lines-2022.pdf` (1,198 바이트, SHA-256 `93b58ab9db87459cb699b1c3da773db0b013fcb4c6122c979881d5a21b07a018`)
+- `pdf/issue9021/textbox_tac_tables_two_lines-hwp-2020.pdf` (1,198 바이트, SHA-256 `93b58ab9db87459cb699b1c3da773db0b013fcb4c6122c979881d5a21b07a018`)
 - 위 저장본을 같은 한/글 2022(`12.0.0.535`)에서 열어 **인쇄 → Microsoft Print to PDF** 로 출력했다(`Producer: Microsoft: Print To PDF`, A4 1쪽). PDF 제목 `3gridInOneTextBox.hwp` 는 출력 당시의 파일 이름이다(내용은 위 입력과 바이트 동일). 빌드 번호는 출력한 PC 의 한/글 정보에서 확인했다(PDF 메타데이터에는 없음).
+
+파일명의 `hwp-2020`은 `tools/oracle_pdf_selection.py`의 원본 형식·HOffice120 호환 엔진 구분이다. 실제 인쇄 제품은 위에 기록한 한/글 2022이며, 기존 `-2022.pdf`에서 이름만 바꾸었다. PDF 바이트와 SHA-256은 동일하다.
 
 ## 측정
 
