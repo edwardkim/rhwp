@@ -5607,6 +5607,27 @@ let body_height=match nested_body_heights
 
         // 셀 간격 포함한 표 높이
         let cell_spacing = hwpunit_to_px(table.cell_spacing as i32, self.dpi);
+        // 페이지 예약·배치와 저장은 같은 닫힌 행 프레임을 소비한다. 편집 세션
+        // 여부로 현재도 유효한 끝 행의 저장 여유를 원시 셀 최소높이로 되돌리지 않는다.
+        // helper는 현재 내용 하한·줄 유효성·되감김·rowspan을 확인한다.
+        if (self.is_native_hwp5 || self.hwpx_stored_layout)
+            && !table.common.treat_as_char
+            && table.common.text_wrap == crate::model::shape::TextWrap::TopAndBottom
+            && table.common.vert_rel_to == crate::model::shape::VertRelTo::Para
+            && matches!(
+                table.layout_page_break(),
+                TablePageBreak::RowBreak | TablePageBreak::CellBreak
+            )
+        {
+            if let Some(tail) = crate::renderer::table_row_frame::declared_tail_row_height(
+                table,
+                &row_heights,
+                cell_spacing,
+                self.dpi,
+            ) {
+                row_heights[row_count - 1] = tail;
+            }
+        }
         let raw_table_height: f64 =
             row_heights.iter().sum::<f64>() + cell_spacing * (row_count.saturating_sub(1) as f64);
         // TAC 표: common.height(표 속성 높이)를 상한으로 사용

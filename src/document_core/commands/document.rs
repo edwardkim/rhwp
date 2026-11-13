@@ -2708,6 +2708,49 @@ impl DocumentCore {
         }
     }
 
+    /// 첫 유효 셀 편집은 표시 중인 관리 캐시를 같은 편집 메트릭으로 인계한다.
+    /// 원본 raw의 해제·Undo 복원 판정은 기존 편집 종료 지점이 계속 소유한다.
+    pub(crate) fn materialize_managed_cell_metrics_for_edit(&mut self, section_index: usize) {
+        let revision = self
+            .render_normalization
+            .section_revisions
+            .get(section_index)
+            .copied()
+            .unwrap_or(0);
+        if !self
+            .render_normalization
+            .sections
+            .get(section_index)
+            .and_then(Option::as_ref)
+            .is_some_and(|section| section.source_revision == revision)
+        {
+            return;
+        }
+        if !self.owns_section_line_cache(section_index) {
+            return;
+        }
+        // 같은 첫 편집의 여러 mutable 접근에서 구역 전체를 반복 스캔하지 않는다.
+        // 기존 호환 투영도 편집 종료 시 현재 revision으로 다시 파생한다.
+        self.invalidate_render_normalization_section(section_index);
+        let paragraphs = match crate::renderer::render_normalization::stored_text_metrics::managed_cells_for_export_with_storage(
+            &self.document.sections[section_index].paragraphs,
+            &self.styles,
+            self.dpi,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(Some(paragraphs)) => paragraphs,
+            Ok(None) => return,
+            Err(never) => match never {},
+        };
+        self.document.sections[section_index].paragraphs = paragraphs;
+        self.layout_engine.clear_layout_caches();
+        if let Some(dirty) = self.dirty_paragraphs.get_mut(section_index) {
+            *dirty = None;
+        }
+        self.mark_section_dirty(section_index);
+        self.invalidate_page_tree_cache();
+    }
+
     fn managed_line_cache_updates_with_storage<S: crate::storage::Storage>(
         &self,
         storage: &S,

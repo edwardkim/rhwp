@@ -1150,7 +1150,6 @@ impl TypesetEngine {
         if declared_empty_para_float_total.is_some()
             && st.col_count == 1
             && st.profile.hwp5_stored_pagination_layout()
-            && !st.profile.session_edited()
             && !ft.strict_following_plain_text_fit
             && ft.table_footnotes.is_empty()
             && table.caption.is_none()
