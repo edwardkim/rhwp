@@ -1,0 +1,237 @@
+{
+  "source_head": "436b09c7418a6d90b34174c25a149651340ba47c",
+  "record_head": "5fe702dc90ce82822682e6654960e6c5b6622457",
+  "source_identity": {
+    "src": {
+      "producer": "36ebcec9851de80d57b3602f41db1bcd87fa8585",
+      "record": "36ebcec9851de80d57b3602f41db1bcd87fa8585"
+    },
+    "rhwp-studio/src": {
+      "producer": "469e21ed3d34250ac38fa0393a5125aa41f0037b",
+      "record": "469e21ed3d34250ac38fa0393a5125aa41f0037b"
+    },
+    "rhwp-studio/e2e": {
+      "producer": "797b6a76895fa030a7fbaa9df11b96c15d7853be",
+      "record": "797b6a76895fa030a7fbaa9df11b96c15d7853be"
+    },
+    "Cargo.toml": {
+      "producer": "67ffbf80f174ba3465e4454d140f758395833b2e",
+      "record": "67ffbf80f174ba3465e4454d140f758395833b2e"
+    },
+    "Cargo.lock": {
+      "producer": "34d08aa8d5150817968568e1ab6f68af228eeeac",
+      "record": "34d08aa8d5150817968568e1ab6f68af228eeeac"
+    },
+    "tests": {
+      "producer": "a1205baad51ce53a52bb8db292b37f74a6d7253a",
+      "record": "a1205baad51ce53a52bb8db292b37f74a6d7253a"
+    },
+    "scripts": {
+      "producer": "d30f2f45aa31ba1dc637ba8b673510630f4ce99a",
+      "record": "d30f2f45aa31ba1dc637ba8b673510630f4ce99a"
+    }
+  },
+  "integrated_base": "47164eb67a8b3526fbba8cf3f3e017656de929ae",
+  "latest_base": "dd7f453898776c262c00e862e10f47d22a4d6ceb",
+  "latest_code_overlap": [],
+  "native_flutter_ffi_candidate_diff": "",
+  "flutter_scope": "Native/Flutter binding ownership and platform lifecycle code unchanged by #8946; actual shared Native/fresh WASM 3 inputs/8 pages per backend and common Canvas suite verified. Windows device qualification from #9037 is not claimed as rerun on this Mac.",
+  "current_base": "959300e66c58241a47e6d46030b4b0854e59604b",
+  "current_merge_tree": "93e61825dc0f66a8acf5284c6f8eac9204922706",
+  "current_base_advance": {
+    "prs": [
+      9012,
+      9053,
+      9054
+    ],
+    "shared_font_contract": "#9012 family helper came from shared original4e66e76981 already incorporated in candidate. Clean merge confirmed.",
+    "other_scope": "#9053 control-only insertion stream metadata; #9054 BinData pruning and nonprinting empty-paragraph caret. No new source integration performed for documentation-only trailing. Current baseline actual outputs checked separately.",
+    "new_source_paths": [
+      "src/document_core/commands/bin_data_prune.rs",
+      "src/document_core/commands/document.rs",
+      "src/document_core/loaded_frame_restore.rs",
+      "src/document_core/mod.rs",
+      "src/document_core/queries/cursor_rect.rs",
+      "src/model/paragraph.rs",
+      "src/paint/builder.rs",
+      "src/renderer/legacy_font_advances.rs",
+      "src/renderer/native_pua_fonts.rs",
+      "src/renderer/render_tree.rs",
+      "src/renderer/svg.rs"
+    ],
+    "review_sources": [
+      "mydocs/pr/archives/pr_9018_review.md",
+      "mydocs/pr/assets/bongseop_20261113/README.md"
+    ]
+  },
+  "browser_condition": {
+    "candidate_observed": "Chrome/157.0.8103.51",
+    "current_installed": "157.0.8103.51",
+    "same_version": true
+  },
+  "next_base": "d7b927d073489b8c5ea95655224b04096c939534",
+  "next_merge_tree": "43c62f58aac8572624fc5abe1f6a705869193b43",
+  "next_base_advance": {
+    "pr": 9052,
+    "scope": "Picture/shape editing CLI, input validation helper exported only; parser, renderer, WASM API, Studio and render CLI unchanged from 959300e66c. New baseline rebuilt and full TSV comparisons executed independently; no relabel of older results.",
+    "changed_paths": [
+      "mydocs/manual/agent_knowledge_map.md",
+      "mydocs/manual/cli_commands.md",
+      "mydocs/orders/20261114.md",
+      "mydocs/pr/archives/pr_9052_review.md",
+      "mydocs/pr/assets/pr9052_picture_cli_20261113/code-ci.json",
+      "mydocs/pr/assets/pr9052_picture_cli_20261113/validation.json",
+      "src/agent_profiles.rs",
+      "src/cli/commands/edit/header_footer_properties.rs",
+      "src/cli/commands/edit/media.rs",
+      "src/cli/commands/edit/mod.rs",
+      "src/cli/commands/edit/shapes.rs",
+      "src/cli/metadata/capabilities/mod.rs",
+      "src/cli/metadata/help/edit.rs",
+      "src/cli/metadata/mcp/advanced.rs",
+      "src/cli/metadata/mcp/edit_content.rs",
+      "src/document_core/commands/mod.rs",
+      "src/document_core/commands/object_ops/mod.rs",
+      "src/document_core/commands/object_ops/props_check.rs",
+      "src/document_core/mod.rs",
+      "tests/cases/issue_9019_picture_edit_surface.rs",
+      "tests/cases/issue_9020_picture_shape_cli.rs",
+      "tests/cases/set_hf_picture_contract.rs"
+    ],
+    "candidate_overlap": [],
+    "merge_preserves_all_new_code_test_blobs": [
+      {
+        "path": "src/agent_profiles.rs",
+        "upstream_blob": "5faa4b9a01518c631c89e0e6d8641720648e808d",
+        "merge_blob": "5faa4b9a01518c631c89e0e6d8641720648e808d",
+        "identical": true
+      },
+      {
+        "path": "src/cli/commands/edit/header_footer_properties.rs",
+        "upstream_blob": "a24bf2fbbf0547bd44c8ad744eac7ac41f1e916f",
+        "merge_blob": "a24bf2fbbf0547bd44c8ad744eac7ac41f1e916f",
+        "identical": true
+      },
+      {
+        "path": "src/cli/commands/edit/media.rs",
+        "upstream_blob": "0be379e53558df37ae7f20aa6656fb634a715ddb",
+        "merge_blob": "0be379e53558df37ae7f20aa6656fb634a715ddb",
+        "identical": true
+      },
+      {
+        "path": "src/cli/commands/edit/mod.rs",
+        "upstream_blob": "9f4f892ae077093f32a5a9f09e3c0089e6cfca2f",
+        "merge_blob": "9f4f892ae077093f32a5a9f09e3c0089e6cfca2f",
+        "identical": true
+      },
+      {
+        "path": "src/cli/commands/edit/shapes.rs",
+        "upstream_blob": "43bc48d059807287fb60a586e61e6d57d2d4131c",
+        "merge_blob": "43bc48d059807287fb60a586e61e6d57d2d4131c",
+        "identical": true
+      },
+      {
+        "path": "src/cli/metadata/capabilities/mod.rs",
+        "upstream_blob": "9ab8a1db82af70942e1167b81ed38bb7673ebda7",
+        "merge_blob": "9ab8a1db82af70942e1167b81ed38bb7673ebda7",
+        "identical": true
+      },
+      {
+        "path": "src/cli/metadata/help/edit.rs",
+        "upstream_blob": "b5812677f88f16450b02dd0206844e061190b0d8",
+        "merge_blob": "b5812677f88f16450b02dd0206844e061190b0d8",
+        "identical": true
+      },
+      {
+        "path": "src/cli/metadata/mcp/advanced.rs",
+        "upstream_blob": "ba9e443ab4ae1c305fd132c4e2d280d602234676",
+        "merge_blob": "ba9e443ab4ae1c305fd132c4e2d280d602234676",
+        "identical": true
+      },
+      {
+        "path": "src/cli/metadata/mcp/edit_content.rs",
+        "upstream_blob": "769dbd447a2342d4bffb7073c845da038fe0e183",
+        "merge_blob": "769dbd447a2342d4bffb7073c845da038fe0e183",
+        "identical": true
+      },
+      {
+        "path": "src/document_core/commands/mod.rs",
+        "upstream_blob": "7971809d2bcb9472d0004091733b11902799bc63",
+        "merge_blob": "7971809d2bcb9472d0004091733b11902799bc63",
+        "identical": true
+      },
+      {
+        "path": "src/document_core/commands/object_ops/mod.rs",
+        "upstream_blob": "b7d7ee44c6d0d1dba0c0f42390c9ae5690287bb5",
+        "merge_blob": "b7d7ee44c6d0d1dba0c0f42390c9ae5690287bb5",
+        "identical": true
+      },
+      {
+        "path": "src/document_core/commands/object_ops/props_check.rs",
+        "upstream_blob": "f26ba4f864e954a35dd921eb0d4afbb320a566e9",
+        "merge_blob": "f26ba4f864e954a35dd921eb0d4afbb320a566e9",
+        "identical": true
+      },
+      {
+        "path": "src/document_core/mod.rs",
+        "upstream_blob": "d47217e2d551430b224074c00903d2fc5d467cf8",
+        "merge_blob": "d47217e2d551430b224074c00903d2fc5d467cf8",
+        "identical": true
+      },
+      {
+        "path": "tests/cases/issue_9019_picture_edit_surface.rs",
+        "upstream_blob": "d12846ae348033f2534f7a130d068f52ef31ecef",
+        "merge_blob": "d12846ae348033f2534f7a130d068f52ef31ecef",
+        "identical": true
+      },
+      {
+        "path": "tests/cases/issue_9020_picture_shape_cli.rs",
+        "upstream_blob": "4cfa1ad563776b9d6d4b66e1ceb0afd7e39c5fd8",
+        "merge_blob": "4cfa1ad563776b9d6d4b66e1ceb0afd7e39c5fd8",
+        "identical": true
+      },
+      {
+        "path": "tests/cases/set_hf_picture_contract.rs",
+        "upstream_blob": "86a54f7712d4877a7943e71de4beb5c5c578d072",
+        "merge_blob": "86a54f7712d4877a7943e71de4beb5c5c578d072",
+        "identical": true
+      }
+    ]
+  },
+  "superseded_intermediate_base": "6217d3cbedc9aba707812e5d4e5ea2a1ed53845a",
+  "last_base": "dd7f453898776c262c00e862e10f47d22a4d6ceb",
+  "last_merge_tree": "fc335061069a5ba10a3126ac9700a43147b9106b",
+  "last_base_advance": {
+    "pr": 8922,
+    "scope": "PDF import ToUnicode CMap token parser; independent reference PDFs are rasterized by separately identified PDFium. HWP/HWPX product outputs and TSV metrics are regenerated for the new baseline.",
+    "merge_preservation": [
+      {
+        "path": "tests/cases/issue_8919_pdf_cmap_range_entries.rs",
+        "upstream_blob": "265443276279f0b92e830e892f123990c0831654",
+        "merged_blob": "265443276279f0b92e830e892f123990c0831654"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/RHWP_PATCHES.md",
+        "upstream_blob": "ffd2bca7ff3c68db3bd30fc4cbb43ea92183c7e4",
+        "merged_blob": "ffd2bca7ff3c68db3bd30fc4cbb43ea92183c7e4"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/fonts/cmap.rs",
+        "upstream_blob": "b75371a6f6566a3d21b4ca0931e20d7c23bf92e0",
+        "merged_blob": "b75371a6f6566a3d21b4ca0931e20d7c23bf92e0"
+      }
+    ],
+    "worktree": "issue8946-base13; base12 retained unchanged"
+  },
+  "last_producers": {
+    "native_sha256": "024014a491ef8d0d7ffda2a60541dccc08a6a6488a3e95919d2104abc2cb8a09",
+    "wasm_sha256": "33e4c4f6e16720b7079f3eba1e7ab43cf43a4600248661e495e0507ace5c9793",
+    "prior_wasm_hashes": {
+      "base": "fabb6224b3953e00d60f5de29771cf26e781f7d039da03920a6cdb9e1b75a0ed",
+      "latest": "ea322aaeb3ff1238ee8399665b5ccf7cf09c8bd84c0885b77525322029ce2193",
+      "current": "3efd841ce24be1fa0b57da85b943e5f243dde3ecda245ad718446d6a9010d500",
+      "next": "7c102644e24b42261cf61acc8b9fcb7f1416a79c2122a382ee4d90381297b3dd"
+    },
+    "distinct_from_every_prior_baseline": true
+  }
+}

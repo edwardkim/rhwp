@@ -1,0 +1,15 @@
+{
+  "input_sha256": "54bb99587c58a07326b245df47e8a7d14baa8a758f9c90ccf9d1865746641ddb",
+  "pdf_sha256": "3eb5fbad5812a147b22dcedc01e8388f9c7e2b3be425b2e7ce2601b0f9f5bde1",
+  "font_sha256": "ce826cd173e60ddcea2004ebd01d0eb678177f0e8a1e7e5951557b30f8be3b94",
+  "family": "RHWP Hancom Junggothic Symbols",
+  "unicode": "U+25B6",
+  "units_per_em": 1000,
+  "advance": 1000.0,
+  "regular_program_sha256": "d87e3c652276bcea7903b7485dba482feca6482655a3ae044d93f371c27889bd",
+  "bold_program_sha256": "7adaf0f9256ee310e0f2919dbf1a6f3fe767492d95d76a79ccfc6cce1fb1a7a3",
+  "bold_target_program_equal": true,
+  "target_pdf_sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+  "transform": "Identity regular outline and advance; independent bold is same path with 20-unit stroke. Target PDF used for equality only, not construction.",
+  "font_local_only": true
+}

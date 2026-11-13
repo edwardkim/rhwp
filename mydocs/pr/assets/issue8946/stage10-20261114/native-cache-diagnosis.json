@@ -1,0 +1,29 @@
+{
+  "head": "a6cdfdce4cc7d360df6ee1ef8d9ea978340d1b04",
+  "source_contents_changed": false,
+  "old_native_sha256": "8e9db6dd3e9dcfb7d5e4713f3d9fce31bd8b633967d0fd097ca19f2a5ef3afee",
+  "rebuilt_native_sha256": "6a4fc598bfd5ee293a193c7f99e5a077bc359e87305d03803f5c60cd52fde585",
+  "command": [
+    "output/issue8946/venv/bin/python",
+    "output/issue8946/stage9/cached-sweep.py",
+    "--silhouette-only",
+    "--rhwp-bin",
+    "$T7/DeveloperArtifacts/rhwp/workspaces/rhwp-task8946-c6f1b14c/output/issue8946/stage10/rebuilt-head-rhwp",
+    "--hwp",
+    "samples/issue8678/bar_axis_floor.hwpx",
+    "--pdf",
+    "pdf/issue8678/bar_axis_floor-hwpx-2020.pdf",
+    "--key",
+    "pr8900-bar_axis_floor",
+    "--compat",
+    "2022",
+    "--embed-fonts",
+    "--font-path",
+    "output/issue8946/stage10/selected-host-fonts",
+    "--out",
+    "output/issue8946/stage10/diagnose-chart-rebuilt"
+  ],
+  "exit": 0,
+  "raw": 95.88988,
+  "same_devel_png": true
+}

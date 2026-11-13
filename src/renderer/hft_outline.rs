@@ -209,6 +209,13 @@ pub(crate) struct FauxBoldOutline {
 }
 
 impl HftOutlineFonts {
+    /// 쪽별 paint 자원을 해제한다. 이미 확정한 cmap coverage는 유지한다.
+    #[cfg(target_arch = "wasm32")]
+    pub(crate) fn clear_outline_family(&mut self, family: &str) {
+        let family = first_family(family).to_lowercase();
+        self.faces.remove(&family);
+    }
+
     pub(crate) fn clear_family(&mut self, family: &str) {
         self.pua_coverage.clear_family(family);
         self.faces.remove(&first_family(family).to_lowercase());

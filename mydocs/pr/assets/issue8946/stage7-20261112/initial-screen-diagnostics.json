@@ -1,0 +1,7 @@
+{
+  "raw_canvas": "background and guide canvas only, not composited screen evidence",
+  "first_composited_attempt": "viewport clipped and missing explicit image decode wait, diagnostic only",
+  "v2": "corrected string flag and full viewport, superseded by explicit decode-wait v3; allowed to finish",
+  "v3": "successful file open plus all 3 image decodes before full DOM screenshot",
+  "default_embedded": "0 string was incorrectly treated as enabled; rerunning all 3 modes in base/head default-corrected directories"
+}

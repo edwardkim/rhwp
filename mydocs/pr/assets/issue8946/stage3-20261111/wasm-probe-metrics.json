@@ -1,0 +1,41 @@
+{
+  "metrics": [
+    {
+      "page": 350,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 28524,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 608,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 12491,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 686,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 15384,
+      "tolerant_content_match_percent": 100.0
+    }
+  ],
+  "pages": [
+    350,
+    608,
+    686
+  ],
+  "dpi": 96,
+  "source_manifest_sha256": "563afe7e2a166bc3c652f890888bd5c90f26d79941aa9e0ea5b14cb34e502088"
+}

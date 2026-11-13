@@ -1,0 +1,744 @@
+{
+  "source_head": "a6cdfdce4cc7d360df6ee1ef8d9ea978340d1b04",
+  "recorded_at": "2026-11-13T18:39:43.187485+00:00",
+  "method": "독립 Print 좌측/제품 우측 같은 96 DPI. 용지 최대 2px 반올림 차이는 흰 여백으로만 보완하고 리샘플링하지 않았다.",
+  "records": [
+    {
+      "key": "pr9030",
+      "backend": "native",
+      "page": 1,
+      "raw": 99.84609,
+      "panel": "output/issue8946/stage10/reading/pr9030-native-p001.png",
+      "original_dimensions": [
+        [
+          794,
+          1122
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "ccff54707c8d199ed42366c042183a1663d11012c5389eb9c6dc4ca07e631213",
+      "product_png_sha256": "456cb81e5fae29c7cb283beeb12d81b6559c6751062234ad4f2a1dd98479dcee",
+      "observation": "인영 이미지 3개, 캡션, 표 끝과 후속 주석의 소속·순서를 확인했다.",
+      "panel_sha256": "4f30b2862a6e53863454d56736b46cfef73324e89662a86261dc4872a19b2f05",
+      "directly_viewed": true
+    },
+    {
+      "key": "pr9030",
+      "backend": "wasm",
+      "page": 1,
+      "raw": 99.84609,
+      "panel": "output/issue8946/stage10/reading/pr9030-wasm-p001.png",
+      "original_dimensions": [
+        [
+          794,
+          1122
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "ccff54707c8d199ed42366c042183a1663d11012c5389eb9c6dc4ca07e631213",
+      "product_png_sha256": "f558b7986ffd615e668daf9efdc4951e61a7112a00948dae000367bfe47d6b1b",
+      "observation": "인영 이미지 3개, 캡션, 표 끝과 후속 주석의 소속·순서를 확인했다.",
+      "panel_sha256": "f70a144f5ec1219e40109221abed369c8a06b8d97f90cf3f1e2805d89ce6d528",
+      "directly_viewed": true
+    },
+    {
+      "key": "pr9034",
+      "backend": "native",
+      "page": 1,
+      "raw": 97.90983,
+      "panel": "output/issue8946/stage10/reading/pr9034-native-p001.png",
+      "original_dimensions": [
+        [
+          794,
+          1122
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "9f48e7aa7c91e2b51047628cec47447f7a3be7f2bda6d7360b84fca3f14d4dcc",
+      "product_png_sha256": "2b33b4df1f9d629784d6b8a7d56d6bfe8d6a685d0da5eca7e59af8eb69b05b30",
+      "observation": "앞뒤 서식 4쪽의 셀·문단·쪽번호 순서를 확인했다. 독립 PDF의 파일명 머리말 및 제목·본문의 글꼴 농도 차이는 기존 devel에도 있고 이번 출력은 devel과 동일하다.",
+      "panel_sha256": "3ff8c4d8cdb3396495ebbe725873ab5188e5044ddf140677069ce81b3d31540a",
+      "directly_viewed": true
+    },
+    {
+      "key": "pr9034",
+      "backend": "native",
+      "page": 2,
+      "raw": 98.88058,
+      "panel": "output/issue8946/stage10/reading/pr9034-native-p002.png",
+      "original_dimensions": [
+        [
+          794,
+          1122
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "ed930bd660f878ea9b8e2441512542ce103e298a097c19b1e28942181035d5d1",
+      "product_png_sha256": "6b7ec7ff2c7b0068487344cfe3162f7f86c3f3cc3d52dcfd9db03c0ef74af3cb",
+      "observation": "앞뒤 서식 4쪽의 셀·문단·쪽번호 순서를 확인했다. 독립 PDF의 파일명 머리말 및 제목·본문의 글꼴 농도 차이는 기존 devel에도 있고 이번 출력은 devel과 동일하다.",
+      "panel_sha256": "226a568e2b9a06accb8cd219c162f9b3e2a5afefc7556ecd0a79d056b8a75c64",
+      "directly_viewed": true
+    },
+    {
+      "key": "pr9034",
+      "backend": "native",
+      "page": 3,
+      "raw": 97.86467,
+      "panel": "output/issue8946/stage10/reading/pr9034-native-p003.png",
+      "original_dimensions": [
+        [
+          794,
+          1122
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "7ca359268722399b2ccd3e7d2660e95432b3491bb548902ac93a3adea0b60547",
+      "product_png_sha256": "bb836864eaa45c4d445a3575a179cf2b33f186f2e5357afb926247c69ea6c188",
+      "observation": "앞뒤 서식 4쪽의 셀·문단·쪽번호 순서를 확인했다. 독립 PDF의 파일명 머리말 및 제목·본문의 글꼴 농도 차이는 기존 devel에도 있고 이번 출력은 devel과 동일하다.",
+      "panel_sha256": "7de117b8ddc52af79697f4085f96346c754030cdb5ed7bbe9ccf71f54ec99da0",
+      "directly_viewed": true
+    },
+    {
+      "key": "pr9034",
+      "backend": "native",
+      "page": 4,
+      "raw": 98.8185,
+      "panel": "output/issue8946/stage10/reading/pr9034-native-p004.png",
+      "original_dimensions": [
+        [
+          794,
+          1122
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "7b0a31f58c305295725283a443dbd90e66c8ac7f7e3eb4501d0fdfee016484c5",
+      "product_png_sha256": "0a889390c1ddb8a2520cc1573d59f1fd365ebdf955f3623fe6091781bf564642",
+      "observation": "앞뒤 서식 4쪽의 셀·문단·쪽번호 순서를 확인했다. 독립 PDF의 파일명 머리말 및 제목·본문의 글꼴 농도 차이는 기존 devel에도 있고 이번 출력은 devel과 동일하다.",
+      "panel_sha256": "db8f1e93ce050ed904c948e079b3bc97cc58ab293b58b8feeeffc3d7865ee665",
+      "directly_viewed": true
+    },
+    {
+      "key": "pr9034",
+      "backend": "wasm",
+      "page": 1,
+      "raw": 97.8872,
+      "panel": "output/issue8946/stage10/reading/pr9034-wasm-p001.png",
+      "original_dimensions": [
+        [
+          794,
+          1122
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "9f48e7aa7c91e2b51047628cec47447f7a3be7f2bda6d7360b84fca3f14d4dcc",
+      "product_png_sha256": "0f9f5cd2773e0e04df6c831f493c3049170302aef38d817b146abf3d213ee0d0",
+      "observation": "앞뒤 서식 4쪽의 셀·문단·쪽번호 순서를 확인했다. 독립 PDF의 파일명 머리말 및 제목·본문의 글꼴 농도 차이는 기존 devel에도 있고 이번 출력은 devel과 동일하다.",
+      "panel_sha256": "49cf60c59c93cb5e4682972806759930c9bc54b04e573d673611ef780499a100",
+      "directly_viewed": true
+    },
+    {
+      "key": "pr9034",
+      "backend": "wasm",
+      "page": 2,
+      "raw": 98.92731,
+      "panel": "output/issue8946/stage10/reading/pr9034-wasm-p002.png",
+      "original_dimensions": [
+        [
+          794,
+          1122
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "ed930bd660f878ea9b8e2441512542ce103e298a097c19b1e28942181035d5d1",
+      "product_png_sha256": "49ce66011d016de5e2c9dfd4e93b98187f4635ce08f1ea704362d903f6c427d1",
+      "observation": "앞뒤 서식 4쪽의 셀·문단·쪽번호 순서를 확인했다. 독립 PDF의 파일명 머리말 및 제목·본문의 글꼴 농도 차이는 기존 devel에도 있고 이번 출력은 devel과 동일하다.",
+      "panel_sha256": "c46427129f39d5b6a5d198f914f95e3d5d436133ee382aa03b50c9f6a4be0877",
+      "directly_viewed": true
+    },
+    {
+      "key": "pr9034",
+      "backend": "wasm",
+      "page": 3,
+      "raw": 97.86235,
+      "panel": "output/issue8946/stage10/reading/pr9034-wasm-p003.png",
+      "original_dimensions": [
+        [
+          794,
+          1122
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "7ca359268722399b2ccd3e7d2660e95432b3491bb548902ac93a3adea0b60547",
+      "product_png_sha256": "dcc43c53a933f58377fe38ea3d74bd323f5047af9148abee77d9e02e2d047458",
+      "observation": "앞뒤 서식 4쪽의 셀·문단·쪽번호 순서를 확인했다. 독립 PDF의 파일명 머리말 및 제목·본문의 글꼴 농도 차이는 기존 devel에도 있고 이번 출력은 devel과 동일하다.",
+      "panel_sha256": "586a74acd334d6ae8b1e428df2a42e66a5d21d87550ebb08b130fe9691b72ca1",
+      "directly_viewed": true
+    },
+    {
+      "key": "pr9034",
+      "backend": "wasm",
+      "page": 4,
+      "raw": 98.82512,
+      "panel": "output/issue8946/stage10/reading/pr9034-wasm-p004.png",
+      "original_dimensions": [
+        [
+          794,
+          1122
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "7b0a31f58c305295725283a443dbd90e66c8ac7f7e3eb4501d0fdfee016484c5",
+      "product_png_sha256": "88d5ba93f5126934d4d68ddb09ceb10329ae6f2f25966ba104cddf0b669144c2",
+      "observation": "앞뒤 서식 4쪽의 셀·문단·쪽번호 순서를 확인했다. 독립 PDF의 파일명 머리말 및 제목·본문의 글꼴 농도 차이는 기존 devel에도 있고 이번 출력은 devel과 동일하다.",
+      "panel_sha256": "73b067d893e1117767da43eb1c5108b4d8a1ed51ac695bb5610e028037235e21",
+      "directly_viewed": true
+    },
+    {
+      "key": "pr9036",
+      "backend": "native",
+      "page": 1,
+      "raw": 99.98223,
+      "panel": "output/issue8946/stage10/reading/pr9036-native-p001.png",
+      "original_dimensions": [
+        [
+          794,
+          1122
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "16c5d280ce2238fc78f03d85682378dd7dcece963ae0812eac4a0376d42450df",
+      "product_png_sha256": "d88c1495f196d2e8042d941f337526d58f0634f6a3114a7d69acf8cdc483966a",
+      "observation": "4개 표와 서명·직인 상자, 하단 외곽선 및 본문 간격을 확인했다.",
+      "panel_sha256": "bf5e757268f68db8c6e7b2c5ce4d888ff1118d9dc7b67d11b2dbdc21af9c992e",
+      "directly_viewed": true
+    },
+    {
+      "key": "pr9036",
+      "backend": "wasm",
+      "page": 1,
+      "raw": 99.85793,
+      "panel": "output/issue8946/stage10/reading/pr9036-wasm-p001.png",
+      "original_dimensions": [
+        [
+          794,
+          1122
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "16c5d280ce2238fc78f03d85682378dd7dcece963ae0812eac4a0376d42450df",
+      "product_png_sha256": "e3c67f153e9fcf677965b5bd39419c2c34a136f73e20ed256a9f40d955182028",
+      "observation": "4개 표와 서명·직인 상자, 하단 외곽선 및 본문 간격을 확인했다.",
+      "panel_sha256": "14fa5d8905b7227e854ba4a14eacd85ae7770c8272eb5a25481fce7ffbd8f553",
+      "directly_viewed": true
+    },
+    {
+      "key": "pr9041",
+      "backend": "native",
+      "page": 1,
+      "raw": 99.23708,
+      "panel": "output/issue8946/stage10/reading/pr9041-native-p001.png",
+      "original_dimensions": [
+        [
+          794,
+          1122
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "90026a3bc27c43dd8946bda7deae0b770ad63201f341928e93e148e894acf05d",
+      "product_png_sha256": "0ca155b4023c26b8a7587764342e4af6e382c17dc4e8a47b1a3ca16fd46d5d18",
+      "observation": "교육 개요의 표·차트 뒤 내용 및 다음 쪽 비교표의 셀 소속·줄바꿈을 확인했다. 제목 굵기, 사각 글머리 크기, 차트 색상 차이는 devel과 동일한 기존 잔차다.",
+      "panel_sha256": "a738626ee854b3e6d0a3c25d41871cf5c6e65b18f50ecc3d32cb9d4fd4bffd9a",
+      "directly_viewed": true
+    },
+    {
+      "key": "pr9041",
+      "backend": "native",
+      "page": 2,
+      "raw": 99.985,
+      "panel": "output/issue8946/stage10/reading/pr9041-native-p002.png",
+      "original_dimensions": [
+        [
+          794,
+          1122
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "1a33e530dcac21e1e4e007c35929cf3a21b3e9f589f05c823e12cfd20d77228b",
+      "product_png_sha256": "048cd4c93865b8731b207ad581d9231dd89cf0f9f9de22bb1fbd6bfab4c59e90",
+      "observation": "교육 개요의 표·차트 뒤 내용 및 다음 쪽 비교표의 셀 소속·줄바꿈을 확인했다. 제목 굵기, 사각 글머리 크기, 차트 색상 차이는 devel과 동일한 기존 잔차다.",
+      "panel_sha256": "7c4bbf8a333f1fe55a6684a0d11191596cd7d648599f1e550b9ce8cda7371ffb",
+      "directly_viewed": true
+    },
+    {
+      "key": "pr9041",
+      "backend": "wasm",
+      "page": 1,
+      "raw": 98.98059,
+      "panel": "output/issue8946/stage10/reading/pr9041-wasm-p001.png",
+      "original_dimensions": [
+        [
+          794,
+          1122
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "90026a3bc27c43dd8946bda7deae0b770ad63201f341928e93e148e894acf05d",
+      "product_png_sha256": "eda5161eabc92ecb3a5e09a36db5aa8e2cf83db436dfdb45e20170562af0b0a0",
+      "observation": "교육 개요의 표·차트 뒤 내용 및 다음 쪽 비교표의 셀 소속·줄바꿈을 확인했다. 제목 굵기, 사각 글머리 크기, 차트 색상 차이는 devel과 동일한 기존 잔차다.",
+      "panel_sha256": "4605c7df7f60a1ebdfc1152b41b578c02d766cedb507decb545553389cdce8cb",
+      "directly_viewed": true
+    },
+    {
+      "key": "pr9041",
+      "backend": "wasm",
+      "page": 2,
+      "raw": 99.94352,
+      "panel": "output/issue8946/stage10/reading/pr9041-wasm-p002.png",
+      "original_dimensions": [
+        [
+          794,
+          1122
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "1a33e530dcac21e1e4e007c35929cf3a21b3e9f589f05c823e12cfd20d77228b",
+      "product_png_sha256": "7a2975acc09419422c7a65b4113690605f3486825f213c8091d84f6695b56e98",
+      "observation": "교육 개요의 표·차트 뒤 내용 및 다음 쪽 비교표의 셀 소속·줄바꿈을 확인했다. 제목 굵기, 사각 글머리 크기, 차트 색상 차이는 devel과 동일한 기존 잔차다.",
+      "panel_sha256": "f721e2452b3e497648ff70f641b79821692197da5bdf2ef6d8802e9d5e32b64f",
+      "directly_viewed": true
+    },
+    {
+      "key": "pr9018-original",
+      "backend": "native",
+      "page": 1,
+      "raw": 99.98905,
+      "panel": "output/issue8946/stage10/reading/pr9018-original-native-p001.png",
+      "original_dimensions": [
+        [
+          794,
+          1122
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "828ea282bb35cf2d42f36e957e3126827d0bbf8821310dd9335edbce32bed1c6",
+      "product_png_sha256": "36faee7a62ac77c74667c0d1ad2519a37b6ca6784c622278e150b3ca09943b0e",
+      "observation": "앞쪽 모든 기재란·동의서·접수란과 뒤쪽 주의사항·처리 절차가 2쪽에 보존됨을 확인했다.",
+      "panel_sha256": "458870e386b535f9345b5a83e0216d3beaaad942b67e53246df67e476eb27725",
+      "directly_viewed": true
+    },
+    {
+      "key": "pr9018-original",
+      "backend": "native",
+      "page": 2,
+      "raw": 99.9405,
+      "panel": "output/issue8946/stage10/reading/pr9018-original-native-p002.png",
+      "original_dimensions": [
+        [
+          794,
+          1122
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "cb459a987be9c588a98789a93c212b043986db17bc5e2b3626ab3727a411f07b",
+      "product_png_sha256": "5920102a826e92657254e61becd93d096d26857fc7e96d043dd383333b7f8959",
+      "observation": "앞쪽 모든 기재란·동의서·접수란과 뒤쪽 주의사항·처리 절차가 2쪽에 보존됨을 확인했다.",
+      "panel_sha256": "dfd2591def43ba922e1ebc92fb4a511a0daa8a2f840713287dad9390fdd9cfaf",
+      "directly_viewed": true
+    },
+    {
+      "key": "pr9018-original",
+      "backend": "wasm",
+      "page": 1,
+      "raw": 99.91262,
+      "panel": "output/issue8946/stage10/reading/pr9018-original-wasm-p001.png",
+      "original_dimensions": [
+        [
+          794,
+          1122
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "828ea282bb35cf2d42f36e957e3126827d0bbf8821310dd9335edbce32bed1c6",
+      "product_png_sha256": "dd7f81f47f5bc1ade38876f8debc3ef41a414bb619bf7b990d7f8b1a4c35f267",
+      "observation": "앞쪽 모든 기재란·동의서·접수란과 뒤쪽 주의사항·처리 절차가 2쪽에 보존됨을 확인했다.",
+      "panel_sha256": "ec705e80b5de73d38cf04ed8ca9de8e490fea4b1f3398d85f3bf91380fd1eee8",
+      "directly_viewed": true
+    },
+    {
+      "key": "pr9018-original",
+      "backend": "wasm",
+      "page": 2,
+      "raw": 99.83131,
+      "panel": "output/issue8946/stage10/reading/pr9018-original-wasm-p002.png",
+      "original_dimensions": [
+        [
+          794,
+          1122
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "cb459a987be9c588a98789a93c212b043986db17bc5e2b3626ab3727a411f07b",
+      "product_png_sha256": "44597945b35f5be0465f0d18e7641f4c8707efcfbb3398fc69ac2f5ebaa0e7ea",
+      "observation": "앞쪽 모든 기재란·동의서·접수란과 뒤쪽 주의사항·처리 절차가 2쪽에 보존됨을 확인했다.",
+      "panel_sha256": "82cbc2bb235dd3fca6938ca65aff0f3f91645da2d975ffbb7895a7c6965d9c0f",
+      "directly_viewed": true
+    },
+    {
+      "key": "pr9018-edited",
+      "backend": "native",
+      "page": 1,
+      "raw": 99.98775,
+      "panel": "output/issue8946/stage10/reading/pr9018-edited-native-p001.png",
+      "original_dimensions": [
+        [
+          794,
+          1123
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "4a86eedf53c0a0b195b633aac1a9ad9b2ef2c9efdc6245372407d512c994bf05",
+      "product_png_sha256": "36faee7a62ac77c74667c0d1ad2519a37b6ca6784c622278e150b3ca09943b0e",
+      "observation": "그림 삽입 저장본의 기재란·동의서·접수란·뒤쪽 처리 절차가 2쪽에 유지되고 추가 빈 쪽·겹침이 없음을 확인했다.",
+      "panel_sha256": "8babae75b2c909df9386acf03b67d24e8207489855c53dabdbbee6a60d67676d",
+      "directly_viewed": true
+    },
+    {
+      "key": "pr9018-edited",
+      "backend": "native",
+      "page": 2,
+      "raw": 99.94611,
+      "panel": "output/issue8946/stage10/reading/pr9018-edited-native-p002.png",
+      "original_dimensions": [
+        [
+          794,
+          1123
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "c4e482e1af26f948acdfe409141fd577e7f7ab4dda0e623747b40c9fd7dff6ba",
+      "product_png_sha256": "5920102a826e92657254e61becd93d096d26857fc7e96d043dd383333b7f8959",
+      "observation": "그림 삽입 저장본의 기재란·동의서·접수란·뒤쪽 처리 절차가 2쪽에 유지되고 추가 빈 쪽·겹침이 없음을 확인했다.",
+      "panel_sha256": "8da6c9e98fe1de33c43d105f5d479291217ae12b647e59a3de41535dae210f07",
+      "directly_viewed": true
+    },
+    {
+      "key": "pr9018-edited",
+      "backend": "wasm",
+      "page": 1,
+      "raw": 99.91043,
+      "panel": "output/issue8946/stage10/reading/pr9018-edited-wasm-p001.png",
+      "original_dimensions": [
+        [
+          794,
+          1123
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "4a86eedf53c0a0b195b633aac1a9ad9b2ef2c9efdc6245372407d512c994bf05",
+      "product_png_sha256": "dd7f81f47f5bc1ade38876f8debc3ef41a414bb619bf7b990d7f8b1a4c35f267",
+      "observation": "그림 삽입 저장본의 기재란·동의서·접수란·뒤쪽 처리 절차가 2쪽에 유지되고 추가 빈 쪽·겹침이 없음을 확인했다.",
+      "panel_sha256": "c30ec9a081d16d6acfbae27510e976d1c1cffdbfe2372fc31afda179f0806962",
+      "directly_viewed": true
+    },
+    {
+      "key": "pr9018-edited",
+      "backend": "wasm",
+      "page": 2,
+      "raw": 99.83793,
+      "panel": "output/issue8946/stage10/reading/pr9018-edited-wasm-p002.png",
+      "original_dimensions": [
+        [
+          794,
+          1123
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "c4e482e1af26f948acdfe409141fd577e7f7ab4dda0e623747b40c9fd7dff6ba",
+      "product_png_sha256": "44597945b35f5be0465f0d18e7641f4c8707efcfbb3398fc69ac2f5ebaa0e7ea",
+      "observation": "그림 삽입 저장본의 기재란·동의서·접수란·뒤쪽 처리 절차가 2쪽에 유지되고 추가 빈 쪽·겹침이 없음을 확인했다.",
+      "panel_sha256": "a71f08a063f325876420d28f31e1377b42b9d5eb3f105d1b776ff52c28523bc8",
+      "directly_viewed": true
+    },
+    {
+      "key": "cover-bold",
+      "backend": "native",
+      "page": 1,
+      "raw": 100.0,
+      "panel": "output/issue8946/stage10/reading/cover-bold-native-p001.png",
+      "original_dimensions": [
+        [
+          794,
+          1122
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "8a26d571e2c2df5fa56cc5d3867d07a2e282667319438cc8a51159e86c11dc07",
+      "product_png_sha256": "e93b4f4638dae72f998beb263c12558a758133cba1be0d91ca592d4ef1c85eae",
+      "observation": "영문 제목과 하단 굵은 한글의 위치·간격 및 획을 대조했다. Native 영문 래스터 농도는 WASM과 다르며 devel과 동일하다.",
+      "panel_sha256": "89a812cdc9db5ecc739608367a2ea6ed0583b2e74dfeedafcb648581093f753d",
+      "directly_viewed": true
+    },
+    {
+      "key": "cover-bold",
+      "backend": "wasm",
+      "page": 1,
+      "raw": 100.0,
+      "panel": "output/issue8946/stage10/reading/cover-bold-wasm-p001.png",
+      "original_dimensions": [
+        [
+          794,
+          1122
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "8a26d571e2c2df5fa56cc5d3867d07a2e282667319438cc8a51159e86c11dc07",
+      "product_png_sha256": "45158538c3b5776ba792abb75e01b808d4d90b01a5660090d470f618be09384c",
+      "observation": "영문 제목과 하단 굵은 한글의 위치·간격 및 획을 대조했다. Native 영문 래스터 농도는 WASM과 다르며 devel과 동일하다.",
+      "panel_sha256": "1aeb08345a371f3211e94587621933561c44abb5c943aca651713c6721c68195",
+      "directly_viewed": true
+    },
+    {
+      "key": "cover-regular",
+      "backend": "native",
+      "page": 1,
+      "raw": 100.0,
+      "panel": "output/issue8946/stage10/reading/cover-regular-native-p001.png",
+      "original_dimensions": [
+        [
+          794,
+          1122
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "804ea35dcb08f5015763f130202b04f6e0de092b2d573bca8055fbae064946a7",
+      "product_png_sha256": "f832c8c4180657e7ba362b50f0235164768f43109356ee6e616afbfd3c326df1",
+      "observation": "영문 제목과 하단 일반체 한글의 위치·자간을 대조했다. Native 영문 래스터 농도는 WASM과 다르며 devel과 동일하다.",
+      "panel_sha256": "262e116b133c993cfcd95c2f71226a729cec36e841bc0c7f66e8cb4b2f82b09c",
+      "directly_viewed": true
+    },
+    {
+      "key": "cover-regular",
+      "backend": "wasm",
+      "page": 1,
+      "raw": 100.0,
+      "panel": "output/issue8946/stage10/reading/cover-regular-wasm-p001.png",
+      "original_dimensions": [
+        [
+          794,
+          1122
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "804ea35dcb08f5015763f130202b04f6e0de092b2d573bca8055fbae064946a7",
+      "product_png_sha256": "6a46ea52870069abbabb62c83c786b9fa7e8029475f30334b23dd3ad7e6dda85",
+      "observation": "영문 제목과 하단 일반체 한글의 위치·자간을 대조했다. Native 영문 래스터 농도는 WASM과 다르며 devel과 동일하다.",
+      "panel_sha256": "c0e40e7cd5f7a5641b30bb31a08e1b0943612205cf55224dc6f4eec6bd96d7c5",
+      "directly_viewed": true
+    },
+    {
+      "key": "tracking",
+      "backend": "native",
+      "page": 1,
+      "raw": 100.0,
+      "panel": "output/issue8946/stage10/reading/tracking-native-p001.png",
+      "original_dimensions": [
+        [
+          794,
+          1122
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "1cb4a49f711abc683cde7b5d87fc2a38c3db28f72a08f232c3ac0fa53d069509",
+      "product_png_sha256": "bb3500369b9faaf167058c7672e703b408eefa70e2fdbcb1f8a375b952ad0216",
+      "observation": "여섯 줄의 크기·일반체/굵은체·자간과 글자 순서를 확인했다.",
+      "panel_sha256": "0cae391dd081c0a1084e080cc7f41f777ac149c86f0c3256cb4b18fc27de9a18",
+      "directly_viewed": true
+    },
+    {
+      "key": "tracking",
+      "backend": "wasm",
+      "page": 1,
+      "raw": 100.0,
+      "panel": "output/issue8946/stage10/reading/tracking-wasm-p001.png",
+      "original_dimensions": [
+        [
+          794,
+          1122
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "1cb4a49f711abc683cde7b5d87fc2a38c3db28f72a08f232c3ac0fa53d069509",
+      "product_png_sha256": "c84cf158d8522b336cdbc14f34759fb0503ba7f727b65e012c993ff54ca08ae1",
+      "observation": "여섯 줄의 크기·일반체/굵은체·자간과 글자 순서를 확인했다.",
+      "panel_sha256": "348674bcb5ed7f7b261154a3e8ce06ac975aac6bd044ef0a840f0d5e2838140c",
+      "directly_viewed": true
+    },
+    {
+      "key": "mixed",
+      "backend": "native",
+      "page": 1,
+      "raw": 100.0,
+      "panel": "output/issue8946/stage10/reading/mixed-native-p001.png",
+      "original_dimensions": [
+        [
+          794,
+          1122
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "8122fdef46a19127e150f9fa10b4545c06017239715bb554a472174386ca9f35",
+      "product_png_sha256": "6e3103720da8eb9a05b56951e9e9afd5d611b5a98e82783c2dd35838e1e7710b",
+      "observation": "외부 Oracle 이미지와 제목·하단 한글의 위치 및 이미지 주변 간격을 확인했다.",
+      "panel_sha256": "90edaa2ab631e34d08daf5747f250b6ae538f00f70a1a35ec61a0941c6a9e2e5",
+      "directly_viewed": true
+    },
+    {
+      "key": "mixed",
+      "backend": "wasm",
+      "page": 1,
+      "raw": 100.0,
+      "panel": "output/issue8946/stage10/reading/mixed-wasm-p001.png",
+      "original_dimensions": [
+        [
+          794,
+          1122
+        ],
+        [
+          794,
+          1122
+        ]
+      ],
+      "view_padding_only_no_rescale": true,
+      "pdf_png_sha256": "8122fdef46a19127e150f9fa10b4545c06017239715bb554a472174386ca9f35",
+      "product_png_sha256": "e5e59ca3c01cb546c349db39c9fe12b23c269872d715f12ddabe26ea680ce0b3",
+      "observation": "외부 Oracle 이미지와 제목·하단 한글의 위치 및 이미지 주변 간격을 확인했다.",
+      "panel_sha256": "deec91ecc9ed7d9be3e02993d4f5d8406537b80f45ecc42e5029760c5a20d51a",
+      "directly_viewed": true
+    }
+  ],
+  "scope": "새 devel 기능 보존과 연결 표지 사례. 기존 잔차를 신규 해결로 주장하지 않는다."
+}

@@ -1,0 +1,1145 @@
+{
+  "head": "a6cdfdce4cc7d360df6ee1ef8d9ea978340d1b04",
+  "records": [
+    {
+      "path": "samples/issue8690/float_line_rowspan_infront_center.hwp",
+      "sha256": "4e5fce692945707fef8c39b6a980016fff4a2cd91b02f7abf35b01d19fabba4b",
+      "bytes": 14848,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8690/float_line_rowspan_infront_center-hwp-2020.pdf",
+      "sha256": "6cd25f5e58614129f9904b00fbd48c2358ce9b4bf8b61ab18a3c5925b4070b8c",
+      "bytes": 29063,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8573/empty-host-split-table.hwp",
+      "sha256": "8d5066645589188ac67cb768b124ac9a0d3ad511de891d4283ae653f9027fbf7",
+      "bytes": 15360,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8573/empty-host-split-table-hwp-2020.pdf",
+      "sha256": "c8fcd259e7b8909e477d7f143dbfea6141117c993c789b54aeb80c00ca64a11f",
+      "bytes": 15072,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8573/whitespace-host-two-tables-negative-offset.hwp",
+      "sha256": "21d1211966e48852316e71847d80c96a056c4b0dd72e6d46594ddab1308d329f",
+      "bytes": 14336,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8573/whitespace-host-two-tables-negative-offset-hwp-2020.pdf",
+      "sha256": "c2fbeda6f372592d74b7664e77d0690a1cf6adf094a44f0f3a562df0cc205aea",
+      "bytes": 10099,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8939/attach_form_reset.hwp",
+      "sha256": "49fdefd36c8555fa39029ce2dc1f783c6f753c8d7a11b9075d116fa69ccc7e68",
+      "bytes": 47104,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8939/attach_form_reset-2020.pdf",
+      "sha256": "24dccbe14de832a5a11ffd56dc71e72e629fa250dcf636dbebfe9d2e45804b76",
+      "bytes": 120596,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/80168_regulatory_analysis.hwp",
+      "sha256": "c8ad10fe9f07be5119cd804278017aefa46e555bbee4f05f0f5132fe4f591a22",
+      "bytes": 218624,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8996/80168-hwp-2020.pdf",
+      "sha256": "65ec5efa7032afa6c7df4d8351b931d4fb95c927c269bfd213f76c6b57740fec",
+      "bytes": 1050443,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8199_control_only_para_line_seg/passport-picture-at-start.hwp",
+      "sha256": "6be52359642a60194f9f3eda0ae40a4e2d8084bd55979fb12d6d8ece61aa8fb9",
+      "bytes": 89088,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8199_control_only_para_line_seg/passport-picture-at-start-hwp2022-print.pdf",
+      "sha256": "afd03ca1bbdeab436c539994d069aa193741877f5e08f07b2af60adef59d33f7",
+      "bytes": 158700,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue2020/passport_application_lawgo.hwp",
+      "sha256": "ec8bb9495d78bce5de338dae7a4b68a35a96e66fa3a7f324c8318ee8626cac8f",
+      "bytes": 96768,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue2020/passport_application_lawgo-lawgo-2020.pdf",
+      "sha256": "02ecef8dd99a59331476ac2bf755d5b3194899f83d62420e56bfe107ff0e686f",
+      "bytes": 98193,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_clean20_20261113/serialized-inputs/receipt-saved.hwpx",
+      "sha256": "21fc0d7ffe6f3644a84b7ca45e5b93d1a54af4e43189bd05d63e1db60f6b1dc1",
+      "bytes": 18804,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8998/issue-986-receipt-rhwp-hwpx-2020.pdf",
+      "sha256": "37e312be6724837f1929eef0ea7a52dfb315240ba6e097f9d9b8240f85e062dd",
+      "bytes": 89152,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8573/whitespace-host-negative-offset-table.hwp",
+      "sha256": "dfac0c5af294357bad22ccf3132957847b820d4533cdd34d5335dc0781c37662",
+      "bytes": 14336,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8573/whitespace-host-negative-offset-table-hwp-2020.pdf",
+      "sha256": "1fe6711eb710dd8c2abe34c982c2fa84b866202874a4b719cfc9774d50949739",
+      "bytes": 10201,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8931/36341965-cell-square-picture-tac-title.hwpx",
+      "sha256": "2fd2d841ce212c319960b1955fec32effeb55f6a1323c98422f13992446f7da3",
+      "bytes": 71350,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8931/36341965-cell-square-picture-tac-title-2020.pdf",
+      "sha256": "3c7601f12e29cc7e87fe2d799823ba25b28aef5d42a982274be7fa58729b3a66",
+      "bytes": 263796,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8573/picture-cell-page-boundary-text.hwpx",
+      "sha256": "cafac0e88d702a1107e85c4dc35e171cdf06be8e40edf25315df94ace6ddb0cb",
+      "bytes": 10786,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8573/picture-cell-page-boundary-text-hwpx-2024.pdf",
+      "sha256": "baba21dff9905ffffc30a4f772cf81632907df0b7affcffb74bb746a0c78533d",
+      "bytes": 16570,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8981/overlap_spacer_paragraph_bands.hwp",
+      "sha256": "fbef5ac8925ca8ce2cad2eb21c249b87f5f188475b00da251f3680bbb8c93a77",
+      "bytes": 15360,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8981/overlap_spacer_paragraph_bands-2020.pdf",
+      "sha256": "0b325abb69ed801351fdbf1f64ee6fdcbdc6a95d55021e444732f868713957cb",
+      "bytes": 64008,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8573/whitespace-host-split-table.hwp",
+      "sha256": "dba90da10c6bcea9294656046a00ebcb08f17c4d7d0f8fd60729dd6f5e019fde",
+      "bytes": 15360,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8573/whitespace-host-split-table-hwp-2020.pdf",
+      "sha256": "573adcc18805f1256b0258f894e3332bbe909389ba334e279b0219e9814c88cb",
+      "bytes": 15092,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8664/zero_size_para_before_table.hwp",
+      "sha256": "29dc4af9b4b746fbd089cff02029fc97bb8a8419d4818b2ddb7785f0fdbac9ce",
+      "bytes": 11264,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8664/zero_size_para_before_table-hwp-2024.pdf",
+      "sha256": "b46b42542293a39defb63e80a15ca81e33b6f38f5b59cf34e884e53cd949ab95",
+      "bytes": 10824,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8573/whitespace-host-topbottom-stacked-zones.hwp",
+      "sha256": "97e347bc79600c7bd9e72d3705a35352f9e347d9c3c6e49f79928a51519723c8",
+      "bytes": 14848,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8573/whitespace-host-topbottom-stacked-zones-hwp-2020.pdf",
+      "sha256": "98c5bee22b4ff94013f5b0253b643a4650d8554298fd7a196fab35e882a44b6c",
+      "bytes": 11147,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8665/title_line_fits.hwpx",
+      "sha256": "6a5f2edeb685ba47ea170eec3c241e1f3d102d6c306ea0b245aa6090ed9ab3c5",
+      "bytes": 11058,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8665/title_line_fits-hwpx-2024.pdf",
+      "sha256": "c4d1ef4d2c1b0aa95abf762791af4358daae0ffb4ed8e14f726000975b16d437",
+      "bytes": 13446,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue9032/tax_relief_form_date_code.hwp",
+      "sha256": "7c24931d2889c35b23531fe15e465d9181321d68ce84e110417ef187a505bdb2",
+      "bytes": 31716,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue9032/tax_relief_form_date_code-print-2022.pdf",
+      "sha256": "b338f7e5a0b0df65b65d509ee743fe9ded3a2ae2ade681302c65e2f7f03241ff",
+      "bytes": 162409,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/task2279/36358528_gyeoljae.hwpx",
+      "sha256": "7eaad132e6227f89c1b1cc129a76effc19d3fd487cf712095ea433c32842f518",
+      "bytes": 35684,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8995/36358528_gyeoljae-2020.pdf",
+      "sha256": "46205cd2152dbd8a4973b0a940c99e57b8ebc675acca66989fb4b233f34ae2c9",
+      "bytes": 34516,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8968/stored_rows_reflowed_cell.hwpx",
+      "sha256": "bd0ebc3237c97826b3921040e7da93a3d585c1e27e7dac71f7511d59b4190f18",
+      "bytes": 36461,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8968/stored_rows_reflowed_cell-2020.pdf",
+      "sha256": "11ca7cf057169cdf51c169a3bb7a97dd813f64af266e1d518a17950872707628",
+      "bytes": 55989,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8678/column_axis_floor_large.hwpx",
+      "sha256": "d3b1f0ef997fb60cffd1bd112a691f399026dda11c6dbe215c08a9ec987965aa",
+      "bytes": 30870,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8678/column_axis_floor_large-hwpx-2020.pdf",
+      "sha256": "3afb095dbab90fa6b6bba65e198324c741a7aca4d0ebd0425cf8ef1431477a36",
+      "bytes": 300888,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8690/float_line_valign_center.hwp",
+      "sha256": "52fd73d131678d8ff020dbe46e0985f6fff616e26ed025b8a6f1d46af92b8d67",
+      "bytes": 15360,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8690/float_line_valign_center-hwp-2020.pdf",
+      "sha256": "5085071ec9c6c14f6f40b53cc62ac5169c75d9b0e39f5111f057649219239d0d",
+      "bytes": 32640,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8971/36400701-picture-cell-empty-line.hwpx",
+      "sha256": "d3be7513fa996f26ef95166ffa9b4a679905bc117c59e39dde827238db23ea01",
+      "bytes": 35900,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8971/36400701-picture-cell-empty-line-2020.pdf",
+      "sha256": "d7ca1129962060d3c90a8a4d7adfa31018da9ad0636409ab5d0a8b69f92d440e",
+      "bytes": 391345,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8678/bar_axis_floor.hwpx",
+      "sha256": "952db943b46d70849c3f82ba9fe3d4b611ab246ab61018ec4cd451f15989b4d3",
+      "bytes": 33121,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8678/bar_axis_floor-hwpx-2020.pdf",
+      "sha256": "2fbb02306e0e8999686b712cc1c79f83bff50d39311a89fb367ab1d23a8b194e",
+      "bytes": 246905,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8985/36385713-plain-command-guide.hwpx",
+      "sha256": "b2b8e6eb29da8dc82bd302694f01232ab6f9131292f0c6410d74f58105e9087f",
+      "bytes": 17053,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8985/36385713-2020.pdf",
+      "sha256": "e4a2515feaa46c88c5e6dbeb4dae36ca48eae682c46fb1c37a4b632d2be29c00",
+      "bytes": 63208,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8950/36421178-variants.hwpx",
+      "sha256": "9bb1572d98d58ba66da8c4614c73ddb63b5096dba903823382063e14bde0afca",
+      "bytes": 31925,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8950/36421178-variants-2020.pdf",
+      "sha256": "f3162386bf46007110758c410a1908ac42f6b9939298428f2812396d2c6fd7d4",
+      "bytes": 42235,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8995/reflowed_cell_tac_after_spaces.hwpx",
+      "sha256": "bab55a32bb1a4b5e248bda6d11d77d4c0ed31f42a0174a1a0cdcb23d5e915ac8",
+      "bytes": 147947,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8995/reflowed_cell_tac_after_spaces-2020.pdf",
+      "sha256": "b7f4292e735594a310fab692420378ba29844f6ffe168a89478c83e67923ad07",
+      "bytes": 97414,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8690/float_line_valign_top.hwp",
+      "sha256": "76aab9b56afd2b0ccfeeab8184474219b84d34b4ac247acc4cca0afec0e359d4",
+      "bytes": 15360,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8690/float_line_valign_top-hwp-2020.pdf",
+      "sha256": "e18e2e917c8dff0fdd4703d461c11ce627eb48a752147a12fa0aaf91036fe556",
+      "bytes": 32743,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8985/3066825-plain-command-guides.hwpx",
+      "sha256": "ac4d8559dc21acbf7df551e1d188d5649073206e4fa29e614509026f5ef5bfa1",
+      "bytes": 17612,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8985/3066825-2020.pdf",
+      "sha256": "c7a9aa080afc3243c6c01b58891fc7726e1b75e0a96648634ef977208ac8cff7",
+      "bytes": 33521,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8678/column_axis_floor.hwpx",
+      "sha256": "aad66c6c81a1c820c420f14b1043f1ac6593e66860fb325071fa8d83376df5d2",
+      "bytes": 30879,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8678/column_axis_floor-hwpx-2020.pdf",
+      "sha256": "ec2e8e61964d89a2415c1e0ed22c5b65ca193de58772789774938d07e5b24ce0",
+      "bytes": 235201,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8573/whitespace-host-square-then-topbottom-push.hwp",
+      "sha256": "4178f240dc0ecfa74fdc6833c82d0d19d64bd6093a8931c80981e247e2835aa5",
+      "bytes": 14336,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8573/whitespace-host-square-then-topbottom-push-hwp-2020.pdf",
+      "sha256": "d1a1f924975f33a0b29810642d2f34f59027e9904d00a8f85370739658f4b3ca",
+      "bytes": 11079,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8680/wingdings_pua_symbols.hwpx",
+      "sha256": "6173d83f23aed79f162e9c07f5efe19a0590bae650c800a4fcebd49abc73ad8b",
+      "bytes": 6050,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8680/wingdings_pua_symbols-hwpx-2020.pdf",
+      "sha256": "99d96e65b8ad607e662e4408b256fd9f64920e0ccd9caa6a20c24e1e41a3a876",
+      "bytes": 25608,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8573/text-host-topbottom-line-below.hwp",
+      "sha256": "f36c04521e0ff7ec1be2a2152e4b628043935557737ce798bf7f0394505bbf84",
+      "bytes": 14336,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8573/text-host-topbottom-line-below-hwp-2020.pdf",
+      "sha256": "483fdc57d7c4c93fde069a00a4f44d69fc9b4d1ee6a0b2e7e6c71a757874cb29",
+      "bytes": 10098,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8573/empty-host-square-band-600-no-extra-line.hwp",
+      "sha256": "3186a02350c8af4471ffd7099a1af84a0335de94acdbbbeaa1aa1b7178488aa3",
+      "bytes": 14336,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8573/empty-host-square-band-600-no-extra-line-hwp-2020.pdf",
+      "sha256": "a54f77962a36c41acec936f4b52fda6061538b3bbdf7c67aed24a2c037f0d5f7",
+      "bytes": 10440,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8678/column_axis_step_tall.hwpx",
+      "sha256": "825be7aec4ab07af28c80b9358bb69d272dcb8bef80a5770b3370f45b3d02df3",
+      "bytes": 30867,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8678/column_axis_step_tall-hwpx-2020.pdf",
+      "sha256": "a942a5fbc65f78bba87796b8983485ef0890e3961cc106bedd83044c32b60a98",
+      "bytes": 351557,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8573/text-host-square-then-topbottom-push.hwp",
+      "sha256": "07b4e5e54e24ce64340aeb275beb3e482199737c6d8ae283bceecbfe1c8b3eec",
+      "bytes": 14336,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8573/text-host-square-then-topbottom-push-hwp-2020.pdf",
+      "sha256": "3418120390f6480dd0c9cbfb7f5368660b9c088a4114526b8563880868fd43fa",
+      "bytes": 11067,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8573/picture-cell-page-boundary-empty.hwpx",
+      "sha256": "f4358c4534c1a37798a77b1fd9ac0b0610481d545e89fdc6d4db5448f63af39d",
+      "bytes": 10782,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8573/picture-cell-page-boundary-empty-hwpx-2024.pdf",
+      "sha256": "9ac8409b6935303944c5d36333af4d99049a7ed3936081dc4cc4a2e2ea519abd",
+      "bytes": 16339,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8573/empty-host-square-band-1450-beside.hwp",
+      "sha256": "2c8763ca2989ae9125e136740890d1a5ea725f0f87a4f41ff0a49770777d6947",
+      "bytes": 14336,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8573/empty-host-square-band-1450-beside-hwp-2020.pdf",
+      "sha256": "02c2be8a1129815143a247c6a941bd193aabb3775c2399608e227ba3e16e4218",
+      "bytes": 10442,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue-986-receipt.hwp",
+      "sha256": "38371563b4f9a53a1b7c2584eb5cd77b6cc2bb13dbf37294d0b797516b1c6715",
+      "bytes": 84992,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue9005/issue-986-receipt-hwp-2020.pdf",
+      "sha256": "a7748c192e47a54b97e7f2bd10c37c94f25c4fd42b2f9484ddcecd4b7b0529ea",
+      "bytes": 89152,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8573/picture-cell-short-empty.hwpx",
+      "sha256": "21aeec31c8548de437bd2a1bbcd743c9b859fd1ed21ad6c1c25d7e2f8e014ea2",
+      "bytes": 10391,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8573/picture-cell-short-empty-hwpx-2024.pdf",
+      "sha256": "614596ac63e865caa84ef54cf7ceb029e555e46432c5fc1b42893e9a4c9e655c",
+      "bytes": 15220,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8573/empty-host-square-then-topbottom-push.hwp",
+      "sha256": "e9e16c4f57d9d356b9b3a8dd3989edf0d4bd10f902f3ce3c45d6a9be4adab0cb",
+      "bytes": 14848,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8573/empty-host-square-then-topbottom-push-hwp-2020.pdf",
+      "sha256": "6e8264d8402a757cdb34de9727350773018fa218e002824f731da2cd583fc614",
+      "bytes": 13860,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8573/text-host-split-table.hwp",
+      "sha256": "85d29b9ae1f6f1254503e744d1e71d37959608b9636f855e04fb11d4bf226738",
+      "bytes": 15360,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8573/text-host-split-table-hwp-2020.pdf",
+      "sha256": "0683de7c2cb1b6504fb93216a19e914500d5592af59db0299d882c258fac39d3",
+      "bytes": 15318,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_clean20_20261113/serialized-inputs/pr9003-saved.hwpx",
+      "sha256": "511bb5b430d2ede35c7c0dfc617f7a4f29ee5ee24d24615efbb4fe4b1ed1c15d",
+      "bytes": 169015,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8996/80168-rhwp-hwpx-2020.pdf",
+      "sha256": "ede3439ae8981b952b4d68e301a499f85a9c56d688068aeaf21cef96911d460b",
+      "bytes": 1050455,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8934/square_host_lane_tail.hwp",
+      "sha256": "33d4311c6c99b961dc6096152e1404b46d02d29d98291c9de0bccefa7162c946",
+      "bytes": 37888,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8934/square_host_lane_tail-2020.pdf",
+      "sha256": "646884eb3d510ef049a28dde147eb488effb3ded6705bfd61caf9321dd7a8a88",
+      "bytes": 39010,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8935/36454139-reflowed-cell-row-growth.hwpx",
+      "sha256": "dad39e1c5ddf8a290420b0158b6a5a7185a406847ab0c8e53fbab382fbbc7dff",
+      "bytes": 59485,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8935/36454139-reflowed-cell-row-growth-2020.pdf",
+      "sha256": "b11d7d1ae9eaaf0920991a81e64504d9a34131d917cdb80e594c6a49b9b2f917",
+      "bytes": 52753,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue9009/1430000-column-break-after-table-continuation.hwp",
+      "sha256": "88482013fb80aa95d994489b44559f2bb53ef3e292a1ea3c3273567a00f83a6a",
+      "bytes": 70144,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue9009/1430000-column-break-after-table-continuation-2020.pdf",
+      "sha256": "66c18d4b85e52aafe7b63e6885eea8a1b26e62dcee78577ece62f0ec007781f3",
+      "bytes": 378118,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8986/36325899-nested-table-top-border.hwpx",
+      "sha256": "ac7d16633d39eed788c65b305613471c709622f698a228bd7bc1008d605fee86",
+      "bytes": 16667,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8986/36325899-2020.pdf",
+      "sha256": "11187f270723648d0693e249877f3fea3bd983ce73f7667519e7f4f6e594b26b",
+      "bytes": 66992,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue9027/1312000-201400081_2015_senior_policy_course.hwp",
+      "sha256": "93d3c39fec006a1a27deff66c5ce7c71bbc361b040c12583c83395dcf7ad120f",
+      "bytes": 69632,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue9027/1312000-201400081_2015_senior_policy_course-hwp-2020.pdf",
+      "sha256": "29c3e37689d5f2769f6db9824afe97c680197b53355c74160f12fa3d315ceafc",
+      "bytes": 187701,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8573/empty-host-square-band-1430-below.hwp",
+      "sha256": "bea3b61b470d9f4d6fd704ee12786c765fde5e1c4fad20d219e2d7397e4f9409",
+      "bytes": 14336,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8573/empty-host-square-band-1430-below-hwp-2020.pdf",
+      "sha256": "1d73e593be48c03af0d2fcc83070598e8bde0f6717b1a98bb4dfc0b9d335cc1a",
+      "bytes": 10443,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8665/title_line_overflows.hwpx",
+      "sha256": "2b30e88a11c007b166560703ed40c917ca0f9fa244795804c108ed45ee770477",
+      "bytes": 11072,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8665/title_line_overflows-hwpx-2024.pdf",
+      "sha256": "6a4d9c305218687056b77d97f40c2798ecc98661597578c87453a87df8a24b4b",
+      "bytes": 13538,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8573/empty-host-square-beside-line.hwp",
+      "sha256": "6b5f643237a5d98d3351d56dd73053becac129b1aa99511a910b298a42f7d4d3",
+      "bytes": 14848,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8573/empty-host-square-beside-line-hwp-2020.pdf",
+      "sha256": "13945fbd0b2fc917edffb75de82a7d897e19f03bb7dde7102d7f094cdb26461c",
+      "bytes": 13859,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8993/31675-rowbreak-overflowing-frame.hwp",
+      "sha256": "03c35242f6d88dd33bde907b64b31b061e600f54ee5e66758e3b5a8c18d84a84",
+      "bytes": 728576,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8993/31675-rowbreak-overflowing-frame-2020.pdf",
+      "sha256": "abad2bc7b5691e5bd6c4b3a5fbaae0eb95b21662f6bc5a3a7472d9027acbb73d",
+      "bytes": 196869,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8950/36446447-forbidden-head-before-long-run.hwpx",
+      "sha256": "5b58a630c7c0fbc038692686589d8926b6a9b70b74d49071f5a0ea6bb5a6eae2",
+      "bytes": 35503,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8950/36446447-forbidden-head-2020.pdf",
+      "sha256": "5451086b76fd3f3ec3d67691bf8f1f40298a43d04b3641df2d024cbb1522867b",
+      "bytes": 39257,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue9029/seal_registration_docinfo_tail.hwp",
+      "sha256": "36fb81b86cc8240b2f4f332934b53ee9b560940ad8fcba201336f6a4e5f29a71",
+      "bytes": 254976,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue9029/seal_registration_docinfo_tail-print-2022.pdf",
+      "sha256": "59dc43ac37507bff738b16d775ce7f8bc9c3bf32c2f83c92a2923bb129735244",
+      "bytes": 138883,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8947/36481164-squeeze-title-cell.hwpx",
+      "sha256": "7cb752425acbb9eaebb144e6f27a895d2d3eabc6fbc6b3059d0c9dce6c46640b",
+      "bytes": 22846,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8947/36481164-squeeze-title-cell-2020.pdf",
+      "sha256": "defb28623048ced692c66fb99542d490de7018678bc02493a842344191ce6b1a",
+      "bytes": 46899,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8573/whitespace-host-topbottom-line-below.hwp",
+      "sha256": "4af3cf6fc98884fa2c872e621bf9d13958654500e337182024cb2f9051774d4b",
+      "bytes": 14336,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8573/whitespace-host-topbottom-line-below-hwp-2020.pdf",
+      "sha256": "7cc39698a47c8228e85a782c029efb389835b8eaf8047898fc42b6523bd34912",
+      "bytes": 9873,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8573/picture-cell-short-spaces.hwpx",
+      "sha256": "3a87ba2d6204b94bfab9eed8cd603b1f2bf90b7ee523bcae6f08e2d38afda416",
+      "bytes": 10396,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8573/picture-cell-short-spaces-hwpx-2024.pdf",
+      "sha256": "a9e8972b356ed052c2df0d00ff7f3ee6b7668db738759c157e9a24b30f35823d",
+      "bytes": 15234,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue9035/field_practice_confirmation_signature.hwp",
+      "sha256": "fd66b8b7f4976f6633cdb4cec3d7b3876271a74882951d02dc7cbebd41f060d8",
+      "bytes": 15360,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue9035/field_practice_confirmation_signature-print-2022.pdf",
+      "sha256": "09bd4b14ec6ff032d7c6cd8c5ba310349c07b24e40823e9f4fc7a0c43eb89e63",
+      "bytes": 36726,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8690/float_line_rowspan_infront_top.hwp",
+      "sha256": "6b75acfc0deab5f1c55408b8143c7f2b936cd716079225b9392af5610ad38de9",
+      "bytes": 14848,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8690/float_line_rowspan_infront_top-hwp-2020.pdf",
+      "sha256": "b63473cdc359fb90d5b423cac252feec6fbb0c4df7d8e7c13e65e4d98857cbe1",
+      "bytes": 29106,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8950/36446447-variants.hwpx",
+      "sha256": "d68b79eafe3e4025bc0c4293416afa679cca7610ba6df087963090d73ec1c8ea",
+      "bytes": 31567,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8950/36446447-variants-2020.pdf",
+      "sha256": "305efa417f770291344db55d89d08e9134d46db9667076aef7106520adc4134f",
+      "bytes": 40778,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8573/text-host-square-paper-companion-beside-line.hwp",
+      "sha256": "24f9f22eede659338a070672d828f0412e589132d432c610bb42a60b9518a516",
+      "bytes": 14848,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8573/text-host-square-paper-companion-beside-line-hwp-2020.pdf",
+      "sha256": "ad616ac4f9851ef0702a9c21fb27ba93d36229a2b51e9c23bc5aeada64161a72",
+      "bytes": 13872,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8573/picture-cell-page-boundary-spaces.hwpx",
+      "sha256": "8c40182058ba97216dcb2678c39eee96ef48cf140362447f9e465b5b11df1850",
+      "bytes": 10787,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8573/picture-cell-page-boundary-spaces-hwpx-2024.pdf",
+      "sha256": "2bff84c3969c4cddd8e64873dcf6e8d69198ecb43c751b907b32675ca1730c0e",
+      "bytes": 16357,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8573/picture-cell-short-text.hwpx",
+      "sha256": "7a4512007260e4e9deba07ebc4b7a11f7ff68e9f83abc3a988be53c6771bdcb7",
+      "bytes": 10395,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8573/picture-cell-short-text-hwpx-2024.pdf",
+      "sha256": "e0a7b19ed5d28cc9e5687285fdd5c4836cfa5df5692e793b65eb20705c162b2d",
+      "bytes": 15449,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue7620/a-rowbreak-float.hwp",
+      "sha256": "44c065e5a770e88903e314b53e1b199f2ab1385e50a79eebb5e8ae8716ec64a3",
+      "bytes": 13312,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue7620/a-rowbreak-float-2020.pdf",
+      "sha256": "55929dc8751d50afbfdbf1679536537d0c94376c6026b7e2f2dc605d0a5a5025",
+      "bytes": 11699,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue7620/hancom2020-saved/e-cellbreak-row-moves-next-page.hwp",
+      "sha256": "635636753ea0193f23867aa6265617563b453f8bee4f44232f8f216fdb8676c5",
+      "bytes": 26112,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue7620/e-cellbreak-row-moves-next-page-hancom-saved-2020.pdf",
+      "sha256": "b2e203ae66ccf534ddcc844c4076324f8357f459b81c72915e72c505f7e45e0b",
+      "bytes": 14596,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue7620/legacy-unmarked/f-rowbreak-row-splits-at-line.hwp",
+      "sha256": "904520801739be5795f0dd64dc907367a15f131ab4b4a985439724fed0936e4b",
+      "bytes": 14336,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue7620/f-rowbreak-row-splits-at-line-2020.pdf",
+      "sha256": "a6f8ffe6c730ac30812dc3a52f8aa6a1585d92e0f118231705c2574624e397b9",
+      "bytes": 14648,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue7621/control-float.hwp",
+      "sha256": "81d61a11efd5070e64767b8cd32491ba8af93ec212351607694e10aece0a9480",
+      "bytes": 13312,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue7620/control-float-2020.pdf",
+      "sha256": "adb141318dcba5240d5794bdbf1245e9c6c4e1569efb9d24b0f79471993b1677",
+      "bytes": 11689,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue7620/legacy-unmarked/e-cellbreak-row-moves-next-page.hwp",
+      "sha256": "e566e14f5a0b4a4b8dbebefc6ab3d233710030ab7f53ee1d7307442ddf54f141",
+      "bytes": 14336,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue7620/e-cellbreak-row-moves-next-page-2020.pdf",
+      "sha256": "a144223cc49c6be43027a5b95e969867dd6ff455115030351271d091183a28c1",
+      "bytes": 14596,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue7620/hancom2020-saved/f-rowbreak-row-splits-at-line.hwp",
+      "sha256": "ba916320d36099c4854087eb2ff8bd65a986a2788eed7fb421f9469521e9dfec",
+      "bytes": 28160,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue7620/f-rowbreak-row-splits-at-line-hancom-saved-2020.pdf",
+      "sha256": "bd35bbddd6d17f7e00aa47b66931f20184aa8a479e2376e91c9251f69efbffa9",
+      "bytes": 14648,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue7620/e-cellbreak-row-moves-next-page.hwp",
+      "sha256": "48b74c6a93f376dec94cbbd9a0f749780566dff85128f341ffe1d5939634e6e1",
+      "bytes": 14336,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue7620/e-cellbreak-row-moves-next-page-tagged-2020.pdf",
+      "sha256": "a06129e96004c6bd58591a1cace0cf0f5c56234168db2bd154f79decd0db77c5",
+      "bytes": 14596,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue7620/f-rowbreak-row-splits-at-line.hwp",
+      "sha256": "627aa762cb53ed673e4e941e46454b717a59683f4daeee9b3189edbc294c8059",
+      "bytes": 14336,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue7620/f-rowbreak-row-splits-at-line-tagged-2020.pdf",
+      "sha256": "9a7344d52ff0b7d565e3e206f522f75f05f1d84aeca5b78711cfb2d8448d9fa8",
+      "bytes": 14648,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue6465/press_release_footer_logos.hwpx",
+      "sha256": "89ec9065432547ae141328dfb957981a26f9dd1b17b9bba9d721e5ae4fbbf5fa",
+      "bytes": 63491,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/pr6485-visual/pr6485-issue6465-press-release-footer-logos-2020.pdf",
+      "sha256": "d5a3db9320675907e92a3407d75ce0726fbe605e5bf19fe9bdc46befd07d1487",
+      "bytes": 453413,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue8160/bitmap-channel-transfer-independent.hwpx",
+      "sha256": "cdb26249443ca1a2e0200245ece0df75255acc7b20278fbdaa8378e398db9784",
+      "bytes": 19887,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8160/bitmap-channel-transfer-independent-2024.pdf",
+      "sha256": "cb99add7db63dc4f783a7484a611b43175fbd08ab68fa5d3b22ddd223dcf4880",
+      "bytes": 6115,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "tests/fixtures/gradient/radial-corner-print-contract.hwpx",
+      "sha256": "01884d8ea148e21fdb68194dd23c353c635903e4fc19d8b242e1efbe1d0aaf0d",
+      "bytes": 8749,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "tests/fixtures/gradient/radial-corner-print-contract-2020.pdf",
+      "sha256": "1f0a7707198e81b8bd9a93efe9e5e6a35fe3ffd9e0131ebb4851c71e9ec2d1a8",
+      "bytes": 35457,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "tests/fixtures/issue8957/cover-regular.hwpx",
+      "sha256": "79e868eefdec63873ab08cb918e85dd7e802f51c828d68fb45eebac3c5ace056",
+      "bytes": 26905,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8957/cover-regular-2024.pdf",
+      "sha256": "701636d1f4d297c47e41a0bd8a2b336cd2c797f58c74137764a35e6587599b34",
+      "bytes": 16715,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "tests/fixtures/issue8957/cover-mixed-images.hwpx",
+      "sha256": "f15acbf3e2b956a4356c447e0778c32afaad061775a89dfdde7ded7bca864091",
+      "bytes": 28829,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8957/cover-mixed-images-2024.pdf",
+      "sha256": "6b3b79c54060c8a960f69e3a505a44a014f79179e72de38fa6b5f7821e63d9d6",
+      "bytes": 19186,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "tests/fixtures/issue8957/strawberry-tracking.hwpx",
+      "sha256": "beab8620cdee0c839dd0f7904f70bb0aedb82e02f23ac996cfe09943f7e3257a",
+      "bytes": 12012,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8957/strawberry-tracking-2024.pdf",
+      "sha256": "4e8fb5e08aebf50830cb1fffcc5d118156d6a1f83403a395e6c25c12c17bb212",
+      "bytes": 20283,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "tests/fixtures/issue8957/cover-linked.hwpx",
+      "sha256": "625a311578ced7a91725998d004590159e0886c5000346279060d7e649b21ab8",
+      "bytes": 26904,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8957/cover-linked-2024.pdf",
+      "sha256": "2088fcfb7498e125306cdcc073bba2307f900087e71f9874d18a91d3aabd6911",
+      "bytes": 16803,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/pic-crop-01.hwp",
+      "sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+      "bytes": 131072,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/pic-crop-01-2022.pdf",
+      "sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+      "bytes": 19211,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+      "bytes": 6848,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+      "sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+      "bytes": 10328,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "tests/fixtures/issue_8109_saved_fonts/body-list-typed-hwp.hwp",
+      "sha256": "ebe04aa214d85ca3f472083ae749f534de446ecf6f58eec532a6c2149839e687",
+      "bytes": 4096,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8109/print/body-list-typed-hwp-2020.pdf",
+      "sha256": "d4c80383b977a0f61e057adadb9f302d591bbb26e0917c61128ee36d37aed5b3",
+      "bytes": 19110,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/re-03-latin-only-hancom.hwp",
+      "sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+      "bytes": 9216,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+      "sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+      "bytes": 11752,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp",
+      "sha256": "2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da",
+      "bytes": 4096,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8109/print/control-styles-hwp-2020.pdf",
+      "sha256": "fd8672dcb24dd7bb1d50983b0545033e7c2513bbb2ecfc48edde1cb4e77058ba",
+      "bytes": 43664,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx",
+      "sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1",
+      "bytes": 140149,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law_hancom2018_print.pdf",
+      "sha256": "1ce35eb7e2d6f93e41834215d6cf7653e3a09ea2fc544856b3df3a89e6d24511",
+      "bytes": 287952,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/task3307/issue3307_outline_number.hwpx",
+      "sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d",
+      "bytes": 57890,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/task3307/issue3307_outline_number-2020.pdf",
+      "sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb",
+      "bytes": 237518,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/pr8040/exam-social-insert.hwp",
+      "sha256": "3c3ff50b430c3129a4ce06575b1a398d01fbd4ec17d9dd895f467a945f656e82",
+      "bytes": 514560,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/pr8040/exam-social-insert-2020.pdf",
+      "sha256": "d368c0ded6f0d9309784e9165aad7360b326a86c01d9938beb95c768ae0d4e74",
+      "bytes": 641866,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/hwp3-sample10.hwp",
+      "sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+      "bytes": 945360,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8371/hwp3-sample10-2020.pdf",
+      "sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+      "bytes": 96185197,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/issue5699/20099369_yeongwol_forms.hwp",
+      "sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09",
+      "bytes": 20800,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue7642-failed-inputs-followup-20261011/20099369_yeongwol_forms-2020.pdf",
+      "sha256": "a04da624238d77da4832dd302017c7d2f559a01da02e4c1b4ae12cfd3f77b123",
+      "bytes": 91696,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/hwp3-sample16-hwp5-2024.hwp",
+      "sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+      "bytes": 3044864,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/hwp3-sample16-hwp5-2024-hwp-2024.pdf",
+      "sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b",
+      "bytes": 2234015,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/2025 행정업무운영 편람(최종).hwp",
+      "sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+      "bytes": 10687488,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf",
+      "sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+      "bytes": 4692840,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/hwp3-sample16-hwp5-2022.hwp",
+      "sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+      "bytes": 3048448,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+      "sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+      "bytes": 1830277,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "bytes": 51712,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+      "sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+      "bytes": 625577,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/hwp3-sample16-hwp5.hwpx",
+      "sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+      "bytes": 3061900,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+      "sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+      "bytes": 2234018,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/pr8040/exam-social-insert-delete.hwp",
+      "sha256": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee",
+      "bytes": 514560,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/pr8040/exam-social-insert-delete-2020.pdf",
+      "sha256": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d",
+      "bytes": 641867,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "samples/shape-group-02.hwp",
+      "sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+      "bytes": 16384,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/shape-group-02-hwp-2020.pdf",
+      "sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+      "bytes": 89651,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwpx.hwpx",
+      "sha256": "3395e19bebea8b6689f383df1f4ea1ddb253dee91c4320392cc40e90e2e4f191",
+      "bytes": 847607,
+      "status": "committed_exact_bytes"
+    },
+    {
+      "path": "pdf/issue8946/hwp3-sample10-hwpx-images-embedded-2024.pdf",
+      "sha256": "45bb4d29b0afea67fb4818a9b605a84201cbdf2998b6c31310d36fb85294cad8",
+      "bytes": 90804612,
+      "status": "large_pdf_local_only"
+    }
+  ]
+}

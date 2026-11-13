@@ -1,0 +1,2163 @@
+{
+  "profile_sha256": "1576eb0cb9e53e700ad4834aed7ff554eb8245a0054a020339c62fc112ac490d",
+  "visible_count": 430,
+  "counts": {
+    "OS 기본": 370,
+    "저장소 공개 fixture": 60
+  },
+  "private_font_probe_count": 71,
+  "private_font_probe": "all denied",
+  "generated_test_font_allowance": "기존 SVG 검사의 PID별 임시 regular/bold 파일을 생성하는 output/pr-review/regression-temp만 추가 허용",
+  "files": [
+    {
+      "category": "OS 기본",
+      "filename": "AppleSDGothicNeo.ttc",
+      "sha256": "e33989af92c53dd2b80efd88f50c404094a046658d0e7a7692619587570e616c"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Menlo.ttc",
+      "sha256": "dc256e0b39c2a6fec947129d421fef41b8b429f58f9b6e5d1b148c87f775c1f6"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STHeiti Medium.ttc",
+      "sha256": "f8fa4a63e2cf500e98e64d4c73260daaba049306cf85dec9e3729bc285b7d645"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Symbol.ttf",
+      "sha256": "fbd16f271abb9bb55708a15c138e3a45924dec215541e95595f7a6918304d867"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Geneva.ttf",
+      "sha256": "b33d76749bbe41ebdffbdfc0330ace133f231d845539063bb2499d6681681a2a"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Hiragino Sans GB.ttc",
+      "sha256": "f887295caf2881cab9554b14c5ab4c9ee624c3895599da152ec37416b5aefae0"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "LastResort.otf",
+      "sha256": "31eee5cd991e615fa7c8288555ace70b1170b4c18e35cbd18cf49428aa41838c"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSerifMyanmar.ttc",
+      "sha256": "ba99aa062aac7a52ee36ba641fe1984176637852f3fcd2317f6d9d022e6cd737"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "HelveticaNeue.ttc",
+      "sha256": "a43317500f5c8086ebbe479b32e86f53ce7c075c14283aa9894cc23be5bfd8e2"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "SFNSMono.ttf",
+      "sha256": "55caaed55254a28ac793847e8976be16c5ba7cbad1ec2ee2d5d86d4e6b3fa0c1"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "ヒラギノ角ゴシック W8.ttc",
+      "sha256": "871fff8eeb3e87f6b0def549cb81449ec7060ddc6dc298bf0bb94a6bc7a26dfe"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Noteworthy.ttc",
+      "sha256": "7785163d9b841cc586d1e696fb4c16a657e16049b092e488a51003e74be8ec21"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansOriya.ttc",
+      "sha256": "5cdd527c8ffa2f2d403ae700d4955294156edc8b75d258e7e8f6079229dcc6ee"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "ヒラギノ角ゴシック W9.ttc",
+      "sha256": "eb2d294fdc4e833705bd8a629097e6f40e59a03da8f12929a2d03b03182c28f0"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "ThonburiUI.ttc",
+      "sha256": "810e5ec99d51fc040764d2b8a652e40c9b01235bebff13680861c0fb80f7e402"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "SFGeorgian.ttf",
+      "sha256": "2883559d4abaa31d7cc89a5864652c5c5a08037bd4bb7814c45c1270d15d673a"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "SFHebrew.ttf",
+      "sha256": "9b492b1a29bd3cc7e7d63095b160b30f93aac1deec65ed3680d0f23941b92a45"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Optima.ttc",
+      "sha256": "1033090a681ea6b7f672febe9e23a91ae6ee06df645cd6efda4a8c1d49975803"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "ZapfDingbats.ttf",
+      "sha256": "8733fa2693d29fa75de52f6893bdfe0b224349c01a1596cf5b9ba2e3d8e81a40"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "SFArmenian.ttf",
+      "sha256": "da7fe100609bb010b83e9100063ea37bead5686a29357160df3ee8952e6694e9"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Apple Braille.ttf",
+      "sha256": "0e8538123007b421c99a7f3bcbaec0c24856ce64a466d79246c473cf569729ad"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Avenir Next Condensed.ttc",
+      "sha256": "2648d9b6344edc3706a4ba14e8c08a03f4640b404090dfca9d991cadbaedeff8"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "LucidaGrande.ttc",
+      "sha256": "d1030f2b3c967b740d236f2a59d38b69705eda36e0633c88eaef06d8b0833ab6"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Courier.ttc",
+      "sha256": "449a068ddd88f179b50b4d6dbb86aa08a30981148b510d5cc30d4ff0cb29e9a6"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "SFCompact.ttf",
+      "sha256": "d31b77f0eecedab8bd990e969817c5d332576e422a3ad69072f8e4c530484d92"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Apple Braille Outline 6 Dot.ttf",
+      "sha256": "aa7570d12d0bd44ef0d736683b600efa0c6eb28ab118a9261009cce1aa06aa1a"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "KohinoorTelugu.ttc",
+      "sha256": "6e55a5b0eb8169b634db0d6345078d6c5637b7a9d375cb56a1742a0944892bc7"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Apple Braille Pinpoint 6 Dot.ttf",
+      "sha256": "40be69c5d8e6a0dde50f22eb4732bb617dfce91aaee354774274d56e3ee5c492"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "MuktaMahee.ttc",
+      "sha256": "1b3107a0b99ccf581ea8b1a3fd36abaee4681d2312d333576e05f13b81f157cc"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NewYork.ttf",
+      "sha256": "296ac5e08bea4da51b7c46eb9647f69be0f56077a9c35b4bc9f433d7e8734771"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "SFNSMonoItalic.ttf",
+      "sha256": "a37d0117486c636ecc7b4f794a9e73bfd0a0c060cb90854a037200d73f67f602"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "SFNS.ttf",
+      "sha256": "2bfd40dc72e6759e248f82a52a40d551338979fffc9b5c070e685b4b7ad19e66"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "SFCamera.ttf",
+      "sha256": "1c89c9953b2ade5ecef874ff42885dc86beb27d5cd47f52d1759c7f7fece82fc"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Avenir.ttc",
+      "sha256": "8a91c65df9df9f597bf9e5460e6c6d2a1c9d7d10c5e1d2af310318df23739490"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Kohinoor.ttc",
+      "sha256": "464b1d1eb2bde3bdd68bed5a2e87af1c54c35712ba532d2c7ec9822be17a01d7"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansMyanmar.ttc",
+      "sha256": "52189a3758c54cb0f37d6452d029d24a866fb1ef89bab970e320fe72cd7b0741"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "SFArmenianRounded.ttf",
+      "sha256": "38b2bd28128c13137bfe857ba453834a37e4db8f95fc1401af5716a88c9287ec"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "ヒラギノ明朝 ProN.ttc",
+      "sha256": "36adcf3dcbec5880364487b380178c6388fcf518cec729ba18a855e71b69495c"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Avenir Next.ttc",
+      "sha256": "98dec241f3ee712a37fad61aafdb83e225ed54c3e5b6e9f0abeb24eba13743ba"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "KohinoorGujarati.ttc",
+      "sha256": "9fbcfdf420f0e85aa03981e2ad2d7757d8c9ac36359fbefb8be428d7dfa32171"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "AquaKana.ttc",
+      "sha256": "2b4483f6cf8e3f1b2721e6f7fe9b6dd5ffdf93e24b27001d6b2f78965c4d1fec"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Palatino.ttc",
+      "sha256": "16ab9a45e8e802db73662cd411cd08402c1360e5c87ffdd4cd0824dc8457bf3e"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Monaco.ttf",
+      "sha256": "e110b2fb6248c654878dee87e9805ac0b2afc8fab19099cf92bfe12ea085c028"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Apple Symbols.ttf",
+      "sha256": "99b1a177669c568bcb157c107ea4ba0f1f60c77021df990cc5c1d7afa3863b92"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoNastaliq.ttc",
+      "sha256": "c6b75b3b3ca434c69e4a1d44205c35de0c57f314cb14c3fc33f1ef0cf0455aa7"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STHeiti Light.ttc",
+      "sha256": "a57b0316cc0544f682b8fb9855e14ade79ae77340ef6a01ba9210e25b4c5a5b7"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NewYorkItalic.ttf",
+      "sha256": "fa03abac96f48bfc4adaf197bf8b96f272d97d0c1b39d9ebda268826e266924b"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "GeezaPro.ttc",
+      "sha256": "5b4309f8d596abee520c0826885a39483a16fb244489d2c313322575df4b04a2"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "SFCompactItalic.ttf",
+      "sha256": "39608005518d32ab6e26973ac1362fe651bed4aed55a3a1cca61e452e12f5814"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "ヒラギノ角ゴシック W7.ttc",
+      "sha256": "8ad617835895e4fb7ee4fc6ddc50f2be323f21506088b945f910c0ff89dd15c9"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Times.ttc",
+      "sha256": "20e3dc89912f4b37f2c29add764855164efafb4c66ca32551d9eb52c7411c7c7"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "ADTNumeric.ttc",
+      "sha256": "0986b0390bd5059f0797c7a501acac9cc7448c1f4918d8646fe0ccd4ffd61081"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "ヒラギノ丸ゴ ProN W4.ttc",
+      "sha256": "1129e740671eb79e89d820dfc9142adf647ee5e2594b59539cb9c243ae4ea1e0"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "ヒラギノ角ゴシック W6.ttc",
+      "sha256": "790fe535987adc662e83489e162dc54c1e50be8de15169300082f6cc7a082e4e"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "ヒラギノ角ゴシック W4.ttc",
+      "sha256": "e1ee608f584acdaffc898efac7e2c9fa1c19457474bf215f6b7031ca720993d1"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansKannada.ttc",
+      "sha256": "165162cd71aebb8172df78a1371dd47f3d630eb195db8dae871fff73e1c8f45b"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "SFArabic.ttf",
+      "sha256": "ba98313de36d7e3b3bcfe0b9a8bfee0eff99460d7e2d3097a6dfd05d5d15b01e"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "SFNSRounded.ttf",
+      "sha256": "fab892ca1a044e23d996a508b48f5f35442f8441e2ea3b640f8aa90ac5e6e99f"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "ヒラギノ角ゴシック W5.ttc",
+      "sha256": "ae3189442e5a293c1c1eb7dd09e163d6b8ded7f859e670b36317a980076a0f6a"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "CJKSymbolsFallback.ttc",
+      "sha256": "f5da5a9233a7fcc6d05f663cfbb865785c9e7d14f3e4fffd559695c7e0edd9aa"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "DecoTypeNastaleeqUrdu.ttc",
+      "sha256": "f1b07ae62b9e195f6094de76cf8121af59fb02487d9f96a2ca5970757ce41d70"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "MarkerFelt.ttc",
+      "sha256": "f6d3bd86dc094b705768129ca621055192764145270138f5a67be4b546f14fb3"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Apple Braille Pinpoint 8 Dot.ttf",
+      "sha256": "3a40d041c49e8c710350df653be597df9e5cb3b1588df6df2b4aeaf68a1aef71"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Keyboard.ttf",
+      "sha256": "8f28913b1a93088199ea084ca5be75e8a9e2927f97e67381967d12a229279d13"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "ヒラギノ角ゴシック W1.ttc",
+      "sha256": "f2fb620234e6e189326051b73e8b422855eae85eaaf3b442f6647f80cf86346c"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "SFIndia.ttc",
+      "sha256": "4eb5daed8fbed9bf4c2708003b78744b3d9beed164217e28d83680e83bd37437"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "SFGeorgianRounded.ttf",
+      "sha256": "1166757dd758fd9f3229a101bfbb3f50fee76167e2f3c4d119d7a4675a3ab2ed"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "SFCompactRounded.ttf",
+      "sha256": "dd41e90ff8aa3f307b96b2526904785792e8ad7abb04d85ad2b68851c3933306"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "ArialHB.ttc",
+      "sha256": "45844259d86c0f2ea1b2446ecf34be47491b09d868f2f996672396ffe505f3f3"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Apple Braille Outline 8 Dot.ttf",
+      "sha256": "42ec4e61ddf37e2f13cac751d5ace0e3a9138a489202652aefe1e8ecd5b34701"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "ヒラギノ角ゴシック W0.ttc",
+      "sha256": "5c8cb449d9e69e17e71d07c9bbbc17b839b0f6447a6359195b11dfaa4742b66d"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Apple Color Emoji.ttc",
+      "sha256": "435ee0b75b26d671e089ddad38640473cc31febc4dbdfae27843a0a000d7ff62"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "ヒラギノ角ゴシック W2.ttc",
+      "sha256": "4c3e37c0c3949beff00f3054fb724af46630d3ef2456cecc6259c8efe773ce01"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "SFNSItalic.ttf",
+      "sha256": "2ee8bcc413aa5cfa7da154bd2fc04f4b91aaa376e334a0fe678d31893d70148f"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Helvetica.ttc",
+      "sha256": "25eceb458d4baf628ee0b6a135a9f8ac5ec7b2826646720834bd2bf00dfc825a"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "KohinoorBangla.ttc",
+      "sha256": "b24e05af7634658467865703d741ce2fb19c8fdff7d763ea69a1f413acb6a573"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "SFArabicRounded.ttf",
+      "sha256": "ed2acafdf9cb8f55b584cfcc03ec06e3f84312fccb526b0c3b7c56d08e1d13a1"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansArmenian.ttc",
+      "sha256": "2780f67be4688ae6a3e0810c400b5f489ce1a51cc8dfe2672bc27180520450b2"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "ヒラギノ角ゴシック W3.ttc",
+      "sha256": "833776a6fd68e2c71c0c52fd8041195bd3d0a336cdb278170b7ad71c7e1b3475"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "SFHebrewRounded.ttf",
+      "sha256": "2582c01fc5abdf2838c068b9811a5c9c2e82ea753d1c564bddcee8fc3abb47d0"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansLepcha-Regular.ttf",
+      "sha256": "6019ed0497ddf6d07bd9310976e591898f46ea3f4a45782b6e3e901ab3a53bdc"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "AlBayan.ttc",
+      "sha256": "180a77a55330ec8e72daec57741fbef87dd98adf04e41db4bb08a37f91a6c356"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Webdings.ttf",
+      "sha256": "876fd4b39d4049cc7d037e4181e2a3291652845d7f4ce85d11885156f2b3407a"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansMandaic-Regular.ttf",
+      "sha256": "4d17d30a0c47a4b2dc87a61f4751e9e54740d4fb3631a991e1c0369ee38c4f73"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Rockwell.ttc",
+      "sha256": "6d723f5f8e28f9e555753192cd744c7d2e3e6a458ed8a1080f375915eb57496b"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Zapfino.ttf",
+      "sha256": "f30e7620766b57a7dc73a43fa415b0ecd81a655684c41255abe5910fc7cd1fdd"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansCaucasianAlbanian-Regular.ttf",
+      "sha256": "6c83cbe4540aed2e976169674e0dcdcee9d6aa7d4dc286fb2559cf4a4e46d418"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Trebuchet MS Italic.ttf",
+      "sha256": "15012b4dfe5470d0f8b75d98b38c461cf81b295485061e1382dc30030c00f2cd"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansOldHungarian-Regular.ttf",
+      "sha256": "9a926369d7e44450c9c4e211f38829f880ecce16f6325e699eb29ce3851bfc7b"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Georgia.ttf",
+      "sha256": "4f54eb299fccea7f103edeb0d92437359bfd4441811d53222b82b335369f6218"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Savoye LET.ttc",
+      "sha256": "bc8f841db3e902a17a1709f106c858495ea8594cdd11dc17ca54553e53aa6ee6"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "PTSans.ttc",
+      "sha256": "cdce7c4305c44aff59b67937d508d2148c5a80c0145a660218bd609ac036ff99"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansSaurashtra-Regular.ttf",
+      "sha256": "892db68ca8f826b6af8d13c8a4249e1fd74598c8dba73a478d6c3ad0efb23cb3"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansMultani-Regular.ttf",
+      "sha256": "fce81e8f9a463f40793136cc446653085a46aa82e635d9520e31a70ee6f629f3"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansHatran-Regular.ttf",
+      "sha256": "3b72a1ced0b9a018dbe77408f3fa505f65dad5682ba81f9a560af1f3d1b2dec7"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Verdana Bold.ttf",
+      "sha256": "480f66b66430bdfa6e9a2199e4bf8f79d915221e60d58e7a32b4ff50645de2e0"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Bodoni 72 Smallcaps Book.ttf",
+      "sha256": "bf8b3661d05b1a574233f6d039f04c26f9c56a5daa196c94b35289d45649da33"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansInscriptionalPahlavi-Regular.ttf",
+      "sha256": "e571797e882fd8a93874f6a75810dd8016120f8112d6ffb469c5d45e56c2da5a"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansHanunoo-Regular.ttf",
+      "sha256": "3f54af33b23863e6cbccdbadc206d3e1c8f3d04ac7154442b8635df5468d9cc4"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Times New Roman Bold Italic.ttf",
+      "sha256": "906157e8294fdf168d83002eaabde01c2d30fc3f44977be89e33fa22f262002a"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "SukhumvitSet.ttc",
+      "sha256": "08b8ae91fe308a82d2390319e178cd578707412bb9df6841204ae9a68e772e75"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Silom.ttf",
+      "sha256": "ae3d2b9af860ca91a2bbd288dc00172a6cc06a05998c5b1bddd17d22c253bfad"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansBhaiksuki-Regular.ttf",
+      "sha256": "ab4dd380c621508d510b80309fd2ecde63818fc4dee9140e36e70d118db18beb"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansCham-Regular.ttf",
+      "sha256": "a02e3a71a31f6e38f504976ebbca80add502006a04d3ad62833ffc4e59142b4d"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansManichaean-Regular.ttf",
+      "sha256": "f30038aeca2c7d0f44c085df4c7ecb598e04732b70daab8219ae29be6861011d"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansNKo-Regular.ttf",
+      "sha256": "72107ca6885331147fb0ca4d7a71f96e6b3e989a75d66ef979a96966b28f8526"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Verdana Italic.ttf",
+      "sha256": "a1149e84da9e5c0a9b4cad68b62542b8503cb16ed8d1d7efd2640b36ce202b44"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansKayahLi-Regular.ttf",
+      "sha256": "8e3a92a485f062923f221f043c292d7bb8b0715617aabc5e4c88591f865a2307"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansOsage-Regular.ttf",
+      "sha256": "93b97cbfe440cdedc69014b775faab9b44f9cf4a3cf801851278486d15e9cfe3"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Nadeem.ttc",
+      "sha256": "854f0d49e30e595efa641911db51530567cd411db19bdd7756df516dbd92e649"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansAdlam-Regular.ttf",
+      "sha256": "4ca58c4f467db4ca8df06ce40f7cc8b27ded41963984f8a4d441285335626dab"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "KufiStandardGK.ttc",
+      "sha256": "24a96bb1c10565d50e29d6c974ad4d17e697773e86a79159bccc762b0829c2c0"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansPahawhHmong-Regular.ttf",
+      "sha256": "6033e882e304ab204b55bbf75032c87f7cce516e59a26df7633264bfa077c545"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Times New Roman Italic.ttf",
+      "sha256": "7bb99c3a67697fbce15ab66d806d9a2151432ce1dab2eaba4156e1251da486c0"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansMro-Regular.ttf",
+      "sha256": "611858696f30b442bf6405f4bad0a8dfc0810763441d804890a736aa6f902a2d"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansCanadianAboriginal-Regular.otf",
+      "sha256": "b7f8287bb749f2a1ff4910e3ddbe2c7a8b22cb3947d8ac7b80f9b6d7e483a117"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansAvestan-Regular.ttf",
+      "sha256": "2a7dc1aba3bc403fa830c90d5755583ae6bdec8284ad6b5309001f16e00a4bbc"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Bradley Hand Bold.ttf",
+      "sha256": "ea54acf02ee9cc276e0e44ce6b2bf60e8eee0a4517468f0e989db55fc1ffe19c"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansMiao-Regular.ttf",
+      "sha256": "e66141c65237edecb22a32e4051516e33ea32548d5aa83a5c70edde9ff5f6be6"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Arial Narrow Italic.ttf",
+      "sha256": "f3d0827024939f01f134668c1d25709e56c5a085bd560e33dc598e86203d31d9"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansBassaVah-Regular.ttf",
+      "sha256": "b2cb12dafa67d0a4aca432aa598b2e947361a3738d79cf9652c25b599e985f7d"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXGeneralItalic.otf",
+      "sha256": "7f6bf9cab728febe4ce111bbfbcd16253806dcab0bbe1940ede2782cfc319a72"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansSyriac-Regular.ttf",
+      "sha256": "d75500075158475aa8d9c5d586196945a0d92d1c27c5d66ecfb0c4f4af35ffe8"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansMendeKikakui-Regular.ttf",
+      "sha256": "04ee7b18ca85d6d7e5d093e2c9c5494994a7d8ce1bddfeee8712490e4a8f08ed"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Kannada Sangam MN.ttc",
+      "sha256": "3471871addd73c09460eed3d0176c86a05be10cbfcf479f12d947caa654271a6"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Papyrus.ttc",
+      "sha256": "831d3ec987dbaee2c45dbf4edea1b910d5a61f062794b38cdeb73cca523bb20b"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Seravek.ttc",
+      "sha256": "aee4895b60f5e1512a61277cfca2267a0e3445261196c2701d383c83670e9ec9"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "AppleGothic.ttf",
+      "sha256": "def69dc2b5e12746049a5dcb189f95341ec460589f47587938567313af3020b1"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Iowan Old Style.ttc",
+      "sha256": "3a6091b6c7e3cf97bf0a749f7f17769a97e5c46228aead256e2c6ccd94b43a7f"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXTwoText-Italic.ttf",
+      "sha256": "88c0e2e316eaff56eddc9e51e4850317e2a1e490bbf758b2dec4793aedba9c74"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansLydian-Regular.ttf",
+      "sha256": "1ccad3ff44c94446a65e5c15be2714acf12487d4e11a3dd39481f62667f43173"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "DIN Condensed Bold.ttf",
+      "sha256": "36958182a424e1e8a1307b2636a615a6323ce1bbfadda136735ab4fb3bd26ceb"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansChakma-Regular.ttf",
+      "sha256": "69a99548a7a1f36ec3ba6fe93f88749b66cf091087eba7a0d1934d27784dba91"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansNabataean-Regular.ttf",
+      "sha256": "f4c55f60942c3b21d7e449b96ac240e19a1e5510618ef310b20ea97a079c8d5a"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Kailasa.ttc",
+      "sha256": "1f97f782da61a3329fd7aaa889dea8a6468b58cb4128bea083e0e540e3c9e551"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Charter.ttc",
+      "sha256": "6ab86ae2c687f80652a8afdc851b3e3234c5ae702e307c0593adfcc63079e19f"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSerifNyiakengPuachueHmong-Regular.ttf",
+      "sha256": "4727ad21c1c9e520ab244399c93014062856009c25fc4154066d9e5e3626b579"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Farisi.ttf",
+      "sha256": "ce274d0fcab2c87dd1db2ad0c908ff6611283eac84bc9f83990c6fc4fa38c0cd"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Arial Bold.ttf",
+      "sha256": "d72db21f9242aedd6b917d8549ad5921766b24d5f8d0becfda2ff4c620b3c2e0"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Trebuchet MS.ttf",
+      "sha256": "ff1d49fde63aabd7f4fc7cd0a80ac7cdb1b9540058988fcbb64d7c23639a7386"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Mishafi.ttf",
+      "sha256": "bacab1e58091125c62c5c579d9cfbb67f24511f7c099a5088b9d60ae391a10e3"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansDuployan-Regular.ttf",
+      "sha256": "081cfdc3be05bf0280aebf360723d0606ae4b571fa3f1fde12058cc63f3eb24c"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Academy Engraved LET Fonts.ttf",
+      "sha256": "8fa97115d74b73c4657525f78fd4d7a2c7618245eeefdcf51e7f39b0efe23232"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansSoraSompeng-Regular.ttf",
+      "sha256": "84db8313949e266e43740eab6a93c69f6deaf090aa9fa01739a0ad99b63f6cbd"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Marion.ttc",
+      "sha256": "519fc804ab2d0e0191221392d1b0ab8b3673c9f49ea6da4c8a87aba07b496aad"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Trattatello.ttf",
+      "sha256": "07ea2c43c7844dba9bbe1ae0dbe4e8f6d2c1a77533ffc05432240c6f14874f3a"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Sinhala MN.ttc",
+      "sha256": "78b9b9cda70b8bf33e7dd62225c8004e741bbbebb6b3ab4a94bf57a585dbf1b7"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansRejang-Regular.ttf",
+      "sha256": "d4692c20ee33dadb2d1187dd2a6022e087dec011ccef869ab6553ff5771fb6fe"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansUgaritic-Regular.ttf",
+      "sha256": "4cab9c4e616e162fef49211db26dcd2d4452a6bf945770330d8571c4e7e6841e"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Corsiva.ttc",
+      "sha256": "37980e3eca8fbe57ff4d860be7a6d5654f82be84ec9305f307606ab721910315"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansLycian-Regular.ttf",
+      "sha256": "1a06d8d62b5d7e616c1caed04e2351f7d03d7e691f9a0ee9f4b5bf529014149d"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "BigCaslon.ttf",
+      "sha256": "a422ba6e8853c4b199cf9b3a20f0e52549ea18f0cb66b83342780f12611a360a"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansWarangCiti-Regular.ttf",
+      "sha256": "e9f7e9f0c581c467f6f0f942c8dfb494c87a1373cc1aea0d6ed93727804bad47"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Courier New Bold.ttf",
+      "sha256": "500df4e46b554ae7d646e8727952fd8c7e60e94423481f6b82325cfddba2ee6a"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NISC18030.ttf",
+      "sha256": "dea7284621b448197fbedffa0248fa2a494af9b3e992c3f70bcd04fd122aa598"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansHanifiRohingya-Regular.ttf",
+      "sha256": "2c3b37dbaf80f240b432a5805160add5a4307a9d3adb4a632a1ce52a3e53f894"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansTirhuta-Regular.ttf",
+      "sha256": "a4fed705f990f3cc11403d41a673941def5e65f211dcc7871b13d27bf089ed22"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Al Nile.ttc",
+      "sha256": "ef8e9a2e578d12fdedf719b70c12eb631996bd8bfd46ecbee0b0c7cc23832d3e"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXIntUpSmReg.otf",
+      "sha256": "5e86eb813bc83daa0fc83f5e7814a9ac54fc27a050d14e408f8acbfb639c2fe9"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "SuperClarendon.ttc",
+      "sha256": "7c6fdff5fa90186b034965a2e1800df11c92eeb2c22c828e4bbb6edbb62a8260"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Baghdad.ttc",
+      "sha256": "0050385e9b57d794fe7acbc97495d4acffb476611d10bcbfd543732ef2fc41df"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXGeneral.otf",
+      "sha256": "5add3f3f2bd7fd897d2fa5ccbe468607c52111dc44cdfaaf2d851a574f5357a7"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Athelas.ttc",
+      "sha256": "51bedfff26b5b4c2c99b9525283e7bcdf5db02cfe4dc14d08dfcb7db081f66dd"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXIntUpDBol.otf",
+      "sha256": "c7579768726c86674b6395e387d0100aee304617a2f6d0e9c80f665db5f2fda1"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "AmericanTypewriter.ttc",
+      "sha256": "a2e235b25ba5863306a8102077e923c9fb4971741e8416a939e7ae60f576ef3a"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Lao Sangam MN.ttf",
+      "sha256": "958682e1c151d1a1c9ef2508a2c44f0be869308c2aaad793a167739a23dc6356"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansTaiLe-Regular.ttf",
+      "sha256": "396016aacf92e480f369ba41ed9958bcceb002eaf057da65647ae9250d02b491"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansThaana-Regular.ttf",
+      "sha256": "d518c8161d9ae68470c9ef5080f9c9aae887dd93bf3c1529a9913ba059ae60e4"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Luminari.ttf",
+      "sha256": "e564e432ed2ae168ac8f8592fb6abaa7aea4480cce9aebf13d122cf73dd6b064"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXVar.otf",
+      "sha256": "e0b9fbd5ebb9e936fd01903998b27267d5a02d6f6e777151787a1a169b4f264d"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Malayalam MN.ttc",
+      "sha256": "a8e76aad43a779bf0b2075bea8a04068d9a16696cb6061a65fca2974191a8874"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXSizOneSymBol.otf",
+      "sha256": "6af0b03b7833028678c44e90d93c98dd2e3ac9ff119052e1e3c3c30645ec3e7f"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Muna.ttc",
+      "sha256": "0025e592f6cb37bedfaab0540964e6e61153d4e1604ca583e2b298b2ff5e85f4"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Times New Roman.ttf",
+      "sha256": "f3b4ffff71c2a0c7227d37497683b2498fb2d0a4e8beae26f022e3ccfcaabfa3"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Brush Script.ttf",
+      "sha256": "28b58b7a1bab9fa76aeef353caed56918abcdef3385daeb569c75226618c7b1d"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Bodoni 72 OS.ttc",
+      "sha256": "b0a6abffcb61e515bdc62d149027063ccf37a87a04033f7d69aa7a05de95570b"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Myanmar MN.ttc",
+      "sha256": "e6bf13d07c820a75b13e9d5060255d8e48ddeb3e69d46dd6ed4203b20a0d0d45"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansJavanese-Regular.otf",
+      "sha256": "18254c5855aa9ec145cbcbf3c2db69daf52f323e3ac2b049d137b6ec85c50a28"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Georgia Italic.ttf",
+      "sha256": "7758840cacb7382db65aa038e9fd1194d077ba9b55fe748f9cfb196d2773ac4e"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Courier New Italic.ttf",
+      "sha256": "b5c6d453f16fb1693652671fa2e11d8c8ad1cd0046c3f38ae2608d165838ecf1"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Arial Unicode.ttf",
+      "sha256": "876af2cd4854644e7f3e7feb2f688997fdb3343c6df6693611209c9dfb47ccec"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Telugu MN.ttc",
+      "sha256": "0516455cd1e33096e270f3b509f3816a44637555f10df9d56dbec5a4275f3fbc"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Myanmar Sangam MN.ttc",
+      "sha256": "3772190509b76977ec1c57120e1bc6c78dab0551d6a448dde95fbe25092c1504"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Chalkduster.ttf",
+      "sha256": "0579613b4e9911c66ccf70a8bc047f2a75d6fc36b32f660d9264f3015b377ef7"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXIntUpSmBol.otf",
+      "sha256": "d776a6661019d0e65129c11ca4f5130de80135f8b0c2d014e2109ea3735bd06a"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXIntUpDReg.otf",
+      "sha256": "602ed39c8479f7a54eb9eddb13c343f393656b2b5690f5768b3169cfa1f688b8"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansSundanese-Regular.ttf",
+      "sha256": "44116238e4f55dedf5a0232f6d6eadbeedd8896b8bee6a63fe949e4c2ec1cf29"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Devanagari Sangam MN.ttc",
+      "sha256": "aa26617121bda473948944563b7aae9b155236ec31340d3062ebad4d0b54d79b"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Phosphate.ttc",
+      "sha256": "5a41e3fd2fe555722aac02ef921dbc88e1c24ad86edbba5078b6c22d9a18df8b"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Apple Chancery.ttf",
+      "sha256": "a9145a5dd2ab5b8f1813d22688de78ac1efee135d1c7f3bb30b5d8f30a311d80"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "AppleMyungjo.ttf",
+      "sha256": "f2017df4b5dd45cd790567f318791045b0379f6fda6e0348997d36edfdbcc70c"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXSizOneSymReg.otf",
+      "sha256": "389a22dfe3c7a097e4b24224dbd62952fc25218640e35f1530ff6bbabe640b25"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansOlChiki-Regular.ttf",
+      "sha256": "42020ef6e4bb0ebde8ecea0c85877fac817a49b69670d5ab755ac6cc16a351f1"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansGunjalaGondi-Regular.otf",
+      "sha256": "896b11b131c7edd23ae97765c16f0c9abb78a9aa322338bacd296ea81357899c"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Futura.ttc",
+      "sha256": "c59c04e8e87f752e2e57b3f3d43a793eba907a9e2affcbfeac85e7c6779e878f"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansCarian-Regular.ttf",
+      "sha256": "d1631100e9b431e672401397465f00300acf1002a10e35d08d4fd0e7a416abae"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Copperplate.ttc",
+      "sha256": "2a14817d53238ac7a25688b4f7e0f0bd1c4c6e4fe84c72be7198151db5d2df22"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "PTMono.ttc",
+      "sha256": "449fd64aa2425eeba37237c73853a89daa94c6e43c1faafba0b53c2c13c3e2c7"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Thonburi.ttc",
+      "sha256": "005370c5ec29075f193ba8b67db94b15a27739cd9b46bebace758fd8c01cabb1"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Farah.ttc",
+      "sha256": "506964e2a985915d493bb4095b753a42c0a66930f1b5156502ac38025a11ab2f"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansNagMundari-Regular.ttf",
+      "sha256": "94789e3ed944ce32f1757e23df8ae3bd4d4d3c46539e8f986b02a5f8fe5954fc"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Arial Narrow Bold Italic.ttf",
+      "sha256": "035cfb8b776e7ce27f4c0ea0dc3ca3ccf85c8da5d59595cecddf02de966fb985"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Malayalam Sangam MN.ttc",
+      "sha256": "869a7cafc91c0b67053ee8f9bc5664f27482fea59baa198869d79bffd1a5e6c5"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansModi-Regular.ttf",
+      "sha256": "be1dbe9c189e98ac2df4dc497148b81585865457c8c8f53f1698cc3fac6e0a27"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "ChalkboardSE.ttc",
+      "sha256": "2f115e259dbd66e39a5891fe1fb49fa18b20b8d2db08a1e43b3b1360ca0e0bbe"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "ITFDevanagari.ttc",
+      "sha256": "6f2c8f345e48803bc1497398b63e8a069d50b1699c951fb061da943ba8210f54"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansMeroitic-Regular.ttf",
+      "sha256": "b3158127a35076b87deac06b13a29df6c397fb2d2562f5d40f7e47a389b43be1"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Bangla MN.ttc",
+      "sha256": "d0f631d4d6cb83d5db456f4507182360cad1cadd1a58be1e32b00140b253de90"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXNonUniBol.otf",
+      "sha256": "405fd126348781471350cbd4517ebf2f39ab6d324a55691a68b63a0b13d1b768"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansPalmyrene-Regular.ttf",
+      "sha256": "0303c0e1a6653b05035a74255423e812529f89b8ef3d006513ce48b1756a2365"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansPhagsPa-Regular.ttf",
+      "sha256": "dc6975773e7c2707d36cd1018ec1c93a396a19d68ae484360b551ec5157dac2d"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Arial Narrow.ttf",
+      "sha256": "9e1d881c4e43b51868f5e235ea5a12c838e23cc8df6277df1a3c94e158999826"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansSiddham-Regular.otf",
+      "sha256": "6062ee98c26cb38b34d43ef71bf95aa962024e725a9138d861661f8a237bae41"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansYi-Regular.ttf",
+      "sha256": "1744f6ebb56f63c9c2276362bf3fcad69d15afcdd199018238ff39558eadf06e"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Bangla Sangam MN.ttc",
+      "sha256": "85f08e8259c0a4773fc570bef2feec266ed620c9f22bf3e824c48195db55560e"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansPsalterPahlavi-Regular.ttf",
+      "sha256": "08553bb6205276d6e96ecee2c31b626f3f3e5774dbfb83011fdd1095ec3d68cd"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Tamil MN.ttc",
+      "sha256": "a90576bc9ff25f391e55024b3dcfe9e24353f6242cd3c665bcd04a47115c1272"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansLimbu-Regular.ttf",
+      "sha256": "2c225a605c5a8aae3c05cf4e8aa710eedf3fa20d59578b1facb127e08ee47191"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansCypriot-Regular.ttf",
+      "sha256": "3e2f2c2a051547937876ca00f43544450489e16e24501d0362c621dae9923b8b"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Gurmukhi Sangam MN.ttc",
+      "sha256": "85aaabd40c2955ef75fd44c4b2be659fad3330c16e32377932dbaf3beabf6e0c"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "GujaratiMT.ttc",
+      "sha256": "b0f0e865bbd04d5c36a5ae6589788bbdafb56c09b681f243a0c91edf878a14af"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Diwan Kufi.ttc",
+      "sha256": "32399807f00fe0e269d4998348138e6133fc7e74b38841096b0f7abed7b7100a"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansBamum-Regular.ttf",
+      "sha256": "ac11fedc2a73d0a9bfc3fc72ecd2e3e833107a1156797f3677945e320fd499d7"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansLisu-Regular.ttf",
+      "sha256": "f78f3387e505fa6fbbe19fa1c6d20f2d96c141b17dacab33b9dfd45a5289ecd1"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Courier New.ttf",
+      "sha256": "c886ca3172d8ce9189976992d145ec090500a4ff516ecb9d4df56b1a78336247"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Wingdings 3.ttf",
+      "sha256": "04d2acd5591632909c5e0c3d07309b8d8c01db8ac985d4cab3ef566dabca109a"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansMahajani-Regular.ttf",
+      "sha256": "87b29271c0485e5ded2b65e15bea5ff205e4a2e12b61c0c9678cb41d45c790a9"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Wingdings 2.ttf",
+      "sha256": "6fce8b535724253e294c88f272613ad4b796c4181bae18b3e49775be63d02dcd"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansGlagolitic-Regular.ttf",
+      "sha256": "fce75abc3b73e537d92e0bef60dc93d65a5cf9ae4d5b8bbb77222b30dc8125c4"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Hoefler Text Ornaments.ttf",
+      "sha256": "7f5d6d5646f86fe21d01986785525e501364aa501efd8788220414f7269753b1"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Tamil Sangam MN.ttc",
+      "sha256": "8a3606d50f768d1a0418906026f9665c6b6abadd9cdf700d86b08e0e085abbdf"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSerifAhom-Regular.ttf",
+      "sha256": "635cd17bfcbd37457c98f0f9e70c7a0aa520f7f202a2b267b09f18fe5e80223d"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Bodoni Ornaments.ttf",
+      "sha256": "2318003edc3690be01e3680d4efc89fc7705ae392d5d37220b865f550e9b6e56"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansVai-Regular.ttf",
+      "sha256": "8730386f446879e610c2aa0cc1b98c56031594fbe94c07f26e515cf7c07a32b2"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansTagbanwa-Regular.ttf",
+      "sha256": "7dedb32bfc8dc5ef05a222bc05ad4fc8f72e0e3fca2a9eb9841591102c040c48"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Cochin.ttc",
+      "sha256": "bf59ed33c1960799671c6b990cb047e13c12efc8f1d588571ed550b7c43d519d"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXTwoText.ttf",
+      "sha256": "7962b8b7811e6a896c9a91a0bccbb5241047770eb24d4997c5cb5fe21d5c0df2"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Skia.ttf",
+      "sha256": "c5662db30ec62800c67d6a854b1dc422c4fdec2a85833066badf88cd60771597"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansPhoenician-Regular.ttf",
+      "sha256": "47709d5c78988406ccada0d83d60a3dd58eb292e21bf0ef58d0212d20802d1b7"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Trebuchet MS Bold Italic.ttf",
+      "sha256": "7ea9e6c68ffd1ac74639277fece1b4258a2e51aa8d54d1cae4688b6f39953385"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "DevanagariMT.ttc",
+      "sha256": "461497bec04a4549bc7e221306390b62cd79027191faa1e62d50feec05da87d6"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Kannada MN.ttc",
+      "sha256": "f83dcc5f8f4ccae7fe24317d150c4a2d54e29a03b212672602e4758185d34d13"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXTwoMath.otf",
+      "sha256": "3a5f3f26f40d5698b3c62dd085d48d6663696a3f80825aab8b553d5097518e8c"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Beirut.ttc",
+      "sha256": "d4ab09a2c25cf2d62ae54cba33c8fa29ba350e181350747e8a2ad4d216184a39"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Impact.ttf",
+      "sha256": "57e95627fd36fe2740e5ee8a91ff1ae74fb216df9580bd23e30d6772814727be"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Kokonor.ttf",
+      "sha256": "e5352ac3b570d3dd17399829557a785ce604c052a95a4e23827a868e1451170c"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansKaithi-Regular.ttf",
+      "sha256": "75b74f45f121e9fc7cf4a3b5fb765101d51d74a8b321f755b938c9f6f2bdc58e"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NewPeninimMT.ttc",
+      "sha256": "76e76b4fbf51e4534caef50d94d57cee89f3cb4314c14a37169df35a06f879af"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXIntUpBol.otf",
+      "sha256": "835a0736be951f58d6496ea601b72436fa54c2394835c68430ffa9cb60585486"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSerifBalinese-Regular.ttf",
+      "sha256": "009f6471b5d2f95172cf3e186d497386f1d2499d69daa6b188e04ced3def8aa1"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansTakri-Regular.ttf",
+      "sha256": "a541ceccf0b2f3c733f362373e3cc2ad4b7b834160a889b4ad44bf0d2ddbbab9"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansMasaramGondi-Regular.otf",
+      "sha256": "ea4a6ecb03bf46fd3b8ceb79c8aef5cadcd23d4bc0fd2da9aedea87ab0501bd1"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Gurmukhi MN.ttc",
+      "sha256": "583cc982c66dada84ae67e317d1e212d949dcb3c45f4ab93172e9bd3e6037c16"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXSizThreeSymBol.otf",
+      "sha256": "6aca1c8cfdadee711a124a504bed27155aa6e15b740e66be92948f3184353860"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansEgyptianHieroglyphs-Regular.ttf",
+      "sha256": "93889bf8a5563f87f70269fc546ca51cbbda6c617c6f3b417792bfe65d6b1165"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansSamaritan-Regular.ttf",
+      "sha256": "4740b58fe07816db1fc838a3004b62dd978b6ac20dbb43a792bef7f28debe0c5"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansElbasan-Regular.ttf",
+      "sha256": "15489bca9803de2a8777c1f478d41dd6de1f81703af34abfb1275afae4857478"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "PartyLET-plain.ttf",
+      "sha256": "1ba209e5965cd4ca77b3b17ccef6bc93279cdcb41805bf17ae54876bf1266982"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansKharoshthi-Regular.ttf",
+      "sha256": "bfe057992a0f4e60b61a4cc977d10badb9036b635f184b28307192df1a1a4b76"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Tahoma Bold.ttf",
+      "sha256": "fc1863ab504b9c160abaa12b92296363db72f5b759311982510a85fe2aa9ff4f"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Arial.ttf",
+      "sha256": "525979822591a3447cfc49d943d6f7683508e25543407871c0ed8fed05fd2bd9"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Diwan Thuluth.ttf",
+      "sha256": "99faa92fcfe8107fc0096dc95f6e3e387d6a851ad303b2d5d145517d1c56d831"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansTagalog-Regular.ttf",
+      "sha256": "69087a0b8ad9a405b065aefefe0c298d9aa7f61b0de345566baf282c9e8282e0"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Ayuthaya.ttf",
+      "sha256": "96a974a13a8737931a343eb8cef7d0bfb534b2fcafeab9482dbed70f2d8662fe"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXIntUpReg.otf",
+      "sha256": "ba1b5dc603956384a8e33141efe684a468c78f8371ce059e4c4ba96247171df5"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Sinhala Sangam MN.ttc",
+      "sha256": "ab965f76f05df703eb96dd93bc5a3708626cddd45cd037cacbfe3f47c3f51ba4"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Khmer Sangam MN.ttf",
+      "sha256": "60d4d878979f391fae7b3adfe69c03fc933001e9cfc8585e40b2f97047709424"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "PTSerif.ttc",
+      "sha256": "793335027541837b62c041ae940b5cc0ea67721e37f957328602b8b2203220e3"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXSizThreeSymReg.otf",
+      "sha256": "a5cd32b5f14b8cf224e1f546be4549013aa6e6042580ef7151d40022203682ab"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "SnellRoundhand.ttc",
+      "sha256": "e0c5507164d81ed30b3a39021828a0fe83ac7d5bc5f0c33441577c747d37c71d"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansSharada-Regular.ttf",
+      "sha256": "0ad26fc89ef2be580c1e6ae10450878f2fddbe2c3b3c9e6bb3dd11ff1c9cbeb2"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Chalkboard.ttc",
+      "sha256": "c1ce8c38124fff79fa2de8e4e9003208a41821a254d2eeee5162672dbc3f3c6c"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "KefaIII.ttf",
+      "sha256": "f89effe0ab7261b828835cde58c794e753d214ddc381d523225a1d66779f9a8c"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansKhojki-Regular.ttf",
+      "sha256": "d743510e9c5a045f14890e694e98b623beb36294a9a10420e6d4ef3723f8dcfc"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Bodoni 72.ttc",
+      "sha256": "de4bde3c1510e2bb6da470a9fc8d7ac128ca4a917f2ae43ced4376f7e4e85d9c"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansNewTaiLue-Regular.ttf",
+      "sha256": "f622c16e1e452905bbe8d94347b9bcec071a49cdc187e1a74e4dffc6d526dbeb"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansInscriptionalParthian-Regular.ttf",
+      "sha256": "1a9c98df07720413e51fd29bec966a4e0c9edcc0fba8e45038ef4974b255c074"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXNonUni.otf",
+      "sha256": "26c141bf3cbb7058246771eeaf8d5b49949a49e00f7cb12535e6848d28a89eff"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Mshtakan.ttc",
+      "sha256": "8cf8f6dee0b434b5bd0269d5753ef362a80dbec8ea7373a0af296ea85823a977"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Trebuchet MS Bold.ttf",
+      "sha256": "c7df0daa11665420461614fc22682c687852b2e1cf5c6ff9188096f5d2a8d0b2"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansBuhid-Regular.ttf",
+      "sha256": "ce3f9e3c785f84fa29246e690e7ccccfe8daf07eb727f1feddec5fa10465a256"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Lao MN.ttc",
+      "sha256": "1d8c50b54f1e63a5f8d68f84db85972398abcd9e0a0f1b88b2c166867c3cd3cf"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Sana.ttc",
+      "sha256": "f23cd7251a5d93e67cb2f2dd1b291afe3f02e245a8d2efcf773d134000d4f4de"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Arial Black.ttf",
+      "sha256": "7d7db3ad96a31373c1437c6ab14266f6605495544c8e663558b047521174c42e"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Baskerville.ttc",
+      "sha256": "11f63e492099fbcfb50ad4f2ac373485af16c049fd6c975ef4ea79ae53222ef9"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Courier New Bold Italic.ttf",
+      "sha256": "60e4c514200985d3f8405af039ffb89cd24b45fef5005b019825a4937b96135d"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Comic Sans MS.ttf",
+      "sha256": "a6f559bc059fe6d0e68826e2daee0db31194844ed6145d5cc31a610c4e2700d2"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansKhudawadi-Regular.ttf",
+      "sha256": "37406ba2413ad4753fba389822a203e55359e32eb028ac15be587b2541d11090"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "InaiMathi-MN.ttc",
+      "sha256": "1935a6fd37722bc37aa0d8e6347584d86c5f1cae3d4804b584a6412947ca51d5"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSerifYezidi-Regular.otf",
+      "sha256": "f8a3c04d1a0a872e2a522d07f1280369c30c680c40099eaf4471ee7c389ebde9"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansBuginese-Regular.ttf",
+      "sha256": "1ade06c5d328f0978d173c18a061ec3b157ba7ced3f4449ad73e16add4f24eef"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Telugu Sangam MN.ttc",
+      "sha256": "b967425608649f324aa6004be79182bfc722f65f0cc6d4129dcc0186a081ae2b"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Hoefler Text.ttc",
+      "sha256": "4e7f471379588b2e40a6e9a96407e0d03207b5185fd92b77481abb4c9eae0e80"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansLinearB-Regular.ttf",
+      "sha256": "23275e2c7aacf0740c08e184525aa50d8312f9d3235be582549114e2ae2c506e"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "DIN Alternate Bold.ttf",
+      "sha256": "78e816b9938fc40dd5383f4a91b598494798e2fa1d526abbd9e7ff7e5b9bf0ee"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Wingdings.ttf",
+      "sha256": "709d5848799239f0c51c0544c471c8d02bcbf9f2bcdc49702ebca1691a4c760e"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansNewa-Regular.ttf",
+      "sha256": "6eb7557d0b7b40f22556c1d90afe011e628df457191830355577da6157ea443e"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Sathu.ttf",
+      "sha256": "29f2d5c184e30805dbd752754d3840f53c3956dc35a89cc008da3729b2e71d60"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Gujarati Sangam MN.ttc",
+      "sha256": "09e896f51375351b07a82df2d990ddd2a82a5cb4ab831d1ca00016207704ba39"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansSylotiNagri-Regular.ttf",
+      "sha256": "e45262b5d2a31db47cc177ddd1c466e241a8ccd5bbff6ba6166e1bd97d9c0635"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Arial Bold Italic.ttf",
+      "sha256": "374b0190a9844343110d8f8ed1818117a4591803d022bbb2bd189d63a681e731"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXSizTwoSymBol.otf",
+      "sha256": "eba25ebafe86908f1488028253f5c077d8055155b932dcf186e69c7322ae82a6"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Galvji.ttc",
+      "sha256": "04f88f648e110ac1d350ac7df22d1ce328cad267cfc381fe2676567654f109c2"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansOldPersian-Regular.ttf",
+      "sha256": "fd46d52e32b296b6f2db73ed02c423d4384f3ae5c2f7e1de4f2df3ff4dbf0eb1"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Tahoma.ttf",
+      "sha256": "359413e76969fc8a03e0acf91b355a98bb13c42472614e54bff5c8e4f4817fbb"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "EuphemiaCAS.ttc",
+      "sha256": "10cec00bc47c1a5e16f5ed8102b8891b3e1c9a8928264c434ba3c923eb2933a8"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "PlantagenetCherokee.ttf",
+      "sha256": "0a73a09a449ec38e6ca0a5d7ff0e0378ecfcf2a01fed9300218e8fbbb706e8d5"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Didot.ttc",
+      "sha256": "c227867f4e386af05fce563afeacde2a9360365e93e326fd40fb066d6f02fe8c"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Georgia Bold.ttf",
+      "sha256": "1cfa9abd55be746c798c22ef4eba88fce82257934897404be2dae53ed0a4142a"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansLinearA-Regular.ttf",
+      "sha256": "a133c2e91206a17e5354f5ea16656a6d8ecb46dcf29a1d17dba62653eee8c51e"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXIntSmReg.otf",
+      "sha256": "33f533027dc4d46384005ab30dbc9de345ea167c1626f64e48c5ffb6c824a2a3"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXNonUniIta.otf",
+      "sha256": "03ae0dce5764007238471a83e91e5a1397253efcb2e9ff0c4a3eaa7b188a8b64"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXSizFourSymReg.otf",
+      "sha256": "ac0827e53a11de79587a9a5dfde7d31b80d2aa039988f576fa063d47814c9604"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Verdana Bold Italic.ttf",
+      "sha256": "252ef50efa09218d77d83311b531c14d7c0d45230e79389bd3db78448bc942f4"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Microsoft Sans Serif.ttf",
+      "sha256": "681fd20f201435edc09fac432cd5409722ca8fd10970dc3dc9be1b2de4b0ef43"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansCuneiform-Regular.ttf",
+      "sha256": "bae49e30a541479cdc8040d6ed2aefe2e75570b3ac303ebece0f25d90fe25e1d"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Georgia Bold Italic.ttf",
+      "sha256": "a2036878f47d0da1765869a8747cfb0079b6125776675bad352468b59ca4493d"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansBatak-Regular.ttf",
+      "sha256": "a32831ffc38301991b631bb0fb1aa9dc5dd96f4047c84635bb031dd682d3c594"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Arial Rounded Bold.ttf",
+      "sha256": "a74ea71c366f15c81f9ce00a757cefb938cda21c0d32e51037d9a038e5ebc14b"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Times New Roman Bold.ttf",
+      "sha256": "50f5b1f27b7d34621090e437e8b1dd4510a22d2823fc876b3286bed327b64bbb"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXSizTwoSymReg.otf",
+      "sha256": "c9802f7e4fcfc1fcba89396716bc20a06886ac550242d6fdf7c20cc629ee6428"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Khmer MN.ttc",
+      "sha256": "79769f359056867e8ae0d64d8e911452f0a70a3bf996a4f182f84463a7407cff"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansWancho-Regular.ttf",
+      "sha256": "7a736f363686f9e88a38a1cc0ba8d68f6cba3da4149f320d91a1a42b2896d2e3"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXGeneralBolIta.otf",
+      "sha256": "4585fcdd3aa1a6f3451c03d4f587134b9fc8a0835380ffec25f3105908ddf31a"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Krungthep.ttf",
+      "sha256": "c5184e9ee4e5b9072133e7d030fa258edd95013ed79fd613a9cb91f6c965baf5"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansOldSouthArabian-Regular.ttf",
+      "sha256": "5d0b9191b80d23fbc22b4ea48d50e6cd53ffb6cbeea86644127ebe836ab96bb3"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Oriya MN.ttc",
+      "sha256": "14f5ed98d942978199bfda17e7c64b2cf19866a6c0d3248ff0e30b0e017525b4"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXSizFourSymBol.otf",
+      "sha256": "91e8f6703a26b9eef0bc8bcd9e294876bab4db94d70aa282c3a38bb606d4f386"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXIntSmBol.otf",
+      "sha256": "317f480d4af5468aed9f81e92787092cdee211c47b635ac1f83e241d5d7509d7"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansPauCinHau-Regular.ttf",
+      "sha256": "e0850630f6affd48b4d077b55ed7160e80616bf8ff69c62c6d873245cfffac2b"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansMarchen-Regular.ttf",
+      "sha256": "6b55b9e8bc50d2f71e211821840c02d29675419608ed981cb1907e50c3fc1e2c"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansOldItalic-Regular.ttf",
+      "sha256": "411ef5004b1978f51878394bec0971811e28f81cd4184ac2282dcb6996b27c87"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansGothic-Regular.ttf",
+      "sha256": "8638a2c56f231dddb5c4a5be06cd62855718913275f5bc0af5113a87f227f3b5"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Gurmukhi.ttf",
+      "sha256": "afca889f2afab872cb966bc1dd120deaa6813afc5036a37854d5ba95384f51dc"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Al Tarikh.ttc",
+      "sha256": "b16f4d19c1d300ec346894e7177af244f6815004e211f0a7071a5fdd2d2d5133"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXNonUniBolIta.otf",
+      "sha256": "7809b69d7d0ccb3e43e0c54c20adc269233e2b039eeacf2e0efa17d7d384ccfa"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Raanana.ttc",
+      "sha256": "c191a61cc9091eaaa2301a788cf33dfc203d6a7999760f5fa338f0d56779b821"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Andale Mono.ttf",
+      "sha256": "ca436a8f07f6699107542ebe19dcc9478f12aa666927699e9fa10115e7d2ee95"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "GillSans.ttc",
+      "sha256": "05f420c90f7bcdc744ba45a71d7d2a521b725ed8683d7c483ca2d0feabf8b12f"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Mishafi Gold.ttf",
+      "sha256": "d769567e10c055c3af72d2eb2751fa946d88281c9ae234d859b70b5f1f710922"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Herculanum.ttf",
+      "sha256": "39f7fc0dfe082adb48330f7784f8e71ef1820dddf73f552e006007c4aaeb3c0d"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansTaiViet-Regular.ttf",
+      "sha256": "4d3bd3ab7a8f0dd7276f8f8020a1f628098cd27f95a02966d4959af2cb50a8e3"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Damascus.ttc",
+      "sha256": "7a7eb40a90e4adec2e02c6bb4936bdf5cb08db434612596f557a965b126d9e3b"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Waseem.ttc",
+      "sha256": "449ef1ee696dff000c1158cc7340591d78b6951ac1fac2f9a71dff10f0886ab5"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansImperialAramaic-Regular.ttf",
+      "sha256": "1d8dec133932014d3baceae6ece503aa52ecce3b17c64b2dff6ccd691d81c478"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXIntDReg.otf",
+      "sha256": "4f16d3dfe5fbc80f19611555c6deffdd5214d75a19a059cd007f75c34cb9726b"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "PTSerifCaption.ttc",
+      "sha256": "2848fdac9b77a47983ce867bda6408b7cd4e3535c19e1e1a88aa7ae7b7b9c45e"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansBrahmi-Regular.ttf",
+      "sha256": "c13211e5b1738428afbab18e77a21d859888738e75246891dae51641253db487"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXVarBol.otf",
+      "sha256": "8dfc1801a43f780c5eee90364c30c1aafa4187676a0d137a2853ea34b8461eaf"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Comic Sans MS Bold.ttf",
+      "sha256": "c1d5060ad77da55f2fadfafda4e95bd6d78fbbb3a29178ff1389893d678fb400"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansCoptic-Regular.ttf",
+      "sha256": "28b6686a032e98205dfec91dcfe196eb4169ad758696b7c2932968b7cd5b6f66"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXSizFiveSymReg.otf",
+      "sha256": "ceea484bfe98f42e48f4b3c0fa7c32d8e20002408c8d2dde7e0044b082f000a8"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Arial Italic.ttf",
+      "sha256": "ce1d2f1ab89db45f9796100eee960f5702a40e84c225c2b48c3ec3e81d153f98"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansTifinagh-Regular.otf",
+      "sha256": "8396ced3cf679a82b5ac2f18639b8a5676b8cd25cfaa833adea8dacbd5a97052"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansOldTurkic-Regular.ttf",
+      "sha256": "02f35911c7249d2412f819b013a4705a5477fa44d0912e70212313ec7f7ae2a2"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "SignPainter.ttc",
+      "sha256": "e8f0f3cfb574111cde25f63fa9bee3fe852554dd3ce4a3d2678ecae117bfe9d4"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Oriya Sangam MN.ttc",
+      "sha256": "9762608b889c25dae1ce6be68e6da243818d0cd1c0d510bde82c0cb5fb721a29"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXGeneralBol.otf",
+      "sha256": "7e4dfb4979e9bb79a0bdedc56f055eab615fb9a3dff8788a52992ae65e8f572d"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansMongolian-Regular.ttf",
+      "sha256": "df8e76675870a47f7dd97ea7e224fcf870713f43ebe6fe4ae6c260d0ee838a0d"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Verdana.ttf",
+      "sha256": "0da8c12f3e15d95585434d2cf294b3113a3e3fc84bf9ba9d64f2ef834ef4bd98"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Shree714.ttc",
+      "sha256": "33aa7bd99829cb4f29e5023d224078a26d5947bb89c031a440410b8ebbde47b4"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansOldPermic-Regular.ttf",
+      "sha256": "8897b1d76fa4d872add20b23244ec351e80cb8df1e2a9434aabfc778a1a247e8"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "STIXIntDBol.otf",
+      "sha256": "8e9adaa55e482c0568a0fb0cbeb76c6ca79e6a99eb43b8f4b720e9d048eaeac0"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Songti.ttc",
+      "sha256": "6873ac2ccab5c2e74d87d6b690f3773098dd6a6238805363a3b3567f2caf6f47"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansTaiTham-Regular.ttf",
+      "sha256": "8b58452015baffee6ba520dcd3396f79d23cdc39392a13f5e784e72ac29d0d22"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansMeeteiMayek-Regular.ttf",
+      "sha256": "cb3bf6030dfeaa765fc0b97469a98444ae6eff937162c1221b3cb368f7c6388a"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansOldNorthArabian-Regular.ttf",
+      "sha256": "6d4e0f32ab4bc7bee8954e21ee80c3e20dc50b7b0961668a9455e7a809e78cf0"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "DecoTypeNaskh.ttc",
+      "sha256": "9cc16622afc00ac2ee567c7e460240c74ba2aa402562368e519c68e7de9c2945"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "NotoSansOsmanya-Regular.ttf",
+      "sha256": "42b8ef4101c6cb45c85ea98c69d75be5838b6f86622bf8449e07312f9fa5db62"
+    },
+    {
+      "category": "OS 기본",
+      "filename": "Arial Narrow Bold.ttf",
+      "sha256": "fcf34b330033e26c06e9bd466bea5a3e4b2f39272972275369beb7d8b257ed57"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "NotoSansKR-Regular.ttf",
+      "sha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "RHWPOldHangul-Regular.otf",
+      "sha256": "0a32ff354d11c955f819d84d91e695927d41aca0fd74b4a286b6235345101af4"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "NotoSansSymbols2-Regular.ttf",
+      "sha256": "876598db5f1e3bef2bc77c4d94c5b0d5d2c1620be4878a06f18fb5434e331688"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "RHWPPublicBatang-Regular.ttf",
+      "sha256": "7e3aee5ee1d8f44cc37d35dbd07e5f66414fee5ce552ebda6b4347643d9d0b78"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "NotoSansKR-ExtraLight.ttf",
+      "sha256": "67b4003e2be99ea44a7c957e4b35acde1b5e6e82a54fe195c5598c3c617bc2e3"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "NanumMyeongjo-Regular.woff2",
+      "sha256": "52d27bf4ee205020a4aa9eb19ef4835e4aa04a94f7742b13e69e5c8b9a74072a"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "NanumGothicCoding-Regular.woff2",
+      "sha256": "6bd0831252dc3bd96f3257ec4eaf794d88ffb185346eb5d3f889248a7a3c6239"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "GowunBatang-Bold.woff2",
+      "sha256": "aef1b91ea9ea4688fb296044959b38dfeeaa3e1650af5d543a2b5c160fa30b36"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "SpoqaHanSans-Regular.woff2",
+      "sha256": "6568bf80b50c14f2e54f56f2c07e668416f39f880baf5ea2825d315767f98f69"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "Pretendard-Regular.woff2",
+      "sha256": "fad853f7f47c6c8b103171e7193fa095708cdcd70850a71d93aa5379e8a61d63"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "NotoSansKR-ExtraLight.woff2",
+      "sha256": "3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "Pretendard-Black.woff2",
+      "sha256": "c5fd0c3568fc1368a3edc0d0fbb36df029935954276e3573451b3bae09e27296"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "LatinModernMath-VariableOutline-subset.otf",
+      "sha256": "c3b70b3a6ad5d7b03fb9c86067b6fc212b3a084870a9acff13238190137bf260"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "NotoSansMath-Regular.woff2",
+      "sha256": "6836027b99d29fd0e6f668cf0c2e89107de4131b91116cd96516ad4a7e19d66d"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "D2Coding-Bold.woff2",
+      "sha256": "cf59ac9e719ce9888870ec012cdf8cbc8ffdb632f823652d5b3ba3236ce6b7c8"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "NotoSansKR-Regular.woff2",
+      "sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "NanumGothic-Regular.woff2",
+      "sha256": "b2b25ce9c9179e0a4c867bd2610e1db5595965345aa1cdb857964ab802c4ee3e"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "Happiness-Sans-Title.woff2",
+      "sha256": "057e6821a062d9192964d99cf058fe6608230e9e4a464c9652b3756e02460e22"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "GowunBatang-Regular.woff2",
+      "sha256": "0c6a288aa0c12081dccde769c312f71f290b353243747dd24fb8c57f94f01d72"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "Pretendard-Thin.woff2",
+      "sha256": "1539755224a64719d5b18406762c476db74fcc299b9e4641ca1e9812fbc7a09b"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "Pretendard-SemiBold.woff2",
+      "sha256": "c863f76a7de5c1ddc1ed8b2fa794964530774592c4f31407a84e2a2ae93f17f0"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "GowunDodum-Regular.woff2",
+      "sha256": "349c098a6181952dab564bf891b8efcacfbf855adc28d40b4aa2e5937c101c56"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "RHWPPublicBatang-Regular.woff2",
+      "sha256": "20d454f45cdf29cc4619e769f1f59f3b8920941b6b274a530e82d3b75e24dbfb"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "Pretendard-ExtraBold.woff2",
+      "sha256": "dd7c1e156f508eb962acc7a33a7a1896d1e0b71e11156fad96e731689ceb6dc3"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "Pretendard-Bold.woff2",
+      "sha256": "4609c3356e536fafe38f4add0daeceb3d8595d3057bce13c428c33ddbd43d362"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "Pretendard-Medium.woff2",
+      "sha256": "d03481330eeba0659ab5b87f25ceb504a35de377dd90a0d0aba2982eb2d05e2c"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "NanumMyeongjo-Bold.woff2",
+      "sha256": "65c47ec072dd91cbaac538f4482be3185fb0896b5f3909aa8a9834604b1eec08"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "NanumGothic-Bold.woff2",
+      "sha256": "f1a3a97599e73746b1af08f88bc542c0f6b091818ffa67b31efb5b88d49ebc2e"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "RHWPOldHangul-Regular.woff2",
+      "sha256": "1a45a61e9a320c1bc62ca1401f7b23ceffffe8133dc2a9650ad4e12524f8dcab"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "Cafe24Supermagic-Regular-v1.0.woff2",
+      "sha256": "65434a217b9532867a1fe41417d0ad51210a60027a51dca40748aafed48ef0ba"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "LatinModernMath-Regular.woff2",
+      "sha256": "b11060f37967c090457580275129d0d7da1d5fbfc82b04e78c91aa31977f547c"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "Pretendard-Light.woff2",
+      "sha256": "b7426635cce2ea2b95c9c802e43fba1c620e0dafaf25f737c069b8b4e09fa841"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "NanumGothicCoding-Bold.woff2",
+      "sha256": "81c3ae9d714c4b31fb0fac7596e4a472e1a19776193a4a595e6f7e5b23daeeb3"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "NotoSerifKR-Regular.woff2",
+      "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "NanumGothic-ExtraBold.woff2",
+      "sha256": "a1961b5f8820d1c03519e21858508bedd32ea9f748805db5cad11536404c1801"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "Happiness-Sans-Regular.woff2",
+      "sha256": "4fc37e7663c3d440b5a6af6938bde0c6618b666553ed521745f3362050bd4988"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "HappinessSansVF.woff2",
+      "sha256": "cd29de60acf8c466938400561fcbfb14812dd5981f4f78b0c8da74609682423c"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "Happiness-Sans-Bold.woff2",
+      "sha256": "54becdfd4f7f58e872eba8fbc67778e29cff94c1cd03f9a0ebadfbe482b4aba0"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "NanumMyeongjo-ExtraBold.woff2",
+      "sha256": "dda2e9b5d670b63dd66a9a83468ee0ee9e64bef09d4fc24771865a7ab2529332"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "NotoSansSymbols2-Regular.ttf",
+      "sha256": "876598db5f1e3bef2bc77c4d94c5b0d5d2c1620be4878a06f18fb5434e331688"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "Cafe24Ssurround-v2.0.woff2",
+      "sha256": "2d726dbf8863d66e6d5cf56e2532c5d14d8a4b514461b565c513c1da6ae2f41a"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "D2Coding-Regular.woff2",
+      "sha256": "4d3fa8ed66fedcb1787f200bd75637b816b09057fc06da0aa783e3b305a726d8"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "Pretendard-ExtraLight.woff2",
+      "sha256": "df43dc9165dff4542114674bcd8b79b7daae6dec004004586d5d076fec6fe2aa"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "NotoSansKR-Bold.woff2",
+      "sha256": "dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "NotoSerifKR-Bold.woff2",
+      "sha256": "504d6af6abb882acd912d47bafa383c4512a6c8c33635e4e8fb37111d9310941"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "RHWPHftOutlineJamo.otf",
+      "sha256": "4b83808ea8cfc6f20c2c03b7259155e1aa205f4f24f5b54ce0e6137ca431c588"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "RHWPHostFixture-Oblique.ttf",
+      "sha256": "e3b86278af359b9e02128fea72e483e1627506c59739b15ee75672ec6eb6be56"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "RHWPHostFixture-Preferred.ttf",
+      "sha256": "3b94fcb46b425f2f2c3b4bbba2abdf352b3f5a4d5187a4574d7182b4f75887f6"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "RHWPEquationLatinOnly.ttf",
+      "sha256": "fcf0dba43d6611d3671880921f7d3c3d5c0f84eba31e490ade0636788d31d77b"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "RHWPHostFixture-CoverageSubset.ttf",
+      "sha256": "88ff7274201030cef93ce4f7884a1f3aa469a692315694ecc6b708a8701e23c2"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "RHWPEquationCJKRegular.ttf",
+      "sha256": "72347c55fed7836208c52c861988eac5fd1169cb8a7df4d7ffbe80f627929768"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "RHWPEquationCJKLight.ttf",
+      "sha256": "f54595d6a760efd5614c3601372c9681b379ebf3be6572f55261fa5e5f48dfe8"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "RHWPExactKerningSmoke.ttf",
+      "sha256": "775667d1980cd734e331f01e9390e02191bc35d669325291c842968cb0a4a9fc"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "RHWPBitmapSvgGlyphSmoke.ttf",
+      "sha256": "ba3121428c49e4ce8d2bf06e9977e126ee08e51dc6b4a840701a1945df3b2e84"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "RHWPExactFaceSmoke.ttc",
+      "sha256": "f58698f3e60e0aa6e182ecadf4f8239f309a0bac7be252538611e6c5cad723b5"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "RHWPHostFixture-Regular.ttf",
+      "sha256": "44479fbcc1e0cb20f97e13405a1fcb26b29fbcdf445ca52b41f6f645b3bd6aa5"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "RHWPHostFixture.ttc",
+      "sha256": "adc2b93966ad2cee31a5edece6d84efd4763a613b3a8bda76720d97f8a26dabf"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "RHWPHostFixture-Italic.ttf",
+      "sha256": "b6f6f576995a976e35eb4323a39633352060ad6b884fd791152a8fce1b1c1e81"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "RHWPHftOutline.otf",
+      "sha256": "c3eb4ea18997f2a79442f80e51e421bfe496edb431a9247f27dafd4fcc305dda"
+    },
+    {
+      "category": "저장소 공개 fixture",
+      "filename": "HappinessSansVF.ttf",
+      "sha256": "3bbd254dcc5780f7524f9d07af4aa981ba5e3e84cf32d7d4e04301b3943e8694"
+    }
+  ]
+}

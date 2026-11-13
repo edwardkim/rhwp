@@ -1,0 +1,556 @@
+{
+  "checks": [
+    [
+      "omitted",
+      true
+    ],
+    [
+      "false",
+      true
+    ],
+    [
+      "program-A",
+      true
+    ],
+    [
+      "source-metrics",
+      true
+    ],
+    [
+      "enable-fresh-tree",
+      true
+    ],
+    [
+      "enable-fresh-paint",
+      true
+    ],
+    [
+      "enable-hwp-roundtrip-0",
+      true
+    ],
+    [
+      "enable-hwp-roundtrip-1",
+      true
+    ],
+    [
+      "enable-hwpx-roundtrip-0",
+      true
+    ],
+    [
+      "enable-hwpx-roundtrip-1",
+      true
+    ],
+    [
+      "split-query-identity",
+      true
+    ],
+    [
+      "same-id-new-bytes",
+      true
+    ],
+    [
+      "replace-bytes-fresh-tree",
+      true
+    ],
+    [
+      "replace-bytes-fresh-paint",
+      true
+    ],
+    [
+      "replace-bytes-hwp-roundtrip-0",
+      true
+    ],
+    [
+      "replace-bytes-hwp-roundtrip-1",
+      true
+    ],
+    [
+      "replace-bytes-hwpx-roundtrip-0",
+      true
+    ],
+    [
+      "replace-bytes-hwpx-roundtrip-1",
+      true
+    ],
+    [
+      "opaque-identity-not-certified",
+      true
+    ],
+    [
+      "indexed-identity-consumed",
+      true
+    ],
+    [
+      "replace-cff-fresh-tree",
+      true
+    ],
+    [
+      "replace-cff-fresh-paint",
+      true
+    ],
+    [
+      "replace-cff-hwp-roundtrip-0",
+      true
+    ],
+    [
+      "replace-cff-hwp-roundtrip-1",
+      true
+    ],
+    [
+      "replace-cff-hwpx-roundtrip-0",
+      true
+    ],
+    [
+      "replace-cff-hwpx-roundtrip-1",
+      true
+    ],
+    [
+      "preview-page-tree-preserved",
+      true
+    ],
+    [
+      "page-outline-released",
+      true
+    ],
+    [
+      "filtered-outline-released",
+      true
+    ],
+    [
+      "patch-outline-released",
+      true
+    ],
+    [
+      "page-outline-program-consumed",
+      true
+    ],
+    [
+      "ttc-face",
+      true
+    ],
+    [
+      "ttc-sha",
+      true
+    ],
+    [
+      "replace-ttc-face-fresh-tree",
+      true
+    ],
+    [
+      "replace-ttc-face-fresh-paint",
+      true
+    ],
+    [
+      "replace-ttc-face-hwp-roundtrip-0",
+      true
+    ],
+    [
+      "replace-ttc-face-hwp-roundtrip-1",
+      true
+    ],
+    [
+      "replace-ttc-face-hwpx-roundtrip-0",
+      true
+    ],
+    [
+      "replace-ttc-face-hwpx-roundtrip-1",
+      true
+    ],
+    [
+      "remove",
+      true
+    ],
+    [
+      "remove-fresh-tree",
+      true
+    ],
+    [
+      "remove-fresh-paint",
+      true
+    ],
+    [
+      "remove-hwp-roundtrip-0",
+      true
+    ],
+    [
+      "remove-hwp-roundtrip-1",
+      true
+    ],
+    [
+      "remove-hwpx-roundtrip-0",
+      true
+    ],
+    [
+      "remove-hwpx-roundtrip-1",
+      true
+    ],
+    [
+      "restore",
+      true
+    ],
+    [
+      "restore-fresh-tree",
+      true
+    ],
+    [
+      "restore-fresh-paint",
+      true
+    ],
+    [
+      "restore-hwp-roundtrip-0",
+      true
+    ],
+    [
+      "restore-hwp-roundtrip-1",
+      true
+    ],
+    [
+      "restore-hwpx-roundtrip-0",
+      true
+    ],
+    [
+      "restore-hwpx-roundtrip-1",
+      true
+    ],
+    [
+      "disable",
+      true
+    ],
+    [
+      "disable-fresh-tree",
+      true
+    ],
+    [
+      "disable-fresh-paint",
+      true
+    ],
+    [
+      "disable-hwp-roundtrip-0",
+      true
+    ],
+    [
+      "disable-hwp-roundtrip-1",
+      true
+    ],
+    [
+      "disable-hwpx-roundtrip-0",
+      true
+    ],
+    [
+      "disable-hwpx-roundtrip-1",
+      true
+    ],
+    [
+      "read-failure",
+      true
+    ],
+    [
+      "read-failure-fresh-tree",
+      true
+    ],
+    [
+      "read-failure-fresh-paint",
+      true
+    ],
+    [
+      "read-failure-hwp-roundtrip-0",
+      true
+    ],
+    [
+      "read-failure-hwp-roundtrip-1",
+      true
+    ],
+    [
+      "read-failure-hwpx-roundtrip-0",
+      true
+    ],
+    [
+      "read-failure-hwpx-roundtrip-1",
+      true
+    ],
+    [
+      "read-recovery-fresh-tree",
+      true
+    ],
+    [
+      "read-recovery-fresh-paint",
+      true
+    ],
+    [
+      "read-recovery-hwp-roundtrip-0",
+      true
+    ],
+    [
+      "read-recovery-hwp-roundtrip-1",
+      true
+    ],
+    [
+      "read-recovery-hwpx-roundtrip-0",
+      true
+    ],
+    [
+      "read-recovery-hwpx-roundtrip-1",
+      true
+    ],
+    [
+      "detach-fresh-tree",
+      true
+    ],
+    [
+      "detach-fresh-paint",
+      true
+    ],
+    [
+      "detach-hwp-roundtrip-0",
+      true
+    ],
+    [
+      "detach-hwp-roundtrip-1",
+      true
+    ],
+    [
+      "detach-hwpx-roundtrip-0",
+      true
+    ],
+    [
+      "detach-hwpx-roundtrip-1",
+      true
+    ],
+    [
+      "reattach-fresh-tree",
+      true
+    ],
+    [
+      "reattach-fresh-paint",
+      true
+    ],
+    [
+      "reattach-hwp-roundtrip-0",
+      true
+    ],
+    [
+      "reattach-hwp-roundtrip-1",
+      true
+    ],
+    [
+      "reattach-hwpx-roundtrip-0",
+      true
+    ],
+    [
+      "reattach-hwpx-roundtrip-1",
+      true
+    ],
+    [
+      "backend",
+      true
+    ],
+    [
+      "explicit-metric-override",
+      true
+    ],
+    [
+      "saved-bytes",
+      true
+    ],
+    [
+      "portable-names",
+      true
+    ],
+    [
+      "explicit-owner",
+      true
+    ],
+    [
+      "late-disable",
+      true
+    ],
+    [
+      "late-replace",
+      true
+    ],
+    [
+      "late-document",
+      true
+    ],
+    [
+      "local-state",
+      true
+    ],
+    [
+      "ttc-native-measure-0",
+      true
+    ],
+    [
+      "ttc-native-measure-1",
+      true
+    ],
+    [
+      "ttc-native-advance-ratio",
+      true
+    ]
+  ],
+  "reads": [
+    {
+      "id": "face",
+      "rev": "0",
+      "source": "Regular",
+      "index": 0
+    },
+    {
+      "id": "face",
+      "rev": "0",
+      "source": "Regular",
+      "index": 0
+    },
+    {
+      "id": "face",
+      "rev": "1",
+      "source": "Regular",
+      "index": 0
+    },
+    {
+      "id": "second",
+      "rev": "1",
+      "source": "Regular",
+      "index": 0
+    },
+    {
+      "id": "face",
+      "rev": "2",
+      "source": "Italic",
+      "index": 0
+    },
+    {
+      "id": "face",
+      "rev": "2",
+      "source": "Italic",
+      "index": 0
+    },
+    {
+      "id": "face",
+      "rev": "3",
+      "source": "CFF",
+      "index": 0
+    },
+    {
+      "id": "face",
+      "rev": "3",
+      "source": "CFF",
+      "index": 0
+    },
+    {
+      "id": "face",
+      "rev": "3",
+      "source": "CFF",
+      "index": 0
+    },
+    {
+      "id": "face",
+      "rev": "4",
+      "source": "ttc",
+      "index": 0
+    },
+    {
+      "id": "face",
+      "rev": "5",
+      "source": "ttc",
+      "index": 1
+    },
+    {
+      "id": "face",
+      "rev": "5",
+      "source": "ttc",
+      "index": 1
+    },
+    {
+      "id": "face",
+      "rev": "7",
+      "source": "ttc",
+      "index": 1
+    },
+    {
+      "id": "face",
+      "rev": "7",
+      "source": "ttc",
+      "index": 1
+    },
+    {
+      "id": "face",
+      "rev": "7",
+      "source": "ttc",
+      "index": 1
+    },
+    {
+      "id": "face",
+      "rev": "7",
+      "source": "ttc",
+      "index": 1
+    },
+    {
+      "id": "face",
+      "rev": "7",
+      "source": "ttc",
+      "index": 1
+    },
+    {
+      "id": "face",
+      "rev": "7",
+      "source": "ttc",
+      "index": 1
+    },
+    {
+      "id": "face",
+      "rev": "7",
+      "source": "ttc",
+      "index": 1
+    },
+    {
+      "id": "face",
+      "rev": "8",
+      "source": "ttc",
+      "index": 1
+    },
+    {
+      "id": "face",
+      "rev": "8",
+      "source": "ttc",
+      "index": 1
+    },
+    {
+      "id": "face",
+      "rev": "9",
+      "source": "ttc",
+      "index": 1
+    },
+    {
+      "id": "face",
+      "rev": "9",
+      "source": "ttc",
+      "index": 1
+    },
+    {
+      "id": "face",
+      "rev": "9",
+      "source": "ttc",
+      "index": 1
+    },
+    {
+      "id": "face",
+      "rev": "9",
+      "source": "ttc",
+      "index": 1
+    },
+    {
+      "id": "face",
+      "rev": "9",
+      "source": "ttc",
+      "index": 1
+    },
+    {
+      "id": "face",
+      "rev": "9",
+      "source": "ttc",
+      "index": 1
+    }
+  ]
+}

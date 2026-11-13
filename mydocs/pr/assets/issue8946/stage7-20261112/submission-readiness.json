@@ -1,0 +1,14 @@
+{
+  "status": "rebase_and_integration_validation_required",
+  "code_head": "cec288ae2fd84b75b884a05ee1ada6ae3a8d2ac7",
+  "base": "1a3ed4a7cd76701085a24ac81d30bc5fb31942c1",
+  "remaining_required_local_checks": [
+    "Rebase onto a85d3265dd and verify incoming #9017 functionality plus final head gates",
+    "Resolve the common helper conflict with open PR #9012 before submission"
+  ],
+  "protected_pages": 3542,
+  "protected_falls": 0,
+  "default_conditions": 9,
+  "composited_initial_screen_conditions": 9,
+  "note": "All stage7 local runtime gates passed at cec288ae2f. Submission held after final remote refresh."
+}

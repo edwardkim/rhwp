@@ -71,6 +71,8 @@ struct NativeOtfProgram {
     bytes: Arc<[u8]>,
     face_index: u32,
     digest: [u8; 32],
+    source_digest: [u8; 32],
+    source_face_index: u32,
     selection_digest: [u8; 32],
     faux_bold: bool,
     cff: bool,
@@ -82,12 +84,17 @@ impl PartialEq for NativeOtfMetrics {
         self.original_truetype == other.original_truetype
             && self.programs.len() == other.programs.len()
             && self.programs.iter().zip(&other.programs).all(|(a, b)| {
-                a.digest == b.digest && a.face_index == b.face_index && a.faux_bold == b.faux_bold
+                a.selection_digest == b.selection_digest && a.faux_bold == b.faux_bold
             })
     }
 }
 
 impl NativeOtfMetrics {
+    /// HFT의 분리 프로그램 소유를 확인할 때 TTF 대체 공급과 구분한다.
+    pub(crate) fn has_only_cff_programs(&self) -> bool {
+        !self.programs.is_empty() && self.programs.iter().all(|program| program.cff)
+    }
+
     /// 실제 공급을 마친 동일 family TrueType 요청의 전진만 허용한다.
     pub fn uses_original_truetype(&self) -> bool {
         self.original_truetype
@@ -168,9 +175,9 @@ impl NativeOtfMetrics {
             .and_then(|(_, _, _, index)| self.programs.get(index))
             .is_some_and(|program| {
                 identity.matches(
-                    &program.digest,
+                    &program.source_digest,
                     &program.selection_digest,
-                    program.face_index,
+                    program.source_face_index,
                 )
             })
     }
@@ -264,6 +271,8 @@ impl NativePuaFonts {
         let face =
             ttf_parser::Face::parse(bytes, face_index).map_err(|_| "invalid native font face")?;
         let cff = is_cff_program(bytes, face_index);
+        let source_digest: [u8; 32] = Sha256::digest(bytes).into();
+        let source_face_index = face_index;
         // FontEnvironment의 Native 신원 생성과 같은 입력·collection face를 소비한다.
         let mut selection_digest = Sha256::new();
         selection_digest.update(bytes);
@@ -278,9 +287,9 @@ impl NativePuaFonts {
                 super::legacy_font_advances::has_verified_hft_bold_tracking_family(&family)
             })
         });
-        let compact = (!cff)
-            .then(|| metric_sfnt::compact_truetype_metrics(bytes, face_index))
-            .flatten();
+        // CFF도 cmap/hmtx만 측정에 사용한다. 원본 신원·형식은 위에서 보존하고
+        // 윤곽은 별도 paint 저장소가 소유하므로 측정 세션에 중복 보관하지 않는다.
+        let compact = metric_sfnt::compact_metrics(bytes, face_index);
         let (bytes, face_index) = match compact.as_deref() {
             Some(metrics) => (metrics, 0),
             None => (bytes, face_index),
@@ -293,7 +302,7 @@ impl NativePuaFonts {
         if old.is_some_and(|font| {
             font.programs
                 .iter()
-                .any(|p| p.digest == digest && p.face_index == face_index)
+                .any(|p| p.selection_digest == selection_digest)
         }) {
             return Ok(());
         }
@@ -330,6 +339,8 @@ impl NativePuaFonts {
             bytes: shared.unwrap_or_else(|| Arc::from(bytes)),
             face_index,
             digest,
+            source_digest,
+            source_face_index,
             selection_digest,
             faux_bold,
             cff,

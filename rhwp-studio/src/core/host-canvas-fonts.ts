@@ -12,6 +12,7 @@ interface CanvasHostFace {
   intrinsicAlias: string;
   intrinsicFont: FontFace | null;
   ownership: Map<string, boolean>;
+  source: { bytes: Uint8Array; faceIndex: number };
 }
 type CanvasFontContext = Pick<CanvasRenderingContext2D, 'font' | 'measureText'>;
 interface CanvasFontSourceOwner extends OrdinaryTextFontSource {
@@ -19,6 +20,8 @@ interface CanvasFontSourceOwner extends OrdinaryTextFontSource {
   registerTextFontGlyphCoverage?: (family: string, bytes: Uint8Array, faceIndex: number) => unknown;
   registerHftOutlineFont?: (family: string, bytes: Uint8Array, faceIndex: number) => unknown;
   registerHftOutlineFontCandidates?: (family: string, programs: Uint8Array[]) => unknown;
+  registerHftOutlineFontFaces?: (family: string, programs: Array<{ bytes: Uint8Array; faceIndex: number }>) => unknown;
+  clearTextFontOutline?: (family: string) => unknown;
 }
 let nextSession = 0;
 let currentSession: HostCanvasFontSession | null = null;
@@ -52,6 +55,7 @@ export class HostCanvasFontSession {
   private readonly pending = new Map<string, Promise<void>>();
   private readonly failures = new Set<string>();
   private fontSet: FontFaceSet | null = null;
+  private scopedOutlines = false;
 
   reset(): void {
     this.epoch += 1;
@@ -63,6 +67,7 @@ export class HostCanvasFontSession {
     this.fontSet = null;
     this.faces.clear(); this.aliases.clear(); this.pending.clear(); this.failures.clear();
     this.generation = -1;
+    this.scopedOutlines = false;
   }
 
   diagnostics(): { loaded: number; pending: number; failed: number } {
@@ -74,12 +79,14 @@ export class HostCanvasFontSession {
   }
 
   async prepare(records: readonly LocalFontRecord[], sourceOwner: CanvasFontSourceOwner | null = null,
-    isCurrent: () => boolean = () => true): Promise<void> {
+    isCurrent: () => boolean = () => true, pageOutlines = false): Promise<void> {
     const generation = getHostFontState().generation;
     if (this.generation !== generation) {
       this.reset(); this.generation = generation;
       this.off = onHostFontsChanged(() => this.reset());
     }
+    this.scopedOutlines = pageOutlines && Boolean(sourceOwner?.clearTextFontOutline
+      && sourceOwner?.registerHftOutlineFontFaces);
     if (typeof FontFace === 'undefined' || typeof document === 'undefined') return;
     this.fontSet = document.fonts;
     const epoch = this.epoch;
@@ -112,7 +119,7 @@ export class HostCanvasFontSession {
           if (candidates.length < 2) {
             sourceOwner?.registerTextFontGlyphCoverage?.(family, new Uint8Array(loaded.bytes), 0);
           }
-          if (candidates.length < 2 && Number(record.hostReference!.face.weight ?? 400) === 400
+          if (!this.scopedOutlines && candidates.length < 2 && Number(record.hostReference!.face.weight ?? 400) === 400
             && (record.hostReference!.face.slant ?? 'normal') === 'normal') {
             sourceOwner?.registerHftOutlineFont?.(family, new Uint8Array(loaded.bytes), 0);
           }
@@ -148,7 +155,8 @@ export class HostCanvasFontSession {
               this.fontSet!.add(intrinsicFont);
             }
             this.fontSet!.add(font);
-            this.faces.set(key, { alias, font, bytes, intrinsicAlias, intrinsicFont, ownership: new Map() });
+            this.faces.set(key, { alias, font, bytes, intrinsicAlias, intrinsicFont, ownership: new Map(),
+              source: { bytes: new Uint8Array(data!.bytes), faceIndex: data!.faceIndex ?? 0 } });
             this.aliases.add(intrinsicAlias);
             this.aliases.add(alias);
           } catch {
@@ -162,6 +170,7 @@ export class HostCanvasFontSession {
       if (prepared && epoch === this.epoch) register(prepared);
     }
     // 실제 Canvas와 같은 후보 순서를 공급한다. 혼합 형식은 기존 painter에 맡긴다.
+    if (this.scopedOutlines) return;
     for (const family of clearedSplitFamilies) {
       const candidates = resolveRendererLocalFontCandidates(family, {weight: 400, slant: 'normal'});
       if (candidates.length < 2) continue;
@@ -172,6 +181,30 @@ export class HostCanvasFontSession {
         sourceOwner?.registerHftOutlineFontCandidates?.(family,
           loaded.map(face => new Uint8Array(face!.bytes)));
       }
+    }
+  }
+
+  /** 현재 paint에 필요한 윤곽만 빌린다. 예외·다른 쪽·portable 출력에 남기지 않는다. */
+  withPageOutlines<T>(records: readonly LocalFontRecord[], owner: CanvasFontSourceOwner,
+    operation: () => T): T {
+    if (!this.scopedOutlines || this.generation !== getHostFontState().generation) return operation();
+    const families = new Set(records.filter(record => record.hostReference
+      && Number(record.hostReference.face.weight ?? 400) === 400
+      && (record.hostReference.face.slant ?? 'normal') === 'normal')
+      .flatMap(record => [record.family, ...record.aliases]));
+    const installed: string[] = [];
+    try {
+      for (const family of families) {
+        const candidates = resolveRendererLocalFontCandidates(family, { weight: 400, slant: 'normal' });
+        const loaded = candidates.map(record => this.faces.get(localFontFaceKey(record)));
+        if (!loaded.length || loaded.some(face => !face || face.bytes.byteLength < 4
+          || new DataView(face.bytes).getUint32(0) !== 0x4f54544f)) continue;
+        installed.push(family);
+        owner.registerHftOutlineFontFaces!(family, loaded.map(face => face!.source));
+      }
+      return operation();
+    } finally {
+      for (const family of installed) owner.clearTextFontOutline!(family);
     }
   }
 

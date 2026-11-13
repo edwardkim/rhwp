@@ -1,0 +1,16 @@
+{
+  "key": "pr8930-6540000-202500049-post-table-line-stored-page-reset",
+  "source_input": "samples/issue8926/6540000-202500049-post-table-line-stored-page-reset.hwp",
+  "source_char_pr": 9,
+  "source_font_id": 5,
+  "source_font": "나눔고딕 Bold",
+  "stored_substitute": "한컴바탕",
+  "independent_pdf_title_base_font": "Haansoft Batang",
+  "public_primary_program_cmap_count": 91,
+  "title_hangul_coverage": false,
+  "restored_contract_source": "mydocs/pr/assets/pr8896/latest-eb84/font-environments/incoming/pr8930-6540000-202500049-post-table-line-stored-page-reset.json",
+  "restored_contract": "7 language slots, fontId 5, source 나눔고딕 Bold, glyph fallback HCRBatang",
+  "product_code_changed": false,
+  "initial_observation": "raw 100.00% still showed a sans-serif title; direct enlarged reading rejected it",
+  "correction": "Restore the original stored substitute and previously accepted explicit environment for both base/head and both backends. Keep initial measurements separately."
+}

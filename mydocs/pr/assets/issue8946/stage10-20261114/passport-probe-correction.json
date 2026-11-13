@@ -1,0 +1,7 @@
+{
+  "original_probe": "7500x7500 HU flow-participating logo; not the original PR reproduction; expecting 2 pages for this altered input was invalid",
+  "reference": "mydocs/pr/assets/issue_8199_control_only_para_line_seg/generate.mjs",
+  "corrected_contract": "2835x2835 HU 1x1 white PNG; InFrontOfText; paper offsets 0/0; original body preserved",
+  "product_source_changed": false,
+  "earlier_probe_outputs_retained": true
+}

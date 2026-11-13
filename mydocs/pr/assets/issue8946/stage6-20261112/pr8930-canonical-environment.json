@@ -1,0 +1,81 @@
+{
+  "documentGlyphFallbacks": [
+    {
+      "faces": [
+        "NotoSansKRExtraLight"
+      ],
+      "fontId": 6,
+      "languageSlot": 0,
+      "source": "KoPub돋움체 Light"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 5,
+      "languageSlot": 0,
+      "source": "나눔고딕 Bold"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 5,
+      "languageSlot": 1,
+      "source": "나눔고딕 Bold"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 5,
+      "languageSlot": 2,
+      "source": "나눔고딕 Bold"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 5,
+      "languageSlot": 3,
+      "source": "나눔고딕 Bold"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 5,
+      "languageSlot": 4,
+      "source": "나눔고딕 Bold"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 5,
+      "languageSlot": 5,
+      "source": "나눔고딕 Bold"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 5,
+      "languageSlot": 6,
+      "source": "나눔고딕 Bold"
+    }
+  ],
+  "documentSubstitutions": [],
+  "id": "issue8946-rebase-preserve-stored-substitute",
+  "preserveSourceMetrics": true,
+  "substitutions": {
+    "KoPubWorld돋움체 Bold": "KoPubWorldDotumPB",
+    "KoPub돋움체 Light": "KoPubDotumLight",
+    "KoPub바탕체 Light": "KoPubBatang-Light",
+    "나눔고딕 Bold": "NanumGothicBold",
+    "맑은 고딕": "Pretendard-Regular",
+    "함초롬돋움": "HCRDotum",
+    "함초롬바탕": "HCRBatang",
+    "휴먼명조": "NotoSansKR-Regular"
+  }
+}
