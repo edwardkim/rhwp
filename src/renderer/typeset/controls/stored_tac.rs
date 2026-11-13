@@ -620,6 +620,23 @@ pub(super) fn prepare(
     source_frame: Option<StoredColumnFrame>,
     dpi: f64,
 ) -> Option<StoredTacPlan> {
+    // 쪽으로 이월된 원본 개체 줄의 앞 띠는 뒤 원본 줄이 정확히 닫는 경우에만
+    // 남긴다. 일반 TAC 경로와 이 조기 수용 계획이 같은 원점·끝점을 소비한다.
+    let opening_before = (page.empty_column
+        && page.current_height == 0.0
+        && page.vpos_col_anchor == 0.0
+        && !page.profile.session_edited())
+    .then(|| {
+        crate::renderer::float_placement::restarted_tac::restarted_tac_opening_before(
+            para,
+            next_para?,
+            fmt.spacing_before,
+            fmt.spacing_after,
+            next_spacing_before,
+            dpi,
+        )
+    })
+    .flatten();
     // 커서가 이미 거절한 source 원점을 첫 저장 줄/개체의 영점 인증으로
     // 다시 수용하지 않는다. 일반 TAC 흐름도 같은 수용 원점에서 fit/paint한다.
     if page
@@ -696,15 +713,16 @@ pub(super) fn prepare(
             {
                 return None;
             }
-            let trailing = if crate::renderer::composer::tac_next_line_full_spacing(
-                para,
-                next_para,
-                fmt.spacing_after,
-                next_spacing_before,
-                seg,
-                page.profile,
-                dpi,
-            ) {
+            let trailing = if opening_before.is_some()
+                || crate::renderer::composer::tac_next_line_full_spacing(
+                    para,
+                    next_para,
+                    fmt.spacing_after,
+                    next_spacing_before,
+                    seg,
+                    page.profile,
+                    dpi,
+                ) {
                 hwpunit_to_px(seg.line_spacing, dpi)
             } else {
                 crate::renderer::composer::tac_host_trailing_spacing_at_boundary(
@@ -746,7 +764,7 @@ pub(super) fn prepare(
             let flow_origin = if single_saved_line {
                 // 저장 줄 원점은 앞 간격을 이미 소유한다. 현재 물리 흐름은 그 하한이며
                 // 앞 간격을 다시 더하지 않는다.
-                page.current_height
+                page.current_height + opening_before.unwrap_or(0.0)
             } else {
                 page.current_height
                     + if page.current_height < 1.0 {
@@ -788,29 +806,30 @@ pub(super) fn prepare(
                         dpi,
                     )
             };
-            let restarted_column_line = single_saved_line
-                && page.empty_column
-                && page.current_height == 0.0
-                && page.vpos_col_anchor == 0.0
-                && fmt.spacing_before == 0.0
-                && fmt.spacing_after == 0.0
-                && next_para.is_some_and(|next| {
-                    !next.stored_text_partition_is_dirty()
-                        && !next.cell_format_vpos_dirty
-                        && next.controls.is_empty()
-                        && next.column_type == crate::model::paragraph::ColumnBreakType::None
-                        && next.line_segs.first().is_some_and(|after| {
-                            !crate::renderer::typeset::is_synthetic_line_seg(after)
-                                && after.vertical_pos < para.line_segs[0].vertical_pos
-                                && i64::from(after.vertical_pos)
-                                    == i64::from(para.line_segs[0].line_height)
-                                        + i64::from(para.line_segs[0].line_spacing)
-                                        + i64::from(crate::renderer::px_to_hwpunit(
-                                            next_spacing_before,
-                                            dpi,
-                                        ))
-                        })
-                });
+            let restarted_column_line = opening_before.is_some()
+                || (single_saved_line
+                    && page.empty_column
+                    && page.current_height == 0.0
+                    && page.vpos_col_anchor == 0.0
+                    && fmt.spacing_before == 0.0
+                    && fmt.spacing_after == 0.0
+                    && next_para.is_some_and(|next| {
+                        !next.stored_text_partition_is_dirty()
+                            && !next.cell_format_vpos_dirty
+                            && next.controls.is_empty()
+                            && next.column_type == crate::model::paragraph::ColumnBreakType::None
+                            && next.line_segs.first().is_some_and(|after| {
+                                !crate::renderer::typeset::is_synthetic_line_seg(after)
+                                    && after.vertical_pos < para.line_segs[0].vertical_pos
+                                    && i64::from(after.vertical_pos)
+                                        == i64::from(para.line_segs[0].line_height)
+                                            + i64::from(para.line_segs[0].line_spacing)
+                                            + i64::from(crate::renderer::px_to_hwpunit(
+                                                next_spacing_before,
+                                                dpi,
+                                            ))
+                            })
+                    }));
             let continued_column_line = single_saved_line
                 && !explicit_page_break_before
                 && page.empty_column
@@ -851,7 +870,7 @@ pub(super) fn prepare(
                 // 뒤 저장 줄이 새 개체 줄의 전체 전진과 일치하는 0축을 소유한다.
                 saved_origin = flow_origin;
             }
-            if continued_column_line {
+            if continued_column_line && opening_before.is_none() {
                 // 앞 쪽에서 완전히 소비한 줄과 이어지는 저장 사다리가 이 문단의
                 // 앞 간격을 인증한다. 새 단으로 넘길 때도 아직 소비하지 않은
                 // 간격을 fit과 실제 배치가 같은 원점에서 한 번만 사용한다.

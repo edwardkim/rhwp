@@ -166,6 +166,8 @@ test('Print TTF 대체 글리프는 원 프로그램의 기하를 쓰고 Screen�
   assert.ok(printed.paths > rows[0].paths, '대체 글리프의 실제 path 재생이 있어야 한다');
 });
 
+// 관계형: 글자 기하는 2024 Print에만, 장치 clip 포함 경계는 모든 Print에 적용한다.
+// 주석 갱신: 2026-11-13 06:05 KST. #8986의 독립 Print·Rust 계약을 실제 Canvas 재생과 함께 확인한다.
 test('실제 Canvas Print 글리프는 기하 모드를 소비하고 Screen으로 복귀한다', async t => {
   const pkg = resolve(process.env.RHWP_SWEEP_TEST_WASM_PKG || join(root, 'pkg'));
   const files = new Map([
@@ -270,8 +272,13 @@ test('실제 Canvas Print 글리프는 기하 모드를 소비하고 Screen으�
     assert.equal(row.tree, first.tree, '프로필 전환으로 원본 배치·소속을 바꾸지 않는다');
     assert.deepEqual(row.calls.map(call => call.transform), first.calls.map(call => call.transform),
       '글리프 원점·장평을 모드 보정 수치로 바꾸지 않는다');
-    const expected = row.profile === 'print' && row.compat ? 'geometricPrecision' : 'auto';
-    assert.equal(row.layer.rasterClipCoverage, row.profile === 'print' && row.compat);
+    const expectedTextGeometry = row.profile === 'print' && row.compat;
+    const expectedClipCoverage = row.profile === 'print';
+    const expected = expectedTextGeometry ? 'geometricPrecision' : 'auto';
+    assert.equal(row.layer.rasterTextGeometry, expectedTextGeometry,
+      `글자 기하는 2024 Print에만 적용한다: ${JSON.stringify({compat: row.compat, profile: row.profile})}`);
+    assert.equal(row.layer.rasterClipCoverage, expectedClipCoverage,
+      `장치 clip 포함 경계는 모든 Print에 적용한다: ${JSON.stringify({compat: row.compat, profile: row.profile})}`);
     const clips = [];
     const visit = node => {
       if (node.kind === 'clipRect' && node.clipKind === 'body') clips.push(node.clip);
@@ -281,7 +288,7 @@ test('실제 Canvas Print 글리프는 기하 모드를 소비하고 Screen으�
     visit(row.layer.root);
     assert.ok(clips.length > 0, '본문 clip이 실제 재생 경로에 있어야 한다');
     for (const clip of clips) {
-      const expectedRect = row.layer.rasterClipCoverage
+      const expectedRect = expectedClipCoverage
         ? [Math.floor(clip.x), Math.floor(clip.y), Math.ceil(clip.x + clip.width) - Math.floor(clip.x), Math.ceil(clip.y + clip.height) - Math.floor(clip.y)]
         : [clip.x, clip.y, clip.width, clip.height];
       assert.ok(row.rectangles.some(rect => rect.transform.every((v, i) => v === [1, 0, 0, 1, 0, 0][i])

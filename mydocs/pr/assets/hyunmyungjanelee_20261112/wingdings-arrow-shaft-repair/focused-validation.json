@@ -1,0 +1,53 @@
+{
+  "stage": "focused validation; fresh consumer recapture pending",
+  "parent_head": "53e3353e6e142df99e4416f417642b4931c9fcd8",
+  "recorded_at": "2026-11-12T11:30:28.174744+00:00",
+  "rust_after": {
+    "run": 5,
+    "pass": 5,
+    "fail": 0,
+    "outside_filter": 336,
+    "elapsed_seconds": 0.029
+  },
+  "before": {
+    "run": 5,
+    "pass": 2,
+    "fail": 3,
+    "note": "원문 표시·nominal guard 실패와 전진 차이를 재현했다. 전진 검사의 최초 기대값은 이상적인 부동소수점 값이었다. 최종 검사에서는 기존 한컴 4HU 장치 계약을 적용한 HU 값으로 정정했으며, 최초 기대값 오류를 제품 회귀로 인용하지 않는다."
+  },
+  "studio_before": "standalone nominal replay assertion failed",
+  "studio_after": "executable renderer contract passed; VS/ZWJ/combining guards retained",
+  "independent_glyph_identity": {
+    "cid": 9,
+    "gid": 9,
+    "print_width_per_1000": 385,
+    "mac_symbol_cmap_F0FA": "bdash2",
+    "same_coordinates": true,
+    "same_contours": true,
+    "same_flags": true,
+    "pdf_sha256": "99d96e65b8ad607e662e4408b256fd9f64920e0ccd9caa6a20c24e1e41a3a876",
+    "private_extracted_font_committed": false,
+    "public_font_sha256": {
+      "ttfs/opensource/NotoSansSymbols2-Regular.ttf": "876598db5f1e3bef2bc77c4d94c5b0d5d2c1620be4878a06f18fb5434e331688",
+      "assets/fonts/NotoSansSymbols2-Regular.ttf": "876598db5f1e3bef2bc77c4d94c5b0d5d2c1620be4878a06f18fb5434e331688",
+      "rhwp-studio/public/fonts/NotoSansSymbols2-Regular.ttf": "876598db5f1e3bef2bc77c4d94c5b0d5d2c1620be4878a06f18fb5434e331688"
+    }
+  },
+  "log_hashes": {
+    "f0fa-before-corrected.log": "4ad308628b0f4c9970ae12698a3c10e7b70d54d0df7cbb5a247a949ea8d17b6d",
+    "f0fa-after.log": "6285b3bd13157d0aa0b524ed864583586cc535dd988c41b833ae0bc6a01c4bac",
+    "f0fa-after-final.log": "312491841c71b8921e5e2d550ed4d083996f663c5355501ed26c8bef8e52e442",
+    "f0fa-renderer-before.log": "aacb8ee418b00cbde9b1003f8463d3b45408b2fa6397ab9d3e4362f8e7498a07",
+    "f0fa-renderer-after.log": "d22ea6be4cd4694fa6356c547d15ad1b2e102a7e3c7aadaebefa33f56e77c2c0"
+  },
+  "source_files_sha256": {
+    "src/renderer/composer/mapped_symbol_fonts.rs": "dc364886f277622faec4d496de015c687b50fb3c0d45e3a0430d95b42da3d559",
+    "src/renderer/composer.rs": "4739dfe07d83f989dc6f2b3e35a72d5fa8ba2dbf5b3aadf7d1e3ded939884f4e",
+    "src/renderer/font_metrics_overlays.rs": "9a1cc0692f06ae6bf49dc39f9ab859149d062309ecf127e48225b8ffeec0fadc",
+    "src/renderer/layout/paragraph_layout.rs": "17299a4ba94da99c1a4d01b72a319d88bf009df6f5c7f8e4170e627b08b023bd",
+    "src/renderer/canvaskit_policy.rs": "97c871376856dfb32c999d09527f9a930691eb1348d8a0a91efac8151eb1020c",
+    "rhwp-studio/src/view/canvaskit/nominal-text-replay.ts": "0eaf2e341fae25e1fe394f9743c101633095b2058fa5d6f3918b71c5393f34e2",
+    "tests/cases/issue_8680_pua_wingdings_circled_digits.rs": "1fdf8eabd6c0c286e9b904e5e276f22039b4ec0b1eda33fd6cdbe425c6f8bf6c",
+    "rhwp-studio/e2e/renderer-contract.test.mjs": "296c778e2d7ea6d45dff8ae2eacdbd46ab4d9e847397c0bf16a0e38b1d600b82"
+  }
+}

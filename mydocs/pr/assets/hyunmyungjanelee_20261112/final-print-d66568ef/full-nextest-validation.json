@@ -1,0 +1,30 @@
+{
+  "code_head": "d66568ef247859a9c184546cad3ba42b06e806e1",
+  "base": "80b1c354c29b7a02fb2b3c14a274da7f5b653ada",
+  "tests_run": 13361,
+  "passed": 13361,
+  "failed": 0,
+  "skipped": 45,
+  "execution_seconds": 579.82,
+  "log_sha256": "9a320863746e025f22678bf71408b2fe5e293a87f0bbac913b05a2a8eebdf8d8",
+  "command": [
+    "sandbox-exec",
+    "-f",
+    "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v9/minimal-font/profile.sb",
+    "cargo",
+    "nextest",
+    "run",
+    "--locked",
+    "--cargo-profile",
+    "release-test",
+    "--target-dir",
+    "target/pr-review",
+    "--tests",
+    "--build-jobs",
+    "8",
+    "--test-threads",
+    "8",
+    "--no-fail-fast"
+  ],
+  "minimal_font_verification": "minimal-font-verification.json"
+}

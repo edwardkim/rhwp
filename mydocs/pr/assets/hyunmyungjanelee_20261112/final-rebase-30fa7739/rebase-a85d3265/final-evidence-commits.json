@@ -1,0 +1,27 @@
+[
+  {
+    "sha": "302a94362762ae9f0912a525a405f0ada59dc894",
+    "title": "문서: 최신 WASM 표 조회 API 생성 주석 동기화",
+    "files": 1
+  },
+  {
+    "sha": "e61d005e5db1fb52d39355c9f3941594232fe806",
+    "title": "검증: 실제 backend 출력과 차트 지원 경계 증적 보존",
+    "files": 61
+  },
+  {
+    "sha": "d4bd3d9a09b3de20c0dafa8c9dabdc7fb2e4555e",
+    "title": "검증: Native·WASM 전쪽 보호 TSV와 생산자 근거 보존",
+    "files": 59
+  },
+  {
+    "sha": "680749b86753d27d29bb957538fb4c9a6a4f4c25",
+    "title": "검증: 최신 리베이스의 전체 회귀와 증적 재사용 감사 보존",
+    "files": 176
+  },
+  {
+    "sha": "9781dfd740b6722ee77c70fd5854e7ee1fa7a17a",
+    "title": "검토: 외부 PR 6건의 메인터너 보정과 최종 수용 근거 확정",
+    "files": 13
+  }
+]

@@ -483,9 +483,20 @@ fn parse_hwp_with_cfb(
     doc_info.raw_stream = Some(doc_info_data);
 
     // 4. BodyText 섹션별 파싱
+    //
+    // rhwp 저장 표지가 인증한 구역만 LineSeg tag bit 31 을 rhwp 합성 표지로 읽는다(#8939).
+    // 표지는 보조 스트림으로 남아 저장기가 원본 그대로 다시 쓰는 구역의 의미를 이어 받는다.
+    let rhwp_line_seg_sections = cfb
+        .read_stream_raw_limited(
+            crate::model::line_seg_tags::HWP_STREAM,
+            crate::model::line_seg_tags::MAX_BYTES,
+        )
+        .map(|bytes| crate::model::line_seg_tags::decode(&bytes))
+        .unwrap_or_default();
     let section_count = cfb.section_count();
     let sections = parse_sections_strict(
         &mut cfb,
+        &rhwp_line_seg_sections,
         section_count,
         compressed,
         distribution,
@@ -842,6 +853,7 @@ fn parse_visible_section(
 #[allow(clippy::too_many_arguments)]
 fn parse_sections_strict(
     cfb: &mut cfb_reader::CfbReader,
+    rhwp_line_seg_sections: &[[u8; 32]],
     section_count: u32,
     compressed: bool,
     distribution: bool,
@@ -906,6 +918,9 @@ fn parse_sections_strict(
             .consume(section_data.len())
             .map_err(ParseError::CfbError)?;
 
+        let _rhwp_line_seg_tags = rhwp_line_seg_sections
+            .contains(&crate::model::line_seg_tags::section_digest(&section_data))
+            .then(body_text::RhwpLineSegTagScope::enter);
         match parse_visible_section(&section_data, &mut sections, doc_info) {
             Ok(mut section) => {
                 // 원본 BodyText 스트림 보존 (라운드트립용)

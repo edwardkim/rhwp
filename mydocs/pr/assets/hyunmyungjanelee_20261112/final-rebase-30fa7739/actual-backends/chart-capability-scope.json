@@ -1,0 +1,16 @@
+{
+  "base": "1a3ed4a7cd76701085a24ac81d30bc5fb31942c1",
+  "head": "30fa7739f0340f2a248b22542c7dd36d9354f056",
+  "policy_files_unchanged": {
+    "rhwp-studio/src/view/renderer-session.ts": true,
+    "rhwp-studio/src/view/canvaskit/diagnostics.ts": true
+  },
+  "existing_executed_regressions": [
+    "test renderer::canvaskit_policy::tests::document_preflight_marks_raw_svg_transition_ineligible ... ok",
+    "test renderer::canvaskit_policy::tests::equation_layout_is_direct_while_raw_svg_remains_a_replay_gap ... ok"
+  ],
+  "forced_canvaskit_chart": "Unsupported RawSvg is an existing explicit contract, not a new CanvasKit SVG support claim. Captures retained as negative diagnostics.",
+  "normal_auto_consumer": "Actual preflight rejects RawSvg and selects Canvas2D with full chart. Both modes screen/print checked; two Print captures each95.07819% vs desktop reference.",
+  "product_changes_needed_for_this_observation": false,
+  "scope": "#8900 changes value-axis calculation in the chart SVG producer; Native/Canvas2D consume it. Direct CanvasKit RawSvg remains unsupported by current project policy."
+}

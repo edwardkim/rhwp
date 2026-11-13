@@ -305,7 +305,7 @@ fn parse_export_pdf_args<'a>(args: &'a [String]) -> Result<PdfExportArgs<'a>, i3
             .file_stem()
             .and_then(|s| s.to_str())
             .unwrap_or("output");
-        output_file = format!("output/{}.pdf", stem);
+        output_file = format!("output/{}", super::output_file_name(stem, ".pdf"));
     }
 
     Ok(PdfExportArgs {

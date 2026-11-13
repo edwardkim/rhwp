@@ -24,7 +24,26 @@ if(NOT WIN32)
   message(FATAL_ERROR "The D3D plugin requires Windows; use RHWP_D3D_LIFETIME_TESTS_ONLY for portable checks")
 endif()
 add_library(rhwp_native_reference_plugin SHARED rhwp_d3d_plugin.cpp Producer.cpp NativeApi.cpp)
-get_filename_component(RHWP_PLUGIN_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" REALPATH)
+# Flutter creates a directory junction for the package on Windows. CMake's
+# REALPATH can retain that alias, after which ../.. targets the runner instead
+# of the package's sibling Swift C header. Resolve the package junction itself.
+get_filename_component(RHWP_PLUGIN_PACKAGE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" DIRECTORY)
+if(IS_SYMLINK "${RHWP_PLUGIN_PACKAGE_DIR}")
+  file(READ_SYMLINK "${RHWP_PLUGIN_PACKAGE_DIR}" RHWP_PLUGIN_PACKAGE_TARGET)
+  string(REPLACE "\\" "/" RHWP_PLUGIN_PACKAGE_TARGET "${RHWP_PLUGIN_PACKAGE_TARGET}")
+  # Windows junctions can expose an NT namespace target, including UNC paths.
+  string(SUBSTRING "${RHWP_PLUGIN_PACKAGE_TARGET}" 0 4 RHWP_PLUGIN_TARGET_PREFIX)
+  if(RHWP_PLUGIN_TARGET_PREFIX STREQUAL "/??/")
+    string(SUBSTRING "${RHWP_PLUGIN_PACKAGE_TARGET}" 4 -1 RHWP_PLUGIN_PACKAGE_TARGET)
+    if(RHWP_PLUGIN_PACKAGE_TARGET MATCHES "^UNC/")
+      string(SUBSTRING "${RHWP_PLUGIN_PACKAGE_TARGET}" 4 -1 RHWP_PLUGIN_PACKAGE_TARGET)
+      set(RHWP_PLUGIN_PACKAGE_TARGET "//${RHWP_PLUGIN_PACKAGE_TARGET}")
+    endif()
+  endif()
+  get_filename_component(RHWP_PLUGIN_PACKAGE_DIR "${RHWP_PLUGIN_PACKAGE_TARGET}" ABSOLUTE
+    BASE_DIR "${RHWP_PLUGIN_PACKAGE_DIR}/..")
+endif()
+get_filename_component(RHWP_PLUGIN_SOURCE_DIR "${RHWP_PLUGIN_PACKAGE_DIR}/windows" REALPATH)
 if(COMMAND apply_standard_settings)
   apply_standard_settings(rhwp_native_reference_plugin)
 endif()

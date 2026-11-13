@@ -190,12 +190,10 @@ issue7216/tall_table_after.hwpx	0
 # off-canvas 1 -> 0, overlap 1 -> 0, LAYOUT_OVERFLOW_CELL 40여건 -> 0 이다. 노드 수만 1 로 같다.
 issue7336/nested_table_fragment_cut.hwp	1
 issue7336/stored_frame_page_larger_rowbreak.hwpx	1
-# #7620 기존 결손 1행 — 이 PR 이 위치를 한컴과 맞추면서 드러났다. 11쪽 표(구역 1 문단 1,
-# RowBreak, 빈 앵커 sw=0)의 시작이 122.9px -> 126.7px 로 내려가 한컴 저장 위치와 같아졌다
-# (저장 vpos 3548 + 바깥 위 283 + 표 68736 + 바깥 아래 283 = 72850HU, 본문 높이 72852HU 안 — 한컴은 쪽을 꽉 채운다).
-# 남는 초과 4.5px 은 rhwp 가 이 표를 선언 높이 916.5px(68736HU)보다 8.3px 큰 924.8px 로
-# 그리는 기존 결손이다. 수정 전에는 초과가 0.8px 이라 공차 2.0px 아래에 숨어 있었다.
-issue6465/press_release_footer_logos.hwpx	1
+# #7620 후속: issue6465/press_release_footer_logos.hwpx 1행(#7644 때 11쪽 표 924.8px, 선언 916.5px)을 내렸다.
+# 지금 11쪽 표는 y=126.7 h=916.5px 로 끝 1043.2px 이 본문 바닥 1047.0px 안이다(layout-anomaly 공차 1px 에서도 0).
+# devel 99b9d7ec5 실측 0 — 이 게이트의 RHWP_BODY_OVERFLOW_DUMP 가 Windows·WSL Ubuntu 22.04 에서 같고(16/16 PASS),
+# 11쪽 raw Native 98.19 / fresh WASM 98.32%, 전13쪽 최저 96.14 / 94.94%(pr6485 2020 PDF). 증가·신규 0 이라 완화가 아니다.
 # #7816 새 시험 고정본 1행 — 이 PR 의 변경과 무관한 기존 결손이 드러났다. 저장 줄 없는 HWPX 에서
 # rhwp 가 load 시 합성한 줄 사다리(vpos)는 문단 위 간격을 빼고 쌓이며, 쪽 나눔이 그 사다리를 믿어
 # 마지막 문단(위 간격 133.3px)을 1쪽에 둔다(한/글 정본은 2쪽). 수정 전 devel 에서도 같은 문서를 짝수
@@ -260,3 +258,7 @@ issue8842/1351000-201800239_hpv_cohort_final_report.hwp	1
 # 1026.5px 아래 1035.3px 까지 내려간다(+8.8px). 보이는 글자(남부도로사업소·기전과)의 위치는 한컴 Print
 # PDF 1쪽과 겹친다(pdf/issue8882/36404364-reflowed-cell-tac-row-floor-2020.pdf, 1쪽 raw Native 97.72).
 issue8882/36404364-reflowed-cell-tac-row-floor.hwpx	1
+# #8993 새 fixture 31675: 17·19쪽 TAC 표(pi=211 919.5px·pi=215 961.7px)가 본문 914.6px 보다 커 아래로 넘친다.
+# 한/글 engine 2020 Print 도 같은 자리까지 그린다(pdf/issue8993/31675-rowbreak-overflowing-frame-2020.pdf
+# 17쪽 표 아래끝 1035px·19쪽 1077px = rhwp 1034.8·1076.9px, 두 쪽 raw Native 99.64·99.63). 수정 전후 같다.
+issue8993/31675-rowbreak-overflowing-frame.hwp	2

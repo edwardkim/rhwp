@@ -1,0 +1,352 @@
+{
+  "checked_at": "2026-11-12T04:36:30.120Z",
+  "coverage": "commit-filtered pull_request workflow runs, first API page; per returned workflow status only",
+  "records": [
+    {
+      "pr": 8895,
+      "head": "c60c1a140dacd635a7bf257d6a4839baea72bebf",
+      "runs": [
+        {
+          "id": 42808411115,
+          "name": "CodeQL",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 11599,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42808411115/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42808411115/logs",
+          "workflow_id": 257371274
+        },
+        {
+          "id": 42808411010,
+          "name": "Render Diff",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 7326,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42808411010/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42808411010/logs",
+          "workflow_id": 268844874
+        },
+        {
+          "id": 42808411006,
+          "name": "CI",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 11700,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42808411006/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42808411006/logs",
+          "workflow_id": 256052003
+        },
+        {
+          "id": 42808411039,
+          "name": "Adapter inter-diff",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 3935,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42808411039/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42808411039/logs",
+          "workflow_id": 336749361
+        },
+        {
+          "id": 42808411103,
+          "name": "Proptest roundtrip",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 4021,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42808411103/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42808411103/logs",
+          "workflow_id": 336733104
+        },
+        {
+          "id": 42808410977,
+          "name": "Cancel stale PR runs",
+          "status": "completed",
+          "conclusion": "skipped",
+          "run_number": 6059,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42808410977/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42808410977/logs",
+          "workflow_id": 320699080
+        }
+      ]
+    },
+    {
+      "pr": 8897,
+      "head": "e263b59c25ae949065dec6726978c9fe2751e4d4",
+      "runs": [
+        {
+          "id": 42758092901,
+          "name": "Adapter inter-diff",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 3922,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42758092901/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42758092901/logs",
+          "workflow_id": 336749361
+        },
+        {
+          "id": 42758092759,
+          "name": "Render Diff",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 7317,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42758092759/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42758092759/logs",
+          "workflow_id": 268844874
+        },
+        {
+          "id": 42758092733,
+          "name": "CI",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 11687,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42758092733/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42758092733/logs",
+          "workflow_id": 256052003
+        },
+        {
+          "id": 42758092773,
+          "name": "CodeQL",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 11586,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42758092773/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42758092773/logs",
+          "workflow_id": 257371274
+        },
+        {
+          "id": 42758093004,
+          "name": "Proptest roundtrip",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 4008,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42758093004/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42758093004/logs",
+          "workflow_id": 336733104
+        }
+      ]
+    },
+    {
+      "pr": 8900,
+      "head": "b215fce8179da1b5ed1a3c3c889388611a87c093",
+      "runs": [
+        {
+          "id": 42769663481,
+          "name": "Adapter inter-diff",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 3925,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42769663481/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42769663481/logs",
+          "workflow_id": 336749361
+        },
+        {
+          "id": 42769663720,
+          "name": "Proptest roundtrip",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 4011,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42769663720/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42769663720/logs",
+          "workflow_id": 336733104
+        },
+        {
+          "id": 42769663827,
+          "name": "CodeQL",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 11589,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42769663827/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42769663827/logs",
+          "workflow_id": 257371274
+        },
+        {
+          "id": 42769663711,
+          "name": "CI",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 11690,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42769663711/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42769663711/logs",
+          "workflow_id": 256052003
+        }
+      ]
+    },
+    {
+      "pr": 8916,
+      "head": "6ad97a9ae8bd230b1e2fd2d7a61764423e0c2b3b",
+      "runs": [
+        {
+          "id": 42835915348,
+          "name": "Cancel stale PR runs",
+          "status": "completed",
+          "conclusion": "skipped",
+          "run_number": 6089,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42835915348/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42835915348/logs",
+          "workflow_id": 320699080
+        },
+        {
+          "id": 42835915215,
+          "name": "Proptest roundtrip",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 4038,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42835915215/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42835915215/logs",
+          "workflow_id": 336733104
+        },
+        {
+          "id": 42835915496,
+          "name": "Adapter inter-diff",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 3952,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42835915496/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42835915496/logs",
+          "workflow_id": 336749361
+        },
+        {
+          "id": 42835915288,
+          "name": "CodeQL",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 11616,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42835915288/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42835915288/logs",
+          "workflow_id": 257371274
+        },
+        {
+          "id": 42835915180,
+          "name": "Render Diff",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 7342,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42835915180/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42835915180/logs",
+          "workflow_id": 268844874
+        },
+        {
+          "id": 42835915272,
+          "name": "CI",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 11717,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42835915272/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42835915272/logs",
+          "workflow_id": 256052003
+        }
+      ]
+    },
+    {
+      "pr": 8918,
+      "head": "9400d7748457089509d7e5a55477dc0016d96c28",
+      "runs": [
+        {
+          "id": 42836140945,
+          "name": "Proptest roundtrip",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 4039,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42836140945/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42836140945/logs",
+          "workflow_id": 336733104
+        },
+        {
+          "id": 42836140972,
+          "name": "Adapter inter-diff",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 3953,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42836140972/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42836140972/logs",
+          "workflow_id": 336749361
+        },
+        {
+          "id": 42836140786,
+          "name": "Render Diff",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 7343,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42836140786/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42836140786/logs",
+          "workflow_id": 268844874
+        },
+        {
+          "id": 42836140805,
+          "name": "CodeQL",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 11617,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42836140805/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42836140805/logs",
+          "workflow_id": 257371274
+        },
+        {
+          "id": 42836140944,
+          "name": "CI",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 11718,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42836140944/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42836140944/logs",
+          "workflow_id": 256052003
+        }
+      ]
+    },
+    {
+      "pr": 8920,
+      "head": "5037330c850e041591cbee1745120e98cf95e12c",
+      "runs": [
+        {
+          "id": 42845029141,
+          "name": "CodeQL",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 11639,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42845029141/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42845029141/logs",
+          "workflow_id": 257371274
+        },
+        {
+          "id": 42845029301,
+          "name": "Adapter inter-diff",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 3975,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42845029301/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42845029301/logs",
+          "workflow_id": 336749361
+        },
+        {
+          "id": 42845028962,
+          "name": "Proptest roundtrip",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 4061,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42845028962/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42845028962/logs",
+          "workflow_id": 336733104
+        },
+        {
+          "id": 42845028888,
+          "name": "Render Diff",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 7365,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42845028888/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42845028888/logs",
+          "workflow_id": 268844874
+        },
+        {
+          "id": 42845029553,
+          "name": "CI",
+          "status": "completed",
+          "conclusion": "success",
+          "run_number": 11740,
+          "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42845029553/jobs",
+          "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/42845029553/logs",
+          "workflow_id": 256052003
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,163 @@
+{
+  "phase": "complete",
+  "pid": 61811,
+  "product_code": "d0cc46573c7505633721c19062e504faff017d59",
+  "head": "05f198b763cf2e68bdcbcb70602edd02778fbaf8",
+  "inputs": [
+    {
+      "path": "samples/issue7620/b-rowbreak-bottom-margin-overflow.hwp",
+      "sha256": "30f3c33d36eaa908ceff5090215a9a0773f3306929b7a908e01ae9f2ab895c20"
+    },
+    {
+      "path": "samples/issue7620/c-rowbreak-table-moves-next-page.hwp",
+      "sha256": "f67b9fd296f16b0c99262cc640dbae73fd1a8619c7605be82adfb4c0712c5f41"
+    },
+    {
+      "path": "samples/issue7620/d-rowbreak-splits-at-row-boundary.hwp",
+      "sha256": "878b2c0db5888b44391414f4db32314643ddefd6afc5155188bfa38b407a09bd"
+    },
+    {
+      "path": "samples/issue8168/multiline_tac_picture_para_topandbottom_offset_above.hwp",
+      "sha256": "9164bd4efd2f753072e49119a2b59c92502dd8e29c4e8669d398e61096960ed5"
+    },
+    {
+      "path": "samples/issue8168/multiline_tac_picture_para_topandbottom_offset_below.hwp",
+      "sha256": "c95fa47e655441ca05a174bbf717aa6c77ad208c64feec885f8d97c0cf331f1c"
+    },
+    {
+      "path": "samples/issue8168/tac_picture_with_page_relative_topandbottom_textbox.hwp",
+      "sha256": "e91d902eaa31f7945d8bc6d50a515d5ddf846943dea67a5e6bfe170408ac7cc0"
+    },
+    {
+      "path": "samples/issue8931/36341965-cell-square-picture-tac-title.hwpx",
+      "sha256": "2fd2d841ce212c319960b1955fec32effeb55f6a1323c98422f13992446f7da3"
+    },
+    {
+      "path": "samples/issue8934/square_host_lane_tail.hwp",
+      "sha256": "33d4311c6c99b961dc6096152e1404b46d02d29d98291c9de0bccefa7162c946"
+    },
+    {
+      "path": "samples/issue8935/36454139-reflowed-cell-row-growth.hwpx",
+      "sha256": "dad39e1c5ddf8a290420b0158b6a5a7185a406847ab0c8e53fbab382fbbc7dff"
+    },
+    {
+      "path": "samples/issue8939/attach_form_reset.hwp",
+      "sha256": "49fdefd36c8555fa39029ce2dc1f783c6f753c8d7a11b9075d116fa69ccc7e68"
+    },
+    {
+      "path": "samples/issue8947/36481164-squeeze-title-cell.hwpx",
+      "sha256": "7cb752425acbb9eaebb144e6f27a895d2d3eabc6fbc6b3059d0c9dce6c46640b"
+    },
+    {
+      "path": "samples/issue8950/36421178-variants.hwpx",
+      "sha256": "9bb1572d98d58ba66da8c4614c73ddb63b5096dba903823382063e14bde0afca"
+    },
+    {
+      "path": "samples/issue8950/36446447-forbidden-head-before-long-run.hwpx",
+      "sha256": "5b58a630c7c0fbc038692686589d8926b6a9b70b74d49071f5a0ea6bb5a6eae2"
+    },
+    {
+      "path": "samples/issue8950/36446447-variants.hwpx",
+      "sha256": "d68b79eafe3e4025bc0c4293416afa679cca7610ba6df087963090d73ec1c8ea"
+    },
+    {
+      "path": "samples/issue8968/stored_rows_reflowed_cell.hwpx",
+      "sha256": "bd0ebc3237c97826b3921040e7da93a3d585c1e27e7dac71f7511d59b4190f18"
+    },
+    {
+      "path": "samples/issue8971/36400701-picture-cell-empty-line.hwpx",
+      "sha256": "d3be7513fa996f26ef95166ffa9b4a679905bc117c59e39dde827238db23ea01"
+    },
+    {
+      "path": "samples/issue8981/overlap_spacer_paragraph_bands.hwp",
+      "sha256": "fbef5ac8925ca8ce2cad2eb21c249b87f5f188475b00da251f3680bbb8c93a77"
+    },
+    {
+      "path": "samples/issue8985/3066825-plain-command-guides.hwpx",
+      "sha256": "ac4d8559dc21acbf7df551e1d188d5649073206e4fa29e614509026f5ef5bfa1"
+    },
+    {
+      "path": "samples/issue8985/36385713-plain-command-guide.hwpx",
+      "sha256": "b2b8e6eb29da8dc82bd302694f01232ab6f9131292f0c6410d74f58105e9087f"
+    },
+    {
+      "path": "samples/issue8986/36325899-nested-table-top-border.hwpx",
+      "sha256": "ac7d16633d39eed788c65b305613471c709622f698a228bd7bc1008d605fee86"
+    },
+    {
+      "path": "samples/issue8993/31675-rowbreak-overflowing-frame.hwp",
+      "sha256": "03c35242f6d88dd33bde907b64b31b061e600f54ee5e66758e3b5a8c18d84a84"
+    },
+    {
+      "path": "samples/issue8995/reflowed_cell_tac_after_spaces.hwpx",
+      "sha256": "bab55a32bb1a4b5e248bda6d11d77d4c0ed31f42a0174a1a0cdcb23d5e915ac8"
+    },
+    {
+      "path": "samples/issue9009/1430000-column-break-after-table-continuation.hwp",
+      "sha256": "88482013fb80aa95d994489b44559f2bb53ef3e292a1ea3c3273567a00f83a6a"
+    }
+  ],
+  "results": [
+    {
+      "module": "security_corpus_regression",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/minimal-font.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "security_corpus_regression",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--build-jobs",
+        "8",
+        "--test-threads",
+        "8",
+        "-E",
+        "test(new_sample_documents_are_clean_across_all_three_detectors)",
+        "--success-output",
+        "immediate"
+      ],
+      "exit": 0,
+      "seconds": 60.099,
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/new-sample-security_corpus_regression.log",
+      "log_sha256": "5e3bacca4d59c1cd2e4acc8c6f05227826cee71b4b3e43aa0747625cde794b94",
+      "actual_summary": "     Summary [   3.165s] 6 tests run: 6 passed, 322 skipped"
+    },
+    {
+      "module": "injection_scan_contract",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/minimal-font.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "injection_scan_contract",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--build-jobs",
+        "8",
+        "--test-threads",
+        "8",
+        "-E",
+        "test(new_normal_sample_documents_are_clean)",
+        "--success-output",
+        "immediate"
+      ],
+      "exit": 0,
+      "seconds": 29.749,
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/new-sample-injection_scan_contract.log",
+      "log_sha256": "887de709e08b0668aea898fb4afefe5864de71975b0cbc8a1c61f21c9c4d2d93",
+      "actual_summary": "     Summary [   3.772s] 14 tests run: 14 passed, 321 skipped"
+    }
+  ],
+  "current": null,
+  "completed_at": "2026-11-12T20:21:45.949469+00:00",
+  "note": "추가·변경 sample23개를 환경변수로 명시 전달했다. 실제 info 파싱도23개 모두 성공. 선택 필터의 합집합으로 관련6+14건이 실행됐으며 전체 회귀13420과 중복 합산하지 않는다."
+}

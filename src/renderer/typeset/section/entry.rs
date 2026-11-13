@@ -247,7 +247,23 @@ impl TypesetEngine {
             if has_diff_col_def {
                 // [Task #702] 단나누기 + 새 ColumnDef = zone 재정의 (MultiColumn 등가 처리)
                 self.process_multicolumn_break(st, para_idx, paragraphs, page_def, styles);
-            } else if !st.current_items.is_empty() {
+            } else if !st.current_items.is_empty()
+                // 단 나누기는 앞 문단의 마지막 줄이 놓인 단의 다음 단에서 시작한다. 이 단에
+                // 바로 앞 문단의 표가 앞 쪽에서 이어진 조각만 있으면 그 문단의 줄은 앞 단에
+                // 있으므로 지금 단이 이미 다음 단이다(한/글은 저장 vpos 를 표 조각 아래에 이어
+                // 둔다). 여러 쪽에 걸친 글 문단의 마지막 줄이나, 이 단에 놓인(숨은 빈 문단
+                // 포함) 다른 앞 문단은 이 단에 있으므로 종전대로 나눈다.
+                && !st.current_items.iter().all(|item| {
+                    matches!(
+                        item,
+                        PageItem::PartialTable {
+                            para_index,
+                            is_continuation: true,
+                            ..
+                        } if *para_index + 1 == para_idx
+                    )
+                })
+            {
                 // [Task #846] 마지막 단에서 명시적 단나누기 → 새 페이지가 아니라 같은
                 // col_count 로 같은 페이지에 새 단-밴드를 시작 (들어갈 공간이 있으면). ≈ #768.
                 // [Task #849] 단, 이는 "배분"(Distribute) 단에서만. "일반"(Normal/신문형)

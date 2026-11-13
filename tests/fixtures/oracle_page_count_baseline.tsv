@@ -339,6 +339,8 @@ samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	204	204
 samples/issue6929/148776468_search_ad_terms_press_release.hwp	17	18
 samples/issue6936/bold-faces.hwp	1	1
 samples/issue6946/44529-logistics-policy-rule-amendment.hwp	13	13
+samples/issue7620/e-cellbreak-row-moves-next-page.hwp	2	2
+samples/issue7620/f-rowbreak-row-splits-at-line.hwp	2	2
 samples/issue_265.hwp	16	16
 samples/k-water-rfp-2024.hwp	27	27
 samples/k-water-rfp.hwp	27	27
@@ -604,3 +606,44 @@ pdf/issue8687/font_list_name_fallback.hwpx	1	1
 pdf/issue8687/font_list_name_used_fallback.hwpx	1	1
 pdf/issue7375/paper-textbox-vpos-local.hwpx	1	1
 pdf/issue7375/paper-textbox-vpos-page.hwpx	1	1
+
+# 검토 6개 PR의 새 MCP Print: 저장 제품에 맞는 엔진·동일 원본·전체 내용 확인.
+# #8916 수동 2024 Print는 저장 제품 기본 2020과 달라 이 자동 원장에 혼입하지 않는다.
+samples/issue8573/empty-host-split-table.hwp	2	2
+samples/issue8573/empty-host-square-band-1430-below.hwp	1	1
+samples/issue8573/empty-host-square-band-1450-beside.hwp	1	1
+samples/issue8573/empty-host-square-band-600-no-extra-line.hwp	1	1
+samples/issue8573/empty-host-square-beside-line.hwp	1	1
+samples/issue8573/empty-host-square-then-topbottom-push.hwp	1	1
+samples/issue8573/text-host-split-table.hwp	2	2
+samples/issue8573/text-host-square-paper-companion-beside-line.hwp	1	1
+samples/issue8573/text-host-square-then-topbottom-push.hwp	1	1
+samples/issue8573/text-host-topbottom-line-below.hwp	1	1
+samples/issue8573/whitespace-host-negative-offset-table.hwp	1	1
+samples/issue8573/whitespace-host-split-table.hwp	2	2
+samples/issue8573/whitespace-host-square-then-topbottom-push.hwp	1	1
+samples/issue8573/whitespace-host-topbottom-line-below.hwp	1	1
+samples/issue8573/whitespace-host-topbottom-stacked-zones.hwp	1	1
+samples/issue8573/whitespace-host-two-tables-negative-offset.hwp	1	1
+samples/issue8665/title_line_fits.hwpx	2	2
+samples/issue8665/title_line_overflows.hwpx	2	2
+samples/issue8678/bar_axis_floor.hwpx	1	1
+samples/issue8678/column_axis_floor.hwpx	1	1
+samples/issue8678/column_axis_floor_large.hwpx	1	1
+samples/issue8678/column_axis_step_tall.hwpx	1	1
+samples/issue8680/wingdings_pua_symbols.hwpx	1	1
+samples/issue8690/float_line_rowspan_infront_center.hwp	2	2
+samples/issue8690/float_line_rowspan_infront_top.hwp	2	2
+samples/issue8690/float_line_valign_center.hwp	2	2
+samples/issue8690/float_line_valign_top.hwp	2	2
+samples/issue8573/picture-cell-short-empty.hwpx	1	1
+samples/issue8573/picture-cell-short-spaces.hwpx	1	1
+samples/issue8573/picture-cell-short-text.hwpx	1	1
+samples/issue8573/picture-cell-page-boundary-empty.hwpx	2	2
+samples/issue8573/picture-cell-page-boundary-spaces.hwpx	2	2
+samples/issue8573/picture-cell-page-boundary-text.hwpx	2	2
+# #8975 갱신 head: 구형 표지 없는 입력과 실제 Hancom 2020 재저장 대조군의 전 2쪽 Print.
+samples/issue7620/hancom2020-saved/e-cellbreak-row-moves-next-page.hwp	2	2
+samples/issue7620/hancom2020-saved/f-rowbreak-row-splits-at-line.hwp	2	2
+samples/issue7620/legacy-unmarked/e-cellbreak-row-moves-next-page.hwp	2	2
+samples/issue7620/legacy-unmarked/f-rowbreak-row-splits-at-line.hwp	2	2

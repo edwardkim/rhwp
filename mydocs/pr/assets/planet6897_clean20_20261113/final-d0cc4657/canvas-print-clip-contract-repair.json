@@ -1,0 +1,44 @@
+{
+  "checked_at": "2026-11-12T21:08:33.008220+00:00",
+  "repair_commit": "c72b10990938a6f1f84f1477c48d461ee7140d4a",
+  "product_code_head": "d0cc46573c7505633721c19062e504faff017d59",
+  "failed_ci_head": "45265c6e5ca5f0a01b4bf27133a5c88c0af02f76",
+  "failed_job": "https://github.com/edwardkim/rhwp/actions/runs/43304456799/job/131484182126",
+  "cause": "PR8999의 공통 Print clip 세대 무관 계약은 구현·Rust 검사에 반영됐지만 기존 실제 Canvas 검사의 clip 기대값은 2024 Print만 허용했다. 글자 기하 세대 정책과 clip 포함 정책을 혼동한 검사 기대값 불일치다.",
+  "original_fix": "e3427b7ba15c5ea35a0ec4d1f53df0f67fafe8c6",
+  "original_rust_test_correction": "4941812632ba55b648b1c24fa568098eaa412ce2",
+  "new_expectations": {
+    "rasterTextGeometry": "profile is print AND compat2024",
+    "rasterClipCoverage": "profile is print for BOTH compat generations",
+    "actual_replay": "실제 ctx.rect가 독립 기대 clip 장치 정수 경계를 재생하고 fillText는 세대별 기하 모드를 유지한다."
+  },
+  "verification": [
+    {
+      "path": "output/pr-review/planet6897-clean20-integration-20261113/logs/ci-print-clip-before.log",
+      "sha256": "3b769b46409b70983be44ce00d4e7831c2940e3012d3c5a8b528cae8a0db2067",
+      "exit": 1,
+      "classification": "기존 검사 현재 frozen WASM: 실제 1FAIL"
+    },
+    {
+      "path": "output/pr-review/planet6897-clean20-integration-20261113/logs/ci-print-clip-after.log",
+      "sha256": "bc644602485cb546a4ec543c8daff72b1c53a19cbedc2535d14f25197e87c8b6",
+      "exit": 0,
+      "classification": "CI와 같은 실제 브라우저 entry: 19PASS/0FAIL"
+    },
+    {
+      "path": "output/pr-review/planet6897-clean20-integration-20261113/logs/ci-print-clip-fixed-base.log",
+      "sha256": "7805fd6d239cf1289c95ca51d25e9eebcb8fa18be238bc02fc050bf3eb89dcae",
+      "exit": 1,
+      "classification": "새 검사가 고정 base의 compat=false Print 누락을 의도한 assertion으로 검출"
+    },
+    {
+      "path": "output/pr-review/planet6897-clean20-integration-20261113/logs/ci-print-clip-minimal-current.log",
+      "sha256": "ab2486a505cf5212ea4f7440c441686ec42771439753f9aba21eb5a6868867bb",
+      "exit": 1,
+      "classification": "추가 macOS sandbox Chrome 페이지 초기화 오류. 제품/clip assertion 결과 아님. 통과 증거에서 제외"
+    }
+  ],
+  "product_source_unchanged": true,
+  "wasm_sha256": "c8596bc0a3d2a4097d4f2f0dedf2ca53ac160444f555e12c8366ca1f1d1efdfb",
+  "scope": "브라우저 검사와 검토 기록만 변경. 제품·gate·판정 문턱·CI workflow와 실행/재사용 정책은 변경하지 않았다. 기존 전쪽 TSV·실제 backend 검증 producer는 그대로 유효하다. 새 remote head의 실제 CI를 다시 확인한다."
+}

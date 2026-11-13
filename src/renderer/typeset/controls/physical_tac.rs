@@ -40,6 +40,20 @@ pub(in crate::renderer::typeset) fn prepare(
     let Control::Table(table) = para.controls.get(control_index)? else {
         return None;
     };
+    // 쪽 이월로 억제된 앞 간격을 다음 원본 줄이 독립적으로 증명하면,
+    // 첫 물리 줄의 원점과 뒤 전진을 같은 수용 결과에 보존한다.
+    let opening_before = (flow_origin == 0.0 && leading_spacing == 0.0)
+        .then(|| {
+            crate::renderer::float_placement::restarted_tac::restarted_tac_opening_before(
+                para,
+                next_para?,
+                fmt.spacing_before,
+                fmt.spacing_after,
+                next_spacing_before,
+                dpi,
+            )
+        })
+        .flatten();
     // 이 줄 전체를 소유한 표 하나만 확정한다. 그림·도형의 독립 줄이나
     // 표 안 각주 예약, 다른 표의 줄을 이 단축에서 대신 소비하지 않는다.
     if table.caption.is_some()
@@ -58,21 +72,22 @@ pub(in crate::renderer::typeset) fn prepare(
         || (measured_body_height - hwpunit_to_px(table.common.height as i32, dpi)).abs()
             > dpi / 7200.0
         || seg.line_spacing < 0
-        || !crate::renderer::composer::tac_next_line_full_spacing(
-            para,
-            next_para,
-            fmt.spacing_after,
-            next_spacing_before,
-            seg,
-            profile,
-            dpi,
-        )
+        || (opening_before.is_none()
+            && !crate::renderer::composer::tac_next_line_full_spacing(
+                para,
+                next_para,
+                fmt.spacing_after,
+                next_spacing_before,
+                seg,
+                profile,
+                dpi,
+            ))
     {
         return None;
     }
     // 저장 줄 높이는 바깥 여백을 이미 담는다. 회피된 현재 원점에서
     // 이를 한 번 소비하고, 다음 저장 줄이 입증한 뒤 간격을 전량 남긴다.
-    let origin = flow_origin + leading_spacing;
+    let origin = flow_origin + leading_spacing + opening_before.unwrap_or(0.0);
     let end = origin
         + hwpunit_to_px(seg.line_height, dpi)
         + hwpunit_to_px(seg.line_spacing, dpi)

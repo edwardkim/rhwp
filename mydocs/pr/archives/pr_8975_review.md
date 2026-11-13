@@ -1,0 +1,93 @@
+# PR #8975 리뷰 — 최신 CellBreak 검사·입력 표지 수용
+
+## 최종 판정
+
+**승인 — 최신 head의 보완 검증과 원격 수용 완료.**
+원 head `286eb32e08`의 기여와 공통 간격 보정은 #9047로 이미 통합했다. 승인 대기 중 갱신된
+`66900a40be`의 추가 검사를 누락하지 않고 별도 검증했다. 제품 코드는 더 바꾸지 않는다.
+기존 차이 예외나 기준값 완화 없이 #9050의 CI·셀프 리뷰 뒤 merge c680b2a58eaade4f3185880fd21d72c2480c4f0a로 통합했다.
+
+## 접수 정보와 변경 구분
+
+| 항목 | 값 |
+| --- | --- |
+| PR·작성자·reviewer | #8975 / sacru2red / edwardkim |
+| 현재 원 head | `66900a40bec0a45d5dd3124538d824c483d631f0` |
+| 앞서 수용한 원 head | `286eb32e0877d2b1fccc0753b60d9604221c156f` |
+| 앞선 수용 PR·merge | [#9047](https://github.com/edwardkim/rhwp/pull/9047), `a785e23f6838d5452e8904cae82f81eb5e185efc` |
+| 후속 로컬 기준 | `1003349996897c6ff097271e7296ae4d1a3d807f` (#9047 뒤 mydocs 기록만 추가) |
+| 최신 원 head CI | 32 SUCCESS·정상 SKIP 6건. 보완 후보 CI와 구분 |
+| 관련 이슈 | #7620은 기존 실물 문서의 전체 잔여 범위를 재판정하지 않아 OPEN 유지 |
+
+새 원 head는 기존 두 commit의 rebase와 `fdbf9a80d1`의 셀 내용 순서·소유·포함·반례 검사,
+`7998010c40`의 합성 LineSeg 표지, `66900a40be`의 증거 보강을 포함한다. 원 SHA는 실제 merge로 보존했다.
+표지 입력은 원래 9개 OLE 스트림과 바이트가 같고 `/RhwpLineSegTags` 40바이트만 추가됐다.
+기존 입력을 `legacy-unmarked/`에 그대로 보존해 #9047의 간격 회귀 보호가 사라지지 않게 했다.
+
+## 독립 시각 검증과 입력 신원
+
+[검증 원장](../assets/pr8975-updated-66900a40/README.md)에 원본·PDF SHA-256, producer와 실제 전쪽 TSV·PNG를 보존했다.
+기여자의 웹 PDF는 이력으로만 보존하고, 판정에는 같은 HWP를 Windows Hancom 2020 `11.0.0.9136`
+Print(method 0, one-up)로 출력한 PDF를 사용했다. 실제 한컴에서 다시 저장한 정상 대조군도 추가했다.
+이 저장본은 `BodyText/Section0`, `DocInfo` 등 6개 스트림이 실제로 바뀌었고 합성 표지가 없다.
+생성 입력을 한컴 저장본으로 표현하지 않는다. 검증한 HWP 6개와 해당 PDF는 모두 제출 commit에 포함한다.
+
+96dpi·compat 2022의 실제 Native PNG와 fresh 최적화 WASM Canvas에서 세 종류 e·f 각 2쪽,
+**Native 12쪽·WASM 12쪽 모두 raw 100.00%**다. 표지 입력과 실제 한컴 재저장본은 보정 전에도 모두 100%다.
+구형 입력만 보정 전 2쪽이 Native 94.62/93.46%, WASM 94.90/93.79%였으며 #9047이 이를 개선했다.
+새 표지의 성공을 기존 간격 보정의 효과로 세지 않는다. 실제 표지·재저장본의 현재 RGB 출력은
+같은 backend의 구형 입력 정상 출력과 각각 전쪽이 같다. 독립 Print도 전쪽 대응을 확인했다.
+
+같은 배율의 Print·Native·WASM을 직접 열어 행 이월, 글줄 순서·셀 내부 포함, 표 괘선과 빈 줄·뒤 본문을
+확인했다. 수식은 없다. 현재 기준과 후보의 제품·출력 경로가 같으므로 페이지별 하락은 0건이다.
+이전 [전체 보호 3,542쪽](../assets/sacru2red-20261113/final/protection/comparison.tsv)은 같은 producer·입력·PDF·환경을
+그대로 재사용한다. 보호 대상은 이번 입력과 겹치지 않으며 새 재캡처나 새 head의 전체 CI로 표현하지 않는다.
+
+## 조판 원칙과 회귀 검토
+
+제품의 측정·배치·분할 로직과 저장 LineSeg 수용 조건은 변경하지 않았다. #9047의 공통 커서는
+연속 저장 줄의 실제 하단·이미 소비한 간격을 사용하며 기존 원점의 축 일치 검사와 합성·편집·비연속
+경로의 bridge를 유지한다. 입력 표지의 의미는 기존 #8939 계약을 따른다.
+
+이번 검사는 실제 라벨의 독립 행·줄 순서, 36개 셀 글줄의 단일 소유·누락/중복, 소유 셀의 행·열,
+글줄의 셀 포함·셀의 표 조각 포함, 글줄 비겹침과 두 열 정렬을 확인한다. 실제 배치에서 라벨 역전,
+표 밖 이동, 다른 행 소유를 만든 음성 대조가 거부되는 것도 확인한다. 원 PDF의 2쪽과 내용 대응을
+함께 검사하며 절대 px 위치를 고정하지 않는다. 기존 빈 줄의 실제 전진은 원본 1000+600HU와 비교한다.
+기존 두 검사가 표지 입력·구형 입력을 모두 실행해 새 입력으로 교체하면서 기존 보호가 없어지지 않는다.
+기존 TAC·RowBreak 예산 대조도 유지한다. 허용치·정본을 낮추거나 테스트를 이관하지 않았다.
+
+## 자동 검증과 원격 범위
+
+- 최소 글꼴 집중: 9 PASS. 저장소 글꼴 5개만 노출하고 시스템·사용자 글꼴과 네트워크를 격리했다.
+- fmt·Native/WASM Clippy·workspace build·workspace all-target Clippy: 모두 exit 0.
+- 샘플 래칫·보안·독립 PDF 쪽수: 82 PASS. 현재 샘플 6개를 보안 입력에 실제 전달했다. suite manifest도 통과했다.
+- 제품 변경이 없는 test/fixture 보완이므로 전체 제품 회귀·Native 공식 4,073건·보호 증거는 #9047과 구분해 재사용한다.
+  새 후보의 필수 GitHub CI도 아래와 같이 별도로 완료했다. SVG snapshot 4건(프로세스 내 반복 출력 결정성 포함)도 통과했고 golden은 변경하지 않았다.
+
+사용자는 두 원 PR의 수용 PR·CI·셀프 리뷰·merge와 댓글·기록·동기화·정리를 승인했다.
+이번 후속도 같은 #8975 최신 기여의 수용 범위이며 새로운 제품 기능·이슈 해결 범위를 추가하지 않는다.
+원 fork push 권한이 없어 upstream 후속 수용 PR을 사용한다. 실패 CI 재실행·정책 변경은 자동 승인으로 취급하지 않는다.
+
+## Merge 후 contributor PR comment 계획
+
+최종 수용 merge SHA·새 head CI·앞선 #9047 링크와 최신 추가분의 수용을 구분해 존댓말 감사 댓글을 게시한다.
+독립 Desktop Print 제품·버전과 전쪽 12쪽씩의 결과, 전쪽 TSV·직접 판독 방법, merge SHA로 고정한
+e 또는 f의 inline 비교 PNG를 포함한다. 기여자의 웹 PDF는 판정에서 제외한 사실도 적는다.
+원 PR의 간접 MERGED를 먼저 재조회하고 #7620은 OPEN 유지한다. 댓글은 UTF-8 파일 `--body-file`로 게시하고 API로 재확인한다.
+
+
+## 최종 원격 결과 — 2026-11-13
+
+[#9050](https://github.com/edwardkim/rhwp/pull/9050)의 exact head `2201c894aa527661d2a28ad194688b2738196070`에서
+31 SUCCESS·정상 SKIP 5건, [Full CI](https://github.com/edwardkim/rhwp/actions/runs/43373482321)·
+[CodeQL](https://github.com/edwardkim/rhwp/actions/runs/43373481590)·[Adapter](https://github.com/edwardkim/rhwp/actions/runs/43373481978)·
+[Proptest](https://github.com/edwardkim/rhwp/actions/runs/43373481782)·[최종 정책 감사](https://github.com/edwardkim/rhwp/actions/runs/43376885483)가 성공했다.
+GitHub A–E 실제 Summary 합계는 13,239 PASS·45 정상 skip이며 Native 실행 로그도 통과했다.
+[셀프 리뷰](https://github.com/edwardkim/rhwp/pull/9050#pullrequestreview-5886931071)를 COMMENT로 게시하고 정확한 head·최신 base·로컬/GitHub 동일 merge tree를 재확인했다.
+재실행·CI 실행 정의 수정·검증 예외는 없었고 merge ref의 열린 CodeQL 경고는 0건이다.
+
+merge는 `c680b2a58eaade4f3185880fd21d72c2480c4f0a`, 시각은 2026-11-13 15:12:57 KST다.
+최신 원 head `66900a40be`도 간접 MERGED가 됐다. #8951도 MERGED이며 #7620은 OPEN이다.
+운영 기록 보존·devel 동기화 뒤 위 계획의 감사 댓글을 게시하고 실제 종료 정리를 완료한다.
+
+병합 후 duration 갱신 43377144591도 ready:true·게시 성공이며 데이터 commit은 `50d327549214e9cbe13c6b3f33d64614f489189b`다. 제품 CI를 병합 후 재실행하지 않았다.

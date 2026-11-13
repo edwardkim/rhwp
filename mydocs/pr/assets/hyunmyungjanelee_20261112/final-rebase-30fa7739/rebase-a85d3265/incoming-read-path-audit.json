@@ -1,0 +1,25 @@
+{
+  "incoming_pr": 9017,
+  "candidate": "73d06ed0b18df7c222a850bb5d9340c9b7de2bcc",
+  "base": "a85d3265dd10b316d1a0ae029ca3f67245b38b77",
+  "observed": {
+    "base_native": 23,
+    "candidate_native_includes_identical_tests": 23,
+    "candidate_native_total": 164,
+    "browser_html_cases": 6,
+    "hwp_hwpx_two_save_cycles": 24,
+    "by_path_api_browser": 11
+  },
+  "consumers": [
+    "DocumentCore HTML API의 실제 최소 글꼴 Native 실행",
+    "현재 WASM HwpDocument의 본문/셀 API·속성 경계·반복 저장과 실제 초기화 응답"
+  ],
+  "render_overlap_analysis": {
+    "html_table": "html_table_import.rs는 0x082A2311의 TAC 표를 만든다. 저장 줄 없는 overlay 제목 조건 !treat_as_char와 다르다.",
+    "html_picture": "그림도 common.treat_as_char=true다. 이번 비 TAC 도형/그림 전용 칸 및 어울림 상자 뒤 표 조건과 구분한다.",
+    "text_and_cell_content": "일반 글자·서식이 있는 셀이며 non-TAC 직선 전용 칸, 크기0 원문, Wingdings PUA, 차트, 여러 단 구역 조건이 없다.",
+    "font_supply": "현재 HTML API 사례에는 명시적 외부 glyph 프로그램을 주입하지 않는다. 공급자 우선순위 보정의 선택 경계를 실제 본문/셀 서식 보존과 구분한다."
+  },
+  "not_repeated": "같은 저장 입력의 전쪽 캡처·독립 Print·Studio 전체 테스트를 반복하지 않았다. 새로운 HTML 기능은 모델/속성에 그치지 않고 WASM API를 통해 HWP/HWPX 두 차례 저장·재열기로 실제 소비를 확인했다.",
+  "limit": "브라우저 API 검사를 새 UI ClipboardEvent 실행으로 표시하지 않는다. UI 이벤트 연결은 변경되지 않은 Studio 소스와 원 #9017의 기존 실제 이벤트 증적을 재사용한다."
+}

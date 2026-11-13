@@ -565,6 +565,14 @@ impl TypesetState {
         }
     }
 
+    /// TAC 줄 높이 상한 뒤에도 같은 문단 블록 표가 전진시킨 흐름 끝은 유지한다.
+    pub(super) fn restore_block_table_flow_bottom(&mut self, bottom: f64) {
+        if bottom > self.data.current_height {
+            self.data.block_table_growth_page = Some(self.data.pages.len());
+        }
+        self.data.current_height = self.data.current_height.max(bottom);
+    }
+
     pub(super) fn has_spilled_page_tail_float(&self, para_idx: usize, ctrl_idx: usize) -> bool {
         self.data
             .page_tail_spilled_floats
@@ -1001,6 +1009,116 @@ impl TypesetState {
                     .and_then(|idx| paragraphs.get(idx))
                     .is_some_and(|p| p.controls.is_empty() && p.text.trim().is_empty())
             })
+    }
+
+    /// 저장 쪽 경계(직전 문단보다 작은 vpos)가 가리키는 옛 쪽 끝을 이미 넘침으로 건넜는가.
+    ///
+    /// 저장 사다리의 쪽 경계는 저장 당시 배치의 결과다. 현재 쪽이 저장 경계가 아니라 넘침으로
+    /// 열렸고(첫 문단의 저장 vpos 가 앞 문단 뒤로 이어짐), 그 뒤 직전 문단까지 저장 경계가
+    /// 없었다면, 지금 쪽은 이미 그 옛 쪽의 뒷부분을 담고 있다. 그 옛 쪽을 닫는 저장 경계에서
+    /// 다시 쪽을 넘기면 옛 쪽 하나가 두 쪽으로 나뉜다(36481164: 측정 높이로 자란 표 뒤 상자가
+    /// 2쪽으로 넘어간 뒤, 저장상 2쪽 첫 문단 `vpos=0` 에서 3쪽을 또 열었다. 한/글은 2쪽).
+    pub(super) fn stored_boundary_crossed_by_overflow(
+        &self,
+        paragraphs: &[Paragraph],
+        para_idx: usize,
+        dpi: f64,
+    ) -> bool {
+        if self.data.col_count != 1
+            || self.data.profile.session_edited()
+            || !(self.data.profile.hwpx_stored_layout()
+                || self.data.profile.hwp5_stored_pagination_layout())
+        {
+            return false;
+        }
+        let Some(first) = self.data.current_items.first() else {
+            return false;
+        };
+        if !matches!(
+            first,
+            PageItem::FullParagraph { .. } | PageItem::Table { .. }
+        ) {
+            return false;
+        }
+        let Some(start) = super::page_item_para_index(first) else {
+            return false;
+        };
+        if start == 0 || start >= para_idx {
+            return false;
+        }
+        let stored_first = |p: &Paragraph| {
+            p.line_segs
+                .first()
+                .filter(|line| !super::is_synthetic_line_seg(line))
+                .map(|line| line.vertical_pos)
+        };
+        let stored_last = |p: &Paragraph| {
+            p.line_segs
+                .last()
+                .filter(|line| !super::is_synthetic_line_seg(line))
+                .map(|line| line.vertical_pos)
+        };
+        // 저장 쪽 경계는 문단 안의 줄에서도 일어난다(되감긴 줄). 쪽을 연 문단의 앞 문단부터
+        // 직전 문단까지 어느 문단 안에서도 저장 줄이 되감기지 않아야, 지금 쪽이 저장 경계가
+        // 아니라 넘침으로 열렸다고 볼 수 있다.
+        let rows_never_rewind = |p: &Paragraph| {
+            p.line_segs
+                .windows(2)
+                .all(|pair| pair[1].vertical_pos >= pair[0].vertical_pos)
+        };
+        // 앞 물리 쪽이 같은 저장 쪽의 처음부터 시작했어야 한다 — 그 쪽 첫 문단만 저장 쪽
+        // 시작일 수 있다. 저장 쪽 경계가 앞 쪽 중간에 있었다면 rhwp 가 저장보다 늦게 쪽을
+        // 나눈 것이지 넘침으로 일찍 넘어간 것이 아니므로 다음 저장 경계는 그대로 유효하다.
+        // 옛 경계가 낡은 근거: 앞 쪽에서 블록 표가 측정 높이로 자라 흐름을 저장 사다리보다
+        // 실제로 밀어 올렸다. 표 자신의 미세한 측정 차로 일반 이월된 쪽은 해당하지 않는다
+        // (`tac_group_page_bottom_overflow::sub_pixel_host_spacing_drift_…`).
+        if self.data.block_table_growth_page != Some(self.data.pages.len().saturating_sub(1)) {
+            return false;
+        }
+        let Some(previous_start) = self
+            .data
+            .pages
+            .iter()
+            .rev()
+            .nth(1)
+            .and_then(|page| page.column_contents.first())
+            .and_then(|column| column.items.first())
+            .and_then(super::page_item_para_index)
+        else {
+            return false;
+        };
+        if previous_start >= start {
+            return false;
+        }
+        // 저장 사다리상으로 지금 쪽 첫 문단은 앞 쪽 본문 안에 들어 있었어야 한다. 그래야 앞
+        // 내용이 저장보다 자라서 넘친 것이다. 저장 사다리 자체가 본문 아래로 이어지는 문서
+        // (되감지 않는 HWP3 변환 사다리)는 이 경계를 판정할 근거가 없다.
+        let stored_bottom_px = paragraphs[start]
+            .line_segs
+            .last()
+            .filter(|line| !super::is_synthetic_line_seg(line))
+            .map(|line| {
+                crate::renderer::hwpunit_to_px(
+                    line.vertical_pos.saturating_add(line.line_height),
+                    dpi,
+                )
+            });
+        if !stored_bottom_px.is_some_and(|bottom| bottom <= self.data.layout.body_area.height + 0.5)
+        {
+            return false;
+        }
+        if !(previous_start..para_idx).all(|index| rows_never_rewind(&paragraphs[index])) {
+            return false;
+        }
+        // 앞 쪽 첫 문단 다음부터 직전 문단까지 저장 사다리가 문단 사이에서도 끊기지 않아야 한다.
+        (previous_start + 1..para_idx).all(|index| {
+            let para = &paragraphs[index];
+            para.column_type == super::ColumnBreakType::None
+                && matches!(
+                    (stored_last(&paragraphs[index - 1]), stored_first(para)),
+                    (Some(previous), Some(current)) if current > 0 && current >= previous
+                )
+        })
     }
 
     /// atomic 항목을 먼저 넣고 조정자가 기존 flow 메트릭을 계산하게 한다.

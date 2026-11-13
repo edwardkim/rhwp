@@ -1,0 +1,17 @@
+{
+  "checked_at": "2026-11-12T14:18:15.923784+00:00",
+  "code_head": "73d06ed0b18df7c222a850bb5d9340c9b7de2bcc",
+  "normal_faces": 1701,
+  "isolated_faces": 528,
+  "non_os_isolated_faces": 0,
+  "korean_glyphs_covered": true,
+  "profile_sha256": "e30e6dd7cd94ebbbd5765024b7eca84308d2df458ca26d93b37d76b5fce57ec3",
+  "audit_executable_sha256": "f59e539e19343ff91fd993bbe5fd28460859a7dca0d9fba0b6b18f81e66bf700",
+  "same_verified_profile_and_exact_isolated_inventory_as_previous_source": true,
+  "actual_probe_exit_codes": {
+    "normal": 0,
+    "isolated": 0
+  },
+  "scope": "macOS 최소 글꼴 Native 회귀. 기존 도구로 현재 실제 CoreText 노출 목록을 확인했다. 브라우저 글꼴 가시성은 별도 계약이다.",
+  "temporary_audit_wrapper_correction": "최초 경로 필터가 /System/Library/Fonts만 OS 글꼴로 셌으나 24 face의 FontServices Reserved/PingFangUI.ttc도 OS 기본 글꼴이다. 원래 검증한 528 face 목록과 현재 목록이 정확히 같음을 대조했다. 테스트·제품·격리 정책을 바꾸지 않았다."
+}

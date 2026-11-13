@@ -1,0 +1,185 @@
+{
+  "checked_at": "2026-11-12T09:57:37.570103+00:00",
+  "code_head": "8fe7d1fb8bc5024d0377ff7aa37d98c78e8f071a",
+  "reference_policy": "original PR web-HWP/Cairo references excluded; Windows Hancom 2020/2024 Print used as recorded in receipts",
+  "all_pages_quantitative": 46,
+  "direct_representative_pages": 7,
+  "records": [
+    {
+      "pr": 8895,
+      "key": "pr8895-title_line_overflows",
+      "page": 2,
+      "review_and_overlay_opened": true,
+      "reading": "TITLE 2와 결재 칸이 2쪽 첫 부분에 함께 배치된다. 표 전체 높이로 제목 fit을 대신하지 않는다.",
+      "images": [
+        {
+          "file": "pr8895/pr8895-title_line_overflows/native/raw-002.png",
+          "sha256": "3cfa18268ca59d114c254d3a61a574432ed15ee1f8535786bd838d4192856747"
+        },
+        {
+          "file": "pr8895/pr8895-title_line_overflows/native/pdf-002.png",
+          "sha256": "1caf7fb75885d611bddcf8a04fd76ce1c6f943dbb262eeb65ba3c655bbb5353c"
+        },
+        {
+          "file": "pr8895/pr8895-title_line_overflows/native/review-002.png",
+          "sha256": "2ed0b37b8c9b732b8068e5e12fc52ae322b5c69514670a17851e6ec7f266f289"
+        },
+        {
+          "file": "pr8895/pr8895-title_line_overflows/native/overlay-002.png",
+          "sha256": "cf5bbc6639d3c890883a8bfd0ef02bf25b5b1d103463b1e040fbbe5832eda4d5"
+        }
+      ]
+    },
+    {
+      "pr": 8897,
+      "key": "pr8897-whitespace-host-topbottom-stacked-zones",
+      "page": 1,
+      "review_and_overlay_opened": true,
+      "reading": "Q·표·A를 보존하고 Z·Y의 중복 후행 간격이 제거됐다. Native 100.00%.",
+      "images": [
+        {
+          "file": "pr8897/pr8897-whitespace-host-topbottom-stacked-zones/native/raw-001.png",
+          "sha256": "db164e2afe68bfd3dae5173372d48ef82669349bbeadf05084c3ff7e5630ae7f"
+        },
+        {
+          "file": "pr8897/pr8897-whitespace-host-topbottom-stacked-zones/native/pdf-001.png",
+          "sha256": "1321b28b98fc7ea6b2afc5d2114c9af7fbdcd21cbdd17aa7f03564ba1deef0e0"
+        },
+        {
+          "file": "pr8897/pr8897-whitespace-host-topbottom-stacked-zones/native/review-001.png",
+          "sha256": "3a129f8a1e5dab5d937497125a8afd633641834256c8ec683ac94168546df185"
+        },
+        {
+          "file": "pr8897/pr8897-whitespace-host-topbottom-stacked-zones/native/overlay-001.png",
+          "sha256": "d30d76269739f24a622e478418bf547d75e0e38861eaef514b9d24813ad8156d"
+        }
+      ]
+    },
+    {
+      "pr": 8897,
+      "key": "page-boundary-text",
+      "page": 2,
+      "review_and_overlay_opened": true,
+      "reading": "마지막 그림 1개와 X·AFTER TABLE·END의 순서와 단일 소속이 Print에 대응한다. base에 없던 둘째 쪽의 구조 복원이다.",
+      "images": [
+        {
+          "file": "pr8897/page-boundary-text/native/raw-002.png",
+          "sha256": "c690ff7b4b80802fca0971cdd1dab1387e6f79e3bd6be1ab542eece86905c68d"
+        },
+        {
+          "file": "pr8897/page-boundary-text/native/pdf-002.png",
+          "sha256": "4dabe457a26aabc8ebb652425a9fb7ebd03dbef10223b5fa7a8d1201bdc9068a"
+        },
+        {
+          "file": "pr8897/page-boundary-text/native/review-002.png",
+          "sha256": "0c2bde1114b5917f4edfe9191bbbab809e805cefc36cb767eb067ab810335b5c"
+        },
+        {
+          "file": "pr8897/page-boundary-text/native/overlay-002.png",
+          "sha256": "ad24fec9e993f02a301556b3f33596a1ef32f0ead76e4e3159b1ce0dab99ef5f"
+        }
+      ]
+    },
+    {
+      "pr": 8900,
+      "key": "pr8900-bar_axis_floor",
+      "page": 1,
+      "review_and_overlay_opened": true,
+      "reading": "4.1부터 5.0까지 0.1 눈금과 가로막대 끝 x 위치를 확인했다. plot 높이·세로 배치는 다르므로 차트 전체 해결로 확대하지 않고 #8678을 OPEN 유지한다.",
+      "images": [
+        {
+          "file": "pr8900/pr8900-bar_axis_floor/native/raw-001.png",
+          "sha256": "9962f771d49d2f25decbcc0531e6c8c95b13a85019d1f5fe4149992bf9b2e4f4"
+        },
+        {
+          "file": "pr8900/pr8900-bar_axis_floor/native/pdf-001.png",
+          "sha256": "8be51bb61bc95d89510a09ee91595cd8340804642261eacca52c57302756c38a"
+        },
+        {
+          "file": "pr8900/pr8900-bar_axis_floor/native/review-001.png",
+          "sha256": "6cbc28c2b3c81ee5da4add13d2be4ea08f39fe2cfc2c1eec3b7bba2c94def4bb"
+        },
+        {
+          "file": "pr8900/pr8900-bar_axis_floor/native/overlay-001.png",
+          "sha256": "7e6d728a7b9f9ae698f9fc12fca59500bb5624c6bba2f96482698500b340a9fd"
+        }
+      ]
+    },
+    {
+      "pr": 8916,
+      "key": "pr8916-zero_size_para_before_table",
+      "page": 1,
+      "review_and_overlay_opened": true,
+      "reading": "TOP→표→AFTER의 순서와 표의 높이·위치가 사용자 확인 2024 Print에 대응한다. MCP 2020 성공으로 표시하지 않는다.",
+      "images": [
+        {
+          "file": "pr8916/pr8916-zero_size_para_before_table/native/raw-001.png",
+          "sha256": "4d1786ad9da12a25113962616d9f0366d0b183034794a17df63dfdd8fd5c2b3e"
+        },
+        {
+          "file": "pr8916/pr8916-zero_size_para_before_table/native/pdf-001.png",
+          "sha256": "cd0e97acafa58de74d86729c9086e5e95a08ae9f744cd46e90845fe3a5076668"
+        },
+        {
+          "file": "pr8916/pr8916-zero_size_para_before_table/native/review-001.png",
+          "sha256": "6d5a9f32ffbeac060f525518ceb613b59960c85a61b4de258a81141caacb7a77"
+        },
+        {
+          "file": "pr8916/pr8916-zero_size_para_before_table/native/overlay-001.png",
+          "sha256": "3166b5654a8dac829e725ec4eb02cba3fcd3167343630f908930b1f2203c00d6"
+        }
+      ]
+    },
+    {
+      "pr": 8918,
+      "key": "pr8918-wingdings_pua_symbols",
+      "page": 1,
+      "review_and_overlay_opened": true,
+      "reading": "원문자·흰 원·체크 상자가 표시되고 뒤 본문 전진을 보존한다. 범위 밖 F0FA 차이를 전체 해결로 표시하지 않는다.",
+      "images": [
+        {
+          "file": "pr8918/pr8918-wingdings_pua_symbols/native/raw-001.png",
+          "sha256": "6efb413c15cda05c1b043b46c3a5e3581483ebb35b9ded88c836eddf2ab0ed94"
+        },
+        {
+          "file": "pr8918/pr8918-wingdings_pua_symbols/native/pdf-001.png",
+          "sha256": "e5892cbb5bd8da09ed68c13c3ed77702b862399ddf87ded68b36b99fcb829135"
+        },
+        {
+          "file": "pr8918/pr8918-wingdings_pua_symbols/native/review-001.png",
+          "sha256": "52422d57670ed2620a672652d21ca95669498cb8535ea2f1df8969cf0e9eae51"
+        },
+        {
+          "file": "pr8918/pr8918-wingdings_pua_symbols/native/overlay-001.png",
+          "sha256": "b91c6ece1874ae09c05642ee810bddd5a2b89b659f76199db380b8f2a1c2b8ef"
+        }
+      ]
+    },
+    {
+      "pr": 8920,
+      "key": "pr8920-float_line_rowspan_infront_center",
+      "page": 1,
+      "review_and_overlay_opened": true,
+      "reading": "병합 칸과 일반 칸의 직선이 모두 표시되고 가운데 정렬 위치가 Print와 대응한다. Native 100.00%.",
+      "images": [
+        {
+          "file": "pr8920/pr8920-float_line_rowspan_infront_center/native/raw-001.png",
+          "sha256": "e748017389ae50bdf593b7ad0430d5747c31a1b25d6977b68304463bb67dc93c"
+        },
+        {
+          "file": "pr8920/pr8920-float_line_rowspan_infront_center/native/pdf-001.png",
+          "sha256": "30bdcc0ea47e7295d9e1a640d096f2761468093fb7fc4629c0dbaa1ce90f9267"
+        },
+        {
+          "file": "pr8920/pr8920-float_line_rowspan_infront_center/native/review-001.png",
+          "sha256": "a3eda11cbbbb95e3c9d2bf31f1f17e45d58a604d902cd174457d995e905eaad3"
+        },
+        {
+          "file": "pr8920/pr8920-float_line_rowspan_infront_center/native/overlay-001.png",
+          "sha256": "c51ae2f0464b12ff6c5b729df1a6a66d9e9b124596b55132fe426d0108866ba2"
+        }
+      ]
+    }
+  ],
+  "fresh_wasm_direct_reading": "wasm-direct-reading.json"
+}

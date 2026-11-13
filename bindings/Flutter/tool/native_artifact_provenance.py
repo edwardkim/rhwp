@@ -54,6 +54,11 @@ def _entry_description(relative, info):
 def _file_identity(info):
     value = _signature(info)
     if hasattr(info, "st_file_attributes"):
+        # win32_xstat synthesizes executable bits from the path extension;
+        # fstat has no filename. They do not describe Windows ACL permissions.
+        # Keep the file type and read/write bits, and retain raw signatures
+        # when comparing each path/fd authority before and after reading.
+        value = (value[0] & ~0o111,) + value[1:]
         # CPython 3.12 win32_xstat reports creation time as ctime, whereas
         # _Py_fstat_noraise reports ChangeTime there. Compare the explicitly
         # supported CreationTime on both sides, without rounding timestamps.

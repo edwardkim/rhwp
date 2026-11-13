@@ -1,0 +1,272 @@
+{
+  "checked_at": "2026-11-12T11:54:32.807822+00:00",
+  "code_head": "d66568ef247859a9c184546cad3ba42b06e806e1",
+  "all_pages_quantitative": 46,
+  "representative_pages": 7,
+  "previous_reading_source": "../final-print-8fe7d1fb/native-direct-reading.json",
+  "records": [
+    {
+      "pr": 8895,
+      "key": "pr8895-title_line_overflows",
+      "page": 2,
+      "review_and_overlay_opened": true,
+      "reading": "TITLE 2와 결재 칸이 2쪽 첫 부분에 함께 배치된다. 표 전체 높이로 제목 fit을 대신하지 않는다.",
+      "images": [
+        {
+          "file": "pr8895/pr8895-title_line_overflows/native/raw-002.png",
+          "sha256": "3cfa18268ca59d114c254d3a61a574432ed15ee1f8535786bd838d4192856747",
+          "previous_sha256": "3cfa18268ca59d114c254d3a61a574432ed15ee1f8535786bd838d4192856747"
+        },
+        {
+          "file": "pr8895/pr8895-title_line_overflows/native/pdf-002.png",
+          "sha256": "1caf7fb75885d611bddcf8a04fd76ce1c6f943dbb262eeb65ba3c655bbb5353c",
+          "previous_sha256": "1caf7fb75885d611bddcf8a04fd76ce1c6f943dbb262eeb65ba3c655bbb5353c"
+        },
+        {
+          "file": "pr8895/pr8895-title_line_overflows/native/review-002.png",
+          "sha256": "2808a0e7a516b55833a981618ce1fb8f76c23b4730fe46e0a855688f7426fc3e",
+          "previous_sha256": "2ed0b37b8c9b732b8068e5e12fc52ae322b5c69514670a17851e6ec7f266f289"
+        },
+        {
+          "file": "pr8895/pr8895-title_line_overflows/native/overlay-002.png",
+          "sha256": "4f80c62f59074d45ff335f4fa1a0ff1eb122d5651020dc12a4e37344e5b5f4eb",
+          "previous_sha256": "cf5bbc6639d3c890883a8bfd0ef02bf25b5b1d103463b1e040fbbe5832eda4d5"
+        }
+      ],
+      "new_capture_source": "d66568ef247859a9c184546cad3ba42b06e806e1",
+      "rendered_png_reused": false,
+      "reading_mode": "이전 직접 판독의 raw·PDF 바이트 및 overlay 본문 픽셀 동일성 검증",
+      "overlay_body_equal": true,
+      "label_heights_old_new": [
+        32,
+        32
+      ],
+      "decoration_note": "제목·범례 글꼴은 Fontconfig 환경에 따라 달라질 수 있으며 본문 픽셀 동일성과 구분한다."
+    },
+    {
+      "pr": 8897,
+      "key": "pr8897-whitespace-host-topbottom-stacked-zones",
+      "page": 1,
+      "review_and_overlay_opened": true,
+      "reading": "Q·표·A를 보존하고 Z·Y의 중복 후행 간격이 제거됐다. Native 100.00%.",
+      "images": [
+        {
+          "file": "pr8897/pr8897-whitespace-host-topbottom-stacked-zones/native/raw-001.png",
+          "sha256": "db164e2afe68bfd3dae5173372d48ef82669349bbeadf05084c3ff7e5630ae7f",
+          "previous_sha256": "db164e2afe68bfd3dae5173372d48ef82669349bbeadf05084c3ff7e5630ae7f"
+        },
+        {
+          "file": "pr8897/pr8897-whitespace-host-topbottom-stacked-zones/native/pdf-001.png",
+          "sha256": "1321b28b98fc7ea6b2afc5d2114c9af7fbdcd21cbdd17aa7f03564ba1deef0e0",
+          "previous_sha256": "1321b28b98fc7ea6b2afc5d2114c9af7fbdcd21cbdd17aa7f03564ba1deef0e0"
+        },
+        {
+          "file": "pr8897/pr8897-whitespace-host-topbottom-stacked-zones/native/review-001.png",
+          "sha256": "d78516710f4c440d077e5a22ef8135a522b03e419d6e30d0dc4af18bf578a180",
+          "previous_sha256": "3a129f8a1e5dab5d937497125a8afd633641834256c8ec683ac94168546df185"
+        },
+        {
+          "file": "pr8897/pr8897-whitespace-host-topbottom-stacked-zones/native/overlay-001.png",
+          "sha256": "5f1877d14baab6a5d1ed942f937b3be6d078378d9d897f40a511b050e8c9e873",
+          "previous_sha256": "d30d76269739f24a622e478418bf547d75e0e38861eaef514b9d24813ad8156d"
+        }
+      ],
+      "new_capture_source": "d66568ef247859a9c184546cad3ba42b06e806e1",
+      "rendered_png_reused": false,
+      "reading_mode": "이전 직접 판독의 raw·PDF 바이트 및 overlay 본문 픽셀 동일성 검증",
+      "overlay_body_equal": true,
+      "label_heights_old_new": [
+        32,
+        32
+      ],
+      "decoration_note": "제목·범례 글꼴은 Fontconfig 환경에 따라 달라질 수 있으며 본문 픽셀 동일성과 구분한다."
+    },
+    {
+      "pr": 8897,
+      "key": "page-boundary-text",
+      "page": 2,
+      "review_and_overlay_opened": true,
+      "reading": "마지막 그림 1개와 X·AFTER TABLE·END의 순서와 단일 소속이 Print에 대응한다. base에 없던 둘째 쪽의 구조 복원이다.",
+      "images": [
+        {
+          "file": "pr8897/page-boundary-text/native/raw-002.png",
+          "sha256": "c690ff7b4b80802fca0971cdd1dab1387e6f79e3bd6be1ab542eece86905c68d",
+          "previous_sha256": "c690ff7b4b80802fca0971cdd1dab1387e6f79e3bd6be1ab542eece86905c68d"
+        },
+        {
+          "file": "pr8897/page-boundary-text/native/pdf-002.png",
+          "sha256": "4dabe457a26aabc8ebb652425a9fb7ebd03dbef10223b5fa7a8d1201bdc9068a",
+          "previous_sha256": "4dabe457a26aabc8ebb652425a9fb7ebd03dbef10223b5fa7a8d1201bdc9068a"
+        },
+        {
+          "file": "pr8897/page-boundary-text/native/review-002.png",
+          "sha256": "f78cbdf73c6087af12d5a96f8a6d119065ff7a5f35e6cc7c9242095f3272bfb7",
+          "previous_sha256": "0c2bde1114b5917f4edfe9191bbbab809e805cefc36cb767eb067ab810335b5c"
+        },
+        {
+          "file": "pr8897/page-boundary-text/native/overlay-002.png",
+          "sha256": "5132a6621434f93123c9df4b373ef8d5fe78fbfcb7ffb30d47636589008ee2c1",
+          "previous_sha256": "ad24fec9e993f02a301556b3f33596a1ef32f0ead76e4e3159b1ce0dab99ef5f"
+        }
+      ],
+      "new_capture_source": "d66568ef247859a9c184546cad3ba42b06e806e1",
+      "rendered_png_reused": false,
+      "reading_mode": "이전 직접 판독의 raw·PDF 바이트 및 overlay 본문 픽셀 동일성 검증",
+      "overlay_body_equal": true,
+      "label_heights_old_new": [
+        32,
+        32
+      ],
+      "decoration_note": "제목·범례 글꼴은 Fontconfig 환경에 따라 달라질 수 있으며 본문 픽셀 동일성과 구분한다."
+    },
+    {
+      "pr": 8900,
+      "key": "pr8900-bar_axis_floor",
+      "page": 1,
+      "review_and_overlay_opened": true,
+      "reading": "4.1부터 5.0까지 0.1 눈금과 가로막대 끝 x 위치를 확인했다. plot 높이·세로 배치는 다르므로 차트 전체 해결로 확대하지 않고 #8678을 OPEN 유지한다.",
+      "images": [
+        {
+          "file": "pr8900/pr8900-bar_axis_floor/native/raw-001.png",
+          "sha256": "9962f771d49d2f25decbcc0531e6c8c95b13a85019d1f5fe4149992bf9b2e4f4",
+          "previous_sha256": "9962f771d49d2f25decbcc0531e6c8c95b13a85019d1f5fe4149992bf9b2e4f4"
+        },
+        {
+          "file": "pr8900/pr8900-bar_axis_floor/native/pdf-001.png",
+          "sha256": "8be51bb61bc95d89510a09ee91595cd8340804642261eacca52c57302756c38a",
+          "previous_sha256": "8be51bb61bc95d89510a09ee91595cd8340804642261eacca52c57302756c38a"
+        },
+        {
+          "file": "pr8900/pr8900-bar_axis_floor/native/review-001.png",
+          "sha256": "871fd9b540bd4585e351a48d454c46e2caa46df50502a101a8d85d7900d4a34e",
+          "previous_sha256": "6cbc28c2b3c81ee5da4add13d2be4ea08f39fe2cfc2c1eec3b7bba2c94def4bb"
+        },
+        {
+          "file": "pr8900/pr8900-bar_axis_floor/native/overlay-001.png",
+          "sha256": "295ced0f4a53e351d5158974d09bb9106e2ac9f9facb015f97a24c29beef07b0",
+          "previous_sha256": "7e6d728a7b9f9ae698f9fc12fca59500bb5624c6bba2f96482698500b340a9fd"
+        }
+      ],
+      "new_capture_source": "d66568ef247859a9c184546cad3ba42b06e806e1",
+      "rendered_png_reused": false,
+      "reading_mode": "이전 직접 판독의 raw·PDF 바이트 및 overlay 본문 픽셀 동일성 검증",
+      "overlay_body_equal": true,
+      "label_heights_old_new": [
+        32,
+        32
+      ],
+      "decoration_note": "제목·범례 글꼴은 Fontconfig 환경에 따라 달라질 수 있으며 본문 픽셀 동일성과 구분한다."
+    },
+    {
+      "pr": 8916,
+      "key": "pr8916-zero_size_para_before_table",
+      "page": 1,
+      "review_and_overlay_opened": true,
+      "reading": "TOP→표→AFTER의 순서와 표의 높이·위치가 사용자 확인 2024 Print에 대응한다. MCP 2020 성공으로 표시하지 않는다.",
+      "images": [
+        {
+          "file": "pr8916/pr8916-zero_size_para_before_table/native/raw-001.png",
+          "sha256": "4d1786ad9da12a25113962616d9f0366d0b183034794a17df63dfdd8fd5c2b3e",
+          "previous_sha256": "4d1786ad9da12a25113962616d9f0366d0b183034794a17df63dfdd8fd5c2b3e"
+        },
+        {
+          "file": "pr8916/pr8916-zero_size_para_before_table/native/pdf-001.png",
+          "sha256": "cd0e97acafa58de74d86729c9086e5e95a08ae9f744cd46e90845fe3a5076668",
+          "previous_sha256": "cd0e97acafa58de74d86729c9086e5e95a08ae9f744cd46e90845fe3a5076668"
+        },
+        {
+          "file": "pr8916/pr8916-zero_size_para_before_table/native/review-001.png",
+          "sha256": "9f279c413a2cd80a6c38d3ac4a3cd4293c41907c871557fba66323e11a2c3ee5",
+          "previous_sha256": "6d5a9f32ffbeac060f525518ceb613b59960c85a61b4de258a81141caacb7a77"
+        },
+        {
+          "file": "pr8916/pr8916-zero_size_para_before_table/native/overlay-001.png",
+          "sha256": "4f266927c9cf4cb7d69842a0b062a38f6510e906ee17eb7018a28cf7b9ab9720",
+          "previous_sha256": "3166b5654a8dac829e725ec4eb02cba3fcd3167343630f908930b1f2203c00d6"
+        }
+      ],
+      "new_capture_source": "d66568ef247859a9c184546cad3ba42b06e806e1",
+      "rendered_png_reused": false,
+      "reading_mode": "이전 직접 판독의 raw·PDF 바이트 및 overlay 본문 픽셀 동일성 검증",
+      "overlay_body_equal": true,
+      "label_heights_old_new": [
+        32,
+        32
+      ],
+      "decoration_note": "제목·범례 글꼴은 Fontconfig 환경에 따라 달라질 수 있으며 본문 픽셀 동일성과 구분한다."
+    },
+    {
+      "pr": 8918,
+      "key": "pr8918-wingdings_pua_symbols",
+      "page": 1,
+      "review_and_overlay_opened": true,
+      "reading": "원문자·흰 원·체크 상자를 유지하고 U+F0FA를 작은 빈 상자 U+1F8AD로 표시한다. 원 전진과 뒤 본문 간격을 확인했다. Native raw99.76%.",
+      "images": [
+        {
+          "file": "pr8918/pr8918-wingdings_pua_symbols/native/raw-001.png",
+          "sha256": "d0ab858fe55524f2fd149a68387c6360d847087eb31f1626e3bb7a18b1577c7c",
+          "previous_sha256": "6efb413c15cda05c1b043b46c3a5e3581483ebb35b9ded88c836eddf2ab0ed94"
+        },
+        {
+          "file": "pr8918/pr8918-wingdings_pua_symbols/native/pdf-001.png",
+          "sha256": "e5892cbb5bd8da09ed68c13c3ed77702b862399ddf87ded68b36b99fcb829135",
+          "previous_sha256": "e5892cbb5bd8da09ed68c13c3ed77702b862399ddf87ded68b36b99fcb829135"
+        },
+        {
+          "file": "pr8918/pr8918-wingdings_pua_symbols/native/review-001.png",
+          "sha256": "866753468e2ba217f7c6ed989168b6dbbda573119edf65da92ecb913c26a11c9",
+          "previous_sha256": "52422d57670ed2620a672652d21ca95669498cb8535ea2f1df8969cf0e9eae51"
+        },
+        {
+          "file": "pr8918/pr8918-wingdings_pua_symbols/native/overlay-001.png",
+          "sha256": "1558420ff3de116a9c0a961ffab6fea128fcccd2858ab1820c2572a7233aeb43",
+          "previous_sha256": "b91c6ece1874ae09c05642ee810bddd5a2b89b659f76199db380b8f2a1c2b8ef"
+        }
+      ],
+      "new_capture_source": "d66568ef247859a9c184546cad3ba42b06e806e1",
+      "rendered_png_reused": false,
+      "reading_mode": "새 source의 review·overlay 직접 판독",
+      "overlay_body_equal": null,
+      "label_heights_old_new": [],
+      "decoration_note": null
+    },
+    {
+      "pr": 8920,
+      "key": "pr8920-float_line_rowspan_infront_center",
+      "page": 1,
+      "review_and_overlay_opened": true,
+      "reading": "병합 칸과 일반 칸의 직선이 모두 표시되고 가운데 정렬 위치가 Print와 대응한다. Native 100.00%.",
+      "images": [
+        {
+          "file": "pr8920/pr8920-float_line_rowspan_infront_center/native/raw-001.png",
+          "sha256": "e748017389ae50bdf593b7ad0430d5747c31a1b25d6977b68304463bb67dc93c",
+          "previous_sha256": "e748017389ae50bdf593b7ad0430d5747c31a1b25d6977b68304463bb67dc93c"
+        },
+        {
+          "file": "pr8920/pr8920-float_line_rowspan_infront_center/native/pdf-001.png",
+          "sha256": "30bdcc0ea47e7295d9e1a640d096f2761468093fb7fc4629c0dbaa1ce90f9267",
+          "previous_sha256": "30bdcc0ea47e7295d9e1a640d096f2761468093fb7fc4629c0dbaa1ce90f9267"
+        },
+        {
+          "file": "pr8920/pr8920-float_line_rowspan_infront_center/native/review-001.png",
+          "sha256": "dd90dc180485021a4049a4d98f93a29b7277a7ec725f50f8155ae52f04b82e85",
+          "previous_sha256": "a3eda11cbbbb95e3c9d2bf31f1f17e45d58a604d902cd174457d995e905eaad3"
+        },
+        {
+          "file": "pr8920/pr8920-float_line_rowspan_infront_center/native/overlay-001.png",
+          "sha256": "09a2e603bd5aca9142f4094ffd3f6faeef37fe5734f35ef0b0262874ab42d6f3",
+          "previous_sha256": "c51ae2f0464b12ff6c5b729df1a6a66d9e9b124596b55132fe426d0108866ba2"
+        }
+      ],
+      "new_capture_source": "d66568ef247859a9c184546cad3ba42b06e806e1",
+      "rendered_png_reused": false,
+      "reading_mode": "이전 직접 판독의 raw·PDF 바이트 및 overlay 본문 픽셀 동일성 검증",
+      "overlay_body_equal": true,
+      "label_heights_old_new": [
+        32,
+        32
+      ],
+      "decoration_note": "제목·범례 글꼴은 Fontconfig 환경에 따라 달라질 수 있으며 본문 픽셀 동일성과 구분한다."
+    }
+  ]
+}

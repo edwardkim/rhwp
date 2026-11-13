@@ -1342,6 +1342,25 @@ pub(crate) fn fit_measured_table_to_declared_height_with_outcome(
     }
 }
 
+/// 저장 프레임 없이 재조판하는 그림 전용 칸의 안 여백은 실제 그림 상자를 소유한다.
+/// 선언 높이 fit과 통째 표 수용이 같은 물리 하한을 판정할 때 함께 사용한다.
+pub(crate) fn unstored_square_picture_cell_owns_padding(cell: &crate::model::table::Cell) -> bool {
+    cell.paragraphs.iter().all(|para| {
+        super::para_has_no_stored_line_segs(para)
+            && para
+                .text
+                .chars()
+                .all(|ch| ch.is_whitespace() || ch.is_control() || ch == '\u{FFFC}')
+    }) && cell.paragraphs.iter().any(|para| {
+        para.controls.iter().any(|control| {
+            matches!(control, Control::Picture(picture)
+                if !picture.common.treat_as_char
+                    && picture.common.flow_with_text
+                    && picture.common.text_wrap == TextWrap::Square)
+        })
+    })
+}
+
 pub(crate) fn fit_measured_table_to_declared_height_with_outcome_with_storage<
     S: crate::storage::Storage,
 >(
@@ -1351,7 +1370,11 @@ pub(crate) fn fit_measured_table_to_declared_height_with_outcome_with_storage<
     storage: &S,
 ) -> Result<(MeasuredTable, bool), S::Error> {
     let mut fitted = crate::storage::try_clone(measured, storage)?;
-    if fitted.row_heights.is_empty() || table.common.height == 0 {
+    // [#9005] 숨긴 안내문을 담아 잰 저장 표 높이는 지금 내용의 높이가 아니다.
+    if fitted.row_heights.is_empty()
+        || table.common.height == 0
+        || table.stored_size_includes_hidden_guide()
+    {
         return Ok((fitted, false));
     }
 
@@ -1429,7 +1452,23 @@ pub(crate) fn fit_measured_table_to_declared_height_with_outcome_with_storage<
                     .cells
                     .iter()
                     .filter(|cell| cell.row == row && cell.row_span == 1)
-                    .map(|cell| cell.total_content_height)
+                    .map(|cell| {
+                        // 저장 줄 없는 그림 전용 칸은 개체 선언이 닫힌 행 프레임을
+                        // 증명하지 않는다. 그림이 차지한 높이에 안 여백을 더한 물리
+                        // 상자까지 보존해야 예약과 paint가 같은 행 경계를 소비한다.
+                        // 저장 표의 패딩 회수(#1510)는 기존 내용 하한을 유지한다.
+                        let owns_picture_padding = table.cells.iter().any(|source| {
+                            usize::from(source.row) == cell.row
+                                && usize::from(source.col) == cell.col
+                                && unstored_square_picture_cell_owns_padding(source)
+                        });
+                        cell.total_content_height
+                            + if owns_picture_padding {
+                                cell.padding_top.max(0.0) + cell.padding_bottom.max(0.0)
+                            } else {
+                                0.0
+                            }
+                    })
                     .fold(0.0f64, f64::max);
                 floor > 0.0 && fitted.row_heights[row] * scale < floor - 0.5
             });
@@ -2185,8 +2224,16 @@ impl HeightMeasurer {
                         paragraphs, pi, self.dpi,
                     )
                     .map_or(object_bottom, |stack| object_bottom.max(stack.bottom));
-                if object_bottom > 0.0 {
-                    para_top + object_bottom
+                // 저장 줄 없는 도형 전용 문단의 글자 줄도 정렬 띠를 소유한다.
+                // TopAndBottom 도형은 위 시각 bottom 질의에서 제외되므로,
+                // 개체 bottom이 0이어도 이 줄 상자는 측정·배치에 함께 남긴다.
+                let anchor =
+                    crate::renderer::cell_paragraph_spacing::unstored_shape_anchor_line_height(
+                        p, styles,
+                    )
+                    .unwrap_or(0.0);
+                if object_bottom > 0.0 || anchor > 0.0 {
+                    para_top + object_bottom.max(anchor)
                 } else {
                     0.0
                 }
@@ -4047,6 +4094,7 @@ let body_height=match nested_body_heights
                                 self.stored_geometry_policy,
                                 self.is_native_hwp5,
                                 &self.single_line_overflow_cache,
+                                cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
                                 |nested| -> Result<_,S::Error> {
 
                                     let stretch = self.render_normalization.nested_table_width_scale(nested);
@@ -4483,10 +4531,34 @@ let body_height=match nested_body_heights
                     let nested_bottom = self.cell_nested_controls_bottom_with_storage(
                         table, cell, styles, depth, cell_w_px, storage,
                     )?;
-                    hwpunit_to_px(last_seg_end, self.dpi)
-                        .max(text_height)
-                        .max(nested_bottom)
-                        .max(self.cell_wrap_objects_bottom_height(&cell.paragraphs, styles))
+                    let stored_end = hwpunit_to_px(last_seg_end, self.dpi);
+                    let wrap_bottom =
+                        self.cell_wrap_objects_bottom_height(&cell.paragraphs, styles);
+                    // 글자처럼 취급 표의 칸에서 저장 사다리가 칸 선언 높이 안에 담기면 배치는
+                    // 문단을 저장 vpos 에 놓는다(table_layout `nested_stored_overflow_rescue` →
+                    // `trust_stored_cell_flow`). 재조판 줄 합으로 칸을 키우면 배치가 쓰지 않는
+                    // 높이가 행에 들어가고, 표 전체 높이는 그대로라 다른 행이 그만큼 줄어든다.
+                    let stored_flow_fits_declared_cell = table.common.treat_as_char
+                        && self.is_native_hwp5
+                        && !self.session_edited
+                        && !self.render_normalization.cell_frame_reflowed(table, cell)
+                        && ladder_intact
+                        && last_seg_end > 0
+                        && cell.height < 0x8000_0000
+                        && i64::from(last_seg_end)
+                            + i64::from(eff_pad.top)
+                            + i64::from(eff_pad.bottom)
+                            <= i64::from(cell.height)
+                        && nested_bottom <= stored_end + 0.5
+                        && wrap_bottom <= stored_end + 0.5;
+                    if stored_flow_fits_declared_cell {
+                        stored_end
+                    } else {
+                        stored_end
+                            .max(text_height)
+                            .max(nested_bottom)
+                            .max(wrap_bottom)
+                    }
                 } else {
                     // 단, 비-인라인 이미지/도형은 LINE_SEG에 미포함이므로 별도 합산
                     let ordinary_non_inline_h = self
@@ -4606,11 +4678,27 @@ let body_height=match nested_body_heights
                             })
                         })
                         .map(|pp| {
-                            // 저장 줄이 없는 문단은 위 `text_height` 가 400HU 자리 줄을
-                            // 실었다. 같은 줄이므로 같은 값을 뺀다(#7685) — 저장 줄만 빼면
-                            // 자리 줄이 개체 아래에 남는다(issue7182 그림 칸 +5.3px).
+                            // 저장 줄이 없는 문단은 위 `text_height` 가 합성한 자리 줄을
+                            // 실었다. 같은 줄이므로 그때 실은 값을 그대로 뺀다(#7685) — 저장
+                            // 줄만 빼면 자리 줄이 개체 아래에 남는다(issue7182 그림 칸 +5.3px).
+                            // 그 줄은 글자 모양이 있으면 400HU 가 아니라 글자 크기(em)로
+                            // 합성되므로 고정 400HU 를 빼면 차이가 개체 아래에 남는다
+                            // (#8971: 10pt 빈 문단의 그림 칸이 13.3 − 5.3 = 8.0px 늘어남).
+                            // 이 갈래는 문단이 하나뿐인 칸이라 `text_height` 가 곧 그 문단의
+                            // 몫이다. 문단 앞 간격은 종전처럼 남긴다.
                             if crate::renderer::para_has_no_stored_line_segs(pp) {
-                                return hwpunit_to_px(400, self.dpi);
+                                let before =
+                                    crate::renderer::cell_paragraph_spacing::paragraph_before(
+                                        pp,
+                                        0,
+                                        styles
+                                            .para_styles
+                                            .get(pp.para_shape_id as usize)
+                                            .map_or(0.0, |s| s.spacing_before),
+                                        self.dpi,
+                                    )
+                                    .occupied_before();
+                                return (text_height - before).max(0.0);
                             }
                             // [#8427] 개체가 이 문단 기준(vert=문단)이면 한/글은 개체를 문단
                             // 앞 간격 **전** 원점에 놓는다(30396 18쪽: 문단 앞 간격 500HU 인
@@ -5093,6 +5181,7 @@ let body_height=match nested_body_heights
                                 self.stored_geometry_policy,
                                 self.is_native_hwp5,
                                 &self.single_line_overflow_cache,
+                                cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
                                 |nested| -> Result<_,S::Error> {
 
                                     let stretch = self.render_normalization.nested_table_width_scale(nested);
@@ -5557,6 +5646,24 @@ let body_height=match nested_body_heights
         // 저장 형식과 무관하다: 저장 줄 없는 HWP5 TAC 표도 한/글 Print 는 재조판한
         // 내용 높이로 행을 키운다(docs#458 머리 행 61.0px, 선언 축소 시 48.1px 로 줄 유실).
         let reflowed_cell_rows = crate::renderer::composer::table_cells_have_no_stored_lines(table);
+        // 저장 줄 없는 칸이 재조판으로 선언 행 높이보다 자란 양. 선언 표 높이는 저장 당시
+        // 내용으로 확정된 값이라 이 성장분을 담지 않는다. 한/글은 그 행만 키우고 저장 줄이
+        // 있는 다른 행을 줄여 흡수하지 않는다(36454139 1쪽: 두 줄로 재조판되는 칸 2개만큼
+        // 표가 선언 483.5px 보다 약 20px 커지고 나머지 행은 선언 28.4px 그대로).
+        // 그래서 이 성장분을 뺀 높이가 선언 안에 들면 비례 축소 대상이 아니다.
+        let reflowed_row_growth: f64 = (0..row_count)
+            .filter(|&r| {
+                table.cells.iter().any(|cell| {
+                    cell.row as usize == r
+                        && cell.row_span == 1
+                        && cell
+                            .paragraphs
+                            .iter()
+                            .any(crate::renderer::para_has_no_stored_line_segs)
+                })
+            })
+            .map(|r| (row_heights[r] - declared_row_height_px(table, r, self.dpi)).max(0.0))
+            .sum();
         let table_height = if stored_rows.is_some() {
             raw_table_height
         } else if table.common.treat_as_char
@@ -5564,6 +5671,7 @@ let body_height=match nested_body_heights
             && !reflowed_cell_rows
             && common_h > 0.0
             && raw_table_height > common_h + shrink_threshold
+            && raw_table_height - reflowed_row_growth > common_h + shrink_threshold
             && raw_table_height <= common_h * TAC_SHRINK_MAX_OVERFLOW_RATIO
         {
             // [#5748] 비례 축소가 '내용이 딱 맞는 행'까지 누르면 그 행의 글자가
@@ -5748,6 +5856,8 @@ let body_height=match nested_body_heights
             common_h
         } else if !table.common.treat_as_char
             && !crate::renderer::float_placement::reflow_table_uses_row_height_constraints(table)
+            // [#9005] 숨긴 안내문을 담아 잰 표 선언은 최소 높이가 아니다.
+            && !table.stored_size_includes_hidden_guide()
             && common_h > 0.0
             && raw_table_height > 0.0
             && common_h > raw_table_height + 0.5
@@ -5891,6 +6001,7 @@ let body_height=match nested_body_heights
                                 &mut comp, p, inner_width, styles, self.dpi,
                                 self.stored_geometry_policy, self.is_native_hwp5,
                                 &self.single_line_overflow_cache,
+                                cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
                                 |nested| -> Result<_,S::Error> {
 
                                     let stretch = self.render_normalization.nested_table_width_scale(nested);

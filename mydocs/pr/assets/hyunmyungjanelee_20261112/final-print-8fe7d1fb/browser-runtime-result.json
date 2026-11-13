@@ -1,0 +1,26 @@
+{
+  "local_font_access_permission": "denied",
+  "os_css_font_visibility_isolation_claimed": false,
+  "code_head": "8fe7d1fb8bc5024d0377ff7aa37d98c78e8f071a",
+  "browser": "Chrome/157.0.8103.51",
+  "actual": {
+    "pageCount": 1,
+    "printCanvasApi": true
+  },
+  "initialization_responses": [
+    {
+      "file": "rhwp.js",
+      "status": 200,
+      "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+      "bytes": 581315
+    },
+    {
+      "file": "rhwp_bg.wasm",
+      "status": 200,
+      "sha256": "eb24edf2895f723d19cddca9403673f3728f15f39016bb7b2f5ca09b7dd8b595",
+      "bytes": 31816267
+    }
+  ],
+  "root_pkg_studio_frozen_and_actual_responses_identical": true,
+  "scope": "runtime JS/WASM; TypeScript declarations are not browser initialization responses"
+}

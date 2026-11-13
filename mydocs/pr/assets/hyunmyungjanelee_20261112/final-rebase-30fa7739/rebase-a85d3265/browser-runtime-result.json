@@ -1,0 +1,414 @@
+{
+  "clipboard_api": {
+    "cases": [
+      {
+        "name": "leading",
+        "after_paste": {
+          "body": [
+            {
+              "text": "첫 문단",
+              "marks": "...."
+            },
+            {
+              "text": "앞 굵게 뒤",
+              "marks": "..BB.."
+            }
+          ],
+          "tables": []
+        },
+        "roundtrips": [
+          {
+            "format": "hwp",
+            "cycle": 1,
+            "preserved": true,
+            "bytes": 12800
+          },
+          {
+            "format": "hwp",
+            "cycle": 2,
+            "preserved": true,
+            "bytes": 12800
+          },
+          {
+            "format": "hwpx",
+            "cycle": 1,
+            "preserved": true,
+            "bytes": 7470
+          },
+          {
+            "format": "hwpx",
+            "cycle": 2,
+            "preserved": true,
+            "bytes": 7470
+          }
+        ]
+      },
+      {
+        "name": "border",
+        "after_paste": {
+          "body": [
+            {
+              "text": "BEFORE",
+              "marks": "......"
+            },
+            {
+              "text": "AFTER",
+              "marks": "....."
+            }
+          ],
+          "tables": [
+            {
+              "paragraph": 1,
+              "cell": [
+                {
+                  "text": "가",
+                  "marks": "."
+                }
+              ],
+              "borders": [
+                {
+                  "type": 1,
+                  "width": 4,
+                  "color": "#000000"
+                },
+                {
+                  "type": 1,
+                  "width": 4,
+                  "color": "#000000"
+                },
+                {
+                  "type": 1,
+                  "width": 4,
+                  "color": "#000000"
+                },
+                {
+                  "type": 1,
+                  "width": 4,
+                  "color": "#000000"
+                }
+              ]
+            }
+          ]
+        },
+        "roundtrips": [
+          {
+            "format": "hwp",
+            "cycle": 1,
+            "preserved": true,
+            "bytes": 13312
+          },
+          {
+            "format": "hwp",
+            "cycle": 2,
+            "preserved": true,
+            "bytes": 13312
+          },
+          {
+            "format": "hwpx",
+            "cycle": 1,
+            "preserved": true,
+            "bytes": 7958
+          },
+          {
+            "format": "hwpx",
+            "cycle": 2,
+            "preserved": true,
+            "bytes": 7958
+          }
+        ]
+      },
+      {
+        "name": "combined",
+        "after_paste": {
+          "body": [
+            {
+              "text": "첫 문단",
+              "marks": "...."
+            },
+            {
+              "text": "앞 굵게 뒤",
+              "marks": "..BB.."
+            },
+            {
+              "text": "AFTER",
+              "marks": "....."
+            }
+          ],
+          "tables": [
+            {
+              "paragraph": 2,
+              "cell": [
+                {
+                  "text": "셀 앞 굵게 뒤",
+                  "marks": "....BB.."
+                }
+              ],
+              "borders": [
+                {
+                  "type": 1,
+                  "width": 4,
+                  "color": "#000000"
+                },
+                {
+                  "type": 1,
+                  "width": 4,
+                  "color": "#000000"
+                },
+                {
+                  "type": 1,
+                  "width": 4,
+                  "color": "#000000"
+                },
+                {
+                  "type": 1,
+                  "width": 4,
+                  "color": "#000000"
+                }
+              ]
+            }
+          ]
+        },
+        "roundtrips": [
+          {
+            "format": "hwp",
+            "cycle": 1,
+            "preserved": true,
+            "bytes": 13312
+          },
+          {
+            "format": "hwp",
+            "cycle": 2,
+            "preserved": true,
+            "bytes": 13312
+          },
+          {
+            "format": "hwpx",
+            "cycle": 1,
+            "preserved": true,
+            "bytes": 8044
+          },
+          {
+            "format": "hwpx",
+            "cycle": 2,
+            "preserved": true,
+            "bytes": 8044
+          }
+        ]
+      },
+      {
+        "name": "body-styled-caret",
+        "after_paste": {
+          "body": [
+            {
+              "text": "L앞 굵게 뒤R",
+              "marks": "I..BB..I"
+            }
+          ],
+          "tables": []
+        },
+        "roundtrips": [
+          {
+            "format": "hwp",
+            "cycle": 1,
+            "preserved": true,
+            "bytes": 12800
+          },
+          {
+            "format": "hwp",
+            "cycle": 2,
+            "preserved": true,
+            "bytes": 12800
+          },
+          {
+            "format": "hwpx",
+            "cycle": 1,
+            "preserved": true,
+            "bytes": 7473
+          },
+          {
+            "format": "hwpx",
+            "cycle": 2,
+            "preserved": true,
+            "bytes": 7473
+          }
+        ]
+      },
+      {
+        "name": "cell-styled-caret",
+        "after_paste": {
+          "body": [],
+          "tables": [
+            {
+              "paragraph": 0,
+              "cell": [
+                {
+                  "text": "L앞 굵게 뒤R",
+                  "marks": "I..BB..I"
+                }
+              ],
+              "borders": [
+                {
+                  "type": 1,
+                  "width": 1,
+                  "color": "#000000"
+                },
+                {
+                  "type": 1,
+                  "width": 1,
+                  "color": "#000000"
+                },
+                {
+                  "type": 1,
+                  "width": 1,
+                  "color": "#000000"
+                },
+                {
+                  "type": 1,
+                  "width": 1,
+                  "color": "#000000"
+                }
+              ]
+            }
+          ]
+        },
+        "roundtrips": [
+          {
+            "format": "hwp",
+            "cycle": 1,
+            "preserved": true,
+            "bytes": 13312
+          },
+          {
+            "format": "hwp",
+            "cycle": 2,
+            "preserved": true,
+            "bytes": 13312
+          },
+          {
+            "format": "hwpx",
+            "cycle": 1,
+            "preserved": true,
+            "bytes": 7880
+          },
+          {
+            "format": "hwpx",
+            "cycle": 2,
+            "preserved": true,
+            "bytes": 7880
+          }
+        ]
+      },
+      {
+        "name": "attribute-alias",
+        "after_paste": {
+          "body": [],
+          "tables": [
+            {
+              "paragraph": 0,
+              "cell": [
+                {
+                  "text": "A",
+                  "marks": "."
+                }
+              ],
+              "borders": [
+                {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                }
+              ]
+            }
+          ]
+        },
+        "roundtrips": [
+          {
+            "format": "hwp",
+            "cycle": 1,
+            "preserved": true,
+            "bytes": 13312
+          },
+          {
+            "format": "hwp",
+            "cycle": 2,
+            "preserved": true,
+            "bytes": 13312
+          },
+          {
+            "format": "hwpx",
+            "cycle": 1,
+            "preserved": true,
+            "bytes": 7871
+          },
+          {
+            "format": "hwpx",
+            "cycle": 2,
+            "preserved": true,
+            "bytes": 7871
+          }
+        ]
+      }
+    ],
+    "passed": 6,
+    "failed": 0,
+    "repeated_save_checks": 24,
+    "consumer": "실제 브라우저의 HwpDocument API; Studio 이벤트 경로는 변경되지 않았으며 기존 검증 출처를 유지한다."
+  },
+  "by_path_api": {
+    "checks": [
+      "outer dimensions [{\"controlIndex\":2}]",
+      "outer dimensions [{\"controlIndex\":2,\"cellIndex\":0}]",
+      "outer dimensions [{\"controlIndex\":2,\"cellIndex\":0,\"cellParaIndex\":0}]",
+      "outer dimensions [{\"controlIndex\":2,\"cellIndex\":99,\"cellParaIndex\":99}]",
+      "six bboxes short/full equal",
+      "missing control rejected",
+      "malformed optional rejected",
+      "cell API still needs cell index",
+      "nested 3x4 short/full equal",
+      "nested missing outer para rejected",
+      "nested missing outer cell rejected"
+    ],
+    "passed": 11,
+    "failed": 0,
+    "consumer": "actual browser WASM HwpDocument"
+  },
+  "local_font_access_permission": "denied",
+  "os_css_font_visibility_isolation_claimed": false,
+  "code_head": "73d06ed0b18df7c222a850bb5d9340c9b7de2bcc",
+  "browser": "Chrome/157.0.8103.51",
+  "actual": {
+    "pageCount": 1,
+    "printCanvasApi": true
+  },
+  "initialization_responses": [
+    {
+      "file": "rhwp.js",
+      "status": 200,
+      "sha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+      "bytes": 583724
+    },
+    {
+      "file": "rhwp_bg.wasm",
+      "status": 200,
+      "sha256": "6c877b07b5534da8557fe605a77a205062f77ae8e8a9660031f6dfddec7305da",
+      "bytes": 31818224
+    }
+  ],
+  "root_pkg_studio_frozen_and_actual_responses_identical": true,
+  "scope": "runtime JS/WASM; TypeScript declarations are not browser initialization responses"
+}

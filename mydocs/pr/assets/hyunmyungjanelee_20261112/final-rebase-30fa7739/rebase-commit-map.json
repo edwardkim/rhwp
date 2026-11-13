@@ -1,0 +1,271 @@
+{
+  "before_base": "80b1c354c29b7a02fb2b3c14a274da7f5b653ada",
+  "after_base": "1a3ed4a7cd76701085a24ac81d30bc5fb31942c1",
+  "commits": [
+    {
+      "before": "9a276031f4d2a19f5c2ebe43034848e99d9f8ef9",
+      "after": "37e989d49a82f787ea2d9c2610d5690118acf5d0",
+      "same_patch_id": true,
+      "subject": "fix(renderer): 저장 줄 없는 제목 host 의 글줄이 쪽 끝에 들지 않으면 다음 쪽으로 넘김 (#8665)"
+    },
+    {
+      "before": "8b826f96c7b393313bb6c685fb85bf821137d15a",
+      "after": "e9f351e05ed56f4e901361f269c362be329d4cb8",
+      "same_patch_id": true,
+      "subject": "test(renderer): 제목 host 쪽 나눔 회귀 가드와 재현물 (#8665)"
+    },
+    {
+      "before": "a9599f6e0c75ac4f05a2709c3c69fba6de265876",
+      "after": "2c24e15ef3eebaca4f917f886e0c8882fa8e0366",
+      "same_patch_id": true,
+      "subject": "test(renderer): #8665 재현물의 한컴 웹한글기안기 기준 PDF"
+    },
+    {
+      "before": "d95508852c1b525af0a70e6e90fe210df75e1b9e",
+      "after": "5a0561e22bcde64b2e6ffb4c4db4c801b8bddebe",
+      "same_patch_id": true,
+      "subject": "test(renderer): #8665 대조군 재현물의 결재 칸 높이를 줄여 범위 밖 기전을 뺌"
+    },
+    {
+      "before": "452d80fcc692ce78be292cb19b4104ac67328934",
+      "after": "69e1b4b646c9d571e04a81a9213ed53e6d750ef2",
+      "same_patch_id": true,
+      "subject": "style: #8665 회귀 테스트 형식 정리"
+    },
+    {
+      "before": "ea628ccb70a7f1ea0f26e63993e78cc32fe2188b",
+      "after": "124d0219d392444c33d3ae7285162bb0b89aa3a0",
+      "same_patch_id": true,
+      "subject": "docs(pr): #8665 Native·fresh WASM Visual Sweep 증적"
+    },
+    {
+      "before": "eb87a3b017a63bda9698fdffbc7f7ab767fc281d",
+      "after": "642140c8635965370383494f328ea615232fe489",
+      "same_patch_id": true,
+      "subject": "fix(renderer): 저장 줄 없는 공백·빈 host 문단의 어울림 표 아래 자리차지 표를 한컴처럼 배치 (#8573)"
+    },
+    {
+      "before": "fbf9141861bb3bd26084a14e234415cd7b70c5ee",
+      "after": "2de496726774d382a7049ae6383cca9e8b2ee6a7",
+      "same_patch_id": true,
+      "subject": "test(renderer): 공백·빈 host 어울림 표와 자리차지 표 배치 회귀 가드와 재현물 (#8573)"
+    },
+    {
+      "before": "0b14b80db05a904bdc0c3e55a52c12047918c9ee",
+      "after": "7165eee2a4a7dfb1dae5f44921f95e1d43e11d01",
+      "same_patch_id": true,
+      "subject": "test(renderer): #8573 재현물의 한컴 웹한글기안기 기준 PDF"
+    },
+    {
+      "before": "fe4994ac85ff834f4b99970a75f5157e297a3ffa",
+      "after": "a789286121e5968efce5d010d18d93ad149802a1",
+      "same_patch_id": true,
+      "subject": "test(renderer): #8573 재현물 2종의 용지 밖 표를 off-canvas 기준표에 싣는다"
+    },
+    {
+      "before": "98e8f2a8f579627a98b301da5dfc6c306291527f",
+      "after": "a1ef21d7cf669282fb60e8481d59724db1d4e4b2",
+      "same_patch_id": true,
+      "subject": "docs(pr): #8573 Native·fresh WASM Visual Sweep 증적"
+    },
+    {
+      "before": "e62e5bbd645025029f70f4162b7d885bb07659a0",
+      "after": "6c0aab812aaaffda667c83676519764ee4a5cc5d",
+      "same_patch_id": true,
+      "subject": "fix(renderer): 값이 몰린 양수 차트 값축의 시작값과 눈금 간격을 한컴 규칙으로 정함 (#8678)"
+    },
+    {
+      "before": "613efc8fd33fd6aa7c569c5f26bf662a001880da",
+      "after": "e48493a3c3334f468d0a26e0ca236ca3b04ac967",
+      "same_patch_id": true,
+      "subject": "test(renderer): 차트 값축 시작값·눈금 간격 회귀 가드와 재현물 (#8678)"
+    },
+    {
+      "before": "63190968d5d3d2911acf0dcf1317cec8a9fde5bc",
+      "after": "1dd0dcb22074d1e92219ca9daddc48ef68efba11",
+      "same_patch_id": true,
+      "subject": "test(renderer): #8678 재현물의 한컴 웹한글기안기 기준 PDF"
+    },
+    {
+      "before": "fb3c8b8f0b0443613c41debd1ea6e111da229324",
+      "after": "56b2ea841c0b91ec7e7a2da39b729b7251624b67",
+      "same_patch_id": true,
+      "subject": "test(renderer): #8678 재현물에서 차트 제목을 지워 값축만 비교되게 함"
+    },
+    {
+      "before": "64a9e06d566499d4e121fcbb48644b93d72f92d3",
+      "after": "c843601f3d8b35f48b06e119778dda48fbaa1ca5",
+      "same_patch_id": true,
+      "subject": "docs(pr): #8678 Native·fresh WASM Visual Sweep 증적"
+    },
+    {
+      "before": "c878551e4b07762ea62cce111853e3ccd734162e",
+      "after": "19465627b65eca5d8881f767584a01d4197579af",
+      "same_patch_id": true,
+      "subject": "fix(renderer): 글자 크기 0 문단이 12px 기본 줄을 만들지 않게 함 (#8664)"
+    },
+    {
+      "before": "5e2f05b9acb23e41a643599ab1f8d87ff0127981",
+      "after": "4472982452533f267e5903251fdbef3d66992230",
+      "same_patch_id": true,
+      "subject": "test(renderer): 글자 크기 0 문단 줄 높이 회귀 가드와 재현물 (#8664)"
+    },
+    {
+      "before": "944840c8fb44750f5fda80a0e98fa22b0c19b9dc",
+      "after": "89d438495303ed45edf6e6d14debf11c3161518a",
+      "same_patch_id": true,
+      "subject": "test(renderer): #8664 재현물의 한컴 웹한글기안기 기준 PDF"
+    },
+    {
+      "before": "f483eba38483d917acfcb925629754ec0456547b",
+      "after": "5287c34053db5253e7dcc81bfd9ee790a5b900a0",
+      "same_patch_id": true,
+      "subject": "docs(pr): #8664 Native·fresh WASM Visual Sweep 증적"
+    },
+    {
+      "before": "95c29dc38eb5518077d61d4b9412c1d5996cb125",
+      "after": "2043157aaf77c9c5032fb07a6e261ba99651a062",
+      "same_patch_id": true,
+      "subject": "test(security): #8664 재현물의 크기 0 글자를 의도된 숨은 글자로 허용 목록에 추가"
+    },
+    {
+      "before": "464d92786ddc0773f40afdef44b37bbb5287f571",
+      "after": "41c8cdb919fea314dc20bb2715c3209c64fea49a",
+      "same_patch_id": true,
+      "subject": "fix(renderer): Wingdings PUA 원문자와 ○ 를 한컴과 같은 글자·폭으로 그림 (#8680)"
+    },
+    {
+      "before": "9aad5dd158de6a57f960cebb280a705f22a2abdc",
+      "after": "64f0972f700b2f27642e582e2a7dd8f0c7bdb455",
+      "same_patch_id": true,
+      "subject": "test(renderer): Wingdings PUA 원문자 회귀 가드와 재현물 (#8680)"
+    },
+    {
+      "before": "96e971b5b219225bf11d4a0a049e3f1a31b65c54",
+      "after": "0938afe8dd0850926498a7854beefb32dffd84c6",
+      "same_patch_id": true,
+      "subject": "test(renderer): #8680 재현물의 한컴 웹한글기안기 기준 PDF"
+    },
+    {
+      "before": "08ad361e05c2b255e61cb2748bc3cb01d159d64f",
+      "after": "931827511a0a8fa259fa8ae93928c1a00efc90fb",
+      "same_patch_id": true,
+      "subject": "docs(pr): #8680 Native·fresh WASM Visual Sweep 증적"
+    },
+    {
+      "before": "77c42dec4d9f2d775778d329051e96330c51adac",
+      "after": "79ea81122f1224a81a6981c92a74c45c1425db1d",
+      "same_patch_id": true,
+      "subject": "fix(renderer): 쪽에 걸친 표의 저장 줄 없는 칸 직선을 그림 (#8690)"
+    },
+    {
+      "before": "6a6c199b6341d148fd0220660f7289ec3ce52853",
+      "after": "adcd771f688b2a88059700a06057afdc7f2901ab",
+      "same_patch_id": true,
+      "subject": "test(renderer): 칸 안 직선 회귀 가드와 재현물 (#8690)"
+    },
+    {
+      "before": "0b4c8c883b7b00179cdccc254aab7cc67b1447ef",
+      "after": "f5e4812bcc80b008f308ec9871f71c7b1d6be5bf",
+      "same_patch_id": true,
+      "subject": "test(renderer): #8690 재현물의 한컴 웹한글기안기 기준 PDF"
+    },
+    {
+      "before": "0c9819d698bcbe3e3d83f563a0154ccb00eb6f07",
+      "after": "8edc974e7ffcd8e8a0421077f6bc9b3927d25306",
+      "same_patch_id": true,
+      "subject": "docs(pr): #8690 Native·fresh WASM Visual Sweep 증적"
+    },
+    {
+      "before": "7d1dafa5f185aaa861e6c2bf6ab43db8577ef337",
+      "after": "ddc69ed0218596eee6da4b827ac97e1d9c0b658f",
+      "same_patch_id": true,
+      "subject": "검토: 외부 PR 6건의 공개 전쪽·최소 글꼴 회귀와 개별 증적 기록"
+    },
+    {
+      "before": "226b420d0d5a92c3805c068993589f8980f750a1",
+      "after": "e353d81478332c61aef870ecba9944cefde797b1",
+      "same_patch_id": true,
+      "subject": "검증: Native 정본 보호 전 1771쪽과 원 PR CI 확인 기록"
+    },
+    {
+      "before": "299630021a1fbfd25fabd35da7ca0cd925108d3a",
+      "after": "66883b5a0bc73a830515fa0f3c1121aa42bd9470",
+      "same_patch_id": true,
+      "subject": "fix(renderer): 그림 전용 셀의 안 여백과 통째 표 물리 예산 보존"
+    },
+    {
+      "before": "cab15c005a7f3dfdc14b0dc757573fd949458dd1",
+      "after": "07abdccb95d49fde947c8e964dd29f1760d8053d",
+      "same_patch_id": true,
+      "subject": "fix(renderer): 그림 표 첫 원점과 이어받은 뒤 간격의 소유 분리"
+    },
+    {
+      "before": "ac8c85ee9dc3ce46f3ea2c23a497e77a61758c34",
+      "after": "3668a6c9de3a33bac9823dbdfad9579d8b67fb33",
+      "same_patch_id": true,
+      "subject": "fix(canvas): 명시한 글리프 공급자를 OS 별칭보다 먼저 선택"
+    },
+    {
+      "before": "bdd8b495e096dc6f20b7d9205058a0f85ab828ef",
+      "after": "2bf5f07c8ab61c32f455b033c7a55ce10f21e9f8",
+      "same_patch_id": true,
+      "subject": "docs(pdf): 검토 34종의 공식 한컴 Print 기준과 생산 근거 보존"
+    },
+    {
+      "before": "c4022f6bee688cb695285fb803c7ed596709e342",
+      "after": "045ec5790228308a12fe2e0bc0487bc8cbe508c0",
+      "same_patch_id": true,
+      "subject": "docs(pdf): 공식 Print 기준의 원본 형식과 엔진을 파일명에 명시"
+    },
+    {
+      "before": "3f27a1d9ee9359bbcaf310e377c31075c3880395",
+      "after": "70654077ad4abdfcd2f822e532e23132e5f0b6ef",
+      "same_patch_id": true,
+      "subject": "fix(renderer): 저장 줄 없는 도형 문단의 원본 정렬 줄 상자 보존"
+    },
+    {
+      "before": "3532e09de2b8d505e54b98e03e0eb6b08a37f25f",
+      "after": "af40cead5fc27745464ec5c94a9525f5affe89b2",
+      "same_patch_id": true,
+      "subject": "test: 공식 MCP Print 33종을 기존 쪽수 원장에 연결"
+    },
+    {
+      "before": "26230dba487b4db8695ab361a9d93a86f3b7bdf3",
+      "after": "fc4ad40971b342cc5257d1168e116e995781097e",
+      "same_patch_id": true,
+      "subject": "문서: 웹한글기안기 PDF의 검토 제외와 실제 Print 버전 명시"
+    },
+    {
+      "before": "8fe7d1fb8bc5024d0377ff7aa37d98c78e8f071a",
+      "after": "76a7e76a123294fc7cb6054bc2ab3445c78882b5",
+      "same_patch_id": true,
+      "subject": "수정: 저장 줄 없는 단 구역의 후행 간격 중복 소비 방지"
+    },
+    {
+      "before": "9af2ca11e4c70a6ad69b231ab9d170df56ee3a6a",
+      "after": "1536111fe9182dfa2564ffddbd5f3069d3b27f8a",
+      "same_patch_id": true,
+      "subject": "검증: 데스크톱 Print 전쪽 결과와 CanvasKit 보정 전 소비 증적 정리"
+    },
+    {
+      "before": "53e3353e6e142df99e4416f417642b4931c9fcd8",
+      "after": "3b40c82491b87e438d27685e7a0e2d45afd0bd2b",
+      "same_patch_id": true,
+      "subject": "수정: 크기 0 원문의 CanvasKit 잉크 없는 명령 계약 보존"
+    },
+    {
+      "before": "d66568ef247859a9c184546cad3ba42b06e806e1",
+      "after": "91a6b52119cad957b2d3ec5882967fc8cc7de0dd",
+      "same_patch_id": true,
+      "subject": "수정: Wingdings 빈 상자 기호의 표시 프로그램과 원 전진 보존"
+    },
+    {
+      "before": "a8e304d4734db765f34ab0227eeb9f3575d86840",
+      "after": "30fa7739f0340f2a248b22542c7dd36d9354f056",
+      "same_patch_id": true,
+      "subject": "검증: 리베이스 전 공개 전쪽·Native 보호 및 전체 회귀 결과 보존"
+    }
+  ],
+  "all_patch_ids_equal": true
+}
