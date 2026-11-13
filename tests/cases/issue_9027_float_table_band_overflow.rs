@@ -1,6 +1,6 @@
 //! [#9027] 관계형·고정형 회귀 — 앞 어울림 표 띠 아래로 밀려 쪽을 넘는 자리차지 표는 표만 다음 쪽으로 가고, 띠에 흡수된 줄 범위만 띠 바닥을 정한다.
 //!
-//! 주석 갱신: 2026-11-13 MEASURED_AT KST(+09:00), 새 파일.
+//! 주석 갱신: 2026-11-13 09:38 KST(+09:00), 새 파일.
 //!
 //! - 입력: `samples/issue9027/1312000-201400081_2015_senior_policy_course.hwp`(인사혁신처 공개 문서
 //!   「2015년 고위정책과정 교육운영 개요」, HWP5, 2쪽).
@@ -17,8 +17,8 @@
 //!
 //! 측정: 2026-11-13, `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`(4열
 //! `silhouette_raw_match_percent`, 색상 경계 보정 전 2px 실루엣). 전체 2쪽 = 한/글 2쪽.
-//! 수정 후(devel `31a4225757` 기준) Native 1쪽 99.99%·2쪽 100.00%, fresh WASM WASM_P1·WASM_P2
-//! (전쪽 최저 Native 99.99%, fresh WASM WASM_MIN). 수정 전 Native 1쪽 74.40%·2쪽 44.93%.
+//! 수정 후(head 소스 `1983410f81`, devel `31a4225757` 기준) Native 1쪽 99.99%·2쪽 100.00%, fresh WASM 1쪽 99.99%·2쪽 100.00%
+//! (전쪽 최저 Native 99.99%, fresh WASM 99.99%). 수정 전 Native 1쪽 74.42%·2쪽 44.93%.
 //! 증거: `mydocs/pr/assets/issue_9027/{native,wasm,base-native}/`.
 //!
 //! 검사: 쪽수 2 = 한/글(고정형). 쪽 소속 — 제목 표는 2쪽, 문단 22 빈 줄은 1쪽(관계형). 2쪽 큰 표는 제목
