@@ -1,5 +1,5 @@
 //! 관계형·고정형 — [#9040] 나뉜 칸의 빈 문단 뒤 자리차지 중첩 표 띠를 한 번만 세고 표를 앞 흐름 뒤에 둔다.
-//! 주석 갱신: 2026-11-13 11:20 KST (새 파일)
+//! 주석 갱신: 2026-11-13 12:28 KST (새 파일)
 //!
 //! 입력: 공개 정책연구용역과제 신청서(문화체육관광부, HWP, 10쪽) `samples/issue9040/1371000-policy-research-application.hwp`.
 //! 기준: 한컴 engine 2020 Print PDF `pdf/issue9040/1371000-policy-research-application-2020.pdf`(10쪽).
@@ -16,7 +16,7 @@
 //! `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`, raw =
 //! `silhouette_raw_match_percent`, 글꼴 `ttfs/opensource` — 문서 본 글꼴 없는 환경):
 //! - Native: 10쪽 / 10쪽, 9쪽 99.83 · 10쪽 99.73(base 21.65 · 27.04, base 11쪽), 최저 91.33(2쪽)
-//! - fresh WASM(`scripts/wasm-pack-locked.sh --target web`): MEASURE_WASM
+//! - fresh WASM(`scripts/wasm-pack-locked.sh --target web`): 10쪽 / 10쪽, 9쪽 99.84 · 10쪽 99.76, 최저 91.92(2쪽)
 //! - 증거: `mydocs/pr/assets/issue_9040/`(native·wasm TSV, review·overlay PNG)
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -60,9 +60,15 @@ fn split_cell_counts_empty_host_table_band_once() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
     let bytes = std::fs::read(&path).unwrap_or_else(|e| panic!("fixture 누락 {SAMPLE}: {e}"));
     let core = DocumentCore::from_bytes(&bytes).expect("문서 열기");
-    assert_eq!(core.page_count(), PDF_PAGES, "전체 쪽수가 한컴 PDF 와 다르다");
+    assert_eq!(
+        core.page_count(),
+        PDF_PAGES,
+        "전체 쪽수가 한컴 PDF 와 다르다"
+    );
 
-    let tree = core.build_page_render_tree(CHART_PAGE).expect("render tree");
+    let tree = core
+        .build_page_render_tree(CHART_PAGE)
+        .expect("render tree");
     let outer = find(&tree.root, &|n| {
         matches!(&n.node_type, RenderNodeType::Table(t)
             if t.para_index == Some(OUTER_TABLE_PARA) && t.cell_context.is_none())
