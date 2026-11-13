@@ -1,0 +1,7 @@
+{
+  "url": "https://raw.githubusercontent.com/johndoekim/rhwp/be67439b02f42779b50361ace7b8a47dd0d1439a/mydocs/pr/assets/issue_8199_control_only_para_line_seg/passport-picture-at-start-p001-wasm-overlay.png",
+  "sha256": "f2b0605f3f1c35de727924853e696def8b85d25b2c1a4fc82d91769706ba1ca5",
+  "bytes": 205763,
+  "same_as_reviewed_git_blob": true,
+  "observed_problem": "Korean footer annotation tofu; document text is readable; original selected annotation font unknown"
+}

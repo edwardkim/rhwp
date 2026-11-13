@@ -17,9 +17,17 @@ const MALGUN_BOLD_DECORATION_METRIC_FACE: &str = "MalgunGothic-HancomBoldDecorat
 /// 같은 원본 HFT 프로그램의 2020·2024 Print에서 확인된 굵기 전진이다.
 /// 실제 공급 프로그램의 소유 확인은 글리프 측정 단계에서 별도로 수행한다.
 pub(crate) fn has_verified_hft_bold_tracking_source(face: &crate::model::style::Font) -> bool {
-    !face.is_embedded
-        && face.alt_type == 2
-        && matches!(face.name.trim(), "신명 중고딕" | "Sinmyeong Junggothic")
+    !face.is_embedded && face.alt_type == 2 && has_verified_hft_bold_tracking_family(&face.name)
+}
+
+/// 독립 Print로 확인한 HFT 꾸밈 전진의 family 계약.
+/// 원본 선언과 실제 glyph 공급 프로그램이 같은 목록을 소비한다.
+/// 딸기는 #8957의 보통/굵게 Print 대조에서 윤곽 굵기와 별도로 전진이 증가한다.
+pub(crate) fn has_verified_hft_bold_tracking_family(family: &str) -> bool {
+    matches!(
+        family.trim(),
+        "신명 중고딕" | "Sinmyeong Junggothic" | "딸기" | "Strawberry"
+    )
 }
 
 pub(crate) fn select_native_programs(document: &Document, styles: &mut ResolvedStyleSet) {

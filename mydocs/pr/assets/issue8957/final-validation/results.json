@@ -1,0 +1,497 @@
+{
+  "verified_code_head": "87a4acee56c4d39c290777a9b6c4bd6f3edbbe57",
+  "base": "80b1c354c29b7a02fb2b3c14a274da7f5b653ada",
+  "collected_at": "2026-11-12T11:18:28.142515+00:00",
+  "native_sha256": "f72ce1276b55f34f4a26a9e4e1cfdd4738ab89ecdf4b943fce4e519f691fa4e5",
+  "wasm_sha256": "86528c97b90ca135e7e704ec5d564124acf35d23c11429d42ce2948e6acdc02a",
+  "js_sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+  "product_sources_identical_to_prior_visual_source": "5cc77a0da8e1e24afc3a810a4967f7876f890bb4",
+  "gates": [
+    {
+      "name": "final-suite-prepare",
+      "source": "87a4acee56c4d39c290777a9b6c4bd6f3edbbe57",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 0.967,
+      "completed_at": "2026-11-12T08:39:37.028176+00:00"
+    },
+    {
+      "name": "final-fmt",
+      "source": "87a4acee56c4d39c290777a9b6c4bd6f3edbbe57",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 13.494,
+      "completed_at": "2026-11-12T08:39:50.522862+00:00"
+    },
+    {
+      "name": "final-manifest-contract",
+      "source": "87a4acee56c4d39c290777a9b6c4bd6f3edbbe57",
+      "command": [
+        "node",
+        "--test",
+        "scripts/tests/rust-test-suite-manifest.test.mjs"
+      ],
+      "exit_code": 0,
+      "seconds": 3.359,
+      "completed_at": "2026-11-12T08:39:53.882234+00:00"
+    },
+    {
+      "name": "final-manifest-policy",
+      "source": "87a4acee56c4d39c290777a9b6c4bd6f3edbbe57",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "80b1c354c29b7a02fb2b3c14a274da7f5b653ada"
+      ],
+      "exit_code": 0,
+      "seconds": 0.633,
+      "completed_at": "2026-11-12T08:39:54.515523+00:00"
+    },
+    {
+      "name": "final-focused-issue_1197_svg_object_zorder",
+      "source": "87a4acee56c4d39c290777a9b6c4bd6f3edbbe57",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "${SOURCE_ROOT}/output/issue8957-stage2/font-isolation.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_1197_svg_object_zorder",
+        "--",
+        "--cargo-profile",
+        "release-test"
+      ],
+      "exit_code": 0,
+      "seconds": 12.855,
+      "completed_at": "2026-11-12T08:40:07.370503+00:00"
+    },
+    {
+      "name": "final-focused-issue_8957_unresolved_linked_picture_print",
+      "source": "87a4acee56c4d39c290777a9b6c4bd6f3edbbe57",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "${SOURCE_ROOT}/output/issue8957-stage2/font-isolation.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8957_unresolved_linked_picture_print",
+        "--",
+        "--cargo-profile",
+        "release-test"
+      ],
+      "exit_code": 0,
+      "seconds": 8.475,
+      "completed_at": "2026-11-12T08:40:15.846435+00:00"
+    },
+    {
+      "name": "final-focused-verified_hft_bold_tracking",
+      "source": "87a4acee56c4d39c290777a9b6c4bd6f3edbbe57",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "${SOURCE_ROOT}/output/issue8957-stage2/font-isolation.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "verified_hft_bold_tracking",
+        "--",
+        "--cargo-profile",
+        "release-test"
+      ],
+      "exit_code": 0,
+      "seconds": 9.203,
+      "completed_at": "2026-11-12T08:40:25.050058+00:00"
+    },
+    {
+      "name": "final-focused-security_linked_images_and_xml_budget",
+      "source": "87a4acee56c4d39c290777a9b6c4bd6f3edbbe57",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "${SOURCE_ROOT}/output/issue8957-stage2/font-isolation.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "security_linked_images_and_xml_budget",
+        "--",
+        "--cargo-profile",
+        "release-test"
+      ],
+      "exit_code": 0,
+      "seconds": 10.886,
+      "completed_at": "2026-11-12T08:40:35.936330+00:00"
+    },
+    {
+      "name": "final-focused-issue_8858_missing_picture_print",
+      "source": "87a4acee56c4d39c290777a9b6c4bd6f3edbbe57",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "${SOURCE_ROOT}/output/issue8957-stage2/font-isolation.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8858_missing_picture_print",
+        "--",
+        "--cargo-profile",
+        "release-test"
+      ],
+      "exit_code": 0,
+      "seconds": 9.68,
+      "completed_at": "2026-11-12T08:40:45.616478+00:00"
+    },
+    {
+      "name": "final-focused-primary_program_hft_decoration_ownership",
+      "source": "87a4acee56c4d39c290777a9b6c4bd6f3edbbe57",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "${SOURCE_ROOT}/output/issue8957-stage2/font-isolation.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "primary_program_hft_decoration_ownership",
+        "--",
+        "--cargo-profile",
+        "release-test"
+      ],
+      "exit_code": 0,
+      "seconds": 8.228,
+      "completed_at": "2026-11-12T08:40:53.844913+00:00"
+    },
+    {
+      "name": "final-focused-square_stored_line_start",
+      "source": "87a4acee56c4d39c290777a9b6c4bd6f3edbbe57",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "${SOURCE_ROOT}/output/issue8957-stage2/font-isolation.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "square_stored_line_start",
+        "--",
+        "--cargo-profile",
+        "release-test"
+      ],
+      "exit_code": 0,
+      "seconds": 10.412,
+      "completed_at": "2026-11-12T08:41:04.257545+00:00"
+    },
+    {
+      "name": "final-focused-hft_outline_font_contract",
+      "source": "87a4acee56c4d39c290777a9b6c4bd6f3edbbe57",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "${SOURCE_ROOT}/output/issue8957-stage2/font-isolation.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "hft_outline_font_contract",
+        "--",
+        "--cargo-profile",
+        "release-test"
+      ],
+      "exit_code": 0,
+      "seconds": 1.435,
+      "completed_at": "2026-11-12T08:41:05.693364+00:00"
+    },
+    {
+      "name": "final-focused-source_hft_original_program_print_frame",
+      "source": "87a4acee56c4d39c290777a9b6c4bd6f3edbbe57",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "${SOURCE_ROOT}/output/issue8957-stage2/font-isolation.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "source_hft_original_program_print_frame",
+        "--",
+        "--cargo-profile",
+        "release-test"
+      ],
+      "exit_code": 0,
+      "seconds": 0.875,
+      "completed_at": "2026-11-12T08:41:06.569674+00:00"
+    },
+    {
+      "name": "final-clippy-native",
+      "source": "87a4acee56c4d39c290777a9b6c4bd6f3edbbe57",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.392,
+      "completed_at": "2026-11-12T08:41:06.961986+00:00"
+    },
+    {
+      "name": "final-clippy-wasm",
+      "source": "87a4acee56c4d39c290777a9b6c4bd6f3edbbe57",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 0.316,
+      "completed_at": "2026-11-12T08:41:07.278238+00:00"
+    },
+    {
+      "name": "final-workspace-build",
+      "source": "87a4acee56c4d39c290777a9b6c4bd6f3edbbe57",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace"
+      ],
+      "exit_code": 0,
+      "seconds": 0.336,
+      "completed_at": "2026-11-12T08:41:07.614513+00:00"
+    },
+    {
+      "name": "final-clippy-workspace",
+      "source": "87a4acee56c4d39c290777a9b6c4bd6f3edbbe57",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 8.21,
+      "completed_at": "2026-11-12T08:41:15.824813+00:00"
+    },
+    {
+      "name": "final-nextest",
+      "source": "87a4acee56c4d39c290777a9b6c4bd6f3edbbe57",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "${SOURCE_ROOT}/output/issue8957-stage2/font-isolation.sb",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--tests",
+        "--test-threads",
+        "4",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 339.993,
+      "completed_at": "2026-11-12T08:58:46.080724+00:00"
+    },
+    {
+      "name": "final-native-skia-lib",
+      "source": "87a4acee56c4d39c290777a9b6c4bd6f3edbbe57",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "${SOURCE_ROOT}/output/issue8957-stage2/font-isolation.sb",
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib"
+      ],
+      "exit_code": 0,
+      "seconds": 166.463,
+      "completed_at": "2026-11-12T09:01:34.576703+00:00"
+    },
+    {
+      "name": "final-native-skia-issue_2225_missing_picture_placeholder",
+      "source": "87a4acee56c4d39c290777a9b6c4bd6f3edbbe57",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "${SOURCE_ROOT}/output/issue8957-stage2/font-isolation.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia"
+      ],
+      "exit_code": 0,
+      "seconds": 182.008,
+      "completed_at": "2026-11-12T11:07:45.949562+00:00"
+    },
+    {
+      "name": "final-native-skia-render_p37_direct_pdf_export",
+      "source": "87a4acee56c4d39c290777a9b6c4bd6f3edbbe57",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "${SOURCE_ROOT}/output/issue8957-stage2/font-isolation.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia"
+      ],
+      "exit_code": 0,
+      "seconds": 20.474,
+      "completed_at": "2026-11-12T11:08:06.426968+00:00"
+    },
+    {
+      "name": "final-native-cli",
+      "source": "87a4acee56c4d39c290777a9b6c4bd6f3edbbe57",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp"
+      ],
+      "exit_code": 0,
+      "seconds": 354.99,
+      "completed_at": "2026-11-12T11:14:01.421043+00:00"
+    },
+    {
+      "name": "final-fresh-wasm",
+      "source": "87a4acee56c4d39c290777a9b6c4bd6f3edbbe57",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "${SOURCE_ROOT}/output/issue8957-stage2/final-wasm-pkg"
+      ],
+      "exit_code": 0,
+      "seconds": 62.9,
+      "completed_at": "2026-11-12T11:15:04.543080+00:00"
+    }
+  ],
+  "cover_measurements": [
+    {
+      "backend": "native",
+      "key": "cover-bold",
+      "pages": 1,
+      "minimum": 100.0,
+      "png_sha256": "e93b4f4638dae72f998beb263c12558a758133cba1be0d91ca592d4ef1c85eae",
+      "identical_to_directly_read_candidate_png": true
+    },
+    {
+      "backend": "native",
+      "key": "cover-regular",
+      "pages": 1,
+      "minimum": 100.0,
+      "png_sha256": "f832c8c4180657e7ba362b50f0235164768f43109356ee6e616afbfd3c326df1",
+      "identical_to_directly_read_candidate_png": true
+    },
+    {
+      "backend": "native",
+      "key": "tracking",
+      "pages": 1,
+      "minimum": 100.0,
+      "png_sha256": "bb3500369b9faaf167058c7672e703b408eefa70e2fdbcb1f8a375b952ad0216",
+      "identical_to_directly_read_candidate_png": true
+    },
+    {
+      "backend": "native",
+      "key": "mixed",
+      "pages": 1,
+      "minimum": 100.0,
+      "png_sha256": "6e3103720da8eb9a05b56951e9e9afd5d611b5a98e82783c2dd35838e1e7710b",
+      "identical_to_directly_read_candidate_png": true
+    },
+    {
+      "backend": "wasm",
+      "key": "cover-bold",
+      "pages": 1,
+      "minimum": 100.0,
+      "png_sha256": "45158538c3b5776ba792abb75e01b808d4d90b01a5660090d470f618be09384c",
+      "identical_to_directly_read_candidate_png": true
+    },
+    {
+      "backend": "wasm",
+      "key": "cover-regular",
+      "pages": 1,
+      "minimum": 100.0,
+      "png_sha256": "6a46ea52870069abbabb62c83c786b9fa7e8029475f30334b23dd3ad7e6dda85",
+      "identical_to_directly_read_candidate_png": true
+    },
+    {
+      "backend": "wasm",
+      "key": "tracking",
+      "pages": 1,
+      "minimum": 100.0,
+      "png_sha256": "c84cf158d8522b336cdbc14f34759fb0503ba7f727b65e012c993ff54ca08ae1",
+      "identical_to_directly_read_candidate_png": true
+    },
+    {
+      "backend": "wasm",
+      "key": "mixed",
+      "pages": 1,
+      "minimum": 100.0,
+      "png_sha256": "e5e59ca3c01cb546c349db39c9fe12b23c269872d715f12ddabe26ea680ce0b3",
+      "identical_to_directly_read_candidate_png": true
+    }
+  ],
+  "handbook": {
+    "status": "passed",
+    "pages": 383,
+    "minimum": 99.96,
+    "regressions": []
+  },
+  "full_regression_summary": "Summary [ 339.356s] 13320 tests run: 13320 passed, 45 skipped",
+  "native_skia_summaries": {
+    "final-native-skia-lib": [
+      "test result: ok. 3852 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 9.53s",
+      "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+    ],
+    "final-native-skia-issue_2225_missing_picture_placeholder": [
+      "Summary [   5.911s] 2 tests run: 2 passed, 321 skipped"
+    ],
+    "final-native-skia-render_p37_direct_pdf_export": [
+      "Summary [   4.277s] 36 tests run: 36 passed, 284 skipped"
+    ]
+  },
+  "minimal_font_environment": {
+    "profile_sha256": "f584195fa1a0b6373cd848f59ca42a65673561199b539b4efe2ea13c7bb6755f",
+    "private_font_access": "denied in preflight",
+    "system_coretext_font_urls": 528,
+    "test_fonts": "repository licensed fixtures; no private OTF redistribution"
+  }
+}

@@ -1,0 +1,455 @@
+{
+  "verified_code_head": "cc6c60381dfeff9b7892e836b8bf01803d0a5c1a",
+  "base": "fa32a1633b0677f3dc48ea5cc99a4cab309361b6",
+  "collected_at_kst": "2026-11-13T20:22:07.182874+09:00",
+  "gates": [
+    {
+      "stage": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 13.98859167098999
+    },
+    {
+      "stage": "full-nextest",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/mydocs/pr/assets/issue8856/final-20261110/minimal-font.sb",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--build-jobs",
+        "8",
+        "--tests",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit": 0,
+      "seconds": 807.7500431537628
+    },
+    {
+      "stage": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 27.18567991256714
+    },
+    {
+      "stage": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 22.96207284927368
+    },
+    {
+      "stage": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8"
+      ],
+      "exit": 0,
+      "seconds": 29.570499658584595
+    },
+    {
+      "stage": "clippy-all",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 39.833364963531494
+    },
+    {
+      "stage": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "fa32a1633b0677f3dc48ea5cc99a4cab309361b6"
+      ],
+      "exit": 0,
+      "seconds": 3.324096918106079
+    },
+    {
+      "stage": "native-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp",
+        "-j",
+        "8"
+      ],
+      "exit": 0,
+      "seconds": 184.65578198432922
+    },
+    {
+      "stage": "fresh-wasm",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "exit": 0,
+      "seconds": 418.78558588027954
+    },
+    {
+      "stage": "native-skia-lib",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/mydocs/pr/assets/issue8856/final-20261110/minimal-font.sb",
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "-j",
+        "8",
+        "--",
+        "--test-threads",
+        "8"
+      ],
+      "exit": 0,
+      "seconds": 226.77208185195923
+    },
+    {
+      "stage": "issue_2225_missing_picture_placeholder",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/mydocs/pr/assets/issue8856/final-20261110/minimal-font.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--build-jobs",
+        "8",
+        "--test-threads",
+        "8"
+      ],
+      "exit": 0,
+      "seconds": 190.37146186828613
+    },
+    {
+      "stage": "render_p37_direct_pdf_export",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/mydocs/pr/assets/issue8856/final-20261110/minimal-font.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--build-jobs",
+        "8",
+        "--test-threads",
+        "8"
+      ],
+      "exit": 0,
+      "seconds": 16.4423930644989
+    },
+    {
+      "stage": "unit-tier",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "fa32a1633b0677f3dc48ea5cc99a4cab309361b6"
+      ],
+      "exit": 0,
+      "seconds": 19.574572801589966
+    }
+  ],
+  "full_regression": {
+    "head": "cc6c60381dfeff9b7892e836b8bf01803d0a5c1a",
+    "base": "fa32a1633b0677f3dc48ea5cc99a4cab309361b6",
+    "runtime_seconds": 410.498,
+    "run": 13446,
+    "passed": 13446,
+    "failed": 0,
+    "skipped": 45,
+    "environment": "sandbox-exec minimal-font.sb",
+    "log_sha256": "acb23e8842da1c42e5ee42afe067531ad7d5411eafbd3afa040f5273fd3ff821"
+  },
+  "native_skia": {
+    "passed": 4034,
+    "ignored": 12
+  },
+  "native_png": 2,
+  "direct_pdf": 36,
+  "focused_before": {
+    "passed": 12,
+    "failed": 1
+  },
+  "focused_after": {
+    "passed": 13,
+    "failed": 0
+  },
+  "visual": [
+    {
+      "backend": "native",
+      "key": "original",
+      "pages": 2,
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99877,
+          "silhouette_raw_unmatched_pixels": 3,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 244088,
+          "tolerant_content_match_percent": 99.99877
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99049,
+          "silhouette_raw_unmatched_pixels": 15,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 157777,
+          "tolerant_content_match_percent": 99.99049
+        }
+      ],
+      "tsv_sha256": "d49b6697beb37b00f585337bdee14e907f46e107f55994c998eaff3c3cac7a50"
+    },
+    {
+      "backend": "native",
+      "key": "edited",
+      "pages": 2,
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.9984,
+          "silhouette_raw_unmatched_pixels": 4,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 250529,
+          "tolerant_content_match_percent": 99.9984
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99061,
+          "silhouette_raw_unmatched_pixels": 15,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 159726,
+          "tolerant_content_match_percent": 99.99061
+        }
+      ],
+      "tsv_sha256": "d49b6697beb37b00f585337bdee14e907f46e107f55994c998eaff3c3cac7a50"
+    },
+    {
+      "backend": "native",
+      "key": "regenerated",
+      "pages": 2,
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.9984,
+          "silhouette_raw_unmatched_pixels": 4,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 250529,
+          "tolerant_content_match_percent": 99.9984
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99061,
+          "silhouette_raw_unmatched_pixels": 15,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 159726,
+          "tolerant_content_match_percent": 99.99061
+        }
+      ],
+      "tsv_sha256": "d49b6697beb37b00f585337bdee14e907f46e107f55994c998eaff3c3cac7a50"
+    },
+    {
+      "backend": "wasm",
+      "key": "original",
+      "pages": 2,
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99877,
+          "silhouette_raw_unmatched_pixels": 3,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 244438,
+          "tolerant_content_match_percent": 99.99877
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.9905,
+          "silhouette_raw_unmatched_pixels": 15,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 157818,
+          "tolerant_content_match_percent": 99.9905
+        }
+      ],
+      "tsv_sha256": "d49b6697beb37b00f585337bdee14e907f46e107f55994c998eaff3c3cac7a50"
+    },
+    {
+      "backend": "wasm",
+      "key": "edited",
+      "pages": 2,
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99841,
+          "silhouette_raw_unmatched_pixels": 4,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 251598,
+          "tolerant_content_match_percent": 99.99841
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99061,
+          "silhouette_raw_unmatched_pixels": 15,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 159767,
+          "tolerant_content_match_percent": 99.99061
+        }
+      ],
+      "tsv_sha256": "d49b6697beb37b00f585337bdee14e907f46e107f55994c998eaff3c3cac7a50"
+    },
+    {
+      "backend": "wasm",
+      "key": "regenerated",
+      "pages": 2,
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99841,
+          "silhouette_raw_unmatched_pixels": 4,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 251598,
+          "tolerant_content_match_percent": 99.99841
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99061,
+          "silhouette_raw_unmatched_pixels": 15,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 159767,
+          "tolerant_content_match_percent": 99.99061
+        }
+      ],
+      "tsv_sha256": "d49b6697beb37b00f585337bdee14e907f46e107f55994c998eaff3c3cac7a50"
+    }
+  ],
+  "handbook": {
+    "status": "passed",
+    "baseline": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
+    "baseline_sha256": "ee41455cf7f05585487d92961ccb9fd8160d5d1e15c3567019ea89e2b7bf2aeb",
+    "metric": "silhouette_raw_match_percent",
+    "backend": "native-skia",
+    "precision": "0.01 percentage points",
+    "pages": 383,
+    "regressions": [],
+    "webfont_fallback": [],
+    "manifest": "/Users/tsjang/rhwp/output/pr-review/johndoekim-pr9018-20261113/field-end-final/handbook/required-handbook-8153-native/silhouette_manifest.json",
+    "elapsed_seconds": 206.407
+  },
+  "regenerated_output": "Runtime editing/save results only, derived from committed original input. PNGs equal committed edited-input evidence; no duplicate HWP/HWPX fixture added."
+}
