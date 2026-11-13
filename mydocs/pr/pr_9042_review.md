@@ -69,3 +69,7 @@
 원 head CI·CodeQL의 Rust 분석 성공은 접수 근거다. 종합 neutral의 미실행 언어 구성 안내를 오류나 새 취약점으로 판정하지 않았으며 경고 분류·재실행은 하지 않았다. 이 원 CI를 메인테이너 새 후보의 CI 성공으로 재사용하지 않는다.
 
 원격 승인 후 upstream 수용 branch push → devel 대상 Open PR → exact-head 필수 CI 성공·self-review → 원 기여를 보존하는 merge → 원 PR 완료 확인·존댓말 감사 댓글·운영 기록·동기화·종료 정리 순서다. 아직 해당 원격 동작은 실행하지 않았다. 직접 연결된 해결 이슈는 없으므로 관계없는 이슈를 닫지 않는다.
+
+## 원격 처리 승인 뒤 최신 base 추가 확인
+
+사용자가 push·Open 수용 PR·해당 head CI·self-review·merge·후속 처리를 승인했다. devel `9e27947967`의 실제 병합 tree에서 Rust 집중 49건·호스트 글꼴 40건을 통과했고 Native 6쪽이 모두 100.00%다. 원본/BodyX 4쪽 RGB도 이전 직접 판독 출력과 같다. [범위와 실제 증거](assets/pr9042/final-validation/postapproval-base-merge/README.md). 후보 제품·테스트를 재작성하지 않았으며 추가 결과를 전체 또는 fresh WASM 재실행으로 표시하지 않는다. 새 수용 PR의 GitHub CI와 self-review·병합은 아직 실행 전이다.
