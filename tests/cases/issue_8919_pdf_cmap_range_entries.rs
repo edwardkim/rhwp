@@ -48,20 +48,25 @@ fn bfrange_array_wrapped_over_lines_maps_its_own_codes() {
     }
 }
 
-/// A wrapped array still costs one entry per element, no more and no less.
+/// A wrapped array still costs one entry per element, no more and no less. A
+/// string in a comment inside the array is no element and costs nothing.
 #[test]
 fn wrapped_array_charges_one_entry_per_element() {
-    let source = b"beginbfrange\n<01><04>[<0041><0042>\n<0043><0044>]\nendbfrange";
-    for (cap, fits) in [(3, false), (4, true)] {
-        let budget = ImportBudget::new(PdfImportLimits {
-            cmap_entries: cap,
-            ..PdfImportLimits::default()
-        })
-        .unwrap();
-        let result = parse_tounicode_cmap_with_budget(source, &budget);
-        assert_eq!(result.is_ok(), fits, "cap {cap}");
-        if let Ok(cmap) = result {
-            assert_eq!(cmap.get(&0x04).as_deref(), Some("D"));
+    for source in [
+        "beginbfrange\n<01><04>[<0041><0042>\n<0043><0044>]\nendbfrange",
+        "beginbfrange\n<01><04>[<0041><0042> % <0045>\n<0043><0044>]\nendbfrange",
+    ] {
+        for (cap, fits) in [(3, false), (4, true)] {
+            let budget = ImportBudget::new(PdfImportLimits {
+                cmap_entries: cap,
+                ..PdfImportLimits::default()
+            })
+            .unwrap();
+            let result = parse_tounicode_cmap_with_budget(source.as_bytes(), &budget);
+            assert_eq!(result.is_ok(), fits, "cap {cap} in {source:?}");
+            if let Ok(cmap) = result {
+                assert_eq!(cmap.get(&0x04).as_deref(), Some("D"), "{source:?}");
+            }
         }
     }
 }
@@ -140,7 +145,8 @@ fn stray_brackets_and_open_entries_map_nothing() {
 }
 
 /// The limit this patch stops tripping by mistake still holds for a range
-/// that really is that large, on one line or across two.
+/// that really is that large, on one line or across two, with a comment
+/// between its strings or not.
 #[test]
 fn a_really_huge_range_is_still_rejected() {
     for source in [
@@ -148,6 +154,8 @@ fn a_really_huge_range_is_still_rejected() {
         "beginbfrange\n<00000000>\n<FFFFFFFF> <0041>\nendbfrange",
         "beginbfrange\n<00000000> <FFFFFFFF>\n[<0041>\n<0042>]\nendbfrange",
         "beginnotdefrange\n<00000000>\n<FFFFFFFF>\n<0041>\nendnotdefrange",
+        "beginbfrange\n<00000000> % <00>\n<FFFFFFFF> <0041>\nendbfrange",
+        "beginnotdefrange\n<00000000> % [\n<FFFFFFFF> <0041>\nendnotdefrange",
     ] {
         let budget = default_budget();
         let result = parse_tounicode_cmap_with_budget(source.as_bytes(), &budget);
@@ -159,4 +167,113 @@ fn a_really_huge_range_is_still_rejected() {
             "{source}"
         );
     }
+}
+
+/// Parses `source` with and without a budget and checks both CMaps.
+fn assert_maps(source: &str, mapped: &[(u32, &str)], unmapped: &[u32]) {
+    let budget = default_budget();
+    let bounded = parse_tounicode_cmap_with_budget(source.as_bytes(), &budget).unwrap();
+    budget.check().unwrap();
+    let unbounded = parse_tounicode_cmap(source.as_bytes()).unwrap();
+    for cmap in [&bounded, &unbounded] {
+        for &(code, value) in mapped {
+            assert_eq!(
+                cmap.get(&code).as_deref(),
+                Some(value),
+                "code {code:#x} in {source:?}"
+            );
+        }
+        for &code in unmapped {
+            assert!(cmap.get(&code).is_none(), "code {code:#x} in {source:?}");
+        }
+    }
+}
+
+const LINE_ENDS: [&str; 3] = ["\n", "\r", "\r\n"];
+
+/// A `%` outside a string starts a comment that runs to the end of the line,
+/// and what is in it belongs to no entry. Reading its `<01>` took the next
+/// line's `<02> <02>` into a range of its own and mapped 0x01 to U+0002 and
+/// 0x02 to U+0003; a `[` or an open `<` in it dropped the entry after it.
+#[test]
+fn a_comment_after_an_entry_is_not_read() {
+    for comment in ["% source <01>", "% [comment", "% <comment", "%]", "%", ""] {
+        for eol in LINE_ENDS {
+            let source = format!(
+                "beginbfrange{eol}<01> <01> <0041> {comment}{eol}<02> <02> <0042>{eol}endbfrange"
+            );
+            assert_maps(&source, &[(0x01, "A"), (0x02, "B")], &[]);
+        }
+    }
+}
+
+/// A comment between entries, between the strings of one entry, or inside a
+/// destination array is white space, and the entry around it reads as if the
+/// comment were not there.
+#[test]
+fn a_comment_inside_an_entry_or_an_array_is_not_read() {
+    for eol in LINE_ENDS {
+        let source = [
+            "beginbfrange",
+            "% <00> <FF> <0058> a line of its own",
+            "<03> % <03> <0058>",
+            "<05> [<0043> % <0058> [ ]",
+            "<0044> % ] <0059>",
+            "<0045>] % <06> <06> <005A>",
+            "<10> % [",
+            "<11> % <0058>",
+            "<0061>",
+            "endbfrange",
+        ]
+        .join(eol);
+        assert_maps(
+            &source,
+            &[
+                (0x03, "C"),
+                (0x04, "D"),
+                (0x05, "E"),
+                (0x10, "a"),
+                (0x11, "b"),
+            ],
+            &[0x00, 0x06, 0x58, 0xFF],
+        );
+    }
+}
+
+/// `notdefrange` reads its entries with the same reader.
+#[test]
+fn a_comment_in_a_notdefrange_is_not_read() {
+    for eol in LINE_ENDS {
+        let source = [
+            "beginnotdefrange",
+            "<20> <21> <FFFD> % <22> <22> <0058>",
+            "<23> % [",
+            "<23> % <0058>",
+            "<FFFD>",
+            "endnotdefrange",
+        ]
+        .join(eol);
+        assert_maps(
+            &source,
+            &[(0x20, "\u{FFFD}"), (0x21, "\u{FFFD}"), (0x23, "\u{FFFD}")],
+            &[0x22],
+        );
+    }
+}
+
+/// A `%` inside a string is text, not a comment, so the entry after it on the
+/// same line is still read. This range form with a literal destination maps
+/// nothing, as before.
+#[test]
+fn a_percent_sign_in_a_string_starts_no_comment() {
+    assert_maps(
+        "beginbfrange\n<30> <30> (%) <31> <31> <0047>\nendbfrange",
+        &[(0x31, "G")],
+        &[0x30],
+    );
+    assert_maps(
+        "beginbfrange\n<30> <30> (a\\) (%) <b>) <31> <31> <0047>\nendbfrange",
+        &[(0x31, "G")],
+        &[0x30, 0x0B],
+    );
 }
