@@ -697,8 +697,9 @@ cargo build --locked --target-dir /home/tsjang/rhwp/target/pr-review -j 8 --feat
 ```
 
 다른 host에서는 해당 host의 기본 rhwp 작업공간 아래 공용 `target/pr-review`로 바꾼다.
-Native PNG에는 Node·Chrome·SVG 임베딩 검사가 필요 없다. WASM PNG에는 Node·Chrome과
-외부 공급 글꼴 catalogue용 Python `fonttools`가 필요하다. SVG 진단의 필수 도구는 다음과 같다.
+Native PNG에는 Node·Chrome·SVG 임베딩 검사가 필요 없다. 한글 라벨의 cmap 확인에는
+Native·WASM 모두 Python `fonttools`가 필요하다(`python -m pip install fonttools`).
+WASM PNG에는 Node·Chrome과 외부 공급 글꼴 catalogue도 필요하다. SVG 진단의 필수 도구는 다음과 같다.
 
 스크립트는 실행 시작 시 다음 CLI와 Python 패키지가 있는지 확인한다.
 
