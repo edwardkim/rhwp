@@ -1185,8 +1185,8 @@ impl Paragraph {
     /// 개체를 가리켜, 누름틀이 조회와 저장에서 사라진다.
     ///
     /// [#8199] **글자 없는 문단**(조절 문자만 있는 문단)은 `char_offsets` 가 비어 있어
-    /// 글자 차례로는 넣는 자리를 셀 수 없다. 그런 문단의 스트림은 조절 문자만으로 이루어지므로
-    /// 새 컨트롤의 자리는 앞 컨트롤 수 × 8 이다. 이 자리를 쓰지 않고 건너뛰면 조절 문자는
+    /// 글자 차례로는 넣는 자리를 셀 수 없다. 별도 누름틀 종료 표식이 없는 문단에서는
+    /// 새 컨트롤의 자리가 앞 컨트롤 수 × 8 이다. 이 자리를 쓰지 않고 건너뛰면 조절 문자는
     /// 8칸씩 밀리는데 줄 시작은 그대로 남아, 한/글이 뒤 줄의 첫 개체를 앞 줄로 읽는다
     /// (표 두 개 문단에 그림을 넣자 쪽이 하나 늘었다).
     pub(crate) fn shift_for_inline_control_insert(
@@ -1199,7 +1199,9 @@ impl Paragraph {
                 range.control_idx += 1;
             }
         }
-        if self.text.is_empty() && self.char_offsets.is_empty() {
+        // FIELD_END는 controls[] 밖의 8유닛이다. 짝이 있는 누름틀 문단에 컨트롤 수만
+        // 대입하면 실제 삽입점보다 앞을 가리켜 앞선 줄까지 민다. 이 경우 기존 경로를 유지한다.
+        if self.text.is_empty() && self.char_offsets.is_empty() && self.field_ranges.is_empty() {
             let insert_pos = u32::try_from(control_idx)
                 .unwrap_or(u32::MAX)
                 .saturating_mul(CTRL_CHAR_CODE_UNITS);
