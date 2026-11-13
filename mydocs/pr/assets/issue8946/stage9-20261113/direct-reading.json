@@ -1,0 +1,93 @@
+[
+  {
+    "key": "hwpx",
+    "backend": "native",
+    "page": 1,
+    "observation": "세 외부 그림과 제목·소속 기관명이 독립 Print와 같은 순서와 영역에 표시된다. 제목의 자간과 하단 기관명은 일치하며 윤곽의 raster 차이는 남는다.",
+    "image": "reviews/hwpx/native/compare_001.png"
+  },
+  {
+    "key": "hwpx-punctuation",
+    "backend": "native",
+    "page": 350,
+    "observation": "한글/영문 제목과 본문의 콜론·별표·괄호 위치 및 줄 소속을 확인했다. 본문 누락·겹침은 없고 Native 영문 윤곽·폭의 잔차가 있어 strict RGB 동일로 주장하지 않는다.",
+    "image": "reviews/hwpx-punctuation/native/compare_350.png"
+  },
+  {
+    "key": "pr9003-hwp",
+    "backend": "native",
+    "page": 80,
+    "observation": "Poppy 원본 space 공급 뒤 본문의 줄 끝·줄 수와 표 및 후속 영향평가 문단을 보존했다. 표 글꼴 굵기와 작은 윤곽 차이는 독립 Print와 남아 있다.",
+    "image": "reviews/pr9003-hwp/native/compare_080.png"
+  },
+  {
+    "key": "pr9003-hwp",
+    "backend": "wasm",
+    "page": 112,
+    "observation": "본문의 줄 끝과 첫 줄·마지막 줄, 표 외곽·후속 문단 순서 및 간격이 대응한다. 제목의 로마숫자 윤곽 차이는 남지만 내용 누락·겹침은 없다.",
+    "image": "reviews/pr9003-hwp/wasm/compare_112.png"
+  },
+  {
+    "key": "footer",
+    "backend": "wasm",
+    "page": 13,
+    "observation": "두 표와 본문 뒤의 푸터 로고·회색 그림 영역·쪽 번호를 확인했다. 기호 크기·글꼴 윤곽 잔차는 있으며 새 겹침·누락은 보이지 않는다.",
+    "image": "reviews/footer/wasm/compare_013.png"
+  },
+  {
+    "key": "pr8999",
+    "backend": "wasm",
+    "page": 2,
+    "observation": "페이지 아래 발신명의 표 두 칸 외곽과 글자가 잘리지 않고 독립 Print의 소속·영역을 유지한다.",
+    "image": "reviews/pr8999/wasm/compare_002.png"
+  },
+  {
+    "key": "pr9001",
+    "backend": "native",
+    "page": 14,
+    "observation": "재정상태보고서의 제목·두 회계연도 열·자산과 부채의 내용 순서 및 표 아래 종료를 대조했다. 굵기·서체 윤곽 잔차가 있으나 새 누락·겹침은 없다.",
+    "image": "reviews/pr9001/native/compare_014.png"
+  },
+  {
+    "key": "receipt-saved",
+    "backend": "wasm",
+    "page": 1,
+    "observation": "영수증 큰 표·오른쪽 세부 상자·하단 요양기관 정보의 소속과 순서를 확인했다. 원문 글자모양별 윤곽과 기호 크기 차이는 있으나 안내문이 본문으로 다시 나타나거나 표 밖으로 겹치지 않는다.",
+    "image": "reviews/receipt-saved/wasm/compare_001.png"
+  },
+  {
+    "key": "pr8987",
+    "backend": "wasm",
+    "page": 6,
+    "observation": "사진 표의 두 행·오른쪽/왼쪽 사진 영역 및 아래 예산표·끝 문단을 확인했다. Print에 비해 약간의 세로 위치와 기호 크기 잔차가 남는다. 각 내용은 자기 칸에 남고 다음 제목과 겹치지 않는다.",
+    "image": "reviews/pr8987/wasm/compare_006.png"
+  },
+  {
+    "key": "hwpx-punctuation",
+    "backend": "wasm",
+    "page": 350,
+    "observation": "제목과 본문의 콜론·괄호·별표 및 전후 단어 간격·줄 소속이 독립 Print와 대응한다.",
+    "image": "reviews/hwpx-punctuation/wasm/compare_350.png"
+  },
+  {
+    "key": "hwp3",
+    "backend": "native",
+    "page": 1,
+    "observation": "표지의 제목·기관명과 세 외부 그림의 소속·위치를 확인했다. 그림 보간·글자 윤곽의 작은 차이는 남지만 잘림·누락은 없다.",
+    "image": "reviews/hwp3/native/compare_001.png"
+  },
+  {
+    "key": "hwp3-punctuation",
+    "backend": "wasm",
+    "page": 350,
+    "observation": "본문 별표·괄호와 영문 폭, 제목·후속 내용의 줄 구성을 독립 Print와 확인했다.",
+    "image": "reviews/hwp3-punctuation/wasm/compare_350.png"
+  },
+  {
+    "key": "hwp3-quotes",
+    "backend": "native",
+    "page": 608,
+    "observation": "SQL 문장의 괄호·관계 기호와 들여쓰기·내용 순서가 보존된다. Native 영문 윤곽과 일부 간격의 잔차를 동일 출력으로 취급하지 않는다.",
+    "image": "reviews/hwp3-quotes/native/compare_608.png"
+  }
+]

@@ -1,0 +1,7 @@
+{
+  "source": "pdf/issue8946/hwp3-sample10-hwpx-images-embedded-2024.pdf",
+  "retained_reference": "$T7/DeveloperArtifacts/rhwp/reference-inputs/issue8946/hwp3-sample10-hwpx-images-embedded-2024.pdf",
+  "bytes": 90804612,
+  "sha256": "45bb4d29b0afea67fb4818a9b605a84201cbdf2998b6c31310d36fb85294cad8",
+  "reason": "Required independent source PDF exceeds50MiB and must survive temporary worktree cleanup; local only. Original still retained until cleanup."
+}

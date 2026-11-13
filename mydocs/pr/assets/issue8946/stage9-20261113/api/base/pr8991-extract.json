@@ -1,0 +1,128 @@
+{
+  "counts": {
+    "amount": 1,
+    "date": 1,
+    "number": 2
+  },
+  "itemCount": 4,
+  "items": [
+    {
+      "cell": {
+        "cell": 0,
+        "control": 0,
+        "paragraph": 0
+      },
+      "charOffset": 3,
+      "kind": "date",
+      "length": 11,
+      "normalized": "2026-08-02",
+      "page": 0,
+      "paragraph": 0,
+      "raw": "2026년 8월 2일",
+      "section": 0
+    },
+    {
+      "cell": {
+        "cell": 1,
+        "control": 0,
+        "paragraph": 1
+      },
+      "cellPath": [
+        {
+          "cell": 1,
+          "control": 0,
+          "kind": "tableCell",
+          "paragraph": 1
+        },
+        {
+          "cell": 0,
+          "control": 0,
+          "kind": "tableCell",
+          "paragraph": 1
+        }
+      ],
+      "charOffset": 0,
+      "kind": "number",
+      "length": 7,
+      "nestedDepth": 1,
+      "normalized": 42360,
+      "page": 0,
+      "paragraph": 0,
+      "raw": "42,360명",
+      "section": 0,
+      "unit": "명"
+    },
+    {
+      "cell": {
+        "cell": 1,
+        "control": 0,
+        "paragraph": 1
+      },
+      "cellPath": [
+        {
+          "cell": 1,
+          "control": 0,
+          "kind": "tableCell",
+          "paragraph": 1
+        },
+        {
+          "cell": 1,
+          "control": 0,
+          "kind": "tableCell",
+          "paragraph": 0
+        }
+      ],
+      "charOffset": 0,
+      "kind": "number",
+      "length": 6,
+      "nestedDepth": 1,
+      "normalized": 4676,
+      "page": 0,
+      "paragraph": 0,
+      "raw": "4,676건",
+      "section": 0,
+      "unit": "건"
+    },
+    {
+      "cell": {
+        "cell": 1,
+        "control": 0,
+        "paragraph": 1
+      },
+      "cellPath": [
+        {
+          "cell": 1,
+          "control": 0,
+          "kind": "tableCell",
+          "paragraph": 1
+        },
+        {
+          "cell": 2,
+          "control": 0,
+          "kind": "tableCell",
+          "paragraph": 0
+        }
+      ],
+      "charOffset": 3,
+      "currency": "KRW",
+      "kind": "amount",
+      "length": 10,
+      "nestedDepth": 1,
+      "normalized": 1234000,
+      "page": 0,
+      "paragraph": 0,
+      "raw": "1,234,000원",
+      "section": 0
+    }
+  ],
+  "kind": "all",
+  "schemaVersion": "1.0",
+  "source": "tests/fixtures/issue8989/nested-values.hml",
+  "totalItemCount": 4,
+  "truncated": false,
+  "untrustedContent": true,
+  "untrustedFields": [
+    "items[].raw",
+    "items[].unit"
+  ]
+}
