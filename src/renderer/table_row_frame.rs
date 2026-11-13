@@ -416,7 +416,7 @@ pub(crate) fn declared_tail_row_height(
                 .unwrap_or(0)
         };
         let pad = hwpunit_to_px(cell.effective_vertical_padding_hu(&table.padding), dpi);
-        let floor = hwpunit_to_px(content_hu as i32, dpi) + pad;
+        let floor = hwpunit_to_px(i32::try_from(content_hu).ok()?, dpi) + pad;
         if floor > content_floor {
             content_floor = floor;
         }

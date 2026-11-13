@@ -112,7 +112,7 @@ pub(crate) fn edit_verify_report(
         )
     } else {
         rhwp::serializer::hwpx::roundtrip::diff_exported_hwp_documents(
-            doc.document(),
+            doc.prepare_hwp_export_snapshot().document(),
             reloaded.document(),
         )
     };
