@@ -56,8 +56,10 @@
     },
     {
       "path": "e-cellbreak-row-moves-next-page.hwp",
-      "sha256": "e566e14f5a0b4a4b8dbebefc6ab3d233710030ab7f53ee1d7307442ddf54f141",
+      "sha256": "48b74c6a93f376dec94cbbd9a0f749780566dff85128f341ffe1d5939634e6e1",
       "bytes": 14336,
+      "generated_sha256": "e566e14f5a0b4a4b8dbebefc6ab3d233710030ab7f53ee1d7307442ddf54f141",
+      "line_seg_tag_marker": "#8939: 생성 파일에 /RhwpLineSegTags 표지 스트림만 더함(다른 스트림 바이트 동일)",
       "source": "generate-cellbreak.mjs 생성 대조군 — 앞 문단 30개 뒤 3×2 CellBreak 표, 셀마다 6개 문단(줄)",
       "reference_pdf": "pdf/issue7620/e-cellbreak-row-moves-next-page-hancomdocs.pdf",
       "reference_pdf_sha256": "3c5d39013cf050319ff86ff3276a5cc04d0d0d2d8f78cd6280d4edc3668b0ecb",
@@ -65,8 +67,10 @@
     },
     {
       "path": "f-rowbreak-row-splits-at-line.hwp",
-      "sha256": "904520801739be5795f0dd64dc907367a15f131ab4b4a985439724fed0936e4b",
+      "sha256": "627aa762cb53ed673e4e941e46454b717a59683f4daeee9b3189edbc294c8059",
       "bytes": 14336,
+      "generated_sha256": "904520801739be5795f0dd64dc907367a15f131ab4b4a985439724fed0936e4b",
+      "line_seg_tag_marker": "#8939: 생성 파일에 /RhwpLineSegTags 표지 스트림만 더함(다른 스트림 바이트 동일)",
       "source": "generate-cellbreak.mjs 생성 대조군 — e와 같고 쪽 경계 나눔만 RowBreak",
       "reference_pdf": "pdf/issue7620/f-rowbreak-row-splits-at-line-hancomdocs.pdf",
       "reference_pdf_sha256": "6702ea0e75bd3bfe1701796e82f57d62d566d704f79925f69e90a75000ad6d57",

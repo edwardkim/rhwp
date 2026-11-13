@@ -28,6 +28,8 @@ b·c·d 세 파일에는 #8939 에서 `/RhwpLineSegTags` 표지 스트림만 더
 
 `e-cellbreak-row-moves-next-page.hwp`·`f-rowbreak-row-splits-at-line.hwp`는 `devel` `4ab860651`(src 동일 트리)의 web WASM으로 `generate-cellbreak.mjs`를 실행해 만든 **생성 대조군**입니다. 한컴 저장본이 아니며, 같은 패키지로 다시 실행하면 바이트가 같습니다.
 
+두 파일은 처음에 #8939 이전 WASM으로 만들어 `/RhwpLineSegTags` 표지가 없었습니다(`MANIFEST.json`의 `generated_sha256`). #8939 이후 파서는 표지 없는 bit 31 을 한/글 저장 속성으로 읽어 표 뒤 빈 문단이 8px 커지므로, `devel` `41c889cfd`의 web WASM으로 같은 생성기를 다시 실행한 파일로 바꿨습니다. 원래 9개 스트림은 바이트가 같고 표지 스트림(40바이트)만 더해졌으므로 기준 PDF와의 대응은 그대로입니다.
+
 두 문서는 앞 문단 30개 · 표 문단 · 빈 문단 · 뒤 문단입니다. 표는 3×2, 비TAC, `TopAndBottom`, 세로 문단 기준 오프셋 0, 바깥 여백 기본값이고 셀마다 한 줄짜리 문단 6개를 넣었습니다. e는 쪽 경계 나눔 «셀 단위로 나눔»(CellBreak, 1), f는 «나눔»(RowBreak, 2)이며 나머지는 같습니다.
 
 기준 PDF는 `pdf/issue7620/`에 있고, 한컴독스 웹 한글에서 파일 → 인쇄 후 Chrome 인쇄 미리보기에서 PDF로 저장한 것입니다(Producer PDFium, 2026-11-11, 편집기 빌드 번호 미확인). 위 두 대조군의 서버 인쇄용 PDF(cairo)와 출력 경로가 다릅니다.
