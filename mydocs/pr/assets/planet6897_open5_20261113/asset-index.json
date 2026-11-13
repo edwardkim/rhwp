@@ -1,10 +1,11 @@
 {
   "product_head": "c6e852a92b3661136552a432d649e168e27f88d4",
+  "code_ci_head": "d480c42be1dcc3fa83c3b73d635162aa90fc8049",
   "asset_files": [
     {
       "path": "README.md",
-      "bytes": 6837,
-      "sha256": "f6187e41621e0bde982d28704b7e7994cb35a5ed22088bce545abf79f52b8d59"
+      "bytes": 7705,
+      "sha256": "b178a69e6f1d34b4ca27b3693014a2774c570e104bd054feb098db9f9e560567"
     },
     {
       "path": "actual-browser/pr8972-p001/canvas2d-print.png",
@@ -230,6 +231,11 @@
       "path": "cherry-pick-simulation.json",
       "bytes": 2363,
       "sha256": "58b325bf5038f40bb3f26e27fbf42529a87ec18c067439918cf6bca3f621cd11"
+    },
+    {
+      "path": "ci9051-code-complete.json",
+      "bytes": 151858,
+      "sha256": "daf3442fe229c3f2ecdb641ce4e1fc2d6d81fa07661060356c2e8cb11eb75514"
     },
     {
       "path": "claim-rasters.json",
@@ -1295,6 +1301,11 @@
       "path": "protected-candidate-qualification.json",
       "bytes": 1475322,
       "sha256": "b1b0bd1d6459eb9eef3104d4e926e4eaf6f1041d3605c90cf9edf9be779c666f"
+    },
+    {
+      "path": "raw-submission-audit.json",
+      "bytes": 18264,
+      "sha256": "63df084e06753dbfd954e52fa0c1c494fce0a17cfaadba8ac39ecb6294854771"
     },
     {
       "path": "rebase-validation.json",

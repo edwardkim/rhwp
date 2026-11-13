@@ -5,7 +5,7 @@
 - 최종 검증 제품 code: `c6e852a92b3661136552a432d649e168e27f88d4`; base: `00d09f773a2f6c21604a4e6394df7152bbb26e8c`.
 - 시각 producer: `605740c4363e9e6bacd84895d93abbc7d7bf62c3`; 고정 devel producer: `1003349996897c6ff097271e7296ae4d1a3d807f`.
 - #9050의 테스트·문서 추가를 리베이스했고20개 patch·제품/출력 read path·입력 51개가 동일하다. 기존 산출물의 producer를 새 head로 바꾸어 표시하지 않았다. [재사용·최신 재검증](rebase-validation.json), [원 commit→통합 commit](source-plan.json).
-- 이 문서는 완료된 로컬 검증 기록이다. 원격 통합 PR의 최신 CI·merge는 게시 이후 별도로 확인한다.
+- 이 문서는 완료된 로컬 검증과 통합 PR #9051의 code head Full CI 기록이다. 문서-only trailing head의 checks·실제 merge는 별도 원격 조건이다.
 
 ## 원 PR의 주장 페이지
 
@@ -42,3 +42,8 @@
 ## 검증 도구의 무효 실행
 
 리베이스 checkout 중 새 입력 경로가 잠시 없어졌던5번의 base Native 호출은 제품 실패가 아닌 무효 실행으로 분리했다. 원본 hash 복원 뒤 그5건만 직렬 재실행했다. [무효 실행과 정정](invalid-operational-attempts.json). 초기 HTTP 관측의 inspector cache·URL 필터 오류도 도구 오류로 구분했으며 제품/PDF/비교 문턱을 바꾸지 않았다. 정식 증적에 `.log`, 임시 스크립트, package 바이너리, 비공개 글꼴을 포함하지 않는다.
+
+
+## 통합 PR CI
+
+[통합 PR #9051](https://github.com/edwardkim/rhwp/pull/9051), code head `d480c42be1dcc3fa83c3b73d635162aa90fc8049`의 [CI](https://github.com/edwardkim/rhwp/actions/runs/43395863363) · [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/43395863339) · [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/43395863324) · [Adapter inter-diff](https://github.com/edwardkim/rhwp/actions/runs/43395863375) · [Proptest roundtrip](https://github.com/edwardkim/rhwp/actions/runs/43395863377) 및 CI Impact Policy가 성공했다. [전체 job 페이지와 정확한 head 영수증](ci9051-code-complete.json), [실제 raw 다운로드 41건 검증](raw-submission-audit.json)을 보존했다. 후행 문서 head의 required check와 실제 재사용 판정은 merge 전에 별도로 확인한다.

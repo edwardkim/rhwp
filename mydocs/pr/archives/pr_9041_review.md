@@ -99,3 +99,12 @@ Native와 fresh WASM에서 관련 모든 페이지의 raw/PDF·review·overlay�
 통합 PR의 정확한 head CI 성공·merge 확인 뒤 원 PR에 통합 PR·merge SHA·이 PR의 주장/검증 결과를 한국어 존댓말로 안내하고 close한다. 관련 #9027도 실제 해결 범위를 확인해 처리한다. 원 contributor fork branch는 삭제하지 않는다.
 
 댓글에는 해당 PR의 위 raw·PDF PNG·review·overlay를 최종 merge SHA 고정 `raw.githubusercontent.com` URL의 **Markdown 이미지**로 표시한다. 다른 PR/보호 문서 그림으로 대체하지 않는다. 데스크톱 한컴2022 Print 기준임을 명시하고 `--body-file` 게시 후 API로 실제 한글·이미지 URL을 재확인한다. 아직 수행하지 않은 원격 게시·CI·병합을 완료로 적지 않는다.
+
+
+## 통합 PR #9051의 code head CI
+
+정확한 제출 head `d480c42be1dcc3fa83c3b73d635162aa90fc8049`의 Full CI·CodeQL·Render Diff·Adapter·Proptest와 CI Impact Policy 성공을 확인했다. 모든 workflow는 같은 PR·head·branch의 실제 완료 결과이며 job 목록은 API 끝 페이지까지 확인했다.
+
+[CI](https://github.com/edwardkim/rhwp/actions/runs/43395863363) · [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/43395863339) · [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/43395863324) · [Adapter inter-diff](https://github.com/edwardkim/rhwp/actions/runs/43395863375) · [Proptest roundtrip](https://github.com/edwardkim/rhwp/actions/runs/43395863377).
+
+[CI 영수증](../assets/planet6897_open5_20261113/ci9051-code-complete.json) · [SHA 고정 raw 다운로드41건 일치](../assets/planet6897_open5_20261113/raw-submission-audit.json). 이 기록 뒤의 문서-only trailing head는 push 후 자신의 trusted reuse·required checks와 mergeability를 재확인하며, code candidate 성공만으로 후행 head의 성공을 가정하지 않는다.
