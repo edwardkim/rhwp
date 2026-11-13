@@ -1,0 +1,842 @@
+[
+  {
+    "case": "head-embedded-default-host",
+    "assets": [
+      {
+        "url": "http://127.0.0.1:8911/theme-init.js",
+        "relative_path": "theme-init.js",
+        "sha256": "5a3afcc0139187bfe509414cd60fde2a0dfea72fd72751c4e6e696cdc0f6c587"
+      },
+      {
+        "url": "http://127.0.0.1:8911/locale-init.js",
+        "relative_path": "locale-init.js",
+        "sha256": "633d47a6a53b2211cf816769f8c084b097c1b60b6ab263803d8610c0531539fa"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/index-DvgX4dSm.js",
+        "relative_path": "assets/index-DvgX4dSm.js",
+        "sha256": "3089e062f3943518efad06a87e45ce97ae898190bc4c58be7943f3f0316e13b5"
+      },
+      {
+        "url": "http://127.0.0.1:8911/registerSW.js",
+        "relative_path": "registerSW.js",
+        "sha256": "9742073ef7fc795e7673d98f272992843298426a0ffd8cb3507784df5143608b"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/rhwp_bg-Wa5qc8q5.wasm",
+        "relative_path": "assets/rhwp_bg-Wa5qc8q5.wasm",
+        "sha256": "4737807f3978d90bc163bfb109c684c05f69c26c35d6a6e5f1bc33b65813c0bb"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/plugin-CPvtmj_Z.js",
+        "relative_path": "assets/plugin-CPvtmj_Z.js",
+        "sha256": "72bcdc6f70e601d35320ed78dc8f8d6fd9212312596d0f2412239d03e8a45a8c"
+      }
+    ]
+  },
+  {
+    "case": "head-embedded-default-none",
+    "assets": [
+      {
+        "url": "http://127.0.0.1:8911/theme-init.js",
+        "relative_path": "theme-init.js",
+        "sha256": "5a3afcc0139187bfe509414cd60fde2a0dfea72fd72751c4e6e696cdc0f6c587"
+      },
+      {
+        "url": "http://127.0.0.1:8911/locale-init.js",
+        "relative_path": "locale-init.js",
+        "sha256": "633d47a6a53b2211cf816769f8c084b097c1b60b6ab263803d8610c0531539fa"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/index-DvgX4dSm.js",
+        "relative_path": "assets/index-DvgX4dSm.js",
+        "sha256": "3089e062f3943518efad06a87e45ce97ae898190bc4c58be7943f3f0316e13b5"
+      },
+      {
+        "url": "http://127.0.0.1:8911/registerSW.js",
+        "relative_path": "registerSW.js",
+        "sha256": "9742073ef7fc795e7673d98f272992843298426a0ffd8cb3507784df5143608b"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/rhwp_bg-Wa5qc8q5.wasm",
+        "relative_path": "assets/rhwp_bg-Wa5qc8q5.wasm",
+        "sha256": "4737807f3978d90bc163bfb109c684c05f69c26c35d6a6e5f1bc33b65813c0bb"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/plugin-CPvtmj_Z.js",
+        "relative_path": "assets/plugin-CPvtmj_Z.js",
+        "sha256": "72bcdc6f70e601d35320ed78dc8f8d6fd9212312596d0f2412239d03e8a45a8c"
+      }
+    ]
+  },
+  {
+    "case": "head-embedded-default-omitted",
+    "assets": [
+      {
+        "url": "http://127.0.0.1:8911/theme-init.js",
+        "relative_path": "theme-init.js",
+        "sha256": "5a3afcc0139187bfe509414cd60fde2a0dfea72fd72751c4e6e696cdc0f6c587"
+      },
+      {
+        "url": "http://127.0.0.1:8911/locale-init.js",
+        "relative_path": "locale-init.js",
+        "sha256": "633d47a6a53b2211cf816769f8c084b097c1b60b6ab263803d8610c0531539fa"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/index-DvgX4dSm.js",
+        "relative_path": "assets/index-DvgX4dSm.js",
+        "sha256": "3089e062f3943518efad06a87e45ce97ae898190bc4c58be7943f3f0316e13b5"
+      },
+      {
+        "url": "http://127.0.0.1:8911/registerSW.js",
+        "relative_path": "registerSW.js",
+        "sha256": "9742073ef7fc795e7673d98f272992843298426a0ffd8cb3507784df5143608b"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/rhwp_bg-Wa5qc8q5.wasm",
+        "relative_path": "assets/rhwp_bg-Wa5qc8q5.wasm",
+        "sha256": "4737807f3978d90bc163bfb109c684c05f69c26c35d6a6e5f1bc33b65813c0bb"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/plugin-CPvtmj_Z.js",
+        "relative_path": "assets/plugin-CPvtmj_Z.js",
+        "sha256": "72bcdc6f70e601d35320ed78dc8f8d6fd9212312596d0f2412239d03e8a45a8c"
+      }
+    ]
+  },
+  {
+    "case": "head-embedded-initial-screen-v3-host",
+    "assets": [
+      {
+        "url": "http://127.0.0.1:8911/theme-init.js",
+        "relative_path": "theme-init.js",
+        "sha256": "5a3afcc0139187bfe509414cd60fde2a0dfea72fd72751c4e6e696cdc0f6c587"
+      },
+      {
+        "url": "http://127.0.0.1:8911/locale-init.js",
+        "relative_path": "locale-init.js",
+        "sha256": "633d47a6a53b2211cf816769f8c084b097c1b60b6ab263803d8610c0531539fa"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/index-DvgX4dSm.js",
+        "relative_path": "assets/index-DvgX4dSm.js",
+        "sha256": "3089e062f3943518efad06a87e45ce97ae898190bc4c58be7943f3f0316e13b5"
+      },
+      {
+        "url": "http://127.0.0.1:8911/registerSW.js",
+        "relative_path": "registerSW.js",
+        "sha256": "9742073ef7fc795e7673d98f272992843298426a0ffd8cb3507784df5143608b"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/rhwp_bg-Wa5qc8q5.wasm",
+        "relative_path": "assets/rhwp_bg-Wa5qc8q5.wasm",
+        "sha256": "4737807f3978d90bc163bfb109c684c05f69c26c35d6a6e5f1bc33b65813c0bb"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/plugin-CPvtmj_Z.js",
+        "relative_path": "assets/plugin-CPvtmj_Z.js",
+        "sha256": "72bcdc6f70e601d35320ed78dc8f8d6fd9212312596d0f2412239d03e8a45a8c"
+      }
+    ]
+  },
+  {
+    "case": "head-embedded-initial-screen-v3-none",
+    "assets": [
+      {
+        "url": "http://127.0.0.1:8911/theme-init.js",
+        "relative_path": "theme-init.js",
+        "sha256": "5a3afcc0139187bfe509414cd60fde2a0dfea72fd72751c4e6e696cdc0f6c587"
+      },
+      {
+        "url": "http://127.0.0.1:8911/locale-init.js",
+        "relative_path": "locale-init.js",
+        "sha256": "633d47a6a53b2211cf816769f8c084b097c1b60b6ab263803d8610c0531539fa"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/index-DvgX4dSm.js",
+        "relative_path": "assets/index-DvgX4dSm.js",
+        "sha256": "3089e062f3943518efad06a87e45ce97ae898190bc4c58be7943f3f0316e13b5"
+      },
+      {
+        "url": "http://127.0.0.1:8911/registerSW.js",
+        "relative_path": "registerSW.js",
+        "sha256": "9742073ef7fc795e7673d98f272992843298426a0ffd8cb3507784df5143608b"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/rhwp_bg-Wa5qc8q5.wasm",
+        "relative_path": "assets/rhwp_bg-Wa5qc8q5.wasm",
+        "sha256": "4737807f3978d90bc163bfb109c684c05f69c26c35d6a6e5f1bc33b65813c0bb"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/plugin-CPvtmj_Z.js",
+        "relative_path": "assets/plugin-CPvtmj_Z.js",
+        "sha256": "72bcdc6f70e601d35320ed78dc8f8d6fd9212312596d0f2412239d03e8a45a8c"
+      }
+    ]
+  },
+  {
+    "case": "head-embedded-initial-screen-v3-omitted",
+    "assets": [
+      {
+        "url": "http://127.0.0.1:8911/theme-init.js",
+        "relative_path": "theme-init.js",
+        "sha256": "5a3afcc0139187bfe509414cd60fde2a0dfea72fd72751c4e6e696cdc0f6c587"
+      },
+      {
+        "url": "http://127.0.0.1:8911/locale-init.js",
+        "relative_path": "locale-init.js",
+        "sha256": "633d47a6a53b2211cf816769f8c084b097c1b60b6ab263803d8610c0531539fa"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/index-DvgX4dSm.js",
+        "relative_path": "assets/index-DvgX4dSm.js",
+        "sha256": "3089e062f3943518efad06a87e45ce97ae898190bc4c58be7943f3f0316e13b5"
+      },
+      {
+        "url": "http://127.0.0.1:8911/registerSW.js",
+        "relative_path": "registerSW.js",
+        "sha256": "9742073ef7fc795e7673d98f272992843298426a0ffd8cb3507784df5143608b"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/rhwp_bg-Wa5qc8q5.wasm",
+        "relative_path": "assets/rhwp_bg-Wa5qc8q5.wasm",
+        "sha256": "4737807f3978d90bc163bfb109c684c05f69c26c35d6a6e5f1bc33b65813c0bb"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/plugin-CPvtmj_Z.js",
+        "relative_path": "assets/plugin-CPvtmj_Z.js",
+        "sha256": "72bcdc6f70e601d35320ed78dc8f8d6fd9212312596d0f2412239d03e8a45a8c"
+      }
+    ]
+  },
+  {
+    "case": "head-hwp3-default-host",
+    "assets": [
+      {
+        "url": "http://127.0.0.1:8911/theme-init.js",
+        "relative_path": "theme-init.js",
+        "sha256": "5a3afcc0139187bfe509414cd60fde2a0dfea72fd72751c4e6e696cdc0f6c587"
+      },
+      {
+        "url": "http://127.0.0.1:8911/locale-init.js",
+        "relative_path": "locale-init.js",
+        "sha256": "633d47a6a53b2211cf816769f8c084b097c1b60b6ab263803d8610c0531539fa"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/index-DvgX4dSm.js",
+        "relative_path": "assets/index-DvgX4dSm.js",
+        "sha256": "3089e062f3943518efad06a87e45ce97ae898190bc4c58be7943f3f0316e13b5"
+      },
+      {
+        "url": "http://127.0.0.1:8911/registerSW.js",
+        "relative_path": "registerSW.js",
+        "sha256": "9742073ef7fc795e7673d98f272992843298426a0ffd8cb3507784df5143608b"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/rhwp_bg-Wa5qc8q5.wasm",
+        "relative_path": "assets/rhwp_bg-Wa5qc8q5.wasm",
+        "sha256": "4737807f3978d90bc163bfb109c684c05f69c26c35d6a6e5f1bc33b65813c0bb"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/plugin-CPvtmj_Z.js",
+        "relative_path": "assets/plugin-CPvtmj_Z.js",
+        "sha256": "72bcdc6f70e601d35320ed78dc8f8d6fd9212312596d0f2412239d03e8a45a8c"
+      }
+    ]
+  },
+  {
+    "case": "head-hwp3-default-none",
+    "assets": [
+      {
+        "url": "http://127.0.0.1:8911/theme-init.js",
+        "relative_path": "theme-init.js",
+        "sha256": "5a3afcc0139187bfe509414cd60fde2a0dfea72fd72751c4e6e696cdc0f6c587"
+      },
+      {
+        "url": "http://127.0.0.1:8911/locale-init.js",
+        "relative_path": "locale-init.js",
+        "sha256": "633d47a6a53b2211cf816769f8c084b097c1b60b6ab263803d8610c0531539fa"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/index-DvgX4dSm.js",
+        "relative_path": "assets/index-DvgX4dSm.js",
+        "sha256": "3089e062f3943518efad06a87e45ce97ae898190bc4c58be7943f3f0316e13b5"
+      },
+      {
+        "url": "http://127.0.0.1:8911/registerSW.js",
+        "relative_path": "registerSW.js",
+        "sha256": "9742073ef7fc795e7673d98f272992843298426a0ffd8cb3507784df5143608b"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/rhwp_bg-Wa5qc8q5.wasm",
+        "relative_path": "assets/rhwp_bg-Wa5qc8q5.wasm",
+        "sha256": "4737807f3978d90bc163bfb109c684c05f69c26c35d6a6e5f1bc33b65813c0bb"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/plugin-CPvtmj_Z.js",
+        "relative_path": "assets/plugin-CPvtmj_Z.js",
+        "sha256": "72bcdc6f70e601d35320ed78dc8f8d6fd9212312596d0f2412239d03e8a45a8c"
+      }
+    ]
+  },
+  {
+    "case": "head-hwp3-default-omitted",
+    "assets": [
+      {
+        "url": "http://127.0.0.1:8911/theme-init.js",
+        "relative_path": "theme-init.js",
+        "sha256": "5a3afcc0139187bfe509414cd60fde2a0dfea72fd72751c4e6e696cdc0f6c587"
+      },
+      {
+        "url": "http://127.0.0.1:8911/locale-init.js",
+        "relative_path": "locale-init.js",
+        "sha256": "633d47a6a53b2211cf816769f8c084b097c1b60b6ab263803d8610c0531539fa"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/index-DvgX4dSm.js",
+        "relative_path": "assets/index-DvgX4dSm.js",
+        "sha256": "3089e062f3943518efad06a87e45ce97ae898190bc4c58be7943f3f0316e13b5"
+      },
+      {
+        "url": "http://127.0.0.1:8911/registerSW.js",
+        "relative_path": "registerSW.js",
+        "sha256": "9742073ef7fc795e7673d98f272992843298426a0ffd8cb3507784df5143608b"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/rhwp_bg-Wa5qc8q5.wasm",
+        "relative_path": "assets/rhwp_bg-Wa5qc8q5.wasm",
+        "sha256": "4737807f3978d90bc163bfb109c684c05f69c26c35d6a6e5f1bc33b65813c0bb"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/plugin-CPvtmj_Z.js",
+        "relative_path": "assets/plugin-CPvtmj_Z.js",
+        "sha256": "72bcdc6f70e601d35320ed78dc8f8d6fd9212312596d0f2412239d03e8a45a8c"
+      }
+    ]
+  },
+  {
+    "case": "head-hwp3-default-stable-host",
+    "assets": [
+      {
+        "url": "http://127.0.0.1:8911/theme-init.js",
+        "relative_path": "theme-init.js",
+        "sha256": "5a3afcc0139187bfe509414cd60fde2a0dfea72fd72751c4e6e696cdc0f6c587"
+      },
+      {
+        "url": "http://127.0.0.1:8911/locale-init.js",
+        "relative_path": "locale-init.js",
+        "sha256": "633d47a6a53b2211cf816769f8c084b097c1b60b6ab263803d8610c0531539fa"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/index-DvgX4dSm.js",
+        "relative_path": "assets/index-DvgX4dSm.js",
+        "sha256": "3089e062f3943518efad06a87e45ce97ae898190bc4c58be7943f3f0316e13b5"
+      },
+      {
+        "url": "http://127.0.0.1:8911/registerSW.js",
+        "relative_path": "registerSW.js",
+        "sha256": "9742073ef7fc795e7673d98f272992843298426a0ffd8cb3507784df5143608b"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/rhwp_bg-Wa5qc8q5.wasm",
+        "relative_path": "assets/rhwp_bg-Wa5qc8q5.wasm",
+        "sha256": "4737807f3978d90bc163bfb109c684c05f69c26c35d6a6e5f1bc33b65813c0bb"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/plugin-CPvtmj_Z.js",
+        "relative_path": "assets/plugin-CPvtmj_Z.js",
+        "sha256": "72bcdc6f70e601d35320ed78dc8f8d6fd9212312596d0f2412239d03e8a45a8c"
+      }
+    ]
+  },
+  {
+    "case": "head-hwp3-default-stable-omitted",
+    "assets": [
+      {
+        "url": "http://127.0.0.1:8911/theme-init.js",
+        "relative_path": "theme-init.js",
+        "sha256": "5a3afcc0139187bfe509414cd60fde2a0dfea72fd72751c4e6e696cdc0f6c587"
+      },
+      {
+        "url": "http://127.0.0.1:8911/locale-init.js",
+        "relative_path": "locale-init.js",
+        "sha256": "633d47a6a53b2211cf816769f8c084b097c1b60b6ab263803d8610c0531539fa"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/index-DvgX4dSm.js",
+        "relative_path": "assets/index-DvgX4dSm.js",
+        "sha256": "3089e062f3943518efad06a87e45ce97ae898190bc4c58be7943f3f0316e13b5"
+      },
+      {
+        "url": "http://127.0.0.1:8911/registerSW.js",
+        "relative_path": "registerSW.js",
+        "sha256": "9742073ef7fc795e7673d98f272992843298426a0ffd8cb3507784df5143608b"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/rhwp_bg-Wa5qc8q5.wasm",
+        "relative_path": "assets/rhwp_bg-Wa5qc8q5.wasm",
+        "sha256": "4737807f3978d90bc163bfb109c684c05f69c26c35d6a6e5f1bc33b65813c0bb"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/plugin-CPvtmj_Z.js",
+        "relative_path": "assets/plugin-CPvtmj_Z.js",
+        "sha256": "72bcdc6f70e601d35320ed78dc8f8d6fd9212312596d0f2412239d03e8a45a8c"
+      }
+    ]
+  },
+  {
+    "case": "head-hwp3-initial-screen-v3-host",
+    "assets": [
+      {
+        "url": "http://127.0.0.1:8911/theme-init.js",
+        "relative_path": "theme-init.js",
+        "sha256": "5a3afcc0139187bfe509414cd60fde2a0dfea72fd72751c4e6e696cdc0f6c587"
+      },
+      {
+        "url": "http://127.0.0.1:8911/locale-init.js",
+        "relative_path": "locale-init.js",
+        "sha256": "633d47a6a53b2211cf816769f8c084b097c1b60b6ab263803d8610c0531539fa"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/index-DvgX4dSm.js",
+        "relative_path": "assets/index-DvgX4dSm.js",
+        "sha256": "3089e062f3943518efad06a87e45ce97ae898190bc4c58be7943f3f0316e13b5"
+      },
+      {
+        "url": "http://127.0.0.1:8911/registerSW.js",
+        "relative_path": "registerSW.js",
+        "sha256": "9742073ef7fc795e7673d98f272992843298426a0ffd8cb3507784df5143608b"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/rhwp_bg-Wa5qc8q5.wasm",
+        "relative_path": "assets/rhwp_bg-Wa5qc8q5.wasm",
+        "sha256": "4737807f3978d90bc163bfb109c684c05f69c26c35d6a6e5f1bc33b65813c0bb"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/plugin-CPvtmj_Z.js",
+        "relative_path": "assets/plugin-CPvtmj_Z.js",
+        "sha256": "72bcdc6f70e601d35320ed78dc8f8d6fd9212312596d0f2412239d03e8a45a8c"
+      }
+    ]
+  },
+  {
+    "case": "head-hwp3-initial-screen-v3-none",
+    "assets": [
+      {
+        "url": "http://127.0.0.1:8911/theme-init.js",
+        "relative_path": "theme-init.js",
+        "sha256": "5a3afcc0139187bfe509414cd60fde2a0dfea72fd72751c4e6e696cdc0f6c587"
+      },
+      {
+        "url": "http://127.0.0.1:8911/locale-init.js",
+        "relative_path": "locale-init.js",
+        "sha256": "633d47a6a53b2211cf816769f8c084b097c1b60b6ab263803d8610c0531539fa"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/index-DvgX4dSm.js",
+        "relative_path": "assets/index-DvgX4dSm.js",
+        "sha256": "3089e062f3943518efad06a87e45ce97ae898190bc4c58be7943f3f0316e13b5"
+      },
+      {
+        "url": "http://127.0.0.1:8911/registerSW.js",
+        "relative_path": "registerSW.js",
+        "sha256": "9742073ef7fc795e7673d98f272992843298426a0ffd8cb3507784df5143608b"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/rhwp_bg-Wa5qc8q5.wasm",
+        "relative_path": "assets/rhwp_bg-Wa5qc8q5.wasm",
+        "sha256": "4737807f3978d90bc163bfb109c684c05f69c26c35d6a6e5f1bc33b65813c0bb"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/plugin-CPvtmj_Z.js",
+        "relative_path": "assets/plugin-CPvtmj_Z.js",
+        "sha256": "72bcdc6f70e601d35320ed78dc8f8d6fd9212312596d0f2412239d03e8a45a8c"
+      }
+    ]
+  },
+  {
+    "case": "head-hwp3-initial-screen-v3-omitted",
+    "assets": [
+      {
+        "url": "http://127.0.0.1:8911/theme-init.js",
+        "relative_path": "theme-init.js",
+        "sha256": "5a3afcc0139187bfe509414cd60fde2a0dfea72fd72751c4e6e696cdc0f6c587"
+      },
+      {
+        "url": "http://127.0.0.1:8911/locale-init.js",
+        "relative_path": "locale-init.js",
+        "sha256": "633d47a6a53b2211cf816769f8c084b097c1b60b6ab263803d8610c0531539fa"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/index-DvgX4dSm.js",
+        "relative_path": "assets/index-DvgX4dSm.js",
+        "sha256": "3089e062f3943518efad06a87e45ce97ae898190bc4c58be7943f3f0316e13b5"
+      },
+      {
+        "url": "http://127.0.0.1:8911/registerSW.js",
+        "relative_path": "registerSW.js",
+        "sha256": "9742073ef7fc795e7673d98f272992843298426a0ffd8cb3507784df5143608b"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/rhwp_bg-Wa5qc8q5.wasm",
+        "relative_path": "assets/rhwp_bg-Wa5qc8q5.wasm",
+        "sha256": "4737807f3978d90bc163bfb109c684c05f69c26c35d6a6e5f1bc33b65813c0bb"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/plugin-CPvtmj_Z.js",
+        "relative_path": "assets/plugin-CPvtmj_Z.js",
+        "sha256": "72bcdc6f70e601d35320ed78dc8f8d6fd9212312596d0f2412239d03e8a45a8c"
+      }
+    ]
+  },
+  {
+    "case": "head-original-default-host",
+    "assets": [
+      {
+        "url": "http://127.0.0.1:8911/theme-init.js",
+        "relative_path": "theme-init.js",
+        "sha256": "5a3afcc0139187bfe509414cd60fde2a0dfea72fd72751c4e6e696cdc0f6c587"
+      },
+      {
+        "url": "http://127.0.0.1:8911/locale-init.js",
+        "relative_path": "locale-init.js",
+        "sha256": "633d47a6a53b2211cf816769f8c084b097c1b60b6ab263803d8610c0531539fa"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/index-DvgX4dSm.js",
+        "relative_path": "assets/index-DvgX4dSm.js",
+        "sha256": "3089e062f3943518efad06a87e45ce97ae898190bc4c58be7943f3f0316e13b5"
+      },
+      {
+        "url": "http://127.0.0.1:8911/registerSW.js",
+        "relative_path": "registerSW.js",
+        "sha256": "9742073ef7fc795e7673d98f272992843298426a0ffd8cb3507784df5143608b"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/rhwp_bg-Wa5qc8q5.wasm",
+        "relative_path": "assets/rhwp_bg-Wa5qc8q5.wasm",
+        "sha256": "4737807f3978d90bc163bfb109c684c05f69c26c35d6a6e5f1bc33b65813c0bb"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/plugin-CPvtmj_Z.js",
+        "relative_path": "assets/plugin-CPvtmj_Z.js",
+        "sha256": "72bcdc6f70e601d35320ed78dc8f8d6fd9212312596d0f2412239d03e8a45a8c"
+      }
+    ]
+  },
+  {
+    "case": "head-original-default-none",
+    "assets": [
+      {
+        "url": "http://127.0.0.1:8911/theme-init.js",
+        "relative_path": "theme-init.js",
+        "sha256": "5a3afcc0139187bfe509414cd60fde2a0dfea72fd72751c4e6e696cdc0f6c587"
+      },
+      {
+        "url": "http://127.0.0.1:8911/locale-init.js",
+        "relative_path": "locale-init.js",
+        "sha256": "633d47a6a53b2211cf816769f8c084b097c1b60b6ab263803d8610c0531539fa"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/index-DvgX4dSm.js",
+        "relative_path": "assets/index-DvgX4dSm.js",
+        "sha256": "3089e062f3943518efad06a87e45ce97ae898190bc4c58be7943f3f0316e13b5"
+      },
+      {
+        "url": "http://127.0.0.1:8911/registerSW.js",
+        "relative_path": "registerSW.js",
+        "sha256": "9742073ef7fc795e7673d98f272992843298426a0ffd8cb3507784df5143608b"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/rhwp_bg-Wa5qc8q5.wasm",
+        "relative_path": "assets/rhwp_bg-Wa5qc8q5.wasm",
+        "sha256": "4737807f3978d90bc163bfb109c684c05f69c26c35d6a6e5f1bc33b65813c0bb"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/plugin-CPvtmj_Z.js",
+        "relative_path": "assets/plugin-CPvtmj_Z.js",
+        "sha256": "72bcdc6f70e601d35320ed78dc8f8d6fd9212312596d0f2412239d03e8a45a8c"
+      }
+    ]
+  },
+  {
+    "case": "head-original-default-omitted",
+    "assets": [
+      {
+        "url": "http://127.0.0.1:8911/theme-init.js",
+        "relative_path": "theme-init.js",
+        "sha256": "5a3afcc0139187bfe509414cd60fde2a0dfea72fd72751c4e6e696cdc0f6c587"
+      },
+      {
+        "url": "http://127.0.0.1:8911/locale-init.js",
+        "relative_path": "locale-init.js",
+        "sha256": "633d47a6a53b2211cf816769f8c084b097c1b60b6ab263803d8610c0531539fa"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/index-DvgX4dSm.js",
+        "relative_path": "assets/index-DvgX4dSm.js",
+        "sha256": "3089e062f3943518efad06a87e45ce97ae898190bc4c58be7943f3f0316e13b5"
+      },
+      {
+        "url": "http://127.0.0.1:8911/registerSW.js",
+        "relative_path": "registerSW.js",
+        "sha256": "9742073ef7fc795e7673d98f272992843298426a0ffd8cb3507784df5143608b"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/rhwp_bg-Wa5qc8q5.wasm",
+        "relative_path": "assets/rhwp_bg-Wa5qc8q5.wasm",
+        "sha256": "4737807f3978d90bc163bfb109c684c05f69c26c35d6a6e5f1bc33b65813c0bb"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/plugin-CPvtmj_Z.js",
+        "relative_path": "assets/plugin-CPvtmj_Z.js",
+        "sha256": "72bcdc6f70e601d35320ed78dc8f8d6fd9212312596d0f2412239d03e8a45a8c"
+      }
+    ]
+  },
+  {
+    "case": "head-original-initial-screen-v3-host",
+    "assets": [
+      {
+        "url": "http://127.0.0.1:8911/theme-init.js",
+        "relative_path": "theme-init.js",
+        "sha256": "5a3afcc0139187bfe509414cd60fde2a0dfea72fd72751c4e6e696cdc0f6c587"
+      },
+      {
+        "url": "http://127.0.0.1:8911/locale-init.js",
+        "relative_path": "locale-init.js",
+        "sha256": "633d47a6a53b2211cf816769f8c084b097c1b60b6ab263803d8610c0531539fa"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/index-DvgX4dSm.js",
+        "relative_path": "assets/index-DvgX4dSm.js",
+        "sha256": "3089e062f3943518efad06a87e45ce97ae898190bc4c58be7943f3f0316e13b5"
+      },
+      {
+        "url": "http://127.0.0.1:8911/registerSW.js",
+        "relative_path": "registerSW.js",
+        "sha256": "9742073ef7fc795e7673d98f272992843298426a0ffd8cb3507784df5143608b"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/rhwp_bg-Wa5qc8q5.wasm",
+        "relative_path": "assets/rhwp_bg-Wa5qc8q5.wasm",
+        "sha256": "4737807f3978d90bc163bfb109c684c05f69c26c35d6a6e5f1bc33b65813c0bb"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/plugin-CPvtmj_Z.js",
+        "relative_path": "assets/plugin-CPvtmj_Z.js",
+        "sha256": "72bcdc6f70e601d35320ed78dc8f8d6fd9212312596d0f2412239d03e8a45a8c"
+      }
+    ]
+  },
+  {
+    "case": "head-original-initial-screen-v3-none",
+    "assets": [
+      {
+        "url": "http://127.0.0.1:8911/theme-init.js",
+        "relative_path": "theme-init.js",
+        "sha256": "5a3afcc0139187bfe509414cd60fde2a0dfea72fd72751c4e6e696cdc0f6c587"
+      },
+      {
+        "url": "http://127.0.0.1:8911/locale-init.js",
+        "relative_path": "locale-init.js",
+        "sha256": "633d47a6a53b2211cf816769f8c084b097c1b60b6ab263803d8610c0531539fa"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/index-DvgX4dSm.js",
+        "relative_path": "assets/index-DvgX4dSm.js",
+        "sha256": "3089e062f3943518efad06a87e45ce97ae898190bc4c58be7943f3f0316e13b5"
+      },
+      {
+        "url": "http://127.0.0.1:8911/registerSW.js",
+        "relative_path": "registerSW.js",
+        "sha256": "9742073ef7fc795e7673d98f272992843298426a0ffd8cb3507784df5143608b"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/rhwp_bg-Wa5qc8q5.wasm",
+        "relative_path": "assets/rhwp_bg-Wa5qc8q5.wasm",
+        "sha256": "4737807f3978d90bc163bfb109c684c05f69c26c35d6a6e5f1bc33b65813c0bb"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/plugin-CPvtmj_Z.js",
+        "relative_path": "assets/plugin-CPvtmj_Z.js",
+        "sha256": "72bcdc6f70e601d35320ed78dc8f8d6fd9212312596d0f2412239d03e8a45a8c"
+      }
+    ]
+  },
+  {
+    "case": "head-original-initial-screen-v3-omitted",
+    "assets": [
+      {
+        "url": "http://127.0.0.1:8911/theme-init.js",
+        "relative_path": "theme-init.js",
+        "sha256": "5a3afcc0139187bfe509414cd60fde2a0dfea72fd72751c4e6e696cdc0f6c587"
+      },
+      {
+        "url": "http://127.0.0.1:8911/locale-init.js",
+        "relative_path": "locale-init.js",
+        "sha256": "633d47a6a53b2211cf816769f8c084b097c1b60b6ab263803d8610c0531539fa"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/index-DvgX4dSm.js",
+        "relative_path": "assets/index-DvgX4dSm.js",
+        "sha256": "3089e062f3943518efad06a87e45ce97ae898190bc4c58be7943f3f0316e13b5"
+      },
+      {
+        "url": "http://127.0.0.1:8911/registerSW.js",
+        "relative_path": "registerSW.js",
+        "sha256": "9742073ef7fc795e7673d98f272992843298426a0ffd8cb3507784df5143608b"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/rhwp_bg-Wa5qc8q5.wasm",
+        "relative_path": "assets/rhwp_bg-Wa5qc8q5.wasm",
+        "sha256": "4737807f3978d90bc163bfb109c684c05f69c26c35d6a6e5f1bc33b65813c0bb"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/plugin-CPvtmj_Z.js",
+        "relative_path": "assets/plugin-CPvtmj_Z.js",
+        "sha256": "72bcdc6f70e601d35320ed78dc8f8d6fd9212312596d0f2412239d03e8a45a8c"
+      }
+    ]
+  },
+  {
+    "case": "host-hwp3-enabled",
+    "assets": [
+      {
+        "url": "http://127.0.0.1:8911/theme-init.js",
+        "relative_path": "theme-init.js",
+        "sha256": "5a3afcc0139187bfe509414cd60fde2a0dfea72fd72751c4e6e696cdc0f6c587"
+      },
+      {
+        "url": "http://127.0.0.1:8911/locale-init.js",
+        "relative_path": "locale-init.js",
+        "sha256": "633d47a6a53b2211cf816769f8c084b097c1b60b6ab263803d8610c0531539fa"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/index-DvgX4dSm.js",
+        "relative_path": "assets/index-DvgX4dSm.js",
+        "sha256": "3089e062f3943518efad06a87e45ce97ae898190bc4c58be7943f3f0316e13b5"
+      },
+      {
+        "url": "http://127.0.0.1:8911/registerSW.js",
+        "relative_path": "registerSW.js",
+        "sha256": "9742073ef7fc795e7673d98f272992843298426a0ffd8cb3507784df5143608b"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/rhwp_bg-Wa5qc8q5.wasm",
+        "relative_path": "assets/rhwp_bg-Wa5qc8q5.wasm",
+        "sha256": "4737807f3978d90bc163bfb109c684c05f69c26c35d6a6e5f1bc33b65813c0bb"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/plugin-CPvtmj_Z.js",
+        "relative_path": "assets/plugin-CPvtmj_Z.js",
+        "sha256": "72bcdc6f70e601d35320ed78dc8f8d6fd9212312596d0f2412239d03e8a45a8c"
+      }
+    ]
+  },
+  {
+    "case": "host-hwpx-enabled",
+    "assets": [
+      {
+        "url": "http://127.0.0.1:8911/theme-init.js",
+        "relative_path": "theme-init.js",
+        "sha256": "5a3afcc0139187bfe509414cd60fde2a0dfea72fd72751c4e6e696cdc0f6c587"
+      },
+      {
+        "url": "http://127.0.0.1:8911/locale-init.js",
+        "relative_path": "locale-init.js",
+        "sha256": "633d47a6a53b2211cf816769f8c084b097c1b60b6ab263803d8610c0531539fa"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/index-DvgX4dSm.js",
+        "relative_path": "assets/index-DvgX4dSm.js",
+        "sha256": "3089e062f3943518efad06a87e45ce97ae898190bc4c58be7943f3f0316e13b5"
+      },
+      {
+        "url": "http://127.0.0.1:8911/registerSW.js",
+        "relative_path": "registerSW.js",
+        "sha256": "9742073ef7fc795e7673d98f272992843298426a0ffd8cb3507784df5143608b"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/rhwp_bg-Wa5qc8q5.wasm",
+        "relative_path": "assets/rhwp_bg-Wa5qc8q5.wasm",
+        "sha256": "4737807f3978d90bc163bfb109c684c05f69c26c35d6a6e5f1bc33b65813c0bb"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/plugin-CPvtmj_Z.js",
+        "relative_path": "assets/plugin-CPvtmj_Z.js",
+        "sha256": "72bcdc6f70e601d35320ed78dc8f8d6fd9212312596d0f2412239d03e8a45a8c"
+      }
+    ]
+  },
+  {
+    "case": "initial-screen-v3-hwp3-enabled",
+    "assets": [
+      {
+        "url": "http://127.0.0.1:8911/theme-init.js",
+        "relative_path": "theme-init.js",
+        "sha256": "5a3afcc0139187bfe509414cd60fde2a0dfea72fd72751c4e6e696cdc0f6c587"
+      },
+      {
+        "url": "http://127.0.0.1:8911/locale-init.js",
+        "relative_path": "locale-init.js",
+        "sha256": "633d47a6a53b2211cf816769f8c084b097c1b60b6ab263803d8610c0531539fa"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/index-DvgX4dSm.js",
+        "relative_path": "assets/index-DvgX4dSm.js",
+        "sha256": "3089e062f3943518efad06a87e45ce97ae898190bc4c58be7943f3f0316e13b5"
+      },
+      {
+        "url": "http://127.0.0.1:8911/registerSW.js",
+        "relative_path": "registerSW.js",
+        "sha256": "9742073ef7fc795e7673d98f272992843298426a0ffd8cb3507784df5143608b"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/rhwp_bg-Wa5qc8q5.wasm",
+        "relative_path": "assets/rhwp_bg-Wa5qc8q5.wasm",
+        "sha256": "4737807f3978d90bc163bfb109c684c05f69c26c35d6a6e5f1bc33b65813c0bb"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/plugin-CPvtmj_Z.js",
+        "relative_path": "assets/plugin-CPvtmj_Z.js",
+        "sha256": "72bcdc6f70e601d35320ed78dc8f8d6fd9212312596d0f2412239d03e8a45a8c"
+      }
+    ]
+  },
+  {
+    "case": "initial-screen-v3-hwpx-enabled",
+    "assets": [
+      {
+        "url": "http://127.0.0.1:8911/theme-init.js",
+        "relative_path": "theme-init.js",
+        "sha256": "5a3afcc0139187bfe509414cd60fde2a0dfea72fd72751c4e6e696cdc0f6c587"
+      },
+      {
+        "url": "http://127.0.0.1:8911/locale-init.js",
+        "relative_path": "locale-init.js",
+        "sha256": "633d47a6a53b2211cf816769f8c084b097c1b60b6ab263803d8610c0531539fa"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/index-DvgX4dSm.js",
+        "relative_path": "assets/index-DvgX4dSm.js",
+        "sha256": "3089e062f3943518efad06a87e45ce97ae898190bc4c58be7943f3f0316e13b5"
+      },
+      {
+        "url": "http://127.0.0.1:8911/registerSW.js",
+        "relative_path": "registerSW.js",
+        "sha256": "9742073ef7fc795e7673d98f272992843298426a0ffd8cb3507784df5143608b"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/rhwp_bg-Wa5qc8q5.wasm",
+        "relative_path": "assets/rhwp_bg-Wa5qc8q5.wasm",
+        "sha256": "4737807f3978d90bc163bfb109c684c05f69c26c35d6a6e5f1bc33b65813c0bb"
+      },
+      {
+        "url": "http://127.0.0.1:8911/assets/plugin-CPvtmj_Z.js",
+        "relative_path": "assets/plugin-CPvtmj_Z.js",
+        "sha256": "72bcdc6f70e601d35320ed78dc8f8d6fd9212312596d0f2412239d03e8a45a8c"
+      }
+    ]
+  }
+]
