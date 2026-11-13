@@ -107,8 +107,16 @@ Windows의 원본 Rust/HWP 렌더링 전체를 실행했다고 주장하지 않�
 
 원 PR의 정확한 source head는 계속 `be67439b02f42779b50361ace7b8a47dd0d1439a`이며
 [원 Full CI](https://github.com/edwardkim/rhwp/actions/runs/43223354792)는 성공했다.
-새 통합 PR의 required CI는 생성 후 exact head에서 확인해야 하며 원 CI로 대신하지 않는다.
-아직 원격 push·통합 PR 생성·병합·원 PR close는 완료하지 않았다.
+[통합 PR #9053](https://github.com/edwardkim/rhwp/pull/9053)의 exact head
+`4499047f5560eaee03347400ff424cede156653e`에서 [Full CI](https://github.com/edwardkim/rhwp/actions/runs/43417460037),
+CodeQL 4언어·GHAS check·Canvas Render Diff·Adapter·Proptest·최종 CI Impact Policy 성공을 확인했다.
+[CI 영수증](../assets/issue8199_review_20261113/ci9053-code-complete.json)에 source SHA·repo/branch·실행 시각·실제 attempt·각 worker를 연결했다.
+기록 시점 checks는 34 SUCCESS·정상 SKIP 5건, MERGEABLE/CLEAN이다. CI Archives A–E는
+13,261 PASS/0 FAIL/45 skip이며 로컬 workspace 집계 13,446과 구분했다. 원 CI로 통합 CI를 대신하지 않았다.
+
+이 문서 전용 trailing commit은 Rust·테스트·도구·입력·baseline·CI 정책을 바꾸지 않는다.
+남은 병합 조건은 같은 PR의 최신 trailing head required checks·MERGEABLE/CLEAN·승인된 후속 처리다.
+원 PR close는 통합 병합 이후이며 #8199는 신고 덧붙임의 별도 #7996 범위를 해결했다고 확대하지 않고 참조로 유지한다.
 
 ## Merge 후 원 PR 코멘트 계획
 

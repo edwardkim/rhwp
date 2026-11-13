@@ -68,3 +68,12 @@ loaded 상태를 확인했다. 그 외 보호 입력에 외부 그림 참조는 
 기준 PDF는 기존 공식 2020 자료 및 원 작성자가 확인한 데스크톱 한컴 2022 12.0.0.535의
 Print→Microsoft Print to PDF다. 이전 3쪽 PDF-save 결과는 정량 기준으로 사용하지 않았다.
 원본·독립 PDF는 기존 커밋을 재사용한다. font binary·실행 로그·임시 스크립트는 포함하지 않았다.
+
+## 통합 head의 GitHub 검증
+
+[통합 PR #9053](https://github.com/edwardkim/rhwp/pull/9053)의 head
+`4499047f5560eaee03347400ff424cede156653e`에서 Full CI·CodeQL 4언어/GHAS·Render Diff·Adapter·Proptest·
+최종 정책 감사가 성공했다. CI Archives A–E의 실제 합계는 13,261 PASS/0 FAIL/45 skip이다.
+로컬 workspace 13,446과 같은 집계로 합치지 않는다.
+[실제 CI 영수증](ci9053-code-complete.json)은 workflow·head·branch·attempt·worker별 summary를 보존한다.
+후속 문서-only head의 검사와 실제 병합은 별도 종료 게이트다.
