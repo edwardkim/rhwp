@@ -26,6 +26,9 @@ pub(crate) use overlay_outer_frame::overlay_table_outer_margin_left_hu;
 pub(crate) use stored_column_spacing::stored_column_top_spacing_before;
 pub use stored_column_spacing::StoredColumnTopSpacing;
 
+mod stored_picture_stack;
+pub(crate) use stored_picture_stack::stored_picture_stack_before_host;
+
 mod picture_box;
 mod stored_cell_flow_picture;
 pub(crate) use picture_box::{

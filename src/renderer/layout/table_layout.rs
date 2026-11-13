@@ -7713,18 +7713,12 @@ impl LayoutEngine {
                     placed.common.vertical_offset = 0;
                     placed.common.horz_align = HorzAlign::Left;
                     placed.common.vert_align = VertAlign::Top;
-                    // 이 재조판 프레임은 한컴의 common 크기로 측정했다. 아래 paint가
-                    // 낡은 current 크기의 축별 max로 다시 키우지 않도록 같은 틀을 준다.
-                    if placed.shape_attr.rotation_angle.rem_euclid(360) == 0 {
-                        placed.shape_attr.current_width = placed.common.width;
-                        placed.shape_attr.current_height = placed.common.height;
-                    }
                     let area = LayoutRect {
                         x: inner_x + rect.x,
                         y: text_y_start + rect.y,
                         ..rect
                     };
-                    self.layout_picture(
+                    self.layout_picture_full_in_frame(
                         tree,
                         cell_node,
                         &placed,
@@ -7734,14 +7728,16 @@ impl LayoutEngine {
                         Some(section_index),
                         cell_context.as_ref().map(|c| c.parent_para_index),
                         Some(ctrl_idx),
+                        None,
                         cell_context.as_ref(),
                         styles,
+                        (pic.shape_attr.rotation_angle.rem_euclid(360) == 0)
+                            .then_some((pic.common.width as i32, pic.common.height as i32)),
                     );
                 }
                 para_y = text_y_start + frame.content_height;
                 continue;
             }
-            let has_table_ctrl = para.controls.iter().any(|c| matches!(c, Control::Table(_)));
             // [Task #573] inline TAC 표(treat_as_char=true) 와 block 표(treat_as_char=false)
             // 를 분리. 인라인 TAC 표가 있는 셀 paragraph 의 surrounding text (예: "ㄷ. ",
             // "이다.") 가 layout_composed_paragraph 호출 미진입으로 미렌더되던 결함 정정.

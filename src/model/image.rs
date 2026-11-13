@@ -318,9 +318,18 @@ pub(crate) fn picture_extra_layout(extra: &[u8]) -> PictureExtraLayout {
         return legacy;
     };
     match extra.len().checked_sub(offset) {
-        Some(0) => PictureExtraLayout { dim_offset: None, alpha_offset: None },
-        Some(8) => PictureExtraLayout { dim_offset: Some(offset), alpha_offset: None },
-        Some(9) => PictureExtraLayout { dim_offset: Some(offset), alpha_offset: Some(offset + 8) },
+        Some(0) => PictureExtraLayout {
+            dim_offset: None,
+            alpha_offset: None,
+        },
+        Some(8) => PictureExtraLayout {
+            dim_offset: Some(offset),
+            alpha_offset: None,
+        },
+        Some(9) => PictureExtraLayout {
+            dim_offset: Some(offset),
+            alpha_offset: Some(offset + 8),
+        },
         _ => legacy,
     }
 }
@@ -329,7 +338,9 @@ pub(crate) fn picture_extra_layout(extra: &[u8]) -> PictureExtraLayout {
 // 알 수 없는 색상·잘린 레코드의 길이는 추측하지 않는다.
 fn picture_dimensions_offset(extra: &[u8]) -> Option<usize> {
     let flags = u32::from_le_bytes(extra.get(5..9)?.try_into().ok()?);
-    if flags & !0x0f != 0 { return None; }
+    if flags & !0x0f != 0 {
+        return None;
+    }
     let mut remaining = extra.get(9..)?;
     if flags & 1 != 0 {
         remaining = remaining.get(44..)?;
@@ -339,16 +350,25 @@ fn picture_dimensions_offset(extra: &[u8]) -> Option<usize> {
         remaining = remaining.get(8..)?;
         remaining = skip_picture_effect_color(remaining)?;
     }
-    if flags & 4 != 0 { remaining = remaining.get(4..)?; }
-    if flags & 8 != 0 { remaining = remaining.get(14 * 4..)?; }
+    if flags & 4 != 0 {
+        remaining = remaining.get(4..)?;
+    }
+    if flags & 8 != 0 {
+        remaining = remaining.get(14 * 4..)?;
+    }
     Some(extra.len() - remaining.len())
 }
 
 fn skip_picture_effect_color(bytes: &[u8]) -> Option<&[u8]> {
     let kind = u32::from_le_bytes(bytes.get(..4)?.try_into().ok()?);
-    if kind != 0 { return None; }
+    if kind != 0 {
+        return None;
+    }
     let count = u32::from_le_bytes(bytes.get(8..12)?.try_into().ok()?);
-    let length = usize::try_from(count).ok()?.checked_mul(8)?.checked_add(12)?;
+    let length = usize::try_from(count)
+        .ok()?
+        .checked_mul(8)?
+        .checked_add(12)?;
     bytes.get(length..)
 }
 

@@ -54,7 +54,11 @@ pub(crate) fn print_jpeg_payload(
             return None;
         }
     }
-    let target = image.transform.effective_image_bbox(&bbox);
+    let target = if image.source_rect.is_some() {
+        image.transformed_paint_bbox(&bbox)
+    } else {
+        image.transform.effective_image_bbox(&bbox)
+    };
     let nominal_width = (target.width * crate::renderer::DEFAULT_DPI / dpi).floor();
     if !nominal_width.is_finite() || nominal_width <= 0.0 {
         return None;

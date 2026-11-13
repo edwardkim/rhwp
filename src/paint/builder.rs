@@ -665,7 +665,13 @@ impl LayerBuilder {
                                 crate::renderer::print_raster::PrintRasterFrame::new(
                                     self.image_page_size,
                                     self.image_reference_origin,
-                                    node.bbox,
+                                    // 원본 꼭짓점이 정한 내부 그림 창에 맞춘 장치 표본이다.
+                                    // 개체의 흐름 프레임을 쓰면 작은 그림의 가운데 내용이 clip 밖으로 밀린다.
+                                    if image.source_rect.is_some() {
+                                        image.transformed_paint_bbox(&frame)
+                                    } else {
+                                        node.bbox
+                                    },
                                     self.layout_dpi,
                                 )
                             {

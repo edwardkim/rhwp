@@ -6321,7 +6321,9 @@ fn try_reflow_line_segs_impl<S: Storage>(
                 // 폭 없는 앵커도 이미 넘친 개체 뒤에는 새 줄에 속한다.
                 // 앞 앵커만 남기고 뒤 앵커를 건너뛰면 말미의 정상 글자 줄을 잃는다.
                 let (ctrl_width, ctrl_height) = occupied.unwrap_or((0, 0));
-                if (line_width > 0 || line_has_anchor) && line_width + ctrl_width > max_line_width(line_specs.len()) {
+                if (line_width > 0 || line_has_anchor)
+                    && line_width + ctrl_width > max_line_width(line_specs.len())
+                {
                     storage.push(&mut line_specs, (line_start, line_width, line_height))?;
                     line_start = utf16_start;
                     line_width = 0;
@@ -6390,7 +6392,13 @@ fn try_reflow_line_segs_impl<S: Storage>(
                 seg.vertical_pos = vpos;
                 vpos += seg.line_height.saturating_add(seg.line_spacing);
             }
-            mark_indented_lines(&mut new_line_segs, 0, para_style, &orig_line_segs);
+            mark_indented_lines(
+                &mut new_line_segs,
+                0,
+                para_style,
+                &orig_line_segs,
+                seg_width_hwp,
+            );
             para.replace_line_segs(new_line_segs);
         } else {
             // 빈 문단도 활성 글자 모양의 크기로 줄을 만든다. 앞 문단 LINE_SEG의
