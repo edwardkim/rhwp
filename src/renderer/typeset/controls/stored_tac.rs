@@ -240,6 +240,7 @@ pub(super) fn prepare_coanchored_first_line(
             }
             Control::SectionDef(_)
             | Control::ColumnDef(_)
+            | Control::PageNumberPos(_)
             | Control::Header(_)
             | Control::Footer(_) => {}
             _ => return None,

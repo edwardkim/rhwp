@@ -3,7 +3,7 @@
 
 use crate::model::{
     control::Control,
-    paragraph::{LineSeg, Paragraph},
+    paragraph::{ColumnBreakType, LineSeg, Paragraph},
     table::Table,
 };
 use crate::renderer::float_placement::ParagraphFloatPlacement;
@@ -223,6 +223,79 @@ pub(crate) fn normalized_empty_control_frame(
     Some(frame)
 }
 
+fn clean_single_saved_line(para: &Paragraph) -> Option<&LineSeg> {
+    let [line] = para.line_segs.as_slice() else {
+        return None;
+    };
+    (!para.stored_text_partition_is_dirty()
+        && !para.cell_format_vpos_dirty
+        && para.column_type == ColumnBreakType::None
+        && line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        && line.text_start == 0
+        && line.vertical_pos >= 0
+        && line.text_height > 0
+        && line.text_height <= line.line_height
+        && line.segment_width > 0
+        && para
+            .source_line_seg_vertical_pos
+            .as_ref()
+            .is_none_or(|source| source.as_slice() == [line.vertical_pos]))
+    .then_some(line)
+}
+
+/// The host line owns the child's complete painted box, including outside margins.
+fn stored_inline_tail_table_fits_line(para: &Paragraph) -> bool {
+    let [Control::Table(child)] = para.controls.as_slice() else {
+        return false;
+    };
+    let Some(line) = clean_single_saved_line(para) else {
+        return false;
+    };
+    let height = i64::from(child.common.height);
+    if !para.text.is_empty()
+        || !child.common.treat_as_char
+        || !child.common.flow_with_text
+        || child.caption.is_some()
+        || child.row_count != 1
+        || child.cells.is_empty()
+        || child.cells.len() != usize::from(child.col_count)
+        || child.cell_spacing < 0
+        || child.common.width > i32::MAX as u32
+        || height == 0
+        || height + i64::from(child.outer_margin_top) + i64::from(child.outer_margin_bottom)
+            != i64::from(line.line_height)
+    {
+        return false;
+    }
+
+    let mut width = u64::from(child.cell_spacing as u16) * (child.cells.len() - 1) as u64;
+    for (col, cell) in child.cells.iter().enumerate() {
+        let [para] = cell.paragraphs.as_slice() else {
+            return false;
+        };
+        let Some(line) = clean_single_saved_line(para) else {
+            return false;
+        };
+        if cell.dirty_flag
+            || cell.row != 0
+            || usize::from(cell.col) != col
+            || cell.row_span != 1
+            || cell.col_span != 1
+            || cell.width == 0
+            || cell.height != child.common.height
+            || !para.controls.is_empty()
+            || i64::from(line.vertical_pos)
+                + i64::from(line.line_height)
+                + i64::from(cell.effective_vertical_padding_hu(&child.padding))
+                != height
+        {
+            return false;
+        }
+        width += u64::from(cell.width);
+    }
+    width == u64::from(child.common.width)
+}
+
 /// 원본 저장 줄과 선언 상자로 입증한 마지막 행의 빈 띠만 회수한다.
 /// 측정 유무와 무관하게 같은 행 벡터를 소비하며, 쪽을 가른 행에는 호출하지 않는다.
 pub(crate) fn declared_tail_row_height(
@@ -272,24 +345,30 @@ pub(crate) fn declared_tail_row_height(
 
     // 축소 하한 = 마지막 행 셀들의 저장 줄 내용 높이 + 상하 패딩.
     let mut content_floor = 0.0f64;
+    let mut has_inline_tail_table = false;
     for cell in &table.cells {
         if cell.row as usize != last_row || cell.row_span != 1 {
             continue;
         }
-        // 합성 줄 셀과 중첩 표 tail 은 여기서 판단하지 않는다 (후자는
-        // `fit_measured_table_nested_tail_to_declared_height` 담당).
         if cell
             .paragraphs
             .iter()
             .any(crate::renderer::para_has_no_stored_line_segs)
-            || cell.paragraphs.iter().any(|paragraph| {
-                paragraph
-                    .controls
-                    .iter()
-                    .any(|control| matches!(control, Control::Table(_)))
-            })
         {
             return None;
+        }
+        for paragraph in &cell.paragraphs {
+            if !paragraph
+                .controls
+                .iter()
+                .any(|control| matches!(control, Control::Table(_)))
+            {
+                continue;
+            }
+            if cell.dirty_flag || !stored_inline_tail_table_fits_line(paragraph) {
+                return None;
+            }
+            has_inline_tail_table = true;
         }
         let content_hu = cell
             .paragraphs
@@ -304,7 +383,12 @@ pub(crate) fn declared_tail_row_height(
             content_floor = floor;
         }
     }
-    if content_floor <= 0.0 {
+    if content_floor <= 0.0
+        || (has_inline_tail_table
+            && table.cells.iter().any(|cell| {
+                cell.row_span > 1 && usize::from(cell.row) + usize::from(cell.row_span) > last_row
+            }))
+    {
         return None;
     }
 
