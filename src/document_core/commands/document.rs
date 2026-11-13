@@ -3305,10 +3305,19 @@ impl DocumentCore {
 
     pub(crate) fn hwpx_document_for_export<T>(
         &self,
-        serialize: impl FnOnce(
-            &crate::model::document::Document,
-        ) -> Result<T, crate::serializer::SerializeError>,
+        serialize: impl FnOnce(&Document) -> Result<T, crate::serializer::SerializeError>,
     ) -> Result<T, HwpError> {
+        self.with_hwpx_export_document(serialize)
+            .map_err(|e| HwpError::RenderError(e.to_string()))
+    }
+
+    /// 저장 검증은 live IR이 아니라 실제 저장기가 소비한 같은 투영을 비교한다.
+    /// 캐시 차이를 일괄 무시하지 않으며 내용·속성·줄의 나머지 엄격 비교는 유지한다.
+    pub fn hwpx_export_expected_document(&self) -> Document {
+        self.with_hwpx_export_document(Clone::clone)
+    }
+
+    fn with_hwpx_export_document<T>(&self, consume: impl FnOnce(&Document) -> T) -> T {
         let hwp3_origin = matches!(self.source_format, crate::parser::FileFormat::Hwp3)
             || self.document.provenance.hwp3_lineage;
         let lower_markers = |doc: &mut Document| {
@@ -3322,7 +3331,7 @@ impl DocumentCore {
         // 아니다. 그 IR 은 HWPX 저장 계약(줄 축·저장 줄 유무)을 그대로 지니므로 HWP5-origin
         // 마커를 붙이지 않고 HWPX 출처와 같은 경로로 내보낸다. 마커를 붙이면 다시 연 HWPX 가
         // HWP5-origin 호환 계약으로 조판돼 원본 HWPX 와 쪽수가 갈린다(36376848: 1쪽 → 2쪽).
-        let serialized = if matches!(self.source_format, crate::parser::FileFormat::Hwp)
+        if matches!(self.source_format, crate::parser::FileFormat::Hwp)
             && !self.document.provenance.hwpx_lineage
         {
             let mut doc = self.document.clone();
@@ -3347,7 +3356,7 @@ impl DocumentCore {
             }
             Self::materialize_hwp5_missing_linesegs_for_hwpx_export(&mut doc);
             lower_markers(&mut doc);
-            serialize(&doc)
+            consume(&doc)
         } else if hwp3_origin
             || self
                 .document
@@ -3370,17 +3379,16 @@ impl DocumentCore {
                 Self::push_hwp3_origin_marker(&mut doc);
             }
             lower_markers(&mut doc);
-            serialize(&doc)
+            consume(&doc)
         } else if grows_tables || !page_starts.is_empty() || !cache_updates.is_empty() {
             let mut doc = self.document.clone();
             Self::apply_managed_line_cache_updates(&mut doc, cache_updates);
             grown_table_heights::apply_grown_table_heights(&mut doc, &grown_tables);
             self.write_page_starts(&mut doc, &page_starts);
-            serialize(&doc)
+            consume(&doc)
         } else {
-            serialize(&self.document)
-        };
-        serialized.map_err(|e| HwpError::RenderError(e.to_string()))
+            consume(&self.document)
+        }
     }
 
     /// HWP3 계보 마커를 export 사본에 심는다(중복 방지).
