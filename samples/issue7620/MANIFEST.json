@@ -56,26 +56,68 @@
     },
     {
       "path": "e-cellbreak-row-moves-next-page.hwp",
-      "sha256": "e566e14f5a0b4a4b8dbebefc6ab3d233710030ab7f53ee1d7307442ddf54f141",
+      "sha256": "48b74c6a93f376dec94cbbd9a0f749780566dff85128f341ffe1d5939634e6e1",
       "bytes": 14336,
       "source": "generate-cellbreak.mjs 생성 대조군 — 앞 문단 30개 뒤 3×2 CellBreak 표, 셀마다 6개 문단(줄)",
-      "reference_pdf": "pdf/issue7620/e-cellbreak-row-moves-next-page-2020.pdf",
-      "reference_pdf_sha256": "a144223cc49c6be43027a5b95e969867dd6ff455115030351271d091183a28c1",
+      "reference_pdf": "pdf/issue7620/e-cellbreak-row-moves-next-page-tagged-2020.pdf",
+      "reference_pdf_sha256": "a06129e96004c6bd58591a1cace0cf0f5c56234168db2bd154f79decd0db77c5",
       "purpose": "쪽 바닥에 걸린 여러 줄 행을 자르지 않고 행 전체를 다음 쪽으로 넘기는지 검사",
       "historical_web_reference_pdf": "pdf/issue7620/e-cellbreak-row-moves-next-page-hancomdocs.pdf",
       "historical_web_reference_pdf_sha256": "3c5d39013cf050319ff86ff3276a5cc04d0d0d2d8f78cd6280d4edc3668b0ecb",
-      "reference_pdf_pages": 2
+      "reference_pdf_pages": 2,
+      "legacy_unmarked_sha256": "e566e14f5a0b4a4b8dbebefc6ab3d233710030ab7f53ee1d7307442ddf54f141",
+      "generated_sha256": "e566e14f5a0b4a4b8dbebefc6ab3d233710030ab7f53ee1d7307442ddf54f141",
+      "line_seg_tag_marker": "#8939: 생성 파일에 /RhwpLineSegTags 표지 스트림만 더함(다른 스트림 바이트 동일)"
     },
     {
       "path": "f-rowbreak-row-splits-at-line.hwp",
-      "sha256": "904520801739be5795f0dd64dc907367a15f131ab4b4a985439724fed0936e4b",
+      "sha256": "627aa762cb53ed673e4e941e46454b717a59683f4daeee9b3189edbc294c8059",
       "bytes": 14336,
       "source": "generate-cellbreak.mjs 생성 대조군 — e와 같고 쪽 경계 나눔만 RowBreak",
-      "reference_pdf": "pdf/issue7620/f-rowbreak-row-splits-at-line-2020.pdf",
-      "reference_pdf_sha256": "a6f8ffe6c730ac30812dc3a52f8aa6a1585d92e0f118231705c2574624e397b9",
+      "reference_pdf": "pdf/issue7620/f-rowbreak-row-splits-at-line-tagged-2020.pdf",
+      "reference_pdf_sha256": "9a7344d52ff0b7d565e3e206f522f75f05f1d84aeca5b78711cfb2d8448d9fa8",
       "purpose": "같은 입력의 RowBreak 표는 걸린 행을 글줄 경계에서 나누는지 검사(대조군)",
       "historical_web_reference_pdf": "pdf/issue7620/f-rowbreak-row-splits-at-line-hancomdocs.pdf",
       "historical_web_reference_pdf_sha256": "6702ea0e75bd3bfe1701796e82f57d62d566d704f79925f69e90a75000ad6d57",
+      "reference_pdf_pages": 2,
+      "legacy_unmarked_sha256": "904520801739be5795f0dd64dc907367a15f131ab4b4a985439724fed0936e4b",
+      "generated_sha256": "904520801739be5795f0dd64dc907367a15f131ab4b4a985439724fed0936e4b",
+      "line_seg_tag_marker": "#8939: 생성 파일에 /RhwpLineSegTags 표지 스트림만 더함(다른 스트림 바이트 동일)"
+    },
+    {
+      "path": "legacy-unmarked/e-cellbreak-row-moves-next-page.hwp",
+      "sha256": "e566e14f5a0b4a4b8dbebefc6ab3d233710030ab7f53ee1d7307442ddf54f141",
+      "bytes": 14336,
+      "source": "표지 도입 전 rhwp 생성 원본, 원래 바이트 그대로 보존",
+      "reference_pdf": "pdf/issue7620/e-cellbreak-row-moves-next-page-2020.pdf",
+      "reference_pdf_sha256": "a144223cc49c6be43027a5b95e969867dd6ff455115030351271d091183a28c1",
+      "reference_pdf_pages": 2
+    },
+    {
+      "path": "legacy-unmarked/f-rowbreak-row-splits-at-line.hwp",
+      "sha256": "904520801739be5795f0dd64dc907367a15f131ab4b4a985439724fed0936e4b",
+      "bytes": 14336,
+      "source": "표지 도입 전 rhwp 생성 원본, 원래 바이트 그대로 보존",
+      "reference_pdf": "pdf/issue7620/f-rowbreak-row-splits-at-line-2020.pdf",
+      "reference_pdf_sha256": "a6f8ffe6c730ac30812dc3a52f8aa6a1585d92e0f118231705c2574624e397b9",
+      "reference_pdf_pages": 2
+    },
+    {
+      "path": "hancom2020-saved/e-cellbreak-row-moves-next-page.hwp",
+      "sha256": "635636753ea0193f23867aa6265617563b453f8bee4f44232f8f216fdb8676c5",
+      "bytes": 26112,
+      "source": "Windows Hancom 2020 11.0.0.9136 실제 SaveAs 정상 대조군",
+      "reference_pdf": "pdf/issue7620/e-cellbreak-row-moves-next-page-hancom-saved-2020.pdf",
+      "reference_pdf_sha256": "b2e203ae66ccf534ddcc844c4076324f8357f459b81c72915e72c505f7e45e0b",
+      "reference_pdf_pages": 2
+    },
+    {
+      "path": "hancom2020-saved/f-rowbreak-row-splits-at-line.hwp",
+      "sha256": "ba916320d36099c4854087eb2ff8bd65a986a2788eed7fb421f9469521e9dfec",
+      "bytes": 28160,
+      "source": "Windows Hancom 2020 11.0.0.9136 실제 SaveAs 정상 대조군",
+      "reference_pdf": "pdf/issue7620/f-rowbreak-row-splits-at-line-hancom-saved-2020.pdf",
+      "reference_pdf_sha256": "bd35bbddd6d17f7e00aa47b66931f20184aa8a479e2376e91c9251f69efbffa9",
       "reference_pdf_pages": 2
     }
   ],

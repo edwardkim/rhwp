@@ -642,3 +642,8 @@ samples/issue8573/picture-cell-short-text.hwpx	1	1
 samples/issue8573/picture-cell-page-boundary-empty.hwpx	2	2
 samples/issue8573/picture-cell-page-boundary-spaces.hwpx	2	2
 samples/issue8573/picture-cell-page-boundary-text.hwpx	2	2
+# #8975 갱신 head: 구형 표지 없는 입력과 실제 Hancom 2020 재저장 대조군의 전 2쪽 Print.
+samples/issue7620/hancom2020-saved/e-cellbreak-row-moves-next-page.hwp	2	2
+samples/issue7620/hancom2020-saved/f-rowbreak-row-splits-at-line.hwp	2	2
+samples/issue7620/legacy-unmarked/e-cellbreak-row-moves-next-page.hwp	2	2
+samples/issue7620/legacy-unmarked/f-rowbreak-row-splits-at-line.hwp	2	2
