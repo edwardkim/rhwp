@@ -1608,6 +1608,8 @@ rhwp edit delete-picture 그림본.hwp --section 0 --para 0 --ctrl 0 -o 지움.h
 `--props` 는 JSON 객체여야 하고, 아래 키와 값만 받는다. 모르는 키나 허용하지 않는 값이 하나라도
 있으면 문서를 쓰지 않고 exit 2 로 끝난다(`--dry-run` 도 같다). 열거 값은 대소문자를 구분한다.
 `set-hf-picture` 의 `--props` 도 같은 키를 받는다(캡션 만들기는 지원하지 않는다).
+동일 키를 두 번 쓴 JSON은 거부한다. Unicode escape로 쓴 키·값도 JSON 의미대로 해석하며,
+검사에서 확인한 값과 실제 저장에 적용하는 값이 같다. 이 규칙은 `set-hf-picture`·`set-shape`에도 적용된다.
 
 | 키 | 값 |
 |---|---|

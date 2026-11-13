@@ -1,5 +1,5 @@
 //! 관계형(그림·도형 컨트롤의 문단·칸 소속, 저장 → 다시 열기 → 재저장 → 다시 열기 뒤 소속 보존, 거부한 편집 ↔ 출력 파일 없음; 실물 px 검사 아님): #9020 회귀.
-//! 주석 갱신: 2026-11-12T23:55:00+09:00
+//! 주석 갱신: 2026-11-13T23:25:55+09:00
 //! 이 파일은 조판 회귀가 아닌 CLI 명령 계약 검사다. 새 명령은 코어의 기존 편집 함수
 //! (`set_shape_properties_native`·`relocate_floating_picture_native`·`insert_picture_in_cell_native`)를
 //! 부르기만 하고 조판 규칙과 그림 배치 계산을 바꾸지 않으므로, 독립 PDF 시각 측정 대상이 아니며 시각
@@ -472,4 +472,85 @@ fn shape_prop_list_matches_the_setter() {
         .map(str::to_string)
         .collect();
     assert_eq!(listed, read);
+}
+
+#[test]
+fn shape_props_use_decoded_json_and_reject_duplicate_members() {
+    let source = temp("decoded-shape", "hwpx");
+    ok_envelope(&[
+        "edit",
+        "insert-shape",
+        &sample(),
+        "--para",
+        "1",
+        "--width",
+        "5000",
+        "--height",
+        "3000",
+        "--json",
+        "-o",
+        source.to_str().unwrap(),
+    ]);
+    let doc = open(&source);
+    let ctrl = doc.document().sections[0].paragraphs[1]
+        .controls
+        .iter()
+        .position(|c| matches!(c, Control::Shape(_)))
+        .expect("넣은 도형");
+    let ctrl_value = ctrl.to_string();
+    for props in [
+        r#"{"\u0074extWrap":"TopAndBottom"}"#,
+        r#"{"textWrap":"TopAnd\u0042ottom"}"#,
+    ] {
+        let output = temp("decoded-shape-out", "hwpx");
+        ok_envelope(&[
+            "edit",
+            "set-shape",
+            source.to_str().unwrap(),
+            "--section",
+            "0",
+            "--para",
+            "1",
+            "--ctrl",
+            &ctrl.to_string(),
+            "--props",
+            props,
+            "--json",
+            "-o",
+            output.to_str().unwrap(),
+        ]);
+        let saved = reopen_twice(&output);
+        let Control::Shape(shape) = &saved.document().sections[0].paragraphs[1].controls[ctrl]
+        else {
+            panic!("도형 소속 보존");
+        };
+        assert_eq!(shape.common().text_wrap, TextWrap::TopAndBottom, "{props}");
+        let _ = std::fs::remove_file(output);
+    }
+    for dry in [false, true] {
+        let output = temp("duplicate-shape", "hwpx");
+        let mut args = vec![
+            "edit",
+            "set-shape",
+            source.to_str().unwrap(),
+            "--section",
+            "0",
+            "--para",
+            "1",
+            "--ctrl",
+            &ctrl_value,
+            "--props",
+            r#"{"fillType":"Solid","fillType":"solid"}"#,
+            "-o",
+            output.to_str().unwrap(),
+        ];
+        if dry {
+            args.push("--dry-run");
+        }
+        let out = run(&args);
+        assert_eq!(out.status.code(), Some(2), "{out:?}");
+        assert!(String::from_utf8_lossy(&out.stderr).contains("중복"));
+        assert!(!output.exists());
+    }
+    let _ = std::fs::remove_file(source);
 }

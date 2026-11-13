@@ -174,16 +174,43 @@ pub(crate) const SHAPE_PROPS: &[PropSpec] = &[
     caption_prop("captionIncludeMargin", PropKind::Bool),
 ];
 
-/// 속성 JSON 이 `specs` 에 맞는지 검사한다. 문제가 있으면 사람이 읽을 오류 문장을 돌려준다.
+/// 최상위 속성의 중복 키를 거부한다. escape 표기가 달라도 같은 키로 판정한다.
+struct UniqueProps;
+
+impl<'de> serde::de::Visitor<'de> for UniqueProps {
+    type Value = serde_json::Map<String, serde_json::Value>;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter.write_str("JSON 객체")
+    }
+
+    fn visit_map<A: serde::de::MapAccess<'de>>(self, mut map: A) -> Result<Self::Value, A::Error> {
+        let mut props = serde_json::Map::new();
+        while let Some((key, value)) = map.next_entry::<String, serde_json::Value>()? {
+            if props.contains_key(&key) {
+                return Err(serde::de::Error::custom(format!(
+                    "속성 키가 중복되었습니다: {key}"
+                )));
+            }
+            props.insert(key, value);
+        }
+        Ok(props)
+    }
+}
+
+/// 검사한 키·값과 setter가 읽는 키·값이 같도록 정규화한 JSON을 반환한다.
 ///
 /// 빈 객체는 바꿀 것이 없으므로 거부한다. 키 하나라도 맞지 않으면 전체를 거부해, 일부만
 /// 적용되고 나머지가 조용히 빠지는 일이 없게 한다.
-pub(crate) fn check_props(json: &str, specs: &[PropSpec], what: &str) -> Result<(), String> {
-    let value: serde_json::Value = serde_json::from_str(json)
-        .map_err(|e| format!("--props 가 올바른 JSON 이 아닙니다 ({e})"))?;
-    let Some(object) = value.as_object() else {
-        return Err("--props 는 JSON 객체여야 합니다".to_string());
-    };
+pub(crate) fn check_props(json: &str, specs: &[PropSpec], what: &str) -> Result<String, String> {
+    use serde::Deserializer;
+
+    let bad_json = |e| format!("--props 가 올바른 JSON 이 아닙니다 ({e})");
+    let mut deserializer = serde_json::Deserializer::from_str(json);
+    let object = (&mut deserializer)
+        .deserialize_map(UniqueProps)
+        .map_err(bad_json)?;
+    deserializer.end().map_err(bad_json)?;
     if object.is_empty() {
         return Err(format!("--props 에 바꿀 {what} 속성이 없습니다"));
     }
@@ -195,7 +222,7 @@ pub(crate) fn check_props(json: &str, specs: &[PropSpec], what: &str) -> Result<
             .join(", ")
     };
     let has_caption = object.get("hasCaption").and_then(|v| v.as_bool()) == Some(true);
-    for (key, v) in object {
+    for (key, v) in &object {
         let Some(spec) = specs.iter().find(|spec| spec.key == key) else {
             return Err(format!(
                 "--props 에 {what} 속성이 아닌 키가 있습니다: {key} (받는 키: {})",
@@ -236,5 +263,7 @@ pub(crate) fn check_props(json: &str, specs: &[PropSpec], what: &str) -> Result<
             ));
         }
     }
-    Ok(())
+    // 기존 setter의 수동 JSON reader에 원문 escape·중복 해석을 맡기지 않는다.
+    // WASM setter의 조회 봉지 되먹임 계약은 변경하지 않는다.
+    Ok(serde_json::Value::Object(object).to_string())
 }

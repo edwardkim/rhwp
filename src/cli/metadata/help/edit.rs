@@ -586,6 +586,7 @@ pub(super) fn print() {
     println!("      본문 그림 속성을 바꾼다");
     println!();
     println!("      --section/--para/--ctrl   구역·문단·컨트롤 인덱스 (0부터, 필수)");
+    println!("      중복 키는 거부하며 Unicode escape로 쓴 키·값도 JSON 의미대로 적용한다");
     println!("      --props <JSON>            그림 속성 JSON 객체 (필수). 주요 키:");
     println!("        treatAsChar               true/false (글자처럼 취급)");
     println!("        textWrap                  Square|Tight|Through|TopAndBottom|BehindText|InFrontOfText");
@@ -627,6 +628,7 @@ pub(super) fn print() {
     println!("      본문 도형 속성을 바꾼다");
     println!();
     println!("      --section/--para/--ctrl   구역·문단·컨트롤 인덱스 (0부터, 필수)");
+    println!("      중복 키는 거부하며 Unicode escape로 쓴 키·값도 JSON 의미대로 적용한다");
     println!("      --props <JSON>            도형 속성 JSON 객체 (필수). 배치 키는 set-picture 와 같고,");
     println!("                                선·채우기·그림자·글상자 여백 등 도형 키를 더 받는다");
     println!(

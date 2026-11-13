@@ -1,5 +1,5 @@
 //! 관계형(CLI 결과 JSON 의 컨트롤 번호 ↔ 문서 안 그림 컨트롤, 거부한 편집 ↔ 출력 파일 없음; 실물 px 검사 아님): #9019 회귀.
-//! 주석 갱신: 2026-11-12T22:22:47+09:00
+//! 주석 갱신: 2026-11-13T23:25:55+09:00
 //! 이 파일은 조판 회귀가 아닌 CLI 결과 JSON·종료 코드 계약 검사다. 조판 규칙과 그림 배치 계산을
 //! 바꾸지 않으므로 독립 PDF 시각 측정 대상이 아니며 시각 점수를 추정하지 않는다.
 //!
@@ -305,7 +305,7 @@ fn keys_read_by(bodies: &[&str]) -> std::collections::BTreeSet<String> {
 }
 
 /// 검사 오류가 알려 주는 받는 키 목록.
-fn keys_listed_by(check: fn(&str) -> Result<(), String>) -> std::collections::BTreeSet<String> {
+fn keys_listed_by(check: fn(&str) -> Result<String, String>) -> std::collections::BTreeSet<String> {
     let err = check(r#"{"__unknown__":1}"#).unwrap_err();
     let list = &err[err.find("받는 키: ").expect("받는 키 목록") + "받는 키: ".len()..];
     list[..list.rfind(')').unwrap()]
@@ -326,4 +326,108 @@ fn picture_prop_list_matches_the_setter() {
         keys_listed_by(rhwp::document_core::check_picture_props),
         keys_read_by(&[fn_body(picture, "apply_picture_props_inner")])
     );
+}
+
+#[test]
+fn set_picture_applies_the_same_decoded_json_that_was_validated() {
+    let inserted = temp("decoded-base");
+    let out = run(&[
+        "edit",
+        "insert-picture",
+        &sample(),
+        "--image",
+        &image(),
+        "--para",
+        "1",
+        "--json",
+        "-o",
+        inserted.to_str().unwrap(),
+    ]);
+    assert_eq!(out.status.code(), Some(0), "{out:?}");
+    let ctrl = index(&envelope(&out), "ctrl");
+    for props in [
+        r#"{"\u0074extWrap":"TopAndBottom"}"#,
+        r#"{"textWrap":"TopAnd\u0042ottom"}"#,
+    ] {
+        for ext in ["hwpx", "hwp"] {
+            let changed = temp("decoded-set").with_extension(ext);
+            let out = run(&[
+                "edit",
+                "set-picture",
+                inserted.to_str().unwrap(),
+                "--section",
+                "0",
+                "--para",
+                "1",
+                "--ctrl",
+                &ctrl.to_string(),
+                "--props",
+                props,
+                "-o",
+                changed.to_str().unwrap(),
+            ]);
+            assert_eq!(out.status.code(), Some(0), "{props}: {out:?}");
+            assert_eq!(
+                picture_wrap(&changed, 0, 1, ctrl),
+                TextWrap::TopAndBottom,
+                "{ext}: 검사한 JSON의 실제 값이 저장되어야 한다: {props}"
+            );
+            let _ = std::fs::remove_file(changed);
+        }
+    }
+    let _ = std::fs::remove_file(inserted);
+}
+
+#[test]
+fn duplicate_picture_props_are_rejected_without_writing() {
+    let inserted = temp("duplicate-base");
+    let out = run(&[
+        "edit",
+        "insert-picture",
+        &sample(),
+        "--image",
+        &image(),
+        "--para",
+        "1",
+        "--json",
+        "-o",
+        inserted.to_str().unwrap(),
+    ]);
+    assert_eq!(out.status.code(), Some(0), "{out:?}");
+    let ctrl = index(&envelope(&out), "ctrl").to_string();
+    for props in [
+        r#"{"textWrap":"topAndBottom","textWrap":"TopAndBottom"}"#,
+        r#"{"textWrap":"TopAndBottom","textWrap":"topAndBottom"}"#,
+        r#"{"width":3000,"\u0077idth":4000}"#,
+    ] {
+        for dry in [false, true] {
+            let output = temp("duplicate-rejected");
+            let mut args = vec![
+                "edit",
+                "set-picture",
+                inserted.to_str().unwrap(),
+                "--section",
+                "0",
+                "--para",
+                "1",
+                "--ctrl",
+                &ctrl,
+                "--props",
+                props,
+                "-o",
+                output.to_str().unwrap(),
+            ];
+            if dry {
+                args.push("--dry-run");
+            }
+            let out = run(&args);
+            assert_eq!(out.status.code(), Some(2), "{props}: {out:?}");
+            assert!(
+                String::from_utf8_lossy(&out.stderr).contains("중복"),
+                "{out:?}"
+            );
+            assert!(!output.exists(), "중복 키는 파일을 쓰기 전에 거부한다");
+        }
+    }
+    let _ = std::fs::remove_file(inserted);
 }

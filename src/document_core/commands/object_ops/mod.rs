@@ -21,13 +21,13 @@ mod table_creation;
 
 pub use table_creation::{TableColumnWidths, TableCreationOptions};
 
-/// 그림 속성 JSON 이 `set_picture_properties_native` 계열 setter 가 읽는 키·값만 담는지 (#9019).
-pub fn check_picture_props(props_json: &str) -> Result<(), String> {
+/// 그림 속성을 검사하고 setter에 전달할 정규화 JSON을 반환한다 (#9019).
+pub fn check_picture_props(props_json: &str) -> Result<String, String> {
     props_check::check_props(props_json, props_check::PICTURE_PROPS, "그림")
 }
 
-/// 도형 속성 JSON 이 `set_shape_properties_native` 가 읽는 키·값만 담는지 (#9020).
-pub fn check_shape_props(props_json: &str) -> Result<(), String> {
+/// 도형 속성을 검사하고 setter에 전달할 정규화 JSON을 반환한다 (#9020).
+pub fn check_shape_props(props_json: &str) -> Result<String, String> {
     props_check::check_props(props_json, props_check::SHAPE_PROPS, "도형")
 }
 
