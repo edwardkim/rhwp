@@ -33,3 +33,7 @@ footer	wasm	10	99.95	99.95	0.0
 footer	wasm	11	97.52	97.52	0.0
 footer	wasm	12	99.9	99.9	0.0
 footer	wasm	13	99.89	99.89	0.0
+a-rowbreak-float	native	1	100.00	100.00	0.00
+control-float	native	1	100.00	100.00	0.00
+a-rowbreak-float	wasm	1	100.00	100.00	0.00
+control-float	wasm	1	100.00	100.00	0.00

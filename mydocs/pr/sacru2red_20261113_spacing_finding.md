@@ -30,3 +30,11 @@ CellBreak·RowBreak 모두 2쪽이며 행별 쪽 소속, 글줄 순서, 누락·
 `pdf/issue7620/{e-cellbreak-row-moves-next-page,f-rowbreak-row-splits-at-line}-2020.pdf`에 보존한다.
 현행 직접 판독 규칙에 따라 수치가 90% 이상이라는 이유만으로 이 기존 차이를 면제하지 않는다.
 #8951의 footer baseline 제거 판정과는 구분한다.
+
+## 승인된 보정 결과
+
+사용자는 이 차이의 예외 수용 대신 간격 보정·재검증을 승인했다. 공통 커서가 이미 소비한
+600HU를 중복 역산하는 원인을 `e5a6a1ff9f`에서 보정했고, 수정 후 두 입력 전 4쪽은
+Native/fresh WASM 모두 100.00%다. 원본 a·None 정상 대조군도 양쪽에서 100.00%를 유지한다.
+이 문서의 위 수치는 보정 전 진단이며, [최종 원장](assets/sacru2red-20261113/final/README.md)에
+보정 후 TSV·직접 판독·실제 빈 줄 전진의 음성/양성 대조와 필수 보호 검증을 보존했다.

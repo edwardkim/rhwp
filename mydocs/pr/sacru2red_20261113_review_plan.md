@@ -42,3 +42,12 @@
 공용 Cargo target은 `/home/edward/mygithub/rhwp/target/pr-review`다. 임시 로그·생성물은 루트
 `output/pr-review/sacru2red-20261113`에만 둔다. source·입력·검사 변경이 없는 녹색 원 head의
 광범위 CI 재사용과 새 보정 head의 로컬 필수 검증을 혼동하지 않는다.
+
+## 승인된 추가 범위와 로컬 완료
+
+위 충돌·보정 없음 설명은 접수 시점이다. 이후 실제 Desktop Print로 발견한 표 뒤 간격 차이에
+사용자가 예외 대신 메인테이너 보정·재검증을 승인했다. 공통 제품 보정 `e5a6a1ff9f`와
+회귀 보완 `b4b8c27260` 이후 필수 검사를 완료했고 원 기여 SHA 두 개를 그대로 보존했다.
+[최종 전쪽 원장](assets/sacru2red-20261113/final/README.md)과
+[원격 처리안](assets/sacru2red-20261113/remote-action-plan.md)을 준비했다.
+원격 push·새 PR·댓글·merge는 이 로컬 승인에 포함하지 않는다.
