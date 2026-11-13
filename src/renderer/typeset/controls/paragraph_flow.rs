@@ -488,6 +488,21 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
                 // 혼합 컨트롤에 전체 PartialParagraph를 다시 추가하지 않는다.
                 flow_table_owns_host_text = true;
                 let flow_before_table = st.current_height;
+                // [#9038] 같은 문단의 앞 표가 쪽을 넘겨 나뉘고 그 이어지는 조각이 이 쪽에 놓였으면
+                // 문단 시작 높이는 지난 쪽의 좌표다. 그 값을 문단 기준 원점으로 쓰면 뒤 표의 쪽
+                // 예산이 지난 쪽 위치에서 계산돼 남은 공간을 넘겨 담는다. 이 쪽에서 뒤 표는 앞 표
+                // 조각 끝(현재 흐름)에서 이어진다. 문단 전체가 새 쪽으로 옮겨진 경우(이 쪽에 앞 표의
+                // 분할 조각이 없음)는 종전 원점을 그대로 쓴다.
+                let table_para_start_height = if st.flow_table_page_count() != page_count_before
+                    && st.current_items.iter().any(|item| {
+                        matches!(item, crate::renderer::pagination::PageItem::PartialTable {
+                            para_index, control_index, ..
+                        } if *para_index == para_idx && *control_index != ctrl_idx)
+                    }) {
+                    st.current_height
+                } else {
+                    para_start_height
+                };
                 let break_after_current_table = controls::flow_table::place(
                     engine,
                     st,
@@ -504,7 +519,7 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
                         tac_count,
                         first_placed_table,
                         last_placed_table,
-                        para_start_height,
+                        para_start_height: table_para_start_height,
                         paragraphs_all,
                         composed_all,
                         ctrl_order: &ctrl_order,
