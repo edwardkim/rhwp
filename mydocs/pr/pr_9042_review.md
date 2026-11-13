@@ -2,7 +2,7 @@
 
 ## 최종 판정: 메인테이너 보정 후 수용 가능
 
-**승인된 로컬 보완과 필수 검증을 완료했다. 기존 차이 예외는 적용하지 않았다. 원격 push·새 PR·공개 review/comment·merge는 승인 대기다.**
+**승인된 로컬 보완과 후보의 필수 검증, 추가된 최신 CLI base의 실제 병합 결과 검증을 완료했다. 기존 차이 예외는 적용하지 않았다. 원격 처리는 승인 대기다.**
 
 원 기여의 같은 문단에 앵커된 제목·본문 표가 3쪽으로 밀리는 문제를 재현했고 2쪽으로 개선됨을 확인했다. 메인테이너가 Header/Footer 경계, 실제 저장 중첩 표의 여백, 원 합성본의 오래된 저장 줄과 실제 편집·반복 저장까지 보완했다. [상세 보완과 소비 경로](pr_9042_review_impl.md), [최종 전쪽·빌드·검사 원장](assets/pr9042/final-validation/README.md).
 
@@ -10,9 +10,9 @@
 
 - [원 PR #9042](https://github.com/edwardkim/rhwp/pull/9042), puckqook의 첫 rhwp 기여. 직접 연결된 해결 이슈는 없다.
 - 원 head `3ae4eeb332c3b0edbb3a8fbe334daf2b0a48115b`, 원 base `180a4ec97205b67c4dc4f90416063c01ecfdf396`. 원 PR의 base ref는 devel이며 API의 오래된 base SHA로 최신 devel을 대체하지 않았다.
-- 검증 제품 `d66d5f05f9efa4d182228494cd970614d479fb7a`, 반영한 최신 devel `959300e66c58241a47e6d46030b4b0854e59604b`. 작업 branch는 `review/pr-9042-coanchored-table-pagination`이다.
+- 검증 제품 `d66d5f05f9efa4d182228494cd970614d479fb7a`, 후보의 통합 기준 devel `959300e66c58241a47e6d46030b4b0854e59604b`. 작업 branch는 `review/pr-9042-coanchored-table-pagination`이다.
 - 원 기여를 적용한 `637410dbfa`와 메인테이너 보정을 분리했다. 원 ref·작성자뿐 아니라 원 SHA 자체도 조상으로 보존했다. 이미 반영한 원 기여를 이력에 연결한 `495787589a` 전후 tree는 같다. [실제 이력 연결 증거](assets/pr9042/final-validation/original-ancestry-preservation.json).
-- fork `puckqook/rhwp`의 `push=false`를 확인했다. upstream 수용 PR을 준비하며 원 fork branch는 보존한다. 현재 원격 mutation은 접수 때 승인받아 지정한 reviewer edwardkim뿐이다.
+- fork `puckqook/rhwp`의 repository `push=false`와 PR의 `maintainer_can_modify=true`를 확인했다. 이 두 값만으로 branch별 push 가능 여부를 단정하지 않는다. 최신 devel 이력을 통합한 후보는 upstream 수용 PR로 제출하며 원 fork branch를 보존한다. 현재 원격 mutation은 접수 때 승인받아 지정한 reviewer edwardkim뿐이다.
 - 기본 maintainer_general과 보조 intake_and_review·local_validation·visual_fixture_evidence·post_merge·first_time_contributor를 적용했다. 최초 사전 조회/fetch가 reviewer 지정 전에 실행된 순서 누락도 접수 기록에 보존했다.
 
 ## 조판 원칙·원인과 공통 결과
@@ -59,6 +59,10 @@
 입력은 공개 RHWP 합성 원본, 실제 한컴 2020 재저장·Print, 커밋된 대조군이다. 생성 경로·실제 실행 파일·독립 PDF·해시는 [입력 원장](assets/pr9042/README.md)에 연결했다. 공개 저장의 실제 byte 그룹을 커밋하고 실행 별칭을 기록했다. BodyX 모델은 RHWP 작성 모델을 한컴에서 Print한 것으로 한컴 SaveAs라고 기록하지 않는다. 현재 source의 본문 snapshot 검사는 엔진 API이며 Studio UI Undo/Redo E2E와 구분한다. 실제 수직 재조판·span·이어받기는 해당 비적용 조건과 기존 분할 경로를 유지하며 임의의 장문 편집 전체를 이번 수용 효과로 확대하지 않는다.
 
 장시간 WASM 감독 도구 세션은 자식 명령의 모든 exit 0 뒤 외부 종료 코드 143을 보고했다. 이를 성공 코드로 치환하지 않았고, [독립 감사](assets/pr9042/final-validation/visual-chain-audit.json)에서 개별 전쪽 결과·입출력·strict 저장·패키지 해시를 짧은 별도 실행으로 다시 확인했다. Native·전체 회귀·lint를 수행한 필수 gate driver는 최종 exit 0이다.
+
+## 최종 조회 뒤 추가된 CLI base
+
+최신 devel `d7b927d073`(#9052)는 후보와 clean merge다. 후보 코드를 유지한 실제 병합 tree에서 새 CLI·머리말 그림과 이번 경계 28건, 원본·BodyX Native 전 4쪽 100.00% 및 후보와 RGB 동일을 확인했다. 원 후보 전체 검증과 새 병합 결과의 추가 검증을 [별도 원장](assets/pr9042/final-validation/latest-base-merge/README.md)에 구분했다.
 
 ## 원격 처리와 남은 절차
 

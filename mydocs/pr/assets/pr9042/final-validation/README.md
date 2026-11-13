@@ -28,3 +28,5 @@
 원본 1쪽 [Native review](representative/native/review_001.png)·[overlay](representative/native/overlay_001.png), [WASM review](representative/wasm/review_001.png)·[overlay](representative/wasm/overlay_001.png)를 보존했다. 전 2쪽 각각의 flagged_pages는 0건이며 pixel·ink/proxy와 raw를 각 metrics.json에 구분했다.
 
 입력 생성·독립 Print 출처는 [상위 원장](../README.md), 실제 저장 중첩 표는 [독립 한컴 검증](../native-nested-validation/README.md)을 따른다. 정식 회귀 첫머리의 `1506a1c346`은 등록 당시의 실제 측정 source이며, 변하지 않은 같은 테스트를 현재 제품에서 9/9 다시 실행했다. 이 원장의 새 source·실제 재측정 결과와 구분한다.
+
+최종 조회에서 추가된 #9052 CLI base `d7b927d073`는 [실제 병합 결과 28건·Native 4쪽 추가 검증](latest-base-merge/README.md)으로 확인했다. 후보 코드와 기존 렌더/WASM/저장 소비자는 유지했으며, 이 추가 검증을 새 base 전체 회귀라고 기록하지 않는다.
