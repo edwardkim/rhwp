@@ -4666,7 +4666,64 @@ impl LayoutEngine {
                         };
                         let dy = floating_offset.map_or(0.0, |(_, dy)| dy);
                         let fallback_y = if table.common.treat_as_char {
-                            inline_obj_y + hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
+                            // 같은 저장 줄에 글자처럼 취급 표가 둘 이상이면 표 셀·글줄 경로와 같은
+                            // 공유 기준선에 앉힌다. 줄 높이가 바깥 상자와 같은 표가 줄 소유자이고
+                            // 나머지는 자기 높이의 85% 를 그 기준선 위에 둔다(#7049·#7150). 모두 줄
+                            // 상단에 붙이면 낮은 표가 높이 차만큼 위로 뜬다(#9021).
+                            let owner_line = |ci: usize| {
+                                tac_line_plan
+                                    .as_ref()
+                                    .and_then(|(ctrl_line, ..)| {
+                                        ctrl_line.get(ci).copied().flatten()
+                                    })
+                                    .unwrap_or(inline_line_idx)
+                            };
+                            let table_line = owner_line(ctrl_idx_in_para);
+                            let line_tables = || {
+                                para.controls
+                                    .iter()
+                                    .enumerate()
+                                    .filter_map(|(ci, ctrl)| match ctrl {
+                                        Control::Table(other)
+                                            if other.common.treat_as_char
+                                                && owner_line(ci) == table_line =>
+                                        {
+                                            Some(other.as_ref())
+                                        }
+                                        _ => None,
+                                    })
+                            };
+                            para.line_segs
+                                .get(table_line)
+                                .filter(|line| {
+                                    !para.stored_text_partition_is_dirty()
+                                        && !para.cell_format_vpos_dirty
+                                        && line.tag
+                                            & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                            == 0
+                                        && line.line_height > 0
+                                        && line_tables().count() >= 2
+                                })
+                                .and_then(|line| {
+                                    super::stored_tac_frame::line_table_owner(
+                                        line_tables(),
+                                        hwpunit_to_px(line.line_height, self.dpi),
+                                        styles,
+                                        self.dpi,
+                                    )
+                                })
+                                .map_or(
+                                    inline_obj_y
+                                        + hwpunit_to_px(table.outer_margin_top as i32, self.dpi),
+                                    |(owner_h, owner_om_top)| {
+                                        super::stored_tac_frame::companion_table_top(
+                                            inline_obj_y,
+                                            owner_h,
+                                            owner_om_top,
+                                            hwpunit_to_px(table.common.height as i32, self.dpi),
+                                        )
+                                    },
+                                )
                         } else {
                             para_start_y + dy
                         };
