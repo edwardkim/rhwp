@@ -57,3 +57,7 @@
 - `head/native/`, `head/wasm/`, `base/native/`, `base/wasm/` — 전 쪽(1쪽) 실루엣 TSV 원본
 
 overlay 의 색은 엄격 픽셀 비교다(파랑 = rhwp 만, 빨강 = PDF 만, 주황 = 양쪽 차이, 회색 = 일치). 한/글 인쇄의 2px 괘선과 rhwp 의 1px 괘선이 겹치는 자리에서 색이 남으며, 판정값은 위 2px 이웃 실루엣이다.
+
+## 2026-11-14 독립 재검증과 oracle 보완
+
+[검증 결과와 실행 근거](reviewer-20261114/README.md): 최신 devel `d7b927d073` 대비 Native/fresh WASM 전 1쪽 61.61% → 100.00%, 편람 Native 383쪽 gate 통과, oracle 16개 partition을 포함한 회귀 25개 통과. 동일 PDF의 canonical 이름과 쪽수 원장 한 행을 보완했다.

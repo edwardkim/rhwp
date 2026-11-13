@@ -1,0 +1,29 @@
+ Nextest run ID 4b7414ed-e9c2-4117-8bb4-63f9fae57998 with nextest profile: default
+    Starting 25 tests across 5 binaries (1656 tests skipped)
+        PASS [   0.020s] ( 1/25) rhwp::regression_suite_002 issue_7524_textbox_tac_picture_rows::photos_wrap_into_rows_without_overlap
+        PASS [   0.020s] ( 2/25) rhwp::regression_suite_002 issue_7524_textbox_tac_picture_rows::photos_stay_inside_the_textbox
+        PASS [   0.230s] ( 3/25) rhwp::regression_suite_003 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_0
+        PASS [   0.358s] ( 4/25) rhwp::regression_suite_003 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_1
+        PASS [   0.176s] ( 5/25) rhwp::regression_suite_003 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_10
+        PASS [   0.126s] ( 6/25) rhwp::regression_suite_003 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_12
+        PASS [   0.248s] ( 7/25) rhwp::regression_suite_003 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_11
+        PASS [   0.103s] ( 8/25) rhwp::regression_suite_003 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_13
+        PASS [   0.215s] ( 9/25) rhwp::regression_suite_003 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_14
+        PASS [   0.068s] (10/25) rhwp::regression_suite_003 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_2
+        PASS [   0.312s] (11/25) rhwp::regression_suite_003 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_15
+        PASS [   0.133s] (12/25) rhwp::regression_suite_003 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_4
+        PASS [   0.334s] (13/25) rhwp::regression_suite_003 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_3
+        PASS [   0.239s] (14/25) rhwp::regression_suite_003 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_5
+        PASS [   0.208s] (15/25) rhwp::regression_suite_003 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_6
+        PASS [   0.114s] (16/25) rhwp::regression_suite_003 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_7
+        PASS [   0.512s] (17/25) rhwp::regression_suite_003 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_9
+        PASS [   0.779s] (18/25) rhwp::regression_suite_003 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_8
+        PASS [   0.015s] (19/25) rhwp::regression_suite_014 issue_9021_textbox_control_only_tac_table_rows::first_two_tables_share_the_first_row
+        PASS [   0.011s] (20/25) rhwp::regression_suite_014 issue_9021_textbox_control_only_tac_table_rows::shorter_table_sits_on_the_shared_baseline
+        PASS [   0.011s] (21/25) rhwp::regression_suite_014 issue_9021_textbox_control_only_tac_table_rows::tables_do_not_overlap
+        PASS [   0.010s] (22/25) rhwp::regression_suite_014 issue_9021_textbox_control_only_tac_table_rows::tables_stay_inside_the_textbox
+        PASS [   0.012s] (23/25) rhwp::regression_suite_014 issue_9021_textbox_control_only_tac_table_rows::third_table_starts_on_the_row_below
+        PASS [   4.181s] (24/25) rhwp::regression_suite_011 security_corpus_regression::new_sample_documents_are_clean_across_all_three_detectors
+        PASS [   4.888s] (25/25) rhwp::regression_suite_015 issue_6465_inline_object_owning_line::footer_logos_sit_on_their_own_line
+────────────
+     Summary [   7.182s] 25 tests run: 25 passed, 1656 skipped
