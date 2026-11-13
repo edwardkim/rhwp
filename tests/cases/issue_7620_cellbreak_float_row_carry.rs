@@ -1,10 +1,13 @@
 //! 관계형·고정형(전체 쪽수).
-//! 주석 갱신: 2026-11-11T23:10:00+09:00 (새 파일).
-//! 2026-11-11 측정 raw(`silhouette_raw_match_percent`, 96dpi, 기준 PDF pypdfium2 5.13.0 래스터,
-//! `scripts/visual_sweep.py --silhouette-only --compat 2022`), source devel 4ab860651, 원본별 전2쪽:
-//!   e-cellbreak-row-moves-next-page: 1·2쪽 Native·fresh WASM 각 100.00%; 최저 100.00% / 100.00%.
-//!   f-rowbreak-row-splits-at-line: 1·2쪽 Native·fresh WASM 각 100.00%; 최저 100.00% / 100.00%.
-//! 근거: mydocs/pr/assets/issue_7620_cellbreak_float_row_carry/README.md (TSV 원본·대표 PNG).
+//! 주석 갱신: 2026-11-13T11:18:31+09:00.
+//! 직전 파일 변경: 2026-11-12T00:19:18+09:00, 0bddada6573f11ed92c3b1943271f14e6b0ce383 (Git committer 시각).
+//! 2026-11-13 실측: source e5a6a1ff9f, raw `silhouette_raw_match_percent`, 96dpi,
+//! Desktop Hancom 2020 Print·pypdfium2, `scripts/visual_sweep.py --silhouette-only --compat 2022`.
+//! e-cellbreak-row-moves-next-page: 전2쪽 Native/fresh WASM 각각 100.00%, 전쪽 최저 각각 100.00%.
+//! f-rowbreak-row-splits-at-line: 전2쪽 Native/fresh WASM 각각 100.00%, 전쪽 최저 각각 100.00%.
+//! 근거: mydocs/pr/assets/sacru2red-20261113/final/README.md (전쪽 TSV·직접 판독).
+//! 보정 전 Native p2는 각각 94.62/93.46%, WASM p2는 94.90/93.79%였고,
+//! 실제 빈 줄의 전진이 저장 1600HU보다 600HU 커 아래의 관계 검사가 실패했다.
 //!
 //! Issue #7620 후속 3 — 비TAC 자리 차지 표의 쪽 경계 나눔 «셀 단위로 나눔»(CellBreak, 1)과
 //! «나눔»(RowBreak, 2)에서 쪽 바닥에 걸린 여러 줄 행의 이월.
@@ -15,10 +18,10 @@
 //! 문단 기준 자리 차지 표 경로를 같은 대조 방식으로 고정한다.
 //!
 //! 입력은 `samples/issue7620/generate-cellbreak.mjs`로 만든 생성 대조군이다(한컴 저장본 아님).
-//! 두 입력은 쪽 경계 나눔 값만 다르다. 기준은 같은 입력을 한컴독스 웹 한글에서 인쇄해
-//! Chrome 인쇄 미리보기로 저장한 PDF `pdf/issue7620/{e,f}-*-hancomdocs.pdf`(Producer PDFium)다.
-//! 이 검사는 결함 수정의 검출 증거가 아니라, 현재 devel이 이미 한컴과 같은 이월을 지키도록 하는
-//! 회귀 방지 검사다(수정 전/후 구분 없음).
+//! 두 입력은 쪽 경계 나눔 값만 다르다. 현재 기준은 같은 입력의 Windows Hancom 2020
+//! 11.0.0.9136 MCP Print(method 0, one-up), `pdf/issue7620/{e,f}-*-2020.pdf`다.
+//! 원 기여의 웹 PDF는 참고 이력이며 Desktop Print 기준으로 사용하지 않는다.
+//! 행 이월 회귀에 더해 실제 빈 줄의 후행 간격을 한 번만 소비하는 관계를 보호한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::collections::BTreeMap;
@@ -181,7 +184,7 @@ fn page_of(where_: &BTreeMap<String, Vec<usize>>, label: &str) -> usize {
 }
 
 /// 표 뒤 문단(표 문단 · 빈 문단 · 「표 뒤 문단」)은 마지막 표 조각 아래, 같은 쪽에 있다.
-fn assert_after_paragraph_below_last_fragment(pages: &[PageView], rel: &str) {
+fn assert_after_paragraph_below_last_fragment(doc: &HwpDocument, pages: &[PageView], rel: &str) {
     let after = HOST as u64 + 2;
     let (ap, atop) = pages
         .iter()
@@ -201,6 +204,32 @@ fn assert_after_paragraph_below_last_fragment(pages: &[PageView], rel: &str) {
     assert!(
         atop >= tbottom,
         "{rel}: 표 뒤 문단({atop:.1})이 표 아랫변({tbottom:.1}) 아래여야 한다"
+    );
+
+    // 독립 Desktop Print에서도 보존되는 실제 빈 줄이다. 저장 1000HU 높이와
+    // 600HU 후행 간격은 한 번 소비한다. 표 뒤 상대 원점에서 재가산하지 않는다.
+    let (bp, btop) = pages
+        .iter()
+        .enumerate()
+        .find_map(|(p, v)| v.lines.iter().find(|l| l.0 == after - 1).map(|l| (p, l.1)))
+        .unwrap_or_else(|| panic!("{rel}: 표 뒤 실제 빈 줄이 없다"));
+    assert_eq!(bp, ap, "{rel}: 빈 줄과 뒤 본문은 같은 쪽에 남는다");
+    let paragraphs = &doc.document().sections[0].paragraphs;
+    let blank = &paragraphs[after as usize - 1];
+    assert!(blank.text.trim().is_empty() && blank.controls.is_empty());
+    let [line] = blank.line_segs.as_slice() else {
+        panic!("{rel}: 원본 빈 문단은 한 줄이다");
+    };
+    let next = &paragraphs[after as usize].line_segs[0];
+    let source_advance = line.line_height + line.line_spacing;
+    assert_eq!(next.vertical_pos - line.vertical_pos, source_advance);
+    let advance_px = f64::from(source_advance) / 75.0;
+    // render tree의 각 원점은 소수 첫 자리로 반올림된다(두 원점 차이 최대 0.1px).
+    assert!(
+        (atop - btop - advance_px).abs() <= 0.1 + 1e-6,
+        "{rel}: 빈 줄의 실제 전진 {}은 원본·독립 Print의 {}px를 한 번 소비해야 한다",
+        atop - btop,
+        advance_px
     );
 }
 
@@ -232,7 +261,7 @@ fn issue_7620_cellbreak_float_table_carries_whole_row() {
     }
     assert_eq!(pages[0].tables.len(), 1, "{REL}: 1쪽 표 조각 하나");
     assert_eq!(pages[1].tables.len(), 1, "{REL}: 2쪽 표 조각 하나");
-    assert_after_paragraph_below_last_fragment(&pages, REL);
+    assert_after_paragraph_below_last_fragment(&doc, &pages, REL);
 }
 
 /// RowBreak 대조군: 같은 입력에서 2행은 글줄 경계에서 나뉜다 — 앞 줄은 1쪽, 남은 줄은 2쪽.
@@ -281,5 +310,5 @@ fn issue_7620_rowbreak_float_table_splits_row_at_line() {
     );
     assert_eq!(pages[0].tables.len(), 1, "{REL}: 1쪽 표 조각 하나");
     assert_eq!(pages[1].tables.len(), 1, "{REL}: 2쪽 표 조각 하나");
-    assert_after_paragraph_below_last_fragment(&pages, REL);
+    assert_after_paragraph_below_last_fragment(&doc, &pages, REL);
 }

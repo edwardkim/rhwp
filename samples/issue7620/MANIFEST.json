@@ -59,18 +59,24 @@
       "sha256": "e566e14f5a0b4a4b8dbebefc6ab3d233710030ab7f53ee1d7307442ddf54f141",
       "bytes": 14336,
       "source": "generate-cellbreak.mjs 생성 대조군 — 앞 문단 30개 뒤 3×2 CellBreak 표, 셀마다 6개 문단(줄)",
-      "reference_pdf": "pdf/issue7620/e-cellbreak-row-moves-next-page-hancomdocs.pdf",
-      "reference_pdf_sha256": "3c5d39013cf050319ff86ff3276a5cc04d0d0d2d8f78cd6280d4edc3668b0ecb",
-      "purpose": "쪽 바닥에 걸린 여러 줄 행을 자르지 않고 행 전체를 다음 쪽으로 넘기는지 검사"
+      "reference_pdf": "pdf/issue7620/e-cellbreak-row-moves-next-page-2020.pdf",
+      "reference_pdf_sha256": "a144223cc49c6be43027a5b95e969867dd6ff455115030351271d091183a28c1",
+      "purpose": "쪽 바닥에 걸린 여러 줄 행을 자르지 않고 행 전체를 다음 쪽으로 넘기는지 검사",
+      "historical_web_reference_pdf": "pdf/issue7620/e-cellbreak-row-moves-next-page-hancomdocs.pdf",
+      "historical_web_reference_pdf_sha256": "3c5d39013cf050319ff86ff3276a5cc04d0d0d2d8f78cd6280d4edc3668b0ecb",
+      "reference_pdf_pages": 2
     },
     {
       "path": "f-rowbreak-row-splits-at-line.hwp",
       "sha256": "904520801739be5795f0dd64dc907367a15f131ab4b4a985439724fed0936e4b",
       "bytes": 14336,
       "source": "generate-cellbreak.mjs 생성 대조군 — e와 같고 쪽 경계 나눔만 RowBreak",
-      "reference_pdf": "pdf/issue7620/f-rowbreak-row-splits-at-line-hancomdocs.pdf",
-      "reference_pdf_sha256": "6702ea0e75bd3bfe1701796e82f57d62d566d704f79925f69e90a75000ad6d57",
-      "purpose": "같은 입력의 RowBreak 표는 걸린 행을 글줄 경계에서 나누는지 검사(대조군)"
+      "reference_pdf": "pdf/issue7620/f-rowbreak-row-splits-at-line-2020.pdf",
+      "reference_pdf_sha256": "a6f8ffe6c730ac30812dc3a52f8aa6a1585d92e0f118231705c2574624e397b9",
+      "purpose": "같은 입력의 RowBreak 표는 걸린 행을 글줄 경계에서 나누는지 검사(대조군)",
+      "historical_web_reference_pdf": "pdf/issue7620/f-rowbreak-row-splits-at-line-hancomdocs.pdf",
+      "historical_web_reference_pdf_sha256": "6702ea0e75bd3bfe1701796e82f57d62d566d704f79925f69e90a75000ad6d57",
+      "reference_pdf_pages": 2
     }
   ],
   "budget_generator": {
@@ -91,6 +97,13 @@
     "package": "scripts/wasm-pack-locked.ps1 --target web"
   },
   "cellbreak_reference": {
+    "product": "Windows Hancom 2020 11.0.0.9136",
+    "method": "MCP engine 2020; Print method 0; hancom2020_pdf_driver_one_up",
+    "pdf_producer": "Hancom PDF 1.3.0.550",
+    "date": "2026-11-13",
+    "reference_role": "independent Desktop Print"
+  },
+  "historical_cellbreak_web_reference": {
     "product": "한컴독스 웹서비스, 한컴오피스 Web v2 한글 (2026-11-11 출력, 편집기 빌드 번호 미확인)",
     "method": "파일 → 인쇄 후 Chrome 인쇄 미리보기에서 PDF로 저장(작업지시자 수동 출력)",
     "pdf_producer": "PDFium"
