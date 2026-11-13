@@ -1,0 +1,2388 @@
+{
+  "pr": 9052,
+  "producer": {
+    "original_head": "de8209abcb2aabe2f57d25190f18baddb68807bc",
+    "maintainer_head": "24aa6c04bc0f632fc6aae2ee8db356fdd85a72d2",
+    "local_branch": "review/pr-9052-picture-cli",
+    "base_checked": "959300e66c58241a47e6d46030b4b0854e59604b",
+    "inputs": {
+      "samples/paper-square-table-tac-host.hwpx": {
+        "bytes": 30629,
+        "sha256": "3caa6a7579208c69e19fbfcb30536731dde32871ca8e1835351e485494a3614f"
+      },
+      "samples/images/moogung.jpg": {
+        "bytes": 81040,
+        "sha256": "7af06b6410ea950341606e2ffe793f99e680030b39513b4bd835dc5c42822f76"
+      },
+      "assets/logo/logo-16.png": {
+        "bytes": 986,
+        "sha256": "ea7d417dc9de2f04a3074a63690c99363d8738b9d614e96ccb289ea7b6573390"
+      }
+    },
+    "corrected_focused_diff_matches_commit": true,
+    "original_cli_sha256": "fd36b671a712fc127df9bdb6a87ac6d3b1000ddd2d075183c2fb1a48bc0f629d",
+    "corrected_cli_sha256": "0f4caffb190bba583fb2c084aa1737a76b41fca3e6be4a3acdeea1938573679e",
+    "font_isolation_profile_sha256": "1b8ba67f5e14b1adbdbd748ad6a35c9dd548e85ca0cfed5b119c17a9b9e8cf85",
+    "cargo_target": "/Users/tsjang/rhwp/target/pr-review",
+    "jobs": 8,
+    "threads": 8
+  },
+  "focused_before": {
+    "command": [
+      "sandbox-exec",
+      "-f",
+      "/Users/tsjang/rhwp/mydocs/pr/assets/issue8856/final-20261110/minimal-font.sb",
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/Users/tsjang/rhwp/target/pr-review",
+      "--build-jobs",
+      "8",
+      "-p",
+      "rhwp",
+      "--test",
+      "regression_suite_005",
+      "--test",
+      "regression_suite_002",
+      "--test",
+      "regression_suite_016",
+      "--test-threads",
+      "8",
+      "--no-fail-fast",
+      "-E",
+      "test(set_picture_applies_the_same_decoded_json_that_was_validated) | test(duplicate_picture_props_are_rejected_without_writing) | test(shape_props_use_decoded_json_and_reject_duplicate_members) | test(hf_picture_uses_decoded_json_and_rejects_duplicate_members)"
+    ],
+    "exit": 100,
+    "source_parent": "de8209abcb2aabe2f57d25190f18baddb68807bc",
+    "source_modified": false,
+    "new_tests_only": true
+  },
+  "focused_after": {
+    "command": [
+      "sandbox-exec",
+      "-f",
+      "/Users/tsjang/rhwp/mydocs/pr/assets/issue8856/final-20261110/minimal-font.sb",
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/Users/tsjang/rhwp/target/pr-review",
+      "--build-jobs",
+      "8",
+      "-p",
+      "rhwp",
+      "--test",
+      "regression_suite_011",
+      "--test",
+      "regression_suite_015",
+      "--test",
+      "regression_suite_006",
+      "--test-threads",
+      "8",
+      "--no-fail-fast",
+      "-E",
+      "test(issue_9019_picture_edit_surface::) | test(issue_9020_picture_shape_cli::) | test(set_hf_picture_contract::)"
+    ],
+    "exit": 0,
+    "seconds": 183.47389733302407,
+    "source_parent": "de8209abcb2aabe2f57d25190f18baddb68807bc",
+    "diff_sha256": "aa8024e7e7802693b7c6b47b8464e599b4910b88b71e0037b8b821463f3caafe",
+    "log_sha256": "2aed4cbe98539c4efc3bdcbcf123afc40507a5a2f34da41b94c1e76a2bcdf92f"
+  },
+  "focused_counts": {
+    "original": {
+      "passed": 11,
+      "failed": 0
+    },
+    "counterexamples_before": {
+      "passed": 0,
+      "failed": 4
+    },
+    "corrected": {
+      "passed": 19,
+      "failed": 0
+    }
+  },
+  "gates": {
+    "head": "24aa6c04bc0f632fc6aae2ee8db356fdd85a72d2",
+    "base": "959300e66c58241a47e6d46030b4b0854e59604b",
+    "status": "passed",
+    "driver_pid": 9842,
+    "stages": [
+      {
+        "name": "fmt",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "status": "passed",
+        "started_at": "2026-11-13T14:31:01.799569+00:00",
+        "pid": 9855,
+        "exit": 0,
+        "seconds": 15.368657291866839,
+        "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "clippy-native",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "-j",
+          "8",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "status": "passed",
+        "started_at": "2026-11-13T14:31:17.174753+00:00",
+        "pid": 11081,
+        "exit": 0,
+        "seconds": 73.65013041696511,
+        "log_sha256": "64ad5d87d23ec39496c58a3f225ee4408abbcf334356046be6509f9d5515418a"
+      },
+      {
+        "name": "clippy-wasm",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "-p",
+          "rhwp",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "-j",
+          "8",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "status": "passed",
+        "started_at": "2026-11-13T14:32:30.838104+00:00",
+        "pid": 17289,
+        "exit": 0,
+        "seconds": 56.01648245891556,
+        "log_sha256": "fa4b09e034a0f4b971b3c37ca1d25c420403797514de0a2426dcc3fa5569e1a3"
+      },
+      {
+        "name": "workspace-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--workspace",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "-j",
+          "8"
+        ],
+        "status": "passed",
+        "started_at": "2026-11-13T14:33:26.873596+00:00",
+        "pid": 21737,
+        "exit": 0,
+        "seconds": 103.24879812495783,
+        "log_sha256": "c0dba75a07d4f72392f005b78d8c0cde0107cd844c3fdeb520132735379831de"
+      },
+      {
+        "name": "clippy-all",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--workspace",
+          "--all-targets",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "-j",
+          "8",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "status": "passed",
+        "started_at": "2026-11-13T14:35:10.137268+00:00",
+        "pid": 28623,
+        "exit": 0,
+        "seconds": 77.69537349999882,
+        "log_sha256": "5b48eeb9b03538f004e20175361b1a4618009626a158a0bdc329ec31aad97453"
+      },
+      {
+        "name": "full-nextest",
+        "command": [
+          "sandbox-exec",
+          "-f",
+          "/Users/tsjang/rhwp/mydocs/pr/assets/issue8856/final-20261110/minimal-font.sb",
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--build-jobs",
+          "8",
+          "--tests",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "status": "passed",
+        "started_at": "2026-11-13T14:36:27.849148+00:00",
+        "pid": 34006,
+        "exit": 0,
+        "seconds": 728.6210411249194,
+        "log_sha256": "2b2000f41deecd535c1c1d4fe9891be731c55023b4a338c6b7179d5c9f5653e5"
+      },
+      {
+        "name": "manifest",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "959300e66c58241a47e6d46030b4b0854e59604b"
+        ],
+        "status": "passed",
+        "started_at": "2026-11-13T14:48:36.492131+00:00",
+        "pid": 97164,
+        "exit": 0,
+        "seconds": 3.869427832774818,
+        "log_sha256": "eeaef106685f1e54628958298f8e9ab9082b91e96df7b4aed292b3ae5f770002"
+      },
+      {
+        "name": "unit-tiers",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "959300e66c58241a47e6d46030b4b0854e59604b"
+        ],
+        "status": "passed",
+        "started_at": "2026-11-13T14:48:40.368573+00:00",
+        "pid": 97309,
+        "exit": 0,
+        "seconds": 21.736638583941385,
+        "log_sha256": "b0d22c7e9e78b2de09250df5931d136093b5d2ad3c7474ab5c37aa9c3dc75ad0"
+      }
+    ]
+  },
+  "full_nextest": {
+    "passed": 13438,
+    "failed": 0,
+    "skipped": 45,
+    "test_seconds": 341.474,
+    "summary": "Summary [ 341.474s] 13438 tests run: 13438 passed (1 slow), 45 skipped"
+  },
+  "cli_before": {
+    "binary": "output/pr-review/pr9052-picture-cli-20261113/rhwp-original-head",
+    "binary_sha256": "fd36b671a712fc127df9bdb6a87ac6d3b1000ddd2d075183c2fb1a48bc0f629d",
+    "results": [
+      {
+        "case": "plain",
+        "props": "{\"textWrap\":\"TopAndBottom\"}",
+        "exit": 0,
+        "output_created": true,
+        "picture_attributes": [
+          {
+            "id": "0",
+            "zOrder": "1",
+            "numberingType": "PICTURE",
+            "textWrap": "TOP_AND_BOTTOM",
+            "textFlow": "BOTH_SIDES",
+            "lock": "0",
+            "dropcapstyle": "None",
+            "href": "",
+            "groupLevel": "0",
+            "instid": "0",
+            "reverse": "0"
+          }
+        ]
+      },
+      {
+        "case": "escaped-key",
+        "props": "{\"\\u0074extWrap\":\"TopAndBottom\"}",
+        "exit": 0,
+        "output_created": true,
+        "picture_attributes": [
+          {
+            "id": "0",
+            "zOrder": "1",
+            "numberingType": "PICTURE",
+            "textWrap": "SQUARE",
+            "textFlow": "BOTH_SIDES",
+            "lock": "0",
+            "dropcapstyle": "None",
+            "href": "",
+            "groupLevel": "0",
+            "instid": "0",
+            "reverse": "0"
+          }
+        ]
+      },
+      {
+        "case": "escaped-value",
+        "props": "{\"textWrap\":\"TopAnd\\u0042ottom\"}",
+        "exit": 0,
+        "output_created": true,
+        "picture_attributes": [
+          {
+            "id": "0",
+            "zOrder": "1",
+            "numberingType": "PICTURE",
+            "textWrap": "SQUARE",
+            "textFlow": "BOTH_SIDES",
+            "lock": "0",
+            "dropcapstyle": "None",
+            "href": "",
+            "groupLevel": "0",
+            "instid": "0",
+            "reverse": "0"
+          }
+        ]
+      },
+      {
+        "case": "duplicate-first-invalid",
+        "props": "{\"textWrap\":\"topAndBottom\",\"textWrap\":\"TopAndBottom\"}",
+        "exit": 0,
+        "output_created": true,
+        "picture_attributes": [
+          {
+            "id": "0",
+            "zOrder": "1",
+            "numberingType": "PICTURE",
+            "textWrap": "SQUARE",
+            "textFlow": "BOTH_SIDES",
+            "lock": "0",
+            "dropcapstyle": "None",
+            "href": "",
+            "groupLevel": "0",
+            "instid": "0",
+            "reverse": "0"
+          }
+        ]
+      },
+      {
+        "case": "duplicate-last-invalid",
+        "props": "{\"textWrap\":\"TopAndBottom\",\"textWrap\":\"topAndBottom\"}",
+        "exit": 2,
+        "output_created": false,
+        "picture_attributes": []
+      }
+    ],
+    "commands": [
+      {
+        "argv": [
+          "edit",
+          "insert-picture",
+          "/Users/tsjang/rhwp/samples/paper-square-table-tac-host.hwpx",
+          "--image",
+          "/Users/tsjang/rhwp/samples/images/moogung.jpg",
+          "--para",
+          "1",
+          "--width",
+          "8000",
+          "--json",
+          "-o",
+          "output/pr-review/pr9052-picture-cli-20261113/props-before/inserted.hwpx"
+        ],
+        "exit": 0,
+        "stdout": "{\"binDataId\":1,\"cellCtrl\":null,\"cellPara\":null,\"changedPages\":[0],\"col\":null,\"ctrl\":0,\"dryRun\":false,\"height\":4184,\"image\":\"/Users/tsjang/rhwp/samples/images/moogung.jpg\",\"offset\":0,\"output\":\"output/pr-review/pr9052-picture-cli-20261113/props-before/inserted.hwpx\",\"outputFormat\":\"hwpx\",\"paragraph\":1,\"row\":null,\"schemaVersion\":\"1.0\",\"section\":0,\"source\":\"/Users/tsjang/rhwp/samples/paper-square-table-tac-host.hwpx\",\"table\":null,\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null,\"width\":8000,\"x\":0,\"y\":0}\n",
+        "stderr": ""
+      },
+      {
+        "argv": [
+          "edit",
+          "set-picture",
+          "output/pr-review/pr9052-picture-cli-20261113/props-before/inserted.hwpx",
+          "--section",
+          "0",
+          "--para",
+          "1",
+          "--ctrl",
+          "0",
+          "--props",
+          "{\"textWrap\":\"TopAndBottom\"}",
+          "--json",
+          "-o",
+          "output/pr-review/pr9052-picture-cli-20261113/props-before/plain.hwpx"
+        ],
+        "exit": 0,
+        "stdout": "{\"changedPages\":[0],\"ctrl\":0,\"dryRun\":false,\"output\":\"output/pr-review/pr9052-picture-cli-20261113/props-before/plain.hwpx\",\"outputFormat\":\"hwpx\",\"paragraph\":1,\"schemaVersion\":\"1.0\",\"section\":0,\"source\":\"output/pr-review/pr9052-picture-cli-20261113/props-before/inserted.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null}\n",
+        "stderr": ""
+      },
+      {
+        "argv": [
+          "edit",
+          "set-picture",
+          "output/pr-review/pr9052-picture-cli-20261113/props-before/inserted.hwpx",
+          "--section",
+          "0",
+          "--para",
+          "1",
+          "--ctrl",
+          "0",
+          "--props",
+          "{\"\\u0074extWrap\":\"TopAndBottom\"}",
+          "--json",
+          "-o",
+          "output/pr-review/pr9052-picture-cli-20261113/props-before/escaped-key.hwpx"
+        ],
+        "exit": 0,
+        "stdout": "{\"changedPages\":[0],\"ctrl\":0,\"dryRun\":false,\"output\":\"output/pr-review/pr9052-picture-cli-20261113/props-before/escaped-key.hwpx\",\"outputFormat\":\"hwpx\",\"paragraph\":1,\"schemaVersion\":\"1.0\",\"section\":0,\"source\":\"output/pr-review/pr9052-picture-cli-20261113/props-before/inserted.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null}\n",
+        "stderr": ""
+      },
+      {
+        "argv": [
+          "edit",
+          "set-picture",
+          "output/pr-review/pr9052-picture-cli-20261113/props-before/inserted.hwpx",
+          "--section",
+          "0",
+          "--para",
+          "1",
+          "--ctrl",
+          "0",
+          "--props",
+          "{\"textWrap\":\"TopAnd\\u0042ottom\"}",
+          "--json",
+          "-o",
+          "output/pr-review/pr9052-picture-cli-20261113/props-before/escaped-value.hwpx"
+        ],
+        "exit": 0,
+        "stdout": "{\"changedPages\":[0],\"ctrl\":0,\"dryRun\":false,\"output\":\"output/pr-review/pr9052-picture-cli-20261113/props-before/escaped-value.hwpx\",\"outputFormat\":\"hwpx\",\"paragraph\":1,\"schemaVersion\":\"1.0\",\"section\":0,\"source\":\"output/pr-review/pr9052-picture-cli-20261113/props-before/inserted.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null}\n",
+        "stderr": ""
+      },
+      {
+        "argv": [
+          "edit",
+          "set-picture",
+          "output/pr-review/pr9052-picture-cli-20261113/props-before/inserted.hwpx",
+          "--section",
+          "0",
+          "--para",
+          "1",
+          "--ctrl",
+          "0",
+          "--props",
+          "{\"textWrap\":\"topAndBottom\",\"textWrap\":\"TopAndBottom\"}",
+          "--json",
+          "-o",
+          "output/pr-review/pr9052-picture-cli-20261113/props-before/duplicate-first-invalid.hwpx"
+        ],
+        "exit": 0,
+        "stdout": "{\"changedPages\":[0],\"ctrl\":0,\"dryRun\":false,\"output\":\"output/pr-review/pr9052-picture-cli-20261113/props-before/duplicate-first-invalid.hwpx\",\"outputFormat\":\"hwpx\",\"paragraph\":1,\"schemaVersion\":\"1.0\",\"section\":0,\"source\":\"output/pr-review/pr9052-picture-cli-20261113/props-before/inserted.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null}\n",
+        "stderr": ""
+      },
+      {
+        "argv": [
+          "edit",
+          "set-picture",
+          "output/pr-review/pr9052-picture-cli-20261113/props-before/inserted.hwpx",
+          "--section",
+          "0",
+          "--para",
+          "1",
+          "--ctrl",
+          "0",
+          "--props",
+          "{\"textWrap\":\"TopAndBottom\",\"textWrap\":\"topAndBottom\"}",
+          "--json",
+          "-o",
+          "output/pr-review/pr9052-picture-cli-20261113/props-before/duplicate-last-invalid.hwpx"
+        ],
+        "exit": 2,
+        "stdout": "",
+        "stderr": "오류: --props 의 textWrap 값이 허용되지 않습니다: \"topAndBottom\" (허용: Square, Tight, Through, TopAndBottom, BehindText, InFrontOfText)\n"
+      }
+    ]
+  },
+  "cli_after": {
+    "binary": "output/pr-review/pr9052-picture-cli-20261113/rhwp-maintainer-candidate",
+    "binary_sha256": "0f4caffb190bba583fb2c084aa1737a76b41fca3e6be4a3acdeea1938573679e",
+    "results": [
+      {
+        "case": "plain",
+        "props": "{\"textWrap\":\"TopAndBottom\"}",
+        "exit": 0,
+        "output_created": true,
+        "picture_attributes": [
+          {
+            "id": "0",
+            "zOrder": "1",
+            "numberingType": "PICTURE",
+            "textWrap": "TOP_AND_BOTTOM",
+            "textFlow": "BOTH_SIDES",
+            "lock": "0",
+            "dropcapstyle": "None",
+            "href": "",
+            "groupLevel": "0",
+            "instid": "0",
+            "reverse": "0"
+          }
+        ]
+      },
+      {
+        "case": "escaped-key",
+        "props": "{\"\\u0074extWrap\":\"TopAndBottom\"}",
+        "exit": 0,
+        "output_created": true,
+        "picture_attributes": [
+          {
+            "id": "0",
+            "zOrder": "1",
+            "numberingType": "PICTURE",
+            "textWrap": "TOP_AND_BOTTOM",
+            "textFlow": "BOTH_SIDES",
+            "lock": "0",
+            "dropcapstyle": "None",
+            "href": "",
+            "groupLevel": "0",
+            "instid": "0",
+            "reverse": "0"
+          }
+        ]
+      },
+      {
+        "case": "escaped-value",
+        "props": "{\"textWrap\":\"TopAnd\\u0042ottom\"}",
+        "exit": 0,
+        "output_created": true,
+        "picture_attributes": [
+          {
+            "id": "0",
+            "zOrder": "1",
+            "numberingType": "PICTURE",
+            "textWrap": "TOP_AND_BOTTOM",
+            "textFlow": "BOTH_SIDES",
+            "lock": "0",
+            "dropcapstyle": "None",
+            "href": "",
+            "groupLevel": "0",
+            "instid": "0",
+            "reverse": "0"
+          }
+        ]
+      },
+      {
+        "case": "duplicate-first-invalid",
+        "props": "{\"textWrap\":\"topAndBottom\",\"textWrap\":\"TopAndBottom\"}",
+        "exit": 2,
+        "output_created": false,
+        "picture_attributes": []
+      },
+      {
+        "case": "duplicate-last-invalid",
+        "props": "{\"textWrap\":\"TopAndBottom\",\"textWrap\":\"topAndBottom\"}",
+        "exit": 2,
+        "output_created": false,
+        "picture_attributes": []
+      }
+    ],
+    "commands": [
+      {
+        "argv": [
+          "edit",
+          "insert-picture",
+          "/Users/tsjang/rhwp/samples/paper-square-table-tac-host.hwpx",
+          "--image",
+          "/Users/tsjang/rhwp/samples/images/moogung.jpg",
+          "--para",
+          "1",
+          "--width",
+          "8000",
+          "--json",
+          "-o",
+          "output/pr-review/pr9052-picture-cli-20261113/props-after/inserted.hwpx"
+        ],
+        "exit": 0,
+        "stdout": "{\"binDataId\":1,\"cellCtrl\":null,\"cellPara\":null,\"changedPages\":[0],\"col\":null,\"ctrl\":0,\"dryRun\":false,\"height\":4184,\"image\":\"/Users/tsjang/rhwp/samples/images/moogung.jpg\",\"offset\":0,\"output\":\"output/pr-review/pr9052-picture-cli-20261113/props-after/inserted.hwpx\",\"outputFormat\":\"hwpx\",\"paragraph\":1,\"row\":null,\"schemaVersion\":\"1.0\",\"section\":0,\"source\":\"/Users/tsjang/rhwp/samples/paper-square-table-tac-host.hwpx\",\"table\":null,\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null,\"width\":8000,\"x\":0,\"y\":0}\n",
+        "stderr": ""
+      },
+      {
+        "argv": [
+          "edit",
+          "set-picture",
+          "output/pr-review/pr9052-picture-cli-20261113/props-after/inserted.hwpx",
+          "--section",
+          "0",
+          "--para",
+          "1",
+          "--ctrl",
+          "0",
+          "--props",
+          "{\"textWrap\":\"TopAndBottom\"}",
+          "--json",
+          "-o",
+          "output/pr-review/pr9052-picture-cli-20261113/props-after/plain.hwpx"
+        ],
+        "exit": 0,
+        "stdout": "{\"changedPages\":[0],\"ctrl\":0,\"dryRun\":false,\"output\":\"output/pr-review/pr9052-picture-cli-20261113/props-after/plain.hwpx\",\"outputFormat\":\"hwpx\",\"paragraph\":1,\"schemaVersion\":\"1.0\",\"section\":0,\"source\":\"output/pr-review/pr9052-picture-cli-20261113/props-after/inserted.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null}\n",
+        "stderr": ""
+      },
+      {
+        "argv": [
+          "edit",
+          "set-picture",
+          "output/pr-review/pr9052-picture-cli-20261113/props-after/inserted.hwpx",
+          "--section",
+          "0",
+          "--para",
+          "1",
+          "--ctrl",
+          "0",
+          "--props",
+          "{\"\\u0074extWrap\":\"TopAndBottom\"}",
+          "--json",
+          "-o",
+          "output/pr-review/pr9052-picture-cli-20261113/props-after/escaped-key.hwpx"
+        ],
+        "exit": 0,
+        "stdout": "{\"changedPages\":[0],\"ctrl\":0,\"dryRun\":false,\"output\":\"output/pr-review/pr9052-picture-cli-20261113/props-after/escaped-key.hwpx\",\"outputFormat\":\"hwpx\",\"paragraph\":1,\"schemaVersion\":\"1.0\",\"section\":0,\"source\":\"output/pr-review/pr9052-picture-cli-20261113/props-after/inserted.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null}\n",
+        "stderr": ""
+      },
+      {
+        "argv": [
+          "edit",
+          "set-picture",
+          "output/pr-review/pr9052-picture-cli-20261113/props-after/inserted.hwpx",
+          "--section",
+          "0",
+          "--para",
+          "1",
+          "--ctrl",
+          "0",
+          "--props",
+          "{\"textWrap\":\"TopAnd\\u0042ottom\"}",
+          "--json",
+          "-o",
+          "output/pr-review/pr9052-picture-cli-20261113/props-after/escaped-value.hwpx"
+        ],
+        "exit": 0,
+        "stdout": "{\"changedPages\":[0],\"ctrl\":0,\"dryRun\":false,\"output\":\"output/pr-review/pr9052-picture-cli-20261113/props-after/escaped-value.hwpx\",\"outputFormat\":\"hwpx\",\"paragraph\":1,\"schemaVersion\":\"1.0\",\"section\":0,\"source\":\"output/pr-review/pr9052-picture-cli-20261113/props-after/inserted.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null}\n",
+        "stderr": ""
+      },
+      {
+        "argv": [
+          "edit",
+          "set-picture",
+          "output/pr-review/pr9052-picture-cli-20261113/props-after/inserted.hwpx",
+          "--section",
+          "0",
+          "--para",
+          "1",
+          "--ctrl",
+          "0",
+          "--props",
+          "{\"textWrap\":\"topAndBottom\",\"textWrap\":\"TopAndBottom\"}",
+          "--json",
+          "-o",
+          "output/pr-review/pr9052-picture-cli-20261113/props-after/duplicate-first-invalid.hwpx"
+        ],
+        "exit": 2,
+        "stdout": "",
+        "stderr": "오류: --props 가 올바른 JSON 이 아닙니다 (속성 키가 중복되었습니다: textWrap at line 1 column 53)\n"
+      },
+      {
+        "argv": [
+          "edit",
+          "set-picture",
+          "output/pr-review/pr9052-picture-cli-20261113/props-after/inserted.hwpx",
+          "--section",
+          "0",
+          "--para",
+          "1",
+          "--ctrl",
+          "0",
+          "--props",
+          "{\"textWrap\":\"TopAndBottom\",\"textWrap\":\"topAndBottom\"}",
+          "--json",
+          "-o",
+          "output/pr-review/pr9052-picture-cli-20261113/props-after/duplicate-last-invalid.hwpx"
+        ],
+        "exit": 2,
+        "stdout": "",
+        "stderr": "오류: --props 가 올바른 JSON 이 아닙니다 (속성 키가 중복되었습니다: textWrap at line 1 column 53)\n"
+      }
+    ]
+  },
+  "mcp": {
+    "before": {
+      "binary": "/Users/tsjang/rhwp/output/pr-review/pr9052-picture-cli-20261113/rhwp-original-head",
+      "binary_sha256": "fd36b671a712fc127df9bdb6a87ac6d3b1000ddd2d075183c2fb1a48bc0f629d",
+      "after": false,
+      "encoded_wrap": "SQUARE",
+      "duplicate_is_error": false,
+      "duplicate_output_exists": true,
+      "body_and_cell_insert_move_and_shape": true,
+      "calls": [
+        {
+          "method": "initialize",
+          "params": {
+            "protocolVersion": "2025-06-18",
+            "capabilities": {},
+            "clientInfo": {
+              "name": "pr9052-review",
+              "version": "1"
+            }
+          },
+          "response": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "result": {
+              "capabilities": {
+                "prompts": {},
+                "resources": {},
+                "tools": {}
+              },
+              "protocolVersion": "2025-06-18",
+              "serverInfo": {
+                "name": "rhwp",
+                "version": "0.9.0"
+              }
+            }
+          }
+        },
+        {
+          "method": "tools/list",
+          "params": {},
+          "response": {
+            "id": 2,
+            "jsonrpc": "2.0",
+            "result": {
+              "tools": [
+                {
+                  "annotations": {
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false,
+                    "readOnlyHint": false
+                  },
+                  "description": "문단 좌표(search 와 같은 section/paragraph/offset, 0 기준)에 본문 그림을 끼운다. 도장·서명용 쪽 좌표 insert-image 와 다르다. 코어 insert_picture_native 배선. 그림 바이트는 파일 그대로 넘긴다. 결과의 section/paragraph/ctrl 이 넣은 그림의 자리이며 hwp_set_picture·hwp_delete_picture 에 그대로 넘긴다 (dryRun 이면 ctrl 은 null). table/row/col 을 주면 그 표 칸 문단 안에 넣어 그림이 칸과 함께 움직이고, 이때 ctrl 은 null 이며 칸 문단 안 번호는 cellCtrl 에 싣는다.",
+                  "inputSchema": {
+                    "properties": {
+                      "cellPara": {
+                        "description": "칸 안 문단 번호 (0부터). 생략하면 0",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "col": {
+                        "description": "table 의 열 (0부터)",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "dryRun": {
+                        "type": "boolean"
+                      },
+                      "height": {
+                        "description": "그림 높이 (HWPUNIT). 생략하면 원본 픽셀 × 75",
+                        "minimum": 1,
+                        "type": "integer"
+                      },
+                      "image": {
+                        "description": "삽입할 그림 파일 경로 (png/jpg/jpeg/bmp/tif/tiff)",
+                        "type": "string"
+                      },
+                      "offset": {
+                        "description": "문단 안 문자 오프셋 (0부터). 생략하면 0",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "output": {
+                        "type": "string"
+                      },
+                      "paragraph": {
+                        "description": "문단 번호 (0부터). 생략하면 0",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "path": {
+                        "description": "입력 HWP/HWPX 문서 경로",
+                        "type": "string"
+                      },
+                      "row": {
+                        "description": "table 의 행 (0부터)",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "section": {
+                        "description": "구역 번호 (0부터). 생략하면 0",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "table": {
+                        "description": "본문 최상위 표 번호 (export-tables 의 index). 주면 그 표 칸 문단 안에 넣고 section/paragraph 는 쓰지 않는다",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "width": {
+                        "description": "그림 너비 (HWPUNIT). 생략하면 원본 픽셀 × 75",
+                        "minimum": 1,
+                        "type": "integer"
+                      },
+                      "x": {
+                        "description": "용지 가로 위치 (HWPUNIT). 생략하면 0. 칸 안에 넣으면 칸 문단 기준",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "y": {
+                        "description": "용지 세로 위치 (HWPUNIT). 생략하면 0",
+                        "minimum": 0,
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "path",
+                      "image"
+                    ],
+                    "type": "object"
+                  },
+                  "name": "hwp_insert_picture"
+                },
+                {
+                  "annotations": {
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false,
+                    "readOnlyHint": false
+                  },
+                  "description": "본문 그림 속성을 JSON 으로 바꾼다. section/para/ctrl 은 0 기준이며 hwp_insert_picture 결과의 section/paragraph/ctrl 을 그대로 쓸 수 있다. 코어 set_picture_properties_native 배선. 받는 키: width·height(HWPUNIT), treatAsChar, textWrap(Square|Tight|Through|TopAndBottom|BehindText|InFrontOfText), vertRelTo(Paper|Page|Para), horzRelTo(Paper|Page|Column|Para), vertAlign(Top|Center|Bottom), horzAlign(Left|Center|Right), vertOffset·horzOffset, restrictInPage, allowOverlap, sizeProtect, brightness, contrast, transparency, effect(RealPic|GrayScale|BlackWhite|Pattern8x8), rotationAngle, horzFlip, vertFlip, cropLeft·cropTop·cropRight·cropBottom, paddingLeft·paddingTop·paddingRight·paddingBottom, outerMarginLeft·outerMarginTop·outerMarginRight·outerMarginBottom, borderColor, borderWidth, description, hasCaption, captionDirection(Left|Right|Top|Bottom)·captionVertAlign(Top|Center|Bottom)·captionWidth·captionSpacing·captionIncludeMargin(hasCaption:true 와 함께). 모르는 키나 허용하지 않는 값이 하나라도 있으면 문서를 쓰지 않고 인자 오류로 끝난다.",
+                  "inputSchema": {
+                    "properties": {
+                      "ctrl": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "dryRun": {
+                        "type": "boolean"
+                      },
+                      "output": {
+                        "type": "string"
+                      },
+                      "paragraph": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "path": {
+                        "type": "string"
+                      },
+                      "props": {
+                        "description": "그림 속성 JSON 객체 (예: {\"textWrap\":\"TopAndBottom\",\"horzAlign\":\"Center\"}). 받는 키와 값은 도구 설명 참조",
+                        "type": "string"
+                      },
+                      "section": {
+                        "minimum": 0,
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "path",
+                      "section",
+                      "paragraph",
+                      "ctrl",
+                      "props"
+                    ],
+                    "type": "object"
+                  },
+                  "name": "hwp_set_picture"
+                },
+                {
+                  "annotations": {
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false,
+                    "readOnlyHint": false
+                  },
+                  "description": "본문의 떠 있는 그림(글자처럼 취급 아님)을 다른 본문 문단(toParagraph)이나 표 칸 문단(table/row/col)으로 옮긴다. 그림이 놓인 자리의 기준 문단(조판 부호)이 바뀌므로 그림이 그 문단·칸과 함께 움직인다. 코어 relocate_floating_picture_native 배선. x/y 는 그림의 가로·세로 기준에서의 거리(HWPUNIT)이며, 생략하면 본문 문단으로 옮길 때는 기존 값을 쓰고 표 칸으로 옮길 때는 0 이다. 표 칸으로 옮기면 세로 기준이 문단, 가로 기준이 단으로 바뀐다. 결과의 toSection/toParagraph/toCtrl 이 옮긴 뒤의 자리이고, 칸으로 옮기면 toCtrl 대신 cellCtrl 에 칸 문단 안 번호를 싣는다.",
+                  "inputSchema": {
+                    "properties": {
+                      "cellPara": {
+                        "description": "칸 안 문단 번호. 생략하면 0",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "col": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "ctrl": {
+                        "description": "옮길 그림의 컨트롤 번호",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "dryRun": {
+                        "type": "boolean"
+                      },
+                      "output": {
+                        "type": "string"
+                      },
+                      "paragraph": {
+                        "description": "옮길 그림의 본문 문단",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "path": {
+                        "type": "string"
+                      },
+                      "row": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "section": {
+                        "description": "옮길 그림의 구역",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "table": {
+                        "description": "옮길 본문 최상위 표 번호. toParagraph 대신 쓴다",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "toOffset": {
+                        "description": "옮길 문단 안 문자 오프셋. 생략하면 0",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "toParagraph": {
+                        "description": "옮길 본문 문단",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "toSection": {
+                        "description": "옮길 본문 구역. 생략하면 section",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "x": {
+                        "description": "가로 기준에서의 거리 HWPUNIT",
+                        "type": "integer"
+                      },
+                      "y": {
+                        "description": "세로 기준에서의 거리 HWPUNIT",
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "path",
+                      "section",
+                      "paragraph",
+                      "ctrl"
+                    ],
+                    "type": "object"
+                  },
+                  "name": "hwp_move_picture"
+                },
+                {
+                  "annotations": {
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false,
+                    "readOnlyHint": false
+                  },
+                  "description": "본문 도형(사각형·타원·선·글상자 등) 속성을 JSON 으로 바꾼다. section/para/ctrl 은 0 기준. 코어 set_shape_properties_native 배선. 받는 키: width·height, treatAsChar, textWrap(Square|Tight|Through|TopAndBottom|BehindText|InFrontOfText), vertRelTo(Paper|Page|Para), horzRelTo(Paper|Page|Column|Para), vertAlign(Top|Center|Bottom), horzAlign(Left|Center|Right), vertOffset·horzOffset(0 이상), restrictInPage, allowOverlap, sizeProtect, dropCapStyle(None|DoubleLine|TripleLine|Margin), outerMargin*, description, rotationAngle, horzFlip, vertFlip, borderColor, borderWidth, lineType, lineEndShape, arrowStart, arrowEnd, arrowStartSize, arrowEndSize, fillType(none|solid|gradient|image), fillBgColor, fillPatColor, fillPatType, fillAlpha, gradientType·gradientAngle·gradientCenterX·gradientCenterY·gradientBlur, shadowType·shadowColor·shadowOffsetX·shadowOffsetY, 글상자 tbMargin*·tbVerticalAlign(Top|Center|Bottom), 사각형 roundRate, hasCaption 과 caption* 키(hasCaption:true 와 함께). 모르는 키나 허용하지 않는 값이 하나라도 있으면 문서를 쓰지 않고 인자 오류로 끝난다.",
+                  "inputSchema": {
+                    "properties": {
+                      "ctrl": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "dryRun": {
+                        "type": "boolean"
+                      },
+                      "output": {
+                        "type": "string"
+                      },
+                      "paragraph": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "path": {
+                        "type": "string"
+                      },
+                      "props": {
+                        "description": "도형 속성 JSON 객체 (예: {\"textWrap\":\"TopAndBottom\",\"horzOffset\":1000}). 받는 키와 값은 도구 설명 참조",
+                        "type": "string"
+                      },
+                      "section": {
+                        "minimum": 0,
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "path",
+                      "section",
+                      "paragraph",
+                      "ctrl",
+                      "props"
+                    ],
+                    "type": "object"
+                  },
+                  "name": "hwp_set_shape"
+                },
+                {
+                  "annotations": {
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false,
+                    "readOnlyHint": false
+                  },
+                  "description": "머리말/꼬리말 안 그림 속성을 바꾼다. para/ctrl은 머리말·꼬리말 컨트롤, innerPara/innerCtrl은 그 안 그림이다. props 에서 받는 키와 값은 hwp_set_picture 와 같고(캡션 만들기 제외), 모르는 키나 허용하지 않는 값이 하나라도 있으면 인자 오류로 끝난다.",
+                  "inputSchema": {
+                    "properties": {
+                      "ctrl": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "dryRun": {
+                        "type": "boolean"
+                      },
+                      "innerCtrl": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "innerPara": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "output": {
+                        "type": "string"
+                      },
+                      "paragraph": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "path": {
+                        "type": "string"
+                      },
+                      "props": {
+                        "description": "그림 속성 JSON 객체 (받는 키는 hwp_set_picture 와 같음)",
+                        "type": "string"
+                      },
+                      "section": {
+                        "minimum": 0,
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "path",
+                      "section",
+                      "paragraph",
+                      "ctrl",
+                      "innerPara",
+                      "innerCtrl",
+                      "props"
+                    ],
+                    "type": "object"
+                  },
+                  "name": "hwp_set_hf_picture"
+                }
+              ]
+            }
+          },
+          "original_tool_count": 184,
+          "retained_tool_count": 5
+        },
+        {
+          "method": "tools/call",
+          "params": {
+            "name": "hwp_insert_picture",
+            "arguments": {
+              "path": "/Users/tsjang/rhwp/samples/paper-square-table-tac-host.hwpx",
+              "image": "/Users/tsjang/rhwp/samples/images/moogung.jpg",
+              "paragraph": 1,
+              "width": 8000,
+              "output": "output/pr-review/pr9052-picture-cli-20261113/mcp-before/inserted.hwpx"
+            }
+          },
+          "response": {
+            "id": 3,
+            "jsonrpc": "2.0",
+            "result": {
+              "content": [
+                {
+                  "text": "{\"binDataId\":1,\"cellCtrl\":null,\"cellPara\":null,\"changedPages\":[0],\"col\":null,\"ctrl\":0,\"dryRun\":false,\"height\":4184,\"image\":\"/Users/tsjang/rhwp/samples/images/moogung.jpg\",\"offset\":0,\"output\":\"output/pr-review/pr9052-picture-cli-20261113/mcp-before/inserted.hwpx\",\"outputFormat\":\"hwpx\",\"paragraph\":1,\"row\":null,\"schemaVersion\":\"1.0\",\"section\":0,\"source\":\"/Users/tsjang/rhwp/samples/paper-square-table-tac-host.hwpx\",\"table\":null,\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null,\"width\":8000,\"x\":0,\"y\":0}",
+                  "type": "text"
+                }
+              ],
+              "isError": false,
+              "structuredContent": {
+                "binDataId": 1,
+                "cellCtrl": null,
+                "cellPara": null,
+                "changedPages": [
+                  0
+                ],
+                "col": null,
+                "ctrl": 0,
+                "dryRun": false,
+                "height": 4184,
+                "image": "/Users/tsjang/rhwp/samples/images/moogung.jpg",
+                "offset": 0,
+                "output": "output/pr-review/pr9052-picture-cli-20261113/mcp-before/inserted.hwpx",
+                "outputFormat": "hwpx",
+                "paragraph": 1,
+                "row": null,
+                "schemaVersion": "1.0",
+                "section": 0,
+                "source": "/Users/tsjang/rhwp/samples/paper-square-table-tac-host.hwpx",
+                "table": null,
+                "untrustedContent": false,
+                "untrustedFields": [],
+                "verify": null,
+                "width": 8000,
+                "x": 0,
+                "y": 0
+              }
+            }
+          }
+        },
+        {
+          "method": "tools/call",
+          "params": {
+            "name": "hwp_set_picture",
+            "arguments": {
+              "path": "output/pr-review/pr9052-picture-cli-20261113/mcp-before/inserted.hwpx",
+              "section": 0,
+              "paragraph": 1,
+              "ctrl": 0,
+              "props": "{\"\\u0074extWrap\":\"TopAnd\\u0042ottom\"}",
+              "output": "output/pr-review/pr9052-picture-cli-20261113/mcp-before/encoded.hwpx"
+            }
+          },
+          "response": {
+            "id": 4,
+            "jsonrpc": "2.0",
+            "result": {
+              "content": [
+                {
+                  "text": "{\"changedPages\":[0],\"ctrl\":0,\"dryRun\":false,\"output\":\"output/pr-review/pr9052-picture-cli-20261113/mcp-before/encoded.hwpx\",\"outputFormat\":\"hwpx\",\"paragraph\":1,\"schemaVersion\":\"1.0\",\"section\":0,\"source\":\"output/pr-review/pr9052-picture-cli-20261113/mcp-before/inserted.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null}",
+                  "type": "text"
+                }
+              ],
+              "isError": false,
+              "structuredContent": {
+                "changedPages": [
+                  0
+                ],
+                "ctrl": 0,
+                "dryRun": false,
+                "output": "output/pr-review/pr9052-picture-cli-20261113/mcp-before/encoded.hwpx",
+                "outputFormat": "hwpx",
+                "paragraph": 1,
+                "schemaVersion": "1.0",
+                "section": 0,
+                "source": "output/pr-review/pr9052-picture-cli-20261113/mcp-before/inserted.hwpx",
+                "untrustedContent": false,
+                "untrustedFields": [],
+                "verify": null
+              }
+            }
+          }
+        },
+        {
+          "method": "tools/call",
+          "params": {
+            "name": "hwp_set_picture",
+            "arguments": {
+              "path": "output/pr-review/pr9052-picture-cli-20261113/mcp-before/inserted.hwpx",
+              "section": 0,
+              "paragraph": 1,
+              "ctrl": 0,
+              "props": "{\"textWrap\":\"topAndBottom\",\"textWrap\":\"TopAndBottom\"}",
+              "output": "output/pr-review/pr9052-picture-cli-20261113/mcp-before/duplicate.hwpx"
+            }
+          },
+          "response": {
+            "id": 5,
+            "jsonrpc": "2.0",
+            "result": {
+              "content": [
+                {
+                  "text": "{\"changedPages\":[0],\"ctrl\":0,\"dryRun\":false,\"output\":\"output/pr-review/pr9052-picture-cli-20261113/mcp-before/duplicate.hwpx\",\"outputFormat\":\"hwpx\",\"paragraph\":1,\"schemaVersion\":\"1.0\",\"section\":0,\"source\":\"output/pr-review/pr9052-picture-cli-20261113/mcp-before/inserted.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null}",
+                  "type": "text"
+                }
+              ],
+              "isError": false,
+              "structuredContent": {
+                "changedPages": [
+                  0
+                ],
+                "ctrl": 0,
+                "dryRun": false,
+                "output": "output/pr-review/pr9052-picture-cli-20261113/mcp-before/duplicate.hwpx",
+                "outputFormat": "hwpx",
+                "paragraph": 1,
+                "schemaVersion": "1.0",
+                "section": 0,
+                "source": "output/pr-review/pr9052-picture-cli-20261113/mcp-before/inserted.hwpx",
+                "untrustedContent": false,
+                "untrustedFields": [],
+                "verify": null
+              }
+            }
+          }
+        },
+        {
+          "method": "tools/call",
+          "params": {
+            "name": "hwp_insert_picture",
+            "arguments": {
+              "path": "/Users/tsjang/rhwp/samples/paper-square-table-tac-host.hwpx",
+              "image": "/Users/tsjang/rhwp/samples/images/moogung.jpg",
+              "table": 2,
+              "row": 0,
+              "col": 1,
+              "width": 3000,
+              "output": "output/pr-review/pr9052-picture-cli-20261113/mcp-before/cell.hwpx"
+            }
+          },
+          "response": {
+            "id": 6,
+            "jsonrpc": "2.0",
+            "result": {
+              "content": [
+                {
+                  "text": "{\"binDataId\":1,\"cellCtrl\":0,\"cellPara\":0,\"changedPages\":[0],\"col\":1,\"ctrl\":null,\"dryRun\":false,\"height\":1569,\"image\":\"/Users/tsjang/rhwp/samples/images/moogung.jpg\",\"offset\":0,\"output\":\"output/pr-review/pr9052-picture-cli-20261113/mcp-before/cell.hwpx\",\"outputFormat\":\"hwpx\",\"paragraph\":2,\"row\":0,\"schemaVersion\":\"1.0\",\"section\":0,\"source\":\"/Users/tsjang/rhwp/samples/paper-square-table-tac-host.hwpx\",\"table\":2,\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null,\"width\":3000,\"x\":0,\"y\":0}",
+                  "type": "text"
+                }
+              ],
+              "isError": false,
+              "structuredContent": {
+                "binDataId": 1,
+                "cellCtrl": 0,
+                "cellPara": 0,
+                "changedPages": [
+                  0
+                ],
+                "col": 1,
+                "ctrl": null,
+                "dryRun": false,
+                "height": 1569,
+                "image": "/Users/tsjang/rhwp/samples/images/moogung.jpg",
+                "offset": 0,
+                "output": "output/pr-review/pr9052-picture-cli-20261113/mcp-before/cell.hwpx",
+                "outputFormat": "hwpx",
+                "paragraph": 2,
+                "row": 0,
+                "schemaVersion": "1.0",
+                "section": 0,
+                "source": "/Users/tsjang/rhwp/samples/paper-square-table-tac-host.hwpx",
+                "table": 2,
+                "untrustedContent": false,
+                "untrustedFields": [],
+                "verify": null,
+                "width": 3000,
+                "x": 0,
+                "y": 0
+              }
+            }
+          }
+        },
+        {
+          "method": "tools/call",
+          "params": {
+            "name": "hwp_move_picture",
+            "arguments": {
+              "path": "output/pr-review/pr9052-picture-cli-20261113/mcp-before/inserted.hwpx",
+              "section": 0,
+              "paragraph": 1,
+              "ctrl": 0,
+              "toParagraph": 3,
+              "output": "output/pr-review/pr9052-picture-cli-20261113/mcp-before/moved.hwpx"
+            }
+          },
+          "response": {
+            "id": 7,
+            "jsonrpc": "2.0",
+            "result": {
+              "content": [
+                {
+                  "text": "{\"cellCtrl\":null,\"cellPara\":null,\"changedPages\":[0],\"col\":null,\"ctrl\":0,\"dryRun\":false,\"output\":\"output/pr-review/pr9052-picture-cli-20261113/mcp-before/moved.hwpx\",\"outputFormat\":\"hwpx\",\"paragraph\":1,\"row\":null,\"schemaVersion\":\"1.0\",\"section\":0,\"source\":\"output/pr-review/pr9052-picture-cli-20261113/mcp-before/inserted.hwpx\",\"table\":null,\"toCtrl\":0,\"toOffset\":0,\"toParagraph\":3,\"toSection\":0,\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null,\"x\":0,\"y\":0}",
+                  "type": "text"
+                }
+              ],
+              "isError": false,
+              "structuredContent": {
+                "cellCtrl": null,
+                "cellPara": null,
+                "changedPages": [
+                  0
+                ],
+                "col": null,
+                "ctrl": 0,
+                "dryRun": false,
+                "output": "output/pr-review/pr9052-picture-cli-20261113/mcp-before/moved.hwpx",
+                "outputFormat": "hwpx",
+                "paragraph": 1,
+                "row": null,
+                "schemaVersion": "1.0",
+                "section": 0,
+                "source": "output/pr-review/pr9052-picture-cli-20261113/mcp-before/inserted.hwpx",
+                "table": null,
+                "toCtrl": 0,
+                "toOffset": 0,
+                "toParagraph": 3,
+                "toSection": 0,
+                "untrustedContent": false,
+                "untrustedFields": [],
+                "verify": null,
+                "x": 0,
+                "y": 0
+              }
+            }
+          }
+        },
+        {
+          "method": "tools/call",
+          "params": {
+            "name": "hwp_move_picture",
+            "arguments": {
+              "path": "output/pr-review/pr9052-picture-cli-20261113/mcp-before/inserted.hwpx",
+              "section": 0,
+              "paragraph": 1,
+              "ctrl": 0,
+              "table": 2,
+              "row": 0,
+              "col": 1,
+              "cellPara": 0,
+              "output": "output/pr-review/pr9052-picture-cli-20261113/mcp-before/moved-cell.hwpx"
+            }
+          },
+          "response": {
+            "id": 8,
+            "jsonrpc": "2.0",
+            "result": {
+              "content": [
+                {
+                  "text": "{\"cellCtrl\":0,\"cellPara\":0,\"changedPages\":[0],\"col\":1,\"ctrl\":0,\"dryRun\":false,\"output\":\"output/pr-review/pr9052-picture-cli-20261113/mcp-before/moved-cell.hwpx\",\"outputFormat\":\"hwpx\",\"paragraph\":1,\"row\":0,\"schemaVersion\":\"1.0\",\"section\":0,\"source\":\"output/pr-review/pr9052-picture-cli-20261113/mcp-before/inserted.hwpx\",\"table\":2,\"toCtrl\":null,\"toOffset\":0,\"toParagraph\":2,\"toSection\":0,\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null,\"x\":0,\"y\":0}",
+                  "type": "text"
+                }
+              ],
+              "isError": false,
+              "structuredContent": {
+                "cellCtrl": 0,
+                "cellPara": 0,
+                "changedPages": [
+                  0
+                ],
+                "col": 1,
+                "ctrl": 0,
+                "dryRun": false,
+                "output": "output/pr-review/pr9052-picture-cli-20261113/mcp-before/moved-cell.hwpx",
+                "outputFormat": "hwpx",
+                "paragraph": 1,
+                "row": 0,
+                "schemaVersion": "1.0",
+                "section": 0,
+                "source": "output/pr-review/pr9052-picture-cli-20261113/mcp-before/inserted.hwpx",
+                "table": 2,
+                "toCtrl": null,
+                "toOffset": 0,
+                "toParagraph": 2,
+                "toSection": 0,
+                "untrustedContent": false,
+                "untrustedFields": [],
+                "verify": null,
+                "x": 0,
+                "y": 0
+              }
+            }
+          }
+        },
+        {
+          "method": "tools/call",
+          "params": {
+            "name": "hwp_set_shape",
+            "arguments": {
+              "path": "output/pr-review/pr9052-picture-cli-20261113/mcp-before/shape.hwpx",
+              "section": 0,
+              "paragraph": 1,
+              "ctrl": 0,
+              "props": "{\"textWrap\":\"TopAndBottom\",\"horzOffset\":1200}",
+              "output": "output/pr-review/pr9052-picture-cli-20261113/mcp-before/shape-set.hwpx"
+            }
+          },
+          "response": {
+            "id": 9,
+            "jsonrpc": "2.0",
+            "result": {
+              "content": [
+                {
+                  "text": "{\"changedPages\":[0],\"ctrl\":0,\"dryRun\":false,\"output\":\"output/pr-review/pr9052-picture-cli-20261113/mcp-before/shape-set.hwpx\",\"outputFormat\":\"hwpx\",\"paragraph\":1,\"schemaVersion\":\"1.0\",\"section\":0,\"source\":\"output/pr-review/pr9052-picture-cli-20261113/mcp-before/shape.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null}",
+                  "type": "text"
+                }
+              ],
+              "isError": false,
+              "structuredContent": {
+                "changedPages": [
+                  0
+                ],
+                "ctrl": 0,
+                "dryRun": false,
+                "output": "output/pr-review/pr9052-picture-cli-20261113/mcp-before/shape-set.hwpx",
+                "outputFormat": "hwpx",
+                "paragraph": 1,
+                "schemaVersion": "1.0",
+                "section": 0,
+                "source": "output/pr-review/pr9052-picture-cli-20261113/mcp-before/shape.hwpx",
+                "untrustedContent": false,
+                "untrustedFields": [],
+                "verify": null
+              }
+            }
+          }
+        }
+      ],
+      "raw_record_sha256": "b6b9a9ef47a19cc7ad8d456a0d53c61cfc9636f14b518e421a64bb72326f3f9b"
+    },
+    "after": {
+      "binary": "/Users/tsjang/rhwp/output/pr-review/pr9052-picture-cli-20261113/rhwp-maintainer-candidate",
+      "binary_sha256": "0f4caffb190bba583fb2c084aa1737a76b41fca3e6be4a3acdeea1938573679e",
+      "after": true,
+      "encoded_wrap": "TOP_AND_BOTTOM",
+      "duplicate_is_error": true,
+      "duplicate_output_exists": false,
+      "body_and_cell_insert_move_and_shape": true,
+      "calls": [
+        {
+          "method": "initialize",
+          "params": {
+            "protocolVersion": "2025-06-18",
+            "capabilities": {},
+            "clientInfo": {
+              "name": "pr9052-review",
+              "version": "1"
+            }
+          },
+          "response": {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "result": {
+              "capabilities": {
+                "prompts": {},
+                "resources": {},
+                "tools": {}
+              },
+              "protocolVersion": "2025-06-18",
+              "serverInfo": {
+                "name": "rhwp",
+                "version": "0.9.0"
+              }
+            }
+          }
+        },
+        {
+          "method": "tools/list",
+          "params": {},
+          "response": {
+            "id": 2,
+            "jsonrpc": "2.0",
+            "result": {
+              "tools": [
+                {
+                  "annotations": {
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false,
+                    "readOnlyHint": false
+                  },
+                  "description": "문단 좌표(search 와 같은 section/paragraph/offset, 0 기준)에 본문 그림을 끼운다. 도장·서명용 쪽 좌표 insert-image 와 다르다. 코어 insert_picture_native 배선. 그림 바이트는 파일 그대로 넘긴다. 결과의 section/paragraph/ctrl 이 넣은 그림의 자리이며 hwp_set_picture·hwp_delete_picture 에 그대로 넘긴다 (dryRun 이면 ctrl 은 null). table/row/col 을 주면 그 표 칸 문단 안에 넣어 그림이 칸과 함께 움직이고, 이때 ctrl 은 null 이며 칸 문단 안 번호는 cellCtrl 에 싣는다.",
+                  "inputSchema": {
+                    "properties": {
+                      "cellPara": {
+                        "description": "칸 안 문단 번호 (0부터). 생략하면 0",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "col": {
+                        "description": "table 의 열 (0부터)",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "dryRun": {
+                        "type": "boolean"
+                      },
+                      "height": {
+                        "description": "그림 높이 (HWPUNIT). 생략하면 원본 픽셀 × 75",
+                        "minimum": 1,
+                        "type": "integer"
+                      },
+                      "image": {
+                        "description": "삽입할 그림 파일 경로 (png/jpg/jpeg/bmp/tif/tiff)",
+                        "type": "string"
+                      },
+                      "offset": {
+                        "description": "문단 안 문자 오프셋 (0부터). 생략하면 0",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "output": {
+                        "type": "string"
+                      },
+                      "paragraph": {
+                        "description": "문단 번호 (0부터). 생략하면 0",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "path": {
+                        "description": "입력 HWP/HWPX 문서 경로",
+                        "type": "string"
+                      },
+                      "row": {
+                        "description": "table 의 행 (0부터)",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "section": {
+                        "description": "구역 번호 (0부터). 생략하면 0",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "table": {
+                        "description": "본문 최상위 표 번호 (export-tables 의 index). 주면 그 표 칸 문단 안에 넣고 section/paragraph 는 쓰지 않는다",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "width": {
+                        "description": "그림 너비 (HWPUNIT). 생략하면 원본 픽셀 × 75",
+                        "minimum": 1,
+                        "type": "integer"
+                      },
+                      "x": {
+                        "description": "용지 가로 위치 (HWPUNIT). 생략하면 0. 칸 안에 넣으면 칸 문단 기준",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "y": {
+                        "description": "용지 세로 위치 (HWPUNIT). 생략하면 0",
+                        "minimum": 0,
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "path",
+                      "image"
+                    ],
+                    "type": "object"
+                  },
+                  "name": "hwp_insert_picture"
+                },
+                {
+                  "annotations": {
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false,
+                    "readOnlyHint": false
+                  },
+                  "description": "본문 그림 속성을 JSON 으로 바꾼다. section/para/ctrl 은 0 기준이며 hwp_insert_picture 결과의 section/paragraph/ctrl 을 그대로 쓸 수 있다. 코어 set_picture_properties_native 배선. 받는 키: width·height(HWPUNIT), treatAsChar, textWrap(Square|Tight|Through|TopAndBottom|BehindText|InFrontOfText), vertRelTo(Paper|Page|Para), horzRelTo(Paper|Page|Column|Para), vertAlign(Top|Center|Bottom), horzAlign(Left|Center|Right), vertOffset·horzOffset, restrictInPage, allowOverlap, sizeProtect, brightness, contrast, transparency, effect(RealPic|GrayScale|BlackWhite|Pattern8x8), rotationAngle, horzFlip, vertFlip, cropLeft·cropTop·cropRight·cropBottom, paddingLeft·paddingTop·paddingRight·paddingBottom, outerMarginLeft·outerMarginTop·outerMarginRight·outerMarginBottom, borderColor, borderWidth, description, hasCaption, captionDirection(Left|Right|Top|Bottom)·captionVertAlign(Top|Center|Bottom)·captionWidth·captionSpacing·captionIncludeMargin(hasCaption:true 와 함께). 모르는 키나 허용하지 않는 값이 하나라도 있으면 문서를 쓰지 않고 인자 오류로 끝난다. 중복 키는 거부하며 Unicode escape로 쓴 키·값도 JSON 의미대로 적용한다.",
+                  "inputSchema": {
+                    "properties": {
+                      "ctrl": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "dryRun": {
+                        "type": "boolean"
+                      },
+                      "output": {
+                        "type": "string"
+                      },
+                      "paragraph": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "path": {
+                        "type": "string"
+                      },
+                      "props": {
+                        "description": "그림 속성 JSON 객체 (예: {\"textWrap\":\"TopAndBottom\",\"horzAlign\":\"Center\"}). 받는 키와 값은 도구 설명 참조",
+                        "type": "string"
+                      },
+                      "section": {
+                        "minimum": 0,
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "path",
+                      "section",
+                      "paragraph",
+                      "ctrl",
+                      "props"
+                    ],
+                    "type": "object"
+                  },
+                  "name": "hwp_set_picture"
+                },
+                {
+                  "annotations": {
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false,
+                    "readOnlyHint": false
+                  },
+                  "description": "본문의 떠 있는 그림(글자처럼 취급 아님)을 다른 본문 문단(toParagraph)이나 표 칸 문단(table/row/col)으로 옮긴다. 그림이 놓인 자리의 기준 문단(조판 부호)이 바뀌므로 그림이 그 문단·칸과 함께 움직인다. 코어 relocate_floating_picture_native 배선. x/y 는 그림의 가로·세로 기준에서의 거리(HWPUNIT)이며, 생략하면 본문 문단으로 옮길 때는 기존 값을 쓰고 표 칸으로 옮길 때는 0 이다. 표 칸으로 옮기면 세로 기준이 문단, 가로 기준이 단으로 바뀐다. 결과의 toSection/toParagraph/toCtrl 이 옮긴 뒤의 자리이고, 칸으로 옮기면 toCtrl 대신 cellCtrl 에 칸 문단 안 번호를 싣는다.",
+                  "inputSchema": {
+                    "properties": {
+                      "cellPara": {
+                        "description": "칸 안 문단 번호. 생략하면 0",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "col": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "ctrl": {
+                        "description": "옮길 그림의 컨트롤 번호",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "dryRun": {
+                        "type": "boolean"
+                      },
+                      "output": {
+                        "type": "string"
+                      },
+                      "paragraph": {
+                        "description": "옮길 그림의 본문 문단",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "path": {
+                        "type": "string"
+                      },
+                      "row": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "section": {
+                        "description": "옮길 그림의 구역",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "table": {
+                        "description": "옮길 본문 최상위 표 번호. toParagraph 대신 쓴다",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "toOffset": {
+                        "description": "옮길 문단 안 문자 오프셋. 생략하면 0",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "toParagraph": {
+                        "description": "옮길 본문 문단",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "toSection": {
+                        "description": "옮길 본문 구역. 생략하면 section",
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "x": {
+                        "description": "가로 기준에서의 거리 HWPUNIT",
+                        "type": "integer"
+                      },
+                      "y": {
+                        "description": "세로 기준에서의 거리 HWPUNIT",
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "path",
+                      "section",
+                      "paragraph",
+                      "ctrl"
+                    ],
+                    "type": "object"
+                  },
+                  "name": "hwp_move_picture"
+                },
+                {
+                  "annotations": {
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false,
+                    "readOnlyHint": false
+                  },
+                  "description": "본문 도형(사각형·타원·선·글상자 등) 속성을 JSON 으로 바꾼다. section/para/ctrl 은 0 기준. 코어 set_shape_properties_native 배선. 받는 키: width·height, treatAsChar, textWrap(Square|Tight|Through|TopAndBottom|BehindText|InFrontOfText), vertRelTo(Paper|Page|Para), horzRelTo(Paper|Page|Column|Para), vertAlign(Top|Center|Bottom), horzAlign(Left|Center|Right), vertOffset·horzOffset(0 이상), restrictInPage, allowOverlap, sizeProtect, dropCapStyle(None|DoubleLine|TripleLine|Margin), outerMargin*, description, rotationAngle, horzFlip, vertFlip, borderColor, borderWidth, lineType, lineEndShape, arrowStart, arrowEnd, arrowStartSize, arrowEndSize, fillType(none|solid|gradient|image), fillBgColor, fillPatColor, fillPatType, fillAlpha, gradientType·gradientAngle·gradientCenterX·gradientCenterY·gradientBlur, shadowType·shadowColor·shadowOffsetX·shadowOffsetY, 글상자 tbMargin*·tbVerticalAlign(Top|Center|Bottom), 사각형 roundRate, hasCaption 과 caption* 키(hasCaption:true 와 함께). 모르는 키나 허용하지 않는 값이 하나라도 있으면 문서를 쓰지 않고 인자 오류로 끝난다. 중복 키는 거부하며 Unicode escape로 쓴 키·값도 JSON 의미대로 적용한다.",
+                  "inputSchema": {
+                    "properties": {
+                      "ctrl": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "dryRun": {
+                        "type": "boolean"
+                      },
+                      "output": {
+                        "type": "string"
+                      },
+                      "paragraph": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "path": {
+                        "type": "string"
+                      },
+                      "props": {
+                        "description": "도형 속성 JSON 객체 (예: {\"textWrap\":\"TopAndBottom\",\"horzOffset\":1000}). 받는 키와 값은 도구 설명 참조",
+                        "type": "string"
+                      },
+                      "section": {
+                        "minimum": 0,
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "path",
+                      "section",
+                      "paragraph",
+                      "ctrl",
+                      "props"
+                    ],
+                    "type": "object"
+                  },
+                  "name": "hwp_set_shape"
+                },
+                {
+                  "annotations": {
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false,
+                    "readOnlyHint": false
+                  },
+                  "description": "머리말/꼬리말 안 그림 속성을 바꾼다. para/ctrl은 머리말·꼬리말 컨트롤, innerPara/innerCtrl은 그 안 그림이다. props 에서 받는 키와 값은 hwp_set_picture 와 같고(캡션 만들기 제외), 모르는 키나 허용하지 않는 값이 하나라도 있으면 인자 오류로 끝난다. 중복 키와 Unicode escape의 처리도 hwp_set_picture와 같다.",
+                  "inputSchema": {
+                    "properties": {
+                      "ctrl": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "dryRun": {
+                        "type": "boolean"
+                      },
+                      "innerCtrl": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "innerPara": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "output": {
+                        "type": "string"
+                      },
+                      "paragraph": {
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "path": {
+                        "type": "string"
+                      },
+                      "props": {
+                        "description": "그림 속성 JSON 객체 (받는 키는 hwp_set_picture 와 같음)",
+                        "type": "string"
+                      },
+                      "section": {
+                        "minimum": 0,
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "path",
+                      "section",
+                      "paragraph",
+                      "ctrl",
+                      "innerPara",
+                      "innerCtrl",
+                      "props"
+                    ],
+                    "type": "object"
+                  },
+                  "name": "hwp_set_hf_picture"
+                }
+              ]
+            }
+          },
+          "original_tool_count": 184,
+          "retained_tool_count": 5
+        },
+        {
+          "method": "tools/call",
+          "params": {
+            "name": "hwp_insert_picture",
+            "arguments": {
+              "path": "/Users/tsjang/rhwp/samples/paper-square-table-tac-host.hwpx",
+              "image": "/Users/tsjang/rhwp/samples/images/moogung.jpg",
+              "paragraph": 1,
+              "width": 8000,
+              "output": "output/pr-review/pr9052-picture-cli-20261113/mcp-after/inserted.hwpx"
+            }
+          },
+          "response": {
+            "id": 3,
+            "jsonrpc": "2.0",
+            "result": {
+              "content": [
+                {
+                  "text": "{\"binDataId\":1,\"cellCtrl\":null,\"cellPara\":null,\"changedPages\":[0],\"col\":null,\"ctrl\":0,\"dryRun\":false,\"height\":4184,\"image\":\"/Users/tsjang/rhwp/samples/images/moogung.jpg\",\"offset\":0,\"output\":\"output/pr-review/pr9052-picture-cli-20261113/mcp-after/inserted.hwpx\",\"outputFormat\":\"hwpx\",\"paragraph\":1,\"row\":null,\"schemaVersion\":\"1.0\",\"section\":0,\"source\":\"/Users/tsjang/rhwp/samples/paper-square-table-tac-host.hwpx\",\"table\":null,\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null,\"width\":8000,\"x\":0,\"y\":0}",
+                  "type": "text"
+                }
+              ],
+              "isError": false,
+              "structuredContent": {
+                "binDataId": 1,
+                "cellCtrl": null,
+                "cellPara": null,
+                "changedPages": [
+                  0
+                ],
+                "col": null,
+                "ctrl": 0,
+                "dryRun": false,
+                "height": 4184,
+                "image": "/Users/tsjang/rhwp/samples/images/moogung.jpg",
+                "offset": 0,
+                "output": "output/pr-review/pr9052-picture-cli-20261113/mcp-after/inserted.hwpx",
+                "outputFormat": "hwpx",
+                "paragraph": 1,
+                "row": null,
+                "schemaVersion": "1.0",
+                "section": 0,
+                "source": "/Users/tsjang/rhwp/samples/paper-square-table-tac-host.hwpx",
+                "table": null,
+                "untrustedContent": false,
+                "untrustedFields": [],
+                "verify": null,
+                "width": 8000,
+                "x": 0,
+                "y": 0
+              }
+            }
+          }
+        },
+        {
+          "method": "tools/call",
+          "params": {
+            "name": "hwp_set_picture",
+            "arguments": {
+              "path": "output/pr-review/pr9052-picture-cli-20261113/mcp-after/inserted.hwpx",
+              "section": 0,
+              "paragraph": 1,
+              "ctrl": 0,
+              "props": "{\"\\u0074extWrap\":\"TopAnd\\u0042ottom\"}",
+              "output": "output/pr-review/pr9052-picture-cli-20261113/mcp-after/encoded.hwpx"
+            }
+          },
+          "response": {
+            "id": 4,
+            "jsonrpc": "2.0",
+            "result": {
+              "content": [
+                {
+                  "text": "{\"changedPages\":[0],\"ctrl\":0,\"dryRun\":false,\"output\":\"output/pr-review/pr9052-picture-cli-20261113/mcp-after/encoded.hwpx\",\"outputFormat\":\"hwpx\",\"paragraph\":1,\"schemaVersion\":\"1.0\",\"section\":0,\"source\":\"output/pr-review/pr9052-picture-cli-20261113/mcp-after/inserted.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null}",
+                  "type": "text"
+                }
+              ],
+              "isError": false,
+              "structuredContent": {
+                "changedPages": [
+                  0
+                ],
+                "ctrl": 0,
+                "dryRun": false,
+                "output": "output/pr-review/pr9052-picture-cli-20261113/mcp-after/encoded.hwpx",
+                "outputFormat": "hwpx",
+                "paragraph": 1,
+                "schemaVersion": "1.0",
+                "section": 0,
+                "source": "output/pr-review/pr9052-picture-cli-20261113/mcp-after/inserted.hwpx",
+                "untrustedContent": false,
+                "untrustedFields": [],
+                "verify": null
+              }
+            }
+          }
+        },
+        {
+          "method": "tools/call",
+          "params": {
+            "name": "hwp_set_picture",
+            "arguments": {
+              "path": "output/pr-review/pr9052-picture-cli-20261113/mcp-after/inserted.hwpx",
+              "section": 0,
+              "paragraph": 1,
+              "ctrl": 0,
+              "props": "{\"textWrap\":\"topAndBottom\",\"textWrap\":\"TopAndBottom\"}",
+              "output": "output/pr-review/pr9052-picture-cli-20261113/mcp-after/duplicate.hwpx"
+            }
+          },
+          "response": {
+            "id": 5,
+            "jsonrpc": "2.0",
+            "result": {
+              "content": [
+                {
+                  "text": "종료 코드 2: 오류: --props 가 올바른 JSON 이 아닙니다 (속성 키가 중복되었습니다: textWrap at line 1 column 53)",
+                  "type": "text"
+                }
+              ],
+              "isError": true
+            }
+          }
+        },
+        {
+          "method": "tools/call",
+          "params": {
+            "name": "hwp_insert_picture",
+            "arguments": {
+              "path": "/Users/tsjang/rhwp/samples/paper-square-table-tac-host.hwpx",
+              "image": "/Users/tsjang/rhwp/samples/images/moogung.jpg",
+              "table": 2,
+              "row": 0,
+              "col": 1,
+              "width": 3000,
+              "output": "output/pr-review/pr9052-picture-cli-20261113/mcp-after/cell.hwpx"
+            }
+          },
+          "response": {
+            "id": 6,
+            "jsonrpc": "2.0",
+            "result": {
+              "content": [
+                {
+                  "text": "{\"binDataId\":1,\"cellCtrl\":0,\"cellPara\":0,\"changedPages\":[0],\"col\":1,\"ctrl\":null,\"dryRun\":false,\"height\":1569,\"image\":\"/Users/tsjang/rhwp/samples/images/moogung.jpg\",\"offset\":0,\"output\":\"output/pr-review/pr9052-picture-cli-20261113/mcp-after/cell.hwpx\",\"outputFormat\":\"hwpx\",\"paragraph\":2,\"row\":0,\"schemaVersion\":\"1.0\",\"section\":0,\"source\":\"/Users/tsjang/rhwp/samples/paper-square-table-tac-host.hwpx\",\"table\":2,\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null,\"width\":3000,\"x\":0,\"y\":0}",
+                  "type": "text"
+                }
+              ],
+              "isError": false,
+              "structuredContent": {
+                "binDataId": 1,
+                "cellCtrl": 0,
+                "cellPara": 0,
+                "changedPages": [
+                  0
+                ],
+                "col": 1,
+                "ctrl": null,
+                "dryRun": false,
+                "height": 1569,
+                "image": "/Users/tsjang/rhwp/samples/images/moogung.jpg",
+                "offset": 0,
+                "output": "output/pr-review/pr9052-picture-cli-20261113/mcp-after/cell.hwpx",
+                "outputFormat": "hwpx",
+                "paragraph": 2,
+                "row": 0,
+                "schemaVersion": "1.0",
+                "section": 0,
+                "source": "/Users/tsjang/rhwp/samples/paper-square-table-tac-host.hwpx",
+                "table": 2,
+                "untrustedContent": false,
+                "untrustedFields": [],
+                "verify": null,
+                "width": 3000,
+                "x": 0,
+                "y": 0
+              }
+            }
+          }
+        },
+        {
+          "method": "tools/call",
+          "params": {
+            "name": "hwp_move_picture",
+            "arguments": {
+              "path": "output/pr-review/pr9052-picture-cli-20261113/mcp-after/inserted.hwpx",
+              "section": 0,
+              "paragraph": 1,
+              "ctrl": 0,
+              "toParagraph": 3,
+              "output": "output/pr-review/pr9052-picture-cli-20261113/mcp-after/moved.hwpx"
+            }
+          },
+          "response": {
+            "id": 7,
+            "jsonrpc": "2.0",
+            "result": {
+              "content": [
+                {
+                  "text": "{\"cellCtrl\":null,\"cellPara\":null,\"changedPages\":[0],\"col\":null,\"ctrl\":0,\"dryRun\":false,\"output\":\"output/pr-review/pr9052-picture-cli-20261113/mcp-after/moved.hwpx\",\"outputFormat\":\"hwpx\",\"paragraph\":1,\"row\":null,\"schemaVersion\":\"1.0\",\"section\":0,\"source\":\"output/pr-review/pr9052-picture-cli-20261113/mcp-after/inserted.hwpx\",\"table\":null,\"toCtrl\":0,\"toOffset\":0,\"toParagraph\":3,\"toSection\":0,\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null,\"x\":0,\"y\":0}",
+                  "type": "text"
+                }
+              ],
+              "isError": false,
+              "structuredContent": {
+                "cellCtrl": null,
+                "cellPara": null,
+                "changedPages": [
+                  0
+                ],
+                "col": null,
+                "ctrl": 0,
+                "dryRun": false,
+                "output": "output/pr-review/pr9052-picture-cli-20261113/mcp-after/moved.hwpx",
+                "outputFormat": "hwpx",
+                "paragraph": 1,
+                "row": null,
+                "schemaVersion": "1.0",
+                "section": 0,
+                "source": "output/pr-review/pr9052-picture-cli-20261113/mcp-after/inserted.hwpx",
+                "table": null,
+                "toCtrl": 0,
+                "toOffset": 0,
+                "toParagraph": 3,
+                "toSection": 0,
+                "untrustedContent": false,
+                "untrustedFields": [],
+                "verify": null,
+                "x": 0,
+                "y": 0
+              }
+            }
+          }
+        },
+        {
+          "method": "tools/call",
+          "params": {
+            "name": "hwp_move_picture",
+            "arguments": {
+              "path": "output/pr-review/pr9052-picture-cli-20261113/mcp-after/inserted.hwpx",
+              "section": 0,
+              "paragraph": 1,
+              "ctrl": 0,
+              "table": 2,
+              "row": 0,
+              "col": 1,
+              "cellPara": 0,
+              "output": "output/pr-review/pr9052-picture-cli-20261113/mcp-after/moved-cell.hwpx"
+            }
+          },
+          "response": {
+            "id": 8,
+            "jsonrpc": "2.0",
+            "result": {
+              "content": [
+                {
+                  "text": "{\"cellCtrl\":0,\"cellPara\":0,\"changedPages\":[0],\"col\":1,\"ctrl\":0,\"dryRun\":false,\"output\":\"output/pr-review/pr9052-picture-cli-20261113/mcp-after/moved-cell.hwpx\",\"outputFormat\":\"hwpx\",\"paragraph\":1,\"row\":0,\"schemaVersion\":\"1.0\",\"section\":0,\"source\":\"output/pr-review/pr9052-picture-cli-20261113/mcp-after/inserted.hwpx\",\"table\":2,\"toCtrl\":null,\"toOffset\":0,\"toParagraph\":2,\"toSection\":0,\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null,\"x\":0,\"y\":0}",
+                  "type": "text"
+                }
+              ],
+              "isError": false,
+              "structuredContent": {
+                "cellCtrl": 0,
+                "cellPara": 0,
+                "changedPages": [
+                  0
+                ],
+                "col": 1,
+                "ctrl": 0,
+                "dryRun": false,
+                "output": "output/pr-review/pr9052-picture-cli-20261113/mcp-after/moved-cell.hwpx",
+                "outputFormat": "hwpx",
+                "paragraph": 1,
+                "row": 0,
+                "schemaVersion": "1.0",
+                "section": 0,
+                "source": "output/pr-review/pr9052-picture-cli-20261113/mcp-after/inserted.hwpx",
+                "table": 2,
+                "toCtrl": null,
+                "toOffset": 0,
+                "toParagraph": 2,
+                "toSection": 0,
+                "untrustedContent": false,
+                "untrustedFields": [],
+                "verify": null,
+                "x": 0,
+                "y": 0
+              }
+            }
+          }
+        },
+        {
+          "method": "tools/call",
+          "params": {
+            "name": "hwp_set_shape",
+            "arguments": {
+              "path": "output/pr-review/pr9052-picture-cli-20261113/mcp-after/shape.hwpx",
+              "section": 0,
+              "paragraph": 1,
+              "ctrl": 0,
+              "props": "{\"textWrap\":\"TopAndBottom\",\"horzOffset\":1200}",
+              "output": "output/pr-review/pr9052-picture-cli-20261113/mcp-after/shape-set.hwpx"
+            }
+          },
+          "response": {
+            "id": 9,
+            "jsonrpc": "2.0",
+            "result": {
+              "content": [
+                {
+                  "text": "{\"changedPages\":[0],\"ctrl\":0,\"dryRun\":false,\"output\":\"output/pr-review/pr9052-picture-cli-20261113/mcp-after/shape-set.hwpx\",\"outputFormat\":\"hwpx\",\"paragraph\":1,\"schemaVersion\":\"1.0\",\"section\":0,\"source\":\"output/pr-review/pr9052-picture-cli-20261113/mcp-after/shape.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null}",
+                  "type": "text"
+                }
+              ],
+              "isError": false,
+              "structuredContent": {
+                "changedPages": [
+                  0
+                ],
+                "ctrl": 0,
+                "dryRun": false,
+                "output": "output/pr-review/pr9052-picture-cli-20261113/mcp-after/shape-set.hwpx",
+                "outputFormat": "hwpx",
+                "paragraph": 1,
+                "schemaVersion": "1.0",
+                "section": 0,
+                "source": "output/pr-review/pr9052-picture-cli-20261113/mcp-after/shape.hwpx",
+                "untrustedContent": false,
+                "untrustedFields": [],
+                "verify": null
+              }
+            }
+          }
+        }
+      ],
+      "raw_record_sha256": "426572895b9a1ff39dbe708e6317e9ba259bef9d02b12522e9afe144f92adbd7"
+    }
+  },
+  "independent_zip": {
+    "reader": "Python stdlib zipfile + ElementTree; no rhwp parser",
+    "source_image_sha256": "7af06b6410ea950341606e2ffe793f99e680030b39513b4bd835dc5c42822f76",
+    "results": {
+      "before": [
+        {
+          "file": "inserted.hwpx",
+          "sha256": "796921844314d141b00140df75c311530a5708307c424b90813e62bb9cdf2a35",
+          "picture_counts_by_body_paragraph": [
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "input_image_bytes_preserved_in": [
+            "BinData/image1.jpg"
+          ]
+        },
+        {
+          "file": "encoded.hwpx",
+          "sha256": "796921844314d141b00140df75c311530a5708307c424b90813e62bb9cdf2a35",
+          "picture_counts_by_body_paragraph": [
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "input_image_bytes_preserved_in": [
+            "BinData/image1.jpg"
+          ]
+        },
+        {
+          "file": "cell.hwpx",
+          "sha256": "51f5ac4fee8ab17295aa910f07e22931138d7004911bf9df4b309ae9200ac3ca",
+          "picture_counts_by_body_paragraph": [
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "input_image_bytes_preserved_in": [
+            "BinData/image1.jpg"
+          ]
+        },
+        {
+          "file": "moved.hwpx",
+          "sha256": "279e979a876c87a8f87858dc467a94bd6f86bab1387d02195edf0612c70305e0",
+          "picture_counts_by_body_paragraph": [
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          "input_image_bytes_preserved_in": [
+            "BinData/image1.jpg"
+          ]
+        },
+        {
+          "file": "moved-cell.hwpx",
+          "sha256": "6950029a1f0fd724126c897667a6ee52ede53737b1d5985e530ea128c3a3109b",
+          "picture_counts_by_body_paragraph": [
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "input_image_bytes_preserved_in": [
+            "BinData/image1.jpg"
+          ]
+        },
+        {
+          "file": "shape-set.hwpx",
+          "sha256": "d0b1ba01b9973c93cb63bb5b33c04abaf803fb3dc42df6d382d43d4ce445d62c",
+          "picture_counts_by_body_paragraph": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "shape": {
+            "textWrap": "TOP_AND_BOTTOM",
+            "position": {
+              "treatAsChar": "0",
+              "affectLSpacing": "0",
+              "flowWithText": "0",
+              "allowOverlap": "0",
+              "holdAnchorAndSO": "0",
+              "vertRelTo": "PAPER",
+              "horzRelTo": "PAPER",
+              "vertAlign": "TOP",
+              "horzAlign": "LEFT",
+              "vertOffset": "0",
+              "horzOffset": "1200"
+            }
+          }
+        }
+      ],
+      "after": [
+        {
+          "file": "inserted.hwpx",
+          "sha256": "796921844314d141b00140df75c311530a5708307c424b90813e62bb9cdf2a35",
+          "picture_counts_by_body_paragraph": [
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "input_image_bytes_preserved_in": [
+            "BinData/image1.jpg"
+          ]
+        },
+        {
+          "file": "encoded.hwpx",
+          "sha256": "962038e8d796fcdf869256edc8328f9b47e278e6f4359682fc51e8f659ce1b3f",
+          "picture_counts_by_body_paragraph": [
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "input_image_bytes_preserved_in": [
+            "BinData/image1.jpg"
+          ]
+        },
+        {
+          "file": "cell.hwpx",
+          "sha256": "51f5ac4fee8ab17295aa910f07e22931138d7004911bf9df4b309ae9200ac3ca",
+          "picture_counts_by_body_paragraph": [
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "input_image_bytes_preserved_in": [
+            "BinData/image1.jpg"
+          ]
+        },
+        {
+          "file": "moved.hwpx",
+          "sha256": "279e979a876c87a8f87858dc467a94bd6f86bab1387d02195edf0612c70305e0",
+          "picture_counts_by_body_paragraph": [
+            0,
+            0,
+            0,
+            1,
+            0
+          ],
+          "input_image_bytes_preserved_in": [
+            "BinData/image1.jpg"
+          ]
+        },
+        {
+          "file": "moved-cell.hwpx",
+          "sha256": "6950029a1f0fd724126c897667a6ee52ede53737b1d5985e530ea128c3a3109b",
+          "picture_counts_by_body_paragraph": [
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          "input_image_bytes_preserved_in": [
+            "BinData/image1.jpg"
+          ]
+        },
+        {
+          "file": "shape-set.hwpx",
+          "sha256": "d0b1ba01b9973c93cb63bb5b33c04abaf803fb3dc42df6d382d43d4ce445d62c",
+          "picture_counts_by_body_paragraph": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "shape": {
+            "textWrap": "TOP_AND_BOTTOM",
+            "position": {
+              "treatAsChar": "0",
+              "affectLSpacing": "0",
+              "flowWithText": "0",
+              "allowOverlap": "0",
+              "holdAnchorAndSO": "0",
+              "vertRelTo": "PAPER",
+              "horzRelTo": "PAPER",
+              "vertAlign": "TOP",
+              "horzAlign": "LEFT",
+              "vertOffset": "0",
+              "horzOffset": "1200"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "tested_merge_identity": {
+    "source": "24aa6c04bc0f632fc6aae2ee8db356fdd85a72d2",
+    "base_snapshot": "00d09f773a2f6c21604a4e6394df7152bbb26e8c",
+    "test_merge_sha": "579d48fcfff7f80539e288c9b066589bf2e3de6e",
+    "merge_parents": [
+      "959300e66c58241a47e6d46030b4b0854e59604b",
+      "24aa6c04bc0f632fc6aae2ee8db356fdd85a72d2"
+    ],
+    "test_merge_tree": "d8eed19052fcda10e1bf53ac012858ec59995b24",
+    "local_merge_tree": "d8eed19052fcda10e1bf53ac012858ec59995b24"
+  },
+  "limitations": [
+    "CLI/MCP contract review; no renderer, pagination, paint or WASM setter implementation change.",
+    "MCP hwp_set_hf_picture declaration and actual CLI regression were checked; MCP runtime header editing was not invoked.",
+    "No Visual Sweep, Print PDF, fresh WASM runtime build or protected-document capture is claimed.",
+    "Mac workspace local test count and Linux root-package CI test count have different OS, target scope and merge-base inputs."
+  ]
+}

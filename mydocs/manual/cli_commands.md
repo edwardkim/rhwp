@@ -1552,9 +1552,11 @@ MCP `hwp_insert_table`은 `atField`, `widths`, `alignments`, `repeatHeader`로 �
 - `-o, --output <파일>` — 출력 파일(기본 `<입력명>_image.<입력과 같은 확장자>`, §edit 산출 형식)
 - `--dry-run` — 파일을 쓰지 않고 배치 예정만 보고
 - `--verify` — 저장 직후 IR 자기검증(차이 시 exit 3)
-- `--json` 봉투: `{"schemaVersion":"1.0","source","image","page","x","y","width","height","binDataId","dryRun","changedPages","overflow":[{"page","paperWidthHu","paperHeightHu","rightHu","bottomHu","overflowXHu","overflowYHu"}],"output"?,"outputFormat"?,"verify"?}`
+- `--json` 봉투: `{"schemaVersion":"1.0","source","image","page","x","y","width","height","binDataId","section","paragraph","ctrl","dryRun","changedPages","overflow":[{"page","paperWidthHu","paperHeightHu","rightHu","bottomHu","overflowXHu","overflowYHu"}],"output"?,"outputFormat"?,"verify"?}`
   - `binDataId` 는 실제로 저장했을 때만 값이 실린다(방금 삽입한 그림의 BinData 참조 —
     같은 그림 재사용이나 산출물 감사용 주소). `overflow` 는 넘칠 때만 원소 1개, 아니면 `[]`.
+  - `section`·`paragraph`·`ctrl` 은 그림을 붙인 문단과 그 안의 컨트롤 번호다. `ctrl` 은
+    실제로 저장했을 때만 값이 실리고 `--dry-run` 이면 `null` 이다.
 - 그림 설명(대체 텍스트)은 삽입한 파일명을 그대로 쓴다(한컴 개체 속성에 노출).
 - 실패 시 원본 불변, 산출 형식은 `edit` 5종과 같은 §edit 산출 형식 규약을 따른다.
 
@@ -1564,21 +1566,29 @@ rhwp edit insert-image 신청서_filled.hwp --image samples/images/moogung.jpg \
   -o 제출본.hwp --json | jq '{output, overflow}'
 ```
 
-### `edit insert-picture <파일> --image <그림> [--section N] [--para N] [--offset N] [--width N] [--height N] [--x N] [--y N] [-o <출력>] [--dry-run] [--verify] [--json]`
+### `edit insert-picture <파일> --image <그림> [--section N --para N | --table N --row N --col N [--cell-para N]] [--offset N] [--width N] [--height N] [--x N] [--y N] [-o <출력>] [--dry-run] [--verify] [--json]`
 문단 좌표에 **본문 그림**을 끼운다. `insert-image` 는 도장·서명용 쪽 좌표(용지 기준 floating)
 축이고, 이 명령은 `search` 와 같은 구역·문단·문자 오프셋에 코어 `insert_picture_native` 만
 배선한다. 새 편집 로직은 없다. 그림 바이트는 파일 그대로 넘긴다.
 
 - `--image <그림>` (필수) — `png`·`jpg`·`jpeg`·`bmp`·`tif`·`tiff`. 확장자·내용 둘 다 검사.
 - `--section` / `--para` / `--offset` — 0 기준. 생략하면 0.
+- `--table` / `--row` / `--col` [`--cell-para`] — 주면 본문 최상위 표(`export-tables` 의 `index`)의
+  그 칸 문단 안에 넣는다(코어 `insert_picture_in_cell_native`). 그림이 칸과 함께 움직인다.
+  `--section`/`--para` 와 함께 쓰면 exit 2. `--offset` 은 칸 문단 안 문자 오프셋, `--x`/`--y` 는 칸
+  문단 기준 거리다.
 - `--width` / `--height` — HWPUNIT. 생략 시 원본 픽셀 ×75, 한쪽만 주면 비율 유지.
 - `--x` / `--y` — 용지 기준 위치(HWPUNIT, 기본 0).
-- `--json` 봉투: `image`·`section`·`paragraph`·`offset`·`x`·`y`·`width`·`height`·`binDataId`.
+- `--json` 봉투: `image`·`section`·`paragraph`·`offset`·`x`·`y`·`width`·`height`·`binDataId`·`ctrl`.
+  `section`·`paragraph`·`ctrl` 을 `set-picture`·`delete-picture` 에 그대로 넘긴다. `--dry-run`
+  이면 그림을 넣지 않으므로 `ctrl` 은 `null` 이다. 표 칸에 넣으면 `section`·`paragraph` 는 표를
+  담은 본문 문단이고, `table`·`row`·`col`·`cellPara` 와 칸 문단 안 번호 `cellCtrl` 을 싣는다. 이때
+  `ctrl` 은 `null` 이다(본문 문단 기준 번호가 아니므로 `set-picture` 에 넘기지 않는다).
 
 ```bash
 rhwp edit insert-picture 공문.hwp --image assets/logo/logo-16.png \
   --section 0 --para 0 --offset 0 --width 1200 --height 1200 \
-  -o 그림본.hwp --json | jq '{section, paragraph, offset, binDataId}'
+  -o 그림본.hwp --json | jq '{section, paragraph, ctrl, binDataId}'
 ```
 
 ### `edit delete-picture <파일> --section N --para N --ctrl N [-o <출력>] [--dry-run] [--verify] [--json]`
@@ -1591,12 +1601,91 @@ rhwp edit delete-picture 그림본.hwp --section 0 --para 0 --ctrl 0 -o 지움.h
 
 ### `edit set-picture <파일> --section N --para N --ctrl N --props <JSON> [-o <출력>] [--dry-run] [--verify] [--json]`
 본문 그림 속성을 바꾼다. 코어 `set_picture_properties_native`. `--section`/`--para`/`--ctrl`/
-`--props` 필수. 인덱스는 문서를 스캔해 Picture 컨트롤을 고른다. `--props` 예:
-`{"brightness":50}`, `{"treatAsChar":true}`, `{"hasCaption":true}`.
+`--props` 필수. 인덱스는 문서를 스캔해 Picture 컨트롤을 고르거나 `insert-picture --json` 결과의
+`section`·`paragraph`·`ctrl` 을 쓴다. `--props` 예:
+`{"brightness":50}`, `{"treatAsChar":true}`, `{"textWrap":"TopAndBottom","horzAlign":"Center"}`.
+
+`--props` 는 JSON 객체여야 하고, 아래 키와 값만 받는다. 모르는 키나 허용하지 않는 값이 하나라도
+있으면 문서를 쓰지 않고 exit 2 로 끝난다(`--dry-run` 도 같다). 열거 값은 대소문자를 구분한다.
+`set-hf-picture` 의 `--props` 도 같은 키를 받는다(캡션 만들기는 지원하지 않는다).
+동일 키를 두 번 쓴 JSON은 거부한다. Unicode escape로 쓴 키·값도 JSON 의미대로 해석하며,
+검사에서 확인한 값과 실제 저장에 적용하는 값이 같다. 이 규칙은 `set-hf-picture`·`set-shape`에도 적용된다.
+
+| 키 | 값 |
+|---|---|
+| `width`, `height` | 0 이상 정수(HWPUNIT) |
+| `treatAsChar`, `restrictInPage`, `allowOverlap`, `sizeProtect`, `horzFlip`, `vertFlip` | `true`/`false` |
+| `textWrap` | `Square`, `Tight`, `Through`, `TopAndBottom`, `BehindText`, `InFrontOfText` |
+| `vertRelTo` | `Paper`, `Page`, `Para` |
+| `horzRelTo` | `Paper`, `Page`, `Column`, `Para` |
+| `vertAlign` | `Top`, `Center`, `Bottom` |
+| `horzAlign` | `Left`, `Center`, `Right` |
+| `vertOffset`, `horzOffset`, `cropLeft`, `cropTop`, `cropRight`, `cropBottom`, `borderWidth` | 정수 (i32) |
+| `brightness`, `contrast` | -128~127 정수 |
+| `transparency` | 0~100 정수 |
+| `effect` | `RealPic`, `GrayScale`, `BlackWhite`, `Pattern8x8` |
+| `rotationAngle`, `paddingLeft`/`Top`/`Right`/`Bottom`, `outerMarginLeft`/`Top`/`Right`/`Bottom` | 정수 (i16) |
+| `borderColor` | 0 이상 정수 |
+| `description` | 문자열 |
+| `hasCaption` | `true` 면 캡션을 만들고 `false` 면 지운다 |
+| `captionDirection` | `Left`, `Right`, `Top`, `Bottom` (`"hasCaption": true` 와 함께) |
+| `captionVertAlign` | `Top`, `Center`, `Bottom` (`"hasCaption": true` 와 함께) |
+| `captionWidth`, `captionSpacing`, `captionIncludeMargin` | 정수·정수·`true`/`false` (`"hasCaption": true` 와 함께) |
 
 ```bash
 rhwp edit set-picture 그림본.hwp --section 0 --para 0 --ctrl 0 \
   --props '{"brightness":50}' -o 조정본.hwp --json
+```
+
+### `edit move-picture <파일> --section N --para N --ctrl N (--to-para N [--to-section N] | --table N --row N --col N [--cell-para N]) [--to-offset N] [--x N] [--y N] [-o <출력>] [--dry-run] [--verify] [--json]`
+본문의 떠 있는 그림(글자처럼 취급 아님)을 다른 본문 문단이나 표 칸 문단으로 옮긴다. 코어
+`relocate_floating_picture_native`. 그림이 기준으로 삼는 문단(조판 부호)이 옮긴 자리로 바뀌므로
+그림이 그 문단·칸과 함께 움직인다. 그림 데이터(BinData)는 그대로 둔다.
+
+- `--section`/`--para`/`--ctrl` (필수) — 옮길 그림. 글자처럼 취급하는 그림이나 그림이 아닌 컨트롤이면
+  exit 1 이다(`--dry-run` 도 같다).
+- 옮길 자리는 `--to-para`(본문 문단, `--to-section` 생략 시 같은 구역)와 `--table`/`--row`/`--col`
+  (표 칸 문단) 중 하나다. 둘 다 없거나 둘 다 주면 exit 2.
+- `--to-offset` — 옮길 문단 안 문자 오프셋(기본 0).
+- `--x`/`--y` — 그림의 가로·세로 기준에서의 거리(HWPUNIT, 음수 허용). 생략하면 본문 문단으로 옮길
+  때는 기존 값을 그대로 쓰고, 표 칸으로 옮길 때는 0 이다. 표 칸으로 옮기면 세로 기준이 문단,
+  가로 기준이 단으로 바뀐다.
+- `--json` 봉투: `section`·`paragraph`·`ctrl`(옮기기 전), `toSection`·`toParagraph`·`toOffset`·`toCtrl`
+  (옮긴 뒤), `table`·`row`·`col`·`cellPara`·`cellCtrl`, `x`·`y`. 표 칸으로 옮기면 `toCtrl` 은 `null`
+  이고 칸 문단 안 번호를 `cellCtrl` 에 싣는다. `--dry-run` 이면 `toCtrl`·`cellCtrl` 은 `null` 이다.
+
+```bash
+rhwp edit move-picture 그림본.hwp --section 0 --para 3 --ctrl 0 --to-para 8 -o 옮김.hwp --json
+rhwp edit move-picture 그림본.hwp --section 0 --para 3 --ctrl 0 --table 0 --row 1 --col 2 -o 칸.hwp --json
+```
+
+### `edit set-shape <파일> --section N --para N --ctrl N --props <JSON> [-o <출력>] [--dry-run] [--verify] [--json]`
+본문 도형(사각형·타원·선·호·다각형·글상자 등) 속성을 바꾼다. 코어 `set_shape_properties_native`.
+`--props` 는 `set-picture` 와 같은 방식으로 검사한다. JSON 객체가 아니거나 모르는 키·허용하지 않는
+값이 하나라도 있으면 문서를 쓰지 않고 exit 2 로 끝난다. 도형 컨트롤을 가리키지 않으면 exit 1 이다.
+
+| 키 | 값 |
+|---|---|
+| `width`, `height`, `vertOffset`, `horzOffset` | 0 이상 정수(HWPUNIT) |
+| `treatAsChar`, `restrictInPage`, `allowOverlap`, `sizeProtect`, `horzFlip`, `vertFlip`, `restoreStoredZero` | `true`/`false` |
+| `textWrap`, `vertRelTo`, `horzRelTo`, `vertAlign`, `horzAlign` | `set-picture` 와 같다 |
+| `dropCapStyle` | `None`, `DoubleLine`, `TripleLine`, `Margin` |
+| `outerMarginLeft`/`Top`/`Right`/`Bottom`, `rotationAngle` | 정수 (i16) |
+| `description` | 문자열 |
+| `borderColor`, `fillBgColor`, `fillPatColor`, `shadowColor` | 0 이상 정수 (색) |
+| `borderWidth`, `fillPatType`, `shadowOffsetX`, `shadowOffsetY` | 정수 (i32) |
+| `lineType`, `arrowStart`, `arrowEnd` | 0~63 정수 |
+| `lineEndShape`, `arrowStartSize`, `arrowEndSize` | 0~15 정수 |
+| `fillType` | `none`, `solid`, `gradient`, `image` |
+| `fillAlpha`, `roundRate` | 0~255 정수 (`roundRate` 는 사각형에만 적용) |
+| `gradientType`, `gradientAngle`, `gradientCenterX`, `gradientCenterY`, `gradientBlur` | 정수 (i16) |
+| `shadowType` | 0 이상 정수 |
+| `tbMarginLeft`/`Right`/`Top`/`Bottom`, `tbVerticalAlign` | 정수 (i16) / `Top`, `Center`, `Bottom` (글상자에만 적용) |
+| `hasCaption`, `caption*` | `set-picture` 와 같다 |
+
+```bash
+rhwp edit set-shape 도형본.hwp --section 0 --para 2 --ctrl 0 \
+  --props '{"textWrap":"TopAndBottom","horzAlign":"Center"}' -o 조정본.hwp --json
 ```
 
 ### `edit ungroup-shape <파일> --section N --para N --ctrl N [-o <출력>] [--dry-run] [--verify] [--json]`
