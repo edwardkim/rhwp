@@ -4189,14 +4189,27 @@ impl LayoutEngine {
                         _ => None,
                     }
                 };
-                let line_of = |pos: usize| {
-                    comp.lines
-                        .iter()
-                        .enumerate()
-                        .rev()
-                        .find(|(_, line)| line.char_start <= pos)
-                        .map(|(idx, _)| idx)
-                        .unwrap_or(0)
+                // 개체의 줄은 표 셀 배치와 같은 공통 결과로 정한다. 저장 줄과 현재 프레임의 줄은
+                // 원시 제어 슬롯(PARA_TEXT) 경계로 소속을 정한다. 글자 번호로 투영하면 글자 없는
+                // 문단의 줄 시작이 모두 0 으로 겹쳐, 뒤 줄 개체가 첫 줄 끝에 이어 붙는다(#9021).
+                // 공통 결과가 없는 문단(인라인이 아닌 컨트롤이 섞인 합성 줄)은 글자 번호로 판정한다.
+                let owner_lines = comp
+                    .control_line_indices(para)
+                    .filter(|lines| lines.iter().all(|line| *line < comp.lines.len()));
+                let line_of = |ci: usize| -> Option<usize> {
+                    if let Some(lines) = owner_lines.as_ref() {
+                        return lines.get(ci).copied();
+                    }
+                    let pos = control_text_positions.get(ci).copied()?;
+                    Some(
+                        comp.lines
+                            .iter()
+                            .enumerate()
+                            .rev()
+                            .find(|(_, line)| line.char_start <= pos)
+                            .map(|(idx, _)| idx)
+                            .unwrap_or(0),
+                    )
                 };
                 let ctrl_line: Vec<Option<usize>> = para
                     .controls
@@ -4204,7 +4217,7 @@ impl LayoutEngine {
                     .enumerate()
                     .map(|(ci, ctrl)| {
                         tac_width(ctrl)?;
-                        Some(line_of(control_text_positions.get(ci).copied()?))
+                        line_of(ci)
                     })
                     .collect();
                 let lines_used: std::collections::BTreeSet<usize> =
