@@ -1,0 +1,715 @@
+{
+  "base": "6217d3cbedc9aba707812e5d4e5ea2a1ed53845a",
+  "current_head": "2baa9606abeba33838c72cf719b355f40ece66a6",
+  "reviewed_production_diff": [
+    "src/model/paragraph.rs"
+  ],
+  "reason": "Only control insertion into empty paragraphs changes in production. All shift_for_inline_control_insert call sites are mutating edit commands; existing document parse/load/read-only Native/WASM export does not invoke insertion. No parser/serializer/font/paint/export changes. Visual Sweep change is only annotation font selection, outside document bitmap and score computation. Protected inputs/PDFs and ordered 1208 font programs are byte-identical. Original/edited direct controls freshly re-exported per backend have identical base/head PNGs and TSV values. Existing protected measurements are retained with original producer identity; mandatory current Native handbook is executed separately.",
+  "unchanged_export_trees": [
+    "src/renderer",
+    "src/parser",
+    "src/serializer",
+    "src/storage",
+    "src/wasm_api",
+    "rhwp-shared",
+    "assets/fonts"
+  ],
+  "font_conditions": {
+    "current_user_font_files": 1208,
+    "current_unique_sha256": 1208,
+    "prior_default_font_entries": 1208,
+    "prior_entries_missing_current_files": 0,
+    "exact_sha256_multiset_equal": true,
+    "lexical_file_order_equal_prior_program_order": true
+  },
+  "prior_report": "mydocs/pr/assets/planet6897_open5_20261113/protected-candidate-qualification.json",
+  "prior_report_sha256": "b1b0bd1d6459eb9eef3104d4e926e4eaf6f1041d3605c90cf9edf9be779c666f",
+  "prior_official_declines": 0,
+  "datasets": [
+    {
+      "key": "yeongwol",
+      "backend": "native",
+      "input": {
+        "path": "samples/issue5699/20099369_yeongwol_forms.hwp",
+        "sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09",
+        "bytes": 20800
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7642-failed-inputs-followup-20261011/20099369_yeongwol_forms-2020.pdf",
+        "sha256": "a04da624238d77da4832dd302017c7d2f559a01da02e4c1b4ae12cfd3f77b123",
+        "bytes": 91696
+      },
+      "pages": 4,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/native/yeongwol.tsv",
+      "tsv_sha256": "b6b1ffe9fea23444d7678ec5e5cb78474d71569b3fee154d962ad95b9adf5f60",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "yeongwol",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/issue5699/20099369_yeongwol_forms.hwp",
+        "sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09",
+        "bytes": 20800
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7642-failed-inputs-followup-20261011/20099369_yeongwol_forms-2020.pdf",
+        "sha256": "a04da624238d77da4832dd302017c7d2f559a01da02e4c1b4ae12cfd3f77b123",
+        "bytes": 91696
+      },
+      "pages": 4,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/wasm/yeongwol.tsv",
+      "tsv_sha256": "b6b1ffe9fea23444d7678ec5e5cb78474d71569b3fee154d962ad95b9adf5f60",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "seo-body-list-typed",
+      "backend": "native",
+      "input": {
+        "path": "tests/fixtures/issue_8109_saved_fonts/body-list-typed-hwp.hwp",
+        "sha256": "ebe04aa214d85ca3f472083ae749f534de446ecf6f58eec532a6c2149839e687",
+        "bytes": 4096
+      },
+      "reference_pdf": {
+        "path": "pdf/issue8109/print/body-list-typed-hwp-2020.pdf",
+        "sha256": "d4c80383b977a0f61e057adadb9f302d591bbb26e0917c61128ee36d37aed5b3",
+        "bytes": 19110
+      },
+      "pages": 1,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/native/seo-body-list-typed.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "seo-body-list-typed",
+      "backend": "wasm",
+      "input": {
+        "path": "tests/fixtures/issue_8109_saved_fonts/body-list-typed-hwp.hwp",
+        "sha256": "ebe04aa214d85ca3f472083ae749f534de446ecf6f58eec532a6c2149839e687",
+        "bytes": 4096
+      },
+      "reference_pdf": {
+        "path": "pdf/issue8109/print/body-list-typed-hwp-2020.pdf",
+        "sha256": "d4c80383b977a0f61e057adadb9f302d591bbb26e0917c61128ee36d37aed5b3",
+        "bytes": 19110
+      },
+      "pages": 1,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/wasm/seo-body-list-typed.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "handbook-hwp",
+      "backend": "native",
+      "input": {
+        "path": "samples/2025 행정업무운영 편람(최종).hwp",
+        "sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+        "bytes": 10687488
+      },
+      "reference_pdf": {
+        "path": "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf",
+        "sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+        "bytes": 4692840
+      },
+      "pages": 383,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/native/handbook-hwp.tsv",
+      "tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "handbook-hwp",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/2025 행정업무운영 편람(최종).hwp",
+        "sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+        "bytes": 10687488
+      },
+      "reference_pdf": {
+        "path": "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf",
+        "sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+        "bytes": 4692840
+      },
+      "pages": 383,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/wasm/handbook-hwp.tsv",
+      "tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "seo-helvetica-styles",
+      "backend": "native",
+      "input": {
+        "path": "tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp",
+        "sha256": "2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da",
+        "bytes": 4096
+      },
+      "reference_pdf": {
+        "path": "pdf/issue8109/print/control-styles-hwp-2020.pdf",
+        "sha256": "fd8672dcb24dd7bb1d50983b0545033e7c2513bbb2ecfc48edde1cb4e77058ba",
+        "bytes": 43664
+      },
+      "pages": 1,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/native/seo-helvetica-styles.tsv",
+      "tsv_sha256": "46ccdd2e0e2dfdec7bc1366e2418de12c83faf6bf5b872b9be8ee71fe24a7f46",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "seo-helvetica-styles",
+      "backend": "wasm",
+      "input": {
+        "path": "tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp",
+        "sha256": "2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da",
+        "bytes": 4096
+      },
+      "reference_pdf": {
+        "path": "pdf/issue8109/print/control-styles-hwp-2020.pdf",
+        "sha256": "fd8672dcb24dd7bb1d50983b0545033e7c2513bbb2ecfc48edde1cb4e77058ba",
+        "bytes": 43664
+      },
+      "pages": 1,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/wasm/seo-helvetica-styles.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "sample16-hwpx",
+      "backend": "native",
+      "input": {
+        "path": "samples/hwp3-sample16-hwp5.hwpx",
+        "sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+        "bytes": 3061900
+      },
+      "reference_pdf": {
+        "path": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+        "sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+        "bytes": 2234018
+      },
+      "pages": 64,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/native/sample16-hwpx.tsv",
+      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "sample16-hwpx",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/hwp3-sample16-hwp5.hwpx",
+        "sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+        "bytes": 3061900
+      },
+      "reference_pdf": {
+        "path": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+        "sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+        "bytes": 2234018
+      },
+      "pages": 64,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/wasm/sample16-hwpx.tsv",
+      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "native",
+      "input": {
+        "path": "samples/hwp3-sample16-hwp5-2022.hwp",
+        "sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+        "bytes": 3048448
+      },
+      "reference_pdf": {
+        "path": "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+        "sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+        "bytes": 1830277
+      },
+      "pages": 64,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/native/sample16-hwp2022.tsv",
+      "tsv_sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/hwp3-sample16-hwp5-2022.hwp",
+        "sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+        "bytes": 3048448
+      },
+      "reference_pdf": {
+        "path": "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+        "sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+        "bytes": 1830277
+      },
+      "pages": 64,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/wasm/sample16-hwp2022.tsv",
+      "tsv_sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "seo-re-03-latin",
+      "backend": "native",
+      "input": {
+        "path": "samples/re-03-latin-only-hancom.hwp",
+        "sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+        "bytes": 9216
+      },
+      "reference_pdf": {
+        "path": "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+        "sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+        "bytes": 11752
+      },
+      "pages": 1,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/native/seo-re-03-latin.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "seo-re-03-latin",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/re-03-latin-only-hancom.hwp",
+        "sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+        "bytes": 9216
+      },
+      "reference_pdf": {
+        "path": "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+        "sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+        "bytes": 11752
+      },
+      "pages": 1,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/wasm/seo-re-03-latin.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "angle-narrow",
+      "backend": "native",
+      "input": {
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+        "sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+        "bytes": 6848
+      },
+      "reference_pdf": {
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+        "sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+        "bytes": 10328
+      },
+      "pages": 1,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/native/angle-narrow.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "angle-narrow",
+      "backend": "wasm",
+      "input": {
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+        "sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+        "bytes": 6848
+      },
+      "reference_pdf": {
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+        "sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+        "bytes": 10328
+      },
+      "pages": 1,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/wasm/angle-narrow.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "outline",
+      "backend": "native",
+      "input": {
+        "path": "samples/task3307/issue3307_outline_number.hwpx",
+        "sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d",
+        "bytes": 57890
+      },
+      "reference_pdf": {
+        "path": "pdf/task3307/issue3307_outline_number-2020.pdf",
+        "sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb",
+        "bytes": 237518
+      },
+      "pages": 9,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/native/outline.tsv",
+      "tsv_sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "outline",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/task3307/issue3307_outline_number.hwpx",
+        "sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d",
+        "bytes": 57890
+      },
+      "reference_pdf": {
+        "path": "pdf/task3307/issue3307_outline_number-2020.pdf",
+        "sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb",
+        "bytes": 237518
+      },
+      "pages": 9,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/wasm/outline.tsv",
+      "tsv_sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "issue8040-insert",
+      "backend": "native",
+      "input": {
+        "path": "samples/pr8040/exam-social-insert.hwp",
+        "sha256": "3c3ff50b430c3129a4ce06575b1a398d01fbd4ec17d9dd895f467a945f656e82",
+        "bytes": 514560
+      },
+      "reference_pdf": {
+        "path": "pdf/pr8040/exam-social-insert-2020.pdf",
+        "sha256": "d368c0ded6f0d9309784e9165aad7360b326a86c01d9938beb95c768ae0d4e74",
+        "bytes": 641866
+      },
+      "pages": 4,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/native/issue8040-insert.tsv",
+      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "issue8040-insert",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/pr8040/exam-social-insert.hwp",
+        "sha256": "3c3ff50b430c3129a4ce06575b1a398d01fbd4ec17d9dd895f467a945f656e82",
+        "bytes": 514560
+      },
+      "reference_pdf": {
+        "path": "pdf/pr8040/exam-social-insert-2020.pdf",
+        "sha256": "d368c0ded6f0d9309784e9165aad7360b326a86c01d9938beb95c768ae0d4e74",
+        "bytes": 641866
+      },
+      "pages": 4,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/wasm/issue8040-insert.tsv",
+      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "nested",
+      "backend": "native",
+      "input": {
+        "path": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+        "sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+        "bytes": 51712
+      },
+      "reference_pdf": {
+        "path": "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+        "sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+        "bytes": 625577
+      },
+      "pages": 17,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/native/nested.tsv",
+      "tsv_sha256": "65bc696e219a9a4923f43b12d018b036ec3e8e05258d30fa9719524815e97d2d",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "nested",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+        "sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+        "bytes": 51712
+      },
+      "reference_pdf": {
+        "path": "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+        "sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+        "bytes": 625577
+      },
+      "pages": 17,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/wasm/nested.tsv",
+      "tsv_sha256": "c397a8ba244f6a50931b5c49410229cbfdace28dce96ab7b3f45b97ae155c059",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "sample16-hwp2024",
+      "backend": "native",
+      "input": {
+        "path": "samples/hwp3-sample16-hwp5-2024.hwp",
+        "sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+        "bytes": 3044864
+      },
+      "reference_pdf": {
+        "path": "pdf/hwp3-sample16-hwp5-2024-hwp-2024.pdf",
+        "sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b",
+        "bytes": 2234015
+      },
+      "pages": 64,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/native/sample16-hwp2024.tsv",
+      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "sample16-hwp2024",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/hwp3-sample16-hwp5-2024.hwp",
+        "sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+        "bytes": 3044864
+      },
+      "reference_pdf": {
+        "path": "pdf/hwp3-sample16-hwp5-2024-hwp-2024.pdf",
+        "sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b",
+        "bytes": 2234015
+      },
+      "pages": 64,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/wasm/sample16-hwp2024.tsv",
+      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "handbook-hwpx",
+      "backend": "native",
+      "input": {
+        "path": "samples/2025 행정업무운영 편람(최종).hwpx",
+        "sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+        "bytes": 13639865
+      },
+      "reference_pdf": {
+        "path": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+        "sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+        "bytes": 4692840
+      },
+      "pages": 383,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/native/handbook-hwpx.tsv",
+      "tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "handbook-hwpx",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/2025 행정업무운영 편람(최종).hwpx",
+        "sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+        "bytes": 13639865
+      },
+      "reference_pdf": {
+        "path": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+        "sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+        "bytes": 4692840
+      },
+      "pages": 383,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/wasm/handbook-hwpx.tsv",
+      "tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "issue7905",
+      "backend": "native",
+      "input": {
+        "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx",
+        "sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1",
+        "bytes": 140149
+      },
+      "reference_pdf": {
+        "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law_hancom2018_print.pdf",
+        "sha256": "1ce35eb7e2d6f93e41834215d6cf7653e3a09ea2fc544856b3df3a89e6d24511",
+        "bytes": 287952
+      },
+      "pages": 6,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/native/issue7905.tsv",
+      "tsv_sha256": "b828c10e23bcef9c5e7078451d3c8d92e1cb9811a7ac3a952c084a741f6ac6fe",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "issue7905",
+      "backend": "wasm",
+      "input": {
+        "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx",
+        "sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1",
+        "bytes": 140149
+      },
+      "reference_pdf": {
+        "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law_hancom2018_print.pdf",
+        "sha256": "1ce35eb7e2d6f93e41834215d6cf7653e3a09ea2fc544856b3df3a89e6d24511",
+        "bytes": 287952
+      },
+      "pages": 6,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/wasm/issue7905.tsv",
+      "tsv_sha256": "086c2d6d0017f63a3d77a9232166de5591ebcf46884461b77c4bf2c153bbeee6",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "sample10",
+      "backend": "native",
+      "input": {
+        "path": "samples/hwp3-sample10.hwp",
+        "sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+        "bytes": 945360
+      },
+      "reference_pdf": {
+        "path": "pdf/issue8371/hwp3-sample10-2020.pdf",
+        "sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+        "bytes": 96185197
+      },
+      "pages": 763,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/native/sample10.tsv",
+      "tsv_sha256": "712a287536ded13276b98665341c1ca0e5420a81a82310f5d9cdf7de30f94363",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "sample10",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/hwp3-sample10.hwp",
+        "sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+        "bytes": 945360
+      },
+      "reference_pdf": {
+        "path": "pdf/issue8371/hwp3-sample10-2020.pdf",
+        "sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+        "bytes": 96185197
+      },
+      "pages": 763,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/wasm/sample10.tsv",
+      "tsv_sha256": "e5623efdcc4d4dcb4e1d0504ea383c867c5e40973a3bfcb0b93335f5bd38d912",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "issue8040-insert-delete",
+      "backend": "native",
+      "input": {
+        "path": "samples/pr8040/exam-social-insert-delete.hwp",
+        "sha256": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee",
+        "bytes": 514560
+      },
+      "reference_pdf": {
+        "path": "pdf/pr8040/exam-social-insert-delete-2020.pdf",
+        "sha256": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d",
+        "bytes": 641867
+      },
+      "pages": 4,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/native/issue8040-insert-delete.tsv",
+      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "issue8040-insert-delete",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/pr8040/exam-social-insert-delete.hwp",
+        "sha256": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee",
+        "bytes": 514560
+      },
+      "reference_pdf": {
+        "path": "pdf/pr8040/exam-social-insert-delete-2020.pdf",
+        "sha256": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d",
+        "bytes": 641867
+      },
+      "pages": 4,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/wasm/issue8040-insert-delete.tsv",
+      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "seo-pic-crop-01",
+      "backend": "native",
+      "input": {
+        "path": "samples/pic-crop-01.hwp",
+        "sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+        "bytes": 131072
+      },
+      "reference_pdf": {
+        "path": "pdf/pic-crop-01-2022.pdf",
+        "sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+        "bytes": 19211
+      },
+      "pages": 1,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/native/seo-pic-crop-01.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "seo-pic-crop-01",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/pic-crop-01.hwp",
+        "sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+        "bytes": 131072
+      },
+      "reference_pdf": {
+        "path": "pdf/pic-crop-01-2022.pdf",
+        "sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+        "bytes": 19211
+      },
+      "pages": 1,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/wasm/seo-pic-crop-01.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "seo-shape-group-02",
+      "backend": "native",
+      "input": {
+        "path": "samples/shape-group-02.hwp",
+        "sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+        "bytes": 16384
+      },
+      "reference_pdf": {
+        "path": "pdf/shape-group-02-hwp-2020.pdf",
+        "sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+        "bytes": 89651
+      },
+      "pages": 1,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/native/seo-shape-group-02.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    },
+    {
+      "key": "seo-shape-group-02",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/shape-group-02.hwp",
+        "sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+        "bytes": 16384
+      },
+      "reference_pdf": {
+        "path": "pdf/shape-group-02-hwp-2020.pdf",
+        "sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+        "bytes": 89651
+      },
+      "pages": 1,
+      "reused_tsv": "mydocs/pr/assets/planet6897_open5_20261113/protected/candidate/wasm/seo-shape-group-02.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "original_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "qualification": "prior output reused for unchanged read-only input/export path; not freshly captured at current head"
+    }
+  ],
+  "new_full_protected_capture_performed": false
+}

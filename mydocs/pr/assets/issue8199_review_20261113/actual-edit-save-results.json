@@ -1,0 +1,48 @@
+{
+  "before": {
+    "pages": 2,
+    "text_sha256": "537f74d6cf5647ce2f98764074e5d215010b229c27a2eb39eef7001b19435e96"
+  },
+  "insert": {
+    "ok": true,
+    "paraIdx": 0,
+    "controlIdx": 3,
+    "logicalOffset": 1
+  },
+  "wasm_sha256": "4a8bfa9288eb195653e62e2e2b81c47cb54c58d9b371d4cd8ea78678982803ff",
+  "results": [
+    {
+      "phase": "after-edit",
+      "pages": 2,
+      "text_preserved": true
+    },
+    {
+      "phase": "hwp-round-1",
+      "pages": 2,
+      "bytes": 89600,
+      "sha256": "8ef8c14d706d84263c525c2f7d4c1671dbd475b547bdecfa7bb04127d24a199b",
+      "text_preserved": true
+    },
+    {
+      "phase": "hwp-round-2",
+      "pages": 2,
+      "bytes": 89600,
+      "sha256": "8ef8c14d706d84263c525c2f7d4c1671dbd475b547bdecfa7bb04127d24a199b",
+      "text_preserved": true
+    },
+    {
+      "phase": "hwpx-round-1",
+      "pages": 2,
+      "bytes": 31128,
+      "sha256": "38f733b13b28748128bad0ca42446c1b1238d7579917e2fd353186d67885ea3c",
+      "text_preserved": true
+    },
+    {
+      "phase": "hwpx-round-2",
+      "pages": 2,
+      "bytes": 31128,
+      "sha256": "38f733b13b28748128bad0ca42446c1b1238d7579917e2fd353186d67885ea3c",
+      "text_preserved": true
+    }
+  ]
+}

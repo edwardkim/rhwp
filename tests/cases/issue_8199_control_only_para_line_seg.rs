@@ -415,3 +415,48 @@ fn char_overlap_keeps_line_membership() {
         );
     });
 }
+
+/// 관계형 메타데이터 계약: 누름틀 끝 표식도 원시 스트림에서 8유닛을 차지한다.
+/// 실물의 px 좌표를 고정하지 않고, 마지막 개체 뒤 삽입이 앞선 줄 시작을 보존하는지 본다.
+#[test]
+fn field_end_does_not_move_an_earlier_line_when_picture_is_appended() {
+    use rhwp::model::control::{Field, FieldType};
+    use rhwp::model::paragraph::FieldRange;
+
+    let mut doc = passport_form();
+    let p = &mut doc.document_mut().sections[0].paragraphs[0];
+    p.controls.insert(
+        2,
+        Control::Field(Field {
+            field_type: FieldType::ClickHere,
+            field_id: 990099,
+            ctrl_id: rhwp::parser::tags::FIELD_CLICKHERE,
+            command: Field::build_clickhere_command("안내", ""),
+            properties: 1 << 15,
+            ..Default::default()
+        }),
+    );
+    p.align_ctrl_data_records();
+    p.field_ranges.push(FieldRange {
+        control_idx: 2,
+        end_field_id: 990099,
+        ..Default::default()
+    });
+    // BEGIN은 controls에 있지만 END는 없으므로 두 슬롯을 원본 줄 앞에 더한다.
+    p.char_count += EXTENDED_CONTROL_UNITS * 2;
+    p.line_segs[1].text_start += EXTENDED_CONTROL_UNITS * 2;
+    let starts: Vec<_> = p.line_segs.iter().map(|s| s.text_start).collect();
+    let controls = p.controls.len();
+    let char_count = p.char_count;
+    let inserted = insert_front_picture(&mut doc, 100);
+    assert_eq!(inserted, controls, "기존 개체 모두 뒤에 삽입");
+    for (label, observed) in [("편집 직후", &doc), ("HWP 재열기", &reparse(&doc))] {
+        let p = para(observed, 0, 0);
+        assert_eq!(p.char_count, char_count + EXTENDED_CONTROL_UNITS, "{label}");
+        assert_eq!(
+            p.line_segs.iter().map(|s| s.text_start).collect::<Vec<_>>(),
+            starts,
+            "{label}: 뒤에 넣은 개체가 앞선 줄 시작을 밀면 안 된다"
+        );
+    }
+}
