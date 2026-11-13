@@ -43,3 +43,16 @@ pub(crate) fn decode(bytes: &[u8]) -> Vec<[u8; 32]> {
         .map(|chunk| chunk.try_into().expect("32바이트 조각"))
         .collect()
 }
+
+/// 보조 스트림의 이름만으로 현재 구역의 캐시를 rhwp 관리 대상으로 읽지 않는다.
+/// 파서와 같은 실제 BodyText 바이트의 인증을 할당 없이 확인한다.
+pub(crate) fn authenticates_section(bytes: &[u8], section: &[u8]) -> bool {
+    let Some(body) = bytes.strip_prefix(MAGIC) else {
+        return false;
+    };
+    if bytes.len() > MAX_BYTES || body.len() % 32 != 0 {
+        return false;
+    }
+    let digest = section_digest(section);
+    body.chunks_exact(32).any(|entry| entry == digest)
+}

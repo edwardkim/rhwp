@@ -2,8 +2,9 @@
 
 use crate::model::{
     control::Control,
-    paragraph::{LineSeg, Paragraph},
+    paragraph::{ColumnBreakType, LineSeg, Paragraph},
     style::{BorderLineType, HeadType, LineSpacingType},
+    table::Cell,
 };
 use crate::renderer::{
     float_placement::is_para_topbottom_float,
@@ -23,7 +24,12 @@ fn floating_text_host(paragraph: &Paragraph) -> bool {
     floating
 }
 
-fn nominal_height(paragraph: &Paragraph, styles: &ResolvedStyleSet, dpi: f64) -> Option<i32> {
+fn nominal_height(
+    paragraph: &Paragraph,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    include_empty: bool,
+) -> Option<i32> {
     // 여러 글자모양의 경계는 완전한 문자 주소가 있을 때만 읽는다.
     // 주소가 없는 합성 입력에서 첫 글자모양을 전체 문단의 근거로 쓰지 않는다.
     if paragraph.char_shapes.is_empty()
@@ -89,7 +95,7 @@ fn nominal_height(paragraph: &Paragraph, styles: &ResolvedStyleSet, dpi: f64) ->
     if end_size.is_finite() && end_size > 0.0 {
         height = height.max(px_to_hwpunit(end_size, dpi));
     }
-    (visible && height > 0).then_some(height)
+    ((visible || include_empty) && height > 0).then_some(height)
 }
 
 fn projected_line(paragraph: &Paragraph, styles: &ResolvedStyleSet, dpi: f64) -> Option<LineSeg> {
@@ -112,7 +118,7 @@ fn projected_line(paragraph: &Paragraph, styles: &ResolvedStyleSet, dpi: f64) ->
     {
         return None;
     }
-    let height = nominal_height(paragraph, styles, dpi)?;
+    let height = nominal_height(paragraph, styles, dpi, false)?;
     // 원본 글자 크기와 원본 Percent 간격이 같은 높이를 증명해야 한다.
     // 1 HWPUNIT는 정수로 저장되는 줄간격의 반올림만 허용한다.
     let expected_spacing = (f64::from(height) * (style.line_spacing / 100.0 - 1.0)).round();
@@ -130,6 +136,119 @@ fn projected_line(paragraph: &Paragraph, styles: &ResolvedStyleSet, dpi: f64) ->
     Some(projected)
 }
 
+/// 개체·장식·문단 경계 간격이 없는 한 줄 문단의 현재 스타일 메트릭.
+/// 고정 간격은 줄 전체 전진이고 Percent는 명목 글자 높이에 적용한다.
+fn owned_cell_line(
+    paragraph: &Paragraph,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Option<(LineSeg, bool)> {
+    let [line] = paragraph.line_segs.as_slice() else {
+        return None;
+    };
+    let style = styles.para_styles.get(paragraph.para_shape_id as usize)?;
+    if !paragraph.controls.is_empty()
+        || paragraph.stored_text_partition_is_dirty()
+        || paragraph.cell_format_vpos_dirty
+        || paragraph.column_type != ColumnBreakType::None
+        || style.page_break_before
+        || style.spacing_before != 0.0
+        || style.spacing_after != 0.0
+        || !matches!(style.head_type, HeadType::None)
+        || line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        || line.text_start != 0
+        || line.vertical_pos < 0
+        || line.segment_width <= 0
+        || line.line_height != line.text_height
+        || line.text_height <= 0
+        || line.baseline_distance <= 0
+        || line.baseline_distance > line.text_height
+    {
+        return None;
+    }
+    let height = nominal_height(paragraph, styles, dpi, true)?;
+    let advance = match style.line_spacing_type {
+        LineSpacingType::Percent
+            if style.line_spacing.is_finite() && style.line_spacing >= 100.0 =>
+        {
+            let value = (f64::from(height) * style.line_spacing / 100.0).round();
+            if value > f64::from(i32::MAX) {
+                return None;
+            }
+            value as i32
+        }
+        LineSpacingType::Fixed if style.line_spacing.is_finite() && style.line_spacing > 0.0 => {
+            px_to_hwpunit(style.line_spacing, styles.resolved_dpi.unwrap_or(dpi))
+        }
+        _ => return None,
+    };
+    if advance < height {
+        return None;
+    }
+    // 글자 높이만으로 큰 저장 strut를 버리지 않는다. 현재 명목 크기와 문단의
+    // 전진 계약이 함께 불일치할 때만 오래된 rhwp 관리 캐시로 판정한다.
+    // 1 HU는 독립적으로 정수화한 높이·간격 합의 반올림 오차다.
+    let stale = line.text_height > height
+        && (i64::from(line.line_height) + i64::from(line.line_spacing) - i64::from(advance)).abs()
+            > 1;
+    let mut current = line.clone();
+    current.line_height = height;
+    current.text_height = height;
+    current.baseline_distance = (f64::from(line.baseline_distance) * f64::from(height)
+        / f64::from(line.text_height))
+    .round() as i32;
+    current.line_spacing = advance - height;
+    Some((current, stale))
+}
+
+/// rhwp 인증 구역의 단순 텍스트 셀 캐시를 하나의 현재 줄 사다리로 투영한다.
+/// 원본 IR은 보존하고, 같은 렌더 사본을 측정·분할·배치가 소비한다.
+fn owned_cell_with_current_metrics<S: crate::storage::Storage>(
+    cell: &Cell,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    storage: &S,
+) -> Result<Option<Vec<Paragraph>>, S::Error> {
+    if cell.dirty_flag || cell.text_direction != 0 || cell.line_wrap != 0 {
+        return Ok(None);
+    }
+    let mut stale = false;
+    let mut previous = None;
+    for paragraph in &cell.paragraphs {
+        let Some((_, changed)) = owned_cell_line(paragraph, styles, dpi) else {
+            return Ok(None);
+        };
+        let top = paragraph.line_segs[0].vertical_pos;
+        if previous.is_some_and(|previous| top < previous) {
+            // 다음 물리 쪽으로 되감긴 줄은 전체 셀 한 프레임이 아니다.
+            return Ok(None);
+        }
+        previous = Some(top);
+        stale |= changed;
+    }
+    if !stale {
+        return Ok(None);
+    }
+    let mut current_top = cell.paragraphs[0].line_segs[0].vertical_pos;
+    let mut result = storage.vec(cell.paragraphs.len())?;
+    for paragraph in &cell.paragraphs {
+        let (mut line, _) = owned_cell_line(paragraph, styles, dpi).unwrap();
+        line.vertical_pos = current_top;
+        let Some(next) = current_top
+            .checked_add(line.line_height)
+            .and_then(|value| value.checked_add(line.line_spacing))
+        else {
+            return Ok(None);
+        };
+        current_top = next;
+        let mut projected = storage.clone_paragraph(paragraph)?;
+        projected.line_segs[0] = line;
+        projected.source_line_seg_vertical_pos = None;
+        result.push(projected);
+    }
+    Ok(Some(result))
+}
+
 fn project(
     paragraph: &Paragraph,
     cell: bool,
@@ -141,6 +260,7 @@ fn project(
         paragraph,
         cell,
         hwpx_cells,
+        false,
         styles,
         dpi,
         &crate::storage::Unbounded,
@@ -153,6 +273,7 @@ fn project_with_storage<S: crate::storage::Storage>(
     paragraph: &Paragraph,
     cell: bool,
     hwpx_cells: bool,
+    owned_hwp5_cells: bool,
     styles: &ResolvedStyleSet,
     dpi: f64,
     storage: &S,
@@ -176,10 +297,32 @@ fn project_with_storage<S: crate::storage::Storage>(
             if cell.text_direction != 0 || cell.line_wrap != 0 {
                 continue;
             }
-            for (paragraph_index, child) in cell.paragraphs.iter().enumerate() {
-                if let Some(child) =
-                    project_with_storage(child, true, hwpx_cells, styles, dpi, storage)?
+            if owned_hwp5_cells {
+                if let Some(paragraphs) =
+                    owned_cell_with_current_metrics(cell, styles, dpi, storage)?
                 {
+                    if projected.is_none() {
+                        projected = Some(storage.clone_paragraph(paragraph)?);
+                    }
+                    let Control::Table(table) =
+                        &mut projected.as_mut().unwrap().controls[control_index]
+                    else {
+                        unreachable!()
+                    };
+                    table.cells[cell_index].paragraphs = paragraphs;
+                    continue;
+                }
+            }
+            for (paragraph_index, child) in cell.paragraphs.iter().enumerate() {
+                if let Some(child) = project_with_storage(
+                    child,
+                    true,
+                    hwpx_cells,
+                    owned_hwp5_cells,
+                    styles,
+                    dpi,
+                    storage,
+                )? {
                     if projected.is_none() {
                         projected = Some(storage.clone_paragraph(paragraph)?);
                     }
@@ -206,6 +349,7 @@ pub(crate) fn normalize(
         styles,
         dpi,
         hwpx_cells,
+        false,
         &crate::storage::Unbounded,
     ) {
         Ok(value) => value,
@@ -217,13 +361,20 @@ pub(crate) fn normalize_with_storage<S: crate::storage::Storage>(
     styles: &ResolvedStyleSet,
     dpi: f64,
     hwpx_cells: bool,
+    owned_hwp5_cells: bool,
     storage: &S,
 ) -> Result<Option<Vec<Paragraph>>, S::Error> {
     let mut result = None;
     for (index, paragraph) in paragraphs.iter().enumerate() {
-        if let Some(projected) =
-            project_with_storage(paragraph, false, hwpx_cells, styles, dpi, storage)?
-        {
+        if let Some(projected) = project_with_storage(
+            paragraph,
+            false,
+            hwpx_cells,
+            owned_hwp5_cells,
+            styles,
+            dpi,
+            storage,
+        )? {
             if result.is_none() {
                 result = Some(
                     storage.try_collect(paragraphs.iter().map(|p| storage.clone_paragraph(p)))?,
