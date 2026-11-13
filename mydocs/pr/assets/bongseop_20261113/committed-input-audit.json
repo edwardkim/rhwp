@@ -1,0 +1,8 @@
+{
+  "head": "89701eb34af54502e94afa6319240596e98a1367",
+  "existing_hwpx": "samples/issue7816/odd_spacing_prev.hwpx",
+  "existing_hwpx_sha256": "b1d3a82bda242971e0aae87a07fe0859089479024bc22d53368854c1b33770ed",
+  "actual_equals_committed": true,
+  "runtime_generated_input": "Public createBlankDocument and RED/BLUE PNG bytes embedded in committed integration test source. Generated saves are output artifacts, not a new document oracle.",
+  "new_hwp_hwpx_pdf_fixtures": false
+}

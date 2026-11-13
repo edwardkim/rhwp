@@ -1244,7 +1244,9 @@ impl DocumentCore {
                         .or(self.marker_end_x)
                         .unwrap_or(self.line_x)
                 } else {
-                    self.line_x
+                    // 빈 문단도 레이아웃이 문단 끝 TextRun을 정렬 앵커에 둔다.
+                    // 줄 왼쪽 끝을 쓰면 가운데·오른쪽 정렬이 사라진다 (#8944).
+                    self.first_body_x.unwrap_or(self.line_x)
                 }
             }
         }

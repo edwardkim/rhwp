@@ -237,6 +237,11 @@ impl DocumentCore {
     ) -> Result<(), S::Error> {
         self.render_normalization.loaded_frames =
             Some(LoadedFrames::capture_with_storage(&self.document, storage)?);
+        // [#8941] 같은 "불러온 원본" 시점에 참조 없는 BinData 도 기록한다.
+        self.loaded_unreferenced_bin_data =
+            crate::document_core::commands::bin_data_prune::unreferenced_bin_data_storage_ids(
+                &mut self.document,
+            );
         Ok(())
     }
 

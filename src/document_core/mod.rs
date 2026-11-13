@@ -315,6 +315,10 @@ pub struct DocumentCore {
     /// 복원은 문서를 통째로 갈아끼워 같은 id 가 다른 바이트를 가리키게 만들 수 있다.
     /// 그래서 그림을 새로 등록할 때와 스냅샷을 되돌릴 때 세대를 올린다.
     pub(crate) bin_data_epoch: u32,
+    /// [#8941] 불러온 원본이 처음부터 참조 없이 지니고 있던 `BinData` 의 storage id.
+    ///
+    /// HWPX 저장은 편집으로 참조가 끊긴 그림만 버리고, 이 항목들은 원본 그대로 옮긴다.
+    pub(crate) loaded_unreferenced_bin_data: std::collections::BTreeSet<u16>,
     /// Batch 모드 플래그 — true이면 paginate() 스킵
     pub(crate) batch_mode: bool,
     /// 셀 문단 서식으로 무효화된 vpos. RowBreak 조각별 첫 변경부터 한 번만 갱신한다.
@@ -638,6 +642,7 @@ impl DocumentCore {
             layer_tree_json_cache: RefCell::new(Vec::new()),
             page_layer_tree_cache: RefCell::new(Vec::new()),
             bin_data_epoch: 0,
+            loaded_unreferenced_bin_data: std::collections::BTreeSet::new(),
             batch_mode: false,
             pending_cell_format_vpos: false,
             event_log: Vec::new(),
