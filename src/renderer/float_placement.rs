@@ -2461,7 +2461,7 @@ pub(crate) fn stored_body_filling_rowbreak_frame(
 
 /// 저장 TAC 줄과 그 줄 아래의 부동 표는 각각 별도의 바깥 프레임을 소유한다.
 /// 빈 문자열만으로 줄이 비었다고 판단하지 않고 TAC의 외곽 band를 확인한다.
-fn stored_inline_host_has_separate_float_frame(para: &Paragraph, table: &Table) -> bool {
+pub(crate) fn stored_inline_host_has_separate_float_frame(para: &Paragraph, table: &Table) -> bool {
     let [line] = para.line_segs.as_slice() else {
         return false;
     };

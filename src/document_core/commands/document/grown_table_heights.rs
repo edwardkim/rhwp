@@ -90,7 +90,24 @@ impl DocumentCore {
                                     control_idx,
                                 )
                         })
-                        .map(|m| content_height(m, self.dpi));
+                        .map(|measured| {
+                            // 같은 저장 host의 수직 프레임이 유지된 편집은 화면이
+                            // 수용한 닫힌 끝 행을 저장한다. 원시 셀 최소높이의 합으로
+                            // 그 여유를 다시 늘리지 않는다. 실제 줄 재배치는 기존 성장
+                            // 경로가 소유하며, 내용 하한·span·되감김은 공통 helper가 검증한다.
+                            let closed = if profile.hwp5_stored_pagination_layout()
+                                && !self.table_text_reflowed_path_exists(section_idx, para_idx, control_idx)
+                                && crate::renderer::float_placement::stored_inline_host_has_separate_float_frame(paragraph, table)
+                            {
+                                crate::renderer::height_measurer::fit_measured_table_declared_tail_to_declared_height_with_storage(
+                                    measured, table, self.dpi, storage,
+                                )?
+                            } else {
+                                None
+                            };
+                            Ok::<u32, S::Error>(content_height(closed.as_ref().unwrap_or(measured), self.dpi))
+                        })
+                        .transpose()?;
                     storage.push(
                         &mut out,
                         content.and_then(|value| grown(table.common.height, value)),
