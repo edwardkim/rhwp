@@ -3,6 +3,7 @@
 - 기준 devel: `5cbcc9b451cf286e1b7c680426c857dc802e50f3`.
 - 실제 검증 code head: `89701eb34af54502e94afa6319240596e98a1367`.
 - [#9043 개별 검토](../../archives/pr_9043_review.md) · [#9048 개별 검토](../../archives/pr_9048_review.md).
+- [집중 28건과 최종 전체 실행 내 동일 28건](focused-results.json).
 - [전체 회귀](full-nextest-result.json): 최소 글꼴 13,455 PASS/0 FAIL/45 skip. 최종 정본 suite 실행 323.601초.
 - [로컬 gate](local-validation.json): fmt, Native/WASM32 Clippy, workspace build, all-target Clippy, manifest, fresh WASM PASS. 같은 head의 이미 통과한 native/WASM32 Clippy와 workspace build는 기록에 구분했다.
 - [환경](environment.json): macOS 26.6.2 arm64, CoreText 528 faces·개인 글꼴 경로 0, system_profiler 237개 font 항목. 최소 글꼴 회귀와 일반 Studio 화면 검증을 구분했다.
