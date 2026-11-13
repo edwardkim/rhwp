@@ -34,4 +34,8 @@ Ready인 #8952·#8953·#8954를 검토하며 Draft #8962–#8967은 제외한다
 
 ## 2026-11-13 승인 범위 완료
 
-Windows 보정·필수 재검증 승인을 적용했다. 최신 base `41c889cfd8`를 merge하고 원 SHA를 보존했다. CMake junction, 실제 실행 파일 stat 경계와 종료 시 messenger 접근을 공통 경로에서 수정했다. 최종 Windows runner·4단계 타일·이동 참조앱 정상 종료와 Linux 대조, 최신 Native/fresh WASM 및 새 devel 기능 보존을 [최종 원장](assets/seo-rii-20261112/windows-correction-20261113/README.md)에 기록했다. 초기 실패를 현재 미완료로 남기지 않으며 원격 처리·해당 head CI는 별도 승인 단계다.
+Windows 보정·필수 재검증 승인을 적용했다. 최신 base `41c889cfd8`를 merge하고 원 SHA를 보존했다. CMake junction, 실제 실행 파일 stat 경계와 종료 시 messenger 접근을 공통 경로에서 수정했다. 최종 Windows runner·4단계 타일·이동 참조앱 정상 종료와 Linux 대조, 최신 Native/fresh WASM 및 새 devel 기능 보존을 [최종 원장](../assets/seo-rii-20261112/windows-correction-20261113/README.md)에 기록했다. 초기 실패를 현재 미완료로 남기지 않으며 원격 처리·해당 head CI는 별도 승인 단계다.
+
+## 원격 후속 확정
+
+수용 PR [#9037](https://github.com/edwardkim/rhwp/pull/9037)의 CI·self-review·merge와 원 PR 3건의 간접 MERGED를 확인했다. [최종 종료 기록](pr_9037_review.md)을 따른다. 초기 승인 대기·보류 문단은 당시의 조사 이력이다.

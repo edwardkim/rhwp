@@ -21,7 +21,7 @@
 
 ## 2026-11-13 승인
 
-작업지시자가 “메인테이너 보정·필수 재검증 승인 (권장)”으로 위 보정과 실제 재검증을 승인했다. Windows CMake의 공통 경로 보정을 적용하고 실제 runner·두 타일·이동 참조앱을 검증한다. 기존 macOS 수용 결정은 유지하며 원격 source push·PR·merge는 이번 범위에 포함하지 않는다. [승인 범위](assets/seo-rii-20261112/windows-correction-20261113/validation-record.md)를 보존했다.
+작업지시자가 “메인테이너 보정·필수 재검증 승인 (권장)”으로 위 보정과 실제 재검증을 승인했다. Windows CMake의 공통 경로 보정을 적용하고 실제 runner·두 타일·이동 참조앱을 검증한다. 기존 macOS 수용 결정은 유지하며 원격 source push·PR·merge는 이번 범위에 포함하지 않는다. [승인 범위](../assets/seo-rii-20261112/windows-correction-20261113/validation-record.md)를 보존했다.
 
 ## 실제 Windows 참조앱에서 추가 확인한 파일 metadata 경계
 
@@ -41,4 +41,8 @@ C SDK의 AddRef/Release·Lock/Unlock·IsAvailable 계약을 사용해 messenger 
 
 ## 최종 재검증 완료
 
-`4ab994ee67`에서 실제 Windows reference release·타일 runner를 새로 빌드했다. 타일 collector 4단계는 `windows-two-tile-consumer-passed`·exit 0이며, 이동 번들은 실제 두 문서 열기·1→6쪽 이동·문서 닫기·WM_CLOSE exit 0을 확인했다. 최초 C1083·`.exe` metadata 거부·messenger 종료 fault를 모두 해소했다. 관련 Linux 검사 50개와 Windows portable bridge도 통과했다. 실제 SDK·DPR·카운터·module mapping·전쪽 Native/WASM 결과는 [최종 검증 원장](assets/seo-rii-20261112/windows-correction-20261113/README.md)에 연결했다. 원격 처리는 아직 수행하지 않았다.
+`4ab994ee67`에서 실제 Windows reference release·타일 runner를 새로 빌드했다. 타일 collector 4단계는 `windows-two-tile-consumer-passed`·exit 0이며, 이동 번들은 실제 두 문서 열기·1→6쪽 이동·문서 닫기·WM_CLOSE exit 0을 확인했다. 최초 C1083·`.exe` metadata 거부·messenger 종료 fault를 모두 해소했다. 관련 Linux 검사 50개와 Windows portable bridge도 통과했다. 실제 SDK·DPR·카운터·module mapping·전쪽 Native/WASM 결과는 [최종 검증 원장](../assets/seo-rii-20261112/windows-correction-20261113/README.md)에 연결했다. 원격 처리는 아직 수행하지 않았다.
+
+## 원격 후속 확정
+
+수용 PR [#9037](https://github.com/edwardkim/rhwp/pull/9037)의 CI·self-review·merge와 원 PR 3건의 간접 MERGED를 확인했다. [최종 종료 기록](pr_9037_review.md)을 따른다. 초기 승인 대기·보류 문단은 당시의 조사 이력이다.

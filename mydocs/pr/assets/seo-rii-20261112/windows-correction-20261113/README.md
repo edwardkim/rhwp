@@ -1,5 +1,7 @@
 # 2026-11-13 Windows 보정과 최종 로컬 검증
 
+수용 PR [#9037](https://github.com/edwardkim/rhwp/pull/9037)의 CI·self-review·merge를 완료했다. [최종 원격·종료 기록](../../../archives/pr_9037_review.md)을 따른다. 아래는 source별 실행을 구분한 제출 전 로컬 검증 기록이며, 당시의 원격 미실행 문구를 현재 상태로 읽지 않는다.
+
 ## 소스·승인·판정
 
 현재 base는 `41c889cfd8a869ad23199d6018f8b569879a575c`, 최종 제품 소스는 `4ab994ee67ff66e35aa9168ac6fae506b6b26122`다. 초기 `a85d3265dd`에서 #9025·#9033을 반영한 최신 devel을 clean merge했다. 원 #8952·#8953·#8954의 SHA를 모두 유지했고 Draft #8962–#8967은 포함하지 않았다. 원격 공개 댓글·승인 리뷰·source push·새 PR·merge는 아직 수행하지 않았다.
@@ -10,7 +12,7 @@
 
 1. `60f5659d5b`: CMake가 Flutter 디렉터리 junction을 그대로 유지하던 C1083을 공통 헤더의 실제 경로로 해결했다. [직접 checkout·junction·상대 링크·UNC 링크 4건](validation-record.md)이 모두 통과했다. 헤더를 복사하거나 include 환경으로 우회하지 않는다.
 2. `7e576a18ca`: 실제 Windows Python의 경로 `.exe` stat과 fd fstat 사이 합성 실행 비트 차이를 공통 identity에서 정규화했다. 원시 path·fd의 각 전후 metadata와 파일 종류·읽기/쓰기·inode·size·mtime·birthtime·link·hash 검사는 유지했다. [기존 코드의 두 새 양성 검사 FAIL](validation-record.md) → [Linux 13+27+10개 PASS](validation-record.md), [Windows 13개 중 11 PASS·POSIX 전용 2 skip 및 27개 PASS](validation-record.md)를 확인했다. Windows용 대조군에서 대소문자 파일의 실제 덮어쓰기와 disposable Git tree의 읽기 전용 속성도 플랫폼에 맞게 수정했다. 보호 조건은 완화하지 않았다.
-3. `4ab994ee67`: 실제 창 종료의 `FlutterDesktopMessengerSetCallback` access violation을 보정했다. [수정 전 종료 코드](validation-record.md)는 `0xc000041d`이며, 고정 SDK의 소멸 순서·비소유 messenger와 실제 DLL export/오류 RVA를 추적했다. C messenger를 소유하고 SDK의 lock/availability 계약에 따라 살아 있는 엔진에서만 handler를 해제한다. [상세 진단](../../../seo_rii_20261112_windows_build_finding.md)을 따른다.
+3. `4ab994ee67`: 실제 창 종료의 `FlutterDesktopMessengerSetCallback` access violation을 보정했다. [수정 전 종료 코드](validation-record.md)는 `0xc000041d`이며, 고정 SDK의 소멸 순서·비소유 messenger와 실제 DLL export/오류 RVA를 추적했다. C messenger를 소유하고 SDK의 lock/availability 계약에 따라 살아 있는 엔진에서만 handler를 해제한다. [상세 진단](../../../archives/seo_rii_20261112_windows_build_finding.md)을 따른다.
 
 Windows bundle에서 fixture에 없는 조합 경로를 입력한 검증 하네스의 실패와 종료 직전 캡처 race도 제품 결함과 구분했다. 최종 UI 검증은 실제 키 입력 간격·필드 선택과 WM_CLOSE 뒤 process wait를 사용하며 실패 종료를 허용하지 않는다.
 
