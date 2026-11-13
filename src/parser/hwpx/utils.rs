@@ -145,21 +145,12 @@ pub fn parse_bool(attr: &quick_xml::events::attributes::Attribute) -> bool {
     s == "true" || s == "1"
 }
 
-/// OWPML `winBrush/@hatchStyle`을 HWP 무늬 번호로 변환한다.
+/// OWPML `winBrush/@hatchStyle`을 HWP 무늬 번호(0~5)로 변환한다.
 ///
-/// HWP 쪽 `pattern_type`은 `-1`이 무늬없음이고, 1~6이 OWPML 스키마의
-/// 6개 hatchStyle 값에 대응한다. HWPX에서 hatchStyle이 생략되면 무늬없음으로
-/// 저장해야 하므로 호출자는 기본값으로 `-1`을 사용한다.
+/// 대응은 한컴이 같은 HWP를 HWPX로 저장한 결과를 따른다([`HatchStyle`]).
+/// HWPX에서 hatchStyle이 생략되면 무늬없음이므로 호출자는 기본값으로 `-1`을 사용한다.
 pub fn parse_hatch_style(value: &str) -> Option<i32> {
-    match value {
-        "HORIZONTAL" => Some(1),
-        "VERTICAL" => Some(2),
-        "BACK_SLASH" => Some(3),
-        "SLASH" => Some(4),
-        "CROSS" => Some(5),
-        "CROSS_DIAGONAL" => Some(6),
-        _ => None,
-    }
+    crate::model::style::HatchStyle::from_owpml_name(value).map(|hatch| hatch.pattern_type())
 }
 
 /// OWPML gradient type 값을 HWP5 gradient kind 값으로 변환한다.
@@ -227,12 +218,13 @@ mod tests {
 
     #[test]
     fn test_parse_hatch_style() {
-        assert_eq!(parse_hatch_style("HORIZONTAL"), Some(1));
-        assert_eq!(parse_hatch_style("VERTICAL"), Some(2));
+        // 한컴 2024가 무늬 0~5인 HWP를 HWPX로 저장한 값 (#8978)
+        assert_eq!(parse_hatch_style("HORIZONTAL"), Some(0));
+        assert_eq!(parse_hatch_style("VERTICAL"), Some(1));
+        assert_eq!(parse_hatch_style("SLASH"), Some(2));
         assert_eq!(parse_hatch_style("BACK_SLASH"), Some(3));
-        assert_eq!(parse_hatch_style("SLASH"), Some(4));
-        assert_eq!(parse_hatch_style("CROSS"), Some(5));
-        assert_eq!(parse_hatch_style("CROSS_DIAGONAL"), Some(6));
+        assert_eq!(parse_hatch_style("CROSS"), Some(4));
+        assert_eq!(parse_hatch_style("CROSS_DIAGONAL"), Some(5));
         assert_eq!(parse_hatch_style(""), None);
     }
 }

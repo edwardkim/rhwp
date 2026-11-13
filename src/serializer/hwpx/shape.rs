@@ -1249,14 +1249,14 @@ where
     let hatch = color_to_hex_with_storage(solid.pattern_color, storage)?;
     let alpha = fill_alpha_str_with_storage(alpha, storage)?;
     start_tag(w, "hc:fillBrush", storage)?;
-    if solid.pattern_type >= 1 {
+    if let Some(style) = solid.hatch() {
         empty_tag(
             w,
             "hc:winBrush",
             &[
                 ("faceColor", &face),
                 ("hatchColor", &hatch),
-                ("hatchStyle", hatch_style_str(solid.pattern_type)),
+                ("hatchStyle", style.owpml_name()),
                 ("alpha", &alpha),
             ],
             storage,
@@ -1425,21 +1425,6 @@ where
     S::Error: std::fmt::Display,
 {
     super::utils::xml_value(storage, alpha as f64 / 255.0)
-}
-
-/// `hatch_style` (1~6) → OWPML hatchStyle. `parse_hatch_style` 의 역매핑.
-fn hatch_style_str(pattern_type: i32) -> &'static str {
-    match pattern_type {
-        1 => "HORIZONTAL",
-        2 => "VERTICAL",
-        3 => "BACK_SLASH",
-        4 => "SLASH",
-        5 => "CROSS",
-        6 => "CROSS_DIAGONAL",
-        // 계약(1~6) 밖의 값은 무늬 정보가 없다는 뜻이므로 임의의 무늬로
-        // 둔갑시키지 않고 가장 무난한 HORIZONTAL 로 방출한다.
-        _ => "HORIZONTAL",
-    }
 }
 
 /// `<hp:shadow>` — `parse_shape_shadow_attr` 의 역매핑.
@@ -2441,17 +2426,32 @@ mod tests {
     }
 
     #[test]
-    fn task_m100_hatch_style_str_covers_all_six() {
-        // 계약(1~6) 값 6개를 모두 명시적으로 매핑하는지 확인한다.
-        // 이전에는 6이 catch-all(_) 분기에 얹혀 있어, 계약 밖의 값(예: 손상된
-        // 원본의 pattern_type=99)도 CROSS_DIAGONAL 로 둔갑했다.
-        assert_eq!(hatch_style_str(1), "HORIZONTAL");
-        assert_eq!(hatch_style_str(2), "VERTICAL");
-        assert_eq!(hatch_style_str(3), "BACK_SLASH");
-        assert_eq!(hatch_style_str(4), "SLASH");
-        assert_eq!(hatch_style_str(5), "CROSS");
-        assert_eq!(hatch_style_str(6), "CROSS_DIAGONAL");
-        assert_eq!(hatch_style_str(99), "HORIZONTAL");
+    fn hatch_style_follows_hancom_hwp_to_hwpx_save() {
+        // 한컴 2024가 무늬 0~5인 HWP를 HWPX로 저장한 값과 같아야 한다 (#8978).
+        // 무늬 없음(-1)·범위 밖(6, 99)은 hatchStyle 을 쓰지 않는다.
+        let expected = [
+            (0, Some("HORIZONTAL")),
+            (1, Some("VERTICAL")),
+            (2, Some("SLASH")),
+            (3, Some("BACK_SLASH")),
+            (4, Some("CROSS")),
+            (5, Some("CROSS_DIAGONAL")),
+            (6, None),
+            (99, None),
+            (-1, None),
+        ];
+        for (pattern_type, name) in expected {
+            let solid = crate::model::style::SolidFill {
+                background_color: 0x00FF_FFFF,
+                pattern_color: 0,
+                pattern_type,
+            };
+            assert_eq!(
+                solid.hatch().map(|h| h.owpml_name()),
+                name,
+                "{pattern_type}"
+            );
+        }
     }
 
     /// [#4669] 재방출 `id` 는 파서가 보존한 원문(hwpx_ole_id)을 되쓰고 `instid`

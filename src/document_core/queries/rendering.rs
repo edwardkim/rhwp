@@ -3615,7 +3615,7 @@ impl DocumentCore {
             "\"borderRight\":{\"type\":0,\"width\":0,\"color\":\"#000000\"},",
             "\"borderTop\":{\"type\":0,\"width\":0,\"color\":\"#000000\"},",
             "\"borderBottom\":{\"type\":0,\"width\":0,\"color\":\"#000000\"},",
-            "\"fillType\":\"none\",\"fillColor\":\"#ffffff\",\"patternColor\":\"#000000\",\"patternType\":0"
+            "\"fillType\":\"none\",\"fillColor\":\"#ffffff\",\"patternColor\":\"#000000\",\"patternType\":-1"
         )
         .to_string();
 
@@ -10592,7 +10592,7 @@ mod tests {
                 "borderRight":{"type":1,"width":1,"color":"#000000"},
                 "borderTop":{"type":1,"width":1,"color":"#000000"},
                 "borderBottom":{"type":1,"width":1,"color":"#000000"},
-                "fillType":"solid","fillColor":"#ffffff","patternColor":"#000000","patternType":0,
+                "fillType":"solid","fillColor":"#ffffff","patternColor":"#000000","patternType":-1,
                 "fillArea":"paper","applyPage":"all"}"##,
             )
             .expect("page border fill should update");

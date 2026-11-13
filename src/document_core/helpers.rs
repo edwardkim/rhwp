@@ -1075,10 +1075,10 @@ pub(crate) fn color_ref_to_css(color: crate::model::ColorRef) -> String {
 pub(crate) fn fill_json_values(
     fill: &crate::model::style::Fill,
 ) -> (&'static str, String, String, i32) {
-    use crate::model::style::FillType;
+    use crate::model::style::{FillType, HatchStyle};
     match (&fill.fill_type, &fill.solid) {
         (FillType::Solid, Some(s)) => {
-            let no_fill = s.pattern_type <= 0
+            let no_fill = s.hatch().is_none()
                 && crate::model::color::opaque_rgb(s.background_color).is_none();
             (
                 if no_fill { "none" } else { "solid" },
@@ -1087,9 +1087,26 @@ pub(crate) fn fill_json_values(
                 s.pattern_type,
             )
         }
-        (FillType::Gradient, _) => ("gradient", "#ffffff".to_string(), "#000000".to_string(), 0),
-        (FillType::Image, _) => ("image", "#ffffff".to_string(), "#000000".to_string(), 0),
-        _ => ("none", "#ffffff".to_string(), "#000000".to_string(), 0),
+        // 무늬 없음은 -1이다. 0은 가로줄이라, 조회값을 되쓰며 fillType 만 solid 로
+        // 바꾸는 호출이 가로줄을 저장하게 된다 (#8978).
+        (FillType::Gradient, _) => (
+            "gradient",
+            "#ffffff".to_string(),
+            "#000000".to_string(),
+            HatchStyle::NONE,
+        ),
+        (FillType::Image, _) => (
+            "image",
+            "#ffffff".to_string(),
+            "#000000".to_string(),
+            HatchStyle::NONE,
+        ),
+        _ => (
+            "none",
+            "#ffffff".to_string(),
+            "#000000".to_string(),
+            HatchStyle::NONE,
+        ),
     }
 }
 

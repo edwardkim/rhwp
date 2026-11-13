@@ -373,9 +373,9 @@ pub(crate) fn drawing_to_shape_style(
     // 배경색: solid 필드가 있으면 fill_type과 무관하게 배경색 적용
     // (Image/Gradient와 단색 채우기가 동시에 적용되는 케이스 지원)
     let fill_color = drawing.fill.solid.and_then(|s| {
-        // HWP pattern_type: >0이면 패턴 채우기(패턴이 배경색 처리), 0 이하=단색
+        // 무늬(0~5)가 있으면 무늬가 배경색까지 칠한다.
         // ColorRef 상위 바이트가 0이 아니면(0xFF 등) 투명
-        if s.pattern_type > 0 || (s.background_color >> 24) != 0 {
+        if s.hatch().is_some() || (s.background_color >> 24) != 0 {
             None
         } else {
             Some(s.background_color)
@@ -445,18 +445,14 @@ pub(crate) fn drawing_to_shape_style(
     } else {
         1.0
     };
-    // 패턴 채우기: pattern_type > 0일 때만 패턴 정보 생성 (1=가로줄, 2=세로줄, ..., 6=격자)
+    // 패턴 채우기: 무늬(0~5)가 있을 때만 패턴 정보 생성
     let pattern = drawing.fill.solid.and_then(|s| {
-        if s.pattern_type > 0 {
-            Some(super::super::PatternFillInfo {
-                pattern_type: s.pattern_type,
-                tile_size: super::super::hwpunit_to_px(576, dpi),
-                pattern_color: s.pattern_color,
-                background_color: s.background_color,
-            })
-        } else {
-            None
-        }
+        s.hatch().map(|hatch| super::super::PatternFillInfo {
+            pattern_type: hatch.pattern_type(),
+            tile_size: super::super::hwpunit_to_px(576, dpi),
+            pattern_color: s.pattern_color,
+            background_color: s.background_color,
+        })
     });
 
     // 그림자

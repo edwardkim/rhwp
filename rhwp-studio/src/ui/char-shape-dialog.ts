@@ -763,8 +763,9 @@ export class CharShapeDialog {
     this.patShapeSelect.className = 'dialog-select';
     this.patShapeSelect.style.width = '90px';
     for (const [val, lbl] of [
-      ['0', i18nText('dialog.charShape.buildBorderPanel.label.x696251')], ['1', '━'], ['2', '┃'],
-      ['3', '╲'], ['4', '╱'], ['5', '╳'], ['6', '┼'],
+      // HWP 무늬 종류: -1=없음, 0~5 = ─ │ ＼ ／ ＋ × (#8978)
+      ['-1', i18nText('dialog.charShape.buildBorderPanel.label.x696251')], ['0', '━'], ['1', '┃'],
+      ['2', '╲'], ['3', '╱'], ['4', '┼'], ['5', '╳'],
     ] as const) {
       const o = document.createElement('option');
       o.value = val; o.textContent = lbl;
@@ -913,7 +914,7 @@ export class CharShapeDialog {
     updateFillControls(this.faceColorSelect, [this.faceColorPicker, this.patColorInput, this.patShapeSelect]);
     this.faceColorPicker.value = p.fillColor || '#ffffff';
     this.patColorInput.value = p.patternColor || '#000000';
-    this.patShapeSelect.value = String(p.patternType || 0);
+    this.patShapeSelect.value = String(p.patternType ?? -1);
 
     this.updatePreview();
   }
@@ -1059,7 +1060,7 @@ export class CharShapeDialog {
     const origFillType = p.fillType || 'none';
     const origFillColor = p.fillColor || '#ffffff';
     const origPatColor = p.patternColor || '#000000';
-    const origPatType = p.patternType || 0;
+    const origPatType = p.patternType ?? -1;
     if (fillType !== origFillType || (fillType === 'solid'
       && (fillColor !== origFillColor || patColor !== origPatColor || patType !== origPatType))) {
       mods.fillType = fillType;

@@ -980,7 +980,7 @@ fn hwp3_para_shape_border_fill(
         bf.fill.solid = Some(crate::model::style::SolidFill {
             background_color: color,
             pattern_color: 0,
-            pattern_type: 0,
+            pattern_type: -1,
         });
     }
     Some(bf)
@@ -1666,7 +1666,7 @@ fn parse_hwp3_object_dispatch(
                 fill.solid = Some(crate::model::style::SolidFill {
                     background_color: color,
                     pattern_color: 0,
-                    pattern_type: 0,
+                    pattern_type: -1,
                 });
                 border_fill.fill = fill;
             }
@@ -2201,7 +2201,7 @@ fn parse_hwp3_object_dispatch(
             fill.solid = Some(crate::model::style::SolidFill {
                 background_color: fill_color,
                 pattern_color: 0,
-                pattern_type: 0,
+                pattern_type: -1,
             });
             line.drawing.fill = fill;
         }

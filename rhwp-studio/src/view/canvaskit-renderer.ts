@@ -5718,7 +5718,7 @@ export class CanvasKitLayerRenderer {
     opacity: number,
     draw: (paint: SkPaint) => void,
   ): void {
-    const kind = pattern.patternType ?? 0;
+    const kind = pattern.patternType ?? -1;
     const bg = parseCssColor(pattern.backgroundColor ?? '#ffffff');
     const fg = parseCssColor(pattern.patternColor ?? '#000000');
     const bytes = new Uint8Array(8 * 8 * 4);
@@ -5728,9 +5728,10 @@ export class CanvasKitLayerRenderer {
         const vertical = x === 0;
         const slash = (x + y) % 8 === 0;
         const backslash = x === y;
-        const ink = kind === 1 ? horizontal : kind === 2 ? vertical
-          : kind === 3 ? slash : kind === 4 ? backslash
-          : kind === 5 ? horizontal || vertical : kind === 6 ? slash || backslash : false;
+        // HWP 무늬 종류 0~5: ─ │ ＼ ／ ＋ × (#8978)
+        const ink = kind === 0 ? horizontal : kind === 1 ? vertical
+          : kind === 2 ? backslash : kind === 3 ? slash
+          : kind === 4 ? horizontal || vertical : kind === 5 ? slash || backslash : false;
         const color = ink ? fg : bg;
         bytes.set([color.r, color.g, color.b, Math.round(color.a * 255)], (y * 8 + x) * 4);
       }

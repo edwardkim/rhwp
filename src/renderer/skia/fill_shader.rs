@@ -46,49 +46,72 @@ pub(super) fn shape_fill(
     Some(paint)
 }
 
+/// 무늬 한 주기를 이루는 픽셀 타일의 한 변. 100dpi 8-dot 무늬다.
+const PATTERN_TILE_DOTS: i32 = 8;
+
+/// 무늬 타일에서 무늬색으로 칠할 칸인지. Studio CanvasKit(`drawPatternFill`)과 같은 표다.
+fn pattern_ink(hatch: crate::model::style::HatchStyle, x: i32, y: i32) -> bool {
+    use crate::model::style::HatchStyle;
+    let horizontal = y == 0;
+    let vertical = x == 0;
+    let rising = (x + y) % PATTERN_TILE_DOTS == 0;
+    let falling = x == y;
+    match hatch {
+        HatchStyle::Horizontal => horizontal,
+        HatchStyle::Vertical => vertical,
+        HatchStyle::Falling => falling,
+        HatchStyle::Rising => rising,
+        HatchStyle::Cross => horizontal || vertical,
+        HatchStyle::DiagonalCross => rising || falling,
+    }
+}
+
 fn make_pattern_shader(pattern: &PatternFillInfo) -> Option<skia_safe::Shader> {
-    let mut surface = surfaces::raster_n32_premul((6, 6))?;
+    let hatch = crate::model::style::HatchStyle::from_pattern_type(pattern.pattern_type);
+    let mut surface = surfaces::raster_n32_premul((PATTERN_TILE_DOTS, PATTERN_TILE_DOTS))?;
     let canvas = surface.canvas();
 
     let mut background = Paint::default();
     background.set_anti_alias(false);
     background.set_style(paint::Style::Fill);
     background.set_color(colorref_to_skia(pattern.background_color, 1.0));
-    canvas.draw_rect(Rect::from_xywh(0.0, 0.0, 6.0, 6.0), &background);
+    let side = PATTERN_TILE_DOTS as f32;
+    canvas.draw_rect(Rect::from_xywh(0.0, 0.0, side, side), &background);
 
     let mut foreground = Paint::default();
-    foreground.set_anti_alias(true);
-    foreground.set_style(paint::Style::Stroke);
-    foreground.set_stroke_width(1.0);
+    foreground.set_anti_alias(false);
+    foreground.set_style(paint::Style::Fill);
     foreground.set_color(colorref_to_skia(pattern.pattern_color, 1.0));
-
-    match pattern.pattern_type {
-        0 => {
-            canvas.draw_line((0.0, 3.0), (6.0, 3.0), &foreground);
+    if let Some(hatch) = hatch {
+        for y in 0..PATTERN_TILE_DOTS {
+            for x in 0..PATTERN_TILE_DOTS {
+                if pattern_ink(hatch, x, y) {
+                    canvas.draw_rect(Rect::from_xywh(x as f32, y as f32, 1.0, 1.0), &foreground);
+                }
+            }
         }
-        1 => {
-            canvas.draw_line((3.0, 0.0), (3.0, 6.0), &foreground);
-        }
-        2 => {
-            canvas.draw_line((6.0, 0.0), (0.0, 6.0), &foreground);
-        }
-        3 => {
-            canvas.draw_line((0.0, 0.0), (6.0, 6.0), &foreground);
-        }
-        4 => {
-            canvas.draw_line((3.0, 0.0), (3.0, 6.0), &foreground);
-            canvas.draw_line((0.0, 3.0), (6.0, 3.0), &foreground);
-        }
-        5 => {
-            canvas.draw_line((0.0, 0.0), (6.0, 6.0), &foreground);
-            canvas.draw_line((6.0, 0.0), (0.0, 6.0), &foreground);
-        }
-        _ => {}
     }
 
+    // 레이아웃이 정한 한 주기(576HU)를 쪽 원점에 고정해 반복한다. SVG·웹 캔버스와 같다.
+    let scale = if pattern.tile_size.is_finite() && pattern.tile_size > 0.0 {
+        (pattern.tile_size / PATTERN_TILE_DOTS as f64) as f32
+    } else {
+        1.0
+    };
+    let matrix = skia_safe::Matrix::new_all(
+        scale,
+        0.0,
+        -scale / 2.0,
+        0.0,
+        scale,
+        -scale / 2.0,
+        0.0,
+        0.0,
+        1.0,
+    );
     surface.image_snapshot().to_shader(
         Some((TileMode::Repeat, TileMode::Repeat)),
-        SamplingOptions::new(FilterMode::Nearest, MipmapMode::None),
-        None,
+        SamplingOptions::new(FilterMode::Linear, MipmapMode::None),
+        Some(&matrix),
     )
 }
