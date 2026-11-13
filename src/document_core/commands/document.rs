@@ -470,6 +470,7 @@ impl DocumentCore {
             layer_tree_json_cache: RefCell::new(Vec::new()),
             page_layer_tree_cache: RefCell::new(Vec::new()),
             bin_data_epoch: 0,
+            loaded_unreferenced_bin_data: std::collections::BTreeSet::new(),
             batch_mode: false,
             pending_cell_format_vpos: false,
             event_log: Vec::new(),
@@ -3361,6 +3362,22 @@ impl DocumentCore {
     }
 
     fn with_hwpx_export_document<T>(&self, consume: impl FnOnce(&Document) -> T) -> T {
+        // [#8941] 실제 저장과 검증 기대값이 같은 사본에서 삭제된 그림만 제거한다.
+        // live IR과 불러올 때부터 참조가 없던 자원은 원래 계약대로 보존한다.
+        let keep = &self.loaded_unreferenced_bin_data;
+        let consume = |document: &Document| {
+            if document
+                .bin_data_content
+                .iter()
+                .all(|c| keep.contains(&c.id))
+            {
+                return consume(document);
+            }
+            let mut pruned = document.clone();
+            super::bin_data_prune::prune_unreferenced_bin_data_except(&mut pruned, keep);
+            consume(&pruned)
+        };
+
         let hwp3_origin = matches!(self.source_format, crate::parser::FileFormat::Hwp3)
             || self.document.provenance.hwp3_lineage;
         let lower_markers = |doc: &mut Document| {

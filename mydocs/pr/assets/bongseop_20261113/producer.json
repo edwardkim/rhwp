@@ -1,0 +1,122 @@
+{
+  "source_prs": {
+    "9043": {
+      "head": "37bb246273400443496207488f4dafa0ad11bc28",
+      "applied": "10c8daa334ba5f91e740fcb394cfb2add8efb202"
+    },
+    "9048": {
+      "head": "af029fca6e39a8d2c971158575d90948c4015f80",
+      "applied": "970190226eef0157ad5e6836af0a9146885350e3"
+    }
+  },
+  "base": "5cbcc9b451cf286e1b7c680426c857dc802e50f3",
+  "verified_code_head": "89701eb34af54502e94afa6319240596e98a1367",
+  "branch": "review/integration-8941-bongseop-editing",
+  "package_hashes": {
+    "rhwp.js": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+    "rhwp_bg.wasm": "5b1d5ca7c637602dad34df1b3593500ee08111465299987cb70038f6d088e801"
+  },
+  "wasm_build": "Mac locked wrapper --target web --out-dir pkg --no-opt, explicit user-specified local substitute; not Docker/wasm-opt success",
+  "base_receipt": "base-producer-qualification.json",
+  "images": [
+    {
+      "path": "mydocs/pr/assets/bongseop_20261113/pr9043/base-picture-inserted.png",
+      "source": "studio-base-final/picture-inserted.png",
+      "sha256": "4fa15a8b44dfd66a4c5383331ee02a9489cc3a70a29b0dc009880a7c3dffc4a2"
+    },
+    {
+      "path": "mydocs/pr/assets/bongseop_20261113/pr9043/base-picture-deleted.png",
+      "source": "studio-base-final/picture-deleted.png",
+      "sha256": "93b0147679cbf4ec3c280bc272b23573e3ab3992224f3ff3bc7f96e6e1e2ef86"
+    },
+    {
+      "path": "mydocs/pr/assets/bongseop_20261113/pr9048/base-center-empty.png",
+      "source": "studio-base-final/center-empty.png",
+      "sha256": "4a76d8c19a8c475e883c58698a94c99421fb80bbd7b1d2952b26d0eddc2fd86d"
+    },
+    {
+      "path": "mydocs/pr/assets/bongseop_20261113/pr9048/base-center-empty-detail.png",
+      "source": "studio-base-final/center-empty-detail.png",
+      "sha256": "5595570370065b3848bbdfa554c776f5cba28729fea8fbe68e686a38811a2b6a"
+    },
+    {
+      "path": "mydocs/pr/assets/bongseop_20261113/pr9048/base-center-first-character.png",
+      "source": "studio-base-final/center-first-character.png",
+      "sha256": "bce122799949e76e1990179c51cd70871038152675a4fe0f7047e1229c2f0051"
+    },
+    {
+      "path": "mydocs/pr/assets/bongseop_20261113/pr9048/base-right-empty.png",
+      "source": "studio-base-final/right-empty.png",
+      "sha256": "33322783ad8b59015f86eea49eebc46831fa3cacb1be49bec4c819b62f6642cb"
+    },
+    {
+      "path": "mydocs/pr/assets/bongseop_20261113/pr9048/base-right-empty-detail.png",
+      "source": "studio-base-final/right-empty-detail.png",
+      "sha256": "5595570370065b3848bbdfa554c776f5cba28729fea8fbe68e686a38811a2b6a"
+    },
+    {
+      "path": "mydocs/pr/assets/bongseop_20261113/pr9048/base-right-first-character.png",
+      "source": "studio-base-final/right-first-character.png",
+      "sha256": "26d6221280c4e89b8736344b30de9a99b91d83a4c72222ef925321b7960d0c71"
+    },
+    {
+      "path": "mydocs/pr/assets/bongseop_20261113/pr9043/head-picture-inserted.png",
+      "source": "studio-candidate/picture-inserted.png",
+      "sha256": "4fa15a8b44dfd66a4c5383331ee02a9489cc3a70a29b0dc009880a7c3dffc4a2"
+    },
+    {
+      "path": "mydocs/pr/assets/bongseop_20261113/pr9043/head-picture-deleted.png",
+      "source": "studio-candidate/picture-deleted.png",
+      "sha256": "93b0147679cbf4ec3c280bc272b23573e3ab3992224f3ff3bc7f96e6e1e2ef86"
+    },
+    {
+      "path": "mydocs/pr/assets/bongseop_20261113/pr9048/head-center-empty.png",
+      "source": "studio-candidate/center-empty.png",
+      "sha256": "8dcc4d41d82f4e3cd566a6559b3ffdbc2e6e20a4a7162215e10443e01669e7fe"
+    },
+    {
+      "path": "mydocs/pr/assets/bongseop_20261113/pr9048/head-center-empty-detail.png",
+      "source": "studio-candidate/center-empty-detail.png",
+      "sha256": "72052580e31ec57d9d77197026fb93df3e88070df51d797df10d57cc442d540c"
+    },
+    {
+      "path": "mydocs/pr/assets/bongseop_20261113/pr9048/head-center-first-character.png",
+      "source": "studio-candidate/center-first-character.png",
+      "sha256": "bce122799949e76e1990179c51cd70871038152675a4fe0f7047e1229c2f0051"
+    },
+    {
+      "path": "mydocs/pr/assets/bongseop_20261113/pr9048/head-right-empty.png",
+      "source": "studio-candidate/right-empty.png",
+      "sha256": "daa071bec18f7a82f197c280a3386ba064e54c5671d1fb8185908ba16cb2b0ec"
+    },
+    {
+      "path": "mydocs/pr/assets/bongseop_20261113/pr9048/head-right-empty-detail.png",
+      "source": "studio-candidate/right-empty-detail.png",
+      "sha256": "661cd7ea64a73c6ed5e0df987aa97ec335eb6e2a68facca61ff8ed3e0a61b39f"
+    },
+    {
+      "path": "mydocs/pr/assets/bongseop_20261113/pr9048/head-right-first-character.png",
+      "source": "studio-candidate/right-first-character.png",
+      "sha256": "26d6221280c4e89b8736344b30de9a99b91d83a4c72222ef925321b7960d0c71"
+    }
+  ],
+  "direct_reading": {
+    "pr9043": "Inserted red picture visible; deletion removes it. ZIP counts and payload identity are the resource-removal proof.",
+    "pr9048": "Center/right empty caret visibly follows the body alignment; the first typed Korean character appears at the same aligned position. Raw UI screenshots and direct screenshot crops, no synthetic caret drawing."
+  },
+  "collected_at_kst": "2026-11-13T22:05:36.019358+09:00",
+  "tracked_declaration_policy": [
+    {
+      "path": "rhwp-studio/public/rhwp.d.ts",
+      "tracked_head_sha256": "0cd258212cbecec2ace95a22f0509aff51fd4025bbb319e94dc3cdae649ffd85",
+      "generated_base_and_candidate_sha256": "0c02b535ff3d0458c0c12b25b5f46d68e49be482d32aec9e5d8db03d1f33c2f0",
+      "reason": "Generated type declaration difference already present in baseline package, outside these PRs; restore only our automatic copy."
+    },
+    {
+      "path": "rhwp-studio/public/rhwp_bg.wasm.d.ts",
+      "tracked_head_sha256": "9231c14fdd938a600e77af5e43f1087d9ec8f3e48b9bf670c59884adf7934cab",
+      "generated_base_and_candidate_sha256": "9d21217c454fa8f1757e7f08e26b27d00c564bcc0be2a228b75bb0dae08aa738",
+      "reason": "Generated type declaration difference already present in baseline package, outside these PRs; restore only our automatic copy."
+    }
+  ]
+}
