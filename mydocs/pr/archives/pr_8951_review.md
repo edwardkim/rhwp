@@ -2,10 +2,10 @@
 
 ## 최종 판정
 
-**메인테이너 보정 후 수용 가능 — 필수 로컬 검증 완료.** Native/fresh WASM 전 13쪽과
-실제 body overflow, 집중 8건·전체 회귀 13,432건·Native 공식 4,073건을 통과했다.
-정본 보호 전 3,542쪽의 공식값 하락은 0건이다. 원격 처리는 사용자 승인과 새 통합 head의 CI가 필요하다.
-GitHub 승인 리뷰·push·merge는 수행하지 않았다.
+**승인 — 통합 PR #9047에 원 기여를 보존해 수용 완료.** 검증 head `68c2441bfd`의
+34 SUCCESS·정상 SKIP 5건과 셀프 리뷰 뒤 merge `a785e23f6838d5452e8904cae82f81eb5e185efc`로
+반영했다. 원 PR #8951도 간접 MERGED를 확인했다. 범위는 불필요한 허용치 1행 제거다.
+
 
 ## 접수 정보
 
@@ -42,7 +42,7 @@ Native Skia·96dpi·`--compat 2022` 전 13쪽 최저 raw 96.17%(1쪽), 목표 11
 90% 미달은 없다. fresh 최적화 WASM Canvas도 전 13쪽 최저 96.11%(1쪽), 목표 11쪽 97.52%로
 모두 통과했다. Print와 1·11쪽을 직접 대조해 표 아래 괘선·본문 경계·쪽 번호 보존을 확인했다.
 원 head의 과거 측정값과 이번 최신 devel 측정값을 섞지 않는다.
-[보정 후 전쪽 TSV·대표 PNG·실행 조건](assets/sacru2red-20261113/final/README.md)을 함께 보존했다.
+[보정 후 전쪽 TSV·대표 PNG·실행 조건](../assets/sacru2red-20261113/final/README.md)을 함께 보존했다.
 
 ## 조판 원칙·검증 입력 검토
 
@@ -53,4 +53,13 @@ Native Skia·96dpi·`--compat 2022` 전 13쪽 최저 raw 96.17%(1쪽), 목표 11
 footer Native/WASM PNG 전 13쪽은 각각 그대로이며 허용치 제거가 유효하다. 두 producer의
 SHA와 보정 전후 비교는 위 최종 원장에 구분했다.
 
-계획·#8975와의 범위 구분은 [공통 계획](sacru2red_20261113_review_plan.md)을 따른다.
+계획·#8975와의 범위 구분은 [공통 계획](../sacru2red_20261113_review_plan.md)을 따른다.
+
+## Merge 후 contributor PR comment 계획
+
+- 실제 [수용 PR #9047](https://github.com/edwardkim/rhwp/pull/9047), merge `a785e23f6838d5452e8904cae82f81eb5e185efc`, 검증 head `68c2441bfd947609676b841e7ff43bf1c64983ab`를 쓴다.
+- 문서 비교는 [정본 Visual Sweep 가이드](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)를 따른다.
+- 실제 footer 전 13쪽의 Native 최저 96.17%, fresh WASM 최저 96.11%와 body overflow 0건을 구분한다. 대표 11쪽은 각각 97.80%·97.52%다.
+- inline PNG는 같은 footer 11쪽의 `mydocs/pr/assets/sacru2red-20261113/final/footer-p011-three-way.png`다. 독립 Desktop Print·Native·fresh WASM을 같은 배율로 대조한 이미지이며, 게시 직전 merge SHA raw 응답의 PNG magic·SHA를 Git bytes와 비교한다.
+- 사람의 판정은 표 아래 괘선·본문 바닥·쪽 번호의 보존과 overflow 0건이다. 수치를 사람 판정 정확도나 RGB 완전 동일로 설명하지 않는다.
+- 공개 댓글은 이 archive·운영 기록의 devel 반영 후 게시하고 본문 일치·한글·BOM·줄바꿈을 API로 확인한다. 원 fork branch는 보존하며 #7620은 기존 전체 잔여 범위로 OPEN을 유지한다.
