@@ -1,7 +1,7 @@
 # 원 합성본의 저장 줄 캐시 보완
 
 메인테이너는 2026-11-13 기존 차이 예외 대신 원 합성본의 저장 줄 처리까지 보완하도록 결정했다.
-제품 `1506a1c34672931c4f5aa5cb6363fba776225949`의 원본·정상 한컴 저장본·Header/Footer·중첩 대조군
+최종 제품 `d66d5f05f9efa4d182228494cd970614d479fb7a`의 원본·정상 한컴 저장본·Header/Footer·중첩 대조군
 8종 전 16쪽은 Native/fresh 최적화 WASM 모두 raw 100.00%다.
 [현재 전쪽 원장](../final-validation/README.md)과 [실제 편집·반복 저장](../final-validation/live-edit/README.md)을 따른다.
 전체 필수 게이트의 종료 판정은 상위 검토 문서에 기록한다.

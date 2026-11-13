@@ -52,8 +52,8 @@
     "render_tree_frame_tail_overflow_pages": [],
     "question_marker_drift_pages": [],
     "legacy_glyph_visual_pages": [],
-    "metrics_json": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/completion-original-review-native/original/analysis/metrics.json",
-    "question_flow_json": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/completion-original-review-native/original/analysis/question_flow.json"
+    "metrics_json": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-original-review-native/original/analysis/metrics.json",
+    "question_flow_json": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-original-review-native/original/analysis/question_flow.json"
   },
   "pr_review_gate": {
     "status": "passed",
@@ -67,5 +67,6 @@
       "pdf": 2
     },
     "page_count_mismatch": false
-  }
+  },
+  "source": "d66d5f05f9efa4d182228494cd970614d479fb7a"
 }

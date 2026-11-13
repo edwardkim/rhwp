@@ -1,0 +1,22 @@
+{
+  "source": "d66d5f05f9efa4d182228494cd970614d479fb7a",
+  "targets": 16,
+  "regressions": 0,
+  "errors_or_missing": 0,
+  "command": [
+    "venv/bin/python",
+    "tools/clipping_gate.py",
+    "--check",
+    "output/pr-review/pr9042/clipping-base.tsv",
+    "--fixture",
+    "output/pr-review/pr9042/clipping-final-inputs.tsv",
+    "--exe",
+    "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp"
+  ],
+  "default_controlset_availability": {
+    "declared": 92,
+    "available": 0,
+    "counted_as_pass": false
+  },
+  "result": "[clipping-gate] 문서=16 개선=0 회귀=0 ERR/없음=0 baseline누락=0"
+}

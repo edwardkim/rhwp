@@ -1,0 +1,1380 @@
+{
+  "source": "d66d5f05f9efa4d182228494cd970614d479fb7a",
+  "artifacts": {
+    "rhwp.js": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+    "rhwp_bg.wasm": "845fd719d38d3b1611253413237cb6ffeceb5fb855f14df1e1242f3755826ced",
+    "rhwp.d.ts": "0c02b535ff3d0458c0c12b25b5f46d68e49be482d32aec9e5d8db03d1f33c2f0",
+    "rhwp_bg.wasm.d.ts": "9d21217c454fa8f1757e7f08e26b27d00c564bcc0be2a228b75bb0dae08aa738"
+  },
+  "captures": {
+    "96": {
+      "pageCount": 2,
+      "layoutGeneration": "2022",
+      "comparisonProfile": "print",
+      "rasterBackend": "wasm-canvas2d",
+      "protocolTimeoutMs": 600000,
+      "pngBackground": "opaque-white-print-paper",
+      "captureCanvasPolicy": "fresh-per-page-after-font-and-image-preparation",
+      "fontEnvironment": {
+        "source": "explicit",
+        "environment": {
+          "documentSubstitutions": [],
+          "id": "native-webfont-e8fc3af137367e8aa5a0cb53",
+          "preserveSourceMetrics": true,
+          "substitutions": {
+            "함초롬돋움": "HCRDotum",
+            "함초롬바탕": "HCRBatang"
+          },
+          "trueTypeFaces": [
+            "HCR Batang",
+            "HCR Dotum"
+          ]
+        },
+        "programs": [
+          {
+            "query": "함초롬돋움",
+            "family": "HCR Dotum",
+            "programId": "sweep-9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+            "trueType": true,
+            "openTypeCff": false
+          },
+          {
+            "query": "HCR Dotum",
+            "family": "HCR Dotum",
+            "programId": "sweep-9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+            "trueType": true,
+            "openTypeCff": false
+          },
+          {
+            "query": "함초롬바탕",
+            "family": "HCR Batang",
+            "programId": "sweep-2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+            "trueType": true,
+            "openTypeCff": false
+          },
+          {
+            "query": "HCR Batang",
+            "family": "HCR Batang",
+            "programId": "sweep-2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+            "trueType": true,
+            "openTypeCff": false
+          },
+          {
+            "query": "HCRDotum",
+            "family": "HCR Dotum",
+            "programId": "sweep-9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+            "trueType": true,
+            "openTypeCff": false
+          },
+          {
+            "query": "HCRBatang",
+            "family": "HCR Batang",
+            "programId": "sweep-2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+            "trueType": true,
+            "openTypeCff": false
+          }
+        ],
+        "loaded": [
+          {
+            "family": "함초롬돋움",
+            "registeredFamily": "함초롬돋움",
+            "sourceSha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+            "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+            "faceIndex": 0,
+            "weight": 400,
+            "style": "normal",
+            "repairs": [],
+            "sourceKind": "external"
+          },
+          {
+            "family": "HCR Dotum",
+            "registeredFamily": "HCR Dotum",
+            "sourceSha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+            "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+            "faceIndex": 0,
+            "weight": 400,
+            "style": "normal",
+            "repairs": [],
+            "sourceKind": "external"
+          },
+          {
+            "family": "함초롬바탕",
+            "registeredFamily": "함초롬바탕",
+            "sourceSha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+            "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+            "faceIndex": 0,
+            "weight": 400,
+            "style": "normal",
+            "repairs": [],
+            "sourceKind": "external"
+          },
+          {
+            "family": "HCR Batang",
+            "registeredFamily": "HCR Batang",
+            "sourceSha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+            "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+            "faceIndex": 0,
+            "weight": 400,
+            "style": "normal",
+            "repairs": [],
+            "sourceKind": "external"
+          },
+          {
+            "family": "HCRDotum",
+            "registeredFamily": "HCRDotum",
+            "sourceSha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+            "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+            "faceIndex": 0,
+            "weight": 400,
+            "style": "normal",
+            "repairs": [],
+            "sourceKind": "external"
+          },
+          {
+            "family": "HCRBatang",
+            "registeredFamily": "HCRBatang",
+            "sourceSha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+            "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+            "faceIndex": 0,
+            "weight": 400,
+            "style": "normal",
+            "repairs": [],
+            "sourceKind": "external"
+          }
+        ]
+      },
+      "pages": [
+        {
+          "page": 1,
+          "pngSha256": "2673556b090516744966c4cd685ab5722b40a9389dd9e62cf36a663322429189",
+          "width": 794,
+          "height": 1122,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        },
+        {
+          "page": 2,
+          "pngSha256": "65ff9419d8c9e55d38ce4f216d31f7b89719be7b8616791dab705bcc3890ea73",
+          "width": 794,
+          "height": 1122,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        }
+      ],
+      "workers": [
+        {
+          "index": 0,
+          "pages": [
+            1,
+            2
+          ],
+          "fonts": {
+            "requested": [
+              "hcrbatang",
+              "hcr batang",
+              "noto serif kr",
+              "함초롬바탕",
+              "hcrdotum",
+              "hcr dotum",
+              "함초롬돋움",
+              "noto sans kr extralight",
+              "noto sans kr"
+            ],
+            "loaded": [
+              {
+                "family": "HCR Dotum",
+                "registeredFamily": "HCR Dotum",
+                "sourceSha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+                "sha256": "e90d31b73f947d90b17fcdd773e07abeb9e0c930ef235da0095c42ca9ed74438",
+                "textProgramSha256": "e90d31b73f947d90b17fcdd773e07abeb9e0c930ef235da0095c42ca9ed74438",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [
+                  "woff-to-sfnt"
+                ],
+                "sourceKind": "external"
+              },
+              {
+                "family": "HCR Dotum",
+                "registeredFamily": "HCR Dotum",
+                "sourceSha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "textProgramSha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "함초롬돋움",
+                "registeredFamily": "함초롬돋움",
+                "sourceSha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+                "sha256": "e90d31b73f947d90b17fcdd773e07abeb9e0c930ef235da0095c42ca9ed74438",
+                "textProgramSha256": "e90d31b73f947d90b17fcdd773e07abeb9e0c930ef235da0095c42ca9ed74438",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [
+                  "woff-to-sfnt"
+                ],
+                "sourceKind": "external"
+              },
+              {
+                "family": "함초롬돋움",
+                "registeredFamily": "함초롬돋움",
+                "sourceSha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "textProgramSha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "HCRDotum",
+                "registeredFamily": "HCRDotum",
+                "sourceSha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+                "sha256": "e90d31b73f947d90b17fcdd773e07abeb9e0c930ef235da0095c42ca9ed74438",
+                "textProgramSha256": "e90d31b73f947d90b17fcdd773e07abeb9e0c930ef235da0095c42ca9ed74438",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [
+                  "woff-to-sfnt"
+                ],
+                "sourceKind": "external"
+              },
+              {
+                "family": "HCRDotum",
+                "registeredFamily": "HCRDotum",
+                "sourceSha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "textProgramSha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "HCR Batang",
+                "registeredFamily": "HCR Batang",
+                "sourceSha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "textProgramSha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "함초롬바탕",
+                "registeredFamily": "함초롬바탕",
+                "sourceSha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "textProgramSha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "HCRBatang",
+                "registeredFamily": "HCRBatang",
+                "sourceSha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "textProgramSha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Sans KR",
+                "registeredFamily": "Noto Sans KR",
+                "sourceSha256": "7cd81998a15203d3b457d31345590181e8933ca3de20361722d996491b132b83",
+                "sha256": "7cd81998a15203d3b457d31345590181e8933ca3de20361722d996491b132b83",
+                "textProgramSha256": "7cd81998a15203d3b457d31345590181e8933ca3de20361722d996491b132b83",
+                "faceIndex": 0,
+                "weight": 100,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Sans KR",
+                "registeredFamily": "Noto Sans KR",
+                "sourceSha256": "d92fe452a7c1adf1e476b8a82ec72f7f6b5641303f384c4f1f59c34a8cd052c2",
+                "sha256": "d92fe452a7c1adf1e476b8a82ec72f7f6b5641303f384c4f1f59c34a8cd052c2",
+                "textProgramSha256": "d92fe452a7c1adf1e476b8a82ec72f7f6b5641303f384c4f1f59c34a8cd052c2",
+                "faceIndex": 0,
+                "weight": 900,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Sans KR",
+                "registeredFamily": "Noto Sans KR",
+                "sourceSha256": "d95f5963608631e4af863f472f594cb00151370583edc174c2a78a71301cb863",
+                "sha256": "d95f5963608631e4af863f472f594cb00151370583edc174c2a78a71301cb863",
+                "textProgramSha256": "d95f5963608631e4af863f472f594cb00151370583edc174c2a78a71301cb863",
+                "faceIndex": 0,
+                "weight": 700,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Sans KR",
+                "registeredFamily": "Noto Sans KR",
+                "sourceSha256": "e4c858e7064b4f6b40043358935068bb086219d881fc1080592cd2c24f12fd5b",
+                "sha256": "e4c858e7064b4f6b40043358935068bb086219d881fc1080592cd2c24f12fd5b",
+                "textProgramSha256": "e4c858e7064b4f6b40043358935068bb086219d881fc1080592cd2c24f12fd5b",
+                "faceIndex": 0,
+                "weight": 800,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Sans KR",
+                "registeredFamily": "Noto Sans KR",
+                "sourceSha256": "e63727eb8ca0c45435f00f57f14eaefd326df179b2c2616518cbbfd2ecba171d",
+                "sha256": "e63727eb8ca0c45435f00f57f14eaefd326df179b2c2616518cbbfd2ecba171d",
+                "textProgramSha256": "e63727eb8ca0c45435f00f57f14eaefd326df179b2c2616518cbbfd2ecba171d",
+                "faceIndex": 0,
+                "weight": 250,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Sans KR",
+                "registeredFamily": "Noto Sans KR",
+                "sourceSha256": "333109be9f01634838b25dd6d926182da76585ee1900428cff19e2f3b4bb910e",
+                "sha256": "333109be9f01634838b25dd6d926182da76585ee1900428cff19e2f3b4bb910e",
+                "textProgramSha256": "333109be9f01634838b25dd6d926182da76585ee1900428cff19e2f3b4bb910e",
+                "faceIndex": 0,
+                "weight": 250,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Sans KR ExtraLight",
+                "registeredFamily": "Noto Sans KR ExtraLight",
+                "sourceSha256": "333109be9f01634838b25dd6d926182da76585ee1900428cff19e2f3b4bb910e",
+                "sha256": "333109be9f01634838b25dd6d926182da76585ee1900428cff19e2f3b4bb910e",
+                "textProgramSha256": "333109be9f01634838b25dd6d926182da76585ee1900428cff19e2f3b4bb910e",
+                "faceIndex": 0,
+                "weight": 250,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Sans KR",
+                "registeredFamily": "Noto Sans KR",
+                "sourceSha256": "e30e815ee5664b977296ea1ead3d26d5c35c54c694b375950c6974c593563194",
+                "sha256": "e30e815ee5664b977296ea1ead3d26d5c35c54c694b375950c6974c593563194",
+                "textProgramSha256": "e30e815ee5664b977296ea1ead3d26d5c35c54c694b375950c6974c593563194",
+                "faceIndex": 0,
+                "weight": 300,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Sans KR",
+                "registeredFamily": "Noto Sans KR",
+                "sourceSha256": "765182d8744fdea52496959aef74fd786dda0b79dfe0e4acc9f7731967867397",
+                "sha256": "765182d8744fdea52496959aef74fd786dda0b79dfe0e4acc9f7731967867397",
+                "textProgramSha256": "765182d8744fdea52496959aef74fd786dda0b79dfe0e4acc9f7731967867397",
+                "faceIndex": 0,
+                "weight": 500,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Sans KR",
+                "registeredFamily": "Noto Sans KR",
+                "sourceSha256": "d120ae7d44307155ab593bbbe63e0bb7f5766e00492015e5d69f220092589156",
+                "sha256": "d120ae7d44307155ab593bbbe63e0bb7f5766e00492015e5d69f220092589156",
+                "textProgramSha256": "d120ae7d44307155ab593bbbe63e0bb7f5766e00492015e5d69f220092589156",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Sans KR",
+                "registeredFamily": "Noto Sans KR",
+                "sourceSha256": "bb455ffd06710cd8cfeda3705095390c1a7efc1747e044f12f259b6afe8f0e85",
+                "sha256": "bb455ffd06710cd8cfeda3705095390c1a7efc1747e044f12f259b6afe8f0e85",
+                "textProgramSha256": "bb455ffd06710cd8cfeda3705095390c1a7efc1747e044f12f259b6afe8f0e85",
+                "faceIndex": 0,
+                "weight": 600,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Serif KR",
+                "registeredFamily": "Noto Serif KR",
+                "sourceSha256": "ad964df5f03b757746aeb34c93ba26c2353939e8dc024216d425d5c7b9f21ae1",
+                "sha256": "ad964df5f03b757746aeb34c93ba26c2353939e8dc024216d425d5c7b9f21ae1",
+                "textProgramSha256": "ad964df5f03b757746aeb34c93ba26c2353939e8dc024216d425d5c7b9f21ae1",
+                "faceIndex": 0,
+                "weight": 200,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Serif KR",
+                "registeredFamily": "Noto Serif KR",
+                "sourceSha256": "10df941c9e340f798821fe5c0d02eebf2ba558b9760edcc885b5b36bbc7d9860",
+                "sha256": "10df941c9e340f798821fe5c0d02eebf2ba558b9760edcc885b5b36bbc7d9860",
+                "textProgramSha256": "10df941c9e340f798821fe5c0d02eebf2ba558b9760edcc885b5b36bbc7d9860",
+                "faceIndex": 0,
+                "weight": 900,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Serif KR",
+                "registeredFamily": "Noto Serif KR",
+                "sourceSha256": "df809f42883c47180dbcd592432c83b3f3abbb67b801dc6e7f9b18bb72efb512",
+                "sha256": "df809f42883c47180dbcd592432c83b3f3abbb67b801dc6e7f9b18bb72efb512",
+                "textProgramSha256": "df809f42883c47180dbcd592432c83b3f3abbb67b801dc6e7f9b18bb72efb512",
+                "faceIndex": 0,
+                "weight": 700,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Serif KR",
+                "registeredFamily": "Noto Serif KR",
+                "sourceSha256": "6f97996ae771efea34d16a63e19bf93750e6ef85d92753d2673af3578c0f290f",
+                "sha256": "6f97996ae771efea34d16a63e19bf93750e6ef85d92753d2673af3578c0f290f",
+                "textProgramSha256": "6f97996ae771efea34d16a63e19bf93750e6ef85d92753d2673af3578c0f290f",
+                "faceIndex": 0,
+                "weight": 800,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Serif KR",
+                "registeredFamily": "Noto Serif KR",
+                "sourceSha256": "80b6af3ff623423898ca8a1efa5ffb64546578b310afd2debe719ade033b8111",
+                "sha256": "80b6af3ff623423898ca8a1efa5ffb64546578b310afd2debe719ade033b8111",
+                "textProgramSha256": "80b6af3ff623423898ca8a1efa5ffb64546578b310afd2debe719ade033b8111",
+                "faceIndex": 0,
+                "weight": 250,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Serif KR",
+                "registeredFamily": "Noto Serif KR",
+                "sourceSha256": "c0fd5cfbb8e2654e70f8c2d0ee279aa307e4218f57bcf28af8954980ec112d62",
+                "sha256": "c0fd5cfbb8e2654e70f8c2d0ee279aa307e4218f57bcf28af8954980ec112d62",
+                "textProgramSha256": "c0fd5cfbb8e2654e70f8c2d0ee279aa307e4218f57bcf28af8954980ec112d62",
+                "faceIndex": 0,
+                "weight": 300,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Serif KR",
+                "registeredFamily": "Noto Serif KR",
+                "sourceSha256": "7ee1428ee40edc4c950057b09d42c17f97e0262598376082a7cd2723ea4f39c0",
+                "sha256": "7ee1428ee40edc4c950057b09d42c17f97e0262598376082a7cd2723ea4f39c0",
+                "textProgramSha256": "7ee1428ee40edc4c950057b09d42c17f97e0262598376082a7cd2723ea4f39c0",
+                "faceIndex": 0,
+                "weight": 500,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Serif KR",
+                "registeredFamily": "Noto Serif KR",
+                "sourceSha256": "78e2a43d067065fa0934765ddf27b7c051a6a43a8407c1dbf6774d3e71b489f4",
+                "sha256": "78e2a43d067065fa0934765ddf27b7c051a6a43a8407c1dbf6774d3e71b489f4",
+                "textProgramSha256": "78e2a43d067065fa0934765ddf27b7c051a6a43a8407c1dbf6774d3e71b489f4",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Serif KR",
+                "registeredFamily": "Noto Serif KR",
+                "sourceSha256": "f485f30688dca5b523bbd8b95090c308e02efd424fdfbcfa169c96212c4f68b6",
+                "sha256": "f485f30688dca5b523bbd8b95090c308e02efd424fdfbcfa169c96212c4f68b6",
+                "textProgramSha256": "f485f30688dca5b523bbd8b95090c308e02efd424fdfbcfa169c96212c4f68b6",
+                "faceIndex": 0,
+                "weight": 600,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              }
+            ]
+          },
+          "nativePuaFonts": [],
+          "hftOtfFonts": [],
+          "observedFonts": [],
+          "fontEnvironment": {
+            "source": "explicit",
+            "environment": {
+              "documentSubstitutions": [],
+              "id": "native-webfont-e8fc3af137367e8aa5a0cb53",
+              "preserveSourceMetrics": true,
+              "substitutions": {
+                "함초롬돋움": "HCRDotum",
+                "함초롬바탕": "HCRBatang"
+              },
+              "trueTypeFaces": [
+                "HCR Batang",
+                "HCR Dotum"
+              ]
+            },
+            "programs": [
+              {
+                "query": "함초롬돋움",
+                "family": "HCR Dotum",
+                "programId": "sweep-9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "trueType": true,
+                "openTypeCff": false
+              },
+              {
+                "query": "HCR Dotum",
+                "family": "HCR Dotum",
+                "programId": "sweep-9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "trueType": true,
+                "openTypeCff": false
+              },
+              {
+                "query": "함초롬바탕",
+                "family": "HCR Batang",
+                "programId": "sweep-2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "trueType": true,
+                "openTypeCff": false
+              },
+              {
+                "query": "HCR Batang",
+                "family": "HCR Batang",
+                "programId": "sweep-2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "trueType": true,
+                "openTypeCff": false
+              },
+              {
+                "query": "HCRDotum",
+                "family": "HCR Dotum",
+                "programId": "sweep-9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "trueType": true,
+                "openTypeCff": false
+              },
+              {
+                "query": "HCRBatang",
+                "family": "HCR Batang",
+                "programId": "sweep-2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "trueType": true,
+                "openTypeCff": false
+              }
+            ],
+            "loaded": [
+              {
+                "family": "함초롬돋움",
+                "registeredFamily": "함초롬돋움",
+                "sourceSha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "HCR Dotum",
+                "registeredFamily": "HCR Dotum",
+                "sourceSha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "함초롬바탕",
+                "registeredFamily": "함초롬바탕",
+                "sourceSha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "HCR Batang",
+                "registeredFamily": "HCR Batang",
+                "sourceSha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "HCRDotum",
+                "registeredFamily": "HCRDotum",
+                "sourceSha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "HCRBatang",
+                "registeredFamily": "HCRBatang",
+                "sourceSha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              }
+            ]
+          },
+          "screenCanvasMetricsActive": false,
+          "canvasMetricsActive": false,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          },
+          "browser": "Chrome/156.0.8078.47"
+        }
+      ]
+    },
+    "384": {
+      "pageCount": 2,
+      "layoutGeneration": "2022",
+      "comparisonProfile": "print",
+      "rasterBackend": "wasm-canvas2d",
+      "protocolTimeoutMs": 600000,
+      "pngBackground": "opaque-white-print-paper",
+      "captureCanvasPolicy": "fresh-per-page-after-font-and-image-preparation",
+      "fontEnvironment": {
+        "source": "explicit",
+        "environment": {
+          "documentSubstitutions": [],
+          "id": "native-webfont-e8fc3af137367e8aa5a0cb53",
+          "preserveSourceMetrics": true,
+          "substitutions": {
+            "함초롬돋움": "HCRDotum",
+            "함초롬바탕": "HCRBatang"
+          },
+          "trueTypeFaces": [
+            "HCR Batang",
+            "HCR Dotum"
+          ]
+        },
+        "programs": [
+          {
+            "query": "함초롬돋움",
+            "family": "HCR Dotum",
+            "programId": "sweep-9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+            "trueType": true,
+            "openTypeCff": false
+          },
+          {
+            "query": "HCR Dotum",
+            "family": "HCR Dotum",
+            "programId": "sweep-9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+            "trueType": true,
+            "openTypeCff": false
+          },
+          {
+            "query": "함초롬바탕",
+            "family": "HCR Batang",
+            "programId": "sweep-2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+            "trueType": true,
+            "openTypeCff": false
+          },
+          {
+            "query": "HCR Batang",
+            "family": "HCR Batang",
+            "programId": "sweep-2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+            "trueType": true,
+            "openTypeCff": false
+          },
+          {
+            "query": "HCRDotum",
+            "family": "HCR Dotum",
+            "programId": "sweep-9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+            "trueType": true,
+            "openTypeCff": false
+          },
+          {
+            "query": "HCRBatang",
+            "family": "HCR Batang",
+            "programId": "sweep-2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+            "trueType": true,
+            "openTypeCff": false
+          }
+        ],
+        "loaded": [
+          {
+            "family": "함초롬돋움",
+            "registeredFamily": "함초롬돋움",
+            "sourceSha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+            "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+            "faceIndex": 0,
+            "weight": 400,
+            "style": "normal",
+            "repairs": [],
+            "sourceKind": "external"
+          },
+          {
+            "family": "HCR Dotum",
+            "registeredFamily": "HCR Dotum",
+            "sourceSha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+            "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+            "faceIndex": 0,
+            "weight": 400,
+            "style": "normal",
+            "repairs": [],
+            "sourceKind": "external"
+          },
+          {
+            "family": "함초롬바탕",
+            "registeredFamily": "함초롬바탕",
+            "sourceSha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+            "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+            "faceIndex": 0,
+            "weight": 400,
+            "style": "normal",
+            "repairs": [],
+            "sourceKind": "external"
+          },
+          {
+            "family": "HCR Batang",
+            "registeredFamily": "HCR Batang",
+            "sourceSha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+            "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+            "faceIndex": 0,
+            "weight": 400,
+            "style": "normal",
+            "repairs": [],
+            "sourceKind": "external"
+          },
+          {
+            "family": "HCRDotum",
+            "registeredFamily": "HCRDotum",
+            "sourceSha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+            "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+            "faceIndex": 0,
+            "weight": 400,
+            "style": "normal",
+            "repairs": [],
+            "sourceKind": "external"
+          },
+          {
+            "family": "HCRBatang",
+            "registeredFamily": "HCRBatang",
+            "sourceSha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+            "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+            "faceIndex": 0,
+            "weight": 400,
+            "style": "normal",
+            "repairs": [],
+            "sourceKind": "external"
+          }
+        ]
+      },
+      "pages": [
+        {
+          "page": 1,
+          "pngSha256": "74c2d81cb3c10d4cd0839774c30f1e77154425be852e444268d9c38cd1623718",
+          "width": 3174,
+          "height": 4486,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        }
+      ],
+      "workers": [
+        {
+          "index": 0,
+          "pages": [
+            1
+          ],
+          "fonts": {
+            "requested": [
+              "hcrbatang",
+              "hcr batang",
+              "noto serif kr",
+              "함초롬바탕",
+              "hcrdotum",
+              "hcr dotum",
+              "함초롬돋움",
+              "noto sans kr extralight",
+              "noto sans kr"
+            ],
+            "loaded": [
+              {
+                "family": "HCR Dotum",
+                "registeredFamily": "HCR Dotum",
+                "sourceSha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+                "sha256": "e90d31b73f947d90b17fcdd773e07abeb9e0c930ef235da0095c42ca9ed74438",
+                "textProgramSha256": "e90d31b73f947d90b17fcdd773e07abeb9e0c930ef235da0095c42ca9ed74438",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [
+                  "woff-to-sfnt"
+                ],
+                "sourceKind": "external"
+              },
+              {
+                "family": "HCR Dotum",
+                "registeredFamily": "HCR Dotum",
+                "sourceSha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "textProgramSha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "함초롬돋움",
+                "registeredFamily": "함초롬돋움",
+                "sourceSha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+                "sha256": "e90d31b73f947d90b17fcdd773e07abeb9e0c930ef235da0095c42ca9ed74438",
+                "textProgramSha256": "e90d31b73f947d90b17fcdd773e07abeb9e0c930ef235da0095c42ca9ed74438",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [
+                  "woff-to-sfnt"
+                ],
+                "sourceKind": "external"
+              },
+              {
+                "family": "함초롬돋움",
+                "registeredFamily": "함초롬돋움",
+                "sourceSha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "textProgramSha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "HCRDotum",
+                "registeredFamily": "HCRDotum",
+                "sourceSha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+                "sha256": "e90d31b73f947d90b17fcdd773e07abeb9e0c930ef235da0095c42ca9ed74438",
+                "textProgramSha256": "e90d31b73f947d90b17fcdd773e07abeb9e0c930ef235da0095c42ca9ed74438",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [
+                  "woff-to-sfnt"
+                ],
+                "sourceKind": "external"
+              },
+              {
+                "family": "HCRDotum",
+                "registeredFamily": "HCRDotum",
+                "sourceSha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "textProgramSha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "HCR Batang",
+                "registeredFamily": "HCR Batang",
+                "sourceSha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "textProgramSha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "함초롬바탕",
+                "registeredFamily": "함초롬바탕",
+                "sourceSha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "textProgramSha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "HCRBatang",
+                "registeredFamily": "HCRBatang",
+                "sourceSha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "textProgramSha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Sans KR",
+                "registeredFamily": "Noto Sans KR",
+                "sourceSha256": "7cd81998a15203d3b457d31345590181e8933ca3de20361722d996491b132b83",
+                "sha256": "7cd81998a15203d3b457d31345590181e8933ca3de20361722d996491b132b83",
+                "textProgramSha256": "7cd81998a15203d3b457d31345590181e8933ca3de20361722d996491b132b83",
+                "faceIndex": 0,
+                "weight": 100,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Sans KR",
+                "registeredFamily": "Noto Sans KR",
+                "sourceSha256": "d92fe452a7c1adf1e476b8a82ec72f7f6b5641303f384c4f1f59c34a8cd052c2",
+                "sha256": "d92fe452a7c1adf1e476b8a82ec72f7f6b5641303f384c4f1f59c34a8cd052c2",
+                "textProgramSha256": "d92fe452a7c1adf1e476b8a82ec72f7f6b5641303f384c4f1f59c34a8cd052c2",
+                "faceIndex": 0,
+                "weight": 900,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Sans KR",
+                "registeredFamily": "Noto Sans KR",
+                "sourceSha256": "d95f5963608631e4af863f472f594cb00151370583edc174c2a78a71301cb863",
+                "sha256": "d95f5963608631e4af863f472f594cb00151370583edc174c2a78a71301cb863",
+                "textProgramSha256": "d95f5963608631e4af863f472f594cb00151370583edc174c2a78a71301cb863",
+                "faceIndex": 0,
+                "weight": 700,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Sans KR",
+                "registeredFamily": "Noto Sans KR",
+                "sourceSha256": "e4c858e7064b4f6b40043358935068bb086219d881fc1080592cd2c24f12fd5b",
+                "sha256": "e4c858e7064b4f6b40043358935068bb086219d881fc1080592cd2c24f12fd5b",
+                "textProgramSha256": "e4c858e7064b4f6b40043358935068bb086219d881fc1080592cd2c24f12fd5b",
+                "faceIndex": 0,
+                "weight": 800,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Sans KR",
+                "registeredFamily": "Noto Sans KR",
+                "sourceSha256": "e63727eb8ca0c45435f00f57f14eaefd326df179b2c2616518cbbfd2ecba171d",
+                "sha256": "e63727eb8ca0c45435f00f57f14eaefd326df179b2c2616518cbbfd2ecba171d",
+                "textProgramSha256": "e63727eb8ca0c45435f00f57f14eaefd326df179b2c2616518cbbfd2ecba171d",
+                "faceIndex": 0,
+                "weight": 250,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Sans KR",
+                "registeredFamily": "Noto Sans KR",
+                "sourceSha256": "333109be9f01634838b25dd6d926182da76585ee1900428cff19e2f3b4bb910e",
+                "sha256": "333109be9f01634838b25dd6d926182da76585ee1900428cff19e2f3b4bb910e",
+                "textProgramSha256": "333109be9f01634838b25dd6d926182da76585ee1900428cff19e2f3b4bb910e",
+                "faceIndex": 0,
+                "weight": 250,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Sans KR ExtraLight",
+                "registeredFamily": "Noto Sans KR ExtraLight",
+                "sourceSha256": "333109be9f01634838b25dd6d926182da76585ee1900428cff19e2f3b4bb910e",
+                "sha256": "333109be9f01634838b25dd6d926182da76585ee1900428cff19e2f3b4bb910e",
+                "textProgramSha256": "333109be9f01634838b25dd6d926182da76585ee1900428cff19e2f3b4bb910e",
+                "faceIndex": 0,
+                "weight": 250,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Sans KR",
+                "registeredFamily": "Noto Sans KR",
+                "sourceSha256": "e30e815ee5664b977296ea1ead3d26d5c35c54c694b375950c6974c593563194",
+                "sha256": "e30e815ee5664b977296ea1ead3d26d5c35c54c694b375950c6974c593563194",
+                "textProgramSha256": "e30e815ee5664b977296ea1ead3d26d5c35c54c694b375950c6974c593563194",
+                "faceIndex": 0,
+                "weight": 300,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Sans KR",
+                "registeredFamily": "Noto Sans KR",
+                "sourceSha256": "765182d8744fdea52496959aef74fd786dda0b79dfe0e4acc9f7731967867397",
+                "sha256": "765182d8744fdea52496959aef74fd786dda0b79dfe0e4acc9f7731967867397",
+                "textProgramSha256": "765182d8744fdea52496959aef74fd786dda0b79dfe0e4acc9f7731967867397",
+                "faceIndex": 0,
+                "weight": 500,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Sans KR",
+                "registeredFamily": "Noto Sans KR",
+                "sourceSha256": "d120ae7d44307155ab593bbbe63e0bb7f5766e00492015e5d69f220092589156",
+                "sha256": "d120ae7d44307155ab593bbbe63e0bb7f5766e00492015e5d69f220092589156",
+                "textProgramSha256": "d120ae7d44307155ab593bbbe63e0bb7f5766e00492015e5d69f220092589156",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Sans KR",
+                "registeredFamily": "Noto Sans KR",
+                "sourceSha256": "bb455ffd06710cd8cfeda3705095390c1a7efc1747e044f12f259b6afe8f0e85",
+                "sha256": "bb455ffd06710cd8cfeda3705095390c1a7efc1747e044f12f259b6afe8f0e85",
+                "textProgramSha256": "bb455ffd06710cd8cfeda3705095390c1a7efc1747e044f12f259b6afe8f0e85",
+                "faceIndex": 0,
+                "weight": 600,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Serif KR",
+                "registeredFamily": "Noto Serif KR",
+                "sourceSha256": "ad964df5f03b757746aeb34c93ba26c2353939e8dc024216d425d5c7b9f21ae1",
+                "sha256": "ad964df5f03b757746aeb34c93ba26c2353939e8dc024216d425d5c7b9f21ae1",
+                "textProgramSha256": "ad964df5f03b757746aeb34c93ba26c2353939e8dc024216d425d5c7b9f21ae1",
+                "faceIndex": 0,
+                "weight": 200,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Serif KR",
+                "registeredFamily": "Noto Serif KR",
+                "sourceSha256": "10df941c9e340f798821fe5c0d02eebf2ba558b9760edcc885b5b36bbc7d9860",
+                "sha256": "10df941c9e340f798821fe5c0d02eebf2ba558b9760edcc885b5b36bbc7d9860",
+                "textProgramSha256": "10df941c9e340f798821fe5c0d02eebf2ba558b9760edcc885b5b36bbc7d9860",
+                "faceIndex": 0,
+                "weight": 900,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Serif KR",
+                "registeredFamily": "Noto Serif KR",
+                "sourceSha256": "df809f42883c47180dbcd592432c83b3f3abbb67b801dc6e7f9b18bb72efb512",
+                "sha256": "df809f42883c47180dbcd592432c83b3f3abbb67b801dc6e7f9b18bb72efb512",
+                "textProgramSha256": "df809f42883c47180dbcd592432c83b3f3abbb67b801dc6e7f9b18bb72efb512",
+                "faceIndex": 0,
+                "weight": 700,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Serif KR",
+                "registeredFamily": "Noto Serif KR",
+                "sourceSha256": "6f97996ae771efea34d16a63e19bf93750e6ef85d92753d2673af3578c0f290f",
+                "sha256": "6f97996ae771efea34d16a63e19bf93750e6ef85d92753d2673af3578c0f290f",
+                "textProgramSha256": "6f97996ae771efea34d16a63e19bf93750e6ef85d92753d2673af3578c0f290f",
+                "faceIndex": 0,
+                "weight": 800,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Serif KR",
+                "registeredFamily": "Noto Serif KR",
+                "sourceSha256": "80b6af3ff623423898ca8a1efa5ffb64546578b310afd2debe719ade033b8111",
+                "sha256": "80b6af3ff623423898ca8a1efa5ffb64546578b310afd2debe719ade033b8111",
+                "textProgramSha256": "80b6af3ff623423898ca8a1efa5ffb64546578b310afd2debe719ade033b8111",
+                "faceIndex": 0,
+                "weight": 250,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Serif KR",
+                "registeredFamily": "Noto Serif KR",
+                "sourceSha256": "c0fd5cfbb8e2654e70f8c2d0ee279aa307e4218f57bcf28af8954980ec112d62",
+                "sha256": "c0fd5cfbb8e2654e70f8c2d0ee279aa307e4218f57bcf28af8954980ec112d62",
+                "textProgramSha256": "c0fd5cfbb8e2654e70f8c2d0ee279aa307e4218f57bcf28af8954980ec112d62",
+                "faceIndex": 0,
+                "weight": 300,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Serif KR",
+                "registeredFamily": "Noto Serif KR",
+                "sourceSha256": "7ee1428ee40edc4c950057b09d42c17f97e0262598376082a7cd2723ea4f39c0",
+                "sha256": "7ee1428ee40edc4c950057b09d42c17f97e0262598376082a7cd2723ea4f39c0",
+                "textProgramSha256": "7ee1428ee40edc4c950057b09d42c17f97e0262598376082a7cd2723ea4f39c0",
+                "faceIndex": 0,
+                "weight": 500,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Serif KR",
+                "registeredFamily": "Noto Serif KR",
+                "sourceSha256": "78e2a43d067065fa0934765ddf27b7c051a6a43a8407c1dbf6774d3e71b489f4",
+                "sha256": "78e2a43d067065fa0934765ddf27b7c051a6a43a8407c1dbf6774d3e71b489f4",
+                "textProgramSha256": "78e2a43d067065fa0934765ddf27b7c051a6a43a8407c1dbf6774d3e71b489f4",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "Noto Serif KR",
+                "registeredFamily": "Noto Serif KR",
+                "sourceSha256": "f485f30688dca5b523bbd8b95090c308e02efd424fdfbcfa169c96212c4f68b6",
+                "sha256": "f485f30688dca5b523bbd8b95090c308e02efd424fdfbcfa169c96212c4f68b6",
+                "textProgramSha256": "f485f30688dca5b523bbd8b95090c308e02efd424fdfbcfa169c96212c4f68b6",
+                "faceIndex": 0,
+                "weight": 600,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              }
+            ]
+          },
+          "nativePuaFonts": [],
+          "hftOtfFonts": [],
+          "observedFonts": [],
+          "fontEnvironment": {
+            "source": "explicit",
+            "environment": {
+              "documentSubstitutions": [],
+              "id": "native-webfont-e8fc3af137367e8aa5a0cb53",
+              "preserveSourceMetrics": true,
+              "substitutions": {
+                "함초롬돋움": "HCRDotum",
+                "함초롬바탕": "HCRBatang"
+              },
+              "trueTypeFaces": [
+                "HCR Batang",
+                "HCR Dotum"
+              ]
+            },
+            "programs": [
+              {
+                "query": "함초롬돋움",
+                "family": "HCR Dotum",
+                "programId": "sweep-9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "trueType": true,
+                "openTypeCff": false
+              },
+              {
+                "query": "HCR Dotum",
+                "family": "HCR Dotum",
+                "programId": "sweep-9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "trueType": true,
+                "openTypeCff": false
+              },
+              {
+                "query": "함초롬바탕",
+                "family": "HCR Batang",
+                "programId": "sweep-2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "trueType": true,
+                "openTypeCff": false
+              },
+              {
+                "query": "HCR Batang",
+                "family": "HCR Batang",
+                "programId": "sweep-2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "trueType": true,
+                "openTypeCff": false
+              },
+              {
+                "query": "HCRDotum",
+                "family": "HCR Dotum",
+                "programId": "sweep-9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "trueType": true,
+                "openTypeCff": false
+              },
+              {
+                "query": "HCRBatang",
+                "family": "HCR Batang",
+                "programId": "sweep-2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "trueType": true,
+                "openTypeCff": false
+              }
+            ],
+            "loaded": [
+              {
+                "family": "함초롬돋움",
+                "registeredFamily": "함초롬돋움",
+                "sourceSha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "HCR Dotum",
+                "registeredFamily": "HCR Dotum",
+                "sourceSha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "함초롬바탕",
+                "registeredFamily": "함초롬바탕",
+                "sourceSha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "HCR Batang",
+                "registeredFamily": "HCR Batang",
+                "sourceSha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "HCRDotum",
+                "registeredFamily": "HCRDotum",
+                "sourceSha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              },
+              {
+                "family": "HCRBatang",
+                "registeredFamily": "HCRBatang",
+                "sourceSha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+                "faceIndex": 0,
+                "weight": 400,
+                "style": "normal",
+                "repairs": [],
+                "sourceKind": "external"
+              }
+            ]
+          },
+          "screenCanvasMetricsActive": false,
+          "canvasMetricsActive": false,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          },
+          "browser": "Chrome/156.0.8078.47"
+        }
+      ]
+    }
+  }
+}

@@ -1,7 +1,7 @@
 {
   "build": {
-    "name": "completion-wasm-build",
-    "source": "1506a1c34672931c4f5aa5cb6363fba776225949",
+    "name": "submission-wasm-build",
+    "source": "d66d5f05f9efa4d182228494cd970614d479fb7a",
     "command": [
       "scripts/wasm-pack-locked.sh",
       "--target",
@@ -10,19 +10,34 @@
       "pkg"
     ],
     "exit": 0,
-    "seconds": 1066.707,
+    "seconds": 1089.535,
     "artifacts": {
       "rhwp.js": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
-      "rhwp_bg.wasm": "3a09d369551df7d3e419233883412487a5feb17ffec8770fc19fd6d44dbd1457",
+      "rhwp_bg.wasm": "845fd719d38d3b1611253413237cb6ffeceb5fb855f14df1e1242f3755826ced",
       "rhwp.d.ts": "0c02b535ff3d0458c0c12b25b5f46d68e49be482d32aec9e5d8db03d1f33c2f0",
       "rhwp_bg.wasm.d.ts": "9d21217c454fa8f1757e7f08e26b27d00c564bcc0be2a228b75bb0dae08aa738"
+    },
+    "public_sync": {
+      "before": {
+        "rhwp.js": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+        "rhwp_bg.wasm": "845fd719d38d3b1611253413237cb6ffeceb5fb855f14df1e1242f3755826ced",
+        "rhwp.d.ts": "0cd258212cbecec2ace95a22f0509aff51fd4025bbb319e94dc3cdae649ffd85",
+        "rhwp_bg.wasm.d.ts": "9231c14fdd938a600e77af5e43f1087d9ec8f3e48b9bf670c59884adf7934cab"
+      },
+      "after": {
+        "rhwp.js": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+        "rhwp_bg.wasm": "845fd719d38d3b1611253413237cb6ffeceb5fb855f14df1e1242f3755826ced",
+        "rhwp.d.ts": "0c02b535ff3d0458c0c12b25b5f46d68e49be482d32aec9e5d8db03d1f33c2f0",
+        "rhwp_bg.wasm.d.ts": "9d21217c454fa8f1757e7f08e26b27d00c564bcc0be2a228b75bb0dae08aa738"
+      },
+      "note": "Wrapper automatically syncs runtime JS/WASM; the validation driver copied both generated declarations before four-file comparison. No rebuild or source change."
     }
   },
   "pkg_public_four_file_sha256": {
     "rhwp.js": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
-    "rhwp_bg.wasm": "3a09d369551df7d3e419233883412487a5feb17ffec8770fc19fd6d44dbd1457",
+    "rhwp_bg.wasm": "845fd719d38d3b1611253413237cb6ffeceb5fb855f14df1e1242f3755826ced",
     "rhwp.d.ts": "0c02b535ff3d0458c0c12b25b5f46d68e49be482d32aec9e5d8db03d1f33c2f0",
     "rhwp_bg.wasm.d.ts": "9d21217c454fa8f1757e7f08e26b27d00c564bcc0be2a228b75bb0dae08aa738"
   },
-  "tracked_declarations": "Generated API declarations are outside this PR scope and restored after this consistency check."
+  "tracked_declarations": "Generated declarations are outside this PR scope and restored after consistency check."
 }

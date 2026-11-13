@@ -1,6 +1,6 @@
 # 실제 글자 추가 후 화면·저장 검증
 
-제품 source `1506a1c34672931c4f5aa5cb6363fba776225949`, base `5cbcc9b451cf286e1b7c680426c857dc802e50f3`.
+제품 source `d66d5f05f9efa4d182228494cd970614d479fb7a`, base `959300e66c58241a47e6d46030b4b0854e59604b`.
 원 공개 입력의 Body 끝에 공개 `insertTextInCell(0,0,3,0,0,4,"X")`를 호출했다.
 Native/fresh 최적화 WASM의 편집 직후 전 2쪽 raw는 각각 100.00%이며,
 HWP/HWPX 각 두 번 저장·재열기도 2쪽·내용 순서를 유지한다. 별도 편집 예외는 적용하지 않았다.
@@ -20,3 +20,5 @@ Native의 편집 직후/첫 저장 재열기 PNG 두 쌍은 RGB가 같다. 100.0
 
 TSV는 [Native](native.tsv)·[WASM](wasm.tsv), 각 live PNG는 같은 디렉터리에 있다.
 전체 회귀·보호 검증과 제출 판정은 상위 최종 원장을 따른다.
+
+현재 source의 [snapshot 복원](history.json), [실제 384 DPI 원본과 crop](actual384-provenance.json), [동일 글꼴의 실제 WASM 로드](wasm-capture-provenance.json), [저장 byte 그룹과 검증](saved-visual-results.json)을 함께 보존한다. 초기 공급 누락을 수정한 최종 확대 이미지이며 과거 Noto 캡처와 섞지 않았다.

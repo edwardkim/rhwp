@@ -1,338 +1,258 @@
 [
   {
     "input_sha256": "709be36ef7a99c16e5e0343277c8d4136441932808045ce5f20708ff91accbb0",
-    "pdf_sha256": "f1ec7d39a06824b1407263ef872d4f05cfba57a0f335e5785fe4305b06309206",
-    "representative": [
-      "native-original-hwp-1",
-      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/original-1.hwp",
-      "pdf/coanchored-table-pagination/float-pagination-hancom-mac-viewer-12.31.9-print.pdf"
-    ],
-    "aliases": [
+    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-original-hwp-1.hwp",
+    "reference_pdf_sha256": "f1ec7d39a06824b1407263ef872d4f05cfba57a0f335e5785fe4305b06309206",
+    "executed_aliases": [
       {
         "key": "native-original-hwp-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/original-1.hwp"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/original-1.hwp"
       },
       {
         "key": "native-original-hwp-2",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/original-2.hwp"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/original-2.hwp"
       },
       {
         "key": "wasm-original-hwp-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/wasm/original-1.hwp"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/original-1.hwp"
       },
       {
         "key": "wasm-original-hwp-2",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/wasm/original-2.hwp"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/original-2.hwp"
       }
-    ],
-    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-original-hwp-1.hwp"
+    ]
   },
   {
     "input_sha256": "fc8e05a92487f4c88d01fcb4795c36e9623750e009485c8b33148abfe1704968",
-    "pdf_sha256": "f1ec7d39a06824b1407263ef872d4f05cfba57a0f335e5785fe4305b06309206",
-    "representative": [
-      "native-original-hwpx-1",
-      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/original-1.hwpx",
-      "pdf/coanchored-table-pagination/float-pagination-hancom-mac-viewer-12.31.9-print.pdf"
-    ],
-    "aliases": [
+    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-original-hwpx-1.hwpx",
+    "reference_pdf_sha256": "f1ec7d39a06824b1407263ef872d4f05cfba57a0f335e5785fe4305b06309206",
+    "executed_aliases": [
       {
         "key": "native-original-hwpx-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/original-1.hwpx"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/original-1.hwpx"
       },
       {
         "key": "native-original-hwpx-2",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/original-2.hwpx"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/original-2.hwpx"
       },
       {
         "key": "wasm-original-hwpx-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/wasm/original-1.hwpx"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/original-1.hwpx"
       },
       {
         "key": "wasm-original-hwpx-2",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/wasm/original-2.hwpx"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/original-2.hwpx"
       }
-    ],
-    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-original-hwpx-1.hwpx"
+    ]
   },
   {
     "input_sha256": "709be36ef7a99c16e5e0343277c8d4136441932808045ce5f20708ff91accbb0",
-    "pdf_sha256": "51eee68afa0e6edb57c6aca05d9a31bcc5b739a22655e7f9d0ce64f860fb7873",
-    "representative": [
-      "native-unchanged-hwp-1",
-      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/unchanged-1.hwp",
-      "pdf/pr9042/metadata-unchanged-hwp-2020.pdf"
-    ],
-    "aliases": [
+    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-unchanged-hwp-1.hwp",
+    "reference_pdf_sha256": "51eee68afa0e6edb57c6aca05d9a31bcc5b739a22655e7f9d0ce64f860fb7873",
+    "executed_aliases": [
       {
         "key": "native-unchanged-hwp-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/unchanged-1.hwp"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/unchanged-1.hwp"
       },
       {
         "key": "wasm-unchanged-hwp-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/wasm/unchanged-1.hwp"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/unchanged-1.hwp"
       }
-    ],
-    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-unchanged-hwp-1.hwp"
+    ]
   },
   {
     "input_sha256": "fc8e05a92487f4c88d01fcb4795c36e9623750e009485c8b33148abfe1704968",
-    "pdf_sha256": "51eee68afa0e6edb57c6aca05d9a31bcc5b739a22655e7f9d0ce64f860fb7873",
-    "representative": [
-      "native-unchanged-hwpx-1",
-      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/unchanged-1.hwpx",
-      "pdf/pr9042/metadata-unchanged-hwp-2020.pdf"
-    ],
-    "aliases": [
+    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-unchanged-hwpx-1.hwpx",
+    "reference_pdf_sha256": "51eee68afa0e6edb57c6aca05d9a31bcc5b739a22655e7f9d0ce64f860fb7873",
+    "executed_aliases": [
       {
         "key": "native-unchanged-hwpx-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/unchanged-1.hwpx"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/unchanged-1.hwpx"
       },
       {
         "key": "wasm-unchanged-hwpx-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/wasm/unchanged-1.hwpx"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/unchanged-1.hwpx"
       }
-    ],
-    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-unchanged-hwpx-1.hwpx"
+    ]
   },
   {
     "input_sha256": "8d5780ee16abcb3ca3cc8a02b705002feb1a16f2a0e7760673d70dbd88c94133",
-    "pdf_sha256": "a8f66beb2d3c08f17ac77194eebc99f571ba2788e42d3e992dc78f535fd5cafd",
-    "representative": [
-      "native-empty-header-hwp-1",
-      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/empty-header-1.hwp",
-      "pdf/pr9042/metadata-empty-header-hwp-2020.pdf"
-    ],
-    "aliases": [
+    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-empty-header-hwp-1.hwp",
+    "reference_pdf_sha256": "a8f66beb2d3c08f17ac77194eebc99f571ba2788e42d3e992dc78f535fd5cafd",
+    "executed_aliases": [
       {
         "key": "native-empty-header-hwp-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/empty-header-1.hwp"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/empty-header-1.hwp"
       },
       {
         "key": "wasm-empty-header-hwp-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/wasm/empty-header-1.hwp"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/empty-header-1.hwp"
       }
-    ],
-    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-empty-header-hwp-1.hwp"
+    ]
   },
   {
     "input_sha256": "7d2341f4140e354fb3e6ddeadd72517b7e3bb76a765dceb05f53c5602accc209",
-    "pdf_sha256": "a8f66beb2d3c08f17ac77194eebc99f571ba2788e42d3e992dc78f535fd5cafd",
-    "representative": [
-      "native-empty-header-hwpx-1",
-      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/empty-header-1.hwpx",
-      "pdf/pr9042/metadata-empty-header-hwp-2020.pdf"
-    ],
-    "aliases": [
+    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-empty-header-hwpx-1.hwpx",
+    "reference_pdf_sha256": "a8f66beb2d3c08f17ac77194eebc99f571ba2788e42d3e992dc78f535fd5cafd",
+    "executed_aliases": [
       {
         "key": "native-empty-header-hwpx-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/empty-header-1.hwpx"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/empty-header-1.hwpx"
       },
       {
         "key": "wasm-empty-header-hwpx-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/wasm/empty-header-1.hwpx"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/empty-header-1.hwpx"
       }
-    ],
-    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-empty-header-hwpx-1.hwpx"
+    ]
   },
   {
     "input_sha256": "8ec2617dff0bd7981f4d5dd36ab9dbe0f652c076916611e5aa5c75e8cd00d11c",
-    "pdf_sha256": "9b960e6334c12be874db6858be1440374d5a8e17deaeba563ceb8309bd10bddd",
-    "representative": [
-      "native-empty-footer-hwp-1",
-      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/empty-footer-1.hwp",
-      "pdf/pr9042/metadata-empty-footer-hwp-2020.pdf"
-    ],
-    "aliases": [
+    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-empty-footer-hwp-1.hwp",
+    "reference_pdf_sha256": "9b960e6334c12be874db6858be1440374d5a8e17deaeba563ceb8309bd10bddd",
+    "executed_aliases": [
       {
         "key": "native-empty-footer-hwp-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/empty-footer-1.hwp"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/empty-footer-1.hwp"
       },
       {
         "key": "wasm-empty-footer-hwp-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/wasm/empty-footer-1.hwp"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/empty-footer-1.hwp"
       }
-    ],
-    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-empty-footer-hwp-1.hwp"
+    ]
   },
   {
     "input_sha256": "3595b5bd837ffd873cb3f9c9cdfcdeb4c252786cbac6188fe27f8b9ccc4d5a95",
-    "pdf_sha256": "9b960e6334c12be874db6858be1440374d5a8e17deaeba563ceb8309bd10bddd",
-    "representative": [
-      "native-empty-footer-hwpx-1",
-      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/empty-footer-1.hwpx",
-      "pdf/pr9042/metadata-empty-footer-hwp-2020.pdf"
-    ],
-    "aliases": [
+    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-empty-footer-hwpx-1.hwpx",
+    "reference_pdf_sha256": "9b960e6334c12be874db6858be1440374d5a8e17deaeba563ceb8309bd10bddd",
+    "executed_aliases": [
       {
         "key": "native-empty-footer-hwpx-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/empty-footer-1.hwpx"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/empty-footer-1.hwpx"
       },
       {
         "key": "wasm-empty-footer-hwpx-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/wasm/empty-footer-1.hwpx"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/empty-footer-1.hwpx"
       }
-    ],
-    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-empty-footer-hwpx-1.hwpx"
+    ]
   },
   {
     "input_sha256": "63b350d66f8f7c5cda0e63684b89807c3eb25558321b9e368279c70276667d57",
-    "pdf_sha256": "314175bff547c8d427bdef0a1727f01e397b611838787d9f37dd87dae6c2e4e0",
-    "representative": [
-      "native-hancom-saved-hwp-1",
-      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/hancom-saved-1.hwp",
-      "pdf/pr9042/pr9042-hancom-saved-hwp-2020.pdf"
-    ],
-    "aliases": [
+    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-hancom-saved-hwp-1.hwp",
+    "reference_pdf_sha256": "314175bff547c8d427bdef0a1727f01e397b611838787d9f37dd87dae6c2e4e0",
+    "executed_aliases": [
       {
         "key": "native-hancom-saved-hwp-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/hancom-saved-1.hwp"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/hancom-saved-1.hwp"
       },
       {
         "key": "wasm-hancom-saved-hwp-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/wasm/hancom-saved-1.hwp"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/hancom-saved-1.hwp"
       }
-    ],
-    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-hancom-saved-hwp-1.hwp"
+    ]
   },
   {
     "input_sha256": "103f8f573d727b0191d723980a5c0927e0fa509731487f1214419a5c1fc053c0",
-    "pdf_sha256": "314175bff547c8d427bdef0a1727f01e397b611838787d9f37dd87dae6c2e4e0",
-    "representative": [
-      "native-hancom-saved-hwpx-1",
-      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/hancom-saved-1.hwpx",
-      "pdf/pr9042/pr9042-hancom-saved-hwp-2020.pdf"
-    ],
-    "aliases": [
+    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-hancom-saved-hwpx-1.hwpx",
+    "reference_pdf_sha256": "314175bff547c8d427bdef0a1727f01e397b611838787d9f37dd87dae6c2e4e0",
+    "executed_aliases": [
       {
         "key": "native-hancom-saved-hwpx-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/hancom-saved-1.hwpx"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/hancom-saved-1.hwpx"
       },
       {
         "key": "wasm-hancom-saved-hwpx-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/wasm/hancom-saved-1.hwpx"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/hancom-saved-1.hwpx"
       }
-    ],
-    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-hancom-saved-hwpx-1.hwpx"
+    ]
   },
   {
     "input_sha256": "d3f399d82099715230d528fc03948938f05e669f5fe61c6af2a4eb0dcef399ed",
-    "pdf_sha256": "e182f8dc4ec1d6abf593c3c83a9902dd76e181b1f525d8fdcb180504666712a6",
-    "representative": [
-      "native-nested-single-line-hwp-1",
-      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/nested-single-line-1.hwp",
-      "pdf/pr9042/nested-tail-single-line-hancom-hwp-2020.pdf"
-    ],
-    "aliases": [
+    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-nested-single-line-hwp-1.hwp",
+    "reference_pdf_sha256": "e182f8dc4ec1d6abf593c3c83a9902dd76e181b1f525d8fdcb180504666712a6",
+    "executed_aliases": [
       {
         "key": "native-nested-single-line-hwp-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/nested-single-line-1.hwp"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/nested-single-line-1.hwp"
       },
       {
         "key": "wasm-nested-single-line-hwp-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/wasm/nested-single-line-1.hwp"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/nested-single-line-1.hwp"
       }
-    ],
-    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-nested-single-line-hwp-1.hwp"
+    ]
   },
   {
     "input_sha256": "5717f4d8970d477a19a26eca8dcc3c449af6c1207caaba8e3d289efc8185f368",
-    "pdf_sha256": "e182f8dc4ec1d6abf593c3c83a9902dd76e181b1f525d8fdcb180504666712a6",
-    "representative": [
-      "native-nested-single-line-hwpx-1",
-      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/nested-single-line-1.hwpx",
-      "pdf/pr9042/nested-tail-single-line-hancom-hwp-2020.pdf"
-    ],
-    "aliases": [
+    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-nested-single-line-hwpx-1.hwpx",
+    "reference_pdf_sha256": "e182f8dc4ec1d6abf593c3c83a9902dd76e181b1f525d8fdcb180504666712a6",
+    "executed_aliases": [
       {
         "key": "native-nested-single-line-hwpx-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/nested-single-line-1.hwpx"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/nested-single-line-1.hwpx"
       },
       {
         "key": "wasm-nested-single-line-hwpx-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/wasm/nested-single-line-1.hwpx"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/nested-single-line-1.hwpx"
       }
-    ],
-    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-nested-single-line-hwpx-1.hwpx"
+    ]
   },
   {
     "input_sha256": "60420db77cda8708172c172f6018b3870c837c94b396913b20fda08a23f680e5",
-    "pdf_sha256": "88e09257e32a063a1cfb9c145146908d163a3128ba449e82e5e8db9c9f4246fd",
-    "representative": [
-      "native-nested-margins-hwp-1",
-      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/nested-margins-1.hwp",
-      "pdf/pr9042/nested-tail-margins-hancom-hwp-2020.pdf"
-    ],
-    "aliases": [
+    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-nested-margins-hwp-1.hwp",
+    "reference_pdf_sha256": "88e09257e32a063a1cfb9c145146908d163a3128ba449e82e5e8db9c9f4246fd",
+    "executed_aliases": [
       {
         "key": "native-nested-margins-hwp-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/nested-margins-1.hwp"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/nested-margins-1.hwp"
       },
       {
         "key": "wasm-nested-margins-hwp-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/wasm/nested-margins-1.hwp"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/nested-margins-1.hwp"
       }
-    ],
-    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-nested-margins-hwp-1.hwp"
+    ]
   },
   {
     "input_sha256": "b120ca4898214879165ecf501bc613af232c191566c41f3f0299f455e744ee7c",
-    "pdf_sha256": "88e09257e32a063a1cfb9c145146908d163a3128ba449e82e5e8db9c9f4246fd",
-    "representative": [
-      "native-nested-margins-hwpx-1",
-      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/nested-margins-1.hwpx",
-      "pdf/pr9042/nested-tail-margins-hancom-hwp-2020.pdf"
-    ],
-    "aliases": [
+    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-nested-margins-hwpx-1.hwpx",
+    "reference_pdf_sha256": "88e09257e32a063a1cfb9c145146908d163a3128ba449e82e5e8db9c9f4246fd",
+    "executed_aliases": [
       {
         "key": "native-nested-margins-hwpx-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/nested-margins-1.hwpx"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/nested-margins-1.hwpx"
       },
       {
         "key": "wasm-nested-margins-hwpx-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/wasm/nested-margins-1.hwpx"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/nested-margins-1.hwpx"
       }
-    ],
-    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-nested-margins-hwpx-1.hwpx"
+    ]
   },
   {
     "input_sha256": "0b69321bb8d9f71ab5780af32976753c0d77759ea3a0b00d185c6483a8fbf9f4",
-    "pdf_sha256": "8f4be9f1dc2a9693eb345df959f22f21f5d76321498c2b64036df3ee58294b1a",
-    "representative": [
-      "native-nested-two-paragraphs-hwp-1",
-      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/nested-two-paragraphs-1.hwp",
-      "pdf/pr9042/nested-tail-two-paragraphs-hancom-hwp-2020.pdf"
-    ],
-    "aliases": [
+    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-nested-two-paragraphs-hwp-1.hwp",
+    "reference_pdf_sha256": "8f4be9f1dc2a9693eb345df959f22f21f5d76321498c2b64036df3ee58294b1a",
+    "executed_aliases": [
       {
         "key": "native-nested-two-paragraphs-hwp-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/nested-two-paragraphs-1.hwp"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/nested-two-paragraphs-1.hwp"
       },
       {
         "key": "wasm-nested-two-paragraphs-hwp-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/wasm/nested-two-paragraphs-1.hwp"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/nested-two-paragraphs-1.hwp"
       }
-    ],
-    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-nested-two-paragraphs-hwp-1.hwp"
+    ]
   },
   {
     "input_sha256": "8daa49d065e6589cd6a8efaf6b48c59fbb858ef17dc708fba2504967a34d7868",
-    "pdf_sha256": "8f4be9f1dc2a9693eb345df959f22f21f5d76321498c2b64036df3ee58294b1a",
-    "representative": [
-      "native-nested-two-paragraphs-hwpx-1",
-      "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/nested-two-paragraphs-1.hwpx",
-      "pdf/pr9042/nested-tail-two-paragraphs-hancom-hwp-2020.pdf"
-    ],
-    "aliases": [
+    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-nested-two-paragraphs-hwpx-1.hwpx",
+    "reference_pdf_sha256": "8f4be9f1dc2a9693eb345df959f22f21f5d76321498c2b64036df3ee58294b1a",
+    "executed_aliases": [
       {
         "key": "native-nested-two-paragraphs-hwpx-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/native/nested-two-paragraphs-1.hwpx"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/nested-two-paragraphs-1.hwpx"
       },
       {
         "key": "wasm-nested-two-paragraphs-hwpx-1",
-        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-completion/wasm/nested-two-paragraphs-1.hwpx"
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/nested-two-paragraphs-1.hwpx"
       }
-    ],
-    "committed_input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-nested-two-paragraphs-hwpx-1.hwpx"
+    ]
   }
 ]
