@@ -1,0 +1,938 @@
+{
+  "phase": "complete",
+  "pid": 60511,
+  "commands": [
+    {
+      "label": "9029-source-tables",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "export-tables",
+        "<repo>/samples/issue9029/seal_registration_docinfo_tail.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-source-tables.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-source-tables.stderr",
+      "stdout_sha256": "5af92ff9dac79a3943cd26070c209ce38dc0b05ee7b32da6fe670dbe48f7718a"
+    },
+    {
+      "label": "9029-source-headers",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "headers-footers",
+        "<repo>/samples/issue9029/seal_registration_docinfo_tail.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-source-headers.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-source-headers.stderr",
+      "stdout_sha256": "d329d762eaa35b34ac07515c88e24cec6076111095637853a3cbc3c53bd7ec2b"
+    },
+    {
+      "label": "9029-original-text",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "export-text",
+        "<repo>/samples/issue9029/seal_registration_docinfo_tail.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-original-text.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-original-text.stderr",
+      "stdout_sha256": "d5397e1f48e881137868865a3f8a47688d8adb920d6fefa404dd8718780c711f"
+    },
+    {
+      "label": "9029-hwp-save",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "convert",
+        "<repo>/samples/issue9029/seal_registration_docinfo_tail.hwp",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-saved.hwp",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwp-save.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwp-save.stderr",
+      "stdout_sha256": "620b8c9c9396665df8ff58af0a3b52a57b6dd40974f7fd4bb9b84d4a035a6a64"
+    },
+    {
+      "label": "9029-hwp-info",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "info",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-saved.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwp-info.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwp-info.stderr",
+      "stdout_sha256": "51fd84e0ebfbee07d2d8663e4cf5f5597e08bdefce158ecf453d5915430508af"
+    },
+    {
+      "label": "9029-hwp-text1",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "export-text",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-saved.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwp-text1.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwp-text1.stderr",
+      "stdout_sha256": "d0503b1f0c92b2010112c8c940df61241855a1cb7da807fe846eda61090e2815"
+    },
+    {
+      "label": "9029-hwp-resave",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "convert",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-saved.hwp",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-resaved.hwp",
+        "--verify",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwp-resave.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwp-resave.stderr",
+      "stdout_sha256": "e3ca0f031c9d15c856f0be48063775b9bac6ee0103a011338db87c60daf2f37b"
+    },
+    {
+      "label": "9029-hwp-reopen",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "info",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-resaved.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwp-reopen.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwp-reopen.stderr",
+      "stdout_sha256": "93a4942819b57672dfa5883a05ca37d3c3037dfec0b46eb2628381549384f155"
+    },
+    {
+      "label": "9029-hwp-text2",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "export-text",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-resaved.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwp-text2.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwp-text2.stderr",
+      "stdout_sha256": "2bf6a61fc6a1d23f76c675da4cfa2387258f017f63a45bafcbd8a8b16f690eb7"
+    },
+    {
+      "label": "9029-hwp-first-controls-tables",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "export-tables",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-saved.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwp-first-controls-tables.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwp-first-controls-tables.stderr",
+      "stdout_sha256": "59298380cdd1ff4cd55b783dab9906cf9f08c3702bcd71cf12003157c5a0fea6"
+    },
+    {
+      "label": "9029-hwp-first-controls-headers",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "headers-footers",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-saved.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwp-first-controls-headers.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwp-first-controls-headers.stderr",
+      "stdout_sha256": "0f5c3c9aa28d1bf7b1f6fc5f75928a9310ba3d1d0f84cce8c0593bafad6f8ff2"
+    },
+    {
+      "label": "9029-hwp-second-controls-tables",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "export-tables",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-resaved.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwp-second-controls-tables.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwp-second-controls-tables.stderr",
+      "stdout_sha256": "0e90f7947d4d2358abc6c406e4a5c3f63bb92a4d1b9114ad3476234590479259"
+    },
+    {
+      "label": "9029-hwp-second-controls-headers",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "headers-footers",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-resaved.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwp-second-controls-headers.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwp-second-controls-headers.stderr",
+      "stdout_sha256": "5f251b98be0e76fd7604648ad92b8688c17ba82537d7d292213c3b4a8046bfb0"
+    },
+    {
+      "label": "9029-hwp-edit",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "edit",
+        "insert-text",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-saved.hwp",
+        "--section",
+        "0",
+        "--para",
+        "0",
+        "--offset",
+        "0",
+        "--text",
+        "RHWP-9029-EDIT",
+        "-o",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-edited.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwp-edit.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwp-edit.stderr",
+      "stdout_sha256": "ed52488838c56647c7edb9777852a8efcb11fd5942936764a9cb33db4bdf672f"
+    },
+    {
+      "label": "9029-hwp-edit-reopen",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "info",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-edited.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwp-edit-reopen.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwp-edit-reopen.stderr",
+      "stdout_sha256": "cabd7ff28b8802990c9a363ed9d34aedbee74c48d130966e2b87df0720df798e"
+    },
+    {
+      "label": "9029-hwp-edit-resave",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "convert",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-edited.hwp",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-edited-resaved.hwp",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwp-edit-resave.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwp-edit-resave.stderr",
+      "stdout_sha256": "87c7bd835b432afc1125483089b90bdc257efe8ca5606079c87e05e37d729fdf"
+    },
+    {
+      "label": "9029-hwp-edit-text",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "export-text",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-edited-resaved.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwp-edit-text.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwp-edit-text.stderr",
+      "stdout_sha256": "c7765f8ec1cfa36e51ab3e11fd9faa70b728ec2e2d389ab4de8b40fff041649a"
+    },
+    {
+      "label": "9029-hwpx-save",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "export-hwpx",
+        "<repo>/samples/issue9029/seal_registration_docinfo_tail.hwp",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-saved.hwpx",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwpx-save.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwpx-save.stderr",
+      "stdout_sha256": "e7d72152ef85600c689213b09139d82b212949bc29bcd676e02137c3e38254bf"
+    },
+    {
+      "label": "9029-hwpx-info",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "info",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-saved.hwpx",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwpx-info.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwpx-info.stderr",
+      "stdout_sha256": "bdee63475f7decea847a3f24cc4d41e308a9faaa79821a94ad4f60a06c7d1d49"
+    },
+    {
+      "label": "9029-hwpx-text1",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "export-text",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-saved.hwpx",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwpx-text1.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwpx-text1.stderr",
+      "stdout_sha256": "cf29c4d64972ce8d860a4c0f2f0ec12bd82e00fb3d2e9bbe10ecfd70f9630735"
+    },
+    {
+      "label": "9029-hwpx-resave",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "export-hwpx",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-saved.hwpx",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-resaved.hwpx",
+        "--verify",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwpx-resave.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwpx-resave.stderr",
+      "stdout_sha256": "52a096460cbe27ff4d9aadc2f08f422ca512d86bd85cb3feb54fbfb78962eb18"
+    },
+    {
+      "label": "9029-hwpx-reopen",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "info",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-resaved.hwpx",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwpx-reopen.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwpx-reopen.stderr",
+      "stdout_sha256": "4b11d4926f41b6ce72a56b5f2f33c19ca10c1f6fd2d2fd04b7a33bdfc30a4832"
+    },
+    {
+      "label": "9029-hwpx-text2",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "export-text",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-resaved.hwpx",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwpx-text2.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwpx-text2.stderr",
+      "stdout_sha256": "cda3f62ddca88a0b5360c0d7d054fa433cea49c3df24d27e0f29c9f3def6ed5f"
+    },
+    {
+      "label": "9029-hwpx-first-controls-tables",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "export-tables",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-saved.hwpx",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwpx-first-controls-tables.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwpx-first-controls-tables.stderr",
+      "stdout_sha256": "6705ef0cccc7f66f77c687ad0d4afe5b0ba4c573610ebbe543b222e2dd4e7ef3"
+    },
+    {
+      "label": "9029-hwpx-first-controls-headers",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "headers-footers",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-saved.hwpx",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwpx-first-controls-headers.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwpx-first-controls-headers.stderr",
+      "stdout_sha256": "9ba2fb7bbda3b35eb31ec6a10ad0d472ce2f5109a08160658ec5730590331dad"
+    },
+    {
+      "label": "9029-hwpx-second-controls-tables",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "export-tables",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-resaved.hwpx",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwpx-second-controls-tables.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwpx-second-controls-tables.stderr",
+      "stdout_sha256": "2cb34599ead4049a7773ac53e9ea35bae630c9cd2d37eff260f829fcc158753c"
+    },
+    {
+      "label": "9029-hwpx-second-controls-headers",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "headers-footers",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-resaved.hwpx",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwpx-second-controls-headers.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwpx-second-controls-headers.stderr",
+      "stdout_sha256": "ae4f225399cf51014224a65fe1a6cc17237483b15a5e7cacfe310fee7b9067a2"
+    },
+    {
+      "label": "9029-hwpx-edit",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "edit",
+        "insert-text",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-saved.hwpx",
+        "--section",
+        "0",
+        "--para",
+        "0",
+        "--offset",
+        "0",
+        "--text",
+        "RHWP-9029-EDIT",
+        "-o",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-edited.hwpx",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwpx-edit.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwpx-edit.stderr",
+      "stdout_sha256": "0626c3810265ab9fefff536506c571f2a250d34c336c97eb8d98ad19495438eb"
+    },
+    {
+      "label": "9029-hwpx-edit-reopen",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "info",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-edited.hwpx",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwpx-edit-reopen.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwpx-edit-reopen.stderr",
+      "stdout_sha256": "a14a42d0602d4c756a85ebb17018e717f0273e3137f57604dd4ad0be5d659008"
+    },
+    {
+      "label": "9029-hwpx-edit-resave",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "export-hwpx",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-edited.hwpx",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-edited-resaved.hwpx",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwpx-edit-resave.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwpx-edit-resave.stderr",
+      "stdout_sha256": "1bcca592d4cc51a48d4fca737c7f0deea55c1aab65355fbb246da7d2cf2e709e"
+    },
+    {
+      "label": "9029-hwpx-edit-text",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "export-text",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-edited-resaved.hwpx",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwpx-edit-text.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9029-hwpx-edit-text.stderr",
+      "stdout_sha256": "75858d40361bbe099df3e0d348d6d060e815e7f11277b57875ad8a3fbeac36a0"
+    },
+    {
+      "label": "9032-source-tables",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "export-tables",
+        "<repo>/samples/issue9032/tax_relief_form_date_code.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-source-tables.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-source-tables.stderr",
+      "stdout_sha256": "1a3e881a1ecf69c7ffd7a03e6a186dc2dd73a578816630492b46131abe176ce2"
+    },
+    {
+      "label": "9032-source-headers",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "headers-footers",
+        "<repo>/samples/issue9032/tax_relief_form_date_code.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-source-headers.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-source-headers.stderr",
+      "stdout_sha256": "725b1a96ec955515c7913b174802f8316b5cda340b1be3c0245fd14345ecee6c"
+    },
+    {
+      "label": "9032-original-text",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "export-text",
+        "<repo>/samples/issue9032/tax_relief_form_date_code.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-original-text.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-original-text.stderr",
+      "stdout_sha256": "f1bbae0962dd12ec9d506a276a0e3bda722bab904678e0b4992bfb71d442602b"
+    },
+    {
+      "label": "9032-hwp-save",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "convert",
+        "<repo>/samples/issue9032/tax_relief_form_date_code.hwp",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-saved.hwp",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwp-save.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwp-save.stderr",
+      "stdout_sha256": "1dfc6229fcda37100af48bec99c467426e976c4d0e535cdd34addd44dcf74b06"
+    },
+    {
+      "label": "9032-hwp-info",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "info",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-saved.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwp-info.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwp-info.stderr",
+      "stdout_sha256": "bfb4b9556a2fef0a27583fa6d20b0929c306e94114ddeb53708b4c13c92461e6"
+    },
+    {
+      "label": "9032-hwp-text1",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "export-text",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-saved.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwp-text1.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwp-text1.stderr",
+      "stdout_sha256": "0f2f5e6348b953a3b86b0479913aa1a849815025b4482e9d13f3b733b981f2bc"
+    },
+    {
+      "label": "9032-hwp-resave",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "convert",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-saved.hwp",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-resaved.hwp",
+        "--verify",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwp-resave.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwp-resave.stderr",
+      "stdout_sha256": "2c7e2cd3be1dc3151e46e6041b49c720ccf52f2c15d3b0b95898c8cac583d632"
+    },
+    {
+      "label": "9032-hwp-reopen",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "info",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-resaved.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwp-reopen.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwp-reopen.stderr",
+      "stdout_sha256": "ab77d8fce7d2eb098b288e84e81922923359ada5d84929b998e3184bbc585f1b"
+    },
+    {
+      "label": "9032-hwp-text2",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "export-text",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-resaved.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwp-text2.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwp-text2.stderr",
+      "stdout_sha256": "af229778707698b097c3adbbac1e9feb5305e7c3fa1362cc63f218bf1041ef85"
+    },
+    {
+      "label": "9032-hwp-first-controls-tables",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "export-tables",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-saved.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwp-first-controls-tables.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwp-first-controls-tables.stderr",
+      "stdout_sha256": "c042837af5cc916a2de7a27ce0678e12ffa5843e31770210cbd4f38d507b869c"
+    },
+    {
+      "label": "9032-hwp-first-controls-headers",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "headers-footers",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-saved.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwp-first-controls-headers.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwp-first-controls-headers.stderr",
+      "stdout_sha256": "8199a1f7a64cdd8eadfd7af5b14ffee4aa0f34e77bb4207589844aa11d106382"
+    },
+    {
+      "label": "9032-hwp-second-controls-tables",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "export-tables",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-resaved.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwp-second-controls-tables.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwp-second-controls-tables.stderr",
+      "stdout_sha256": "e64c420a4ecf9bad1cb9afa4e13aeae65172d42fea8374c6d258b3651d54a7e7"
+    },
+    {
+      "label": "9032-hwp-second-controls-headers",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "headers-footers",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-resaved.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwp-second-controls-headers.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwp-second-controls-headers.stderr",
+      "stdout_sha256": "7d242989b9af10a4f0557d823abd9212cd1d5813a2eb00ff598e518aeed83293"
+    },
+    {
+      "label": "9032-hwp-edit",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "edit",
+        "insert-text",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-saved.hwp",
+        "--section",
+        "0",
+        "--para",
+        "0",
+        "--offset",
+        "0",
+        "--text",
+        "RHWP-9032-EDIT",
+        "-o",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-edited.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwp-edit.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwp-edit.stderr",
+      "stdout_sha256": "7934efc600313a4f9d27fe6ead19afd41ae9d3e93b581c826d778be9ff170c37"
+    },
+    {
+      "label": "9032-hwp-edit-reopen",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "info",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-edited.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwp-edit-reopen.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwp-edit-reopen.stderr",
+      "stdout_sha256": "974ab1e0f98fae89cadc99e1d28bb8261fe4e7a7170fb23c3bb3a20e3d3344c9"
+    },
+    {
+      "label": "9032-hwp-edit-resave",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "convert",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-edited.hwp",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-edited-resaved.hwp",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwp-edit-resave.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwp-edit-resave.stderr",
+      "stdout_sha256": "bad574d9039ad5b799e3d98c747d2f0f069b23a2e33662920247341810d3b710"
+    },
+    {
+      "label": "9032-hwp-edit-text",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "export-text",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-edited-resaved.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwp-edit-text.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwp-edit-text.stderr",
+      "stdout_sha256": "d99a326095e82fd73b9ce94ab5f406457f644882bd57358b5b6f6c479978ad7b"
+    },
+    {
+      "label": "9032-hwpx-save",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "export-hwpx",
+        "<repo>/samples/issue9032/tax_relief_form_date_code.hwp",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-saved.hwpx",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwpx-save.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwpx-save.stderr",
+      "stdout_sha256": "d0e6aef1ce8ae1e0686413246b8f5dbbef08f46450a836c2c0c3f73f3bfbdaf9"
+    },
+    {
+      "label": "9032-hwpx-info",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "info",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-saved.hwpx",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwpx-info.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwpx-info.stderr",
+      "stdout_sha256": "5666ff371bd811730c80cb5b57f95b8eabbd4068e81d5aa5f638c42ed2611e59"
+    },
+    {
+      "label": "9032-hwpx-text1",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "export-text",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-saved.hwpx",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwpx-text1.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwpx-text1.stderr",
+      "stdout_sha256": "69788374e87c4af29b3749b7e95b952a6c1bb6404107cda698d7b56eff171ad3"
+    },
+    {
+      "label": "9032-hwpx-resave",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "export-hwpx",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-saved.hwpx",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-resaved.hwpx",
+        "--verify",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwpx-resave.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwpx-resave.stderr",
+      "stdout_sha256": "4297db25a0600cd5249bbd73e08f3ac778c580591c65a82a0e10ac8742f767a1"
+    },
+    {
+      "label": "9032-hwpx-reopen",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "info",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-resaved.hwpx",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwpx-reopen.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwpx-reopen.stderr",
+      "stdout_sha256": "14a0536fa7acf662948bbc8645a70ac554634ce4e1c99113e6851f00b916baac"
+    },
+    {
+      "label": "9032-hwpx-text2",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "export-text",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-resaved.hwpx",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwpx-text2.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwpx-text2.stderr",
+      "stdout_sha256": "4b856548e2950ffe6a63c331e4c271b5dd38993cd07dc2f7a66d69eefcec8670"
+    },
+    {
+      "label": "9032-hwpx-first-controls-tables",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "export-tables",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-saved.hwpx",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwpx-first-controls-tables.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwpx-first-controls-tables.stderr",
+      "stdout_sha256": "77385c2d94d70412b5ed930c44de17b3339cffa40aba6243da34bf134a9cc4c2"
+    },
+    {
+      "label": "9032-hwpx-first-controls-headers",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "headers-footers",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-saved.hwpx",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwpx-first-controls-headers.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwpx-first-controls-headers.stderr",
+      "stdout_sha256": "b2840703e353c8f9b52a6e26caa7cb62a541520a1787b7cca069d4f7dbfa6d73"
+    },
+    {
+      "label": "9032-hwpx-second-controls-tables",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "export-tables",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-resaved.hwpx",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwpx-second-controls-tables.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwpx-second-controls-tables.stderr",
+      "stdout_sha256": "5f92b9260492c3bb4622dea65efe7820ee0b7db79945e28bc4b357c55db2eb6e"
+    },
+    {
+      "label": "9032-hwpx-second-controls-headers",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "headers-footers",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-resaved.hwpx",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwpx-second-controls-headers.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwpx-second-controls-headers.stderr",
+      "stdout_sha256": "2f1756fec20ffbec88e8cacb70ec46ff607efe168ccb624b3bae42697a9cf25a"
+    },
+    {
+      "label": "9032-hwpx-edit",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "edit",
+        "insert-text",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-saved.hwpx",
+        "--section",
+        "0",
+        "--para",
+        "0",
+        "--offset",
+        "0",
+        "--text",
+        "RHWP-9032-EDIT",
+        "-o",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-edited.hwpx",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwpx-edit.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwpx-edit.stderr",
+      "stdout_sha256": "5e9cf551b93e47b63d2f21f8bb7a39cb610098ac7897941f11297aac36805918"
+    },
+    {
+      "label": "9032-hwpx-edit-reopen",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "info",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-edited.hwpx",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwpx-edit-reopen.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwpx-edit-reopen.stderr",
+      "stdout_sha256": "b92683f373c95d6cfc1bd52d9dfa3482859469c0d883cb545dc7b6d38fa65ea0"
+    },
+    {
+      "label": "9032-hwpx-edit-resave",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "export-hwpx",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-edited.hwpx",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-edited-resaved.hwpx",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwpx-edit-resave.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwpx-edit-resave.stderr",
+      "stdout_sha256": "c54924958199509f13f21353ebcfbc06157db6d7c465ba8848533f42f15fe10c"
+    },
+    {
+      "label": "9032-hwpx-edit-text",
+      "command": [
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+        "export-text",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-edited-resaved.hwpx",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwpx-edit-text.stdout",
+      "stderr": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-cli/9032-hwpx-edit-text.stderr",
+      "stdout_sha256": "31a05aee8ec6eed29347893925131b529c4b202e53d423e4e9cf56f1879d33e1"
+    }
+  ],
+  "head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+  "binary_sha256": "231fe6135de3d6ab75180a8329d0f6a9a999c03475611a326eca937ce5febbf5",
+  "documents": [
+    {
+      "issue": "9029",
+      "source": "<repo>/samples/issue9029/seal_registration_docinfo_tail.hwp",
+      "source_sha256": "36fb81b86cc8240b2f4f332934b53ee9b560940ad8fcba201336f6a4e5f29a71",
+      "formats": [
+        {
+          "format": "hwp",
+          "save_reopen_resave_reopen": true,
+          "text_preserved": true,
+          "edit_marker_once": true,
+          "tables_and_headers_preserved": true,
+          "hwp3_object_marker_normalization": false,
+          "normalization_contract": null
+        },
+        {
+          "format": "hwpx",
+          "save_reopen_resave_reopen": true,
+          "text_preserved": true,
+          "edit_marker_once": true,
+          "tables_and_headers_preserved": true,
+          "hwp3_object_marker_normalization": false,
+          "normalization_contract": null
+        }
+      ]
+    },
+    {
+      "issue": "9032",
+      "source": "<repo>/samples/issue9032/tax_relief_form_date_code.hwp",
+      "source_sha256": "7c24931d2889c35b23531fe15e465d9181321d68ce84e110417ef187a505bdb2",
+      "formats": [
+        {
+          "format": "hwp",
+          "save_reopen_resave_reopen": true,
+          "text_preserved": true,
+          "edit_marker_once": true,
+          "tables_and_headers_preserved": true,
+          "hwp3_object_marker_normalization": true,
+          "normalization_contract": "src/serializer/body_text.rs #4957 and src/serializer/hwpx/section.rs control slot emission"
+        },
+        {
+          "format": "hwpx",
+          "save_reopen_resave_reopen": true,
+          "text_preserved": true,
+          "edit_marker_once": true,
+          "tables_and_headers_preserved": true,
+          "hwp3_object_marker_normalization": true,
+          "normalization_contract": "src/serializer/body_text.rs #4957 and src/serializer/hwpx/section.rs control slot emission"
+        }
+      ]
+    }
+  ]
+}
