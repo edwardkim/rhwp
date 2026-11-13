@@ -1,0 +1,73 @@
+{
+  "local_product_source": "a156bfa7dd86d2568bd7cfc4a97687ac457505b6",
+  "current_code_head": "728b368e35ccde71d21d5c98d3c2ba791af3ce30",
+  "base": "dd7f453898776c262c00e862e10f47d22a4d6ceb",
+  "visual_producer_source_before_rebase": "6f8d22ac95147b16d9828fee7976df2de192699f",
+  "visual_reuse": "HWP/HWPX read/layout/paint sources unchanged; incoming changes only PDF import CMap; original producer identity retained",
+  "claims": {
+    "base": "d7b927d073489b8c5ea95655224b04096c939534",
+    "producer_code": "6f8d22ac95147b16d9828fee7976df2de192699f",
+    "rows": 66,
+    "pages_per_backend": 33,
+    "minimum_candidate_raw": "99.97213",
+    "declines": 0,
+    "declines_over_2pp": 0,
+    "all_pages_at_least90": true,
+    "table_sha256": "1ac74bdba5f070443c24096900c42338a86472c042f98b9cde1537c3dc437be5"
+  },
+  "protected": {
+    "passed": true,
+    "documents": 18,
+    "datasets": 36,
+    "pages_per_backend": 1771,
+    "rows": 3542,
+    "regressions": 0,
+    "required_handbook_gate": "passed",
+    "table_sha256": "fa7ed3d4d006d2fb69f27f68286fdf70088a4f47ce8c0414eb8822376501d944",
+    "condition": "normal installed fonts; original approved per-document environments; Decimal official 2 decimal strings"
+  },
+  "regression": {
+    "status": "all_tests_passed",
+    "head_at_start": "b8029a6feefc064e06b2f99728a962d40842a081",
+    "base": "d7b927d073489b8c5ea95655224b04096c939534",
+    "additional_test_source": {
+      "path": "tests/cases/picture_cell_flow_frame.rs",
+      "sha256": "3d6e2eea28d893441e49dace378ddf4be9fabb206d5e8bd195fcdaa0e6b3c48d"
+    },
+    "tests_run": 13477,
+    "passed": 13477,
+    "failed": 0,
+    "skipped": 45,
+    "test_seconds": 538.576,
+    "environment": "macOS sandbox-exec; OS fonts only, RHWP_FONT_PATH unset",
+    "log_sha256": "68a8eb64f709099925299aa2328ddba74e5f5c802643e181302d655e1b116a50",
+    "supervisor": "own supervisor paused after active nextest, before further Cargo for rebase"
+  },
+  "incoming_8922_tests": {
+    "passed": 10,
+    "failed": 0
+  },
+  "current_picture_focus": {
+    "passed": 7,
+    "failed": 0
+  },
+  "native_skia_lib": {
+    "root_passed": 3852,
+    "ignored": 12,
+    "other_lib_passed": 182
+  },
+  "native_png_contracts": 2,
+  "native_pdf_contracts": 36,
+  "actual": {
+    "passed": true,
+    "captures": 35,
+    "editSaveInputs": 2
+  },
+  "local_lint_build": "fmt, native/wasm/all-target clippy, workspace build PASS",
+  "ci": "not yet submitted; no remote CI success claimed",
+  "actual_print_comparison": {
+    "cases": 15,
+    "minimum": 100.0,
+    "failed": 0
+  }
+}

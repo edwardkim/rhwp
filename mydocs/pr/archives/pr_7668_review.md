@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**머지 보류 — 메인터너 보정 후 공개 사례의 Native/fresh WASM 시각 검증은 통과했으며 전체 회귀·보호 WASM·실제 소비 경로 검증을 진행 중이다.** 원 head를 보정 없이 승인한 판정이나 원격 병합 완료 기록이 아니다.
+**메인터너 보정 후 수용 가능 — 정확한 통합 코드와 독립 Print에 대한 로컬 검증을 완료했다.** 원 contributor head를 보정 없이 승인하거나 원격 병합을 완료했다는 뜻은 아니다. 통합 PR의 정확한 최종 head CI와 병합 상태는 후속 기록으로 확인한다.
 
 ## 접수 정보
 
@@ -12,7 +12,8 @@
 | 원 head | `e9f43c0ce5876c08106547781888c4ab6a41ec8b` |
 | 대상·고정 base | `devel` / `d7b927d073489b8c5ea95655224b04096c939534` |
 | 검토 브랜치 | `review/integration-20261114-jeong-sik-audit` |
-| 메인터너 제품 보정 | `6f8d22ac95147b16d9828fee7976df2de192699f` |
+| 메인터너 제품 보정 | `a156bfa7dd86d2568bd7cfc4a97687ac457505b6` (원 시각 producer `6f8d22ac95147b16d9828fee7976df2de192699f`) |
+| 최종 검증 코드·base | `728b368e35ccde71d21d5c98d3c2ba791af3ce30` / `dd7f453898776c262c00e862e10f47d22a4d6ceb` |
 | 사전 reviewer | 기존 `edwardkim` 유지, `jangster77` 추가·API 확인 |
 | 관련 이슈 | 원 PR의 명시적 닫기 대상 없음 |
 
@@ -53,6 +54,12 @@ Native Skia 및 fresh WASM Canvas 직접 PNG, `compat=2022`, 96 DPI, 색상 경�
 
 ## 회귀와 기존 기능 보존
 
-관계형 [picture_cell_flow_frame](../../../tests/cases/picture_cell_flow_frame.rs)은 원본 그림 수·소유, 줄 소속, 전체 프레임의 비겹침, 내부 표시 비율, 반복 HWP 저장과 실제 인쇄 JPEG 프레임을 검사한다. 알려진 효과 16조합은 파일 형식의 크기·투명도 꼬리와 효과 바이트 보존을 별도로 확인한다. 최소 글꼴 환경에서 새 7건과 전체 nextest 13,477건이 실제 PASS다(FAIL 0, skip 45, test 538.576초). Native Skia·lint/build 검증은 진행 중이다. 초기 인자 오류·0 tests·불일치 합성 IR 실행을 최종 PASS나 제품의 수정 전 FAIL로 사용하지 않는다.
+관계형 [picture_cell_flow_frame](../../../tests/cases/picture_cell_flow_frame.rs)은 원본 그림 수·소유, 줄 소속, 전체 프레임의 비겹침, 내부 표시 비율, 반복 HWP 저장과 실제 인쇄 JPEG 프레임을 검사한다. 알려진 효과 16조합은 파일 형식의 크기·투명도 꼬리와 효과 바이트 보존을 별도로 확인한다. 최소 글꼴 환경에서 새 7건과 전체 nextest 13,477건이 실제 PASS다(FAIL 0, skip 45, test 538.576초). 전체 회귀의 원 실행 head·추가 테스트 해시는 [실행 기록](../assets/jeong_sik_integration_20261114/full-nextest-result.json)에 보존한다. supervisor의 리베이스·빌드 대기는 test 시간에 합산하지 않는다. 초기 인자 오류·0 tests·불일치 합성 IR 실행은 최종 PASS나 제품의 수정 전 FAIL 근거가 아니다.
 
-정본 보호 Native 18문서·1,771쪽은 하락 0건이며 필수 편람 HWPX 383쪽 gate도 통과했다. 중첩 표는 기존 `nested-original-approved-font-environment.json`을 그대로 사용해 8쪽 99.59%로 보호값 99.49%를 유지했다. 보호 WASM 18문서·1,771쪽의 최종 결과와 실제 Studio·저장·재열기 결과를 확인한 뒤 최종 판정과 실행 원장을 갱신한다. 기준 PDF·보호 TSV·허용치는 변경하지 않았다.
+리베이스로 추가된 #8922는 PDF import CMap 변경이며 HWP/HWPX 읽기·조판·paint 10파일 해시와 13개 패치가 유지됐다. [재사용 감사](../assets/jeong_sik_integration_20261114/rebase-reuse-audit.json)에 따라 원 producer의 전쪽 결과를 보존하며 새 head 재출력으로 표시하지 않는다. 최신 head에서 해당 CMap 10건과 그림 관계 검사 7건을 다시 통과했다. Native Skia lib 4,034 PASS/12 ignore, PNG 2·PDF 36 계약, fmt·Native/WASM/all-target Clippy·workspace build·새 base 지정 manifest/unit-tier도 통과했다.
+
+정본 보호 Native/fresh WASM 각각 18문서·1,771쪽, 합계 3,542행의 공식 두 자리 표시값 하락은 0건이다. 필수 편람 HWPX Native 383쪽 gate도 통과했다. 중첩 표는 기존 `nested-original-approved-font-environment.json`을 그대로 사용해 8쪽 Native/WASM 모두 99.59%로 보호값 99.49%/99.50%를 유지했다. 기준 PDF·보호 TSV·허용치는 변경하지 않았다. [보호 결과](../assets/jeong_sik_integration_20261114/protected/completion.json) · [전행 비교](../assets/jeong_sik_integration_20261114/protected/comparison.tsv).
+
+최신 코드의 fresh WASM을 다시 빌드해 root pkg·Studio public·실제 초기화 응답의 JS/WASM을 확인했다. Vite의 WASM URL 변환과 source map 외 JS 본문 변경도 없었다. 대표 5입력의 Canvas2D·CanvasKit software 화면/인쇄 20건, Native SVG browser 화면/인쇄 10건, Native Skia 화면 5건을 통과했다. 두 본문 대조군은 밝기를 17로 편집한 뒤 HWP/HWPX 각 3회 반복 저장·재열기에서 편집값·개체 수·전체 프레임 비겹침을 보존했다. [실제 결과](../assets/jeong_sik_integration_20261114/actual/results.json) · [완료](../assets/jeong_sik_integration_20261114/actual/completion.json) · [전체 검증](../assets/jeong_sik_integration_20261114/README.md).
+
+공통 조판 원칙은 충족한다. 원본 기하·논리 점유·내부 표시를 구분하고 측정·배치·paint가 같은 프레임 계약을 소비한다. 문서명·쪽수·점수에 따른 예외, baseline 완화, 오류를 숨기는 fallback 우회는 추가하지 않았다. 원 PR의 plain cell 사례만으로 모든 부분 분할 행을 증명했다고 하지 않으며, 기존 분할·저장 경로는 전체 회귀와 보호 문서에서 별도로 확인했다.
