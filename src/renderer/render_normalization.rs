@@ -456,7 +456,8 @@ impl RenderNormalizationOverlay {
             // 인접 셀의 저장 재시작과 완료 행을 다시 용량 컷으로 바꾸게 된다.
             // 원본의 모든 슬롯 속성과 세로 좌표 출처가 같을 때만 보존한다.
             // 새 줄·높이·폭·기준선·태그 또는 편집 재조판은 이 인증을 갖지 않는다.
-            let physical_slots_preserved = !original.line_segs.is_empty()
+            let physical_slots_preserved = partition_changed
+                && !original.line_segs.is_empty()
                 && original.line_segs.len() == current.line_segs.len()
                 && original.source_line_seg_vertical_pos == current.source_line_seg_vertical_pos
                 && !original.stored_text_partition_is_dirty()

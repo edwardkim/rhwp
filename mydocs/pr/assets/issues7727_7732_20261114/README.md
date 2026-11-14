@@ -37,6 +37,11 @@ Visual Sweep raw 2px·픽셀 차이 문턱 32로 측정했다. 기준 PDF 바이
 후속 물리 슬롯 보정 뒤에는 기존 네 실패와 관련 대조군이 [34 PASS / 0 FAIL](full-regression-repair/focused-after-summary.json)이다.
 새 소스의 전체 검증을 완료하기 전에는 PR 준비 완료로 판단하지 않는다.
 
+현재 후속 전체 실행은 [13,558 PASS / 2 FAIL](full-regression-repair/full-nextest-17301-result.json)로 완료했다.
+새 각주 중복은 제품에서 보정해 관련 대조군 [40 PASS / 0 FAIL](full-regression-repair/note-prefix-focused-summary.json)을 확인했다.
+나머지1937 검사는 typed 주석을 읽지 못하고 독립 PDF와 다른 번호 순서를 기대하므로,
+새 양쪽 전쪽 검증 뒤 수집·순서 관계를 바로잡는다. 상세 상태는 분석 보고서를 따른다.
+
 ## 원인별 분석과 실제 보정
 
 | 대상 | 확인한 원인과 보정 | 독립 근거·실행 증적 |

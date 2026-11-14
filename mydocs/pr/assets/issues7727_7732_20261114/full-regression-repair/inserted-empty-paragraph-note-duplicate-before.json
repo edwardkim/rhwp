@@ -1,0 +1,12 @@
+{
+  "head": "17301f013376b079da40ece94e06c44bdc6c96e1",
+  "test": "footnote_shape_api::new_footnotes_follow_the_section_shape",
+  "source": "tests/cases/footnote_shape_api.rs",
+  "original_implementation": "9fe4a4df5e2271f128be49dc4457e2053ef9f25b",
+  "related_followup": "7cbcdee652",
+  "current_full_run": "running, final summary pending",
+  "observed": "page2 [①],[②],[②], expected [①],[②]",
+  "diagnostic": "last paragraph text is empty, two controls logical positions [0,1]. leading prefix treats both as position 0, empty-line exclusion treats only first as position 0. second control emitted twice.",
+  "log_sha256": "85c77ac2f3bcb8382574368b63ba03ab23d175c7994e1ff4d57d076d9d484f66",
+  "status": "identified, product repair pending completion of current full run"
+}

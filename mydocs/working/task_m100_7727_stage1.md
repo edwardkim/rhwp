@@ -7,7 +7,7 @@ last_verified: 2026-11-15
 
 # #7727·#7729·#7730·#7731·#7732 원본 피델리티 분석과 보정
 
-갱신: 2026-11-15T00:41:48+09:00.
+갱신: 2026-11-15T01:03:00+09:00.
 
 Issue: #7727, #7729, #7730, #7731, #7732.
 
@@ -169,6 +169,55 @@ HWPX 표본과 저장 줄을 가진 HWP 표본 양쪽에서 확인했으며, 출
 
 이 결과는 독립 rustc 실행이다. 새 소스의 원본389쪽 Native/fresh WASM과 정식 전체 suite,
 필수 lint/build·보호 TSV·실제 backend 검증까지 완료해야 PR을 제출한다.
+
+### 같은 소스의 Native389쪽 재검증
+
+`17301f0133`에 해당하는 실제 소스를 고정한 새 Native에서389쪽 모두98% 이상이며 쪽수도
+각204/22/8/105/50쪽이다. 최저값은 CBTA98.11%(2쪽), 권고안98.69%(7쪽),
+영어 시험지99.49%(3쪽), API99.55%(97쪽), 각주 표98.75%(37쪽)다.
+[새 Native 전쪽 TSV와 앞 단계 대조](../pr/assets/issues7727_7732_20261114/full-regression-repair/native-comparison.json)를 보존했다.
+주석 줄 보정 뒤 결과와 비교하면 권고안4쪽만99.96%→99.86%이고 나머지388쪽은 같다.
+이0.10%p 차이를 숨기거나 판정 문턱을 바꾸지 않는다. 같은4쪽의
+[review](../pr/assets/issues7727_7732_20261114/full-regression-repair/native-recommendation-p004-review.png)·
+[overlay](../pr/assets/issues7727_7732_20261114/full-regression-repair/native-recommendation-p004-overlay.png)를 직접 판독했고,
+본문·쪽수 누락은 없지만 목차의 인라인 쪽번호8 위치 차이는 남아 있다. 전체 회귀와
+독립 RIGHT 탭 대조군을 함께 확인하며, 모든 쪽100%라고 보고하지 않는다.
+
+이 커밋의 최소 글꼴 정식 전체 nextest는 [13,558 PASS / 2 FAIL / 45 skip](../pr/assets/issues7727_7732_20261114/full-regression-repair/full-nextest-17301-result.json),
+테스트370.316초로 완료했다. 앞선 네 실패는 모두 복구됐고 아래의 각주 관련 두 반례가 남았다.
+이 실행의 필수 lint/build·Native Skia 후속 단계는 실패 때문에 시작하지 않았다.
+새 제품 보정과 독립 출력 검증을 마친 뒤 정식 전체 검증을 다시 진행한다.
+
+### 전체 회귀의 새 반례: 빈 문단에 두 번째 각주를 넣을 때 중복 방출
+
+`17301f0133`의 전체13,560건 실행 중 기존
+`footnote_shape_api::new_footnotes_follow_the_section_shape`가 새 실패로 확인됐다.
+원 해결은 `9fe4a4df5e`의 각주 모양·새 각주 번호 계약이며, 후속 `7cbcdee652`의
+본문 표시 경로도 함께 확인한다. 기존 검사는 그대로 유지한다.
+
+실제 API로 마지막 빈 문단에 각주를 넣으면 controls 두 개의 논리 위치는 `[0,1]`이다.
+선두 접두부는 가시 글자가 없는 문단의 두 제어를 모두 위치0에서 한 번씩 그린다.
+그러나 새 주석 전용 줄의 제외 조건은 원래 논리 위치를 그대로 비교하여 두 번째 제어를
+다시 그렸다. 따라서2쪽에 `[①],[②]` 대신 `[①],[②],[②]`가 생긴다.
+[실제 원인·원 해결 SHA·진단 로그 SHA](../pr/assets/issues7727_7732_20261114/full-regression-repair/inserted-empty-paragraph-note-duplicate-before.json)를 기록했다.
+전체 실행에서 확인한 두 실패 중 이 항목은 실제 제품 중복이며, 다른 하나는 아래의 기존
+TextRun 전용 수집기와 잘못된 번호 순서다. 제품에서는 선두 표시와 빈 줄 제외가 공통
+`leading_position`을 사용하도록 수정했다. 빈 문단의 논리 제어 칸0·1은 모두 선두0에
+놓는 기존 의미를 두 소비자가 공유한다.
+
+새 Native Skia 최소 글꼴 독립 실행은 기존 각주 모양6개·주석 전용 줄1개를 포함하여
+[40 PASS / 0 FAIL](../pr/assets/issues7727_7732_20261114/full-regression-repair/note-prefix-focused-summary.json)이다.
+[실행 코드·로그 SHA](../pr/assets/issues7727_7732_20261114/full-regression-repair/note-prefix-standalone-result.json)와
+[새 Native 생산자](../pr/assets/issues7727_7732_20261114/full-regression-repair/note-prefix-producer.json)를 고정했다.
+이는 정식 전체 suite 통과가 아니며, 새 Native389쪽과 fresh WASM389쪽을 확인하고 있다.
+
+1937의 기존 수집기는 `TextRun`만 읽어 새 typed `FootnoteMarker`를 빠뜨린다. 기존 기대
+문자열도 `정책실현24)25)재정조달`이지만, 독립 Print37쪽의 실제 순서는
+[정책실현→24)→재정조달→25)](../pr/assets/issues7727_7732_20261114/full-regression-repair/annotated-cell-independent-pdf-order.json)다.
+두 입력 경로(samples와 issue7445 asset)의 SHA는 같은
+`a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990`임을 확인했다.
+새 출력의 양쪽 전쪽 자격 확인 뒤 typed 주석과 이 독립 순서를 검사하도록 보정한다.
+쪽수·원문 소유·누락·중복·겹침·기존 정상 좌표 검사는 유지한다.
 
 ## 이전 분석: 권고안 4쪽의 배경 채널 보간
 

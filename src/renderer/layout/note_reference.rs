@@ -86,6 +86,16 @@ pub(super) fn reference(
     }
 }
 
+/// 빈 문단의 주석 제어들은 논리 칸이 달라도 같은 선두 접두부를 이룬다.
+/// 실제 선두 방출과 빈 줄에서의 중복 제외가 같은 위치 해석을 사용한다.
+fn leading_position(para: &Paragraph, logical: Option<usize>) -> Option<usize> {
+    if para.text.is_empty() {
+        Some(0)
+    } else {
+        logical
+    }
+}
+
 pub(super) fn leading(
     para: &Paragraph,
     styles: &ResolvedStyleSet,
@@ -101,11 +111,7 @@ pub(super) fn leading(
                 Control::Endnote(note) => note.number,
                 _ => return None,
             };
-            let position = if para.text.is_empty() {
-                0
-            } else {
-                *positions.get(index)?
-            };
+            let position = leading_position(para, positions.get(index).copied())?;
             if position != line_start {
                 return None;
             }
@@ -134,9 +140,9 @@ pub(super) fn empty_line(
     positions
         .iter()
         .filter_map(|&(_, number, index)| {
-            if leading_prefix_start
-                .is_some_and(|start| logical_positions.get(index).copied() == Some(start))
-            {
+            if leading_prefix_start.is_some_and(|start| {
+                leading_position(para, logical_positions.get(index).copied()) == Some(start)
+            }) {
                 return None;
             }
             let control = para.controls.get(index)?;
