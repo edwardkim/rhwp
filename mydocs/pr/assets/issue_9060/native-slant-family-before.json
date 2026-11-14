@@ -1,0 +1,392 @@
+{
+  "scope": "실제 Native 공급을 준비한 font decision trace에서 명조 기울임의 글리프 공급자를 확인한다. 조판·raw 점수·기준 PDF는 변경하지 않았다.",
+  "input": "samples/hwp3-sample10.hwp",
+  "page": 12,
+  "trace_sha256": "5eabb24bda0741e996cd44702eaaf8b5291238d7f58c6478c6dadb4778223557",
+  "trace_build_record": "output/pr-review/pr9075/native-sample10-font-trace-probe-build.json",
+  "native_font_lookup_sha256": "8df6fbb6590dad5c3750376828908ab3c114013e8f806409533ae644e28b415d",
+  "relevant_records": [
+    {
+      "source": {
+        "status": "complete",
+        "sectionIndex": 0,
+        "paragraphIndex": 513,
+        "nestedPath": [],
+        "runIndex": 12,
+        "charOffset": 0,
+        "character": "[",
+        "codePoint": 91,
+        "charShapeId": 60
+      },
+      "document": {
+        "languageSlot": 0,
+        "inheritedLanguageSlot": 0,
+        "face": "명조",
+        "altType": 2,
+        "embedded": false,
+        "substFont": null
+      },
+      "layoutName": {
+        "requestedFace": "명조",
+        "normalizedFace": "Myeongjo",
+        "cssFamilyChain": [
+          "Myeongjo"
+        ],
+        "steps": [
+          {
+            "kind": "fontEnvironment",
+            "input": "명조",
+            "output": "Myeongjo",
+            "reason": "declared-program-1b05e0e34cc751b8e541273aa2ec10be0a9c47857e2224479e69d0732e076f94"
+          }
+        ]
+      },
+      "paint": {
+        "native": {
+          "status": "complete",
+          "certainty": "observed",
+          "requested": "Myeongjo",
+          "candidates": [
+            "Myeongjo",
+            "Haansoft Batang",
+            "Batang",
+            "바탕",
+            "Nanum Myeongjo",
+            "AppleMyungjo",
+            "Noto Serif KR",
+            "Noto Serif CJK KR",
+            "HCR Batang",
+            "함초롬바탕",
+            "HCR Batang Ext",
+            "함초롬바탕 확장",
+            "HCR Batang ExtB",
+            "함초롬바탕 확장B",
+            "RHWP Old Hangul",
+            "Segoe UI Emoji",
+            "Noto Emoji",
+            "Noto Color Emoji",
+            "serif"
+          ],
+          "resolved": "Myeongjo",
+          "source": "system",
+          "capabilities": [
+            "nativeTypefaceChainEnumerated",
+            "nativeGlyphCoverageObserved"
+          ],
+          "failures": []
+        },
+        "canvas2d": {
+          "status": "unsupported",
+          "certainty": "unsupported",
+          "requested": "Myeongjo",
+          "candidates": [],
+          "resolved": null,
+          "source": null,
+          "capabilities": [],
+          "failures": [
+            "studioSnapshotRequired"
+          ]
+        },
+        "canvaskit": {
+          "status": "unsupported",
+          "certainty": "unsupported",
+          "requested": "Myeongjo",
+          "candidates": [],
+          "resolved": null,
+          "source": null,
+          "capabilities": [],
+          "failures": [
+            "studioSnapshotRequired"
+          ]
+        }
+      }
+    },
+    {
+      "source": {
+        "status": "complete",
+        "sectionIndex": 0,
+        "paragraphIndex": 517,
+        "nestedPath": [],
+        "runIndex": 29,
+        "charOffset": 9,
+        "character": "구",
+        "codePoint": 44396,
+        "charShapeId": 61
+      },
+      "document": {
+        "languageSlot": 0,
+        "inheritedLanguageSlot": null,
+        "face": "명조",
+        "altType": 2,
+        "embedded": false,
+        "substFont": null
+      },
+      "layoutName": {
+        "requestedFace": "명조",
+        "normalizedFace": "Myeongjo",
+        "cssFamilyChain": [
+          "Myeongjo"
+        ],
+        "steps": [
+          {
+            "kind": "fontEnvironment",
+            "input": "명조",
+            "output": "Myeongjo",
+            "reason": "declared-program-1b05e0e34cc751b8e541273aa2ec10be0a9c47857e2224479e69d0732e076f94"
+          }
+        ]
+      },
+      "paint": {
+        "native": {
+          "status": "complete",
+          "certainty": "observed",
+          "requested": "Myeongjo",
+          "candidates": [
+            "Myeongjo",
+            "Haansoft Batang",
+            "Batang",
+            "바탕",
+            "Nanum Myeongjo",
+            "AppleMyungjo",
+            "Noto Serif KR",
+            "Noto Serif CJK KR",
+            "HCR Batang",
+            "함초롬바탕",
+            "HCR Batang Ext",
+            "함초롬바탕 확장",
+            "HCR Batang ExtB",
+            "함초롬바탕 확장B",
+            "RHWP Old Hangul",
+            "Segoe UI Emoji",
+            "Noto Emoji",
+            "Noto Color Emoji",
+            "serif"
+          ],
+          "resolved": "Haansoft Batang",
+          "source": "system",
+          "capabilities": [
+            "nativeTypefaceChainEnumerated",
+            "nativeGlyphCoverageObserved"
+          ],
+          "failures": []
+        },
+        "canvas2d": {
+          "status": "unsupported",
+          "certainty": "unsupported",
+          "requested": "Myeongjo",
+          "candidates": [],
+          "resolved": null,
+          "source": null,
+          "capabilities": [],
+          "failures": [
+            "studioSnapshotRequired"
+          ]
+        },
+        "canvaskit": {
+          "status": "unsupported",
+          "certainty": "unsupported",
+          "requested": "Myeongjo",
+          "candidates": [],
+          "resolved": null,
+          "source": null,
+          "capabilities": [],
+          "failures": [
+            "studioSnapshotRequired"
+          ]
+        }
+      }
+    },
+    {
+      "source": {
+        "status": "complete",
+        "sectionIndex": 0,
+        "paragraphIndex": 537,
+        "nestedPath": [],
+        "runIndex": 49,
+        "charOffset": 0,
+        "character": "[",
+        "codePoint": 91,
+        "charShapeId": 60
+      },
+      "document": {
+        "languageSlot": 0,
+        "inheritedLanguageSlot": 0,
+        "face": "명조",
+        "altType": 2,
+        "embedded": false,
+        "substFont": null
+      },
+      "layoutName": {
+        "requestedFace": "명조",
+        "normalizedFace": "Myeongjo",
+        "cssFamilyChain": [
+          "Myeongjo"
+        ],
+        "steps": [
+          {
+            "kind": "fontEnvironment",
+            "input": "명조",
+            "output": "Myeongjo",
+            "reason": "declared-program-1b05e0e34cc751b8e541273aa2ec10be0a9c47857e2224479e69d0732e076f94"
+          }
+        ]
+      },
+      "paint": {
+        "native": {
+          "status": "complete",
+          "certainty": "observed",
+          "requested": "Myeongjo",
+          "candidates": [
+            "Myeongjo",
+            "Haansoft Batang",
+            "Batang",
+            "바탕",
+            "Nanum Myeongjo",
+            "AppleMyungjo",
+            "Noto Serif KR",
+            "Noto Serif CJK KR",
+            "HCR Batang",
+            "함초롬바탕",
+            "HCR Batang Ext",
+            "함초롬바탕 확장",
+            "HCR Batang ExtB",
+            "함초롬바탕 확장B",
+            "RHWP Old Hangul",
+            "Segoe UI Emoji",
+            "Noto Emoji",
+            "Noto Color Emoji",
+            "serif"
+          ],
+          "resolved": "Myeongjo",
+          "source": "system",
+          "capabilities": [
+            "nativeTypefaceChainEnumerated",
+            "nativeGlyphCoverageObserved"
+          ],
+          "failures": []
+        },
+        "canvas2d": {
+          "status": "unsupported",
+          "certainty": "unsupported",
+          "requested": "Myeongjo",
+          "candidates": [],
+          "resolved": null,
+          "source": null,
+          "capabilities": [],
+          "failures": [
+            "studioSnapshotRequired"
+          ]
+        },
+        "canvaskit": {
+          "status": "unsupported",
+          "certainty": "unsupported",
+          "requested": "Myeongjo",
+          "candidates": [],
+          "resolved": null,
+          "source": null,
+          "capabilities": [],
+          "failures": [
+            "studioSnapshotRequired"
+          ]
+        }
+      }
+    },
+    {
+      "source": {
+        "status": "complete",
+        "sectionIndex": 0,
+        "paragraphIndex": 541,
+        "nestedPath": [],
+        "runIndex": 62,
+        "charOffset": 9,
+        "character": "구",
+        "codePoint": 44396,
+        "charShapeId": 61
+      },
+      "document": {
+        "languageSlot": 0,
+        "inheritedLanguageSlot": null,
+        "face": "명조",
+        "altType": 2,
+        "embedded": false,
+        "substFont": null
+      },
+      "layoutName": {
+        "requestedFace": "명조",
+        "normalizedFace": "Myeongjo",
+        "cssFamilyChain": [
+          "Myeongjo"
+        ],
+        "steps": [
+          {
+            "kind": "fontEnvironment",
+            "input": "명조",
+            "output": "Myeongjo",
+            "reason": "declared-program-1b05e0e34cc751b8e541273aa2ec10be0a9c47857e2224479e69d0732e076f94"
+          }
+        ]
+      },
+      "paint": {
+        "native": {
+          "status": "complete",
+          "certainty": "observed",
+          "requested": "Myeongjo",
+          "candidates": [
+            "Myeongjo",
+            "Haansoft Batang",
+            "Batang",
+            "바탕",
+            "Nanum Myeongjo",
+            "AppleMyungjo",
+            "Noto Serif KR",
+            "Noto Serif CJK KR",
+            "HCR Batang",
+            "함초롬바탕",
+            "HCR Batang Ext",
+            "함초롬바탕 확장",
+            "HCR Batang ExtB",
+            "함초롬바탕 확장B",
+            "RHWP Old Hangul",
+            "Segoe UI Emoji",
+            "Noto Emoji",
+            "Noto Color Emoji",
+            "serif"
+          ],
+          "resolved": "Haansoft Batang",
+          "source": "system",
+          "capabilities": [
+            "nativeTypefaceChainEnumerated",
+            "nativeGlyphCoverageObserved"
+          ],
+          "failures": []
+        },
+        "canvas2d": {
+          "status": "unsupported",
+          "certainty": "unsupported",
+          "requested": "Myeongjo",
+          "candidates": [],
+          "resolved": null,
+          "source": null,
+          "capabilities": [],
+          "failures": [
+            "studioSnapshotRequired"
+          ]
+        },
+        "canvaskit": {
+          "status": "unsupported",
+          "certainty": "unsupported",
+          "requested": "Myeongjo",
+          "candidates": [],
+          "resolved": null,
+          "source": null,
+          "capabilities": [],
+          "failures": [
+            "studioSnapshotRequired"
+          ]
+        }
+      }
+    }
+  ],
+  "physical_program_observation": "ch=* tf=Myeongjo post=Some(\"Myeongjo-ENMJ\") style=FontStyle { weight: Weight(400), width: Width(5), slant: Oblique } physical=FontStyle { weight: Weight(400), width: Width(5), slant: Upright } cff_replay=true draw=true\nch=구 tf=Myeongjo post=Some(\"Myeongjo-HGMJ\") style=FontStyle { weight: Weight(400), width: Width(5), slant: Upright } physical=FontStyle { weight: Weight(400), width: Width(5), slant: Upright } cff_replay=true draw=true\nch=* tf=Myeongjo post=Some(\"Myeongjo-ENMJ\") style=FontStyle { weight: Weight(400), width: Width(5), slant: Oblique } physical=FontStyle { weight: Weight(400), width: Width(5), slant: Upright } cff_replay=true draw=true\nch=구 tf=Myeongjo post=Some(\"Myeongjo-HGMJ\") style=FontStyle { weight: Weight(400), width: Width(5), slant: Upright } physical=FontStyle { weight: Weight(400), width: Width(5), slant: Upright } cff_replay=true draw=true\n",
+  "candidate_rejection": "공개 affine 관계 검사 7건은 통과했으나 실제 보호 하락을 개선하지 못했다. 행렬·em 후보와 후보 전용 테스트를 작업 코드에서 되돌렸다."
+}

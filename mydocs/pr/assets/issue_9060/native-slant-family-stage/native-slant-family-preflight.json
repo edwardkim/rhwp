@@ -1,0 +1,406 @@
+{
+  "state": "needs-correction",
+  "pid": 4109731,
+  "binary": "/home/tsjang/rhwp/output/pr-review/pr9075/rhwp-native-slant-family",
+  "binary_sha256": "dc56853dc19060aaf3aa2dbe86b8f2a58f5516e0ac9fa33bca56c286521ec45c",
+  "datasets": [
+    {
+      "key": "sample16-hwp2022",
+      "backend": "native",
+      "pages": [
+        1,
+        26,
+        38,
+        40,
+        51,
+        64
+      ],
+      "complete": true,
+      "exit_code": 0,
+      "rows": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "26",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "38",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "40",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "51",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "64",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "declines": [],
+      "tsv": "/home/tsjang/rhwp/output/pr-review/pr9075/native-slant-family-preflight/sample16-hwp2022/sample16-hwp2022/silhouette.tsv",
+      "seconds": 34.35050058364868,
+      "passed": true
+    },
+    {
+      "key": "outline",
+      "backend": "native",
+      "pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "complete": true,
+      "exit_code": 0,
+      "rows": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "2",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "3",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "4",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "5",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "6",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "7",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "8",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "9",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "declines": [],
+      "tsv": "/home/tsjang/rhwp/output/pr-review/pr9075/native-slant-family-preflight/outline/outline/silhouette.tsv",
+      "seconds": 57.23802447319031,
+      "passed": true
+    },
+    {
+      "key": "nested",
+      "backend": "native",
+      "pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "complete": true,
+      "exit_code": 0,
+      "rows": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "98.59",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "98.59",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "2",
+          "tolerant_content_match_percent": "99.99",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.99",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "3",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "4",
+          "tolerant_content_match_percent": "99.95",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.95",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "5",
+          "tolerant_content_match_percent": "99.99",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.99",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "6",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "7",
+          "tolerant_content_match_percent": "99.99",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.99",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "8",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "9",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "10",
+          "tolerant_content_match_percent": "98.78",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "98.78",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "11",
+          "tolerant_content_match_percent": "99.05",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.05",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "12",
+          "tolerant_content_match_percent": "99.86",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.86",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "13",
+          "tolerant_content_match_percent": "99.68",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.68",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "14",
+          "tolerant_content_match_percent": "98.62",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "98.62",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "15",
+          "tolerant_content_match_percent": "99.16",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.16",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "16",
+          "tolerant_content_match_percent": "98.30",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "98.30",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "17",
+          "tolerant_content_match_percent": "99.98",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.98",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "declines": [
+        {
+          "page": 11,
+          "baseline": "99.06",
+          "candidate": "99.05",
+          "decline_pp": "0.01"
+        },
+        {
+          "page": 12,
+          "baseline": "99.87",
+          "candidate": "99.86",
+          "decline_pp": "0.01"
+        },
+        {
+          "page": 16,
+          "baseline": "98.36",
+          "candidate": "98.30",
+          "decline_pp": "0.06"
+        }
+      ],
+      "tsv": "/home/tsjang/rhwp/output/pr-review/pr9075/native-slant-family-preflight/nested/nested/silhouette.tsv",
+      "seconds": 39.29122447967529,
+      "passed": false
+    },
+    {
+      "key": "sample10",
+      "backend": "native",
+      "pages": [
+        12,
+        15,
+        16,
+        17,
+        18,
+        20,
+        81,
+        351
+      ],
+      "complete": true,
+      "exit_code": 0,
+      "rows": [
+        {
+          "page": "12",
+          "tolerant_content_match_percent": "99.99",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.99",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "15",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "16",
+          "tolerant_content_match_percent": "99.99",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.99",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "17",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "18",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "20",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "81",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "351",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "declines": [],
+      "tsv": "/home/tsjang/rhwp/output/pr-review/pr9075/native-slant-family-preflight/sample10/sample10/silhouette.tsv",
+      "seconds": 36.23769497871399,
+      "passed": true
+    }
+  ],
+  "active": {},
+  "scope": "선택 페이지의 선행 대조이며 전쪽 보호 검증을 대신하지 않는다.",
+  "updated_at": "2026-11-14T17:38:27.600014+00:00"
+}
