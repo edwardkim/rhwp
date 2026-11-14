@@ -1,0 +1,10 @@
+{
+  "parent": "6197d8e680dad3ff8b466a62b9a5ab78275cde01",
+  "patch_sha256": "8cf4e3be991a5f06245cc0ad260fd1de8aa9e7b4da270c6f68f0c25333b739f3",
+  "binary_sha256": "5b1cf7e9932b0d45ef7a4cf270f309f6993e5ed715602e4cb958515fdd1eeab7",
+  "build": "Mac locked wrapper --target web --no-opt; Docker 아님",
+  "files": {
+    "rhwp.js": "2d48f8a6c3ff7f848f08725bb54d04094b296af1a40ae61203081a7cf8061a1a",
+    "rhwp_bg.wasm": "8e0e7922492cfbd8d001909778099444e8a955098565f7019a57d268916bec4b"
+  }
+}

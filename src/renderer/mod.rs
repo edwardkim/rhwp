@@ -1091,7 +1091,10 @@ fn lerp_color(from: ColorRef, to: ColorRef, t: f64) -> ColorRef {
     for shift in [0, 8, 16] {
         let a = ((from >> shift) & 0xff) as f64;
         let b = ((to >> shift) & 0xff) as f64;
-        let v = (a + (b - a) * t).round().clamp(0.0, 255.0) as u32;
+        // 독립 한컴 Print의 양방향 RGB 대조군은 최종값 반올림이 아니라
+        // 시작색에 대한 signed 변화량의 소수부를 버린 뒤 더한다.
+        // 예: 210→40의 1/6은182, 40→210의 1/6은68이다.
+        let v = (a + ((b - a) * t).trunc()).clamp(0.0, 255.0) as u32;
         out |= v << shift;
     }
     out
