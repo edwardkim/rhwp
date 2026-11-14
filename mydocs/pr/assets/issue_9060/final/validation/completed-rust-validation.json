@@ -1,6 +1,6 @@
 {
   "state": "completed-subset-only",
-  "recorded_at": "2026-11-15T07:06:19.509225+09:00",
+  "recorded_at": "2026-11-15T07:16:26.754159+09:00",
   "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
   "source_tree": "e7f9c1398f7e1c51bb92dd2b76d8e48050794dc4",
   "source_hash_count": 4849,
@@ -42,6 +42,33 @@
       "sha256": "127ece4277e37e22578e3f525ffaaed64b9beb8bce72c8910280ea09898138f1",
       "exit_code": 0,
       "seconds": 582.2211124897003
+    },
+    "print-primary-final-final-native-lib": {
+      "path": "mydocs/pr/assets/issue_9060/final/validation/final-native-lib.txt",
+      "sha256": "52c0af5cfb2630e605a18c6d5a5b4bbb7216702f6ca379f51cbffe976baab02f",
+      "exit_code": 0,
+      "seconds": 746.1932575702667,
+      "source_log_sha256": "f657ad700c64125dd7b90ce3077891e3994fddfabb20410eb2221ae5c9a4fbd6",
+      "source_bytes": 343714,
+      "preservation": "말미의 빈 줄만 정리. 검사 출력 내용·순서·수치는 유지."
+    },
+    "print-primary-final-final-native-picture-placeholder": {
+      "path": "mydocs/pr/assets/issue_9060/final/validation/final-native-picture-placeholder.txt",
+      "sha256": "73bb64894444dbcaf1ff04e16ccd23d8c531adb9ca8e15080bee57e8eda7e2f7",
+      "exit_code": 0,
+      "seconds": 79.49754524230957,
+      "source_log_sha256": "73bb64894444dbcaf1ff04e16ccd23d8c531adb9ca8e15080bee57e8eda7e2f7",
+      "source_bytes": 1063,
+      "preservation": "말미의 빈 줄만 정리. 검사 출력 내용·순서·수치는 유지."
+    },
+    "print-primary-final-final-native-direct-pdf": {
+      "path": "mydocs/pr/assets/issue_9060/final/validation/final-native-direct-pdf.txt",
+      "sha256": "4d232c59e629c4a5ae9675c07050a6e5c121094fe23263b3ac3a47dcae9c62f0",
+      "exit_code": 0,
+      "seconds": 25.604522228240967,
+      "source_log_sha256": "4d232c59e629c4a5ae9675c07050a6e5c121094fe23263b3ac3a47dcae9c62f0",
+      "source_bytes": 7435,
+      "preservation": "말미의 빈 줄만 정리. 검사 출력 내용·순서·수치는 유지."
     }
   },
   "full_rust": {
@@ -53,5 +80,18 @@
     "passed": 3,
     "failed": 0
   },
-  "remaining": "Native lib·그림·PDF 검사, lint, 새 Native 전쪽·fresh WASM 보호 전쪽과 편람 gate는 별도 최종 영수증으로 확정한다. 원격 CI·병합 완료가 아니다."
+  "remaining": "새 Native CLI 빌드·lint·Native/fresh WASM 보호 전쪽·편람 gate는 별도 최종 영수증으로 확정한다. 원격 CI·병합 완료가 아니다.",
+  "native_lib": {
+    "passed": 4035,
+    "ignored": 12,
+    "failed": 0
+  },
+  "native_picture": {
+    "passed": 2,
+    "failed": 0
+  },
+  "native_direct_pdf": {
+    "passed": 36,
+    "failed": 0
+  }
 }
