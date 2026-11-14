@@ -10139,6 +10139,25 @@ pub(crate) fn para_relative_left_aligned_outer_margin_left_hu(table: &Table) -> 
 /// (`spacing_before`)이 이미 흐름에 싣고 있어 여기서 또 실으면 두 번 든다
 /// (`byeolpyo1` 의 이미 맞던 표가 1.9px 내려간다 — 실측).
 /// 오른쪽·가운데 정렬은 `ref_w` 산식이 달라 열지 않는다.
+/// 폭0인 저장 어울림 앵커는 독립 글줄 없이 문단 원점에서 개체를 연다.
+/// 그 문단의 앞 간격을 표 상자 앞에 다시 더하지 않는다.
+pub(crate) fn stored_empty_square_host_uses_paragraph_origin(
+    para: &Paragraph,
+    table: &Table,
+) -> bool {
+    !table.common.treat_as_char
+        && matches!(table.common.text_wrap, TextWrap::Square)
+        && matches!(table.common.vert_rel_to, VertRelTo::Para)
+        && matches!(table.common.vert_align, VertAlign::Top | VertAlign::Inside)
+        && para.text.is_empty()
+        && matches!(para.controls.as_slice(), [Control::Table(_)])
+        && !para.stored_text_partition_is_dirty()
+        && !para.cell_format_vpos_dirty
+        && matches!(para.line_segs.as_slice(), [line]
+            if line.segment_width == 0 && line.vertical_pos >= 0
+                && line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+}
+
 /// [#7287] **어울림(Square) 자리차지** 표의 위쪽 바깥여백 (HU).
 ///
 /// 가로 [`para_relative_left_aligned_outer_margin_left_hu`](`#6887`) 의 세로판이다.
@@ -10165,6 +10184,47 @@ pub(crate) fn square_float_outer_margin_top_hu(table: &Table) -> Option<i32> {
         return None;
     }
     Some(i32::from(table.outer_margin_top))
+}
+
+/// 저장된 후속 원점이 표의 바깥 하단을 닫을 때만 표 자체의 아래 여백을 반환한다.
+/// 이 상자는 별도 호스트 글줄의 뒤 간격을 다시 소유하지 않는다.
+pub(crate) fn stored_empty_square_host_closing_margin(
+    para: &Paragraph,
+    next: Option<&Paragraph>,
+    table: &Table,
+    styles: &super::style_resolver::ResolvedStyleSet,
+    dpi: f64,
+) -> Option<f64> {
+    if !stored_empty_square_host_uses_paragraph_origin(para, table)
+        || table.caption.is_some()
+        || table.cells.iter().any(|cell| cell.dirty_flag)
+    {
+        return None;
+    }
+    let next = next?;
+    if next.stored_text_partition_is_dirty() || next.cell_format_vpos_dirty {
+        return None;
+    }
+    let source = para.line_segs.first()?;
+    let after = next.line_segs.first()?;
+    if after.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0 {
+        return None;
+    }
+    let before = styles
+        .para_styles
+        .get(para.para_shape_id as usize)?
+        .spacing_before;
+    let next_before = styles
+        .para_styles
+        .get(next.para_shape_id as usize)?
+        .spacing_before;
+    let closing = i64::from(source.vertical_pos) - i64::from(super::px_to_hwpunit(before, dpi))
+        + i64::from(signed_hwpunit(table.common.vertical_offset))
+        + i64::from(table.outer_margin_top)
+        + i64::from(table.common.height)
+        + i64::from(table.outer_margin_bottom);
+    (closing == i64::from(after.vertical_pos) - i64::from(super::px_to_hwpunit(next_before, dpi)))
+        .then(|| hwpunit_to_px(table.outer_margin_bottom as i32, dpi))
 }
 
 pub(crate) fn topbottom_float_outer_margin_left_hu(table: &Table) -> Option<i32> {

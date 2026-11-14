@@ -10,6 +10,22 @@ pub(super) fn text_start(
     stored_target: f64,
     segment_width: f64,
 ) -> f64 {
+    // 원래 단의 정지가 현재 셀 밖에 있어도 유효한 저장 인라인 전진은
+    // 이미 이 셀에서 조판한 위치다. 정지를 셀 우단으로 잘라 그 전진을
+    // 다시 계산하면 같은 런의 쪽번호가 이동한다. 자동 우단은 별도 계약이다.
+    if !style.auto_tab_right
+        && style.available_width > 0.0
+        && style
+            .tab_stops
+            .iter()
+            .find(|stop| stop.position > style.line_x_offset + current + 0.5)
+            .is_some_and(|stop| {
+                stop.tab_type == 1
+                    && stop.position > style.text_start_offset + style.available_width
+            })
+    {
+        return stored_target.max(current);
+    }
     let (_, _, default_tab_width) = super::style_params(style);
     let (position, kind, _) = super::find_next_tab_stop(
         style.line_x_offset + current,
