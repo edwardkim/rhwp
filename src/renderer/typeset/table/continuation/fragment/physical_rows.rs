@@ -179,7 +179,7 @@ impl TypesetEngine {
                     && cell.height > 0
                     && cell.height < 0x8000_0000
                     && first <= row
-                    && row + 1 <= first + usize::from(cell.row_span)
+                    && row < first + usize::from(cell.row_span)
             })
             .filter_map(|cell| {
                 let first = usize::from(cell.row);
