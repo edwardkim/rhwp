@@ -6172,14 +6172,17 @@ fn try_reflow_line_segs_impl<S: Storage>(
     if !paragraph_box.is_usable() {
         return Ok(false);
     }
-    // 새 글줄은 이전 RIGHT 탭이 정렬을 마친 전진을 상속하지 않는다.
-    // 저장 줄만 교체하면 다음 compose와 HWP/HWPX 저장이 그 폭을 다시
-    // 유효한 캐시로 받아들인다. 정렬 종류·채움·탭 순번은 보존하고,
-    // 현재 문단 TabDef가 새 전진을 계산하도록 폭의 두 워드만 비운다.
-    for extension in &mut para.tab_extended {
-        if extension[2] >> 8 == 2 {
-            extension[0] = 0;
-            extension[1] = 0;
+    // 입력 편집으로 무효화한 줄만 이전 RIGHT 전진을 버린다. Undo가 원래
+    // 문단 메타를 복원한 뒤 줄을 구성하는 경우까지 캐시를 지우면 안 된다.
+    // 실제 탭에 대응하는 폭의 두 워드만 비우며 정렬·채움·순번과 남는
+    // 원본 메타는 보존한다. 새 전진은 현재 문단 TabDef로 계산한다.
+    if para.stored_text_partition_is_dirty() {
+        let tab_count = para.text.chars().filter(|&ch| ch == '\t').count();
+        for extension in para.tab_extended.iter_mut().take(tab_count) {
+            if extension[2] >> 8 == 2 {
+                extension[0] = 0;
+                extension[1] = 0;
+            }
         }
     }
     // [#4677] 줄을 다시 계산하면 이전에 붙여 둔 조판 전용 보강 줄은 사라진다 — 표식을

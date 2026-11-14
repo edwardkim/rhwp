@@ -1,6 +1,6 @@
 //! #7727 저장 RIGHT 탭 전진의 소유를 확인하는 관계형 회귀 검사다.
 //!
-//! 주석 갱신: 2026-11-15 03:40 KST.
+//! 주석 갱신: 2026-11-15 04:08 KST.
 //! 검사 종류: 관계형. 입력의 저장 폭 변화와 다음 글자의 이동량을 비교하며,
 //! 문서의 절대 px 좌표를 고정하지 않는다.
 //! 보정 전 원본 전204쪽 최저: Native 98.11%, fresh WASM 98.08%.
@@ -10,6 +10,7 @@
 //! 원본 글꼴 설치에 의존하지 않고 공개 DocumentCore의 현재 문자 배치를 비교한다.
 //! 편집·반복 저장 검사는 같은 본문을 편집한 두 입력의 기하와 모든 본문 문단 보존 관계다.
 //! 저장 전진 검증의 전쪽 수치는 편집되지 않은 원본에 해당하며 편집본의 시각 측정으로 쓰지 않는다.
+//! 실제 편집 무효화와 Undo 메타 복원·빈 입력은 서로 다른 관계로 검사한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
@@ -126,4 +127,58 @@ fn editing_and_repeated_saves_do_not_revalidate_the_old_right_tab_advance() {
                 "같은 편집·저장 결과에 옛 캐시 폭이 개입하면 안 된다: hwpx={hwpx}, 단계={stage}, {observed:?}");
         }
     }
+}
+
+#[test]
+fn undo_merge_preserves_the_restored_visible_tab_metadata() {
+    let mut core = core_with_stored_tab_delta(1500, false);
+    let original_text: Vec<_> = core.document().sections[0]
+        .paragraphs
+        .iter()
+        .map(|p| p.text.clone())
+        .collect();
+    let metadata = core.document().sections[0].paragraphs[PARAGRAPH].capture_meta();
+    let tabs = core.document().sections[0].paragraphs[PARAGRAPH]
+        .tab_extended
+        .clone();
+    let split_at = core.document().sections[0].paragraphs[PARAGRAPH - 1]
+        .text
+        .chars()
+        .count();
+    core.merge_paragraph_native(0, PARAGRAPH)
+        .expect("앞 문단과 병합");
+    core.split_paragraph_native(0, PARAGRAPH - 1, split_at, Some(metadata))
+        .expect("원본 메타를 사용한 병합 되돌리기");
+    let restored = &core.document().sections[0].paragraphs[PARAGRAPH];
+    assert!(
+        restored.text.contains('\t'),
+        "실제 가시 탭의 복원을 검사한다"
+    );
+    assert_eq!(
+        restored.tab_extended, tabs,
+        "Undo로 복원한 원본 폭·채움은 다시 무효화하지 않는다"
+    );
+    assert_eq!(
+        core.document().sections[0]
+            .paragraphs
+            .iter()
+            .map(|p| p.text.clone())
+            .collect::<Vec<_>>(),
+        original_text
+    );
+}
+
+#[test]
+fn empty_input_does_not_invalidate_the_original_right_tab_advance() {
+    let mut core = core_with_stored_tab_delta(1500, false);
+    let tabs = core.document().sections[0].paragraphs[PARAGRAPH]
+        .tab_extended
+        .clone();
+    core.insert_text_native(0, PARAGRAPH, 0, "")
+        .expect("빈 입력");
+    assert_eq!(
+        core.document().sections[0].paragraphs[PARAGRAPH].tab_extended,
+        tabs,
+        "본문이 바뀌지 않은 명령은 원본 저장 전진을 무효화하지 않는다"
+    );
 }

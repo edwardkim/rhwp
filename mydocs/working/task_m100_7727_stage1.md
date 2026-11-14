@@ -694,6 +694,30 @@ HWP/HWPX 각각 편집→저장→열기→재저장→열기에서 텍스트·�
 실행 로그: `output/pr-review/issues-7727-7732-20261114/stored-right-tab-repair/`의
 `edit-invalidation-before-test.log`, `edit-invalidation-native-build.log`.
 
+## 2026-11-15 04:04 KST — Undo 메타 복원을 실제 입력 무효화와 구분
+
+`fe8425e66d`의 새 Native 전389쪽은 모두 98% 이상이며 직전353989의 페이지 점수와
+달라진 쪽이 없다. 그러나 최소 글꼴 전체 회귀는 **13,558 PASS / 5 FAIL / 45 skip**으로
+끝났다. 테스트 실행356.908초, 컴파일 포함829.311초다. 이 head를 최종 통과로 쓰지 않는다.
+
+실패는 본문1건과 표 셀·중첩 셀·글상자·그림 캡션4건의 Undo 메타 복원이다.
+원 해결은 본문 PR #3223 및 셀 경로 PR #3324, 실제 셀 통합 커밋`a9f4729bdd`다.
+원래 탭 메타100HU를 그대로 복원하던 계약을 이번 무조건 캐시 삭제가0으로 바꿨다.
+원 검사·기대값은 변경하지 않는다. 원인과 전체 실패 목록은 로컬
+`stored-right-tab-repair/edit-undo-full-regression-failure.json`에 보존했다.
+
+수정 경계는 실제 텍스트 교체 helper가 기존 `invalidate_layout_inputs`로 입력 변경을
+게시하는 지점이다. 재조판은 그 dirty 출처가 있는 실제 탭에 대해서만 이전 RIGHT 전진을
+비우고, Undo가 원본 메타를 복원한 경우와 실제 글을 바꾸지 않은 빈 입력은 보존한다.
+파일·쪽·문구 조건이나 Undo 전용 수치 복사로 통과시키지 않는다.
+실제 CBTA 가시 탭의 병합 Undo와 빈 입력 반례를 추가했으며 보정 전 **3 PASS / 2 FAIL**이다.
+새 후보의 Native 빌드와 최소 글꼴 집중12개(새 탭5·기존 셀 계열 Undo5·bbox2)가 모두
+통과했다. CoreText 실제 목록528개에 사용자·추가 시스템 경로의 글꼴은0개였고,
+OS 기본 AppleSDGothicNeo의 한글 glyph는 사용 가능했다.
+같은 본문 Undo가 전체 페이지네이션 재사용 후보와 다르다는 진단이 나오지만, 이 경로는
+실제로 계산한 full pagination을 유지하고 잘못된 재사용을 하지 않는다. 이 기록을
+페이지별 Print 대조의 통과로 바꾸어 쓰지 않는다. 새 전체 게이트를 이어 진행한다.
+
 ## 증적 위치
 
 현재 작업 증적은 저장소 기준 `output/pr-review/issues-7727-7732-20261114/`다.
