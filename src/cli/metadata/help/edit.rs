@@ -11,18 +11,24 @@ pub(super) fn print() {
     println!("      --dry-run                 파일을 쓰지 않고 변경 예정 내역만 보고");
     println!("      --json                    계약 봉투 JSON을 stdout에 출력");
     println!();
-    println!("  edit replace-text <파일.hwp|파일.hwpx> --find <문자열> --replace <문자열> [옵션]");
+    println!(
+        "  {}",
+        crate::cli::metadata::capabilities::REPLACE_TEXT_USAGE.trim_start_matches("rhwp ")
+    );
     println!("      문서 전체 일괄 치환 (기관명 변경·연도 갱신·용어 정비). 본문+표 셀");
     println!();
     println!("      --find <문자열>           찾을 문자열 (빈 문자열 불가)");
     println!("      --replace <문자열>        바꿀 문자열 (\"\" 이면 삭제)");
     println!("      --ignore-case             대소문자 무시");
+    println!("      --occurrence <k>          문서 순서 k번째 매치만 치환 (0부터, 0=첫 매치, 생략 시 전체)");
     println!(
         "      -o, --output <파일>       출력 파일 (기본: 입력명_replaced.<입력과 같은 확장자>)"
     );
     println!("      --dry-run                 파일을 쓰지 않고 치환 예정 건수만 보고");
     println!("      --json                    계약 봉투 JSON을 stdout에 출력");
     println!("      치환 0건이면 출력 파일을 만들지 않음");
+    println!("      --verify                  저장 후 다시 열어 변경 내용을 검증");
+    println!("      --expect-sha256 <해시>    입력 파일의 SHA-256이 일치할 때만 진행");
     println!();
     println!("  edit set-cell <파일> --table <번호> --row <행> --col <열> --text <문자열> [옵션]");
     println!("      표 격자 좌표로 셀 값을 바꾼다 (실물 표 양식 채우기)");

@@ -8770,8 +8770,13 @@ impl DocumentCore {
 
     /// 페이지에 렌더된 텍스트를 줄 단위로 추출한다.
     ///
-    /// TextLine 노드의 시각적 순서를 유지하며 TextRun/각주 마커/양식 텍스트를 합친다.
+    /// 렌더 트리 순서로 TextLine과 독립 TextRun/수식/각주 마커/양식 텍스트를 합친다.
     pub fn extract_page_text_native(&self, page_num: u32) -> Result<String, HwpError> {
+        let tree = self.build_page_tree(page_num)?;
+        Ok(Self::extract_render_tree_text(&tree.root))
+    }
+
+    fn extract_render_tree_text(root: &crate::renderer::render_tree::RenderNode) -> String {
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
         fn collect_line_text(node: &RenderNode, out: &mut String, has_token: &mut bool) {
@@ -8818,10 +8823,63 @@ impl DocumentCore {
             }
         }
 
+        struct Fragment<'a> {
+            node: &'a RenderNode,
+            owner: (Option<usize>, Option<usize>),
+            run: Option<&'a TextRunNode>,
+        }
+
+        impl<'a> Fragment<'a> {
+            fn from_node(node: &'a RenderNode) -> Option<Self> {
+                let (owner, run) = match &node.node_type {
+                    RenderNodeType::TextRun(run) => {
+                        ((run.section_index, run.para_index), Some(run))
+                    }
+                    RenderNodeType::FootnoteMarker(marker) => {
+                        ((Some(marker.section_index), Some(marker.para_index)), None)
+                    }
+                    RenderNodeType::FormObject(form) => {
+                        ((Some(form.section_index), Some(form.para_index)), None)
+                    }
+                    RenderNodeType::Equation(eq) => ((eq.section_index, eq.para_index), None),
+                    _ => return None,
+                };
+                Some(Self { node, owner, run })
+            }
+
+            fn same_line(&self, next: &Self) -> bool {
+                if self.owner != next.owner {
+                    return false;
+                }
+                if let (Some(a), Some(b)) = (self.run, next.run) {
+                    // 같은 줄의 런은 조판에서 공유한 원점·기준선을 보존한다.
+                    return a.cell_context == b.cell_context
+                        && a.is_vertical == b.is_vertical
+                        && if a.is_vertical {
+                            self.node.bbox.x == next.node.bbox.x
+                        } else {
+                            self.node.bbox.y + a.baseline == next.node.bbox.y + b.baseline
+                        };
+                }
+                // 기준선이 다른 위첨자 참조와 수식·양식은 같은 줄 상자 안에서 이어진다.
+                let a = self.node.bbox;
+                let b = next.node.bbox;
+                if self.run.or(next.run).is_some_and(|run| run.is_vertical) {
+                    a.x.max(b.x) < (a.x + a.width).min(b.x + b.width)
+                } else {
+                    a.y.max(b.y) < (a.y + a.height).min(b.y + b.height)
+                }
+            }
+        }
+
         fn collect_page_lines(node: &RenderNode, lines: &mut Vec<String>) {
             if matches!(
                 node.node_type,
-                RenderNodeType::TextLine(_) | RenderNodeType::Equation(_)
+                RenderNodeType::TextLine(_)
+                    | RenderNodeType::TextRun(_)
+                    | RenderNodeType::Equation(_)
+                    | RenderNodeType::FootnoteMarker(_)
+                    | RenderNodeType::FormObject(_)
             ) {
                 let mut line = String::new();
                 let mut has_token = false;
@@ -8834,15 +8892,57 @@ impl DocumentCore {
                 return;
             }
 
+            let mut line = String::new();
+            let mut has_token = false;
+            let mut anchor: Option<Fragment<'_>> = None;
+            let mut ended = false;
             for child in &node.children {
-                collect_page_lines(child, lines);
+                if let Some(fragment) = Fragment::from_node(child) {
+                    let new_line = ended
+                        || anchor
+                            .as_ref()
+                            .is_some_and(|prev| !prev.same_line(&fragment));
+                    if new_line {
+                        if has_token {
+                            lines.push(std::mem::take(&mut line));
+                            has_token = false;
+                        }
+                        anchor = None;
+                    }
+                    collect_line_text(child, &mut line, &mut has_token);
+                    ended = fragment
+                        .run
+                        .is_some_and(|run| run.is_para_end || run.is_line_break_end);
+                    // 첫 본문 런의 기준선을 유지해 큰 인라인 개체가 다음 줄까지 묶지 않게 한다.
+                    if anchor
+                        .as_ref()
+                        .is_none_or(|prev| prev.run.is_none() && fragment.run.is_some())
+                    {
+                        anchor = Some(fragment);
+                    }
+                } else {
+                    let mut child_lines = Vec::new();
+                    collect_page_lines(child, &mut child_lines);
+                    // 배경·테두리 같은 비텍스트 노드는 같은 줄의 런을 가르지 않는다.
+                    if !child_lines.is_empty() {
+                        if has_token {
+                            lines.push(std::mem::take(&mut line));
+                            has_token = false;
+                        }
+                        anchor = None;
+                        ended = false;
+                        lines.extend(child_lines);
+                    }
+                }
+            }
+            if has_token {
+                lines.push(line);
             }
         }
 
-        let tree = self.build_page_tree(page_num)?;
         let mut lines = Vec::new();
-        collect_page_lines(&tree.root, &mut lines);
-        Ok(lines.join("\n"))
+        collect_page_lines(root, &mut lines);
+        lines.join("\n")
     }
 
     /// 페이지를 Markdown으로 추출한다.
