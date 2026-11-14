@@ -1,0 +1,308 @@
+{
+  "pr": 9068,
+  "title": "fix(hwpx): 반복·짝 없는 숨김 범위 끝 표지를 허용하고, 숨김 삭제 사슬의 저장 줄과 꼬리 조각의 저장 줄 위치를 따른다 (#9026, #9044, #9028)",
+  "source_head": "3da35b96822fb58ce4cc249d6ff4829185a17d06",
+  "source_base": {
+    "sha": "dc3d0ff15e6e7cdb39138c72a5466994dea0e0d4",
+    "ref": "devel"
+  },
+  "before": "d0bd67d60b44bd3c1db2048ab01cafa911675d0c",
+  "after": "b60aa5e4a7ac678fe51532f37c0bb861cff2c466",
+  "applied": [
+    {
+      "source": "45bd21963d4c865b768daf6124bc62fb3c00a5ad",
+      "cherry_pick": "87242d768ec1070f8578c0dcda421c599afec859"
+    },
+    {
+      "source": "9005beaffd8f392b29da555600c071bf19031635",
+      "cherry_pick": "8abb1c2a7528ecb7aae59867f72533f41060f877"
+    },
+    {
+      "source": "05b15cb6191b1ea824454fee13d2403a258ccf83",
+      "cherry_pick": "2bcdf7be349231acecb9e731763a378fbfb061a2"
+    },
+    {
+      "source": "3657c2ef58a832aea3404dc9a4c8cdb4b9852ae8",
+      "cherry_pick": "b2bee63160983fadfe3fb66b399ce07ea3749852"
+    },
+    {
+      "source": "3da35b96822fb58ce4cc249d6ff4829185a17d06",
+      "cherry_pick": "b60aa5e4a7ac678fe51532f37c0bb861cff2c466"
+    }
+  ],
+  "conflicts": [],
+  "inclusion": "사용자의 추가 지시에 따라 초기 CI 오류 제외 분류를 대체하여 최신 정상 head를 통합했다.",
+  "reviewer_assignment": {
+    "number": 9068,
+    "head": "3da35b96822fb58ce4cc249d6ff4829185a17d06",
+    "requested_reviewers": [
+      "jangster77"
+    ]
+  },
+  "checks": [
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225753/job/132336283357",
+      "name": "Build & Test",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/runs/132335776443",
+      "name": "CodeQL",
+      "state": "NEUTRAL"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225753/job/132334021555",
+      "name": "test-archive-e-shard-1 / Default-feature tests (Archive E)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225753/job/132334001669",
+      "name": "test-archive-b-shard-1 / Default-feature tests (Archive B)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225753/job/132333874417",
+      "name": "test-archive-a-shard-1 / Default-feature tests (Archive A)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225753/job/132333804194",
+      "name": "test-archive-d-shard-1 / Default-feature tests (Archive D)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225753/job/132333678621",
+      "name": "test-archive-c-shard-1 / Default-feature tests (Archive C)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225753/job/132329701448",
+      "name": "build-test-archive-e / Build test archive (e)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225753/job/132329701487",
+      "name": "build-test-archive-d / Build test archive (d)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225753/job/132329701460",
+      "name": "build-test-archive-c / Build test archive (c)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225753/job/132329701483",
+      "name": "build-test-archive-b / Build test archive (b)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225753/job/132329679184",
+      "name": "Lint (fmt, clippy, WASM check)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225753/job/132329679365",
+      "name": "Resolve nextest target duration policy",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225753/job/132329679226",
+      "name": "Native Skia tests",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225753/job/132329679295",
+      "name": "build-test-archive-a / Build test archive (a)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225753/job/132329680162",
+      "name": "release-operations-contracts",
+      "state": "SKIPPED"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225753/job/132329680267",
+      "name": "native-host-package",
+      "state": "SKIPPED"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225753/job/132329680452",
+      "name": "Workflow promotion preflight",
+      "state": "SKIPPED"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225753/job/132329680207",
+      "name": "Frontend package gates",
+      "state": "SKIPPED"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225753/job/132329680483",
+      "name": "Frontend unit gates",
+      "state": "SKIPPED"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225798/job/132329647347",
+      "name": "Analyze (javascript-typescript)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225798/job/132329647333",
+      "name": "Analyze (rust)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225798/job/132329647302",
+      "name": "Analyze (python)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225715/job/132329650513",
+      "name": "adapter inter-diff",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225798/job/132329647323",
+      "name": "Analyze (actions)",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225726/job/132329636926",
+      "name": "prop roundtrip",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225741/job/132329624032",
+      "name": "Canvas visual diff",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225715/job/132329609681",
+      "name": "adapter inter-diff preflight",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225753/job/132329611290",
+      "name": "CI preflight",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225798/job/132329603876",
+      "name": "CodeQL preflight",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225726/job/132329600852",
+      "name": "Proptest preflight",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225753/job/132329566863",
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225715/job/132329566438",
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225741/job/132329566389",
+      "name": "Render Diff preflight",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225798/job/132329567067",
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225726/job/132329566274",
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556223325/job/132329561551",
+      "name": "cancel-stale-runs",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225849/job/132329567701",
+      "name": "cancel-stale-runs",
+      "state": "SKIPPED"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556223332/job/132329561395",
+      "name": "Evaluate trusted CI impact policy",
+      "state": "SUCCESS"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43556225753/job/132329568003",
+      "name": "WASM Build",
+      "state": "SKIPPED"
+    },
+    {
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/43558748545",
+      "name": "CI Impact Policy",
+      "state": "SUCCESS"
+    }
+  ],
+  "input_baseline_audit": [
+    {
+      "key": "repeated",
+      "input": "samples/issue9026/press_release_repeated_hidden_end.hwpx",
+      "input_bytes": 1206024,
+      "input_sha256": "fd3775bbbd4f8da5e8b78608a8ee4f084c822fd04941e8762b21a4d02b013310",
+      "pdf": "pdf/issue9026/press_release_repeated_hidden_end-print-2022.pdf",
+      "pdf_sha256": "0e3d4d72f4eaa8a82a03b5e7d4a1d8c91862ca5959139ee698e99538373b1b14",
+      "pdf_bytes": 931029,
+      "pdf_pages": 5,
+      "pdf_metadata": {
+        "format": "PDF 1.4",
+        "title": "",
+        "author": "planet",
+        "subject": "",
+        "keywords": "",
+        "creator": "Hwp 2022 12.0.0.4547",
+        "producer": "Hancom PDF 1.3.0.547",
+        "creationDate": "D:20261112070215+09'00'",
+        "modDate": "D:20261112070215+09'00'",
+        "trapped": "",
+        "encryption": null
+      },
+      "baseline_open_exit": 1,
+      "baseline_error": "오류: 문서 파싱 실패 - 유효하지 않은 파일: HWPX 오류: XML 파싱 오류: tracking structure: hidden range end without begin",
+      "zero_width_source_xml": []
+    },
+    {
+      "key": "orphan",
+      "input": "samples/issue9026/press_release_orphan_hidden_end.hwpx",
+      "input_bytes": 19982711,
+      "input_sha256": "8e255a1553285f012815d773d229ee8ffdda4cb3d054cb478694f1fe292c5475",
+      "pdf": "pdf/issue9026/press_release_orphan_hidden_end-hwpx-2020.pdf",
+      "pdf_sha256": "28b12eac8681b3da4583aaea015b1655b7336b9734a233baba1028541f925214",
+      "pdf_bytes": 2015679,
+      "pdf_pages": 8,
+      "pdf_metadata": {
+        "format": "PDF 1.4",
+        "title": "",
+        "author": "planet",
+        "subject": "",
+        "keywords": "",
+        "creator": "Hwp 2022 12.0.0.4547",
+        "producer": "Hancom PDF 1.3.0.547",
+        "creationDate": "D:20261113100642+09'00'",
+        "modDate": "D:20261113100642+09'00'",
+        "trapped": "",
+        "encryption": null
+      },
+      "baseline_open_exit": 1,
+      "baseline_error": "오류: 문서 파싱 실패 - 유효하지 않은 파일: HWPX 오류: XML 파싱 오류: tracking structure: hidden range end without begin",
+      "zero_width_source_xml": [
+        {
+          "paragraph": 22,
+          "count": 2
+        }
+      ]
+    }
+  ]
+}

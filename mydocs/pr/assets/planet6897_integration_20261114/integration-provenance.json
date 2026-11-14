@@ -58,5 +58,33 @@
     9068
   ],
   "head": "613d992a61cd1e0da317b3875a686cc73d50c010",
-  "completed_at": "2026-11-14T03:57:30.814363+00:00"
+  "completed_at": "2026-11-14T03:57:30.814363+00:00",
+  "additional_user_authorized_pr9068": {
+    "source_head": "3da35b96822fb58ce4cc249d6ff4829185a17d06",
+    "before": "d0bd67d60b44bd3c1db2048ab01cafa911675d0c",
+    "after": "b60aa5e4a7ac678fe51532f37c0bb861cff2c466",
+    "applied": [
+      {
+        "source": "45bd21963d4c865b768daf6124bc62fb3c00a5ad",
+        "cherry_pick": "87242d768ec1070f8578c0dcda421c599afec859"
+      },
+      {
+        "source": "9005beaffd8f392b29da555600c071bf19031635",
+        "cherry_pick": "8abb1c2a7528ecb7aae59867f72533f41060f877"
+      },
+      {
+        "source": "05b15cb6191b1ea824454fee13d2403a258ccf83",
+        "cherry_pick": "2bcdf7be349231acecb9e731763a378fbfb061a2"
+      },
+      {
+        "source": "3657c2ef58a832aea3404dc9a4c8cdb4b9852ae8",
+        "cherry_pick": "b2bee63160983fadfe3fb66b399ce07ea3749852"
+      },
+      {
+        "source": "3da35b96822fb58ce4cc249d6ff4829185a17d06",
+        "cherry_pick": "b60aa5e4a7ac678fe51532f37c0bb861cff2c466"
+      }
+    ],
+    "details": "pr9068/intake-provenance.json"
+  }
 }
