@@ -219,7 +219,13 @@ impl TypesetState {
             return flow_y.is_finite().then_some(flow_y);
         }
         let stored_layout = profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout();
-        if let (true, Some(seg)) = (stored_layout, para.line_segs.first()) {
+        // 저장기가 편집 줄에 붙인 구현용 LineSeg의 vpos는 문단 내부 좌표다.
+        // 이를 실제 저장 쪽 좌표로 재사용하면 재열기 때 앵커가 쪽 위로 이동한다.
+        let stored_line = para
+            .line_segs
+            .iter()
+            .find(|line| !crate::renderer::typeset::is_synthetic_line_seg(line));
+        if let (true, Some(seg)) = (stored_layout, stored_line) {
             let stored_y = crate::renderer::hwpunit_to_px(
                 seg.vertical_pos
                     .saturating_sub(self.data.vpos_page_base.unwrap_or(0)),
@@ -227,7 +233,7 @@ impl TypesetState {
             );
             return (stored_y.is_finite() && stored_y >= 0.0).then(|| flow_y.min(stored_y));
         }
-        if !para.line_segs.is_empty() {
+        if stored_line.is_some() {
             return None;
         }
         let text_only_before = self
