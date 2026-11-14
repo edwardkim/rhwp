@@ -1,5 +1,5 @@
 //! 관계형·고정형 — [#9016] 글자 없는 문단의 제목 차례 표시 슬롯을 빼고 다중 TAC 표를 자기 저장 줄에 매핑한다.
-//! 주석 갱신: 2026-11-13 04:00 KST (새 파일)
+//! 주석 갱신: 2026-11-14 12:30 KST (새 파일, 직전 파일 커밋 없음)
 //!
 //! 입력: 공개 과업수행계획서(새만금개발청, HWP, 10쪽) `samples/issue9016/1730000-title-mark-empty-stream.hwp`.
 //! 기준: 한컴 engine 2020 Print PDF `pdf/issue9016/1730000-title-mark-empty-stream-2020.pdf`(10쪽).
@@ -11,12 +11,18 @@
 //! - 관계형: 9쪽은 「과업 추진일정」 표를 담고 「과업 예산계획」을 담지 않는다. 10쪽은 「과업 예산계획」과
 //!   예산표 끝 「최종보고」를 함께 담는다.
 //!
-//! 측정(2026-11-13, 이 파일과 같은 커밋의 코드, base = upstream/devel 80b1c354c2,
-//! `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`, raw =
-//! `silhouette_raw_match_percent`, 글꼴 `ttfs/opensource` — 문서 본 글꼴 없는 환경):
-//! - Native: 10쪽 / 10쪽, 9쪽 99.98 · 10쪽 90.95(base 69.21 · 8.23, base 11쪽), 최저 90.95(10쪽)
-//! - fresh WASM(`scripts/wasm-pack-locked.sh --target web`): MEASURE_WASM
-//! - 증거: `mydocs/pr/assets/issue_9016/`(native·wasm TSV, review·overlay PNG)
+//! 측정(2026-11-14, 코드 커밋 475fc73f5e(base devel 5f78bb8d02),
+//! `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`, raw = `silhouette_raw_match_percent`).
+//! 글꼴 공급은 두 경로 같게 맑은 고딕(Regular·Bold)·바탕(Windows/Office 글꼴)과 저장소
+//! `ttfs/opensource` 다. 표지의 HY울릉도M·HY헤드라인M·굴림체 등 문서 face 는 대체 글꼴이다.
+//! - Native: 10/10쪽, 1쪽 93.46 · 9쪽 99.98 · 10쪽 99.62, 전쪽 최저 93.46(1쪽 표지).
+//! - fresh WASM(wasm sha256 430504874f79c84c…): 10/10쪽, 1쪽 92.43 · 9쪽 99.95 · 10쪽 99.82,
+//!   전쪽 최저 92.43(1쪽 표지).
+//! - `ttfs/opensource` 만 공급하면 fresh WASM 1쪽이 89.91 이다(2026-11-13 측정). macOS Chrome 이
+//!   대체 사다리의 Apple SD Gothic Neo 를 골라 Native 의 대체 글꼴과 갈린다. 1쪽 배치는 수정 전후 같다.
+//! - 수정 전(devel 5f78bb8d02): 11쪽(한컴 10쪽)이라 쪽수 불일치.
+//!
+//! 증거: `mydocs/pr/assets/issue_9016/`(Native·fresh WASM TSV, 1·9·10쪽 review·overlay PNG).
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
