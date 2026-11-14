@@ -1,12 +1,12 @@
 //! 검사 유형: 관계형·고정형.
-//! 주석 갱신: 2026-11-14T04:40:00+09:00 (새 파일, 직전 파일 커밋 없음).
+//! 주석 갱신: 2026-11-14T15:04:24+09:00 (독립 Print의 끝 글줄 위치 보완).
 //!
 //! 입력: `samples/issue9062/ws-host-tac-above-offset-float.hwpx`. 공개 결재문서 36390766(저장 줄
 //! 없는 HWPX, 한컴 16쪽)에서 구역 첫 문단과 마지막 「붙임5」 문단 넷(원본 문단 134~137)만 남긴
 //! 축소본이다. 원본 문단을 지우기만 했고 남긴 문단의 속성·내용은 그대로다(끝 문단의 짝 없는
 //! 누름틀 끝 표지 하나만 뺐다). 원본 전체는 4~8·11·12쪽이 다른 결함으로 90% 미만이라 쓰지 않는다.
 //! 기준: 축소본을 한컴 engine 2020 으로 Print 한 `pdf/issue9062/ws-host-tac-above-offset-float-2020.pdf`(2쪽).
-//! - 고정형: 전체 쪽수 2.
+//! - 고정형: 전체 쪽수 2, 독립 Print로 확인한 2쪽 「끝.」 글줄 위끝(±2px).
 //! - 관계형(1쪽): 문단 1(글 「  」)의 글자처럼 취급 제목 표(컨트롤 1) → 문단 2 「(단위 : 천원)」
 //!   → 문단 1 의 자리차지 표(컨트롤 0, 문단 기준 세로 오프셋 6198) 순으로 놓인다. 제목 표
 //!   위끝에서 자리차지 표 위끝까지는 원본 오프셋 6198 − 문단 위 간격 500 − 제목 표 바깥 위 여백 140 이다
@@ -27,6 +27,11 @@
 //!   제목 표는 2쪽 표 뒤, 「(단위 : 천원)」·「끝.」은 3쪽에 놓였다.
 //!
 //! 증거: `mydocs/pr/assets/issue_9062/`(Native·fresh WASM TSV, 1쪽 review·overlay PNG).
+//! 추가 검증(2026-11-14): 통합 후보의 2쪽 raw는 Native 98.76%, fresh WASM 99.86%다.
+//! 같은 입력의 독립 한컴 2020 재저장 HWP에서 빈 문단 3과 「끝.」 문단 4의 실제 저장
+//! vpos는 68224·70404HU다. 본문 위 여백 5668HU를 더한 「끝.」 줄 위끝은 1014.293px다.
+//! 원본 Print와 같은 페이지의 review·overlay에서 잔여 차이가 이 글줄에만 있음을 확인했다.
+//! 형상·절대 좌표 검사는 양쪽 raw 98% 이상인 이 2쪽에만 추가한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::Path;
@@ -171,6 +176,18 @@ fn closing_line_follows_the_continued_table_on_the_second_page() {
     let page = Page::of(&core, 1);
     let (_, continued_bottom) = page.table(1, 0).expect("2쪽에 이어진 표 조각이 있다");
     let closing = page.line_top(4).expect("2쪽에 문단 4 「끝.」이 있다");
+    // 저장 줄이 없는 공백 host의 표가 앞 간격 띠를 이미 차지한 뒤에는,
+    // 이어받기 끝에서 빈 후속 문단의 앞 간격을 다시 더하지 않는다.
+    let empty = page.line_top(3).expect("2쪽에 빈 후속 문단 3이 있다");
+    assert!(
+        (empty - continued_bottom).abs() <= TOLERANCE_PX,
+        "빈 후속 줄 {empty:.2}는 이어받은 표 하단 {continued_bottom:.2}에서 시작한다"
+    );
+    let print_closing_top = hu_to_px(5668 + 70404);
+    assert!(
+        (closing - print_closing_top).abs() <= 2.0,
+        "「끝.」 위끝 {closing:.3}px는 독립 한컴 Print의 {print_closing_top:.3}px와 ±2px 안이다"
+    );
     assert!(
         continued_bottom <= closing,
         "이어진 표 아래끝 {continued_bottom:.2} ≤ 「끝.」 위끝 {closing:.2}"

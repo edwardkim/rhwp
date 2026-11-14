@@ -9268,7 +9268,7 @@ pub(crate) fn split_float_successor_spacing_before(
         })?;
     // 계산한 빈 호스트는 이어받기 조각의 점유 끝이 앞 간격의 하한을 소유한다.
     // 구현 태그가 있는 옛 줄 위치를 저장 사다리 증거로 사용하지 않는다.
-    if computed_empty_table_host(fragment_host, table) {
+    if computed_fragment_host_uses_column_origin(fragment_host, table) {
         return Some(float_pushed_line_spacing_before(
             column_top,
             spacing_before,
@@ -9285,6 +9285,22 @@ pub(crate) fn split_float_successor_spacing_before(
         + i64::from(table.outer_margin_bottom);
     (i64::from(successor_line.vertical_pos) == box_end)
         .then(|| float_pushed_line_spacing_before(column_top, spacing_before, fragment_bottom))
+}
+
+/// 저장 줄 없이 재조판한 host의 이어받기 표는 현재 단 위끝을 앞 간격의 원점으로 쓴다.
+/// 공백 글줄과 TAC 형제는 첫 조각에서 이미 소비됐으므로 끝 조각 뒤에서 원점을 다시 열지 않는다.
+/// 가시 본문·실제 저장 줄·둘 이상의 흐름 개체·음수 오프셋은 기존 원점 계약을 유지한다.
+pub(crate) fn computed_fragment_host_uses_column_origin(para: &Paragraph, table: &Table) -> bool {
+    computed_empty_table_host(para, table)
+        || (!para.layout_object_projection
+            && para
+                .text
+                .chars()
+                .all(|ch| ch.is_whitespace() || ch.is_control() || ch == '\u{FFFC}')
+            && crate::renderer::is_unstored_whitespace_object_host(para)
+            && is_para_topbottom_float(&table.common)
+            && matches!(table.common.vert_align, VertAlign::Top)
+            && signed_hwpunit(table.common.vertical_offset) >= 0)
 }
 
 /// With no line box, an empty block host places its sole flow table
