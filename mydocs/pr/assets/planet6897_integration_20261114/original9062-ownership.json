@@ -1,0 +1,45 @@
+{
+  "scope": "원문 마지막 두 쪽의 쪽수·제어 소유·앞뒤 내용 확인. 원문 전쪽 시각 수용을 뜻하지 않음. 공개 축소본 전2쪽 Native/fresh WASM Print 비교는 claim-validation.json에 별도 기록.",
+  "source_sha": "836615963eedfac9170d45c15cbba32d23e1b4d0",
+  "input_name": "36390766_결재문서본문_2027 회계연도「재난안전예산 사전검토」추진 계획.hwpx",
+  "base_source": "dc3d0ff15e6e7cdb39138c72a5466994dea0e0d4",
+  "base_page_count": 17,
+  "candidate_page_count": 16,
+  "last_saved": {
+    "confidence": "metadata",
+    "product": "hancom-office-2020",
+    "version": "11.0.0.8227"
+  },
+  "page15": {
+    "title": {
+      "para": 134,
+      "control": 1
+    },
+    "unit_paragraph": 135,
+    "large_table": {
+      "para": 134,
+      "control": 0,
+      "rows": [
+        0,
+        41
+      ]
+    },
+    "order_preserved": true
+  },
+  "page16": {
+    "table_continuation": {
+      "para": 134,
+      "control": 0,
+      "rows": [
+        41,
+        81
+      ]
+    },
+    "empty_paragraph": 136,
+    "ending": {
+      "para": 137,
+      "text": "끝."
+    }
+  },
+  "passed": true
+}

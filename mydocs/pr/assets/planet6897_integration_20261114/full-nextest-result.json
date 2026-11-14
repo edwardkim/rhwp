@@ -1,0 +1,37 @@
+{
+  "source_head": "836615963eedfac9170d45c15cbba32d23e1b4d0",
+  "base": "a210861488468868b5992231c55b78798e622e98",
+  "summary": "Summary [ 582.573s] 13533 tests run: 13533 passed (3 slow), 45 skipped",
+  "test_seconds": 582.573,
+  "tests_run": 13533,
+  "passed": 13533,
+  "failed": 0,
+  "slow": 3,
+  "skipped": 45,
+  "execution": {
+    "name": "full-nextest",
+    "command": [
+      "sandbox-exec",
+      "-f",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/Users/tsjang/rhwp/target/pr-review",
+      "--tests",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "exit": 0,
+    "seconds": 1067.561
+  },
+  "environment": "macOS minimal-font sandbox; personal/shared private fonts denied, OS fonts and public fixtures retained",
+  "profile_sha256": "d6303bc13d7fdf3cad52056338eae3164b1a2b6049f09bccc70b6b097b093875",
+  "jobs": 8,
+  "test_threads": 8
+}

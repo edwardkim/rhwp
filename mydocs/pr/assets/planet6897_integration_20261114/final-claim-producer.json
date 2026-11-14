@@ -1,0 +1,17 @@
+{
+  "parent": "836615963eedfac9170d45c15cbba32d23e1b4d0",
+  "base": "a210861488468868b5992231c55b78798e622e98",
+  "source_files": {
+    "src/renderer/reflow_float_host_line.rs": "f65762953b05e52e848d4d490b2741498c2b59b50e1a1beb9f25bc8d62e41262",
+    "src/renderer/float_placement.rs": "8ba69f963cc0ef9ccc55aed7e8a4a87202d629fcee37235de8d5763dd01caa69",
+    "src/renderer/typeset/paragraph/spacing.rs": "03d35b8f00a7ef40dae5a2a33264eca773ece6796573864f7f915e04a9234008",
+    "src/parser/hwpx/tracked_changes.rs": "a7dfbc83d2157187c5608a4cebf5fe1e5f156e75f08ce0974a1553af271a199f",
+    "src/renderer/layout/table_partial.rs": "56aa54a9d63b0afc576bd5993a4765227bc0e467f25e560442fb8b68a44f7bfe",
+    "src/renderer/typeset/section/tail.rs": "6298cbda0d3afd8760157d85116e98c8015f3c3f7e7e5627e9626bc116f02483",
+    "tests/cases/issue_9062_ws_host_tac_above_offset_float.rs": "913a6092bba9b49b62b67f4fea8c20e17bea7ed118fd0160e7b7714a375cfabe"
+  },
+  "native_sha256": "8993fd1c22c17d19cda0aae59378ad9b47215fef933e042c67828e66326a1f68",
+  "wasm_sha256": "5e5847d6aec86158f53a2626af196396c674a963e47b67e3ee7c4411c0480e13",
+  "js_sha256": "2d48f8a6c3ff7f848f08725bb54d04094b296af1a40ae61203081a7cf8061a1a",
+  "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

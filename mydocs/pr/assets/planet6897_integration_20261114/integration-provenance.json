@@ -1,90 +1,118 @@
 {
   "branch": "review/integration-20261114-planet6897-open",
-  "base": "dc3d0ff15e6e7cdb39138c72a5466994dea0e0d4",
-  "phase": "cherry-pick-complete",
+  "current_base": "a210861488468868b5992231c55b78798e622e98",
+  "code_validation_source": "836615963eedfac9170d45c15cbba32d23e1b4d0",
   "applied": [
     {
       "pr": 8976,
       "source": "6e5c6860363e8bb4940fc00569b123335950f009",
-      "integration": "ceecc52eed2b1ecf48e128c90654d2d5b76f3295"
+      "integration": "2dd9ede3f0e8b98382da746db3e476e8f576af92"
     },
     {
       "pr": 8976,
       "source": "e725859e24f9bd0d4631a95ad2d4d37e521193c5",
-      "integration": "b599757ddfb9b78cbedfb857da2a609b078a6c59"
+      "integration": "48714449f303a70eba523c2b91fdb53eab46ffbb"
     },
     {
       "pr": 9064,
       "source": "ad794d2cc6a6cd287882d72474d6c1f3e976eb49",
-      "integration": "f96c1061111f4b65e4360338032f795aefdbe1e2"
+      "integration": "7868d982eeac927515e3f790b373757f602aaa82"
     },
     {
       "pr": 9064,
       "source": "0cc72f29257a566ff5f9d0526ab7de0a7c4bf1d4",
-      "integration": "50d23c5306e5057fd9e6e289d605e332e34f2848"
+      "integration": "ec123deca2e510ce927f9156a01f7daf0403fcd0"
     },
     {
       "pr": 9065,
       "source": "a1a041e5fbba45b126a0a342788a7fdfb995d273",
-      "integration": "5ba88cf90012d4a27c7709b2dfeb472f919ccd20"
+      "integration": "908574e3e6008f8cf605379d2d2e94d074604218"
     },
     {
       "pr": 9065,
       "source": "c4fa5598ba272c405369571f637ee0028b1bc203",
-      "integration": "33a1a15a9fdb064cbc4478315fd9a54427f10c50"
+      "integration": "8e6fad88caa8932007d7dc82042bc9d19b0f58cc"
     },
     {
       "pr": 9067,
       "source": "37acaa703b7bee6417b1b05b4aec235ee2913646",
-      "integration": "0e99e946add783f890f40c308853f0efe558b7cc"
+      "integration": "e7ba944eafd1204f4f9ec7896e8be58097a8d796"
     },
     {
       "pr": 9067,
       "source": "5397280acda82dca76bc7a69d16003e44d7de446",
-      "integration": "5bb6455fe6d9a858ab443dd4d2597b0e720ae5a9"
+      "integration": "cc38e0e4f8d048c89ea6ca59c3db533ffd3c7a54"
     },
     {
       "pr": 9067,
       "source": "475fc73f5eb963b8805c4754635535ddd8f95dfc",
-      "integration": "949cf279c33217a40cedebe4b03dbec1bd77cec1"
+      "integration": "b8392298426d882a201b8bd712d88fcb390924a2"
     },
     {
       "pr": 9067,
       "source": "02ea378e337cc82756f26eb80644448dea848826",
-      "integration": "613d992a61cd1e0da317b3875a686cc73d50c010"
+      "integration": "3010ed79a5936b7400541ffdb2c364f154ff3e16"
+    },
+    {
+      "pr": 9068,
+      "source": "45bd21963d4c865b768daf6124bc62fb3c00a5ad",
+      "integration": "9f2f0cc0448d4653c79b5acff3da8eacdb9eb254"
+    },
+    {
+      "pr": 9068,
+      "source": "9005beaffd8f392b29da555600c071bf19031635",
+      "integration": "413d5bf94725cb191bb6a4ae0cbc3d323476d203"
+    },
+    {
+      "pr": 9068,
+      "source": "05b15cb6191b1ea824454fee13d2403a258ccf83",
+      "integration": "23d4e032a8f4fc87de2aae89e59282066a76b104"
+    },
+    {
+      "pr": 9068,
+      "source": "3657c2ef58a832aea3404dc9a4c8cdb4b9852ae8",
+      "integration": "f863acd024f7dc56fd60b0f85a4102074a672b87"
+    },
+    {
+      "pr": 9068,
+      "source": "3da35b96822fb58ce4cc249d6ff4829185a17d06",
+      "integration": "0ec93e3ae04102ca63fd255f606dd82f2dba1f1e"
     }
   ],
-  "excluded": [
-    9068
+  "maintainer_corrections": [
+    {
+      "commit": "ccf3199ae0103db9130ceeab0a000e4fe3cf4e38",
+      "title": "fix: 음수 오프셋 중첩 표 host의 글줄 높이 중복 가산 보정"
+    },
+    {
+      "commit": "32e589da308ad7a145fb78f3998c0196f1550906",
+      "title": "fix: 공백 host의 이어받기 표 뒤 앞 간격 중복 소비 보정"
+    },
+    {
+      "commit": "836615963eedfac9170d45c15cbba32d23e1b4d0",
+      "title": "fix: 공백 호스트 줄의 종료 글자 높이 보존"
+    }
   ],
-  "head": "613d992a61cd1e0da317b3875a686cc73d50c010",
-  "completed_at": "2026-11-14T03:57:30.814363+00:00",
-  "additional_user_authorized_pr9068": {
-    "source_head": "3da35b96822fb58ce4cc249d6ff4829185a17d06",
-    "before": "d0bd67d60b44bd3c1db2048ab01cafa911675d0c",
-    "after": "b60aa5e4a7ac678fe51532f37c0bb861cff2c466",
-    "applied": [
-      {
-        "source": "45bd21963d4c865b768daf6124bc62fb3c00a5ad",
-        "cherry_pick": "87242d768ec1070f8578c0dcda421c599afec859"
-      },
-      {
-        "source": "9005beaffd8f392b29da555600c071bf19031635",
-        "cherry_pick": "8abb1c2a7528ecb7aae59867f72533f41060f877"
-      },
-      {
-        "source": "05b15cb6191b1ea824454fee13d2403a258ccf83",
-        "cherry_pick": "2bcdf7be349231acecb9e731763a378fbfb061a2"
-      },
-      {
-        "source": "3657c2ef58a832aea3404dc9a4c8cdb4b9852ae8",
-        "cherry_pick": "b2bee63160983fadfe3fb66b399ce07ea3749852"
-      },
-      {
-        "source": "3da35b96822fb58ce4cc249d6ff4829185a17d06",
-        "cherry_pick": "b60aa5e4a7ac678fe51532f37c0bb861cff2c466"
-      }
-    ],
-    "details": "pr9068/intake-provenance.json"
+  "excluded": [],
+  "initial_ci_error_exclusion": {
+    "pr": 9068,
+    "head": "3657c2ef58a832aea3404dc9a4c8cdb4b9852ae8",
+    "superseded_by_explicit_user_inclusion": true,
+    "current_verified_green_source_head": "3da35b96822fb58ce4cc249d6ff4829185a17d06"
+  },
+  "rebase": {
+    "before": "99da76e17283425595f75662e8041baf247bbab8",
+    "base": "a210861488468868b5992231c55b78798e622e98",
+    "after": "8ed9e46a5d12c4765c74fefe4b469faf38c0c8e9",
+    "conflicts": [],
+    "all_26_range_diff_entries_equal": true
+  },
+  "initial_intake_base": "dc3d0ff15e6e7cdb39138c72a5466994dea0e0d4",
+  "source_pr_heads": {
+    "8976": "e725859e24f9bd0d4631a95ad2d4d37e521193c5",
+    "9064": "0cc72f29257a566ff5f9d0526ab7de0a7c4bf1d4",
+    "9065": "c4fa5598ba272c405369571f637ee0028b1bc203",
+    "9067": "02ea378e337cc82756f26eb80644448dea848826",
+    "9068": "3da35b96822fb58ce4cc249d6ff4829185a17d06"
   }
 }

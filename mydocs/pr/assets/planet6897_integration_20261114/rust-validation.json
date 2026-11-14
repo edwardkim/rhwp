@@ -1,7 +1,7 @@
 {
-  "head": "44fdbd164199cc0ba1c75c3c9dc293ea78156dfc",
-  "base": "dc3d0ff15e6e7cdb39138c72a5466994dea0e0d4",
-  "product_source_sha256": "1c2fec4b97a0ed065714c5416e863dc94f3c6aa1a219ec89ea593bd20b4fc8bc",
+  "head": "836615963eedfac9170d45c15cbba32d23e1b4d0",
+  "base": "a210861488468868b5992231c55b78798e622e98",
+  "product_source_sha256": "8ba69f963cc0ef9ccc55aed7e8a4a87202d629fcee37235de8d5763dd01caa69",
   "status": "completed",
   "results": [
     {
@@ -12,8 +12,8 @@
         "--prepare"
       ],
       "exit": 0,
-      "seconds": 3.946,
-      "log_sha256": "b6df54859d25b7dd80235e3c6057e54750f5f28c6c16b2f071d589dcfe143214",
+      "seconds": 2.292,
+      "log_sha256": "272c0228c1b97faa6bb92f11f1199151e4d88038d0d9191893f9f937dbdba286",
       "summaries": []
     },
     {
@@ -26,7 +26,7 @@
         "--check"
       ],
       "exit": 0,
-      "seconds": 15.209,
+      "seconds": 14.171,
       "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "summaries": []
     },
@@ -37,12 +37,142 @@
         "scripts/rust-test-suite-manifest.mjs",
         "--check",
         "--base-ref",
-        "dc3d0ff15e6e7cdb39138c72a5466994dea0e0d4"
+        "a210861488468868b5992231c55b78798e622e98"
       ],
       "exit": 0,
-      "seconds": 0.842,
-      "log_sha256": "e31d870c1281b800e7e674078e847dc245447c69224ab6e1e02dd4b26322ca1d",
+      "seconds": 1.337,
+      "log_sha256": "662f5ac860dcfd5e14b4cc1b7e14b83daa0e8ce375621f02eb361a8fec140b5d",
       "summaries": []
+    },
+    {
+      "name": "focused-verified_computed_split_successor_spacing",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "verified_computed_split_successor_spacing",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit": 0,
+      "seconds": 17.367,
+      "log_sha256": "e70e5cc2b0012eb981beca7405ec02e248af56ce97bd27b56043a52f08adb39e",
+      "summaries": [
+        "Finished `release-test` profile [optimized] target(s) in 14.82s",
+        "Summary [   0.028s] 6 tests run: 6 passed, 324 skipped"
+      ]
+    },
+    {
+      "name": "focused-verified_computed_split_successor_multiline",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "verified_computed_split_successor_multiline",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit": 0,
+      "seconds": 15.118,
+      "log_sha256": "ff3a7664eda0fc5dd723dd17d279433989ca588aa6a121cfdba3909492dba04d",
+      "summaries": [
+        "Finished `release-test` profile [optimized] target(s) in 13.30s",
+        "Summary [   0.112s] 2 tests run: 2 passed, 329 skipped"
+      ]
+    },
+    {
+      "name": "focused-issue_7330_float_push_spacing_boundaries",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_7330_float_push_spacing_boundaries",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit": 0,
+      "seconds": 25.459,
+      "log_sha256": "0881f1655c534c67c00d8dc4008982f4b746f0337c81d26beda742068c28f8ca",
+      "summaries": [
+        "Finished `release-test` profile [optimized] target(s) in 21.83s",
+        "Summary [   0.119s] 7 tests run: 7 passed, 314 skipped"
+      ]
+    },
+    {
+      "name": "focused-issue_9026_repeated_hidden_range_end",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_9026_repeated_hidden_range_end",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit": 0,
+      "seconds": 18.854,
+      "log_sha256": "ad8de04d0240f20c41350d825e1854ee06d7ff595e987e54402c8b1648778660",
+      "summaries": [
+        "Finished `release-test` profile [optimized] target(s) in 12.52s",
+        "Summary [   0.055s] 4 tests run: 4 passed, 334 skipped"
+      ]
+    },
+    {
+      "name": "focused-rowbreak_short_row_whole_carry",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "rowbreak_short_row_whole_carry",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit": 0,
+      "seconds": 15.296,
+      "log_sha256": "59294bcd92864c351e827efe0c28e72658221bfac154edc28f6e78bfd0b2acd9",
+      "summaries": [
+        "Finished `release-test` profile [optimized] target(s) in 10.93s",
+        "Summary [   2.732s] 24 tests run: 24 passed, 293 skipped"
+      ]
     },
     {
       "name": "focused-issue_8969_owned_tac_lines",
@@ -63,10 +193,11 @@
         "--no-fail-fast"
       ],
       "exit": 0,
-      "seconds": 22.178,
-      "log_sha256": "94f0d4a7740d699b13358f2ebb530573a6288c96ddc9a6f7f5dd0cdc65e79c0d",
+      "seconds": 11.788,
+      "log_sha256": "d4d663faa55c965b8d0bf37b969f186078c6d5a25f29f17ef6a491851ff3720d",
       "summaries": [
-        "Summary [   7.141s] 3 tests run: 3 passed, 340 skipped"
+        "Finished `release-test` profile [optimized] target(s) in 1.35s",
+        "Summary [   7.875s] 3 tests run: 3 passed, 328 skipped"
       ]
     },
     {
@@ -88,10 +219,11 @@
         "--no-fail-fast"
       ],
       "exit": 0,
-      "seconds": 12.588,
-      "log_sha256": "e46ccaade76031ec31a06e807df7b674b386967eeefdab80d92cc93fb14bc735",
+      "seconds": 20.724,
+      "log_sha256": "85007092f8eee60a71edcab87754dd1e36b5036fa7f37016e029da77281a4073",
       "summaries": [
-        "Summary [   0.056s] 4 tests run: 4 passed, 282 skipped"
+        "Finished `release-test` profile [optimized] target(s) in 18.98s",
+        "Summary [   0.048s] 5 tests run: 5 passed, 323 skipped"
       ]
     },
     {
@@ -113,10 +245,11 @@
         "--no-fail-fast"
       ],
       "exit": 0,
-      "seconds": 15.271,
-      "log_sha256": "beaa501f912a45fc3dca29bc9bc1c2b6acdfa692790f85fe745e99ac5ba5f692",
+      "seconds": 18.578,
+      "log_sha256": "33ec5b5a0a968c29181e4780cef06f6d6ab42b04c1fbaf7c7cae28f74df89d13",
       "summaries": [
-        "Summary [   1.288s] 4 tests run: 4 passed, 325 skipped"
+        "Finished `release-test` profile [optimized] target(s) in 14.98s",
+        "Summary [   0.067s] 4 tests run: 4 passed, 340 skipped"
       ]
     },
     {
@@ -138,10 +271,11 @@
         "--no-fail-fast"
       ],
       "exit": 0,
-      "seconds": 33.296,
-      "log_sha256": "d809024be73d17540b1a603f18c0ac129d10628cfbd47a07049a46ea1cef75b7",
+      "seconds": 14.934,
+      "log_sha256": "7984368a66543178e99cc9e7bc3ca8b1f8d652ae2ced7296d807d56b5614fdf3",
       "summaries": [
-        "Summary [   0.321s] 1 test run: 1 passed, 342 skipped"
+        "Finished `release-test` profile [optimized] target(s) in 11.23s",
+        "Summary [   0.029s] 1 test run: 1 passed, 283 skipped"
       ]
     },
     {
@@ -163,10 +297,141 @@
         "--no-fail-fast"
       ],
       "exit": 0,
-      "seconds": 80.143,
-      "log_sha256": "bc25d14fb2a9e68ea001ba2835d1ab04892c699b1d1a3d210c7f8259435278ee",
+      "seconds": 46.773,
+      "log_sha256": "0028d67632488cd8c0d93a068210e136afeb0848b99d665df717b91340dfb46e",
       "summaries": [
-        "Summary [  34.681s] 1 test run: 1 passed, 335 skipped"
+        "Finished `release-test` profile [optimized] target(s) in 15.69s",
+        "Summary [  29.537s] 1 test run: 1 passed, 348 skipped"
+      ]
+    },
+    {
+      "name": "focused-issue_8660_restricted_para_object_next_page",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8660_restricted_para_object_next_page",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit": 0,
+      "seconds": 2.532,
+      "log_sha256": "7d32fee41e8993f9044463aeb61b5697c8c15e6c1fb17d9a6cff0759705f4c0d",
+      "summaries": [
+        "Finished `release-test` profile [optimized] target(s) in 0.50s",
+        "Summary [   0.117s] 12 tests run: 12 passed, 318 skipped"
+      ]
+    },
+    {
+      "name": "focused-tac_space_tail_hang_before_float_anchor",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "tac_space_tail_hang_before_float_anchor",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit": 0,
+      "seconds": 1.331,
+      "log_sha256": "05809b30c3a91cb5bc76f3f9fdebb12ff0f6646c108a0d8d536798da6c4d723d",
+      "summaries": [
+        "Finished `release-test` profile [optimized] target(s) in 0.55s",
+        "Summary [   0.053s] 4 tests run: 4 passed, 313 skipped"
+      ]
+    },
+    {
+      "name": "focused-issue_reflow_empty_float_host_line",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_reflow_empty_float_host_line",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit": 0,
+      "seconds": 14.302,
+      "log_sha256": "31baa4ec43832d8837805ac7918660771c521c92490af5848e1261f9a58273e0",
+      "summaries": [
+        "Finished `release-test` profile [optimized] target(s) in 12.96s",
+        "Summary [   0.021s] 2 tests run: 2 passed, 348 skipped"
+      ]
+    },
+    {
+      "name": "focused-issue_8573_empty_host_square_beside_line",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8573_empty_host_square_beside_line",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit": 0,
+      "seconds": 11.537,
+      "log_sha256": "dab7ba62a7446b0d2689056f99cd730c6f0d310b68b722fc98a3f38861d7d9d5",
+      "summaries": [
+        "Finished `release-test` profile [optimized] target(s) in 10.08s",
+        "Summary [   0.019s] 4 tests run: 4 passed, 339 skipped"
+      ]
+    },
+    {
+      "name": "focused-issue_8160_terminal_style_cell_frame",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8160_terminal_style_cell_frame",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit": 0,
+      "seconds": 2.149,
+      "log_sha256": "8f6a495d42728779133d1e3cb540252c85a19bc66cf488f3c88335a7f50066e6",
+      "summaries": [
+        "Finished `release-test` profile [optimized] target(s) in 1.12s",
+        "Summary [   0.266s] 1 test run: 1 passed, 316 skipped"
       ]
     },
     {
@@ -188,10 +453,11 @@
         "--no-fail-fast"
       ],
       "exit": 0,
-      "seconds": 20.67,
-      "log_sha256": "151dd92b5a4153fad8170c157f897e66d873090a422ae86312ae12dcfea0cd1b",
+      "seconds": 12.879,
+      "log_sha256": "a924f9ec63b7a8a1ad92c272cda47f19ea17e2a919f663492d57503e3f6825a2",
       "summaries": [
-        "Summary [   0.018s] 6 tests run: 6 passed, 343 skipped"
+        "Finished `release-test` profile [optimized] target(s) in 11.51s",
+        "Summary [   0.027s] 6 tests run: 6 passed, 350 skipped"
       ]
     },
     {
@@ -213,10 +479,11 @@
         "--no-fail-fast"
       ],
       "exit": 0,
-      "seconds": 14.628,
-      "log_sha256": "f512af11a25214f0ae5affbc9eeed27a5a47f24c8400a60c3a7bac3628c0661d",
+      "seconds": 66.747,
+      "log_sha256": "466361579798013d6f9417780891c0308dd7a2a08681860139722e611e1b35ba",
       "summaries": [
-        "Summary [   0.216s] 27 tests run: 27 passed, 323 skipped"
+        "Finished `release-test` profile [optimized] target(s) in 34.09s",
+        "Summary [   5.777s] 27 tests run: 27 passed, 316 skipped"
       ]
     },
     {
@@ -238,10 +505,11 @@
         "--no-fail-fast"
       ],
       "exit": 0,
-      "seconds": 25.316,
-      "log_sha256": "e1f3b3d06993f266d3783866712e418170000cdfcd2293731fa94999cafd2e61",
+      "seconds": 34.06,
+      "log_sha256": "260e931dc64376b22a6c18bbcac7bd763f4741c5b1ba983d0e90987afcfc1291",
       "summaries": [
-        "Summary [   0.898s] 7 tests run: 7 passed, 324 skipped"
+        "Finished `release-test` profile [optimized] target(s) in 15.48s",
+        "Summary [   0.824s] 7 tests run: 7 passed, 331 skipped"
       ]
     },
     {
@@ -264,10 +532,11 @@
         "--no-fail-fast"
       ],
       "exit": 0,
-      "seconds": 686.542,
-      "log_sha256": "bf4c7716eaa8bdae7c767141e4b63fb12ab88680290f575863bc6f4c56cfb178",
+      "seconds": 1067.561,
+      "log_sha256": "504eac41fc3a95ad0da9c28dc8694cf1e4f55c6e4562dd38df580d0bd7cc0102",
       "summaries": [
-        "Summary [ 357.730s] 13512 tests run: 13512 passed (1 slow), 45 skipped"
+        "Finished `release-test` profile [optimized] target(s) in 7m 32s",
+        "Summary [ 582.573s] 13533 tests run: 13533 passed (3 slow), 45 skipped"
       ]
     },
     {
@@ -293,10 +562,11 @@
         "8"
       ],
       "exit": 0,
-      "seconds": 228.318,
-      "log_sha256": "e091369ce29af0ebfc2b9322490852295dd0d1ceab25769a383887bd06ddd68a",
+      "seconds": 672.791,
+      "log_sha256": "b2bf4995df62a8a1c1a11b7beb7e5107da07a7831740ff10acb9de05f76c067f",
       "summaries": [
-        "test result: ok. 3852 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 13.10s",
+        "Finished `release-test` profile [optimized] target(s) in 10m 48s",
+        "test result: ok. 3852 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 22.56s",
         "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
         "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
         "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
@@ -323,10 +593,11 @@
         "--no-fail-fast"
       ],
       "exit": 0,
-      "seconds": 203.265,
-      "log_sha256": "a2e4d796da6cb1936f1a5daad537ff037cb084c37f463e4915bb64c31cd7898b",
+      "seconds": 215.419,
+      "log_sha256": "d52cab60b4dbc35bbe5fdc4f2e5ddc9b59e27a700d7d184aeba5edf16b5eb28d",
       "summaries": [
-        "Summary [   2.582s] 2 tests run: 2 passed, 321 skipped"
+        "Finished `release-test` profile [optimized] target(s) in 3m 27s",
+        "Summary [   2.536s] 2 tests run: 2 passed, 332 skipped"
       ]
     },
     {
@@ -350,10 +621,11 @@
         "--no-fail-fast"
       ],
       "exit": 0,
-      "seconds": 16.105,
-      "log_sha256": "ed416303bb9ebe14c231b0a1e691397f00a4a032a33e0131fa9df09f8c33d6a9",
+      "seconds": 6.448,
+      "log_sha256": "21200d19275232ae9aa726172546d376303f9e3619d93d086c7aa9bef57a780f",
       "summaries": [
-        "Summary [   2.388s] 36 tests run: 36 passed, 287 skipped"
+        "Finished `release-test` profile [optimized] target(s) in 1.31s",
+        "Summary [   2.333s] 36 tests run: 36 passed, 298 skipped"
       ]
     },
     {
@@ -371,9 +643,11 @@
         "warnings"
       ],
       "exit": 0,
-      "seconds": 79.627,
-      "log_sha256": "368108815af7a6711b9dd74ea6c3acb11aec9e3cac3a87c80779bf7ab9fe85e1",
-      "summaries": []
+      "seconds": 28.521,
+      "log_sha256": "ae7a4a16c2233fd09ab2ed3ae59a189f89ce5aca83664f0639006c4658e558a6",
+      "summaries": [
+        "Finished `dev` profile [unoptimized + debuginfo] target(s) in 28.27s"
+      ]
     },
     {
       "name": "wasm-clippy",
@@ -395,9 +669,11 @@
         "warnings"
       ],
       "exit": 0,
-      "seconds": 62.371,
-      "log_sha256": "040aaeb83e7bbaf567a040611173438427e0e48dfc734d83bde540527962b100",
-      "summaries": []
+      "seconds": 26.574,
+      "log_sha256": "062a6195174d2446a9db4640d0fe78ee09fcf9c044a1076571b01abab93389b0",
+      "summaries": [
+        "Finished `dev` profile [unoptimized + debuginfo] target(s) in 26.47s"
+      ]
     },
     {
       "name": "workspace-build",
@@ -412,9 +688,11 @@
         "8"
       ],
       "exit": 0,
-      "seconds": 103.311,
-      "log_sha256": "a323462cd5b75c8c0d338b85a1b1dd6132217725ecfe6128fc70e47344da05b2",
-      "summaries": []
+      "seconds": 38.888,
+      "log_sha256": "2c77cb9f21b02fcb8e41dd6d60e94dbd979c2b8aef4c0b60066b1ab686fa0c0e",
+      "summaries": [
+        "Finished `dev` profile [unoptimized + debuginfo] target(s) in 38.78s"
+      ]
     },
     {
       "name": "all-target-clippy",
@@ -433,18 +711,16 @@
         "warnings"
       ],
       "exit": 0,
-      "seconds": 83.343,
-      "log_sha256": "123e99b9d41834a4b213a40dbec33036cd62da3965aab13bfb4e2d591ca982ac",
-      "summaries": []
+      "seconds": 43.724,
+      "log_sha256": "26b5926877027e7276bd7bb8a05fba0529b07904d3585abbb7ddaafeaa1a97a8",
+      "summaries": [
+        "Finished `dev` profile [unoptimized + debuginfo] target(s) in 43.43s"
+      ]
     }
   ],
+  "source_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   "active": null,
   "passed": true,
-  "source_identity": {
-    "validated_code_commit": "44fdbd164199cc0ba1c75c3c9dc293ea78156dfc",
-    "current_documentation_commit": "c2e1983e72d7fed44b790e51afb4a0e94ae14e45",
-    "post_validation_product_diff": [],
-    "note": "Later commits contain formal evidence only; product, tests, config and reference inputs are unchanged."
-  },
-  "unit_tiers": "not applicable: no src/crates #[cfg(test)] changes"
+  "runtime_source": "836615963eedfac9170d45c15cbba32d23e1b4d0",
+  "minimal_font_profile_sha256": "d6303bc13d7fdf3cad52056338eae3164b1a2b6049f09bccc70b6b097b093875"
 }

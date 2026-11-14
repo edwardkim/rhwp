@@ -1,7 +1,7 @@
 {
   "status": "completed",
   "producer": {
-    "status": "completed",
+    "status": "ready",
     "results": [
       {
         "name": "format-check",
@@ -13,7 +13,17 @@
           "--check"
         ],
         "exit": 0,
-        "seconds": 15.047
+        "seconds": 12.881
+      },
+      {
+        "name": "prepare",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit": 0,
+        "seconds": 1.554
       },
       {
         "name": "native-build",
@@ -33,22 +43,22 @@
           "/Users/tsjang/rhwp/target/pr-review"
         ],
         "exit": 0,
-        "seconds": 165.158
+        "seconds": 169.066
       },
       {
-        "name": "native-whole",
+        "name": "native-ws-host",
         "command": [
           "/Users/tsjang/rhwp/venv/bin/python",
           "scripts/visual_sweep.py",
           "--silhouette-only",
           "--hwp",
-          "samples/issue8969/36400485-owned-tac-lines.hwpx",
+          "samples/issue9062/ws-host-tac-above-offset-float.hwpx",
           "--pdf",
-          "pdf/issue8969/36400485-2020.pdf",
+          "pdf/issue9062/ws-host-tac-above-offset-float-2020.pdf",
           "--key",
-          "owned-tac",
+          "ws-host",
           "--rhwp-bin",
-          "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/rhwp-native",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/rhwp-native",
           "--compat",
           "2022",
           "--dpi",
@@ -56,10 +66,19 @@
           "--page-workers",
           "8",
           "--out",
-          "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/native"
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/claims/native"
         ],
         "exit": 0,
-        "seconds": 68.22
+        "seconds": 13.619
+      },
+      {
+        "name": "focused-boundaries",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/run-focused.py"
+        ],
+        "exit": 0,
+        "seconds": 244.635
       },
       {
         "name": "fresh-wasm",
@@ -72,43 +91,25 @@
           "--no-opt"
         ],
         "exit": 0,
-        "seconds": 301.54
-      },
-      {
-        "name": "wasm-whole",
-        "command": [
-          "/Users/tsjang/rhwp/venv/bin/python",
-          "scripts/visual_sweep.py",
-          "--silhouette-only",
-          "--hwp",
-          "samples/issue8969/36400485-owned-tac-lines.hwpx",
-          "--pdf",
-          "pdf/issue8969/36400485-2020.pdf",
-          "--key",
-          "owned-tac",
-          "--rhwp-bin",
-          "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/rhwp-native",
-          "--compat",
-          "2022",
-          "--dpi",
-          "96",
-          "--page-workers",
-          "8",
-          "--wasm-pkg",
-          "/Users/tsjang/rhwp/pkg",
-          "--out",
-          "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/wasm"
-        ],
-        "exit": 0,
-        "seconds": 136.803
+        "seconds": 321.087
       }
     ],
-    "parent": "613d992a61cd1e0da317b3875a686cc73d50c010",
-    "source_sha256": "1c2fec4b97a0ed065714c5416e863dc94f3c6aa1a219ec89ea593bd20b4fc8bc",
-    "patch_sha256": "200b2d55cff59046244e9a496a95d36d006c6c8bbef808443c2ed2f70d7f9b25",
-    "active": null,
-    "native_sha256": "e3d439c6412b2633583feb441abc71c7959f86258b6df4b4cfc6d160109cf4ef",
-    "wasm_sha256": "6e9b6ca665848ba49b87f9c2488bd4a9c4d70f62311ee17e3a8df6a6b2124174",
+    "base": "a210861488468868b5992231c55b78798e622e98",
+    "parent": "836615963eedfac9170d45c15cbba32d23e1b4d0",
+    "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "source_sha256": "8ba69f963cc0ef9ccc55aed7e8a4a87202d629fcee37235de8d5763dd01caa69",
+    "source_files": {
+      "src/renderer/reflow_float_host_line.rs": "f65762953b05e52e848d4d490b2741498c2b59b50e1a1beb9f25bc8d62e41262",
+      "src/renderer/float_placement.rs": "8ba69f963cc0ef9ccc55aed7e8a4a87202d629fcee37235de8d5763dd01caa69",
+      "src/renderer/typeset/paragraph/spacing.rs": "03d35b8f00a7ef40dae5a2a33264eca773ece6796573864f7f915e04a9234008",
+      "src/parser/hwpx/tracked_changes.rs": "a7dfbc83d2157187c5608a4cebf5fe1e5f156e75f08ce0974a1553af271a199f",
+      "src/renderer/layout/table_partial.rs": "56aa54a9d63b0afc576bd5993a4765227bc0e467f25e560442fb8b68a44f7bfe",
+      "src/renderer/typeset/section/tail.rs": "6298cbda0d3afd8760157d85116e98c8015f3c3f7e7e5627e9626bc116f02483",
+      "tests/cases/issue_9062_ws_host_tac_above_offset_float.rs": "913a6092bba9b49b62b67f4fea8c20e17bea7ed118fd0160e7b7714a375cfabe"
+    },
+    "active": "fresh-wasm",
+    "native_sha256": "8993fd1c22c17d19cda0aae59378ad9b47215fef933e042c67828e66326a1f68",
+    "wasm_sha256": "5e5847d6aec86158f53a2626af196396c674a963e47b67e3ee7c4411c0480e13",
     "js_sha256": "2d48f8a6c3ff7f848f08725bb54d04094b296af1a40ae61203081a7cf8061a1a"
   },
   "baseline_sha256": "ee41455cf7f05585487d92961ccb9fd8160d5d1e15c3567019ea89e2b7bf2aeb",
@@ -129,9 +130,10 @@
       "minimum": "100.00",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/native/angle-narrow.tsv",
       "font_environment": null,
-      "seconds": 6.635,
+      "seconds": 6.515,
       "passed": true,
-      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "tsv_bytes": 132
     },
     {
       "key": "seo-body-list-typed",
@@ -146,9 +148,10 @@
       "minimum": "100.00",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/native/seo-body-list-typed.tsv",
       "font_environment": null,
-      "seconds": 2.882,
+      "seconds": 3.158,
       "passed": true,
-      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "tsv_bytes": 132
     },
     {
       "key": "seo-helvetica-styles",
@@ -163,9 +166,10 @@
       "minimum": "99.25",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/native/seo-helvetica-styles.tsv",
       "font_environment": null,
-      "seconds": 3.353,
+      "seconds": 3.677,
       "passed": true,
-      "tsv_sha256": "46ccdd2e0e2dfdec7bc1366e2418de12c83faf6bf5b872b9be8ee71fe24a7f46"
+      "tsv_sha256": "46ccdd2e0e2dfdec7bc1366e2418de12c83faf6bf5b872b9be8ee71fe24a7f46",
+      "tsv_bytes": 130
     },
     {
       "key": "seo-pic-crop-01",
@@ -180,9 +184,10 @@
       "minimum": "100.00",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/native/seo-pic-crop-01.tsv",
       "font_environment": null,
-      "seconds": 2.841,
+      "seconds": 3.044,
       "passed": true,
-      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "tsv_bytes": 132
     },
     {
       "key": "seo-re-03-latin",
@@ -197,9 +202,10 @@
       "minimum": "100.00",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/native/seo-re-03-latin.tsv",
       "font_environment": null,
-      "seconds": 3.22,
+      "seconds": 3.16,
       "passed": true,
-      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "tsv_bytes": 132
     },
     {
       "key": "seo-shape-group-02",
@@ -214,9 +220,10 @@
       "minimum": "100.00",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/native/seo-shape-group-02.tsv",
       "font_environment": null,
-      "seconds": 2.968,
+      "seconds": 2.934,
       "passed": true,
-      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "tsv_bytes": 132
     },
     {
       "key": "issue8040-insert",
@@ -231,9 +238,10 @@
       "minimum": "99.99",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/native/issue8040-insert.tsv",
       "font_environment": null,
-      "seconds": 9.03,
+      "seconds": 9.748,
       "passed": true,
-      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08"
+      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "tsv_bytes": 190
     },
     {
       "key": "issue8040-insert-delete",
@@ -248,9 +256,10 @@
       "minimum": "99.99",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/native/issue8040-insert-delete.tsv",
       "font_environment": null,
-      "seconds": 7.888,
+      "seconds": 9.889,
       "passed": true,
-      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08"
+      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "tsv_bytes": 190
     },
     {
       "key": "yeongwol",
@@ -265,9 +274,10 @@
       "minimum": "99.99",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/native/yeongwol.tsv",
       "font_environment": null,
-      "seconds": 4.948,
+      "seconds": 10.752,
       "passed": true,
-      "tsv_sha256": "b6b1ffe9fea23444d7678ec5e5cb78474d71569b3fee154d962ad95b9adf5f60"
+      "tsv_sha256": "b6b1ffe9fea23444d7678ec5e5cb78474d71569b3fee154d962ad95b9adf5f60",
+      "tsv_bytes": 190
     },
     {
       "key": "issue7905",
@@ -282,9 +292,10 @@
       "minimum": "98.86",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/native/issue7905.tsv",
       "font_environment": null,
-      "seconds": 5.338,
+      "seconds": 5.866,
       "passed": true,
-      "tsv_sha256": "b828c10e23bcef9c5e7078451d3c8d92e1cb9811a7ac3a952c084a741f6ac6fe"
+      "tsv_sha256": "b828c10e23bcef9c5e7078451d3c8d92e1cb9811a7ac3a952c084a741f6ac6fe",
+      "tsv_bytes": 220
     },
     {
       "key": "outline",
@@ -299,9 +310,10 @@
       "minimum": "100.00",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/native/outline.tsv",
       "font_environment": null,
-      "seconds": 13.913,
+      "seconds": 24.743,
       "passed": true,
-      "tsv_sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675"
+      "tsv_sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+      "tsv_bytes": 292
     },
     {
       "key": "nested",
@@ -316,9 +328,10 @@
       "minimum": "98.36",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/native/nested.tsv",
       "font_environment": "/Users/tsjang/rhwp/mydocs/pr/assets/planet6897_clean19_20261110/nested-original-approved-font-environment.json",
-      "seconds": 14.442,
+      "seconds": 24.972,
       "passed": true,
-      "tsv_sha256": "7623a0ae2724adcd0400ac8150fee75e71bf342d216445255c9210ee9bbc1620"
+      "tsv_sha256": "7623a0ae2724adcd0400ac8150fee75e71bf342d216445255c9210ee9bbc1620",
+      "tsv_bytes": 432
     },
     {
       "key": "sample16-hwp2022",
@@ -333,9 +346,10 @@
       "minimum": "100.00",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/native/sample16-hwp2022.tsv",
       "font_environment": "/Users/tsjang/rhwp/mydocs/pr/assets/planet6897_integration_final/pr8389_8397/hwp3-2020-font-environment.json",
-      "seconds": 22.819,
+      "seconds": 42.564,
       "passed": true,
-      "tsv_sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7"
+      "tsv_sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+      "tsv_bytes": 1447
     },
     {
       "key": "sample16-hwp2024",
@@ -350,9 +364,10 @@
       "minimum": "99.99",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/native/sample16-hwp2024.tsv",
       "font_environment": "/Users/tsjang/rhwp/mydocs/pr/assets/planet6897_integration_final/pr8389_8397/hwp3-2024-font-environment.json",
-      "seconds": 21.393,
+      "seconds": 36.107,
       "passed": true,
-      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942"
+      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "tsv_bytes": 1447
     },
     {
       "key": "sample16-hwpx",
@@ -367,9 +382,10 @@
       "minimum": "99.99",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/native/sample16-hwpx.tsv",
       "font_environment": "/Users/tsjang/rhwp/mydocs/pr/assets/planet6897_integration_final/pr8389_8397/hwp3-2024-font-environment.json",
-      "seconds": 20.259,
+      "seconds": 23.036,
       "passed": true,
-      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942"
+      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "tsv_bytes": 1447
     },
     {
       "key": "handbook-hwp",
@@ -384,9 +400,10 @@
       "minimum": "99.96",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/native/handbook-hwp.tsv",
       "font_environment": "/Users/tsjang/rhwp/mydocs/pr/assets/planet6897_integration_final/pr8389_8397/handbook-font-environment.json",
-      "seconds": 67.906,
+      "seconds": 74.013,
       "passed": true,
-      "tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308"
+      "tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+      "tsv_bytes": 8428
     },
     {
       "key": "handbook-hwpx",
@@ -401,9 +418,10 @@
       "minimum": "99.96",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/native/handbook-hwpx.tsv",
       "font_environment": "/Users/tsjang/rhwp/mydocs/pr/assets/planet6897_integration_final/pr8389_8397/handbook-font-environment.json",
-      "seconds": 226.781,
+      "seconds": 340.212,
       "passed": true,
-      "tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308"
+      "tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+      "tsv_bytes": 8428
     },
     {
       "key": "sample10",
@@ -418,9 +436,10 @@
       "minimum": "99.56",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/native/sample10.tsv",
       "font_environment": null,
-      "seconds": 57.289,
+      "seconds": 130.031,
       "passed": true,
-      "tsv_sha256": "712a287536ded13276b98665341c1ca0e5420a81a82310f5d9cdf7de30f94363"
+      "tsv_sha256": "712a287536ded13276b98665341c1ca0e5420a81a82310f5d9cdf7de30f94363",
+      "tsv_bytes": 16746
     },
     {
       "key": "angle-narrow",
@@ -435,9 +454,10 @@
       "minimum": "100.00",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/wasm/angle-narrow.tsv",
       "font_environment": null,
-      "seconds": 13.369,
+      "seconds": 24.364,
       "passed": true,
-      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "tsv_bytes": 132
     },
     {
       "key": "seo-body-list-typed",
@@ -452,9 +472,10 @@
       "minimum": "100.00",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/wasm/seo-body-list-typed.tsv",
       "font_environment": null,
-      "seconds": 15.787,
+      "seconds": 19.332,
       "passed": true,
-      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "tsv_bytes": 132
     },
     {
       "key": "seo-helvetica-styles",
@@ -469,9 +490,10 @@
       "minimum": "100.00",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/wasm/seo-helvetica-styles.tsv",
       "font_environment": null,
-      "seconds": 11.462,
+      "seconds": 13.352,
       "passed": true,
-      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "tsv_bytes": 132
     },
     {
       "key": "seo-pic-crop-01",
@@ -486,9 +508,10 @@
       "minimum": "100.00",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/wasm/seo-pic-crop-01.tsv",
       "font_environment": null,
-      "seconds": 9.125,
+      "seconds": 10.114,
       "passed": true,
-      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "tsv_bytes": 132
     },
     {
       "key": "seo-re-03-latin",
@@ -503,9 +526,10 @@
       "minimum": "100.00",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/wasm/seo-re-03-latin.tsv",
       "font_environment": null,
-      "seconds": 10.774,
+      "seconds": 12.348,
       "passed": true,
-      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "tsv_bytes": 132
     },
     {
       "key": "seo-shape-group-02",
@@ -520,9 +544,10 @@
       "minimum": "100.00",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/wasm/seo-shape-group-02.tsv",
       "font_environment": null,
-      "seconds": 9.23,
+      "seconds": 10.584,
       "passed": true,
-      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "tsv_bytes": 132
     },
     {
       "key": "issue8040-insert",
@@ -537,9 +562,10 @@
       "minimum": "99.99",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/wasm/issue8040-insert.tsv",
       "font_environment": null,
-      "seconds": 18.928,
+      "seconds": 23.322,
       "passed": true,
-      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08"
+      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "tsv_bytes": 190
     },
     {
       "key": "issue8040-insert-delete",
@@ -554,9 +580,10 @@
       "minimum": "99.99",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/wasm/issue8040-insert-delete.tsv",
       "font_environment": null,
-      "seconds": 21.999,
+      "seconds": 23.747,
       "passed": true,
-      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08"
+      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "tsv_bytes": 190
     },
     {
       "key": "yeongwol",
@@ -571,9 +598,10 @@
       "minimum": "99.99",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/wasm/yeongwol.tsv",
       "font_environment": null,
-      "seconds": 23.28,
+      "seconds": 27.721,
       "passed": true,
-      "tsv_sha256": "b6b1ffe9fea23444d7678ec5e5cb78474d71569b3fee154d962ad95b9adf5f60"
+      "tsv_sha256": "b6b1ffe9fea23444d7678ec5e5cb78474d71569b3fee154d962ad95b9adf5f60",
+      "tsv_bytes": 190
     },
     {
       "key": "issue7905",
@@ -588,9 +616,10 @@
       "minimum": "98.86",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/wasm/issue7905.tsv",
       "font_environment": null,
-      "seconds": 17.408,
+      "seconds": 21.875,
       "passed": true,
-      "tsv_sha256": "086c2d6d0017f63a3d77a9232166de5591ebcf46884461b77c4bf2c153bbeee6"
+      "tsv_sha256": "086c2d6d0017f63a3d77a9232166de5591ebcf46884461b77c4bf2c153bbeee6",
+      "tsv_bytes": 228
     },
     {
       "key": "outline",
@@ -605,9 +634,10 @@
       "minimum": "100.00",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/wasm/outline.tsv",
       "font_environment": null,
-      "seconds": 19.78,
+      "seconds": 24.643,
       "passed": true,
-      "tsv_sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675"
+      "tsv_sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+      "tsv_bytes": 292
     },
     {
       "key": "nested",
@@ -622,9 +652,10 @@
       "minimum": "98.37",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/wasm/nested.tsv",
       "font_environment": "/Users/tsjang/rhwp/mydocs/pr/assets/planet6897_clean19_20261110/nested-original-approved-font-environment.json",
-      "seconds": 30.545,
+      "seconds": 36.306,
       "passed": true,
-      "tsv_sha256": "4cdb4a4747a8005d9ddbfdcee7a4baaabaa5ab2e2fe710eae3be827a249058e3"
+      "tsv_sha256": "4cdb4a4747a8005d9ddbfdcee7a4baaabaa5ab2e2fe710eae3be827a249058e3",
+      "tsv_bytes": 432
     },
     {
       "key": "sample16-hwp2022",
@@ -639,9 +670,10 @@
       "minimum": "100.00",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/wasm/sample16-hwp2022.tsv",
       "font_environment": "/Users/tsjang/rhwp/mydocs/pr/assets/planet6897_integration_final/pr8389_8397/hwp3-2020-font-environment.json",
-      "seconds": 41.45,
+      "seconds": 50.112,
       "passed": true,
-      "tsv_sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7"
+      "tsv_sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+      "tsv_bytes": 1447
     },
     {
       "key": "sample16-hwp2024",
@@ -656,9 +688,10 @@
       "minimum": "99.99",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/wasm/sample16-hwp2024.tsv",
       "font_environment": "/Users/tsjang/rhwp/mydocs/pr/assets/planet6897_integration_final/pr8389_8397/hwp3-2024-font-environment.json",
-      "seconds": 36.521,
+      "seconds": 41.82,
       "passed": true,
-      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942"
+      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "tsv_bytes": 1447
     },
     {
       "key": "sample16-hwpx",
@@ -673,9 +706,10 @@
       "minimum": "99.99",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/wasm/sample16-hwpx.tsv",
       "font_environment": "/Users/tsjang/rhwp/mydocs/pr/assets/planet6897_integration_final/pr8389_8397/hwp3-2024-font-environment.json",
-      "seconds": 36.086,
+      "seconds": 43.89,
       "passed": true,
-      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942"
+      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "tsv_bytes": 1447
     },
     {
       "key": "handbook-hwp",
@@ -690,9 +724,10 @@
       "minimum": "99.96",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/wasm/handbook-hwp.tsv",
       "font_environment": "/Users/tsjang/rhwp/mydocs/pr/assets/planet6897_integration_final/pr8389_8397/handbook-font-environment.json",
-      "seconds": 75.454,
+      "seconds": 91.502,
       "passed": true,
-      "tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308"
+      "tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+      "tsv_bytes": 8428
     },
     {
       "key": "handbook-hwpx",
@@ -707,9 +742,10 @@
       "minimum": "99.96",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/wasm/handbook-hwpx.tsv",
       "font_environment": "/Users/tsjang/rhwp/mydocs/pr/assets/planet6897_integration_final/pr8389_8397/handbook-font-environment.json",
-      "seconds": 87.227,
+      "seconds": 105.673,
       "passed": true,
-      "tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308"
+      "tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+      "tsv_bytes": 8428
     },
     {
       "key": "sample10",
@@ -724,18 +760,25 @@
       "minimum": "99.56",
       "tsv": "mydocs/pr/assets/planet6897_integration_20261114/protected/wasm/sample10.tsv",
       "font_environment": null,
-      "seconds": 86.369,
+      "seconds": 137.957,
       "passed": true,
-      "tsv_sha256": "e5623efdcc4d4dcb4e1d0504ea383c867c5e40973a3bfcb0b93335f5bd38d912"
+      "tsv_sha256": "e5623efdcc4d4dcb4e1d0504ea383c867c5e40973a3bfcb0b93335f5bd38d912",
+      "tsv_bytes": 16754
     }
   ],
   "active": null,
   "handbook_gate": "passed",
   "passed": true,
-  "condition_correction": "Yeongwol: removed the older optional substitution map to match the accepted consolidated baseline environment (normal system fonts). Initial mapped runs retained only as diagnostic evidence.",
-  "dataset_count": 36,
-  "page_rows": 3542,
-  "decreased_pages": 0,
-  "comparison_table": "protected/comparison.tsv",
-  "normal_font_inventory": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/normal-coretext.json"
+  "summary": {
+    "native": {
+      "documents": 18,
+      "pages": 1771,
+      "regressions": 0
+    },
+    "wasm": {
+      "documents": 18,
+      "pages": 1771,
+      "regressions": 0
+    }
+  }
 }
