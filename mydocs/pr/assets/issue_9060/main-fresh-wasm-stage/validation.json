@@ -1,0 +1,114 @@
+{
+  "state": "complete",
+  "source_parent": "5ea4c47c4bcf339d64376adbbdf259a5f339c9db",
+  "input_sha256": "f224d490226b3673554b484d6ce1e2b1c3bbaf0aac02340706edf5fc9d0a4025",
+  "pdf_sha256": "c9ba8e9d4b4e2cb32277d030161dedb59d9067eba0a4665b40f9c0b46cc47317",
+  "package_sha256": {
+    "rhwp.js": "bc741316480f6aa314c007421cf4c4980692ad239983b4e288a486858da0c280",
+    "rhwp_bg.wasm": "14f10c0ca41cb0b6cf36d71cae565106df519501e72610d21696f7834b049dc3"
+  },
+  "font_catalog_sha256": "39eda841367769811a27a428f6ecd48fd6efea69b39ff3756ef22afadd0d3f43",
+  "font_catalog_reuse": "같은 원본의 기존 공급 목록만 재사용한다. exporter가 모든 글꼴 SHA를 재확인하고, 새 제품 package로 14쪽을 실제 재출력한다.",
+  "options_sha256": "897a585056e3bc8c79aac2e933e897b68261f296f99b724391e2299db8a3a336",
+  "exit_code": 0,
+  "rows": [
+    {
+      "page": "1",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "2",
+      "tolerant_content_match_percent": "99.99",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "99.99",
+      "silhouette_boundary_reconciled_pixels": "1"
+    },
+    {
+      "page": "3",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "4",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "5",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "6",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "7",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "8",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "9",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "10",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "11",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "12",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "13",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "14",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "scope": "Canvas bitmap 가장자리 보정의 제품 검증 단계; PR 전체 완료가 아니다",
+  "checked_at": "2026-11-14T15:22:37.036605+00:00",
+  "source_parent": "5ea4c47c4bcf339d64376adbbdf259a5f339c9db",
+  "runtime_source_sha256": {
+    "src/renderer/web_canvas.rs": "b43849c5ccd5529704fd89c3f9eb8a3b5c3e3279fa39ba5f6fb8be61573a354b",
+    "src/renderer/web_canvas/image_coverage.rs": "c84cdf814d3f1a5f66596ccf962d79210c4aa9d2a4ac2b87aa6fba1201ed01d4",
+    "src/renderer/skia/cache.rs": "61c06af536cdac4f65370ade47d35c9bf2c00824a39257631815839ad9dfc136"
+  },
+  "package_sha256": {
+    "rhwp.js": "bc741316480f6aa314c007421cf4c4980692ad239983b4e288a486858da0c280",
+    "rhwp_bg.wasm": "14f10c0ca41cb0b6cf36d71cae565106df519501e72610d21696f7834b049dc3"
+  },
+  "build_command": {
+    "name": "canvas-coverage-fresh-wasm-build",
+    "exit_code": 0,
+    "seconds": 521.9567120075226,
+    "log": "/home/tsjang/rhwp/output/pr-review/pr9075/logs/canvas-coverage-fresh-wasm-build.log"
+  },
+  "browser_before": {
+    "exit_code": 1,
+    "tests": 1,
+    "failed": 1,
+    "log": "canvas-crop-border-before.log"
+  },
+  "browser_after": {
+    "exit_code": 0,
+    "tests": 3,
+    "passed": 3,
+    "log": "canvas-crop-border-and-jpeg-after.log"
+  },
+  "browser_aggregate": {
+    "tests": 20,
+    "passed": 20,
+    "failed": 0,
+    "terminal_summary_verified": true,
+    "exit_code": null,
+    "exit_code_note": "종료된 단독 process의 exit code는 보관되지 않아 실제 최종 test summary로 판정했다.",
+    "log": "canvas-coverage-all-browser.log"
+  },
+  "browser_test_measured_sha256": "e909dc19b56a2f689d6bbbafa58be76b9aff3d51ffdb709cd338b0a2cf334978",
+  "browser_test_final_sha256": "0052afbc5ad19ad6f5a86ccd6fed041ec73baa686690dbad653187398a31e16b",
+  "test_post_measurement_change": "첫머리의 검사 유형·시각 측정 근거 주석만 갱신; 실행 코드는 동일",
+  "picture": {
+    "input": "samples/pic-crop-01.hwp",
+    "input_sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+    "pdf": "pdf/pic-crop-01-2022.pdf",
+    "pdf_sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+    "pages": 1,
+    "native_binary_sha256": "d214453b23ac6b4cde6cbfa6d7488e445482f3f6fceb4e03dff108fe1ec1d140",
+    "native_tsv": "native_silhouette.tsv",
+    "wasm_tsv": "wasm_silhouette.tsv"
+  },
+  "remaining_required": [
+    "중첩 표·sample10 보호 하락 보정",
+    "최종 전체 보호 36개 데이터셋 검증",
+    "최종 편람 gate",
+    "실행 중 전체 Rust·lint",
+    "최종 리뷰·PR·CI·병합·후속 처리"
+  ],
+  "assets_sha256": {
+    "overlay_001.png": "6950e002d1972709291e29be93119a3770ba5260e8dfccf109edc8008285e169",
+    "wasm_silhouette.tsv": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "review_001.png": "c692795649228b66bc12921277e32da4e89943e86b737cb2f890e4cbcea4996f",
+    "native_silhouette.tsv": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "outline_wasm_silhouette.tsv": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+    "canvas-crop-border-and-jpeg-after.log": "7294830ec714c79d59403f77de3ad1c886034e52b6dc393b9f8a8f42ab24002b",
+    "canvas-crop-border-before.log": "8daf7b9c9e76db4f22f96f187914252be09c2fa67bda92fabb63fc91f551ee0d",
+    "canvas-coverage-all-browser.log": "9161c1738ba0e7e3290a53fc3109980cb29ca1b1b09a6e15296cb0bd3ea8b693"
+  }
+}
