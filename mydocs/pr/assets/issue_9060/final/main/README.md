@@ -1,7 +1,7 @@
 # 원 PR의 실제 입력·페이지에 대응하는 최종 증적
 
 [검증 기록](../../verification-record.md)은 제품 소스·Native 실행 파일·fresh WASM·
-실제 공급 환경·입력·PDF와 최종 대표 파일의 SHA-256을 연결한다. 기존 PDF를 재인쇄하지 않았다.
+[실제 공급 조건](conditions.md)·입력·PDF와 최종 대표 파일의 SHA-256을 연결한다. 기존 PDF를 재인쇄하지 않았다.
 
 - [Native 전 14쪽](native_silhouette.tsv)·[fresh WASM 전 14쪽](wasm_silhouette.tsv): 각각 모든 쪽 raw 100.00%.
 - Native [5쪽 review](native/review_005.png)·[overlay](native/overlay_005.png), [6쪽 review](native/review_006.png)·[overlay](native/overlay_006.png).
