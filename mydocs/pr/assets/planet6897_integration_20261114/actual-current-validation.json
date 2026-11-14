@@ -1844,5 +1844,6 @@
   },
   "old_strict_report": "actual-final/browser-report.json",
   "old_strict_report_note": "이전 50,000 상한에서 4건이 Canvas2D로 fallback한 기록을 보존한다. 이를 새 CanvasKit 결과로 표시하지 않는다.",
-  "actual_resource_note": "Standalone Node API is not the resource-prepared Studio path. Matching unsupported shaping blockers are not counted as successful CanvasKit replay."
+  "actual_resource_note": "Standalone Node API is not the resource-prepared Studio path. Matching unsupported shaping blockers are not counted as successful CanvasKit replay.",
+  "current_initialization_audit": "budget100k/initialization-audit.json"
 }

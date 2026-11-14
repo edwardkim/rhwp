@@ -1,8 +1,134 @@
 {
-  "head": "836615963eedfac9170d45c15cbba32d23e1b4d0",
-  "base": "a210861488468868b5992231c55b78798e622e98",
-  "product_source_sha256": "8ba69f963cc0ef9ccc55aed7e8a4a87202d629fcee37235de8d5763dd01caa69",
   "status": "completed",
+  "base": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
+  "build_producer": {
+    "status": "completed",
+    "parent": "afb3f17c38b2bafec62c1dad16398720552ab958",
+    "base": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
+    "source_files": {
+      "src/renderer/canvaskit_policy.rs": "885683b76cae587481f0bb105d624b4cdce34c2bf64caf1784b16b3061241476",
+      "src/wasm_api/tests.rs": "4e032ab0c72b6c9c55975a15f40a7d663cd1a03125c6dacaca7d861f5f142a6f",
+      "tests/cases/canvaskit_document_preflight_work_budget.rs": "8938240f4e3f0591277dabc797beabcbac8716b4bbbb0f143a4e37542e7077e0"
+    },
+    "source_patch_sha256": "f057d1de909822f25bc09e689f41679556059e50013a1e4e0630b59ca0162d84",
+    "results": [
+      {
+        "name": "prepare",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit": 0,
+        "seconds": 3.861
+      },
+      {
+        "name": "format",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all"
+        ],
+        "exit": 0,
+        "seconds": 13.666
+      },
+      {
+        "name": "format-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit": 0,
+        "seconds": 12.94
+      },
+      {
+        "name": "manifest",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc"
+        ],
+        "exit": 0,
+        "seconds": 0.93
+      },
+      {
+        "name": "unit-tiers",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc"
+        ],
+        "exit": 0,
+        "seconds": 15.86
+      },
+      {
+        "name": "budget-tests",
+        "command": [
+          "sandbox-exec",
+          "-f",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+          "node",
+          "scripts/run-rust-test.mjs",
+          "canvaskit_document_preflight_work_budget",
+          "--",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit": 0,
+        "seconds": 168.304
+      },
+      {
+        "name": "native-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--profile",
+          "release-test",
+          "--features",
+          "native-skia",
+          "--bin",
+          "rhwp",
+          "-j",
+          "8",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review"
+        ],
+        "exit": 0,
+        "seconds": 165.602
+      },
+      {
+        "name": "fresh-wasm",
+        "command": [
+          "scripts/wasm-pack-locked.sh",
+          "--target",
+          "web",
+          "--out-dir",
+          "pkg",
+          "--no-opt"
+        ],
+        "exit": 0,
+        "seconds": 321.217
+      }
+    ],
+    "active": null,
+    "native_sha256": "9110f28a5ba71f2ff524c2d96bb37f076af5fc3f631202c1f555809e57cc9925",
+    "passed": true,
+    "wasm_sha256": "01161ceb1e4e8ae97c3d20ff63cd74c7fff7f2ed796c963e30298fa0bd20e13c",
+    "js_sha256": "2d48f8a6c3ff7f848f08725bb54d04094b296af1a40ae61203081a7cf8061a1a"
+  },
   "results": [
     {
       "name": "prepare",
@@ -12,12 +138,12 @@
         "--prepare"
       ],
       "exit": 0,
-      "seconds": 2.292,
-      "log_sha256": "272c0228c1b97faa6bb92f11f1199151e4d88038d0d9191893f9f937dbdba286",
+      "seconds": 4.826,
+      "log_sha256": "f0995db984366c0b5466682f9f3b3945b7c281b302b7d4f42934a7b2635c90bf",
       "summaries": []
     },
     {
-      "name": "format-check",
+      "name": "fmt",
       "command": [
         "cargo",
         "fmt",
@@ -26,33 +152,47 @@
         "--check"
       ],
       "exit": 0,
-      "seconds": 14.171,
+      "seconds": 15.949,
       "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "summaries": []
     },
     {
-      "name": "manifest-check",
+      "name": "manifest",
       "command": [
         "node",
         "scripts/rust-test-suite-manifest.mjs",
         "--check",
         "--base-ref",
-        "a210861488468868b5992231c55b78798e622e98"
+        "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc"
       ],
       "exit": 0,
-      "seconds": 1.337,
-      "log_sha256": "662f5ac860dcfd5e14b4cc1b7e14b83daa0e8ce375621f02eb361a8fec140b5d",
+      "seconds": 2.013,
+      "log_sha256": "0187505b7eb26ac019fd11055d66e344d094788c3ac701e485d38c00bd755bb4",
       "summaries": []
     },
     {
-      "name": "focused-verified_computed_split_successor_spacing",
+      "name": "unit-tiers",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc"
+      ],
+      "exit": 0,
+      "seconds": 22.895,
+      "log_sha256": "b0d22c7e9e78b2de09250df5931d136093b5d2ad3c7474ab5c37aa9c3dc75ad0",
+      "summaries": []
+    },
+    {
+      "name": "issue_8978_fill_pattern_index",
       "command": [
         "sandbox-exec",
         "-f",
         "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
         "node",
         "scripts/run-rust-test.mjs",
-        "verified_computed_split_successor_spacing",
+        "issue_8978_fill_pattern_index",
         "--",
         "--cargo-profile",
         "release-test",
@@ -63,22 +203,21 @@
         "--no-fail-fast"
       ],
       "exit": 0,
-      "seconds": 17.367,
-      "log_sha256": "e70e5cc2b0012eb981beca7405ec02e248af56ce97bd27b56043a52f08adb39e",
+      "seconds": 227.971,
+      "log_sha256": "2ce83259825a7017b37c66afc4835efdaf2ff62f524d9e99016e23ce668d6b17",
       "summaries": [
-        "Finished `release-test` profile [optimized] target(s) in 14.82s",
-        "Summary [   0.028s] 6 tests run: 6 passed, 324 skipped"
+        "Summary [   0.305s] 6 tests run: 6 passed, 319 skipped"
       ]
     },
     {
-      "name": "focused-verified_computed_split_successor_multiline",
+      "name": "hidden_text_contract",
       "command": [
         "sandbox-exec",
         "-f",
         "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
         "node",
         "scripts/run-rust-test.mjs",
-        "verified_computed_split_successor_multiline",
+        "hidden_text_contract",
         "--",
         "--cargo-profile",
         "release-test",
@@ -89,93 +228,14 @@
         "--no-fail-fast"
       ],
       "exit": 0,
-      "seconds": 15.118,
-      "log_sha256": "ff3a7664eda0fc5dd723dd17d279433989ca588aa6a121cfdba3909492dba04d",
+      "seconds": 21.279,
+      "log_sha256": "27bb0cd4b264fb8d0848a69e0bfead65f32a7d016e3b3b33634775a52c161ac9",
       "summaries": [
-        "Finished `release-test` profile [optimized] target(s) in 13.30s",
-        "Summary [   0.112s] 2 tests run: 2 passed, 329 skipped"
+        "Summary [   0.792s] 23 tests run: 23 passed, 310 skipped"
       ]
     },
     {
-      "name": "focused-issue_7330_float_push_spacing_boundaries",
-      "command": [
-        "sandbox-exec",
-        "-f",
-        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
-        "node",
-        "scripts/run-rust-test.mjs",
-        "issue_7330_float_push_spacing_boundaries",
-        "--",
-        "--cargo-profile",
-        "release-test",
-        "--target-dir",
-        "/Users/tsjang/rhwp/target/pr-review",
-        "--test-threads",
-        "8",
-        "--no-fail-fast"
-      ],
-      "exit": 0,
-      "seconds": 25.459,
-      "log_sha256": "0881f1655c534c67c00d8dc4008982f4b746f0337c81d26beda742068c28f8ca",
-      "summaries": [
-        "Finished `release-test` profile [optimized] target(s) in 21.83s",
-        "Summary [   0.119s] 7 tests run: 7 passed, 314 skipped"
-      ]
-    },
-    {
-      "name": "focused-issue_9026_repeated_hidden_range_end",
-      "command": [
-        "sandbox-exec",
-        "-f",
-        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
-        "node",
-        "scripts/run-rust-test.mjs",
-        "issue_9026_repeated_hidden_range_end",
-        "--",
-        "--cargo-profile",
-        "release-test",
-        "--target-dir",
-        "/Users/tsjang/rhwp/target/pr-review",
-        "--test-threads",
-        "8",
-        "--no-fail-fast"
-      ],
-      "exit": 0,
-      "seconds": 18.854,
-      "log_sha256": "ad8de04d0240f20c41350d825e1854ee06d7ff595e987e54402c8b1648778660",
-      "summaries": [
-        "Finished `release-test` profile [optimized] target(s) in 12.52s",
-        "Summary [   0.055s] 4 tests run: 4 passed, 334 skipped"
-      ]
-    },
-    {
-      "name": "focused-rowbreak_short_row_whole_carry",
-      "command": [
-        "sandbox-exec",
-        "-f",
-        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
-        "node",
-        "scripts/run-rust-test.mjs",
-        "rowbreak_short_row_whole_carry",
-        "--",
-        "--cargo-profile",
-        "release-test",
-        "--target-dir",
-        "/Users/tsjang/rhwp/target/pr-review",
-        "--test-threads",
-        "8",
-        "--no-fail-fast"
-      ],
-      "exit": 0,
-      "seconds": 15.296,
-      "log_sha256": "59294bcd92864c351e827efe0c28e72658221bfac154edc28f6e78bfd0b2acd9",
-      "summaries": [
-        "Finished `release-test` profile [optimized] target(s) in 10.93s",
-        "Summary [   2.732s] 24 tests run: 24 passed, 293 skipped"
-      ]
-    },
-    {
-      "name": "focused-issue_8969_owned_tac_lines",
+      "name": "issue_8969_owned_tac_lines",
       "command": [
         "sandbox-exec",
         "-f",
@@ -193,15 +253,14 @@
         "--no-fail-fast"
       ],
       "exit": 0,
-      "seconds": 11.788,
-      "log_sha256": "d4d663faa55c965b8d0bf37b969f186078c6d5a25f29f17ef6a491851ff3720d",
+      "seconds": 24.232,
+      "log_sha256": "df9c2eb4b882c3c7682ce04190ec076230e7a2d764992cb8b776ac22bdbc95eb",
       "summaries": [
-        "Finished `release-test` profile [optimized] target(s) in 1.35s",
-        "Summary [   7.875s] 3 tests run: 3 passed, 328 skipped"
+        "Summary [   7.512s] 3 tests run: 3 passed, 285 skipped"
       ]
     },
     {
-      "name": "focused-issue_9062_ws_host_tac_above_offset_float",
+      "name": "issue_9062_ws_host_tac_above_offset_float",
       "command": [
         "sandbox-exec",
         "-f",
@@ -219,15 +278,14 @@
         "--no-fail-fast"
       ],
       "exit": 0,
-      "seconds": 20.724,
-      "log_sha256": "85007092f8eee60a71edcab87754dd1e36b5036fa7f37016e029da77281a4073",
+      "seconds": 20.822,
+      "log_sha256": "9f0c0df2a3b2c077711bef1b1e3d7cc2e5a3cde76048ecf23f30a277b677b99f",
       "summaries": [
-        "Finished `release-test` profile [optimized] target(s) in 18.98s",
-        "Summary [   0.048s] 5 tests run: 5 passed, 323 skipped"
+        "Summary [   0.048s] 5 tests run: 5 passed, 318 skipped"
       ]
     },
     {
-      "name": "focused-issue_9055_page_band_empty_host_line",
+      "name": "issue_9055_page_band_empty_host_line",
       "command": [
         "sandbox-exec",
         "-f",
@@ -245,15 +303,14 @@
         "--no-fail-fast"
       ],
       "exit": 0,
-      "seconds": 18.578,
-      "log_sha256": "33ec5b5a0a968c29181e4780cef06f6d6ab42b04c1fbaf7c7cae28f74df89d13",
+      "seconds": 11.396,
+      "log_sha256": "301dd4e5742a0989da7da660a4ff0b2b0d52d5ee05d6f97597f608607e1515af",
       "summaries": [
-        "Finished `release-test` profile [optimized] target(s) in 14.98s",
-        "Summary [   0.067s] 4 tests run: 4 passed, 340 skipped"
+        "Summary [   0.024s] 4 tests run: 4 passed, 325 skipped"
       ]
     },
     {
-      "name": "focused-issue_9016_title_mark_empty_stream",
+      "name": "issue_9016_title_mark_empty_stream",
       "command": [
         "sandbox-exec",
         "-f",
@@ -271,22 +328,21 @@
         "--no-fail-fast"
       ],
       "exit": 0,
-      "seconds": 14.934,
-      "log_sha256": "7984368a66543178e99cc9e7bc3ca8b1f8d652ae2ced7296d807d56b5614fdf3",
+      "seconds": 3.335,
+      "log_sha256": "186a121a2be19dc42658fc0329a1f5defd996ae0a10ca9c98ddf93e602064269",
       "summaries": [
-        "Finished `release-test` profile [optimized] target(s) in 11.23s",
-        "Summary [   0.029s] 1 test run: 1 passed, 283 skipped"
+        "Summary [   0.038s] 1 test run: 1 passed, 287 skipped"
       ]
     },
     {
-      "name": "focused-issue_8973_negative_offset_nested_host",
+      "name": "issue_9026_repeated_hidden_range_end",
       "command": [
         "sandbox-exec",
         "-f",
         "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
         "node",
         "scripts/run-rust-test.mjs",
-        "issue_8973_negative_offset_nested_host",
+        "issue_9026_repeated_hidden_range_end",
         "--",
         "--cargo-profile",
         "release-test",
@@ -297,219 +353,10 @@
         "--no-fail-fast"
       ],
       "exit": 0,
-      "seconds": 46.773,
-      "log_sha256": "0028d67632488cd8c0d93a068210e136afeb0848b99d665df717b91340dfb46e",
+      "seconds": 96.174,
+      "log_sha256": "23e6500aa11193fa1211f8133248defe73798c5896f9c3f4ea0dcff727febbef",
       "summaries": [
-        "Finished `release-test` profile [optimized] target(s) in 15.69s",
-        "Summary [  29.537s] 1 test run: 1 passed, 348 skipped"
-      ]
-    },
-    {
-      "name": "focused-issue_8660_restricted_para_object_next_page",
-      "command": [
-        "sandbox-exec",
-        "-f",
-        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
-        "node",
-        "scripts/run-rust-test.mjs",
-        "issue_8660_restricted_para_object_next_page",
-        "--",
-        "--cargo-profile",
-        "release-test",
-        "--target-dir",
-        "/Users/tsjang/rhwp/target/pr-review",
-        "--test-threads",
-        "8",
-        "--no-fail-fast"
-      ],
-      "exit": 0,
-      "seconds": 2.532,
-      "log_sha256": "7d32fee41e8993f9044463aeb61b5697c8c15e6c1fb17d9a6cff0759705f4c0d",
-      "summaries": [
-        "Finished `release-test` profile [optimized] target(s) in 0.50s",
-        "Summary [   0.117s] 12 tests run: 12 passed, 318 skipped"
-      ]
-    },
-    {
-      "name": "focused-tac_space_tail_hang_before_float_anchor",
-      "command": [
-        "sandbox-exec",
-        "-f",
-        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
-        "node",
-        "scripts/run-rust-test.mjs",
-        "tac_space_tail_hang_before_float_anchor",
-        "--",
-        "--cargo-profile",
-        "release-test",
-        "--target-dir",
-        "/Users/tsjang/rhwp/target/pr-review",
-        "--test-threads",
-        "8",
-        "--no-fail-fast"
-      ],
-      "exit": 0,
-      "seconds": 1.331,
-      "log_sha256": "05809b30c3a91cb5bc76f3f9fdebb12ff0f6646c108a0d8d536798da6c4d723d",
-      "summaries": [
-        "Finished `release-test` profile [optimized] target(s) in 0.55s",
-        "Summary [   0.053s] 4 tests run: 4 passed, 313 skipped"
-      ]
-    },
-    {
-      "name": "focused-issue_reflow_empty_float_host_line",
-      "command": [
-        "sandbox-exec",
-        "-f",
-        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
-        "node",
-        "scripts/run-rust-test.mjs",
-        "issue_reflow_empty_float_host_line",
-        "--",
-        "--cargo-profile",
-        "release-test",
-        "--target-dir",
-        "/Users/tsjang/rhwp/target/pr-review",
-        "--test-threads",
-        "8",
-        "--no-fail-fast"
-      ],
-      "exit": 0,
-      "seconds": 14.302,
-      "log_sha256": "31baa4ec43832d8837805ac7918660771c521c92490af5848e1261f9a58273e0",
-      "summaries": [
-        "Finished `release-test` profile [optimized] target(s) in 12.96s",
-        "Summary [   0.021s] 2 tests run: 2 passed, 348 skipped"
-      ]
-    },
-    {
-      "name": "focused-issue_8573_empty_host_square_beside_line",
-      "command": [
-        "sandbox-exec",
-        "-f",
-        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
-        "node",
-        "scripts/run-rust-test.mjs",
-        "issue_8573_empty_host_square_beside_line",
-        "--",
-        "--cargo-profile",
-        "release-test",
-        "--target-dir",
-        "/Users/tsjang/rhwp/target/pr-review",
-        "--test-threads",
-        "8",
-        "--no-fail-fast"
-      ],
-      "exit": 0,
-      "seconds": 11.537,
-      "log_sha256": "dab7ba62a7446b0d2689056f99cd730c6f0d310b68b722fc98a3f38861d7d9d5",
-      "summaries": [
-        "Finished `release-test` profile [optimized] target(s) in 10.08s",
-        "Summary [   0.019s] 4 tests run: 4 passed, 339 skipped"
-      ]
-    },
-    {
-      "name": "focused-issue_8160_terminal_style_cell_frame",
-      "command": [
-        "sandbox-exec",
-        "-f",
-        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
-        "node",
-        "scripts/run-rust-test.mjs",
-        "issue_8160_terminal_style_cell_frame",
-        "--",
-        "--cargo-profile",
-        "release-test",
-        "--target-dir",
-        "/Users/tsjang/rhwp/target/pr-review",
-        "--test-threads",
-        "8",
-        "--no-fail-fast"
-      ],
-      "exit": 0,
-      "seconds": 2.149,
-      "log_sha256": "8f6a495d42728779133d1e3cb540252c85a19bc66cf488f3c88335a7f50066e6",
-      "summaries": [
-        "Finished `release-test` profile [optimized] target(s) in 1.12s",
-        "Summary [   0.266s] 1 test run: 1 passed, 316 skipped"
-      ]
-    },
-    {
-      "name": "focused-maintainer_nested_table_lines",
-      "command": [
-        "sandbox-exec",
-        "-f",
-        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
-        "node",
-        "scripts/run-rust-test.mjs",
-        "maintainer_nested_table_lines",
-        "--",
-        "--cargo-profile",
-        "release-test",
-        "--target-dir",
-        "/Users/tsjang/rhwp/target/pr-review",
-        "--test-threads",
-        "8",
-        "--no-fail-fast"
-      ],
-      "exit": 0,
-      "seconds": 12.879,
-      "log_sha256": "a924f9ec63b7a8a1ad92c272cda47f19ea17e2a919f663492d57503e3f6825a2",
-      "summaries": [
-        "Finished `release-test` profile [optimized] target(s) in 11.51s",
-        "Summary [   0.027s] 6 tests run: 6 passed, 350 skipped"
-      ]
-    },
-    {
-      "name": "focused-issue_6950_paragraph_end_topbottom_anchor",
-      "command": [
-        "sandbox-exec",
-        "-f",
-        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
-        "node",
-        "scripts/run-rust-test.mjs",
-        "issue_6950_paragraph_end_topbottom_anchor",
-        "--",
-        "--cargo-profile",
-        "release-test",
-        "--target-dir",
-        "/Users/tsjang/rhwp/target/pr-review",
-        "--test-threads",
-        "8",
-        "--no-fail-fast"
-      ],
-      "exit": 0,
-      "seconds": 66.747,
-      "log_sha256": "466361579798013d6f9417780891c0308dd7a2a08681860139722e611e1b35ba",
-      "summaries": [
-        "Finished `release-test` profile [optimized] target(s) in 34.09s",
-        "Summary [   5.777s] 27 tests run: 27 passed, 316 skipped"
-      ]
-    },
-    {
-      "name": "focused-issue_7032_cell_empty_paragraph_flow",
-      "command": [
-        "sandbox-exec",
-        "-f",
-        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
-        "node",
-        "scripts/run-rust-test.mjs",
-        "issue_7032_cell_empty_paragraph_flow",
-        "--",
-        "--cargo-profile",
-        "release-test",
-        "--target-dir",
-        "/Users/tsjang/rhwp/target/pr-review",
-        "--test-threads",
-        "8",
-        "--no-fail-fast"
-      ],
-      "exit": 0,
-      "seconds": 34.06,
-      "log_sha256": "260e931dc64376b22a6c18bbcac7bd763f4741c5b1ba983d0e90987afcfc1291",
-      "summaries": [
-        "Finished `release-test` profile [optimized] target(s) in 15.48s",
-        "Summary [   0.824s] 7 tests run: 7 passed, 331 skipped"
+        "Summary [   0.070s] 4 tests run: 4 passed, 334 skipped"
       ]
     },
     {
@@ -532,11 +379,10 @@
         "--no-fail-fast"
       ],
       "exit": 0,
-      "seconds": 1067.561,
-      "log_sha256": "504eac41fc3a95ad0da9c28dc8694cf1e4f55c6e4562dd38df580d0bd7cc0102",
+      "seconds": 1386.089,
+      "log_sha256": "b7c5d4afdb448b52f25c9c40ace3435db36045d4eb1b20d962e3f0f7d93f848b",
       "summaries": [
-        "Finished `release-test` profile [optimized] target(s) in 7m 32s",
-        "Summary [ 582.573s] 13533 tests run: 13533 passed (3 slow), 45 skipped"
+        "Summary [ 708.798s] 13541 tests run: 13541 passed (3 slow), 45 skipped"
       ]
     },
     {
@@ -562,11 +408,10 @@
         "8"
       ],
       "exit": 0,
-      "seconds": 672.791,
-      "log_sha256": "b2bf4995df62a8a1c1a11b7beb7e5107da07a7831740ff10acb9de05f76c067f",
+      "seconds": 607.19,
+      "log_sha256": "a288532ab7c1ec7450392c4afc6b724ffc7f8eac508896eb481f5c2e594ba3fd",
       "summaries": [
-        "Finished `release-test` profile [optimized] target(s) in 10m 48s",
-        "test result: ok. 3852 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 22.56s",
+        "test result: ok. 3852 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 12.78s",
         "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
         "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
         "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
@@ -593,11 +438,10 @@
         "--no-fail-fast"
       ],
       "exit": 0,
-      "seconds": 215.419,
-      "log_sha256": "d52cab60b4dbc35bbe5fdc4f2e5ddc9b59e27a700d7d184aeba5edf16b5eb28d",
+      "seconds": 225.052,
+      "log_sha256": "5ffd42bc912e204f616465b488a83a30dd44b820674c0c9d87a6bdf733a70570",
       "summaries": [
-        "Finished `release-test` profile [optimized] target(s) in 3m 27s",
-        "Summary [   2.536s] 2 tests run: 2 passed, 332 skipped"
+        "Summary [   2.784s] 2 tests run: 2 passed, 352 skipped"
       ]
     },
     {
@@ -621,11 +465,10 @@
         "--no-fail-fast"
       ],
       "exit": 0,
-      "seconds": 6.448,
-      "log_sha256": "21200d19275232ae9aa726172546d376303f9e3619d93d086c7aa9bef57a780f",
+      "seconds": 15.851,
+      "log_sha256": "1dfb4b1e1904e30e324b5a708090c18b45170564a7f0967c76c046d766701593",
       "summaries": [
-        "Finished `release-test` profile [optimized] target(s) in 1.31s",
-        "Summary [   2.333s] 36 tests run: 36 passed, 298 skipped"
+        "Summary [   2.278s] 36 tests run: 36 passed, 296 skipped"
       ]
     },
     {
@@ -643,11 +486,9 @@
         "warnings"
       ],
       "exit": 0,
-      "seconds": 28.521,
-      "log_sha256": "ae7a4a16c2233fd09ab2ed3ae59a189f89ce5aca83664f0639006c4658e558a6",
-      "summaries": [
-        "Finished `dev` profile [unoptimized + debuginfo] target(s) in 28.27s"
-      ]
+      "seconds": 39.088,
+      "log_sha256": "cc06cd516f586834979a5b15f3b90699f7c1d3d76d428ea35ba4b40d8617b30d",
+      "summaries": []
     },
     {
       "name": "wasm-clippy",
@@ -669,11 +510,9 @@
         "warnings"
       ],
       "exit": 0,
-      "seconds": 26.574,
-      "log_sha256": "062a6195174d2446a9db4640d0fe78ee09fcf9c044a1076571b01abab93389b0",
-      "summaries": [
-        "Finished `dev` profile [unoptimized + debuginfo] target(s) in 26.47s"
-      ]
+      "seconds": 37.157,
+      "log_sha256": "4b7395f3c315e76f2c039a849c6dfb6a414a15d57a8bc823653376acc3589ce0",
+      "summaries": []
     },
     {
       "name": "workspace-build",
@@ -688,11 +527,9 @@
         "8"
       ],
       "exit": 0,
-      "seconds": 38.888,
-      "log_sha256": "2c77cb9f21b02fcb8e41dd6d60e94dbd979c2b8aef4c0b60066b1ab686fa0c0e",
-      "summaries": [
-        "Finished `dev` profile [unoptimized + debuginfo] target(s) in 38.78s"
-      ]
+      "seconds": 56.188,
+      "log_sha256": "63fc023efcafd5b3197a4996ac8e3f86883cbc8e142276b24a3f877ae376c148",
+      "summaries": []
     },
     {
       "name": "all-target-clippy",
@@ -711,16 +548,29 @@
         "warnings"
       ],
       "exit": 0,
-      "seconds": 43.724,
-      "log_sha256": "26b5926877027e7276bd7bb8a05fba0529b07904d3585abbb7ddaafeaa1a97a8",
-      "summaries": [
-        "Finished `dev` profile [unoptimized + debuginfo] target(s) in 43.43s"
-      ]
+      "seconds": 58.646,
+      "log_sha256": "73df20fee3c11d483e018e8be7d35b08aa0ad3334fdfc8d488e9603dcf289232",
+      "summaries": []
+    },
+    {
+      "name": "frontend-boundaries",
+      "command": [
+        "node",
+        "--test",
+        "rhwp-studio/tests/issue-8733-solid-fill-pattern.test.ts",
+        "rhwp-studio/tests/canvaskit-document-preflight.test.ts",
+        "rhwp-studio/tests/renderer-session.test.ts"
+      ],
+      "exit": 0,
+      "seconds": 0.577,
+      "log_sha256": "74a246be7b298f99d8efcd678792f0afc4f5de40231a2c6680856b50afd9bc3c",
+      "summaries": []
     }
   ],
-  "source_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   "active": null,
   "passed": true,
-  "runtime_source": "836615963eedfac9170d45c15cbba32d23e1b4d0",
+  "runtime_source": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+  "head_when_started": "afb3f17c38b2bafec62c1dad16398720552ab958",
+  "build_snapshot_note": "Compiler ran against parent+recorded source patch. Those exact source bytes were committed as validated_runtime_commit. Full-file SHA snapshot verified before collection.",
   "minimal_font_profile_sha256": "d6303bc13d7fdf3cad52056338eae3164b1a2b6049f09bccc70b6b097b093875"
 }
