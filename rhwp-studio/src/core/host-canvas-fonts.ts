@@ -13,7 +13,7 @@ interface CanvasHostFace {
   intrinsicFont: FontFace | null;
   ownership: Map<string, boolean>;
   source: { bytes: Uint8Array; faceIndex: number };
-  unicodeRestricted: boolean;
+  unicodeRange: string;
 }
 type CanvasFontContext = Pick<CanvasRenderingContext2D, 'font' | 'measureText'>;
 interface CanvasFontSourceOwner extends OrdinaryTextFontSource {
@@ -25,6 +25,7 @@ interface CanvasFontSourceOwner extends OrdinaryTextFontSource {
   clearTextFontOutline?: (family: string) => unknown;
   registerPrintFontPrimary?: (family: string, bytes: Uint8Array, faceIndex: number, complete: boolean) => unknown;
   clearPrintFontPrimary?: (family: string) => unknown;
+  getFontSymbolUnicodeRange?: (bytes: Uint8Array, faceIndex: number) => string;
 }
 
 function isCff(face: CanvasHostFace | null | undefined): boolean {
@@ -172,7 +173,7 @@ export class HostCanvasFontSession {
             }
             this.fontSet!.add(font);
             this.faces.set(key, { alias, font, bytes, intrinsicAlias, intrinsicFont, ownership: new Map(),
-              unicodeRestricted: Boolean(descriptors.unicodeRange),
+              unicodeRange: descriptors.unicodeRange ?? '',
               source: { bytes: new Uint8Array(data!.bytes), faceIndex: data!.faceIndex ?? 0 } });
             this.aliases.add(intrinsicAlias);
             this.aliases.add(alias);
@@ -224,14 +225,16 @@ export class HostCanvasFontSession {
         }
         if (!hasPrimaryScope) continue;
         const primary = canvasHostOrder(loaded, false)?.[0];
-        if (primary && (!primary.unicodeRestricted || allCff)) {
+        const knownRange = (face: CanvasHostFace) => !face.unicodeRange
+          || face.unicodeRange === owner.getFontSymbolUnicodeRange?.(new Uint8Array(face.bytes), 0);
+        if (primary && (knownRange(primary) || allCff)) {
           primaries.push(family);
           const source = isCff(primary) ? primary.source : { bytes: new Uint8Array(primary.bytes), faceIndex: 0 };
           owner.registerPrintFontPrimary!(family, source.bytes, source.faceIndex, allCff || loaded.length === 1);
         }
         // 실제 descriptor가 원본 TTF용 별칭을 해소할 때와 같은 순서다.
         const ttf = canvasHostOrder(loaded, true)?.[0];
-        if (ttf && !isCff(ttf) && !ttf.unicodeRestricted) {
+        if (ttf && !isCff(ttf) && knownRange(ttf)) {
           const alias = `__rhwp_ttf__${family}`;
           primaries.push(alias);
           owner.registerPrintFontPrimary!(alias, new Uint8Array(ttf.bytes), 0, loaded.length === 1);

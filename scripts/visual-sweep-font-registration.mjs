@@ -147,10 +147,11 @@ export async function installCanvasFont(family, bytes, descriptors, sourceOwner 
     sourceOwner.registerHftOutlineFont(family, new Uint8Array(paintBytes), 0);
   }
   // 주 FontFace의 순서가 확인된 경우만 Print 기하에 연결한다.
-  // 제한된 unicode-range의 TTF는 cmap만으로 소유를 확정하지 않는다.
+  // 공통 빈 기호 제외와 다른 unicode-range의 TTF는 소유를 확정하지 않는다.
   const cff = paintBytes.byteLength >= 4 && new DataView(paintBytes).getUint32(0) === 0x4f54544f;
   if (printPrimary && String(descriptors.weight || '400') === '400'
-      && (descriptors.style || 'normal') === 'normal' && (!descriptors.unicodeRange || cff)) {
+      && (descriptors.style || 'normal') === 'normal'
+      && (!descriptors.unicodeRange || descriptors.unicodeRange === unicodeRange || cff)) {
     sourceOwner?.registerPrintFontPrimary?.(family, new Uint8Array(paintBytes), 0, registerCoverage);
   }
   return font;

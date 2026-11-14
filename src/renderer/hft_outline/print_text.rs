@@ -2,6 +2,7 @@
 
 use super::{face_contour, first_family, HftOutlineFonts, PathCommand, SourceFace, TextStyle};
 use sha2::{Digest, Sha256};
+use std::collections::BTreeSet;
 use std::sync::Arc;
 use ttf_parser::Face;
 
@@ -9,6 +10,7 @@ use ttf_parser::Face;
 pub(super) struct PrintPrimary {
     source: Arc<SourceFace>,
     complete: bool,
+    excluded_symbols: BTreeSet<u32>,
 }
 
 impl HftOutlineFonts {
@@ -44,8 +46,16 @@ impl HftOutlineFonts {
             (name == &family && source.digest == digest && source.face_index == index)
                 .then(|| source.clone())
         }) {
-            self.print_primaries
-                .insert(family, PrintPrimary { source, complete });
+            let excluded_symbols =
+                super::super::font_symbol_coverage::empty_symbol_codepoints(bytes, index);
+            self.print_primaries.insert(
+                family,
+                PrintPrimary {
+                    source,
+                    complete,
+                    excluded_symbols,
+                },
+            );
         } else if complete
             && self.faces.get(&family).is_some_and(|faces| {
                 faces
@@ -77,6 +87,14 @@ impl HftOutlineFonts {
         for name in crate::renderer::internal_font_family_members(&families) {
             let family = name.to_lowercase();
             if let Some(primary) = self.print_primaries.get(&family) {
+                // 실제 FontFace의 공통 unicode-range가 제외한 빈 기호는
+                // cmap가 있다는 이유로 현재 프로그램의 소유로 되돌리지 않는다.
+                if primary.excluded_symbols.contains(&(character as u32)) {
+                    if primary.complete {
+                        continue;
+                    }
+                    return None;
+                }
                 let source = &primary.source;
                 let face = Face::parse(&source.bytes, source.face_index).ok()?;
                 if let Some(glyph) = face.glyph_index(character) {

@@ -320,10 +320,42 @@ test('unicode-range로 제한된 TTF는 원 cmap으로 Print 소유를 확대하
     assert.equal(records.length, 1, '실제 제한 프로그램을 준비한 상태에서 검사한다');
     const owner = {
       registerHftOutlineFontFaces() {}, clearTextFontOutline() {},
+      getFontSymbolUnicodeRange() { return ''; },
       registerPrintFontPrimary() { assert.fail('제한된 FontFace의 원 cmap을 공급하면 안 된다'); },
       clearPrintFontPrimary() { assert.fail('등록하지 않은 family를 해제하지 않는다'); },
     };
     await f.session.prepare(records, owner, () => true, true);
     f.session.withPageOutlines(records, owner, () => {});
+  } finally { await f.dispose(); }
+});
+
+test('공통 검사기의 빈 기호 제외 범위는 일반 TTF 글자를 Print 공급에서 빼지 않는다', async () => {
+  const bytes = Uint8Array.from(readFileSync(new URL(
+    '../../tests/fixtures/fonts/RHWPHostFixture-Regular.ttf', import.meta.url))).buffer;
+  const range = 'U+0-FFFB,U+FFFD-10FFFF';
+  const f = await fixture(() => range, bytes);
+  try {
+    await setHostFontProvider({ ...f.provider, async getSnapshot() {
+      return { revision: 'shared-symbol-range', faces: [{ id: 'normal', family: 'Shared Range',
+        fullName: 'Shared Range', postscriptName: 'SharedRange', style: 'Regular',
+        weight: 400, slant: 'normal' as const }] };
+    } }, { layout: true });
+    const records = resolveRendererLocalFontCandidates('Shared Range', { weight: 400, slant: 'normal' });
+    assert.equal(records.length, 1);
+    const active = new Set<string>();
+    const owner = {
+      registerHftOutlineFontFaces() {}, clearTextFontOutline() {},
+      getFontSymbolUnicodeRange(program: Uint8Array) {
+        assert.deepEqual(program, new Uint8Array(bytes)); return range;
+      },
+      registerPrintFontPrimary(family: string) { active.add(family); },
+      clearPrintFontPrimary(family: string) { active.delete(family); },
+    };
+    await f.session.prepare(records, owner, () => true, true);
+    f.session.withPageOutlines(records, owner, () => {
+      assert(active.has('Shared Range'));
+      assert(active.has('__rhwp_ttf__Shared Range'));
+    });
+    assert.equal(active.size, 0);
   } finally { await f.dispose(); }
 });

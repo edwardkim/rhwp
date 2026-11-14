@@ -60,3 +60,17 @@ WASM/Canvas에서 검사한다. 기존 fallback·분리 CFF·가짜 굵기 계�
   --target wasm32-unknown-unknown --lib`가 통과했다. [컴파일 로그](print-primary-stage/wasm-check.txt).
 - 위 결과는 새 최적화 WASM의 실물 전쪽 대조 완료를 뜻하지 않는다. 기존 측정과 보호 하한은
   그대로 유지하고 새 제품 package의 실제 결과를 별도로 확인한다.
+
+
+### 공통 빈 기호 제외 범위의 보존
+
+실제 Gulim 프로그램에는 cmap에 대응하지만 glyf가 빈 `U+FFFC`가 있어 공통 Rust 검사기가
+FontFace의 unicode-range에서 그 기호를 제외한다. 제한이 하나라도 있으면 TTF 전체를
+새 경로에서 제외하는 조건은 일반 본문의 획 보정까지 막으므로, 첫 최적화 빌드는 그 확인
+직후 중단했다. 중단한 빌드를 완료·통과로 기록하지 않는다.
+
+Canvas의 제한이 같은 프로그램의 공통 `getFontSymbolUnicodeRange` 결과와 일치할 때는
+일반 글리프의 주 프로그램을 공급한다. Rust Print도 동일한 `empty_symbol_codepoints`로
+제외된 기호를 다시 cmap 소유로 되돌리지 않는다. 임의의 다른 제한 범위는 계속 등록하지
+않는다. 같은 프로그램 검사·descriptor 순서·수명 경계를 확인한 [Studio 집중 13건](print-primary-stage/shared-range-studio-unit.txt)과
+[TypeScript 검사](print-primary-stage/shared-range-typecheck.txt)가 통과했다. 최적화 제품의 실물 재검증은 별도 수행한다.
