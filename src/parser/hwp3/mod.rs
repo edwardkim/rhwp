@@ -2271,7 +2271,9 @@ fn parse_hwp3_object_dispatch(
         // 상호 참조
         if header_val1 < 1000000 {
             info_buf.resize(header_val1 as usize, 0);
-            let _ = body_cursor.read_exact(info_buf.as_mut_slice());
+            if let Err(_) = body_cursor.read_exact(info_buf.as_mut_slice()) {
+                return Ok(Some(true));
+            }
         }
     } else if ch == 5 {
         // [Task #877] 필드 코드 (spec §10.1, 표 33): 가변 길이 8 + n bytes.

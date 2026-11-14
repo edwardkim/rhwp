@@ -214,6 +214,14 @@ fn decode_hwp3_extra(ch: u16) -> Option<char> {
         return char::from_u32(0xF03EF + (ch - 0x37C0) as u32);
     }
     let codepoint: u32 = match ch {
+        // [#8912] 사적 기호 코드. ∼는 KS 기호행의 ～ 보정과 별개다.
+        0x2051 => 0x00B1, // ±
+        0x2053 => 0x00D7, // ×
+        0x048A => 0x02DA, // ˚
+        0x223C => 0x223C, // ∼
+        0x3151 => 0x2027, // ‧
+        0x2F66 => 0x25B6, // ▶
+        0x2191 => 0x2191, // ↑
         0x0081 => 0x201C, // 왼쪽 큰따옴표
         0x0082 => 0x201D, // 오른쪽 큰따옴표
         // [#5860] 작은따옴표 짝 — 큰따옴표(0x0081/0x0082) 바로 다음 코드다.
@@ -362,7 +370,15 @@ fn decode_hwp3_extra(ch: u16) -> Option<char> {
         // 하드코딩에 없으면 완성형 좌표 규칙으로 넘어간다. 종전에는 여기서 None →
         // decode_johab 가 '?' → HWP3 파서가 그 문자를 **조용히 버렸다**(10k 스윕
         // A-개체치환 17문서: `채권(債權)조서` → `채권()조서`, ※·○·□ 등 전량 소실).
-        _ => return decode_hwp3_ksc_symbol(ch).or_else(|| decode_hwp3_ksc_hanja(ch)),
+        _ => {
+            // [#8912] 실측된 PUA 매핑이 우선이다. 나머지 괘선은 공개 문자표의
+            // Unicode 대응을 사용하며, 확인되지 않은 한컴 PUA 오프셋을 추정하지 않는다.
+            if (0x3013..=0x305F).contains(&ch) {
+                let index = (ch - 0x3013) as usize;
+                return Some(johab_map::HWP3_LINE_CHARS[index / 11][index % 11]);
+            }
+            return decode_hwp3_ksc_symbol(ch).or_else(|| decode_hwp3_ksc_hanja(ch));
+        }
     };
     char::from_u32(codepoint)
 }
