@@ -1,0 +1,141 @@
+{
+  "state": "complete",
+  "pid": 4180508,
+  "updated_at": "2026-11-14T22:18:41.703884+00:00",
+  "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
+  "command": [
+    "/home/tsjang/rhwp/venv/bin/python",
+    "scripts/visual_sweep.py",
+    "--silhouette-only",
+    "--hwp",
+    "/home/tsjang/rhwp/samples/issue9060/86036-rowbreak-first-line-fragment.hwpx",
+    "--pdf",
+    "/home/tsjang/rhwp/pdf/issue9060/86036-rowbreak-first-line-fragment-2020.pdf",
+    "--key",
+    "print-primary-final-main",
+    "--rhwp-bin",
+    "/home/tsjang/rhwp/output/pr-review/pr9075/rhwp-print-primary-final",
+    "--compat",
+    "2022",
+    "--dpi",
+    "96",
+    "--page-workers",
+    "1",
+    "--font-environment",
+    "/home/tsjang/rhwp/output/pr-review/pr9075/independent-print-font-environment-win-malgun.json",
+    "--embed-fonts=full",
+    "--font-path",
+    "/home/tsjang/rhwp/output/pr-review/pr9075/print-fonts",
+    "--font-path",
+    "/home/tsjang/rhwp/output/pr-review/pr9075/font-version-candidates",
+    "--out",
+    "/home/tsjang/rhwp/output/pr-review/pr9075/print-primary-final-main"
+  ],
+  "binary": "/home/tsjang/rhwp/output/pr-review/pr9075/rhwp-print-primary-final",
+  "binary_sha256": "5e9c68af4bb8b902b56b5a80678156da193bbcd983080a7b804e0d16ca1dccd6",
+  "log": "/home/tsjang/rhwp/output/pr-review/pr9075/logs/print-primary-final-main-native.log",
+  "child_pid": 59560,
+  "exit_code": 0,
+  "complete": true,
+  "tsv": "/home/tsjang/rhwp/output/pr-review/pr9075/print-primary-final-main/print-primary-final-main/silhouette.tsv",
+  "rows": [
+    {
+      "page": "1",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "2",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "3",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "4",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "5",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "6",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "7",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "8",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "9",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "10",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "11",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "12",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "13",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "14",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    }
+  ]
+}

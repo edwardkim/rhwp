@@ -1,0 +1,77 @@
+{
+  "source_sha256": "f224d490226b3673554b484d6ce1e2b1c3bbaf0aac02340706edf5fc9d0a4025",
+  "pdf_sha256": "c9ba8e9d4b4e2cb32277d030161dedb59d9067eba0a4665b40f9c0b46cc47317",
+  "expected_table_text": "공공재정 부정청구등 행위로 신고자가 받은 불이익조치를 해소하기 위한 신분보장등조치결정의 실효성을 제고하기 위해 제재 수준을 상향함으로써 신고자가 안심하고 신고할 수 있는 환경 조성",
+  "pdf_page_count": 14,
+  "backends": {
+    "native": {
+      "page_count": 14,
+      "table_fragments": [
+        {
+          "page": 5,
+          "text": "공공재정 부정청구등 행위로 신고자가 받은 불이익조치를 해소하기 ",
+          "bbox": {
+            "x": 77.5,
+            "y": 1015.1,
+            "w": 638.2,
+            "h": 28.6
+          },
+          "owned_line_count": 1,
+          "present_once_in_pdf_page": true
+        },
+        {
+          "page": 6,
+          "text": "위한 신분보장등조치결정의 실효성을 제고하기 위해 제재 수준을 상향함으로써 신고자가 안심하고 신고할 수 있는 환경 조성",
+          "bbox": {
+            "x": 77.5,
+            "y": 77.5,
+            "w": 638.2,
+            "h": 53.8
+          },
+          "owned_line_count": 2,
+          "present_once_in_pdf_page": true
+        }
+      ],
+      "complete_original_cell_text_preserved_exactly_once": true,
+      "same_fragments_on_independent_pdf_pages": true,
+      "following_para_43_on_page_7": [
+        "Ⅱ. 규제의 적정성"
+      ]
+    },
+    "wasm": {
+      "page_count": 14,
+      "table_fragments": [
+        {
+          "page": 5,
+          "text": "공공재정 부정청구등 행위로 신고자가 받은 불이익조치를 해소하기 ",
+          "bbox": {
+            "x": 77.5,
+            "y": 1015.1,
+            "w": 638.2,
+            "h": 28.6
+          },
+          "owned_line_count": 1,
+          "present_once_in_pdf_page": true
+        },
+        {
+          "page": 6,
+          "text": "위한 신분보장등조치결정의 실효성을 제고하기 위해 제재 수준을 상향함으로써 신고자가 안심하고 신고할 수 있는 환경 조성",
+          "bbox": {
+            "x": 77.5,
+            "y": 77.5,
+            "w": 638.2,
+            "h": 53.8
+          },
+          "owned_line_count": 2,
+          "present_once_in_pdf_page": true
+        }
+      ],
+      "complete_original_cell_text_preserved_exactly_once": true,
+      "same_fragments_on_independent_pdf_pages": true,
+      "following_para_43_on_page_7": [
+        "Ⅱ. 규제의 적정성"
+      ]
+    }
+  },
+  "checked_at": "2026-11-14T22:18:47.449712+00:00"
+}
