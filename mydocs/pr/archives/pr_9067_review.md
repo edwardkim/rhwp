@@ -53,7 +53,7 @@
 
 현재 base는 `88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc`, 실제 검증한 구현은 `5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca`다. 빌드 당시 parent와 미커밋 patch, 이후 같은 바이트를 커밋한 구현 SHA를 [producer](../assets/planet6897_integration_20261114/final-claim-producer.json)에서 구분한다. 리베이스는 충돌 없이 32개 커밋의 range-diff가 모두 같았다. 반영 #9007의 HWP/HWPX 무늬 대조 2종을 Native/fresh WASM으로 다시 출력해 각각 99.97%/99.99%를 확인했고, 무늬 6건·숨김 23건 집중 회귀도 통과했다. [현재 base 경로 감사](../assets/planet6897_integration_20261114/rebase-base-read-path-audit.json)는 이전 고정 base 결과의 재사용 범위와 실제 입력 바이트·XML 근거를 기록한다. base 쪽수 결함을 가상의 0% 결과로 만들지 않는다.
 
-[실제 소비](../assets/planet6897_integration_20261114/actual-current-validation.json)는 기존 5개 쪽 경계의 화면/인쇄 × Canvas2D/CanvasKit compat/default 30건을 구분한다. 변경된 10만 정책은 반복 문서에서 새 6건을 캡처했고 CanvasKit 4건 모두 요청 backend로 실행됐다. 나머지 24건은 이전 직접 캡처의 적용 경로·현재 API 비교·같은 원본의 byte-identical raw/Print 증거로 재사용했다. 30건 전부를 새로 캡처했다고 쓰지 않는다. SVG는 새 2건의 PNG 해시를 재확인하고 변경 없는 8건을 재사용했다. 이전 5만 한도의 fallback 4건과 실패한 strict report는 이력으로 보존하며 현재 CanvasKit 통과에 합산하지 않는다.
+[실제 소비](../assets/planet6897_integration_20261114/actual-current-validation.json)는 기존 9개 쪽 경계의 화면/인쇄 × Canvas2D/CanvasKit compat/default 54건(새 30건·변경 없는 ws-host/orphan 24건 재사용), SVG 18건(새 10건·재사용 8건)을 구분한다. owned-tac 4·10쪽, page-band 2쪽, title-mark 9쪽은 현재 구현으로 Studio 24건과 SVG 8건을 다시 캡처했다. 실제 요청 backend/profile이 모두 일치하고 fallback은 0건이며, 같은 소비 경로의 이전 PNG 24건과도 바이트가 일치한다. [새 producer와 판독](../assets/planet6897_integration_20261114/actual-consumer-completion/validation.json)에 현재 JS/WASM 응답 해시와 Print review/overlay 8쌍 직접 판독, default 4쌍의 compat PNG 동일성을 구분했다. 이전 5만 한도 fallback·실패 report는 현재 CanvasKit 통과에 합산하지 않는다.
 
 [10만 정책](../assets/planet6897_integration_20261114/budget100k/validation.json)은 문서 전체 77,079작업·5쪽 완료와 실제 CanvasKit 인쇄 두 모드 raw100.00%를 확인한다. 128쪽·글꼴·payload·깊이 제한을 유지했고 합성 작업 예산 회귀 2건은 최소 글꼴 환경에서 통과했다. 독립 Print와 같은 기준·2px 허용을 유지한다.
 
@@ -70,3 +70,19 @@
 ![Native overlay 9쪽](../assets/planet6897_integration_20261114/claims/title-mark/native/overlay-009.png)
 
 [실제 CLI 편집·HWP/HWPX 재저장](../assets/planet6897_integration_20261114/title-repeated-save.json)은 명시된 이전 producer의 이력이며 새 head 실행으로 바꾸어 표시하지 않는다. 새 base의 무늬 저장 경로는 이 입력의 무늬 -1·도형 없음에 적용되지 않음을 입력 바이트와 경로 감사로 확인했다. 제목 차례 슬롯·숨김 저장 소유 검사는 최신 전체·집중 회귀로 다시 확인했다.
+
+## 통합 코드 CI와 현재 캡처
+
+[PR #9074 코드 CI](../assets/planet6897_integration_20261114/code-ci.json)는 `f3446e4bbaae57b70c3da0288a27f019aa897c4f`에서 필요한 5개 workflow 모두 성공했다. 실제 구현 source는 `5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca`이며 이후는 증적·리뷰 기록이다. trailing head CI·병합은 아직 완료로 표시하지 않는다.
+
+현재 Studio canvas2d 9쪽:
+
+![현재 9쪽 review](../assets/planet6897_integration_20261114/actual-consumer-completion/title-mark-p9/canvas2d/review-009.png)
+
+![현재 9쪽 overlay](../assets/planet6897_integration_20261114/actual-consumer-completion/title-mark-p9/canvas2d/overlay-009.png)
+
+현재 Studio canvaskit-compat 9쪽:
+
+![현재 9쪽 review](../assets/planet6897_integration_20261114/actual-consumer-completion/title-mark-p9/canvaskit-compat/review-009.png)
+
+![현재 9쪽 overlay](../assets/planet6897_integration_20261114/actual-consumer-completion/title-mark-p9/canvaskit-compat/overlay-009.png)

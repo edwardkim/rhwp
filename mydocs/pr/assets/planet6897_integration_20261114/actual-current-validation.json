@@ -2,10 +2,10 @@
   "runtime_source": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
   "producer_evidence": "final-claim-producer.json",
   "status": "completed-by-new-policy-validation-and-proven-reuse",
-  "scope": "5 existing page boundaries × screen/print × Canvas2D/CanvasKit compat/default =30; SVG5×2=10",
-  "fresh_studio_captures": 6,
+  "scope": "9 existing page boundaries × screen/print × Canvas2D/CanvasKit compat/default =54; SVG9×2=18",
+  "fresh_studio_captures": 30,
   "reused_studio_captures": 24,
-  "studio_effective_backend_matches_requested": 30,
+  "studio_effective_backend_matches_requested": 54,
   "latest_studio_fallbacks": 0,
   "fresh_captures": [
     {
@@ -980,6 +980,294 @@
       "png_sha256": "5c963236470d34adcfb17926d9f43a92b11a4f83a2bfb708c643e16b6058127d",
       "original_source": "836615963eedfac9170d45c15cbba32d23e1b4d0",
       "reused": true
+    },
+    {
+      "sample": "owned-tac-p4",
+      "profile": "screen",
+      "page": 4,
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/rhwp-native",
+        "export-svg",
+        "/Users/tsjang/rhwp/samples/issue8969/36400485-owned-tac-lines.hwpx",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/consumer-completion/actual/svg/owned-tac-p4/screen",
+        "-p",
+        "3",
+        "--profile",
+        "screen",
+        "--compat",
+        "2022",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--json"
+      ],
+      "raster_command": [
+        "node",
+        "/Users/tsjang/rhwp/scripts/rasterize-svg-webfonts.mjs",
+        "--input",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/consumer-completion/actual/svg/owned-tac-p4/screen/36400485-owned-tac-lines_004.svg",
+        "--output",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/consumer-completion/actual/svg/owned-tac-p4/screen/actual.png",
+        "--zoom",
+        "1.00000000"
+      ],
+      "svg_sha256": "749c312de76e083397afb480008784bf1f7ba31f62edefc711f177686b8a78d9",
+      "png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/svg/owned-tac-p4/screen/actual.png",
+      "png_sha256": "a0ea91cb08b3f0f6b494bec5ac3ebea65a8f26f629ab56135a9122dff1773082",
+      "reused": false
+    },
+    {
+      "sample": "owned-tac-p4",
+      "profile": "print",
+      "page": 4,
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/rhwp-native",
+        "export-svg",
+        "/Users/tsjang/rhwp/samples/issue8969/36400485-owned-tac-lines.hwpx",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/consumer-completion/actual/svg/owned-tac-p4/print",
+        "-p",
+        "3",
+        "--profile",
+        "print",
+        "--compat",
+        "2022",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--json"
+      ],
+      "raster_command": [
+        "node",
+        "/Users/tsjang/rhwp/scripts/rasterize-svg-webfonts.mjs",
+        "--input",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/consumer-completion/actual/svg/owned-tac-p4/print/36400485-owned-tac-lines_004.svg",
+        "--output",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/consumer-completion/actual/svg/owned-tac-p4/print/actual.png",
+        "--zoom",
+        "1.00000000"
+      ],
+      "svg_sha256": "2a64f826f27bf9603a19965d69e226d46407186535c3812c9711e53a1c6aba26",
+      "png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/svg/owned-tac-p4/print/actual.png",
+      "png_sha256": "943d30af169db9f08549af75e1b5572dbfbdec2573d931a21c2cc05408fd2655",
+      "reused": false
+    },
+    {
+      "sample": "owned-tac-p10",
+      "profile": "screen",
+      "page": 10,
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/rhwp-native",
+        "export-svg",
+        "/Users/tsjang/rhwp/samples/issue8969/36400485-owned-tac-lines.hwpx",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/consumer-completion/actual/svg/owned-tac-p10/screen",
+        "-p",
+        "9",
+        "--profile",
+        "screen",
+        "--compat",
+        "2022",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--json"
+      ],
+      "raster_command": [
+        "node",
+        "/Users/tsjang/rhwp/scripts/rasterize-svg-webfonts.mjs",
+        "--input",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/consumer-completion/actual/svg/owned-tac-p10/screen/36400485-owned-tac-lines_010.svg",
+        "--output",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/consumer-completion/actual/svg/owned-tac-p10/screen/actual.png",
+        "--zoom",
+        "1.00000000"
+      ],
+      "svg_sha256": "276e4007c63d18e33d4fa6ed6bc125e620a8150d7e20e874693c3347f00c149e",
+      "png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/svg/owned-tac-p10/screen/actual.png",
+      "png_sha256": "7c6f22fd3582da1762b8c93090eb3e90623e3b4c032d232678db0c9a54e0faa5",
+      "reused": false
+    },
+    {
+      "sample": "owned-tac-p10",
+      "profile": "print",
+      "page": 10,
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/rhwp-native",
+        "export-svg",
+        "/Users/tsjang/rhwp/samples/issue8969/36400485-owned-tac-lines.hwpx",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/consumer-completion/actual/svg/owned-tac-p10/print",
+        "-p",
+        "9",
+        "--profile",
+        "print",
+        "--compat",
+        "2022",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--json"
+      ],
+      "raster_command": [
+        "node",
+        "/Users/tsjang/rhwp/scripts/rasterize-svg-webfonts.mjs",
+        "--input",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/consumer-completion/actual/svg/owned-tac-p10/print/36400485-owned-tac-lines_010.svg",
+        "--output",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/consumer-completion/actual/svg/owned-tac-p10/print/actual.png",
+        "--zoom",
+        "1.00000000"
+      ],
+      "svg_sha256": "694addf9170273713bbdee7a7961ce7afb93211915369d6cdcb542e1fb0db972",
+      "png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/svg/owned-tac-p10/print/actual.png",
+      "png_sha256": "66690376889e2856645111ac215b32a35fb3abf00120ab3a7b45d0a6be8abe06",
+      "reused": false
+    },
+    {
+      "sample": "page-band-p2",
+      "profile": "screen",
+      "page": 2,
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/rhwp-native",
+        "export-svg",
+        "/Users/tsjang/rhwp/samples/issue9055/36400525-page-band-empty-host-line.hwpx",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/consumer-completion/actual/svg/page-band-p2/screen",
+        "-p",
+        "1",
+        "--profile",
+        "screen",
+        "--compat",
+        "2022",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--json"
+      ],
+      "raster_command": [
+        "node",
+        "/Users/tsjang/rhwp/scripts/rasterize-svg-webfonts.mjs",
+        "--input",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/consumer-completion/actual/svg/page-band-p2/screen/36400525-page-band-empty-host-line_002.svg",
+        "--output",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/consumer-completion/actual/svg/page-band-p2/screen/actual.png",
+        "--zoom",
+        "1.00000000"
+      ],
+      "svg_sha256": "e171fdd228e60cdbef2808408ef53c3f1dfebe7cc895dc41e54273de79196a1a",
+      "png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/svg/page-band-p2/screen/actual.png",
+      "png_sha256": "b3dff6786138d2ab9d96558e2306ebf042683881ede2662d0409af978cc4ec13",
+      "reused": false
+    },
+    {
+      "sample": "page-band-p2",
+      "profile": "print",
+      "page": 2,
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/rhwp-native",
+        "export-svg",
+        "/Users/tsjang/rhwp/samples/issue9055/36400525-page-band-empty-host-line.hwpx",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/consumer-completion/actual/svg/page-band-p2/print",
+        "-p",
+        "1",
+        "--profile",
+        "print",
+        "--compat",
+        "2022",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--json"
+      ],
+      "raster_command": [
+        "node",
+        "/Users/tsjang/rhwp/scripts/rasterize-svg-webfonts.mjs",
+        "--input",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/consumer-completion/actual/svg/page-band-p2/print/36400525-page-band-empty-host-line_002.svg",
+        "--output",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/consumer-completion/actual/svg/page-band-p2/print/actual.png",
+        "--zoom",
+        "1.00000000"
+      ],
+      "svg_sha256": "fde9f062455c8da034bf6409e603644f3a9e3f5e7eeda20d75624ba0b1740460",
+      "png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/svg/page-band-p2/print/actual.png",
+      "png_sha256": "7d461461c96e81727601e5af65b3cc6a9e9b644e8407f4a5f3c316051ac07422",
+      "reused": false
+    },
+    {
+      "sample": "title-mark-p9",
+      "profile": "screen",
+      "page": 9,
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/rhwp-native",
+        "export-svg",
+        "/Users/tsjang/rhwp/samples/issue9016/1730000-title-mark-empty-stream.hwp",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/consumer-completion/actual/svg/title-mark-p9/screen",
+        "-p",
+        "8",
+        "--profile",
+        "screen",
+        "--compat",
+        "2022",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--json"
+      ],
+      "raster_command": [
+        "node",
+        "/Users/tsjang/rhwp/scripts/rasterize-svg-webfonts.mjs",
+        "--input",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/consumer-completion/actual/svg/title-mark-p9/screen/1730000-title-mark-empty-stream_009.svg",
+        "--output",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/consumer-completion/actual/svg/title-mark-p9/screen/actual.png",
+        "--zoom",
+        "1.00000000"
+      ],
+      "svg_sha256": "7385193bb51fe54a39c4cfe793e221baeefa27e3ec8d5cd5436aaea2ae7ae47b",
+      "png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/svg/title-mark-p9/screen/actual.png",
+      "png_sha256": "66456539ed492c2bebd24e61bd6aea9e26c78259c52329577fc03e9c845099ab",
+      "reused": false
+    },
+    {
+      "sample": "title-mark-p9",
+      "profile": "print",
+      "page": 9,
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/rhwp-native",
+        "export-svg",
+        "/Users/tsjang/rhwp/samples/issue9016/1730000-title-mark-empty-stream.hwp",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/consumer-completion/actual/svg/title-mark-p9/print",
+        "-p",
+        "8",
+        "--profile",
+        "print",
+        "--compat",
+        "2022",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--json"
+      ],
+      "raster_command": [
+        "node",
+        "/Users/tsjang/rhwp/scripts/rasterize-svg-webfonts.mjs",
+        "--input",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/consumer-completion/actual/svg/title-mark-p9/print/1730000-title-mark-empty-stream_009.svg",
+        "--output",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/consumer-completion/actual/svg/title-mark-p9/print/actual.png",
+        "--zoom",
+        "1.00000000"
+      ],
+      "svg_sha256": "f89a07541550b60043ef7200c22a03b2ebe7c9787b11c58ff4497d4e6ee90d5c",
+      "png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/svg/title-mark-p9/print/actual.png",
+      "png_sha256": "22392fe500e4aed387d95c86e003aea307c0def5c5ffe9d21a2c623247e3cc07",
+      "reused": false
     }
   ],
   "reuse_basis": {
@@ -1845,5 +2133,1921 @@
   "old_strict_report": "actual-final/browser-report.json",
   "old_strict_report_note": "이전 50,000 상한에서 4건이 Canvas2D로 fallback한 기록을 보존한다. 이를 새 CanvasKit 결과로 표시하지 않는다.",
   "actual_resource_note": "Standalone Node API is not the resource-prepared Studio path. Matching unsupported shaping blockers are not counted as successful CanvasKit replay.",
-  "current_initialization_audit": "budget100k/initialization-audit.json"
+  "current_initialization_audit": "budget100k/initialization-audit.json",
+  "additional_current_captures": [
+    {
+      "sample": "owned-tac-p4",
+      "key": "owned-tac",
+      "page": 4,
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "screen",
+      "actual_profile": "screen",
+      "sha256": "ffad25b8883c67a72b0c4773c6d9db6c822122852267e505f1e91ea5e2992b99",
+      "runtime": {
+        "activeBackend": "canvas2d",
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "requestedBackend": "canvas2d",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "explicitCanvas2d",
+          "fallbackReason": null,
+          "documentRevision": 2,
+          "resourceGeneration": 2,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:cf4551e4e8b6e702f0575f4618ea276abfc50a2299a2581fd1e59dd8ed9ffa03",
+          "decisionKey": "blake3:cf4551e4e8b6e702f0575f4618ea276abfc50a2299a2581fd1e59dd8ed9ffa03|revision:2|profile:screen|resources:2|request:canvas2d|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": false
+      },
+      "previous_same_consumer": {
+        "source": "44fdbd164199cc0ba1c75c3c9dc293ea78156dfc",
+        "sha256": "ffad25b8883c67a72b0c4773c6d9db6c822122852267e505f1e91ea5e2992b99",
+        "byte_identical": true
+      },
+      "path": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p4/canvas2d-screen.png"
+    },
+    {
+      "sample": "owned-tac-p4",
+      "key": "owned-tac",
+      "page": 4,
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_profile": "screen",
+      "sha256": "1955d5e2c990205d8ba9a7545ef1e61ff50469e442b0e04f057158f0962f0075",
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "compat",
+            "source": "url",
+            "requested": "compat"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:cf4551e4e8b6e702f0575f4618ea276abfc50a2299a2581fd1e59dd8ed9ffa03",
+          "decisionKey": "blake3:cf4551e4e8b6e702f0575f4618ea276abfc50a2299a2581fd1e59dd8ed9ffa03|revision:3|profile:screen|resources:3|request:canvaskit|mode:compat",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": false
+      },
+      "previous_same_consumer": {
+        "source": "44fdbd164199cc0ba1c75c3c9dc293ea78156dfc",
+        "sha256": "1955d5e2c990205d8ba9a7545ef1e61ff50469e442b0e04f057158f0962f0075",
+        "byte_identical": true
+      },
+      "path": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p4/canvaskit-compat-screen-software.png"
+    },
+    {
+      "sample": "owned-tac-p4",
+      "key": "owned-tac",
+      "page": 4,
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_profile": "screen",
+      "sha256": "1955d5e2c990205d8ba9a7545ef1e61ff50469e442b0e04f057158f0962f0075",
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 4,
+          "resourceGeneration": 4,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:cf4551e4e8b6e702f0575f4618ea276abfc50a2299a2581fd1e59dd8ed9ffa03",
+          "decisionKey": "blake3:cf4551e4e8b6e702f0575f4618ea276abfc50a2299a2581fd1e59dd8ed9ffa03|revision:4|profile:screen|resources:4|request:canvaskit|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": false
+      },
+      "previous_same_consumer": {
+        "source": "44fdbd164199cc0ba1c75c3c9dc293ea78156dfc",
+        "sha256": "1955d5e2c990205d8ba9a7545ef1e61ff50469e442b0e04f057158f0962f0075",
+        "byte_identical": true
+      },
+      "path": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p4/canvaskit-default-screen-software.png"
+    },
+    {
+      "sample": "owned-tac-p4",
+      "key": "owned-tac",
+      "page": 4,
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "sha256": "b161b485fd9ac2ed7dd5039efd5b2a8023692a12b18001b41e12c7ff94409575",
+      "runtime": {
+        "activeBackend": "canvas2d",
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "requestedBackend": "canvas2d",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "explicitCanvas2d",
+          "fallbackReason": null,
+          "documentRevision": 2,
+          "resourceGeneration": 2,
+          "renderProfile": "print",
+          "documentDigest": "blake3:cf4551e4e8b6e702f0575f4618ea276abfc50a2299a2581fd1e59dd8ed9ffa03",
+          "decisionKey": "blake3:cf4551e4e8b6e702f0575f4618ea276abfc50a2299a2581fd1e59dd8ed9ffa03|revision:2|profile:print|resources:2|request:canvas2d|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": false
+      },
+      "metrics": {
+        "page": 4,
+        "rhwp_png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p4/canvas2d-print.png",
+        "pdf_png": "mydocs/pr/assets/planet6897_integration_20261114/claims/owned-tac/wasm/pdf-004.png",
+        "overlay_png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p4/canvas2d/overlay-004.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 70134,
+        "diff_ratio": 0.07872547,
+        "pixel_match_percent": 92.12745,
+        "ink_union_pixels": 102345,
+        "ink_diff_pixels": 70134,
+        "ink_diff_ratio": 0.68527041,
+        "ink_match_percent": 31.47296,
+        "visual_accuracy_proxy_percent": 31.47296,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.79774,
+        "silhouette_raw_unmatched_pixels": 207,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 102345,
+        "tolerant_content_match_percent": 99.79774,
+        "mean_abs_channel_delta": 9.42,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          77,
+          115,
+          716,
+          1064
+        ]
+      },
+      "pdf_png_sha256": "b467fa5e3c6f1b55eca8a0aa47ce9984af9e6ea0eb0e1c647b038fb4fe5f3887",
+      "previous_same_consumer": {
+        "source": "44fdbd164199cc0ba1c75c3c9dc293ea78156dfc",
+        "sha256": "b161b485fd9ac2ed7dd5039efd5b2a8023692a12b18001b41e12c7ff94409575",
+        "byte_identical": true
+      },
+      "path": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p4/canvas2d-print.png",
+      "review": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p4/canvas2d/review-004.png",
+      "overlay": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p4/canvas2d/overlay-004.png",
+      "pdf_png": "mydocs/pr/assets/planet6897_integration_20261114/claims/owned-tac/wasm/pdf-004.png"
+    },
+    {
+      "sample": "owned-tac-p4",
+      "key": "owned-tac",
+      "page": 4,
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_profile": "print",
+      "sha256": "9017ac572722755938de80d2d4d5631cc660ef7cbbbcb796a0bc33721a78161d",
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "compat",
+            "source": "url",
+            "requested": "compat"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 4,
+          "resourceGeneration": 4,
+          "renderProfile": "print",
+          "documentDigest": "blake3:cf4551e4e8b6e702f0575f4618ea276abfc50a2299a2581fd1e59dd8ed9ffa03",
+          "decisionKey": "blake3:cf4551e4e8b6e702f0575f4618ea276abfc50a2299a2581fd1e59dd8ed9ffa03|revision:4|profile:print|resources:4|request:canvaskit|mode:compat",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": false
+      },
+      "metrics": {
+        "page": 4,
+        "rhwp_png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p4/canvaskit-compat-print-software.png",
+        "pdf_png": "mydocs/pr/assets/planet6897_integration_20261114/claims/owned-tac/wasm/pdf-004.png",
+        "overlay_png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p4/canvaskit-compat/overlay-004.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 67630,
+        "diff_ratio": 0.07591473,
+        "pixel_match_percent": 92.40853,
+        "ink_union_pixels": 93928,
+        "ink_diff_pixels": 67630,
+        "ink_diff_ratio": 0.72001959,
+        "ink_match_percent": 27.99804,
+        "visual_accuracy_proxy_percent": 27.99804,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.9819,
+        "silhouette_raw_unmatched_pixels": 17,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 93928,
+        "tolerant_content_match_percent": 99.9819,
+        "mean_abs_channel_delta": 9.477,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          77,
+          115,
+          715,
+          1064
+        ]
+      },
+      "pdf_png_sha256": "b467fa5e3c6f1b55eca8a0aa47ce9984af9e6ea0eb0e1c647b038fb4fe5f3887",
+      "previous_same_consumer": {
+        "source": "44fdbd164199cc0ba1c75c3c9dc293ea78156dfc",
+        "sha256": "9017ac572722755938de80d2d4d5631cc660ef7cbbbcb796a0bc33721a78161d",
+        "byte_identical": true
+      },
+      "path": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p4/canvaskit-compat-print-software.png",
+      "review": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p4/canvaskit-compat/review-004.png",
+      "overlay": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p4/canvaskit-compat/overlay-004.png",
+      "pdf_png": "mydocs/pr/assets/planet6897_integration_20261114/claims/owned-tac/wasm/pdf-004.png"
+    },
+    {
+      "sample": "owned-tac-p4",
+      "key": "owned-tac",
+      "page": 4,
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_profile": "print",
+      "sha256": "9017ac572722755938de80d2d4d5631cc660ef7cbbbcb796a0bc33721a78161d",
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 4,
+          "resourceGeneration": 4,
+          "renderProfile": "print",
+          "documentDigest": "blake3:cf4551e4e8b6e702f0575f4618ea276abfc50a2299a2581fd1e59dd8ed9ffa03",
+          "decisionKey": "blake3:cf4551e4e8b6e702f0575f4618ea276abfc50a2299a2581fd1e59dd8ed9ffa03|revision:4|profile:print|resources:4|request:canvaskit|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": false
+      },
+      "metrics": {
+        "page": 4,
+        "rhwp_png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p4/canvaskit-default-print-software.png",
+        "pdf_png": "mydocs/pr/assets/planet6897_integration_20261114/claims/owned-tac/wasm/pdf-004.png",
+        "overlay_png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p4/canvaskit-default/overlay-004.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 67630,
+        "diff_ratio": 0.07591473,
+        "pixel_match_percent": 92.40853,
+        "ink_union_pixels": 93928,
+        "ink_diff_pixels": 67630,
+        "ink_diff_ratio": 0.72001959,
+        "ink_match_percent": 27.99804,
+        "visual_accuracy_proxy_percent": 27.99804,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.9819,
+        "silhouette_raw_unmatched_pixels": 17,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 93928,
+        "tolerant_content_match_percent": 99.9819,
+        "mean_abs_channel_delta": 9.477,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          77,
+          115,
+          715,
+          1064
+        ]
+      },
+      "pdf_png_sha256": "b467fa5e3c6f1b55eca8a0aa47ce9984af9e6ea0eb0e1c647b038fb4fe5f3887",
+      "previous_same_consumer": {
+        "source": "44fdbd164199cc0ba1c75c3c9dc293ea78156dfc",
+        "sha256": "9017ac572722755938de80d2d4d5631cc660ef7cbbbcb796a0bc33721a78161d",
+        "byte_identical": true
+      },
+      "path": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p4/canvaskit-default-print-software.png",
+      "review": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p4/canvaskit-default/review-004.png",
+      "overlay": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p4/canvaskit-default/overlay-004.png",
+      "pdf_png": "mydocs/pr/assets/planet6897_integration_20261114/claims/owned-tac/wasm/pdf-004.png"
+    },
+    {
+      "sample": "owned-tac-p10",
+      "key": "owned-tac",
+      "page": 10,
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "screen",
+      "actual_profile": "screen",
+      "sha256": "c5cdcbf9dceacaba1139fad0daffdc0860fc5c4c6faf125bc795f939d5de1ff2",
+      "runtime": {
+        "activeBackend": "canvas2d",
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "requestedBackend": "canvas2d",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "explicitCanvas2d",
+          "fallbackReason": null,
+          "documentRevision": 2,
+          "resourceGeneration": 2,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:cf4551e4e8b6e702f0575f4618ea276abfc50a2299a2581fd1e59dd8ed9ffa03",
+          "decisionKey": "blake3:cf4551e4e8b6e702f0575f4618ea276abfc50a2299a2581fd1e59dd8ed9ffa03|revision:2|profile:screen|resources:2|request:canvas2d|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": false
+      },
+      "previous_same_consumer": {
+        "source": "44fdbd164199cc0ba1c75c3c9dc293ea78156dfc",
+        "sha256": "c5cdcbf9dceacaba1139fad0daffdc0860fc5c4c6faf125bc795f939d5de1ff2",
+        "byte_identical": true
+      },
+      "path": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p10/canvas2d-screen.png"
+    },
+    {
+      "sample": "owned-tac-p10",
+      "key": "owned-tac",
+      "page": 10,
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_profile": "screen",
+      "sha256": "8884dc08bbab5f2a37a289b414f66cf18d6662fa873aa0716da56c683564cbc4",
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "compat",
+            "source": "url",
+            "requested": "compat"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 4,
+          "resourceGeneration": 4,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:cf4551e4e8b6e702f0575f4618ea276abfc50a2299a2581fd1e59dd8ed9ffa03",
+          "decisionKey": "blake3:cf4551e4e8b6e702f0575f4618ea276abfc50a2299a2581fd1e59dd8ed9ffa03|revision:4|profile:screen|resources:4|request:canvaskit|mode:compat",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": false
+      },
+      "previous_same_consumer": {
+        "source": "44fdbd164199cc0ba1c75c3c9dc293ea78156dfc",
+        "sha256": "8884dc08bbab5f2a37a289b414f66cf18d6662fa873aa0716da56c683564cbc4",
+        "byte_identical": true
+      },
+      "path": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p10/canvaskit-compat-screen-software.png"
+    },
+    {
+      "sample": "owned-tac-p10",
+      "key": "owned-tac",
+      "page": 10,
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_profile": "screen",
+      "sha256": "8884dc08bbab5f2a37a289b414f66cf18d6662fa873aa0716da56c683564cbc4",
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 4,
+          "resourceGeneration": 4,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:cf4551e4e8b6e702f0575f4618ea276abfc50a2299a2581fd1e59dd8ed9ffa03",
+          "decisionKey": "blake3:cf4551e4e8b6e702f0575f4618ea276abfc50a2299a2581fd1e59dd8ed9ffa03|revision:4|profile:screen|resources:4|request:canvaskit|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": false
+      },
+      "previous_same_consumer": {
+        "source": "44fdbd164199cc0ba1c75c3c9dc293ea78156dfc",
+        "sha256": "8884dc08bbab5f2a37a289b414f66cf18d6662fa873aa0716da56c683564cbc4",
+        "byte_identical": true
+      },
+      "path": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p10/canvaskit-default-screen-software.png"
+    },
+    {
+      "sample": "owned-tac-p10",
+      "key": "owned-tac",
+      "page": 10,
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "sha256": "b5846a42ccf3c0499fd4081d672401372686fccfb1c1ef685a3e3eb20615aa9e",
+      "runtime": {
+        "activeBackend": "canvas2d",
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "requestedBackend": "canvas2d",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "explicitCanvas2d",
+          "fallbackReason": null,
+          "documentRevision": 2,
+          "resourceGeneration": 2,
+          "renderProfile": "print",
+          "documentDigest": "blake3:cf4551e4e8b6e702f0575f4618ea276abfc50a2299a2581fd1e59dd8ed9ffa03",
+          "decisionKey": "blake3:cf4551e4e8b6e702f0575f4618ea276abfc50a2299a2581fd1e59dd8ed9ffa03|revision:2|profile:print|resources:2|request:canvas2d|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": false
+      },
+      "metrics": {
+        "page": 10,
+        "rhwp_png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p10/canvas2d-print.png",
+        "pdf_png": "mydocs/pr/assets/planet6897_integration_20261114/claims/owned-tac/wasm/pdf-010.png",
+        "overlay_png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p10/canvas2d/overlay-010.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 86432,
+        "diff_ratio": 0.09701999,
+        "pixel_match_percent": 90.298,
+        "ink_union_pixels": 237523,
+        "ink_diff_pixels": 86432,
+        "ink_diff_ratio": 0.36388897,
+        "ink_match_percent": 63.6111,
+        "visual_accuracy_proxy_percent": 63.6111,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.97011,
+        "silhouette_raw_unmatched_pixels": 71,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 237523,
+        "tolerant_content_match_percent": 99.97011,
+        "mean_abs_channel_delta": 10.924,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          76,
+          114,
+          711,
+          1064
+        ]
+      },
+      "pdf_png_sha256": "cd0a9aa49e21de02c227cbf9774103cd0ee886b77f05ca58b9aef4e1730ae748",
+      "previous_same_consumer": {
+        "source": "44fdbd164199cc0ba1c75c3c9dc293ea78156dfc",
+        "sha256": "b5846a42ccf3c0499fd4081d672401372686fccfb1c1ef685a3e3eb20615aa9e",
+        "byte_identical": true
+      },
+      "path": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p10/canvas2d-print.png",
+      "review": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p10/canvas2d/review-010.png",
+      "overlay": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p10/canvas2d/overlay-010.png",
+      "pdf_png": "mydocs/pr/assets/planet6897_integration_20261114/claims/owned-tac/wasm/pdf-010.png"
+    },
+    {
+      "sample": "owned-tac-p10",
+      "key": "owned-tac",
+      "page": 10,
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_profile": "print",
+      "sha256": "383538f99091cca6dae1b2cbe52d5d53ba67ecd10eae73bf8b09ecf86d4bb0de",
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "compat",
+            "source": "url",
+            "requested": "compat"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 4,
+          "resourceGeneration": 4,
+          "renderProfile": "print",
+          "documentDigest": "blake3:cf4551e4e8b6e702f0575f4618ea276abfc50a2299a2581fd1e59dd8ed9ffa03",
+          "decisionKey": "blake3:cf4551e4e8b6e702f0575f4618ea276abfc50a2299a2581fd1e59dd8ed9ffa03|revision:4|profile:print|resources:4|request:canvaskit|mode:compat",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": false
+      },
+      "metrics": {
+        "page": 10,
+        "rhwp_png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p10/canvaskit-compat-print-software.png",
+        "pdf_png": "mydocs/pr/assets/planet6897_integration_20261114/claims/owned-tac/wasm/pdf-010.png",
+        "overlay_png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p10/canvaskit-compat/overlay-010.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 77290,
+        "diff_ratio": 0.08675808,
+        "pixel_match_percent": 91.32419,
+        "ink_union_pixels": 227040,
+        "ink_diff_pixels": 77290,
+        "ink_diff_ratio": 0.34042459,
+        "ink_match_percent": 65.95754,
+        "visual_accuracy_proxy_percent": 65.95754,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 227040,
+        "tolerant_content_match_percent": 100.0,
+        "mean_abs_channel_delta": 9.485,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          76,
+          114,
+          711,
+          1064
+        ]
+      },
+      "pdf_png_sha256": "cd0a9aa49e21de02c227cbf9774103cd0ee886b77f05ca58b9aef4e1730ae748",
+      "previous_same_consumer": {
+        "source": "44fdbd164199cc0ba1c75c3c9dc293ea78156dfc",
+        "sha256": "383538f99091cca6dae1b2cbe52d5d53ba67ecd10eae73bf8b09ecf86d4bb0de",
+        "byte_identical": true
+      },
+      "path": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p10/canvaskit-compat-print-software.png",
+      "review": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p10/canvaskit-compat/review-010.png",
+      "overlay": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p10/canvaskit-compat/overlay-010.png",
+      "pdf_png": "mydocs/pr/assets/planet6897_integration_20261114/claims/owned-tac/wasm/pdf-010.png"
+    },
+    {
+      "sample": "owned-tac-p10",
+      "key": "owned-tac",
+      "page": 10,
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_profile": "print",
+      "sha256": "383538f99091cca6dae1b2cbe52d5d53ba67ecd10eae73bf8b09ecf86d4bb0de",
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 4,
+          "resourceGeneration": 4,
+          "renderProfile": "print",
+          "documentDigest": "blake3:cf4551e4e8b6e702f0575f4618ea276abfc50a2299a2581fd1e59dd8ed9ffa03",
+          "decisionKey": "blake3:cf4551e4e8b6e702f0575f4618ea276abfc50a2299a2581fd1e59dd8ed9ffa03|revision:4|profile:print|resources:4|request:canvaskit|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": false
+      },
+      "metrics": {
+        "page": 10,
+        "rhwp_png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p10/canvaskit-default-print-software.png",
+        "pdf_png": "mydocs/pr/assets/planet6897_integration_20261114/claims/owned-tac/wasm/pdf-010.png",
+        "overlay_png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p10/canvaskit-default/overlay-010.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 77290,
+        "diff_ratio": 0.08675808,
+        "pixel_match_percent": 91.32419,
+        "ink_union_pixels": 227040,
+        "ink_diff_pixels": 77290,
+        "ink_diff_ratio": 0.34042459,
+        "ink_match_percent": 65.95754,
+        "visual_accuracy_proxy_percent": 65.95754,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 227040,
+        "tolerant_content_match_percent": 100.0,
+        "mean_abs_channel_delta": 9.485,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          76,
+          114,
+          711,
+          1064
+        ]
+      },
+      "pdf_png_sha256": "cd0a9aa49e21de02c227cbf9774103cd0ee886b77f05ca58b9aef4e1730ae748",
+      "previous_same_consumer": {
+        "source": "44fdbd164199cc0ba1c75c3c9dc293ea78156dfc",
+        "sha256": "383538f99091cca6dae1b2cbe52d5d53ba67ecd10eae73bf8b09ecf86d4bb0de",
+        "byte_identical": true
+      },
+      "path": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p10/canvaskit-default-print-software.png",
+      "review": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p10/canvaskit-default/review-010.png",
+      "overlay": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/owned-tac-p10/canvaskit-default/overlay-010.png",
+      "pdf_png": "mydocs/pr/assets/planet6897_integration_20261114/claims/owned-tac/wasm/pdf-010.png"
+    },
+    {
+      "sample": "page-band-p2",
+      "key": "page-band",
+      "page": 2,
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "screen",
+      "actual_profile": "screen",
+      "sha256": "5b8c763389005fcb0ce400d89c8f71ac2672326146dd74538d0b053d90492ce1",
+      "runtime": {
+        "activeBackend": "canvas2d",
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "requestedBackend": "canvas2d",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "explicitCanvas2d",
+          "fallbackReason": null,
+          "documentRevision": 2,
+          "resourceGeneration": 2,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:92cbec2fd89bedb60dc45e33e384f164c97087763b0a6ce520ac1f0d09c5786a",
+          "decisionKey": "blake3:92cbec2fd89bedb60dc45e33e384f164c97087763b0a6ce520ac1f0d09c5786a|revision:2|profile:screen|resources:2|request:canvas2d|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "previous_same_consumer": {
+        "source": "44fdbd164199cc0ba1c75c3c9dc293ea78156dfc",
+        "sha256": "5b8c763389005fcb0ce400d89c8f71ac2672326146dd74538d0b053d90492ce1",
+        "byte_identical": true
+      },
+      "path": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/page-band-p2/canvas2d-screen.png"
+    },
+    {
+      "sample": "page-band-p2",
+      "key": "page-band",
+      "page": 2,
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_profile": "screen",
+      "sha256": "a43dd2529cbd3fcc1a0624a406bd2925a5841bd79b14d2ea20cce273b363ab8d",
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "compat",
+            "source": "url",
+            "requested": "compat"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 4,
+          "resourceGeneration": 4,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:92cbec2fd89bedb60dc45e33e384f164c97087763b0a6ce520ac1f0d09c5786a",
+          "decisionKey": "blake3:92cbec2fd89bedb60dc45e33e384f164c97087763b0a6ce520ac1f0d09c5786a|revision:4|profile:screen|resources:4|request:canvaskit|mode:compat",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "previous_same_consumer": {
+        "source": "44fdbd164199cc0ba1c75c3c9dc293ea78156dfc",
+        "sha256": "a43dd2529cbd3fcc1a0624a406bd2925a5841bd79b14d2ea20cce273b363ab8d",
+        "byte_identical": true
+      },
+      "path": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/page-band-p2/canvaskit-compat-screen-software.png"
+    },
+    {
+      "sample": "page-band-p2",
+      "key": "page-band",
+      "page": 2,
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_profile": "screen",
+      "sha256": "a43dd2529cbd3fcc1a0624a406bd2925a5841bd79b14d2ea20cce273b363ab8d",
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 4,
+          "resourceGeneration": 4,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:92cbec2fd89bedb60dc45e33e384f164c97087763b0a6ce520ac1f0d09c5786a",
+          "decisionKey": "blake3:92cbec2fd89bedb60dc45e33e384f164c97087763b0a6ce520ac1f0d09c5786a|revision:4|profile:screen|resources:4|request:canvaskit|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "previous_same_consumer": {
+        "source": "44fdbd164199cc0ba1c75c3c9dc293ea78156dfc",
+        "sha256": "a43dd2529cbd3fcc1a0624a406bd2925a5841bd79b14d2ea20cce273b363ab8d",
+        "byte_identical": true
+      },
+      "path": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/page-band-p2/canvaskit-default-screen-software.png"
+    },
+    {
+      "sample": "page-band-p2",
+      "key": "page-band",
+      "page": 2,
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "sha256": "b116bb1dd7a2b0d9aa1142ad97b53a49cb7d02c585febee221163d55e4537475",
+      "runtime": {
+        "activeBackend": "canvas2d",
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "requestedBackend": "canvas2d",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "explicitCanvas2d",
+          "fallbackReason": null,
+          "documentRevision": 2,
+          "resourceGeneration": 2,
+          "renderProfile": "print",
+          "documentDigest": "blake3:92cbec2fd89bedb60dc45e33e384f164c97087763b0a6ce520ac1f0d09c5786a",
+          "decisionKey": "blake3:92cbec2fd89bedb60dc45e33e384f164c97087763b0a6ce520ac1f0d09c5786a|revision:2|profile:print|resources:2|request:canvas2d|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "metrics": {
+        "page": 2,
+        "rhwp_png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/page-band-p2/canvas2d-print.png",
+        "pdf_png": "mydocs/pr/assets/planet6897_integration_20261114/claims/page-band/wasm/pdf-002.png",
+        "overlay_png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/page-band-p2/canvas2d/overlay-002.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 55658,
+        "diff_ratio": 0.06247615,
+        "pixel_match_percent": 93.75239,
+        "ink_union_pixels": 78069,
+        "ink_diff_pixels": 55658,
+        "ink_diff_ratio": 0.71293343,
+        "ink_match_percent": 28.70666,
+        "visual_accuracy_proxy_percent": 28.70666,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 93.589,
+        "silhouette_raw_unmatched_pixels": 5005,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 78069,
+        "tolerant_content_match_percent": 93.589,
+        "mean_abs_channel_delta": 8.432,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          75,
+          114,
+          734,
+          1019
+        ]
+      },
+      "pdf_png_sha256": "b544b8c5ad1017bbb2312680137ca3489e9d48db0682cdfc46d8db73e5aca6d2",
+      "previous_same_consumer": {
+        "source": "44fdbd164199cc0ba1c75c3c9dc293ea78156dfc",
+        "sha256": "b116bb1dd7a2b0d9aa1142ad97b53a49cb7d02c585febee221163d55e4537475",
+        "byte_identical": true
+      },
+      "path": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/page-band-p2/canvas2d-print.png",
+      "review": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/page-band-p2/canvas2d/review-002.png",
+      "overlay": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/page-band-p2/canvas2d/overlay-002.png",
+      "pdf_png": "mydocs/pr/assets/planet6897_integration_20261114/claims/page-band/wasm/pdf-002.png"
+    },
+    {
+      "sample": "page-band-p2",
+      "key": "page-band",
+      "page": 2,
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_profile": "print",
+      "sha256": "1534b59f0c11b399742e9b1fa606de4cef55c5e26ff75975100d219032d46654",
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "compat",
+            "source": "url",
+            "requested": "compat"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 4,
+          "resourceGeneration": 4,
+          "renderProfile": "print",
+          "documentDigest": "blake3:92cbec2fd89bedb60dc45e33e384f164c97087763b0a6ce520ac1f0d09c5786a",
+          "decisionKey": "blake3:92cbec2fd89bedb60dc45e33e384f164c97087763b0a6ce520ac1f0d09c5786a|revision:4|profile:print|resources:4|request:canvaskit|mode:compat",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "metrics": {
+        "page": 2,
+        "rhwp_png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/page-band-p2/canvaskit-compat-print-software.png",
+        "pdf_png": "mydocs/pr/assets/planet6897_integration_20261114/claims/page-band/wasm/pdf-002.png",
+        "overlay_png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/page-band-p2/canvaskit-compat/overlay-002.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 35600,
+        "diff_ratio": 0.03996103,
+        "pixel_match_percent": 96.0039,
+        "ink_union_pixels": 65252,
+        "ink_diff_pixels": 35600,
+        "ink_diff_ratio": 0.54557715,
+        "ink_match_percent": 45.44229,
+        "visual_accuracy_proxy_percent": 45.44229,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.96015,
+        "silhouette_raw_unmatched_pixels": 26,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 65252,
+        "tolerant_content_match_percent": 99.96015,
+        "mean_abs_channel_delta": 3.886,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          76,
+          114,
+          735,
+          1019
+        ]
+      },
+      "pdf_png_sha256": "b544b8c5ad1017bbb2312680137ca3489e9d48db0682cdfc46d8db73e5aca6d2",
+      "previous_same_consumer": {
+        "source": "44fdbd164199cc0ba1c75c3c9dc293ea78156dfc",
+        "sha256": "1534b59f0c11b399742e9b1fa606de4cef55c5e26ff75975100d219032d46654",
+        "byte_identical": true
+      },
+      "path": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/page-band-p2/canvaskit-compat-print-software.png",
+      "review": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/page-band-p2/canvaskit-compat/review-002.png",
+      "overlay": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/page-band-p2/canvaskit-compat/overlay-002.png",
+      "pdf_png": "mydocs/pr/assets/planet6897_integration_20261114/claims/page-band/wasm/pdf-002.png"
+    },
+    {
+      "sample": "page-band-p2",
+      "key": "page-band",
+      "page": 2,
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_profile": "print",
+      "sha256": "1534b59f0c11b399742e9b1fa606de4cef55c5e26ff75975100d219032d46654",
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 4,
+          "resourceGeneration": 4,
+          "renderProfile": "print",
+          "documentDigest": "blake3:92cbec2fd89bedb60dc45e33e384f164c97087763b0a6ce520ac1f0d09c5786a",
+          "decisionKey": "blake3:92cbec2fd89bedb60dc45e33e384f164c97087763b0a6ce520ac1f0d09c5786a|revision:4|profile:print|resources:4|request:canvaskit|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "metrics": {
+        "page": 2,
+        "rhwp_png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/page-band-p2/canvaskit-default-print-software.png",
+        "pdf_png": "mydocs/pr/assets/planet6897_integration_20261114/claims/page-band/wasm/pdf-002.png",
+        "overlay_png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/page-band-p2/canvaskit-default/overlay-002.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 35600,
+        "diff_ratio": 0.03996103,
+        "pixel_match_percent": 96.0039,
+        "ink_union_pixels": 65252,
+        "ink_diff_pixels": 35600,
+        "ink_diff_ratio": 0.54557715,
+        "ink_match_percent": 45.44229,
+        "visual_accuracy_proxy_percent": 45.44229,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.96015,
+        "silhouette_raw_unmatched_pixels": 26,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 65252,
+        "tolerant_content_match_percent": 99.96015,
+        "mean_abs_channel_delta": 3.886,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          76,
+          114,
+          735,
+          1019
+        ]
+      },
+      "pdf_png_sha256": "b544b8c5ad1017bbb2312680137ca3489e9d48db0682cdfc46d8db73e5aca6d2",
+      "previous_same_consumer": {
+        "source": "44fdbd164199cc0ba1c75c3c9dc293ea78156dfc",
+        "sha256": "1534b59f0c11b399742e9b1fa606de4cef55c5e26ff75975100d219032d46654",
+        "byte_identical": true
+      },
+      "path": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/page-band-p2/canvaskit-default-print-software.png",
+      "review": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/page-band-p2/canvaskit-default/review-002.png",
+      "overlay": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/page-band-p2/canvaskit-default/overlay-002.png",
+      "pdf_png": "mydocs/pr/assets/planet6897_integration_20261114/claims/page-band/wasm/pdf-002.png"
+    },
+    {
+      "sample": "title-mark-p9",
+      "key": "title-mark",
+      "page": 9,
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "screen",
+      "actual_profile": "screen",
+      "sha256": "e8009e5478e9ef4f2455eec65f6a2bded595d4413dafba580f69a41e4a7fea55",
+      "runtime": {
+        "activeBackend": "canvas2d",
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "requestedBackend": "canvas2d",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "explicitCanvas2d",
+          "fallbackReason": null,
+          "documentRevision": 2,
+          "resourceGeneration": 2,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:5bb3e92721848f7ae7f3765dd98d7ca6e87f4fb8b5dc3fecd9ce1c026a7514c6",
+          "decisionKey": "blake3:5bb3e92721848f7ae7f3765dd98d7ca6e87f4fb8b5dc3fecd9ce1c026a7514c6|revision:2|profile:screen|resources:2|request:canvas2d|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": false
+      },
+      "previous_same_consumer": {
+        "source": "44fdbd164199cc0ba1c75c3c9dc293ea78156dfc",
+        "sha256": "e8009e5478e9ef4f2455eec65f6a2bded595d4413dafba580f69a41e4a7fea55",
+        "byte_identical": true
+      },
+      "path": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/title-mark-p9/canvas2d-screen.png"
+    },
+    {
+      "sample": "title-mark-p9",
+      "key": "title-mark",
+      "page": 9,
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_profile": "screen",
+      "sha256": "df592c52ec2d14f0b5fac35be969d0f1b94f88ed1a054d517e4ce99916e245f0",
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "compat",
+            "source": "url",
+            "requested": "compat"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 4,
+          "resourceGeneration": 4,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:5bb3e92721848f7ae7f3765dd98d7ca6e87f4fb8b5dc3fecd9ce1c026a7514c6",
+          "decisionKey": "blake3:5bb3e92721848f7ae7f3765dd98d7ca6e87f4fb8b5dc3fecd9ce1c026a7514c6|revision:4|profile:screen|resources:4|request:canvaskit|mode:compat",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": false
+      },
+      "previous_same_consumer": {
+        "source": "44fdbd164199cc0ba1c75c3c9dc293ea78156dfc",
+        "sha256": "df592c52ec2d14f0b5fac35be969d0f1b94f88ed1a054d517e4ce99916e245f0",
+        "byte_identical": true
+      },
+      "path": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/title-mark-p9/canvaskit-compat-screen-software.png"
+    },
+    {
+      "sample": "title-mark-p9",
+      "key": "title-mark",
+      "page": 9,
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_profile": "screen",
+      "sha256": "df592c52ec2d14f0b5fac35be969d0f1b94f88ed1a054d517e4ce99916e245f0",
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 4,
+          "resourceGeneration": 4,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:5bb3e92721848f7ae7f3765dd98d7ca6e87f4fb8b5dc3fecd9ce1c026a7514c6",
+          "decisionKey": "blake3:5bb3e92721848f7ae7f3765dd98d7ca6e87f4fb8b5dc3fecd9ce1c026a7514c6|revision:4|profile:screen|resources:4|request:canvaskit|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": false
+      },
+      "previous_same_consumer": {
+        "source": "44fdbd164199cc0ba1c75c3c9dc293ea78156dfc",
+        "sha256": "df592c52ec2d14f0b5fac35be969d0f1b94f88ed1a054d517e4ce99916e245f0",
+        "byte_identical": true
+      },
+      "path": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/title-mark-p9/canvaskit-default-screen-software.png"
+    },
+    {
+      "sample": "title-mark-p9",
+      "key": "title-mark",
+      "page": 9,
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "sha256": "4333e50c5801424afa688103bdf209a498294331ef10c1a519927415c7a08656",
+      "runtime": {
+        "activeBackend": "canvas2d",
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "requestedBackend": "canvas2d",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "explicitCanvas2d",
+          "fallbackReason": null,
+          "documentRevision": 2,
+          "resourceGeneration": 2,
+          "renderProfile": "print",
+          "documentDigest": "blake3:5bb3e92721848f7ae7f3765dd98d7ca6e87f4fb8b5dc3fecd9ce1c026a7514c6",
+          "decisionKey": "blake3:5bb3e92721848f7ae7f3765dd98d7ca6e87f4fb8b5dc3fecd9ce1c026a7514c6|revision:2|profile:print|resources:2|request:canvas2d|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": false
+      },
+      "metrics": {
+        "page": 9,
+        "rhwp_png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/title-mark-p9/canvas2d-print.png",
+        "pdf_png": "mydocs/pr/assets/planet6897_integration_20261114/claims/title-mark/wasm/pdf-009.png",
+        "overlay_png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/title-mark-p9/canvas2d/overlay-009.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 68154,
+        "diff_ratio": 0.07650292,
+        "pixel_match_percent": 92.34971,
+        "ink_union_pixels": 134807,
+        "ink_diff_pixels": 68154,
+        "ink_diff_ratio": 0.50556722,
+        "ink_match_percent": 49.44328,
+        "visual_accuracy_proxy_percent": 49.44328,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.94807,
+        "silhouette_raw_unmatched_pixels": 70,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 134807,
+        "tolerant_content_match_percent": 99.94807,
+        "mean_abs_channel_delta": 6.934,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          107,
+          135,
+          676,
+          992
+        ]
+      },
+      "pdf_png_sha256": "8dacc84a56045b4727e1bd62f47bba3d819956be341c7c4bcefa58b841bfc564",
+      "previous_same_consumer": {
+        "source": "44fdbd164199cc0ba1c75c3c9dc293ea78156dfc",
+        "sha256": "4333e50c5801424afa688103bdf209a498294331ef10c1a519927415c7a08656",
+        "byte_identical": true
+      },
+      "path": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/title-mark-p9/canvas2d-print.png",
+      "review": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/title-mark-p9/canvas2d/review-009.png",
+      "overlay": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/title-mark-p9/canvas2d/overlay-009.png",
+      "pdf_png": "mydocs/pr/assets/planet6897_integration_20261114/claims/title-mark/wasm/pdf-009.png"
+    },
+    {
+      "sample": "title-mark-p9",
+      "key": "title-mark",
+      "page": 9,
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_profile": "print",
+      "sha256": "bd870a5a55f385cb5d1e48423ffc0bc6a43ffb767f3fb8bea37ef1016cb3a456",
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "compat",
+            "source": "url",
+            "requested": "compat"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 4,
+          "resourceGeneration": 4,
+          "renderProfile": "print",
+          "documentDigest": "blake3:5bb3e92721848f7ae7f3765dd98d7ca6e87f4fb8b5dc3fecd9ce1c026a7514c6",
+          "decisionKey": "blake3:5bb3e92721848f7ae7f3765dd98d7ca6e87f4fb8b5dc3fecd9ce1c026a7514c6|revision:4|profile:print|resources:4|request:canvaskit|mode:compat",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": false
+      },
+      "metrics": {
+        "page": 9,
+        "rhwp_png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/title-mark-p9/canvaskit-compat-print-software.png",
+        "pdf_png": "mydocs/pr/assets/planet6897_integration_20261114/claims/title-mark/wasm/pdf-009.png",
+        "overlay_png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/title-mark-p9/canvaskit-compat/overlay-009.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 68166,
+        "diff_ratio": 0.07651639,
+        "pixel_match_percent": 92.34836,
+        "ink_union_pixels": 134319,
+        "ink_diff_pixels": 68166,
+        "ink_diff_ratio": 0.50749336,
+        "ink_match_percent": 49.25066,
+        "visual_accuracy_proxy_percent": 49.25066,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 134319,
+        "tolerant_content_match_percent": 100.0,
+        "mean_abs_channel_delta": 7.056,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          107,
+          135,
+          676,
+          992
+        ]
+      },
+      "pdf_png_sha256": "8dacc84a56045b4727e1bd62f47bba3d819956be341c7c4bcefa58b841bfc564",
+      "previous_same_consumer": {
+        "source": "44fdbd164199cc0ba1c75c3c9dc293ea78156dfc",
+        "sha256": "bd870a5a55f385cb5d1e48423ffc0bc6a43ffb767f3fb8bea37ef1016cb3a456",
+        "byte_identical": true
+      },
+      "path": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/title-mark-p9/canvaskit-compat-print-software.png",
+      "review": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/title-mark-p9/canvaskit-compat/review-009.png",
+      "overlay": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/title-mark-p9/canvaskit-compat/overlay-009.png",
+      "pdf_png": "mydocs/pr/assets/planet6897_integration_20261114/claims/title-mark/wasm/pdf-009.png"
+    },
+    {
+      "sample": "title-mark-p9",
+      "key": "title-mark",
+      "page": 9,
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_profile": "print",
+      "sha256": "bd870a5a55f385cb5d1e48423ffc0bc6a43ffb767f3fb8bea37ef1016cb3a456",
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 4,
+          "resourceGeneration": 4,
+          "renderProfile": "print",
+          "documentDigest": "blake3:5bb3e92721848f7ae7f3765dd98d7ca6e87f4fb8b5dc3fecd9ce1c026a7514c6",
+          "decisionKey": "blake3:5bb3e92721848f7ae7f3765dd98d7ca6e87f4fb8b5dc3fecd9ce1c026a7514c6|revision:4|profile:print|resources:4|request:canvaskit|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": false
+      },
+      "metrics": {
+        "page": 9,
+        "rhwp_png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/title-mark-p9/canvaskit-default-print-software.png",
+        "pdf_png": "mydocs/pr/assets/planet6897_integration_20261114/claims/title-mark/wasm/pdf-009.png",
+        "overlay_png": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/title-mark-p9/canvaskit-default/overlay-009.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 68166,
+        "diff_ratio": 0.07651639,
+        "pixel_match_percent": 92.34836,
+        "ink_union_pixels": 134319,
+        "ink_diff_pixels": 68166,
+        "ink_diff_ratio": 0.50749336,
+        "ink_match_percent": 49.25066,
+        "visual_accuracy_proxy_percent": 49.25066,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 134319,
+        "tolerant_content_match_percent": 100.0,
+        "mean_abs_channel_delta": 7.056,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          107,
+          135,
+          676,
+          992
+        ]
+      },
+      "pdf_png_sha256": "8dacc84a56045b4727e1bd62f47bba3d819956be341c7c4bcefa58b841bfc564",
+      "previous_same_consumer": {
+        "source": "44fdbd164199cc0ba1c75c3c9dc293ea78156dfc",
+        "sha256": "bd870a5a55f385cb5d1e48423ffc0bc6a43ffb767f3fb8bea37ef1016cb3a456",
+        "byte_identical": true
+      },
+      "path": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/title-mark-p9/canvaskit-default-print-software.png",
+      "review": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/title-mark-p9/canvaskit-default/review-009.png",
+      "overlay": "mydocs/pr/assets/planet6897_integration_20261114/actual-consumer-completion/title-mark-p9/canvaskit-default/overlay-009.png",
+      "pdf_png": "mydocs/pr/assets/planet6897_integration_20261114/claims/title-mark/wasm/pdf-009.png"
+    }
+  ],
+  "additional_current_validation": "actual-consumer-completion/validation.json",
+  "capture_note": "새30건(반복6+owned-tac/page-band/title-mark24), 변경 없는 ws-host/orphan24건 재사용. 이전 캡처도 이력으로 보존한다."
 }

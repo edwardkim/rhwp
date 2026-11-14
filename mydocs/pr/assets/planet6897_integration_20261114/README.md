@@ -40,7 +40,7 @@ owned-tac·ws-host·page-band는 데스크톱 한컴2020 Print, title-mark·repe
 
 [현재 Rust 게이트](rust-validation.json) 20단계 모두 통과했다. 최소 글꼴 전체 회귀13,541통과·0실패·45skip, Native Skia의 주 라이브러리3,852통과·12ignore와 나머지 라이브러리182통과, PNG2건·PDF36건 및 Native/WASM/all-target Clippy·workspace build·관련 프런트엔드 검사를 확인했다. 회귀·보호·실제 소비·재사용은 각각의 producer와 범위를 구분한다.
 
-[현재 실제 소비](actual-current-validation.json)는 새6건과 변경 없는24건의 재사용, SVG 새2건/재사용8건을 구분한다. [초기 응답 감사](budget100k/initialization-audit.json)는 root pkg/Studio public/frozen pkg 동일성과 실제 초기 JS 및 WASM6응답을 확인한다. 초기 JS의 Vite URL 한 곳 변환은 역변환 후 원문 해시가 일치한다. 이전5만 상한의 fallback·실패 strict report를 새 CanvasKit 통과로 표시하지 않는다.
+[현재 실제 소비](actual-current-validation.json)는 Studio 54건(새 30건·변경 없는 24건 재사용), SVG 18건(새 10건·재사용 8건)을 구분한다. owned-tac 4·10쪽, page-band 2쪽, title-mark 9쪽은 [현재 코드로 다시 캡처한 24건](actual-consumer-completion/validation.json)과 같은 페이지의 review·overlay를 새로 보존했다. [초기 응답 감사](budget100k/initialization-audit.json)는 root pkg/Studio public/frozen pkg 동일성과 실제 초기 JS 및 WASM6응답을 확인한다. 초기 JS의 Vite URL 한 곳 변환은 역변환 후 원문 해시가 일치한다. 이전5만 상한의 fallback·실패 strict report를 새 CanvasKit 통과로 표시하지 않는다.
 
 ## 개별 원 PR 리뷰
 
@@ -50,4 +50,13 @@ owned-tac·ws-host·page-band는 데스크톱 한컴2020 Print, title-mark·repe
 - [#9067](../../archives/pr_9067_review.md): 글자 없는 문단의 제목 차례 슬롯·다중 TAC 소유.
 - [#9068](../../archives/pr_9068_review.md): 반복·짝 없는 숨김 끝·저장 문단 사슬·마지막 조각 점유.
 
-원 PR의 기능과 통합 후 보정, 실제 한컴 Print의 제품·버전과 전쪽 TSV/대표 PNG를 번호별로 연결했다. 원 PR head CI는 [현재 조회](source-ci-final.json)에서 모두 성공이다. 통합 PR의 원격 CI·병합·후속 조치는 아직 완료로 표시하지 않는다.
+원 PR의 기능과 통합 후 보정, 실제 한컴 Print의 제품·버전과 전쪽 TSV/대표 PNG를 번호별로 연결했다. 원 PR head CI는 [현재 조회](source-ci-final.json)에서 모두 성공이다. [통합 PR #9074의 코드 head CI](code-ci.json)는 `f3446e4bbaae57b70c3da0288a27f019aa897c4f`에서 CI·CodeQL·Render Diff·Adapter·Proptest 모두 성공했다. 증적 trailing head CI·병합·후속 조치는 별도 확인한다.
+
+## page-band 2쪽 출력 경로별 구분
+
+원 PR #9065의 제출 TSV는 Native 97.96%·fresh WASM 93.57%다. 현재 실제 Studio Canvas2D는 93.59%, CanvasKit compat/default는 각각 99.96%다. 원 PR의 단독 WASM과 현재 Studio의 글꼴 공급·실행 경로가 달라 0.02%p 개선으로 단정하지 않는다. 현재 Canvas2D PNG는 같은 소비 경로의 이전 PNG와 해시가 일치한다.
+
+| 현재 출력 | review | overlay |
+| --- | --- | --- |
+| Studio canvas2d | ![2쪽 review](actual-consumer-completion/page-band-p2/canvas2d/review-002.png) | ![2쪽 overlay](actual-consumer-completion/page-band-p2/canvas2d/overlay-002.png) |
+| Studio canvaskit-compat | ![2쪽 review](actual-consumer-completion/page-band-p2/canvaskit-compat/review-002.png) | ![2쪽 overlay](actual-consumer-completion/page-band-p2/canvaskit-compat/overlay-002.png) |
