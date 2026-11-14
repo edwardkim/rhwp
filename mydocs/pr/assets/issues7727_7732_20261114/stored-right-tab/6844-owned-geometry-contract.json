@@ -1,0 +1,33 @@
+{
+  "kind": "관계형 bbox 소유 계약의 진단용 출력 변이",
+  "product_api": "실제 get_page_text_layout_native 호출 결과를 얻은 뒤, 임시 테스트 사본에서 숫자 bbox 폭 필드만 바꾼다. 제품 코드와 실제 glyph 배치는 바꾸지 않는다.",
+  "original_bbox_test_unchanged": true,
+  "original_bbox_test_sha256": "e36db026997b32fafc10f4e56a112d1d8ad8851895a5a00a38899a1729ac780f",
+  "positive": "교정한 실제 두 검사2PASS, 0.05초",
+  "negative": [
+    {
+      "variant": "short",
+      "delta_from_actual_character_end": -20.3,
+      "exit_code": 101,
+      "log_sha256": "9cd3fdae62f81d98ba77f3135c712a433d4c0e22dd44dc901f2e4af9319ffa32",
+      "summary": "test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s"
+    },
+    {
+      "variant": "wide",
+      "delta_from_actual_character_end": 20.3,
+      "exit_code": 101,
+      "log_sha256": "c86ea97d6bea1183afd6afe5beadfc61c7d5fdb1e18db9148970ddede4cb8f84",
+      "summary": "test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s"
+    }
+  ],
+  "qualification": {
+    "head": "353989d9f2b040de6ddfc75ab483c65a7da6b23b",
+    "page": 4,
+    "native_raw_percent": 99.96,
+    "fresh_wasm_raw_percent": 99.96,
+    "all22_native_minimum": 98.69,
+    "all22_wasm_minimum": 98.68,
+    "direct_review_and_overlay": "Native/fresh WASM 각 같은 쪽을 직접 판독했다."
+  },
+  "scope": "음성 대조는 bbox 출력 변이이며 과거 제품의 실제 실행으로 표시하지 않는다. source-tab 결함의 before는 정확한57a38 고정실행의 별도PNG 비교다."
+}

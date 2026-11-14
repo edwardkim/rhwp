@@ -6172,6 +6172,16 @@ fn try_reflow_line_segs_impl<S: Storage>(
     if !paragraph_box.is_usable() {
         return Ok(false);
     }
+    // 새 글줄은 이전 RIGHT 탭이 정렬을 마친 전진을 상속하지 않는다.
+    // 저장 줄만 교체하면 다음 compose와 HWP/HWPX 저장이 그 폭을 다시
+    // 유효한 캐시로 받아들인다. 정렬 종류·채움·탭 순번은 보존하고,
+    // 현재 문단 TabDef가 새 전진을 계산하도록 폭의 두 워드만 비운다.
+    for extension in &mut para.tab_extended {
+        if extension[2] >> 8 == 2 {
+            extension[0] = 0;
+            extension[1] = 0;
+        }
+    }
     // [#4677] 줄을 다시 계산하면 이전에 붙여 둔 조판 전용 보강 줄은 사라진다 — 표식을
     // 남겨 두면 실제 줄을 저장에서 잘라 내게 된다.
     para.layout_only_fill_lines = 0;
