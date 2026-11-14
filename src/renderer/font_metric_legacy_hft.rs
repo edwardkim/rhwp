@@ -58,11 +58,19 @@ static SQUARE_ROOT_2: [u16; 1] = [1000];
 // 대체 paint의 Gulim 기호는 자연 폭0.375em이지만 그 폭으로 원본 전진을
 // 재지 않는다. 별도 HFT 프로그램 표를 선택해도 확인된 전각 계약을 보존한다.
 static BULLET_2: [u16; 1] = [1000];
-static RANGES_2: [LatinRange; 3] = [
+// nested 독립 Print T6의 U+2013: /Widths와 HFT376 d1은 모두 1000/1000em이다.
+// 기호 슬롯의 원 HFT 전진이며 TrueType 궁서 등의 자연 반각 전진과 구분한다.
+static EN_DASH_2: [u16; 1] = [1000];
+static RANGES_2: [LatinRange; 4] = [
     LatinRange {
         start: 0x0020,
         end: 0x007e,
         widths: &ASCII_2,
+    },
+    LatinRange {
+        start: 0x2013,
+        end: 0x2013,
+        widths: &EN_DASH_2,
     },
     LatinRange {
         start: 0x2022,

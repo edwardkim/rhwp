@@ -1,0 +1,24 @@
+{
+  "source_code_commit": "96c008dddf",
+  "scope": "보정 전 실제 공유 조판 소스의 반례. 진단용 rlib의 Native 기능과 설치 글꼴은 이 원본 메트릭·제어 슬롯 실패의 근거가 아니다.",
+  "independent_input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+  "independent_pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+  "rlib_sha256": "078a4a06359d83537524fc706019538d168e8fc3e6adb383d8ca00a7e704a2a6",
+  "font_environment": "run-minimal.sh의 최소 공개 글꼴 격리",
+  "cases": [
+    {
+      "test": "source_hft_en_dash_keeps_one_em_independent_of_display_alias",
+      "exit_code": 101,
+      "failed": 1,
+      "passed": 0,
+      "log": "hft-en-dash-before.txt"
+    },
+    {
+      "test": "char_overlap_missing_pua_host_style",
+      "exit_code": 101,
+      "failed": 1,
+      "passed": 1,
+      "log": "missing-pua-host-before.txt"
+    }
+  ]
+}
