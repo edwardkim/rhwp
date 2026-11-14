@@ -1,0 +1,214 @@
+[
+  {
+    "mode": "compat",
+    "profile": "screen",
+    "milliseconds": 123.30387499999995,
+    "rssBefore": 186662912,
+    "rssAfter": 445480960,
+    "maxRssKiB": 435040,
+    "report": {
+      "schemaVersion": 1,
+      "mode": "compat",
+      "profile": "screen",
+      "status": "incomplete",
+      "eligible": false,
+      "complete": false,
+      "pageCount": 5,
+      "scannedPages": 3,
+      "scannedWorkUnits": 50000,
+      "limits": {
+        "maxPages": 128,
+        "maxWorkUnits": 50000,
+        "maxBlockers": 32,
+        "maxRequiredFontFamilies": 256
+      },
+      "summary": {
+        "totalItems": 313,
+        "directItems": 313,
+        "directRequiredItems": 0,
+        "compatOverlayItems": 0,
+        "textFallbackItems": 0,
+        "unsupportedItems": 0,
+        "hiddenOverlayViolations": 0
+      },
+      "blockers": [
+        {
+          "pageIndex": 3,
+          "code": "workLimitExceeded",
+          "detail": "stage=preLowering;maxWorkUnits=50000;remainingWorkUnits=46600"
+        }
+      ],
+      "requiredFontFamilies": [
+        "HY헤드라인M",
+        "굴림",
+        "돋움체",
+        "바탕",
+        "바탕체",
+        "한양중고딕",
+        "함초롬돋움",
+        "함초롬바탕",
+        "휴먼명조"
+      ],
+      "capabilityDigest": "blake3:9cca992ab8ea71d9eef29ad0c0aa725c8c26c129d75353a16c15dc68214591c5"
+    }
+  },
+  {
+    "mode": "compat",
+    "profile": "print",
+    "milliseconds": 55.20929099999995,
+    "rssBefore": 450183168,
+    "rssAfter": 469139456,
+    "maxRssKiB": 459216,
+    "report": {
+      "schemaVersion": 1,
+      "mode": "compat",
+      "profile": "print",
+      "status": "incomplete",
+      "eligible": false,
+      "complete": false,
+      "pageCount": 5,
+      "scannedPages": 3,
+      "scannedWorkUnits": 50000,
+      "limits": {
+        "maxPages": 128,
+        "maxWorkUnits": 50000,
+        "maxBlockers": 32,
+        "maxRequiredFontFamilies": 256
+      },
+      "summary": {
+        "totalItems": 313,
+        "directItems": 313,
+        "directRequiredItems": 0,
+        "compatOverlayItems": 0,
+        "textFallbackItems": 0,
+        "unsupportedItems": 0,
+        "hiddenOverlayViolations": 0
+      },
+      "blockers": [
+        {
+          "pageIndex": 3,
+          "code": "workLimitExceeded",
+          "detail": "stage=preLowering;maxWorkUnits=50000;remainingWorkUnits=46600"
+        }
+      ],
+      "requiredFontFamilies": [
+        "HY헤드라인M",
+        "굴림",
+        "돋움체",
+        "바탕",
+        "바탕체",
+        "한양중고딕",
+        "함초롬돋움",
+        "함초롬바탕",
+        "휴먼명조"
+      ],
+      "capabilityDigest": "blake3:2efb6fa83c64c51b79060423670626866069c301228699a578f62d82db4a0624"
+    }
+  },
+  {
+    "mode": "default",
+    "profile": "screen",
+    "milliseconds": 39.59758300000004,
+    "rssBefore": 469172224,
+    "rssAfter": 472055808,
+    "maxRssKiB": 460992,
+    "report": {
+      "schemaVersion": 1,
+      "mode": "default",
+      "profile": "screen",
+      "status": "incomplete",
+      "eligible": false,
+      "complete": false,
+      "pageCount": 5,
+      "scannedPages": 3,
+      "scannedWorkUnits": 50000,
+      "limits": {
+        "maxPages": 128,
+        "maxWorkUnits": 50000,
+        "maxBlockers": 32,
+        "maxRequiredFontFamilies": 256
+      },
+      "summary": {
+        "totalItems": 313,
+        "directItems": 313,
+        "directRequiredItems": 0,
+        "compatOverlayItems": 0,
+        "textFallbackItems": 0,
+        "unsupportedItems": 0,
+        "hiddenOverlayViolations": 0
+      },
+      "blockers": [
+        {
+          "pageIndex": 3,
+          "code": "workLimitExceeded",
+          "detail": "stage=preLowering;maxWorkUnits=50000;remainingWorkUnits=46600"
+        }
+      ],
+      "requiredFontFamilies": [
+        "HY헤드라인M",
+        "굴림",
+        "돋움체",
+        "바탕",
+        "바탕체",
+        "한양중고딕",
+        "함초롬돋움",
+        "함초롬바탕",
+        "휴먼명조"
+      ],
+      "capabilityDigest": "blake3:eac1b51cf25281b30ec96c787de1cd45f786d203c52be31a883552198b940b1e"
+    }
+  },
+  {
+    "mode": "default",
+    "profile": "print",
+    "milliseconds": 45.9855,
+    "rssBefore": 476626944,
+    "rssAfter": 522551296,
+    "maxRssKiB": 510304,
+    "report": {
+      "schemaVersion": 1,
+      "mode": "default",
+      "profile": "print",
+      "status": "incomplete",
+      "eligible": false,
+      "complete": false,
+      "pageCount": 5,
+      "scannedPages": 3,
+      "scannedWorkUnits": 50000,
+      "limits": {
+        "maxPages": 128,
+        "maxWorkUnits": 50000,
+        "maxBlockers": 32,
+        "maxRequiredFontFamilies": 256
+      },
+      "summary": {
+        "totalItems": 313,
+        "directItems": 313,
+        "directRequiredItems": 0,
+        "compatOverlayItems": 0,
+        "textFallbackItems": 0,
+        "unsupportedItems": 0,
+        "hiddenOverlayViolations": 0
+      },
+      "blockers": [
+        {
+          "pageIndex": 3,
+          "code": "workLimitExceeded",
+          "detail": "stage=preLowering;maxWorkUnits=50000;remainingWorkUnits=46600"
+        }
+      ],
+      "requiredFontFamilies": [
+        "HY헤드라인M",
+        "굴림",
+        "돋움체",
+        "바탕",
+        "바탕체",
+        "한양중고딕",
+        "함초롬돋움",
+        "함초롬바탕",
+        "휴먼명조"
+      ],
+      "capabilityDigest": "blake3:0841f855502d0982fb549a527420c94014efef167505fd4af006544f4c3bc844"
+    }
+  }
+]
