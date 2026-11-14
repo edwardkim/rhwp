@@ -1,0 +1,112 @@
+[
+  {
+    "backend": "native",
+    "page": 1,
+    "same_png": true
+  },
+  {
+    "backend": "native",
+    "page": 2,
+    "same_png": true
+  },
+  {
+    "backend": "native",
+    "page": 3,
+    "same_png": true
+  },
+  {
+    "backend": "native",
+    "page": 4,
+    "same_png": true
+  },
+  {
+    "backend": "native",
+    "page": 5,
+    "same_png": true
+  },
+  {
+    "backend": "native",
+    "page": 6,
+    "same_png": true
+  },
+  {
+    "backend": "native",
+    "page": 7,
+    "same_png": true
+  },
+  {
+    "backend": "native",
+    "page": 8,
+    "same_png": true
+  },
+  {
+    "backend": "native",
+    "page": 9,
+    "same_png": true
+  },
+  {
+    "backend": "native",
+    "page": 10,
+    "same_png": false
+  },
+  {
+    "backend": "native",
+    "page": 11,
+    "same_png": true
+  },
+  {
+    "backend": "wasm",
+    "page": 1,
+    "same_png": true
+  },
+  {
+    "backend": "wasm",
+    "page": 2,
+    "same_png": true
+  },
+  {
+    "backend": "wasm",
+    "page": 3,
+    "same_png": true
+  },
+  {
+    "backend": "wasm",
+    "page": 4,
+    "same_png": true
+  },
+  {
+    "backend": "wasm",
+    "page": 5,
+    "same_png": true
+  },
+  {
+    "backend": "wasm",
+    "page": 6,
+    "same_png": true
+  },
+  {
+    "backend": "wasm",
+    "page": 7,
+    "same_png": true
+  },
+  {
+    "backend": "wasm",
+    "page": 8,
+    "same_png": true
+  },
+  {
+    "backend": "wasm",
+    "page": 9,
+    "same_png": true
+  },
+  {
+    "backend": "wasm",
+    "page": 10,
+    "same_png": false
+  },
+  {
+    "backend": "wasm",
+    "page": 11,
+    "same_png": true
+  }
+]

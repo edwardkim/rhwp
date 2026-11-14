@@ -1484,10 +1484,10 @@ pub(crate) fn parallel_cell_picture_band_height(para: &Paragraph, dpi: f64) -> O
     parallel_cell_float_band_height(&para.controls, dpi)
 }
 
-/// A reflowed empty block-table host shares its line origin with its tables.
-/// Column definitions configure that flow; they do not create an extra line.
-/// A following empty paragraph remains a separate line, as do text, fields,
-/// TAC objects and stored line boxes.
+/// 재조판된 빈 블록 표 host는 자기 글줄과 표의 흐름 원점을 공유한다.
+/// 셀 배치가 같은 흐름 상자로 소비하는 음수 오프셋도 글줄을 별도로 더하지 않는다.
+/// 양수 오프셋의 빈 띠, 뒤의 빈 문단, 본문·필드·TAC·실제 저장 줄은 별도 계약이다.
+/// 단 정의는 흐름을 설정하며 자체 글줄을 만들지 않는다.
 pub(crate) fn reflow_block_table_host_occupied_height(
     para: &Paragraph,
     line_height: f64,
@@ -1505,7 +1505,7 @@ pub(crate) fn reflow_block_table_host_occupied_height(
                     && table.common.text_wrap == TextWrap::TopAndBottom
                     && table.common.vert_rel_to == VertRelTo::Para
                     && table.common.vert_align == VertAlign::Top
-                    && signed_hwpunit(table.common.vertical_offset) == 0 =>
+                    && signed_hwpunit(table.common.vertical_offset) <= 0 =>
             {
                 has_table = true;
             }
