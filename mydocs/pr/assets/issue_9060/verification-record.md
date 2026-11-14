@@ -17,8 +17,6 @@
 - [최종 Native TSV](final/main/native_silhouette.tsv)·[fresh WASM TSV](final/main/wasm_silhouette.tsv): 각각 전 14쪽 100.00%.
 - 두 경로의 5·6쪽 review/overlay를 직접 판독했다. [대표 증적](final/main/README.md)의 같은 입력·쪽을 사용한다.
 - 실제 출력 트리와 독립 PDF에서 첫 소유 줄은 5쪽, 나머지 두 줄은 6쪽, 후속 문단 43 「Ⅱ. 규제의 적정성」은 7쪽임을 대조했다.
-- 원 PR이 제시한 통일부 반례는 원 PR binary와 최종 Native의 전 165쪽 페이지 덤프가 동일하다. 82쪽에는 표가 없고 83쪽의 문단 17·control 0에 1×1 표가 온다.
-  이 A/B는 독립 PDF 시각 측정 또는 원 작성자의 10k 코퍼스 재실행을 뜻하지 않는다.
 - 공식 100.00%는 RGB 픽셀 동일성을 뜻하지 않는다. 비공개 글꼴 프로그램은 커밋하지 않는다.
 
 ### 생산 파일 SHA-256
@@ -34,6 +32,7 @@
 - Native 그림: 2 PASS. Native 직접 PDF: 36 PASS.
 - 실제 Canvas browser: 23/23 PASS. 새 두 반례는 보정 전 FAIL을 확인했고 기대값 완화 없이 제품의 CSS family 파서를 수정했다.
 - Studio 전체 Node: 2,794/2,794 PASS. Studio 구현이 같은 단계의 증적을 재사용한다.
+- 같은 fresh package를 pkg/Studio 실행 경로에 반영하고 해시 일치를 확인했다. 바인딩·embed 3건 PASS, TypeScript exit 0. 기존 pkg의 오래된 선언 문제를 실제 산출물 반영으로 해결했다.
 - 회귀 글꼴 노출은 저장소 공개 5개 자원만 허용했다. 시스템·사용자 글꼴을 격리하고 `RHWP_FONT_PATH`를 해제했다.
 - 빌드 잡 8개·테스트 스레드 12개, 공유 `target/pr-review`를 사용하며 Cargo는 직렬 실행했다.
 - 시각 측정은 최소 글꼴 격리와 다르게 기존 일반 시스템 글꼴·명시적 공급 환경을 사용했다.

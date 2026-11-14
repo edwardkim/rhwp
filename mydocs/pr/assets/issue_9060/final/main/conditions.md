@@ -69,3 +69,12 @@ node scripts/export-wasm-png-for-sweep.mjs --pkg /home/tsjang/rhwp/output/pr-rev
 위 명령의 output 경로는 당시 로컬 실행을 식별한다. 검토 종료 시 임시 경로는 정리한다.
 최종 TSV·대표 PNG·제품 SHA와 관측값은 [검증 기록](../../verification-record.md)에 보존한다.
 WASM catalog SHA-256: `39eda841367769811a27a428f6ecd48fd6efea69b39ff3756ef22afadd0d3f43`. 실제 exporter가 원본·공급 프로그램의 SHA를 대조했다.
+
+## 실제 실행 경로의 fresh package 반영
+
+위 검증에 사용한 동일한 최적화 package를 루트 `pkg`와 `rhwp-studio/public`에 반영했다.
+새 빌드는 수행하지 않았으며 JS·WASM·타입 선언의 바이트 해시가 검증 package와 같은지 확인했다.
+기존 `pkg/rhwp.d.ts`의 오래된 내보내기 선언 때문에 실패하던 바인딩 검사는 산출물 반영 뒤
+3/3건 통과했고, Studio TypeScript 검사는 종료 코드 0이다. 기대값은 변경하지 않았다.
+Studio 소스는 이전 2,794건 통과 단계와 같고, 실제 브라우저 23건에서 사용한 package의 바이트를 그대로 소비한다.
+Git에는 기존에 추적하는 JS·타입 선언 3개를 반영하며 생성 WASM binary는 기존 ignore 규칙을 따른다.

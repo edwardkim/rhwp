@@ -1022,6 +1022,15 @@ export class HwpDocument {
         wasm.hwpdocument_clearNativePuaFonts(this.__wbg_ptr);
     }
     /**
+     * 페이지별 host FontFace 공급의 수명이 끝나면 그 주 프로그램 증거를 폐기한다.
+     * @param {string} family
+     */
+    clearPrintFontPrimary(family) {
+        const ptr0 = passStringToWasm0(family, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.hwpdocument_clearPrintFontPrimary(this.__wbg_ptr, ptr0, len0);
+    }
+    /**
      * 셀 블록이 덮은 칸들의 글을 비운다 — `Run("TableDeleteCell")`. 규약은 merge 와 같다.
      * @param {number} list_id
      * @param {number} end_row
@@ -10670,6 +10679,21 @@ export class HwpDocument {
         return ret[0] !== 0;
     }
     /**
+     * 실제 로드한 보통 FontFace의 주 프로그램을 Print paint에만 연결한다.
+     * complete가 false이면 결측 glyph를 뒤 family의 glyph로 추정하지 않는다.
+     * @param {string} family
+     * @param {Uint8Array} bytes
+     * @param {number} index
+     * @param {boolean} complete
+     */
+    registerPrintFontPrimary(family, bytes, index, complete) {
+        const ptr0 = passStringToWasm0(family, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+        const len1 = WASM_VECTOR_LEN;
+        wasm.hwpdocument_registerPrintFontPrimary(this.__wbg_ptr, ptr0, len0, ptr1, len1, index, complete);
+    }
+    /**
      * @param {string} family
      * @param {Uint8Array} bytes
      * @param {number} face_index
@@ -14679,6 +14703,9 @@ function __wbg_get_imports() {
         __wbg_clip_19f3482515ce11e2: function(arg0, arg1) {
             arg0.clip(__wbindgen_enum_CanvasWindingRule[arg1]);
         },
+        __wbg_clip_791397882a8aa222: function(arg0, arg1) {
+            arg0.clip(arg1);
+        },
         __wbg_closePath_4580feb19a1218cc: function(arg0) {
             arg0.closePath();
         },
@@ -15017,6 +15044,9 @@ function __wbg_get_imports() {
             arg0.quadraticCurveTo(arg1, arg2, arg3, arg4);
         },
         __wbg_rect_b3341a8d819476e1: function(arg0, arg1, arg2, arg3, arg4) {
+            arg0.rect(arg1, arg2, arg3, arg4);
+        },
+        __wbg_rect_db1056f1138dff21: function(arg0, arg1, arg2, arg3, arg4) {
             arg0.rect(arg1, arg2, arg3, arg4);
         },
         __wbg_restore_43a0248041b088b5: function(arg0) {
