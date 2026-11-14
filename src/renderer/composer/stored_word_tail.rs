@@ -88,11 +88,10 @@ pub(crate) fn project_current_marker_geometry_rows_with_storage<S: crate::storag
             }
             // 같은 수·높이의 슬롯에서 문자 경계만 새 마커 기하로 옮긴다.
             // 원본 프레임 원점과 명시적 쪽/단 경계를 재래핑의 부산물로 바꾸지 않는다.
-            let physical_flags =
-                LineSeg::TAG_FIRST_LINE_OF_PAGE | LineSeg::TAG_FIRST_LINE_OF_COLUMN;
             for (fresh, stored) in rows.iter_mut().zip(&para.line_segs) {
-                fresh.vertical_pos = stored.vertical_pos;
-                fresh.tag = (fresh.tag & !physical_flags) | (stored.tag & physical_flags);
+                let text_start = fresh.text_start;
+                *fresh = stored.clone();
+                fresh.text_start = text_start;
             }
         }
         if rows

@@ -7,7 +7,7 @@ last_verified: 2026-11-15
 
 # #7727·#7729·#7730·#7731·#7732 원본 피델리티 분석과 보정
 
-갱신: 2026-11-15T00:33:25+09:00.
+갱신: 2026-11-15T00:41:48+09:00.
 
 Issue: #7727, #7729, #7730, #7731, #7732.
 
@@ -146,6 +146,29 @@ HWPX 표본과 저장 줄을 가진 HWP 표본 양쪽에서 확인했으며, 출
 위 두 기존 검사와 새 주석 줄 검사는 PASS이며, 규제영향분석서·교육과정 지도는 아직 FAIL이다.
 이는 정식 전체 suite 결과가 아니며 [실행 로그 SHA·라이브러리 SHA·반환 코드](../pr/assets/issues7727_7732_20261114/full-regression-repair/four-regressions-standalone-result.json)를
 기록했다. 새 가로 문자 경계 발행이 원본 물리 슬롯에 미치는 영향을 추가 추적하고 있다.
+
+### 물리 슬롯을 유지하는 문자 경계 갱신과 네 실패 복구
+
+추가 진단에서 규제영향분석서의 번호 문단은 문자 시작 위치만 `0/20/40/60/80`에서
+`0/20/40/61/81`로 달라지고 나머지 줄 속성은 모두 같았다. 교육과정 지도에서도 같은
+높이의 문자 경계 이동을 확인했다. 그러나 overlay 등록이 문자 경계 변화만으로 셀·조상 표의
+저장 물리 프레임을 무효화하여, 기존 쪽 컷을 다시 용량 컷으로 계산했다.
+[줄 속성 진단과 로그 SHA](../pr/assets/issues7727_7732_20261114/full-regression-repair/physical-slot-preservation-diagnostic.json)를 보존했다.
+
+번호 문단의 같은 높이 갱신은 **원본 물리 슬롯 전체를 유지하고 문자 시작 위치만** 새 채움에서
+가져온다. overlay는 줄 수·전체 줄 속성·세로 원점 출처가 모두 같은 유효한 원본 슬롯을
+인증할 때만 쪽 프레임을 보존한다. 높이·폭·기준선·태그·슬롯 수가 달라지거나 원본 출처가
+없으면 기존 프레임 무효화 경로를 유지한다. 원본 IR과 독립 PDF는 바꾸지 않았다.
+
+보정 후 여백1·목차2·규제영향분석서4·짧은 행24·주석 줄1·번호 문단2 검사는
+최소 글꼴 독립 Native Skia 실행에서 **34 PASS / 0 FAIL**이다. 전체 회귀에서 확인한 네 실패와
+기존 양성·음성 대조군이 모두 통과했고, 번호 문단 개선 관계도 유지됐다.
+[반환 코드·로그·라이브러리 SHA](../pr/assets/issues7727_7732_20261114/full-regression-repair/physical-slots-standalone-result.json),
+[검사 수 요약](../pr/assets/issues7727_7732_20261114/full-regression-repair/focused-after-summary.json),
+[실제 Native 생산자](../pr/assets/issues7727_7732_20261114/full-regression-repair/physical-slots-producer.json)를 연결한다.
+
+이 결과는 독립 rustc 실행이다. 새 소스의 원본389쪽 Native/fresh WASM과 정식 전체 suite,
+필수 lint/build·보호 TSV·실제 backend 검증까지 완료해야 PR을 제출한다.
 
 ## 이전 분석: 권고안 4쪽의 배경 채널 보간
 

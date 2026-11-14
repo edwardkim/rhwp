@@ -34,7 +34,8 @@ Visual Sweep raw 2px·픽셀 차이 문턱 32로 측정했다. 기준 PDF 바이
 최소 글꼴 전체 회귀도 실행했으며 보정 전 code head에서 [13,555 PASS / 4 FAIL](full-nextest-before-note-repair.json)이다.
 여백 원점·목차 오른쪽 탭은 기존 검사를 그대로 유지한 최소 글꼴 독립 실행에서 통과했다.
 남은 두 실패는 번호 문단 갱신 단계부터 발생함을 [단계별 대조](full-regression-repair/full-failures-producer-bisect.json)로 확인했다.
-네 실패의 보정과 새 소스 전체 검증을 완료하기 전에는 PR 준비 완료로 판단하지 않는다.
+후속 물리 슬롯 보정 뒤에는 기존 네 실패와 관련 대조군이 [34 PASS / 0 FAIL](full-regression-repair/focused-after-summary.json)이다.
+새 소스의 전체 검증을 완료하기 전에는 PR 준비 완료로 판단하지 않는다.
 
 ## 원인별 분석과 실제 보정
 
