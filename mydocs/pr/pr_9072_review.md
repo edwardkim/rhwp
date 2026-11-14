@@ -18,7 +18,7 @@ WASM getPageText는 웹 컨트롤의 IR 본문 JSON 문자열 계약이고 CLI e
 
 제품 source `eeaecff59e834f28437c98b509089bbb36a7682d`와 검증 head `3b5e750d66351799fe81c0e1b67c5e78323763f5`의 제품 경로는 같다. 최종 전체 회귀 13,574개·실패 0, fmt·root/WASM32/workspace Clippy·workspace build·manifest 검사와 편람 Native 383쪽 gate를 통과했다. Native 공식 3종도 4,073개 모두 통과했다. [최종 실행 기록](assets/jinho-von-choi-20261114/local-validation.json).
 
-Native/fresh WASM 각각 134쪽의 최저 raw는 93.30%·92.46%이고 독립 Print의 전체 쪽수가 일치한다. 새 devel 기능 보존 41쪽씩의 PNG 82쌍은 수정 전후 같다. 반면 정본 보호 3,542행 중 과거 공식값 미재현은 Native 51행·WASM 56행이다. Native는 최신 devel과 후보의 전 1,771행이 같으며 WASM도 exact base 대조를 진행한다. 특별 하락 금지 gate의 통과·예외를 아직 선언하지 않는다. [보호값 재현 조사](assets/jinho-von-choi-20261114/protected-environment-review.md).
+Native/fresh WASM 각각 134쪽의 최저 raw는 93.30%·92.46%이고 독립 Print의 전체 쪽수가 일치한다. 새 devel 기능 보존 41쪽씩의 PNG 82쌍은 수정 전후 같다. 반면 정본 보호 3,542행 중 과거 공식값 미재현은 Native 51행·WASM 56행이다. Native는 최신 devel과 후보의 전 1,771행이 같으며 WASM 미재현 56행도 exact base와 값·PNG가 모두 같다. 특별 하락 금지 gate의 통과·예외를 아직 선언하지 않는다. [보호값 재현 조사](assets/jinho-von-choi-20261114/protected-environment-review.md).
 
 초기 집중 60개에는 새 바탕쪽 모듈이 실제로 실행되지 않아 그 통과 주장을 정정했다. 이후 집중 126개와 최종 전체 회귀에서 새 검사 3개의 실제 PASS를 확인했다. `b60322c765`의 두 실패도 최종 source에서 보완·재검증했으며 정확한 기존 기대값은 유지했다. 원 head의 CI와 누적 보완 후보의 CI는 구분한다. 아직 공개 댓글·push·새 PR·승인 review·merge·issue close는 수행하지 않았다.
 

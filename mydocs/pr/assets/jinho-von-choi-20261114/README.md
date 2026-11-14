@@ -32,7 +32,7 @@
 
 편람 HWPX Native 383쪽 `--handbook-gate`는 통과했다. [실제 gate](handbook-gate.json). 별도의 정본 보호 36 dataset·3,542행은 Native 51행·WASM 56행에서 과거 공식값을 재현하지 못했다. 전쪽 90% 이상이지만 특별 하락 금지 gate는 **통과하지 않았다**. [실제 결과](protected-results.json) · [환경·base 대조](protected-environment-review.md).
 
-Native 1,771행은 정확한 최신 devel `53da4d2da2`와 후보의 측정값이 모두 같다. WASM의 미재현 56행도 같은 base의 최적화 빌드와 대조 중이다. 기준 TSV·기대값·비교 영역을 낮추거나 수용 예외를 적용하지 않았다. 사용자가 안내한 HBATANG 파일은 실제로 사용 중이며, 과거 파일과 해시가 다르다는 사실만으로 원인을 글꼴로 확정하지 않는다.
+Native 1,771행은 정확한 최신 devel `53da4d2da2`와 후보의 측정값이 모두 같다. WASM 미재현 56행도 같은 base의 최적화 빌드와 값이 같고 PNG 56쌍 모두 같다. [base WASM 실제 대조](protected-base-wasm-selected.json). 기준 TSV·기대값·비교 영역을 낮추거나 수용 예외를 적용하지 않았다. 사용자가 안내한 HBATANG 파일은 실제로 사용 중이며, 과거 파일과 해시가 다르다는 사실만으로 원인을 글꼴로 확정하지 않는다.
 
 ## 앞선 보고 정정
 

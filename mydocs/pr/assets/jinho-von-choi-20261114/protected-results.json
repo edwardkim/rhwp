@@ -18,5 +18,13 @@
     }
   ],
   "formal_gate": "not_passed",
-  "threshold_or_baseline_changed": false
+  "threshold_or_baseline_changed": false,
+  "exactBaseComparison": {
+    "base": "53da4d2da28ae0cacf8feac3a989cc6a69fb2622",
+    "nativeRows": 1771,
+    "nativeMetricChanges": 0,
+    "wasmUnreproducedRows": 56,
+    "wasmMetricChanges": 0,
+    "wasmPngChanges": 0
+  }
 }
