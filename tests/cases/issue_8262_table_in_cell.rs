@@ -355,7 +355,7 @@ fn create_table_in_cell_survives_hwp_and_hwpx_roundtrip() {
             doc.export_hwp_native().unwrap(),
             HNC_NESTED_TABLE_ATTR,
         ),
-        ("hwpx", doc.export_hwpx_native().unwrap(), 0x1),
+        ("hwpx", doc.export_hwpx_native().unwrap(), 0x2001),
     ] {
         let reloaded =
             HwpDocument::new(&bytes).unwrap_or_else(|_| panic!("{label} 다시 읽기 실패"));

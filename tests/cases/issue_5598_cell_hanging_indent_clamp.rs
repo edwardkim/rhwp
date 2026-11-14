@@ -82,7 +82,37 @@ fn worst_overflow(doc: &Document, printed_input: &[u8]) -> f64 {
     use quick_xml::{events::Event, Reader};
     use rhwp::renderer::render_tree::RenderNodeType;
     let bytes = serialize_hwpx(doc).expect("HWPX 직렬화 실패");
-    assert_eq!(bytes, printed_input, "독립 Print에 사용한 입력과 동일하다");
+    // #8318: header.xml의 0xFFFFFFFF 센티넬이 "none"에서 "#FFFFFFFF"로 바뀌었을 뿐
+    // 독립 Print 입력의 본문·레이아웃 엔트리는 바이트 단위로 동일해야 한다.
+    let mut actual_zip = zip::ZipArchive::new(std::io::Cursor::new(&bytes)).expect("actual zip");
+    let mut expected_zip =
+        zip::ZipArchive::new(std::io::Cursor::new(printed_input)).expect("expected zip");
+    assert_eq!(actual_zip.len(), expected_zip.len(), "엔트리 수 일치");
+    for i in 0..expected_zip.len() {
+        use std::io::Read;
+        let mut expected_entry = expected_zip.by_index(i).expect("expected entry");
+        let name = expected_entry.name().to_owned();
+        let mut actual_entry = actual_zip.by_name(&name).expect("actual entry");
+        let mut expected_buf = Vec::new();
+        let mut actual_buf = Vec::new();
+        expected_entry.read_to_end(&mut expected_buf).unwrap();
+        actual_entry.read_to_end(&mut actual_buf).unwrap();
+        if name == "Contents/header.xml" {
+            let expected_str = String::from_utf8(expected_buf)
+                .unwrap()
+                .replace("=\"none\"", "=\"#FFFFFFFF\"");
+            let actual_str = String::from_utf8(actual_buf).unwrap();
+            assert_eq!(
+                actual_str, expected_str,
+                "독립 Print 입력의 header.xml과 동등하다"
+            );
+        } else {
+            assert_eq!(
+                actual_buf, expected_buf,
+                "독립 Print 입력의 {name}과 동일하다"
+            );
+        }
+    }
     let core = DocumentCore::from_bytes(&bytes).expect("재로드 실패");
     assert_eq!(core.page_count(), 1, "독립 Print와 같은 한 쪽");
     let tree = core.build_page_render_tree(0).expect("render tree");
