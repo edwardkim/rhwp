@@ -16,7 +16,7 @@ pub fn is_book_bracket(character: char) -> bool {
 }
 /// 실제 공급한 같은 SFNT의 원 PUA 표시와 전진을 보존할 기호다.
 /// 이 기호는 Unicode 대체와 폭·윤곽이 달라 실제 공급한 원 glyph가 필요하다.
-pub const SUPPORTED_SYMBOLS: [char; 11] = [
+const EXISTING_SUPPORTED_SYMBOLS: [char; 11] = [
     '\u{F0854}',
     '\u{F0855}',
     '\u{F02FC}',
@@ -32,6 +32,44 @@ pub const SUPPORTED_SYMBOLS: [char; 11] = [
     // 원 프로그램이 없으면 기존 U+25B8 표시 대체를 그대로 사용한다.
     '\u{F02FB}',
 ];
+
+/// 원본 글꼴이 공급된 HWP3 괘선도 같은 측정·paint 경로에서 원 glyph를 쓴다.
+/// 앞선 11개 기호의 공급 순서는 유지하고, 독립 한컴 저장값 77개 중 기존 2개를
+/// 제외한 75개만 추가한다. 방향·굵기·점선의 Unicode 추정으로 IR을 바꾸지 않는다.
+pub const SUPPORTED_SYMBOLS: [char; 86] = with_hwp3_line_symbols();
+
+const fn with_hwp3_line_symbols() -> [char; 86] {
+    let mut symbols = ['\0'; 86];
+    let mut count = 0;
+    while count < EXISTING_SUPPORTED_SYMBOLS.len() {
+        symbols[count] = EXISTING_SUPPORTED_SYMBOLS[count];
+        count += 1;
+    }
+    let rows = crate::parser::hwp3::johab_map::HWP3_LINE_CHARS;
+    let mut row = 0;
+    while row < rows.len() {
+        let mut column = 0;
+        while column < rows[row].len() {
+            let character = rows[row][column];
+            let mut index = 0;
+            let mut present = false;
+            while index < count {
+                if symbols[index] == character {
+                    present = true;
+                }
+                index += 1;
+            }
+            if !present {
+                symbols[count] = character;
+                count += 1;
+            }
+            column += 1;
+        }
+        row += 1;
+    }
+    assert!(count == symbols.len());
+    symbols
+}
 
 pub fn is_supported_symbol(character: char) -> bool {
     SUPPORTED_SYMBOLS.contains(&super::composer::hancom_symbol_display_key(character))
