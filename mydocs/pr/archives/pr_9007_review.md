@@ -80,3 +80,19 @@
 - 최신 code head Full CI를 재사용할 수 있는 문서 전용 trailing 범위만 추가한다. push 전 원격 SHA·LFS 범위·최신 devel merge tree·공백·문서 링크·오늘할일 보존을 확인하고, push 뒤 실제 fast-pass와 최신 required aggregate를 확인한다.
 - [앞선 재검토 COMMENT](https://github.com/edwardkim/rhwp/pull/9007#pullrequestreview-5901900092) 당시에는 보호 검증 미충족으로 승인하지 않았다. 기존 세 인라인 스레드는 해결됐고, 이번 전쪽 검증으로 남은 보류 조건을 해소했다.
 - 사용자 요청 범위에 따라 최종 Approval → 정확한 head 병합 → duration 결과·#8978 종료 확인과 증적 댓글 → devel 동기화·전용 작업공간·유휴 산출물 정리를 수행한다. 병합 SHA와 실제 종료 시각은 실행 전 완료로 기록하지 않는다.
+
+## Merge 후 contributor PR comment 계획
+
+병합 뒤 확정한 merge SHA와 최신 required check를 조회하고, 기여자께 무늬 번호·방향 및 숨김 글자 판정 보정에 감사한다.
+원 제품 코드 위의 검토 기록만 추가했으며 보호 검증 미달은 검증 환경 복원으로 해소했음을 구분한다.
+문서·오늘할일은 이 PR에 이미 포함되어 있으므로 중복 기록 PR은 만들지 않는다.
+#8978의 실제 종료 상태와 duration 메타데이터 갱신 결과를 확인해 댓글에 기록한다.
+
+시각 근거는 [Visual Sweep 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)을 연결하고,
+merge SHA로 고정한 `mydocs/pr/assets/pr9007_protection_20261114/direct-review/fill-patterns-source-head.png`를
+본문 이미지로 표시한다. 무늬 HWP/HWPX 각 1쪽의 0~5 방향·무늬 없음과 Native/PDF/WASM 대조이며,
+기존 제품 head의 정식 증거를 재사용한 그림이다. Native 최저 raw 99.966083%, WASM 99.987953%를 함께 적는다.
+전체 보호 문서 18종·양 경로 3,542쪽은 보호값 하락 0, 최저 98.09%, 별도 편람 gate는 383쪽 통과로 구분한다.
+raw 수치는 사람의 판정 정확도가 아닌 내용 실루엣 자동 비교 보조값이며,
+수식·기호·줄 끝은 직접 확대 판독했다. 59043의 기존 미해결 8쪽은 이 결과와 섞지 않는다.
+게시 전에 merge SHA raw 이미지의 형식·해시를 검증하고 게시 뒤 본문의 한글·링크·이미지 표시를 확인한다.
