@@ -1,5 +1,7 @@
 # PR #9075 검증 기록
 
+> 새 base `f8234f6f90` 반영 뒤 재검증 중이다. 아래 수치는 리베이스 전 source43의 완료 기록이며 새 head의 통과로 대신하지 않는다. [리베이스 보고서](rebase-f823-analysis.md)를 따른다.
+
 기록 시각: 2026-11-15T07:28:46.182146+09:00.
 
 원시 build·test·lint 로그, run manifest, metric·분석 JSON과 중간 PNG는 제출에서 제외한다.

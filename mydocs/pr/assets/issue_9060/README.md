@@ -1,5 +1,7 @@
 # PR #9075 검토 증적
 
+> 새 base `f8234f6f90` 반영 뒤 재검증 중이다. 아래 수치는 리베이스 전 source43의 완료 기록이며 새 head의 통과로 대신하지 않는다. [리베이스 보고서](rebase-f823-analysis.md)를 따른다.
+
 [최종 대상 문서 증적](final/main/README.md)과 [검증 기록](verification-record.md)을 정본으로 본다.
 제품 소스는 `43adf3f7fe412e71797456887e2be44b8ef8d14f`이며 기존 독립 한컴 Print를
 재인쇄하거나 원본을 바꾸지 않고 Native·fresh WASM으로 대조했다.
