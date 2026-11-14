@@ -6,18 +6,23 @@
 ## 현재 확인한 결과
 
 검증 대상은 CBTA 204쪽·권고안 22쪽·영어 시험지 8쪽·API 105쪽·각주 표 50쪽이다.
-주석 선두 소유 보정 커밋 `602b0595cac811a94e36858df79b0f9a7501a1cc`의 제품 소스에 대해
+직전 검증 커밋 `57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3`에 대해
 Native와 fresh WASM **각 389쪽 모두 98% 이상**을 확인했다.
-생산자는 parent `17301f0133`과 실제 소스 패치 SHA,602b의 fresh WASM build head로 고정했다.
-아래 결과는 전체 회귀나 PR 제출 준비 완료를 뜻하지 않는다.
+생산자는 동일 head의 Native 실행 파일과 fresh WASM JS·WASM SHA로 고정했다.
+같은 head의 Mac 최소 글꼴 전체 회귀도 **13,560 PASS / 0 FAIL / 45 skip**이다.
+아래 결과는 보호 문서·실제 소비 경로를 포함한 PR 제출 준비 완료를 뜻하지 않는다.
+
+이후 독립 Print에서 저장 탭 폭의 소비를 확인하여, 같은 런 RIGHT 탭의 저장 전진 보정을
+추가 검증 중이다. 아래 표와 전체 회귀 결과는 `57a38d59`의 기록이며, 새 보정 후보의
+검증으로 재사용하지 않는다. 새 관계형 반례는 보정 전 **1 PASS / 1 FAIL**로 확인했다.
 
 | 문서 | 쪽수 | Native 최저 | fresh WASM 최저 | 최신 TSV |
 | --- | ---: | ---: | ---: | --- |
-| CBTA | 204 | 98.11% (2쪽) | 98.08% (2쪽) | [Native](note-prefix-final/native-cbta.tsv) · [WASM](note-prefix-final/wasm-cbta.tsv) |
-| 권고안 | 22 | 98.69% (7쪽) | 98.68% (7쪽) | [Native](note-prefix-final/native-recommendation.tsv) · [WASM](note-prefix-final/wasm-recommendation.tsv) |
-| 영어 시험지 | 8 | 99.49% (3쪽) | 99.49% (3쪽) | [Native](note-prefix-final/native-exam.tsv) · [WASM](note-prefix-final/wasm-exam.tsv) |
-| API | 105 | 99.55% (97쪽) | 99.55% (97쪽) | [Native](note-prefix-final/native-api.tsv) · [WASM](note-prefix-final/wasm-api.tsv) |
-| 각주 표 | 50 | 98.75% (37쪽) | 98.75% (37쪽) | [Native](note-prefix-final/native-footnote.tsv) · [WASM](note-prefix-final/wasm-footnote.tsv) |
+| CBTA | 204 | 98.11% (2쪽) | 98.08% (2쪽) | [Native](note-oracle-final/native-cbta.tsv) · [WASM](note-oracle-final/wasm-cbta.tsv) |
+| 권고안 | 22 | 98.69% (7쪽) | 98.68% (7쪽) | [Native](note-oracle-final/native-recommendation.tsv) · [WASM](note-oracle-final/wasm-recommendation.tsv) |
+| 영어 시험지 | 8 | 99.49% (3쪽) | 99.49% (3쪽) | [Native](note-oracle-final/native-exam.tsv) · [WASM](note-oracle-final/wasm-exam.tsv) |
+| API | 105 | 99.55% (97쪽) | 99.55% (97쪽) | [Native](note-oracle-final/native-api.tsv) · [WASM](note-oracle-final/wasm-api.tsv) |
+| 각주 표 | 50 | 98.75% (37쪽) | 98.75% (37쪽) | [Native](note-oracle-final/native-footnote.tsv) · [WASM](note-oracle-final/wasm-footnote.tsv) |
 
 같은 원본·독립 한컴 Print PDF·정상 설치 글꼴 조건에서 96 DPI, compat2022,
 Visual Sweep raw 2px·픽셀 차이 문턱 32로 측정했다. 기준 PDF 바이트와 판정 기준은
@@ -57,7 +62,8 @@ fresh WASM [review](note-prefix-final/wasm-p037-review.png)·[overlay](note-pref
 | CBTA 그림 캡션·API 표·권고안 단 시작 | 소유 그림과 테두리의 동시 이동, 표 앞뒤의 중복 점유, 빈 줄과 다음 물리 프레임의 경계를 공통 소비 경로에서 보정했다. | [상세 분석 보고서의 원인별 규칙](../../../working/task_m100_7727_stage1.md#원인별-보정-규칙) |
 
 위 표의 앞선 단계 결과는 해당 단계 생산자의 증적이다. 현재 전체 쪽수와 최저값은
-`note-prefix-final/`의 최신 TSV를 따른다. 과거 측정을 새 head의 실행으로 바꾸어 쓰지 않는다.
+`note-oracle-final/`의 최신 TSV를 따른다. `note-prefix-final/`은 앞선 제품 소스의 증적이며,
+과거 측정을 새 head의 실행으로 바꾸어 쓰지 않는다.
 
 ## 같은 쪽의 review와 overlay
 
@@ -78,8 +84,15 @@ CBTA 118·162·166쪽에는 양쪽 98% 이상과 독립 PDF 판독에 근거한 
 
 CBTA 2쪽의 목차 쪽번호 위치는 저장 RIGHT 탭 전진과 정지점 재계산을 분리하여 분석 중이다.
 아직 확정 원인이나 완료 결과가 아니며, 이를 해결 불가능한 글꼴 차이로 분류하지 않았다.
-최종 전체 nextest·필수 lint/build·정본 보호 TSV·편람 gate·실제 backend 소비 검증이
+최종 전체 nextest·필수 lint/build·Native Skia·suite manifest·unit tier 검사는 모두 통과했다.
+[최종 Rust 검증](note-oracle-final/rust-gates.json)과
+[양쪽 전쪽 TSV·생산자](note-oracle-final/validation.json)에 실행 범위를 기록했다.
+정본 보호 TSV·편람 gate·실제 backend 소비 검증과 fixed base WASM 대조가
 남아 있으므로 **PR 제출 준비는 진행 중**이다.
+
+모든 필수 검증과 병합이 끝난 뒤 #7727·#7729·#7730·#7731·#7732의 실제 해결 범위를
+재확인하고, 완료 댓글·종료 및 #7445 해당 행의 취소선을 반영한다. 부분 해결 이슈와
+대표 #7445 자체는 이 다섯 건의 완료만으로 닫지 않는다.
 
 임시 진단기·실행 파일·로그·MCP 대기 자료는 저장소의
 `output/pr-review/issues-7727-7732-20261114/`에 둔다. 확정된 분석과 제출 증적은
