@@ -26,6 +26,7 @@
 # 값으로 올려 적는다.
 #
 # 0 행은 그대로 둔다 — 값 0 과 행 삭제는 이 게이트에서 같은 판정(증가 / 신규 발생)이다.
+# #9073: issue9073/proficiency_test_result_form.hwpx 1건 — 글자처럼 취급 표가 저장 줄을 혼자 소유해 1쪽에 통째로 놓인다(한컴 2022 Print 1쪽). 맨 아래 「210mm×297mm…」 줄은 한컴 PDF 에서도 아래끝 1049.97px 로 본문 바닥 1046.9px 를 넘는다.
 issue3637/press_release_split_cell_nested_table.hwpx	0
 issue6133/156483831_poster_title_above_offset_float.hwp	1
 issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	0
@@ -137,6 +138,7 @@ issue6888/156730935-marine-mobility-expo.hwpx	1
 issue6896/156564340-ip-dispute-mediation.hwpx	1
 issue6946/44529-logistics-policy-rule-amendment.hwp	1
 issue8755/46551_road_traffic_rule_amendment.hwp	11
+issue9073/proficiency_test_result_form.hwpx	1
 issues/2809/jubo_20260104.hwp	3
 kps-ai.hwp	2
 loading-fail-01.hwp	0
