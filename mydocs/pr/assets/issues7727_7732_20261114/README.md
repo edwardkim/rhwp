@@ -23,6 +23,17 @@ Native와 fresh WASM **각 389쪽 모두 98% 이상**을 확인했다.
 Visual Sweep raw 2px·픽셀 차이 문턱 32로 측정했다. 기준 PDF 바이트와 판정 기준은
 바꾸지 않았다. 회귀 검사는 별도의 Mac 최소 글꼴 환경에서 실행했다.
 
+## 후속 주석 줄 보정의 현재 범위
+
+각주37쪽의 `24)`·`25)`가 겹치는 추가 결함을 [분석·보정](../../../working/task_m100_7727_stage1.md#추가-판독-각주-표-37쪽의-주석-전용-줄-누락)했다.
+새 제품 소스 Native 전389쪽은 모두98% 이상이며, 각주37쪽98.75%·39쪽99.92%로
+두 쪽이 개선되고 나머지387쪽은 같다. [Native 증적](note-only-line/native-after.json)과
+[review](note-only-line/after-native-p037-review.png)·[overlay](note-only-line/after-native-p037-overlay.png)를 보존했다.
+위 양쪽 전쪽 표는 앞선 번호 문단 소스의 결과다. 새 주석 소스의 fresh WASM은 아직이다.
+
+최소 글꼴 전체 회귀도 실행했으며 보정 전 code head에서 [13,555 PASS / 4 FAIL](full-nextest-before-note-repair.json)이다.
+네 실패의 보정과 새 소스 전체 검증을 완료하기 전에는 PR 준비 완료로 판단하지 않는다.
+
 ## 원인별 분석과 실제 보정
 
 | 대상 | 확인한 원인과 보정 | 독립 근거·실행 증적 |

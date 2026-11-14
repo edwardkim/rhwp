@@ -118,6 +118,43 @@ pub(super) fn leading(
         .collect()
 }
 
+/// 가시 글자가 없는 저장 줄도 자기 주석 슬롯의 폭·paint를 소유한다.
+/// 이미 선두 접두부로 그린 제어만 제외하고, 스타일은 제어의 원시 주소에서 고른다.
+pub(super) fn empty_line(
+    para: Option<&Paragraph>,
+    styles: &ResolvedStyleSet,
+    positions: &[(usize, u16, usize)],
+    leading_prefix_start: Option<usize>,
+) -> Vec<Reference> {
+    let Some(para) = para else {
+        return Vec::new();
+    };
+    let logical_positions = para.control_text_positions();
+    let raw_positions = para.control_utf16_positions();
+    positions
+        .iter()
+        .filter_map(|&(_, number, index)| {
+            if leading_prefix_start
+                .is_some_and(|start| logical_positions.get(index).copied() == Some(start))
+            {
+                return None;
+            }
+            let control = para.controls.get(index)?;
+            if !matches!(control, Control::Footnote(_) | Control::Endnote(_)) {
+                return None;
+            }
+            let raw = *raw_positions.get(index)?;
+            let style_id = para
+                .char_shapes
+                .iter()
+                .rev()
+                .find(|shape| shape.start_pos <= raw)
+                .map_or(0, |shape| shape.char_shape_id);
+            Some(reference(Some(control), number, styles, style_id, index))
+        })
+        .collect()
+}
+
 pub(super) fn before_table(
     para: &Paragraph,
     styles: &ResolvedStyleSet,

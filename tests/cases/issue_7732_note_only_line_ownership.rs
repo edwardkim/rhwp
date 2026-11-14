@@ -31,7 +31,6 @@ fn collect(node: &LayerNode, markers: &mut Vec<(u16, BoundingBox)>) {
                 }
             }
         }
-        _ => {}
     }
 }
 
