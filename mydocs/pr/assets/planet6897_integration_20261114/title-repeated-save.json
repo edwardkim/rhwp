@@ -1,0 +1,300 @@
+{
+  "status": "completed",
+  "scope": "Title-marker source position mapping: actual CLI replace-text, HWP/HWPX save/reopen/resave; no added product changes.",
+  "results": [
+    {
+      "name": "edit-hwp",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/rhwp-native",
+        "edit",
+        "replace-text",
+        "/Users/tsjang/rhwp/samples/issue9016/1730000-title-mark-empty-stream.hwp",
+        "--find",
+        "최종보고",
+        "--replace",
+        "최종검토",
+        "--occurrence",
+        "1",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/title-repeated-save-v4/edited.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "seconds": 0.028
+    },
+    {
+      "name": "resave-hwp",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/rhwp-native",
+        "convert",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/title-repeated-save-v4/edited.hwp",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/title-repeated-save-v4/resaved.hwp",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "seconds": 0.034
+    },
+    {
+      "name": "edited-info-hwp",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/rhwp-native",
+        "info",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/title-repeated-save-v4/edited.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "seconds": 0.021
+    },
+    {
+      "name": "edited-page10-hwp",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/rhwp-native",
+        "export-render-tree",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/title-repeated-save-v4/edited.hwp",
+        "-p",
+        "9",
+        "--compat",
+        "2022",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/title-repeated-save-v4/edited-hwp"
+      ],
+      "exit": 0,
+      "seconds": 0.498
+    },
+    {
+      "name": "edited-page9-hwp",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/rhwp-native",
+        "export-render-tree",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/title-repeated-save-v4/edited.hwp",
+        "-p",
+        "8",
+        "--compat",
+        "2022",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/title-repeated-save-v4/edited-page9-hwp"
+      ],
+      "exit": 0,
+      "seconds": 0.495,
+      "edited_label_preserved": true,
+      "file_sha256": "808f769b31ab6cd5e193f9c0409c72d3d148408f7e2d96082d9e6ea4f10a0e2e"
+    },
+    {
+      "name": "resaved-info-hwp",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/rhwp-native",
+        "info",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/title-repeated-save-v4/resaved.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "seconds": 0.025
+    },
+    {
+      "name": "resaved-page10-hwp",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/rhwp-native",
+        "export-render-tree",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/title-repeated-save-v4/resaved.hwp",
+        "-p",
+        "9",
+        "--compat",
+        "2022",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/title-repeated-save-v4/resaved-hwp"
+      ],
+      "exit": 0,
+      "seconds": 0.483
+    },
+    {
+      "name": "resaved-page9-hwp",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/rhwp-native",
+        "export-render-tree",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/title-repeated-save-v4/resaved.hwp",
+        "-p",
+        "8",
+        "--compat",
+        "2022",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/title-repeated-save-v4/resaved-page9-hwp"
+      ],
+      "exit": 0,
+      "seconds": 0.482,
+      "edited_label_preserved": true,
+      "file_sha256": "808f769b31ab6cd5e193f9c0409c72d3d148408f7e2d96082d9e6ea4f10a0e2e"
+    },
+    {
+      "name": "edit-hwpx",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/rhwp-native",
+        "edit",
+        "replace-text",
+        "/Users/tsjang/rhwp/samples/issue9016/1730000-title-mark-empty-stream.hwp",
+        "--find",
+        "최종보고",
+        "--replace",
+        "최종검토",
+        "--occurrence",
+        "1",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/title-repeated-save-v4/edited.hwpx",
+        "--json"
+      ],
+      "exit": 0,
+      "seconds": 0.028
+    },
+    {
+      "name": "resave-hwpx",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/rhwp-native",
+        "export-hwpx",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/title-repeated-save-v4/edited.hwpx",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/title-repeated-save-v4/resaved.hwpx",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "seconds": 0.039
+    },
+    {
+      "name": "edited-info-hwpx",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/rhwp-native",
+        "info",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/title-repeated-save-v4/edited.hwpx",
+        "--json"
+      ],
+      "exit": 0,
+      "seconds": 0.022
+    },
+    {
+      "name": "edited-page10-hwpx",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/rhwp-native",
+        "export-render-tree",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/title-repeated-save-v4/edited.hwpx",
+        "-p",
+        "9",
+        "--compat",
+        "2022",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/title-repeated-save-v4/edited-hwpx"
+      ],
+      "exit": 0,
+      "seconds": 0.492
+    },
+    {
+      "name": "edited-page9-hwpx",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/rhwp-native",
+        "export-render-tree",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/title-repeated-save-v4/edited.hwpx",
+        "-p",
+        "8",
+        "--compat",
+        "2022",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/title-repeated-save-v4/edited-page9-hwpx"
+      ],
+      "exit": 0,
+      "seconds": 0.479,
+      "edited_label_preserved": true,
+      "file_sha256": "808f769b31ab6cd5e193f9c0409c72d3d148408f7e2d96082d9e6ea4f10a0e2e"
+    },
+    {
+      "name": "resaved-info-hwpx",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/rhwp-native",
+        "info",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/title-repeated-save-v4/resaved.hwpx",
+        "--json"
+      ],
+      "exit": 0,
+      "seconds": 0.024
+    },
+    {
+      "name": "resaved-page10-hwpx",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/rhwp-native",
+        "export-render-tree",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/title-repeated-save-v4/resaved.hwpx",
+        "-p",
+        "9",
+        "--compat",
+        "2022",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/title-repeated-save-v4/resaved-hwpx"
+      ],
+      "exit": 0,
+      "seconds": 0.487
+    },
+    {
+      "name": "resaved-page9-hwpx",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/rhwp-native",
+        "export-render-tree",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/title-repeated-save-v4/resaved.hwpx",
+        "-p",
+        "8",
+        "--compat",
+        "2022",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/title-repeated-save-v4/resaved-page9-hwpx"
+      ],
+      "exit": 0,
+      "seconds": 0.491,
+      "edited_label_preserved": true,
+      "file_sha256": "3146c48bf0c71c3f9efdc7cb5a33836637f62715e3f45e4621cf29f464369289"
+    }
+  ]
+}

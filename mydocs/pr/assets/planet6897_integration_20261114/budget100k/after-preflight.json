@@ -1,0 +1,198 @@
+[
+  {
+    "mode": "compat",
+    "profile": "screen",
+    "milliseconds": 391.61362499999996,
+    "rssBefore": 185630720,
+    "rssAfter": 521961472,
+    "maxRssKiB": 510576,
+    "report": {
+      "schemaVersion": 1,
+      "mode": "compat",
+      "profile": "screen",
+      "status": "eligible",
+      "eligible": true,
+      "complete": true,
+      "pageCount": 5,
+      "scannedPages": 5,
+      "scannedWorkUnits": 77079,
+      "limits": {
+        "maxPages": 128,
+        "maxWorkUnits": 100000,
+        "maxBlockers": 32,
+        "maxRequiredFontFamilies": 256
+      },
+      "summary": {
+        "totalItems": 454,
+        "directItems": 454,
+        "directRequiredItems": 0,
+        "compatOverlayItems": 0,
+        "textFallbackItems": 0,
+        "unsupportedItems": 0,
+        "hiddenOverlayViolations": 0
+      },
+      "blockers": [],
+      "requiredFontFamilies": [
+        "HY헤드라인M",
+        "Palatino Linotype",
+        "굴림",
+        "돋움체",
+        "바탕",
+        "바탕체",
+        "한양신명조",
+        "한양중고딕",
+        "함초롬돋움",
+        "함초롬바탕",
+        "휴먼명조"
+      ],
+      "capabilityDigest": "blake3:bae5aae8f685fd0cc25b2a85995c4492375cd4dffdf1a8c959f5f5260dd7a05a"
+    }
+  },
+  {
+    "mode": "compat",
+    "profile": "print",
+    "milliseconds": 454.71699999999987,
+    "rssBefore": 522960896,
+    "rssAfter": 698138624,
+    "maxRssKiB": 681776,
+    "report": {
+      "schemaVersion": 1,
+      "mode": "compat",
+      "profile": "print",
+      "status": "eligible",
+      "eligible": true,
+      "complete": true,
+      "pageCount": 5,
+      "scannedPages": 5,
+      "scannedWorkUnits": 77079,
+      "limits": {
+        "maxPages": 128,
+        "maxWorkUnits": 100000,
+        "maxBlockers": 32,
+        "maxRequiredFontFamilies": 256
+      },
+      "summary": {
+        "totalItems": 454,
+        "directItems": 454,
+        "directRequiredItems": 0,
+        "compatOverlayItems": 0,
+        "textFallbackItems": 0,
+        "unsupportedItems": 0,
+        "hiddenOverlayViolations": 0
+      },
+      "blockers": [],
+      "requiredFontFamilies": [
+        "HY헤드라인M",
+        "Palatino Linotype",
+        "굴림",
+        "돋움체",
+        "바탕",
+        "바탕체",
+        "한양신명조",
+        "한양중고딕",
+        "함초롬돋움",
+        "함초롬바탕",
+        "휴먼명조"
+      ],
+      "capabilityDigest": "blake3:c792cb45bdc28c2d4cda550dbe4741e940db149037619fa61a467c534716dc22"
+    }
+  },
+  {
+    "mode": "default",
+    "profile": "screen",
+    "milliseconds": 114.00400000000013,
+    "rssBefore": 699449344,
+    "rssAfter": 722108416,
+    "maxRssKiB": 705184,
+    "report": {
+      "schemaVersion": 1,
+      "mode": "default",
+      "profile": "screen",
+      "status": "eligible",
+      "eligible": true,
+      "complete": true,
+      "pageCount": 5,
+      "scannedPages": 5,
+      "scannedWorkUnits": 77079,
+      "limits": {
+        "maxPages": 128,
+        "maxWorkUnits": 100000,
+        "maxBlockers": 32,
+        "maxRequiredFontFamilies": 256
+      },
+      "summary": {
+        "totalItems": 454,
+        "directItems": 454,
+        "directRequiredItems": 0,
+        "compatOverlayItems": 0,
+        "textFallbackItems": 0,
+        "unsupportedItems": 0,
+        "hiddenOverlayViolations": 0
+      },
+      "blockers": [],
+      "requiredFontFamilies": [
+        "HY헤드라인M",
+        "Palatino Linotype",
+        "굴림",
+        "돋움체",
+        "바탕",
+        "바탕체",
+        "한양신명조",
+        "한양중고딕",
+        "함초롬돋움",
+        "함초롬바탕",
+        "휴먼명조"
+      ],
+      "capabilityDigest": "blake3:757599cb498c4eef5cdd2efc1f76be855474810ae7b1cdd8878a56d644b6db40"
+    }
+  },
+  {
+    "mode": "default",
+    "profile": "print",
+    "milliseconds": 63.55312499999991,
+    "rssBefore": 722190336,
+    "rssAfter": 721698816,
+    "maxRssKiB": 705856,
+    "report": {
+      "schemaVersion": 1,
+      "mode": "default",
+      "profile": "print",
+      "status": "eligible",
+      "eligible": true,
+      "complete": true,
+      "pageCount": 5,
+      "scannedPages": 5,
+      "scannedWorkUnits": 77079,
+      "limits": {
+        "maxPages": 128,
+        "maxWorkUnits": 100000,
+        "maxBlockers": 32,
+        "maxRequiredFontFamilies": 256
+      },
+      "summary": {
+        "totalItems": 454,
+        "directItems": 454,
+        "directRequiredItems": 0,
+        "compatOverlayItems": 0,
+        "textFallbackItems": 0,
+        "unsupportedItems": 0,
+        "hiddenOverlayViolations": 0
+      },
+      "blockers": [],
+      "requiredFontFamilies": [
+        "HY헤드라인M",
+        "Palatino Linotype",
+        "굴림",
+        "돋움체",
+        "바탕",
+        "바탕체",
+        "한양신명조",
+        "한양중고딕",
+        "함초롬돋움",
+        "함초롬바탕",
+        "휴먼명조"
+      ],
+      "capabilityDigest": "blake3:55a3a3c8369bf50e80dbc88e5fdb6620abad6c921d52fa551b01158422a03693"
+    }
+  }
+]

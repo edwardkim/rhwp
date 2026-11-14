@@ -1,0 +1,61 @@
+{
+  "comparison": "Same independent Print raster and canonical metric producer. Historical before binary retained as diagnostic evidence, not a new-base rebuild.",
+  "records": [
+    {
+      "phase": "combined-final",
+      "metrics_file_sha256": "f59cb28793e81c37f80675cd65abd6d42336cf1b42193ef5df8fe7efb3fad5e9",
+      "identity": {
+        "rhwp_sha256": "bc8017f65e649069fa5a9a2dbf2c70d92bbac8b74e512c1d4e70f99b819e07a4",
+        "pdf_sha256": "7e9b3e355e29663ee2b76e6fda91f24973fef62e943c2e5bc89e772b5521730d",
+        "excluded": [],
+        "method": "threshold_boundary_color_support_v1",
+        "producer": {
+          "sweep": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+          "image_helpers": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6",
+          "exclusion_evidence": null,
+          "image_decoding": {
+            "alpha_background": "#ffffff",
+            "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+          }
+        }
+      },
+      "details": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 98.76479,
+        "silhouette_raw_unmatched_pixels": 1923,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 155682,
+        "tolerant_content_match_percent": 98.76479
+      }
+    },
+    {
+      "phase": "terminal-line-final",
+      "metrics_file_sha256": "35d7421aee376ed72dd51a4fb4550cfbaa9eded3baeecacf5652130cb74f7fbc",
+      "identity": {
+        "rhwp_sha256": "ad79bbc9645420ed499373b752b8129073cb682f8876863000f33ef8d75216ef",
+        "pdf_sha256": "7e9b3e355e29663ee2b76e6fda91f24973fef62e943c2e5bc89e772b5521730d",
+        "excluded": [],
+        "method": "threshold_boundary_color_support_v1",
+        "producer": {
+          "sweep": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+          "image_helpers": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6",
+          "exclusion_evidence": null,
+          "image_decoding": {
+            "alpha_background": "#ffffff",
+            "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+          }
+        }
+      },
+      "details": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 124572,
+        "tolerant_content_match_percent": 100.0
+      }
+    }
+  ]
+}

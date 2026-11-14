@@ -36,7 +36,12 @@ pub(crate) fn neutral_anchor_metrics(
         .char_shape_id_at(0)
         .or_else(|| para.char_shapes.first().map(|shape| shape.char_shape_id))?;
     let char_style = styles.char_styles.get(shape as usize)?;
-    let font_size = char_style.font_size;
+    // 가시 잉크가 없어도 문단 끝 문자는 마지막 줄의 글자 상자에 참여한다.
+    // 재조판 프레임이 이미 계산한 종단 크기를 첫 공백 run의 크기로 낮추면
+    // 측정·배치가 함께 짧아져 뒤 제목과 표가 앞당겨진다.
+    let font_size = char_style
+        .font_size
+        .max(super::composer::paragraph_end_font_size_px(para, styles));
     if font_size <= 0.0 {
         return None;
     }

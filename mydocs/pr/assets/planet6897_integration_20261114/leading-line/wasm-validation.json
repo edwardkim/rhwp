@@ -1,0 +1,92 @@
+{
+  "source_head": "836615963eedfac9170d45c15cbba32d23e1b4d0",
+  "base": "a210861488468868b5992231c55b78798e622e98",
+  "source_files": {
+    "src/renderer/reflow_float_host_line.rs": "f65762953b05e52e848d4d490b2741498c2b59b50e1a1beb9f25bc8d62e41262",
+    "src/renderer/float_placement.rs": "8ba69f963cc0ef9ccc55aed7e8a4a87202d629fcee37235de8d5763dd01caa69",
+    "src/renderer/typeset/paragraph/spacing.rs": "03d35b8f00a7ef40dae5a2a33264eca773ece6796573864f7f915e04a9234008",
+    "src/parser/hwpx/tracked_changes.rs": "a7dfbc83d2157187c5608a4cebf5fe1e5f156e75f08ce0974a1553af271a199f",
+    "src/renderer/layout/table_partial.rs": "56aa54a9d63b0afc576bd5993a4765227bc0e467f25e560442fb8b68a44f7bfe",
+    "src/renderer/typeset/section/tail.rs": "6298cbda0d3afd8760157d85116e98c8015f3c3f7e7e5627e9626bc116f02483",
+    "tests/cases/issue_9062_ws_host_tac_above_offset_float.rs": "913a6092bba9b49b62b67f4fea8c20e17bea7ed118fd0160e7b7714a375cfabe"
+  },
+  "wasm_sha256": "5e5847d6aec86158f53a2626af196396c674a963e47b67e3ee7c4411c0480e13",
+  "js_sha256": "2d48f8a6c3ff7f848f08725bb54d04094b296af1a40ae61203081a7cf8061a1a",
+  "build": "Mac locked wrapper --target web --out-dir pkg --no-opt; local alternative, not Docker optimization",
+  "root_pkg_studio_public_hash_equal": true,
+  "input": "samples/issue9062/ws-host-tac-above-offset-float.hwpx",
+  "reference_pdf": "pdf/issue9062/ws-host-tac-above-offset-float-2020.pdf",
+  "compat": "2022",
+  "dpi": 96,
+  "backend": "fresh WASM Canvas",
+  "metrics": {
+    "1": {
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 124577,
+      "tolerant_content_match_percent": 100.0
+    },
+    "2": {
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 119898,
+      "tolerant_content_match_percent": 100.0
+    }
+  },
+  "direct_reading": {
+    "pages": [
+      1,
+      2
+    ],
+    "review_and_overlay": true,
+    "finding": "Leading whitespace strut no longer raises the three horizontal rules; two-page content and page2 closing line remain preserved."
+  },
+  "native_png_hash_equal": {
+    "1": false,
+    "2": false
+  },
+  "artifacts": {
+    "overlay-002.png": {
+      "bytes": 74031,
+      "sha256": "7cbebb7cbd28d7ba1c29d3ea0047c85b0ac74816b4a35b0d8b700f5b61250d77"
+    },
+    "overlay-001.png": {
+      "bytes": 82571,
+      "sha256": "172c500d02b8bd41a737bb399f47cb47d86ce4f8fa184107db89232897c9f435"
+    },
+    "silhouette.tsv": {
+      "bytes": 152,
+      "sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    "raw-002.png": {
+      "bytes": 81021,
+      "sha256": "78bbb4d353c198481b813d12440bab446c7d759984250f0fdbd0c8c3720bee38"
+    },
+    "raw-001.png": {
+      "bytes": 89066,
+      "sha256": "f1d86586e8874d4d931d3fdd6a46dcaa5e2f7bb45614efdf4e0e29adad111b4f"
+    },
+    "pdf-001.png": {
+      "bytes": 61702,
+      "sha256": "7e9b3e355e29663ee2b76e6fda91f24973fef62e943c2e5bc89e772b5521730d"
+    },
+    "review-001.png": {
+      "bytes": 200647,
+      "sha256": "f0f0d189aafe4b9d89d1d422c43b6356641c526d9f4f9cd88d87245efe8eea23"
+    },
+    "pdf-002.png": {
+      "bytes": 51445,
+      "sha256": "99713f4f79ca16dc1a69634ef5b70ea7617ddec4fd56258327b080d08c3bfc01"
+    },
+    "review-002.png": {
+      "bytes": 175191,
+      "sha256": "1fe399fad4fff7a70b9b5cdcc0959e74ce4ad95a0eb5400e80e5ea3c439dee47"
+    }
+  }
+}

@@ -1,0 +1,316 @@
+{
+  "key": "owned-tac",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "completed_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "missing_pages": [],
+  "tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/native/owned-tac/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/native/owned-tac/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "ae5fd23f24a91ed0294894b0fc8d41684b4dfd783fc68f2ca19ce76fab63370e",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/native/owned-tac/pdf_png/pdf-001.png",
+      "pdf_sha256": "af3d0107bc1ca6e372863021642e3c27dc5708ca032d7d050060a348475661f3"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/native/owned-tac/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "aa7138607992ce4334410e6e39de98032bb0725d30ced10598edb4132f483d53",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/native/owned-tac/pdf_png/pdf-002.png",
+      "pdf_sha256": "e13b12c73ebbb6dafa72f1379ccd3f6ad1963b9d5cbb7ddf690420332c47d256"
+    },
+    {
+      "page": 3,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/native/owned-tac/rhwp_png/rhwp_003.png",
+      "rhwp_sha256": "1820fc9b0be5178447ec3df3ab82d7023863751c969532992404e5e1cbaa22d6",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/native/owned-tac/pdf_png/pdf-003.png",
+      "pdf_sha256": "cc30847ce24deeb136c1e7b190d5b9d9df4ae39e3f359c9960f093b72ad2ed06"
+    },
+    {
+      "page": 4,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/native/owned-tac/rhwp_png/rhwp_004.png",
+      "rhwp_sha256": "f407724025c3b7e7f2895eaae056e9f45f01f70662eca5ff63fd6eab59f3a4c5",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/native/owned-tac/pdf_png/pdf-004.png",
+      "pdf_sha256": "b467fa5e3c6f1b55eca8a0aa47ce9984af9e6ea0eb0e1c647b038fb4fe5f3887"
+    },
+    {
+      "page": 5,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/native/owned-tac/rhwp_png/rhwp_005.png",
+      "rhwp_sha256": "e27fa7192191a2f4c1919d53ddb61cf7cb4e858f9fc7119859d9c26acc5144c4",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/native/owned-tac/pdf_png/pdf-005.png",
+      "pdf_sha256": "16212306d95bd04e054240c2050aa5e5a3533933f0ff38946b85a21ed5d50bfd"
+    },
+    {
+      "page": 6,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/native/owned-tac/rhwp_png/rhwp_006.png",
+      "rhwp_sha256": "c6bbfbe49a95feccac9b83b47d3cc29b339b2e0854d5808490180abdc364dc9f",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/native/owned-tac/pdf_png/pdf-006.png",
+      "pdf_sha256": "31b3bd3d8d981bad00f416bc3fe54f179af9f4d5207e53274c457ab81a9c343f"
+    },
+    {
+      "page": 7,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/native/owned-tac/rhwp_png/rhwp_007.png",
+      "rhwp_sha256": "4a42277f0706a4a996887f6fc7b9ef55b4a4ab386e50469b001b6f979d1149d5",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/native/owned-tac/pdf_png/pdf-007.png",
+      "pdf_sha256": "fcad07ba2bbc2be4fda59516d7e454fe62f53efa2fe7817c930d81a7536f6c1b"
+    },
+    {
+      "page": 8,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/native/owned-tac/rhwp_png/rhwp_008.png",
+      "rhwp_sha256": "5b599116c01535fe24bedcb6950e288af8b18ea2b0f32a465318e9e485b93a8c",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/native/owned-tac/pdf_png/pdf-008.png",
+      "pdf_sha256": "5df354111623039b306aad9f8fea8f6deb8b268d41580b429302d2399f08e79a"
+    },
+    {
+      "page": 9,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/native/owned-tac/rhwp_png/rhwp_009.png",
+      "rhwp_sha256": "b24112a62be98f7abd8b92bc6bc020f518f4a1282d22c45aa4f3bac69d177489",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/native/owned-tac/pdf_png/pdf-009.png",
+      "pdf_sha256": "fc5bc0691d4a82e1d2f48882c511d88be9cd78503ae56d09d3968db7126be5f0"
+    },
+    {
+      "page": 10,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/native/owned-tac/rhwp_png/rhwp_010.png",
+      "rhwp_sha256": "6a95ef56db855286949065fb9fa378d59d9de10f7cf05067bb70580e5e2fa2e4",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/native/owned-tac/pdf_png/pdf-010.png",
+      "pdf_sha256": "cd0a9aa49e21de02c227cbf9774103cd0ee886b77f05ca58b9aef4e1730ae748"
+    },
+    {
+      "page": 11,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/native/owned-tac/rhwp_png/rhwp_011.png",
+      "rhwp_sha256": "8f3f6bfc6fb3224460eb749b3e6e861db2111d07f332006f0810c5ff63d3b700",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/native/owned-tac/pdf_png/pdf-011.png",
+      "pdf_sha256": "21b8acf036bfb06ea04af7da3d050135f77235ee562b8643550c758391dba2a9"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 45260,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99263,
+      "silhouette_raw_unmatched_pixels": 8,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 108614,
+      "tolerant_content_match_percent": 99.99263
+    },
+    {
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 122607,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 96406,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 5,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.10161,
+      "silhouette_raw_unmatched_pixels": 2630,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 292745,
+      "tolerant_content_match_percent": 99.10161
+    },
+    {
+      "page": 6,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 95.63889,
+      "silhouette_raw_unmatched_pixels": 12676,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 290660,
+      "tolerant_content_match_percent": 95.63889
+    },
+    {
+      "page": 7,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.62165,
+      "silhouette_raw_unmatched_pixels": 4051,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 293903,
+      "tolerant_content_match_percent": 98.62165
+    },
+    {
+      "page": 8,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.73214,
+      "silhouette_raw_unmatched_pixels": 550,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 205331,
+      "tolerant_content_match_percent": 99.73214
+    },
+    {
+      "page": 9,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.80852,
+      "silhouette_raw_unmatched_pixels": 534,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 278880,
+      "tolerant_content_match_percent": 99.80852
+    },
+    {
+      "page": 10,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 231970,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 11,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.96163,
+      "silhouette_raw_unmatched_pixels": 21,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 54728,
+      "tolerant_content_match_percent": 99.96163
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 11,
+      "pdf": 11
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue8969/36400485-owned-tac-lines.hwpx",
+      "sha256": "6c74234bd60208a64d04e4b00cb6b6f09aac0fe323734c05e00f6d0b1526d399"
+    },
+    "pdf": {
+      "path": "pdf/issue8969/36400485-2020.pdf",
+      "sha256": "d52da3db4784ea987ee61ea42df8ecd414befbece3a8bdcb9c86e54ecd05ad32"
+    },
+    "git_head": "613d992a61cd1e0da317b3875a686cc73d50c010",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+      "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+      "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+      "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+      "version": "152.0.7947.0",
+      "wrapper_version": "5.12.1",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/rhwp-native",
+      "path": "output/pr-review/planet6897-integration-20261114/row-repair-v2/rhwp-native",
+      "sha256": "e3d439c6412b2633583feb441abc71c7959f86258b6df4b4cfc6d160109cf4ef"
+    },
+    "native_webfont_fallback": {
+      "registry_sha256": "35f3e1ac64348a6497b50cc98c7235a8adcb4c99bfa78fec6302bde6f525a299",
+      "mappings": {},
+      "document_glyph_fallbacks": [],
+      "unmapped_sources": [],
+      "local_document_substitutes": [],
+      "resources": [],
+      "module_sha256": "604d15d877f3a60d6cb2444fafefd3057fc5d595d402f06bb08748c9fe28c1cf"
+    },
+    "raster_backend": "native-skia",
+    "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+    "layout_generation": "2022",
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "automatic_local_and_web",
+      "program_record_count": 1208,
+      "program_records_sha256": "da0784a0e28fa281da660bac15b3e14d4508ffec8cb2dffe8312855e2ce93ff0",
+      "record_policy": "Full installed-program inventory remains local; this digest records the supplied program list without repeating unrelated local font paths."
+    }
+  },
+  "checkpoint": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/native/owned-tac/silhouette-checkpoint.json",
+  "full_execution_manifest_sha256": "d22d50d74bb40760c86e12440be1e71f4874c4d0cfb181b9578bbc91c8f2139a"
+}

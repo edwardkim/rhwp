@@ -1,0 +1,13 @@
+{
+  "before": "613d992a61cd1e0da317b3875a686cc73d50c010",
+  "after": "44fdbd164199cc0ba1c75c3c9dc293ea78156dfc",
+  "changed_product_paths": [
+    "src/renderer/float_placement.rs"
+  ],
+  "title_mark_native_pages_scanned": 10,
+  "title_mark_nested_tables": 0,
+  "ws_host_nested_tables": 0,
+  "page_band_nested_table_predicate": "sole nested table is TAC=true, excluded by changed helper",
+  "owned_tac_other_ten_pages": "actual PNG SHA unchanged in both backends; row8973/page-change-audit.json",
+  "scope": "Only the negative non-TAC nested host predicate changed; no font, backend, serialization or comparison tool change."
+}

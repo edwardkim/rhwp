@@ -1,0 +1,27 @@
+[
+  {
+    "input": "samples/issue9062/ws-host-tac-above-offset-float.hwpx",
+    "nested_tables": []
+  },
+  {
+    "input": "samples/issue9055/36400525-page-band-empty-host-line.hwpx",
+    "nested_tables": [
+      {
+        "id": "1727737172",
+        "position": {
+          "treatAsChar": "1",
+          "affectLSpacing": "0",
+          "flowWithText": "1",
+          "allowOverlap": "0",
+          "holdAnchorAndSO": "0",
+          "vertRelTo": "PARA",
+          "horzRelTo": "PARA",
+          "vertAlign": "TOP",
+          "horzAlign": "LEFT",
+          "vertOffset": "0",
+          "horzOffset": "0"
+        }
+      }
+    ]
+  }
+]

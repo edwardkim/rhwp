@@ -313,7 +313,14 @@ fn positive_corpus_unicode_vector_is_caught() {
 ///   글자로 숨겨 둔 서식 문서의 형상을 일부러 만든 것이다. 이 문단이 줄 높이를
 ///   만들지 않는지가 회귀 가드의 대상이므로 **보이지 않는 글자가 있다**는 탐지는 옳다.
 ///
-/// 그래서 **규칙을 느슨하게 하지 않고** 이 일곱 문서만 스윕에서 뺀다. 여기에 항목을
+/// - `36400485-owned-tac-lines.hwpx`(`samples/issue8969/`, #8969) 1쪽 흰 글자 4자 "방침번호".
+///   결재 서식 머리 표에 "방침번호" 가 세 번 나온다. 둘은 검은 글자(`charPr id=261`)인 보이는
+///   라벨이고, 탐지된 셋째는 `charPr id=253`(`height="1300"`·`textColor="#FFFFFF"`)이다. 그 칸
+///   (`editable="0"`)의 `borderFillIDRef=65` 에는 채우기가 없고, 구역 XML 에 `<hp:pic>` 이 0개라
+///   탐지기가 쪽 바탕까지 내려간다(`backgroundSource: "page"`). 기안 시스템이 남긴 감춘 라벨이며,
+///   흰 종이 위 흰 글자로 **사람 눈에 보이지 않는다**.
+///
+/// 그래서 **규칙을 느슨하게 하지 않고** 이 여덟 문서만 스윕에서 뺀다. 여기에 항목을
 /// 추가할 때는 반드시 위와 같은 개별 근거를 함께 남긴다 — 근거 없이 이름만 늘리면
 /// 이 목록이 오탐을 숨기는 서랍이 된다.
 const KNOWN_GENUINE_HIDDEN_TEXT: &[&str] = &[
@@ -324,6 +331,7 @@ const KNOWN_GENUINE_HIDDEN_TEXT: &[&str] = &[
     "36338125-bottom-fixed-table-margin.hwpx",
     "zero_size_para_before_table.hwp",
     "36439173-empty-tac-line-baseline.hwpx",
+    "36400485-owned-tac-lines.hwpx",
 ];
 
 /// 제로폭 축의 같은 성격 목록 — **탐지가 맞았는데 표본이 실제로 그렇다**는 선언.
@@ -347,6 +355,11 @@ const KNOWN_GENUINE_HIDDEN_TEXT: &[&str] = &[
 /// 문단 3 에 U+200B 2개가 잇달아 있다(문자 29, `… 배출을 제어하는 <U+200B><U+200B> 경우, …`,
 /// 앞 공백·뒤 공백). 다른 문서에서 옮겨 붙인 흔적으로 보이며 탐지 자체는 옳다.
 ///
+/// `press_release_orphan_hidden_end.hwpx`(#9026) 구역 0 문단 19 의 인용문 닫는 따옴표 뒤에
+/// U+200B 이 2개 있다(문자 85 `… 이어져야 한다”<U+200B>라며, …`, 문자 176
+/// `… 발전해야 한다”<U+200B>라고 밝혔다.`, 앞 `”`·뒤 한글 음절). 배포 원문에 든 줄 나눔
+/// 허용 표지이며 숨은 문구는 없다. 탐지 자체는 옳다.
+///
 /// 규칙을 느슨하게 하지 않고 이 문서만 뺀다. 제로폭 탐지의 감도를 낮추면
 /// 낱자 사이에 끼워 넣는 진짜 회피(`비밀<U+200B>번호`)까지 함께 놓친다.
 /// 항목을 추가할 때는 반드시 위와 같은 개별 근거(문단·코드포인트·앞뒤 문자)를 남긴다.
@@ -356,12 +369,14 @@ const KNOWN_GENUINE_ZERO_WIDTH: &[&str] = &[
     "employment_service_interim_report.hwp",
     "1351000-201800239_hpv_cohort_final_report.hwp",
     "1480000-201900510_facility_pollution_study.hwp",
+    "press_release_orphan_hidden_end.hwpx",
 ];
 
 /// `samples/` 바로 아래가 아닌 허용목록 문서. 자기검증이 조용히 건너뛰지 않게 경로를 둔다.
 const KNOWN_GENUINE_ZERO_WIDTH_SUBDIR: &[&str] = &[
     "samples/issue8692/employment_service_interim_report.hwp",
     "samples/issue8842/1351000-201800239_hpv_cohort_final_report.hwp",
+    "samples/issue9026/press_release_orphan_hidden_end.hwpx",
 ];
 
 const SECURITY_SWEEP_SAMPLES_ENV: &str = "RHWP_SECURITY_SWEEP_SAMPLES_JSON";

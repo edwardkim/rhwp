@@ -1484,10 +1484,10 @@ pub(crate) fn parallel_cell_picture_band_height(para: &Paragraph, dpi: f64) -> O
     parallel_cell_float_band_height(&para.controls, dpi)
 }
 
-/// A reflowed empty block-table host shares its line origin with its tables.
-/// Column definitions configure that flow; they do not create an extra line.
-/// A following empty paragraph remains a separate line, as do text, fields,
-/// TAC objects and stored line boxes.
+/// 재조판된 빈 블록 표 host는 자기 글줄과 표의 흐름 원점을 공유한다.
+/// 셀 배치가 같은 흐름 상자로 소비하는 음수 오프셋도 글줄을 별도로 더하지 않는다.
+/// 양수 오프셋의 빈 띠, 뒤의 빈 문단, 본문·필드·TAC·실제 저장 줄은 별도 계약이다.
+/// 단 정의는 흐름을 설정하며 자체 글줄을 만들지 않는다.
 pub(crate) fn reflow_block_table_host_occupied_height(
     para: &Paragraph,
     line_height: f64,
@@ -1505,7 +1505,7 @@ pub(crate) fn reflow_block_table_host_occupied_height(
                     && table.common.text_wrap == TextWrap::TopAndBottom
                     && table.common.vert_rel_to == VertRelTo::Para
                     && table.common.vert_align == VertAlign::Top
-                    && signed_hwpunit(table.common.vertical_offset) == 0 =>
+                    && signed_hwpunit(table.common.vertical_offset) <= 0 =>
             {
                 has_table = true;
             }
@@ -9268,7 +9268,7 @@ pub(crate) fn split_float_successor_spacing_before(
         })?;
     // 계산한 빈 호스트는 이어받기 조각의 점유 끝이 앞 간격의 하한을 소유한다.
     // 구현 태그가 있는 옛 줄 위치를 저장 사다리 증거로 사용하지 않는다.
-    if computed_empty_table_host(fragment_host, table) {
+    if computed_fragment_host_uses_column_origin(fragment_host, table) {
         return Some(float_pushed_line_spacing_before(
             column_top,
             spacing_before,
@@ -9285,6 +9285,22 @@ pub(crate) fn split_float_successor_spacing_before(
         + i64::from(table.outer_margin_bottom);
     (i64::from(successor_line.vertical_pos) == box_end)
         .then(|| float_pushed_line_spacing_before(column_top, spacing_before, fragment_bottom))
+}
+
+/// 저장 줄 없이 재조판한 host의 이어받기 표는 현재 단 위끝을 앞 간격의 원점으로 쓴다.
+/// 공백 글줄과 TAC 형제는 첫 조각에서 이미 소비됐으므로 끝 조각 뒤에서 원점을 다시 열지 않는다.
+/// 가시 본문·실제 저장 줄·둘 이상의 흐름 개체·음수 오프셋은 기존 원점 계약을 유지한다.
+pub(crate) fn computed_fragment_host_uses_column_origin(para: &Paragraph, table: &Table) -> bool {
+    computed_empty_table_host(para, table)
+        || (!para.layout_object_projection
+            && para
+                .text
+                .chars()
+                .all(|ch| ch.is_whitespace() || ch.is_control() || ch == '\u{FFFC}')
+            && crate::renderer::is_unstored_whitespace_object_host(para)
+            && is_para_topbottom_float(&table.common)
+            && matches!(table.common.vert_align, VertAlign::Top)
+            && signed_hwpunit(table.common.vertical_offset) >= 0)
 }
 
 /// With no line box, an empty block host places its sole flow table
@@ -9481,6 +9497,41 @@ pub(crate) fn absolute_topbottom_table_band_bottom_px(
         stored_square_top_band::table_reserved_height_hu(table).max(table.common.height);
     let height = hwpunit_to_px(height_hu.min(i32::MAX as u32) as i32, dpi);
     Some(absolute_table_vertical_geometry(table, ref_y, ref_h, height, dpi).1)
+}
+
+/// 쪽 기준 자리차지(비-TAC) 표의 띠에 저장 줄이 걸린 빈 host — 다음 문단의 저장 첫 줄이
+/// 「띠 아래끝 + host 줄 전진」에 있으면 한/글은 host 줄을 띠 아래의 독립 줄로 뒀다([#8554]
+/// 배치 규칙). 조판이 같은 줄을 흐름에 싣도록 띠 아래끝(본문 위끝 기준 px)과 host 줄
+/// 전진(`줄높이 + 줄간격`, HU)을 돌려준다.
+///
+/// 36400525 결재문서 1쪽: 쪽 기준 머리 표(오프셋 2 + 바깥 위 138 + 높이 26454 + 바깥 아래
+/// 138 = 26732)의 빈 host 줄은 저장 vpos 0(띠 안)이고, 다음 문단 저장 vpos 는
+/// 28332 = 26732 + 1000 + 600 이다. 다음 문단이 띠 아래끝에 바로 붙는 문서(쪽 아래 고정 틀
+/// 등)는 host 줄이 띠 아래로 가지 않았으므로 해당하지 않는다.
+pub(crate) fn page_band_pushed_empty_host_line(
+    para: &Paragraph,
+    next: Option<&Paragraph>,
+    table: &Table,
+    body_height: f64,
+    dpi: f64,
+) -> Option<(f64, i32)> {
+    let stored = |seg: &&crate::model::paragraph::LineSeg| {
+        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+    };
+    if !matches!(table.common.vert_rel_to, VertRelTo::Page)
+        || para_has_non_whitespace_text(para)
+        || para.line_segs.len() != 1
+    {
+        return None;
+    }
+    let seg = para.line_segs.first().filter(stored)?;
+    let successor = next?.line_segs.first().filter(stored)?;
+    let band_bottom = absolute_topbottom_table_band_bottom_px(table, 0.0, body_height, 0.0, dpi)?;
+    let advance = seg.line_height.max(0) + seg.line_spacing.max(0);
+    let expected = crate::renderer::px_to_hwpunit(band_bottom, dpi) + advance;
+    (hwpunit_to_px(seg.vertical_pos, dpi) + 0.5 < band_bottom
+        && (successor.vertical_pos - expected).abs() <= 2)
+        .then_some((band_bottom, advance))
 }
 
 /// [#8859] 뒤 문단의 저장 첫 줄이 빈 host 의 저장 줄 끝(`vpos + 줄 높이 + 줄간격`)에서

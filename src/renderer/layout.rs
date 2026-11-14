@@ -218,7 +218,10 @@ fn stored_empty_full_band_tac_table_top(
         || !table.common.treat_as_char
         || !matches!(table.common.text_wrap, TextWrap::TopAndBottom)
         || para.stored_text_partition_dirty
-        || !tac_has_only_in_front_decoration_shapes_before(para, control_index)
+        || !(tac_has_only_in_front_decoration_shapes_before(para, control_index)
+            // [#9016] 앞 제어 없이 제목 차례 표시만 앞 슬롯을 차지하는 문단도 표가 둘째
+            // 저장 줄을 온전히 소유한다(제목 표시 줄은 글자 높이 줄, 표 줄 th = 표 + 여백).
+            || (control_index == 0 && para.title_marks.iter().any(|mark| mark.char_idx == 0)))
     {
         return None;
     }
@@ -10299,13 +10302,30 @@ impl LayoutEngine {
                 item,
                 PageItem::FullParagraph { .. } | PageItem::PartialParagraph { start_line: 0, .. }
             ) {
-                if let Some(origin) = col_content.paragraph_float_placements.iter().find_map(
-                    |(&(pi, _), placement)| {
+                if let Some(origin) = col_content
+                    .paragraph_float_placements
+                    .iter()
+                    .find_map(|(&(pi, _), placement)| {
                         (pi == item_para)
                             .then_some(placement.stored_host_origin)
                             .flatten()
-                    },
-                ) {
+                    })
+                    // 같은 문단의 글자처럼 취급 표가 바로 앞에서 이 host 줄을 놓았으면 흐름은 이미
+                    // 그 줄 끝에 있다. 원점으로 되돌리면 표 위 틈의 후속 문단이 그 줄과 겹친다.
+                    .filter(|_| {
+                        !item_ordinal
+                            .checked_sub(1)
+                            .and_then(|previous| col_content.items.get(previous))
+                            .is_some_and(|previous| {
+                                matches!(previous, PageItem::Table { para_index, control_index }
+                                if *para_index == item_para
+                                    && matches!(
+                                        paragraphs[item_para].controls.get(*control_index),
+                                        Some(Control::Table(table)) if table.common.treat_as_char
+                                    ))
+                            })
+                    })
+                {
                     let spacing_before = styles
                         .para_styles
                         .get(paragraphs[item_para].para_shape_id as usize)
@@ -14648,11 +14668,20 @@ impl LayoutEngine {
                 // 줄 seg 를 찾는다. 해석 불가 시 기존 값 유지.
                 // HWPX 계산-lineseg 는 저장 사다리가 아니라 이 사영이 성립하지 않는다
                 // — hwp5 네이티브 프로파일에서만 교정한다(56734607.hwpx 신규 회귀 실측).
-                let seg_idx = if self.profile.get().hwp5_stored_pagination_layout() {
-                    control_line_seg_index(para, control_index).unwrap_or(control_index)
-                } else {
-                    control_index
-                };
+                // 원본 HWPX 의 저장 줄도 같은 사다리다. 합성 줄이 섞이지 않은 문단만
+                // 사영한다(#8969: 앞 글줄 + 표 두 줄 문단에서 첫 표가 둘째 표 줄을 보고
+                // 줄간격을 잃었다).
+                let stored_hwpx_ladder = self.profile.get().hwpx_stored_layout()
+                    && !para.line_segs.is_empty()
+                    && para.line_segs.iter().all(|seg| {
+                        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                    });
+                let seg_idx =
+                    if self.profile.get().hwp5_stored_pagination_layout() || stored_hwpx_ladder {
+                        control_line_seg_index(para, control_index).unwrap_or(control_index)
+                    } else {
+                        control_index
+                    };
                 let tac_count_total = para
                     .controls
                     .iter()
@@ -14681,7 +14710,36 @@ impl LayoutEngine {
                         let gap = next_seg
                             .vertical_pos
                             .saturating_sub(seg.vertical_pos.saturating_add(seg.line_height));
-                        y_offset += hwpunit_to_px(gap, self.dpi);
+                        // 두 표가 각자의 저장 줄을 정확히 소유하면 그 줄 높이는 위·아래
+                        // 바깥 여백을 담는다. 같은 문단의 다음 TAC 표는 넘겨받은 y 를 그대로
+                        // 원점으로 쓰므로, 이 표의 아래 여백과 다음 표의 위 여백까지 넘긴다
+                        // (#8969, 36400485 2쪽: 둘째 표가 저장 줄보다 5.6px 위).
+                        let next_owned_margin_top =
+                            crate::renderer::composer::stored_owned_tac_line(para, control_index)
+                                .filter(|&(owner, _)| owner == seg_idx)
+                                .and_then(|_| {
+                                    para.controls
+                                .iter()
+                                .enumerate()
+                                .skip(control_index + 1)
+                                .find(|(_, c)| {
+                                    matches!(c, Control::Table(next) if next.common.treat_as_char)
+                                })
+                                })
+                                .and_then(|(next_index, next)| {
+                                    let Control::Table(next) = next else {
+                                        return None;
+                                    };
+                                    crate::renderer::composer::stored_owned_tac_line(
+                                        para, next_index,
+                                    )
+                                    .filter(|&(owner, _)| owner == seg_idx + 1)
+                                    .map(|_| next.outer_margin_top)
+                                });
+                        let owned_margins = next_owned_margin_top.map_or(0, |next_top| {
+                            i32::from(t.outer_margin_bottom) + i32::from(next_top)
+                        });
+                        y_offset += hwpunit_to_px(gap + owned_margins, self.dpi);
                     }
                     return TableControlOut {
                         y_offset,
@@ -15907,6 +15965,17 @@ impl LayoutEngine {
                         let body_bottom = layout.body_area.y + layout.body_area.height;
                         tbl_y < layout.body_area.y || tbl_y + tbl_h > body_bottom
                     }
+                    // [#9055] 쪽 기준 띠 안에 저장 줄을 둔 빈 host 는 띠 아래의 독립 줄을 가진다
+                    // (조판의 `page_band_pushed_empty_host_line` 과 같은 판정). 그 줄의 전진은
+                    // 본문 흐름이 소유한다.
+                    && crate::renderer::float_placement::page_band_pushed_empty_host_line(
+                        para,
+                        paragraphs.get(para_index + 1),
+                        t,
+                        layout.body_area.height,
+                        self.dpi,
+                    )
+                    .is_none()
             } else {
                 false
             };

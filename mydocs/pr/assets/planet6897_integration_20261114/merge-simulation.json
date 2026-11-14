@@ -1,0 +1,259 @@
+{
+  "base": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
+  "source_refs": [
+    {
+      "pr": 8976,
+      "sha": "e725859e24f9bd0d4631a95ad2d4d37e521193c5"
+    },
+    {
+      "pr": 9064,
+      "sha": "0cc72f29257a566ff5f9d0526ab7de0a7c4bf1d4"
+    },
+    {
+      "pr": 9065,
+      "sha": "c4fa5598ba272c405369571f637ee0028b1bc203"
+    },
+    {
+      "pr": 9067,
+      "sha": "02ea378e337cc82756f26eb80644448dea848826"
+    },
+    {
+      "pr": 9068,
+      "sha": "3da35b96822fb58ce4cc249d6ff4829185a17d06"
+    }
+  ],
+  "source_implementation": "15 commits cherry-picked with -x; 4 maintainer corrections",
+  "runs": [
+    {
+      "label": "current-base-pr8976",
+      "left": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
+      "right": "e725859e24f9bd0d4631a95ad2d4d37e521193c5",
+      "exit_code": 0,
+      "clean": true,
+      "tree": "49db796e02d3a3e9d29f36409b28de2f9a303b4d"
+    },
+    {
+      "label": "current-base-pr9064",
+      "left": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
+      "right": "0cc72f29257a566ff5f9d0526ab7de0a7c4bf1d4",
+      "exit_code": 0,
+      "clean": true,
+      "tree": "69537ba1554b033d862406efe0986a168992b84d"
+    },
+    {
+      "label": "current-base-pr9065",
+      "left": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
+      "right": "c4fa5598ba272c405369571f637ee0028b1bc203",
+      "exit_code": 0,
+      "clean": true,
+      "tree": "9054e318426781687a13c8b46bf9df834826fe7c"
+    },
+    {
+      "label": "current-base-pr9067",
+      "left": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
+      "right": "02ea378e337cc82756f26eb80644448dea848826",
+      "exit_code": 0,
+      "clean": true,
+      "tree": "3c39bf6416a913434bbe47f8c40ed607e02197e2"
+    },
+    {
+      "label": "current-base-pr9068",
+      "left": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
+      "right": "3da35b96822fb58ce4cc249d6ff4829185a17d06",
+      "exit_code": 0,
+      "clean": true,
+      "tree": "cf9ccf507d1c155457cb26371f5bd1014f186c57"
+    },
+    {
+      "label": "current-pr8976-pr9064",
+      "left": "e725859e24f9bd0d4631a95ad2d4d37e521193c5",
+      "right": "0cc72f29257a566ff5f9d0526ab7de0a7c4bf1d4",
+      "exit_code": 0,
+      "clean": true,
+      "tree": "69e5b2331c65d8c024b55ea5df4e0f94d8b842af"
+    },
+    {
+      "label": "current-pr8976-pr9065",
+      "left": "e725859e24f9bd0d4631a95ad2d4d37e521193c5",
+      "right": "c4fa5598ba272c405369571f637ee0028b1bc203",
+      "exit_code": 0,
+      "clean": true,
+      "tree": "1deb93ab5f4df3ed016bd1d47ad3120394ef99c0"
+    },
+    {
+      "label": "current-pr8976-pr9067",
+      "left": "e725859e24f9bd0d4631a95ad2d4d37e521193c5",
+      "right": "02ea378e337cc82756f26eb80644448dea848826",
+      "exit_code": 0,
+      "clean": true,
+      "tree": "f025f378d1c756e36581f7b1c3585b6dc704a91e"
+    },
+    {
+      "label": "current-pr8976-pr9068",
+      "left": "e725859e24f9bd0d4631a95ad2d4d37e521193c5",
+      "right": "3da35b96822fb58ce4cc249d6ff4829185a17d06",
+      "exit_code": 0,
+      "clean": true,
+      "tree": "26ed9ca038951cddb82b6e0d60c69b265fd6fc2c"
+    },
+    {
+      "label": "current-pr9064-pr9065",
+      "left": "0cc72f29257a566ff5f9d0526ab7de0a7c4bf1d4",
+      "right": "c4fa5598ba272c405369571f637ee0028b1bc203",
+      "exit_code": 0,
+      "clean": true,
+      "tree": "f88749d3f98340a299ab93d93651d726608f98de"
+    },
+    {
+      "label": "current-pr9064-pr9067",
+      "left": "0cc72f29257a566ff5f9d0526ab7de0a7c4bf1d4",
+      "right": "02ea378e337cc82756f26eb80644448dea848826",
+      "exit_code": 0,
+      "clean": true,
+      "tree": "d8e498f53ec9f725adcae8875b0c6cf980907967"
+    },
+    {
+      "label": "current-pr9064-pr9068",
+      "left": "0cc72f29257a566ff5f9d0526ab7de0a7c4bf1d4",
+      "right": "3da35b96822fb58ce4cc249d6ff4829185a17d06",
+      "exit_code": 0,
+      "clean": true,
+      "tree": "d952f88d86843ef422bb133070130d89aff95c0c"
+    },
+    {
+      "label": "current-pr9065-pr9067",
+      "left": "c4fa5598ba272c405369571f637ee0028b1bc203",
+      "right": "02ea378e337cc82756f26eb80644448dea848826",
+      "exit_code": 0,
+      "clean": true,
+      "tree": "92da9037b12568014fe70c86ab8441d6883328c5"
+    },
+    {
+      "label": "current-pr9065-pr9068",
+      "left": "c4fa5598ba272c405369571f637ee0028b1bc203",
+      "right": "3da35b96822fb58ce4cc249d6ff4829185a17d06",
+      "exit_code": 0,
+      "clean": true,
+      "tree": "0d5106bd03f644e2cf72c4e2e9b5b9e31d1b92d0"
+    },
+    {
+      "label": "current-pr9067-pr9068",
+      "left": "02ea378e337cc82756f26eb80644448dea848826",
+      "right": "3da35b96822fb58ce4cc249d6ff4829185a17d06",
+      "exit_code": 0,
+      "clean": true,
+      "tree": "213553a9e4c4be09c9b3126a56d799b6a00b1bb0"
+    },
+    {
+      "label": "current-cumulative-pr8976",
+      "left": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
+      "right": "e725859e24f9bd0d4631a95ad2d4d37e521193c5",
+      "exit_code": 0,
+      "clean": true,
+      "tree": "49db796e02d3a3e9d29f36409b28de2f9a303b4d"
+    },
+    {
+      "label": "current-cumulative-pr9064",
+      "left": "b10dd79544e8515e1283944f3fa97a89468d3d6a",
+      "right": "0cc72f29257a566ff5f9d0526ab7de0a7c4bf1d4",
+      "exit_code": 0,
+      "clean": true,
+      "tree": "d2dd4c349d5b7f96d82f57b0e6118df189da23fd"
+    },
+    {
+      "label": "current-cumulative-pr9065",
+      "left": "8f58d6c701f784cdd659ab2bace1ba79eb3773d3",
+      "right": "c4fa5598ba272c405369571f637ee0028b1bc203",
+      "exit_code": 0,
+      "clean": true,
+      "tree": "e0cd3bbbaa468519e2f80a47b5c38cc924ab402b"
+    },
+    {
+      "label": "current-cumulative-pr9067",
+      "left": "a8a8dd93dfb167a3a264363e2b056406fe263774",
+      "right": "02ea378e337cc82756f26eb80644448dea848826",
+      "exit_code": 0,
+      "clean": true,
+      "tree": "4b5993ea5ac21ee9b391ab3fb6dee430a6f77f25"
+    },
+    {
+      "label": "current-cumulative-pr9068",
+      "left": "3d5b9b880b2204a46e7437f001135da271aa7df3",
+      "right": "3da35b96822fb58ce4cc249d6ff4829185a17d06",
+      "exit_code": 0,
+      "clean": true,
+      "tree": "f74c4aa2adafcb271869316c9f4f624b7ae50ad6"
+    },
+    {
+      "label": "current-candidate-devel",
+      "left": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
+      "right": "13bc8edc30c6b2c0c60413ee731f5a9ff3a36922",
+      "exit_code": 0,
+      "clean": true,
+      "tree": "f6445c62e3665769f57e6763f98105915fe949db"
+    }
+  ],
+  "author_open_prs": [],
+  "author_open_pr_query": "live GitHub search repo:edwardkim/rhwp is:pr is:open author:jangster77, successful empty result",
+  "reviewer_exempt_prs": [],
+  "passed": true,
+  "live_head_check": {
+    "checked_at": "2026-11-14T08:48:20.543Z",
+    "self_open_prs": {
+      "issues": []
+    },
+    "prs": [
+      {
+        "number": 8976,
+        "head_sha": "e725859e24f9bd0d4631a95ad2d4d37e521193c5",
+        "base_sha": "5cbcc9b451cf286e1b7c680426c857dc802e50f3",
+        "state": "open",
+        "mergeable": true,
+        "reviewers": [
+          "jangster77"
+        ]
+      },
+      {
+        "number": 9064,
+        "head_sha": "0cc72f29257a566ff5f9d0526ab7de0a7c4bf1d4",
+        "base_sha": "9e2794796787b46815462fcecd1536ab74ac8528",
+        "state": "open",
+        "mergeable": false,
+        "reviewers": [
+          "jangster77"
+        ]
+      },
+      {
+        "number": 9065,
+        "head_sha": "c4fa5598ba272c405369571f637ee0028b1bc203",
+        "base_sha": "9e2794796787b46815462fcecd1536ab74ac8528",
+        "state": "open",
+        "mergeable": false,
+        "reviewers": [
+          "jangster77"
+        ]
+      },
+      {
+        "number": 9067,
+        "head_sha": "02ea378e337cc82756f26eb80644448dea848826",
+        "base_sha": "dc3d0ff15e6e7cdb39138c72a5466994dea0e0d4",
+        "state": "open",
+        "mergeable": false,
+        "reviewers": [
+          "jangster77"
+        ]
+      },
+      {
+        "number": 9068,
+        "head_sha": "3da35b96822fb58ce4cc249d6ff4829185a17d06",
+        "base_sha": "dc3d0ff15e6e7cdb39138c72a5466994dea0e0d4",
+        "state": "open",
+        "mergeable": true,
+        "reviewers": [
+          "jangster77"
+        ]
+      }
+    ]
+  },
+  "source_pr_mergeability_note": "GitHub API의 원 head mergeability 표시와 통합 후보 판정은 구분한다. 고정 base·각 원 head·누적·통합 후보의 실제 git merge-tree를 21건 확인했다."
+}

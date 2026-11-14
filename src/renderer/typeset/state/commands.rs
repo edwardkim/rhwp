@@ -10,6 +10,13 @@ impl TypesetState {
         self.data.hidden_line_reflow_active = active;
     }
 
+    pub(in crate::renderer::typeset) fn set_page_band_host_line(
+        &mut self,
+        line: Option<(usize, usize, f64, i32)>,
+    ) {
+        self.data.page_band_host_line = line;
+    }
+
     pub(in crate::renderer::typeset) fn replace_deferred_table_successor_start(
         &mut self,
         start: Option<usize>,

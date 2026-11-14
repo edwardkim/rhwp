@@ -21,7 +21,8 @@ fn computed_fragment_host<'a>(
     let Control::Table(table) = host.controls.get(*control_index)? else {
         return None;
     };
-    crate::renderer::float_placement::computed_empty_table_host(host, table).then_some(host)
+    crate::renderer::float_placement::computed_fragment_host_uses_column_origin(host, table)
+        .then_some(host)
 }
 
 pub(super) fn confirm_split_successor(

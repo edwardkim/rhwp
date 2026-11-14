@@ -1,0 +1,372 @@
+{
+  "measurement_base": "dc3d0ff15e6e7cdb39138c72a5466994dea0e0d4",
+  "current_base": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
+  "candidate_runtime_commit": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+  "decision": "Keep original fixed-base whole TSVs as historical measurements, with composed read-path proofs; current six candidates were freshly rendered for both backends. No old baseline is relabeled as a new-base capture.",
+  "previous_rebase_audit": {
+    "previous_base_measurement_source": "dc3d0ff15e6e7cdb39138c72a5466994dea0e0d4",
+    "current_base": "a210861488468868b5992231c55b78798e622e98",
+    "current_candidate_code": "836615963eedfac9170d45c15cbba32d23e1b4d0",
+    "new_upstream_pr": 9069,
+    "original_pr": 9063,
+    "new_base_verified_runtime_source": "e2d7fb08b55a37dc7b951a2a9c4eddafe5003523",
+    "new_base_runtime_changed_paths": [
+      "src/renderer/float_placement.rs",
+      "src/renderer/inline_flow.rs",
+      "src/renderer/inline_flow/separator_spaces.rs",
+      "src/renderer/layout.rs",
+      "src/renderer/typeset/controls.rs",
+      "src/renderer/typeset/paragraph.rs",
+      "src/renderer/typeset/paragraph/entry.rs",
+      "src/renderer/typeset/section/controls.rs",
+      "src/renderer/typeset/state/transition.rs"
+    ],
+    "new_base_runtime_equivalence": "src, assets and Cargo manifests equal the independently verified e2d7fb08b5 runtime; mydocs/pr/assets/pr9063/evidence.md describes Desktop Print originals and actual edit/save results. Current candidate preservation is separately re-executed.",
+    "old_base_claim_reuse": [
+      {
+        "key": "owned-tac",
+        "overflow_object_gate": "No Picture or Shape controls. Only floating tables; the new object placement explicitly rejects Table.",
+        "float_tail_gate": "Floating-table paragraphs have either no text/only spaces without preceding flow content or non-space terminal text. There is no overflowing space tail before terminal floating anchors."
+      },
+      {
+        "key": "ws-host",
+        "overflow_object_gate": "Two tables only; the new object placement rejects Table.",
+        "float_tail_gate": "Source control order is floating Table then TAC Table then two trailing spaces. No floating anchor follows those spaces, so the existing trailing-space arm remains authoritative."
+      },
+      {
+        "key": "page-band",
+        "overflow_object_gate": "The only flowWithText Picture is treatAsChar=1, excluded by the new placement guard. Other pictures fail the required Para/Top/flowWithText conjunction.",
+        "float_tail_gate": "The only floating-table paragraph is empty, hence has no preceding flow content to hang a space tail."
+      },
+      {
+        "key": "title-mark",
+        "overflow_object_gate": "Old fixed-base CLI exported an IR-identical temporary HWPX (--verify, diffCount=0); there are no Picture or Shape controls.",
+        "float_tail_gate": "All three floating-table paragraphs contain no text, so no space-tail atom can take the new hanging branch."
+      }
+    ],
+    "new_hidden_end_inputs_base": "Both baseline inputs fail during HWPX hidden-range parsing before any renderer call. src/parser, src/model and font/render program selection are unchanged from the measurement base to the current base. The recorded parse failures are retained; no invented 0% score is used.",
+    "new_renderer_contexts": "Calls added to paragraph fit, section control placement and table-host shape placement all depend on the rejected object-placement predicate. Layout applies non-TAC Shape placements only; no applicable Shape exists in these four claims. With no new hanging span, the refactored row-font fold is identical.",
+    "candidate_measurement": "All six inputs were freshly captured at source 836615963e using Native and fresh WASM, 40 pages per backend. Original four claim baseline TSVs remain actual dc3d source results, reused with this read-path proof rather than relabeled as fresh a210 outputs.",
+    "normal_font_environment": "No font installation, font-rule, Skia program loader, WASM canvas, or PDF rasterizer change occurred between the two bases. Actual source input and reference PDF hashes are fixed in claim-validation.json.",
+    "supporting_input_audits": {
+      "source-claims-float-inputs.json": [
+        {
+          "key": "owned-tac",
+          "objects": []
+        },
+        {
+          "key": "ws-host",
+          "objects": []
+        },
+        {
+          "key": "page-band",
+          "objects": [
+            {
+              "kind": "pic",
+              "pos": {
+                "treatAsChar": "1",
+                "affectLSpacing": "0",
+                "flowWithText": "1",
+                "allowOverlap": "0",
+                "holdAnchorAndSO": "0",
+                "vertRelTo": "PARA",
+                "horzRelTo": "COLUMN",
+                "vertAlign": "TOP",
+                "horzAlign": "LEFT",
+                "vertOffset": "0",
+                "horzOffset": "0"
+              }
+            },
+            {
+              "kind": "container",
+              "pos": {
+                "treatAsChar": "1",
+                "affectLSpacing": "0",
+                "flowWithText": "0",
+                "allowOverlap": "1",
+                "holdAnchorAndSO": "0",
+                "vertRelTo": "PARA",
+                "horzRelTo": "PARA",
+                "vertAlign": "TOP",
+                "horzAlign": "LEFT",
+                "vertOffset": "0",
+                "horzOffset": "0"
+              }
+            },
+            {
+              "kind": "container",
+              "pos": {
+                "treatAsChar": "1",
+                "affectLSpacing": "0",
+                "flowWithText": "0",
+                "allowOverlap": "1",
+                "holdAnchorAndSO": "0",
+                "vertRelTo": "PARA",
+                "horzRelTo": "PARA",
+                "vertAlign": "TOP",
+                "horzAlign": "LEFT",
+                "vertOffset": "0",
+                "horzOffset": "0"
+              }
+            },
+            {
+              "kind": "container",
+              "pos": {
+                "treatAsChar": "1",
+                "affectLSpacing": "0",
+                "flowWithText": "0",
+                "allowOverlap": "1",
+                "holdAnchorAndSO": "0",
+                "vertRelTo": "PARA",
+                "horzRelTo": "PARA",
+                "vertAlign": "TOP",
+                "horzAlign": "LEFT",
+                "vertOffset": "0",
+                "horzOffset": "0"
+              }
+            },
+            {
+              "kind": "container",
+              "pos": {
+                "treatAsChar": "1",
+                "affectLSpacing": "0",
+                "flowWithText": "0",
+                "allowOverlap": "1",
+                "holdAnchorAndSO": "0",
+                "vertRelTo": "PARA",
+                "horzRelTo": "PARA",
+                "vertAlign": "TOP",
+                "horzAlign": "LEFT",
+                "vertOffset": "0",
+                "horzOffset": "0"
+              }
+            },
+            {
+              "kind": "container",
+              "pos": {
+                "treatAsChar": "1",
+                "affectLSpacing": "0",
+                "flowWithText": "0",
+                "allowOverlap": "1",
+                "holdAnchorAndSO": "0",
+                "vertRelTo": "PARA",
+                "horzRelTo": "PARA",
+                "vertAlign": "TOP",
+                "horzAlign": "LEFT",
+                "vertOffset": "0",
+                "horzOffset": "0"
+              }
+            },
+            {
+              "kind": "container",
+              "pos": {
+                "treatAsChar": "1",
+                "affectLSpacing": "0",
+                "flowWithText": "0",
+                "allowOverlap": "1",
+                "holdAnchorAndSO": "0",
+                "vertRelTo": "PARA",
+                "horzRelTo": "PARA",
+                "vertAlign": "TOP",
+                "horzAlign": "LEFT",
+                "vertOffset": "0",
+                "horzOffset": "0"
+              }
+            },
+            {
+              "kind": "container",
+              "pos": {
+                "treatAsChar": "1",
+                "affectLSpacing": "0",
+                "flowWithText": "0",
+                "allowOverlap": "1",
+                "holdAnchorAndSO": "0",
+                "vertRelTo": "PARA",
+                "horzRelTo": "PARA",
+                "vertAlign": "TOP",
+                "horzAlign": "LEFT",
+                "vertOffset": "0",
+                "horzOffset": "0"
+              }
+            }
+          ]
+        }
+      ],
+      "float-tail-input-audit.json": [
+        {
+          "key": "owned-tac",
+          "paragraphs_with_floating_controls": [
+            {
+              "index_in_xml_walk": 2751,
+              "text": "  ",
+              "controls": [
+                "tbl"
+              ],
+              "tac": [],
+              "floating": [
+                0
+              ],
+              "stored_lines": true
+            },
+            {
+              "index_in_xml_walk": 3196,
+              "text": "  - 건당 점수(1.6점) 판단기준(감점요인 해당 시 감점)",
+              "controls": [
+                "tbl"
+              ],
+              "tac": [],
+              "floating": [
+                0
+              ],
+              "stored_lines": true
+            },
+            {
+              "index_in_xml_walk": 3444,
+              "text": "  - 점수(1점) = 사전정보가 국민의 관점에서 접근, 이용, 활용, 가독이 편리한지, 기관의 업무 특성을 반영하여 사전정보를 제공하고 있는지 등을 종합적으로 평가",
+              "controls": [
+                "tbl"
+              ],
+              "tac": [],
+              "floating": [
+                0
+              ],
+              "stored_lines": false
+            },
+            {
+              "index_in_xml_walk": 4022,
+              "text": "",
+              "controls": [
+                "tbl"
+              ],
+              "tac": [],
+              "floating": [
+                0
+              ],
+              "stored_lines": false
+            },
+            {
+              "index_in_xml_walk": 4649,
+              "text": "",
+              "controls": [
+                "tbl"
+              ],
+              "tac": [],
+              "floating": [
+                0
+              ],
+              "stored_lines": false
+            }
+          ]
+        },
+        {
+          "key": "ws-host",
+          "paragraphs_with_floating_controls": [
+            {
+              "index_in_xml_walk": 39,
+              "text": "  ",
+              "controls": [
+                "tbl",
+                "tbl"
+              ],
+              "tac": [
+                1
+              ],
+              "floating": [
+                0
+              ],
+              "stored_lines": false
+            }
+          ]
+        },
+        {
+          "key": "page-band",
+          "paragraphs_with_floating_controls": [
+            {
+              "index_in_xml_walk": 1,
+              "text": "",
+              "controls": [
+                "tbl"
+              ],
+              "tac": [],
+              "floating": [
+                0
+              ],
+              "stored_lines": true
+            }
+          ]
+        }
+      ],
+      "titlemark-control-applicability.json": {
+        "reader": "Old fixed-base CLI parsed the unchanged HWP model and exported a temporary HWPX; no Print reference or sample was replaced. --verify exit0.",
+        "objects": [],
+        "floating_paragraphs": [
+          {
+            "text": "",
+            "kinds": [
+              "tbl"
+            ]
+          },
+          {
+            "text": "",
+            "kinds": [
+              "tbl"
+            ]
+          },
+          {
+            "text": "",
+            "kinds": [
+              "tbl"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "new_base_change": "#9007 fixes hatch index0..5, serialization, editing defaults, hidden-text background query and renderer pattern consumers. These are separate from current table flow changes.",
+  "independent_input_fill_audit": [
+    {
+      "key": "owned-tac",
+      "input_sha256": "6c74234bd60208a64d04e4b00cb6b6f09aac0fe323734c05e00f6d0b1526d399",
+      "hatch_attributes": []
+    },
+    {
+      "key": "ws-host",
+      "input_sha256": "0fe99b8df395f7787332ea557ed96b7421f27d687363625878b38cfed35e0a24",
+      "hatch_attributes": []
+    },
+    {
+      "key": "page-band",
+      "input_sha256": "75aa3918f793c889be96a24e9dff4766fe85eaa0ed3413c7c7895ce24e84e3ee",
+      "hatch_attributes": []
+    },
+    {
+      "key": "title-mark",
+      "input_sha256": "4982322f105f602ea89eccfbcc934068ad0cf71ddb3b9294ab79316b2a4f8036",
+      "border_fill_records": 77,
+      "solid_fill_pattern_values": {
+        "-1": 28
+      },
+      "active_hwp_patterns": 0
+    },
+    {
+      "key": "repeated",
+      "input_sha256": "fd3775bbbd4f8da5e8b78608a8ee4f084c822fd04941e8762b21a4d02b013310",
+      "hatch_attributes": []
+    },
+    {
+      "key": "orphan",
+      "input_sha256": "8e255a1553285f012815d773d229ee8ffdda4cb3d054cb478694f1fe292c5475",
+      "hatch_attributes": []
+    }
+  ],
+  "applicability": {
+    "hwpx": "All Contents XML in the five HWPX source inputs has no hatchStyle attributes. Existing HWPX fill readers explicitly initialize omitted hatchStyle to -1, before and after #9007. New 0..5 remapping therefore has no applicable source hatch.",
+    "title_mark_hwp": "Raw CFB DocInfo BorderFill77 records,28 solid brushes, all raw pattern i32=-1. No Picture/Shape controls were present in the independently verified IR-equivalent temporary HWPX; table fills use these styles.",
+    "defaults": "No editing command is used to obtain baseline Print output; newly created editing SolidFill defaults are not input brushes. HWP3 changes cannot apply to these HWP/HWPX inputs.",
+    "hidden_ends": "#9007 does not change the hidden-range parser. The recorded old-base errors occur at the unchanged hidden-end admission rule, before layout or hatch painting; they are not invented zero-percent scores.",
+    "budget": "50,000→100,000 changes only the opt-in CanvasKit document capability scan, not Native or Canvas2D ordinary Print layout/rasterization."
+  },
+  "inherited_function_validation": "Current Native/fresh WASM patterns0..6 HWP and HWPX whole one-page controls in incoming9007/validation.json; upstream issue8978 and hidden_text_contract focused regressions re-executed. Prior #9069 functionality17 documents/22 pages perbackend remains separately recorded.",
+  "candidate_measurement": "Current40 pages perbackend fresh output, plus inherited2 pattern pages perbackend. Inputs, Print PDF, compat, DPI, fonts and raw2px method fixed.",
+  "font_and_rasterizer": "No font installation or font-rule/rasterizer program change between the measurement bases; approved per-document protected font environments preserved."
+}

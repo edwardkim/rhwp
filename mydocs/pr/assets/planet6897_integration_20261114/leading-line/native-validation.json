@@ -1,0 +1,75 @@
+{
+  "source_head": "836615963eedfac9170d45c15cbba32d23e1b4d0",
+  "base": "a210861488468868b5992231c55b78798e622e98",
+  "source_files": {
+    "src/renderer/reflow_float_host_line.rs": "f65762953b05e52e848d4d490b2741498c2b59b50e1a1beb9f25bc8d62e41262",
+    "src/renderer/float_placement.rs": "8ba69f963cc0ef9ccc55aed7e8a4a87202d629fcee37235de8d5763dd01caa69",
+    "src/renderer/typeset/paragraph/spacing.rs": "03d35b8f00a7ef40dae5a2a33264eca773ece6796573864f7f915e04a9234008",
+    "src/parser/hwpx/tracked_changes.rs": "a7dfbc83d2157187c5608a4cebf5fe1e5f156e75f08ce0974a1553af271a199f",
+    "src/renderer/layout/table_partial.rs": "56aa54a9d63b0afc576bd5993a4765227bc0e467f25e560442fb8b68a44f7bfe",
+    "src/renderer/typeset/section/tail.rs": "6298cbda0d3afd8760157d85116e98c8015f3c3f7e7e5627e9626bc116f02483",
+    "tests/cases/issue_9062_ws_host_tac_above_offset_float.rs": "913a6092bba9b49b62b67f4fea8c20e17bea7ed118fd0160e7b7714a375cfabe"
+  },
+  "cli_sha256": "8993fd1c22c17d19cda0aae59378ad9b47215fef933e042c67828e66326a1f68",
+  "input": "samples/issue9062/ws-host-tac-above-offset-float.hwpx",
+  "reference_pdf": "pdf/issue9062/ws-host-tac-above-offset-float-2020.pdf",
+  "backend": "native",
+  "compat": "2022",
+  "dpi": 96,
+  "silhouette_radius_px": 2,
+  "raw_pages": {
+    "1": "100.00",
+    "2": "100.00"
+  },
+  "boundary_reconciled_pixels": 0,
+  "direct_reading": {
+    "pages": [
+      1,
+      2
+    ],
+    "page1": "Three previously unmatched horizontal lines are now within the unchanged 2px tolerance. Title/table content and both pages preserved. Page2 closing line remains on its own paragraph after the continued table."
+  },
+  "artifacts": {
+    "overlay-002.png": {
+      "bytes": 74097,
+      "sha256": "8f810db4e68189b6cf02ed95f2e4e403f717ca1c65d2a8fc304bdc9ff237af08"
+    },
+    "overlay-001.png": {
+      "bytes": 82648,
+      "sha256": "8ca46a2a6c771693e580f64d5796f81b5c969bab95dc00c273c6849ee1f94275"
+    },
+    "silhouette.tsv": {
+      "bytes": 152,
+      "sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    "raw-002.png": {
+      "bytes": 72059,
+      "sha256": "a9e4f9e48a791b7ce904c8d79c69b391718220bacb32940a107ea649563809e5"
+    },
+    "raw-001.png": {
+      "bytes": 79796,
+      "sha256": "ad79bbc9645420ed499373b752b8129073cb682f8876863000f33ef8d75216ef"
+    },
+    "pdf-001.png": {
+      "bytes": 61702,
+      "sha256": "7e9b3e355e29663ee2b76e6fda91f24973fef62e943c2e5bc89e772b5521730d"
+    },
+    "review-001.png": {
+      "bytes": 200757,
+      "sha256": "5ad92658a1d686eea58385697d404d223f6afa27c2113da43a0cd013473b23ee"
+    },
+    "pdf-002.png": {
+      "bytes": 51445,
+      "sha256": "99713f4f79ca16dc1a69634ef5b70ea7617ddec4fd56258327b080d08c3bfc01"
+    },
+    "review-002.png": {
+      "bytes": 175178,
+      "sha256": "177409edb363bcc3ef59cbcd3a749a1813626344233197501ee453eecb81a12c"
+    }
+  },
+  "raw_precision": {
+    "page1": 100.0,
+    "page1_unmatched_pixels": 0,
+    "page1_boundary_reconciled_pixels": 0
+  }
+}

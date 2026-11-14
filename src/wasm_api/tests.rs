@@ -1734,7 +1734,7 @@ fn test_empty_document_canvaskit_preflight_api_schema() {
     assert!(parsed["scannedPages"].is_u64());
     assert!(parsed["scannedWorkUnits"].is_u64());
     assert_eq!(parsed["limits"]["maxPages"].as_u64(), Some(128));
-    assert_eq!(parsed["limits"]["maxWorkUnits"].as_u64(), Some(50_000));
+    assert_eq!(parsed["limits"]["maxWorkUnits"].as_u64(), Some(100_000));
     assert_eq!(parsed["limits"]["maxBlockers"].as_u64(), Some(32));
     assert_eq!(
         parsed["limits"]["maxRequiredFontFamilies"].as_u64(),

@@ -183,7 +183,9 @@ impl<'a> TacFlowQuery<'a> {
         table: &crate::model::table::Table,
         fmt: &FormattedParagraph,
     ) -> bool {
-        self.uses_tac_table_flow(table) || self.tac_table_line_index(para, table, fmt) == Some(0)
+        self.uses_tac_table_flow(table)
+            || self.tac_table_line_index(para, table, fmt) == Some(0)
+            || owns_later_stored_line(para, table)
     }
 
     /// HWPX 계보 HWP는 HWP5 CTRL_HEADER를 다시 읽으면서 `table.attr` bit 0을
@@ -200,4 +202,22 @@ impl<'a> TacFlowQuery<'a> {
             table.attr & 0x01 != 0
         }
     }
+}
+
+/// 글자 취급 표가 첫 줄이 아닌 저장 줄을 혼자 소유하는가.
+///
+/// 저장 줄 높이가 표 높이와 위·아래 바깥 여백의 합과 같으면 한/글이 그 표를 글줄 안에
+/// 놓은 증거다. 줄 0 의 같은 증거는 이미 TAC 흐름으로 받으므로, 여러 표가 각자의 줄을
+/// 가진 문단(쪽을 넘겨 vpos 를 되감은 둘째 표 포함)의 뒤 표도 같은 흐름으로 받는다.
+/// 그렇지 않으면 typeset 은 블록 표로 표 높이만 전진하고 layout 은 저장 줄 전체를
+/// 전진해 같은 쪽 뒤 TAC 표의 원점이 갈린다(#8969, 36400485 4쪽).
+fn owns_later_stored_line(para: &Paragraph, table: &crate::model::table::Table) -> bool {
+    para.controls
+        .iter()
+        .position(|control| {
+            matches!(control, crate::model::control::Control::Table(candidate)
+                if std::ptr::eq(candidate.as_ref(), table))
+        })
+        .and_then(|index| crate::renderer::composer::stored_owned_tac_line(para, index))
+        .is_some_and(|(owner, _)| owner > 0)
 }
