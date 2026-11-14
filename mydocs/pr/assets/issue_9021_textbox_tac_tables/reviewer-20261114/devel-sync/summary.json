@@ -1,0 +1,226 @@
+[
+  {
+    "stage": "base",
+    "backend": "native",
+    "document": "issue9021",
+    "pages": 1,
+    "minimum_raw": 61.61
+  },
+  {
+    "stage": "base",
+    "backend": "native",
+    "document": "metadata-empty-footer",
+    "pages": 2,
+    "minimum_raw": 100.0
+  },
+  {
+    "stage": "base",
+    "backend": "native",
+    "document": "metadata-empty-header",
+    "pages": 2,
+    "minimum_raw": 100.0
+  },
+  {
+    "stage": "base",
+    "backend": "native",
+    "document": "metadata-unchanged",
+    "pages": 2,
+    "minimum_raw": 100.0
+  },
+  {
+    "stage": "base",
+    "backend": "native",
+    "document": "nested-tail-margins-hancom",
+    "pages": 2,
+    "minimum_raw": 100.0
+  },
+  {
+    "stage": "base",
+    "backend": "native",
+    "document": "nested-tail-single-line-hancom",
+    "pages": 2,
+    "minimum_raw": 100.0
+  },
+  {
+    "stage": "base",
+    "backend": "native",
+    "document": "nested-tail-two-paragraphs-hancom",
+    "pages": 2,
+    "minimum_raw": 100.0
+  },
+  {
+    "stage": "base",
+    "backend": "native",
+    "document": "pr9042-hancom-saved",
+    "pages": 2,
+    "minimum_raw": 100.0
+  },
+  {
+    "stage": "base",
+    "backend": "wasm",
+    "document": "issue9021",
+    "pages": 1,
+    "minimum_raw": 61.61
+  },
+  {
+    "stage": "base",
+    "backend": "wasm",
+    "document": "metadata-empty-footer",
+    "pages": 2,
+    "minimum_raw": 100.0
+  },
+  {
+    "stage": "base",
+    "backend": "wasm",
+    "document": "metadata-empty-header",
+    "pages": 2,
+    "minimum_raw": 100.0
+  },
+  {
+    "stage": "base",
+    "backend": "wasm",
+    "document": "metadata-unchanged",
+    "pages": 2,
+    "minimum_raw": 100.0
+  },
+  {
+    "stage": "base",
+    "backend": "wasm",
+    "document": "nested-tail-margins-hancom",
+    "pages": 2,
+    "minimum_raw": 100.0
+  },
+  {
+    "stage": "base",
+    "backend": "wasm",
+    "document": "nested-tail-single-line-hancom",
+    "pages": 2,
+    "minimum_raw": 100.0
+  },
+  {
+    "stage": "base",
+    "backend": "wasm",
+    "document": "nested-tail-two-paragraphs-hancom",
+    "pages": 2,
+    "minimum_raw": 100.0
+  },
+  {
+    "stage": "base",
+    "backend": "wasm",
+    "document": "pr9042-hancom-saved",
+    "pages": 2,
+    "minimum_raw": 100.0
+  },
+  {
+    "stage": "head",
+    "backend": "native",
+    "document": "issue9021",
+    "pages": 1,
+    "minimum_raw": 100.0
+  },
+  {
+    "stage": "head",
+    "backend": "native",
+    "document": "metadata-empty-footer",
+    "pages": 2,
+    "minimum_raw": 100.0
+  },
+  {
+    "stage": "head",
+    "backend": "native",
+    "document": "metadata-empty-header",
+    "pages": 2,
+    "minimum_raw": 100.0
+  },
+  {
+    "stage": "head",
+    "backend": "native",
+    "document": "metadata-unchanged",
+    "pages": 2,
+    "minimum_raw": 100.0
+  },
+  {
+    "stage": "head",
+    "backend": "native",
+    "document": "nested-tail-margins-hancom",
+    "pages": 2,
+    "minimum_raw": 100.0
+  },
+  {
+    "stage": "head",
+    "backend": "native",
+    "document": "nested-tail-single-line-hancom",
+    "pages": 2,
+    "minimum_raw": 100.0
+  },
+  {
+    "stage": "head",
+    "backend": "native",
+    "document": "nested-tail-two-paragraphs-hancom",
+    "pages": 2,
+    "minimum_raw": 100.0
+  },
+  {
+    "stage": "head",
+    "backend": "native",
+    "document": "pr9042-hancom-saved",
+    "pages": 2,
+    "minimum_raw": 100.0
+  },
+  {
+    "stage": "head",
+    "backend": "wasm",
+    "document": "issue9021",
+    "pages": 1,
+    "minimum_raw": 100.0
+  },
+  {
+    "stage": "head",
+    "backend": "wasm",
+    "document": "metadata-empty-footer",
+    "pages": 2,
+    "minimum_raw": 100.0
+  },
+  {
+    "stage": "head",
+    "backend": "wasm",
+    "document": "metadata-empty-header",
+    "pages": 2,
+    "minimum_raw": 100.0
+  },
+  {
+    "stage": "head",
+    "backend": "wasm",
+    "document": "metadata-unchanged",
+    "pages": 2,
+    "minimum_raw": 100.0
+  },
+  {
+    "stage": "head",
+    "backend": "wasm",
+    "document": "nested-tail-margins-hancom",
+    "pages": 2,
+    "minimum_raw": 100.0
+  },
+  {
+    "stage": "head",
+    "backend": "wasm",
+    "document": "nested-tail-single-line-hancom",
+    "pages": 2,
+    "minimum_raw": 100.0
+  },
+  {
+    "stage": "head",
+    "backend": "wasm",
+    "document": "nested-tail-two-paragraphs-hancom",
+    "pages": 2,
+    "minimum_raw": 100.0
+  },
+  {
+    "stage": "head",
+    "backend": "wasm",
+    "document": "pr9042-hancom-saved",
+    "pages": 2,
+    "minimum_raw": 100.0
+  }
+]

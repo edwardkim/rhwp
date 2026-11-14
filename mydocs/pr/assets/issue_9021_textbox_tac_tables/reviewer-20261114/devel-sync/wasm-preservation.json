@@ -1,0 +1,72 @@
+[
+  {
+    "document": "metadata-empty-footer",
+    "page": "rhwp_001.png",
+    "pixel_identical": true
+  },
+  {
+    "document": "metadata-empty-footer",
+    "page": "rhwp_002.png",
+    "pixel_identical": true
+  },
+  {
+    "document": "metadata-empty-header",
+    "page": "rhwp_001.png",
+    "pixel_identical": true
+  },
+  {
+    "document": "metadata-empty-header",
+    "page": "rhwp_002.png",
+    "pixel_identical": true
+  },
+  {
+    "document": "metadata-unchanged",
+    "page": "rhwp_001.png",
+    "pixel_identical": true
+  },
+  {
+    "document": "metadata-unchanged",
+    "page": "rhwp_002.png",
+    "pixel_identical": true
+  },
+  {
+    "document": "nested-tail-margins-hancom",
+    "page": "rhwp_001.png",
+    "pixel_identical": true
+  },
+  {
+    "document": "nested-tail-margins-hancom",
+    "page": "rhwp_002.png",
+    "pixel_identical": true
+  },
+  {
+    "document": "nested-tail-single-line-hancom",
+    "page": "rhwp_001.png",
+    "pixel_identical": true
+  },
+  {
+    "document": "nested-tail-single-line-hancom",
+    "page": "rhwp_002.png",
+    "pixel_identical": true
+  },
+  {
+    "document": "nested-tail-two-paragraphs-hancom",
+    "page": "rhwp_001.png",
+    "pixel_identical": true
+  },
+  {
+    "document": "nested-tail-two-paragraphs-hancom",
+    "page": "rhwp_002.png",
+    "pixel_identical": true
+  },
+  {
+    "document": "pr9042-hancom-saved",
+    "page": "rhwp_001.png",
+    "pixel_identical": true
+  },
+  {
+    "document": "pr9042-hancom-saved",
+    "page": "rhwp_002.png",
+    "pixel_identical": true
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "source": "dc3d0ff15e6e7cdb39138c72a5466994dea0e0d4",
+  "sha256": {
+    "output/pr-review/9057-sync/base/rhwp": "92711afb7a8678c92529658000861f8962e1021ca451ba844cb026b468354171",
+    "output/pr-review/9057-sync/base/pkg/rhwp_bg.wasm": "ee5b6df0befe778237560d50f9941963ea10ec2019fc79f91f10bc08e265a370",
+    "output/pr-review/9057-sync/base/pkg/rhwp.js": "2d48f8a6c3ff7f848f08725bb54d04094b296af1a40ae61203081a7cf8061a1a",
+    "Cargo.lock": "448b40a5ef01b4a730e21f1bbc31f9a6a617d5ddaa89ab3b7133b5863d0dc551",
+    "scripts/visual_sweep.py": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+    "src/renderer/layout/shape_layout.rs": "afc8da8da519faa674b2b6b36d530edd21b0d6648be0f10b2687f4754f93018d"
+  }
+}

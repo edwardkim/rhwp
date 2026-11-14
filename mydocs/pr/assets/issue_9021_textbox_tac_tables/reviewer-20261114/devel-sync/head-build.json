@@ -1,0 +1,15 @@
+{
+  "head": "52fdce92f65581058e49ff2e9985f32c8478d4bb",
+  "base": "dc3d0ff15e6e7cdb39138c72a5466994dea0e0d4",
+  "native_build_source": "b565d9c54ae36751958e79834471017b35ebd0da",
+  "wasm_build_source": "b565d9c54ae36751958e79834471017b35ebd0da",
+  "runtime_source_equal_to_head": true,
+  "sha256": {
+    "output/pr-review/9057-sync/head/rhwp": "70260a02cc6aa2f54b8d72c032354ed6b6ee84d0a45efa993ddaf38061a8ed03",
+    "output/pr-review/9057-sync/head/pkg/rhwp_bg.wasm": "0c065b7b0f65f2bf3634c39d71232c69298251c5cce5fe827733a0fb275c633d",
+    "output/pr-review/9057-sync/head/pkg/rhwp.js": "2d48f8a6c3ff7f848f08725bb54d04094b296af1a40ae61203081a7cf8061a1a",
+    "Cargo.lock": "448b40a5ef01b4a730e21f1bbc31f9a6a617d5ddaa89ab3b7133b5863d0dc551",
+    "scripts/visual_sweep.py": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+    "src/renderer/layout/shape_layout.rs": "7387d7104376b0804be5fb334dc9ce27664affef4c9ee13dc4155fafc7c66f2a"
+  }
+}

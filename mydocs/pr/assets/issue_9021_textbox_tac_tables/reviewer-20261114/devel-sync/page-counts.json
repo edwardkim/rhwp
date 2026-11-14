@@ -1,0 +1,74 @@
+[
+  {
+    "sample": "samples/issue9021/textbox_tac_tables_two_lines.hwp",
+    "sample_sha256": "e0cd85dad3edbd8d00a4c37c2d3c78bc3912524f9527baac1cab6d23943df959",
+    "pdf": "pdf/issue9021/textbox_tac_tables_two_lines-hwp-2020.pdf",
+    "pdf_sha256": "93b58ab9db87459cb699b1c3da773db0b013fcb4c6122c979881d5a21b07a018",
+    "native_pages": 1,
+    "oracle_pages": 1,
+    "nup": false
+  },
+  {
+    "sample": "samples/pr9042/metadata-empty-footer.hwp",
+    "sample_sha256": "b0e28245015a888ff9a2861a44178e4025c599ada1cc312c936ca842690a2580",
+    "pdf": "pdf/pr9042/metadata-empty-footer-hwp-2020.pdf",
+    "pdf_sha256": "9b960e6334c12be874db6858be1440374d5a8e17deaeba563ceb8309bd10bddd",
+    "native_pages": 2,
+    "oracle_pages": 2,
+    "nup": false
+  },
+  {
+    "sample": "samples/pr9042/metadata-empty-header.hwp",
+    "sample_sha256": "8b93ad8e2b926fd3359105596bff803a81cfb79ba065776e8ef801428330f70b",
+    "pdf": "pdf/pr9042/metadata-empty-header-hwp-2020.pdf",
+    "pdf_sha256": "a8f66beb2d3c08f17ac77194eebc99f571ba2788e42d3e992dc78f535fd5cafd",
+    "native_pages": 2,
+    "oracle_pages": 2,
+    "nup": false
+  },
+  {
+    "sample": "samples/pr9042/metadata-unchanged.hwp",
+    "sample_sha256": "fdd0a3e956378a945021a3cd0b6232d5fd1da9ce85d4da07f4152a8cc9b033b8",
+    "pdf": "pdf/pr9042/metadata-unchanged-hwp-2020.pdf",
+    "pdf_sha256": "51eee68afa0e6edb57c6aca05d9a31bcc5b739a22655e7f9d0ce64f860fb7873",
+    "native_pages": 2,
+    "oracle_pages": 2,
+    "nup": false
+  },
+  {
+    "sample": "samples/pr9042/nested-tail-margins-hancom.hwp",
+    "sample_sha256": "922dbfb0297e15088bec80a5ff1d3c3afc44831271e8062089d0f62c0c2d217b",
+    "pdf": "pdf/pr9042/nested-tail-margins-hancom-hwp-2020.pdf",
+    "pdf_sha256": "88e09257e32a063a1cfb9c145146908d163a3128ba449e82e5e8db9c9f4246fd",
+    "native_pages": 2,
+    "oracle_pages": 2,
+    "nup": false
+  },
+  {
+    "sample": "samples/pr9042/nested-tail-single-line-hancom.hwp",
+    "sample_sha256": "a5ff18b9ea3f0ca6992563c8049fffd9031a82307f636768e17016f5366c80fa",
+    "pdf": "pdf/pr9042/nested-tail-single-line-hancom-hwp-2020.pdf",
+    "pdf_sha256": "e182f8dc4ec1d6abf593c3c83a9902dd76e181b1f525d8fdcb180504666712a6",
+    "native_pages": 2,
+    "oracle_pages": 2,
+    "nup": false
+  },
+  {
+    "sample": "samples/pr9042/nested-tail-two-paragraphs-hancom.hwp",
+    "sample_sha256": "1c301e6f90c22a6b833c3e6ff61ffd49f32706859530b177543dc1d3624e9a89",
+    "pdf": "pdf/pr9042/nested-tail-two-paragraphs-hancom-hwp-2020.pdf",
+    "pdf_sha256": "8f4be9f1dc2a9693eb345df959f22f21f5d76321498c2b64036df3ee58294b1a",
+    "native_pages": 2,
+    "oracle_pages": 2,
+    "nup": false
+  },
+  {
+    "sample": "samples/pr9042/pr9042-hancom-saved.hwp",
+    "sample_sha256": "0e003794aab9c3d49f47a3cb5f08a6c093172a3617b9648185e2b761c66198e6",
+    "pdf": "pdf/pr9042/pr9042-hancom-saved-hwp-2020.pdf",
+    "pdf_sha256": "314175bff547c8d427bdef0a1727f01e397b611838787d9f37dd87dae6c2e4e0",
+    "native_pages": 2,
+    "oracle_pages": 2,
+    "nup": false
+  }
+]

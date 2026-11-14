@@ -65,4 +65,4 @@ cargo nextest run --locked --cargo-profile release-test --features native-skia \
 
 ## 범위
 
-이 기록은 요청된 원본의 oracle 등록 및 독립 Native/fresh WASM 전쪽 검증 증적이다. 원격 push·GitHub review·merge는 수행하지 않았다. 전체 18문서 정본 보호 corpus를 새로 검증한 결과나 최종 PR 승인으로 대체하지 않는다.
+이 기록은 요청된 원본의 oracle 등록 및 독립 Native/fresh WASM 전쪽 검증 증적이다. 최초 기록 작성 시점에는 원격 push·GitHub review·merge를 수행하지 않았다. 이후 원격 반영과 devel 충돌 해결·재검증은 [후속 기록](devel-sync/README.md)에 있다. 전체 18문서 정본 보호 corpus를 새로 검증한 결과나 최종 PR 승인으로 대체하지 않는다.
