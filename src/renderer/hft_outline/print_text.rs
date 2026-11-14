@@ -84,7 +84,12 @@ impl HftOutlineFonts {
             return None;
         }
         let families = crate::renderer::canvas_text_font::family_chain(style);
-        for name in crate::renderer::internal_font_family_members(&families) {
+        // Canvas와 coverage 선택에 전달한 CSS 체인이다. 내부의 비인용
+        // 목록 분리기를 쓰면 따옴표·이스케이프가 실제 family 이름에 남는다.
+        for name in svgtypes::parse_font_families(&families).ok()? {
+            let svgtypes::FontFamily::Named(name) = name else {
+                return None;
+            };
             let family = name.to_lowercase();
             if let Some(primary) = self.print_primaries.get(&family) {
                 // 실제 FontFace의 공통 unicode-range가 제외한 빈 기호는

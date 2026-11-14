@@ -1,5 +1,5 @@
 // 관계형: 실제 FontFace 주 프로그램의 Print 기하·후보 소유·Screen 보존을 검사한다.
-// 주석 갱신: 2026-11-15 KST. 공개 MIT 합성 글꼴만 공급하며 실물 px 핀·시스템 글꼴을 요구하지 않는다.
+// 주석 갱신: 2026-11-15 05:42:03 KST. 공개 OFL TTF·MIT CFF 자원만 공급하며 실물 px 핀·시스템 글꼴을 요구하지 않는다.
 // 실물 보정 근거: mydocs/pr/assets/issue_9060/print-primary-glyph-geometry-analysis.md.
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';

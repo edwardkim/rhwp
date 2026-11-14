@@ -74,3 +74,16 @@ Canvas의 제한이 같은 프로그램의 공통 `getFontSymbolUnicodeRange` �
 제외된 기호를 다시 cmap 소유로 되돌리지 않는다. 임의의 다른 제한 범위는 계속 등록하지
 않는다. 같은 프로그램 검사·descriptor 순서·수명 경계를 확인한 [Studio 집중 13건](print-primary-stage/shared-range-studio-unit.txt)과
 [TypeScript 검사](print-primary-stage/shared-range-typecheck.txt)가 통과했다. 최적화 제품의 실물 재검증은 별도 수행한다.
+
+
+### 실제 CSS 사다리의 이름 해소
+
+최초 최적화 package에서 기존 21개 브라우저 계약은 통과했으나 새 주 프로그램·완전 CFF 결측
+두 반례는 그대로 실패했다. 실제 `fillText` descriptor를 수집해, 따옴표가 포함된 CSS 사다리를
+내부 비인용 목록 분리기로 읽어 적재 family를 찾지 못함을 확인했다. API 등록 자체와 조판 트리는
+정상이었고 실제 윤곽 소비가 누락됐다. 테스트 기대값을 완화하지 않는다.
+
+기존 `text_font_coverage::select`가 사용하는 `svgtypes::parse_font_families`로 같은 CSS 이름·
+이스케이프를 해소한다. 미확인 generic과 앞 family를 건너뛰지 않는 소유 조건은 그대로 유지한다.
+이 보정은 wasm32 전용 Print 공급 경로에 한정한다. 최적화 빌드와 실제 브라우저·전쪽 결과는
+새 package에서 다시 확인한다. [최초 최적화 반례](print-primary-stage/css-chain-before-browser.txt).
