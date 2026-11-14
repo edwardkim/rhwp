@@ -2,6 +2,9 @@
   {
     "pr": 8976,
     "key": "owned-tac",
+    "validated_runtime_commit": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+    "producer_parent": "afb3f17c38b2bafec62c1dad16398720552ab958",
+    "producer_patch_sha256": "f057d1de909822f25bc09e689f41679556059e50013a1e4e0630b59ca0162d84",
     "inputs": {
       "input": {
         "path": "samples/issue8969/36400485-owned-tac-lines.hwpx",
@@ -17,13 +20,15 @@
     "dpi": 96,
     "compat": "2022",
     "profile": "print",
-    "font_supply": "normal installed fonts plus canonical webfont supply; no minimal-font regression sandbox",
+    "font_supply": "normal installed fonts; original approved environments for protected documents",
     "outputs": {
       "native": {
         "pages": 11,
         "minimum_raw": 95.63889,
-        "producer_source": "836615963eedfac9170d45c15cbba32d23e1b4d0",
-        "native_binary_sha256": "8993fd1c22c17d19cda0aae59378ad9b47215fef933e042c67828e66326a1f68",
+        "producer_source": "afb3f17c38b2bafec62c1dad16398720552ab958",
+        "producer_patch_sha256": "f057d1de909822f25bc09e689f41679556059e50013a1e4e0630b59ca0162d84",
+        "validated_runtime_commit": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+        "native_binary_sha256": "9110f28a5ba71f2ff524c2d96bb37f076af5fc3f631202c1f555809e57cc9925",
         "wasm_sha256": null,
         "tsv": "mydocs/pr/assets/planet6897_integration_20261114/claims/owned-tac/native/silhouette.tsv",
         "tsv_sha256": "fe3ae6ba7b852b2223486dcb29fbf7662c08280edfad2601ac40d3a9b1c4db4c",
@@ -144,9 +149,11 @@
       "wasm": {
         "pages": 11,
         "minimum_raw": 95.64295,
-        "producer_source": "836615963eedfac9170d45c15cbba32d23e1b4d0",
-        "native_binary_sha256": "8993fd1c22c17d19cda0aae59378ad9b47215fef933e042c67828e66326a1f68",
-        "wasm_sha256": "5e5847d6aec86158f53a2626af196396c674a963e47b67e3ee7c4411c0480e13",
+        "producer_source": "afb3f17c38b2bafec62c1dad16398720552ab958",
+        "producer_patch_sha256": "f057d1de909822f25bc09e689f41679556059e50013a1e4e0630b59ca0162d84",
+        "validated_runtime_commit": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+        "native_binary_sha256": "9110f28a5ba71f2ff524c2d96bb37f076af5fc3f631202c1f555809e57cc9925",
+        "wasm_sha256": "01161ceb1e4e8ae97c3d20ff63cd74c7fff7f2ed796c963e30298fa0bd20e13c",
         "tsv": "mydocs/pr/assets/planet6897_integration_20261114/claims/owned-tac/wasm/silhouette.tsv",
         "tsv_sha256": "d11c569fd48262131afc592f85804527eb492b6f80d81986b5e5e15cba9fdd34",
         "tsv_bytes": 324,
@@ -268,6 +275,9 @@
   {
     "pr": 9064,
     "key": "ws-host",
+    "validated_runtime_commit": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+    "producer_parent": "afb3f17c38b2bafec62c1dad16398720552ab958",
+    "producer_patch_sha256": "f057d1de909822f25bc09e689f41679556059e50013a1e4e0630b59ca0162d84",
     "inputs": {
       "input": {
         "path": "samples/issue9062/ws-host-tac-above-offset-float.hwpx",
@@ -283,13 +293,15 @@
     "dpi": 96,
     "compat": "2022",
     "profile": "print",
-    "font_supply": "normal installed fonts plus canonical webfont supply; no minimal-font regression sandbox",
+    "font_supply": "normal installed fonts; original approved environments for protected documents",
     "outputs": {
       "native": {
         "pages": 2,
         "minimum_raw": 100.0,
-        "producer_source": "836615963eedfac9170d45c15cbba32d23e1b4d0",
-        "native_binary_sha256": "8993fd1c22c17d19cda0aae59378ad9b47215fef933e042c67828e66326a1f68",
+        "producer_source": "afb3f17c38b2bafec62c1dad16398720552ab958",
+        "producer_patch_sha256": "f057d1de909822f25bc09e689f41679556059e50013a1e4e0630b59ca0162d84",
+        "validated_runtime_commit": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+        "native_binary_sha256": "9110f28a5ba71f2ff524c2d96bb37f076af5fc3f631202c1f555809e57cc9925",
         "wasm_sha256": null,
         "tsv": "mydocs/pr/assets/planet6897_integration_20261114/claims/ws-host/native/silhouette.tsv",
         "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
@@ -320,9 +332,11 @@
       "wasm": {
         "pages": 2,
         "minimum_raw": 100.0,
-        "producer_source": "836615963eedfac9170d45c15cbba32d23e1b4d0",
-        "native_binary_sha256": "8993fd1c22c17d19cda0aae59378ad9b47215fef933e042c67828e66326a1f68",
-        "wasm_sha256": "5e5847d6aec86158f53a2626af196396c674a963e47b67e3ee7c4411c0480e13",
+        "producer_source": "afb3f17c38b2bafec62c1dad16398720552ab958",
+        "producer_patch_sha256": "f057d1de909822f25bc09e689f41679556059e50013a1e4e0630b59ca0162d84",
+        "validated_runtime_commit": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+        "native_binary_sha256": "9110f28a5ba71f2ff524c2d96bb37f076af5fc3f631202c1f555809e57cc9925",
+        "wasm_sha256": "01161ceb1e4e8ae97c3d20ff63cd74c7fff7f2ed796c963e30298fa0bd20e13c",
         "tsv": "mydocs/pr/assets/planet6897_integration_20261114/claims/ws-host/wasm/silhouette.tsv",
         "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
         "tsv_bytes": 152,
@@ -354,6 +368,9 @@
   {
     "pr": 9065,
     "key": "page-band",
+    "validated_runtime_commit": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+    "producer_parent": "afb3f17c38b2bafec62c1dad16398720552ab958",
+    "producer_patch_sha256": "f057d1de909822f25bc09e689f41679556059e50013a1e4e0630b59ca0162d84",
     "inputs": {
       "input": {
         "path": "samples/issue9055/36400525-page-band-empty-host-line.hwpx",
@@ -369,13 +386,15 @@
     "dpi": 96,
     "compat": "2022",
     "profile": "print",
-    "font_supply": "normal installed fonts plus canonical webfont supply; no minimal-font regression sandbox",
+    "font_supply": "normal installed fonts; original approved environments for protected documents",
     "outputs": {
       "native": {
         "pages": 4,
         "minimum_raw": 95.97412,
-        "producer_source": "836615963eedfac9170d45c15cbba32d23e1b4d0",
-        "native_binary_sha256": "8993fd1c22c17d19cda0aae59378ad9b47215fef933e042c67828e66326a1f68",
+        "producer_source": "afb3f17c38b2bafec62c1dad16398720552ab958",
+        "producer_patch_sha256": "f057d1de909822f25bc09e689f41679556059e50013a1e4e0630b59ca0162d84",
+        "validated_runtime_commit": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+        "native_binary_sha256": "9110f28a5ba71f2ff524c2d96bb37f076af5fc3f631202c1f555809e57cc9925",
         "wasm_sha256": null,
         "tsv": "mydocs/pr/assets/planet6897_integration_20261114/claims/page-band/native/silhouette.tsv",
         "tsv_sha256": "3872da7a7dc5143dbdf2e977cf41dd386cff3e92190b5fd1cc2b4cc4ef68b57b",
@@ -426,9 +445,11 @@
       "wasm": {
         "pages": 4,
         "minimum_raw": 96.01502,
-        "producer_source": "836615963eedfac9170d45c15cbba32d23e1b4d0",
-        "native_binary_sha256": "8993fd1c22c17d19cda0aae59378ad9b47215fef933e042c67828e66326a1f68",
-        "wasm_sha256": "5e5847d6aec86158f53a2626af196396c674a963e47b67e3ee7c4411c0480e13",
+        "producer_source": "afb3f17c38b2bafec62c1dad16398720552ab958",
+        "producer_patch_sha256": "f057d1de909822f25bc09e689f41679556059e50013a1e4e0630b59ca0162d84",
+        "validated_runtime_commit": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+        "native_binary_sha256": "9110f28a5ba71f2ff524c2d96bb37f076af5fc3f631202c1f555809e57cc9925",
+        "wasm_sha256": "01161ceb1e4e8ae97c3d20ff63cd74c7fff7f2ed796c963e30298fa0bd20e13c",
         "tsv": "mydocs/pr/assets/planet6897_integration_20261114/claims/page-band/wasm/silhouette.tsv",
         "tsv_sha256": "72933cf591caa101bab6e660fd514a8e7fd44d455cfd5c41bcad447d152ede2c",
         "tsv_bytes": 184,
@@ -480,6 +501,9 @@
   {
     "pr": 9067,
     "key": "title-mark",
+    "validated_runtime_commit": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+    "producer_parent": "afb3f17c38b2bafec62c1dad16398720552ab958",
+    "producer_patch_sha256": "f057d1de909822f25bc09e689f41679556059e50013a1e4e0630b59ca0162d84",
     "inputs": {
       "input": {
         "path": "samples/issue9016/1730000-title-mark-empty-stream.hwp",
@@ -495,13 +519,15 @@
     "dpi": 96,
     "compat": "2022",
     "profile": "print",
-    "font_supply": "normal installed fonts plus canonical webfont supply; no minimal-font regression sandbox",
+    "font_supply": "normal installed fonts; original approved environments for protected documents",
     "outputs": {
       "native": {
         "pages": 10,
         "minimum_raw": 94.38083,
-        "producer_source": "836615963eedfac9170d45c15cbba32d23e1b4d0",
-        "native_binary_sha256": "8993fd1c22c17d19cda0aae59378ad9b47215fef933e042c67828e66326a1f68",
+        "producer_source": "afb3f17c38b2bafec62c1dad16398720552ab958",
+        "producer_patch_sha256": "f057d1de909822f25bc09e689f41679556059e50013a1e4e0630b59ca0162d84",
+        "validated_runtime_commit": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+        "native_binary_sha256": "9110f28a5ba71f2ff524c2d96bb37f076af5fc3f631202c1f555809e57cc9925",
         "wasm_sha256": null,
         "tsv": "mydocs/pr/assets/planet6897_integration_20261114/claims/title-mark/native/silhouette.tsv",
         "tsv_sha256": "a5b9f686d4f90405f53e8d718abf5875de4329e12c7a1d7113e01ab33972d739",
@@ -612,9 +638,11 @@
       "wasm": {
         "pages": 10,
         "minimum_raw": 94.48671,
-        "producer_source": "836615963eedfac9170d45c15cbba32d23e1b4d0",
-        "native_binary_sha256": "8993fd1c22c17d19cda0aae59378ad9b47215fef933e042c67828e66326a1f68",
-        "wasm_sha256": "5e5847d6aec86158f53a2626af196396c674a963e47b67e3ee7c4411c0480e13",
+        "producer_source": "afb3f17c38b2bafec62c1dad16398720552ab958",
+        "producer_patch_sha256": "f057d1de909822f25bc09e689f41679556059e50013a1e4e0630b59ca0162d84",
+        "validated_runtime_commit": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+        "native_binary_sha256": "9110f28a5ba71f2ff524c2d96bb37f076af5fc3f631202c1f555809e57cc9925",
+        "wasm_sha256": "01161ceb1e4e8ae97c3d20ff63cd74c7fff7f2ed796c963e30298fa0bd20e13c",
         "tsv": "mydocs/pr/assets/planet6897_integration_20261114/claims/title-mark/wasm/silhouette.tsv",
         "tsv_sha256": "0facf06829e7f6581387f4b5c8d5080dadc6423976f9e8e200129141a2a475ee",
         "tsv_bytes": 305,
@@ -726,6 +754,9 @@
   {
     "pr": 9068,
     "key": "repeated",
+    "validated_runtime_commit": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+    "producer_parent": "afb3f17c38b2bafec62c1dad16398720552ab958",
+    "producer_patch_sha256": "f057d1de909822f25bc09e689f41679556059e50013a1e4e0630b59ca0162d84",
     "inputs": {
       "input": {
         "path": "samples/issue9026/press_release_repeated_hidden_end.hwpx",
@@ -741,13 +772,15 @@
     "dpi": 96,
     "compat": "2022",
     "profile": "print",
-    "font_supply": "normal installed fonts plus canonical webfont supply; no minimal-font regression sandbox",
+    "font_supply": "normal installed fonts; original approved environments for protected documents",
     "outputs": {
       "native": {
         "pages": 5,
         "minimum_raw": 99.79582,
-        "producer_source": "836615963eedfac9170d45c15cbba32d23e1b4d0",
-        "native_binary_sha256": "8993fd1c22c17d19cda0aae59378ad9b47215fef933e042c67828e66326a1f68",
+        "producer_source": "afb3f17c38b2bafec62c1dad16398720552ab958",
+        "producer_patch_sha256": "f057d1de909822f25bc09e689f41679556059e50013a1e4e0630b59ca0162d84",
+        "validated_runtime_commit": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+        "native_binary_sha256": "9110f28a5ba71f2ff524c2d96bb37f076af5fc3f631202c1f555809e57cc9925",
         "wasm_sha256": null,
         "tsv": "mydocs/pr/assets/planet6897_integration_20261114/claims/repeated/native/silhouette.tsv",
         "tsv_sha256": "e805e7bce1fdbe65c9146b0896598151b4e13881e273c4a8c67f856a7377234a",
@@ -808,9 +841,11 @@
       "wasm": {
         "pages": 5,
         "minimum_raw": 99.79577,
-        "producer_source": "836615963eedfac9170d45c15cbba32d23e1b4d0",
-        "native_binary_sha256": "8993fd1c22c17d19cda0aae59378ad9b47215fef933e042c67828e66326a1f68",
-        "wasm_sha256": "5e5847d6aec86158f53a2626af196396c674a963e47b67e3ee7c4411c0480e13",
+        "producer_source": "afb3f17c38b2bafec62c1dad16398720552ab958",
+        "producer_patch_sha256": "f057d1de909822f25bc09e689f41679556059e50013a1e4e0630b59ca0162d84",
+        "validated_runtime_commit": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+        "native_binary_sha256": "9110f28a5ba71f2ff524c2d96bb37f076af5fc3f631202c1f555809e57cc9925",
+        "wasm_sha256": "01161ceb1e4e8ae97c3d20ff63cd74c7fff7f2ed796c963e30298fa0bd20e13c",
         "tsv": "mydocs/pr/assets/planet6897_integration_20261114/claims/repeated/wasm/silhouette.tsv",
         "tsv_sha256": "e805e7bce1fdbe65c9146b0896598151b4e13881e273c4a8c67f856a7377234a",
         "tsv_bytes": 210,
@@ -872,6 +907,9 @@
   {
     "pr": 9068,
     "key": "orphan",
+    "validated_runtime_commit": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+    "producer_parent": "afb3f17c38b2bafec62c1dad16398720552ab958",
+    "producer_patch_sha256": "f057d1de909822f25bc09e689f41679556059e50013a1e4e0630b59ca0162d84",
     "inputs": {
       "input": {
         "path": "samples/issue9026/press_release_orphan_hidden_end.hwpx",
@@ -887,13 +925,15 @@
     "dpi": 96,
     "compat": "2022",
     "profile": "print",
-    "font_supply": "normal installed fonts plus canonical webfont supply; no minimal-font regression sandbox",
+    "font_supply": "normal installed fonts; original approved environments for protected documents",
     "outputs": {
       "native": {
         "pages": 8,
         "minimum_raw": 95.42298,
-        "producer_source": "836615963eedfac9170d45c15cbba32d23e1b4d0",
-        "native_binary_sha256": "8993fd1c22c17d19cda0aae59378ad9b47215fef933e042c67828e66326a1f68",
+        "producer_source": "afb3f17c38b2bafec62c1dad16398720552ab958",
+        "producer_patch_sha256": "f057d1de909822f25bc09e689f41679556059e50013a1e4e0630b59ca0162d84",
+        "validated_runtime_commit": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+        "native_binary_sha256": "9110f28a5ba71f2ff524c2d96bb37f076af5fc3f631202c1f555809e57cc9925",
         "wasm_sha256": null,
         "tsv": "mydocs/pr/assets/planet6897_integration_20261114/claims/orphan/native/silhouette.tsv",
         "tsv_sha256": "21712adbd6f0a5d43517dd674d6d5f6d266aea4d9929b7e5660cf4982d03f0ad",
@@ -984,9 +1024,11 @@
       "wasm": {
         "pages": 8,
         "minimum_raw": 95.42139,
-        "producer_source": "836615963eedfac9170d45c15cbba32d23e1b4d0",
-        "native_binary_sha256": "8993fd1c22c17d19cda0aae59378ad9b47215fef933e042c67828e66326a1f68",
-        "wasm_sha256": "5e5847d6aec86158f53a2626af196396c674a963e47b67e3ee7c4411c0480e13",
+        "producer_source": "afb3f17c38b2bafec62c1dad16398720552ab958",
+        "producer_patch_sha256": "f057d1de909822f25bc09e689f41679556059e50013a1e4e0630b59ca0162d84",
+        "validated_runtime_commit": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+        "native_binary_sha256": "9110f28a5ba71f2ff524c2d96bb37f076af5fc3f631202c1f555809e57cc9925",
+        "wasm_sha256": "01161ceb1e4e8ae97c3d20ff63cd74c7fff7f2ed796c963e30298fa0bd20e13c",
         "tsv": "mydocs/pr/assets/planet6897_integration_20261114/claims/orphan/wasm/silhouette.tsv",
         "tsv_sha256": "e166327d7480b3d030122387fe89ebe2678e7116f04d861343beda5d6b48ed03",
         "tsv_bytes": 264,

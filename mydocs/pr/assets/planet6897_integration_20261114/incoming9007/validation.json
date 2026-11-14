@@ -1,0 +1,148 @@
+[
+  {
+    "pr": 9007,
+    "key": "inherited-pattern-hwp",
+    "validated_runtime_commit": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+    "producer_parent": "afb3f17c38b2bafec62c1dad16398720552ab958",
+    "producer_patch_sha256": "f057d1de909822f25bc09e689f41679556059e50013a1e4e0630b59ca0162d84",
+    "inputs": {
+      "input": {
+        "path": "samples/issue8978/fill-patterns-0-6.hwp",
+        "sha256": "26062124ea6184245e967b0dbba5a2ee129a076188a0a1d8e6ff65ece5321b2b",
+        "bytes": 13312
+      },
+      "pdf": {
+        "path": "pdf/issue8978/fill-patterns-0-6-2024.pdf",
+        "sha256": "be829f0f4647f895ca9e293bad8c36ad2ea95c14442dfe8cfe4fa86d2bb68ee3",
+        "bytes": 65335
+      }
+    },
+    "dpi": 96,
+    "compat": "2024",
+    "profile": "print",
+    "font_supply": "normal installed fonts; original approved environments for protected documents",
+    "outputs": {
+      "native": {
+        "pages": 1,
+        "minimum_raw": 99.96608,
+        "producer_source": "afb3f17c38b2bafec62c1dad16398720552ab958",
+        "producer_patch_sha256": "f057d1de909822f25bc09e689f41679556059e50013a1e4e0630b59ca0162d84",
+        "validated_runtime_commit": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+        "native_binary_sha256": "9110f28a5ba71f2ff524c2d96bb37f076af5fc3f631202c1f555809e57cc9925",
+        "wasm_sha256": null,
+        "tsv": "mydocs/pr/assets/planet6897_integration_20261114/incoming9007/inherited-pattern-hwp/native/silhouette.tsv",
+        "tsv_sha256": "561d4d47f78b0b8ae70ad6ec8d29c3a170ad0b344a57e00d42aeefb8a4787c99",
+        "tsv_bytes": 130,
+        "per_page": [
+          {
+            "page": 1,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 99.96608,
+            "silhouette_raw_unmatched_pixels": 8,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 23587,
+            "tolerant_content_match_percent": 99.96608
+          }
+        ]
+      },
+      "wasm": {
+        "pages": 1,
+        "minimum_raw": 99.98795,
+        "producer_source": "afb3f17c38b2bafec62c1dad16398720552ab958",
+        "producer_patch_sha256": "f057d1de909822f25bc09e689f41679556059e50013a1e4e0630b59ca0162d84",
+        "validated_runtime_commit": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+        "native_binary_sha256": "9110f28a5ba71f2ff524c2d96bb37f076af5fc3f631202c1f555809e57cc9925",
+        "wasm_sha256": "01161ceb1e4e8ae97c3d20ff63cd74c7fff7f2ed796c963e30298fa0bd20e13c",
+        "tsv": "mydocs/pr/assets/planet6897_integration_20261114/incoming9007/inherited-pattern-hwp/wasm/silhouette.tsv",
+        "tsv_sha256": "986a0b62cd22d43909fa3bca1257b95a11d7985707fa83f124d2703da8f149fb",
+        "tsv_bytes": 130,
+        "per_page": [
+          {
+            "page": 1,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 99.98795,
+            "silhouette_raw_unmatched_pixels": 3,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 24902,
+            "tolerant_content_match_percent": 99.98795
+          }
+        ]
+      }
+    }
+  },
+  {
+    "pr": 9007,
+    "key": "inherited-pattern-hwpx",
+    "validated_runtime_commit": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+    "producer_parent": "afb3f17c38b2bafec62c1dad16398720552ab958",
+    "producer_patch_sha256": "f057d1de909822f25bc09e689f41679556059e50013a1e4e0630b59ca0162d84",
+    "inputs": {
+      "input": {
+        "path": "samples/issue8978/fill-patterns-0-6.hancom2024.hwpx",
+        "sha256": "4733e537608f22f6c9b6a144f97830baae998705bd610d0338807cf668075429",
+        "bytes": 18072
+      },
+      "pdf": {
+        "path": "pdf/issue8978/fill-patterns-0-6.hancom2024-hwpx-2024.pdf",
+        "sha256": "0493000b0572a3f1de68d694fc52181d74397aadeaaa2cdad014d2be8ea288f1",
+        "bytes": 65344
+      }
+    },
+    "dpi": 96,
+    "compat": "2024",
+    "profile": "print",
+    "font_supply": "normal installed fonts; original approved environments for protected documents",
+    "outputs": {
+      "native": {
+        "pages": 1,
+        "minimum_raw": 99.96608,
+        "producer_source": "afb3f17c38b2bafec62c1dad16398720552ab958",
+        "producer_patch_sha256": "f057d1de909822f25bc09e689f41679556059e50013a1e4e0630b59ca0162d84",
+        "validated_runtime_commit": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+        "native_binary_sha256": "9110f28a5ba71f2ff524c2d96bb37f076af5fc3f631202c1f555809e57cc9925",
+        "wasm_sha256": null,
+        "tsv": "mydocs/pr/assets/planet6897_integration_20261114/incoming9007/inherited-pattern-hwpx/native/silhouette.tsv",
+        "tsv_sha256": "561d4d47f78b0b8ae70ad6ec8d29c3a170ad0b344a57e00d42aeefb8a4787c99",
+        "tsv_bytes": 130,
+        "per_page": [
+          {
+            "page": 1,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 99.96608,
+            "silhouette_raw_unmatched_pixels": 8,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 23587,
+            "tolerant_content_match_percent": 99.96608
+          }
+        ]
+      },
+      "wasm": {
+        "pages": 1,
+        "minimum_raw": 99.98795,
+        "producer_source": "afb3f17c38b2bafec62c1dad16398720552ab958",
+        "producer_patch_sha256": "f057d1de909822f25bc09e689f41679556059e50013a1e4e0630b59ca0162d84",
+        "validated_runtime_commit": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+        "native_binary_sha256": "9110f28a5ba71f2ff524c2d96bb37f076af5fc3f631202c1f555809e57cc9925",
+        "wasm_sha256": "01161ceb1e4e8ae97c3d20ff63cd74c7fff7f2ed796c963e30298fa0bd20e13c",
+        "tsv": "mydocs/pr/assets/planet6897_integration_20261114/incoming9007/inherited-pattern-hwpx/wasm/silhouette.tsv",
+        "tsv_sha256": "986a0b62cd22d43909fa3bca1257b95a11d7985707fa83f124d2703da8f149fb",
+        "tsv_bytes": 130,
+        "per_page": [
+          {
+            "page": 1,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 99.98795,
+            "silhouette_raw_unmatched_pixels": 3,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 24902,
+            "tolerant_content_match_percent": 99.98795
+          }
+        ]
+      }
+    }
+  }
+]

@@ -1,96 +1,120 @@
 {
   "branch": "review/integration-20261114-planet6897-open",
-  "current_base": "a210861488468868b5992231c55b78798e622e98",
-  "code_validation_source": "836615963eedfac9170d45c15cbba32d23e1b4d0",
+  "current_base": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
+  "code_validation_source": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
   "applied": [
     {
       "pr": 8976,
       "source": "6e5c6860363e8bb4940fc00569b123335950f009",
-      "integration": "2dd9ede3f0e8b98382da746db3e476e8f576af92"
+      "integration": "26994818495867853fac2ef9a49b0625732a50bb",
+      "previous_integration": "2dd9ede3f0e8b98382da746db3e476e8f576af92"
     },
     {
       "pr": 8976,
       "source": "e725859e24f9bd0d4631a95ad2d4d37e521193c5",
-      "integration": "48714449f303a70eba523c2b91fdb53eab46ffbb"
+      "integration": "9d1760f6eb5a879a6658f96edcc82afe980c19cf",
+      "previous_integration": "48714449f303a70eba523c2b91fdb53eab46ffbb"
     },
     {
       "pr": 9064,
       "source": "ad794d2cc6a6cd287882d72474d6c1f3e976eb49",
-      "integration": "7868d982eeac927515e3f790b373757f602aaa82"
+      "integration": "8c5ba1df1fc24b7efaeb9624511da2523dde08bb",
+      "previous_integration": "7868d982eeac927515e3f790b373757f602aaa82"
     },
     {
       "pr": 9064,
       "source": "0cc72f29257a566ff5f9d0526ab7de0a7c4bf1d4",
-      "integration": "ec123deca2e510ce927f9156a01f7daf0403fcd0"
+      "integration": "b882d2b4349764730598196efc1861eef6b12dc4",
+      "previous_integration": "ec123deca2e510ce927f9156a01f7daf0403fcd0"
     },
     {
       "pr": 9065,
       "source": "a1a041e5fbba45b126a0a342788a7fdfb995d273",
-      "integration": "908574e3e6008f8cf605379d2d2e94d074604218"
+      "integration": "441b7653f786fa3fad9b308f3e923369cb155241",
+      "previous_integration": "908574e3e6008f8cf605379d2d2e94d074604218"
     },
     {
       "pr": 9065,
       "source": "c4fa5598ba272c405369571f637ee0028b1bc203",
-      "integration": "8e6fad88caa8932007d7dc82042bc9d19b0f58cc"
+      "integration": "d977a70bc55462444b077c067c408542d2ab5767",
+      "previous_integration": "8e6fad88caa8932007d7dc82042bc9d19b0f58cc"
     },
     {
       "pr": 9067,
       "source": "37acaa703b7bee6417b1b05b4aec235ee2913646",
-      "integration": "e7ba944eafd1204f4f9ec7896e8be58097a8d796"
+      "integration": "b7c684b8007fd611a680f5939458f3f4697e3c56",
+      "previous_integration": "e7ba944eafd1204f4f9ec7896e8be58097a8d796"
     },
     {
       "pr": 9067,
       "source": "5397280acda82dca76bc7a69d16003e44d7de446",
-      "integration": "cc38e0e4f8d048c89ea6ca59c3db533ffd3c7a54"
+      "integration": "3c01af76f55ef10a2b02e847382c5ed2ee3b3540",
+      "previous_integration": "cc38e0e4f8d048c89ea6ca59c3db533ffd3c7a54"
     },
     {
       "pr": 9067,
       "source": "475fc73f5eb963b8805c4754635535ddd8f95dfc",
-      "integration": "b8392298426d882a201b8bd712d88fcb390924a2"
+      "integration": "ace6a5a307243f6b341beff13232f77ff8f17125",
+      "previous_integration": "b8392298426d882a201b8bd712d88fcb390924a2"
     },
     {
       "pr": 9067,
       "source": "02ea378e337cc82756f26eb80644448dea848826",
-      "integration": "3010ed79a5936b7400541ffdb2c364f154ff3e16"
+      "integration": "8f7644bd3aee26d999bbc0025d3d64214eb1fd4d",
+      "previous_integration": "3010ed79a5936b7400541ffdb2c364f154ff3e16"
     },
     {
       "pr": 9068,
       "source": "45bd21963d4c865b768daf6124bc62fb3c00a5ad",
-      "integration": "9f2f0cc0448d4653c79b5acff3da8eacdb9eb254"
+      "integration": "6a17861ef2da07623d1cbb2e1f97945e46f72d90",
+      "previous_integration": "9f2f0cc0448d4653c79b5acff3da8eacdb9eb254"
     },
     {
       "pr": 9068,
       "source": "9005beaffd8f392b29da555600c071bf19031635",
-      "integration": "413d5bf94725cb191bb6a4ae0cbc3d323476d203"
+      "integration": "73f4a2012155160e37f88c0d974a195e5e0377f6",
+      "previous_integration": "413d5bf94725cb191bb6a4ae0cbc3d323476d203"
     },
     {
       "pr": 9068,
       "source": "05b15cb6191b1ea824454fee13d2403a258ccf83",
-      "integration": "23d4e032a8f4fc87de2aae89e59282066a76b104"
+      "integration": "520d8edf242184ae4b5c55e58a88ec87e8b768fa",
+      "previous_integration": "23d4e032a8f4fc87de2aae89e59282066a76b104"
     },
     {
       "pr": 9068,
       "source": "3657c2ef58a832aea3404dc9a4c8cdb4b9852ae8",
-      "integration": "f863acd024f7dc56fd60b0f85a4102074a672b87"
+      "integration": "8413afcc1e9a353d99c8ef379eb17a1b08171abf",
+      "previous_integration": "f863acd024f7dc56fd60b0f85a4102074a672b87"
     },
     {
       "pr": 9068,
       "source": "3da35b96822fb58ce4cc249d6ff4829185a17d06",
-      "integration": "0ec93e3ae04102ca63fd255f606dd82f2dba1f1e"
+      "integration": "ec8bbb1f4ea4ad4285d91fade1b80ba65174385f",
+      "previous_integration": "0ec93e3ae04102ca63fd255f606dd82f2dba1f1e"
     }
   ],
   "maintainer_corrections": [
     {
-      "commit": "ccf3199ae0103db9130ceeab0a000e4fe3cf4e38",
-      "title": "fix: 음수 오프셋 중첩 표 host의 글줄 높이 중복 가산 보정"
+      "commit": "1c9a377f1649223ec35feadccdb4c089ecf6f741",
+      "title": "fix: 음수 오프셋 중첩 표 host의 글줄 높이 중복 가산 보정",
+      "previous_commit": "ccf3199ae0103db9130ceeab0a000e4fe3cf4e38"
     },
     {
-      "commit": "32e589da308ad7a145fb78f3998c0196f1550906",
-      "title": "fix: 공백 host의 이어받기 표 뒤 앞 간격 중복 소비 보정"
+      "commit": "61eda6dd9f53a6eb6371950ceca1408fbcd1d0e2",
+      "title": "fix: 공백 host의 이어받기 표 뒤 앞 간격 중복 소비 보정",
+      "previous_commit": "32e589da308ad7a145fb78f3998c0196f1550906"
     },
     {
-      "commit": "836615963eedfac9170d45c15cbba32d23e1b4d0",
-      "title": "fix: 공백 호스트 줄의 종료 글자 높이 보존"
+      "commit": "b37276dee39e15900bc3b56ffe30516585b46ff4",
+      "title": "fix: 공백 호스트 줄의 종료 글자 높이 보존",
+      "previous_commit": "836615963eedfac9170d45c15cbba32d23e1b4d0"
+    },
+    {
+      "commit": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+      "title": "개선: CanvasKit 문서 사전 검사 작업 상한을 10만으로 조정",
+      "authorization": "사용자의 50,000 → 100,000 요청",
+      "validation": "budget100k/validation.json"
     }
   ],
   "excluded": [],
@@ -101,11 +125,14 @@
     "current_verified_green_source_head": "3da35b96822fb58ce4cc249d6ff4829185a17d06"
   },
   "rebase": {
-    "before": "99da76e17283425595f75662e8041baf247bbab8",
-    "base": "a210861488468868b5992231c55b78798e622e98",
-    "after": "8ed9e46a5d12c4765c74fefe4b469faf38c0c8e9",
-    "conflicts": [],
-    "all_26_range_diff_entries_equal": true
+    "before": "2140c579544e72b2986366ebbd4a8232ef155138",
+    "old_base": "a210861488468868b5992231c55b78798e622e98",
+    "new_base": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
+    "after": "afb3f17c38b2bafec62c1dad16398720552ab958",
+    "conflicts": 0,
+    "range_diff_equal_commits": 32,
+    "policy_followup_commit": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+    "source_read_path_audit": "rebase-base-read-path-audit.json"
   },
   "initial_intake_base": "dc3d0ff15e6e7cdb39138c72a5466994dea0e0d4",
   "source_pr_heads": {
@@ -114,5 +141,14 @@
     "9065": "c4fa5598ba272c405369571f637ee0028b1bc203",
     "9067": "02ea378e337cc82756f26eb80644448dea848826",
     "9068": "3da35b96822fb58ce4cc249d6ff4829185a17d06"
-  }
+  },
+  "previous_base": "a210861488468868b5992231c55b78798e622e98",
+  "previous_rebase": {
+    "before": "99da76e17283425595f75662e8041baf247bbab8",
+    "base": "a210861488468868b5992231c55b78798e622e98",
+    "after": "8ed9e46a5d12c4765c74fefe4b469faf38c0c8e9",
+    "conflicts": [],
+    "all_26_range_diff_entries_equal": true
+  },
+  "build_producer": "final-claim-producer.json"
 }

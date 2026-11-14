@@ -9,8 +9,8 @@
     "pdf_pages": 11,
     "base_page_count_mismatch": false,
     "base_scope": "all pages",
-    "candidate_source": "836615963eedfac9170d45c15cbba32d23e1b4d0",
-    "current_base": "a210861488468868b5992231c55b78798e622e98",
+    "candidate_source": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+    "current_base": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
     "base_reuse_evidence": "rebase-base-read-path-audit.json",
     "pages": [
       {
@@ -92,8 +92,8 @@
     "pdf_pages": 11,
     "base_page_count_mismatch": false,
     "base_scope": "all pages",
-    "candidate_source": "836615963eedfac9170d45c15cbba32d23e1b4d0",
-    "current_base": "a210861488468868b5992231c55b78798e622e98",
+    "candidate_source": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+    "current_base": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
     "base_reuse_evidence": "rebase-base-read-path-audit.json",
     "pages": [
       {
@@ -175,8 +175,8 @@
     "pdf_pages": 2,
     "base_page_count_mismatch": true,
     "base_scope": "all common PDF pages; excess source page has no reference and no invented score",
-    "candidate_source": "836615963eedfac9170d45c15cbba32d23e1b4d0",
-    "current_base": "a210861488468868b5992231c55b78798e622e98",
+    "candidate_source": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+    "current_base": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
     "base_reuse_evidence": "rebase-base-read-path-audit.json",
     "pages": [
       {
@@ -205,8 +205,8 @@
     "pdf_pages": 2,
     "base_page_count_mismatch": true,
     "base_scope": "all common PDF pages; excess source page has no reference and no invented score",
-    "candidate_source": "836615963eedfac9170d45c15cbba32d23e1b4d0",
-    "current_base": "a210861488468868b5992231c55b78798e622e98",
+    "candidate_source": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+    "current_base": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
     "base_reuse_evidence": "rebase-base-read-path-audit.json",
     "pages": [
       {
@@ -235,8 +235,8 @@
     "pdf_pages": 4,
     "base_page_count_mismatch": false,
     "base_scope": "all pages",
-    "candidate_source": "836615963eedfac9170d45c15cbba32d23e1b4d0",
-    "current_base": "a210861488468868b5992231c55b78798e622e98",
+    "candidate_source": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+    "current_base": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
     "base_reuse_evidence": "rebase-base-read-path-audit.json",
     "pages": [
       {
@@ -276,8 +276,8 @@
     "pdf_pages": 4,
     "base_page_count_mismatch": false,
     "base_scope": "all pages",
-    "candidate_source": "836615963eedfac9170d45c15cbba32d23e1b4d0",
-    "current_base": "a210861488468868b5992231c55b78798e622e98",
+    "candidate_source": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+    "current_base": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
     "base_reuse_evidence": "rebase-base-read-path-audit.json",
     "pages": [
       {
@@ -317,8 +317,8 @@
     "pdf_pages": 10,
     "base_page_count_mismatch": true,
     "base_scope": "all common PDF pages; excess source page has no reference and no invented score",
-    "candidate_source": "836615963eedfac9170d45c15cbba32d23e1b4d0",
-    "current_base": "a210861488468868b5992231c55b78798e622e98",
+    "candidate_source": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+    "current_base": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
     "base_reuse_evidence": "rebase-base-read-path-audit.json",
     "pages": [
       {
@@ -395,8 +395,8 @@
     "pdf_pages": 10,
     "base_page_count_mismatch": true,
     "base_scope": "all common PDF pages; excess source page has no reference and no invented score",
-    "candidate_source": "836615963eedfac9170d45c15cbba32d23e1b4d0",
-    "current_base": "a210861488468868b5992231c55b78798e622e98",
+    "candidate_source": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+    "current_base": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
     "base_reuse_evidence": "rebase-base-read-path-audit.json",
     "pages": [
       {
