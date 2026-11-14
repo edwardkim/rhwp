@@ -1,0 +1,23 @@
+{
+  "source": "tests/fixtures/issue7727/stored-right-tab-independent-probe.hwpx",
+  "normalized": "output/pr-review/issues-7727-7732-20261114/stored-right-tab-repair/edited-small-current/canonical-prefix-control.hwpx",
+  "source_sha256": "0110fdfcdeaafe07c78e348c05e9f2263c67c6b798b224e26b36ba8fb70bd66d",
+  "normalized_sha256": "f90c57b4b41d6e89a5fe64d6d8c5ebfe8997677b12faeb7b80dd089be19dfaaf",
+  "changed": "header.xml namespace prefix aliases only; expanded names, attributes, texts, tails all identical",
+  "failed_output": "edited-2.hwpx",
+  "error": "Namespace prefix ns0 on paraHead is not defined",
+  "confirmed_code": "src/serializer/hwpx/header.rs raw_para_heads splice preserves original alias without its inherited declaration",
+  "tab_width_zero_direct_xml_Print_job": "9c4e9762-2f14-4613-979f-56db9b479438",
+  "tab_width_zero_direct_xml_Print": "succeeded; 12seconds",
+  "product_namespace_fix": false,
+  "raw_numbering_splice_unchanged_from_base": true,
+  "current_five_originals_are": "HWP 입력 5종; 정본 HWP 원본·Print 기준은 바꾸지 않음",
+  "normal_prefix_export_print": {
+    "job_id": "7a2bc452-42a6-4f4d-be21-4a233768366a",
+    "engine": "2020",
+    "status": "succeeded",
+    "elapsed_seconds": 12
+  },
+  "hwp_after_prefix_change": "모든 CFB 스트림과 전체 파일 SHA가 정리 전후 동일",
+  "qualified_scope": "표준 접두사를 가진 독립 소형 표본에서 실제 텍스트 편집·두 번 저장·한컴 Print. 임의 namespace 별칭 보존의 일반 수정을 주장하지 않음"
+}

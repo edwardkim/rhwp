@@ -718,6 +718,67 @@ OS 기본 AppleSDGothicNeo의 한글 glyph는 사용 가능했다.
 실제로 계산한 full pagination을 유지하고 잘못된 재사용을 하지 않는다. 이 기록을
 페이지별 Print 대조의 통과로 바꾸어 쓰지 않는다. 새 전체 게이트를 이어 진행한다.
 
+## 2026-11-15 04:43 KST — Undo 경계 보정 후 전체 회귀 완료
+
+제품 소스 `1123f322a65cd8eaa414a8f32c3e2b99462bbda0`의 Mac 최소 글꼴 전체 회귀는
+**13,565 실행 / 13,565 PASS / 0 FAIL / 45 skip**이다. 테스트 333.989초,
+컴파일을 포함한 명령 710.630초다. 이전 실패한 본문·셀 계열 Undo 검사는 기대값을
+유지한 채 통과했다. fmt·Native/WASM Clippy·workspace build·all-target Clippy·suite
+manifest·unit tier·Native Skia 라이브러리·placeholder·직접 PDF 검사도 모두 exit 0이다.
+
+같은 소스의 Native 전 389쪽은 모두 98% 이상이다. CBTA 최저 98.13%(58쪽),
+권고안 98.69%(7쪽), 시험지 99.49%(3쪽), API 99.55%(97쪽), 각주 98.75%(37쪽)다.
+직전 `fe8425e66d`와 현재 Native raw PNG 389개 및 페이지별 점수는 모두 같다.
+수정은 실제 입력과 복원 경계를 구분하며 원본의 수용된 저장 배치를 바꾸지 않았다.
+
+고정 base `53da4d2d`의 동일 조건 Native 전 389쪽과 비교해29쪽 상승·3쪽 하락이다.
+CBTA 3쪽 99.42→99.41%, 4쪽 98.31→98.26%, 5쪽 99.34→99.28%이며 최대 하락 0.06%p다.
+이 세 쪽의 base/후보 review·overlay 여섯 쌍을 직접 판독했다. 목차 문구·순서·쪽번호·줄
+소속은 유지됐고 새 누락·중복·넘침은 관측하지 않았다. 이 결과는 일반 2%p 하락 문턱
+대조이며 특별 보호 TSV의 하락 금지 검증을 대신하지 않는다.
+
+fresh WASM은 저장소 루트 `pkg`에 `--target web --no-opt`로 새로 빌드했고,
+빌드 4분 56초·root/Studio 공개 JS·WASM 해시 일치를 확인했다. 현재 전 389쪽 WASM과
+이후 정본 보호 36조건·실제 소비 90건·고정 base WASM 대조를 순서대로 진행 중이다.
+과거 source의 결과를 이 소스의 보호·소비 완료로 사용하지 않는다.
+
+보정 전 전체 CBTA 편집 진단 사본 2개는 MCP의 문서 열기 단계에서 각각 1800초
+시간 초과했고 PDF는 생성되지 않았다. 이 결과는 실패로 보존하며 원본 독립 Print를
+대체하지 않는다. 현재 소스의 공개 편집 API로 별도의 작은 표본을 편집·2회 저장한
+HWP/HWPX의 독립 Print를 요청했다. 아직 성공·시각 일치로 판정하지 않는다.
+
+실행 기록: `output/pr-review/issues-7727-7732-20261114/`의
+`stored-tab-owned-final-rust-gates/state.json`, `stored-tab-owned-final/native-fixed-base-comparison.json`,
+`stored-tab-owned-final/native-decline-review/reading.json`, `stored-tab-owned-final/state.json`.
+
+## 2026-11-15 05:04 KST — 소형 편집 저장본의 독립 Print와 namespace 분리
+
+현재 fresh WASM `1123f322a6`에서 작은 독립 탭 표본의 첫 문단에 `x`를 입력하고,
+HWP/HWPX 각각 두 번 저장·다시 열었다. HWP Print는 MCP job
+`cdcdae80-619b-4296-b43a-0a121f00faaa`에서 성공했다. 처음 생성한 HWPX는
+`HANCOM_DOCUMENT_OPEN_REJECTED`로 거절됐으므로 같은 파일을 재시도하거나 보안 설정을
+낮추지 않았다. 이 실패와 PDF 0바이트 기록을 보존했다.
+
+파일을 직접 검사하니 `header.xml`의 번호 정의에 선언되지 않은 `ns0:paraHead`가 있었다.
+원본 표본에서 쓴 namespace 별칭이 raw numbering splice에서 선언 없이 재사용된 결과다.
+이 splice는 고정 base에도 존재하는 `3f564107368`의 기존 경로이며 이번 탭 수정으로
+추가하지 않았다. 원본 XML에서 글자와 RIGHT 폭만0으로 직접 바꾼 대조군은 독립 Print
+job `9c4e9762-2f14-4613-979f-56db9b479438`에서 성공했다. 따라서 이 거절을 폭 0 자체의
+한컴 형식 위반으로 해석하지 않는다. 기존 실패 원본과 정상 대조군을 혼합하지 않는다.
+
+별칭만 표준 `hh/hc/hp`로 정리한 별도 표본에서 XML expanded name·속성·text·tail의
+완전 동일성을 확인했다. 이 입력을 실제로 편집·두 번 저장한 HWPX는 모든 XML이 정상이며
+job `7a2bc452-42a6-4f4d-be21-4a233768366a`에서 한컴 2020 `11.0.0.9136` Print에 성공했다.
+HWP는 별칭 정리 전후의 모든 CFB 스트림뿐 아니라 전체 파일 SHA도 동일하다.
+두 독립 Print는 1쪽, 본문 `xABC 10 / ABC 10 / ABC 10`과96DPI PDF 픽셀이 같다.
+
+Print의 숫자 문자 원점은 세 줄 모두324.46415 CSSpx이며 rhwp 문자 배치 JSON은
+324.7 CSSpx다. 차이 0.23585 CSSpx를 기록했다. 이는 독립 원점 측정이며 아직 실제
+Native/fresh WASM 래스터와의 시각 대조 완료를 뜻하지 않는다. 기존763쪽 보호 문서와
+캡처8개 한도를 공유하므로 대기 중 비교가 끝난 뒤 소형 표본을 순차 출력한다.
+임의 namespace 별칭을 가진 HWPX의 일반 무손실 재저장까지 해결했다고 주장하지 않는다.
+이번 다섯 원본은 HWP이며 원본과 기준 PDF는 바꾸지 않았다.
+
 ## 증적 위치
 
 현재 작업 증적은 저장소 기준 `output/pr-review/issues-7727-7732-20261114/`다.
@@ -740,3 +801,41 @@ OS 기본 AppleSDGothicNeo의 한글 glyph는 사용 가능했다.
 
 위 경로는 진행 중인 로컬 증적이다. 최종 제출 때에는 필요한 PNG·TSV·영수증과 독립 표본을
 정식 assets/PDF 경로로 선별해 함께 커밋하고 이 문서의 링크와 판정을 갱신한다.
+
+### 2026-11-15 05:46 KST 최소 글꼴 회귀와 원본/보호 검증 완료, 실제 소비 경로 점검
+
+- source `1123f322a65cd8eaa414a8f32c3e2b99462bbda0`에서 최소 글꼴 전체 nextest는
+  13,565 PASS / 0 FAIL / 45 skip이다. Native/fresh WASM 원본 5종 전389쪽은 모두98% 이상이며,
+  필수 편람을 포함한 보호36조건 전3,542쪽은 공식 두 자리 TSV 하락0이다.
+- 실제 편집→2회 저장·재열기한 작은 독립 표본은 HWP/HWPX 각각 Native99.90%, fresh WASM100.00%다.
+  같은 쪽 review와 overlay를 네 경로 모두 열어 세 줄 내용·순서·숫자 RIGHT 끝 정렬을 판독했다.
+  HWPX는 기존 raw numbering namespace 직렬화 문제와 분리한 canonical prefix 대조군이다.
+  원본 namespace alias 상태의 수동 XML 진단은 Native55.95%·gate FAIL로 별도 보존했으며,
+  이 추가 진단을 정상 fixture 또는 실제 편집 저장 네 경로의 성공으로 계산하지 않는다.
+- 자동화 브라우저의 Local Font Access 열거가0개여서 처음 캡처가 두부로 나온 것은 무효로 보존했다.
+  실제 설치 글꼴1,220 face를 기존 HostFontProvider 공개 API에 공급하고 읽은 bytes의 SHA를 검증한
+  캡처에서는 한글이 표시된다. 이를 브라우저 Local Font Access 정상 증거로 바꾸어 설명하지 않는다.
+- CBTA204쪽은 CanvasKit의 기존 문서 preflight128쪽 한도를 넘는다. 강제 요청도 준비 단계에서
+  Canvas2D로 대체되며 CanvasKit PASS가 아니다. 제품 guard/한도는 변경하지 않고 원 gate 실패·
+  실제 선택 backend·전체 preflight를 보존한다. 실제 지원 경로와 의도된 한도 대체 경로를 구분해
+  전체 캡처와 고정 base fresh WASM 비교를 계속한다. PR 제출·하위 이슈 close는 아직 하지 않았다.
+
+### 2026-11-15T06:39:32+09:00 — 실제 CanvasKit 소비에서 원형 반경 전달 누락 확인
+
+정식 원본 Native/fresh WASM389쪽·보호3,542쪽과 별도로 실제 Studio 출력도 비교했다.
+설치 SFNT bytes와 실제 이름 정보를 Local Font Access 인터페이스 adapter에 공급한
+권고안4쪽의 Canvas2D Print는98.30%, 실제 CanvasKit compat/default Print는 각각53.71%다.
+readiness와 fallback gate가 통과해도 독립 PDF 피델리티를 보장하지 않으므로 제출을 보류한다.
+이 adapter는 실제 Chrome의 OS 열거 성공 증거가 아니며 실제 설치 bytes를 사용하는 제품
+렌더링 소비 검사다. 초기0개 열거·두부 결과와 HostFontProvider 전용 결과도 구분해 보존한다.
+
+원 해결 `0dc43871465ef312c1e93b571c240a0a2e7394f1`은 Native·Rust Canvas의 원형 반경을
+공통 `gradient_geometry::radial_circle`의 가장 먼 모서리 거리로 보정했다. 현재
+`src/paint/json.rs::write_gradient`는 중심 비율만 전달하고
+Studio `makeShapeGradientShader`는 긴 축 절반을 다시 계산한다. 물리 반경을 제품 공통
+결과에서 JSON에 전달해 CanvasKit이 소비하도록 보완한다. 원뿔 형식3의 기존 근사는
+별개 계약으로 보존하고, 사각형·이동 중심·비정사각형 독립 Print 대조군으로 확인한다.
+목차 하위 항목의 글꼴/전진 차이도 보이므로 그라데이션만 보정해 완료로 판정하지 않는다.
+
+완료 후 #7727·#7729·#7730·#7731·#7732의 실제 해결 범위와 병합 결과를 확인해
+각 완료 댓글·close와 #7445의 해당 행 취소선을 처리한다. 미완료 항목과 대표 이슈는 유지한다.

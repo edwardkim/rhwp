@@ -5,50 +5,42 @@
 
 ## 현재 확인한 결과
 
-검증 대상은 CBTA 204쪽·권고안 22쪽·영어 시험지 8쪽·API 105쪽·각주 표 50쪽이다.
-직전 검증 커밋 `57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3`에 대해
-Native와 fresh WASM **각 389쪽 모두 98% 이상**을 확인했다.
-생산자는 동일 head의 Native 실행 파일과 fresh WASM JS·WASM SHA로 고정했다.
-같은 head의 Mac 최소 글꼴 전체 회귀도 **13,560 PASS / 0 FAIL / 45 skip**이다.
-아래 결과는 보호 문서·실제 소비 경로를 포함한 PR 제출 준비 완료를 뜻하지 않는다.
+검증 source는 `1123f322a65cd8eaa414a8f32c3e2b99462bbda0`, 비교 base는
+`53da4d2da28ae0cacf8feac3a989cc6a69fb2622`다. Native와 fresh WASM 각각 원본5종
+**전389쪽이98% 이상**, Mac 최소 글꼴 전체 회귀는 **13,565 PASS / 0 FAIL / 45 skip**이다.
+[전쪽 요약](final-1123f322/visual-389-summary.json)과 [전체 회귀 결과](final-1123f322/full-nextest-result.json)를 보존한다.
 
-이후 독립 Print에서 저장 탭 폭의 소비를 확인하여, 같은 런 RIGHT 탭의 저장 전진 보정을
-추가 검증 중이다. 아래 표와 전체 회귀 결과는 `57a38d59`의 기록이며, 새 보정 후보의
-검증으로 재사용하지 않는다. 새 관계형 반례는 보정 전 **1 PASS / 1 FAIL**로 확인했다.
-
-| 문서 | 쪽수 | Native 최저 | fresh WASM 최저 | 최신 TSV |
+| 문서 | 쪽수 | Native 최저 | fresh WASM 최저 | 같은 source 전쪽 TSV |
 | --- | ---: | ---: | ---: | --- |
-| CBTA | 204 | 98.11% (2쪽) | 98.08% (2쪽) | [Native](note-oracle-final/native-cbta.tsv) · [WASM](note-oracle-final/wasm-cbta.tsv) |
-| 권고안 | 22 | 98.69% (7쪽) | 98.68% (7쪽) | [Native](note-oracle-final/native-recommendation.tsv) · [WASM](note-oracle-final/wasm-recommendation.tsv) |
-| 영어 시험지 | 8 | 99.49% (3쪽) | 99.49% (3쪽) | [Native](note-oracle-final/native-exam.tsv) · [WASM](note-oracle-final/wasm-exam.tsv) |
-| API | 105 | 99.55% (97쪽) | 99.55% (97쪽) | [Native](note-oracle-final/native-api.tsv) · [WASM](note-oracle-final/wasm-api.tsv) |
-| 각주 표 | 50 | 98.75% (37쪽) | 98.75% (37쪽) | [Native](note-oracle-final/native-footnote.tsv) · [WASM](note-oracle-final/wasm-footnote.tsv) |
+| CBTA | 204 | 98.13% (58쪽) | 98.13% (58쪽) | [Native](final-1123f322/native-cbta.tsv) · [WASM](final-1123f322/wasm-cbta.tsv) |
+| 권고안 | 22 | 98.69% (7쪽) | 98.68% (7쪽) | [Native](final-1123f322/native-recommendation.tsv) · [WASM](final-1123f322/wasm-recommendation.tsv) |
+| 영어 시험지 | 8 | 99.49% (3쪽) | 99.49% (3쪽) | [Native](final-1123f322/native-exam.tsv) · [WASM](final-1123f322/wasm-exam.tsv) |
+| API | 105 | 99.55% (97쪽) | 99.55% (97쪽) | [Native](final-1123f322/native-api.tsv) · [WASM](final-1123f322/wasm-api.tsv) |
+| 각주 표 | 50 | 98.75% (37쪽) | 98.75% (37쪽) | [Native](final-1123f322/native-footnote.tsv) · [WASM](final-1123f322/wasm-footnote.tsv) |
 
-같은 원본·독립 한컴 Print PDF·정상 설치 글꼴 조건에서 96 DPI, compat2022,
-Visual Sweep raw 2px·픽셀 차이 문턱 32로 측정했다. 기준 PDF 바이트와 판정 기준은
-바꾸지 않았다. 회귀 검사는 별도의 Mac 최소 글꼴 환경에서 실행했다.
+입력·독립 Print PDF의 [해시와 출처](final-1123f322/inputs.json),
+[검토 commit과 실행 bytes 일치](final-1123f322/committed-original-input-audit.json),
+[Native 생산자](final-1123f322/native-producer.json)·[WASM 생산자](final-1123f322/wasm-producer.json)를 연결한다.
+정상 설치 글꼴·96DPI·compat2022·print·raw2px·채널 문턱32를 사용했다. Native는 실제
+CLI `export-png`, fresh WASM은 실제 WASM Canvas PNG이며 SVG raster로 대신하지 않았다.
+Mac WASM은 사용자 지시의 호스트 `--target web --out-dir pkg --no-opt` 대체 빌드다.
+Docker 또는 wasm-opt 검증으로 보고하지 않는다. 기준 PDF·판정 문턱은 변경하지 않았다.
 
-## 후속 주석 줄 보정의 현재 범위
+[보호 검증](final-1123f322/protected-validation.json)은 필수 Native 편람383쪽을 포함해
+36조건 전3,542쪽 완료, 정본의 공식 두 자리 TSV 하락0·상승0이다. 원본 Native의
+[고정 base 비교](final-1123f322/native-fixed-base-comparison.json)는29쪽 상승·3쪽 하락,
+최대 하락0.06%p이며2%p 초과 하락은 없다. 세 하락 쪽의 같은 쪽 review/overlay에서
+내용·소속·줄·목차 번호 보존을 직접 확인했다.
 
-각주37쪽의 `24)`·`25)`가 겹치는 추가 결함을 [분석·보정](../../../working/task_m100_7727_stage1.md#추가-판독-각주-표-37쪽의-주석-전용-줄-누락)했다.
-새 제품 소스 Native 전389쪽은 모두98% 이상이며, 각주37쪽98.75%·39쪽99.92%로
-두 쪽이 개선되고 나머지387쪽은 같다. [Native 증적](note-only-line/native-after.json)과
-[review](note-only-line/after-native-p037-review.png)·[overlay](note-only-line/after-native-p037-overlay.png)를 보존했다.
-새 주석 소스의 [양쪽 전쪽 TSV·생산자·직접 판독](note-prefix-final/validation.json)도 완료했다.
-37쪽 Native [review](note-prefix-final/native-p037-review.png)·[overlay](note-prefix-final/native-p037-overlay.png),
-fresh WASM [review](note-prefix-final/wasm-p037-review.png)·[overlay](note-prefix-final/wasm-p037-overlay.png)를 보존했다.
+### 현재 남은 제출 전 검증
 
-최소 글꼴 전체 회귀도 실행했으며 보정 전 code head에서 [13,555 PASS / 4 FAIL](full-nextest-before-note-repair.json)이다.
-여백 원점·목차 오른쪽 탭은 기존 검사를 그대로 유지한 최소 글꼴 독립 실행에서 통과했다.
-남은 두 실패는 번호 문단 갱신 단계부터 발생함을 [단계별 대조](full-regression-repair/full-failures-producer-bisect.json)로 확인했다.
-후속 물리 슬롯 보정 뒤에는 기존 네 실패와 관련 대조군이 [34 PASS / 0 FAIL](full-regression-repair/focused-after-summary.json)이다.
-새 소스의 전체 검증을 완료하기 전에는 PR 준비 완료로 판단하지 않는다.
-
-현재 후속 전체 실행은 [13,558 PASS / 2 FAIL](full-regression-repair/full-nextest-17301-result.json)로 완료했다.
-새 각주 중복은 제품에서 보정해 관련 대조군 [40 PASS / 0 FAIL](full-regression-repair/note-prefix-focused-summary.json)을 확인했다.
-나머지1937 검사는 typed 주석을 읽지 못하고 독립 PDF와 다른 번호 순서를 기대했다.
-새 양쪽 전쪽 자격과 직접 판독을 확인한 뒤 수집·순서 관계를 바로잡았다. 기존 내용·쪽수·
-괘선 검사는 유지하며, 새 code head의 전체 회귀·lint/build 검증은 아직 남아 있다.
+고정 base의 Native/fresh WASM 전389쪽 대조도 완료했고 모든 경로에서2%p 초과 하락은0쪽이다.
+[고정 base 대조](final-1123f322/fixed-base-comparison.json)를 따른다.
+실제 Studio Canvas2D/CanvasKit 소비 경로에서 확인한 차이는 문서 끝의 잔여 항목에 기록한다.
+CBTA204쪽과 API·각주 문서의 기존 page/work preflight 한도는 변경하지 않았으며,
+의도된 Canvas2D 대체 경로를 실제 CanvasKit 통과로 계산하지 않는다.
+앞선 Undo5FAIL은 실제 편집 캐시와 Undo 복원/빈 입력의 소유를 구분해 제품에서 보정했고,
+최신 전체 회귀에서는 모두 통과했다. 과거 실패·중간 결과를 새 source의 통과로 재사용하지 않는다.
 
 ## 원인별 분석과 실제 보정
 
@@ -62,7 +54,7 @@ fresh WASM [review](note-prefix-final/wasm-p037-review.png)·[overlay](note-pref
 | CBTA 그림 캡션·API 표·권고안 단 시작 | 소유 그림과 테두리의 동시 이동, 표 앞뒤의 중복 점유, 빈 줄과 다음 물리 프레임의 경계를 공통 소비 경로에서 보정했다. | [상세 분석 보고서의 원인별 규칙](../../../working/task_m100_7727_stage1.md#원인별-보정-규칙) |
 
 위 표의 앞선 단계 결과는 해당 단계 생산자의 증적이다. 현재 전체 쪽수와 최저값은
-`note-oracle-final/`의 최신 TSV를 따른다. `note-prefix-final/`은 앞선 제품 소스의 증적이며,
+`final-1123f322/`의 TSV를 따른다. `note-prefix-final/`은 앞선 제품 소스의 증적이며,
 과거 측정을 새 head의 실행으로 바꾸어 쓰지 않는다.
 
 ## 같은 쪽의 review와 overlay
@@ -75,25 +67,33 @@ fresh WASM [review](note-prefix-final/wasm-p037-review.png)·[overlay](note-pref
 | 권고안 4쪽 배경 | [review](gradient-channel/native-p004-review.png) · [overlay](gradient-channel/native-p004-overlay.png) | [review](gradient-channel/wasm-p004-review.png) · [overlay](gradient-channel/wasm-p004-overlay.png) |
 | 영어 시험지 2쪽 공백 | [review](half-space-origin/native-p002-review.png) · [overlay](half-space-origin/native-p002-overlay.png) | [raw PNG](half-space-origin/wasm-p002-raw.png) · [전쪽 TSV](note-prefix-final/wasm-exam.tsv) |
 
-## 회귀 검사와 남은 작업
+## 회귀 검사와 독립 편집·저장 검증
 
-Mac 최소 글꼴 집중 검증은 **23 PASS / 0 FAIL**, 4.110초다. 선택 밖 2,778건이며
-전체 회귀 결과가 아니다. [검증 범위·격리 프로필·로그 SHA](marker-partition/cause.json)에
-실제 실행 근거를 기록했다. 새 번호 문단 반례는 보정 전 1 PASS / 1 FAIL, 보정 후 2 PASS다.
-CBTA 118·162·166쪽에는 양쪽 98% 이상과 독립 PDF 판독에 근거한 ±2 CSSpx 보호도 추가했다.
+기존의 독립 기대값이 정확한 검사는 유지하고, 틀린 수집/순서 기대만 실제 독립 PDF와
+원 해결 PR을 추적한 뒤 관계형 검사로 바로잡았다. CBTA118·162·166쪽은 양쪽98% 이상과
+독립 PDF 직접 판독을 확인해 ±2 CSSpx 보호를 추가했다. 저장 RIGHT 탭은 +1500HU 독립
+Print의 +19.99996 CSSpx 이동, 저장 줄 없는 재조판, 실제 편집·2회 저장, Undo 및 빈 입력을
+각각 검사한다. 새 검사와 기존 Undo/bbox 대조군은 최소 글꼴12PASS이며 전체 회귀에도 포함된다.
 
-CBTA 2쪽의 목차 쪽번호 위치는 저장 RIGHT 탭 전진과 정지점 재계산을 분리하여 분석 중이다.
-아직 확정 원인이나 완료 결과가 아니며, 이를 해결 불가능한 글꼴 차이로 분류하지 않았다.
-최종 전체 nextest·필수 lint/build·Native Skia·suite manifest·unit tier 검사는 모두 통과했다.
-[최종 Rust 검증](note-oracle-final/rust-gates.json)과
-[양쪽 전쪽 TSV·생산자](note-oracle-final/validation.json)에 실행 범위를 기록했다.
-정본 보호 TSV·편람 gate·실제 backend 소비 검증과 fixed base WASM 대조가
-남아 있으므로 **PR 제출 준비는 진행 중**이다.
+실제 공개 편집 API로 편집한 뒤 두 번 저장·재열기한 작은 HWP/HWPX 독립 Print 대조군은
+[네 경로 검증](final-1123f322/edited-save-print/validation.json)에서 Native99.90%, fresh WASM100.00%다.
+원본과 숫자 세 줄의 순서·RIGHT 정렬을 네 쌍 review/overlay로 직접 판독했다.
+HWPX는 기존 raw numbering namespace 직렬화 문제를 분리한 canonical prefix 대조군이며,
+이 결과를 일반 namespace alias 결함까지 해결한 것으로 확대하지 않는다.
 
 모든 필수 검증과 병합이 끝난 뒤 #7727·#7729·#7730·#7731·#7732의 실제 해결 범위를
 재확인하고, 완료 댓글·종료 및 #7445 해당 행의 취소선을 반영한다. 부분 해결 이슈와
-대표 #7445 자체는 이 다섯 건의 완료만으로 닫지 않는다.
+대표 #7445 자체는 이 다섯 건의 완료만으로 닫지 않는다. 현재 원격 종료는 실행하지 않았다.
 
-임시 진단기·실행 파일·로그·MCP 대기 자료는 저장소의
+임시 진단기·실행 파일·로그·MCP 대기 자료와 별도 namespace 실패 진단은 저장소의
 `output/pr-review/issues-7727-7732-20261114/`에 둔다. 확정된 분석과 제출 증적은
-이 디렉터리와 단계별 보고서에 커밋하고, 임시 산출물과 비공개 글꼴은 커밋하지 않는다.
+이 디렉터리와 [단계별 보고서](../../../working/task_m100_7727_stage1.md)에 보존한다.
+임시 산출물과 비공개 글꼴은 커밋하지 않는다.
+
+### 실제 Studio 소비 경로의 남은 항목
+
+Rust source1123f322의 위 원본·보호 검증은 완료됐지만, 실제 CanvasKit 권고안4쪽은
+독립 Print 대비53.71%다. 공통 원형 반경의 JSON 전달 누락과 하위 목차 글꼴/전진을
+추적 중이며 이 결과를 통과로 계산하지 않는다. 설치 SFNT bytes를 공급하는
+Local Font Access 인터페이스 adapter로 검사했고 실제 Chrome OS 열거 성공을 뜻하지 않는다.
+전체 필수 검증 완료·PR 병합 전에는 서브이슈를 닫지 않는다.

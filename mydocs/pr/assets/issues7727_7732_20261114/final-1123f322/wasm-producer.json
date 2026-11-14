@@ -1,0 +1,26 @@
+{
+  "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+  "code_sha256": "7d7ad4314fe60380a9f2c9bed5ea4882a31b8da24856a4779d6830dbb6ac9203",
+  "binary_sha256": "6cb34b87414c9780aa24158bf7879d64638922f3dcdc69d00c65e72be1efacc5",
+  "native_build": {
+    "name": "native-build",
+    "exit_code": 0,
+    "seconds": 3.793,
+    "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/logs/stored-tab-owned-final-native-build.log",
+    "log_sha256": "b6acf8e6b8f8e11859804459b0d181ce0a8dbc4fcaf4f841cd2e4fffcebf7a6c"
+  },
+  "normal_installed_fonts": true,
+  "wasm_build_head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+  "wasm_build_type": "macOS local alternative --target web --no-opt",
+  "wasm_build": {
+    "name": "fresh-wasm-build",
+    "exit_code": 0,
+    "seconds": 297.881,
+    "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/logs/stored-tab-owned-final-fresh-wasm-build.log",
+    "log_sha256": "e253b2fffa53ce4e4adab9c377d3d7c6fcbbee5fd985f5ec2aa66fdbe62e2ba3"
+  },
+  "files": {
+    "rhwp.js": "2d48f8a6c3ff7f848f08725bb54d04094b296af1a40ae61203081a7cf8061a1a",
+    "rhwp_bg.wasm": "05f99162ab20ba5094566bda0fef37cf5fe18427b8392d74c20818496fd2db67"
+  }
+}
