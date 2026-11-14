@@ -1,0 +1,28 @@
+{
+  "before": "22a994602442159ed6b146098733eec255231d9c",
+  "after": "8af32b9d991ee6b6c7bf082aaf6cc6caac1b86ab",
+  "shared_commit": "4e66e76981dca50fe866d6bc3e591ccfcd9bc169",
+  "other_pr": 9012,
+  "other_head": "71c002495603a34af43f238dd2c98354d942a589",
+  "source_objects_before": {
+    "src": "a83e7bfbcefd771d539fa6928da53b89a9b8cd8a",
+    "rhwp-studio": "4cabffff7f69f1607576eb98268535772fca8fe0",
+    "Cargo.toml": "67ffbf80f174ba3465e4454d140f758395833b2e",
+    "Cargo.lock": "34d08aa8d5150817968568e1ab6f68af228eeeac",
+    "scripts": "fa0a728014c9114687aa5ba58607b3e272be0fc1"
+  },
+  "source_objects_after": {
+    "src": "a83e7bfbcefd771d539fa6928da53b89a9b8cd8a",
+    "rhwp-studio": "4cabffff7f69f1607576eb98268535772fca8fe0",
+    "Cargo.toml": "67ffbf80f174ba3465e4454d140f758395833b2e",
+    "Cargo.lock": "34d08aa8d5150817968568e1ab6f68af228eeeac",
+    "scripts": "fa0a728014c9114687aa5ba58607b3e272be0fc1"
+  },
+  "product_source_identical": true,
+  "shared_visual_native_raw": 100,
+  "shared_visual_wasm_raw": 100,
+  "direct_review": "12/18/24pt regular/bold glyphs, spacing and centered row origins checked against independent Print at equal 3x scale",
+  "historical_shared_evidence": "Original tracked evidence of 4e66e76981 preserved. Its later removal remains owned by #9012. Pre-removal caused an unrelated Git rename/delete heuristic conflict with #9017 logs. No new private logs were added.",
+  "merge_simulation_exit": 0,
+  "merge_simulation_output": "131dd8b4ef1b3e8e579fc25ebac822abed16afa0\n"
+}

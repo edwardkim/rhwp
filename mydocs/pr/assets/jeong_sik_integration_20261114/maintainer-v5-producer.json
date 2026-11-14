@@ -1,0 +1,19 @@
+{
+  "parent_head": "b02921dd3d8f29e49f4a3ca06e472db677cc6f91",
+  "binary_sha256": "e37e3b14cadbacc9c4213c6fd57bfae760e35892c62a7abf895655a076608689",
+  "sources": {
+    "src/model/image.rs": "c1173b09178de9f856886c7b0921d51d8daf461fc3790f4e0245227bdf47cb66",
+    "src/paint/builder.rs": "98a5165fe844677f77077b63c78b939a7a50db1bd9d172467c0dfed9bdafe95e",
+    "src/renderer/composer/line_breaking.rs": "02c03680431b35f3a3a705c67f079499664bb57a174333a6e4d66a12b43e8884",
+    "src/renderer/float_placement.rs": "3400565c4c950e1232847ea4393a5df19f66686a851903137f239f16608f6087",
+    "src/renderer/height_measurer.rs": "9b4154fe2b3d6253c16e170a2d29f77ad6e9c66dc763376fc30de785b12ca2b5",
+    "src/renderer/image_resolver/print_jpeg_encode.rs": "194fec442befbc75ea1b4695d6ce47e3deea0d5a321d31d16c40dea80b21abfc",
+    "src/renderer/layout/picture_footnote.rs": "4898af9896a258abea41e4707fc6fcc3983e8ac04c9766b74e73d8a5f8db66ec",
+    "src/renderer/layout/table_layout.rs": "8c027be08fc00dd6b364b331ea13c263f2b8fbc2914b25a52125905e18c85093",
+    "src/renderer/typeset/section/controls.rs": "60465a42bc2c90fa57cddbf20b5528900ebacfc7609691008ccd3e109bd1cbf9",
+    "src/renderer/float_placement/stored_picture_stack.rs": "bf799722d5f9efc65bd3f338fe55f591d5f35053dc6a43132a0d3dcf05b35929"
+  },
+  "build_log": "logs/maintainer-v5-native-build.log",
+  "code_head": "6f8d22ac95147b16d9828fee7976df2de192699f",
+  "committed_source_hashes_verified": true
+}

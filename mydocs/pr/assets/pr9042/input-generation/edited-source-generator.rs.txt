@@ -1,0 +1,9 @@
+use rhwp::document_core::DocumentCore;
+fn main(){
+ let input=std::fs::read("output/pr-review/pr9042/roundtrip-final/native/original-1.hwp").unwrap();
+ std::fs::create_dir_all("output/pr-review/pr9042/edited-models").unwrap();
+ for (key,text) in [("small","X".to_string()),("wrap","X ".repeat(300)),("overflow","X ".repeat(1000))] {
+  let mut c=DocumentCore::from_bytes(&input).unwrap();c.insert_text_in_cell_native(0,0,3,0,0,4,&text).unwrap();
+  let b=rhwp::serializer::serialize_document(c.document()).unwrap();std::fs::write(format!("output/pr-review/pr9042/edited-models/{key}.hwp"),b).unwrap();
+ }
+}

@@ -20,13 +20,22 @@ pub(crate) fn has_verified_hft_bold_tracking_source(face: &crate::model::style::
     !face.is_embedded && face.alt_type == 2 && has_verified_hft_bold_tracking_family(&face.name)
 }
 
-/// 독립 Print로 확인한 HFT 꾸밈 전진의 family 계약.
-/// 원본 선언과 실제 glyph 공급 프로그램이 같은 목록을 소비한다.
-/// 딸기는 #8957의 보통/굵게 Print 대조에서 윤곽 굵기와 별도로 전진이 증가한다.
+/// 선언과 실제 글리프 공급 프로그램 양쪽에서 확인해야 하는 원본 꾸밈 계약.
+/// #8946의 변경하지 않은 한컴 Print /Widths·TJ 대조에서 세나루(12/20pt),
+/// 강낭콩(20pt), 딸기(18pt)의 별도 굵기 전진을 확인했다.
+/// HFT 유형이나 CFF 형식만으로 다른 프로그램에 이 계약을 확장하지 않는다.
 pub(crate) fn has_verified_hft_bold_tracking_family(family: &str) -> bool {
     matches!(
         family.trim(),
-        "신명 중고딕" | "Sinmyeong Junggothic" | "딸기" | "Strawberry"
+        "신명 중고딕"
+            | "Sinmyeong Junggothic"
+            | "#세나루"
+            | "세나루"
+            | "Senaru"
+            | "강낭콩"
+            | "Kidney bean"
+            | "딸기"
+            | "Strawberry"
     )
 }
 

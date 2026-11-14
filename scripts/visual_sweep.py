@@ -35,6 +35,10 @@ except ModuleNotFoundError:
 
 
 LABEL_FONT_ENV = "RHWP_VISUAL_SWEEP_LABEL_FONT"
+LABEL_FONT_REQUIRED_TEXT = (
+    "색상: 파랑=RHWP만 · 빨강=PDF만 · 주황=양쪽 차이 · 회색=일치 "
+    "코멘트: 판정값 raw 실루엣(2px 이웃) = 확인 불가. 0123456789%"
+)
 LABEL_FONTCONFIG_FAMILIES = (
     "Noto Sans CJK KR:lang=ko",
     "NanumGothic:lang=ko",
@@ -5135,13 +5139,37 @@ def configured_label_font_paths() -> list[Path]:
 
 @lru_cache(maxsize=1)
 def label_font() -> ImageFont.ImageFont:
-    for font_path in configured_label_font_paths():
+    # 로드 가능한 라틴 글꼴도 한글을 .notdef 사각형으로 그릴 수 있다.
+    # 문서 본문용 글꼴 선택과 별개로, 도구의 범례·판정 문자를 실제로 지원하는지 확인한다.
+    fallback = Path(__file__).resolve().parents[1] / "ttfs/opensource/NotoSansKR-Regular.ttf"
+    for font_path in dedupe_paths([*configured_label_font_paths(), fallback]):
         if font_path.exists():
             try:
-                return ImageFont.truetype(str(font_path), 18)
+                font = ImageFont.truetype(str(font_path), 18)
             except OSError:
                 continue
-    return ImageFont.load_default()
+            if label_font_has_required_glyphs(font_path):
+                return font
+    raise RuntimeError(
+        "Visual Sweep 한글 라벨을 표시할 글꼴이 없습니다. "
+        f"{LABEL_FONT_ENV}에 한글을 지원하는 글꼴을 지정하거나 {fallback}을 확인하세요."
+    )
+
+
+def label_font_has_required_glyphs(font_path: Path) -> bool:
+    """FreeType이 선택하는 첫 face의 Unicode cmap에서 라벨 문자 지원을 확인한다."""
+    from fontTools.ttLib import TTFont, TTLibError
+
+    try:
+        with TTFont(font_path, fontNumber=0, lazy=True) as font:
+            cmap = font.getBestCmap() if "cmap" in font else None
+            return bool(cmap) and all(
+                cmap.get(ord(char)) not in (None, ".notdef")
+                for char in LABEL_FONT_REQUIRED_TEXT
+                if not char.isspace()
+            )
+    except (OSError, TTLibError):
+        return False
 
 
 def label_line_height(font: ImageFont.ImageFont) -> int:

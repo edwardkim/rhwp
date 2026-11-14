@@ -1,0 +1,40 @@
+{
+  "alignment_equal": true,
+  "roundtrip_equal": true,
+  "zip_resources": [
+    {
+      "revision": "head",
+      "file": "before.hwpx",
+      "resources": {
+        "BinData/image1.png": "ea7d417dc9de2f04a3074a63690c99363d8738b9d614e96ccb289ea7b6573390"
+      }
+    },
+    {
+      "revision": "head",
+      "file": "deleted-1.hwpx",
+      "resources": {}
+    },
+    {
+      "revision": "head",
+      "file": "deleted-2.hwpx",
+      "resources": {}
+    },
+    {
+      "revision": "base",
+      "file": "before.hwpx",
+      "resources": {
+        "BinData/image1.png": "ea7d417dc9de2f04a3074a63690c99363d8738b9d614e96ccb289ea7b6573390"
+      }
+    },
+    {
+      "revision": "base",
+      "file": "deleted-1.hwpx",
+      "resources": {}
+    },
+    {
+      "revision": "base",
+      "file": "deleted-2.hwpx",
+      "resources": {}
+    }
+  ]
+}

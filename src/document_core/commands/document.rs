@@ -29,6 +29,8 @@ use serde::Deserialize;
 use std::cell::RefCell;
 use std::collections::HashMap;
 
+type ManagedLineCachePlan = Vec<(usize, Vec<Paragraph>)>;
+
 mod reparsed_split_cache;
 #[path = "stored_body_frames.rs"]
 mod stored_body_frames;
@@ -468,6 +470,7 @@ impl DocumentCore {
             layer_tree_json_cache: RefCell::new(Vec::new()),
             page_layer_tree_cache: RefCell::new(Vec::new()),
             bin_data_epoch: 0,
+            loaded_unreferenced_bin_data: std::collections::BTreeSet::new(),
             batch_mode: false,
             pending_cell_format_vpos: false,
             event_log: Vec::new(),
@@ -2683,6 +2686,99 @@ impl DocumentCore {
         Ok(self.get_document_info())
     }
 
+    pub(crate) fn owns_section_line_cache(&self, index: usize) -> bool {
+        self.effective_layout_profile()
+            .hwp5_stored_pagination_layout()
+            && self
+                .document
+                .sections
+                .get(index)
+                .and_then(|section| section.raw_stream.as_deref())
+                .is_some_and(|body| {
+                    self.document.extra_streams.iter().any(|(path, marker)| {
+                        path == crate::model::line_seg_tags::HWP_STREAM
+                            && crate::model::line_seg_tags::authenticates_section(marker, body)
+                    })
+                })
+    }
+
+    fn managed_line_cache_updates(&self) -> ManagedLineCachePlan {
+        match self.managed_line_cache_updates_with_storage(&crate::storage::Unbounded) {
+            Ok(plan) => plan,
+            Err(never) => match never {},
+        }
+    }
+
+    /// 첫 유효 셀 편집은 표시 중인 관리 캐시를 같은 편집 메트릭으로 인계한다.
+    /// 원본 raw의 해제·Undo 복원 판정은 기존 편집 종료 지점이 계속 소유한다.
+    pub(crate) fn materialize_managed_cell_metrics_for_edit(&mut self, section_index: usize) {
+        let revision = self
+            .render_normalization
+            .section_revisions
+            .get(section_index)
+            .copied()
+            .unwrap_or(0);
+        if !self
+            .render_normalization
+            .sections
+            .get(section_index)
+            .and_then(Option::as_ref)
+            .is_some_and(|section| section.source_revision == revision)
+        {
+            return;
+        }
+        if !self.owns_section_line_cache(section_index) {
+            return;
+        }
+        // 같은 첫 편집의 여러 mutable 접근에서 구역 전체를 반복 스캔하지 않는다.
+        // 기존 호환 투영도 편집 종료 시 현재 revision으로 다시 파생한다.
+        self.invalidate_render_normalization_section(section_index);
+        let paragraphs = match crate::renderer::render_normalization::stored_text_metrics::managed_cells_for_export_with_storage(
+            &self.document.sections[section_index].paragraphs,
+            &self.styles,
+            self.dpi,
+            &crate::storage::Unbounded,
+        ) {
+            Ok(Some(paragraphs)) => paragraphs,
+            Ok(None) => return,
+            Err(never) => match never {},
+        };
+        self.document.sections[section_index].paragraphs = paragraphs;
+        self.layout_engine.clear_layout_caches();
+        if let Some(dirty) = self.dirty_paragraphs.get_mut(section_index) {
+            *dirty = None;
+        }
+        self.mark_section_dirty(section_index);
+        self.invalidate_page_tree_cache();
+    }
+
+    fn managed_line_cache_updates_with_storage<S: crate::storage::Storage>(
+        &self,
+        storage: &S,
+    ) -> Result<ManagedLineCachePlan, S::Error> {
+        let mut plan = Vec::new();
+        for (index, section) in self.document.sections.iter().enumerate() {
+            if self.owns_section_line_cache(index) {
+                if let Some(paragraphs) = crate::renderer::render_normalization::stored_text_metrics::managed_cells_for_export_with_storage(
+                    &section.paragraphs, &self.styles, self.dpi, storage,
+                )? {
+                    storage.push(&mut plan, (index, paragraphs))?;
+                }
+            }
+        }
+        Ok(plan)
+    }
+
+    /// 같은 메트릭 생산자의 캐시만 저장 사본에 발행한다. 편집 IR과 다른 렌더
+    /// 호환 투영은 보존하고, 뒤의 포맷 lowering·쪽 경계 갱신은 이 사본을 소비한다.
+    fn apply_managed_line_cache_updates(snapshot: &mut Document, plan: ManagedLineCachePlan) {
+        for (index, paragraphs) in plan {
+            let section = &mut snapshot.sections[index];
+            section.paragraphs = paragraphs;
+            section.raw_stream = None;
+        }
+    }
+
     /// Document IR을 HWP 5.0 CFB 바이너리로 직렬화 (네이티브 에러 타입)
     pub fn export_hwp_native(&self) -> Result<Vec<u8>, HwpError> {
         // PDF has no original HWP wire metadata to preserve. Both public save
@@ -2696,14 +2792,17 @@ impl DocumentCore {
         let grown_tables = self.grown_table_heights();
         let grows_tables = grown_tables.iter().any(Option::is_some);
         let page_starts = self.shifted_page_starts();
+        let cache_updates = self.managed_line_cache_updates();
         if !grows_tables
             && page_starts.is_empty()
             && self.render_normalization.text_reflowed_tables.is_empty()
+            && cache_updates.is_empty()
         {
             return crate::serializer::serialize_document(&self.document)
                 .map_err(|e| HwpError::RenderError(e.to_string()));
         }
         let mut snapshot = self.document.clone();
+        Self::apply_managed_line_cache_updates(&mut snapshot, cache_updates);
         grown_table_heights::apply_grown_table_heights(&mut snapshot, &grown_tables);
         self.write_page_starts(&mut snapshot, &page_starts);
         self.writeback_reflowed_table_frames(&mut snapshot);
@@ -3085,6 +3184,8 @@ impl DocumentCore {
 
         let grown_tables = self.grown_table_heights_with_storage(storage)?;
         let mut snapshot = storage.clone_document(&self.document)?;
+        let cache_updates = self.managed_line_cache_updates_with_storage(storage)?;
+        Self::apply_managed_line_cache_updates(&mut snapshot, cache_updates);
         grown_table_heights::apply_grown_table_heights(&mut snapshot, &grown_tables);
         self.write_page_starts(&mut snapshot, &self.shifted_page_starts());
         self.writeback_reflowed_table_frames_with_storage(&mut snapshot, storage)?;
@@ -3248,10 +3349,35 @@ impl DocumentCore {
 
     pub(crate) fn hwpx_document_for_export<T>(
         &self,
-        serialize: impl FnOnce(
-            &crate::model::document::Document,
-        ) -> Result<T, crate::serializer::SerializeError>,
+        serialize: impl FnOnce(&Document) -> Result<T, crate::serializer::SerializeError>,
     ) -> Result<T, HwpError> {
+        self.with_hwpx_export_document(serialize)
+            .map_err(|e| HwpError::RenderError(e.to_string()))
+    }
+
+    /// 저장 검증은 live IR이 아니라 실제 저장기가 소비한 같은 투영을 비교한다.
+    /// 캐시 차이를 일괄 무시하지 않으며 내용·속성·줄의 나머지 엄격 비교는 유지한다.
+    pub fn hwpx_export_expected_document(&self) -> Document {
+        self.with_hwpx_export_document(Clone::clone)
+    }
+
+    fn with_hwpx_export_document<T>(&self, consume: impl FnOnce(&Document) -> T) -> T {
+        // [#8941] 실제 저장과 검증 기대값이 같은 사본에서 삭제된 그림만 제거한다.
+        // live IR과 불러올 때부터 참조가 없던 자원은 원래 계약대로 보존한다.
+        let keep = &self.loaded_unreferenced_bin_data;
+        let consume = |document: &Document| {
+            if document
+                .bin_data_content
+                .iter()
+                .all(|c| keep.contains(&c.id))
+            {
+                return consume(document);
+            }
+            let mut pruned = document.clone();
+            super::bin_data_prune::prune_unreferenced_bin_data_except(&mut pruned, keep);
+            consume(&pruned)
+        };
+
         let hwp3_origin = matches!(self.source_format, crate::parser::FileFormat::Hwp3)
             || self.document.provenance.hwp3_lineage;
         let lower_markers = |doc: &mut Document| {
@@ -3260,14 +3386,16 @@ impl DocumentCore {
         let grown_tables = self.grown_table_heights();
         let grows_tables = grown_tables.iter().any(Option::is_some);
         let page_starts = self.shifted_page_starts();
+        let cache_updates = self.managed_line_cache_updates();
         // [#8302] rhwp 가 HWPX 에서 만든 HWP(`/RhwpHwpxOrigin`, `hwpx_lineage`)는 HWP5 계보가
         // 아니다. 그 IR 은 HWPX 저장 계약(줄 축·저장 줄 유무)을 그대로 지니므로 HWP5-origin
         // 마커를 붙이지 않고 HWPX 출처와 같은 경로로 내보낸다. 마커를 붙이면 다시 연 HWPX 가
         // HWP5-origin 호환 계약으로 조판돼 원본 HWPX 와 쪽수가 갈린다(36376848: 1쪽 → 2쪽).
-        let serialized = if matches!(self.source_format, crate::parser::FileFormat::Hwp)
+        if matches!(self.source_format, crate::parser::FileFormat::Hwp)
             && !self.document.provenance.hwpx_lineage
         {
             let mut doc = self.document.clone();
+            Self::apply_managed_line_cache_updates(&mut doc, cache_updates);
             grown_table_heights::apply_grown_table_heights(&mut doc, &grown_tables);
             self.write_page_starts(&mut doc, &page_starts);
             if let Some((_, value)) = doc
@@ -3288,7 +3416,7 @@ impl DocumentCore {
             }
             Self::materialize_hwp5_missing_linesegs_for_hwpx_export(&mut doc);
             lower_markers(&mut doc);
-            serialize(&doc)
+            consume(&doc)
         } else if hwp3_origin
             || self
                 .document
@@ -3297,6 +3425,7 @@ impl DocumentCore {
             || super::header_footer_ops::has_header_footer_field_markers(&self.document)
         {
             let mut doc = self.document.clone();
+            Self::apply_managed_line_cache_updates(&mut doc, cache_updates);
             grown_table_heights::apply_grown_table_heights(&mut doc, &grown_tables);
             self.write_page_starts(&mut doc, &page_starts);
             if let Some((_, value)) = doc
@@ -3310,16 +3439,16 @@ impl DocumentCore {
                 Self::push_hwp3_origin_marker(&mut doc);
             }
             lower_markers(&mut doc);
-            serialize(&doc)
-        } else if grows_tables || !page_starts.is_empty() {
+            consume(&doc)
+        } else if grows_tables || !page_starts.is_empty() || !cache_updates.is_empty() {
             let mut doc = self.document.clone();
+            Self::apply_managed_line_cache_updates(&mut doc, cache_updates);
             grown_table_heights::apply_grown_table_heights(&mut doc, &grown_tables);
             self.write_page_starts(&mut doc, &page_starts);
-            serialize(&doc)
+            consume(&doc)
         } else {
-            serialize(&self.document)
-        };
-        serialized.map_err(|e| HwpError::RenderError(e.to_string()))
+            consume(&self.document)
+        }
     }
 
     /// HWP3 계보 마커를 export 사본에 심는다(중복 방지).

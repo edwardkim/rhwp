@@ -1,0 +1,22 @@
+[
+  {
+    "revision": "base",
+    "input": "hwpx",
+    "sha256": "d5c348428dca32f12a402a55e5e03c60e0cfa9694257d93034c599b07a96e08b"
+  },
+  {
+    "revision": "base",
+    "input": "hwp3",
+    "sha256": "d5c348428dca32f12a402a55e5e03c60e0cfa9694257d93034c599b07a96e08b"
+  },
+  {
+    "revision": "head",
+    "input": "hwpx",
+    "sha256": "a1596ff11c174bdc52da36f7951d7b3e3abfee5449ee612fd9c85b1e0756dbad"
+  },
+  {
+    "revision": "head",
+    "input": "hwp3",
+    "sha256": "a1596ff11c174bdc52da36f7951d7b3e3abfee5449ee612fd9c85b1e0756dbad"
+  }
+]

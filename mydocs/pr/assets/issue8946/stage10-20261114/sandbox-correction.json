@@ -1,0 +1,16 @@
+{
+  "cause": "Stage10 script mistakenly referenced minimal-font-recovered.sb instead of the stage6/minimal-font.sb actually used by the passing stage9 run.",
+  "correction": "Restore byte-identical prior validated profile; no product or test expectation change.",
+  "affected_attempts": [
+    "initial 5 compilation-blocked checks",
+    "retry full compile blocked Happiness fixture",
+    "retry Skia lib 3 failures: generated synthetic font paths denied"
+  ],
+  "evidence": [
+    "stage9/run-full.sh",
+    "stage9/font-isolation-audit.json",
+    "stage10/retry-skia-lib.log",
+    "stage10/font-isolation-audit.json"
+  ],
+  "final_profile_sha256": "1576eb0cb9e53e700ad4834aed7ff554eb8245a0054a020339c62fc112ac490d"
+}

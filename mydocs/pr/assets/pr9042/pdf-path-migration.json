@@ -1,0 +1,37 @@
+[
+  {
+    "old": "pdf/pr9042/pr9042-unchanged-2020.pdf",
+    "canonical": "pdf/pr9042/metadata-unchanged-hwp-2020.pdf",
+    "sha256": "51eee68afa0e6edb57c6aca05d9a31bcc5b739a22655e7f9d0ce64f860fb7873"
+  },
+  {
+    "old": "pdf/pr9042/pr9042-empty-header-2020.pdf",
+    "canonical": "pdf/pr9042/metadata-empty-header-hwp-2020.pdf",
+    "sha256": "a8f66beb2d3c08f17ac77194eebc99f571ba2788e42d3e992dc78f535fd5cafd"
+  },
+  {
+    "old": "pdf/pr9042/pr9042-empty-footer-2020.pdf",
+    "canonical": "pdf/pr9042/metadata-empty-footer-hwp-2020.pdf",
+    "sha256": "9b960e6334c12be874db6858be1440374d5a8e17deaeba563ceb8309bd10bddd"
+  },
+  {
+    "old": "pdf/pr9042/pr9042-hancom-saved-2020.pdf",
+    "canonical": "pdf/pr9042/pr9042-hancom-saved-hwp-2020.pdf",
+    "sha256": "314175bff547c8d427bdef0a1727f01e397b611838787d9f37dd87dae6c2e4e0"
+  },
+  {
+    "old": "pdf/pr9042/nested-tail-single-line-hancom-2020.pdf",
+    "canonical": "pdf/pr9042/nested-tail-single-line-hancom-hwp-2020.pdf",
+    "sha256": "e182f8dc4ec1d6abf593c3c83a9902dd76e181b1f525d8fdcb180504666712a6"
+  },
+  {
+    "old": "pdf/pr9042/nested-tail-margins-hancom-2020.pdf",
+    "canonical": "pdf/pr9042/nested-tail-margins-hancom-hwp-2020.pdf",
+    "sha256": "88e09257e32a063a1cfb9c145146908d163a3128ba449e82e5e8db9c9f4246fd"
+  },
+  {
+    "old": "pdf/pr9042/nested-tail-two-paragraphs-hancom-2020.pdf",
+    "canonical": "pdf/pr9042/nested-tail-two-paragraphs-hancom-hwp-2020.pdf",
+    "sha256": "8f4be9f1dc2a9693eb345df959f22f21f5d76321498c2b64036df3ee58294b1a"
+  }
+]

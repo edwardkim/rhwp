@@ -1,0 +1,17 @@
+{
+  "status": "all_tests_passed",
+  "head_at_start": "b8029a6feefc064e06b2f99728a962d40842a081",
+  "base": "d7b927d073489b8c5ea95655224b04096c939534",
+  "additional_test_source": {
+    "path": "tests/cases/picture_cell_flow_frame.rs",
+    "sha256": "3d6e2eea28d893441e49dace378ddf4be9fabb206d5e8bd195fcdaa0e6b3c48d"
+  },
+  "tests_run": 13477,
+  "passed": 13477,
+  "failed": 0,
+  "skipped": 45,
+  "test_seconds": 538.576,
+  "environment": "macOS sandbox-exec; OS fonts only, RHWP_FONT_PATH unset",
+  "log_sha256": "68a8eb64f709099925299aa2328ddba74e5f5c802643e181302d655e1b116a50",
+  "supervisor": "own supervisor paused after active nextest, before further Cargo for rebase"
+}

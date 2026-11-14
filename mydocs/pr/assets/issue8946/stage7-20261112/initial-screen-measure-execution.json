@@ -1,0 +1,42 @@
+[
+  {
+    "input": "hwpx",
+    "command": [
+      "output/issue8946/venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--silhouette-only",
+      "--png-pair",
+      "output/issue8946/stage7/initial-screen-pair-hwpx/rhwp",
+      "output/issue8946/stage7/initial-screen-pair-hwpx/pdf",
+      "--key",
+      "sample10-hwpx",
+      "--dpi",
+      "96",
+      "--out",
+      "output/issue8946/stage7/initial-screen-measure-hwpx"
+    ],
+    "exit": 0,
+    "screen_sha256": "b7264f61e8052bc99e10a8b97638f90ecf2bea3e3ee46116c5799d8cc95b2158",
+    "independent_reference_png_sha256": "86b36a80dad8386eedfac5b721e9681cf762334cebbe643d56c3588cddd11736"
+  },
+  {
+    "input": "hwp3",
+    "command": [
+      "output/issue8946/venv/bin/python",
+      "scripts/visual_sweep.py",
+      "--silhouette-only",
+      "--png-pair",
+      "output/issue8946/stage7/initial-screen-pair-hwp3/rhwp",
+      "output/issue8946/stage7/initial-screen-pair-hwp3/pdf",
+      "--key",
+      "sample10",
+      "--dpi",
+      "96",
+      "--out",
+      "output/issue8946/stage7/initial-screen-measure-hwp3"
+    ],
+    "exit": 0,
+    "screen_sha256": "b7264f61e8052bc99e10a8b97638f90ecf2bea3e3ee46116c5799d8cc95b2158",
+    "independent_reference_png_sha256": "12b25234c73eae39b045eefa07f19bc024cd47dd349ef91ce1bf9f2811a3e0d0"
+  }
+]

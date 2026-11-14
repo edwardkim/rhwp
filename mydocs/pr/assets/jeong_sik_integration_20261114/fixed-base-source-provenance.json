@@ -1,0 +1,5 @@
+{
+  "base": "d7b927d073489b8c5ea95655224b04096c939534",
+  "source": "output/pr-review/jeong-sik-integration-20261114/fixed-base-source",
+  "purpose": "Same-source fresh baseline WASM comparison; not candidate package."
+}

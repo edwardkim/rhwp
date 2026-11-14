@@ -1,0 +1,119 @@
+{
+  "base": "80b1c354c29b7a02fb2b3c14a274da7f5b653ada",
+  "head": "b4855616375c4a8fd1cdd6083d85cd77d655ad26",
+  "backend": "wasm",
+  "rows": [
+    {
+      "key": "sample16-hwpx",
+      "file": "rhwp_006.png",
+      "base_sha256": "57c32e964eae87e571e16caa149349ee492ba1522c97cc4cbcdf2f6a43d550ed",
+      "head_sha256": "57c32e964eae87e571e16caa149349ee492ba1522c97cc4cbcdf2f6a43d550ed",
+      "equal": true
+    },
+    {
+      "key": "sample16-hwpx",
+      "file": "rhwp_022.png",
+      "base_sha256": "704fa6e6dcd9c7f7b932efed8644682a748cba4546990be7a66183eabf2ad888",
+      "head_sha256": "704fa6e6dcd9c7f7b932efed8644682a748cba4546990be7a66183eabf2ad888",
+      "equal": true
+    },
+    {
+      "key": "sample16-hwpx",
+      "file": "rhwp_024.png",
+      "base_sha256": "4c2df8fd34bbc191c78c339c4740bf87363840e7afd44070372010f785339c2e",
+      "head_sha256": "4c2df8fd34bbc191c78c339c4740bf87363840e7afd44070372010f785339c2e",
+      "equal": true
+    },
+    {
+      "key": "sample16-hwpx",
+      "file": "rhwp_025.png",
+      "base_sha256": "987e15660fef67bf8ece0fa1c7790ad3abae63c64a9055e75e96f239d0dd73bb",
+      "head_sha256": "987e15660fef67bf8ece0fa1c7790ad3abae63c64a9055e75e96f239d0dd73bb",
+      "equal": true
+    },
+    {
+      "key": "sample16-hwpx",
+      "file": "rhwp_043.png",
+      "base_sha256": "6374467b9ee51851640c47f6787db563f0e52293c0627a035f14517cdce19ec5",
+      "head_sha256": "6374467b9ee51851640c47f6787db563f0e52293c0627a035f14517cdce19ec5",
+      "equal": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "file": "rhwp_006.png",
+      "base_sha256": "ddf181db5181b4737e6b03d2f4182bc25540724cfd04c1d8b097bd68c5448524",
+      "head_sha256": "ddf181db5181b4737e6b03d2f4182bc25540724cfd04c1d8b097bd68c5448524",
+      "equal": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "file": "rhwp_022.png",
+      "base_sha256": "e1a4caca6a11ce6d5592302cd25a2c932aac69603d3d5445e79d0af2dc84a8c1",
+      "head_sha256": "e1a4caca6a11ce6d5592302cd25a2c932aac69603d3d5445e79d0af2dc84a8c1",
+      "equal": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "file": "rhwp_025.png",
+      "base_sha256": "124398e9001c7b3a4d1d2bcc13b7d127a972ff88bf1b5748ddb21d14b952e612",
+      "head_sha256": "124398e9001c7b3a4d1d2bcc13b7d127a972ff88bf1b5748ddb21d14b952e612",
+      "equal": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "file": "rhwp_043.png",
+      "base_sha256": "df3a8cdf6ce68ed46207d4ad6fb8c0d04daa0394d687960906980c9031a0be62",
+      "head_sha256": "df3a8cdf6ce68ed46207d4ad6fb8c0d04daa0394d687960906980c9031a0be62",
+      "equal": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "file": "rhwp_052.png",
+      "base_sha256": "10c41e1f90b785328c3db3f2cd435526af764379459f5cbf714b9d597c2f269c",
+      "head_sha256": "10c41e1f90b785328c3db3f2cd435526af764379459f5cbf714b9d597c2f269c",
+      "equal": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "file": "rhwp_053.png",
+      "base_sha256": "3326fd20581597d7b1d2f8993a0c3036fef946edf5671b3e4b4896a5b2ef5b8d",
+      "head_sha256": "3326fd20581597d7b1d2f8993a0c3036fef946edf5671b3e4b4896a5b2ef5b8d",
+      "equal": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "file": "rhwp_055.png",
+      "base_sha256": "f17647509e9260e783b8cabdccf2010f6d8052cb4817edde3592a136742fb741",
+      "head_sha256": "f17647509e9260e783b8cabdccf2010f6d8052cb4817edde3592a136742fb741",
+      "equal": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "file": "rhwp_056.png",
+      "base_sha256": "642d7d126fe373813ef4732dbe10c8702f48916997a4cd1f28428bae48644c58",
+      "head_sha256": "642d7d126fe373813ef4732dbe10c8702f48916997a4cd1f28428bae48644c58",
+      "equal": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "file": "rhwp_057.png",
+      "base_sha256": "d252163c480502ff4bf2c492655cb77f093ae0daf1d32a2811faaafba009dd48",
+      "head_sha256": "d252163c480502ff4bf2c492655cb77f093ae0daf1d32a2811faaafba009dd48",
+      "equal": true
+    },
+    {
+      "key": "sample10",
+      "file": "rhwp_081.png",
+      "base_sha256": "56d95c28a6b739d151113a79e4b5f627581592b4e9c56bdd306e89452b42a0a0",
+      "head_sha256": "56d95c28a6b739d151113a79e4b5f627581592b4e9c56bdd306e89452b42a0a0",
+      "equal": true
+    },
+    {
+      "key": "sample10",
+      "file": "rhwp_351.png",
+      "base_sha256": "b4348664a7897e2d75c9ff089e635b0707e2a5467bc079bf5dfbb37a504d4991",
+      "head_sha256": "b4348664a7897e2d75c9ff089e635b0707e2a5467bc079bf5dfbb37a504d4991",
+      "equal": true
+    }
+  ]
+}

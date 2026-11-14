@@ -647,4 +647,11 @@ samples/issue7620/hancom2020-saved/e-cellbreak-row-moves-next-page.hwp	2	2
 samples/issue7620/hancom2020-saved/f-rowbreak-row-splits-at-line.hwp	2	2
 samples/issue7620/legacy-unmarked/e-cellbreak-row-moves-next-page.hwp	2	2
 samples/issue7620/legacy-unmarked/f-rowbreak-row-splits-at-line.hwp	2	2
+samples/pr9042/metadata-empty-footer.hwp	2	2
+samples/pr9042/metadata-empty-header.hwp	2	2
+samples/pr9042/metadata-unchanged.hwp	2	2
+samples/pr9042/nested-tail-margins-hancom.hwp	2	2
+samples/pr9042/nested-tail-single-line-hancom.hwp	2	2
+samples/pr9042/nested-tail-two-paragraphs-hancom.hwp	2	2
+samples/pr9042/pr9042-hancom-saved.hwp	2	2
 samples/issue9021/textbox_tac_tables_two_lines.hwp	1	1

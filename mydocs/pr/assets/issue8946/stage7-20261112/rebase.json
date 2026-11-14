@@ -1,0 +1,9 @@
+{
+  "old_base": "80b1c354c29b7a02fb2b3c14a274da7f5b653ada",
+  "old_head": "c033229633",
+  "new_base": "1a3ed4a7cd76701085a24ac81d30bc5fb31942c1",
+  "new_head": "cec288ae2fd84b75b884a05ee1ada6ae3a8d2ac7",
+  "incoming_pr": 8956,
+  "incoming_feature": "Table ByPath query terminal cell fields optional; outer steps still require complete cell path. No layout changes.",
+  "conflicts": false
+}

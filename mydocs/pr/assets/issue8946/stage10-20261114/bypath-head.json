@@ -1,0 +1,20 @@
+{
+  "status": "passed",
+  "checks": [
+    "last-step optional cell fields",
+    "actual cell bboxes identical",
+    "invalid paths rejected",
+    "nested table and required outer steps"
+  ],
+  "dimensions": {
+    "rowCount": 2,
+    "colCount": 3,
+    "cellCount": 6
+  },
+  "nestedDimensions": {
+    "rowCount": 3,
+    "colCount": 4,
+    "cellCount": 12
+  },
+  "bboxCount": 6
+}

@@ -1,0 +1,69 @@
+{
+  "kind": "linked-image-exclusions-v1",
+  "dpi": 96,
+  "source": {
+    "path": "mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwpx.hwpx",
+    "sha256": "3395e19bebea8b6689f383df1f4ea1ddb253dee91c4320392cc40e90e2e4f191"
+  },
+  "pdf": {
+    "path": "pdf/issue8946/hwp3-sample10-hwpx-2024-reprint.pdf",
+    "sha256": "4442f06e7acbe6c25404dbba9dcfa4749d2e61952569e35de1f8262aadb3b0a7"
+  },
+  "regions": [
+    {
+      "page": 1,
+      "rect_px": [
+        124,
+        165,
+        253,
+        207
+      ],
+      "external_path": "D:\\Work\\Gwjang\\temp\\images\\oracle.gif",
+      "control": "section0/para1/control0"
+    },
+    {
+      "page": 1,
+      "rect_px": [
+        220,
+        489,
+        574,
+        675
+      ],
+      "external_path": "D:\\Work\\Gwjang\\temp\\images\\rdb02.gif",
+      "control": "section0/para12/control0"
+    },
+    {
+      "page": 1,
+      "rect_px": [
+        166,
+        899,
+        250,
+        977
+      ],
+      "external_path": "D:\\Work\\Gwjang\\temp\\images\\s1.jpg",
+      "control": "section0/para22/control0"
+    }
+  ],
+  "assets": [
+    {
+      "name": "oracle.gif",
+      "path": "samples/oracle.gif",
+      "sha256": "464e863dd2c1650fc6997b03a5d96c9413e61bbabaf7337c783db27203cc2761"
+    },
+    {
+      "name": "rdb02.gif",
+      "path": "samples/rdb02.gif",
+      "sha256": "bfadf4cdbbeeb5f3d8632cb54c8c3696977f405204b651f99a7a24c8f39532cf"
+    },
+    {
+      "name": "s1.jpg",
+      "path": "samples/s1.jpg",
+      "sha256": "77dea18ce7f8f93b0931e133dec222aec642eef0ed87b8f2031b94dcbea5c514"
+    }
+  ],
+  "authorization": "User explicitly approved supplementary comparison on 2026-11-11; this does not replace the unmasked full-page comparison.",
+  "render_tree": {
+    "path": "mydocs/pr/assets/issue8946/stage2-20261111/cover-render-tree.json",
+    "sha256": "9e4778db17ce990cc9aecea32641374b6aa38103ad7485b6028815cbb6776b20"
+  }
+}

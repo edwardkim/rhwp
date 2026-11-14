@@ -1,0 +1,42 @@
+{
+  "hwpx-native": {
+    "rhwp_png": {
+      "pages": 763,
+      "changed": []
+    },
+    "render_tree": {
+      "pages": 763,
+      "changed": []
+    }
+  },
+  "hwpx-wasm": {
+    "rhwp_png": {
+      "pages": 763,
+      "changed": []
+    },
+    "render_tree": {
+      "pages": 763,
+      "changed": []
+    }
+  },
+  "hwp3-native": {
+    "rhwp_png": {
+      "pages": 763,
+      "changed": []
+    },
+    "render_tree": {
+      "pages": 763,
+      "changed": []
+    }
+  },
+  "hwp3-wasm": {
+    "rhwp_png": {
+      "pages": 763,
+      "changed": []
+    },
+    "render_tree": {
+      "pages": 763,
+      "changed": []
+    }
+  }
+}

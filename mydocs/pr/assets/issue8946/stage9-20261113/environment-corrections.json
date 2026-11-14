@@ -1,0 +1,96 @@
+{
+  "product_or_expectation_changes": false,
+  "full_nextest": {
+    "executed": 13429,
+    "passed": 13428,
+    "failed": 1,
+    "skipped": 45,
+    "failed_test": "render_p37_pdf_backend_cli::explicit_svg_backend_preserves_default_pdf_bytes_and_stdout",
+    "cause": "온라인 웹폰트 다운로드 timeout과 캐시 상태 차이로 기본/명시 SVG의 stderr가 달랐다. PDF 계약 assertion 변경 없음.",
+    "rerun": {
+      "module_tests": 2,
+      "passed": 2,
+      "environment": {
+        "RHWP_WEBFONT_OFFLINE": "1",
+        "RHWP_WEBFONT_CACHE": "empty task-local cache"
+      },
+      "same_minimum_font_sandbox": true
+    },
+    "original_log_sha256": "b1747dac8eea190419c139c044e19d8dcba5912803494f10ec089959319fe9f4",
+    "rerun_log_sha256": "c2f0795f18cbdac71179e4acb7f54f09712da9c9a07ff5a445d4cfd9683aedd8"
+  },
+  "base_canvas": {
+    "original": {
+      "passed": 17,
+      "failed": 2,
+      "reason": "새 sparse 기준 worktree에 원래 추적된 PDF 2개 누락"
+    },
+    "correction": "동일 기준 commit의 PDF 바이트를 복원",
+    "rerun": {
+      "passed": 19,
+      "failed": 0
+    }
+  },
+  "poppy": {
+    "affected_cases": [
+      "pr9003-hwp",
+      "pr9003-saved"
+    ],
+    "original_program_available": false,
+    "local_independent_subset": {
+      "sources": [
+        {
+          "pdf": "pdf/issue8160/tab-leader-independent-2024.pdf",
+          "sha256": "3c8ee47dea976547f3321008e06847a430af0341292d7438f962046465a68c27",
+          "xref": 25
+        },
+        {
+          "pdf": "pdf/issue8160/synthetic-italic-independent-2024.pdf",
+          "sha256": "c75b32fcd9b2977349490d2a3b68db42f49d598865cd99f9986cc95754adfc9d",
+          "xref": 41
+        }
+      ],
+      "scalars": [
+        32,
+        48,
+        49,
+        50,
+        51,
+        65,
+        98,
+        99,
+        120,
+        121,
+        122
+      ],
+      "unchanged_outlines_and_advances": true,
+      "local_only": true,
+      "target_document_not_used": true
+    },
+    "scope": "독립 PDF 2개의 11개 glyph 및 space 전진만 보존한 로컬 공급. 완전한 원본 프로그램을 확보했다고 주장하지 않음.",
+    "initial_missing_font_measurements_retained": true,
+    "product_change": false
+  },
+  "cache_provenance": {
+    "empty_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "rule": "0바이트 임시 캐시는 글꼴 프로그램 집합에서만 제외하고 원장에 그대로 보존. 비어 있지 않은 모든 프로그램 SHA는 기준/후보 일치 요구."
+  },
+  "latest_initial_comparator": {
+    "initial_error": "System Python lacked PIL; no measurement ran",
+    "correction": "Re-executed unchanged comparator with existing verification venv",
+    "result": "9 actual composited screens RGB identical"
+  },
+  "superseded_intermediate_base": {
+    "sha": "6217d3cbedc9aba707812e5d4e5ea2a1ed53845a",
+    "reason": "User requested safe stop on2026-11-13. On resume devel advanced to959300e66c; incomplete intermediate measurements were preserved but excluded from final gate.",
+    "incomplete_prefix": "latest-",
+    "authoritative_current_prefix": "current-",
+    "old_complete_baseline_prefix": "base-",
+    "candidate_prefix": "head- or document/backend without prefix"
+  },
+  "documentation_generator": {
+    "initial_failure": "System Python 3.9.6 file execution reported Non-UTF-8 syntax error twice; bytes decoded as UTF-8 and compile(bytes) passed. Root cause not established.",
+    "resolution": "Same UTF-8 generator completed under verification Python 3.12; both generated Markdown links passed.",
+    "generator_sha256": "13c15898579e98bf3e16e1c87b5281ebbb1d20f8ad8351d93100d5f4ee8176ff"
+  }
+}

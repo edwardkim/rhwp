@@ -1056,6 +1056,15 @@ export class HwpDocument {
         wasm.hwpdocument_clearTextFontFamily(this.__wbg_ptr, ptr0, len0);
     }
     /**
+     * 쪽별 host paint 자원만 해제한다. 측정·coverage·문서 상태는 유지한다.
+     * @param {string} family
+     */
+    clearTextFontOutline(family) {
+        const ptr0 = passStringToWasm0(family, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.hwpdocument_clearTextFontOutline(this.__wbg_ptr, ptr0, len0);
+    }
+    /**
      * 내부 클립보드에 컨트롤(표/그림/도형)이 포함되어 있는지 확인한다.
      * @returns {boolean}
      */
@@ -5108,6 +5117,32 @@ export class HwpDocument {
         let deferred2_1;
         try {
             const ret = wasm.hwpdocument_getHeaderFooter(this.__wbg_ptr, section_idx, is_header, apply_to);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * 같은 preview의 paint 자원 준비에 필요한 트리. 일반 쪽 캐시는 변경하지 않는다.
+     * @param {number} page_num
+     * @param {number} section_idx
+     * @param {boolean} is_header
+     * @param {number} apply_to
+     * @returns {string}
+     */
+    getHeaderFooterEditPreviewLayerTree(page_num, section_idx, is_header, apply_to) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.hwpdocument_getHeaderFooterEditPreviewLayerTree(this.__wbg_ptr, page_num, section_idx, is_header, apply_to);
             var ptr1 = ret[0];
             var len1 = ret[1];
             if (ret[3]) {
@@ -10355,6 +10390,18 @@ export class HwpDocument {
         }
     }
     /**
+     * 원본 SFNT/TTC 바이트와 선택 face를 함께 받는 공급 계약의 기능 탐지 경계.
+     * @param {Function} provider
+     * @returns {boolean}
+     */
+    prepareNativeOtfFontFaces(provider) {
+        const ret = wasm.hwpdocument_prepareNativeOtfFontFaces(this.__wbg_ptr, provider);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return ret[0] !== 0;
+    }
+    /**
      * 미리 준비한 실제 face만 동기 공급하고 모든 선택을 한 번에 조판한다.
      * @param {Function} provider
      * @returns {boolean}
@@ -10506,6 +10553,21 @@ export class HwpDocument {
         const ptr0 = passStringToWasm0(family, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len0 = WASM_VECTOR_LEN;
         const ret = wasm.hwpdocument_registerHftOutlineFontCandidates(this.__wbg_ptr, ptr0, len0, programs);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return ret[0] !== 0;
+    }
+    /**
+     * TTC 원본 신원을 보존한 paint 후보. FontFace용 정규화 사본과 구분한다.
+     * @param {string} family
+     * @param {Array<any>} programs
+     * @returns {boolean}
+     */
+    registerHftOutlineFontFaces(family, programs) {
+        const ptr0 = passStringToWasm0(family, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.hwpdocument_registerHftOutlineFontFaces(this.__wbg_ptr, ptr0, len0, programs);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }

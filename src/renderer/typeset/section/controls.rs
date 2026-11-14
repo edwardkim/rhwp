@@ -374,6 +374,49 @@ impl TypesetEngine {
                                 st.register_side_wrap_picture(para_idx, ctrl_idx, para, Some(placement.anchor_y), styles);
                             }
                         }
+                        // 빈 저장 호스트 앞을 같은 앵커의 겹침 금지 그림들이 닫으면,
+                        // 측정한 전체 프레임 예약과 각 그림의 개별 원점을 함께 발행한다.
+                        if !self.profile.get().session_edited()
+                            && (self.profile.get().hwp5_stored_pagination_layout()
+                                || self.profile.get().hwpx_stored_layout())
+                            && (st.pages.len(), st.current_column)
+                                == (picture_host_origin.0, picture_host_origin.1)
+                        {
+                            let host_style = styles.para_styles.get(para.para_shape_id as usize);
+                            if let Some(placements) =
+                                crate::renderer::float_placement::stored_picture_stack_before_host(
+                                    para,
+                                    st.vpos_page_base.unwrap_or(0),
+                                    picture_host_origin.2,
+                                    host_style.map_or(0.0, |s| s.margin_left),
+                                    host_style.map_or(0.0, |s| s.spacing_after),
+                                    self.dpi,
+                                )
+                            {
+                                if let Some((_, selected)) = placements
+                                    .iter()
+                                    .find(|(index, _)| *index == ctrl_idx)
+                                    .copied()
+                                    .filter(|(_, p)| {
+                                        p.paragraph_end(st.current_height, 0.0)
+                                            <= st.available_height()
+                                    })
+                                {
+                                    for (index, placement) in placements {
+                                        st.record_paragraph_float_placement_with_storage(
+                                            (para_idx, index),
+                                            placement,
+                                            storage,
+                                        )?;
+                                    }
+                                    st.align_flow_to(
+                                        st.current_height
+                                            .max(selected.paragraph_end(st.current_height, 0.0)),
+                                    );
+                                    continue;
+                                }
+                            }
+                        }
                         // 저장된 그림 앞 공간과 뒤 호스트 줄을 하나의 프레임으로 예약한다.
                         // HWP3 변환본도 원본 줄의 앞·개체·뒤 경계가 모두 닫히면 같은 프레임이다.
                         // 현재 단에서만 확정하고 편집 흐름에는 적용하지 않는다.

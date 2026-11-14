@@ -1,0 +1,191 @@
+{
+  "base": "5cbcc9b451cf286e1b7c680426c857dc802e50f3",
+  "candidate": "1506a1c34672931c4f5aa5cb6363fba776225949",
+  "cases": [
+    {
+      "key": "new-base-8960",
+      "pages": [
+        {
+          "page": 1,
+          "base_sha256": "0d807e9ded90c97fa814fb8fb2a9bba7ee6e71884c1b4068ba47db45e5524f37",
+          "candidate_sha256": "0d807e9ded90c97fa814fb8fb2a9bba7ee6e71884c1b4068ba47db45e5524f37",
+          "rgb_identical": true
+        },
+        {
+          "page": 2,
+          "base_sha256": "e28de32b6f696c0843b713673f0587a95a64739c0b45527d90bb969cb3c70b93",
+          "candidate_sha256": "e28de32b6f696c0843b713673f0587a95a64739c0b45527d90bb969cb3c70b93",
+          "rgb_identical": true
+        }
+      ],
+      "base_minimum": 90.01,
+      "candidate_minimum": 90.01
+    },
+    {
+      "key": "new-base-9027",
+      "pages": [
+        {
+          "page": 1,
+          "base_sha256": "86eb7744e70eaa1d3940997eb376e75a00ee99da3032fa1b0410cbf64cd99ccf",
+          "candidate_sha256": "86eb7744e70eaa1d3940997eb376e75a00ee99da3032fa1b0410cbf64cd99ccf",
+          "rgb_identical": true
+        },
+        {
+          "page": 2,
+          "base_sha256": "69ef69b381922e94756459462181151200d38214d5330427830f2cd4e528fff1",
+          "candidate_sha256": "69ef69b381922e94756459462181151200d38214d5330427830f2cd4e528fff1",
+          "rgb_identical": true
+        }
+      ],
+      "base_minimum": 99.41,
+      "candidate_minimum": 99.41
+    },
+    {
+      "key": "new-base-9029",
+      "pages": [
+        {
+          "page": 1,
+          "base_sha256": "456cb81e5fae29c7cb283beeb12d81b6559c6751062234ad4f2a1dd98479dcee",
+          "candidate_sha256": "456cb81e5fae29c7cb283beeb12d81b6559c6751062234ad4f2a1dd98479dcee",
+          "rgb_identical": true
+        }
+      ],
+      "base_minimum": 99.85,
+      "candidate_minimum": 99.85
+    },
+    {
+      "key": "new-base-9032",
+      "pages": [
+        {
+          "page": 1,
+          "base_sha256": "d347990b7c9941442f90d907f761db51639c7819206daf1f0ad45d1f87a02b5b",
+          "candidate_sha256": "d347990b7c9941442f90d907f761db51639c7819206daf1f0ad45d1f87a02b5b",
+          "rgb_identical": true
+        },
+        {
+          "page": 2,
+          "base_sha256": "def9a620d29cc606995fd3504623cbe235ac878fbf7d3323af33808030d91daa",
+          "candidate_sha256": "def9a620d29cc606995fd3504623cbe235ac878fbf7d3323af33808030d91daa",
+          "rgb_identical": true
+        },
+        {
+          "page": 3,
+          "base_sha256": "f139cc165ae182e4e5604ee878b739527f53fa26a387c014d0be6fb17847ab47",
+          "candidate_sha256": "f139cc165ae182e4e5604ee878b739527f53fa26a387c014d0be6fb17847ab47",
+          "rgb_identical": true
+        },
+        {
+          "page": 4,
+          "base_sha256": "031a631c28b11ac2eb47e2317cab52910185ec22ad153e461bc144d5fd5cfa2d",
+          "candidate_sha256": "031a631c28b11ac2eb47e2317cab52910185ec22ad153e461bc144d5fd5cfa2d",
+          "rgb_identical": true
+        }
+      ],
+      "base_minimum": 97.84,
+      "candidate_minimum": 97.84
+    },
+    {
+      "key": "new-base-9035",
+      "pages": [
+        {
+          "page": 1,
+          "base_sha256": "f3e6dcfcb0b497e960dbeb96a1ced8ce26a069574dcebed8ace8665be3df9b13",
+          "candidate_sha256": "f3e6dcfcb0b497e960dbeb96a1ced8ce26a069574dcebed8ace8665be3df9b13",
+          "rgb_identical": true
+        }
+      ],
+      "base_minimum": 99.96,
+      "candidate_minimum": 99.96
+    },
+    {
+      "key": "new-base-8957-cover-linked",
+      "pages": [
+        {
+          "page": 1,
+          "base_sha256": "6ed390b21ce351e591e26d16c399e22ca8d3fab526fffcc1e526339ad9e35a4f",
+          "candidate_sha256": "6ed390b21ce351e591e26d16c399e22ca8d3fab526fffcc1e526339ad9e35a4f",
+          "rgb_identical": true
+        }
+      ],
+      "base_minimum": 98.86,
+      "candidate_minimum": 98.86
+    },
+    {
+      "key": "new-base-8957-cover-mixed-images",
+      "pages": [
+        {
+          "page": 1,
+          "base_sha256": "406106a1320f5aaf2ce4805f76e9fe20452545c06f1c3a968931866b0a8c4bd1",
+          "candidate_sha256": "406106a1320f5aaf2ce4805f76e9fe20452545c06f1c3a968931866b0a8c4bd1",
+          "rgb_identical": true
+        }
+      ],
+      "base_minimum": 99.08,
+      "candidate_minimum": 99.08
+    },
+    {
+      "key": "new-base-8957-cover-regular",
+      "pages": [
+        {
+          "page": 1,
+          "base_sha256": "0e3f24e9b88b4b84329cef7b869ffb17aba9ecc7aada8d28ad29beb5e6fd7067",
+          "candidate_sha256": "0e3f24e9b88b4b84329cef7b869ffb17aba9ecc7aada8d28ad29beb5e6fd7067",
+          "rgb_identical": true
+        }
+      ],
+      "base_minimum": 98.76,
+      "candidate_minimum": 98.76
+    },
+    {
+      "key": "new-base-8957-strawberry-tracking",
+      "pages": [
+        {
+          "page": 1,
+          "base_sha256": "8c214cf8c07cb7e9fed8eaaa5b7e0ad1ecd151edec852782b9dca0021214671f",
+          "candidate_sha256": "8c214cf8c07cb7e9fed8eaaa5b7e0ad1ecd151edec852782b9dca0021214671f",
+          "rgb_identical": true
+        }
+      ],
+      "base_minimum": 100.0,
+      "candidate_minimum": 100.0
+    },
+    {
+      "key": "new-base-8199-original",
+      "pages": [
+        {
+          "page": 1,
+          "base_sha256": "346696b6a2a582bfcae8257415255704b7015094668b14d25ddd6990ab3ac692",
+          "candidate_sha256": "346696b6a2a582bfcae8257415255704b7015094668b14d25ddd6990ab3ac692",
+          "rgb_identical": true
+        },
+        {
+          "page": 2,
+          "base_sha256": "2a4e7b7eb7dc21682a8a36cb65d34264d085fdea0a9514a8d0ad140e10b0226b",
+          "candidate_sha256": "2a4e7b7eb7dc21682a8a36cb65d34264d085fdea0a9514a8d0ad140e10b0226b",
+          "rgb_identical": true
+        }
+      ],
+      "base_minimum": 99.9,
+      "candidate_minimum": 99.9
+    },
+    {
+      "key": "new-base-8199-edited",
+      "pages": [
+        {
+          "page": 1,
+          "base_sha256": "346696b6a2a582bfcae8257415255704b7015094668b14d25ddd6990ab3ac692",
+          "candidate_sha256": "346696b6a2a582bfcae8257415255704b7015094668b14d25ddd6990ab3ac692",
+          "rgb_identical": true
+        },
+        {
+          "page": 2,
+          "base_sha256": "2a4e7b7eb7dc21682a8a36cb65d34264d085fdea0a9514a8d0ad140e10b0226b",
+          "candidate_sha256": "2a4e7b7eb7dc21682a8a36cb65d34264d085fdea0a9514a8d0ad140e10b0226b",
+          "rgb_identical": true
+        }
+      ],
+      "base_minimum": 99.91,
+      "candidate_minimum": 99.91
+    }
+  ]
+}

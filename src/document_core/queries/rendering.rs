@@ -6394,6 +6394,7 @@ impl DocumentCore {
                     storage,
                 )?;
             let text_metrics = if !profile.hwp3_layout() {
+                let owned_hwp5_cells = self.owns_section_line_cache(idx);
                 crate::renderer::render_normalization::stored_text_metrics::normalize_with_storage(
                     math_textboxes
                         .as_deref()
@@ -6402,6 +6403,7 @@ impl DocumentCore {
                     &self.styles,
                     self.dpi,
                     profile.hwpx_stored_layout() && !profile.hwp5_origin_hwpx(),
+                    owned_hwp5_cells,
                     storage,
                 )?
             } else {

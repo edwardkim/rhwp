@@ -1,0 +1,59 @@
+{
+  "key": "pr7675-right",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1
+  ],
+  "completed_pages": [
+    1
+  ],
+  "missing_pages": [],
+  "tsv": "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/canonical-tsv/final-base-native/pr7675-right/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/final-base-native/pr7675-right/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "f8de57026056b23247cb66cc3766145c03ff213004803c910a0718a63f939ca7",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/final-base-native/pr7675-right/pdf_png/pdf-001.png",
+      "pdf_sha256": "1aae1921cde03b31cd64d8a91c00506dead189a01cadaa4df54905c5d631e143"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 11.26957,
+      "silhouette_raw_unmatched_pixels": 25384,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 28608,
+      "tolerant_content_match_percent": 11.26957
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "re_review_required",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 1,
+        "silhouette_raw_match_percent": 11.26957
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "page_count_mismatch": false
+  }
+}

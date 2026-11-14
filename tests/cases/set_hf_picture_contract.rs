@@ -1,4 +1,6 @@
-//! `edit set-hf-picture` 계약.
+//! 관계형: `edit set-hf-picture`의 요청 값과 재열기 후 속성·오류 시 파일 미생성 계약.
+//! 주석 갱신: 2026-11-13T23:25:55+09:00
+//! 실물 px 고정 검사가 아니므로 PDF 일치율을 작성 근거로 사용하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::{Path, PathBuf};
@@ -106,6 +108,74 @@ fn fixture_with_header_picture() -> PathBuf {
     let out = temp("fixture");
     std::fs::write(&out, doc.export_hwp().expect("export")).unwrap();
     out
+}
+
+#[test]
+fn hf_picture_uses_decoded_json_and_rejects_duplicate_members() {
+    let source = fixture_with_header_picture();
+    let addr = header_picture_addr(&source);
+    let values = [addr.0, addr.1, addr.2, addr.3, addr.4].map(|v| v.to_string());
+    let target = picture_width(&source, addr) + 333;
+    let props = format!(r#"{{"\u0077idth":{target}}}"#);
+    let changed = temp("decoded");
+    let output = Command::new(rhwp_bin())
+        .args([
+            "edit",
+            "set-hf-picture",
+            source.to_str().unwrap(),
+            "--section",
+            &values[0],
+            "--para",
+            &values[1],
+            "--ctrl",
+            &values[2],
+            "--inner-para",
+            &values[3],
+            "--inner-ctrl",
+            &values[4],
+            "--props",
+            &props,
+            "-o",
+            changed.to_str().unwrap(),
+        ])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(0), "{output:?}");
+    assert_eq!(
+        picture_width(&changed, header_picture_addr(&changed)),
+        target
+    );
+    for dry in [false, true] {
+        let rejected = temp("duplicate");
+        let mut args = vec![
+            "edit",
+            "set-hf-picture",
+            source.to_str().unwrap(),
+            "--section",
+            &values[0],
+            "--para",
+            &values[1],
+            "--ctrl",
+            &values[2],
+            "--inner-para",
+            &values[3],
+            "--inner-ctrl",
+            &values[4],
+            "--props",
+            r#"{"width":3000,"width":4000}"#,
+            "-o",
+            rejected.to_str().unwrap(),
+        ];
+        if dry {
+            args.push("--dry-run");
+        }
+        let output = Command::new(rhwp_bin()).args(args).output().unwrap();
+        assert_eq!(output.status.code(), Some(2), "{output:?}");
+        assert!(String::from_utf8_lossy(&output.stderr).contains("중복"));
+        assert!(!rejected.exists());
+    }
+    let _ = std::fs::remove_file(source);
+    let _ = std::fs::remove_file(changed);
 }
 
 #[test]

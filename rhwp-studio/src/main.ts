@@ -4,7 +4,7 @@ import { setFormActionsEnabled } from './core/form-action-policy';
 import { isPdfInput, type PdfInputSource } from './core/pdf-open';
 import { showPdfImportDialog, cancelPdfImport } from './ui/pdf-import-dialog';
 import { installCommandErrorGlobalRouting, StudioCommandError, inspectCommandError, type CommandErrorV1 } from '@/core/command-error';
-import { setHostFontProvider, onHostFontsChanged, hasHostFontProvider, prepareHostFontCatalog, getHostFontState, localFontFaceKey, type LocalFontRecord } from '@/core/local-fonts';
+import { hostFontLayoutEnabled, setHostFontProvider, onHostFontsChanged, hasHostFontProvider, prepareHostFontCatalog, getHostFontState, localFontFaceKey, type LocalFontRecord } from '@/core/local-fonts';
 import { collectHostFontRequests, collectDocumentCanvasKitFontUsage, resolveDocumentCanvasKitFontUsage, type DocumentCanvasKitFontUsage } from '@/core/host-font-requests';
 import { WasmBridge } from '@/core/wasm-bridge';
 import { installDocumentTitle } from '@/ui/document-title';
@@ -1303,7 +1303,24 @@ function setupEventListeners(): void {
   onHostFontsChanged(() => {
     if (!canvasView || wasm.pageCount === 0) return;
     wasm.invalidateCanvasMetricFonts();
-    void canvasView.refreshFontResources().catch(error => {
+    const documentGeneration = wasm.documentGeneration;
+    const hostGeneration = getHostFontState().generation;
+    const prepare = hostFontLayoutEnabled() || wasm.hasHostFontLayoutEnvironment
+      ? wasm.prepareDeclaredFontEnvironment(canvasView.getRenderBackend())
+      : Promise.resolve(false);
+    void prepare.then(changed => {
+      if (!canvasView || wasm.documentGeneration !== documentGeneration
+        || getHostFontState().generation !== hostGeneration) return;
+      if (changed) {
+        const info = wasm.getDocumentInfo();
+        setDocumentFontSubstitutions(info.fontSubstitutions);
+        currentDocumentFonts = [...new Set([
+          ...(info.fontsUsed ?? []),
+          ...(info.fontSubstitutions ?? []).map(([, target]) => target),
+        ])];
+      }
+      return canvasView.refreshFontResources();
+    }).catch(error => {
       console.warn('[HostFonts] View refresh failed:', error);
     });
   });

@@ -1,0 +1,45 @@
+{
+  "before": 2,
+  "after": 2,
+  "insert": {
+    "ok": true,
+    "paraIdx": 0,
+    "controlIdx": 3,
+    "logicalOffset": 1
+  },
+  "rows": [
+    {
+      "format": "hwp",
+      "round": 1,
+      "pages": 2,
+      "textPreserved": true,
+      "bytes": 24064,
+      "sha256": "e6065b32c7a859be5fe6ea0d2a0c9931d2583a487b4d05df6a73329e076b5740"
+    },
+    {
+      "format": "hwp",
+      "round": 2,
+      "pages": 2,
+      "textPreserved": true,
+      "bytes": 24064,
+      "sha256": "63698be77ea216b9f17b6d85c3f5338f6377c1cf78c37b63b74495c15c0c6ab8"
+    },
+    {
+      "format": "hwpx",
+      "round": 1,
+      "pages": 2,
+      "textPreserved": true,
+      "bytes": 31128,
+      "sha256": "38f733b13b28748128bad0ca42446c1b1238d7579917e2fd353186d67885ea3c"
+    },
+    {
+      "format": "hwpx",
+      "round": 2,
+      "pages": 2,
+      "textPreserved": true,
+      "bytes": 31128,
+      "sha256": "38f733b13b28748128bad0ca42446c1b1238d7579917e2fd353186d67885ea3c"
+    }
+  ],
+  "wasm_sha256": "4737807f3978d90bc163bfb109c684c05f69c26c35d6a6e5f1bc33b65813c0bb"
+}

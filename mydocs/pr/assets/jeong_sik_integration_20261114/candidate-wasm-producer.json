@@ -1,0 +1,19 @@
+{
+  "head": "b8029a6feefc064e06b2f99728a962d40842a081",
+  "code_head": "6f8d22ac95147b16d9828fee7976df2de192699f",
+  "method": "Mac locked wrapper --target web --out-dir pkg --no-opt; local alternative",
+  "exit": 0,
+  "log": "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/logs/candidate-fresh-wasm-recompiled.log",
+  "files": {
+    "rhwp.js": {
+      "/Users/tsjang/rhwp/pkg/rhwp.js": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+      "/Users/tsjang/rhwp/rhwp-studio/public/rhwp.js": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+      "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/candidate-pkg/rhwp.js": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094"
+    },
+    "rhwp_bg.wasm": {
+      "/Users/tsjang/rhwp/pkg/rhwp_bg.wasm": "66d0ba187083518fc03067252e06fd930c1093f348a740ff4cbdef0bcfb43d45",
+      "/Users/tsjang/rhwp/rhwp-studio/public/rhwp_bg.wasm": "66d0ba187083518fc03067252e06fd930c1093f348a740ff4cbdef0bcfb43d45",
+      "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/candidate-pkg/rhwp_bg.wasm": "66d0ba187083518fc03067252e06fd930c1093f348a740ff4cbdef0bcfb43d45"
+    }
+  }
+}

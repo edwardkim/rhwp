@@ -1,0 +1,22 @@
+{
+  "fonts": [
+    {
+      "name": "HBATANG.TTF",
+      "sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+      "bytes": 32483900,
+      "path": "output/issue8946/stage6/user-fonts/HBATANG.TTF",
+      "source": "$USER_HOME/Downloads/HBATANG.TTF",
+      "authorization": "user supplied; local verification only; no redistribution"
+    },
+    {
+      "name": "HMKMM.TTF",
+      "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+      "bytes": 1820732,
+      "path": "output/issue8946/stage6/user-fonts/HMKMM.TTF",
+      "source": "$USER_HOME/Downloads/HMKMM.TTF",
+      "authorization": "user supplied; local verification only; no redistribution"
+    }
+  ],
+  "system_install": false,
+  "publish_binaries": false
+}

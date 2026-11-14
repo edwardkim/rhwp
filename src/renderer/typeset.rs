@@ -4173,6 +4173,11 @@ impl TypesetEngine {
                 next_para,
                 is_column_top,
                 external_flow,
+                unchanged_coanchored_frame: self.profile.get().hwp5_stored_pagination_layout()
+                    && !self.render_normalization.table_text_reflowed(table)
+                    && crate::renderer::float_placement::stored_inline_host_has_separate_float_frame(
+                        para, table,
+                    ),
             },
             self.dpi,
             || self.profile.get(),

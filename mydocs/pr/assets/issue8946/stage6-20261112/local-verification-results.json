@@ -1,0 +1,570 @@
+{
+  "code_head": "b4855616375c4a8fd1cdd6083d85cd77d655ad26",
+  "base": "80b1c354c29b7a02fb2b3c14a274da7f5b653ada",
+  "checks": {
+    "full-tests": {
+      "log_sha256": "91b1b7a4e106a90cd5f48bdd06a11c643abc5cbee7345362a21097a3ae284b0e",
+      "summary": [
+        "     Summary [ 453.689s] 13320 tests run: 13320 passed (1 slow), 45 skipped"
+      ]
+    },
+    "skia-lib": {
+      "log_sha256": "dcfdb88b9aeb0ff628e8903201d4c78138d82b6cb67fdcc6584de91399cbf2b0",
+      "summary": [
+        "test result: ok. 3852 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 12.25s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ]
+    },
+    "skia-placeholder": {
+      "log_sha256": "a250690a891c95e6cc7a442c16327dc42f3c70ea2a6944ccdb7076e11ca861b1",
+      "summary": [
+        "     Summary [   6.427s] 2 tests run: 2 passed, 367 skipped"
+      ]
+    },
+    "skia-pdf": {
+      "log_sha256": "6f4916bb0f2599158ea93894f1b8423f24c3daf40ee1ad0581199fa22fac0c52",
+      "summary": [
+        "     Summary [   5.964s] 36 tests run: 36 passed, 286 skipped"
+      ]
+    },
+    "fmt-final": {
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "summary": []
+    },
+    "clippy-native-final": {
+      "log_sha256": "d7b1096cf8db1ef3ad8ec9b2c83cfcf0c324976b2736509242fcbb3ad217ecf0",
+      "summary": []
+    },
+    "clippy-wasm-final": {
+      "log_sha256": "f68978e63a19c1c41a3cfeaff525f445a7c8e98e67f76a71fb935b6b4df76aa3",
+      "summary": []
+    },
+    "workspace-build": {
+      "log_sha256": "11c630660e5585e2d53d6ef4c0e3795f01f46d7cb8e25ac57bce9c2065f25122",
+      "summary": []
+    },
+    "clippy-workspace-final": {
+      "log_sha256": "c23890b2de1303f4c916783c91bca9a852e24856589cacc4638abd39d13515f1",
+      "summary": []
+    },
+    "suite-check-final": {
+      "log_sha256": "1ab1f4c0bf6d6e588c76856b38892e01b4b3257cf6d3fa478ddf8ea15392988d",
+      "summary": []
+    },
+    "unit-tiers-final": {
+      "log_sha256": "b0d22c7e9e78b2de09250df5931d136093b5d2ad3c7474ab5c37aa9c3dc75ad0",
+      "summary": []
+    },
+    "studio-test": {
+      "log_sha256": "6a354ac8726dabac2e46ac71ee7618f8682875a63cd9bae42c0015c1c892274b",
+      "summary": [
+        "ℹ pass 2789",
+        "ℹ fail 0"
+      ]
+    },
+    "typescript": {
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "summary": []
+    },
+    "frontend-bindings": {
+      "log_sha256": "26215db5cd86e08d90c49c5353a873c0377e999a2dea0389f7555f15d134a568",
+      "summary": [
+        "ℹ pass 3",
+        "ℹ fail 0"
+      ]
+    },
+    "e2e-manifest": {
+      "log_sha256": "c3e275485acad4da8352010d38fe688cf840f706bd4e31846e934c2b352f97e7",
+      "summary": []
+    },
+    "e2e-final": {
+      "log_sha256": "0d092da0568239d74cbab091bd0f2fe7b635142f315c67f1e9c012d63984775e",
+      "summary": [
+        "RESULT canvas2d 0",
+        "RESULT canvaskit 0"
+      ]
+    }
+  },
+  "e2e": {
+    "checks": [
+      [
+        "omitted",
+        true
+      ],
+      [
+        "false",
+        true
+      ],
+      [
+        "program-A",
+        true
+      ],
+      [
+        "source-metrics",
+        true
+      ],
+      [
+        "enable-fresh-tree",
+        true
+      ],
+      [
+        "enable-fresh-paint",
+        true
+      ],
+      [
+        "enable-hwp-roundtrip-0",
+        true
+      ],
+      [
+        "enable-hwp-roundtrip-1",
+        true
+      ],
+      [
+        "enable-hwpx-roundtrip-0",
+        true
+      ],
+      [
+        "enable-hwpx-roundtrip-1",
+        true
+      ],
+      [
+        "split-query-identity",
+        true
+      ],
+      [
+        "same-id-new-bytes",
+        true
+      ],
+      [
+        "replace-bytes-fresh-tree",
+        true
+      ],
+      [
+        "replace-bytes-fresh-paint",
+        true
+      ],
+      [
+        "replace-bytes-hwp-roundtrip-0",
+        true
+      ],
+      [
+        "replace-bytes-hwp-roundtrip-1",
+        true
+      ],
+      [
+        "replace-bytes-hwpx-roundtrip-0",
+        true
+      ],
+      [
+        "replace-bytes-hwpx-roundtrip-1",
+        true
+      ],
+      [
+        "opaque-identity-not-certified",
+        true
+      ],
+      [
+        "indexed-identity-consumed",
+        true
+      ],
+      [
+        "replace-cff-fresh-tree",
+        true
+      ],
+      [
+        "replace-cff-fresh-paint",
+        true
+      ],
+      [
+        "replace-cff-hwp-roundtrip-0",
+        true
+      ],
+      [
+        "replace-cff-hwp-roundtrip-1",
+        true
+      ],
+      [
+        "replace-cff-hwpx-roundtrip-0",
+        true
+      ],
+      [
+        "replace-cff-hwpx-roundtrip-1",
+        true
+      ],
+      [
+        "preview-page-tree-preserved",
+        true
+      ],
+      [
+        "page-outline-released",
+        true
+      ],
+      [
+        "filtered-outline-released",
+        true
+      ],
+      [
+        "patch-outline-released",
+        true
+      ],
+      [
+        "page-outline-program-consumed",
+        true
+      ],
+      [
+        "ttc-face",
+        true
+      ],
+      [
+        "ttc-sha",
+        true
+      ],
+      [
+        "replace-ttc-face-fresh-tree",
+        true
+      ],
+      [
+        "replace-ttc-face-fresh-paint",
+        true
+      ],
+      [
+        "replace-ttc-face-hwp-roundtrip-0",
+        true
+      ],
+      [
+        "replace-ttc-face-hwp-roundtrip-1",
+        true
+      ],
+      [
+        "replace-ttc-face-hwpx-roundtrip-0",
+        true
+      ],
+      [
+        "replace-ttc-face-hwpx-roundtrip-1",
+        true
+      ],
+      [
+        "remove",
+        true
+      ],
+      [
+        "remove-fresh-tree",
+        true
+      ],
+      [
+        "remove-fresh-paint",
+        true
+      ],
+      [
+        "remove-hwp-roundtrip-0",
+        true
+      ],
+      [
+        "remove-hwp-roundtrip-1",
+        true
+      ],
+      [
+        "remove-hwpx-roundtrip-0",
+        true
+      ],
+      [
+        "remove-hwpx-roundtrip-1",
+        true
+      ],
+      [
+        "restore",
+        true
+      ],
+      [
+        "restore-fresh-tree",
+        true
+      ],
+      [
+        "restore-fresh-paint",
+        true
+      ],
+      [
+        "restore-hwp-roundtrip-0",
+        true
+      ],
+      [
+        "restore-hwp-roundtrip-1",
+        true
+      ],
+      [
+        "restore-hwpx-roundtrip-0",
+        true
+      ],
+      [
+        "restore-hwpx-roundtrip-1",
+        true
+      ],
+      [
+        "disable",
+        true
+      ],
+      [
+        "disable-fresh-tree",
+        true
+      ],
+      [
+        "disable-fresh-paint",
+        true
+      ],
+      [
+        "disable-hwp-roundtrip-0",
+        true
+      ],
+      [
+        "disable-hwp-roundtrip-1",
+        true
+      ],
+      [
+        "disable-hwpx-roundtrip-0",
+        true
+      ],
+      [
+        "disable-hwpx-roundtrip-1",
+        true
+      ],
+      [
+        "read-failure",
+        true
+      ],
+      [
+        "read-failure-fresh-tree",
+        true
+      ],
+      [
+        "read-failure-fresh-paint",
+        true
+      ],
+      [
+        "read-failure-hwp-roundtrip-0",
+        true
+      ],
+      [
+        "read-failure-hwp-roundtrip-1",
+        true
+      ],
+      [
+        "read-failure-hwpx-roundtrip-0",
+        true
+      ],
+      [
+        "read-failure-hwpx-roundtrip-1",
+        true
+      ],
+      [
+        "read-recovery-fresh-tree",
+        true
+      ],
+      [
+        "read-recovery-fresh-paint",
+        true
+      ],
+      [
+        "read-recovery-hwp-roundtrip-0",
+        true
+      ],
+      [
+        "read-recovery-hwp-roundtrip-1",
+        true
+      ],
+      [
+        "read-recovery-hwpx-roundtrip-0",
+        true
+      ],
+      [
+        "read-recovery-hwpx-roundtrip-1",
+        true
+      ],
+      [
+        "detach-fresh-tree",
+        true
+      ],
+      [
+        "detach-fresh-paint",
+        true
+      ],
+      [
+        "detach-hwp-roundtrip-0",
+        true
+      ],
+      [
+        "detach-hwp-roundtrip-1",
+        true
+      ],
+      [
+        "detach-hwpx-roundtrip-0",
+        true
+      ],
+      [
+        "detach-hwpx-roundtrip-1",
+        true
+      ],
+      [
+        "reattach-fresh-tree",
+        true
+      ],
+      [
+        "reattach-fresh-paint",
+        true
+      ],
+      [
+        "reattach-hwp-roundtrip-0",
+        true
+      ],
+      [
+        "reattach-hwp-roundtrip-1",
+        true
+      ],
+      [
+        "reattach-hwpx-roundtrip-0",
+        true
+      ],
+      [
+        "reattach-hwpx-roundtrip-1",
+        true
+      ],
+      [
+        "backend",
+        true
+      ],
+      [
+        "explicit-metric-override",
+        true
+      ],
+      [
+        "saved-bytes",
+        true
+      ],
+      [
+        "portable-names",
+        true
+      ],
+      [
+        "explicit-owner",
+        true
+      ],
+      [
+        "late-disable",
+        true
+      ],
+      [
+        "late-replace",
+        true
+      ],
+      [
+        "late-document",
+        true
+      ],
+      [
+        "local-state",
+        true
+      ],
+      [
+        "ttc-native-measure-0",
+        true
+      ],
+      [
+        "ttc-native-measure-1",
+        true
+      ],
+      [
+        "ttc-native-advance-ratio",
+        true
+      ]
+    ],
+    "count": 97,
+    "all_passed": true
+  },
+  "visual": {
+    "hwpx-native": {
+      "pages": 763,
+      "minimum_raw": 96.35,
+      "below90": 0
+    },
+    "hwpx-wasm": {
+      "pages": 763,
+      "minimum_raw": 99.56,
+      "below90": 0
+    },
+    "hwp3-native": {
+      "pages": 763,
+      "minimum_raw": 98.77,
+      "below90": 0
+    },
+    "hwp3-wasm": {
+      "pages": 763,
+      "minimum_raw": 99.55,
+      "below90": 0
+    },
+    "host-hwpx-measure": {
+      "pages": 763,
+      "minimum_raw": 99.36,
+      "below90": 0
+    },
+    "host-hwp3-measure": {
+      "pages": 763,
+      "minimum_raw": 99.35,
+      "below90": 0
+    },
+    "incoming-final-base-native": {
+      "pages": 88,
+      "minimum_raw": 90.79,
+      "below90": 0
+    },
+    "incoming-final-head-native": {
+      "pages": 88,
+      "minimum_raw": 90.79,
+      "below90": 0
+    },
+    "incoming-final-base-wasm": {
+      "pages": 88,
+      "minimum_raw": 90.79,
+      "below90": 0
+    },
+    "incoming-final-head-wasm": {
+      "pages": 88,
+      "minimum_raw": 90.79,
+      "below90": 0
+    },
+    "rowbreak-base-native": {
+      "pages": 14,
+      "minimum_raw": 100.0,
+      "below90": 0
+    },
+    "rowbreak-base-wasm": {
+      "pages": 14,
+      "minimum_raw": 100.0,
+      "below90": 0
+    },
+    "rowbreak-head-native": {
+      "pages": 14,
+      "minimum_raw": 100.0,
+      "below90": 0
+    },
+    "rowbreak-head-wasm": {
+      "pages": 14,
+      "minimum_raw": 100.0,
+      "below90": 0
+    }
+  },
+  "shell_exits": {
+    "suite-prepare-final": 0,
+    "full-tests": 0,
+    "skia-lib": 0,
+    "skia-placeholder": 0,
+    "skia-pdf": 0,
+    "fmt-final": 0,
+    "clippy-native-final": 0,
+    "clippy-wasm-final": 0,
+    "workspace-build": 0,
+    "clippy-workspace-final": 0,
+    "suite-check-final": 0,
+    "unit-tiers-final": 0
+  }
+}

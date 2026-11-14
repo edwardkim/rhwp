@@ -1,0 +1,463 @@
+{
+  "type": "resolvedness audit; not PR approval or merge validation",
+  "checked_at": "2026-11-13T15:56:50.994732+00:00",
+  "devel": "d7b927d073489b8c5ea95655224b04096c939534",
+  "source_unchanged": true,
+  "prs": [
+    {
+      "number": 7668,
+      "url": "https://github.com/edwardkim/rhwp/pull/7668",
+      "title": "fix(render): preserve picture effect sizes and mixed-cell flow",
+      "state": "OPEN",
+      "draft": true,
+      "head": "e9f43c0ce5876c08106547781888c4ab6a41ec8b",
+      "existing_reviewers": [
+        "edwardkim"
+      ]
+    },
+    {
+      "number": 7675,
+      "url": "https://github.com/edwardkim/rhwp/pull/7675",
+      "title": "fix(renderer): wrap inline picture cells using paragraph indentation",
+      "state": "OPEN",
+      "draft": true,
+      "head": "fb6e03c2dbd3f1c0d2d17702479d18b2e3ced51c",
+      "existing_reviewers": [
+        "edwardkim"
+      ]
+    },
+    {
+      "number": 7682,
+      "url": "https://github.com/edwardkim/rhwp/pull/7682",
+      "title": "fix(renderer): preserve paragraph flow in picture-only cells",
+      "state": "OPEN",
+      "draft": true,
+      "head": "9f2556c092a76fc66eaa123480ffaeedaeaed22c",
+      "existing_reviewers": [
+        "edwardkim"
+      ]
+    }
+  ],
+  "native_build": {
+    "head": "d7b927d073489b8c5ea95655224b04096c939534",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--bin",
+      "rhwp",
+      "--target-dir",
+      "/Users/tsjang/rhwp/target/pr-review",
+      "-j",
+      "8"
+    ],
+    "status": "passed",
+    "started_at": "2026-11-13T15:46:02.757176+00:00",
+    "font_environment": "normal Mac installed user/system fonts; no minimal-font sandbox",
+    "pid": 10710,
+    "exit": 0,
+    "seconds": 167.12514362484217,
+    "log_sha256": "9949f1670af1a6cc41642819418b2c223e0c41a1f6e30403b2b991107e98e7b7",
+    "binary_sha256": "2be5428297be9017833277a1cff3878371096fa78e9cd5fc84c86b7f44eb7d1f"
+  },
+  "metric": "canonical Visual Sweep 2px raw content silhouette, 96 DPI, compat2022, native PNG; normal Mac system/user fonts",
+  "rows": [
+    {
+      "key": "pr7668-grid-soft-hancom",
+      "pr": 7668,
+      "source_pr_heads": [
+        {
+          "pr": 7668,
+          "head": "e9f43c0ce5876c08106547781888c4ab6a41ec8b"
+        },
+        {
+          "pr": 7675,
+          "head": "fb6e03c2dbd3f1c0d2d17702479d18b2e3ced51c"
+        },
+        {
+          "pr": 7682,
+          "head": "9f2556c092a76fc66eaa123480ffaeedaeaed22c"
+        }
+      ],
+      "original_path": "mydocs/pr/assets/picture-effect-reflow/grid-soft-hancom.hwp",
+      "source_blob": "bb50e582a041e345fc901a54f075c3e943b2778a",
+      "input": "mydocs/pr/assets/jeong_sik_devel_audit_20261114/cases/pr7668-grid-soft-hancom/grid-soft-hancom.hwp",
+      "input_sha256": "da9debd67b7bdf141281645c5b013e03f4be52f8bafb2251cef69562ecb15c01",
+      "pdf": "pdf/jeong-sik-develop-audit-20261114/pr7668-grid-soft-hancom-2020.pdf",
+      "pdf_sha256": "708a3278ecff8ebd97c9078bad81b0077a5dc411977a049cc6a1aac1cf446d5f",
+      "tsv": "mydocs/pr/assets/jeong_sik_devel_audit_20261114/cases/pr7668-grid-soft-hancom/native.tsv",
+      "tsv_sha256": "561d4d47f78b0b8ae70ad6ec8d29c3a170ad0b344a57e00d42aeefb8a4787c99",
+      "page": 1,
+      "native_pages": 1,
+      "pdf_pages": 1,
+      "silhouette_raw_match_percent": 99.97213,
+      "gate": "passed",
+      "last_saved_with": {
+        "confidence": "metadata",
+        "product": "hancom-office-2018",
+        "version": "10.90.0.2390"
+      },
+      "print_receipt": {
+        "job_id": "948b16e2-6c64-420c-b8be-06d798673d22",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      },
+      "visual_read": "Soft-edge grid, size, colored cells and circular cutouts are preserved; minor raster-edge differences remain.",
+      "images": [
+        {
+          "path": "mydocs/pr/assets/jeong_sik_devel_audit_20261114/cases/pr7668-grid-soft-hancom/review-001.png",
+          "sha256": "c1710402b171920b6a72db83891bbce6908f118eee5d0ed0dbef9e568305d70d"
+        },
+        {
+          "path": "mydocs/pr/assets/jeong_sik_devel_audit_20261114/cases/pr7668-grid-soft-hancom/overlay-001.png",
+          "sha256": "54269b845b429cc278c841df1184c493f68560a8b202c51bde1fd1a6f12f22f2"
+        },
+        {
+          "path": "mydocs/pr/assets/jeong_sik_devel_audit_20261114/cases/pr7668-grid-soft-hancom/raw-001.png",
+          "sha256": "b8447c60279d934f11126da0b79121ecce91b526dc5e940ec85423fca31ac34d"
+        },
+        {
+          "path": "mydocs/pr/assets/jeong_sik_devel_audit_20261114/cases/pr7668-grid-soft-hancom/pdf-001.png",
+          "sha256": "2ce2840e59e16e967067f912a22ca93a08153567c1aedb43ebf9290d61c17717"
+        }
+      ]
+    },
+    {
+      "key": "pr7668-mixed",
+      "pr": 7668,
+      "source_pr_heads": [
+        {
+          "pr": 7668,
+          "head": "e9f43c0ce5876c08106547781888c4ab6a41ec8b"
+        },
+        {
+          "pr": 7675,
+          "head": "fb6e03c2dbd3f1c0d2d17702479d18b2e3ced51c"
+        },
+        {
+          "pr": 7682,
+          "head": "9f2556c092a76fc66eaa123480ffaeedaeaed22c"
+        }
+      ],
+      "original_path": "mydocs/pr/assets/picture-effect-reflow/mixed.hwp",
+      "source_blob": "e2b974f9eb8391bb2b6583fee9d5286c2d970f1c",
+      "input": "mydocs/pr/assets/jeong_sik_devel_audit_20261114/cases/pr7668-mixed/mixed.hwp",
+      "input_sha256": "fdff394269be5191acdc9aced62da202e64cfe655e4c2775319edab3531f4126",
+      "pdf": "pdf/jeong-sik-develop-audit-20261114/pr7668-mixed-2020.pdf",
+      "pdf_sha256": "c159df1abd5356dded5f76b263ed9b5bdb18fafb93e62aec259fd471662bb767",
+      "tsv": "mydocs/pr/assets/jeong_sik_devel_audit_20261114/cases/pr7668-mixed/native.tsv",
+      "tsv_sha256": "bcafc2ec3f9860e05f1ee8694c70eb366d808dfd0ef67758c9fbaada30e731aa",
+      "page": 1,
+      "native_pages": 1,
+      "pdf_pages": 1,
+      "silhouette_raw_match_percent": 0.0,
+      "gate": "re_review_required",
+      "last_saved_with": {
+        "confidence": "metadata",
+        "product": "hancom-office-2018",
+        "version": "10.90.0.2390"
+      },
+      "print_receipt": {
+        "job_id": "7fe7e678-c431-458f-a5e6-d71ca55cda9e",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      },
+      "visual_read": "Float and inline pictures overlap; Print separates the four numbered pictures.",
+      "images": [
+        {
+          "path": "mydocs/pr/assets/jeong_sik_devel_audit_20261114/cases/pr7668-mixed/review-001.png",
+          "sha256": "0a74461a4c9edcad72dea1dc6f1243c2c95ea7022dc3b1e67a78248c3ce8422d"
+        },
+        {
+          "path": "mydocs/pr/assets/jeong_sik_devel_audit_20261114/cases/pr7668-mixed/overlay-001.png",
+          "sha256": "83f0661230c0eb1535b1b07b8325ee7f7c010594cde34becb07725afd6eed01f"
+        },
+        {
+          "path": "mydocs/pr/assets/jeong_sik_devel_audit_20261114/cases/pr7668-mixed/raw-001.png",
+          "sha256": "92fa37168b2b3713302c01619320bd473de8093bc57245f43cdf084e21ed3f01"
+        },
+        {
+          "path": "mydocs/pr/assets/jeong_sik_devel_audit_20261114/cases/pr7668-mixed/pdf-001.png",
+          "sha256": "f2a83b6d8e840aeff21157701f436216383af644cb327ce3a63b08c508810264"
+        }
+      ]
+    },
+    {
+      "key": "pr7675-all-inline",
+      "pr": 7675,
+      "source_pr_heads": [
+        {
+          "pr": 7675,
+          "head": "fb6e03c2dbd3f1c0d2d17702479d18b2e3ced51c"
+        },
+        {
+          "pr": 7682,
+          "head": "9f2556c092a76fc66eaa123480ffaeedaeaed22c"
+        }
+      ],
+      "original_path": "mydocs/pr/assets/inline-picture-cell-flow/all-inline.hwp",
+      "source_blob": "b8b23f4807952eef85b8c848ac03e30d6a86c455",
+      "input": "mydocs/pr/assets/jeong_sik_devel_audit_20261114/cases/pr7675-all-inline/all-inline.hwp",
+      "input_sha256": "9da935ce21128324c7b5d4f799678bcb69b0c24369c1875243fd89dfa330b196",
+      "pdf": "pdf/jeong-sik-develop-audit-20261114/pr7675-all-inline-2020.pdf",
+      "pdf_sha256": "327925263fef709ac4c4341d5691cda66cf53b18b0501acf41ac056883e9a2ad",
+      "tsv": "mydocs/pr/assets/jeong_sik_devel_audit_20261114/cases/pr7675-all-inline/native.tsv",
+      "tsv_sha256": "1be9a1ca7be20d0e46e190a31834fa08dccd48b349237710c9961c2d82b4cf50",
+      "page": 1,
+      "native_pages": 1,
+      "pdf_pages": 1,
+      "silhouette_raw_match_percent": 1.94372,
+      "gate": "re_review_required",
+      "last_saved_with": {
+        "confidence": "metadata",
+        "product": "hancom-office-2018",
+        "version": "10.90.0.2390"
+      },
+      "print_receipt": {
+        "job_id": "ebfd7bf0-9ec7-41b0-8815-bc77b7be90d9",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      },
+      "visual_read": "Four pictures occupy one row outside the table; Print wraps into three rows; internal bitmap numbers are also cropped.",
+      "images": [
+        {
+          "path": "mydocs/pr/assets/jeong_sik_devel_audit_20261114/cases/pr7675-all-inline/review-001.png",
+          "sha256": "d3ac0468973417490c603a30179c2bb5418ab07ca9ac4255482d59552a5f5c14"
+        },
+        {
+          "path": "mydocs/pr/assets/jeong_sik_devel_audit_20261114/cases/pr7675-all-inline/overlay-001.png",
+          "sha256": "fa87dd65d1dc11cc52a4cef9c884046f5d83ee35e4aef291f8a51e5430b1150e"
+        },
+        {
+          "path": "mydocs/pr/assets/jeong_sik_devel_audit_20261114/cases/pr7675-all-inline/raw-001.png",
+          "sha256": "f8de57026056b23247cb66cc3766145c03ff213004803c910a0718a63f939ca7"
+        },
+        {
+          "path": "mydocs/pr/assets/jeong_sik_devel_audit_20261114/cases/pr7675-all-inline/pdf-001.png",
+          "sha256": "9d6d3d707b426ab7e7e61d480ffeea86cc886a646f20a8d23a9391f45ff347d8"
+        }
+      ]
+    },
+    {
+      "key": "pr7675-bottom",
+      "pr": 7675,
+      "source_pr_heads": [
+        {
+          "pr": 7675,
+          "head": "fb6e03c2dbd3f1c0d2d17702479d18b2e3ced51c"
+        },
+        {
+          "pr": 7682,
+          "head": "9f2556c092a76fc66eaa123480ffaeedaeaed22c"
+        }
+      ],
+      "original_path": "mydocs/pr/assets/inline-picture-cell-flow/bottom.hwp",
+      "source_blob": "fb65f8531d0811193f1247666f802a7576d568af",
+      "input": "mydocs/pr/assets/jeong_sik_devel_audit_20261114/cases/pr7675-bottom/bottom.hwp",
+      "input_sha256": "5eb48a1dc3b6cdde2cb55f88eb05a23248a010fd25d0e8facd70b7e19d9daa34",
+      "pdf": "pdf/jeong-sik-develop-audit-20261114/pr7675-bottom-2020.pdf",
+      "pdf_sha256": "7936a91782a4af40812d5f2fae63fa4f299a29f5740cdfa085af62a08b40a8cb",
+      "tsv": "mydocs/pr/assets/jeong_sik_devel_audit_20261114/cases/pr7675-bottom/native.tsv",
+      "tsv_sha256": "98ca37700a16a2715803a75e7cef64901778e56c8eaba09a85c99eadc401ebff",
+      "page": 1,
+      "native_pages": 1,
+      "pdf_pages": 1,
+      "silhouette_raw_match_percent": 6.06745,
+      "gate": "re_review_required",
+      "last_saved_with": {
+        "confidence": "metadata",
+        "product": "hancom-office-2018",
+        "version": "10.90.0.2390"
+      },
+      "print_receipt": {
+        "job_id": "fff4de84-6db9-4ef3-8650-21685ed38efc",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      },
+      "visual_read": "Pictures remain in one lower row and clip; Print has three rows at the bottom."
+    },
+    {
+      "key": "pr7682-bottom",
+      "pr": 7682,
+      "source_pr_heads": [
+        {
+          "pr": 7682,
+          "head": "9f2556c092a76fc66eaa123480ffaeedaeaed22c"
+        }
+      ],
+      "original_path": "mydocs/pr/assets/picture-cell-paragraph-flow/bottom.hwp",
+      "source_blob": "6e93c4859d07489510cfab316d3cdc71e3c16a25",
+      "input": "mydocs/pr/assets/jeong_sik_devel_audit_20261114/cases/pr7682-bottom/bottom.hwp",
+      "input_sha256": "106787de5e3437b8859756edba7c36c51996625d2cb9296f7e0da4d2166abb28",
+      "pdf": "pdf/jeong-sik-develop-audit-20261114/pr7682-bottom-2020.pdf",
+      "pdf_sha256": "48eee219369c1f0ee271338b4c168f06bed9255463ea196d7a701118f90decb6",
+      "tsv": "mydocs/pr/assets/jeong_sik_devel_audit_20261114/cases/pr7682-bottom/native.tsv",
+      "tsv_sha256": "df42770bfc77ead97e9b44debb118f209d9fd1b2ae3a793d1b63748d85bb5f70",
+      "page": 1,
+      "native_pages": 1,
+      "pdf_pages": 1,
+      "silhouette_raw_match_percent": 44.51006,
+      "gate": "re_review_required",
+      "last_saved_with": {
+        "confidence": "metadata",
+        "product": "hancom-office-2018",
+        "version": "10.90.0.2390"
+      },
+      "print_receipt": {
+        "job_id": "85a4d0df-0e69-45ee-b881-bd016c733668",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      },
+      "visual_read": "First and second pictures occupy the wrong lower locations; Print preserves their two paragraph frames."
+    },
+    {
+      "key": "pr7682-two-paras",
+      "pr": 7682,
+      "source_pr_heads": [
+        {
+          "pr": 7682,
+          "head": "9f2556c092a76fc66eaa123480ffaeedaeaed22c"
+        }
+      ],
+      "original_path": "mydocs/pr/assets/picture-cell-paragraph-flow/two-paras.hwp",
+      "source_blob": "87d3dd16b8120c917e8fb6c2f311f7bca66f93eb",
+      "input": "mydocs/pr/assets/jeong_sik_devel_audit_20261114/cases/pr7682-two-paras/two-paras.hwp",
+      "input_sha256": "b40fa498c4f2bc31d488c911f76dda1ae61709567cf5f373b6aa25bd37352dcf",
+      "pdf": "pdf/jeong-sik-develop-audit-20261114/pr7682-two-paras-2020.pdf",
+      "pdf_sha256": "7f4835cbd9285b20c9bd70f5bcbfd5bee5474a14d78f76e64eea764ebb62bdd7",
+      "tsv": "mydocs/pr/assets/jeong_sik_devel_audit_20261114/cases/pr7682-two-paras/native.tsv",
+      "tsv_sha256": "aa5bd553e68e591507547620d38e9b8b4bf0f396917da9c105ffce43894c5153",
+      "page": 1,
+      "native_pages": 1,
+      "pdf_pages": 1,
+      "silhouette_raw_match_percent": 9.53881,
+      "gate": "re_review_required",
+      "last_saved_with": {
+        "confidence": "metadata",
+        "product": "hancom-office-2018",
+        "version": "10.90.0.2390"
+      },
+      "print_receipt": {
+        "job_id": "e89e7c72-6b4b-47c2-a0df-3fb2a7ed20bf",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      },
+      "visual_read": "Both paragraph picture origins are too low and internal picture numbers are cropped; following text remains separately present.",
+      "images": [
+        {
+          "path": "mydocs/pr/assets/jeong_sik_devel_audit_20261114/cases/pr7682-two-paras/review-001.png",
+          "sha256": "f925484ae1369a877afafe71aafb0ba0e49a6271bbef523ae78043007331fcb2"
+        },
+        {
+          "path": "mydocs/pr/assets/jeong_sik_devel_audit_20261114/cases/pr7682-two-paras/overlay-001.png",
+          "sha256": "20bb66ffd8cfd38195fff6a828fee39a4dd3028e19a2e600172381e77e833c87"
+        },
+        {
+          "path": "mydocs/pr/assets/jeong_sik_devel_audit_20261114/cases/pr7682-two-paras/raw-001.png",
+          "sha256": "60f9a97aea0da8aacdb96c7688228cb4b5cb8ce9387ad9d596b1fefe53dbe8a6"
+        },
+        {
+          "path": "mydocs/pr/assets/jeong_sik_devel_audit_20261114/cases/pr7682-two-paras/pdf-001.png",
+          "sha256": "2710f9fc18cc05f7ed8f3e617c5657329e5e012706b530496d1475420d2f42b7"
+        }
+      ]
+    },
+    {
+      "key": "pr7682-wrapped",
+      "pr": 7682,
+      "source_pr_heads": [
+        {
+          "pr": 7682,
+          "head": "9f2556c092a76fc66eaa123480ffaeedaeaed22c"
+        }
+      ],
+      "original_path": "mydocs/pr/assets/picture-cell-paragraph-flow/wrapped.hwp",
+      "source_blob": "03c06e63c3ece0dc3275322c4704f4967ebc114f",
+      "input": "mydocs/pr/assets/jeong_sik_devel_audit_20261114/cases/pr7682-wrapped/wrapped.hwp",
+      "input_sha256": "9651afa266be86b905d0f18f797233180269d0f9aa44472ae565e490148e51ef",
+      "pdf": "pdf/jeong-sik-develop-audit-20261114/pr7682-wrapped-2020.pdf",
+      "pdf_sha256": "d91841d338dfc7ba855e61fd387d9b82e2b9ae0ed8c967c7f191ce6cdb3e5d87",
+      "tsv": "mydocs/pr/assets/jeong_sik_devel_audit_20261114/cases/pr7682-wrapped/native.tsv",
+      "tsv_sha256": "5081845921c8aca9d8764956e71799223251f02d89000cd659281495a03a171d",
+      "page": 1,
+      "native_pages": 1,
+      "pdf_pages": 1,
+      "silhouette_raw_match_percent": 18.89514,
+      "gate": "re_review_required",
+      "last_saved_with": {
+        "confidence": "metadata",
+        "product": "hancom-office-2018",
+        "version": "10.90.0.2390"
+      },
+      "print_receipt": {
+        "job_id": "7ae443e6-46ce-4b99-a610-8cd5b8a71395",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      },
+      "visual_read": "Pictures from the second paragraph fail width wrapping and clip at the side; Print places them vertically."
+    }
+  ],
+  "png_reuse": "TSV regenerated from same full-sweep Native/PDF PNG pair by canonical --silhouette-only --png-pair; input, PDF, producer and PNG hashes connect each row. No old head raster reused.",
+  "scope": {
+    "public_inputs_available": 31,
+    "public_inputs_rendered_and_printed": 7,
+    "pages_native": 7,
+    "pages_print": 7,
+    "fresh_wasm_executed": false,
+    "private_company_originals_available": false,
+    "full_regression_executed": false,
+    "remote_changes": false
+  },
+  "already_resolved_history": [
+    {
+      "pr": 8656,
+      "commit": "d8e6c8a445429cc8354f7e8fd3f8d67ffef7f6bd",
+      "scope": "known single soft-edge tail dimensions/alpha",
+      "integration": "c80f355faa2bd810eda0724ec606027e7bbc019f"
+    },
+    {
+      "pr": 8889,
+      "commit": "050e78455ea22857665973be3cdb68981fd71cb0",
+      "scope": "soft-edge radius ownership/paint/print planes; not all picture-cell geometry"
+    }
+  ]
+}

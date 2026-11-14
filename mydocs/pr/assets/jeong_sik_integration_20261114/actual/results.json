@@ -1,0 +1,3317 @@
+[
+  {
+    "key": "pr7668-mixed",
+    "requestedBackend": "canvas2d",
+    "profile": "screen",
+    "jsResponses": [
+      {
+        "url": "http://127.0.0.1:7738/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+        "sha256": "12dab7329c321bbbffd3b8dc696c6a12df80222dd9de734939ae86ce63623ca9",
+        "sourceSha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+        "verifiedSource": true,
+        "transport": "Vite WASM URL rewrite and source map",
+        "wasmPath": "/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm"
+      }
+    ],
+    "loaded": {
+      "pageCount": 1
+    },
+    "state": {
+      "backend": "canvas2d",
+      "selection": {
+        "schemaVersion": 1,
+        "request": {
+          "backend": "canvas2d",
+          "source": "url",
+          "requested": "canvas2d"
+        },
+        "requestedBackend": "canvas2d",
+        "effectiveBackend": "canvas2d",
+        "selectionReason": "explicitCanvas2d",
+        "fallbackReason": null,
+        "documentRevision": 2,
+        "resourceGeneration": 2,
+        "renderProfile": "screen",
+        "documentDigest": "blake3:bfa55fbc7733c809c1c92d457d6b6609ca211463df6cde4c199d6489a61565f3",
+        "decisionKey": "blake3:bfa55fbc7733c809c1c92d457d6b6609ca211463df6cde4c199d6489a61565f3|revision:2|profile:screen|resources:2|request:canvas2d|mode:default",
+        "preflight": null,
+        "initializationError": null,
+        "selectionError": null
+      },
+      "runtime": {
+        "backend": {
+          "backend": "canvas2d",
+          "source": "url",
+          "requested": "canvas2d"
+        },
+        "canvaskitMode": {
+          "mode": "default",
+          "source": "url",
+          "requested": "default"
+        },
+        "canvaskitSurface": {
+          "preference": "software",
+          "requested": "software"
+        },
+        "renderProfile": "screen"
+      },
+      "images": [
+        {
+          "bbox": {
+            "x": 117.147,
+            "y": 424.207,
+            "width": 226.76,
+            "height": 188.973
+          },
+          "paint": {
+            "x": 117.147,
+            "y": 424.207,
+            "width": 75.587,
+            "height": 35.432
+          }
+        },
+        {
+          "bbox": {
+            "x": 343.933,
+            "y": 235.233,
+            "width": 226.76,
+            "height": 188.973
+          },
+          "paint": {
+            "x": 343.933,
+            "y": 235.233,
+            "width": 94.483,
+            "height": 78.651
+          }
+        },
+        {
+          "bbox": {
+            "x": 343.907,
+            "y": 424.207,
+            "width": 226.76,
+            "height": 188.973
+          },
+          "paint": {
+            "x": 343.907,
+            "y": 424.207,
+            "width": 56.69,
+            "height": 47.149
+          }
+        },
+        {
+          "bbox": {
+            "x": 117.147,
+            "y": 235.233,
+            "width": 226.76,
+            "height": 188.973
+          },
+          "paint": {
+            "x": 117.147,
+            "y": 235.233,
+            "width": 94.483,
+            "height": 78.651
+          }
+        }
+      ],
+      "captureClip": {
+        "x": 263.15625,
+        "y": 150,
+        "height": 1122.5,
+        "width": 793.6875
+      }
+    },
+    "cycles": null,
+    "passed": true,
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/pr7668-mixed/canvas2d-screen.png",
+    "capture_sha256": "6f88d003a71c9658113a3c7c0f294b7c5e1c76b9e44af812d99f13087f69468b"
+  },
+  {
+    "key": "pr7675-all-inline",
+    "requestedBackend": "canvas2d",
+    "profile": "screen",
+    "jsResponses": [
+      {
+        "url": "http://127.0.0.1:7738/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+        "sha256": "12dab7329c321bbbffd3b8dc696c6a12df80222dd9de734939ae86ce63623ca9",
+        "sourceSha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+        "verifiedSource": true,
+        "transport": "Vite WASM URL rewrite and source map",
+        "wasmPath": "/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm"
+      }
+    ],
+    "loaded": {
+      "pageCount": 1
+    },
+    "state": {
+      "backend": "canvas2d",
+      "selection": {
+        "schemaVersion": 1,
+        "request": {
+          "backend": "canvas2d",
+          "source": "url",
+          "requested": "canvas2d"
+        },
+        "requestedBackend": "canvas2d",
+        "effectiveBackend": "canvas2d",
+        "selectionReason": "explicitCanvas2d",
+        "fallbackReason": null,
+        "documentRevision": 2,
+        "resourceGeneration": 2,
+        "renderProfile": "screen",
+        "documentDigest": "blake3:f62e87928bb903b01d4d9c2d6fc6076a5b2cef93379f87f89ce9b02fbaa2ec37",
+        "decisionKey": "blake3:f62e87928bb903b01d4d9c2d6fc6076a5b2cef93379f87f89ce9b02fbaa2ec37|revision:2|profile:screen|resources:2|request:canvas2d|mode:default",
+        "preflight": null,
+        "initializationError": null,
+        "selectionError": null
+      },
+      "runtime": {
+        "backend": {
+          "backend": "canvas2d",
+          "source": "url",
+          "requested": "canvas2d"
+        },
+        "canvaskitMode": {
+          "mode": "default",
+          "source": "url",
+          "requested": "default"
+        },
+        "canvaskitSurface": {
+          "preference": "software",
+          "requested": "software"
+        },
+        "renderProfile": "screen"
+      },
+      "images": [
+        {
+          "bbox": {
+            "x": 117.147,
+            "y": 157.36,
+            "width": 226.76,
+            "height": 188.973
+          },
+          "paint": {
+            "x": 117.147,
+            "y": 157.36,
+            "width": 75.587,
+            "height": 35.432
+          }
+        },
+        {
+          "bbox": {
+            "x": 343.907,
+            "y": 157.36,
+            "width": 226.76,
+            "height": 188.973
+          },
+          "paint": {
+            "x": 343.907,
+            "y": 157.36,
+            "width": 94.483,
+            "height": 78.651
+          }
+        },
+        {
+          "bbox": {
+            "x": 150.48,
+            "y": 357,
+            "width": 226.76,
+            "height": 188.973
+          },
+          "paint": {
+            "x": 150.48,
+            "y": 357,
+            "width": 56.69,
+            "height": 47.149
+          }
+        },
+        {
+          "bbox": {
+            "x": 150.48,
+            "y": 556.64,
+            "width": 226.76,
+            "height": 188.973
+          },
+          "paint": {
+            "x": 150.48,
+            "y": 556.64,
+            "width": 94.483,
+            "height": 78.651
+          }
+        }
+      ],
+      "captureClip": {
+        "x": 263.15625,
+        "y": 150,
+        "height": 1122.5,
+        "width": 793.6875
+      }
+    },
+    "cycles": null,
+    "passed": true,
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/pr7675-all-inline/canvas2d-screen.png",
+    "capture_sha256": "5953d116fd8980fe4be4f4d382efbbbf6995986de5b4a2fa95da062ddfb04e5b"
+  },
+  {
+    "key": "pr7682-two-paras",
+    "requestedBackend": "canvas2d",
+    "profile": "screen",
+    "jsResponses": [
+      {
+        "url": "http://127.0.0.1:7738/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+        "sha256": "12dab7329c321bbbffd3b8dc696c6a12df80222dd9de734939ae86ce63623ca9",
+        "sourceSha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+        "verifiedSource": true,
+        "transport": "Vite WASM URL rewrite and source map",
+        "wasmPath": "/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm"
+      }
+    ],
+    "loaded": {
+      "pageCount": 1
+    },
+    "state": {
+      "backend": "canvas2d",
+      "selection": {
+        "schemaVersion": 1,
+        "request": {
+          "backend": "canvas2d",
+          "source": "url",
+          "requested": "canvas2d"
+        },
+        "requestedBackend": "canvas2d",
+        "effectiveBackend": "canvas2d",
+        "selectionReason": "explicitCanvas2d",
+        "fallbackReason": null,
+        "documentRevision": 2,
+        "resourceGeneration": 2,
+        "renderProfile": "screen",
+        "documentDigest": "blake3:6c1db5c792c29b9c7f25a1b35df18f87c0941f63f5a63291153d16e6cf6dccef",
+        "decisionKey": "blake3:6c1db5c792c29b9c7f25a1b35df18f87c0941f63f5a63291153d16e6cf6dccef|revision:2|profile:screen|resources:2|request:canvas2d|mode:default",
+        "preflight": null,
+        "initializationError": null,
+        "selectionError": null
+      },
+      "runtime": {
+        "backend": {
+          "backend": "canvas2d",
+          "source": "url",
+          "requested": "canvas2d"
+        },
+        "canvaskitMode": {
+          "mode": "default",
+          "source": "url",
+          "requested": "default"
+        },
+        "canvaskitSurface": {
+          "preference": "software",
+          "requested": "software"
+        },
+        "renderProfile": "screen"
+      },
+      "images": [
+        {
+          "bbox": {
+            "x": 117.147,
+            "y": 157.36,
+            "width": 162.36,
+            "height": 91.32
+          },
+          "paint": {
+            "x": 117.147,
+            "y": 157.36,
+            "width": 54.12,
+            "height": 17.122
+          }
+        },
+        {
+          "bbox": {
+            "x": 117.147,
+            "y": 256.68,
+            "width": 162.36,
+            "height": 91.32
+          },
+          "paint": {
+            "x": 117.147,
+            "y": 256.68,
+            "width": 67.65,
+            "height": 38.008
+          }
+        }
+      ],
+      "captureClip": {
+        "x": 263.15625,
+        "y": 150,
+        "height": 1122.5,
+        "width": 793.6875
+      }
+    },
+    "cycles": null,
+    "passed": true,
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/pr7682-two-paras/canvas2d-screen.png",
+    "capture_sha256": "556c342f695bb1a017115f30c11a1b0ce9704c01db99174752d13e6e3aa7dc4c"
+  },
+  {
+    "key": "owner-hwp",
+    "requestedBackend": "canvas2d",
+    "profile": "screen",
+    "jsResponses": [
+      {
+        "url": "http://127.0.0.1:7738/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+        "sha256": "12dab7329c321bbbffd3b8dc696c6a12df80222dd9de734939ae86ce63623ca9",
+        "sourceSha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+        "verifiedSource": true,
+        "transport": "Vite WASM URL rewrite and source map",
+        "wasmPath": "/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm"
+      }
+    ],
+    "loaded": {
+      "pageCount": 1
+    },
+    "state": {
+      "backend": "canvas2d",
+      "selection": {
+        "schemaVersion": 1,
+        "request": {
+          "backend": "canvas2d",
+          "source": "url",
+          "requested": "canvas2d"
+        },
+        "requestedBackend": "canvas2d",
+        "effectiveBackend": "canvas2d",
+        "selectionReason": "explicitCanvas2d",
+        "fallbackReason": null,
+        "documentRevision": 2,
+        "resourceGeneration": 2,
+        "renderProfile": "screen",
+        "documentDigest": "blake3:a079f83e6ca47d93f7d0a7610514be272dbcc933435a0c2edb9ca1be8e4fa01f",
+        "decisionKey": "blake3:a079f83e6ca47d93f7d0a7610514be272dbcc933435a0c2edb9ca1be8e4fa01f|revision:2|profile:screen|resources:2|request:canvas2d|mode:default",
+        "preflight": null,
+        "initializationError": null,
+        "selectionError": null
+      },
+      "runtime": {
+        "backend": {
+          "backend": "canvas2d",
+          "source": "url",
+          "requested": "canvas2d"
+        },
+        "canvaskitMode": {
+          "mode": "default",
+          "source": "url",
+          "requested": "default"
+        },
+        "canvaskitSurface": {
+          "preference": "software",
+          "requested": "software"
+        },
+        "renderProfile": "screen"
+      },
+      "images": [
+        {
+          "bbox": {
+            "x": 113.387,
+            "y": 132.267,
+            "width": 226.76,
+            "height": 188.973
+          },
+          "paint": {
+            "x": 113.387,
+            "y": 132.267,
+            "width": 226.76,
+            "height": 188.973
+          }
+        },
+        {
+          "bbox": {
+            "x": 113.387,
+            "y": 321.24,
+            "width": 226.76,
+            "height": 188.973
+          },
+          "paint": {
+            "x": 113.387,
+            "y": 321.24,
+            "width": 75.587,
+            "height": 35.432
+          }
+        }
+      ],
+      "captureClip": {
+        "x": 263.15625,
+        "y": 150,
+        "height": 1122.5,
+        "width": 793.6875
+      }
+    },
+    "cycles": {
+      "edit": {
+        "ok": true
+      },
+      "results": [
+        {
+          "format": "hwp",
+          "cycle": 1,
+          "pages": 1,
+          "images": [
+            {
+              "type": "Image",
+              "bbox": {
+                "x": 113.4,
+                "y": 132.3,
+                "w": 226.8,
+                "h": 189
+              },
+              "pi": 0,
+              "ci": 2,
+              "textWrap": "TopAndBottom"
+            },
+            {
+              "type": "Image",
+              "bbox": {
+                "x": 113.4,
+                "y": 321.2,
+                "w": 226.8,
+                "h": 189
+              },
+              "pi": 0,
+              "ci": 3,
+              "textWrap": "TopAndBottom"
+            }
+          ],
+          "brightness": 17
+        },
+        {
+          "format": "hwp",
+          "cycle": 2,
+          "pages": 1,
+          "images": [
+            {
+              "type": "Image",
+              "bbox": {
+                "x": 113.4,
+                "y": 132.3,
+                "w": 226.8,
+                "h": 189
+              },
+              "pi": 0,
+              "ci": 2,
+              "textWrap": "TopAndBottom"
+            },
+            {
+              "type": "Image",
+              "bbox": {
+                "x": 113.4,
+                "y": 321.2,
+                "w": 226.8,
+                "h": 189
+              },
+              "pi": 0,
+              "ci": 3,
+              "textWrap": "TopAndBottom"
+            }
+          ],
+          "brightness": 17
+        },
+        {
+          "format": "hwp",
+          "cycle": 3,
+          "pages": 1,
+          "images": [
+            {
+              "type": "Image",
+              "bbox": {
+                "x": 113.4,
+                "y": 132.3,
+                "w": 226.8,
+                "h": 189
+              },
+              "pi": 0,
+              "ci": 2,
+              "textWrap": "TopAndBottom"
+            },
+            {
+              "type": "Image",
+              "bbox": {
+                "x": 113.4,
+                "y": 321.2,
+                "w": 226.8,
+                "h": 189
+              },
+              "pi": 0,
+              "ci": 3,
+              "textWrap": "TopAndBottom"
+            }
+          ],
+          "brightness": 17
+        },
+        {
+          "format": "hwpx",
+          "cycle": 1,
+          "pages": 1,
+          "images": [
+            {
+              "type": "Image",
+              "bbox": {
+                "x": 113.4,
+                "y": 132.3,
+                "w": 226.8,
+                "h": 189
+              },
+              "pi": 0,
+              "ci": 2,
+              "textWrap": "TopAndBottom"
+            },
+            {
+              "type": "Image",
+              "bbox": {
+                "x": 113.4,
+                "y": 321.2,
+                "w": 226.8,
+                "h": 189
+              },
+              "pi": 0,
+              "ci": 3,
+              "textWrap": "TopAndBottom"
+            }
+          ],
+          "brightness": 17
+        },
+        {
+          "format": "hwpx",
+          "cycle": 2,
+          "pages": 1,
+          "images": [
+            {
+              "type": "Image",
+              "bbox": {
+                "x": 113.4,
+                "y": 132.3,
+                "w": 226.8,
+                "h": 189
+              },
+              "pi": 0,
+              "ci": 2,
+              "textWrap": "TopAndBottom"
+            },
+            {
+              "type": "Image",
+              "bbox": {
+                "x": 113.4,
+                "y": 321.2,
+                "w": 226.8,
+                "h": 189
+              },
+              "pi": 0,
+              "ci": 3,
+              "textWrap": "TopAndBottom"
+            }
+          ],
+          "brightness": 17
+        },
+        {
+          "format": "hwpx",
+          "cycle": 3,
+          "pages": 1,
+          "images": [
+            {
+              "type": "Image",
+              "bbox": {
+                "x": 113.4,
+                "y": 132.3,
+                "w": 226.8,
+                "h": 189
+              },
+              "pi": 0,
+              "ci": 2,
+              "textWrap": "TopAndBottom"
+            },
+            {
+              "type": "Image",
+              "bbox": {
+                "x": 113.4,
+                "y": 321.2,
+                "w": 226.8,
+                "h": 189
+              },
+              "pi": 0,
+              "ci": 3,
+              "textWrap": "TopAndBottom"
+            }
+          ],
+          "brightness": 17
+        }
+      ]
+    },
+    "passed": true,
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/owner-hwp/canvas2d-screen.png",
+    "capture_sha256": "3239219bc3016152e5d027a5ed84ebc19bbfe198c6deba9826e057bdac0a0ab2"
+  },
+  {
+    "key": "owner-hwpx",
+    "requestedBackend": "canvas2d",
+    "profile": "screen",
+    "jsResponses": [
+      {
+        "url": "http://127.0.0.1:7738/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+        "sha256": "12dab7329c321bbbffd3b8dc696c6a12df80222dd9de734939ae86ce63623ca9",
+        "sourceSha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+        "verifiedSource": true,
+        "transport": "Vite WASM URL rewrite and source map",
+        "wasmPath": "/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm"
+      }
+    ],
+    "loaded": {
+      "pageCount": 1
+    },
+    "state": {
+      "backend": "canvas2d",
+      "selection": {
+        "schemaVersion": 1,
+        "request": {
+          "backend": "canvas2d",
+          "source": "url",
+          "requested": "canvas2d"
+        },
+        "requestedBackend": "canvas2d",
+        "effectiveBackend": "canvas2d",
+        "selectionReason": "explicitCanvas2d",
+        "fallbackReason": null,
+        "documentRevision": 2,
+        "resourceGeneration": 2,
+        "renderProfile": "screen",
+        "documentDigest": "blake3:16454e8028237c1b3ba66c13c5e8279b0f30410e675fdbdc8511294f35256eb4",
+        "decisionKey": "blake3:16454e8028237c1b3ba66c13c5e8279b0f30410e675fdbdc8511294f35256eb4|revision:2|profile:screen|resources:2|request:canvas2d|mode:default",
+        "preflight": null,
+        "initializationError": null,
+        "selectionError": null
+      },
+      "runtime": {
+        "backend": {
+          "backend": "canvas2d",
+          "source": "url",
+          "requested": "canvas2d"
+        },
+        "canvaskitMode": {
+          "mode": "default",
+          "source": "url",
+          "requested": "default"
+        },
+        "canvaskitSurface": {
+          "preference": "software",
+          "requested": "software"
+        },
+        "renderProfile": "screen"
+      },
+      "images": [
+        {
+          "bbox": {
+            "x": 113.387,
+            "y": 132.267,
+            "width": 226.76,
+            "height": 188.973
+          },
+          "paint": {
+            "x": 113.387,
+            "y": 132.267,
+            "width": 226.76,
+            "height": 188.973
+          }
+        },
+        {
+          "bbox": {
+            "x": 113.387,
+            "y": 321.24,
+            "width": 226.76,
+            "height": 188.973
+          },
+          "paint": {
+            "x": 113.387,
+            "y": 321.24,
+            "width": 75.587,
+            "height": 35.432
+          }
+        }
+      ],
+      "captureClip": {
+        "x": 263.15625,
+        "y": 150,
+        "height": 1122.5,
+        "width": 793.6875
+      }
+    },
+    "cycles": {
+      "edit": {
+        "ok": true
+      },
+      "results": [
+        {
+          "format": "hwp",
+          "cycle": 1,
+          "pages": 1,
+          "images": [
+            {
+              "type": "Image",
+              "bbox": {
+                "x": 113.4,
+                "y": 132.3,
+                "w": 226.8,
+                "h": 189
+              },
+              "pi": 0,
+              "ci": 2,
+              "textWrap": "TopAndBottom"
+            },
+            {
+              "type": "Image",
+              "bbox": {
+                "x": 113.4,
+                "y": 321.2,
+                "w": 226.8,
+                "h": 189
+              },
+              "pi": 0,
+              "ci": 3,
+              "textWrap": "TopAndBottom"
+            }
+          ],
+          "brightness": 17
+        },
+        {
+          "format": "hwp",
+          "cycle": 2,
+          "pages": 1,
+          "images": [
+            {
+              "type": "Image",
+              "bbox": {
+                "x": 113.4,
+                "y": 132.3,
+                "w": 226.8,
+                "h": 189
+              },
+              "pi": 0,
+              "ci": 2,
+              "textWrap": "TopAndBottom"
+            },
+            {
+              "type": "Image",
+              "bbox": {
+                "x": 113.4,
+                "y": 321.2,
+                "w": 226.8,
+                "h": 189
+              },
+              "pi": 0,
+              "ci": 3,
+              "textWrap": "TopAndBottom"
+            }
+          ],
+          "brightness": 17
+        },
+        {
+          "format": "hwp",
+          "cycle": 3,
+          "pages": 1,
+          "images": [
+            {
+              "type": "Image",
+              "bbox": {
+                "x": 113.4,
+                "y": 132.3,
+                "w": 226.8,
+                "h": 189
+              },
+              "pi": 0,
+              "ci": 2,
+              "textWrap": "TopAndBottom"
+            },
+            {
+              "type": "Image",
+              "bbox": {
+                "x": 113.4,
+                "y": 321.2,
+                "w": 226.8,
+                "h": 189
+              },
+              "pi": 0,
+              "ci": 3,
+              "textWrap": "TopAndBottom"
+            }
+          ],
+          "brightness": 17
+        },
+        {
+          "format": "hwpx",
+          "cycle": 1,
+          "pages": 1,
+          "images": [
+            {
+              "type": "Image",
+              "bbox": {
+                "x": 113.4,
+                "y": 132.3,
+                "w": 226.8,
+                "h": 189
+              },
+              "pi": 0,
+              "ci": 2,
+              "textWrap": "TopAndBottom"
+            },
+            {
+              "type": "Image",
+              "bbox": {
+                "x": 113.4,
+                "y": 321.2,
+                "w": 226.8,
+                "h": 189
+              },
+              "pi": 0,
+              "ci": 3,
+              "textWrap": "TopAndBottom"
+            }
+          ],
+          "brightness": 17
+        },
+        {
+          "format": "hwpx",
+          "cycle": 2,
+          "pages": 1,
+          "images": [
+            {
+              "type": "Image",
+              "bbox": {
+                "x": 113.4,
+                "y": 132.3,
+                "w": 226.8,
+                "h": 189
+              },
+              "pi": 0,
+              "ci": 2,
+              "textWrap": "TopAndBottom"
+            },
+            {
+              "type": "Image",
+              "bbox": {
+                "x": 113.4,
+                "y": 321.2,
+                "w": 226.8,
+                "h": 189
+              },
+              "pi": 0,
+              "ci": 3,
+              "textWrap": "TopAndBottom"
+            }
+          ],
+          "brightness": 17
+        },
+        {
+          "format": "hwpx",
+          "cycle": 3,
+          "pages": 1,
+          "images": [
+            {
+              "type": "Image",
+              "bbox": {
+                "x": 113.4,
+                "y": 132.3,
+                "w": 226.8,
+                "h": 189
+              },
+              "pi": 0,
+              "ci": 2,
+              "textWrap": "TopAndBottom"
+            },
+            {
+              "type": "Image",
+              "bbox": {
+                "x": 113.4,
+                "y": 321.2,
+                "w": 226.8,
+                "h": 189
+              },
+              "pi": 0,
+              "ci": 3,
+              "textWrap": "TopAndBottom"
+            }
+          ],
+          "brightness": 17
+        }
+      ]
+    },
+    "passed": true,
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/owner-hwpx/canvas2d-screen.png",
+    "capture_sha256": "3239219bc3016152e5d027a5ed84ebc19bbfe198c6deba9826e057bdac0a0ab2"
+  },
+  {
+    "key": "pr7668-mixed",
+    "requestedBackend": "canvas2d",
+    "profile": "print",
+    "jsResponses": [
+      {
+        "url": "http://127.0.0.1:7738/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+        "sha256": "12dab7329c321bbbffd3b8dc696c6a12df80222dd9de734939ae86ce63623ca9",
+        "sourceSha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+        "verifiedSource": true,
+        "transport": "Vite WASM URL rewrite and source map",
+        "wasmPath": "/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm"
+      }
+    ],
+    "loaded": {
+      "pageCount": 1
+    },
+    "state": {
+      "backend": "canvas2d",
+      "selection": {
+        "schemaVersion": 1,
+        "request": {
+          "backend": "canvas2d",
+          "source": "url",
+          "requested": "canvas2d"
+        },
+        "requestedBackend": "canvas2d",
+        "effectiveBackend": "canvas2d",
+        "selectionReason": "explicitCanvas2d",
+        "fallbackReason": null,
+        "documentRevision": 2,
+        "resourceGeneration": 2,
+        "renderProfile": "print",
+        "documentDigest": "blake3:bfa55fbc7733c809c1c92d457d6b6609ca211463df6cde4c199d6489a61565f3",
+        "decisionKey": "blake3:bfa55fbc7733c809c1c92d457d6b6609ca211463df6cde4c199d6489a61565f3|revision:2|profile:print|resources:2|request:canvas2d|mode:default",
+        "preflight": null,
+        "initializationError": null,
+        "selectionError": null
+      },
+      "runtime": {
+        "backend": {
+          "backend": "canvas2d",
+          "source": "url",
+          "requested": "canvas2d"
+        },
+        "canvaskitMode": {
+          "mode": "default",
+          "source": "url",
+          "requested": "default"
+        },
+        "canvaskitSurface": {
+          "preference": "software",
+          "requested": "software"
+        },
+        "renderProfile": "print"
+      },
+      "images": [
+        {
+          "bbox": {
+            "x": 117.217,
+            "y": 423.856,
+            "width": 226.598,
+            "height": 188.754
+          },
+          "paint": {
+            "x": 117.217,
+            "y": 423.856,
+            "width": 75.533,
+            "height": 35.391
+          },
+          "printFrame": [
+            59528,
+            84186,
+            733,
+            2649,
+            472,
+            221,
+            1205,
+            2871
+          ]
+        },
+        {
+          "bbox": {
+            "x": 343.815,
+            "y": 235.103,
+            "width": 226.598,
+            "height": 188.754
+          },
+          "paint": {
+            "x": 343.815,
+            "y": 235.103,
+            "width": 94.416,
+            "height": 78.56
+          },
+          "printFrame": [
+            59528,
+            84186,
+            2149,
+            1470,
+            590,
+            491,
+            2739,
+            1961
+          ]
+        },
+        {
+          "bbox": {
+            "x": 343.815,
+            "y": 423.856,
+            "width": 226.598,
+            "height": 188.754
+          },
+          "paint": {
+            "x": 343.815,
+            "y": 423.856,
+            "width": 56.65,
+            "height": 47.094
+          },
+          "printFrame": [
+            59528,
+            84186,
+            2149,
+            2649,
+            354,
+            294,
+            2503,
+            2944
+          ]
+        },
+        {
+          "bbox": {
+            "x": 117.217,
+            "y": 235.103,
+            "width": 226.598,
+            "height": 188.754
+          },
+          "paint": {
+            "x": 117.217,
+            "y": 235.103,
+            "width": 94.416,
+            "height": 78.56
+          },
+          "printFrame": [
+            59528,
+            84186,
+            733,
+            1470,
+            590,
+            491,
+            1323,
+            1961
+          ]
+        }
+      ],
+      "captureClip": {
+        "x": 263.15625,
+        "y": 150,
+        "height": 1122.5,
+        "width": 793.6875
+      }
+    },
+    "cycles": null,
+    "passed": true,
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/pr7668-mixed/canvas2d-print.png",
+    "capture_sha256": "6eebcca81dfbc5f4bdd2d91fcc3704653fdf8b9455e8f2b6673e3d87ac3a6fe9"
+  },
+  {
+    "key": "pr7675-all-inline",
+    "requestedBackend": "canvas2d",
+    "profile": "print",
+    "jsResponses": [
+      {
+        "url": "http://127.0.0.1:7738/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+        "sha256": "12dab7329c321bbbffd3b8dc696c6a12df80222dd9de734939ae86ce63623ca9",
+        "sourceSha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+        "verifiedSource": true,
+        "transport": "Vite WASM URL rewrite and source map",
+        "wasmPath": "/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm"
+      }
+    ],
+    "loaded": {
+      "pageCount": 1
+    },
+    "state": {
+      "backend": "canvas2d",
+      "selection": {
+        "schemaVersion": 1,
+        "request": {
+          "backend": "canvas2d",
+          "source": "url",
+          "requested": "canvas2d"
+        },
+        "requestedBackend": "canvas2d",
+        "effectiveBackend": "canvas2d",
+        "selectionReason": "explicitCanvas2d",
+        "fallbackReason": null,
+        "documentRevision": 2,
+        "resourceGeneration": 2,
+        "renderProfile": "print",
+        "documentDigest": "blake3:f62e87928bb903b01d4d9c2d6fc6076a5b2cef93379f87f89ce9b02fbaa2ec37",
+        "decisionKey": "blake3:f62e87928bb903b01d4d9c2d6fc6076a5b2cef93379f87f89ce9b02fbaa2ec37|revision:2|profile:print|resources:2|request:canvas2d|mode:default",
+        "preflight": null,
+        "initializationError": null,
+        "selectionError": null
+      },
+      "runtime": {
+        "backend": {
+          "backend": "canvas2d",
+          "source": "url",
+          "requested": "canvas2d"
+        },
+        "canvaskitMode": {
+          "mode": "default",
+          "source": "url",
+          "requested": "default"
+        },
+        "canvaskitSurface": {
+          "preference": "software",
+          "requested": "software"
+        },
+        "renderProfile": "print"
+      },
+      "images": [
+        {
+          "bbox": {
+            "x": 117.217,
+            "y": 157.268,
+            "width": 226.598,
+            "height": 188.754
+          },
+          "paint": {
+            "x": 117.217,
+            "y": 157.268,
+            "width": 75.533,
+            "height": 35.391
+          },
+          "printFrame": [
+            59528,
+            84186,
+            733,
+            983,
+            472,
+            221,
+            1205,
+            1204
+          ]
+        },
+        {
+          "bbox": {
+            "x": 343.815,
+            "y": 157.268,
+            "width": 226.598,
+            "height": 188.754
+          },
+          "paint": {
+            "x": 343.815,
+            "y": 157.268,
+            "width": 94.416,
+            "height": 78.56
+          },
+          "printFrame": [
+            59528,
+            84186,
+            2149,
+            983,
+            590,
+            491,
+            2739,
+            1474
+          ]
+        },
+        {
+          "bbox": {
+            "x": 150.479,
+            "y": 356.73,
+            "width": 226.598,
+            "height": 188.754
+          },
+          "paint": {
+            "x": 150.479,
+            "y": 356.73,
+            "width": 56.65,
+            "height": 47.094
+          },
+          "printFrame": [
+            59528,
+            84186,
+            941,
+            2230,
+            354,
+            294,
+            1295,
+            2524
+          ]
+        },
+        {
+          "bbox": {
+            "x": 150.479,
+            "y": 556.032,
+            "width": 226.598,
+            "height": 188.754
+          },
+          "paint": {
+            "x": 150.479,
+            "y": 556.032,
+            "width": 94.416,
+            "height": 78.56
+          },
+          "printFrame": [
+            59528,
+            84186,
+            941,
+            3476,
+            590,
+            491,
+            1531,
+            3967
+          ]
+        }
+      ],
+      "captureClip": {
+        "x": 263.15625,
+        "y": 150,
+        "height": 1122.5,
+        "width": 793.6875
+      }
+    },
+    "cycles": null,
+    "passed": true,
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/pr7675-all-inline/canvas2d-print.png",
+    "capture_sha256": "842284f51ff595666cf66ed1c6517d611fa3cc0919ee4b625e4266f67ed40b38"
+  },
+  {
+    "key": "pr7682-two-paras",
+    "requestedBackend": "canvas2d",
+    "profile": "print",
+    "jsResponses": [
+      {
+        "url": "http://127.0.0.1:7738/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+        "sha256": "12dab7329c321bbbffd3b8dc696c6a12df80222dd9de734939ae86ce63623ca9",
+        "sourceSha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+        "verifiedSource": true,
+        "transport": "Vite WASM URL rewrite and source map",
+        "wasmPath": "/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm"
+      }
+    ],
+    "loaded": {
+      "pageCount": 1
+    },
+    "state": {
+      "backend": "canvas2d",
+      "selection": {
+        "schemaVersion": 1,
+        "request": {
+          "backend": "canvas2d",
+          "source": "url",
+          "requested": "canvas2d"
+        },
+        "requestedBackend": "canvas2d",
+        "effectiveBackend": "canvas2d",
+        "selectionReason": "explicitCanvas2d",
+        "fallbackReason": null,
+        "documentRevision": 2,
+        "resourceGeneration": 2,
+        "renderProfile": "print",
+        "documentDigest": "blake3:6c1db5c792c29b9c7f25a1b35df18f87c0941f63f5a63291153d16e6cf6dccef",
+        "decisionKey": "blake3:6c1db5c792c29b9c7f25a1b35df18f87c0941f63f5a63291153d16e6cf6dccef|revision:2|profile:print|resources:2|request:canvas2d|mode:default",
+        "preflight": null,
+        "initializationError": null,
+        "selectionError": null
+      },
+      "runtime": {
+        "backend": {
+          "backend": "canvas2d",
+          "source": "url",
+          "requested": "canvas2d"
+        },
+        "canvaskitMode": {
+          "mode": "default",
+          "source": "url",
+          "requested": "default"
+        },
+        "canvaskitSurface": {
+          "preference": "software",
+          "requested": "software"
+        },
+        "renderProfile": "print"
+      },
+      "images": [
+        {
+          "bbox": {
+            "x": 117.217,
+            "y": 157.268,
+            "width": 162.313,
+            "height": 91.26
+          },
+          "paint": {
+            "x": 117.217,
+            "y": 157.268,
+            "width": 54.104,
+            "height": 17.111
+          },
+          "printFrame": [
+            59528,
+            84186,
+            733,
+            983,
+            338,
+            107,
+            1071,
+            1090
+          ]
+        },
+        {
+          "bbox": {
+            "x": 117.217,
+            "y": 256.519,
+            "width": 162.313,
+            "height": 91.26
+          },
+          "paint": {
+            "x": 117.217,
+            "y": 256.519,
+            "width": 67.63,
+            "height": 37.983
+          },
+          "printFrame": [
+            59528,
+            84186,
+            733,
+            1604,
+            423,
+            237,
+            1156,
+            1841
+          ]
+        }
+      ],
+      "captureClip": {
+        "x": 263.15625,
+        "y": 150,
+        "height": 1122.5,
+        "width": 793.6875
+      }
+    },
+    "cycles": null,
+    "passed": true,
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/pr7682-two-paras/canvas2d-print.png",
+    "capture_sha256": "5029028312e448b9f4248e0c728bf6423ecf0f126036dcaeed3584de8b2124e8"
+  },
+  {
+    "key": "owner-hwp",
+    "requestedBackend": "canvas2d",
+    "profile": "print",
+    "jsResponses": [
+      {
+        "url": "http://127.0.0.1:7738/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+        "sha256": "12dab7329c321bbbffd3b8dc696c6a12df80222dd9de734939ae86ce63623ca9",
+        "sourceSha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+        "verifiedSource": true,
+        "transport": "Vite WASM URL rewrite and source map",
+        "wasmPath": "/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm"
+      }
+    ],
+    "loaded": {
+      "pageCount": 1
+    },
+    "state": {
+      "backend": "canvas2d",
+      "selection": {
+        "schemaVersion": 1,
+        "request": {
+          "backend": "canvas2d",
+          "source": "url",
+          "requested": "canvas2d"
+        },
+        "requestedBackend": "canvas2d",
+        "effectiveBackend": "canvas2d",
+        "selectionReason": "explicitCanvas2d",
+        "fallbackReason": null,
+        "documentRevision": 2,
+        "resourceGeneration": 2,
+        "renderProfile": "print",
+        "documentDigest": "blake3:a079f83e6ca47d93f7d0a7610514be272dbcc933435a0c2edb9ca1be8e4fa01f",
+        "decisionKey": "blake3:a079f83e6ca47d93f7d0a7610514be272dbcc933435a0c2edb9ca1be8e4fa01f|revision:2|profile:print|resources:2|request:canvas2d|mode:default",
+        "preflight": null,
+        "initializationError": null,
+        "selectionError": null
+      },
+      "runtime": {
+        "backend": {
+          "backend": "canvas2d",
+          "source": "url",
+          "requested": "canvas2d"
+        },
+        "canvaskitMode": {
+          "mode": "default",
+          "source": "url",
+          "requested": "default"
+        },
+        "canvaskitSurface": {
+          "preference": "software",
+          "requested": "software"
+        },
+        "renderProfile": "print"
+      },
+      "images": [
+        {
+          "bbox": {
+            "x": 113.379,
+            "y": 132.175,
+            "width": 226.598,
+            "height": 188.754
+          },
+          "paint": {
+            "x": 113.379,
+            "y": 132.175,
+            "width": 226.598,
+            "height": 188.754
+          },
+          "printFrame": [
+            59528,
+            84186,
+            709,
+            827,
+            1417,
+            1181,
+            2126,
+            2008
+          ]
+        },
+        {
+          "bbox": {
+            "x": 113.379,
+            "y": 320.929,
+            "width": 226.598,
+            "height": 188.754
+          },
+          "paint": {
+            "x": 113.379,
+            "y": 320.929,
+            "width": 75.533,
+            "height": 35.391
+          },
+          "printFrame": [
+            59528,
+            84186,
+            709,
+            2006,
+            472,
+            221,
+            1181,
+            2227
+          ]
+        }
+      ],
+      "captureClip": {
+        "x": 263.15625,
+        "y": 150,
+        "height": 1122.5,
+        "width": 793.6875
+      }
+    },
+    "cycles": null,
+    "passed": true,
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/owner-hwp/canvas2d-print.png",
+    "capture_sha256": "cadb36b36d0eba3792d86b61d89d31d50b81666c031d4b54d2ffdb1df44bd255"
+  },
+  {
+    "key": "owner-hwpx",
+    "requestedBackend": "canvas2d",
+    "profile": "print",
+    "jsResponses": [
+      {
+        "url": "http://127.0.0.1:7738/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+        "sha256": "12dab7329c321bbbffd3b8dc696c6a12df80222dd9de734939ae86ce63623ca9",
+        "sourceSha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+        "verifiedSource": true,
+        "transport": "Vite WASM URL rewrite and source map",
+        "wasmPath": "/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm"
+      }
+    ],
+    "loaded": {
+      "pageCount": 1
+    },
+    "state": {
+      "backend": "canvas2d",
+      "selection": {
+        "schemaVersion": 1,
+        "request": {
+          "backend": "canvas2d",
+          "source": "url",
+          "requested": "canvas2d"
+        },
+        "requestedBackend": "canvas2d",
+        "effectiveBackend": "canvas2d",
+        "selectionReason": "explicitCanvas2d",
+        "fallbackReason": null,
+        "documentRevision": 2,
+        "resourceGeneration": 2,
+        "renderProfile": "print",
+        "documentDigest": "blake3:16454e8028237c1b3ba66c13c5e8279b0f30410e675fdbdc8511294f35256eb4",
+        "decisionKey": "blake3:16454e8028237c1b3ba66c13c5e8279b0f30410e675fdbdc8511294f35256eb4|revision:2|profile:print|resources:2|request:canvas2d|mode:default",
+        "preflight": null,
+        "initializationError": null,
+        "selectionError": null
+      },
+      "runtime": {
+        "backend": {
+          "backend": "canvas2d",
+          "source": "url",
+          "requested": "canvas2d"
+        },
+        "canvaskitMode": {
+          "mode": "default",
+          "source": "url",
+          "requested": "default"
+        },
+        "canvaskitSurface": {
+          "preference": "software",
+          "requested": "software"
+        },
+        "renderProfile": "print"
+      },
+      "images": [
+        {
+          "bbox": {
+            "x": 113.379,
+            "y": 132.175,
+            "width": 226.598,
+            "height": 188.754
+          },
+          "paint": {
+            "x": 113.379,
+            "y": 132.175,
+            "width": 226.598,
+            "height": 188.754
+          },
+          "printFrame": [
+            59528,
+            84186,
+            709,
+            827,
+            1417,
+            1181,
+            2126,
+            2008
+          ]
+        },
+        {
+          "bbox": {
+            "x": 113.379,
+            "y": 320.929,
+            "width": 226.598,
+            "height": 188.754
+          },
+          "paint": {
+            "x": 113.379,
+            "y": 320.929,
+            "width": 75.533,
+            "height": 35.391
+          },
+          "printFrame": [
+            59528,
+            84186,
+            709,
+            2006,
+            472,
+            221,
+            1181,
+            2227
+          ]
+        }
+      ],
+      "captureClip": {
+        "x": 263.15625,
+        "y": 150,
+        "height": 1122.5,
+        "width": 793.6875
+      }
+    },
+    "cycles": null,
+    "passed": true,
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/owner-hwpx/canvas2d-print.png",
+    "capture_sha256": "cadb36b36d0eba3792d86b61d89d31d50b81666c031d4b54d2ffdb1df44bd255"
+  },
+  {
+    "key": "pr7668-mixed",
+    "requestedBackend": "canvaskit",
+    "profile": "screen",
+    "jsResponses": [
+      {
+        "url": "http://127.0.0.1:7738/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+        "sha256": "12dab7329c321bbbffd3b8dc696c6a12df80222dd9de734939ae86ce63623ca9",
+        "sourceSha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+        "verifiedSource": true,
+        "transport": "Vite WASM URL rewrite and source map",
+        "wasmPath": "/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm"
+      }
+    ],
+    "loaded": {
+      "pageCount": 1
+    },
+    "state": {
+      "backend": "canvaskit",
+      "selection": {
+        "schemaVersion": 1,
+        "request": {
+          "backend": "canvaskit",
+          "source": "url",
+          "requested": "canvaskit"
+        },
+        "requestedBackend": "canvaskit",
+        "effectiveBackend": "canvaskit",
+        "selectionReason": "explicitCanvasKit",
+        "fallbackReason": null,
+        "documentRevision": 3,
+        "resourceGeneration": 3,
+        "renderProfile": "screen",
+        "documentDigest": "blake3:bfa55fbc7733c809c1c92d457d6b6609ca211463df6cde4c199d6489a61565f3",
+        "decisionKey": "blake3:bfa55fbc7733c809c1c92d457d6b6609ca211463df6cde4c199d6489a61565f3|revision:3|profile:screen|resources:3|request:canvaskit|mode:default",
+        "preflight": null,
+        "initializationError": null,
+        "selectionError": null
+      },
+      "surface": {
+        "created": 2,
+        "reused": 1,
+        "backend": "software",
+        "preference": "software",
+        "fallbackReason": null
+      },
+      "runtime": {
+        "backend": {
+          "backend": "canvaskit",
+          "source": "url",
+          "requested": "canvaskit"
+        },
+        "canvaskitMode": {
+          "mode": "default",
+          "source": "url",
+          "requested": "default"
+        },
+        "canvaskitSurface": {
+          "preference": "software",
+          "requested": "software"
+        },
+        "renderProfile": "screen"
+      },
+      "images": [
+        {
+          "bbox": {
+            "x": 117.147,
+            "y": 424.207,
+            "width": 226.76,
+            "height": 188.973
+          },
+          "paint": {
+            "x": 117.147,
+            "y": 424.207,
+            "width": 75.587,
+            "height": 35.432
+          }
+        },
+        {
+          "bbox": {
+            "x": 343.933,
+            "y": 235.233,
+            "width": 226.76,
+            "height": 188.973
+          },
+          "paint": {
+            "x": 343.933,
+            "y": 235.233,
+            "width": 94.483,
+            "height": 78.651
+          }
+        },
+        {
+          "bbox": {
+            "x": 343.907,
+            "y": 424.207,
+            "width": 226.76,
+            "height": 188.973
+          },
+          "paint": {
+            "x": 343.907,
+            "y": 424.207,
+            "width": 56.69,
+            "height": 47.149
+          }
+        },
+        {
+          "bbox": {
+            "x": 117.147,
+            "y": 235.233,
+            "width": 226.76,
+            "height": 188.973
+          },
+          "paint": {
+            "x": 117.147,
+            "y": 235.233,
+            "width": 94.483,
+            "height": 78.651
+          }
+        }
+      ],
+      "captureClip": {
+        "x": 263.15625,
+        "y": 150,
+        "height": 1122.5,
+        "width": 793.6875
+      }
+    },
+    "cycles": null,
+    "passed": true,
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/pr7668-mixed/canvaskit-screen.png",
+    "capture_sha256": "14b5c8fb1f1bff5ef742b91604e2fe39ff75d367cdc7371346842fcfafb41765"
+  },
+  {
+    "key": "pr7675-all-inline",
+    "requestedBackend": "canvaskit",
+    "profile": "screen",
+    "jsResponses": [
+      {
+        "url": "http://127.0.0.1:7738/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+        "sha256": "12dab7329c321bbbffd3b8dc696c6a12df80222dd9de734939ae86ce63623ca9",
+        "sourceSha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+        "verifiedSource": true,
+        "transport": "Vite WASM URL rewrite and source map",
+        "wasmPath": "/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm"
+      }
+    ],
+    "loaded": {
+      "pageCount": 1
+    },
+    "state": {
+      "backend": "canvaskit",
+      "selection": {
+        "schemaVersion": 1,
+        "request": {
+          "backend": "canvaskit",
+          "source": "url",
+          "requested": "canvaskit"
+        },
+        "requestedBackend": "canvaskit",
+        "effectiveBackend": "canvaskit",
+        "selectionReason": "explicitCanvasKit",
+        "fallbackReason": null,
+        "documentRevision": 4,
+        "resourceGeneration": 4,
+        "renderProfile": "screen",
+        "documentDigest": "blake3:f62e87928bb903b01d4d9c2d6fc6076a5b2cef93379f87f89ce9b02fbaa2ec37",
+        "decisionKey": "blake3:f62e87928bb903b01d4d9c2d6fc6076a5b2cef93379f87f89ce9b02fbaa2ec37|revision:4|profile:screen|resources:4|request:canvaskit|mode:default",
+        "preflight": null,
+        "initializationError": null,
+        "selectionError": null
+      },
+      "surface": {
+        "created": 2,
+        "reused": 2,
+        "backend": "software",
+        "preference": "software",
+        "fallbackReason": null
+      },
+      "runtime": {
+        "backend": {
+          "backend": "canvaskit",
+          "source": "url",
+          "requested": "canvaskit"
+        },
+        "canvaskitMode": {
+          "mode": "default",
+          "source": "url",
+          "requested": "default"
+        },
+        "canvaskitSurface": {
+          "preference": "software",
+          "requested": "software"
+        },
+        "renderProfile": "screen"
+      },
+      "images": [
+        {
+          "bbox": {
+            "x": 117.147,
+            "y": 157.36,
+            "width": 226.76,
+            "height": 188.973
+          },
+          "paint": {
+            "x": 117.147,
+            "y": 157.36,
+            "width": 75.587,
+            "height": 35.432
+          }
+        },
+        {
+          "bbox": {
+            "x": 343.907,
+            "y": 157.36,
+            "width": 226.76,
+            "height": 188.973
+          },
+          "paint": {
+            "x": 343.907,
+            "y": 157.36,
+            "width": 94.483,
+            "height": 78.651
+          }
+        },
+        {
+          "bbox": {
+            "x": 150.48,
+            "y": 357,
+            "width": 226.76,
+            "height": 188.973
+          },
+          "paint": {
+            "x": 150.48,
+            "y": 357,
+            "width": 56.69,
+            "height": 47.149
+          }
+        },
+        {
+          "bbox": {
+            "x": 150.48,
+            "y": 556.64,
+            "width": 226.76,
+            "height": 188.973
+          },
+          "paint": {
+            "x": 150.48,
+            "y": 556.64,
+            "width": 94.483,
+            "height": 78.651
+          }
+        }
+      ],
+      "captureClip": {
+        "x": 263.15625,
+        "y": 150,
+        "height": 1122.5,
+        "width": 793.6875
+      }
+    },
+    "cycles": null,
+    "passed": true,
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/pr7675-all-inline/canvaskit-screen.png",
+    "capture_sha256": "70c1f48e3a1dcaaac1a9ac00666fd7c9d71fdfc4128c5e6825b17819af94a2c1"
+  },
+  {
+    "key": "pr7682-two-paras",
+    "requestedBackend": "canvaskit",
+    "profile": "screen",
+    "jsResponses": [
+      {
+        "url": "http://127.0.0.1:7738/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+        "sha256": "12dab7329c321bbbffd3b8dc696c6a12df80222dd9de734939ae86ce63623ca9",
+        "sourceSha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+        "verifiedSource": true,
+        "transport": "Vite WASM URL rewrite and source map",
+        "wasmPath": "/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm"
+      }
+    ],
+    "loaded": {
+      "pageCount": 1
+    },
+    "state": {
+      "backend": "canvaskit",
+      "selection": {
+        "schemaVersion": 1,
+        "request": {
+          "backend": "canvaskit",
+          "source": "url",
+          "requested": "canvaskit"
+        },
+        "requestedBackend": "canvaskit",
+        "effectiveBackend": "canvaskit",
+        "selectionReason": "explicitCanvasKit",
+        "fallbackReason": null,
+        "documentRevision": 4,
+        "resourceGeneration": 4,
+        "renderProfile": "screen",
+        "documentDigest": "blake3:6c1db5c792c29b9c7f25a1b35df18f87c0941f63f5a63291153d16e6cf6dccef",
+        "decisionKey": "blake3:6c1db5c792c29b9c7f25a1b35df18f87c0941f63f5a63291153d16e6cf6dccef|revision:4|profile:screen|resources:4|request:canvaskit|mode:default",
+        "preflight": null,
+        "initializationError": null,
+        "selectionError": null
+      },
+      "surface": {
+        "created": 2,
+        "reused": 2,
+        "backend": "software",
+        "preference": "software",
+        "fallbackReason": null
+      },
+      "runtime": {
+        "backend": {
+          "backend": "canvaskit",
+          "source": "url",
+          "requested": "canvaskit"
+        },
+        "canvaskitMode": {
+          "mode": "default",
+          "source": "url",
+          "requested": "default"
+        },
+        "canvaskitSurface": {
+          "preference": "software",
+          "requested": "software"
+        },
+        "renderProfile": "screen"
+      },
+      "images": [
+        {
+          "bbox": {
+            "x": 117.147,
+            "y": 157.36,
+            "width": 162.36,
+            "height": 91.32
+          },
+          "paint": {
+            "x": 117.147,
+            "y": 157.36,
+            "width": 54.12,
+            "height": 17.122
+          }
+        },
+        {
+          "bbox": {
+            "x": 117.147,
+            "y": 256.68,
+            "width": 162.36,
+            "height": 91.32
+          },
+          "paint": {
+            "x": 117.147,
+            "y": 256.68,
+            "width": 67.65,
+            "height": 38.008
+          }
+        }
+      ],
+      "captureClip": {
+        "x": 263.15625,
+        "y": 150,
+        "height": 1122.5,
+        "width": 793.6875
+      }
+    },
+    "cycles": null,
+    "passed": true,
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/pr7682-two-paras/canvaskit-screen.png",
+    "capture_sha256": "ccdcade94f314269e380783184263867e7faac76b3f136a1bf1e0dea112b884b"
+  },
+  {
+    "key": "owner-hwp",
+    "requestedBackend": "canvaskit",
+    "profile": "screen",
+    "jsResponses": [
+      {
+        "url": "http://127.0.0.1:7738/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+        "sha256": "12dab7329c321bbbffd3b8dc696c6a12df80222dd9de734939ae86ce63623ca9",
+        "sourceSha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+        "verifiedSource": true,
+        "transport": "Vite WASM URL rewrite and source map",
+        "wasmPath": "/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm"
+      }
+    ],
+    "loaded": {
+      "pageCount": 1
+    },
+    "state": {
+      "backend": "canvaskit",
+      "selection": {
+        "schemaVersion": 1,
+        "request": {
+          "backend": "canvaskit",
+          "source": "url",
+          "requested": "canvaskit"
+        },
+        "requestedBackend": "canvaskit",
+        "effectiveBackend": "canvaskit",
+        "selectionReason": "explicitCanvasKit",
+        "fallbackReason": null,
+        "documentRevision": 4,
+        "resourceGeneration": 4,
+        "renderProfile": "screen",
+        "documentDigest": "blake3:a079f83e6ca47d93f7d0a7610514be272dbcc933435a0c2edb9ca1be8e4fa01f",
+        "decisionKey": "blake3:a079f83e6ca47d93f7d0a7610514be272dbcc933435a0c2edb9ca1be8e4fa01f|revision:4|profile:screen|resources:4|request:canvaskit|mode:default",
+        "preflight": null,
+        "initializationError": null,
+        "selectionError": null
+      },
+      "surface": {
+        "created": 2,
+        "reused": 2,
+        "backend": "software",
+        "preference": "software",
+        "fallbackReason": null
+      },
+      "runtime": {
+        "backend": {
+          "backend": "canvaskit",
+          "source": "url",
+          "requested": "canvaskit"
+        },
+        "canvaskitMode": {
+          "mode": "default",
+          "source": "url",
+          "requested": "default"
+        },
+        "canvaskitSurface": {
+          "preference": "software",
+          "requested": "software"
+        },
+        "renderProfile": "screen"
+      },
+      "images": [
+        {
+          "bbox": {
+            "x": 113.387,
+            "y": 132.267,
+            "width": 226.76,
+            "height": 188.973
+          },
+          "paint": {
+            "x": 113.387,
+            "y": 132.267,
+            "width": 226.76,
+            "height": 188.973
+          }
+        },
+        {
+          "bbox": {
+            "x": 113.387,
+            "y": 321.24,
+            "width": 226.76,
+            "height": 188.973
+          },
+          "paint": {
+            "x": 113.387,
+            "y": 321.24,
+            "width": 75.587,
+            "height": 35.432
+          }
+        }
+      ],
+      "captureClip": {
+        "x": 263.15625,
+        "y": 150,
+        "height": 1122.5,
+        "width": 793.6875
+      }
+    },
+    "cycles": null,
+    "passed": true,
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/owner-hwp/canvaskit-screen.png",
+    "capture_sha256": "d71853d97eb03b58ab03445e6da93828fd70b13f326e606f1fd881533bbff964"
+  },
+  {
+    "key": "owner-hwpx",
+    "requestedBackend": "canvaskit",
+    "profile": "screen",
+    "jsResponses": [
+      {
+        "url": "http://127.0.0.1:7738/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+        "sha256": "12dab7329c321bbbffd3b8dc696c6a12df80222dd9de734939ae86ce63623ca9",
+        "sourceSha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+        "verifiedSource": true,
+        "transport": "Vite WASM URL rewrite and source map",
+        "wasmPath": "/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm"
+      }
+    ],
+    "loaded": {
+      "pageCount": 1
+    },
+    "state": {
+      "backend": "canvaskit",
+      "selection": {
+        "schemaVersion": 1,
+        "request": {
+          "backend": "canvaskit",
+          "source": "url",
+          "requested": "canvaskit"
+        },
+        "requestedBackend": "canvaskit",
+        "effectiveBackend": "canvaskit",
+        "selectionReason": "explicitCanvasKit",
+        "fallbackReason": null,
+        "documentRevision": 4,
+        "resourceGeneration": 4,
+        "renderProfile": "screen",
+        "documentDigest": "blake3:16454e8028237c1b3ba66c13c5e8279b0f30410e675fdbdc8511294f35256eb4",
+        "decisionKey": "blake3:16454e8028237c1b3ba66c13c5e8279b0f30410e675fdbdc8511294f35256eb4|revision:4|profile:screen|resources:4|request:canvaskit|mode:default",
+        "preflight": null,
+        "initializationError": null,
+        "selectionError": null
+      },
+      "surface": {
+        "created": 2,
+        "reused": 2,
+        "backend": "software",
+        "preference": "software",
+        "fallbackReason": null
+      },
+      "runtime": {
+        "backend": {
+          "backend": "canvaskit",
+          "source": "url",
+          "requested": "canvaskit"
+        },
+        "canvaskitMode": {
+          "mode": "default",
+          "source": "url",
+          "requested": "default"
+        },
+        "canvaskitSurface": {
+          "preference": "software",
+          "requested": "software"
+        },
+        "renderProfile": "screen"
+      },
+      "images": [
+        {
+          "bbox": {
+            "x": 113.387,
+            "y": 132.267,
+            "width": 226.76,
+            "height": 188.973
+          },
+          "paint": {
+            "x": 113.387,
+            "y": 132.267,
+            "width": 226.76,
+            "height": 188.973
+          }
+        },
+        {
+          "bbox": {
+            "x": 113.387,
+            "y": 321.24,
+            "width": 226.76,
+            "height": 188.973
+          },
+          "paint": {
+            "x": 113.387,
+            "y": 321.24,
+            "width": 75.587,
+            "height": 35.432
+          }
+        }
+      ],
+      "captureClip": {
+        "x": 263.15625,
+        "y": 150,
+        "height": 1122.5,
+        "width": 793.6875
+      }
+    },
+    "cycles": null,
+    "passed": true,
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/owner-hwpx/canvaskit-screen.png",
+    "capture_sha256": "d71853d97eb03b58ab03445e6da93828fd70b13f326e606f1fd881533bbff964"
+  },
+  {
+    "key": "pr7668-mixed",
+    "requestedBackend": "canvaskit",
+    "profile": "print",
+    "jsResponses": [
+      {
+        "url": "http://127.0.0.1:7738/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+        "sha256": "12dab7329c321bbbffd3b8dc696c6a12df80222dd9de734939ae86ce63623ca9",
+        "sourceSha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+        "verifiedSource": true,
+        "transport": "Vite WASM URL rewrite and source map",
+        "wasmPath": "/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm"
+      }
+    ],
+    "loaded": {
+      "pageCount": 1
+    },
+    "state": {
+      "backend": "canvaskit",
+      "selection": {
+        "schemaVersion": 1,
+        "request": {
+          "backend": "canvaskit",
+          "source": "url",
+          "requested": "canvaskit"
+        },
+        "requestedBackend": "canvaskit",
+        "effectiveBackend": "canvaskit",
+        "selectionReason": "explicitCanvasKit",
+        "fallbackReason": null,
+        "documentRevision": 4,
+        "resourceGeneration": 4,
+        "renderProfile": "print",
+        "documentDigest": "blake3:bfa55fbc7733c809c1c92d457d6b6609ca211463df6cde4c199d6489a61565f3",
+        "decisionKey": "blake3:bfa55fbc7733c809c1c92d457d6b6609ca211463df6cde4c199d6489a61565f3|revision:4|profile:print|resources:4|request:canvaskit|mode:default",
+        "preflight": null,
+        "initializationError": null,
+        "selectionError": null
+      },
+      "surface": {
+        "created": 2,
+        "reused": 2,
+        "backend": "software",
+        "preference": "software",
+        "fallbackReason": null
+      },
+      "runtime": {
+        "backend": {
+          "backend": "canvaskit",
+          "source": "url",
+          "requested": "canvaskit"
+        },
+        "canvaskitMode": {
+          "mode": "default",
+          "source": "url",
+          "requested": "default"
+        },
+        "canvaskitSurface": {
+          "preference": "software",
+          "requested": "software"
+        },
+        "renderProfile": "print"
+      },
+      "images": [
+        {
+          "bbox": {
+            "x": 117.217,
+            "y": 423.856,
+            "width": 226.598,
+            "height": 188.754
+          },
+          "paint": {
+            "x": 117.217,
+            "y": 423.856,
+            "width": 75.533,
+            "height": 35.391
+          },
+          "printFrame": [
+            59528,
+            84186,
+            733,
+            2649,
+            472,
+            221,
+            1205,
+            2871
+          ]
+        },
+        {
+          "bbox": {
+            "x": 343.815,
+            "y": 235.103,
+            "width": 226.598,
+            "height": 188.754
+          },
+          "paint": {
+            "x": 343.815,
+            "y": 235.103,
+            "width": 94.416,
+            "height": 78.56
+          },
+          "printFrame": [
+            59528,
+            84186,
+            2149,
+            1470,
+            590,
+            491,
+            2739,
+            1961
+          ]
+        },
+        {
+          "bbox": {
+            "x": 343.815,
+            "y": 423.856,
+            "width": 226.598,
+            "height": 188.754
+          },
+          "paint": {
+            "x": 343.815,
+            "y": 423.856,
+            "width": 56.65,
+            "height": 47.094
+          },
+          "printFrame": [
+            59528,
+            84186,
+            2149,
+            2649,
+            354,
+            294,
+            2503,
+            2944
+          ]
+        },
+        {
+          "bbox": {
+            "x": 117.217,
+            "y": 235.103,
+            "width": 226.598,
+            "height": 188.754
+          },
+          "paint": {
+            "x": 117.217,
+            "y": 235.103,
+            "width": 94.416,
+            "height": 78.56
+          },
+          "printFrame": [
+            59528,
+            84186,
+            733,
+            1470,
+            590,
+            491,
+            1323,
+            1961
+          ]
+        }
+      ],
+      "captureClip": {
+        "x": 263.15625,
+        "y": 150,
+        "height": 1122.5,
+        "width": 793.6875
+      }
+    },
+    "cycles": null,
+    "passed": true,
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/pr7668-mixed/canvaskit-print.png",
+    "capture_sha256": "4db75fba055795fe637f2e6be2ed52c5db158a188915babebcee129b07c7b016"
+  },
+  {
+    "key": "pr7675-all-inline",
+    "requestedBackend": "canvaskit",
+    "profile": "print",
+    "jsResponses": [
+      {
+        "url": "http://127.0.0.1:7738/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+        "sha256": "12dab7329c321bbbffd3b8dc696c6a12df80222dd9de734939ae86ce63623ca9",
+        "sourceSha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+        "verifiedSource": true,
+        "transport": "Vite WASM URL rewrite and source map",
+        "wasmPath": "/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm"
+      }
+    ],
+    "loaded": {
+      "pageCount": 1
+    },
+    "state": {
+      "backend": "canvaskit",
+      "selection": {
+        "schemaVersion": 1,
+        "request": {
+          "backend": "canvaskit",
+          "source": "url",
+          "requested": "canvaskit"
+        },
+        "requestedBackend": "canvaskit",
+        "effectiveBackend": "canvaskit",
+        "selectionReason": "explicitCanvasKit",
+        "fallbackReason": null,
+        "documentRevision": 4,
+        "resourceGeneration": 4,
+        "renderProfile": "print",
+        "documentDigest": "blake3:f62e87928bb903b01d4d9c2d6fc6076a5b2cef93379f87f89ce9b02fbaa2ec37",
+        "decisionKey": "blake3:f62e87928bb903b01d4d9c2d6fc6076a5b2cef93379f87f89ce9b02fbaa2ec37|revision:4|profile:print|resources:4|request:canvaskit|mode:default",
+        "preflight": null,
+        "initializationError": null,
+        "selectionError": null
+      },
+      "surface": {
+        "created": 2,
+        "reused": 2,
+        "backend": "software",
+        "preference": "software",
+        "fallbackReason": null
+      },
+      "runtime": {
+        "backend": {
+          "backend": "canvaskit",
+          "source": "url",
+          "requested": "canvaskit"
+        },
+        "canvaskitMode": {
+          "mode": "default",
+          "source": "url",
+          "requested": "default"
+        },
+        "canvaskitSurface": {
+          "preference": "software",
+          "requested": "software"
+        },
+        "renderProfile": "print"
+      },
+      "images": [
+        {
+          "bbox": {
+            "x": 117.217,
+            "y": 157.268,
+            "width": 226.598,
+            "height": 188.754
+          },
+          "paint": {
+            "x": 117.217,
+            "y": 157.268,
+            "width": 75.533,
+            "height": 35.391
+          },
+          "printFrame": [
+            59528,
+            84186,
+            733,
+            983,
+            472,
+            221,
+            1205,
+            1204
+          ]
+        },
+        {
+          "bbox": {
+            "x": 343.815,
+            "y": 157.268,
+            "width": 226.598,
+            "height": 188.754
+          },
+          "paint": {
+            "x": 343.815,
+            "y": 157.268,
+            "width": 94.416,
+            "height": 78.56
+          },
+          "printFrame": [
+            59528,
+            84186,
+            2149,
+            983,
+            590,
+            491,
+            2739,
+            1474
+          ]
+        },
+        {
+          "bbox": {
+            "x": 150.479,
+            "y": 356.73,
+            "width": 226.598,
+            "height": 188.754
+          },
+          "paint": {
+            "x": 150.479,
+            "y": 356.73,
+            "width": 56.65,
+            "height": 47.094
+          },
+          "printFrame": [
+            59528,
+            84186,
+            941,
+            2230,
+            354,
+            294,
+            1295,
+            2524
+          ]
+        },
+        {
+          "bbox": {
+            "x": 150.479,
+            "y": 556.032,
+            "width": 226.598,
+            "height": 188.754
+          },
+          "paint": {
+            "x": 150.479,
+            "y": 556.032,
+            "width": 94.416,
+            "height": 78.56
+          },
+          "printFrame": [
+            59528,
+            84186,
+            941,
+            3476,
+            590,
+            491,
+            1531,
+            3967
+          ]
+        }
+      ],
+      "captureClip": {
+        "x": 263.15625,
+        "y": 150,
+        "height": 1122.5,
+        "width": 793.6875
+      }
+    },
+    "cycles": null,
+    "passed": true,
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/pr7675-all-inline/canvaskit-print.png",
+    "capture_sha256": "b98bbdf979611456a8185edd700efec9e25e762fc8c03b53523a9450364176fa"
+  },
+  {
+    "key": "pr7682-two-paras",
+    "requestedBackend": "canvaskit",
+    "profile": "print",
+    "jsResponses": [
+      {
+        "url": "http://127.0.0.1:7738/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+        "sha256": "12dab7329c321bbbffd3b8dc696c6a12df80222dd9de734939ae86ce63623ca9",
+        "sourceSha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+        "verifiedSource": true,
+        "transport": "Vite WASM URL rewrite and source map",
+        "wasmPath": "/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm"
+      }
+    ],
+    "loaded": {
+      "pageCount": 1
+    },
+    "state": {
+      "backend": "canvaskit",
+      "selection": {
+        "schemaVersion": 1,
+        "request": {
+          "backend": "canvaskit",
+          "source": "url",
+          "requested": "canvaskit"
+        },
+        "requestedBackend": "canvaskit",
+        "effectiveBackend": "canvaskit",
+        "selectionReason": "explicitCanvasKit",
+        "fallbackReason": null,
+        "documentRevision": 4,
+        "resourceGeneration": 4,
+        "renderProfile": "print",
+        "documentDigest": "blake3:6c1db5c792c29b9c7f25a1b35df18f87c0941f63f5a63291153d16e6cf6dccef",
+        "decisionKey": "blake3:6c1db5c792c29b9c7f25a1b35df18f87c0941f63f5a63291153d16e6cf6dccef|revision:4|profile:print|resources:4|request:canvaskit|mode:default",
+        "preflight": null,
+        "initializationError": null,
+        "selectionError": null
+      },
+      "surface": {
+        "created": 2,
+        "reused": 2,
+        "backend": "software",
+        "preference": "software",
+        "fallbackReason": null
+      },
+      "runtime": {
+        "backend": {
+          "backend": "canvaskit",
+          "source": "url",
+          "requested": "canvaskit"
+        },
+        "canvaskitMode": {
+          "mode": "default",
+          "source": "url",
+          "requested": "default"
+        },
+        "canvaskitSurface": {
+          "preference": "software",
+          "requested": "software"
+        },
+        "renderProfile": "print"
+      },
+      "images": [
+        {
+          "bbox": {
+            "x": 117.217,
+            "y": 157.268,
+            "width": 162.313,
+            "height": 91.26
+          },
+          "paint": {
+            "x": 117.217,
+            "y": 157.268,
+            "width": 54.104,
+            "height": 17.111
+          },
+          "printFrame": [
+            59528,
+            84186,
+            733,
+            983,
+            338,
+            107,
+            1071,
+            1090
+          ]
+        },
+        {
+          "bbox": {
+            "x": 117.217,
+            "y": 256.519,
+            "width": 162.313,
+            "height": 91.26
+          },
+          "paint": {
+            "x": 117.217,
+            "y": 256.519,
+            "width": 67.63,
+            "height": 37.983
+          },
+          "printFrame": [
+            59528,
+            84186,
+            733,
+            1604,
+            423,
+            237,
+            1156,
+            1841
+          ]
+        }
+      ],
+      "captureClip": {
+        "x": 263.15625,
+        "y": 150,
+        "height": 1122.5,
+        "width": 793.6875
+      }
+    },
+    "cycles": null,
+    "passed": true,
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/pr7682-two-paras/canvaskit-print.png",
+    "capture_sha256": "acc0a8ffa8a1d555ab021683475520f853e3c4ad2ad136bfb242cf6ad2ef473c"
+  },
+  {
+    "key": "owner-hwp",
+    "requestedBackend": "canvaskit",
+    "profile": "print",
+    "jsResponses": [
+      {
+        "url": "http://127.0.0.1:7738/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+        "sha256": "12dab7329c321bbbffd3b8dc696c6a12df80222dd9de734939ae86ce63623ca9",
+        "sourceSha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+        "verifiedSource": true,
+        "transport": "Vite WASM URL rewrite and source map",
+        "wasmPath": "/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm"
+      }
+    ],
+    "loaded": {
+      "pageCount": 1
+    },
+    "state": {
+      "backend": "canvaskit",
+      "selection": {
+        "schemaVersion": 1,
+        "request": {
+          "backend": "canvaskit",
+          "source": "url",
+          "requested": "canvaskit"
+        },
+        "requestedBackend": "canvaskit",
+        "effectiveBackend": "canvaskit",
+        "selectionReason": "explicitCanvasKit",
+        "fallbackReason": null,
+        "documentRevision": 4,
+        "resourceGeneration": 4,
+        "renderProfile": "print",
+        "documentDigest": "blake3:a079f83e6ca47d93f7d0a7610514be272dbcc933435a0c2edb9ca1be8e4fa01f",
+        "decisionKey": "blake3:a079f83e6ca47d93f7d0a7610514be272dbcc933435a0c2edb9ca1be8e4fa01f|revision:4|profile:print|resources:4|request:canvaskit|mode:default",
+        "preflight": null,
+        "initializationError": null,
+        "selectionError": null
+      },
+      "surface": {
+        "created": 2,
+        "reused": 2,
+        "backend": "software",
+        "preference": "software",
+        "fallbackReason": null
+      },
+      "runtime": {
+        "backend": {
+          "backend": "canvaskit",
+          "source": "url",
+          "requested": "canvaskit"
+        },
+        "canvaskitMode": {
+          "mode": "default",
+          "source": "url",
+          "requested": "default"
+        },
+        "canvaskitSurface": {
+          "preference": "software",
+          "requested": "software"
+        },
+        "renderProfile": "print"
+      },
+      "images": [
+        {
+          "bbox": {
+            "x": 113.379,
+            "y": 132.175,
+            "width": 226.598,
+            "height": 188.754
+          },
+          "paint": {
+            "x": 113.379,
+            "y": 132.175,
+            "width": 226.598,
+            "height": 188.754
+          },
+          "printFrame": [
+            59528,
+            84186,
+            709,
+            827,
+            1417,
+            1181,
+            2126,
+            2008
+          ]
+        },
+        {
+          "bbox": {
+            "x": 113.379,
+            "y": 320.929,
+            "width": 226.598,
+            "height": 188.754
+          },
+          "paint": {
+            "x": 113.379,
+            "y": 320.929,
+            "width": 75.533,
+            "height": 35.391
+          },
+          "printFrame": [
+            59528,
+            84186,
+            709,
+            2006,
+            472,
+            221,
+            1181,
+            2227
+          ]
+        }
+      ],
+      "captureClip": {
+        "x": 263.15625,
+        "y": 150,
+        "height": 1122.5,
+        "width": 793.6875
+      }
+    },
+    "cycles": null,
+    "passed": true,
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/owner-hwp/canvaskit-print.png",
+    "capture_sha256": "dba34696a8c9a6618c5c585aaa5a3ae8207592642d3ac03235209a5852998d53"
+  },
+  {
+    "key": "owner-hwpx",
+    "requestedBackend": "canvaskit",
+    "profile": "print",
+    "jsResponses": [
+      {
+        "url": "http://127.0.0.1:7738/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+        "sha256": "12dab7329c321bbbffd3b8dc696c6a12df80222dd9de734939ae86ce63623ca9",
+        "sourceSha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+        "verifiedSource": true,
+        "transport": "Vite WASM URL rewrite and source map",
+        "wasmPath": "/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm"
+      }
+    ],
+    "loaded": {
+      "pageCount": 1
+    },
+    "state": {
+      "backend": "canvaskit",
+      "selection": {
+        "schemaVersion": 1,
+        "request": {
+          "backend": "canvaskit",
+          "source": "url",
+          "requested": "canvaskit"
+        },
+        "requestedBackend": "canvaskit",
+        "effectiveBackend": "canvaskit",
+        "selectionReason": "explicitCanvasKit",
+        "fallbackReason": null,
+        "documentRevision": 4,
+        "resourceGeneration": 4,
+        "renderProfile": "print",
+        "documentDigest": "blake3:16454e8028237c1b3ba66c13c5e8279b0f30410e675fdbdc8511294f35256eb4",
+        "decisionKey": "blake3:16454e8028237c1b3ba66c13c5e8279b0f30410e675fdbdc8511294f35256eb4|revision:4|profile:print|resources:4|request:canvaskit|mode:default",
+        "preflight": null,
+        "initializationError": null,
+        "selectionError": null
+      },
+      "surface": {
+        "created": 2,
+        "reused": 2,
+        "backend": "software",
+        "preference": "software",
+        "fallbackReason": null
+      },
+      "runtime": {
+        "backend": {
+          "backend": "canvaskit",
+          "source": "url",
+          "requested": "canvaskit"
+        },
+        "canvaskitMode": {
+          "mode": "default",
+          "source": "url",
+          "requested": "default"
+        },
+        "canvaskitSurface": {
+          "preference": "software",
+          "requested": "software"
+        },
+        "renderProfile": "print"
+      },
+      "images": [
+        {
+          "bbox": {
+            "x": 113.379,
+            "y": 132.175,
+            "width": 226.598,
+            "height": 188.754
+          },
+          "paint": {
+            "x": 113.379,
+            "y": 132.175,
+            "width": 226.598,
+            "height": 188.754
+          },
+          "printFrame": [
+            59528,
+            84186,
+            709,
+            827,
+            1417,
+            1181,
+            2126,
+            2008
+          ]
+        },
+        {
+          "bbox": {
+            "x": 113.379,
+            "y": 320.929,
+            "width": 226.598,
+            "height": 188.754
+          },
+          "paint": {
+            "x": 113.379,
+            "y": 320.929,
+            "width": 75.533,
+            "height": 35.391
+          },
+          "printFrame": [
+            59528,
+            84186,
+            709,
+            2006,
+            472,
+            221,
+            1181,
+            2227
+          ]
+        }
+      ],
+      "captureClip": {
+        "x": 263.15625,
+        "y": 150,
+        "height": 1122.5,
+        "width": 793.6875
+      }
+    },
+    "cycles": null,
+    "passed": true,
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/owner-hwpx/canvaskit-print.png",
+    "capture_sha256": "dba34696a8c9a6618c5c585aaa5a3ae8207592642d3ac03235209a5852998d53"
+  },
+  {
+    "key": "pr7668-mixed",
+    "requestedBackend": "native-svg-browser",
+    "profile": "screen",
+    "source": {
+      "key": "pr7668-mixed",
+      "profile": "screen",
+      "svg": "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/native-svg-consumers/pr7668-mixed/screen/mixed.svg",
+      "svg_sha256": "012d6394658eb13b2acbb2f73feb28a67f72b8d23aa0e87ffa7956c42f1f7502",
+      "binary_sha256": "e37e3b14cadbacc9c4213c6fd57bfae760e35892c62a7abf895655a076608689",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/rhwp-maintainer-v5-native",
+        "export-svg",
+        "/Users/tsjang/rhwp/mydocs/pr/assets/picture-effect-reflow/mixed.hwp",
+        "--profile",
+        "screen",
+        "--compat",
+        "2022",
+        "--json",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/native-svg-consumers/pr7668-mixed/screen"
+      ]
+    },
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/pr7668-mixed/native-svg-browser-screen.png",
+    "images": 4,
+    "passed": true,
+    "capture_sha256": "6dcd19ffec314a59a34583bf953c33eebbcf7e70fd41f332c16f5be243f68766"
+  },
+  {
+    "key": "pr7675-all-inline",
+    "requestedBackend": "native-svg-browser",
+    "profile": "screen",
+    "source": {
+      "key": "pr7675-all-inline",
+      "profile": "screen",
+      "svg": "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/native-svg-consumers/pr7675-all-inline/screen/all-inline.svg",
+      "svg_sha256": "97b8bb905682a24784d2119968c3e863fcdb40a48edfaa40eb75e1fd3d180b1c",
+      "binary_sha256": "e37e3b14cadbacc9c4213c6fd57bfae760e35892c62a7abf895655a076608689",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/rhwp-maintainer-v5-native",
+        "export-svg",
+        "/Users/tsjang/rhwp/mydocs/pr/assets/inline-picture-cell-flow/all-inline.hwp",
+        "--profile",
+        "screen",
+        "--compat",
+        "2022",
+        "--json",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/native-svg-consumers/pr7675-all-inline/screen"
+      ]
+    },
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/pr7675-all-inline/native-svg-browser-screen.png",
+    "images": 4,
+    "passed": true,
+    "capture_sha256": "54fcec26c8ff769fac5cbd2149762045d386c9a996c1cbec69b6e1e558c6f218"
+  },
+  {
+    "key": "pr7682-two-paras",
+    "requestedBackend": "native-svg-browser",
+    "profile": "screen",
+    "source": {
+      "key": "pr7682-two-paras",
+      "profile": "screen",
+      "svg": "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/native-svg-consumers/pr7682-two-paras/screen/two-paras.svg",
+      "svg_sha256": "9dfccd8c5cec065c3f7f297b37824162450f80aa08b3cbe8b03c09c0b7736781",
+      "binary_sha256": "e37e3b14cadbacc9c4213c6fd57bfae760e35892c62a7abf895655a076608689",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/rhwp-maintainer-v5-native",
+        "export-svg",
+        "/Users/tsjang/rhwp/mydocs/pr/assets/picture-cell-paragraph-flow/two-paras.hwp",
+        "--profile",
+        "screen",
+        "--compat",
+        "2022",
+        "--json",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/native-svg-consumers/pr7682-two-paras/screen"
+      ]
+    },
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/pr7682-two-paras/native-svg-browser-screen.png",
+    "images": 2,
+    "passed": true,
+    "capture_sha256": "c8dce57e8590a2fd7e0af8d1938093dd80038bf81e7c8b2960c403dd36b75f64"
+  },
+  {
+    "key": "owner-hwp",
+    "requestedBackend": "native-svg-browser",
+    "profile": "screen",
+    "source": {
+      "key": "owner-hwp",
+      "profile": "screen",
+      "svg": "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/native-svg-consumers/owner-hwp/screen/img_cmp_01.svg",
+      "svg_sha256": "49c198a1aa6d9c9f6cb8c52e0e1fb4a0f963e41132ce1448a80328028d006801",
+      "binary_sha256": "e37e3b14cadbacc9c4213c6fd57bfae760e35892c62a7abf895655a076608689",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/rhwp-maintainer-v5-native",
+        "export-svg",
+        "/Users/tsjang/rhwp/mydocs/pr/assets/jeong_sik_integration_20261114/input/img_cmp_01.hwp",
+        "--profile",
+        "screen",
+        "--compat",
+        "2022",
+        "--json",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/native-svg-consumers/owner-hwp/screen"
+      ]
+    },
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/owner-hwp/native-svg-browser-screen.png",
+    "images": 2,
+    "passed": true,
+    "capture_sha256": "2ac0b9d2388db8691a9fc4a7cf1ebb6e02378de2d21d1533a62e5adc502957fb"
+  },
+  {
+    "key": "owner-hwpx",
+    "requestedBackend": "native-svg-browser",
+    "profile": "screen",
+    "source": {
+      "key": "owner-hwpx",
+      "profile": "screen",
+      "svg": "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/native-svg-consumers/owner-hwpx/screen/img_cmp_01.svg",
+      "svg_sha256": "49c198a1aa6d9c9f6cb8c52e0e1fb4a0f963e41132ce1448a80328028d006801",
+      "binary_sha256": "e37e3b14cadbacc9c4213c6fd57bfae760e35892c62a7abf895655a076608689",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/rhwp-maintainer-v5-native",
+        "export-svg",
+        "/Users/tsjang/rhwp/mydocs/pr/assets/jeong_sik_integration_20261114/input/img_cmp_01.hwpx",
+        "--profile",
+        "screen",
+        "--compat",
+        "2022",
+        "--json",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/native-svg-consumers/owner-hwpx/screen"
+      ]
+    },
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/owner-hwpx/native-svg-browser-screen.png",
+    "images": 2,
+    "passed": true,
+    "capture_sha256": "2ac0b9d2388db8691a9fc4a7cf1ebb6e02378de2d21d1533a62e5adc502957fb"
+  },
+  {
+    "key": "pr7668-mixed",
+    "requestedBackend": "native-svg-browser",
+    "profile": "print",
+    "source": {
+      "key": "pr7668-mixed",
+      "profile": "print",
+      "svg": "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/native-svg-consumers/pr7668-mixed/print/mixed.svg",
+      "svg_sha256": "673f34e7220d75ddf7af648d8977aad1a9bee63eaf17b22d2ee12191588b934b",
+      "binary_sha256": "e37e3b14cadbacc9c4213c6fd57bfae760e35892c62a7abf895655a076608689",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/rhwp-maintainer-v5-native",
+        "export-svg",
+        "/Users/tsjang/rhwp/mydocs/pr/assets/picture-effect-reflow/mixed.hwp",
+        "--profile",
+        "print",
+        "--compat",
+        "2022",
+        "--json",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/native-svg-consumers/pr7668-mixed/print"
+      ]
+    },
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/pr7668-mixed/native-svg-browser-print.png",
+    "images": 4,
+    "passed": true,
+    "capture_sha256": "6766ee1febe2957a0f16e48c2418437589dfbc7168c15fd24ff4c3e5828a2055"
+  },
+  {
+    "key": "pr7675-all-inline",
+    "requestedBackend": "native-svg-browser",
+    "profile": "print",
+    "source": {
+      "key": "pr7675-all-inline",
+      "profile": "print",
+      "svg": "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/native-svg-consumers/pr7675-all-inline/print/all-inline.svg",
+      "svg_sha256": "22adbd1cc17a1d7f288ec6b07b6de91d961abef86fab9c10e59dda991f365a59",
+      "binary_sha256": "e37e3b14cadbacc9c4213c6fd57bfae760e35892c62a7abf895655a076608689",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/rhwp-maintainer-v5-native",
+        "export-svg",
+        "/Users/tsjang/rhwp/mydocs/pr/assets/inline-picture-cell-flow/all-inline.hwp",
+        "--profile",
+        "print",
+        "--compat",
+        "2022",
+        "--json",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/native-svg-consumers/pr7675-all-inline/print"
+      ]
+    },
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/pr7675-all-inline/native-svg-browser-print.png",
+    "images": 4,
+    "passed": true,
+    "capture_sha256": "9b6ee37af093a1730d13235a31a5a0abdfa72fbd9184189d2a0c8bb08759d766"
+  },
+  {
+    "key": "pr7682-two-paras",
+    "requestedBackend": "native-svg-browser",
+    "profile": "print",
+    "source": {
+      "key": "pr7682-two-paras",
+      "profile": "print",
+      "svg": "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/native-svg-consumers/pr7682-two-paras/print/two-paras.svg",
+      "svg_sha256": "577dde8b08c91cd5525abb83be0074deafdb6ce2e4e647196543a48c818a4b5a",
+      "binary_sha256": "e37e3b14cadbacc9c4213c6fd57bfae760e35892c62a7abf895655a076608689",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/rhwp-maintainer-v5-native",
+        "export-svg",
+        "/Users/tsjang/rhwp/mydocs/pr/assets/picture-cell-paragraph-flow/two-paras.hwp",
+        "--profile",
+        "print",
+        "--compat",
+        "2022",
+        "--json",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/native-svg-consumers/pr7682-two-paras/print"
+      ]
+    },
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/pr7682-two-paras/native-svg-browser-print.png",
+    "images": 2,
+    "passed": true,
+    "capture_sha256": "cf93028c7373c9ea07750ca4b8a89ca2104557341fdfd583326cfca495600dcb"
+  },
+  {
+    "key": "owner-hwp",
+    "requestedBackend": "native-svg-browser",
+    "profile": "print",
+    "source": {
+      "key": "owner-hwp",
+      "profile": "print",
+      "svg": "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/native-svg-consumers/owner-hwp/print/img_cmp_01.svg",
+      "svg_sha256": "b10269a0879ea67741e03c53da48867543593b9dcd5be9ae7eff3c1d22a5ce5c",
+      "binary_sha256": "e37e3b14cadbacc9c4213c6fd57bfae760e35892c62a7abf895655a076608689",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/rhwp-maintainer-v5-native",
+        "export-svg",
+        "/Users/tsjang/rhwp/mydocs/pr/assets/jeong_sik_integration_20261114/input/img_cmp_01.hwp",
+        "--profile",
+        "print",
+        "--compat",
+        "2022",
+        "--json",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/native-svg-consumers/owner-hwp/print"
+      ]
+    },
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/owner-hwp/native-svg-browser-print.png",
+    "images": 2,
+    "passed": true,
+    "capture_sha256": "c802f20a1049920c4afe2c92bb73085d0cac003968dc9de7e366a810a9becb49"
+  },
+  {
+    "key": "owner-hwpx",
+    "requestedBackend": "native-svg-browser",
+    "profile": "print",
+    "source": {
+      "key": "owner-hwpx",
+      "profile": "print",
+      "svg": "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/native-svg-consumers/owner-hwpx/print/img_cmp_01.svg",
+      "svg_sha256": "b10269a0879ea67741e03c53da48867543593b9dcd5be9ae7eff3c1d22a5ce5c",
+      "binary_sha256": "e37e3b14cadbacc9c4213c6fd57bfae760e35892c62a7abf895655a076608689",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/rhwp-maintainer-v5-native",
+        "export-svg",
+        "/Users/tsjang/rhwp/mydocs/pr/assets/jeong_sik_integration_20261114/input/img_cmp_01.hwpx",
+        "--profile",
+        "print",
+        "--compat",
+        "2022",
+        "--json",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/native-svg-consumers/owner-hwpx/print"
+      ]
+    },
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/owner-hwpx/native-svg-browser-print.png",
+    "images": 2,
+    "passed": true,
+    "capture_sha256": "c802f20a1049920c4afe2c92bb73085d0cac003968dc9de7e366a810a9becb49"
+  },
+  {
+    "key": "pr7668-mixed",
+    "requestedBackend": "native-skia",
+    "profile": "screen",
+    "command": [
+      "export-png",
+      "/Users/tsjang/rhwp/mydocs/pr/assets/picture-effect-reflow/mixed.hwp",
+      "--profile",
+      "screen",
+      "--compat",
+      "2022",
+      "--dpi",
+      "96",
+      "--json",
+      "-o",
+      "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/actual-consumers/pr7668-mixed-native-screen"
+    ],
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/pr7668-mixed/native-skia-screen.png",
+    "passed": true,
+    "capture_sha256": "ae7e2bfaecd0a1b77ac95162743e836236b33dff3425cbaa0cd3419d4b35dc92"
+  },
+  {
+    "key": "pr7675-all-inline",
+    "requestedBackend": "native-skia",
+    "profile": "screen",
+    "command": [
+      "export-png",
+      "/Users/tsjang/rhwp/mydocs/pr/assets/inline-picture-cell-flow/all-inline.hwp",
+      "--profile",
+      "screen",
+      "--compat",
+      "2022",
+      "--dpi",
+      "96",
+      "--json",
+      "-o",
+      "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/actual-consumers/pr7675-all-inline-native-screen"
+    ],
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/pr7675-all-inline/native-skia-screen.png",
+    "passed": true,
+    "capture_sha256": "ffa0b7d99b051488e3362e9c6e2b0ed58ff6e461cd17b1cd6169e4a89043d500"
+  },
+  {
+    "key": "pr7682-two-paras",
+    "requestedBackend": "native-skia",
+    "profile": "screen",
+    "command": [
+      "export-png",
+      "/Users/tsjang/rhwp/mydocs/pr/assets/picture-cell-paragraph-flow/two-paras.hwp",
+      "--profile",
+      "screen",
+      "--compat",
+      "2022",
+      "--dpi",
+      "96",
+      "--json",
+      "-o",
+      "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/actual-consumers/pr7682-two-paras-native-screen"
+    ],
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/pr7682-two-paras/native-skia-screen.png",
+    "passed": true,
+    "capture_sha256": "60a6e5ff980a8d0b42ae39a8ad282db5d8b5e050438f8a153925773f9dcd03db"
+  },
+  {
+    "key": "owner-hwp",
+    "requestedBackend": "native-skia",
+    "profile": "screen",
+    "command": [
+      "export-png",
+      "/Users/tsjang/rhwp/mydocs/pr/assets/jeong_sik_integration_20261114/input/img_cmp_01.hwp",
+      "--profile",
+      "screen",
+      "--compat",
+      "2022",
+      "--dpi",
+      "96",
+      "--json",
+      "-o",
+      "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/actual-consumers/owner-hwp-native-screen"
+    ],
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/owner-hwp/native-skia-screen.png",
+    "passed": true,
+    "capture_sha256": "0a320470ddaa507ac9340be9d8fc696ead892f048ebfbfae984fa3d6b9fe748c"
+  },
+  {
+    "key": "owner-hwpx",
+    "requestedBackend": "native-skia",
+    "profile": "screen",
+    "command": [
+      "export-png",
+      "/Users/tsjang/rhwp/mydocs/pr/assets/jeong_sik_integration_20261114/input/img_cmp_01.hwpx",
+      "--profile",
+      "screen",
+      "--compat",
+      "2022",
+      "--dpi",
+      "96",
+      "--json",
+      "-o",
+      "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/actual-consumers/owner-hwpx-native-screen"
+    ],
+    "capture": "mydocs/pr/assets/jeong_sik_integration_20261114/actual/owner-hwpx/native-skia-screen.png",
+    "passed": true,
+    "capture_sha256": "0a320470ddaa507ac9340be9d8fc696ead892f048ebfbfae984fa3d6b9fe748c"
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "success": true,
+  "source_sha": "728b368e35ccde71d21d5c98d3c2ba791af3ce30",
+  "profile": "Mac locked wrapper --target web --out-dir pkg --no-opt local alternative",
+  "artifacts": {
+    "rhwp.js": {
+      "sha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+      "bytes": 583724
+    },
+    "rhwp_bg.wasm": {
+      "sha256": "4a90b04bd425b44f12f32436cc3df4775dd65b9e3c9ada8648d581f44755d5c0",
+      "bytes": 31875850
+    }
+  },
+  "time": "2026-11-14T03:09:44.240921+09:00"
+}

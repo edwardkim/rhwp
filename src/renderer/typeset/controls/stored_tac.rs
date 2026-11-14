@@ -164,7 +164,6 @@ pub(super) fn prepare_coanchored_first_line(
     dpi: f64,
 ) -> Option<StoredTacControlPlacement> {
     if !page.profile.hwp5_stored_pagination_layout()
-        || page.profile.session_edited()
         || !page.side_wrap_empty
         || para.cell_format_vpos_dirty
     {
@@ -240,6 +239,7 @@ pub(super) fn prepare_coanchored_first_line(
             }
             Control::SectionDef(_)
             | Control::ColumnDef(_)
+            | Control::PageNumberPos(_)
             | Control::Header(_)
             | Control::Footer(_) => {}
             _ => return None,

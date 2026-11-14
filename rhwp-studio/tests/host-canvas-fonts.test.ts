@@ -217,3 +217,53 @@ test('failed loads are bounded within a generation and retry after replacement',
     assert(!f.fonts.has(previous), 'notification immediately releases old faces');
   } finally { await f.dispose(); }
 });
+
+
+test('opt-in outlines live only during their page paint and are cleared on errors', async () => {
+  const f = await fixture();
+  const file = readFileSync(new URL('../../tests/fixtures/fonts/RHWPHftOutline.otf', import.meta.url));
+  const bytes = file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength) as ArrayBuffer;
+  const families = ['First page', 'Second page'];
+  try {
+    await setHostFontProvider({ ...f.provider,
+      async getSnapshot() { return { revision: 'pages', faces: families.map(family => ({
+        id: family, family, fullName: family, postscriptName: family,
+        style: 'Regular', weight: 400, slant: 'normal' as const,
+      })) }; },
+      async readFace() { return { bytes }; },
+    }, { layout: true });
+    const records = families.map(family => resolveRendererLocalFont(family)!);
+    const active = new Set<string>();
+    let coverage = 0;
+    let fail = false;
+    const owner = {
+      registerTextFontGlyphCoverage() { coverage++; },
+      registerHftOutlineFont() { assert.fail('whole-document outline registration'); },
+      registerHftOutlineFontFaces(family: string, programs: Array<{ bytes: Uint8Array; faceIndex: number }>) {
+        assert.deepEqual(programs[0].bytes, new Uint8Array(bytes));
+        assert.equal(programs[0].faceIndex, 0);
+        active.add(family);
+        if (fail) throw new Error('resource rejection');
+      },
+      clearTextFontOutline(family: string) { active.delete(family); },
+    };
+    await f.session.prepare(records, owner, () => true, true);
+    assert.equal(active.size, 0);
+    const preparedCoverage = coverage;
+    for (const record of records) {
+      f.session.withPageOutlines([record], owner, () => {
+        assert(active.has(record.family));
+        assert(!active.has(families.find(family => family !== record.family)!));
+      });
+      assert.equal(active.size, 0);
+    }
+    assert.throws(() => f.session.withPageOutlines([records[0]], owner, () => {
+      throw new Error('paint rejection');
+    }), /paint rejection/);
+    assert.equal(active.size, 0);
+    fail = true;
+    assert.throws(() => f.session.withPageOutlines([records[1]], owner, () => {}), /resource rejection/);
+    assert.equal(active.size, 0);
+    assert.equal(coverage, preparedCoverage, 'paint scopes must not rebuild measurement coverage');
+  } finally { await f.dispose(); }
+});

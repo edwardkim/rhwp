@@ -1,0 +1,11 @@
+{
+  "chrome": "157.0.8103.39",
+  "node": "v24.15.0",
+  "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)",
+  "python": "Python 3.12.16",
+  "base": "4c876654d86d071d342fc78706c51cfff6ddbde4",
+  "code_head": "6b7ceb9cd5f11e8c4c073aeadc032d84c0767b2e",
+  "issue_updated_at": "2026-11-11T10:17:17Z",
+  "own_open_prs": [],
+  "remote_mutations": false
+}

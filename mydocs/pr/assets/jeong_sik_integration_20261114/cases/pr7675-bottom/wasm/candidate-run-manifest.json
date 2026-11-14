@@ -1,0 +1,100 @@
+{
+  "schema_version": 2,
+  "key": "pr7675-bottom",
+  "provenance": {
+    "hwp": {
+      "path": "mydocs/pr/assets/inline-picture-cell-flow/bottom.hwp",
+      "sha256": "5eb48a1dc3b6cdde2cb55f88eb05a23248a010fd25d0e8facd70b7e19d9daa34"
+    },
+    "pdf": {
+      "path": "pdf/jeong-sik-develop-audit-20261114/pr7675-bottom-2020.pdf",
+      "sha256": "7936a91782a4af40812d5f2fae63fa4f299a29f5740cdfa085af62a08b40a8cb"
+    },
+    "git_head": "b8029a6feefc064e06b2f99728a962d40842a081",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+      "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+      "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+      "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+      "version": "152.0.7947.0",
+      "wrapper_version": "5.12.1",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "output/pr-review/jeong-sik-integration-20261114/rhwp-maintainer-v5-native",
+      "path": "output/pr-review/jeong-sik-integration-20261114/rhwp-maintainer-v5-native",
+      "sha256": "e37e3b14cadbacc9c4213c6fd57bfae760e35892c62a7abf895655a076608689"
+    },
+    "raster_backend": "wasm-canvas2d",
+    "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+    "layout_generation": "2022",
+    "wasm": {
+      "files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/candidate-pkg/rhwp.js",
+          "sha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/candidate-pkg/rhwp_bg.wasm",
+          "sha256": "66d0ba187083518fc03067252e06fd930c1093f348a740ff4cbdef0bcfb43d45"
+        }
+      ],
+      "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+      "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+      "comparison_profile": "print",
+      "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "automatic_local_and_web",
+      "files_receipt": {
+        "path": "font-inventories/32e88a4bd70a989f618549c3b106556d82be102539121aa70dd1abeffb8f4f92.json",
+        "sha256": "32e88a4bd70a989f618549c3b106556d82be102539121aa70dd1abeffb8f4f92",
+        "count": 1208
+      }
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": null,
+  "requested_pages": [
+    1
+  ],
+  "requested_page_shards": [
+    [
+      1
+    ]
+  ],
+  "run_state": "complete",
+  "document_page_counts": {
+    "rhwp": 1,
+    "pdf": 1
+  },
+  "build_producer": "candidate-wasm-producer.json"
+}

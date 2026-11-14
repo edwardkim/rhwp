@@ -1,0 +1,184 @@
+[
+  {
+    "key": "border-hwp",
+    "backend": "native",
+    "base_raw": "100.00",
+    "head_raw": "100.00",
+    "png_identical": true
+  },
+  {
+    "key": "border-hwpx",
+    "backend": "native",
+    "base_raw": "100.00",
+    "head_raw": "100.00",
+    "png_identical": true
+  },
+  {
+    "key": "combined-hwp",
+    "backend": "native",
+    "base_raw": "100.00",
+    "head_raw": "100.00",
+    "png_identical": true
+  },
+  {
+    "key": "combined-hwpx",
+    "backend": "native",
+    "base_raw": "100.00",
+    "head_raw": "100.00",
+    "png_identical": true
+  },
+  {
+    "key": "data-before-zero-hwpx",
+    "backend": "native",
+    "base_raw": "100.00",
+    "head_raw": "100.00",
+    "png_identical": true
+  },
+  {
+    "key": "data-only-hwpx",
+    "backend": "native",
+    "base_raw": "100.00",
+    "head_raw": "100.00",
+    "png_identical": true
+  },
+  {
+    "key": "leading-hwp",
+    "backend": "native",
+    "base_raw": "100.00",
+    "head_raw": "100.00",
+    "png_identical": true
+  },
+  {
+    "key": "leading-hwpx",
+    "backend": "native",
+    "base_raw": "100.00",
+    "head_raw": "100.00",
+    "png_identical": true
+  },
+  {
+    "key": "predecessor-pr7521",
+    "backend": "native",
+    "base_raw": "100.00",
+    "head_raw": "100.00",
+    "png_identical": true
+  },
+  {
+    "key": "styled-caret-hwpx",
+    "backend": "native",
+    "base_raw": "100.00",
+    "head_raw": "100.00",
+    "png_identical": true
+  },
+  {
+    "key": "styled-cell-hwpx",
+    "backend": "native",
+    "base_raw": "100.00",
+    "head_raw": "100.00",
+    "png_identical": true
+  },
+  {
+    "key": "value-fake-before-zero-hwpx",
+    "backend": "native",
+    "base_raw": "100.00",
+    "head_raw": "100.00",
+    "png_identical": true
+  },
+  {
+    "key": "whitespace-case-hwpx",
+    "backend": "native",
+    "base_raw": "100.00",
+    "head_raw": "100.00",
+    "png_identical": true
+  },
+  {
+    "key": "border-hwp",
+    "backend": "wasm",
+    "base_raw": "100.00",
+    "head_raw": "100.00",
+    "png_identical": true
+  },
+  {
+    "key": "border-hwpx",
+    "backend": "wasm",
+    "base_raw": "100.00",
+    "head_raw": "100.00",
+    "png_identical": true
+  },
+  {
+    "key": "combined-hwp",
+    "backend": "wasm",
+    "base_raw": "100.00",
+    "head_raw": "100.00",
+    "png_identical": true
+  },
+  {
+    "key": "combined-hwpx",
+    "backend": "wasm",
+    "base_raw": "100.00",
+    "head_raw": "100.00",
+    "png_identical": true
+  },
+  {
+    "key": "data-before-zero-hwpx",
+    "backend": "wasm",
+    "base_raw": "100.00",
+    "head_raw": "100.00",
+    "png_identical": true
+  },
+  {
+    "key": "data-only-hwpx",
+    "backend": "wasm",
+    "base_raw": "100.00",
+    "head_raw": "100.00",
+    "png_identical": true
+  },
+  {
+    "key": "leading-hwp",
+    "backend": "wasm",
+    "base_raw": "100.00",
+    "head_raw": "100.00",
+    "png_identical": true
+  },
+  {
+    "key": "leading-hwpx",
+    "backend": "wasm",
+    "base_raw": "100.00",
+    "head_raw": "100.00",
+    "png_identical": true
+  },
+  {
+    "key": "predecessor-pr7521",
+    "backend": "wasm",
+    "base_raw": "100.00",
+    "head_raw": "100.00",
+    "png_identical": true
+  },
+  {
+    "key": "styled-caret-hwpx",
+    "backend": "wasm",
+    "base_raw": "100.00",
+    "head_raw": "100.00",
+    "png_identical": true
+  },
+  {
+    "key": "styled-cell-hwpx",
+    "backend": "wasm",
+    "base_raw": "100.00",
+    "head_raw": "100.00",
+    "png_identical": true
+  },
+  {
+    "key": "value-fake-before-zero-hwpx",
+    "backend": "wasm",
+    "base_raw": "100.00",
+    "head_raw": "100.00",
+    "png_identical": true
+  },
+  {
+    "key": "whitespace-case-hwpx",
+    "backend": "wasm",
+    "base_raw": "100.00",
+    "head_raw": "100.00",
+    "png_identical": true
+  }
+]

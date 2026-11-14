@@ -1,0 +1,41 @@
+{
+  "cases": [
+    {
+      "case": "leading",
+      "paste_semantics_equal": true,
+      "base_roundtrips": 4,
+      "head_roundtrips": 4
+    },
+    {
+      "case": "border",
+      "paste_semantics_equal": true,
+      "base_roundtrips": 4,
+      "head_roundtrips": 4
+    },
+    {
+      "case": "combined",
+      "paste_semantics_equal": true,
+      "base_roundtrips": 4,
+      "head_roundtrips": 4
+    },
+    {
+      "case": "body-styled-caret",
+      "paste_semantics_equal": true,
+      "base_roundtrips": 4,
+      "head_roundtrips": 4
+    },
+    {
+      "case": "cell-styled-caret",
+      "paste_semantics_equal": true,
+      "base_roundtrips": 4,
+      "head_roundtrips": 4
+    },
+    {
+      "case": "attribute-alias",
+      "paste_semantics_equal": true,
+      "base_roundtrips": 4,
+      "head_roundtrips": 4
+    }
+  ],
+  "both_all_passed": true
+}

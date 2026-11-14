@@ -39,6 +39,7 @@ pub(super) struct TableFormatInput<'a> {
     pub(super) next_para: Option<&'a Paragraph>,
     pub(super) is_column_top: bool,
     pub(super) external_flow: Option<crate::renderer::float_placement::ReflowExternalTableFlow>,
+    pub(super) unchanged_coanchored_frame: bool,
 }
 
 /// 측정 선택 → host 간격 → 측정값 복제 → 각주 수집 → 결과 조립 순서를 유지한다.
@@ -79,13 +80,31 @@ pub(super) fn format_with_storage<S: crate::storage::Storage>(
         next_para,
         is_column_top,
         external_flow,
+        unchanged_coanchored_frame,
     } = input;
     let mt = measured_tables
         .iter()
         .find(|mt| mt.para_index == para_idx && mt.control_index == ctrl_idx);
-    let fitted_visible_mt = fit_measured_for_host_with_storage(
-        para, next_para, table, mt, dpi, styles, &profile, storage,
-    )?;
+    // 편집 세션 여부는 이 표의 줄 재배치 증거가 아니다. 같은 저장 host와
+    // 수직 줄 프레임을 유지했다면 저장·paint와 같은 닫힌 끝 행을 먼저 쓴다.
+    // 실제 줄바꿈·높이 변화는 호출자가 제외하며 내용 하한은 공통 fit이 검증한다.
+    let closed_coanchored_mt = if unchanged_coanchored_frame {
+        mt.map(|measured| {
+            crate::renderer::height_measurer::fit_measured_table_declared_tail_to_declared_height_with_storage(
+                measured, table, dpi, storage,
+            )
+        })
+        .transpose()?
+        .flatten()
+    } else {
+        None
+    };
+    let fitted_visible_mt = match closed_coanchored_mt {
+        Some(closed) => Some(closed),
+        None => fit_measured_for_host_with_storage(
+            para, next_para, table, mt, dpi, styles, &profile, storage,
+        )?,
+    };
     let mt = fitted_visible_mt.as_ref().or(mt);
 
     let is_tac = uses_tac_flow();
