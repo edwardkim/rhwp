@@ -326,7 +326,7 @@ fn try_compose_paragraph_with_owners<S: crate::storage::Storage>(
                     Some((pos, inline_picture_size_hu(p).0, i))
                 }
                 Control::Shape(s) if s.common().treat_as_char => {
-                    Some((pos, s.common().width as i32, i))
+                    Some((pos, inline_shape_width_hu(s), i))
                 }
                 Control::Equation(eq) if eq.common.treat_as_char => {
                     // HWP 저장값을 사용 — 한컴 편집기가 실제 폰트로 계산한 정확한 너비
