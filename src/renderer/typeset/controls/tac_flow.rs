@@ -82,11 +82,14 @@ impl<'a> TacFlowQuery<'a> {
         table: &crate::model::table::Table,
         fmt: &FormattedParagraph,
     ) -> Option<usize> {
-        if !table.common.treat_as_char
-            || fmt.line_heights.is_empty()
-            || (fmt.line_heights.len() == 1 && !crate::renderer::para_has_no_stored_line_segs(para))
-        {
+        if !table.common.treat_as_char || fmt.line_heights.is_empty() {
             return None;
+        }
+        if fmt.line_heights.len() == 1 && !crate::renderer::para_has_no_stored_line_segs(para) {
+            // 저장 줄이 하나뿐인 문단은 흐름 속성(#3930)이 경로를 정한다. 다만 그 줄이
+            // 이 표 하나의 줄 상자임을 문서가 증명하면(줄 높이 = 표 높이 + 바깥 여백,
+            // 보이는 글과 다른 표 없음) 한/글이 표를 글줄에 놓은 것이므로 그 줄을 따른다.
+            return sole_stored_table_line(para, table).then_some(0);
         }
 
         // 저장 사다리가 없는 현재 단일 줄도 같은 줄 구성에서 실제 표 높이를
@@ -220,4 +223,20 @@ fn owns_later_stored_line(para: &Paragraph, table: &crate::model::table::Table) 
         })
         .and_then(|index| crate::renderer::composer::stored_owned_tac_line(para, index))
         .is_some_and(|(owner, _)| owner > 0)
+}
+
+/// 글자처럼 취급 표 하나가 문단의 유일한 저장 줄을 혼자 소유하는가.
+///
+/// 저장 줄 높이가 표 높이와 위·아래 바깥 여백의 합과 정확히 같고 문단에 보이는 글이
+/// 없으면 그 줄은 이 표의 줄 상자다. 표가 둘 이상이면 줄 하나가 누구의 것인지 이 증거로
+/// 정할 수 없으므로 제외한다.
+fn sole_stored_table_line(para: &Paragraph, table: &crate::model::table::Table) -> bool {
+    let mut tables = para.controls.iter().filter_map(|control| match control {
+        crate::model::control::Control::Table(candidate) => Some(candidate.as_ref()),
+        _ => None,
+    });
+    tables.next().is_some_and(|only| std::ptr::eq(only, table))
+        && tables.next().is_none()
+        && para.line_segs.len() == 1
+        && crate::renderer::composer::stored_first_tac_line(para).is_some()
 }
