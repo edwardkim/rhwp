@@ -1,0 +1,38 @@
+[
+  {
+    "key": "handbook-hwp",
+    "page": 258,
+    "pixels": 1,
+    "max_channel_delta": 1,
+    "bbox": [
+      640,
+      602,
+      641,
+      603
+    ]
+  },
+  {
+    "key": "handbook-hwpx",
+    "page": 82,
+    "pixels": 1,
+    "max_channel_delta": 9,
+    "bbox": [
+      115,
+      183,
+      116,
+      184
+    ]
+  },
+  {
+    "key": "handbook-hwpx",
+    "page": 224,
+    "pixels": 1,
+    "max_channel_delta": 3,
+    "bbox": [
+      130,
+      621,
+      131,
+      622
+    ]
+  }
+]

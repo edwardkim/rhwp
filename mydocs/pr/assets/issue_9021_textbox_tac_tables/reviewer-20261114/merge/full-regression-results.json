@@ -1,0 +1,66 @@
+[
+  {
+    "name": "full-nextest",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--tests",
+      "--test-threads",
+      "6",
+      "--no-fail-fast"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "native-lib",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--lib",
+      "--",
+      "--test-threads=6"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "native-placeholder",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_2225_missing_picture_placeholder",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--test-threads",
+      "6"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "native-pdf",
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "render_p37_direct_pdf_export",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--test-threads",
+      "6"
+    ],
+    "exit": 0
+  }
+]

@@ -1,0 +1,217 @@
+{
+  "key": "issue9021",
+  "hwp": "samples/issue9021/textbox_tac_tables_two_lines.hwp",
+  "pdf": "pdf/issue9021/textbox_tac_tables_two_lines-hwp-2020.pdf",
+  "requested_pages": [
+    1
+  ],
+  "completed_pages": [
+    1
+  ],
+  "missing_pages": [],
+  "run_state": "complete",
+  "run_manifest": "<local>/latest88170/candidate-issue-wasm/issue9021/run_manifest.json",
+  "exported_svg_pages": 0,
+  "exported_source_pages": 1,
+  "exported_render_tree_pages": 1,
+  "exported_pdf_pages": 1,
+  "rasterized_svg_pages": 0,
+  "rasterized_pdf_pages": 1,
+  "svg_pages": 0,
+  "render_tree_pages": 1,
+  "pdf_pages": 1,
+  "compare_pages": 1,
+  "overlay_pages": 1,
+  "review_pages": 1,
+  "pdf_question_markers": 0,
+  "contact_sheet": "<local>/latest88170/candidate-issue-wasm/issue9021/contact_sheet.png",
+  "overlay_contact_sheet": "<local>/latest88170/candidate-issue-wasm/issue9021/overlay_contact_sheet.png",
+  "review_contact_sheet": "<local>/latest88170/candidate-issue-wasm/issue9021/review_contact_sheet.png",
+  "analysis_dir": "<local>/latest88170/candidate-issue-wasm/issue9021/analysis",
+  "overlay_dir": "<local>/latest88170/candidate-issue-wasm/issue9021/overlay",
+  "review_dir": "<local>/latest88170/candidate-issue-wasm/issue9021/review",
+  "note_shape": [
+    {
+      "section": 0,
+      "footnote": {
+        "separatorAboveMm": 2.999,
+        "separatorBelowMm": 2.0,
+        "betweenNotesMm": 0.998,
+        "separatorEnabled": true,
+        "separatorLengthMm": -0.004,
+        "rawSeparatorMarginTopMm": 0.0,
+        "rawSeparatorMarginBottomMm": 2.999,
+        "rawNoteSpacingMm": 2.0,
+        "rawUnknownMm": 0.998
+      },
+      "endnote": {
+        "separatorAboveMm": 2.999,
+        "separatorBelowMm": 2.0,
+        "betweenNotesMm": 0.0,
+        "separatorEnabled": true,
+        "separatorLengthMm": 51831.325,
+        "rawSeparatorMarginTopMm": 0.0,
+        "rawSeparatorMarginBottomMm": 2.999,
+        "rawNoteSpacingMm": 2.0,
+        "rawUnknownMm": 0.0
+      }
+    }
+  ],
+  "note_shape_json": "<local>/latest88170/candidate-issue-wasm/issue9021/analysis/note_shape.json",
+  "overlay_metrics": {
+    "compared_pages": 1,
+    "average_silhouette_raw_match_percent": 100.0,
+    "worst_silhouette_raw_match_percent": 100.0,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 99.37723,
+    "worst_pixel_match_percent": 99.37723,
+    "average_ink_match_percent": 48.52614,
+    "worst_ink_match_percent": 48.52614,
+    "average_visual_accuracy_proxy_percent": 48.52614,
+    "worst_visual_accuracy_proxy_percent": 48.52614,
+    "average_tolerant_content_match_percent": 100.0,
+    "worst_tolerant_content_match_percent": 100.0,
+    "worst_pages": [
+      1
+    ]
+  },
+  "overlay_metrics_json": "<local>/latest88170/candidate-issue-wasm/issue9021/overlay/overlay_metrics.json",
+  "pr_review_gate": {
+    "status": "passed",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "page_count_mismatch": false
+  },
+  "visual_metrics": {
+    "analyzed_pages": 1,
+    "flagged_page_count": 0,
+    "frame_overflow_pages": [],
+    "content_bottom_drift_pages": [],
+    "red_marker_drift_pages": [],
+    "question_marker_flow_drift_pages": [],
+    "line_band_drift_pages": [],
+    "column_line_band_drift_pages": [],
+    "column_text_flow_collapse_pages": [],
+    "large_ink_region_drift_pages": [],
+    "endnote_separator_gap_drift_pages": [],
+    "endnote_separator_observed_pages": [],
+    "endnote_separator_gap_pages": [],
+    "endnote_no_separator_content_pages": [],
+    "between_notes_marker_gap_pages": [],
+    "equation_text_overlap_pages": [],
+    "square_wrap_text_overlap_pages": [],
+    "deferred_square_picture_top_drift_pages": [],
+    "right_table_left_strip_text_deficit_pages": [],
+    "question_title_text_overlap_pages": [],
+    "line_order_overlap_pages": [],
+    "render_tree_frame_tail_overflow_pages": [],
+    "question_marker_drift_pages": [],
+    "legacy_glyph_visual_pages": [],
+    "metrics_json": "<local>/latest88170/candidate-issue-wasm/issue9021/analysis/metrics.json",
+    "question_flow_json": "<local>/latest88170/candidate-issue-wasm/issue9021/analysis/question_flow.json"
+  },
+  "flagged_pages": [],
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue9021/textbox_tac_tables_two_lines.hwp",
+      "sha256": "e0cd85dad3edbd8d00a4c37c2d3c78bc3912524f9527baac1cab6d23943df959"
+    },
+    "pdf": {
+      "path": "pdf/issue9021/textbox_tac_tables_two_lines-hwp-2020.pdf",
+      "sha256": "93b58ab9db87459cb699b1c3da773db0b013fcb4c6122c979881d5a21b07a018"
+    },
+    "git_head": "b6da239caeaf551947a9a6300d25a42f0cd86ab6",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/opt/homebrew/Cellar/python@3.14/3.14.10/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+      "executable_sha256": "7827c8b0d2c63e841f04651d0a620e3f71991f68aaf72f42cbb3a16392ec3013",
+      "library": "<local>/venv/lib/python3.14/site-packages/pypdfium2_raw/libpdfium.dylib",
+      "library_sha256": "5574cd4164a1317bc6b2f3168a4f433ca84561aa1b33f570422ce20f199d3765",
+      "version": "159.0.8149.0@sourcebuild-toolchained",
+      "wrapper_version": "5.15.2",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "<local>/latest88170/candidate-rhwp",
+      "path": "<local>/latest88170/candidate-rhwp",
+      "sha256": "3428cd7788c5032b1573d806ff3ad82e5b9d94f3bea674a1103f460a7e2bc9da"
+    },
+    "raster_backend": "wasm-canvas2d",
+    "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+    "layout_generation": "2022",
+    "wasm": {
+      "files": [
+        {
+          "path": "<local>/latest88170/candidate-pkg/rhwp.js",
+          "sha256": "2d48f8a6c3ff7f848f08725bb54d04094b296af1a40ae61203081a7cf8061a1a"
+        },
+        {
+          "path": "<local>/latest88170/candidate-pkg/rhwp_bg.wasm",
+          "sha256": "639aa2c39918611066aed75beb626fb1e3eef754fdc4412912d5ba7be12f4b1e"
+        }
+      ],
+      "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+      "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+      "comparison_profile": "print",
+      "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files": [
+        {
+          "path": "<local>/ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+          "sha256": "67b4003e2be99ea44a7c957e4b35acde1b5e6e82a54fe195c5598c3c617bc2e3"
+        },
+        {
+          "path": "<local>/ttfs/opensource/NotoSansKR-Regular.ttf",
+          "sha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74"
+        },
+        {
+          "path": "<local>/ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+          "sha256": "876598db5f1e3bef2bc77c4d94c5b0d5d2c1620be4878a06f18fb5434e331688"
+        },
+        {
+          "path": "<local>/ttfs/opensource/RHWPOldHangul-Regular.otf",
+          "sha256": "0a32ff354d11c955f819d84d91e695927d41aca0fd74b4a286b6235345101af4"
+        },
+        {
+          "path": "<local>/ttfs/opensource/RHWPPublicBatang-Regular.ttf",
+          "sha256": "7e3aee5ee1d8f44cc37d35dbd07e5f66414fee5ce552ebda6b4347643d9d0b78"
+        }
+      ]
+    }
+  }
+}
