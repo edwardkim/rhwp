@@ -946,12 +946,15 @@ fn parse_para_shape(
         }
     }
 
+    let mut plain_line_spacing = false;
     if !is_empty_event(e) {
         let mut buf = Vec::new();
         loop {
             match reader.read_event_into(&mut buf) {
                 Ok(Event::Empty(ref ce)) => {
-                    parse_para_shape_child(ce, &mut ps);
+                    if parse_para_shape_child(ce, &mut ps) == ParaShapeChildKind::LineSpacing {
+                        plain_line_spacing = true;
+                    }
                 }
                 Ok(Event::Start(ref ce)) => {
                     match parse_para_shape_child(ce, &mut ps) {
@@ -967,6 +970,7 @@ fn parse_para_shape(
                             // HwpUnitChar case를 우선 적용, 없으면 default 사용
                             parse_para_shape_switch(reader, &mut ps, physical_plain_margin)?;
                         }
+                        ParaShapeChildKind::LineSpacing => plain_line_spacing = true,
                         ParaShapeChildKind::Other => {}
                     }
                 }
@@ -982,6 +986,17 @@ fn parse_para_shape(
             }
             buf.clear();
         }
+    }
+
+    // switch 밖 평문 `<hh:lineSpacing>` 의 고정·최소·여백 값은 평문 여백과 같은 단위 계약을 따른다.
+    // 패키지 xmlVersion 1.4 이상은 물리 HWPUNIT 이라 공통 IR(2× 스케일)로 올리고, 이전 판본은
+    // 저장 IR 값 그대로다. 웹한글기안기 인쇄 실측: 고정 2000 은 1.4 에서 20pt, 1.2 에서 10pt,
+    // 여백 500 은 1.4 에서 5pt, 1.2 에서 2.5pt 를 띄운다(HWP5 저장값 4000 → 20pt 와 같은 IR).
+    if plain_line_spacing
+        && physical_plain_margin
+        && ps.line_spacing_type != LineSpacingType::Percent
+    {
+        ps.line_spacing = ps.line_spacing.saturating_mul(2);
     }
 
     // [Task #1058 후속] line_spacing_v2 (UINT32, 5.0.2.5 이상) 보정.
@@ -1010,6 +1025,7 @@ fn parse_para_shape(
 enum ParaShapeChildKind {
     Margin,
     Switch,
+    LineSpacing,
     Other,
 }
 
@@ -1078,7 +1094,7 @@ fn parse_para_shape_child(
                     _ => {}
                 }
             }
-            ParaShapeChildKind::Other
+            ParaShapeChildKind::LineSpacing
         }
         b"border" => {
             for attr in ce.attributes().flatten() {
