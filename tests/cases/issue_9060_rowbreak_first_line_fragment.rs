@@ -1,28 +1,29 @@
 //! 검사 유형: 관계형·고정형.
-//! 주석 갱신: 2026-11-15 04:26:18 KST.
-//! 직전 파일 변경: c71275f6cbc7bbb967a9de1497513070649410e2 2026-11-14T18:53:16+09:00.
+//! 주석 갱신: 2026-11-15 08:02:09 KST (Asia/Seoul).
+//! 직전 파일 변경: f899c873d6989eee1d556cfbc3455de4ac8854c7 2026-11-15T04:27:06+09:00.
 //!
-//! 입력: 공개 입법예고 의견 86036 「(규제영향분석서) 공공재정 부정청구 금지 및 부정이익 환수 등에
-//! 관한 법률 일부개정법률(안)」(한컴오피스 2020 저장 HWPX, 14쪽)
-//! `samples/issue9060/86036-rowbreak-first-line-fragment.hwpx`.
-//! 기준: 첨부 한컴 Print `pdf/issue9060/86036-rowbreak-first-line-fragment-2020.pdf`(14쪽).
-//! 원 PR은 engine 2020으로 설명하지만 PDF Creator는 Hwp 2022 12.0.0.4547,
-//! Producer는 Hancom PDF 1.3.0.547이다. 저장 제품·파일명으로 출력 제품을 단정하지 않는다.
-//! 기존 PDF를 그대로 사용하며 아래 compat 2022 측정과 원 PR의 연도 설명을 구분한다.
-//! - 고정형: 전체 쪽수 14.
-//! - 관계형([#9060]): 문단 41 의 1×1 RowBreak 자리차지 표는 5쪽 아래와 6쪽 위에 나뉘어 놓인다.
-//!   칸 문단의 저장 줄은 vpos `0, 0, 2252` 로 첫 줄 뒤에서 쪽을 다시 시작한다. 5쪽 조각은
-//!   「3. 규제목표」(문단 39) 아래에 있고, 6쪽은 나머지 조각으로 시작한다.
+//! 입력: `samples/issue9060/86036-rowbreak-first-line-fragment.hwpx`.
+//! 입력 SHA-256: f224d490226b3673554b484d6ce1e2b1c3bbaf0aac02340706edf5fc9d0a4025.
+//! 독립 Print: `pdf/issue9060/86036-rowbreak-first-line-fragment-2020.pdf`, 14쪽.
+//! PDF SHA-256: c9ba8e9d4b4e2cb32277d030161dedb59d9067eba0a4665b40f9c0b46cc47317.
+//! PDF Creator는 Hwp 2022 12.0.0.4547, Producer는 Hancom PDF 1.3.0.547이다.
+//! 파일명·원 PR의 engine 2020 설명과 구분하고 기존 PDF를 재인쇄하지 않았다.
 //!
-//! 측정(2026-11-14, 코드 커밋 ddcc876814(base devel 5f78bb8d02),
-//! `scripts/visual_sweep.py --silhouette-only --compat 2022 --dpi 96`, raw = `silhouette_raw_match_percent`).
-//! 글꼴 공급은 두 경로 같게 맑은 고딕(Regular·Bold)·바탕(Windows/Office 글꼴)과 저장소
-//! `ttfs/opensource` 다.
-//! - Native: 14/14쪽, 5쪽 99.20 · 6쪽 99.26, 전쪽 최저 95.47(4쪽).
-//! - fresh WASM(wasm sha256 e8fb83753c35abb2…): 14/14쪽, 5쪽 100.00 · 6쪽 100.00, 전쪽 최저 99.54(4쪽).
-//! - 수정 전(devel 5f78bb8d02): 15쪽(한컴 14쪽)이라 쪽수 불일치.
+//! 측정일: 2026-11-15. 소스 43adf3f7fe412e71797456887e2be44b8ef8d14f.
+//! 방법: Visual Sweep, compat 2022·Print·96 DPI·색상 경계 보정 전 2px raw.
+//! Native: 전 14쪽 최저 100.00%, 대상 5·6쪽 각각 100.00%.
+//! fresh WASM: 전 14쪽 최저 100.00%, 대상 5·6쪽 각각 100.00%.
+//! Native binary SHA-256: 5e9c68af4bb8b902b56b5a80678156da193bbcd983080a7b804e0d16ca1dccd6.
+//! WASM binary SHA-256: b2fd15c785c7201c63b5c1942f47ae2b244db9c303614338638daa439d1b9f3c.
+//! 시각 측정은 실제 공급 프로그램·명시적 글꼴 환경으로 수행했다.
+//! 증거: `mydocs/pr/assets/issue_9060/final/main/`의 두 경로 전쪽 TSV·5·6쪽 review/overlay,
+//! `conditions.md` 및 `mydocs/pr/assets/issue_9060/verification-record.md`.
 //!
-//! 증거: `mydocs/pr/assets/issue_9060/`(Native·fresh WASM TSV, 5·6쪽 review·overlay PNG).
+//! 고정형은 독립 PDF의 전체 쪽수 14와 원본 저장 줄의 vpos 0·0·2252다.
+//! 관계형은 제목·표 조각·뒤 본문의 소유와 순서, 셀 전체 내용의 누락·중복 방지다.
+//! 첫 조각의 소유 줄은 5쪽 1개, 나머지는 6쪽 2개이며 후속 제목은 7쪽에 한 번 존재한다.
+//! 실물의 절대 px 좌표를 고정하지 않으며 회귀 실행에 설치된 OTF·시스템 글꼴을 요구하지 않는다.
+//! 수정 전 devel은 15쪽으로 독립 PDF와 달랐다. 기존 세 검사에 내용 보존 검사를 새 이름으로 더한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::Path;
@@ -103,7 +104,7 @@ fn page_count_matches_hancom_print() {
     assert_eq!(
         document().page_count(),
         14,
-        "한컴 engine 2020 Print PDF 는 14쪽"
+        "첨부 독립 한컴 Print PDF는 14쪽"
     );
 }
 
@@ -161,5 +162,84 @@ fn first_line_fragment_stays_at_the_bottom_of_the_page() {
     assert!(
         Page::of(&core, 6).table(TABLE_PARA).is_none(),
         "표는 7쪽까지 이어지지 않는다"
+    );
+}
+
+// 원 PR의 위치 관계 검사를 유지하면서 두 조각의 실제 내용과 뒤 본문까지 보호한다.
+// 기대 문자열은 원본 셀과 독립 Print 5·6쪽, 뒤 제목은 독립 Print 7쪽에서 확인했다.
+#[test]
+fn split_fragments_preserve_all_source_text_and_following_heading() {
+    fn text_and_lines(node: &RenderNode, text: &mut String, lines: &mut usize) {
+        match &node.node_type {
+            RenderNodeType::TextRun(run) => text.push_str(&run.text),
+            RenderNodeType::TextLine(_) => *lines += 1,
+            _ => {}
+        }
+        for child in &node.children {
+            text_and_lines(child, text, lines);
+        }
+    }
+    fn ownership(
+        node: &RenderNode,
+        in_table: bool,
+        page: u32,
+        fragments: &mut Vec<(u32, usize, String)>,
+        following: &mut Vec<(u32, String)>,
+    ) {
+        let mut inside = in_table;
+        match &node.node_type {
+            RenderNodeType::Table(table) => {
+                if !in_table && table.para_index == Some(TABLE_PARA) {
+                    let (mut text, mut lines) = (String::new(), 0);
+                    text_and_lines(node, &mut text, &mut lines);
+                    assert!(!text.is_empty(), "빈 조각은 내용 보존 증거가 아니다");
+                    fragments.push((page, lines, text));
+                }
+                inside = true;
+            }
+            RenderNodeType::TextLine(line) if !in_table && line.para_index == Some(43) => {
+                let (mut text, mut lines) = (String::new(), 0);
+                text_and_lines(node, &mut text, &mut lines);
+                following.push((page, text));
+            }
+            _ => {}
+        }
+        for child in &node.children {
+            ownership(child, inside, page, fragments, following);
+        }
+    }
+    let core = document();
+    let (mut fragments, mut following) = (Vec::new(), Vec::new());
+    for page in 0..core.page_count() {
+        let tree = core
+            .build_page_render_tree(page)
+            .expect("원본의 실제 출력 트리");
+        ownership(&tree.root, false, page + 1, &mut fragments, &mut following);
+    }
+    assert_eq!(
+        fragments
+            .iter()
+            .map(|(page, lines, _)| (*page, *lines))
+            .collect::<Vec<_>>(),
+        [(5, 1), (6, 2)],
+        "독립 Print처럼 첫 줄과 나머지 두 줄을 한 번씩 소유한다"
+    );
+    let expected = concat!(
+        "공공재정 부정청구등 행위로 신고자가 받은 불이익조치를 해소하기 위한 ",
+        "신분보장등조치결정의 실효성을 제고하기 위해 제재 수준을 상향함으로써 ",
+        "신고자가 안심하고 신고할 수 있는 환경 조성"
+    );
+    assert_eq!(
+        fragments
+            .iter()
+            .map(|(_, _, text)| text.as_str())
+            .collect::<String>(),
+        expected,
+        "두 조각을 합친 내용이 원본 셀 전체와 같으며 누락·중복이 없어야 한다"
+    );
+    assert_eq!(
+        following,
+        [(7, "Ⅱ. 규제의 적정성".to_owned())],
+        "후속 본문은 실제 내용을 가진 채 독립 Print 7쪽에 한 번만 놓인다"
     );
 }

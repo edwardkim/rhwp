@@ -158,3 +158,32 @@ cargo nextest run --locked --cargo-profile release-test \
 | `final/main/wasm/overlay_005.png` | `a6f06205a3eba3072218e9a20279e53215314950689aa1aaeb6ac11c5bd08c84` |
 | `final/main/wasm/review_006.png` | `839b5edf150ae539edf644a23dc190e3e0551ccbf0f8a5077f30d53b7b71048c` |
 | `final/main/wasm/overlay_006.png` | `d7d3f3940959bac91be8e54e97fc0c00e8255fa7216e83320fe00aa716aea7a0` |
+
+## 내용 보존 추가 회귀
+
+기존 세 검사의 assertion은 유지했고, `split_fragments_preserve_all_source_text_and_following_heading`를 새로 추가했다.
+두 조각이 소유하는 줄과 셀 전체 텍스트의 누락·중복, 후속 제목이 7쪽에 한 번만 나오는지 검사한다.
+기본·Native 최소 글꼴 환경에서 각각 네 함수가 모두 통과했다. 제품 소스는 기존 측정 source와 같고,
+전체 13,562건 통과에 추가한 한 함수를 별도로 실행해 현재 13,563개 고유 검사의 범위를 연결한다.
+
+포맷이 소스 바이트 수 기반 suite 배정에 영향을 주어 첫 manifest 검사가 중단됐고,
+포맷 뒤 suite를 다시 생성해 실제 배정된 `regression_suite_019`에서 검사·Native Clippy를 실행했다.
+실물 출력·기대값·입력을 바꾸거나 generated 파일을 커밋하지 않았다.
+
+- 검사 소스 SHA-256: `07f0618f55c29b1eb50ea535622a945b86e5ea1c9c58ee37a33c0af36ff67dce`.
+- 추가 단계의 필수 default/WASM/workspace lint도 모두 종료 코드 0이다.
+
+| 추가 검사 단계 | exit | 초 | 원시 로그 SHA-256 |
+| --- | ---: | ---: | --- |
+| `prepare` | 0 | 2.021 | `9938e96ffe09d8c5be92cdaa3434e9d899e342cc6e8682417f6c661100ba19ba` |
+| `format` | 0 | 35.549 | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` |
+| `prepare-after-format` | 0 | 2.039 | `9938e96ffe09d8c5be92cdaa3434e9d899e342cc6e8682417f6c661100ba19ba` |
+| `format-check` | 0 | 36.476 | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` |
+| `manifest` | 0 | 1.087 | `437a02411f2d41193935c1cc6dedf687bec2161277b80b5b1077293da87d682b` |
+| `default-focused` | 0 | 491.095 | `7d18bfe06bdd07cb5865a9e0fc61567f87f840c61405d267b1846b8856eef085` |
+| `native-focused` | 0 | 459.337 | `ba9d25daa92dbaf439fbc7fa92d9b5b7e98963b0a577605fc0bd6b5a6009b6c1` |
+| `native-test-clippy` | 0 | 13.566 | `3d6b28fca5295d50f1884e62b8496406acf1ab46a8ef01d0bae0612d370db88d` |
+| `default-clippy` | 0 | 1.306 | `57bcdf8fbdad4529b29d74839a73c59a27c793a90195e6279bcd8763621ab49b` |
+| `wasm-clippy` | 0 | 3.199 | `5c05bd74bc59c78d52c4084fbf3111ec685ca88e6c55da828e347ae58c7e2576` |
+| `workspace-build` | 0 | 2.449 | `8f8b1dce1679886c7a6a71d75b3045d4de5bc0750769a34a065ab4f0bf2212e4` |
+| `workspace-clippy` | 0 | 30.111 | `34a594dd70fe68c1686c1ab55efe4d88674499d4607880bcc9f3ed5a27b19224` |
