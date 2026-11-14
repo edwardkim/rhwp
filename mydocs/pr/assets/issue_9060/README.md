@@ -8,7 +8,7 @@
 - 첫 줄은 5쪽, 나머지 두 줄은 6쪽, 후속 문단은 7쪽임을 실제 내용과 독립 PDF에서 확인했다.
 - [Native 전쪽 TSV](final/main/native_silhouette.tsv)·[fresh WASM 전쪽 TSV](final/main/wasm_silhouette.tsv).
 - [5·6쪽 Native/fresh WASM review와 overlay](final/main/README.md)는 PR 주장과 같은 입력·쪽이다.
-- [보호 전쪽 TSV](final/protected/README.md): WASM 18개 입력·1,771쪽 완료, 하락 0쪽·상승 15쪽. Native 보호 검증은 진행 중이다.
+- [보호 전쪽 TSV](final/protected/README.md): 두 경로 총 36개 데이터셋·3,542쪽 완료, 하락 0쪽·상승 30쪽. 실제 편람 gate도 통과했다.
 - 기본 Rust 13,562건, Native 3종, 필수 lint와 workspace 검사까지 모두 통과했다. 실제 명령·결과·SHA는 검증 기록을 따른다.
 
 루트의 기존 Native/WASM TSV·5·6쪽 PNG는 원 PR 자료를 바탕으로 수행한 초기 글꼴 공급

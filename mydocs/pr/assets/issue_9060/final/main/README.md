@@ -17,4 +17,5 @@
 원시 render tree·분석 JSON·폰트 catalog·실행 로그는 output에서 관리하며 제출하지 않는다.
 [Native 명시적 글꼴 환경](native-font-environment.json)은 검증의 입력 설정이다.
 글꼴 파일은 배포하지 않는다. 100.00%는 공식 2px 실루엣 지표이며 RGB 동일성을 뜻하지 않는다.
-전체 보호 Native·편람 gate와 원격 CI·병합은 별도 최종 기록으로 확정한다.
+전체 보호 Native·fresh WASM 및 편람 gate는 [전쪽 보호 기록](../protected/README.md)에서 확인한다.
+원격 CI·병합은 이후 실제 결과로 확정한다.

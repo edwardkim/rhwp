@@ -38,7 +38,7 @@
 - 빌드 잡 8개·테스트 스레드 12개, 공유 `target/pr-review`를 사용하며 Cargo는 직렬 실행했다.
 - 시각 측정은 최소 글꼴 격리와 다르게 기존 일반 시스템 글꼴·명시적 공급 환경을 사용했다.
 - Native 집중 Clippy·기본 Clippy·WASM Clippy·workspace build·workspace all-target Clippy까지 모두 종료 코드 0.
-- 최종 Native 전쪽 보호 검증은 실행 중이며 기존 결과를 대신해 완료로 쓰지 않는다.
+- 최종 Native 전쪽 보호 검증과 실제 편람 HWPX `--handbook-gate`까지 종료 코드 0으로 통과했다.
 
 ```bash
 cargo nextest run --locked --cargo-profile release-test \
@@ -79,7 +79,9 @@ cargo nextest run --locked --cargo-profile release-test \
 
 - 최종 fresh WASM: 18개 입력·1,771쪽 전체 완료, 기존 정본보다 하락 0쪽·상승 15쪽.
 - [WASM 전쪽 TSV](final/protected/README.md)는 입력마다 동일한 최종 실행의 전체 결과다.
-- 최종 Native 전쪽과 실제 편람 HWPX `--handbook-gate`는 실행 중이다.
+- 최종 Native도 18개 입력·1,771쪽 완료, 하락 0쪽·상승 15쪽이다.
+- 실제 편람 HWPX Native gate 383쪽: 1,801.002초, 종료 코드 0, 공식 최저 99.96%. 같은 실제 TSV를 보호 대조에도 사용했다.
+- 최종 전쪽 수용 조건은 [정식 baseline 계약](final/protected-validation.json)에 기록한다. 중간 run manifest와 구분한다.
 - 정본 보호값 `1063d78078b704a2bfb712ca3929ab251596dd391b41bc1a9a44e9935e4990e5`는 아직 유지한다.
 - Native와 필수 검증까지 완료된 같은 최종 수용본으로 상승분을 상향한다. 페이지별 최댓값을 이어 붙이거나 기존 하한을 낮추지 않는다.
 - 원격 PR 생성·CI·승인·병합·원 PR 종료는 아직 실행하지 않았다.
