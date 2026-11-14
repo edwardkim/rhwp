@@ -1,0 +1,22 @@
+full-nextest
+        PASS [   0.013s] ( 4609/13526) rhwp::regression_suite_002 issue_8978_fill_pattern_index::hancom_hwpx_hatch_styles_read_as_the_same_pattern_types
+        PASS [   0.014s] ( 4610/13526) rhwp::regression_suite_002 issue_8978_fill_pattern_index::hidden_text_judges_only_unhatched_textbox_fills
+        PASS [   0.011s] ( 4611/13526) rhwp::regression_suite_002 issue_8978_fill_pattern_index::hwp_pattern_types_draw_in_hancom_print_order
+        PASS [   0.011s] ( 4612/13526) rhwp::regression_suite_002 issue_8978_fill_pattern_index::hwp_to_hwpx_writes_the_hatch_styles_hancom_writes
+        PASS [   0.214s] ( 4613/13526) rhwp::regression_suite_002 issue_8978_fill_pattern_index::hwpspec_record_header_and_data_rows_keep_their_diagonals
+        PASS [   0.012s] ( 4614/13526) rhwp::regression_suite_002 issue_8978_fill_pattern_index::reading_back_an_unfilled_cell_does_not_store_a_horizontal_hatch
+        PASS [   0.009s] (11197/13526) rhwp::regression_suite_022 issue_9021_textbox_control_only_tac_table_rows::first_two_tables_share_the_first_row
+        PASS [   0.009s] (11199/13526) rhwp::regression_suite_022 issue_9021_textbox_control_only_tac_table_rows::shorter_table_sits_on_the_shared_baseline
+        PASS [   0.009s] (11200/13526) rhwp::regression_suite_022 issue_9021_textbox_control_only_tac_table_rows::tables_do_not_overlap
+        PASS [   0.009s] (11201/13526) rhwp::regression_suite_022 issue_9021_textbox_control_only_tac_table_rows::tables_stay_inside_the_textbox
+        PASS [   0.008s] (11202/13526) rhwp::regression_suite_022 issue_9021_textbox_control_only_tac_table_rows::third_table_starts_on_the_row_below
+     Summary [ 436.478s] 13526 tests run: 13526 passed (1 slow), 45 skipped
+native-lib
+test result: ok. 3852 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 10.41s
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+native-placeholder
+     Summary [   6.850s] 2 tests run: 2 passed, 329 skipped
+native-pdf
+     Summary [   5.932s] 36 tests run: 36 passed, 289 skipped

@@ -1,0 +1,332 @@
+{
+  "base_sha": "d7b927d073489b8c5ea95655224b04096c939534",
+  "source_head": "079ec7bc893fd2e68bdb9d28c96c824149bdddc6",
+  "inputs": {
+    "textbox_tac_tables_two_lines-2022.pdf": {
+      "bytes": 1198,
+      "sha256": "93b58ab9db87459cb699b1c3da773db0b013fcb4c6122c979881d5a21b07a018"
+    },
+    "textbox_tac_tables_two_lines.hwp": {
+      "bytes": 17920,
+      "sha256": "e0cd85dad3edbd8d00a4c37c2d3c78bc3912524f9527baac1cab6d23943df959"
+    }
+  },
+  "base_native_sha256": "3ff6c2061c8f19e7f0f6648a3f54c31d77f7bf51bd86ce16e45360e9e05c5ae2",
+  "base_rhwp_bg.wasm_sha256": "8b24bcf9f0abda24e5993068c69c6b8cb97df6cb5470328cca1df985685c8a60",
+  "base_rhwp.js_sha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+  "measurement": {
+    "dpi": 96,
+    "compat": "2022",
+    "rasterizer": "Native Skia / fresh WASM Canvas2D",
+    "oracle_rasterizer": "PDFium",
+    "radius_px": 2,
+    "metric": "silhouette_raw_match_percent",
+    "label_font": "ttfs/opensource/NotoSansKR-Regular.ttf"
+  },
+  "tool_blobs": {
+    "base": {
+      "scripts/visual_sweep.py": "9a1166712571965b927428c9ba8fd2ca4ff69a57",
+      "scripts/visual_sweep_pdf.py": "4b9e60aed8b46dcdd3ca2ed8c259103d1bc9d2e3",
+      "scripts/wasm-pack-locked.sh": "855ca67dcd4b175287c297d4d015851aab3cf8af"
+    },
+    "head": {
+      "scripts/visual_sweep.py": "7e19710dd1d8e6fffd03eefd61810b13cd2983c5",
+      "scripts/visual_sweep_pdf.py": "4b9e60aed8b46dcdd3ca2ed8c259103d1bc9d2e3",
+      "scripts/wasm-pack-locked.sh": "855ca67dcd4b175287c297d4d015851aab3cf8af"
+    }
+  },
+  "head_native_sha256": "2dc2a276c1c683ef7cb191c3a397aef69e55ea0e4d94922ec9b8ddc6650c18db",
+  "head_rhwp_bg.wasm_sha256": "98d4243651539a57fbaaf402564996c47e9e2d10fc23ff685c992f75d4df9ee2",
+  "head_rhwp.js_sha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+  "versions": {
+    "rust": "1.93.1",
+    "node": "24.15.0",
+    "pypdfium2": "5.15.2"
+  },
+  "canonical_pdf": "pdf/issue9021/textbox_tac_tables_two_lines-hwp-2020.pdf",
+  "actual_print_product": "Hancom Office 2022 12.0.0.535",
+  "canonical_engine": "2020 (HOffice120 compatibility family)",
+  "measurements": {
+    "base-native": {
+      "run_state": "complete",
+      "completed_pages": [
+        1
+      ],
+      "missing_pages": [],
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 61.61307,
+          "silhouette_raw_unmatched_pixels": 4393,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 11444,
+          "tolerant_content_match_percent": 61.61307
+        }
+      ],
+      "visual_gate": {
+        "status": "re_review_required",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 1,
+            "silhouette_raw_match_percent": 61.61307
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false
+      },
+      "raster_inputs": [
+        {
+          "page": 1,
+          "rhwp_sha256": "8b659174e76f006f885d0345b6da0d09d5cc65d7bdb1845410219cc34b149846",
+          "pdf_sha256": "fa5466ec39ed710ad3bbd11dfdafe05a54418e4c5318245a827a98deed4173a8"
+        }
+      ]
+    },
+    "base-wasm": {
+      "run_state": "complete",
+      "completed_pages": [
+        1
+      ],
+      "missing_pages": [],
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 61.61307,
+          "silhouette_raw_unmatched_pixels": 4393,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 11444,
+          "tolerant_content_match_percent": 61.61307
+        }
+      ],
+      "visual_gate": {
+        "status": "re_review_required",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [
+          {
+            "page": 1,
+            "silhouette_raw_match_percent": 61.61307
+          }
+        ],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false
+      },
+      "raster_inputs": [
+        {
+          "page": 1,
+          "rhwp_sha256": "89c40dae363b0c939735523830038d381870f3c50f6a8fd7c2be319feb5b97f4",
+          "pdf_sha256": "fa5466ec39ed710ad3bbd11dfdafe05a54418e4c5318245a827a98deed4173a8"
+        }
+      ]
+    },
+    "head-native": {
+      "run_state": "complete",
+      "completed_pages": [
+        1
+      ],
+      "missing_pages": [],
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 10788,
+          "tolerant_content_match_percent": 100.0
+        }
+      ],
+      "visual_gate": {
+        "status": "passed",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false
+      },
+      "raster_inputs": [
+        {
+          "page": 1,
+          "rhwp_sha256": "23fe8f2b581c1cf747bae861740ea3c0738ab785537ca89c19e36dbd5320c9c7",
+          "pdf_sha256": "fa5466ec39ed710ad3bbd11dfdafe05a54418e4c5318245a827a98deed4173a8"
+        }
+      ]
+    },
+    "head-wasm": {
+      "run_state": "complete",
+      "completed_pages": [
+        1
+      ],
+      "missing_pages": [],
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 10788,
+          "tolerant_content_match_percent": 100.0
+        }
+      ],
+      "visual_gate": {
+        "status": "passed",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false
+      },
+      "raster_inputs": [
+        {
+          "page": 1,
+          "rhwp_sha256": "3e1c3d5b7a01bc1275a1c9f4b9662951e7ac55102385d4b68b459911a5cbe086",
+          "pdf_sha256": "fa5466ec39ed710ad3bbd11dfdafe05a54418e4c5318245a827a98deed4173a8"
+        }
+      ]
+    }
+  },
+  "handbook_gate": {
+    "status": "passed",
+    "baseline": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
+    "baseline_sha256": "ee41455cf7f05585487d92961ccb9fd8160d5d1e15c3567019ea89e2b7bf2aeb",
+    "metric": "silhouette_raw_match_percent",
+    "backend": "native-skia",
+    "precision": "0.01 percentage points",
+    "pages": 383,
+    "regressions": [],
+    "webfont_fallback": [
+      {
+        "family": "KoPubBatang",
+        "style": "Light",
+        "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubBatang@7ef37ed4015cf0f638952e3d9937e4192f7cea97/KoPubBatang-Light.ttf",
+        "source_sha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f",
+        "native_sha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f"
+      },
+      {
+        "family": "KoPubBatang",
+        "style": "Medium",
+        "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubBatang@7ef37ed4015cf0f638952e3d9937e4192f7cea97/KoPubBatang-Medium.ttf",
+        "source_sha256": "7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4",
+        "native_sha256": "7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4"
+      },
+      {
+        "family": "KoPubBatang",
+        "style": "Bold",
+        "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubBatang@7ef37ed4015cf0f638952e3d9937e4192f7cea97/KoPubBatang-Bold.ttf",
+        "source_sha256": "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b",
+        "native_sha256": "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b"
+      },
+      {
+        "family": "KoPubDotum",
+        "style": "Light",
+        "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubDotum@295e0fc83931fda749f129b6690c0fa93f798007/KoPubDotum-Light.ttf",
+        "source_sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d",
+        "native_sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d"
+      },
+      {
+        "family": "KoPubDotum",
+        "style": "Medium",
+        "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubDotum@295e0fc83931fda749f129b6690c0fa93f798007/KoPubDotum-Medium.ttf",
+        "source_sha256": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7",
+        "native_sha256": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7"
+      },
+      {
+        "family": "KoPubDotum",
+        "style": "Bold",
+        "url": "https://cdn.jsdelivr.net/gh/fonts-archive/KoPubDotum@295e0fc83931fda749f129b6690c0fa93f798007/KoPubDotum-Bold.ttf",
+        "source_sha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275",
+        "native_sha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275"
+      },
+      {
+        "family": "HCR Batang",
+        "style": "Regular",
+        "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff",
+        "source_sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+        "native_sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee"
+      }
+    ],
+    "elapsed_seconds": 212.553
+  },
+  "oracle_candidate_sha": "75da9680e31b3179efb3a044f934dce4227f9182",
+  "regression": {
+    "tests": 25,
+    "passed": 25,
+    "failed": 0,
+    "filtered_out": 1656,
+    "nextest_run_id": "4b7414ed-e9c2-4117-8bb4-63f9fae57998",
+    "oracle_partitions": 16,
+    "focused_layout": 8,
+    "security_sample_tests": 1
+  },
+  "final_canonical_confirmation": {
+    "native": {
+      "git_head": "75da9680e31b3179efb3a044f934dce4227f9182",
+      "input": {
+        "path": "samples/issue9021/textbox_tac_tables_two_lines.hwp",
+        "sha256": "e0cd85dad3edbd8d00a4c37c2d3c78bc3912524f9527baac1cab6d23943df959"
+      },
+      "pdf": {
+        "path": "pdf/issue9021/textbox_tac_tables_two_lines-hwp-2020.pdf",
+        "sha256": "93b58ab9db87459cb699b1c3da773db0b013fcb4c6122c979881d5a21b07a018"
+      },
+      "run_state": "complete",
+      "completed_pages": [
+        1
+      ],
+      "page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    },
+    "wasm": {
+      "git_head": "75da9680e31b3179efb3a044f934dce4227f9182",
+      "input": {
+        "path": "samples/issue9021/textbox_tac_tables_two_lines.hwp",
+        "sha256": "e0cd85dad3edbd8d00a4c37c2d3c78bc3912524f9527baac1cab6d23943df959"
+      },
+      "pdf": {
+        "path": "pdf/issue9021/textbox_tac_tables_two_lines-hwp-2020.pdf",
+        "sha256": "93b58ab9db87459cb699b1c3da773db0b013fcb4c6122c979881d5a21b07a018"
+      },
+      "run_state": "complete",
+      "completed_pages": [
+        1
+      ],
+      "page_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    }
+  }
+}
