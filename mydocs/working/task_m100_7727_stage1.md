@@ -839,3 +839,19 @@ Studio `makeShapeGradientShader`는 긴 축 절반을 다시 계산한다. 물�
 
 완료 후 #7727·#7729·#7730·#7731·#7732의 실제 해결 범위와 병합 결과를 확인해
 각 완료 댓글·close와 #7445의 해당 행 취소선을 처리한다. 미완료 항목과 대표 이슈는 유지한다.
+
+### 2026-11-15T06:47:18+09:00 — 공통 producer와 CanvasKit 소비 계약 보완
+
+`gradient_geometry::radial_circle → paint JSON radialCircle → makeShapeGradientShader`로
+물리 원 전달을 연결했다. Native·Rust Canvas의 산식은 바꾸지 않았고 형식3의 기존 원형 근사도
+유지했다. 독립 Print6쪽을 사용하는 기존 정식 검사에 JSON의 실제 물리 원 전달을 추가했으며
+최소 글꼴2PASS, Studio shader replay 계약도 PASS다. 실물 CanvasKit 재출력은 아직 대기다.
+
+목차 하위 글꼴은 같은 family에 HMKMM.TTF와 HMKSM.otf가 공존한다. CanvasKit이 공통
+resolver의 선택 뒤에 캐시 전체를 다시 순회하면서 스타일 거리가 같은 첫 후보로 덮어쓰는
+코드가 있었다. 공통 선택을 동점에서 보존하고 더 정확한 굵기/기울기가 있는 경우만 기존처럼
+교체하도록 했다. 두 캐시 순서·Bold/Italic 대조군2PASS다. 실제 반례의 회복 여부는 새 WASM과
+실제 CanvasKit 출력으로 확인하며, 분석 가설만으로 피델리티 완료를 주장하지 않는다.
+
+진단 중 normal JSON을 Canvas 보충 메트릭 상태에서 직접 내보낸 추가 wrapper는 제품 guard에
+거절됐다. 이 wrapper 오류를 원본 렌더링 결함이나 성공 결과로 계산하지 않으며 실패 기록을 보존했다.

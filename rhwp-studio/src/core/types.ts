@@ -1361,6 +1361,8 @@ export interface LayerGradientFill {
   centerY?: number;
   colors?: string[];
   positions?: number[];
+  /** 공통 paint 생산자가 확정한 물리 중심 x/y와 반경. 원형 형식2에만 존재한다. */
+  radialCircle?: [number, number, number];
 }
 
 

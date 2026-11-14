@@ -1208,6 +1208,8 @@ function runExecutableGradientFillReplay() {
     gradientType: 2,
     centerX: 50,
     centerY: 50,
+    // 소비자는 bounds/중심 비율이 아니라 공통 생산자가 확정한 물리 원을 쓴다.
+    radialCircle: [7, 3, 13],
     colors: ['#ff0000', '#0000ff'],
     positions: [0, 1],
   };
@@ -2187,6 +2189,12 @@ assert.equal(
   gradientFillReplay.events.filter((event) => event.type === 'shader.radial').length,
   1,
   'radial gradientFill replay should use a CanvasKit radial shader',
+);
+assert.deepEqual(
+  gradientFillReplay.events.filter((event) => event.type === 'shader.radial')
+    .map(({ center, radius }) => ({ center, radius })),
+  [{ center: [7, 3], radius: 13 }],
+  '원형 shader는 긴 축 반경을 재계산하지 않고 paint JSON의 물리 원을 소비한다',
 );
 assert.equal(
   gradientFillReplay.events.filter((event) => event.type === 'shader.delete').length,
