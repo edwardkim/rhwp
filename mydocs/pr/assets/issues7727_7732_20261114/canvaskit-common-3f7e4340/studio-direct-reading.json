@@ -1,0 +1,78 @@
+{
+  "head": "3f7e4340ae3038ea77917ff0f45f816e8342770e",
+  "profile": "print",
+  "backend": "Studio Canvas2D",
+  "normal_installed_font_programs": true,
+  "records": [
+    {
+      "sample": "cbta-p002",
+      "page": 2,
+      "raw": "98.46",
+      "source_png_sha256": "e37ee0281cda9964bb7137543f20b5ef67f89a380c625429e27bf2c43a4afff9",
+      "pdf_png_sha256": "53d913e93899aea33f11c8e3edf99c5c208e7352bc84911ef7584f0bde95b50e",
+      "review": "studio-canvas/cbta-p002/review.png",
+      "overlay": "studio-canvas/cbta-p002/overlay.png",
+      "direct_reading": "목차 전체 항목과 이어지는 두 줄 항목, RIGHT 쪽번호와 로마자 쪽번호를 보존한다. 일부 글자 가장자리의 미세 차이가 남는다."
+    },
+    {
+      "sample": "cbta-p118",
+      "page": 118,
+      "raw": "98.44",
+      "source_png_sha256": "db85414d4970503974d8198f3d26f486ae333283ab35d0c83d642f5d99c0fc0b",
+      "pdf_png_sha256": "62a5528364364a3adca493010772232d83acf717e443ff345dd6a9a89d84ee15",
+      "review": "studio-canvas/cbta-p118/review.png",
+      "overlay": "studio-canvas/cbta-p118/overlay.png",
+      "direct_reading": "그림26 캡션·그림의 공통 원점과 후속 다. 본문 소유가 보존된다. 외곽 테두리 농도와 일부 글리프 가장자리 차이가 남는다."
+    },
+    {
+      "sample": "recommendation-p004",
+      "page": 4,
+      "raw": "99.95",
+      "source_png_sha256": "81d6d3efcce268e82f5a7f9d023783cb0cb6822b0d94001fe3e2150279081a6e",
+      "pdf_png_sha256": "d035ef4d927d917cd206e13fafc4c4b956f37df5791996d8440d79f2fad1abad",
+      "review": "studio-canvas/recommendation-p004/review.png",
+      "overlay": "studio-canvas/recommendation-p004/overlay.png",
+      "direct_reading": "목차1/2/8/12/15/18의 순서와 RIGHT 끝 정렬, 원형 배경 띠를 보존한다. 제목/테두리의 미세 차이가 남는다."
+    },
+    {
+      "sample": "recommendation-p006",
+      "page": 6,
+      "raw": "98.21",
+      "source_png_sha256": "46c38cdb9b5274cb2d60c84f0e87bad4df5015e3e74817ae8516509e6a849e14",
+      "pdf_png_sha256": "429926bf039cbe34115243891b53069f016e3ae9b8d583abb05eec60fb18096f",
+      "review": "studio-canvas/recommendation-p006/review.png",
+      "overlay": "studio-canvas/recommendation-p006/overlay.png",
+      "direct_reading": "두 표의 모든 행·반복/병합 칸과 후속 관련 법령이 보존된다. 본문의 굵기·글자 가장자리 차이가 남는다."
+    },
+    {
+      "sample": "exam-p002",
+      "page": 2,
+      "raw": "98.75",
+      "source_png_sha256": "6bd6ea4b47b32c2064a2faed52c60cd151300ec4f62a8d14b41970a48d045e8f",
+      "pdf_png_sha256": "22a8ec5ccfd077b0c262beb647e548fa96778c14a3d2a2361be8ec3e1ea69d80",
+      "review": "studio-canvas/exam-p002/review.png",
+      "overlay": "studio-canvas/exam-p002/overlay.png",
+      "direct_reading": "문항13~20, 지문·선택지·밑줄과 하단2/8 표식을 보존한다. 한글 글리프 가장자리와 일부 밑줄의 미세 차이가 남는다."
+    },
+    {
+      "sample": "api-p065",
+      "page": 65,
+      "raw": "99.07",
+      "source_png_sha256": "7c4feecee5748b3ac3944825d3c1957466ced8a0c975954f3a19a4b5881643e3",
+      "pdf_png_sha256": "ecee7489cb021b178e847b7d298ed094940a9c22531c44c2f97e8648d14534a7",
+      "review": "studio-canvas/api-p065/review.png",
+      "overlay": "studio-canvas/api-p065/overlay.png",
+      "direct_reading": "InsertBackgroundPicture의 Syntax·8개 Parameters·두 표의 행과 후속 본문 소유가 보존된다. 제목 굵기·선 가장자리에 미세 차이가 남는다."
+    },
+    {
+      "sample": "footnote-p037",
+      "page": 37,
+      "raw": "98.53",
+      "source_png_sha256": "9e376f808f053327b690b721564f76b7aefa9748dbf3b4be8e376b31dc333fa5",
+      "pdf_png_sha256": "88253c9179cb22eba2948df03ef02c2daf3bec1cd238cee8fc6ea5ec7ca7a0a8",
+      "review": "studio-canvas/footnote-p037/review.png",
+      "overlay": "studio-canvas/footnote-p037/overlay.png",
+      "direct_reading": "표22~31과 병합 칸·주석 표식·하단31행 소유를 보존하며 누락/중복은 보이지 않는다. 일부 표 종료 선과 글자 가장자리의 미세 차이가 남는다."
+    }
+  ]
+}

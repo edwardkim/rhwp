@@ -2,6 +2,8 @@
 //! 전쪽 Native/fresh WASM 실루엣 모두 100%, 실제 SVG 브라우저 출력도 모두 100%다.
 //! 96dpi의 독립 PDF 타원 좌표와 ±2px로 비교하며 포함·소유 관계를 함께 유지한다.
 //! 입력·Print SHA, 수정 전 실패와 새 head 증적: task_m100_7642_stage1414.md.
+//! 검사 유형: 고정형(독립 Print의 ±2 CSSpx 원)·관계형(소유·내용·SVG/JSON 공통 원).
+//! 주석 갱신: 2026-11-15T06:42:00+09:00. CanvasKit 실제 피델리티는 별도 검증한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::paint::RenderProfile;
@@ -62,6 +64,46 @@ fn verified_radial_print_keeps_physical_circle_at_center_and_edge_origins() {
         }
         for (focus, center) in [("fx", "cx"), ("fy", "cy")] {
             assert_eq!(gradient.attribute(focus), gradient.attribute(center));
+        }
+        // CanvasKit도 SVG와 같은 독립 Print의 물리 원을 받아야 한다.
+        // 중심 비율만 전달하면 소비자가 긴 축 절반으로 재계산해 띠가 잘린다.
+        let layer: serde_json::Value = serde_json::from_str(
+            &core
+                .get_page_layer_tree_with_profile_native(page as u32, RenderProfile::Print)
+                .expect("실제 CanvasKit 레이어 JSON"),
+        )
+        .expect("유효한 레이어 JSON");
+        fn circles(value: &serde_json::Value, out: &mut Vec<Vec<f64>>) {
+            match value {
+                serde_json::Value::Object(object) => {
+                    if let Some(circle) = object.get("radialCircle") {
+                        out.push(
+                            circle
+                                .as_array()
+                                .expect("물리 원 배열")
+                                .iter()
+                                .map(|number| number.as_f64().expect("유한 원 좌표"))
+                                .collect(),
+                        );
+                    }
+                    for child in object.values() {
+                        circles(child, out);
+                    }
+                }
+                serde_json::Value::Array(array) => {
+                    for child in array {
+                        circles(child, out);
+                    }
+                }
+                _ => {}
+            }
+        }
+        let mut replay_circles = Vec::new();
+        circles(&layer, &mut replay_circles);
+        assert_eq!(replay_circles.len(), 1, "같은 채우기의 단일 물리 원 전달");
+        assert_eq!(replay_circles[0].len(), 3);
+        for (actual, expected) in replay_circles[0].iter().zip([cx, cy, radius]) {
+            near_print(*actual, expected, "CanvasKit radialCircle");
         }
         let id = gradient.attribute("id").unwrap();
         let reference = format!("url(#{id})");

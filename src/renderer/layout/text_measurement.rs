@@ -125,7 +125,16 @@ fn style_params(style: &TextStyle) -> (f64, f64, f64) {
 fn reflow_space_font_size(style: &TextStyle) -> f64 {
     // 원본에서 해소된 0 크기의 안내문도 빈칸을 소유하지만 전진폭은 0이다.
     // 미해소 스타일의 기본 크기만 일반 글리프와 같은 계약으로 공급한다.
-    style.effective_font_size()
+    let size = style.effective_font_size();
+    // 명시한 글꼴 공백과 앞 언어에서 상속한 반각 전진은 기존 em을 쓴다.
+    // 그 외 반각은 한글 슬롯의 em을 소비한다. 독립 Print의 영문 상대 크기
+    // 100/106/120% 대조군은 글리프만 커지고 낱말 공백은 일정하다.
+    if style.font_space_em.is_none() {
+        if let Some(em) = style.layout_half_space_em {
+            return size * 2.0 * em;
+        }
+    }
+    size
 }
 
 /// inline_tabs ext[2] 에서 탭 종류를 추출.
@@ -601,7 +610,8 @@ impl EmbeddedTextMeasurer {
                                 measure_segment_from(&chars, &cluster_len, i + 1, &char_width)
                             });
                             // 자동 우측도 실제 명시적 정지를 소비한다.
-                            total = inline_right_tab::text_start(style, total, tab_target, seg_w);
+                            total =
+                                inline_right_tab::text_start(style, total, tab_target, seg_w, ext);
                         } else if inline_type_hi == 0
                             && !has_more_tabs_after
                             && (tab_suffix_is_ascii_page_number(&chars, i + 1)
@@ -627,7 +637,7 @@ impl EmbeddedTextMeasurer {
                                         &char_width,
                                     );
                                     total = inline_right_tab::text_start(
-                                        style, total, tab_target, seg_w,
+                                        style, total, tab_target, seg_w, ext,
                                     );
                                 }
                                 1 => {
@@ -782,7 +792,7 @@ impl EmbeddedTextMeasurer {
                     measure_segment_from(&chars, &cluster_len, seg_start, &char_width)
                 };
                 // 측정과 같은 명시적/자동 정지를 소비한다. 문단 우단으로 덮어쓰지 않는다.
-                x = inline_right_tab::text_start(style, x, tab_target, seg_w);
+                x = inline_right_tab::text_start(style, x, tab_target, seg_w, ext);
             } else if inline_type_hi == 0
                 && !has_more_tabs_after
                 && (tab_suffix_is_ascii_page_number(&chars, i + 1)
@@ -833,7 +843,7 @@ impl EmbeddedTextMeasurer {
                         if has_content_after {
                             let seg_w_full =
                                 measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
-                            x = inline_right_tab::text_start(style, x, tab_target, seg_w_full);
+                            x = inline_right_tab::text_start(style, x, tab_target, seg_w_full, ext);
                         } else {
                             let seg_w = measure_segment_from(
                                 &chars,
@@ -1036,6 +1046,14 @@ fn try_char_style_to_text_style<S: crate::renderer::style_resolver::storage::Sto
             font_space_em: cs.font_space_em,
             inherited_half_space_em: false,
             layout_half_space: false,
+            layout_half_space_em: {
+                let effective_ratio = |ratio: f64| if ratio > 0.0 { ratio } else { 1.0 };
+                let current_em = cs.font_size_for_lang(lang_index)
+                    * effective_ratio(cs.ratio_for_lang(lang_index));
+                let source_em = cs.font_size_for_lang(0) * effective_ratio(cs.ratio_for_lang(0));
+                (current_em > 0.0 && source_em.is_finite() && source_em >= 0.0)
+                    .then(|| 0.5 * source_em / current_em)
+            },
             regenerated_font_metrics: false,
             literal_figure_space: false,
             literal_soft_hyphen: false,

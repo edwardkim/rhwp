@@ -711,13 +711,14 @@ impl TypesetEngine {
                         st.current_zone_y_offset.to_bits(),
                     )
             {
-                // 흐름 원점(현재 높이 + 호스트 앞 간격)이 이미 위 여백을 담은 계획은
-                // 다시 열지 않는다. 그 간격이 곧 바깥 위 여백이라 더하면 조각이 두 번
-                // 내려간다(1613000 58쪽 1×1 상자: 계획 3.77 + 여백 3.77).
+                // 배치 계획이 만든 앵커에서 이미 위 여백을 열었으면 다시 더하지 않는다.
+                // 준비 뒤 저장 줄 원점으로 보정된 현재 커서는 원래 계획의 소유 근거가
+                // 아니다. 그 커서와 비교하면 기존 위 여백을 미소비로 오인하여 첫 조각을
+                // 내리고, 들어갈 저장 글줄도 다음 쪽으로 보낸다.
                 let margin = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
-                let opened_by_flow =
-                    (p.table_top - (st.current_height + host_before_overhead)).abs() <= 0.01
-                        && host_before_overhead + 0.01 >= margin;
+                let opened_by_flow = (p.table_top - (p.anchor_y + host_before_overhead)).abs()
+                    <= 0.01
+                    && host_before_overhead + 0.01 >= margin;
                 if !opened_by_flow {
                     p.table_top += margin;
                 }

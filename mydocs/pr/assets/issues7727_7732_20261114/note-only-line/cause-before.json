@@ -1,0 +1,37 @@
+{
+  "status": "reproduced_before_product_repair",
+  "source_head": "006f3ca043dc03d8b83482b02c5aab84dba2c7fa",
+  "input": "mydocs/pr/assets/issue7445/issue1937_rowbreak_footnote_overpagination.hwp",
+  "input_sha256": "a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+  "pdf": "pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf",
+  "pdf_sha256": "7f14bc85eb389a68cc88bd40fcafeb7a638d8454293a30bb2c8fe884a16978eb",
+  "page": 37,
+  "native_raw": 98.58,
+  "wasm_raw": 98.58,
+  "observed_native_bbox": {
+    "24)": [
+      384.3,
+      884.2,
+      12.0,
+      13.3
+    ],
+    "25)": [
+      384.3,
+      884.2,
+      12.0,
+      13.3
+    ]
+  },
+  "source": "같은 셀 row44/col2에 두 문단이 있으며 각 문단은 본문 4글자와 뒤의 주석 전용 저장 줄을 가진다.",
+  "before_regression": {
+    "compile_exit": 0,
+    "run_exit": 101,
+    "summary": "0 PASS / 1 FAIL",
+    "log_sha256": "99b8e733b4056644ca42785cc229f551cbf7ad86089834ad701a2a374f1f4f49"
+  },
+  "source_contracts": [
+    "97e0d9d5ac: NoteLineSlots의 원시 줄 소속",
+    "src/renderer/layout/paragraph_layout.rs: 빈 runs 줄의 참조 번호 방출 누락",
+    "src/renderer/layout/picture_footnote.rs: 셀 전체 char_start 검색의 기존 폴백이 두 번호를 첫 문단에 삽입"
+  ]
+}

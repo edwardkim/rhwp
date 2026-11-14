@@ -3068,7 +3068,49 @@ impl LayoutEngine {
             return Some(gap);
         }
         let original_plain_frame = self.stored_plain_fragment_table(table);
-        let legacy_text_frame = self.stored_table_has_physical_text_frames(table, styles)
+        // 셀 높이가 첫 상자의 placeholder여도 저장 컷 직전의 잉크·패딩이
+        // 표 선언을 정확히 닫으면 물리 프레임이다. 종료 뒤 문단도 같은
+        // 저장 축의 소유자이므로 호스트 뒤 간격을 중복해서 예약하지 않는다.
+        let declared_opening_frame = self.profile.get().hwp5_stored_pagination_layout()
+            && !self.profile.get().session_edited()
+            && table.row_count == 1
+            && table.col_count == 1
+            && table.cells.len() == 1
+            && table.cells.first().is_some_and(|cell| {
+                !cell.dirty_flag
+                    && !self
+                        .render_normalization
+                        .borrow()
+                        .cell_frame_reflowed(table, cell)
+                    && cell.paragraphs.iter().all(|para| {
+                        para.controls.is_empty()
+                            && !para.stored_text_partition_is_dirty()
+                            && !para.cell_format_vpos_dirty
+                    })
+                    && {
+                        let units = self.cell_units(cell, table, styles);
+                        units.iter().enumerate().skip(1).any(|(end, _)| {
+                            if !self
+                                .stored_cut_closes_declared_opening_frame(cell, table, styles, end)
+                            {
+                                return false;
+                            }
+                            let closing = &units[end - 1];
+                            let Some(line) = cell.paragraphs[closing.para_idx]
+                                .line_segs
+                                .get(closing.vis_end.saturating_sub(1))
+                            else {
+                                return false;
+                            };
+                            i64::from(line.vertical_pos)
+                                + i64::from(line.line_height)
+                                + i64::from(cell.effective_vertical_padding_hu(&table.padding))
+                                == i64::from(table.common.height)
+                        })
+                    }
+            });
+        let legacy_text_frame = (self.stored_table_has_physical_text_frames(table, styles)
+            || declared_opening_frame)
             && table.common.vertical_offset == 0
             && styles
                 .para_styles
@@ -3147,7 +3189,26 @@ impl LayoutEngine {
         {
             return Some(0.0);
         }
-        (next_line.vertical_pos < host_line.vertical_pos
+        // 종료 프레임이 첫 프레임보다 길면 다음 저장 원점은 호스트보다 클 수 있다.
+        // 첫 상자의 닫힘뿐 아니라 마지막 줄·셀 패딩·표 바깥여백도 후속 원점을
+        // 정확히 닫는 경우에만 같은 프레임으로 인정한다.
+        let declared_terminal_frame = declared_opening_frame
+            && table.cells.first().is_some_and(|cell| {
+                cell.paragraphs
+                    .last()
+                    .and_then(|para| para.line_segs.last())
+                    .is_some_and(|line| {
+                        let next_before_hu =
+                            (next_before / hwpunit_to_px(1, self.dpi)).round() as i64;
+                        i64::from(line.vertical_pos)
+                            + i64::from(line.line_height)
+                            + i64::from(cell.effective_vertical_padding_hu(&table.padding))
+                            + i64::from(table.outer_margin_top)
+                            + i64::from(table.outer_margin_bottom)
+                            == i64::from(next_line.vertical_pos) - next_before_hu
+                    })
+            });
+        ((next_line.vertical_pos < host_line.vertical_pos || declared_terminal_frame)
             && gap_hu >= 0
             && fragment_bottom <= column.y + column.height)
             .then(|| hwpunit_to_px(gap_hu, self.dpi))
@@ -13117,14 +13178,32 @@ impl LayoutEngine {
                     return None;
                 }
                 if let Some(last) = previous {
-                    if line.vertical_pos < last.vertical_pos {
+                    // 첫 빈 줄과 다음 문단이 모두 0에서 시작해도, 뒤 줄의
+                    // 정확한 전진과 선언된 종료 상자가 있으면 서로 다른 프레임이다.
+                    let zero_opening_restart = index > 0
+                        && line_index == 0
+                        && last.vertical_pos == 0
+                        && line.vertical_pos == 0
+                        && stored_zero_restart_is_confirmed(
+                            cell,
+                            index - 1,
+                            last,
+                            index,
+                            line_index,
+                            self.profile.get().hwp5_stored_pagination_layout(),
+                        );
+                    if line.vertical_pos < last.vertical_pos || zero_opening_restart {
                         let end = i64::from(last.vertical_pos)
                             + i64::from(last.line_height)
                             + i64::from(padding.top)
                             + i64::from(padding.bottom);
                         return (index > 0
                             && line_index == 0
-                            && end == i64::from(table.common.height))
+                            && (end == i64::from(table.common.height)
+                                || (zero_opening_restart
+                                    && end <= i64::from(table.common.height)
+                                    && i64::from(table.common.height)
+                                        <= end + i64::from(last.line_spacing))))
                         .then_some(index);
                     }
                 }
@@ -16804,7 +16883,11 @@ impl LayoutEngine {
             // applies to picture flow too, not just nested-table flow.
             // Standalone empty paragraphs keep their successor advance.
             let stored_empty_successor_geometry = stored_empty_successor_geometry.filter(|_| {
-                !collapse_stored_square_picture_empty_run && !collapse_native_float_ladder_spacer
+                // 원본 첫 프레임의 종료가 인증됐으면 같은 0 원점은
+                // 겹침용 빈 줄이 아니다. 종료 줄 상자의 전진을 유지한다.
+                closing_empty_line_advance.is_none()
+                    && !collapse_stored_square_picture_empty_run
+                    && !collapse_native_float_ladder_spacer
             });
             let stored_empty_successor_advance = stored_empty_successor_geometry
                 .as_ref()
@@ -24382,16 +24465,19 @@ impl LayoutEngine {
                 // 원시 저장 행들의 합으로 입증된 첫 표 frame은 ordinary-row
                 // scanner도 block scanner와 같은 컷에서 멈춰야 한다.
                 let declared_saved_frame_break = u.stored_frame_break_before
-                    && j.checked_sub(1)
-                        .and_then(|index| {
-                            let previous = &units[index];
-                            cell.paragraphs
-                                .get(previous.para_idx)
-                                .and_then(|p| p.line_segs.get(previous.vis_end.saturating_sub(1)))
-                        })
-                        .is_some_and(|previous| {
-                            self.stored_row_reset_closes_declared_frame(cell, table, previous)
-                        });
+                    && ((start == 0
+                        && u.vis_start == 0
+                        && self.declared_nested_opening_frame_reset(table) == Some(u.para_idx))
+                        || j.checked_sub(1)
+                            .and_then(|index| {
+                                let previous = &units[index];
+                                cell.paragraphs.get(previous.para_idx).and_then(|p| {
+                                    p.line_segs.get(previous.vis_end.saturating_sub(1))
+                                })
+                            })
+                            .is_some_and(|previous| {
+                                self.stored_row_reset_closes_declared_frame(cell, table, previous)
+                            }));
                 let body_frame_reset = current_frame_cut
                     && u.page_frame_reset_before
                     && self.stored_cell_reset_closes_body(

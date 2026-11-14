@@ -1,0 +1,259 @@
+{
+  "base": "53da4d2da28ae0cacf8feac3a989cc6a69fb2622",
+  "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+  "normal_installed_fonts": true,
+  "rows": [
+    {
+      "key": "cbta",
+      "pages": 204,
+      "base_tsv_sha256": "3f505c42774199072c9db6e7d206f61c95f0d9efe58e67bb52365ced9623157f",
+      "candidate_tsv_sha256": "d5d1a294ee5de606a6e71039df9ec3fea7b41aa00379cc2b6ed63ce3fdf6d1ab",
+      "increased_pages": 7,
+      "decreased_pages": 3,
+      "max_drop_pp": "0.06",
+      "over_2pp": [],
+      "changes": [
+        {
+          "page": 2,
+          "base": "98.11",
+          "candidate": "98.52",
+          "delta_pp": "0.41"
+        },
+        {
+          "page": 3,
+          "base": "99.42",
+          "candidate": "99.41",
+          "delta_pp": "-0.01"
+        },
+        {
+          "page": 4,
+          "base": "98.31",
+          "candidate": "98.26",
+          "delta_pp": "-0.05"
+        },
+        {
+          "page": 5,
+          "base": "99.34",
+          "candidate": "99.28",
+          "delta_pp": "-0.06"
+        },
+        {
+          "page": 96,
+          "base": "97.00",
+          "candidate": "99.72",
+          "delta_pp": "2.72"
+        },
+        {
+          "page": 118,
+          "base": "96.85",
+          "candidate": "98.44",
+          "delta_pp": "1.59"
+        },
+        {
+          "page": 162,
+          "base": "96.35",
+          "candidate": "99.94",
+          "delta_pp": "3.59"
+        },
+        {
+          "page": 166,
+          "base": "96.76",
+          "candidate": "99.95",
+          "delta_pp": "3.19"
+        },
+        {
+          "page": 176,
+          "base": "97.45",
+          "candidate": "99.94",
+          "delta_pp": "2.49"
+        },
+        {
+          "page": 182,
+          "base": "96.23",
+          "candidate": "99.94",
+          "delta_pp": "3.71"
+        }
+      ]
+    },
+    {
+      "key": "recommendation",
+      "pages": 22,
+      "base_tsv_sha256": "55fdf8c44a5b0563d5b7a15d6d156dd9f5ae6cbc1252b353d8ed4db8df47ecf9",
+      "candidate_tsv_sha256": "87565d8bedb64b4b8d99568e31a669f2c3c57bc9c5f81b0406c8abf265346b63",
+      "increased_pages": 3,
+      "decreased_pages": 0,
+      "max_drop_pp": "0",
+      "over_2pp": [],
+      "changes": [
+        {
+          "page": 4,
+          "base": "97.34",
+          "candidate": "99.96",
+          "delta_pp": "2.62"
+        },
+        {
+          "page": 6,
+          "base": "87.21",
+          "candidate": "99.95",
+          "delta_pp": "12.74"
+        },
+        {
+          "page": 22,
+          "base": "91.73",
+          "candidate": "99.60",
+          "delta_pp": "7.87"
+        }
+      ]
+    },
+    {
+      "key": "exam",
+      "pages": 8,
+      "base_tsv_sha256": "16c9fa0fb7ea4838a0bb70ca11b86fb8e414e6c8498a601b26b1fc81bd55eebc",
+      "candidate_tsv_sha256": "4ee763deecfca07a600b468b5ba6528e59492044afff2ec5891c1655d7cd1419",
+      "increased_pages": 7,
+      "decreased_pages": 0,
+      "max_drop_pp": "0",
+      "over_2pp": [],
+      "changes": [
+        {
+          "page": 1,
+          "base": "99.07",
+          "candidate": "99.96",
+          "delta_pp": "0.89"
+        },
+        {
+          "page": 2,
+          "base": "97.12",
+          "candidate": "99.96",
+          "delta_pp": "2.84"
+        },
+        {
+          "page": 3,
+          "base": "99.02",
+          "candidate": "99.49",
+          "delta_pp": "0.47"
+        },
+        {
+          "page": 4,
+          "base": "99.78",
+          "candidate": "99.81",
+          "delta_pp": "0.03"
+        },
+        {
+          "page": 5,
+          "base": "99.58",
+          "candidate": "99.78",
+          "delta_pp": "0.20"
+        },
+        {
+          "page": 6,
+          "base": "99.56",
+          "candidate": "99.97",
+          "delta_pp": "0.41"
+        },
+        {
+          "page": 8,
+          "base": "99.56",
+          "candidate": "99.76",
+          "delta_pp": "0.20"
+        }
+      ]
+    },
+    {
+      "key": "api",
+      "pages": 105,
+      "base_tsv_sha256": "40ffd0e5efd94030b4c7ae0c22b953c722990b644aca7238e543e5c5501c7d1c",
+      "candidate_tsv_sha256": "0d300742ef260dadda962f4474e3fb347fd3b54879acc5179cdd609b9f3746bf",
+      "increased_pages": 10,
+      "decreased_pages": 0,
+      "max_drop_pp": "0",
+      "over_2pp": [],
+      "changes": [
+        {
+          "page": 12,
+          "base": "97.06",
+          "candidate": "99.99",
+          "delta_pp": "2.93"
+        },
+        {
+          "page": 13,
+          "base": "24.28",
+          "candidate": "100.00",
+          "delta_pp": "75.72"
+        },
+        {
+          "page": 27,
+          "base": "90.63",
+          "candidate": "100.00",
+          "delta_pp": "9.37"
+        },
+        {
+          "page": 35,
+          "base": "97.18",
+          "candidate": "100.00",
+          "delta_pp": "2.82"
+        },
+        {
+          "page": 36,
+          "base": "31.60",
+          "candidate": "100.00",
+          "delta_pp": "68.40"
+        },
+        {
+          "page": 53,
+          "base": "94.16",
+          "candidate": "100.00",
+          "delta_pp": "5.84"
+        },
+        {
+          "page": 56,
+          "base": "91.70",
+          "candidate": "100.00",
+          "delta_pp": "8.30"
+        },
+        {
+          "page": 65,
+          "base": "72.99",
+          "candidate": "100.00",
+          "delta_pp": "27.01"
+        },
+        {
+          "page": 67,
+          "base": "97.65",
+          "candidate": "100.00",
+          "delta_pp": "2.35"
+        },
+        {
+          "page": 69,
+          "base": "96.04",
+          "candidate": "100.00",
+          "delta_pp": "3.96"
+        }
+      ]
+    },
+    {
+      "key": "footnote",
+      "pages": 50,
+      "base_tsv_sha256": "650f6a1d30fb0cf059371d11477cd6132976a35c02bfdf4ece2244611fa4ad65",
+      "candidate_tsv_sha256": "1e7ec85986045afd1dd77a87d88a53c1fa3f61951494d428ba1c2714acdaca6f",
+      "increased_pages": 2,
+      "decreased_pages": 0,
+      "max_drop_pp": "0",
+      "over_2pp": [],
+      "changes": [
+        {
+          "page": 37,
+          "base": "98.58",
+          "candidate": "98.75",
+          "delta_pp": "0.17"
+        },
+        {
+          "page": 39,
+          "base": "99.83",
+          "candidate": "99.92",
+          "delta_pp": "0.09"
+        }
+      ]
+    }
+  ]
+}

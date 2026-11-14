@@ -1,0 +1,29 @@
+{
+  "job_id": "872c0343-ba5e-4a9c-ad50-355b329ed56f",
+  "status": "queued",
+  "phase": "queued",
+  "stage": "queued",
+  "progress_percent": null,
+  "progress_kind": "unavailable",
+  "progress_current_page": null,
+  "progress_total_pages": null,
+  "progress_observed_at": null,
+  "target": "pdf",
+  "engine": "2020",
+  "created_at": "2026-11-14T14:57:26.277Z",
+  "started_at": null,
+  "completed_at": null,
+  "expired_at": null,
+  "elapsed_seconds": 0,
+  "queue_position": 1,
+  "output_bytes": 0,
+  "delivery": {
+    "status": "not_requested",
+    "attempts": 0,
+    "output_path": null,
+    "saved_at": null,
+    "error": null
+  },
+  "result": null,
+  "error": null
+}

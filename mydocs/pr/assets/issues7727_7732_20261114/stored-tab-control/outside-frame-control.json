@@ -1,0 +1,62 @@
+{
+  "source": "tests/fixtures/issue7727/stored-right-tab-outside-frame-probe.hwpx",
+  "source_sha256": "9a3a4b140ee24c5b71c23b63c3e5e49938954abb3a6c296fa889abdcb26d279d",
+  "pdf": "pdf/issue7727/stored-right-tab-outside-frame-probe-2020.pdf",
+  "pdf_sha256": "0df5c523cf67b72f9743ce3833ca395f382bd8f9b8a30512979a69ed3356e0c6",
+  "job_id": "0e111b2d-db29-42ec-b3fb-820568e5022b",
+  "engine": "2020",
+  "product": "11.0.0.9136",
+  "print_method": 0,
+  "declared_body_width_hu": 48190,
+  "declared_right_stop_hu": 50000,
+  "stored_widths_hu": [
+    10000,
+    11500,
+    0
+  ],
+  "spans": [
+    {
+      "text": "10",
+      "origin": [
+        525.075439453125,
+        80.91157531738281
+      ],
+      "bbox": [
+        525.075439453125,
+        71.32181549072266,
+        538.268310546875,
+        83.31201171875
+      ],
+      "font": "MalgunGothic"
+    },
+    {
+      "text": "10",
+      "origin": [
+        525.075439453125,
+        100.09061431884766
+      ],
+      "bbox": [
+        525.075439453125,
+        90.5008544921875,
+        538.268310546875,
+        102.49105834960938
+      ],
+      "font": "MalgunGothic"
+    },
+    {
+      "text": "10",
+      "origin": [
+        525.075439453125,
+        119.2696533203125
+      ],
+      "bbox": [
+        525.075439453125,
+        109.67989349365234,
+        538.268310546875,
+        121.67008972167969
+      ],
+      "font": "MalgunGothic"
+    }
+  ],
+  "conclusion": "명시적 RIGHT 정지가 본문 밖인 독립 HWPX에서도 저장 폭 세 값의 출력 원점은 같다. 저장 폭을 언제나 우선한다는 가설을 지지하지 않는다. 실제 원본 HWP의 개별 목차 위치까지 이 합성 표본만으로 확정하지 않는다."
+}

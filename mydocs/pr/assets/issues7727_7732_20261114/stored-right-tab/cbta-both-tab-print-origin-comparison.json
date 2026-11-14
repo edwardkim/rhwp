@@ -1,0 +1,21 @@
+{
+  "text": "제2장 ICAO가 제시하는 CBTA의 개념, 목적, 적용 범위 등 분석 ······ 10",
+  "last_origins": [
+    {
+      "char": " ",
+      "x_css": 746.5
+    },
+    {
+      "char": "1",
+      "x_css": 694.8799641927084
+    },
+    {
+      "char": "0",
+      "x_css": 704.7999674479166
+    }
+  ],
+  "unmodified_first_digit_x_css": 674.8800048828125,
+  "stored_width_delta_css": 20,
+  "measured_digit_shift_css": 19.99995930989587,
+  "source_streams": "BodyText/Section0·ViewText/Section0의 TAB 폭만 각각 +1500HU 변경"
+}

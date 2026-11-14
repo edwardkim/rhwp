@@ -1,0 +1,13 @@
+{
+  "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+  "base": "53da4d2da28ae0cacf8feac3a989cc6a69fb2622",
+  "environment": "Mac 최소 글꼴 프로세스 격리; 별도 public webfont cache; RHWP_FONT_PATH 미설정",
+  "run": 13565,
+  "passed": 13565,
+  "failed": 0,
+  "skipped": 45,
+  "test_seconds": 333.989,
+  "command_seconds": 710.63,
+  "summary": "Summary [ 333.989s] 13565 tests run: 13565 passed (1 slow), 45 skipped",
+  "log_sha256": "a738ad1ec42022ec21f0e340a3d9e817d45e2f7aa31f9e4a8db8cf0711f01e4b"
+}

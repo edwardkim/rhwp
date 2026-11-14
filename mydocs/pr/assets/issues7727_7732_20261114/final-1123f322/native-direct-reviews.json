@@ -1,0 +1,579 @@
+{
+  "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+  "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+  "capture_reexecuted": false,
+  "method": "완료한 현재 head Native389쪽 PNG에서 canonical review/overlay 생성; 기존 실제 판독과 raw/PDF byte identity로 판독 재사용",
+  "cases": [
+    {
+      "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+      "key": "cbta",
+      "backend": "native",
+      "page": 2,
+      "raw_percent": "98.52",
+      "files": {
+        "raw": {
+          "path": "cases/cbta/native/raw-002.png",
+          "sha256": "27971e4c3c1ff6932b0fd40f6cd2efe7e837b3369e786cab564ec3225e3e1c8d"
+        },
+        "pdf": {
+          "path": "cases/cbta/native/pdf-002.png",
+          "sha256": "53d913e93899aea33f11c8e3edf99c5c208e7352bc84911ef7584f0bde95b50e"
+        },
+        "review": {
+          "path": "cases/cbta/native/review-002.png",
+          "sha256": "6c003828856cda4d458794c02db089990ad1b6ad8c4be77b8a7455552cdc0a9c"
+        },
+        "overlay": {
+          "path": "cases/cbta/native/overlay-002.png",
+          "sha256": "a007e9e3332cb21e5d6db75af9df8a499075d415610444dadbe8a7e6550deb9a"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "현재 실제 Native raw/PDF PNG가 직접 판독한 이전 캡처와 SHA-256 동일함을 확인; 현재 head 라벨로 review/overlay 재생성",
+        "reviewed_head": "fe8425e66db9e3b6fbb4232e6931ec1ea7fa5e81",
+        "prior_reading": {
+          "status": "completed",
+          "method": "현재 head의 같은 쪽 review와 overlay 직접 판독",
+          "observation": "목차의 본문·숫자 소유를 확인했다. HCI Poppy 굵은 제목의 미세한 가로 차이는 남는다."
+        },
+        "prior_raw_sha256": "27971e4c3c1ff6932b0fd40f6cd2efe7e837b3369e786cab564ec3225e3e1c8d",
+        "prior_pdf_sha256": "53d913e93899aea33f11c8e3edf99c5c208e7352bc84911ef7584f0bde95b50e"
+      }
+    },
+    {
+      "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+      "key": "cbta",
+      "backend": "native",
+      "page": 96,
+      "raw_percent": "99.72",
+      "files": {
+        "raw": {
+          "path": "cases/cbta/native/raw-096.png",
+          "sha256": "e6f802a3d4db52b8e9991be1444b7cf432f35e912381af66d6f37847715f147f"
+        },
+        "pdf": {
+          "path": "cases/cbta/native/pdf-096.png",
+          "sha256": "cfd450f04689bd811bcde7559f5198280a6e40d8366c812975bbe393e2e91714"
+        },
+        "review": {
+          "path": "cases/cbta/native/review-096.png",
+          "sha256": "9d2362f6f9b4072682ee360dbaa2febb7d217f0509c0a38a093709062266eb20"
+        },
+        "overlay": {
+          "path": "cases/cbta/native/overlay-096.png",
+          "sha256": "134d0c8c03382897f13b49fcff7970e7e662d95c84d780874648385529452750"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "현재 실제 Native raw/PDF PNG가 직접 판독한 이전 캡처와 SHA-256 동일함을 확인; 현재 head 라벨로 review/overlay 재생성",
+        "reviewed_head": "fe8425e66db9e3b6fbb4232e6931ec1ea7fa5e81",
+        "prior_reading": {
+          "status": "completed",
+          "method": "직접 판독한 이전 raw/PDF와 새 head 실제 캡처의 SHA-256 동일 확인",
+          "observation": "번호 제목의 줄 소유와 다음 본문 시작을 PDF와 비교했다. 잔여 글리프·미세 위치 차이가 있다.",
+          "read_source": "mydocs/pr/assets/issues7727_7732_20261114/note-oracle-final/direct-reviews.json",
+          "reviewed_head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+          "current_raw_sha256": "e6f802a3d4db52b8e9991be1444b7cf432f35e912381af66d6f37847715f147f",
+          "current_pdf_sha256": "cfd450f04689bd811bcde7559f5198280a6e40d8366c812975bbe393e2e91714"
+        },
+        "prior_raw_sha256": "e6f802a3d4db52b8e9991be1444b7cf432f35e912381af66d6f37847715f147f",
+        "prior_pdf_sha256": "cfd450f04689bd811bcde7559f5198280a6e40d8366c812975bbe393e2e91714"
+      }
+    },
+    {
+      "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+      "key": "cbta",
+      "backend": "native",
+      "page": 118,
+      "raw_percent": "98.44",
+      "files": {
+        "raw": {
+          "path": "cases/cbta/native/raw-118.png",
+          "sha256": "8c6fc1aa173364b2da1919e97dd83e0db0a09a4cf99ccf8ba0e7a131c1600f3f"
+        },
+        "pdf": {
+          "path": "cases/cbta/native/pdf-118.png",
+          "sha256": "62a5528364364a3adca493010772232d83acf717e443ff345dd6a9a89d84ee15"
+        },
+        "review": {
+          "path": "cases/cbta/native/review-118.png",
+          "sha256": "8cf4ba2385d7991b4f56c471a0f77261f2ca62c52a343f2884c4f6f15b344d4d"
+        },
+        "overlay": {
+          "path": "cases/cbta/native/overlay-118.png",
+          "sha256": "6baf112e0455519aa2fade75d7cc0c19b2bd32a330f5f91d60b2134ad69865b4"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "현재 실제 Native raw/PDF PNG가 직접 판독한 이전 캡처와 SHA-256 동일함을 확인; 현재 head 라벨로 review/overlay 재생성",
+        "reviewed_head": "fe8425e66db9e3b6fbb4232e6931ec1ea7fa5e81",
+        "prior_reading": {
+          "status": "completed",
+          "method": "현재 head의 같은 쪽 review와 overlay 직접 판독",
+          "observation": "그림26의 캡션·그림 안 내용·다음 항공교통업무기준 제목의 소유를 확인했다. 그림 외곽선 농도와 미세 위치 차이는 남는다."
+        },
+        "prior_raw_sha256": "8c6fc1aa173364b2da1919e97dd83e0db0a09a4cf99ccf8ba0e7a131c1600f3f",
+        "prior_pdf_sha256": "62a5528364364a3adca493010772232d83acf717e443ff345dd6a9a89d84ee15"
+      }
+    },
+    {
+      "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+      "key": "cbta",
+      "backend": "native",
+      "page": 162,
+      "raw_percent": "99.94",
+      "files": {
+        "raw": {
+          "path": "cases/cbta/native/raw-162.png",
+          "sha256": "2237b40b851fdebaeb58cdc92e030c4f7ecb09b63e57a21fa8db3cbae4e0f850"
+        },
+        "pdf": {
+          "path": "cases/cbta/native/pdf-162.png",
+          "sha256": "97f254a1969dd26949af475ef0149957897352114b20d5bb2194b0bfea91b7b9"
+        },
+        "review": {
+          "path": "cases/cbta/native/review-162.png",
+          "sha256": "b85910f02a98b24777d687bdb558bdbce24ece1605994562d9e58dd76ac4c169"
+        },
+        "overlay": {
+          "path": "cases/cbta/native/overlay-162.png",
+          "sha256": "7f868be997209e8c1cd69d09e0c81facafeb3ea12a19139934ec1dc0594d86f5"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "현재 실제 Native raw/PDF PNG가 직접 판독한 이전 캡처와 SHA-256 동일함을 확인; 현재 head 라벨로 review/overlay 재생성",
+        "reviewed_head": "fe8425e66db9e3b6fbb4232e6931ec1ea7fa5e81",
+        "prior_reading": {
+          "status": "completed",
+          "method": "현재 head의 같은 쪽 review와 overlay 직접 판독",
+          "observation": "첫 피로 행부터4.2.5 종료 행까지의 내용과 병합 셀·표 하단을 PDF와 대조했다."
+        },
+        "prior_raw_sha256": "2237b40b851fdebaeb58cdc92e030c4f7ecb09b63e57a21fa8db3cbae4e0f850",
+        "prior_pdf_sha256": "97f254a1969dd26949af475ef0149957897352114b20d5bb2194b0bfea91b7b9"
+      }
+    },
+    {
+      "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+      "key": "cbta",
+      "backend": "native",
+      "page": 166,
+      "raw_percent": "99.95",
+      "files": {
+        "raw": {
+          "path": "cases/cbta/native/raw-166.png",
+          "sha256": "8107cb27611437b38476f615bf208306b0a1b8f6c6a9ac8916908567d0f45412"
+        },
+        "pdf": {
+          "path": "cases/cbta/native/pdf-166.png",
+          "sha256": "daf25aec13a5ad71356458bbb6a93ad74895ca9a3981c255a482636cf26e6fe1"
+        },
+        "review": {
+          "path": "cases/cbta/native/review-166.png",
+          "sha256": "57e698b91da90bf81785605fe9fbffb778fe1e96491fa7a362e949e0a0a60ab5"
+        },
+        "overlay": {
+          "path": "cases/cbta/native/overlay-166.png",
+          "sha256": "d314bd00df46c7fed478bd8d462cfc3bbef953974ec649c86baa076a1e732dce"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "현재 실제 Native raw/PDF PNG가 직접 판독한 이전 캡처와 SHA-256 동일함을 확인; 현재 head 라벨로 review/overlay 재생성",
+        "reviewed_head": "fe8425e66db9e3b6fbb4232e6931ec1ea7fa5e81",
+        "prior_reading": {
+          "status": "completed",
+          "method": "현재 head의 같은 쪽 review와 overlay 직접 판독",
+          "observation": "5.5 연속 행·환경 구간·2.2.3 종료 행과 표 하단의 소유를 대조했다."
+        },
+        "prior_raw_sha256": "8107cb27611437b38476f615bf208306b0a1b8f6c6a9ac8916908567d0f45412",
+        "prior_pdf_sha256": "daf25aec13a5ad71356458bbb6a93ad74895ca9a3981c255a482636cf26e6fe1"
+      }
+    },
+    {
+      "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+      "key": "recommendation",
+      "backend": "native",
+      "page": 4,
+      "raw_percent": "99.96",
+      "files": {
+        "raw": {
+          "path": "cases/recommendation/native/raw-004.png",
+          "sha256": "4e3b96ed50440ddb948db426644701c6aed839223902e0843a4202304eb4294f"
+        },
+        "pdf": {
+          "path": "cases/recommendation/native/pdf-004.png",
+          "sha256": "d035ef4d927d917cd206e13fafc4c4b956f37df5791996d8440d79f2fad1abad"
+        },
+        "review": {
+          "path": "cases/recommendation/native/review-004.png",
+          "sha256": "63bb45e7348503fb8edeea09014fb190c29028c3f2839049a4998859f8e2faa1"
+        },
+        "overlay": {
+          "path": "cases/recommendation/native/overlay-004.png",
+          "sha256": "be8785ae3846e65128a6264b57f756389e2518727bb691adbead9a7513e8d15c"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "현재 실제 Native raw/PDF PNG가 직접 판독한 이전 캡처와 SHA-256 동일함을 확인; 현재 head 라벨로 review/overlay 재생성",
+        "reviewed_head": "fe8425e66db9e3b6fbb4232e6931ec1ea7fa5e81",
+        "prior_reading": {
+          "status": "completed",
+          "method": "현재 head의 같은 쪽 review와 overlay 직접 판독",
+          "observation": "목차·일곱 숫자·배경 채널·소항목8의 저장 전진을 확인했다."
+        },
+        "prior_raw_sha256": "4e3b96ed50440ddb948db426644701c6aed839223902e0843a4202304eb4294f",
+        "prior_pdf_sha256": "d035ef4d927d917cd206e13fafc4c4b956f37df5791996d8440d79f2fad1abad"
+      }
+    },
+    {
+      "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+      "key": "recommendation",
+      "backend": "native",
+      "page": 6,
+      "raw_percent": "99.95",
+      "files": {
+        "raw": {
+          "path": "cases/recommendation/native/raw-006.png",
+          "sha256": "2cd887232f82ca33fb3dc7ea105fea0605d50f37a31767a030059faeb9884f2c"
+        },
+        "pdf": {
+          "path": "cases/recommendation/native/pdf-006.png",
+          "sha256": "429926bf039cbe34115243891b53069f016e3ae9b8d583abb05eec60fb18096f"
+        },
+        "review": {
+          "path": "cases/recommendation/native/review-006.png",
+          "sha256": "68627c4960db2eeedd5dc3a3b456248fc443e7158bdf3a26a4c9a648620e263e"
+        },
+        "overlay": {
+          "path": "cases/recommendation/native/overlay-006.png",
+          "sha256": "bf68c1355b05369468eb520f7c67733659bbb2bc14caa5ab0291a777d1a422b8"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "현재 실제 Native raw/PDF PNG가 직접 판독한 이전 캡처와 SHA-256 동일함을 확인; 현재 head 라벨로 review/overlay 재생성",
+        "reviewed_head": "fe8425e66db9e3b6fbb4232e6931ec1ea7fa5e81",
+        "prior_reading": {
+          "status": "completed",
+          "method": "현재 head의 같은 쪽 review와 overlay 직접 판독",
+          "observation": "일반 현황 제목과 두 표·뒤 법령 문단을 확인했다. 원 기하를 벗어난 내용이나 이전 장의 유입은 보이지 않았다."
+        },
+        "prior_raw_sha256": "2cd887232f82ca33fb3dc7ea105fea0605d50f37a31767a030059faeb9884f2c",
+        "prior_pdf_sha256": "429926bf039cbe34115243891b53069f016e3ae9b8d583abb05eec60fb18096f"
+      }
+    },
+    {
+      "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+      "key": "exam",
+      "backend": "native",
+      "page": 2,
+      "raw_percent": "99.96",
+      "files": {
+        "raw": {
+          "path": "cases/exam/native/raw-002.png",
+          "sha256": "b7092251e81e8960ca1a14889b751716e9ad14561dd3e993f64b9b34f63f74ba"
+        },
+        "pdf": {
+          "path": "cases/exam/native/pdf-002.png",
+          "sha256": "22a8ec5ccfd077b0c262beb647e548fa96778c14a3d2a2361be8ec3e1ea69d80"
+        },
+        "review": {
+          "path": "cases/exam/native/review-002.png",
+          "sha256": "1fbf37964efd3d951e7380aaa6cdd228770e6fd12a48d9cd2f4f6e67e1ad1894"
+        },
+        "overlay": {
+          "path": "cases/exam/native/overlay-002.png",
+          "sha256": "056d12bd2405936cd4b1dbc9c91b8f72b0a48fca3b3f83cd95544f61dd5d9f70"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "현재 실제 Native raw/PDF PNG가 직접 판독한 이전 캡처와 SHA-256 동일함을 확인; 현재 head 라벨로 review/overlay 재생성",
+        "reviewed_head": "fe8425e66db9e3b6fbb4232e6931ec1ea7fa5e81",
+        "prior_reading": {
+          "status": "completed",
+          "method": "직접 판독한 이전 raw/PDF와 새 head 실제 캡처의 SHA-256 동일 확인",
+          "observation": "영어 응답 줄 낱말 공백·밑줄 원점·좌우 단 내용 소유를 비교했다.",
+          "read_source": "mydocs/pr/assets/issues7727_7732_20261114/note-oracle-final/direct-reviews.json",
+          "reviewed_head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+          "current_raw_sha256": "b7092251e81e8960ca1a14889b751716e9ad14561dd3e993f64b9b34f63f74ba",
+          "current_pdf_sha256": "22a8ec5ccfd077b0c262beb647e548fa96778c14a3d2a2361be8ec3e1ea69d80"
+        },
+        "prior_raw_sha256": "b7092251e81e8960ca1a14889b751716e9ad14561dd3e993f64b9b34f63f74ba",
+        "prior_pdf_sha256": "22a8ec5ccfd077b0c262beb647e548fa96778c14a3d2a2361be8ec3e1ea69d80"
+      }
+    },
+    {
+      "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+      "key": "api",
+      "backend": "native",
+      "page": 13,
+      "raw_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "cases/api/native/raw-013.png",
+          "sha256": "6b6a0e7faa4d4dcac976735c8736f747b71838b2419ba064496aa39c15136716"
+        },
+        "pdf": {
+          "path": "cases/api/native/pdf-013.png",
+          "sha256": "9bfdda86c939577d5d3986f03cd99a684b06cae318fe71de8ecd745b45eff905"
+        },
+        "review": {
+          "path": "cases/api/native/review-013.png",
+          "sha256": "926fffdb3490dd736c027a2270dbaa795e3e6c498013dcacf05dc783470b621c"
+        },
+        "overlay": {
+          "path": "cases/api/native/overlay-013.png",
+          "sha256": "f979db784c867323d9fb942b3972d09cc46962c595046ee364404affbeae36b2"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "현재 실제 Native raw/PDF PNG가 직접 판독한 이전 캡처와 SHA-256 동일함을 확인; 현재 head 라벨로 review/overlay 재생성",
+        "reviewed_head": "fe8425e66db9e3b6fbb4232e6931ec1ea7fa5e81",
+        "prior_reading": {
+          "status": "completed",
+          "method": "현재 head의 같은 쪽 review와 overlay 직접 판독",
+          "observation": "첫 코드 상자·Remarks·GetDefault와 뒤 Syntax/Example의 줄·테두리·내용을 확인했다."
+        },
+        "prior_raw_sha256": "6b6a0e7faa4d4dcac976735c8736f747b71838b2419ba064496aa39c15136716",
+        "prior_pdf_sha256": "9bfdda86c939577d5d3986f03cd99a684b06cae318fe71de8ecd745b45eff905"
+      }
+    },
+    {
+      "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+      "key": "api",
+      "backend": "native",
+      "page": 35,
+      "raw_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "cases/api/native/raw-035.png",
+          "sha256": "ab1d823f69975cf4edd0d347582239eec7d6e4bd50b2d750731d657cd69b1da4"
+        },
+        "pdf": {
+          "path": "cases/api/native/pdf-035.png",
+          "sha256": "947930055143f2df3d49cfb2f4c8d378d57b734df9ed12888a18142915f50c44"
+        },
+        "review": {
+          "path": "cases/api/native/review-035.png",
+          "sha256": "a79102a9fa84ea86279d669fe8b0df53cbf8b6d3e54c1e5cafcefa03870aae1a"
+        },
+        "overlay": {
+          "path": "cases/api/native/overlay-035.png",
+          "sha256": "d4e7143c3f3937d782736af4048d490fb239e5b4493700be9738a5242e9cbf86"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "현재 실제 Native raw/PDF PNG가 직접 판독한 이전 캡처와 SHA-256 동일함을 확인; 현재 head 라벨로 review/overlay 재생성",
+        "reviewed_head": "fe8425e66db9e3b6fbb4232e6931ec1ea7fa5e81",
+        "prior_reading": {
+          "status": "completed",
+          "method": "현재 head의 같은 쪽 review와 overlay 직접 판독",
+          "observation": "앞 Remarks·CharShape 예제와 다음 CurFieldState 제목·빈 코드 상자의 소유를 확인했다."
+        },
+        "prior_raw_sha256": "ab1d823f69975cf4edd0d347582239eec7d6e4bd50b2d750731d657cd69b1da4",
+        "prior_pdf_sha256": "947930055143f2df3d49cfb2f4c8d378d57b734df9ed12888a18142915f50c44"
+      }
+    },
+    {
+      "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+      "key": "api",
+      "backend": "native",
+      "page": 36,
+      "raw_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "cases/api/native/raw-036.png",
+          "sha256": "c279e50cf223493f7c60f3aa25b5f98c8b55510da5ad42bf56aaf0bd526d8cc4"
+        },
+        "pdf": {
+          "path": "cases/api/native/pdf-036.png",
+          "sha256": "e2f43c432ad1d4ff620869575b8ebf5a9a05ddbf9e0ce8e1180e40a0d8b9e32d"
+        },
+        "review": {
+          "path": "cases/api/native/review-036.png",
+          "sha256": "d90e78f8a9b36da9e64f38c62527285a8191c26b230420252b201dbcaa2ed904"
+        },
+        "overlay": {
+          "path": "cases/api/native/overlay-036.png",
+          "sha256": "6b76e78e93b0e1ac1daf903db66e582e258d93a438cee7399d6743d0b4ccb55c"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "현재 실제 Native raw/PDF PNG가 직접 판독한 이전 캡처와 SHA-256 동일함을 확인; 현재 head 라벨로 review/overlay 재생성",
+        "reviewed_head": "fe8425e66db9e3b6fbb4232e6931ec1ea7fa5e81",
+        "prior_reading": {
+          "status": "completed",
+          "method": "현재 head의 같은 쪽 review와 overlay 직접 판독",
+          "observation": "이전 쪽 코드 상자의 이어진 switch·alert와 EditMode 시작·뒤 본문을 확인했다."
+        },
+        "prior_raw_sha256": "c279e50cf223493f7c60f3aa25b5f98c8b55510da5ad42bf56aaf0bd526d8cc4",
+        "prior_pdf_sha256": "e2f43c432ad1d4ff620869575b8ebf5a9a05ddbf9e0ce8e1180e40a0d8b9e32d"
+      }
+    },
+    {
+      "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+      "key": "api",
+      "backend": "native",
+      "page": 65,
+      "raw_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "cases/api/native/raw-065.png",
+          "sha256": "10346b4952cc067b6efdbb0b142ff9766aaf0f191a0af5c52e626b8072caf65d"
+        },
+        "pdf": {
+          "path": "cases/api/native/pdf-065.png",
+          "sha256": "ecee7489cb021b178e847b7d298ed094940a9c22531c44c2f97e8648d14534a7"
+        },
+        "review": {
+          "path": "cases/api/native/review-065.png",
+          "sha256": "e22637187c834ef8cd47285de959785d67f730423f4f2e0e8cd813c87bd43fc2"
+        },
+        "overlay": {
+          "path": "cases/api/native/overlay-065.png",
+          "sha256": "014e5cdea9a79fccd5404622f4446e708db057ccd137e1c44a4dd49dab8f4917"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "현재 실제 Native raw/PDF PNG가 직접 판독한 이전 캡처와 SHA-256 동일함을 확인; 현재 head 라벨로 review/overlay 재생성",
+        "reviewed_head": "fe8425e66db9e3b6fbb4232e6931ec1ea7fa5e81",
+        "prior_reading": {
+          "status": "completed",
+          "method": "현재 head의 같은 쪽 review와 overlay 직접 판독",
+          "observation": "두 매개변수 표의 시작·종료와 effect/watermark 문단이 겹치지 않는지 확인했다."
+        },
+        "prior_raw_sha256": "10346b4952cc067b6efdbb0b142ff9766aaf0f191a0af5c52e626b8072caf65d",
+        "prior_pdf_sha256": "ecee7489cb021b178e847b7d298ed094940a9c22531c44c2f97e8648d14534a7"
+      }
+    },
+    {
+      "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+      "key": "api",
+      "backend": "native",
+      "page": 69,
+      "raw_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "cases/api/native/raw-069.png",
+          "sha256": "afe7cc63b65f3e1e7a84ac540aab239ea7589384c3f20d0637d81fb8ec046799"
+        },
+        "pdf": {
+          "path": "cases/api/native/pdf-069.png",
+          "sha256": "224169cf9ba09e39b1235f43d005bde7ab376bc5f268b7ffb7b7297649ce4090"
+        },
+        "review": {
+          "path": "cases/api/native/review-069.png",
+          "sha256": "8915f9565b3ad17fcbec1257bb27bed8aaaa48445b8f955d1bf4a0c3670fdc1d"
+        },
+        "overlay": {
+          "path": "cases/api/native/overlay-069.png",
+          "sha256": "dbc2ca8e8857ac9330329788cb8b1bcc3f31f4fb7addf01c1e33b5d076133c06"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "현재 실제 Native raw/PDF PNG가 직접 판독한 이전 캡처와 SHA-256 동일함을 확인; 현재 head 라벨로 review/overlay 재생성",
+        "reviewed_head": "fe8425e66db9e3b6fbb4232e6931ec1ea7fa5e81",
+        "prior_reading": {
+          "status": "completed",
+          "method": "직접 판독한 이전 raw/PDF와 새 head 실제 캡처의 SHA-256 동일 확인",
+          "observation": "두 표의 시작·종료와 빈 줄·아래 Example·다음 제목의 위치를 비교했다.",
+          "read_source": "mydocs/pr/assets/issues7727_7732_20261114/note-oracle-final/direct-reviews.json",
+          "reviewed_head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+          "current_raw_sha256": "afe7cc63b65f3e1e7a84ac540aab239ea7589384c3f20d0637d81fb8ec046799",
+          "current_pdf_sha256": "224169cf9ba09e39b1235f43d005bde7ab376bc5f268b7ffb7b7297649ce4090"
+        },
+        "prior_raw_sha256": "afe7cc63b65f3e1e7a84ac540aab239ea7589384c3f20d0637d81fb8ec046799",
+        "prior_pdf_sha256": "224169cf9ba09e39b1235f43d005bde7ab376bc5f268b7ffb7b7297649ce4090"
+      }
+    },
+    {
+      "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+      "key": "footnote",
+      "backend": "native",
+      "page": 37,
+      "raw_percent": "98.75",
+      "files": {
+        "raw": {
+          "path": "cases/footnote/native/raw-037.png",
+          "sha256": "209ec278e95e1b0bdd6e95dc826a9d676f1a4865dfeeaf3726a476d5fb4d0579"
+        },
+        "pdf": {
+          "path": "cases/footnote/native/pdf-037.png",
+          "sha256": "88253c9179cb22eba2948df03ef02c2daf3bec1cd238cee8fc6ea5ec7ca7a0a8"
+        },
+        "review": {
+          "path": "cases/footnote/native/review-037.png",
+          "sha256": "ce8623153604d08f0dc59061c403dd2b50a402286f3640d15899906cb47d8756"
+        },
+        "overlay": {
+          "path": "cases/footnote/native/overlay-037.png",
+          "sha256": "f4c762713af59a798b08b501efbaa9961839fbcee37bf58504983bf9aac5fdc3"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "현재 실제 Native raw/PDF PNG가 직접 판독한 이전 캡처와 SHA-256 동일함을 확인; 현재 head 라벨로 review/overlay 재생성",
+        "reviewed_head": "fe8425e66db9e3b6fbb4232e6931ec1ea7fa5e81",
+        "prior_reading": {
+          "status": "completed",
+          "method": "직접 판독한 이전 raw/PDF와 새 head 실제 캡처의 SHA-256 동일 확인",
+          "observation": "24)·25)의 서로 다른 줄 소유와 31번 행의 끝 내용을 비교했다. 일부 경계의 미세 차이는 남아 있다.",
+          "read_source": "mydocs/pr/assets/issues7727_7732_20261114/note-oracle-final/direct-reviews.json",
+          "reviewed_head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+          "current_raw_sha256": "209ec278e95e1b0bdd6e95dc826a9d676f1a4865dfeeaf3726a476d5fb4d0579",
+          "current_pdf_sha256": "88253c9179cb22eba2948df03ef02c2daf3bec1cd238cee8fc6ea5ec7ca7a0a8"
+        },
+        "prior_raw_sha256": "209ec278e95e1b0bdd6e95dc826a9d676f1a4865dfeeaf3726a476d5fb4d0579",
+        "prior_pdf_sha256": "88253c9179cb22eba2948df03ef02c2daf3bec1cd238cee8fc6ea5ec7ca7a0a8"
+      }
+    },
+    {
+      "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+      "key": "footnote",
+      "backend": "native",
+      "page": 38,
+      "raw_percent": "99.84",
+      "files": {
+        "raw": {
+          "path": "cases/footnote/native/raw-038.png",
+          "sha256": "0947f933f4a8f908a4d78c86e8a6eaa9fb4846820b77775841b992193e6a8e22"
+        },
+        "pdf": {
+          "path": "cases/footnote/native/pdf-038.png",
+          "sha256": "03602e510f33cf49a0bb96beb216eda95daf0d4c95e8c49b3c1c269f38bfb25d"
+        },
+        "review": {
+          "path": "cases/footnote/native/review-038.png",
+          "sha256": "d93f7f2162490b2a933551f5961f0c6afd956637600b4ad2de9a1b3fc88cee8b"
+        },
+        "overlay": {
+          "path": "cases/footnote/native/overlay-038.png",
+          "sha256": "8a66392311d9c9e12c8e0bfde43963263cc13444cb54c0937fabb0eda2f31fc2"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "현재 실제 Native raw/PDF PNG가 직접 판독한 이전 캡처와 SHA-256 동일함을 확인; 현재 head 라벨로 review/overlay 재생성",
+        "reviewed_head": "fe8425e66db9e3b6fbb4232e6931ec1ea7fa5e81",
+        "prior_reading": {
+          "status": "completed",
+          "method": "현재 head의 같은 쪽 review와 overlay 직접 판독",
+          "observation": "이전 행의 이어진 내용과32~43번 행·26) 참조를 확인했다. 아래 우측 셀의 미세한 글자 위치 차이는 남는다."
+        },
+        "prior_raw_sha256": "0947f933f4a8f908a4d78c86e8a6eaa9fb4846820b77775841b992193e6a8e22",
+        "prior_pdf_sha256": "03602e510f33cf49a0bb96beb216eda95daf0d4c95e8c49b3c1c269f38bfb25d"
+      }
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+  "status": "ready_direct_review",
+  "pid": 91998,
+  "capture_workers": 1,
+  "cases": [
+    {
+      "key": "hwp-native",
+      "input_sha256": "8abdadd1d48cc8438ccee66be86d9942639153e5f5112ec5869cd6377bd2f1ec",
+      "pdf_sha256": "2094532dafe0076645ae9e19f40396fb27133abee5e6f4815914ad5877aca88c",
+      "exit_code": 0,
+      "reused_same_head_png": true,
+      "seconds": 0.238,
+      "pages": 1,
+      "raw": "99.90",
+      "tsv_sha256": "c0f9c8fbc83248e37199e4a8b2e01df23d13d86dd6ce7f1486ba0c7bf3298405",
+      "direct_reading": "review/overlay 직접 판독: xABC·ABC·ABC와 숫자10 세 줄의 내용/순서/RIGHT 끝 정렬이 보존됨. Native는 글자 가장자리 0.10% 차이, WASM은 raw 100.00%이며 RGB 완전 일치 주장은 아님."
+    },
+    {
+      "key": "hwp-wasm",
+      "input_sha256": "8abdadd1d48cc8438ccee66be86d9942639153e5f5112ec5869cd6377bd2f1ec",
+      "pdf_sha256": "2094532dafe0076645ae9e19f40396fb27133abee5e6f4815914ad5877aca88c",
+      "exit_code": 0,
+      "reused_same_head_png": false,
+      "seconds": 13.318,
+      "pages": 1,
+      "raw": "100.00",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "direct_reading": "review/overlay 직접 판독: xABC·ABC·ABC와 숫자10 세 줄의 내용/순서/RIGHT 끝 정렬이 보존됨. Native는 글자 가장자리 0.10% 차이, WASM은 raw 100.00%이며 RGB 완전 일치 주장은 아님."
+    },
+    {
+      "key": "hwpx-native",
+      "input_sha256": "3e7975439ac3177e35349a372241d061f568d5ad8745624f40c03beba8196727",
+      "pdf_sha256": "efeb872c274313e501b11073f979f0cf960b5adf836e18faff64af769770047e",
+      "exit_code": 0,
+      "reused_same_head_png": false,
+      "seconds": 10.539,
+      "pages": 1,
+      "raw": "99.90",
+      "tsv_sha256": "c0f9c8fbc83248e37199e4a8b2e01df23d13d86dd6ce7f1486ba0c7bf3298405",
+      "direct_reading": "review/overlay 직접 판독: xABC·ABC·ABC와 숫자10 세 줄의 내용/순서/RIGHT 끝 정렬이 보존됨. Native는 글자 가장자리 0.10% 차이, WASM은 raw 100.00%이며 RGB 완전 일치 주장은 아님."
+    },
+    {
+      "key": "hwpx-wasm",
+      "input_sha256": "3e7975439ac3177e35349a372241d061f568d5ad8745624f40c03beba8196727",
+      "pdf_sha256": "efeb872c274313e501b11073f979f0cf960b5adf836e18faff64af769770047e",
+      "exit_code": 0,
+      "reused_same_head_png": false,
+      "seconds": 12.406,
+      "pages": 1,
+      "raw": "100.00",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "direct_reading": "review/overlay 직접 판독: xABC·ABC·ABC와 숫자10 세 줄의 내용/순서/RIGHT 끝 정렬이 보존됨. Native는 글자 가장자리 0.10% 차이, WASM은 raw 100.00%이며 RGB 완전 일치 주장은 아님."
+    }
+  ],
+  "updated_at": "2026-11-14T20:39:36.032866+00:00",
+  "current": "direct-xml-native",
+  "diagnostic_cases": [
+    {
+      "key": "direct-xml-native",
+      "input_sha256": "33c2d87ecc77a43a3277c7dcca98e341d98a1126a7ab846db91fa62c68efb54e",
+      "pdf_sha256": "22b58231522feb4fb2d56ecdf2101cadebb2f152460e5da768544489d740a4c7",
+      "exit_code": 1,
+      "reused_same_head_png": false,
+      "seconds": 10.813,
+      "pages": 1,
+      "raw": "55.95",
+      "tsv_sha256": "253d8544c836a1ca61516c8f9e3d0cbe3ff991d5ca1c47689368af39a174cf7c",
+      "direct_reading": "pending",
+      "scope": "추가 namespace 격리용 수동 XML 진단. 실제 편집·2회 저장한 HWP/HWPX 네 경로와 별개이며 새 회귀/정상 fixture 수용 대상이 아님",
+      "qualified_as_acceptance": false
+    }
+  ],
+  "scope": "공개 편집 API→2회 저장·재열기의 HWP/HWPX×Native/fresh WASM 네 경로"
+}

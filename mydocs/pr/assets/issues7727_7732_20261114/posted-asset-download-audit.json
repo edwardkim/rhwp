@@ -1,0 +1,246 @@
+{
+  "head": "e9b3114b3506483b423541349639d18b3731e6ac",
+  "all_downloads_equal_git_blob": true,
+  "records": [
+    {
+      "path": "mydocs/pr/assets/issue7445/hwpctl_API_v2.4.hwp",
+      "bytes": 262144,
+      "sha256": "d11dd1331083be4e8c989dfbd587777626b3d77686d3436c35a2c20da9494603"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7445/issue1937_rowbreak_footnote_overpagination.hwp",
+      "bytes": 147456,
+      "sha256": "a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990"
+    },
+    {
+      "path": "mydocs/pr/assets/issue7731/api-reference/hwpctl_API_v2.4-hwp-2020.pdf",
+      "bytes": 828101,
+      "sha256": "1d289727dd40ed35e48135bf16df06fe4cd080d967441ff464fb0e0b205fae74"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/README.md",
+      "bytes": 11144,
+      "sha256": "5d3afc21fcde8b6091f8b9af6bc3dab4867a1620c26df425aab366669ad8f300"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/canvaskit-common-3f7e4340/unchanged-path-reuse-audit.json",
+      "bytes": 2046,
+      "sha256": "2773fab56d80faf6b2f1b995eba01b785230393957fb1bca071c49f6af0f4fd7"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/canvaskit-common-3f7e4340/wasm-api.tsv",
+      "bytes": 2308,
+      "sha256": "76f12f9f4b677b340aa930d1894188256638a1e4c8d20a8356d5f7900863a2ac"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/canvaskit-common-3f7e4340/wasm-cbta.tsv",
+      "bytes": 4122,
+      "sha256": "0b14f231561f52f20539bd54964a67b8811c5e616d24f68c21f9cf81ee5ca4cd"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/canvaskit-common-3f7e4340/wasm-exam.tsv",
+      "bytes": 256,
+      "sha256": "4ee763deecfca07a600b468b5ba6528e59492044afff2ec5891c1655d7cd1419"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/canvaskit-common-3f7e4340/wasm-footnote.tsv",
+      "bytes": 1111,
+      "sha256": "1e7ec85986045afd1dd77a87d88a53c1fa3f61951494d428ba1c2714acdaca6f"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/canvaskit-common-3f7e4340/wasm-recommendation.tsv",
+      "bytes": 533,
+      "sha256": "cc669817ace630a67f88bc4a571f82c5622172e095fc549242cbe6d26b41ed26"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/cases/api/native/overlay-065.png",
+      "bytes": 131580,
+      "sha256": "014e5cdea9a79fccd5404622f4446e708db057ccd137e1c44a4dd49dab8f4917"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/cases/api/native/review-065.png",
+      "bytes": 362156,
+      "sha256": "e22637187c834ef8cd47285de959785d67f730423f4f2e0e8cd813c87bd43fc2"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/cases/api/wasm/overlay-065.png",
+      "bytes": 132745,
+      "sha256": "d85fc9520cef2e3f00c2a986b50e4a5581f450d92da2790a90d1c86f2dcd63ac"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/cases/api/wasm/review-065.png",
+      "bytes": 363290,
+      "sha256": "9673db79f6164817d1cde0c9e101d301c6f7c22ffc8ce16e3ab3422b12e5dbb9"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/cases/cbta/native/overlay-118.png",
+      "bytes": 286804,
+      "sha256": "6baf112e0455519aa2fade75d7cc0c19b2bd32a330f5f91d60b2134ad69865b4"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/cases/cbta/native/review-118.png",
+      "bytes": 816656,
+      "sha256": "8cf4ba2385d7991b4f56c471a0f77261f2ca62c52a343f2884c4f6f15b344d4d"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/cases/cbta/wasm/overlay-118.png",
+      "bytes": 287443,
+      "sha256": "1c877c83c2f66498bbdaceb83d6e94dba7a1a6fddfec07b0ed8ce130af066ce3"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/cases/cbta/wasm/review-118.png",
+      "bytes": 815683,
+      "sha256": "b82a6ec03e5ac95f357492674cd84b1f650f9da4e8f2200cfe954f49c5755ae1"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/cases/exam/native/overlay-002.png",
+      "bytes": 455051,
+      "sha256": "056d12bd2405936cd4b1dbc9c91b8f72b0a48fca3b3f83cd95544f61dd5d9f70"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/cases/exam/native/review-002.png",
+      "bytes": 1415230,
+      "sha256": "1fbf37964efd3d951e7380aaa6cdd228770e6fd12a48d9cd2f4f6e67e1ad1894"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/cases/exam/wasm/overlay-002.png",
+      "bytes": 443774,
+      "sha256": "8aeb1a5e4eb2adff4bf5bbd6fb8fb44246ce5066db15ddfd773a270ebf436350"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/cases/exam/wasm/review-002.png",
+      "bytes": 1322652,
+      "sha256": "ff65515387d5b017c93a0996e0ad4b8bf990535cf842b95270c9b9d9daa7c85c"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/cases/footnote/native/overlay-037.png",
+      "bytes": 188041,
+      "sha256": "f4c762713af59a798b08b501efbaa9961839fbcee37bf58504983bf9aac5fdc3"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/cases/footnote/native/review-037.png",
+      "bytes": 508486,
+      "sha256": "ce8623153604d08f0dc59061c403dd2b50a402286f3640d15899906cb47d8756"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/cases/footnote/wasm/overlay-037.png",
+      "bytes": 188387,
+      "sha256": "f829102939112f22aff415d7d2cd89dd2cdf89fbfb0f1ffc020e7cb9fa82a699"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/cases/footnote/wasm/review-037.png",
+      "bytes": 508558,
+      "sha256": "e4f635adb2a8fc5e9bcf2d45d6b7a3b40b9bb7d496014b37e84332ea3799d7bc"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/cases/recommendation/native/overlay-004.png",
+      "bytes": 90066,
+      "sha256": "be8785ae3846e65128a6264b57f756389e2518727bb691adbead9a7513e8d15c"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/cases/recommendation/native/review-004.png",
+      "bytes": 258210,
+      "sha256": "63bb45e7348503fb8edeea09014fb190c29028c3f2839049a4998859f8e2faa1"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/cases/recommendation/wasm/overlay-004.png",
+      "bytes": 90687,
+      "sha256": "2534b319f5a8f6d851d038ba7a1de3332245ee7835840bf8c082b0789700d8f0"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/cases/recommendation/wasm/review-004.png",
+      "bytes": 259444,
+      "sha256": "1ce1b57017465ff7b5dff0e51c5f7bbd99f7afa6b47f88cd0b07ec3b9113201b"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/fixed-base-comparison.json",
+      "bytes": 10941,
+      "sha256": "f01dd7170ded10b28f50c9a9beb04f88cf494b65e2b196cd54839af5465971b4"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/inputs.json",
+      "bytes": 2926,
+      "sha256": "ac06a77d499aa6e7cbf3ab8b4641846bead414c6db3229602135b1d79b3e6113"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/native-api.tsv",
+      "bytes": 2296,
+      "sha256": "0d300742ef260dadda962f4474e3fb347fd3b54879acc5179cdd609b9f3746bf"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/native-cbta.tsv",
+      "bytes": 4122,
+      "sha256": "d5d1a294ee5de606a6e71039df9ec3fea7b41aa00379cc2b6ed63ce3fdf6d1ab"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/native-exam.tsv",
+      "bytes": 256,
+      "sha256": "4ee763deecfca07a600b468b5ba6528e59492044afff2ec5891c1655d7cd1419"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/native-footnote.tsv",
+      "bytes": 1111,
+      "sha256": "1e7ec85986045afd1dd77a87d88a53c1fa3f61951494d428ba1c2714acdaca6f"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/native-producer.json",
+      "bytes": 564,
+      "sha256": "20b6fc78fcc0b7f29bb8c5b35f1512d30a596f530eb86fa686c56210a7f8cf29"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/native-recommendation.tsv",
+      "bytes": 533,
+      "sha256": "87565d8bedb64b4b8d99568e31a669f2c3c57bc9c5f81b0406c8abf265346b63"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/protected-validation.json",
+      "bytes": 34380,
+      "sha256": "95104e23df863efc0d61e230e8eb7ecdddb8c88272e126dd79f84308c283b8f6"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/wasm-producer.json",
+      "bytes": 1196,
+      "sha256": "4c57d39f81d1b325f460094f008bd12e1ecda4bcd1fd625fb0707cbe150cd11b"
+    },
+    {
+      "path": "mydocs/working/task_m100_7727_stage1.md",
+      "bytes": 73278,
+      "sha256": "b855b27635c4393e6bf59afdba41cdfc6127cf7e768b0d26210ed6511b19f613"
+    },
+    {
+      "path": "pdf/30269-anticorruption-recommendation-toc-2020.pdf",
+      "bytes": 572193,
+      "sha256": "d01f9ff59664a9c5b4e1a67e38f0d1c295aac8e22e3fbc07017f938f197822c3"
+    },
+    {
+      "path": "pdf/exam_eng-hwp-2020.pdf",
+      "bytes": 1047484,
+      "sha256": "4f5b9e0b7be65fcb915b2fecc41e9b397b1d85d369b64545209a172bc7b36c98"
+    },
+    {
+      "path": "pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf",
+      "bytes": 766874,
+      "sha256": "7f14bc85eb389a68cc88bd40fcafeb7a638d8454293a30bb2c8fe884a16978eb"
+    },
+    {
+      "path": "pdf/issue7727/cbta-original-hancom2020-print-20261106.pdf",
+      "bytes": 4970756,
+      "sha256": "0db1eb55eda0f1a4985eeaf187656c23499616b7dccddcbb7c874c0937e1b2e0"
+    },
+    {
+      "path": "samples/exam_eng.hwp",
+      "bytes": 3486208,
+      "sha256": "7a5755a2f773fce4d295cbfeb1c5d722edb02c7f920bb067fa56940e8cd6a05b"
+    },
+    {
+      "path": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+      "bytes": 12851712,
+      "sha256": "8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7"
+    },
+    {
+      "path": "samples/issue6844/30269-anticorruption-recommendation-toc.hwp",
+      "bytes": 470016,
+      "sha256": "9e7cc9a3ea8c9d67a9df33fe49921ec87e6f5c38d5cc53b9885a37ef5b285ef7"
+    }
+  ]
+}
