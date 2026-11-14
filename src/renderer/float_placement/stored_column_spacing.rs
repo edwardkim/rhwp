@@ -106,7 +106,13 @@ pub(crate) fn stored_column_top_spacing_before(
     let one_source_unit = dpi / 7200.0;
     let frame = StoredColumnTopSpacing {
         before: spacing_before,
-        source_origin_hu: first.checked_sub(crate::renderer::px_to_hwpunit(spacing_before, dpi))?,
+        // 원본 사다리로 간격을 인증하되, 소비자에게는 현재 줄 좌표계의 원점을 준다.
+        // 재구성 전 원시 vpos를 돌려주면 이미 이동한 뒤 문단만 그 차이만큼 당겨진다.
+        source_origin_hu: current
+            .line_segs
+            .first()?
+            .vertical_pos
+            .checked_sub(crate::renderer::px_to_hwpunit(spacing_before, dpi))?,
     };
     if (hwpunit_to_px(first, dpi) - spacing_before).abs() <= one_source_unit {
         return Some(frame);
