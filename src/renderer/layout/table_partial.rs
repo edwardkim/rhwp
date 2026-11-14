@@ -2541,6 +2541,31 @@ impl LayoutEngine {
             // 정본은 늘어난 상자 안에서 그 조각을 정렬한다(hwpx_sample2 19쪽: 상자
             // 89.91..1081.39 안에서 칸 내용이 95.06 — 상자 위에서 5.15px).
             let align_inner_height = (cell_h - pad_top - pad_bottom).max(0.0);
+            // 남은 내용 전체를 담은 꼬리 조각의 상자가 그 유닛 점유만으로 닫혔다면
+            // 상자에는 나눌 여분이 없다. 유닛 원장이 마지막 줄 뒤 간격까지 상자에
+            // 넣었으므로 정렬 내용도 같은 점유를 쓴다. 줄간격만큼 짧은 가시 높이로
+            // 다시 가운데 정렬하면 그 절반만큼 내용이 저장 줄 위치보다 내려간다.
+            let centered_content_height = if complete_suffix_frame
+                && atomic_suffix_content_height.is_none()
+                && stored_picture_cut_frame.is_none()
+            {
+                let units = self.cell_units(cell, table, styles);
+                cut_units
+                    .map(|(start, end)| {
+                        let (start, end) = (start.min(units.len()), end.min(units.len()));
+                        units[start..end]
+                            .iter()
+                            .map(|unit| unit.height)
+                            .sum::<f64>()
+                            + self.nested_continuation_header_height(cell, &units, start, styles)
+                    })
+                    .filter(|&occupied| occupied + 0.5 >= align_inner_height)
+                    .map_or(centered_content_height, |occupied| {
+                        centered_content_height.max(occupied.min(align_inner_height))
+                    })
+            } else {
+                centered_content_height
+            };
             let first_source_band_owns_position = first_source_lead > 0.0
                 && matches!(effective_align, VerticalAlign::Top)
                 && !matches!(cell.vertical_align, VerticalAlign::Top);

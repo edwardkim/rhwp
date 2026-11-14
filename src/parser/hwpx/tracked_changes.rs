@@ -187,50 +187,201 @@ fn clear_lines(node: &mut Node) {
         .retain(|n| !n.is(b"linesegarray") && !n.is(b"lineseg"));
 }
 
+/// One paragraph of a list after projection, on the stored text axis.
+struct Piece {
+    merged: bool,
+    hidden_end: bool,
+    /// Stored axis length without the paragraph mark, hidden content included.
+    total: u32,
+    /// Stored axis offset of the first visible unit, if any.
+    first_visible: Option<u32>,
+    /// Stored line starts (`lineseg textpos`) before projection.
+    starts: Vec<u32>,
+}
+/// Stored `merged` paragraphs share the line array of the first one. Its
+/// text positions run over the whole chain, one unit per paragraph mark.
+struct Chain {
+    starts: Vec<u32>,
+    pos: u32,
+}
+fn stored_line_starts(node: &Node) -> Result<Vec<u32>, HwpxError> {
+    let mut starts = Vec::new();
+    for array in node.children.iter().filter(|n| n.is(b"linesegarray")) {
+        for seg in array.children.iter().filter(|n| n.is(b"lineseg")) {
+            if let Some(pos) = attribute(seg.element().unwrap(), b"textpos")? {
+                if let Ok(pos) = pos.parse() {
+                    starts.push(pos);
+                }
+            }
+        }
+    }
+    Ok(starts)
+}
+/// Stored axis position of the first visible unit at or after `start`, where
+/// `start` is the first unit of the merged paragraph `index`. A visible
+/// paragraph mark counts as a unit; a hidden one continues into the next
+/// merged paragraph.
+fn first_visible_position(
+    pieces: &[Option<Piece>],
+    spacing: &[bool],
+    index: usize,
+    start: u32,
+) -> u32 {
+    let mut pos = start;
+    for (offset, piece) in pieces[index..].iter().enumerate() {
+        let Some(piece) = piece else {
+            if spacing[index + offset] {
+                continue;
+            }
+            break;
+        };
+        if offset > 0 && !piece.merged {
+            break;
+        }
+        if let Some(visible) = piece.first_visible {
+            return pos + visible;
+        }
+        if !piece.hidden_end {
+            return pos + piece.total;
+        }
+        pos += piece.total + 1;
+    }
+    pos.saturating_sub(1)
+}
+
 fn project_lists(nodes: &mut Vec<Node>, visibility: &Visibility) -> Result<(), HwpxError> {
     for node in nodes.iter_mut() {
         project_lists(&mut node.children, visibility)?;
     }
-    let mut output: Vec<Node> = Vec::new();
-    let mut hidden_end = false;
-    for mut node in std::mem::take(nodes) {
+    let mut pieces: Vec<Option<Piece>> = Vec::with_capacity(nodes.len());
+    let mut spacing: Vec<bool> = Vec::with_capacity(nodes.len());
+    for node in nodes.iter_mut() {
+        spacing.push(node.is_xml_spacing());
         if !node.is(b"p") {
-            let is_spacing = node.is_xml_spacing();
-            output.push(node);
-            if !is_spacing {
-                hidden_end = false;
-            }
+            pieces.push(None);
             continue;
         }
         let merged = matches!(
             attribute(node.element().unwrap(), b"merged")?.as_deref(),
             Some("1" | "true")
         );
+        let starts = stored_line_starts(node)?;
         let mut ranges = Ranges::default();
-        let (changed, end) = project_content(&mut node.children, visibility, &mut ranges)?;
+        let mut axis = Axis::default();
+        let (changed, hidden_end) = project_content(
+            &mut node.children,
+            visibility,
+            &mut ranges,
+            Some(&mut axis),
+            false,
+        )?;
         if !ranges.active.is_empty() {
             return Err(structure("unclosed hidden change range in paragraph"));
         }
         if changed {
-            clear_lines(&mut node);
+            clear_lines(node);
         }
-        // Stored merged paragraphs belong to the previous paragraph in this
-        // same list. No joining across a cell, caption, note or other owner.
-        // Formatting whitespace between sibling elements is not a paragraph
-        // boundary. Keep it in XML, while resolving the preceding list owner.
-        let previous = output.iter().rposition(|n| !n.is_xml_spacing());
-        if let Some(previous) = previous.filter(|&i| (merged || hidden_end) && output[i].is(b"p")) {
-            let previous = &mut output[previous];
-            clear_lines(previous);
-            clear_lines(&mut node);
-            previous.children.extend(node.children);
-        } else {
+        pieces.push(Some(Piece {
+            merged,
+            hidden_end,
+            total: axis.total,
+            first_visible: axis.first_visible,
+            starts,
+        }));
+    }
+    let mut output: Vec<Node> = Vec::new();
+    let mut hidden_end = false;
+    let mut chain: Option<Chain> = None;
+    for (index, mut node) in std::mem::take(nodes).into_iter().enumerate() {
+        let Some(piece) = &pieces[index] else {
             output.push(node);
+            if !spacing[index] {
+                hidden_end = false;
+                chain = None;
+            }
+            continue;
+        };
+        // Paragraphs join only inside one list. No joining across a cell,
+        // caption, note or other owner. Formatting whitespace between sibling
+        // elements is not a paragraph boundary. Keep it in XML, while
+        // resolving the preceding list owner.
+        let previous = output
+            .iter()
+            .rposition(|n| !n.is_xml_spacing())
+            .filter(|&i| output[i].is(b"p"));
+        let chained = piece.merged && previous.is_some();
+        let start = match (&chain, chained) {
+            (Some(chain), true) => Some((chain.pos, chain.starts.as_slice())),
+            _ => None,
+        };
+        // A hidden paragraph mark joins the next paragraph into the same
+        // line. A visible mark before a stored `merged` paragraph follows
+        // the stored lines of the chain: Hancom Print keeps them, and they
+        // start a line at the first visible unit after the mark only when
+        // the mark breaks the line. Without stored lines the mark breaks.
+        let join = previous.is_some()
+            && (hidden_end
+                || start.is_some_and(|(start, starts)| {
+                    let line = starts.iter().copied().filter(|&s| s >= start).min();
+                    match line {
+                        Some(line) => {
+                            line != first_visible_position(&pieces, &spacing, index, start)
+                        }
+                        None => !starts.is_empty(),
+                    }
+                }));
+        chain = Some(match (chain.take(), chained) {
+            (Some(chain), true) => Chain {
+                pos: chain.pos + piece.total + 1,
+                ..chain
+            },
+            _ => Chain {
+                starts: piece.starts.clone(),
+                pos: piece.total + 1,
+            },
+        });
+        hidden_end = piece.hidden_end;
+        if let Some(previous) = previous.filter(|_| join || chained) {
+            // The stored lines of the chain no longer describe either part.
+            clear_lines(&mut output[previous]);
+            clear_lines(&mut node);
+            if join {
+                output[previous].children.extend(node.children);
+                continue;
+            }
         }
-        hidden_end = end;
+        output.push(node);
     }
     *nodes = output;
     Ok(())
+}
+/// Stored text axis of one paragraph: a control takes 8 units, a character
+/// its UTF-16 length. Range marks and highlight marks take none.
+#[derive(Default)]
+struct Axis {
+    total: u32,
+    first_visible: Option<u32>,
+}
+impl Axis {
+    fn add(&mut self, units: u32, visible: bool) {
+        if visible && units > 0 {
+            self.first_visible.get_or_insert(self.total);
+        }
+        self.total += units;
+    }
+}
+fn text_units(text: &str) -> u32 {
+    text.chars()
+        .map(|c| if (c as u32) > 0xFFFF { 2 } else { 1 })
+        .sum()
+}
+fn element_units(local: &[u8]) -> u32 {
+    match local {
+        b"markpenBegin" | b"markpenEnd" | b"linesegarray" | b"lineseg" | b"p" => 0,
+        b"lineBreak" | b"columnBreak" | b"nbSpace" | b"fwSpace" | b"hypen" | b"hyphen"
+        | b"softHyphen" => 1,
+        _ => 8,
+    }
 }
 /// Hidden ranges open in one paragraph. Only an open range hides content.
 /// Hancom can store an end that closes no open range: a repeat at a later run
@@ -245,6 +396,8 @@ fn project_content(
     nodes: &mut Vec<Node>,
     visibility: &Visibility,
     ranges: &mut Ranges,
+    mut axis: Option<&mut Axis>,
+    in_text: bool,
 ) -> Result<(bool, bool), HwpxError> {
     let mut output = Vec::new();
     let mut changed = false;
@@ -290,24 +443,45 @@ fn project_content(
                 output.push(node);
                 continue;
             }
-            if !ranges.active.is_empty() && !matches!(local, b"run" | b"t") {
+            let flow = matches!(local, b"run" | b"t");
+            let hidden = !ranges.active.is_empty() && !flow;
+            let child_in_text = local == b"t";
+            if !flow {
+                if let Some(axis) = axis.as_deref_mut() {
+                    axis.add(element_units(local), !hidden);
+                }
+            }
+            if hidden {
                 changed = true;
                 continue;
             }
-            let (child_changed, child_end) =
-                project_content(&mut node.children, visibility, ranges)?;
+            let child_axis = if flow { axis.as_deref_mut() } else { None };
+            let (child_changed, child_end) = project_content(
+                &mut node.children,
+                visibility,
+                ranges,
+                child_axis,
+                child_in_text,
+            )?;
             changed |= child_changed;
             hidden_end |= child_end;
             output.push(node);
-        } else if !ranges.active.is_empty()
-            && matches!(
-                node.event,
-                Some(Event::Text(_) | Event::CData(_) | Event::GeneralRef(_))
-            )
-        {
-            changed = true;
         } else {
-            output.push(node);
+            let content = match &node.event {
+                Some(Event::Text(text)) => Some(text_units(text.as_ref())),
+                Some(Event::CData(text)) => Some(text_units(text.as_ref())),
+                Some(Event::GeneralRef(_)) => Some(1),
+                _ => None,
+            };
+            let hidden = !ranges.active.is_empty() && content.is_some();
+            if let (Some(axis), Some(units), true) = (axis.as_deref_mut(), content, in_text) {
+                axis.add(units, !hidden);
+            }
+            if hidden {
+                changed = true;
+            } else {
+                output.push(node);
+            }
         }
     }
     *nodes = output;
