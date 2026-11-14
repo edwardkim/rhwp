@@ -1,5 +1,5 @@
 //! 검사 유형: 관계형·고정형.
-//! 주석 갱신: 2026-11-14T15:04:24+09:00 (독립 Print의 끝 글줄 위치 보완).
+//! 주석 갱신: 2026-11-14T15:45:50+09:00 (독립 Print의 끝 글줄·선행 공백 줄 높이 보완).
 //!
 //! 입력: `samples/issue9062/ws-host-tac-above-offset-float.hwpx`. 공개 결재문서 36390766(저장 줄
 //! 없는 HWPX, 한컴 16쪽)에서 구역 첫 문단과 마지막 「붙임5」 문단 넷(원본 문단 134~137)만 남긴
@@ -7,6 +7,8 @@
 //! 누름틀 끝 표지 하나만 뺐다). 원본 전체는 4~8·11·12쪽이 다른 결함으로 90% 미만이라 쓰지 않는다.
 //! 기준: 축소본을 한컴 engine 2020 으로 Print 한 `pdf/issue9062/ws-host-tac-above-offset-float-2020.pdf`(2쪽).
 //! - 고정형: 전체 쪽수 2, 독립 Print로 확인한 2쪽 「끝.」 글줄 위끝(±2px).
+//! - 관계형(1쪽 선행 공백 줄): 마지막 빈 run의 선언 크기를 줄 상자에 포함한다.
+//!   독립 한컴 재저장 LineSeg의 1200HU를 첫 공백 run의 1100HU로 낮추지 않는다.
 //! - 관계형(1쪽): 문단 1(글 「  」)의 글자처럼 취급 제목 표(컨트롤 1) → 문단 2 「(단위 : 천원)」
 //!   → 문단 1 의 자리차지 표(컨트롤 0, 문단 기준 세로 오프셋 6198) 순으로 놓인다. 제목 표
 //!   위끝에서 자리차지 표 위끝까지는 원본 오프셋 6198 − 문단 위 간격 500 − 제목 표 바깥 위 여백 140 이다
@@ -194,4 +196,36 @@ fn closing_line_follows_the_continued_table_on_the_second_page() {
     );
     assert!(page.table(1, 1).is_none(), "제목 표는 1쪽에만 있다");
     assert!(page.line_top(2).is_none(), "문단 2 는 1쪽에만 있다");
+}
+
+/// 공백·탭뿐인 첫 문단도 종료 문자의 글자 모양이 소유한 줄 높이를 소비한다.
+/// 원본의 마지막 빈 run은 12pt이고 앞 공백 run은 11pt다. 독립 한컴 재저장의
+/// 첫 문단 LineSeg도 1200HU를 기록한다. 뒤 제목과 표를 특정 좌표로 이동시키지 않는다.
+#[test]
+fn leading_whitespace_line_keeps_its_terminal_character_height() {
+    fn first_body_line(node: &RenderNode) -> Option<&RenderNode> {
+        if matches!(node.node_type, RenderNodeType::Table(_)) {
+            return None;
+        }
+        if matches!(&node.node_type, RenderNodeType::TextLine(line) if line.para_index == Some(0)) {
+            return Some(node);
+        }
+        node.children.iter().find_map(first_body_line)
+    }
+    let core = document();
+    let source = &core.document().sections[0].paragraphs[0];
+    assert!(source.text.chars().all(char::is_whitespace));
+    let terminal = source.char_shapes.last().expect("문단 끝 글자 모양");
+    let terminal_size =
+        core.document().doc_info.char_shapes[terminal.char_shape_id as usize].base_size;
+    let tree = core.build_page_render_tree(0).expect("첫 쪽");
+    let line = first_body_line(&tree.root).expect("첫 공백 문단 줄");
+    assert!(
+        line.bbox.height + 0.01 >= hu_to_px(terminal_size as i32),
+        "공백 줄 높이 {}는 종료 글자 크기 {}HU를 포함한다: char_count={}, char_shapes={:?}",
+        line.bbox.height,
+        terminal_size,
+        source.char_count,
+        source.char_shapes
+    );
 }
