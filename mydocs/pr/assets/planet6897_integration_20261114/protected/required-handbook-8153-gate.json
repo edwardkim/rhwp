@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "baseline": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
+  "baseline_sha256": "1063d78078b704a2bfb712ca3929ab251596dd391b41bc1a9a44e9935e4990e5",
+  "metric": "silhouette_raw_match_percent",
+  "backend": "native-skia",
+  "precision": "0.01 percentage points",
+  "pages": 383,
+  "regressions": [],
+  "webfont_fallback": [],
+  "manifest": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/post-rebase-88170/budget100k/protected/native/handbook-gate/required-handbook-8153-native/silhouette_manifest.json",
+  "elapsed_seconds": 329.692
+}
