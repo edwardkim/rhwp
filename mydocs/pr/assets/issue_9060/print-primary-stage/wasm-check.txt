@@ -1,0 +1,5 @@
+   Compiling rhwp v0.9.0 (/home/tsjang/rhwp)
+    Checking rhwp-password-crypto v0.1.0 (/home/tsjang/rhwp/crates/rhwp-password-crypto)
+    Checking rhwp-ooxml-chart v0.1.0 (/home/tsjang/rhwp/crates/rhwp-ooxml-chart)
+    Checking rhwp-contracts v0.1.0 (/home/tsjang/rhwp/crates/rhwp-contracts)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2m 05s

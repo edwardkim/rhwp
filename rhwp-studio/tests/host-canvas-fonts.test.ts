@@ -267,3 +267,63 @@ test('opt-in outlines live only during their page paint and are cleared on error
     assert.equal(coverage, preparedCoverage, 'paint scopes must not rebuild measurement coverage');
   } finally { await f.dispose(); }
 });
+
+test('Print의 주 프로그램은 실제 descriptor와 같은 순서를 쓰고 paint 뒤 해제한다', async () => {
+  const f = await fixture();
+  const data = (name: string) => Uint8Array.from(readFileSync(
+    new URL(`../../tests/fixtures/fonts/${name}`, import.meta.url))).buffer;
+  const ttf = data('RHWPHostFixture-Regular.ttf'), cff = data('RHWPHftOutline.otf');
+  const faces = ['TTF', 'CFF'].map(id => ({ id, family: 'Print Mixed', fullName: id,
+    postscriptName: id, style: 'Regular', weight: 400, slant: 'normal' as const }));
+  try {
+    await setHostFontProvider({ ...f.provider,
+      async getSnapshot() { return { revision: 'print-mixed', faces }; },
+      async readFace(id) { return { bytes: id === 'TTF' ? ttf : cff }; },
+    }, { layout: true });
+    const records = resolveRendererLocalFontCandidates('Print Mixed', { weight: 400, slant: 'normal' });
+    const active = new Map<string, { bytes: Uint8Array; complete: boolean }>();
+    const owner = {
+      registerHftOutlineFontFaces() {}, clearTextFontOutline() {},
+      registerPrintFontPrimary(family: string, bytes: Uint8Array, index: number, complete: boolean) {
+        assert.equal(index, 0); active.set(family, { bytes, complete });
+      },
+      clearPrintFontPrimary(family: string) { active.delete(family); },
+    };
+    await f.session.prepare(records, owner, () => true, true);
+    assert.equal(active.size, 0, '비동기 준비가 Print paint를 활성화하지 않는다');
+    const inspect = () => {
+      assert.deepEqual(active.get('Print Mixed')?.bytes, new Uint8Array(cff));
+      assert.deepEqual(active.get('__rhwp_ttf__Print Mixed')?.bytes, new Uint8Array(ttf));
+      assert.equal(active.get('Print Mixed')?.complete, false, '혼합 family의 결측을 완전하다고 선언하지 않는다');
+      assert.equal(active.get('__rhwp_ttf__Print Mixed')?.complete, false);
+    };
+    f.session.withPageOutlines(records, owner, inspect);
+    assert.equal(active.size, 0);
+    assert.throws(() => f.session.withPageOutlines(records, owner, () => {
+      inspect(); throw new Error('paint rejection');
+    }), /paint rejection/);
+    assert.equal(active.size, 0, '실패한 paint도 등록을 남기지 않는다');
+  } finally { await f.dispose(); }
+});
+
+test('unicode-range로 제한된 TTF는 원 cmap으로 Print 소유를 확대하지 않는다', async () => {
+  const font = Uint8Array.from(readFileSync(new URL(
+    '../../tests/fixtures/fonts/RHWPHostFixture-Regular.ttf', import.meta.url))).buffer;
+  const f = await fixture(() => 'U+41-5A', font);
+  try {
+    await setHostFontProvider({ ...f.provider, async getSnapshot() {
+      return { revision: 'restricted-print', faces: [{ id: 'normal', family: 'Restricted Print',
+        fullName: 'Restricted Print', postscriptName: 'RestrictedPrint', style: 'Regular',
+        weight: 400, slant: 'normal' as const }] };
+    } }, { layout: true });
+    const records = resolveRendererLocalFontCandidates('Restricted Print', { weight: 400, slant: 'normal' });
+    assert.equal(records.length, 1, '실제 제한 프로그램을 준비한 상태에서 검사한다');
+    const owner = {
+      registerHftOutlineFontFaces() {}, clearTextFontOutline() {},
+      registerPrintFontPrimary() { assert.fail('제한된 FontFace의 원 cmap을 공급하면 안 된다'); },
+      clearPrintFontPrimary() { assert.fail('등록하지 않은 family를 해제하지 않는다'); },
+    };
+    await f.session.prepare(records, owner, () => true, true);
+    f.session.withPageOutlines(records, owner, () => {});
+  } finally { await f.dispose(); }
+});

@@ -1,0 +1,20 @@
+✔ 분할 OTF는 준비된 순서대로 Canvas family 사다리에 포함한다 (22.452734ms)
+✔ 같은 family의 OTF와 TTF를 모두 준비하고 OTF를 먼저 표시한다 (4.28594ms)
+✔ host aliases exist only in synchronous measurement/paint scope and are released on detach (1.694465ms)
+✔ host FontFace와 주입한 공통 기호 검사기는 같은 실제 프로그램을 소비한다 (1.421071ms)
+✔ #8109 a prepared document substitute remains available behind an absent primary (1.168168ms)
+✔ 일반 글리프 대체도 준비한 프로그램의 별칭을 선언 순서로 소비한다 (1.837549ms)
+✔ late FontFace.load cannot register after a document reset, even if bytes were already read (1.006375ms)
+✔ host 글꼴의 누락 글리프를 위해 준비한 뒤쪽 후보도 같은 순서로 전달한다 (1.49937ms)
+✔ failed loads are bounded within a generation and retry after replacement (1.602276ms)
+✔ opt-in outlines live only during their page paint and are cleared on errors (2.864832ms)
+✔ Print의 주 프로그램은 실제 descriptor와 같은 순서를 쓰고 paint 뒤 해제한다 (2.555832ms)
+✔ unicode-range로 제한된 TTF는 원 cmap으로 Print 소유를 확대하지 않는다 (1.194198ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 305.400402
