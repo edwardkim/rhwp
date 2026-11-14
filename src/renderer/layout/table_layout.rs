@@ -6900,7 +6900,7 @@ impl LayoutEngine {
                             .filter(|_| !topbottom_outer_margin_already_applied)
                             .map(|hu| hwpunit_to_px(hu, self.dpi))
                             .unwrap_or(0.0);
-                    (om_l, paper_w - om_l)
+                    (self.current_paper_origin_x.get() + om_l, paper_w - om_l)
                 }
                 HorzRelTo::Page => {
                     // Task #347: 본문 영역(body_area) 기준. 미설정 시 col_area 폴백.
