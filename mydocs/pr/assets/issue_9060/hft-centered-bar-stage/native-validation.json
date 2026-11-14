@@ -1,0 +1,192 @@
+{
+  "state": "complete",
+  "pid": 4139045,
+  "source_parent": "adf5bd671cfd8123ccf95c5e8c0ce95ddaf1f5c0",
+  "build_jobs": 8,
+  "test_threads": 12,
+  "font_environment": "run-minimal.sh; 공개 합성 fixture와 최소 공개 글꼴만 노출",
+  "steps": [
+    {
+      "name": "hft-centered-bar-final-suite-prepare",
+      "exit_code": 0,
+      "seconds": 2.1952061653137207,
+      "log": "/home/tsjang/rhwp/output/pr-review/pr9075/logs/hft-centered-bar-final-suite-prepare.log"
+    },
+    {
+      "name": "hft-centered-bar-final-format",
+      "exit_code": 0,
+      "seconds": 51.21391534805298,
+      "log": "/home/tsjang/rhwp/output/pr-review/pr9075/logs/hft-centered-bar-final-format.log"
+    },
+    {
+      "name": "hft-centered-bar-final-combined-build",
+      "exit_code": 0,
+      "seconds": 258.2063670158386,
+      "log": "/home/tsjang/rhwp/output/pr-review/pr9075/logs/hft-centered-bar-final-combined-build.log"
+    },
+    {
+      "name": "hft-centered-bar-final-cli-build",
+      "exit_code": 0,
+      "seconds": 0.9719877243041992,
+      "log": "/home/tsjang/rhwp/output/pr-review/pr9075/logs/hft-centered-bar-final-cli-build.log"
+    },
+    {
+      "name": "hft-centered-bar-final-hft_centered_bar_glyph_fit",
+      "exit_code": 0,
+      "seconds": 4.722577810287476,
+      "log": "/home/tsjang/rhwp/output/pr-review/pr9075/logs/hft-centered-bar-final-hft_centered_bar_glyph_fit.log"
+    },
+    {
+      "name": "hft-centered-bar-final-issue_8153_symbol_fallback",
+      "exit_code": 0,
+      "seconds": 2.4324758052825928,
+      "log": "/home/tsjang/rhwp/output/pr-review/pr9075/logs/hft-centered-bar-final-issue_8153_symbol_fallback.log"
+    },
+    {
+      "name": "hft-centered-bar-final-char_overlap_missing_pua_host_style",
+      "exit_code": 0,
+      "seconds": 3.2290453910827637,
+      "log": "/home/tsjang/rhwp/output/pr-review/pr9075/logs/hft-centered-bar-final-char_overlap_missing_pua_host_style.log"
+    },
+    {
+      "name": "hft-centered-bar-final-hft_declared_en_dash_advance",
+      "exit_code": 0,
+      "seconds": 2.569216728210449,
+      "log": "/home/tsjang/rhwp/output/pr-review/pr9075/logs/hft-centered-bar-final-hft_declared_en_dash_advance.log"
+    },
+    {
+      "name": "hft-centered-bar-final-issue_8315_symbol_slot_advance",
+      "exit_code": 0,
+      "seconds": 2.4259605407714844,
+      "log": "/home/tsjang/rhwp/output/pr-review/pr9075/logs/hft-centered-bar-final-issue_8315_symbol_slot_advance.log"
+    },
+    {
+      "name": "hft-centered-bar-final-char_overlap_hancom_shapes",
+      "exit_code": 0,
+      "seconds": 2.322540521621704,
+      "log": "/home/tsjang/rhwp/output/pr-review/pr9075/logs/hft-centered-bar-final-char_overlap_hancom_shapes.log"
+    },
+    {
+      "name": "hft-centered-bar-final-char_overlap_caret_axis",
+      "exit_code": 0,
+      "seconds": 3.1400625705718994,
+      "log": "/home/tsjang/rhwp/output/pr-review/pr9075/logs/hft-centered-bar-final-char_overlap_caret_axis.log"
+    },
+    {
+      "name": "hft-centered-bar-final-issue_8153_empty_overlap_carrier",
+      "exit_code": 0,
+      "seconds": 8.192657232284546,
+      "log": "/home/tsjang/rhwp/output/pr-review/pr9075/logs/hft-centered-bar-final-issue_8153_empty_overlap_carrier.log"
+    },
+    {
+      "name": "hft-centered-bar-final-hft_outline_font_contract",
+      "exit_code": 0,
+      "seconds": 6.368154287338257,
+      "log": "/home/tsjang/rhwp/output/pr-review/pr9075/logs/hft-centered-bar-final-hft_outline_font_contract.log"
+    },
+    {
+      "name": "hft-centered-bar-final-issue_9060_rowbreak_first_line_fragment",
+      "exit_code": 0,
+      "seconds": 2.6988091468811035,
+      "log": "/home/tsjang/rhwp/output/pr-review/pr9075/logs/hft-centered-bar-final-issue_9060_rowbreak_first_line_fragment.log"
+    },
+    {
+      "name": "hft-centered-bar-final-issue_2225_missing_picture_placeholder",
+      "exit_code": 0,
+      "seconds": 5.498800992965698,
+      "log": "/home/tsjang/rhwp/output/pr-review/pr9075/logs/hft-centered-bar-final-issue_2225_missing_picture_placeholder.log"
+    },
+    {
+      "name": "hft-centered-bar-final-render_p37_direct_pdf_export",
+      "exit_code": 0,
+      "seconds": 6.090932607650757,
+      "log": "/home/tsjang/rhwp/output/pr-review/pr9075/logs/hft-centered-bar-final-render_p37_direct_pdf_export.log"
+    },
+    {
+      "name": "hft-centered-bar-final-lib",
+      "exit_code": 0,
+      "seconds": 49.785014152526855,
+      "log": "/home/tsjang/rhwp/output/pr-review/pr9075/logs/hft-centered-bar-final-lib.log"
+    },
+    {
+      "name": "hft-centered-bar-final-clippy",
+      "exit_code": 0,
+      "seconds": 130.32146859169006,
+      "log": "/home/tsjang/rhwp/output/pr-review/pr9075/logs/hft-centered-bar-final-clippy.log"
+    }
+  ],
+  "source_sha256": {
+    "scripts/rust-test-suite-manifest.mjs": "e01a714d3aea85595f6eb1c33a9ea49f4cbad01ac8a9fa4762c554e814fcd667",
+    "scripts/tests/rust-test-suite-manifest.test.mjs": "f0313531609a82ebf049821b30442f7a013ffb0e6d5f0b13930e025a8a0fbf3c",
+    "src/renderer/glyph_fit.rs": "94361c254511222b16627e7941f6e7ead867e1147c48aed6360a68ab0333bb14",
+    "src/renderer/font_metrics_data.rs": "1ab0de2a009863acdf7049e7f3f792d7271f2ffa347ce6dea4963f74e40dfea5",
+    "src/renderer/mod.rs": "db04f5fb7fcfa9df711612dd00542852f37a83a1a92e069b6abbbc9335d24287",
+    "tests/cases/hft_centered_bar_glyph_fit.rs": "43da0a385cd1c5b1eb8ae5e5a687f80031b9c07c62ef12c6217977404db7d900",
+    "src/renderer/font_metric_legacy_hft.rs": "45c83397dc3f707f344f0ab07bba45e42349d083bd2890519aea688c5b5f2d67",
+    "src/renderer/composer/inline_control_projection.inc.rs": "508f168d9dd1376869748aac8754aa683789a5e8df2a3c5374f94c39864c2e72",
+    "tests/cases/hft_declared_en_dash_advance.rs": "6cb6e454518ade8ebc719d06dfe1036e5a270bec221fdf7c73ed494a18758a4f",
+    "tests/cases/char_overlap_missing_pua_host_style.rs": "533af4f3b1d743f0c9f6d6c3777dd61ee5992822d8fe9462b6e5eee767b1da28",
+    "src/renderer/skia/font_lookup.rs": "46e71f7a314fafa398cef19e918bb7299941b8860898d86a4410ffaa045d91c9",
+    "src/renderer/skia/cache.rs": "61c06af536cdac4f65370ade47d35c9bf2c00824a39257631815839ad9dfc136",
+    "src/renderer/skia/text_replay.rs": "f71594e76d00ff583913ff6f6eba3ee557e2224c6dcdfe5b39fc510b8e5424af",
+    "src/renderer/skia/text_replay/fonts.rs": "c071cdb77006b38be86f9b0b6576fccd5974accb2ece2bd83223151c4e09b912",
+    "src/renderer/skia/hft_outline.rs": "94fb3c9b5ec4daf93804c9f6657d79cf4b8def13af0fe294ffb36b3814e75ba5",
+    "src/renderer/skia/synthetic_typeface.rs": "3640a927f1762d08b8f6f4485143605a32ace84bb02a90728dae2e28a46447d4",
+    "src/renderer/skia/mod.rs": "f23d83815e8e36f62a2df68efa78df9edd4346ea1c584a7625a684fe3a809c02",
+    "tests/cases/native_fractional_glyph_origin.rs": "7e52d60c01fe6e033e8da301354985e9202e35e5a10baca1da049d741e4bcda0"
+  },
+  "updated_at": "2026-11-14T19:11:12.229636+00:00",
+  "current": "hft-centered-bar-final-clippy",
+  "command": [
+    "bash",
+    "/home/tsjang/rhwp/output/pr-review/pr9075/run-minimal.sh",
+    "cargo",
+    "clippy",
+    "--locked",
+    "--target-dir",
+    "/home/tsjang/rhwp/target/pr-review",
+    "--features",
+    "native-skia",
+    "--lib",
+    "--test",
+    "regression_suite_007",
+    "--test",
+    "regression_suite_020",
+    "--test",
+    "regression_suite_003",
+    "--test",
+    "regression_suite_017",
+    "--test",
+    "regression_suite_014",
+    "--test",
+    "regression_suite_002",
+    "--test",
+    "regression_suite_001",
+    "--test",
+    "regression_suite_025",
+    "--test",
+    "regression_suite_010",
+    "--test",
+    "regression_suite_006",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "log": "/home/tsjang/rhwp/output/pr-review/pr9075/logs/hft-centered-bar-final-clippy.log",
+  "child_pid": 4145977,
+  "targets": [
+    "regression_suite_007",
+    "regression_suite_020",
+    "regression_suite_003",
+    "regression_suite_017",
+    "regression_suite_014",
+    "regression_suite_002",
+    "regression_suite_001",
+    "regression_suite_025",
+    "regression_suite_010",
+    "regression_suite_006"
+  ],
+  "binary": "/home/tsjang/rhwp/output/pr-review/pr9075/rhwp-hft-centered-bar-final",
+  "binary_sha256": "d918d1a05ab0433d3af01a1925eece0670fc7ad45287d8c806732eb21e98d7a3",
+  "source_unchanged": true
+}

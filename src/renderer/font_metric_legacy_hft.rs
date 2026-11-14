@@ -254,3 +254,14 @@ pub(crate) fn metric_face_name(requested: &str) -> Option<&'static str> {
 pub(crate) fn is_metric_face(name: &str) -> bool {
     METRICS.iter().any(|metric| metric.name == name)
 }
+
+/// 독립 Print의 중심 막대가 소유하는 원 HFT 칸이다. 표시 glyph의 hmtx와 구분한다.
+/// T6/HFT376은 1em 칸의 가운데에 잉크를 둔다. 다른 source 프로그램에는 적용하지 않는다.
+pub(crate) fn centered_bar_advance_em(face: &str, character: char) -> Option<f64> {
+    let source = metric_face_name(face).unwrap_or(face);
+    if character != '\u{2013}' || source != "한양신명조 (HFT)" {
+        return None;
+    }
+    let metric = METRICS.iter().find(|metric| metric.name == source)?;
+    Some(f64::from(metric.get_width(character)?) / f64::from(metric.em_size))
+}

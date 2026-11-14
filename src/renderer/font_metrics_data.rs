@@ -53,6 +53,7 @@ mod symbol_slot_chars;
 mod nimbus_roman;
 
 pub(crate) use legacy_hft::{
+    centered_bar_advance_em as original_hft_centered_bar_advance_em,
     is_metric_face as is_legacy_hft_metric_face, metric_face_name as legacy_hft_metric_face,
 };
 

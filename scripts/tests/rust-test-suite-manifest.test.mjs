@@ -243,6 +243,7 @@ test('harness와 Cargo target 렌더링은 입력 순서와 무관하다', () =>
 
 test('공용 helper는 소비 검사가 함께 또는 따로 배정돼도 harness마다 한 번 공급한다', () => {
   const consumers = [
+    'tests/cases/hft_centered_bar_glyph_fit.rs',
     'tests/cases/issue_8153_symbol_coverage.rs',
     'tests/cases/issue_8153_symbol_fallback.rs',
   ];
