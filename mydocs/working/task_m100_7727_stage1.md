@@ -7,7 +7,7 @@ last_verified: 2026-11-14
 
 # #7727·#7729·#7730·#7731·#7732 원본 피델리티 분석과 보정
 
-갱신: 2026-11-14T21:39:40+09:00.
+갱신: 2026-11-14T22:24:00+09:00.
 
 ## 목표와 현재 판정
 
@@ -19,6 +19,35 @@ last_verified: 2026-11-14
 `53da4d2da28ae0cacf8feac3a989cc6a69fb2622`다. 현재 구현·검증이 진행 중이며 PR 제출 준비가
 완료되지 않았다. 아래 수치는 해당 생산자에 한정한다. 뒤의 변경으로 앞선 전쪽 결과를
 새 후보의 결과로 바꾸어 부르지 않는다.
+
+## 최신 보정과 실제 완료 범위
+
+영어 시험지의 낱말 공백 기준 em을 보정한 생산자는 parent `d04b21df67`과
+소스 패치 SHA-256 `406ae228d79ca7f416b9e6817e0a8eb87daaeaf61b471efa52273fd492ae6761`로
+고정했다. Native 바이너리·fresh WASM의 SHA와 측정 요약은
+[영어 공백 원인·생산자 기록](../pr/assets/issues7727_7732_20261114/half-space-origin/cause.json)에 있다.
+Mac WASM은 locked wrapper의 `--no-opt` 로컬 대체 빌드다.
+
+| 문서 | 최신 측정 범위 | Native 최저 | fresh WASM 최저 | 남은 98% 미만 |
+| --- | --- | ---: | ---: | --- |
+| 영어 시험지 | 전 8쪽 | 99.49% (3쪽) | 99.49% (3쪽) | 없음 |
+| API | 전 105쪽 | 99.55% (97쪽) | 99.55% (97쪽) | 없음 |
+| 각주 표 | 전 50쪽 | 98.58% (37쪽) | 98.58% (37쪽) | 없음 |
+| 권고안 | 전 22쪽 | 97.44% (4쪽) | 97.44% (4쪽) | 4쪽 |
+| CBTA | 96·118·162·166·176·182쪽 | 96.35% (162쪽) | 96.35% (162쪽) | 96·162·166쪽 |
+
+최신 생산자에서는 각 경로 191쪽을 측정했다. CBTA 나머지 198쪽은 이 생산자로 아직 다시
+측정하지 않았으므로 전 389쪽 최종 수용으로 보고하지 않는다. 영어 시험지 2쪽은 두 경로 모두
+99.96%이며, 전 8쪽 TSV 원문은 [Native](../pr/assets/issues7727_7732_20261114/half-space-origin/exam-native-silhouette.tsv)와
+[fresh WASM](../pr/assets/issues7727_7732_20261114/half-space-origin/exam-wasm-silhouette.tsv)에 보존했다.
+같은 쪽 [review](../pr/assets/issues7727_7732_20261114/half-space-origin/native-p002-review.png)와
+[overlay](../pr/assets/issues7727_7732_20261114/half-space-origin/native-p002-overlay.png)를 직접 판독했다.
+
+최소 글꼴 Native Skia 집중 회귀는 **8 PASS / 0 FAIL**, 2.349초다. 세 파생 suite에서
+세 원본 검사 파일만 선택했고 1024개는 선택 밖이다. 새 낱말 원점 고정형 검사도 포함한다.
+[격리 정책·실행 요약](../pr/assets/issues7727_7732_20261114/half-space-origin/minimal-font-validation.json)에
+기존 7개 검사 실행과 구분하여 기록했다. 전체 회귀·보호 문서·필수 편람·실제 소비 경로는
+최종 소스에서 별도로 완료해야 한다.
 
 ## 원본과 독립 기준
 
@@ -37,7 +66,7 @@ last_verified: 2026-11-14
 현재 정본 도구의 PDFium 변환을 사용하며 기준 PDF 바이트는 수정하지 않았다.
 회귀 검사 실행의 최소 글꼴 조건과 실물 시각 검증의 원본 글꼴 조건은 구분한다.
 
-## 동일 생산자의 전쪽 결과
+## 이전 생산자의 전쪽 결과 (이력)
 
 `closing-span-clean-native` 및 `closing-span-clean-pkg`는 API 종료 프레임·CBTA 종료 병합 칸
 보정까지 포함한다. 이후의 캡션 테두리·NBSP 압축·밑줄 변경은 포함하지 않는다.
@@ -172,13 +201,39 @@ Mac 격리에서 CoreText1875→528개, system_profiler의 글꼴 파일235개�
 [원인·전후 측정·MCP 영수증](../pr/assets/issues7727_7732_20261114/underline-baseline/cause.json)에
 같은 SHA로 보존했다. 글꼴 바이너리는 포함하지 않는다.
 
+### 영어 낱말 공백: 언어 슬롯의 상대 크기와 기준 em 분리
+
+원본 영어 시험지 CS13은 1150HU, 한글 장평 95%, 영문 상대 크기 106%다. 반각 공백이
+현재 영문 글리프 크기를 기준으로 커지면서, `bike`의 첫 글자가 독립 Print보다 약7.76px
+오른쪽에 놓였다. 글리프 크기·장평·자간을 바꾸지 않고 반각 공백의 기준 em만 한글 슬롯의
+크기로 환산하여 측정·줄 구성·paint가 공유하도록 했다. `font_space_em`이 명시되거나
+앞 언어에서 상속된 전진은 기존 값을 유지한다. 반각 규칙을 선택하지 않은 경로에는 적용하지 않는다.
+
+독립 한컴2020 Print 대조군은 한글12pt·장평95%를 유지하고 영문 상대 크기100/106/120%만
+바꿨다. 영문 글리프는 커지지만 낱말 공백은 약5.7pt로 유지됐다. MCP job은
+`e2f7be42-a029-49db-920e-ac993c38cd66`, 제품11.0.0.9136, Print method0이다.
+[독립 HWPX](../../tests/fixtures/issue7730/relative-size-half-space-probe.hwpx)와
+[Print PDF](../../pdf/issue7730/relative-size-half-space-probe-2020.pdf),
+[영수증·원인](../pr/assets/issues7727_7732_20261114/half-space-origin/cause.json)을 함께 보존했다.
+이 HWPX의 Native 경로는 `layout_half_space=false`라서 전후93.05%이며, 해당 표본까지
+시각적으로 해결했다고 주장하지 않는다. 이 표본은 독립적인 공백 전진의 인쇄 근거다.
+
+실제 원본 HWP 전8쪽은 Native·fresh WASM 모두 최저99.49%로 복구됐다. 새 고정형 검사
+`english_response_line_keeps_independent_print_word_origins`는 독립 PDF의 낱말 원점
+326.759979pt→435.679972 CSSpx와 기준선308.799988 CSSpx를 ±2 CSSpx로 검사한다.
+원점은 보정 전443.44px로 허용 범위를 벗어나며 보정 후 통과했다. 추가한 네 번째 검사를
+포함하여 같은 파일의4개 검사와 정식 최소 글꼴 집중8개 검사가 실제 통과했다.
+이전 독립 rustc 대조군은 폐기한 언어 슬롯 후보를 포함하므로 정확한 base 전체 결과와 구분한다.
+
 ## 남은 분석과 완료 조건
 
 - CBTA 96쪽: 저장 줄은 `교육훈`/`련 단계 간 비교`로 나뉘지만 Print는 `교육훈련`/`단계 간 비교`다.
   자동 번호 뒤의 실제 가용 폭·언어별 전진·저장 줄의 소유를 원본에서 확인한다.
 - CBTA 162·166쪽: 종료 행 상자가 약6px 더 크다. 162쪽은 문단5의 표 조각173..189,
   scan 단계 끝 행 override 45.2933px다. 176·182쪽과 같은 원인이라고 단정하지 않는다.
-- 권고안 4쪽과 영어 시험지 2쪽은 남은 실제 차이를 해결한다.
+- 권고안 4쪽은 97.44%로 남아 있다. 원본 HCI Poppy·휴먼명조 파일을 명시한 대조군도
+  base97.34%/후보97.44%로 동일했다. 글꼴 경로 추가만으로 해결된다고 단정하지 않고
+  실제 Print 경로의 글리프 원점·간격을 대조한다. 영어 시험지는 전8쪽98% 이상으로 복구했다.
 - 최종 source의 Native/fresh WASM 전389쪽을 같은 조건으로 재검증한다.
 - 회귀를 최소 글꼴 환경에서 실행하고, 독립 근거로 자격을 얻은 쪽에는 현행 지침에 따른
   정확한 고정형 또는 관계형 검사를 추가한다. 검사의 상단 주석에 종류·측정 근거를 명시한다.
@@ -198,6 +253,12 @@ Mac 격리에서 CoreText1875→528개, system_profiler의 글꼴 파일235개�
 - `logs/caption-frame-before-test.log`, `logs/caption-frame-after-test.log`: 새 검사 전후 실패/통과.
 - `caption-frame-direct-review/review/review_118.png`와 `overlay/overlay_118.png`: 같은 쪽 직접 판독 쌍.
 - `underline-position-cause.json`, `underline-position-print-{start,status,download}.json`: 독립 밑줄 대조군 영수증.
+- `half-space-origin-{native,wasm}-state.json`: 최신191쪽 측정과 남은4쪽.
+- `logs/half-space-origin-minimal-font-focused-nextest.log`: 정식 최소 글꼴 집중8개 PASS.
+- `cbta-row188-diagnostic.log`: 162쪽 종료 행·걸침 셀의 원본 선언 높이와 저장 줄.
+
+영어 공백의 확정 증거는 정식 `mydocs/pr/assets/issues7727_7732_20261114/half-space-origin/`에
+복사했고, 독립 표본은 `tests/fixtures/issue7730/`와 `pdf/issue7730/`에 보존했다.
 
 위 경로는 진행 중인 로컬 증적이다. 최종 제출 때에는 필요한 PNG·TSV·영수증과 독립 표본을
 정식 assets/PDF 경로로 선별해 함께 커밋하고 이 문서의 링크와 판정을 갱신한다.

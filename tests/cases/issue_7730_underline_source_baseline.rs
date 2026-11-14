@@ -1,7 +1,8 @@
-//! 검사 유형: 관계형 — 글자 위치와 아래 밑줄의 줄 기준선 소유를 구분한다.
-//! 주석 갱신: 2026-11-14T21:29:06+09:00.
-//! exam_eng.hwp 전8쪽은 보정 전 Native/fresh WASM 최저97.12%/97.11%다.
-//! 문서의 절대 픽셀 좌표를 고정하지 않는다. 독립 한컴2020 Print 대조군의
+//! 검사 유형: 고정형 — english_response_line_keeps_independent_print_word_origins는 독립 Print의 낱말 원점·기준선을 ±2 CSSpx로 고정한다.
+//! 나머지 세 함수는 관계형 — 밑줄의 줄 기준선·원본 소유와 NBSP의 저장 줄 전진을 검사한다.
+//! 주석 갱신: 2026-11-14T22:06:40+09:00.
+//! exam_eng.hwp 전 8쪽은 보정 후 Native/fresh WASM 모두 최저 99.49%, 고정 대상 2쪽은 모두 99.96%다.
+//! 96 DPI·compat2022·raw 2px, 같은 쪽 review·overlay 직접 판독 뒤 고정한다. 독립 한컴2020 Print 대조군의
 //! 글자 위치 -12/0/+12에서 밑줄은 줄 간격만 따라가고 글리프만 추가 이동했다.
 //! 원본 run·장식의 canonical 소유는 동일하며 재생 좌표만 이 계약을 소비해야 한다.
 //! 글자 위치 0과 위 밑줄·취소선은 기존 글리프 기준선을 유지하는 대조군이다.
@@ -171,5 +172,60 @@ fn nbsp_compression_counts_the_advances_actually_replayed() {
     assert!(
         (right - expected).abs() <= quantum * (runs.len() + 1) as f64,
         "NBSP 전진을 압축 분모에서 빼면 밑줄이 줄 끝에 못 미친다: {right} / {expected}"
+    );
+}
+
+/// 고정형: 실제 한컴2022 Print의 마지막 낱말 원점과 첫 응답 기준선이다.
+#[test]
+fn english_response_line_keeps_independent_print_word_origins() {
+    use rhwp::{
+        renderer::{
+            layout::{EmbeddedTextMeasurer, TextMeasurer},
+            render_tree::{RenderNode, RenderNodeType},
+        },
+        DocumentCore,
+    };
+    let mut core = DocumentCore::from_bytes(
+        &std::fs::read(concat!(env!("CARGO_MANIFEST_DIR"), "/samples/exam_eng.hwp")).unwrap(),
+    )
+    .unwrap();
+    core.set_hangul2024_compat(false);
+    let tree = core.build_page_render_tree(1).unwrap();
+    fn collect<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
+        if matches!(&node.node_type, RenderNodeType::TextRun(run)
+            if run.para_index==Some(69) && run.text=="Too bad. I hope you can find your lost bike.")
+        {
+            out.push(node);
+        }
+        for child in &node.children {
+            collect(child, out);
+        }
+    }
+    let mut found = Vec::new();
+    collect(&tree.root, &mut found);
+    assert_eq!(found.len(), 1, "원본 첫 응답 문구의 누락·중복");
+    let node = found[0];
+    let RenderNodeType::TextRun(run) = &node.node_type else {
+        unreachable!()
+    };
+    let index = run.text.find("bike").unwrap(); // 이 응답은 ASCII여서 byte/scalar 인덱스가 같다.
+    let positions = run
+        .layout_positions
+        .clone()
+        .unwrap_or_else(|| EmbeddedTextMeasurer.compute_char_positions(&run.text, &run.style));
+    let bike = node.bbox.x + positions[index];
+    // 독립 PDF 2쪽 rawdict의 bike b 원점326.759979pt, 기준선231.599991pt.
+    let expected_bike = 326.7599792480469 * 96.0 / 72.0;
+    let expected_baseline = 231.59999084472656 * 96.0 / 72.0;
+    let (_, baseline) = run
+        .style
+        .script_draw_metrics(run.style.font_size, node.bbox.y + run.baseline);
+    assert!(
+        (bike - expected_bike).abs() <= 2.0,
+        "반각 공백 누적으로 마지막 낱말이 벌어짐: {bike} / {expected_bike}"
+    );
+    assert!(
+        (baseline - expected_baseline).abs() <= 2.0,
+        "첫 응답 기준선: {baseline} / {expected_baseline}"
     );
 }

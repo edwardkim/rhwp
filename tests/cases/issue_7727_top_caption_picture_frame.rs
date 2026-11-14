@@ -29,30 +29,50 @@ fn top_caption_moves_the_picture_and_its_owned_border_together() {
     let tree = core.build_page_render_tree(117).unwrap();
     let mut nodes = Vec::new();
     flatten(&tree.root, &mut nodes);
-    let images: Vec<_> = nodes.iter().copied().filter(|node| {
-        matches!(&node.node_type, RenderNodeType::Image(image)
+    let images: Vec<_> = nodes
+        .iter()
+        .copied()
+        .filter(|node| {
+            matches!(&node.node_type, RenderNodeType::Image(image)
             if image.para_index == Some(1099) && image.control_index == Some(0))
-    }).collect();
+        })
+        .collect();
     assert_eq!(images.len(), 1, "위 캡션 그림의 누락·중복");
     let image = images[0];
-    let borders: Vec<_> = nodes.iter().copied().filter(|node| {
-        matches!(&node.node_type, RenderNodeType::Rectangle(rect)
+    let borders: Vec<_> = nodes
+        .iter()
+        .copied()
+        .filter(|node| {
+            matches!(&node.node_type, RenderNodeType::Rectangle(rect)
             if rect.image_frame_owner == Some(image.id))
-    }).collect();
+        })
+        .collect();
     assert_eq!(borders.len(), 1, "그림 소유 테두리의 누락·중복");
     let border = borders[0];
-    let RenderNodeType::Rectangle(rect) = &border.node_type else { unreachable!() };
+    let RenderNodeType::Rectangle(rect) = &border.node_type else {
+        unreachable!()
+    };
     let pen = rect.style.stroke_width;
     // 같은 그림의 프레임 가장자리는 선언 획 안에서 만난다. 캡션 띠를
     // 별도 좌표 허용치로 흡수하지 않으며, 한 HU는 측정 양자만 반영한다.
     let quantum = 96.0 / 7200.0;
     for (label, actual, expected) in [
         ("위", border.bbox.y, image.bbox.y),
-        ("아래", border.bbox.y + border.bbox.height, image.bbox.y + image.bbox.height),
+        (
+            "아래",
+            border.bbox.y + border.bbox.height,
+            image.bbox.y + image.bbox.height,
+        ),
         ("왼쪽", border.bbox.x, image.bbox.x),
-        ("오른쪽", border.bbox.x + border.bbox.width, image.bbox.x + image.bbox.width),
+        (
+            "오른쪽",
+            border.bbox.x + border.bbox.width,
+            image.bbox.x + image.bbox.width,
+        ),
     ] {
-        assert!((actual - expected).abs() <= pen + quantum,
-            "{label} 테두리가 그림 프레임에서 분리됨: {actual} / {expected}, 획={pen}");
+        assert!(
+            (actual - expected).abs() <= pen + quantum,
+            "{label} 테두리가 그림 프레임에서 분리됨: {actual} / {expected}, 획={pen}"
+        );
     }
 }
