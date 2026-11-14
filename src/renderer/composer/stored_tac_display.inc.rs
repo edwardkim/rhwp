@@ -368,6 +368,27 @@ pub(crate) fn caption_height_px_in_context_with_storage<S: crate::storage::Stora
 }
 
 /// 도형 캡션 선택은 실제 배치와 흐름 측정이 같은 속성을 소비한다.
+/// 글줄이 예약하는 글자처럼 취급 도형의 가로 폭.
+///
+/// 왼쪽·오른쪽 캡션은 개체 옆에 자기 상자(폭 + 개체와의 간격)를 갖고, 한/글은 개체와 캡션을
+/// 합친 폭을 한 글자처럼 줄에 놓는다. 위·아래 캡션은 가로 폭을 늘리지 않는다.
+pub(crate) fn inline_shape_width_hu(shape: &ShapeObject) -> i32 {
+    let width = shape.common().width as i32;
+    match shape_caption_for_layout(shape) {
+        Some(caption)
+            if matches!(
+                caption.direction,
+                CaptionDirection::Left | CaptionDirection::Right
+            ) =>
+        {
+            width
+                .saturating_add(caption.width as i32)
+                .saturating_add(i32::from(caption.spacing))
+        }
+        _ => width,
+    }
+}
+
 pub(crate) fn shape_caption_for_layout(shape: &ShapeObject) -> Option<Caption> {
     match shape {
         ShapeObject::Line(s) => s.drawing.caption.clone(),
