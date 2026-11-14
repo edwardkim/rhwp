@@ -1,5 +1,5 @@
 {
-  "base": "a210861488468868b5992231c55b78798e622e98",
+  "base": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
   "source_refs": [
     {
       "pr": 8976,
@@ -22,47 +22,47 @@
       "sha": "3da35b96822fb58ce4cc249d6ff4829185a17d06"
     }
   ],
-  "source_implementation": "15 commits cherry-picked with -x; 3 maintainer corrections",
+  "source_implementation": "15 commits cherry-picked with -x; 4 maintainer corrections",
   "runs": [
     {
       "label": "current-base-pr8976",
-      "left": "a210861488468868b5992231c55b78798e622e98",
+      "left": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
       "right": "e725859e24f9bd0d4631a95ad2d4d37e521193c5",
       "exit_code": 0,
       "clean": true,
-      "tree": "bbb305b41e4690c97a335e864b489fea663f52bd"
+      "tree": "49db796e02d3a3e9d29f36409b28de2f9a303b4d"
     },
     {
       "label": "current-base-pr9064",
-      "left": "a210861488468868b5992231c55b78798e622e98",
+      "left": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
       "right": "0cc72f29257a566ff5f9d0526ab7de0a7c4bf1d4",
       "exit_code": 0,
       "clean": true,
-      "tree": "d8fd8db321c942618960e16e976d4dd72ed6b55a"
+      "tree": "69537ba1554b033d862406efe0986a168992b84d"
     },
     {
       "label": "current-base-pr9065",
-      "left": "a210861488468868b5992231c55b78798e622e98",
+      "left": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
       "right": "c4fa5598ba272c405369571f637ee0028b1bc203",
       "exit_code": 0,
       "clean": true,
-      "tree": "f1b1c9fa3796fc21125ee572aa2cbea42cc3a61a"
+      "tree": "9054e318426781687a13c8b46bf9df834826fe7c"
     },
     {
       "label": "current-base-pr9067",
-      "left": "a210861488468868b5992231c55b78798e622e98",
+      "left": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
       "right": "02ea378e337cc82756f26eb80644448dea848826",
       "exit_code": 0,
       "clean": true,
-      "tree": "22abba460e3281e20949117236e789bbc31df87a"
+      "tree": "3c39bf6416a913434bbe47f8c40ed607e02197e2"
     },
     {
       "label": "current-base-pr9068",
-      "left": "a210861488468868b5992231c55b78798e622e98",
+      "left": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
       "right": "3da35b96822fb58ce4cc249d6ff4829185a17d06",
       "exit_code": 0,
       "clean": true,
-      "tree": "d69cac65d7d15eab88ae9ada7e5ba140c2594653"
+      "tree": "cf9ccf507d1c155457cb26371f5bd1014f186c57"
     },
     {
       "label": "current-pr8976-pr9064",
@@ -146,55 +146,114 @@
     },
     {
       "label": "current-cumulative-pr8976",
-      "left": "a210861488468868b5992231c55b78798e622e98",
+      "left": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
       "right": "e725859e24f9bd0d4631a95ad2d4d37e521193c5",
       "exit_code": 0,
       "clean": true,
-      "tree": "bbb305b41e4690c97a335e864b489fea663f52bd"
+      "tree": "49db796e02d3a3e9d29f36409b28de2f9a303b4d"
     },
     {
       "label": "current-cumulative-pr9064",
-      "left": "56a769e527aa95ea6b1212077e0464f0e86bfc2e",
+      "left": "b10dd79544e8515e1283944f3fa97a89468d3d6a",
       "right": "0cc72f29257a566ff5f9d0526ab7de0a7c4bf1d4",
       "exit_code": 0,
       "clean": true,
-      "tree": "8ef1c0f16d6d26bd6fbeac2f0642b1a784fa3d19"
+      "tree": "d2dd4c349d5b7f96d82f57b0e6118df189da23fd"
     },
     {
       "label": "current-cumulative-pr9065",
-      "left": "36aff373782c24e2bbfb52478deaec6133217ff2",
+      "left": "8f58d6c701f784cdd659ab2bace1ba79eb3773d3",
       "right": "c4fa5598ba272c405369571f637ee0028b1bc203",
       "exit_code": 0,
       "clean": true,
-      "tree": "62f0c2800a52d0de12198a372fba30656f26a349"
+      "tree": "e0cd3bbbaa468519e2f80a47b5c38cc924ab402b"
     },
     {
       "label": "current-cumulative-pr9067",
-      "left": "f2814568a593c842bdf67657bacf26787971c623",
+      "left": "a8a8dd93dfb167a3a264363e2b056406fe263774",
       "right": "02ea378e337cc82756f26eb80644448dea848826",
       "exit_code": 0,
       "clean": true,
-      "tree": "635b690277f3159ea8fc14d99ae1fb9b4e445860"
+      "tree": "4b5993ea5ac21ee9b391ab3fb6dee430a6f77f25"
     },
     {
       "label": "current-cumulative-pr9068",
-      "left": "6a1171321f84505e7ca8d77d691f53bef215ba7e",
+      "left": "3d5b9b880b2204a46e7437f001135da271aa7df3",
       "right": "3da35b96822fb58ce4cc249d6ff4829185a17d06",
       "exit_code": 0,
       "clean": true,
-      "tree": "84d51738d5344fb6e765d7b58be7d633b1fc3420"
+      "tree": "f74c4aa2adafcb271869316c9f4f624b7ae50ad6"
     },
     {
       "label": "current-candidate-devel",
-      "left": "a210861488468868b5992231c55b78798e622e98",
-      "right": "a349c98e2b31e661d1343ee2fa5cc042489e4c49",
+      "left": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
+      "right": "13bc8edc30c6b2c0c60413ee731f5a9ff3a36922",
       "exit_code": 0,
       "clean": true,
-      "tree": "4b59570d065b28d406c073b4e74123851df52273"
+      "tree": "f6445c62e3665769f57e6763f98105915fe949db"
     }
   ],
   "author_open_prs": [],
   "author_open_pr_query": "live GitHub search repo:edwardkim/rhwp is:pr is:open author:jangster77, successful empty result",
   "reviewer_exempt_prs": [],
-  "passed": true
+  "passed": true,
+  "live_head_check": {
+    "checked_at": "2026-11-14T08:48:20.543Z",
+    "self_open_prs": {
+      "issues": []
+    },
+    "prs": [
+      {
+        "number": 8976,
+        "head_sha": "e725859e24f9bd0d4631a95ad2d4d37e521193c5",
+        "base_sha": "5cbcc9b451cf286e1b7c680426c857dc802e50f3",
+        "state": "open",
+        "mergeable": true,
+        "reviewers": [
+          "jangster77"
+        ]
+      },
+      {
+        "number": 9064,
+        "head_sha": "0cc72f29257a566ff5f9d0526ab7de0a7c4bf1d4",
+        "base_sha": "9e2794796787b46815462fcecd1536ab74ac8528",
+        "state": "open",
+        "mergeable": false,
+        "reviewers": [
+          "jangster77"
+        ]
+      },
+      {
+        "number": 9065,
+        "head_sha": "c4fa5598ba272c405369571f637ee0028b1bc203",
+        "base_sha": "9e2794796787b46815462fcecd1536ab74ac8528",
+        "state": "open",
+        "mergeable": false,
+        "reviewers": [
+          "jangster77"
+        ]
+      },
+      {
+        "number": 9067,
+        "head_sha": "02ea378e337cc82756f26eb80644448dea848826",
+        "base_sha": "dc3d0ff15e6e7cdb39138c72a5466994dea0e0d4",
+        "state": "open",
+        "mergeable": false,
+        "reviewers": [
+          "jangster77"
+        ]
+      },
+      {
+        "number": 9068,
+        "head_sha": "3da35b96822fb58ce4cc249d6ff4829185a17d06",
+        "base_sha": "dc3d0ff15e6e7cdb39138c72a5466994dea0e0d4",
+        "state": "open",
+        "mergeable": true,
+        "reviewers": [
+          "jangster77"
+        ]
+      }
+    ]
+  },
+  "source_pr_mergeability_note": "GitHub API의 원 head mergeability 표시와 통합 후보 판정은 구분한다. 고정 base·각 원 head·누적·통합 후보의 실제 git merge-tree를 21건 확인했다."
 }
