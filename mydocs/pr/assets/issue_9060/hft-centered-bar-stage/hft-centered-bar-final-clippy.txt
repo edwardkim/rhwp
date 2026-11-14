@@ -1,2 +1,0 @@
-    Checking rhwp v0.9.0 (/home/tsjang/rhwp)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2m 09s

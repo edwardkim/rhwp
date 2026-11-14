@@ -1,9 +1,0 @@
-{
-  "parent": "adf5bd671cfd8123ccf95c5e8c0ce95ddaf1f5c0",
-  "before_log": "/home/tsjang/rhwp/output/pr-review/pr9075/logs/hft-centered-bar-before.log",
-  "before_exit": 101,
-  "before_failed": 1,
-  "probe_binary_sha256": "5392d40f6fb3a23602b90b911b5e64e4405cb192b12c455d84935d07a5d0ae43",
-  "rlibs": [],
-  "scope": "보정 전 공개 합성 CFF 중심 배치 검사 한 건에서 실제 raster 112바이트 차이를 확인했다. 미확인 원본 대조와 original_glyph_metric_family 경로는 이후 보완한 검사이므로 보정 전 실행 범위로 세지 않는다."
-}

@@ -51,13 +51,13 @@ WASM/Canvas에서 검사한다. 기존 fallback·분리 CFF·가짜 굵기 계�
 ## 공급 경계의 사전 검증
 
 - 기존 최적화 WASM에 새 반례를 실행하면 주 TTF 재생과 완전한 CFF 결측 두 검사가 실패하고,
-  미확인 동반 face 보존 검사는 통과한다. [수정 전 브라우저 로그](print-primary-stage/before-browser.txt).
+  미확인 동반 face 보존 검사는 통과한다. [수정 전 브라우저 로그](verification-record.md).
 - Studio의 실제 descriptor 순서·페이지별 수명·예외 후 해제·제한된 unicode-range를 포함한
-  12개 검사가 통과했다. [Studio 검사](print-primary-stage/studio-unit.txt).
+  12개 검사가 통과했다. [Studio 검사](verification-record.md).
 - 실제 Chrome FontFace 공급 검사 2개와 Studio TypeScript 검사가 통과했다.
-  [Chrome 등록 검사](print-primary-stage/font-registration.txt), [TypeScript 검사](print-primary-stage/studio-typecheck.txt).
+  [Chrome 등록 검사](verification-record.md), [TypeScript 검사](verification-record.md).
 - wasm32 공통 API·소유 경로의 `cargo check --locked --target-dir target/pr-review
-  --target wasm32-unknown-unknown --lib`가 통과했다. [컴파일 로그](print-primary-stage/wasm-check.txt).
+  --target wasm32-unknown-unknown --lib`가 통과했다. [컴파일 로그](verification-record.md).
 - 위 결과는 새 최적화 WASM의 실물 전쪽 대조 완료를 뜻하지 않는다. 기존 측정과 보호 하한은
   그대로 유지하고 새 제품 package의 실제 결과를 별도로 확인한다.
 
@@ -72,8 +72,8 @@ FontFace의 unicode-range에서 그 기호를 제외한다. 제한이 하나라�
 Canvas의 제한이 같은 프로그램의 공통 `getFontSymbolUnicodeRange` 결과와 일치할 때는
 일반 글리프의 주 프로그램을 공급한다. Rust Print도 동일한 `empty_symbol_codepoints`로
 제외된 기호를 다시 cmap 소유로 되돌리지 않는다. 임의의 다른 제한 범위는 계속 등록하지
-않는다. 같은 프로그램 검사·descriptor 순서·수명 경계를 확인한 [Studio 집중 13건](print-primary-stage/shared-range-studio-unit.txt)과
-[TypeScript 검사](print-primary-stage/shared-range-typecheck.txt)가 통과했다. 최적화 제품의 실물 재검증은 별도 수행한다.
+않는다. 같은 프로그램 검사·descriptor 순서·수명 경계를 확인한 [Studio 집중 13건](verification-record.md)과
+[TypeScript 검사](verification-record.md)가 통과했다. 최적화 제품의 실물 재검증은 별도 수행한다.
 
 
 ### 실제 CSS 사다리의 이름 해소
@@ -86,4 +86,4 @@ Canvas의 제한이 같은 프로그램의 공통 `getFontSymbolUnicodeRange` �
 기존 `text_font_coverage::select`가 사용하는 `svgtypes::parse_font_families`로 같은 CSS 이름·
 이스케이프를 해소한다. 미확인 generic과 앞 family를 건너뛰지 않는 소유 조건은 그대로 유지한다.
 이 보정은 wasm32 전용 Print 공급 경로에 한정한다. 최적화 빌드와 실제 브라우저·전쪽 결과는
-새 package에서 다시 확인한다. [최초 최적화 반례](print-primary-stage/css-chain-before-browser.txt).
+새 package에서 다시 확인한다. [최초 최적화 반례](verification-record.md).

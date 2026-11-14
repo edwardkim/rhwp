@@ -1,1 +1,0 @@
-    Finished `release-test` profile [optimized] target(s) in 0.52s

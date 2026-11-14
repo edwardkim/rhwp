@@ -1,5 +1,7 @@
 # sample10 fresh WASM 전쪽 보호 검증
 
+> 이 문서는 당시 단계의 분석 기록이다. 최종 결과와 대표 증적은 [검증 기록](../verification-record.md)과 [최종 대상 증적](../final/main/README.md)을 따른다. 원시 로그·중간 분석 JSON·중간 PNG는 제출에서 제외했다.
+
 최적화한 실제 fresh WASM 제품의 전체 763쪽을 기존 독립 Print PDF와 비교했다.
 전체 쪽수가 일치하며, 정본 보호 TSV의 공식 두 자리 값보다 하락한 쪽은 0쪽이다.
 최저 99.56%로 기존 보호 하한을 유지했다. Native 결과나 통합 PR 전체의 완료를 뜻하지 않는다.
@@ -14,9 +16,9 @@
 - 연결 그림 `oracle.gif`·`rdb02.gif`·`s1.jpg`도 실제 바이트와 SHA를 확인해 명시 공급했다. 마스킹하지 않았다.
 - 원본 PDF를 다시 출력하거나 판정 조건을 변경하지 않았다. 글꼴 파일을 포함하지 않는다.
 
-[전쪽 TSV](sample10-wasm.tsv) · [명령·입력·연결 그림·생산물·완료 기록](sample10-validation.json).
-12쪽의 합성 기울임 영역은 [review](sample10-wasm-review-012.png)와
-[같은 쪽 overlay](sample10-wasm-overlay-012.png)로 확인한다. 해당 쪽의 공식 표시값은 100.00%다.
+[전쪽 TSV의 검증 요약](../verification-record.md) · [명령·입력·연결 그림·생산물·완료 기록](../verification-record.md).
+12쪽의 합성 기울임 영역은 [review](../verification-record.md)와
+[같은 쪽 overlay](../verification-record.md)로 확인한다. 해당 쪽의 공식 표시값은 100.00%다.
 이는 2px 실루엣 값이며 엄격한 RGB 동일성을 뜻하지 않는다.
 
 검증 당시 진행 중인 Native 전용 보정은 이 WASM package에 포함되지 않는다.

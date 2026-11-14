@@ -1,5 +1,7 @@
 # Native 2·5·12쪽의 잔여 차이 원인
 
+> 이 문서는 당시 단계의 분석 기록이다. 최종 결과와 대표 증적은 [검증 기록](../verification-record.md)과 [최종 대상 증적](../final/main/README.md)을 따른다. 원시 로그·중간 분석 JSON·중간 PNG는 제출에서 제외했다.
+
 2026-11-14 검토. 세 쪽 모두 100.00%가 불가능한 상태는 아니다. 원본 조판을 유지한
 분리 진단에서 **2·5·12쪽 모두 2px raw 실루엣 100.00%, 미대응 0개**를 확인했다.
 이 폴더는 원인 분석 자료다. 제품 코드의 보정 완료나 최종 전쪽 TSV로 대신하지 않는다.
@@ -7,7 +9,7 @@
 
 ## 같은 입력의 분리 대조
 
-입력·독립 한컴 Print PDF의 SHA와 producer는 [실행 기록](diagnosis.json)에 있다.
+입력·독립 한컴 Print PDF의 SHA와 producer는 [실행 기록](../verification-record.md)에 있다.
 Print profile, 2022 호환 조판, 96 DPI, 기존 2px raw 지표를 유지했다. PDF를 재산출하거나
 비교 영역·마스크·임계값·원점·글자 크기·장평·전진 폭을 바꾸지 않았다.
 
@@ -34,7 +36,7 @@ baseline snap을 끄고 단색 SFNT의 단일 문자 윤곽을 같은 원점에 
 사용자가 지적한 첫 본문 줄은 이미 미대응 0개이며 나머지 17개는 표의 다른 글자에 있다.
 원본 문단·표 분할이나 첫 줄의 위치를 다시 옮겨 해결할 문제가 아니다.
 
-[진단 코드](native-geometry-probe.rs.txt)는 2022 호환에서 만든 실제 페이지의 root·스타일·
+[진단 코드](../verification-record.md)는 2022 호환에서 만든 실제 페이지의 root·스타일·
 좌표·자원을 유지한 채 글자 재생 정책을 분리한다. 자원을 바꾼 뒤 layer JSON 전체가
 `rasterTextGeometry` 한 값 외에는 같다는 assertion을 통과해야 렌더링한다.
 제품의 세대 선택이나 제출용 `--compat` 값을 바꾸어 얻은 수치가 아니다.
@@ -48,7 +50,7 @@ PDF의 `/F9`는 `INPILL+MalgunGothic`, CIDToGIDMap은 Identity다. PDF의 ToUnic
 설치된 6.50과 Windows의 6.68은 비교한 한글 `기·준·및·받·항`의 윤곽과 전진 폭이 모두
 PDF와 같다. 반면 숫자 `1·4·6`은 6.50의 윤곽이 PDF와 다르고 6.68의 윤곽은 같다.
 전진 폭은 두 버전 모두 같으므로 폭 보정으로 대체하면 안 된다.
-[글리프별 실제 대조](glyph-program-comparison.json)를 따른다.
+[글리프별 실제 대조](../verification-record.md)를 따른다.
 
 글자 재생 정책만 분리했을 때 12쪽에 남은 8개는 숫자와 `항` 주변의 획 끝에 있다.
 같은 기하 재생에서 6.68을 명시 공급하자 그 8개도 없어졌다. 따라서 글꼴 버전만 바꾼
@@ -72,6 +74,6 @@ HWP 사양은 이 저수준 힌팅 방식을 강제하지 않는다. 특정 문�
 
 | 쪽 | review | overlay |
 | --- | --- | --- |
-| 2 | [review](diagnostic-review-002.png) | [overlay](diagnostic-overlay-002.png) |
-| 5 | [review](diagnostic-review-005.png) | [overlay](diagnostic-overlay-005.png) |
-| 12 | [review](diagnostic-review-012.png) | [overlay](diagnostic-overlay-012.png) |
+| 2 | [review](../verification-record.md) | [overlay](../verification-record.md) |
+| 5 | [review](../verification-record.md) | [overlay](../verification-record.md) |
+| 12 | [review](../verification-record.md) | [overlay](../verification-record.md) |

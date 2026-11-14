@@ -7,7 +7,7 @@ PR #8397의 `99a176b7cb3`은 합성 Bold를 실제 보통 프로그램의 스타
 선택한 프로그램을 먼저 유지하도록 보완했다. 현재 구현은 그 경로에서 합성 Oblique를
 되돌리지 않아, 실제로는 정체인 다른 한글·영문 프로그램을 후보에서 제외한다.
 
-[실제 Native 공급 기록](native-slant-family-before.json)에서 sample10 12쪽의
+[실제 Native 공급 기록](verification-record.md)에서 sample10 12쪽의
 기울임 ‘구’ 두 글자는 요청한 `Myeongjo` 대신 `Haansoft Batang`으로 표시된다.
 같은 호스트의 `Myeongjo-HGMJ`는 해당 글리프를 가진 정체 CFF다. Fontconfig가
 영문 `Myeongjo-ENMJ`에 붙인 Oblique는 실제 파일을 다시 열면 Upright로 확인된다.
@@ -49,13 +49,13 @@ family에서 선택해야 하며, 실제 최종 raster도 같은 프로그램의
 
 ## 보정 후 실제 실행
 
-[실행 영수증](native-slant-family-stage/native-slant-family-validation.json)에서 고정한 소스·바이너리로
+[실행 영수증](verification-record.md)에서 고정한 소스·바이너리로
 최소 글꼴 환경의 집중 검사 76건과 라이브러리 4,035건이 모두 통과했다. 새 분리 CFF 사례는
 보정 전 FAIL, 보정 후 PASS다. 실제 italic·굵기 소유 반례, Print 기하, HFT 윤곽,
 그림 누락·직접 PDF 출력 검사 및 Clippy `-D warnings`도 통과했다.
-[원 PR 입력의 Native 전쪽 TSV](native-slant-family-stage/native-main.tsv)는 전 14쪽 100.00%다.
+[원 PR 입력의 Native 전쪽 TSV의 검증 요약](verification-record.md)는 전 14쪽 100.00%다.
 
-[보호 선행 대조](native-slant-family-stage/native-slant-family-preflight.json)에서 sample10의
+[보호 선행 대조](verification-record.md)에서 sample10의
 하락했던 12·15·17·18·20쪽은 각각 99.99%·100.00%·100.00%·100.00%·100.00%로 복구됐다.
 선택 쪽 결과이며 전 763쪽 검증을 대신하지 않는다. 별도 중첩 표의 기존 하락은 이 선택
 보정으로 해결되지 않았으며, 해당 결과를 기준 갱신이나 통합 완료의 근거로 쓰지 않는다.

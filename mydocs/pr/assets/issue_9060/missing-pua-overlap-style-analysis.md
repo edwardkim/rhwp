@@ -28,15 +28,15 @@ char_style_id → 공통 한 칸 전진 → 저장 줄 재생·재조판·실제
 
 ## Native 단계의 실제 확인
 
-[최소 글꼴 Native 실행](nested-source-contracts-stage/nested-source-contracts-native-final-validation.json)은
+[최소 글꼴 Native 실행](verification-record.md)은
 신규 관계형 검사·기존 겹침과 기호 대조군·원 PR 검사·Native 필수 3종 및 Clippy를 통과했다.
 새 PUA 검사의 전쪽 문자열 개수 단언은 제목 외 본문에도 같은 문구가 있는 의미 오류여서
 해당 제목 run의 원문 보존으로 바로잡았으며, 서식·크기·인접 원점·명시적0 대조는 유지했다.
 
-[현재 Native 전17쪽](nested-source-contracts-stage/nested-native.tsv)은 기존 보호값 대비 하락0쪽이다.
+[현재 Native 전17쪽의 검증 요약](verification-record.md)은 기존 보호값 대비 하락0쪽이다.
 12쪽100.00%, 16쪽99.96%이며 원 PR 입력 전14쪽도100.00%를 유지했다.
-[12쪽 review](nested-source-contracts-stage/native-review-012.png)·[overlay](nested-source-contracts-stage/native-overlay-012.png),
-[16쪽 review](nested-source-contracts-stage/native-review-016.png)·[overlay](nested-source-contracts-stage/native-overlay-016.png)를
+[12쪽 review](verification-record.md)·[overlay](verification-record.md),
+[16쪽 review](verification-record.md)·[overlay](verification-record.md)를
 직접 판독했다. 원본 전진이 복구되어도16쪽의 좁은 대체 dash 자체는 원본 전각 칸에서 왼쪽에
 치우쳐 있어, 뒤의 공통 glyph 맞춤 단계에서 보정한다. fresh WASM·보호 전수·최종 통합이
 완료되었다는 판정은 아니다. 기준 PDF·원본·마스크·판정값과 보호 하한은 그대로다.

@@ -1,5 +1,7 @@
 # Native 제품 보정 단계 결과
 
+> 이 문서는 당시 단계의 분석 기록이다. 최종 결과와 대표 증적은 [검증 기록](../verification-record.md)과 [최종 대상 증적](../final/main/README.md)을 따른다. 원시 로그·중간 분석 JSON·중간 PNG는 제출에서 제외했다.
+
 진단 프로그램의 설정 변경을 제품의 공통 Native Print 재생 정책에 반영했다.
 실제 새 제품 binary로 기존 한컴 Print PDF와 전 14쪽을 다시 비교했고,
 **Native 모든 페이지의 2px raw 일치율이 100.00%**다. 원본·PDF·원점·글자 크기·장평·
@@ -26,12 +28,12 @@
 5쪽에 표 첫 줄, 6쪽에 나머지 두 줄, 7쪽에 후속 본문이 있다. 원본 셀의 공백을 정규화한
 전체 내용과 각 조각의 독립 PDF 대응을 확인해 누락·중복이 없음을 검증했다.
 
-- [Native 전쪽 TSV](native_silhouette.tsv)
-- [생산·입력 SHA와 단계 검증 영수증](validation.json)
+- [Native 전쪽 TSV의 검증 요약](../verification-record.md)
+- [생산·입력 SHA와 단계 검증 영수증](../verification-record.md)
 - [실제 측정 글꼴 환경](font-environment.json)
-- 5쪽: [review](native_review_005.png) · [overlay](native_overlay_005.png)
-- 6쪽: [review](native_review_006.png) · [overlay](native_overlay_006.png)
-- 12쪽: [review](native_review_012.png) · [overlay](native_overlay_012.png)
+- 5쪽: [review](../verification-record.md) · [overlay](../verification-record.md)
+- 6쪽: [review](../verification-record.md) · [overlay](../verification-record.md)
+- 12쪽: [review](../verification-record.md) · [overlay](../verification-record.md)
 
 이 기록은 Native 보정 단계의 완료다. 전체 Rust·lint·최종 fresh WASM·정본 보호 전쪽 검증과
 상승 기준 반영·최종 PR review·원격 CI·병합은 아직 완료로 판정하지 않는다.
