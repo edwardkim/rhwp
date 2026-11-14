@@ -1,0 +1,62 @@
+{
+  "branch": "review/integration-20261114-planet6897-open",
+  "base": "dc3d0ff15e6e7cdb39138c72a5466994dea0e0d4",
+  "phase": "cherry-pick-complete",
+  "applied": [
+    {
+      "pr": 8976,
+      "source": "6e5c6860363e8bb4940fc00569b123335950f009",
+      "integration": "ceecc52eed2b1ecf48e128c90654d2d5b76f3295"
+    },
+    {
+      "pr": 8976,
+      "source": "e725859e24f9bd0d4631a95ad2d4d37e521193c5",
+      "integration": "b599757ddfb9b78cbedfb857da2a609b078a6c59"
+    },
+    {
+      "pr": 9064,
+      "source": "ad794d2cc6a6cd287882d72474d6c1f3e976eb49",
+      "integration": "f96c1061111f4b65e4360338032f795aefdbe1e2"
+    },
+    {
+      "pr": 9064,
+      "source": "0cc72f29257a566ff5f9d0526ab7de0a7c4bf1d4",
+      "integration": "50d23c5306e5057fd9e6e289d605e332e34f2848"
+    },
+    {
+      "pr": 9065,
+      "source": "a1a041e5fbba45b126a0a342788a7fdfb995d273",
+      "integration": "5ba88cf90012d4a27c7709b2dfeb472f919ccd20"
+    },
+    {
+      "pr": 9065,
+      "source": "c4fa5598ba272c405369571f637ee0028b1bc203",
+      "integration": "33a1a15a9fdb064cbc4478315fd9a54427f10c50"
+    },
+    {
+      "pr": 9067,
+      "source": "37acaa703b7bee6417b1b05b4aec235ee2913646",
+      "integration": "0e99e946add783f890f40c308853f0efe558b7cc"
+    },
+    {
+      "pr": 9067,
+      "source": "5397280acda82dca76bc7a69d16003e44d7de446",
+      "integration": "5bb6455fe6d9a858ab443dd4d2597b0e720ae5a9"
+    },
+    {
+      "pr": 9067,
+      "source": "475fc73f5eb963b8805c4754635535ddd8f95dfc",
+      "integration": "949cf279c33217a40cedebe4b03dbec1bd77cec1"
+    },
+    {
+      "pr": 9067,
+      "source": "02ea378e337cc82756f26eb80644448dea848826",
+      "integration": "613d992a61cd1e0da317b3875a686cc73d50c010"
+    }
+  ],
+  "excluded": [
+    9068
+  ],
+  "head": "613d992a61cd1e0da317b3875a686cc73d50c010",
+  "completed_at": "2026-11-14T03:57:30.814363+00:00"
+}

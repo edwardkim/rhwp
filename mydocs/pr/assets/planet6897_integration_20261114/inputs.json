@@ -1,0 +1,105 @@
+[
+  {
+    "pr": 8976,
+    "key": "owned-tac",
+    "input": "samples/issue8969/36400485-owned-tac-lines.hwpx",
+    "pdf": "pdf/issue8969/36400485-2020.pdf",
+    "pages": 11,
+    "review_pages": [
+      2,
+      4,
+      10
+    ],
+    "compat": "2022",
+    "dpi": 96,
+    "paths": {
+      "input": {
+        "path": "samples/issue8969/36400485-owned-tac-lines.hwpx",
+        "bytes": 56783,
+        "sha256": "6c74234bd60208a64d04e4b00cb6b6f09aac0fe323734c05e00f6d0b1526d399"
+      },
+      "pdf": {
+        "path": "pdf/issue8969/36400485-2020.pdf",
+        "bytes": 278788,
+        "sha256": "d52da3db4784ea987ee61ea42df8ecd414befbece3a8bdcb9c86e54ecd05ad32"
+      }
+    }
+  },
+  {
+    "pr": 9064,
+    "key": "ws-host",
+    "input": "samples/issue9062/ws-host-tac-above-offset-float.hwpx",
+    "pdf": "pdf/issue9062/ws-host-tac-above-offset-float-2020.pdf",
+    "pages": 2,
+    "review_pages": [
+      1,
+      2
+    ],
+    "compat": "2022",
+    "dpi": 96,
+    "paths": {
+      "input": {
+        "path": "samples/issue9062/ws-host-tac-above-offset-float.hwpx",
+        "bytes": 29976,
+        "sha256": "0fe99b8df395f7787332ea557ed96b7421f27d687363625878b38cfed35e0a24"
+      },
+      "pdf": {
+        "path": "pdf/issue9062/ws-host-tac-above-offset-float-2020.pdf",
+        "bytes": 38254,
+        "sha256": "7b4ea851f1b7cdf3b5f537ddab32547d3fb6a0a0e551b2e8290e2b4a9ad2c813"
+      }
+    }
+  },
+  {
+    "pr": 9065,
+    "key": "page-band",
+    "input": "samples/issue9055/36400525-page-band-empty-host-line.hwpx",
+    "pdf": "pdf/issue9055/36400525-page-band-empty-host-line-2020.pdf",
+    "pages": 4,
+    "review_pages": [
+      1,
+      2,
+      3
+    ],
+    "compat": "2022",
+    "dpi": 96,
+    "paths": {
+      "input": {
+        "path": "samples/issue9055/36400525-page-band-empty-host-line.hwpx",
+        "bytes": 36674,
+        "sha256": "75aa3918f793c889be96a24e9dff4766fe85eaa0ed3413c7c7895ce24e84e3ee"
+      },
+      "pdf": {
+        "path": "pdf/issue9055/36400525-page-band-empty-host-line-2020.pdf",
+        "bytes": 142429,
+        "sha256": "9e4458071a21c7bd9e9d100672d6a5633fb2727402a5af523386bc3cd14b9495"
+      }
+    }
+  },
+  {
+    "pr": 9067,
+    "key": "title-mark",
+    "input": "samples/issue9016/1730000-title-mark-empty-stream.hwp",
+    "pdf": "pdf/issue9016/1730000-title-mark-empty-stream-2020.pdf",
+    "pages": 10,
+    "review_pages": [
+      1,
+      9,
+      10
+    ],
+    "compat": "2022",
+    "dpi": 96,
+    "paths": {
+      "input": {
+        "path": "samples/issue9016/1730000-title-mark-empty-stream.hwp",
+        "bytes": 33280,
+        "sha256": "4982322f105f602ea89eccfbcc934068ad0cf71ddb3b9294ab79316b2a4f8036"
+      },
+      "pdf": {
+        "path": "pdf/issue9016/1730000-title-mark-empty-stream-2020.pdf",
+        "bytes": 115206,
+        "sha256": "591d5713a0b8e945c6f5e5ef330ce886a4fa0972e5e19c6429a2250712e9ec05"
+      }
+    }
+  }
+]

@@ -1,0 +1,2642 @@
+[
+  {
+    "family" : "Apple Braille",
+    "path" : "\/System\/Library\/Fonts\/Apple Braille Outline 6 Dot.ttf",
+    "postscript" : "AppleBraille-Outline6Dot"
+  },
+  {
+    "family" : "Apple Braille",
+    "path" : "\/System\/Library\/Fonts\/Apple Braille Outline 8 Dot.ttf",
+    "postscript" : "AppleBraille-Outline8Dot"
+  },
+  {
+    "family" : "Apple Braille",
+    "path" : "\/System\/Library\/Fonts\/Apple Braille Pinpoint 6 Dot.ttf",
+    "postscript" : "AppleBraille-Pinpoint6Dot"
+  },
+  {
+    "family" : "Apple Braille",
+    "path" : "\/System\/Library\/Fonts\/Apple Braille Pinpoint 8 Dot.ttf",
+    "postscript" : "AppleBraille-Pinpoint8Dot"
+  },
+  {
+    "family" : "Apple Braille",
+    "path" : "\/System\/Library\/Fonts\/Apple Braille.ttf",
+    "postscript" : "AppleBraille"
+  },
+  {
+    "family" : "Apple Color Emoji",
+    "path" : "\/System\/Library\/Fonts\/Apple Color Emoji.ttc",
+    "postscript" : "AppleColorEmoji"
+  },
+  {
+    "family" : "Apple Symbols",
+    "path" : "\/System\/Library\/Fonts\/Apple Symbols.ttf",
+    "postscript" : "AppleSymbols"
+  },
+  {
+    "family" : "Apple SD Gothic Neo",
+    "path" : "\/System\/Library\/Fonts\/AppleSDGothicNeo.ttc",
+    "postscript" : "AppleSDGothicNeo-Bold"
+  },
+  {
+    "family" : "Apple SD Gothic Neo",
+    "path" : "\/System\/Library\/Fonts\/AppleSDGothicNeo.ttc",
+    "postscript" : "AppleSDGothicNeo-ExtraBold"
+  },
+  {
+    "family" : "Apple SD Gothic Neo",
+    "path" : "\/System\/Library\/Fonts\/AppleSDGothicNeo.ttc",
+    "postscript" : "AppleSDGothicNeo-Heavy"
+  },
+  {
+    "family" : "Apple SD Gothic Neo",
+    "path" : "\/System\/Library\/Fonts\/AppleSDGothicNeo.ttc",
+    "postscript" : "AppleSDGothicNeo-Light"
+  },
+  {
+    "family" : "Apple SD Gothic Neo",
+    "path" : "\/System\/Library\/Fonts\/AppleSDGothicNeo.ttc",
+    "postscript" : "AppleSDGothicNeo-Medium"
+  },
+  {
+    "family" : "Apple SD Gothic Neo",
+    "path" : "\/System\/Library\/Fonts\/AppleSDGothicNeo.ttc",
+    "postscript" : "AppleSDGothicNeo-Regular"
+  },
+  {
+    "family" : "Apple SD Gothic Neo",
+    "path" : "\/System\/Library\/Fonts\/AppleSDGothicNeo.ttc",
+    "postscript" : "AppleSDGothicNeo-SemiBold"
+  },
+  {
+    "family" : "Apple SD Gothic Neo",
+    "path" : "\/System\/Library\/Fonts\/AppleSDGothicNeo.ttc",
+    "postscript" : "AppleSDGothicNeo-Thin"
+  },
+  {
+    "family" : "Apple SD Gothic Neo",
+    "path" : "\/System\/Library\/Fonts\/AppleSDGothicNeo.ttc",
+    "postscript" : "AppleSDGothicNeo-UltraLight"
+  },
+  {
+    "family" : "Arial Hebrew",
+    "path" : "\/System\/Library\/Fonts\/ArialHB.ttc",
+    "postscript" : "ArialHebrew"
+  },
+  {
+    "family" : "Arial Hebrew",
+    "path" : "\/System\/Library\/Fonts\/ArialHB.ttc",
+    "postscript" : "ArialHebrew-Bold"
+  },
+  {
+    "family" : "Arial Hebrew",
+    "path" : "\/System\/Library\/Fonts\/ArialHB.ttc",
+    "postscript" : "ArialHebrew-Light"
+  },
+  {
+    "family" : "Arial Hebrew Scholar",
+    "path" : "\/System\/Library\/Fonts\/ArialHB.ttc",
+    "postscript" : "ArialHebrewScholar"
+  },
+  {
+    "family" : "Arial Hebrew Scholar",
+    "path" : "\/System\/Library\/Fonts\/ArialHB.ttc",
+    "postscript" : "ArialHebrewScholar-Bold"
+  },
+  {
+    "family" : "Arial Hebrew Scholar",
+    "path" : "\/System\/Library\/Fonts\/ArialHB.ttc",
+    "postscript" : "ArialHebrewScholar-Light"
+  },
+  {
+    "family" : "Avenir Next Condensed",
+    "path" : "\/System\/Library\/Fonts\/Avenir Next Condensed.ttc",
+    "postscript" : "AvenirNextCondensed-Bold"
+  },
+  {
+    "family" : "Avenir Next Condensed",
+    "path" : "\/System\/Library\/Fonts\/Avenir Next Condensed.ttc",
+    "postscript" : "AvenirNextCondensed-BoldItalic"
+  },
+  {
+    "family" : "Avenir Next Condensed",
+    "path" : "\/System\/Library\/Fonts\/Avenir Next Condensed.ttc",
+    "postscript" : "AvenirNextCondensed-DemiBold"
+  },
+  {
+    "family" : "Avenir Next Condensed",
+    "path" : "\/System\/Library\/Fonts\/Avenir Next Condensed.ttc",
+    "postscript" : "AvenirNextCondensed-DemiBoldItalic"
+  },
+  {
+    "family" : "Avenir Next Condensed",
+    "path" : "\/System\/Library\/Fonts\/Avenir Next Condensed.ttc",
+    "postscript" : "AvenirNextCondensed-Heavy"
+  },
+  {
+    "family" : "Avenir Next Condensed",
+    "path" : "\/System\/Library\/Fonts\/Avenir Next Condensed.ttc",
+    "postscript" : "AvenirNextCondensed-HeavyItalic"
+  },
+  {
+    "family" : "Avenir Next Condensed",
+    "path" : "\/System\/Library\/Fonts\/Avenir Next Condensed.ttc",
+    "postscript" : "AvenirNextCondensed-Italic"
+  },
+  {
+    "family" : "Avenir Next Condensed",
+    "path" : "\/System\/Library\/Fonts\/Avenir Next Condensed.ttc",
+    "postscript" : "AvenirNextCondensed-Medium"
+  },
+  {
+    "family" : "Avenir Next Condensed",
+    "path" : "\/System\/Library\/Fonts\/Avenir Next Condensed.ttc",
+    "postscript" : "AvenirNextCondensed-MediumItalic"
+  },
+  {
+    "family" : "Avenir Next Condensed",
+    "path" : "\/System\/Library\/Fonts\/Avenir Next Condensed.ttc",
+    "postscript" : "AvenirNextCondensed-Regular"
+  },
+  {
+    "family" : "Avenir Next Condensed",
+    "path" : "\/System\/Library\/Fonts\/Avenir Next Condensed.ttc",
+    "postscript" : "AvenirNextCondensed-UltraLight"
+  },
+  {
+    "family" : "Avenir Next Condensed",
+    "path" : "\/System\/Library\/Fonts\/Avenir Next Condensed.ttc",
+    "postscript" : "AvenirNextCondensed-UltraLightItalic"
+  },
+  {
+    "family" : "Avenir Next",
+    "path" : "\/System\/Library\/Fonts\/Avenir Next.ttc",
+    "postscript" : "AvenirNext-Bold"
+  },
+  {
+    "family" : "Avenir Next",
+    "path" : "\/System\/Library\/Fonts\/Avenir Next.ttc",
+    "postscript" : "AvenirNext-BoldItalic"
+  },
+  {
+    "family" : "Avenir Next",
+    "path" : "\/System\/Library\/Fonts\/Avenir Next.ttc",
+    "postscript" : "AvenirNext-DemiBold"
+  },
+  {
+    "family" : "Avenir Next",
+    "path" : "\/System\/Library\/Fonts\/Avenir Next.ttc",
+    "postscript" : "AvenirNext-DemiBoldItalic"
+  },
+  {
+    "family" : "Avenir Next",
+    "path" : "\/System\/Library\/Fonts\/Avenir Next.ttc",
+    "postscript" : "AvenirNext-Heavy"
+  },
+  {
+    "family" : "Avenir Next",
+    "path" : "\/System\/Library\/Fonts\/Avenir Next.ttc",
+    "postscript" : "AvenirNext-HeavyItalic"
+  },
+  {
+    "family" : "Avenir Next",
+    "path" : "\/System\/Library\/Fonts\/Avenir Next.ttc",
+    "postscript" : "AvenirNext-Italic"
+  },
+  {
+    "family" : "Avenir Next",
+    "path" : "\/System\/Library\/Fonts\/Avenir Next.ttc",
+    "postscript" : "AvenirNext-Medium"
+  },
+  {
+    "family" : "Avenir Next",
+    "path" : "\/System\/Library\/Fonts\/Avenir Next.ttc",
+    "postscript" : "AvenirNext-MediumItalic"
+  },
+  {
+    "family" : "Avenir Next",
+    "path" : "\/System\/Library\/Fonts\/Avenir Next.ttc",
+    "postscript" : "AvenirNext-Regular"
+  },
+  {
+    "family" : "Avenir Next",
+    "path" : "\/System\/Library\/Fonts\/Avenir Next.ttc",
+    "postscript" : "AvenirNext-UltraLight"
+  },
+  {
+    "family" : "Avenir Next",
+    "path" : "\/System\/Library\/Fonts\/Avenir Next.ttc",
+    "postscript" : "AvenirNext-UltraLightItalic"
+  },
+  {
+    "family" : "Avenir",
+    "path" : "\/System\/Library\/Fonts\/Avenir.ttc",
+    "postscript" : "Avenir-Black"
+  },
+  {
+    "family" : "Avenir",
+    "path" : "\/System\/Library\/Fonts\/Avenir.ttc",
+    "postscript" : "Avenir-BlackOblique"
+  },
+  {
+    "family" : "Avenir",
+    "path" : "\/System\/Library\/Fonts\/Avenir.ttc",
+    "postscript" : "Avenir-Book"
+  },
+  {
+    "family" : "Avenir",
+    "path" : "\/System\/Library\/Fonts\/Avenir.ttc",
+    "postscript" : "Avenir-BookOblique"
+  },
+  {
+    "family" : "Avenir",
+    "path" : "\/System\/Library\/Fonts\/Avenir.ttc",
+    "postscript" : "Avenir-Heavy"
+  },
+  {
+    "family" : "Avenir",
+    "path" : "\/System\/Library\/Fonts\/Avenir.ttc",
+    "postscript" : "Avenir-HeavyOblique"
+  },
+  {
+    "family" : "Avenir",
+    "path" : "\/System\/Library\/Fonts\/Avenir.ttc",
+    "postscript" : "Avenir-Light"
+  },
+  {
+    "family" : "Avenir",
+    "path" : "\/System\/Library\/Fonts\/Avenir.ttc",
+    "postscript" : "Avenir-LightOblique"
+  },
+  {
+    "family" : "Avenir",
+    "path" : "\/System\/Library\/Fonts\/Avenir.ttc",
+    "postscript" : "Avenir-Medium"
+  },
+  {
+    "family" : "Avenir",
+    "path" : "\/System\/Library\/Fonts\/Avenir.ttc",
+    "postscript" : "Avenir-MediumOblique"
+  },
+  {
+    "family" : "Avenir",
+    "path" : "\/System\/Library\/Fonts\/Avenir.ttc",
+    "postscript" : "Avenir-Oblique"
+  },
+  {
+    "family" : "Avenir",
+    "path" : "\/System\/Library\/Fonts\/Avenir.ttc",
+    "postscript" : "Avenir-Roman"
+  },
+  {
+    "family" : "Geeza Pro",
+    "path" : "\/System\/Library\/Fonts\/GeezaPro.ttc",
+    "postscript" : "GeezaPro"
+  },
+  {
+    "family" : "Geeza Pro",
+    "path" : "\/System\/Library\/Fonts\/GeezaPro.ttc",
+    "postscript" : "GeezaPro-Bold"
+  },
+  {
+    "family" : "Geneva",
+    "path" : "\/System\/Library\/Fonts\/Geneva.ttf",
+    "postscript" : "Geneva"
+  },
+  {
+    "family" : "Helvetica",
+    "path" : "\/System\/Library\/Fonts\/Helvetica.ttc",
+    "postscript" : "Helvetica"
+  },
+  {
+    "family" : "Helvetica",
+    "path" : "\/System\/Library\/Fonts\/Helvetica.ttc",
+    "postscript" : "Helvetica-Bold"
+  },
+  {
+    "family" : "Helvetica",
+    "path" : "\/System\/Library\/Fonts\/Helvetica.ttc",
+    "postscript" : "Helvetica-BoldOblique"
+  },
+  {
+    "family" : "Helvetica",
+    "path" : "\/System\/Library\/Fonts\/Helvetica.ttc",
+    "postscript" : "Helvetica-Light"
+  },
+  {
+    "family" : "Helvetica",
+    "path" : "\/System\/Library\/Fonts\/Helvetica.ttc",
+    "postscript" : "Helvetica-LightOblique"
+  },
+  {
+    "family" : "Helvetica",
+    "path" : "\/System\/Library\/Fonts\/Helvetica.ttc",
+    "postscript" : "Helvetica-Oblique"
+  },
+  {
+    "family" : "Helvetica Neue",
+    "path" : "\/System\/Library\/Fonts\/HelveticaNeue.ttc",
+    "postscript" : "HelveticaNeue"
+  },
+  {
+    "family" : "Helvetica Neue",
+    "path" : "\/System\/Library\/Fonts\/HelveticaNeue.ttc",
+    "postscript" : "HelveticaNeue-Bold"
+  },
+  {
+    "family" : "Helvetica Neue",
+    "path" : "\/System\/Library\/Fonts\/HelveticaNeue.ttc",
+    "postscript" : "HelveticaNeue-BoldItalic"
+  },
+  {
+    "family" : "Helvetica Neue",
+    "path" : "\/System\/Library\/Fonts\/HelveticaNeue.ttc",
+    "postscript" : "HelveticaNeue-CondensedBlack"
+  },
+  {
+    "family" : "Helvetica Neue",
+    "path" : "\/System\/Library\/Fonts\/HelveticaNeue.ttc",
+    "postscript" : "HelveticaNeue-CondensedBold"
+  },
+  {
+    "family" : "Helvetica Neue",
+    "path" : "\/System\/Library\/Fonts\/HelveticaNeue.ttc",
+    "postscript" : "HelveticaNeue-Italic"
+  },
+  {
+    "family" : "Helvetica Neue",
+    "path" : "\/System\/Library\/Fonts\/HelveticaNeue.ttc",
+    "postscript" : "HelveticaNeue-Light"
+  },
+  {
+    "family" : "Helvetica Neue",
+    "path" : "\/System\/Library\/Fonts\/HelveticaNeue.ttc",
+    "postscript" : "HelveticaNeue-LightItalic"
+  },
+  {
+    "family" : "Helvetica Neue",
+    "path" : "\/System\/Library\/Fonts\/HelveticaNeue.ttc",
+    "postscript" : "HelveticaNeue-Medium"
+  },
+  {
+    "family" : "Helvetica Neue",
+    "path" : "\/System\/Library\/Fonts\/HelveticaNeue.ttc",
+    "postscript" : "HelveticaNeue-MediumItalic"
+  },
+  {
+    "family" : "Helvetica Neue",
+    "path" : "\/System\/Library\/Fonts\/HelveticaNeue.ttc",
+    "postscript" : "HelveticaNeue-Thin"
+  },
+  {
+    "family" : "Helvetica Neue",
+    "path" : "\/System\/Library\/Fonts\/HelveticaNeue.ttc",
+    "postscript" : "HelveticaNeue-ThinItalic"
+  },
+  {
+    "family" : "Helvetica Neue",
+    "path" : "\/System\/Library\/Fonts\/HelveticaNeue.ttc",
+    "postscript" : "HelveticaNeue-UltraLight"
+  },
+  {
+    "family" : "Helvetica Neue",
+    "path" : "\/System\/Library\/Fonts\/HelveticaNeue.ttc",
+    "postscript" : "HelveticaNeue-UltraLightItalic"
+  },
+  {
+    "family" : "Hiragino Sans GB",
+    "path" : "\/System\/Library\/Fonts\/Hiragino Sans GB.ttc",
+    "postscript" : "HiraginoSansGB-W3"
+  },
+  {
+    "family" : "Hiragino Sans GB",
+    "path" : "\/System\/Library\/Fonts\/Hiragino Sans GB.ttc",
+    "postscript" : "HiraginoSansGB-W6"
+  },
+  {
+    "family" : "Kohinoor Devanagari",
+    "path" : "\/System\/Library\/Fonts\/Kohinoor.ttc",
+    "postscript" : "KohinoorDevanagari-Bold"
+  },
+  {
+    "family" : "Kohinoor Devanagari",
+    "path" : "\/System\/Library\/Fonts\/Kohinoor.ttc",
+    "postscript" : "KohinoorDevanagari-Light"
+  },
+  {
+    "family" : "Kohinoor Devanagari",
+    "path" : "\/System\/Library\/Fonts\/Kohinoor.ttc",
+    "postscript" : "KohinoorDevanagari-Medium"
+  },
+  {
+    "family" : "Kohinoor Devanagari",
+    "path" : "\/System\/Library\/Fonts\/Kohinoor.ttc",
+    "postscript" : "KohinoorDevanagari-Regular"
+  },
+  {
+    "family" : "Kohinoor Devanagari",
+    "path" : "\/System\/Library\/Fonts\/Kohinoor.ttc",
+    "postscript" : "KohinoorDevanagari-Semibold"
+  },
+  {
+    "family" : "Kohinoor Bangla",
+    "path" : "\/System\/Library\/Fonts\/KohinoorBangla.ttc",
+    "postscript" : "KohinoorBangla-Bold"
+  },
+  {
+    "family" : "Kohinoor Bangla",
+    "path" : "\/System\/Library\/Fonts\/KohinoorBangla.ttc",
+    "postscript" : "KohinoorBangla-Light"
+  },
+  {
+    "family" : "Kohinoor Bangla",
+    "path" : "\/System\/Library\/Fonts\/KohinoorBangla.ttc",
+    "postscript" : "KohinoorBangla-Medium"
+  },
+  {
+    "family" : "Kohinoor Bangla",
+    "path" : "\/System\/Library\/Fonts\/KohinoorBangla.ttc",
+    "postscript" : "KohinoorBangla-Regular"
+  },
+  {
+    "family" : "Kohinoor Bangla",
+    "path" : "\/System\/Library\/Fonts\/KohinoorBangla.ttc",
+    "postscript" : "KohinoorBangla-Semibold"
+  },
+  {
+    "family" : "Kohinoor Gujarati",
+    "path" : "\/System\/Library\/Fonts\/KohinoorGujarati.ttc",
+    "postscript" : "KohinoorGujarati-Bold"
+  },
+  {
+    "family" : "Kohinoor Gujarati",
+    "path" : "\/System\/Library\/Fonts\/KohinoorGujarati.ttc",
+    "postscript" : "KohinoorGujarati-Light"
+  },
+  {
+    "family" : "Kohinoor Gujarati",
+    "path" : "\/System\/Library\/Fonts\/KohinoorGujarati.ttc",
+    "postscript" : "KohinoorGujarati-Medium"
+  },
+  {
+    "family" : "Kohinoor Gujarati",
+    "path" : "\/System\/Library\/Fonts\/KohinoorGujarati.ttc",
+    "postscript" : "KohinoorGujarati-Regular"
+  },
+  {
+    "family" : "Kohinoor Gujarati",
+    "path" : "\/System\/Library\/Fonts\/KohinoorGujarati.ttc",
+    "postscript" : "KohinoorGujarati-Semibold"
+  },
+  {
+    "family" : "Kohinoor Telugu",
+    "path" : "\/System\/Library\/Fonts\/KohinoorTelugu.ttc",
+    "postscript" : "KohinoorTelugu-Bold"
+  },
+  {
+    "family" : "Kohinoor Telugu",
+    "path" : "\/System\/Library\/Fonts\/KohinoorTelugu.ttc",
+    "postscript" : "KohinoorTelugu-Light"
+  },
+  {
+    "family" : "Kohinoor Telugu",
+    "path" : "\/System\/Library\/Fonts\/KohinoorTelugu.ttc",
+    "postscript" : "KohinoorTelugu-Medium"
+  },
+  {
+    "family" : "Kohinoor Telugu",
+    "path" : "\/System\/Library\/Fonts\/KohinoorTelugu.ttc",
+    "postscript" : "KohinoorTelugu-Regular"
+  },
+  {
+    "family" : "Kohinoor Telugu",
+    "path" : "\/System\/Library\/Fonts\/KohinoorTelugu.ttc",
+    "postscript" : "KohinoorTelugu-Semibold"
+  },
+  {
+    "family" : "Lucida Grande",
+    "path" : "\/System\/Library\/Fonts\/LucidaGrande.ttc",
+    "postscript" : "LucidaGrande"
+  },
+  {
+    "family" : "Lucida Grande",
+    "path" : "\/System\/Library\/Fonts\/LucidaGrande.ttc",
+    "postscript" : "LucidaGrande-Bold"
+  },
+  {
+    "family" : "Marker Felt",
+    "path" : "\/System\/Library\/Fonts\/MarkerFelt.ttc",
+    "postscript" : "MarkerFelt-Thin"
+  },
+  {
+    "family" : "Marker Felt",
+    "path" : "\/System\/Library\/Fonts\/MarkerFelt.ttc",
+    "postscript" : "MarkerFelt-Wide"
+  },
+  {
+    "family" : "Menlo",
+    "path" : "\/System\/Library\/Fonts\/Menlo.ttc",
+    "postscript" : "Menlo-Bold"
+  },
+  {
+    "family" : "Menlo",
+    "path" : "\/System\/Library\/Fonts\/Menlo.ttc",
+    "postscript" : "Menlo-BoldItalic"
+  },
+  {
+    "family" : "Menlo",
+    "path" : "\/System\/Library\/Fonts\/Menlo.ttc",
+    "postscript" : "Menlo-Italic"
+  },
+  {
+    "family" : "Menlo",
+    "path" : "\/System\/Library\/Fonts\/Menlo.ttc",
+    "postscript" : "Menlo-Regular"
+  },
+  {
+    "family" : "Monaco",
+    "path" : "\/System\/Library\/Fonts\/Monaco.ttf",
+    "postscript" : "Monaco"
+  },
+  {
+    "family" : "Mukta Mahee",
+    "path" : "\/System\/Library\/Fonts\/MuktaMahee.ttc",
+    "postscript" : "MuktaMahee-Bold"
+  },
+  {
+    "family" : "Mukta Mahee",
+    "path" : "\/System\/Library\/Fonts\/MuktaMahee.ttc",
+    "postscript" : "MuktaMahee-ExtraBold"
+  },
+  {
+    "family" : "Mukta Mahee",
+    "path" : "\/System\/Library\/Fonts\/MuktaMahee.ttc",
+    "postscript" : "MuktaMahee-ExtraLight"
+  },
+  {
+    "family" : "Mukta Mahee",
+    "path" : "\/System\/Library\/Fonts\/MuktaMahee.ttc",
+    "postscript" : "MuktaMahee-Light"
+  },
+  {
+    "family" : "Mukta Mahee",
+    "path" : "\/System\/Library\/Fonts\/MuktaMahee.ttc",
+    "postscript" : "MuktaMahee-Medium"
+  },
+  {
+    "family" : "Mukta Mahee",
+    "path" : "\/System\/Library\/Fonts\/MuktaMahee.ttc",
+    "postscript" : "MuktaMahee-Regular"
+  },
+  {
+    "family" : "Mukta Mahee",
+    "path" : "\/System\/Library\/Fonts\/MuktaMahee.ttc",
+    "postscript" : "MuktaMahee-SemiBold"
+  },
+  {
+    "family" : "Noteworthy",
+    "path" : "\/System\/Library\/Fonts\/Noteworthy.ttc",
+    "postscript" : "Noteworthy-Bold"
+  },
+  {
+    "family" : "Noteworthy",
+    "path" : "\/System\/Library\/Fonts\/Noteworthy.ttc",
+    "postscript" : "Noteworthy-Light"
+  },
+  {
+    "family" : "Noto Nastaliq Urdu",
+    "path" : "\/System\/Library\/Fonts\/NotoNastaliq.ttc",
+    "postscript" : "NotoNastaliqUrdu"
+  },
+  {
+    "family" : "Noto Nastaliq Urdu",
+    "path" : "\/System\/Library\/Fonts\/NotoNastaliq.ttc",
+    "postscript" : "NotoNastaliqUrdu-Bold"
+  },
+  {
+    "family" : "Noto Sans Kannada",
+    "path" : "\/System\/Library\/Fonts\/NotoSansKannada.ttc",
+    "postscript" : "NotoSansKannada-Black"
+  },
+  {
+    "family" : "Noto Sans Kannada",
+    "path" : "\/System\/Library\/Fonts\/NotoSansKannada.ttc",
+    "postscript" : "NotoSansKannada-Bold"
+  },
+  {
+    "family" : "Noto Sans Kannada",
+    "path" : "\/System\/Library\/Fonts\/NotoSansKannada.ttc",
+    "postscript" : "NotoSansKannada-ExtraBold"
+  },
+  {
+    "family" : "Noto Sans Kannada",
+    "path" : "\/System\/Library\/Fonts\/NotoSansKannada.ttc",
+    "postscript" : "NotoSansKannada-ExtraLight"
+  },
+  {
+    "family" : "Noto Sans Kannada",
+    "path" : "\/System\/Library\/Fonts\/NotoSansKannada.ttc",
+    "postscript" : "NotoSansKannada-Light"
+  },
+  {
+    "family" : "Noto Sans Kannada",
+    "path" : "\/System\/Library\/Fonts\/NotoSansKannada.ttc",
+    "postscript" : "NotoSansKannada-Medium"
+  },
+  {
+    "family" : "Noto Sans Kannada",
+    "path" : "\/System\/Library\/Fonts\/NotoSansKannada.ttc",
+    "postscript" : "NotoSansKannada-Regular"
+  },
+  {
+    "family" : "Noto Sans Kannada",
+    "path" : "\/System\/Library\/Fonts\/NotoSansKannada.ttc",
+    "postscript" : "NotoSansKannada-SemiBold"
+  },
+  {
+    "family" : "Noto Sans Kannada",
+    "path" : "\/System\/Library\/Fonts\/NotoSansKannada.ttc",
+    "postscript" : "NotoSansKannada-Thin"
+  },
+  {
+    "family" : "Noto Sans Myanmar",
+    "path" : "\/System\/Library\/Fonts\/NotoSansMyanmar.ttc",
+    "postscript" : "NotoSansMyanmar-Black"
+  },
+  {
+    "family" : "Noto Sans Myanmar",
+    "path" : "\/System\/Library\/Fonts\/NotoSansMyanmar.ttc",
+    "postscript" : "NotoSansMyanmar-Bold"
+  },
+  {
+    "family" : "Noto Sans Myanmar",
+    "path" : "\/System\/Library\/Fonts\/NotoSansMyanmar.ttc",
+    "postscript" : "NotoSansMyanmar-ExtraBold"
+  },
+  {
+    "family" : "Noto Sans Myanmar",
+    "path" : "\/System\/Library\/Fonts\/NotoSansMyanmar.ttc",
+    "postscript" : "NotoSansMyanmar-ExtraLight"
+  },
+  {
+    "family" : "Noto Sans Myanmar",
+    "path" : "\/System\/Library\/Fonts\/NotoSansMyanmar.ttc",
+    "postscript" : "NotoSansMyanmar-Light"
+  },
+  {
+    "family" : "Noto Sans Myanmar",
+    "path" : "\/System\/Library\/Fonts\/NotoSansMyanmar.ttc",
+    "postscript" : "NotoSansMyanmar-Medium"
+  },
+  {
+    "family" : "Noto Sans Myanmar",
+    "path" : "\/System\/Library\/Fonts\/NotoSansMyanmar.ttc",
+    "postscript" : "NotoSansMyanmar-Regular"
+  },
+  {
+    "family" : "Noto Sans Myanmar",
+    "path" : "\/System\/Library\/Fonts\/NotoSansMyanmar.ttc",
+    "postscript" : "NotoSansMyanmar-SemiBold"
+  },
+  {
+    "family" : "Noto Sans Myanmar",
+    "path" : "\/System\/Library\/Fonts\/NotoSansMyanmar.ttc",
+    "postscript" : "NotoSansMyanmar-Thin"
+  },
+  {
+    "family" : "Noto Sans Oriya",
+    "path" : "\/System\/Library\/Fonts\/NotoSansOriya.ttc",
+    "postscript" : "NotoSansOriya"
+  },
+  {
+    "family" : "Noto Sans Oriya",
+    "path" : "\/System\/Library\/Fonts\/NotoSansOriya.ttc",
+    "postscript" : "NotoSansOriya-Bold"
+  },
+  {
+    "family" : "Noto Serif Myanmar",
+    "path" : "\/System\/Library\/Fonts\/NotoSerifMyanmar.ttc",
+    "postscript" : "NotoSerifMyanmar-Black"
+  },
+  {
+    "family" : "Noto Serif Myanmar",
+    "path" : "\/System\/Library\/Fonts\/NotoSerifMyanmar.ttc",
+    "postscript" : "NotoSerifMyanmar-Bold"
+  },
+  {
+    "family" : "Noto Serif Myanmar",
+    "path" : "\/System\/Library\/Fonts\/NotoSerifMyanmar.ttc",
+    "postscript" : "NotoSerifMyanmar-ExtraBold"
+  },
+  {
+    "family" : "Noto Serif Myanmar",
+    "path" : "\/System\/Library\/Fonts\/NotoSerifMyanmar.ttc",
+    "postscript" : "NotoSerifMyanmar-ExtraLight"
+  },
+  {
+    "family" : "Noto Serif Myanmar",
+    "path" : "\/System\/Library\/Fonts\/NotoSerifMyanmar.ttc",
+    "postscript" : "NotoSerifMyanmar-Light"
+  },
+  {
+    "family" : "Noto Serif Myanmar",
+    "path" : "\/System\/Library\/Fonts\/NotoSerifMyanmar.ttc",
+    "postscript" : "NotoSerifMyanmar-Medium"
+  },
+  {
+    "family" : "Noto Serif Myanmar",
+    "path" : "\/System\/Library\/Fonts\/NotoSerifMyanmar.ttc",
+    "postscript" : "NotoSerifMyanmar-Regular"
+  },
+  {
+    "family" : "Noto Serif Myanmar",
+    "path" : "\/System\/Library\/Fonts\/NotoSerifMyanmar.ttc",
+    "postscript" : "NotoSerifMyanmar-SemiBold"
+  },
+  {
+    "family" : "Noto Serif Myanmar",
+    "path" : "\/System\/Library\/Fonts\/NotoSerifMyanmar.ttc",
+    "postscript" : "NotoSerifMyanmar-Thin"
+  },
+  {
+    "family" : "Optima",
+    "path" : "\/System\/Library\/Fonts\/Optima.ttc",
+    "postscript" : "Optima-Bold"
+  },
+  {
+    "family" : "Optima",
+    "path" : "\/System\/Library\/Fonts\/Optima.ttc",
+    "postscript" : "Optima-BoldItalic"
+  },
+  {
+    "family" : "Optima",
+    "path" : "\/System\/Library\/Fonts\/Optima.ttc",
+    "postscript" : "Optima-ExtraBlack"
+  },
+  {
+    "family" : "Optima",
+    "path" : "\/System\/Library\/Fonts\/Optima.ttc",
+    "postscript" : "Optima-Italic"
+  },
+  {
+    "family" : "Optima",
+    "path" : "\/System\/Library\/Fonts\/Optima.ttc",
+    "postscript" : "Optima-Regular"
+  },
+  {
+    "family" : "Palatino",
+    "path" : "\/System\/Library\/Fonts\/Palatino.ttc",
+    "postscript" : "Palatino-Bold"
+  },
+  {
+    "family" : "Palatino",
+    "path" : "\/System\/Library\/Fonts\/Palatino.ttc",
+    "postscript" : "Palatino-BoldItalic"
+  },
+  {
+    "family" : "Palatino",
+    "path" : "\/System\/Library\/Fonts\/Palatino.ttc",
+    "postscript" : "Palatino-Italic"
+  },
+  {
+    "family" : "Palatino",
+    "path" : "\/System\/Library\/Fonts\/Palatino.ttc",
+    "postscript" : "Palatino-Roman"
+  },
+  {
+    "family" : "Heiti SC",
+    "path" : "\/System\/Library\/Fonts\/STHeiti Light.ttc",
+    "postscript" : "STHeitiSC-Light"
+  },
+  {
+    "family" : "Heiti TC",
+    "path" : "\/System\/Library\/Fonts\/STHeiti Light.ttc",
+    "postscript" : "STHeitiTC-Light"
+  },
+  {
+    "family" : "Heiti SC",
+    "path" : "\/System\/Library\/Fonts\/STHeiti Medium.ttc",
+    "postscript" : "STHeitiSC-Medium"
+  },
+  {
+    "family" : "Heiti TC",
+    "path" : "\/System\/Library\/Fonts\/STHeiti Medium.ttc",
+    "postscript" : "STHeitiTC-Medium"
+  },
+  {
+    "family" : "Academy Engraved LET",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Academy Engraved LET Fonts.ttf",
+    "postscript" : "AcademyEngravedLetPlain"
+  },
+  {
+    "family" : "Al Nile",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Al Nile.ttc",
+    "postscript" : "AlNile"
+  },
+  {
+    "family" : "Al Nile",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Al Nile.ttc",
+    "postscript" : "AlNile-Bold"
+  },
+  {
+    "family" : "Al Tarikh",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Al Tarikh.ttc",
+    "postscript" : "AlTarikh"
+  },
+  {
+    "family" : "Al Bayan",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/AlBayan.ttc",
+    "postscript" : "AlBayan"
+  },
+  {
+    "family" : "Al Bayan",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/AlBayan.ttc",
+    "postscript" : "AlBayan-Bold"
+  },
+  {
+    "family" : "American Typewriter",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/AmericanTypewriter.ttc",
+    "postscript" : "AmericanTypewriter"
+  },
+  {
+    "family" : "American Typewriter",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/AmericanTypewriter.ttc",
+    "postscript" : "AmericanTypewriter-Bold"
+  },
+  {
+    "family" : "American Typewriter",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/AmericanTypewriter.ttc",
+    "postscript" : "AmericanTypewriter-Condensed"
+  },
+  {
+    "family" : "American Typewriter",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/AmericanTypewriter.ttc",
+    "postscript" : "AmericanTypewriter-CondensedBold"
+  },
+  {
+    "family" : "American Typewriter",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/AmericanTypewriter.ttc",
+    "postscript" : "AmericanTypewriter-CondensedLight"
+  },
+  {
+    "family" : "American Typewriter",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/AmericanTypewriter.ttc",
+    "postscript" : "AmericanTypewriter-Light"
+  },
+  {
+    "family" : "American Typewriter",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/AmericanTypewriter.ttc",
+    "postscript" : "AmericanTypewriter-Semibold"
+  },
+  {
+    "family" : "Andale Mono",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Andale Mono.ttf",
+    "postscript" : "AndaleMono"
+  },
+  {
+    "family" : "Apple Chancery",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Apple Chancery.ttf",
+    "postscript" : "Apple-Chancery"
+  },
+  {
+    "family" : "AppleGothic",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/AppleGothic.ttf",
+    "postscript" : "AppleGothic"
+  },
+  {
+    "family" : "AppleMyungjo",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/AppleMyungjo.ttf",
+    "postscript" : "AppleMyungjo"
+  },
+  {
+    "family" : "Arial Black",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Arial Black.ttf",
+    "postscript" : "Arial-Black"
+  },
+  {
+    "family" : "Arial",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Arial Bold Italic.ttf",
+    "postscript" : "Arial-BoldItalicMT"
+  },
+  {
+    "family" : "Arial",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Arial Bold.ttf",
+    "postscript" : "Arial-BoldMT"
+  },
+  {
+    "family" : "Arial",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Arial Italic.ttf",
+    "postscript" : "Arial-ItalicMT"
+  },
+  {
+    "family" : "Arial Narrow",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Arial Narrow Bold Italic.ttf",
+    "postscript" : "ArialNarrow-BoldItalic"
+  },
+  {
+    "family" : "Arial Narrow",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Arial Narrow Bold.ttf",
+    "postscript" : "ArialNarrow-Bold"
+  },
+  {
+    "family" : "Arial Narrow",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Arial Narrow Italic.ttf",
+    "postscript" : "ArialNarrow-Italic"
+  },
+  {
+    "family" : "Arial Narrow",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Arial Narrow.ttf",
+    "postscript" : "ArialNarrow"
+  },
+  {
+    "family" : "Arial Rounded MT Bold",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Arial Rounded Bold.ttf",
+    "postscript" : "ArialRoundedMTBold"
+  },
+  {
+    "family" : "Arial Unicode MS",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Arial Unicode.ttf",
+    "postscript" : "ArialUnicodeMS"
+  },
+  {
+    "family" : "Arial",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Arial.ttf",
+    "postscript" : "ArialMT"
+  },
+  {
+    "family" : "Ayuthaya",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Ayuthaya.ttf",
+    "postscript" : "Ayuthaya"
+  },
+  {
+    "family" : "Baghdad",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Baghdad.ttc",
+    "postscript" : "Baghdad"
+  },
+  {
+    "family" : "Bangla MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Bangla MN.ttc",
+    "postscript" : "BanglaMN"
+  },
+  {
+    "family" : "Bangla MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Bangla MN.ttc",
+    "postscript" : "BanglaMN-Bold"
+  },
+  {
+    "family" : "Bangla Sangam MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Bangla Sangam MN.ttc",
+    "postscript" : "BanglaSangamMN"
+  },
+  {
+    "family" : "Bangla Sangam MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Bangla Sangam MN.ttc",
+    "postscript" : "BanglaSangamMN-Bold"
+  },
+  {
+    "family" : "Baskerville",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Baskerville.ttc",
+    "postscript" : "Baskerville"
+  },
+  {
+    "family" : "Baskerville",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Baskerville.ttc",
+    "postscript" : "Baskerville-Bold"
+  },
+  {
+    "family" : "Baskerville",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Baskerville.ttc",
+    "postscript" : "Baskerville-BoldItalic"
+  },
+  {
+    "family" : "Baskerville",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Baskerville.ttc",
+    "postscript" : "Baskerville-Italic"
+  },
+  {
+    "family" : "Baskerville",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Baskerville.ttc",
+    "postscript" : "Baskerville-SemiBold"
+  },
+  {
+    "family" : "Baskerville",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Baskerville.ttc",
+    "postscript" : "Baskerville-SemiBoldItalic"
+  },
+  {
+    "family" : "Beirut",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Beirut.ttc",
+    "postscript" : "Beirut"
+  },
+  {
+    "family" : "Big Caslon",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/BigCaslon.ttf",
+    "postscript" : "BigCaslon-Medium"
+  },
+  {
+    "family" : "Bodoni 72 Oldstyle",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Bodoni 72 OS.ttc",
+    "postscript" : "BodoniSvtyTwoOSITCTT-Bold"
+  },
+  {
+    "family" : "Bodoni 72 Oldstyle",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Bodoni 72 OS.ttc",
+    "postscript" : "BodoniSvtyTwoOSITCTT-Book"
+  },
+  {
+    "family" : "Bodoni 72 Oldstyle",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Bodoni 72 OS.ttc",
+    "postscript" : "BodoniSvtyTwoOSITCTT-BookIt"
+  },
+  {
+    "family" : "Bodoni 72 Smallcaps",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Bodoni 72 Smallcaps Book.ttf",
+    "postscript" : "BodoniSvtyTwoSCITCTT-Book"
+  },
+  {
+    "family" : "Bodoni 72",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Bodoni 72.ttc",
+    "postscript" : "BodoniSvtyTwoITCTT-Bold"
+  },
+  {
+    "family" : "Bodoni 72",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Bodoni 72.ttc",
+    "postscript" : "BodoniSvtyTwoITCTT-Book"
+  },
+  {
+    "family" : "Bodoni 72",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Bodoni 72.ttc",
+    "postscript" : "BodoniSvtyTwoITCTT-BookIta"
+  },
+  {
+    "family" : "Bodoni Ornaments",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Bodoni Ornaments.ttf",
+    "postscript" : "BodoniOrnamentsITCTT"
+  },
+  {
+    "family" : "Bradley Hand",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Bradley Hand Bold.ttf",
+    "postscript" : "BradleyHandITCTT-Bold"
+  },
+  {
+    "family" : "Brush Script MT",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Brush Script.ttf",
+    "postscript" : "BrushScriptMT"
+  },
+  {
+    "family" : "Chalkboard",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Chalkboard.ttc",
+    "postscript" : "Chalkboard"
+  },
+  {
+    "family" : "Chalkboard",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Chalkboard.ttc",
+    "postscript" : "Chalkboard-Bold"
+  },
+  {
+    "family" : "Chalkboard SE",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/ChalkboardSE.ttc",
+    "postscript" : "ChalkboardSE-Bold"
+  },
+  {
+    "family" : "Chalkboard SE",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/ChalkboardSE.ttc",
+    "postscript" : "ChalkboardSE-Light"
+  },
+  {
+    "family" : "Chalkboard SE",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/ChalkboardSE.ttc",
+    "postscript" : "ChalkboardSE-Regular"
+  },
+  {
+    "family" : "Chalkduster",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Chalkduster.ttf",
+    "postscript" : "Chalkduster"
+  },
+  {
+    "family" : "Charter",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Charter.ttc",
+    "postscript" : "Charter-Black"
+  },
+  {
+    "family" : "Charter",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Charter.ttc",
+    "postscript" : "Charter-BlackItalic"
+  },
+  {
+    "family" : "Charter",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Charter.ttc",
+    "postscript" : "Charter-Bold"
+  },
+  {
+    "family" : "Charter",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Charter.ttc",
+    "postscript" : "Charter-BoldItalic"
+  },
+  {
+    "family" : "Charter",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Charter.ttc",
+    "postscript" : "Charter-Italic"
+  },
+  {
+    "family" : "Charter",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Charter.ttc",
+    "postscript" : "Charter-Roman"
+  },
+  {
+    "family" : "Cochin",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Cochin.ttc",
+    "postscript" : "Cochin"
+  },
+  {
+    "family" : "Cochin",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Cochin.ttc",
+    "postscript" : "Cochin-Bold"
+  },
+  {
+    "family" : "Cochin",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Cochin.ttc",
+    "postscript" : "Cochin-BoldItalic"
+  },
+  {
+    "family" : "Cochin",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Cochin.ttc",
+    "postscript" : "Cochin-Italic"
+  },
+  {
+    "family" : "Comic Sans MS",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Comic Sans MS Bold.ttf",
+    "postscript" : "ComicSansMS-Bold"
+  },
+  {
+    "family" : "Comic Sans MS",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Comic Sans MS.ttf",
+    "postscript" : "ComicSansMS"
+  },
+  {
+    "family" : "Copperplate",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Copperplate.ttc",
+    "postscript" : "Copperplate"
+  },
+  {
+    "family" : "Copperplate",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Copperplate.ttc",
+    "postscript" : "Copperplate-Bold"
+  },
+  {
+    "family" : "Copperplate",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Copperplate.ttc",
+    "postscript" : "Copperplate-Light"
+  },
+  {
+    "family" : "Corsiva Hebrew",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Corsiva.ttc",
+    "postscript" : "CorsivaHebrew"
+  },
+  {
+    "family" : "Corsiva Hebrew",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Corsiva.ttc",
+    "postscript" : "CorsivaHebrew-Bold"
+  },
+  {
+    "family" : "Courier New",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Courier New Bold Italic.ttf",
+    "postscript" : "CourierNewPS-BoldItalicMT"
+  },
+  {
+    "family" : "Courier New",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Courier New Bold.ttf",
+    "postscript" : "CourierNewPS-BoldMT"
+  },
+  {
+    "family" : "Courier New",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Courier New Italic.ttf",
+    "postscript" : "CourierNewPS-ItalicMT"
+  },
+  {
+    "family" : "Courier New",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Courier New.ttf",
+    "postscript" : "CourierNewPSMT"
+  },
+  {
+    "family" : "DIN Alternate",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/DIN Alternate Bold.ttf",
+    "postscript" : "DINAlternate-Bold"
+  },
+  {
+    "family" : "DIN Condensed",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/DIN Condensed Bold.ttf",
+    "postscript" : "DINCondensed-Bold"
+  },
+  {
+    "family" : "Damascus",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Damascus.ttc",
+    "postscript" : "Damascus"
+  },
+  {
+    "family" : "Damascus",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Damascus.ttc",
+    "postscript" : "DamascusBold"
+  },
+  {
+    "family" : "Damascus",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Damascus.ttc",
+    "postscript" : "DamascusLight"
+  },
+  {
+    "family" : "Damascus",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Damascus.ttc",
+    "postscript" : "DamascusMedium"
+  },
+  {
+    "family" : "Damascus",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Damascus.ttc",
+    "postscript" : "DamascusSemiBold"
+  },
+  {
+    "family" : "DecoType Naskh",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/DecoTypeNaskh.ttc",
+    "postscript" : "DecoTypeNaskh"
+  },
+  {
+    "family" : "Devanagari Sangam MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Devanagari Sangam MN.ttc",
+    "postscript" : "DevanagariSangamMN"
+  },
+  {
+    "family" : "Devanagari Sangam MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Devanagari Sangam MN.ttc",
+    "postscript" : "DevanagariSangamMN-Bold"
+  },
+  {
+    "family" : "Devanagari MT",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/DevanagariMT.ttc",
+    "postscript" : "DevanagariMT"
+  },
+  {
+    "family" : "Devanagari MT",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/DevanagariMT.ttc",
+    "postscript" : "DevanagariMT-Bold"
+  },
+  {
+    "family" : "Didot",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Didot.ttc",
+    "postscript" : "Didot"
+  },
+  {
+    "family" : "Didot",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Didot.ttc",
+    "postscript" : "Didot-Bold"
+  },
+  {
+    "family" : "Didot",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Didot.ttc",
+    "postscript" : "Didot-Italic"
+  },
+  {
+    "family" : "Diwan Kufi",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Diwan Kufi.ttc",
+    "postscript" : "DiwanKufi"
+  },
+  {
+    "family" : "Diwan Thuluth",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Diwan Thuluth.ttf",
+    "postscript" : "DiwanThuluth"
+  },
+  {
+    "family" : "Euphemia UCAS",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/EuphemiaCAS.ttc",
+    "postscript" : "EuphemiaUCAS"
+  },
+  {
+    "family" : "Euphemia UCAS",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/EuphemiaCAS.ttc",
+    "postscript" : "EuphemiaUCAS-Bold"
+  },
+  {
+    "family" : "Euphemia UCAS",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/EuphemiaCAS.ttc",
+    "postscript" : "EuphemiaUCAS-Italic"
+  },
+  {
+    "family" : "Farah",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Farah.ttc",
+    "postscript" : "Farah"
+  },
+  {
+    "family" : "Farisi",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Farisi.ttf",
+    "postscript" : "Farisi"
+  },
+  {
+    "family" : "Futura",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Futura.ttc",
+    "postscript" : "Futura-Bold"
+  },
+  {
+    "family" : "Futura",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Futura.ttc",
+    "postscript" : "Futura-CondensedExtraBold"
+  },
+  {
+    "family" : "Futura",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Futura.ttc",
+    "postscript" : "Futura-CondensedMedium"
+  },
+  {
+    "family" : "Futura",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Futura.ttc",
+    "postscript" : "Futura-Medium"
+  },
+  {
+    "family" : "Futura",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Futura.ttc",
+    "postscript" : "Futura-MediumItalic"
+  },
+  {
+    "family" : "Galvji",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Galvji.ttc",
+    "postscript" : "Galvji"
+  },
+  {
+    "family" : "Galvji",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Galvji.ttc",
+    "postscript" : "Galvji-Bold"
+  },
+  {
+    "family" : "Galvji",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Galvji.ttc",
+    "postscript" : "Galvji-BoldOblique"
+  },
+  {
+    "family" : "Galvji",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Galvji.ttc",
+    "postscript" : "Galvji-Oblique"
+  },
+  {
+    "family" : "Georgia",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Georgia Bold Italic.ttf",
+    "postscript" : "Georgia-BoldItalic"
+  },
+  {
+    "family" : "Georgia",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Georgia Bold.ttf",
+    "postscript" : "Georgia-Bold"
+  },
+  {
+    "family" : "Georgia",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Georgia Italic.ttf",
+    "postscript" : "Georgia-Italic"
+  },
+  {
+    "family" : "Georgia",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Georgia.ttf",
+    "postscript" : "Georgia"
+  },
+  {
+    "family" : "Gill Sans",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/GillSans.ttc",
+    "postscript" : "GillSans"
+  },
+  {
+    "family" : "Gill Sans",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/GillSans.ttc",
+    "postscript" : "GillSans-Bold"
+  },
+  {
+    "family" : "Gill Sans",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/GillSans.ttc",
+    "postscript" : "GillSans-BoldItalic"
+  },
+  {
+    "family" : "Gill Sans",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/GillSans.ttc",
+    "postscript" : "GillSans-Italic"
+  },
+  {
+    "family" : "Gill Sans",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/GillSans.ttc",
+    "postscript" : "GillSans-Light"
+  },
+  {
+    "family" : "Gill Sans",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/GillSans.ttc",
+    "postscript" : "GillSans-LightItalic"
+  },
+  {
+    "family" : "Gill Sans",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/GillSans.ttc",
+    "postscript" : "GillSans-SemiBold"
+  },
+  {
+    "family" : "Gill Sans",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/GillSans.ttc",
+    "postscript" : "GillSans-SemiBoldItalic"
+  },
+  {
+    "family" : "Gill Sans",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/GillSans.ttc",
+    "postscript" : "GillSans-UltraBold"
+  },
+  {
+    "family" : "Gujarati Sangam MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Gujarati Sangam MN.ttc",
+    "postscript" : "GujaratiSangamMN"
+  },
+  {
+    "family" : "Gujarati Sangam MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Gujarati Sangam MN.ttc",
+    "postscript" : "GujaratiSangamMN-Bold"
+  },
+  {
+    "family" : "Gujarati MT",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/GujaratiMT.ttc",
+    "postscript" : "GujaratiMT"
+  },
+  {
+    "family" : "Gujarati MT",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/GujaratiMT.ttc",
+    "postscript" : "GujaratiMT-Bold"
+  },
+  {
+    "family" : "Gurmukhi MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Gurmukhi MN.ttc",
+    "postscript" : "GurmukhiMN"
+  },
+  {
+    "family" : "Gurmukhi MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Gurmukhi MN.ttc",
+    "postscript" : "GurmukhiMN-Bold"
+  },
+  {
+    "family" : "Gurmukhi Sangam MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Gurmukhi Sangam MN.ttc",
+    "postscript" : "GurmukhiSangamMN"
+  },
+  {
+    "family" : "Gurmukhi Sangam MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Gurmukhi Sangam MN.ttc",
+    "postscript" : "GurmukhiSangamMN-Bold"
+  },
+  {
+    "family" : "Gurmukhi MT",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Gurmukhi.ttf",
+    "postscript" : "MonotypeGurmukhi"
+  },
+  {
+    "family" : "Herculanum",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Herculanum.ttf",
+    "postscript" : "Herculanum"
+  },
+  {
+    "family" : "Hoefler Text",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Hoefler Text Ornaments.ttf",
+    "postscript" : "HoeflerText-Ornaments"
+  },
+  {
+    "family" : "Hoefler Text",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Hoefler Text.ttc",
+    "postscript" : "HoeflerText-Black"
+  },
+  {
+    "family" : "Hoefler Text",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Hoefler Text.ttc",
+    "postscript" : "HoeflerText-BlackItalic"
+  },
+  {
+    "family" : "Hoefler Text",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Hoefler Text.ttc",
+    "postscript" : "HoeflerText-Italic"
+  },
+  {
+    "family" : "Hoefler Text",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Hoefler Text.ttc",
+    "postscript" : "HoeflerText-Regular"
+  },
+  {
+    "family" : "ITF Devanagari",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/ITFDevanagari.ttc",
+    "postscript" : "ITFDevanagari-Bold"
+  },
+  {
+    "family" : "ITF Devanagari",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/ITFDevanagari.ttc",
+    "postscript" : "ITFDevanagari-Book"
+  },
+  {
+    "family" : "ITF Devanagari",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/ITFDevanagari.ttc",
+    "postscript" : "ITFDevanagari-Demi"
+  },
+  {
+    "family" : "ITF Devanagari",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/ITFDevanagari.ttc",
+    "postscript" : "ITFDevanagari-Light"
+  },
+  {
+    "family" : "ITF Devanagari",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/ITFDevanagari.ttc",
+    "postscript" : "ITFDevanagari-Medium"
+  },
+  {
+    "family" : "ITF Devanagari Marathi",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/ITFDevanagari.ttc",
+    "postscript" : "ITFDevanagariMarathi-Bold"
+  },
+  {
+    "family" : "ITF Devanagari Marathi",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/ITFDevanagari.ttc",
+    "postscript" : "ITFDevanagariMarathi-Book"
+  },
+  {
+    "family" : "ITF Devanagari Marathi",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/ITFDevanagari.ttc",
+    "postscript" : "ITFDevanagariMarathi-Demi"
+  },
+  {
+    "family" : "ITF Devanagari Marathi",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/ITFDevanagari.ttc",
+    "postscript" : "ITFDevanagariMarathi-Light"
+  },
+  {
+    "family" : "ITF Devanagari Marathi",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/ITFDevanagari.ttc",
+    "postscript" : "ITFDevanagariMarathi-Medium"
+  },
+  {
+    "family" : "Impact",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Impact.ttf",
+    "postscript" : "Impact"
+  },
+  {
+    "family" : "InaiMathi",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/InaiMathi-MN.ttc",
+    "postscript" : "InaiMathi"
+  },
+  {
+    "family" : "InaiMathi",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/InaiMathi-MN.ttc",
+    "postscript" : "InaiMathi-Bold"
+  },
+  {
+    "family" : "Kailasa",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Kailasa.ttc",
+    "postscript" : "Kailasa"
+  },
+  {
+    "family" : "Kailasa",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Kailasa.ttc",
+    "postscript" : "Kailasa-Bold"
+  },
+  {
+    "family" : "Kannada MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Kannada MN.ttc",
+    "postscript" : "KannadaMN"
+  },
+  {
+    "family" : "Kannada MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Kannada MN.ttc",
+    "postscript" : "KannadaMN-Bold"
+  },
+  {
+    "family" : "Kannada Sangam MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Kannada Sangam MN.ttc",
+    "postscript" : "KannadaSangamMN"
+  },
+  {
+    "family" : "Kannada Sangam MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Kannada Sangam MN.ttc",
+    "postscript" : "KannadaSangamMN-Bold"
+  },
+  {
+    "family" : "Kefa III",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/KefaIII.ttf",
+    "postscript" : "KefaIII-Bold"
+  },
+  {
+    "family" : "Kefa III",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/KefaIII.ttf",
+    "postscript" : "KefaIII-ExtraBold"
+  },
+  {
+    "family" : "Kefa III",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/KefaIII.ttf",
+    "postscript" : "KefaIII-Light"
+  },
+  {
+    "family" : "Kefa III",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/KefaIII.ttf",
+    "postscript" : "KefaIII-Regular"
+  },
+  {
+    "family" : "Khmer MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Khmer MN.ttc",
+    "postscript" : "KhmerMN"
+  },
+  {
+    "family" : "Khmer MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Khmer MN.ttc",
+    "postscript" : "KhmerMN-Bold"
+  },
+  {
+    "family" : "Khmer Sangam MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Khmer Sangam MN.ttf",
+    "postscript" : "KhmerSangamMN"
+  },
+  {
+    "family" : "Kokonor",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Kokonor.ttf",
+    "postscript" : "Kokonor"
+  },
+  {
+    "family" : "Krungthep",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Krungthep.ttf",
+    "postscript" : "Krungthep"
+  },
+  {
+    "family" : "KufiStandardGK",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/KufiStandardGK.ttc",
+    "postscript" : "KufiStandardGK"
+  },
+  {
+    "family" : "Lao MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Lao MN.ttc",
+    "postscript" : "LaoMN"
+  },
+  {
+    "family" : "Lao MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Lao MN.ttc",
+    "postscript" : "LaoMN-Bold"
+  },
+  {
+    "family" : "Lao Sangam MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Lao Sangam MN.ttf",
+    "postscript" : "LaoSangamMN"
+  },
+  {
+    "family" : "Luminari",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Luminari.ttf",
+    "postscript" : "Luminari-Regular"
+  },
+  {
+    "family" : "Malayalam MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Malayalam MN.ttc",
+    "postscript" : "MalayalamMN"
+  },
+  {
+    "family" : "Malayalam MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Malayalam MN.ttc",
+    "postscript" : "MalayalamMN-Bold"
+  },
+  {
+    "family" : "Malayalam Sangam MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Malayalam Sangam MN.ttc",
+    "postscript" : "MalayalamSangamMN"
+  },
+  {
+    "family" : "Malayalam Sangam MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Malayalam Sangam MN.ttc",
+    "postscript" : "MalayalamSangamMN-Bold"
+  },
+  {
+    "family" : "Microsoft Sans Serif",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Microsoft Sans Serif.ttf",
+    "postscript" : "MicrosoftSansSerif"
+  },
+  {
+    "family" : "Mishafi Gold",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Mishafi Gold.ttf",
+    "postscript" : "DiwanMishafiGold"
+  },
+  {
+    "family" : "Mishafi",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Mishafi.ttf",
+    "postscript" : "DiwanMishafi"
+  },
+  {
+    "family" : "Mshtakan",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Mshtakan.ttc",
+    "postscript" : "Mshtakan"
+  },
+  {
+    "family" : "Mshtakan",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Mshtakan.ttc",
+    "postscript" : "MshtakanBold"
+  },
+  {
+    "family" : "Mshtakan",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Mshtakan.ttc",
+    "postscript" : "MshtakanBoldOblique"
+  },
+  {
+    "family" : "Mshtakan",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Mshtakan.ttc",
+    "postscript" : "MshtakanOblique"
+  },
+  {
+    "family" : "Muna",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Muna.ttc",
+    "postscript" : "Muna"
+  },
+  {
+    "family" : "Muna",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Muna.ttc",
+    "postscript" : "MunaBlack"
+  },
+  {
+    "family" : "Muna",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Muna.ttc",
+    "postscript" : "MunaBold"
+  },
+  {
+    "family" : "Myanmar MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Myanmar MN.ttc",
+    "postscript" : "MyanmarMN"
+  },
+  {
+    "family" : "Myanmar MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Myanmar MN.ttc",
+    "postscript" : "MyanmarMN-Bold"
+  },
+  {
+    "family" : "Myanmar Sangam MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Myanmar Sangam MN.ttc",
+    "postscript" : "MyanmarSangamMN"
+  },
+  {
+    "family" : "Myanmar Sangam MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Myanmar Sangam MN.ttc",
+    "postscript" : "MyanmarSangamMN-Bold"
+  },
+  {
+    "family" : "GB18030 Bitmap",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/NISC18030.ttf",
+    "postscript" : "GB18030Bitmap"
+  },
+  {
+    "family" : "Nadeem",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Nadeem.ttc",
+    "postscript" : "Nadeem"
+  },
+  {
+    "family" : "New Peninim MT",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/NewPeninimMT.ttc",
+    "postscript" : "NewPeninimMT"
+  },
+  {
+    "family" : "New Peninim MT",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/NewPeninimMT.ttc",
+    "postscript" : "NewPeninimMT-Bold"
+  },
+  {
+    "family" : "New Peninim MT",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/NewPeninimMT.ttc",
+    "postscript" : "NewPeninimMT-BoldInclined"
+  },
+  {
+    "family" : "New Peninim MT",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/NewPeninimMT.ttc",
+    "postscript" : "NewPeninimMT-Inclined"
+  },
+  {
+    "family" : "Noto Sans Batak",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/NotoSansBatak-Regular.ttf",
+    "postscript" : "NotoSansBatak-Regular"
+  },
+  {
+    "family" : "Noto Sans NKo",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/NotoSansNKo-Regular.ttf",
+    "postscript" : "NotoSansNKo-Regular"
+  },
+  {
+    "family" : "Noto Sans Syriac",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/NotoSansSyriac-Regular.ttf",
+    "postscript" : "NotoSansSyriac-Regular"
+  },
+  {
+    "family" : "Noto Sans Syriac",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/NotoSansSyriac-Regular.ttf",
+    "postscript" : "NotoSansSyriac-Regular_Black"
+  },
+  {
+    "family" : "Noto Sans Syriac",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/NotoSansSyriac-Regular.ttf",
+    "postscript" : "NotoSansSyriac-Regular_Bold"
+  },
+  {
+    "family" : "Noto Sans Syriac",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/NotoSansSyriac-Regular.ttf",
+    "postscript" : "NotoSansSyriac-Regular_ExtraBold"
+  },
+  {
+    "family" : "Noto Sans Syriac",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/NotoSansSyriac-Regular.ttf",
+    "postscript" : "NotoSansSyriac-Regular_ExtraLight"
+  },
+  {
+    "family" : "Noto Sans Syriac",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/NotoSansSyriac-Regular.ttf",
+    "postscript" : "NotoSansSyriac-Regular_Light"
+  },
+  {
+    "family" : "Noto Sans Syriac",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/NotoSansSyriac-Regular.ttf",
+    "postscript" : "NotoSansSyriac-Regular_Medium"
+  },
+  {
+    "family" : "Noto Sans Syriac",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/NotoSansSyriac-Regular.ttf",
+    "postscript" : "NotoSansSyriac-Regular_SemiBold"
+  },
+  {
+    "family" : "Noto Sans Syriac",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/NotoSansSyriac-Regular.ttf",
+    "postscript" : "NotoSansSyriac-Regular_Thin"
+  },
+  {
+    "family" : "Noto Sans Tagalog",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/NotoSansTagalog-Regular.ttf",
+    "postscript" : "NotoSansTagalog-Regular"
+  },
+  {
+    "family" : "Oriya MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Oriya MN.ttc",
+    "postscript" : "OriyaMN"
+  },
+  {
+    "family" : "Oriya MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Oriya MN.ttc",
+    "postscript" : "OriyaMN-Bold"
+  },
+  {
+    "family" : "Oriya Sangam MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Oriya Sangam MN.ttc",
+    "postscript" : "OriyaSangamMN"
+  },
+  {
+    "family" : "Oriya Sangam MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Oriya Sangam MN.ttc",
+    "postscript" : "OriyaSangamMN-Bold"
+  },
+  {
+    "family" : "PT Mono",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/PTMono.ttc",
+    "postscript" : "PTMono-Bold"
+  },
+  {
+    "family" : "PT Mono",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/PTMono.ttc",
+    "postscript" : "PTMono-Regular"
+  },
+  {
+    "family" : "PT Sans",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/PTSans.ttc",
+    "postscript" : "PTSans-Bold"
+  },
+  {
+    "family" : "PT Sans",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/PTSans.ttc",
+    "postscript" : "PTSans-BoldItalic"
+  },
+  {
+    "family" : "PT Sans Caption",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/PTSans.ttc",
+    "postscript" : "PTSans-Caption"
+  },
+  {
+    "family" : "PT Sans Caption",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/PTSans.ttc",
+    "postscript" : "PTSans-CaptionBold"
+  },
+  {
+    "family" : "PT Sans",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/PTSans.ttc",
+    "postscript" : "PTSans-Italic"
+  },
+  {
+    "family" : "PT Sans Narrow",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/PTSans.ttc",
+    "postscript" : "PTSans-Narrow"
+  },
+  {
+    "family" : "PT Sans Narrow",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/PTSans.ttc",
+    "postscript" : "PTSans-NarrowBold"
+  },
+  {
+    "family" : "PT Sans",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/PTSans.ttc",
+    "postscript" : "PTSans-Regular"
+  },
+  {
+    "family" : "PT Serif",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/PTSerif.ttc",
+    "postscript" : "PTSerif-Bold"
+  },
+  {
+    "family" : "PT Serif",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/PTSerif.ttc",
+    "postscript" : "PTSerif-BoldItalic"
+  },
+  {
+    "family" : "PT Serif",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/PTSerif.ttc",
+    "postscript" : "PTSerif-Italic"
+  },
+  {
+    "family" : "PT Serif",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/PTSerif.ttc",
+    "postscript" : "PTSerif-Regular"
+  },
+  {
+    "family" : "PT Serif Caption",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/PTSerifCaption.ttc",
+    "postscript" : "PTSerif-Caption"
+  },
+  {
+    "family" : "PT Serif Caption",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/PTSerifCaption.ttc",
+    "postscript" : "PTSerif-CaptionItalic"
+  },
+  {
+    "family" : "Papyrus",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Papyrus.ttc",
+    "postscript" : "Papyrus"
+  },
+  {
+    "family" : "Papyrus",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Papyrus.ttc",
+    "postscript" : "Papyrus-Condensed"
+  },
+  {
+    "family" : "Party LET",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/PartyLET-plain.ttf",
+    "postscript" : "PartyLetPlain"
+  },
+  {
+    "family" : "Phosphate",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Phosphate.ttc",
+    "postscript" : "Phosphate-Inline"
+  },
+  {
+    "family" : "Phosphate",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Phosphate.ttc",
+    "postscript" : "Phosphate-Solid"
+  },
+  {
+    "family" : "Plantagenet Cherokee",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/PlantagenetCherokee.ttf",
+    "postscript" : "PlantagenetCherokee"
+  },
+  {
+    "family" : "Raanana",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Raanana.ttc",
+    "postscript" : "Raanana"
+  },
+  {
+    "family" : "Raanana",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Raanana.ttc",
+    "postscript" : "RaananaBold"
+  },
+  {
+    "family" : "Rockwell",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Rockwell.ttc",
+    "postscript" : "Rockwell-Bold"
+  },
+  {
+    "family" : "Rockwell",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Rockwell.ttc",
+    "postscript" : "Rockwell-BoldItalic"
+  },
+  {
+    "family" : "Rockwell",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Rockwell.ttc",
+    "postscript" : "Rockwell-Italic"
+  },
+  {
+    "family" : "Rockwell",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Rockwell.ttc",
+    "postscript" : "Rockwell-Regular"
+  },
+  {
+    "family" : "STIX Two Math",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/STIXTwoMath.otf",
+    "postscript" : "STIXTwoMath-Regular"
+  },
+  {
+    "family" : "STIX Two Text",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/STIXTwoText-Italic.ttf",
+    "postscript" : "STIXTwoText-Italic"
+  },
+  {
+    "family" : "STIX Two Text",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/STIXTwoText-Italic.ttf",
+    "postscript" : "STIXTwoText-Italic_Bold-Italic"
+  },
+  {
+    "family" : "STIX Two Text",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/STIXTwoText-Italic.ttf",
+    "postscript" : "STIXTwoText-Italic_Medium-Italic"
+  },
+  {
+    "family" : "STIX Two Text",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/STIXTwoText-Italic.ttf",
+    "postscript" : "STIXTwoText-Italic_SemiBold-Italic"
+  },
+  {
+    "family" : "STIX Two Text",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/STIXTwoText.ttf",
+    "postscript" : "STIXTwoText"
+  },
+  {
+    "family" : "STIX Two Text",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/STIXTwoText.ttf",
+    "postscript" : "STIXTwoText_Bold"
+  },
+  {
+    "family" : "STIX Two Text",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/STIXTwoText.ttf",
+    "postscript" : "STIXTwoText_Medium"
+  },
+  {
+    "family" : "STIX Two Text",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/STIXTwoText.ttf",
+    "postscript" : "STIXTwoText_SemiBold"
+  },
+  {
+    "family" : "Sana",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Sana.ttc",
+    "postscript" : "Sana"
+  },
+  {
+    "family" : "Sathu",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Sathu.ttf",
+    "postscript" : "Sathu"
+  },
+  {
+    "family" : "Savoye LET",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Savoye LET.ttc",
+    "postscript" : "SavoyeLetPlain"
+  },
+  {
+    "family" : "Shree Devanagari 714",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Shree714.ttc",
+    "postscript" : "ShreeDev0714"
+  },
+  {
+    "family" : "Shree Devanagari 714",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Shree714.ttc",
+    "postscript" : "ShreeDev0714-Bold"
+  },
+  {
+    "family" : "Shree Devanagari 714",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Shree714.ttc",
+    "postscript" : "ShreeDev0714-BoldItalic"
+  },
+  {
+    "family" : "Shree Devanagari 714",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Shree714.ttc",
+    "postscript" : "ShreeDev0714-Italic"
+  },
+  {
+    "family" : "SignPainter",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/SignPainter.ttc",
+    "postscript" : "SignPainter-HouseScript"
+  },
+  {
+    "family" : "SignPainter",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/SignPainter.ttc",
+    "postscript" : "SignPainter-HouseScriptSemibold"
+  },
+  {
+    "family" : "Silom",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Silom.ttf",
+    "postscript" : "Silom"
+  },
+  {
+    "family" : "Sinhala MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Sinhala MN.ttc",
+    "postscript" : "SinhalaMN"
+  },
+  {
+    "family" : "Sinhala MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Sinhala MN.ttc",
+    "postscript" : "SinhalaMN-Bold"
+  },
+  {
+    "family" : "Sinhala Sangam MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Sinhala Sangam MN.ttc",
+    "postscript" : "SinhalaSangamMN"
+  },
+  {
+    "family" : "Sinhala Sangam MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Sinhala Sangam MN.ttc",
+    "postscript" : "SinhalaSangamMN-Bold"
+  },
+  {
+    "family" : "Skia",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Skia.ttf",
+    "postscript" : "Skia-Regular"
+  },
+  {
+    "family" : "Skia",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Skia.ttf",
+    "postscript" : "Skia-Regular_Black"
+  },
+  {
+    "family" : "Skia",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Skia.ttf",
+    "postscript" : "Skia-Regular_Black-Condensed"
+  },
+  {
+    "family" : "Skia",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Skia.ttf",
+    "postscript" : "Skia-Regular_Black-Extended"
+  },
+  {
+    "family" : "Skia",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Skia.ttf",
+    "postscript" : "Skia-Regular_Bold"
+  },
+  {
+    "family" : "Skia",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Skia.ttf",
+    "postscript" : "Skia-Regular_Condensed"
+  },
+  {
+    "family" : "Skia",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Skia.ttf",
+    "postscript" : "Skia-Regular_Extended"
+  },
+  {
+    "family" : "Skia",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Skia.ttf",
+    "postscript" : "Skia-Regular_Light"
+  },
+  {
+    "family" : "Skia",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Skia.ttf",
+    "postscript" : "Skia-Regular_Light-Condensed"
+  },
+  {
+    "family" : "Skia",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Skia.ttf",
+    "postscript" : "Skia-Regular_Light-Extended"
+  },
+  {
+    "family" : "Snell Roundhand",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/SnellRoundhand.ttc",
+    "postscript" : "SnellRoundhand"
+  },
+  {
+    "family" : "Snell Roundhand",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/SnellRoundhand.ttc",
+    "postscript" : "SnellRoundhand-Black"
+  },
+  {
+    "family" : "Snell Roundhand",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/SnellRoundhand.ttc",
+    "postscript" : "SnellRoundhand-Bold"
+  },
+  {
+    "family" : "STSong",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Songti.ttc",
+    "postscript" : "STSong"
+  },
+  {
+    "family" : "Songti SC",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Songti.ttc",
+    "postscript" : "STSongti-SC-Black"
+  },
+  {
+    "family" : "Songti SC",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Songti.ttc",
+    "postscript" : "STSongti-SC-Bold"
+  },
+  {
+    "family" : "Songti SC",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Songti.ttc",
+    "postscript" : "STSongti-SC-Light"
+  },
+  {
+    "family" : "Songti SC",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Songti.ttc",
+    "postscript" : "STSongti-SC-Regular"
+  },
+  {
+    "family" : "Songti TC",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Songti.ttc",
+    "postscript" : "STSongti-TC-Bold"
+  },
+  {
+    "family" : "Songti TC",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Songti.ttc",
+    "postscript" : "STSongti-TC-Light"
+  },
+  {
+    "family" : "Songti TC",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Songti.ttc",
+    "postscript" : "STSongti-TC-Regular"
+  },
+  {
+    "family" : "Sukhumvit Set",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/SukhumvitSet.ttc",
+    "postscript" : "SukhumvitSet-Bold"
+  },
+  {
+    "family" : "Sukhumvit Set",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/SukhumvitSet.ttc",
+    "postscript" : "SukhumvitSet-Light"
+  },
+  {
+    "family" : "Sukhumvit Set",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/SukhumvitSet.ttc",
+    "postscript" : "SukhumvitSet-Medium"
+  },
+  {
+    "family" : "Sukhumvit Set",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/SukhumvitSet.ttc",
+    "postscript" : "SukhumvitSet-SemiBold"
+  },
+  {
+    "family" : "Sukhumvit Set",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/SukhumvitSet.ttc",
+    "postscript" : "SukhumvitSet-Text"
+  },
+  {
+    "family" : "Sukhumvit Set",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/SukhumvitSet.ttc",
+    "postscript" : "SukhumvitSet-Thin"
+  },
+  {
+    "family" : "Tahoma",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Tahoma Bold.ttf",
+    "postscript" : "Tahoma-Bold"
+  },
+  {
+    "family" : "Tahoma",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Tahoma.ttf",
+    "postscript" : "Tahoma"
+  },
+  {
+    "family" : "Tamil MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Tamil MN.ttc",
+    "postscript" : "TamilMN"
+  },
+  {
+    "family" : "Tamil MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Tamil MN.ttc",
+    "postscript" : "TamilMN-Bold"
+  },
+  {
+    "family" : "Grantha Sangam MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Tamil Sangam MN.ttc",
+    "postscript" : "GranthaSangamMN-Bold"
+  },
+  {
+    "family" : "Grantha Sangam MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Tamil Sangam MN.ttc",
+    "postscript" : "GranthaSangamMN-Regular"
+  },
+  {
+    "family" : "Tamil Sangam MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Tamil Sangam MN.ttc",
+    "postscript" : "TamilSangamMN"
+  },
+  {
+    "family" : "Tamil Sangam MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Tamil Sangam MN.ttc",
+    "postscript" : "TamilSangamMN-Bold"
+  },
+  {
+    "family" : "Telugu MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Telugu MN.ttc",
+    "postscript" : "TeluguMN"
+  },
+  {
+    "family" : "Telugu MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Telugu MN.ttc",
+    "postscript" : "TeluguMN-Bold"
+  },
+  {
+    "family" : "Telugu Sangam MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Telugu Sangam MN.ttc",
+    "postscript" : "TeluguSangamMN"
+  },
+  {
+    "family" : "Telugu Sangam MN",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Telugu Sangam MN.ttc",
+    "postscript" : "TeluguSangamMN-Bold"
+  },
+  {
+    "family" : "Thonburi",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Thonburi.ttc",
+    "postscript" : "Thonburi"
+  },
+  {
+    "family" : "Thonburi",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Thonburi.ttc",
+    "postscript" : "Thonburi-Bold"
+  },
+  {
+    "family" : "Thonburi",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Thonburi.ttc",
+    "postscript" : "Thonburi-Light"
+  },
+  {
+    "family" : "Times New Roman",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Times New Roman Bold Italic.ttf",
+    "postscript" : "TimesNewRomanPS-BoldItalicMT"
+  },
+  {
+    "family" : "Times New Roman",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Times New Roman Bold.ttf",
+    "postscript" : "TimesNewRomanPS-BoldMT"
+  },
+  {
+    "family" : "Times New Roman",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Times New Roman Italic.ttf",
+    "postscript" : "TimesNewRomanPS-ItalicMT"
+  },
+  {
+    "family" : "Times New Roman",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Times New Roman.ttf",
+    "postscript" : "TimesNewRomanPSMT"
+  },
+  {
+    "family" : "Trattatello",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Trattatello.ttf",
+    "postscript" : "Trattatello"
+  },
+  {
+    "family" : "Trebuchet MS",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Trebuchet MS Bold Italic.ttf",
+    "postscript" : "Trebuchet-BoldItalic"
+  },
+  {
+    "family" : "Trebuchet MS",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Trebuchet MS Bold.ttf",
+    "postscript" : "TrebuchetMS-Bold"
+  },
+  {
+    "family" : "Trebuchet MS",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Trebuchet MS Italic.ttf",
+    "postscript" : "TrebuchetMS-Italic"
+  },
+  {
+    "family" : "Trebuchet MS",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Trebuchet MS.ttf",
+    "postscript" : "TrebuchetMS"
+  },
+  {
+    "family" : "Verdana",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Verdana Bold Italic.ttf",
+    "postscript" : "Verdana-BoldItalic"
+  },
+  {
+    "family" : "Verdana",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Verdana Bold.ttf",
+    "postscript" : "Verdana-Bold"
+  },
+  {
+    "family" : "Verdana",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Verdana Italic.ttf",
+    "postscript" : "Verdana-Italic"
+  },
+  {
+    "family" : "Verdana",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Verdana.ttf",
+    "postscript" : "Verdana"
+  },
+  {
+    "family" : "Waseem",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Waseem.ttc",
+    "postscript" : "Waseem"
+  },
+  {
+    "family" : "Waseem",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Waseem.ttc",
+    "postscript" : "WaseemLight"
+  },
+  {
+    "family" : "Webdings",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Webdings.ttf",
+    "postscript" : "Webdings"
+  },
+  {
+    "family" : "Wingdings 2",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Wingdings 2.ttf",
+    "postscript" : "Wingdings2"
+  },
+  {
+    "family" : "Wingdings 3",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Wingdings 3.ttf",
+    "postscript" : "Wingdings3"
+  },
+  {
+    "family" : "Wingdings",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Wingdings.ttf",
+    "postscript" : "Wingdings-Regular"
+  },
+  {
+    "family" : "Zapfino",
+    "path" : "\/System\/Library\/Fonts\/Supplemental\/Zapfino.ttf",
+    "postscript" : "Zapfino"
+  },
+  {
+    "family" : "Symbol",
+    "path" : "\/System\/Library\/Fonts\/Symbol.ttf",
+    "postscript" : "Symbol"
+  },
+  {
+    "family" : "Zapf Dingbats",
+    "path" : "\/System\/Library\/Fonts\/ZapfDingbats.ttf",
+    "postscript" : "ZapfDingbatsITC"
+  },
+  {
+    "family" : "Hiragino Maru Gothic ProN",
+    "path" : "\/System\/Library\/Fonts\/ヒラギノ丸ゴ ProN W4.ttc",
+    "postscript" : "HiraMaruProN-W4"
+  },
+  {
+    "family" : "Hiragino Mincho ProN",
+    "path" : "\/System\/Library\/Fonts\/ヒラギノ明朝 ProN.ttc",
+    "postscript" : "HiraMinProN-W3"
+  },
+  {
+    "family" : "Hiragino Mincho ProN",
+    "path" : "\/System\/Library\/Fonts\/ヒラギノ明朝 ProN.ttc",
+    "postscript" : "HiraMinProN-W6"
+  },
+  {
+    "family" : "Hiragino Sans",
+    "path" : "\/System\/Library\/Fonts\/ヒラギノ角ゴシック W0.ttc",
+    "postscript" : "HiraginoSans-W0"
+  },
+  {
+    "family" : "Hiragino Sans",
+    "path" : "\/System\/Library\/Fonts\/ヒラギノ角ゴシック W1.ttc",
+    "postscript" : "HiraginoSans-W1"
+  },
+  {
+    "family" : "Hiragino Sans",
+    "path" : "\/System\/Library\/Fonts\/ヒラギノ角ゴシック W2.ttc",
+    "postscript" : "HiraginoSans-W2"
+  },
+  {
+    "family" : "Hiragino Sans",
+    "path" : "\/System\/Library\/Fonts\/ヒラギノ角ゴシック W3.ttc",
+    "postscript" : "HiraginoSans-W3"
+  },
+  {
+    "family" : "Hiragino Sans",
+    "path" : "\/System\/Library\/Fonts\/ヒラギノ角ゴシック W4.ttc",
+    "postscript" : "HiraginoSans-W4"
+  },
+  {
+    "family" : "Hiragino Sans",
+    "path" : "\/System\/Library\/Fonts\/ヒラギノ角ゴシック W5.ttc",
+    "postscript" : "HiraginoSans-W5"
+  },
+  {
+    "family" : "Hiragino Sans",
+    "path" : "\/System\/Library\/Fonts\/ヒラギノ角ゴシック W6.ttc",
+    "postscript" : "HiraginoSans-W6"
+  },
+  {
+    "family" : "Hiragino Sans",
+    "path" : "\/System\/Library\/Fonts\/ヒラギノ角ゴシック W7.ttc",
+    "postscript" : "HiraginoSans-W7"
+  },
+  {
+    "family" : "Hiragino Sans",
+    "path" : "\/System\/Library\/Fonts\/ヒラギノ角ゴシック W8.ttc",
+    "postscript" : "HiraginoSans-W8"
+  },
+  {
+    "family" : "Hiragino Sans",
+    "path" : "\/System\/Library\/Fonts\/ヒラギノ角ゴシック W9.ttc",
+    "postscript" : "HiraginoSans-W9"
+  },
+  {
+    "family" : "PingFang HK",
+    "path" : "\/System\/Library\/PrivateFrameworks\/FontServices.framework\/Resources\/Reserved\/PingFangUI.ttc",
+    "postscript" : "PingFangHK-Light"
+  },
+  {
+    "family" : "PingFang HK",
+    "path" : "\/System\/Library\/PrivateFrameworks\/FontServices.framework\/Resources\/Reserved\/PingFangUI.ttc",
+    "postscript" : "PingFangHK-Medium"
+  },
+  {
+    "family" : "PingFang HK",
+    "path" : "\/System\/Library\/PrivateFrameworks\/FontServices.framework\/Resources\/Reserved\/PingFangUI.ttc",
+    "postscript" : "PingFangHK-Regular"
+  },
+  {
+    "family" : "PingFang HK",
+    "path" : "\/System\/Library\/PrivateFrameworks\/FontServices.framework\/Resources\/Reserved\/PingFangUI.ttc",
+    "postscript" : "PingFangHK-Semibold"
+  },
+  {
+    "family" : "PingFang HK",
+    "path" : "\/System\/Library\/PrivateFrameworks\/FontServices.framework\/Resources\/Reserved\/PingFangUI.ttc",
+    "postscript" : "PingFangHK-Thin"
+  },
+  {
+    "family" : "PingFang HK",
+    "path" : "\/System\/Library\/PrivateFrameworks\/FontServices.framework\/Resources\/Reserved\/PingFangUI.ttc",
+    "postscript" : "PingFangHK-Ultralight"
+  },
+  {
+    "family" : "PingFang MO",
+    "path" : "\/System\/Library\/PrivateFrameworks\/FontServices.framework\/Resources\/Reserved\/PingFangUI.ttc",
+    "postscript" : "PingFangMO-Light"
+  },
+  {
+    "family" : "PingFang MO",
+    "path" : "\/System\/Library\/PrivateFrameworks\/FontServices.framework\/Resources\/Reserved\/PingFangUI.ttc",
+    "postscript" : "PingFangMO-Medium"
+  },
+  {
+    "family" : "PingFang MO",
+    "path" : "\/System\/Library\/PrivateFrameworks\/FontServices.framework\/Resources\/Reserved\/PingFangUI.ttc",
+    "postscript" : "PingFangMO-Regular"
+  },
+  {
+    "family" : "PingFang MO",
+    "path" : "\/System\/Library\/PrivateFrameworks\/FontServices.framework\/Resources\/Reserved\/PingFangUI.ttc",
+    "postscript" : "PingFangMO-Semibold"
+  },
+  {
+    "family" : "PingFang MO",
+    "path" : "\/System\/Library\/PrivateFrameworks\/FontServices.framework\/Resources\/Reserved\/PingFangUI.ttc",
+    "postscript" : "PingFangMO-Thin"
+  },
+  {
+    "family" : "PingFang MO",
+    "path" : "\/System\/Library\/PrivateFrameworks\/FontServices.framework\/Resources\/Reserved\/PingFangUI.ttc",
+    "postscript" : "PingFangMO-Ultralight"
+  },
+  {
+    "family" : "PingFang SC",
+    "path" : "\/System\/Library\/PrivateFrameworks\/FontServices.framework\/Resources\/Reserved\/PingFangUI.ttc",
+    "postscript" : "PingFangSC-Light"
+  },
+  {
+    "family" : "PingFang SC",
+    "path" : "\/System\/Library\/PrivateFrameworks\/FontServices.framework\/Resources\/Reserved\/PingFangUI.ttc",
+    "postscript" : "PingFangSC-Medium"
+  },
+  {
+    "family" : "PingFang SC",
+    "path" : "\/System\/Library\/PrivateFrameworks\/FontServices.framework\/Resources\/Reserved\/PingFangUI.ttc",
+    "postscript" : "PingFangSC-Regular"
+  },
+  {
+    "family" : "PingFang SC",
+    "path" : "\/System\/Library\/PrivateFrameworks\/FontServices.framework\/Resources\/Reserved\/PingFangUI.ttc",
+    "postscript" : "PingFangSC-Semibold"
+  },
+  {
+    "family" : "PingFang SC",
+    "path" : "\/System\/Library\/PrivateFrameworks\/FontServices.framework\/Resources\/Reserved\/PingFangUI.ttc",
+    "postscript" : "PingFangSC-Thin"
+  },
+  {
+    "family" : "PingFang SC",
+    "path" : "\/System\/Library\/PrivateFrameworks\/FontServices.framework\/Resources\/Reserved\/PingFangUI.ttc",
+    "postscript" : "PingFangSC-Ultralight"
+  },
+  {
+    "family" : "PingFang TC",
+    "path" : "\/System\/Library\/PrivateFrameworks\/FontServices.framework\/Resources\/Reserved\/PingFangUI.ttc",
+    "postscript" : "PingFangTC-Light"
+  },
+  {
+    "family" : "PingFang TC",
+    "path" : "\/System\/Library\/PrivateFrameworks\/FontServices.framework\/Resources\/Reserved\/PingFangUI.ttc",
+    "postscript" : "PingFangTC-Medium"
+  },
+  {
+    "family" : "PingFang TC",
+    "path" : "\/System\/Library\/PrivateFrameworks\/FontServices.framework\/Resources\/Reserved\/PingFangUI.ttc",
+    "postscript" : "PingFangTC-Regular"
+  },
+  {
+    "family" : "PingFang TC",
+    "path" : "\/System\/Library\/PrivateFrameworks\/FontServices.framework\/Resources\/Reserved\/PingFangUI.ttc",
+    "postscript" : "PingFangTC-Semibold"
+  },
+  {
+    "family" : "PingFang TC",
+    "path" : "\/System\/Library\/PrivateFrameworks\/FontServices.framework\/Resources\/Reserved\/PingFangUI.ttc",
+    "postscript" : "PingFangTC-Thin"
+  },
+  {
+    "family" : "PingFang TC",
+    "path" : "\/System\/Library\/PrivateFrameworks\/FontServices.framework\/Resources\/Reserved\/PingFangUI.ttc",
+    "postscript" : "PingFangTC-Ultralight"
+  }
+]
