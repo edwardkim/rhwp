@@ -1,7 +1,7 @@
 # PR #9063 원격 수용과 후속 처리안
 
 작업지시자는 후보 `fafc84f71187`의 원격 처리 전체를 승인했다. 아래는 승인한 계획의 보존 기록이다.
-수용 PR #9069의 CI·self-review·merge와 원 PR/연결 이슈 자동 완료를 확인했으며, 최신 실행 결과와 댓글 계획은 archive 검토를 따른다.
+수용 PR #9069의 CI·self-review·merge, 원 PR/연결 이슈 완료, 댓글 세 건의 API 본문과 실제 GitHub 이미지 표시까지 확인했다. 최신 실행 결과는 archive 검토를 따른다.
 최종 제출 SHA와 검증 결과는 [검토 기록](../../archives/pr_9063_review.md) 및 [실행 원장](evidence.md)을 따른다.
 
 ## 대상과 이력 보존

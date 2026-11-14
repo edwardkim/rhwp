@@ -287,3 +287,13 @@ Oracle 원장은 기존 모든 행이 그대로이며 신규 17행은 모두 Pri
 | `mydocs/pr/assets/pr9063/correction/wasm-detail.png` | `297d99f696a6515ec7f0527b5be54a6f9a62e6e1ba4f58539c548b5d9b5bc074` | 25213 |
 | `mydocs/pr/assets/pr9063/native-detail-comparison.png` | `9feb77a8dc2af38135ca49d8afa586ce2e40c5b5f4d55e713836efd76e634159` | 42602 |
 | `mydocs/pr/assets/pr9063/wasm-detail-comparison.png` | `19edbe930fdffc6b670dd3daabfab1965a116339edb824c1a6ec9bcf35c6ed30` | 49792 |
+
+## 완료 댓글과 게시 검증
+
+- [8660 결과 댓글](https://github.com/edwardkim/rhwp/issues/8660#issuecomment-6872474094), 본문 SHA-256 `1b010a9d7afda651feeee067f34fc95b513977e44acb691188eccb2b1c102d14`.
+- [9059 결과 댓글](https://github.com/edwardkim/rhwp/issues/9059#issuecomment-6872474568), 본문 SHA-256 `03c7de748a9bce25bf1c0408f78b0351555aa20b3472ca46e22a1e630f1f4308`.
+- [9063 결과 댓글](https://github.com/edwardkim/rhwp/pull/9063#issuecomment-6872475032), 본문 SHA-256 `97d852984e1f29e214e5f3378b870b9c9d21242cac5a7cb09a7ed1858d4fb2c7`.
+
+API에서 세 댓글의 실제 UTF-8 본문이 준비한 원문과 같은지 확인했다. 원 PR #9063과 수용 PR #9069는 MERGED, #8660·#9059는 CLOSED/completed다.
+
+Chromium `152.0.7946.0`의 실제 GitHub 페이지에서 정확한 alt·merge SHA 원본 URL로 이미지 5개를 구분했다. 아바타는 제외했고 Native/WASM은 1260×1000, 꼬리 공백 비교는 1250×1165의 실제 원본 크기로 로드됐다. 댓글별 첫 비교 이미지가 화면 안에 표시되는 좌표도 확인하고 직접 캡처를 판독했다. React 재렌더링 중 분리된 DOM 캡처나 아바타만 확인한 초기 probe는 완료 결과로 계상하지 않았다. 브라우저·임시 profile은 닫았고 최종 원시 화면·API 로그는 output 종료 정리 대상이다.
