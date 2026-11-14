@@ -31,6 +31,16 @@
 //! fixture 계약(안내문 잔재와 저장 줄 수), 둘째 표가 첫째 표 아래 줄에서 같은 x 로 시작하고
 //! 두 표가 글상자 안에 있음, 누름틀 유무로 표 위치가 달라지지 않음(관계 검사).
 //! 절대 좌표는 고정하지 않는다. 실제 위치는 독립 PDF 와의 Visual Sweep 으로 확인한다.
+//!
+//! # 측정
+//!
+//! 2026-11-15, `scripts/visual_sweep.py --silhouette-only --compat 2022 --dpi 96`, 판정값
+//! `silhouette_raw_match_percent`(색상 경계 보정 전 2px 내용 실루엣). 두 문서 모두 전체 1쪽 =
+//! PDF 1쪽이고, 인쇄되는 글자가 없어 글꼴이 결과에 관여하지 않는다.
+//! - 누름틀 있음: Native 100.00 / fresh WASM 100.00 (수정 전 devel `53da4d2da2`: 29.43 / 29.43)
+//! - 누름틀 없음: Native 100.00 / fresh WASM 100.00 (수정 전과 같음)
+//!
+//! 증거: `mydocs/pr/assets/issue_9076_textbox_unfilled_field_rows/`(전 쪽 TSV, review·overlay PNG).
 
 #![cfg(not(target_arch = "wasm32"))]
 
