@@ -91,7 +91,7 @@ fn worst_overflow(doc: &Document, printed_input: &[u8]) -> f64 {
     for i in 0..expected_zip.len() {
         use std::io::Read;
         let mut expected_entry = expected_zip.by_index(i).expect("expected entry");
-        let name = expected_entry.name().to_owned();
+        let name = expected_entry.name().expect("entry name").into_owned();
         let mut actual_entry = actual_zip.by_name(&name).expect("actual entry");
         let mut expected_buf = Vec::new();
         let mut actual_buf = Vec::new();
