@@ -1726,10 +1726,10 @@ fn parse_border_fill(
                             for attr in ce.attributes().flatten() {
                                 match attr.key.as_ref().as_bytes() {
                                     b"faceColor" => {
-                                        if attr_str(&attr).eq_ignore_ascii_case("none") {
-                                            face_is_none = true;
-                                        }
                                         solid.background_color = parse_color(&attr);
+                                        // 한글 2018은 같은 색 없음 값을 #FFFFFFFF로 저장한다.
+                                        face_is_none = solid.background_color == 0xffff_ffff
+                                            || attr_str(&attr).eq_ignore_ascii_case("none");
                                     }
                                     b"hatchColor" => solid.pattern_color = parse_color(&attr),
                                     b"hatchStyle" => {
@@ -3457,30 +3457,33 @@ mod tests {
   </hh:refList>
 </hh:head>"##;
 
-        let (doc_info, _) = parse_hwpx_header(xml).unwrap();
-        let bf = &doc_info.border_fills[0];
+        for color in ["none", "#FFFFFFFF", "#ffffffff"] {
+            let xml = xml.replace("faceColor=\"none\"", &format!("faceColor=\"{color}\""));
+            let (doc_info, _) = parse_hwpx_header(&xml).unwrap();
+            let bf = &doc_info.border_fills[0];
 
-        // 렌더는 빈 채우기.
-        assert_eq!(
-            bf.fill.fill_type,
-            FillType::None,
-            "빈 winBrush 는 렌더상 채움 없음"
-        );
-        // 직렬화 복원을 위해 solid 데이터는 보존.
-        let solid = bf
-            .fill
-            .solid
-            .as_ref()
-            .expect("winBrush solid 데이터 보존 필요");
-        assert_eq!(
-            solid.background_color, 0xFFFF_FFFF,
-            "faceColor=none 센티넬 보존"
-        );
-        assert_eq!(
-            solid.pattern_color, 0xFF00_0000,
-            "hatchColor=#FF000000 보존"
-        );
-        assert_eq!(solid.pattern_type, -1, "무늬 없음");
+            // 렌더는 빈 채우기.
+            assert_eq!(
+                bf.fill.fill_type,
+                FillType::None,
+                "빈 winBrush 는 렌더상 채움 없음"
+            );
+            // 직렬화 복원을 위해 solid 데이터는 보존.
+            let solid = bf
+                .fill
+                .solid
+                .as_ref()
+                .expect("winBrush solid 데이터 보존 필요");
+            assert_eq!(
+                solid.background_color, 0xFFFF_FFFF,
+                "faceColor=none 센티넬 보존"
+            );
+            assert_eq!(
+                solid.pattern_color, 0xFF00_0000,
+                "hatchColor=#FF000000 보존"
+            );
+            assert_eq!(solid.pattern_type, -1, "무늬 없음");
+        }
     }
 
     #[test]

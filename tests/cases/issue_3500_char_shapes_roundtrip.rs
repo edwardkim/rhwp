@@ -248,7 +248,7 @@ fn write_char_pr_uses_lang_attr_names() {
     for attr in LANG_ATTRS {
         assert!(xml.contains(attr), "missing {attr} in {xml}");
     }
-    assert!(xml.contains(r#"shadeColor="none""#), "{xml}");
+    assert!(xml.contains(r##"shadeColor="#FFFFFFFF""##), "{xml}");
     assert!(xml.contains(r#"symMark="NONE""#), "{xml}");
 }
 
