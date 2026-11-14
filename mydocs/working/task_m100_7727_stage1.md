@@ -855,3 +855,43 @@ resolver의 선택 뒤에 캐시 전체를 다시 순회하면서 스타일 거�
 
 진단 중 normal JSON을 Canvas 보충 메트릭 상태에서 직접 내보낸 추가 wrapper는 제품 guard에
 거절됐다. 이 wrapper 오류를 원본 렌더링 결함이나 성공 결과로 계산하지 않으며 실패 기록을 보존했다.
+
+### 2026-11-15T07:01:14+09:00 — 실제 CanvasKit 원형 배경 회복
+
+새 source3f7e4340ae의 Mac 로컬 --no-opt fresh WASM은5분19초에 빌드됐다. WASM SHA는
+`332fe003097de7043f0261044b08af720de8382d22502adbb23aa387d253f2d9`다. 루트 pkg·Studio public·
+실제 초기화 응답을 검증했고 같은 원본/PDF/글꼴 인터페이스/96DPI Print에서 CanvasKit
+권고안4쪽53.71%→98.26%, Canvas2D98.30% 유지다. review와 standalone overlay를 모두
+판독해 배경 원형 띠·외곽 프레임·목차 순서·쪽번호가 보존됨을 확인했다. 하위 목차의
+글리프/작은 간격 차이는 남아 있으므로100%로 주장하지 않는다.
+
+동점 face 보존만 적용하고 이전 WASM을 쓴 분리 진단의 CK PNG는 수정 전과 바이트가
+같았다. 따라서 이 표본의 점수 상승 원인을 그 face 변경으로 설명하지 않는다. 실제 상승은
+새 공통 radialCircle 전달 후 관측했다. CanvasKit 준비 실패 후 실제 Canvas2D로 대체된
+경로는 원 fallback gate의 exactDiffPixels0을 확인해 별도로 기록하며 CK 성공으로 세지 않는다.
+
+독립 자료는 `mydocs/pr/assets/issues7727_7732_20261114/canvaskit-common-3f7e4340/`에
+선별 보존했다. 원본389쪽 새 WASM 실측과 최소 글꼴 전체 회귀·lint 묶음은 새 source에서
+진행 중이다. Native Skia/직접 Canvas의 그리기 경로는1123f322와 바이트가 같고 추가 Rust
+제품 변경은 paint JSON 투영뿐임을 재사용 감사에 기록했다. 과거 실행 SHA를 새 실행으로
+바꾸어 표기하지 않는다.
+
+### 2026-11-15T07:37:00+09:00 — 최종 source 검증과 제출 증적 확정
+
+source3f7e4340의 최소 글꼴 전체 nextest는13,565PASS·0FAIL·45skip(테스트461.749초),
+필수 Rust14단계는 전부exit0이다. Native Skia lib는3,852+15+165+2PASS(12ignored),
+placeholder2건과 P37 독립 PDF 경로도 통과했다. Studio 전체는2,791PASS·0FAIL·2skip,
+tsc·build·shader replay 계약도exit0이다.
+
+새 fresh WASM389쪽을 전부 산출해 최저98.13%와 기존 자격 PNG389개 바이트 동일을 확인했다.
+추가 Rust 제품 차이가 paint JSON뿐인 점과 실제 읽기 경로 SHA를 기록해 Native389쪽·보호36조건
+3,542쪽의 기존 실행을 재사용한다. 공식 보호 TSV 하락0·상승0, 편람 Native gate PASS다.
+
+canonical Visual Sweep과 같은 정상 설치 프로그램을 공통 Rust API로 선언한 실제 Studio
+Canvas2D Print15쪽은 최저98.21%다. 대표7쪽의 review와 overlay를 직접 판독했다.
+설치 SFNT의 실제 bytes를 공급한 플랫폼 adapter 조건을 기록하며 실제 OS 열거 검증이나
+일반 자동 선택 경로의 모든 피델리티 해결로 확대하지 않는다. 지원 CanvasKit 권고안4쪽은
+같은 조건98.26%로 회복했고 의도된 Canvas2D fallback은 CK PASS로 세지 않는다.
+
+최종 증적은 `canvaskit-common-3f7e4340/`에 보존한다. 다음 단계는 승인된 PR 생성·정확한 code
+head CI·review/오늘할일 trailing·trailing CI·병합 및5개 하위 이슈 완료 처리다.

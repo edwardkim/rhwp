@@ -5,10 +5,18 @@
 
 ## 현재 확인한 결과
 
-검증 source는 `1123f322a65cd8eaa414a8f32c3e2b99462bbda0`, 비교 base는
+최종 제품 source는 `3f7e4340ae3038ea77917ff0f45f816e8342770e`, 비교 base는
 `53da4d2da28ae0cacf8feac3a989cc6a69fb2622`다. Native와 fresh WASM 각각 원본5종
-**전389쪽이98% 이상**, Mac 최소 글꼴 전체 회귀는 **13,565 PASS / 0 FAIL / 45 skip**이다.
-[전쪽 요약](final-1123f322/visual-389-summary.json)과 [전체 회귀 결과](final-1123f322/full-nextest-result.json)를 보존한다.
+**전389쪽이98% 이상**이다. 최종 source의 Mac 최소 글꼴 전체 회귀는
+**13,565 PASS / 0 FAIL / 45 skip**이며 필수 Rust14단계도 모두 통과했다.
+[최종 Rust 검증](canvaskit-common-3f7e4340/rust-validation.json)과
+[새 WASM389쪽 검증](canvaskit-common-3f7e4340/fresh-wasm-389-validation.json)을 따른다.
+
+아래 Native TSV·대표 그림은 source1123f322에서 산출했다. 이후 Rust 제품 차이는 paint JSON의
+공통 원형 전달뿐이고 Native/직접 WASM Canvas 그리기 경로는 동일하다. 최종 source로 다시
+산출한 WASM389 PNG도 이전 파일과 전부 바이트가 같았다.
+[경로 재사용 감사](canvaskit-common-3f7e4340/unchanged-path-reuse-audit.json)에 따라 Native389쪽과
+보호3,542쪽의 기존 실행을 재사용하며 과거 실행 SHA를 새 실행으로 바꾸어 쓰지 않는다.
 
 | 문서 | 쪽수 | Native 최저 | fresh WASM 최저 | 같은 source 전쪽 TSV |
 | --- | ---: | ---: | ---: | --- |
@@ -32,7 +40,7 @@ Docker 또는 wasm-opt 검증으로 보고하지 않는다. 기준 PDF·판정 �
 최대 하락0.06%p이며2%p 초과 하락은 없다. 세 하락 쪽의 같은 쪽 review/overlay에서
 내용·소속·줄·목차 번호 보존을 직접 확인했다.
 
-### 현재 남은 제출 전 검증
+### 고정 base 및 소비 경로 검증
 
 고정 base의 Native/fresh WASM 전389쪽 대조도 완료했고 모든 경로에서2%p 초과 하락은0쪽이다.
 [고정 base 대조](final-1123f322/fixed-base-comparison.json)를 따른다.
@@ -53,8 +61,8 @@ CBTA204쪽과 API·각주 문서의 기존 page/work preflight 한도는 변경�
 | 영어 시험지 밑줄 | 글자 위치 변화와 줄 기준선의 밑줄 원점을 분리했다. 원본 장식 run은 보존한다. | [독립 한컴 Print와 전후 검증](underline-baseline/cause.json) |
 | CBTA 그림 캡션·API 표·권고안 단 시작 | 소유 그림과 테두리의 동시 이동, 표 앞뒤의 중복 점유, 빈 줄과 다음 물리 프레임의 경계를 공통 소비 경로에서 보정했다. | [상세 분석 보고서의 원인별 규칙](../../../working/task_m100_7727_stage1.md#원인별-보정-규칙) |
 
-위 표의 앞선 단계 결과는 해당 단계 생산자의 증적이다. 현재 전체 쪽수와 최저값은
-`final-1123f322/`의 TSV를 따른다. `note-prefix-final/`은 앞선 제품 소스의 증적이며,
+위 표의 앞선 단계 결과는 해당 단계 생산자의 증적이다. 현재 전체 쪽수와 Native 최저값은
+`final-1123f322/`의 TSV, 최종 fresh WASM은 `canvaskit-common-3f7e4340/`의 TSV를 따른다. `note-prefix-final/`은 앞선 제품 소스의 증적이며,
 과거 측정을 새 head의 실행으로 바꾸어 쓰지 않는다.
 
 ## 같은 쪽의 review와 overlay
@@ -90,10 +98,23 @@ HWPX는 기존 raw numbering namespace 직렬화 문제를 분리한 canonical p
 이 디렉터리와 [단계별 보고서](../../../working/task_m100_7727_stage1.md)에 보존한다.
 임시 산출물과 비공개 글꼴은 커밋하지 않는다.
 
-### 실제 Studio 소비 경로의 남은 항목
+### 최종 실제 Studio 소비 검증
 
-Rust source1123f322의 위 원본·보호 검증은 완료됐지만, 실제 CanvasKit 권고안4쪽은
-독립 Print 대비53.71%다. 공통 원형 반경의 JSON 전달 누락과 하위 목차 글꼴/전진을
-추적 중이며 이 결과를 통과로 계산하지 않는다. 설치 SFNT bytes를 공급하는
-Local Font Access 인터페이스 adapter로 검사했고 실제 Chrome OS 열거 성공을 뜻하지 않는다.
-전체 필수 검증 완료·PR 병합 전에는 서브이슈를 닫지 않는다.
+공통 물리 원을 paint JSON으로 전달해 CanvasKit 권고안4쪽을 같은 조건에서
+**53.71%→98.26%**로 회복했다. 동점 face 선택 보존도 보완했으나 face만 바꾼 분리 진단의
+PNG는 동일했으므로 이 점수 상승의 원인으로 설명하지 않는다.
+[원인·전후 검증](canvaskit-common-3f7e4340/validation.json),
+[review](canvaskit-common-3f7e4340/after/review.png)와
+[overlay](canvaskit-common-3f7e4340/after/overlay.png)를 보존한다.
+
+정상 설치 SFNT 프로그램을 canonical Visual Sweep과 같은 공통 Rust 선택 API로 선언한 실제
+Studio Canvas2D Print15쪽은 최저98.21%다. 실제 설치 bytes·이름을 공급하는 플랫폼 API adapter를
+사용했으며 Chrome의 OS 글꼴 열거 자체가 검증됐다는 뜻은 아니다. 별도 자동 글꼴 선택 조건의
+낮은 진단값을 수용 결과와 섞지 않는다. 기존 CK page/work/font preflight와 fallback은 보존했으며,
+실제 Canvas2D로 대체된 요청은 CK 통과로 세지 않는다.
+[소비 검증](canvaskit-common-3f7e4340/studio-canvas-validation.json)과
+[대표7쪽 직접 판독](canvaskit-common-3f7e4340/studio-direct-reading.json)을 연결한다.
+
+최종 Studio 전체 검사는2,791PASS·0FAIL·2skip이며 tsc·build·renderer 계약도 통과했다.
+[Studio 검증](canvaskit-common-3f7e4340/studio-validation.json)을 따른다.
+일부 글리프 가장자리·테두리 농도·미세 간격 차이는 판독에 남아 있으므로100%로 주장하지 않는다.

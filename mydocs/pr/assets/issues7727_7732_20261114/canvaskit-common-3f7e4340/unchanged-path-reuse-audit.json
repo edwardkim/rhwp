@@ -1,0 +1,56 @@
+{
+  "qualified_source": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+  "candidate_source": "3f7e4340ae3038ea77917ff0f45f816e8342770e",
+  "changed_rust_product_files": [
+    "src/paint/json.rs"
+  ],
+  "unchanged_read_paths": [
+    {
+      "path": "src/renderer/web_canvas.rs",
+      "sha256": "69c2511f73ffb7802254bf84008cbbd10bcb4b62f5b1d91c9ca9ffb7355e1c59",
+      "unchanged": true
+    },
+    {
+      "path": "src/renderer/skia/fill.rs",
+      "sha256": "8d05e1c708b693ba7c2055ab5789e86bdaa8f9ae9ad271668a05d65896c404e4",
+      "unchanged": true
+    },
+    {
+      "path": "src/renderer/skia/text_replay.rs",
+      "sha256": "f71594e76d00ff583913ff6f6eba3ee557e2224c6dcdfe5b39fc510b8e5424af",
+      "unchanged": true
+    },
+    {
+      "path": "src/renderer/gradient_geometry.rs",
+      "sha256": "f9cb2e8f59cf663a94373065bb68a9f470d4e9b8044d21dd3e70b3e7dac94cc7",
+      "unchanged": true
+    },
+    {
+      "path": "src/renderer/mod.rs",
+      "sha256": "71d319955308adf1e1276ed33bbd6b94b92abe122d5593a8581ca9a118641743",
+      "unchanged": true
+    },
+    {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+      "unchanged": true
+    },
+    {
+      "path": "scripts/visual_sweep_png.py",
+      "sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+      "unchanged": true
+    },
+    {
+      "path": "scripts/export-wasm-png-for-sweep.mjs",
+      "sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+      "unchanged": true
+    }
+  ],
+  "reused_native_original_pages": 389,
+  "reused_protected_datasets": 36,
+  "reused_protected_pages": 3542,
+  "reason": "추가 Rust 변경은 CanvasKit 레이어 JSON의 원 좌표 투영뿐이며, Native Skia와 WASM 직접 Canvas의 그리기·글꼴 공급·원본/PDF·문턱은 같다. 새 WASM389쪽도 별도로 실측 중이다.",
+  "new_wasm_389_status": "completed",
+  "do_not_relabel_old_executions": true,
+  "new_wasm_389_png_bytes_identical_to_qualified_source": 389
+}

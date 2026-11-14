@@ -1,0 +1,16 @@
+{
+  "success": true,
+  "source_sha": "3f7e4340ae3038ea77917ff0f45f816e8342770e",
+  "profile": "print",
+  "artifacts": {
+    "rhwp.js": {
+      "sha256": "2d48f8a6c3ff7f848f08725bb54d04094b296af1a40ae61203081a7cf8061a1a",
+      "bytes": 586144
+    },
+    "rhwp_bg.wasm": {
+      "sha256": "332fe003097de7043f0261044b08af720de8382d22502adbb23aa387d253f2d9",
+      "bytes": 31919303
+    }
+  },
+  "build_kind": "macos-local-no-opt"
+}
