@@ -1,0 +1,25 @@
+picture_in_front_over_1px
+loaded	pages=2
+loaded	page=1	objects=
+loaded	page=2	objects=y=132.267,height=27.560
+edited	pages=1
+edited	page=1	objects=y=981.533,height=27.560
+reopened	pages=2
+reopened	page=1	objects=
+reopened	page=2	objects=y=132.267,height=27.560
+rect_top_and_bottom_over_12px
+loaded	pages=2
+loaded	page=1	objects=
+loaded	page=2	objects=y=132.267,height=27.560
+edited	pages=1
+edited	page=1	objects=y=981.533,height=27.560
+reopened	pages=2
+reopened	page=1	objects=
+reopened	page=2	objects=y=132.267,height=27.560
+picture_in_front_fits
+loaded	pages=1
+loaded	page=1	objects=y=981.533,height=27.560
+edited	pages=1
+edited	page=1	objects=y=981.533,height=27.560
+reopened	pages=1
+reopened	page=1	objects=y=981.533,height=27.560

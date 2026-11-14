@@ -1,0 +1,336 @@
+[
+  {
+    "input": "picture_in_front_over_1px",
+    "snapshot": "edited-page1.json",
+    "render_tree_sha256": "5d1c05f756bbad5717d6598412ce35be460307d7ee309c5f7397705ec5cb1905",
+    "nodes": [
+      {
+        "text": "XL00",
+        "bbox": {
+          "x": 113.38666666666667,
+          "y": 132.26666666666668,
+          "width": 32.16,
+          "height": 13.333333333333334
+        }
+      },
+      {
+        "text": "ANCHOR",
+        "bbox": {
+          "x": 113.38666666666667,
+          "y": 772.266666666667,
+          "width": 56.746666666666655,
+          "height": 13.333333333333334
+        }
+      },
+      {
+        "kind": "Image",
+        "bbox": {
+          "x": 380.05333333333334,
+          "y": 981.5333333333334,
+          "width": 25.44,
+          "height": 27.56
+        }
+      }
+    ]
+  },
+  {
+    "input": "picture_in_front_over_1px",
+    "snapshot": "loaded-page1.json",
+    "render_tree_sha256": "0c52dcb42bcc179f2e9a319aa2984e07200ace9b0cd11cbbf4fa0547b5ce2beb",
+    "nodes": [
+      {
+        "text": "L00",
+        "bbox": {
+          "x": 113.38666666666667,
+          "y": 132.26666666666668,
+          "width": 22.773333333333333,
+          "height": 13.333333333333334
+        }
+      },
+      {
+        "text": "ANCHOR",
+        "bbox": {
+          "x": 113.38666666666667,
+          "y": 772.266666666667,
+          "width": 56.746666666666655,
+          "height": 13.333333333333334
+        }
+      }
+    ]
+  },
+  {
+    "input": "picture_in_front_over_1px",
+    "snapshot": "loaded-page2.json",
+    "render_tree_sha256": "042f49749f3d3a19ae419960ad4520dd6facb51f342a873084c3b9c86bda4b5a",
+    "nodes": [
+      {
+        "kind": "Image",
+        "bbox": {
+          "x": 380.05333333333334,
+          "y": 132.26666666666668,
+          "width": 25.44,
+          "height": 27.56
+        }
+      }
+    ]
+  },
+  {
+    "input": "picture_in_front_over_1px",
+    "snapshot": "reopened-page1.json",
+    "render_tree_sha256": "0b93258525ede95b970d8baee9347177c0f6015c13bfc596eb063d01ee53b164",
+    "nodes": [
+      {
+        "text": "XL00",
+        "bbox": {
+          "x": 113.38666666666667,
+          "y": 132.26666666666668,
+          "width": 32.16,
+          "height": 13.333333333333334
+        }
+      },
+      {
+        "text": "ANCHOR",
+        "bbox": {
+          "x": 113.38666666666667,
+          "y": 772.266666666667,
+          "width": 56.746666666666655,
+          "height": 13.333333333333334
+        }
+      }
+    ]
+  },
+  {
+    "input": "picture_in_front_over_1px",
+    "snapshot": "reopened-page2.json",
+    "render_tree_sha256": "042f49749f3d3a19ae419960ad4520dd6facb51f342a873084c3b9c86bda4b5a",
+    "nodes": [
+      {
+        "kind": "Image",
+        "bbox": {
+          "x": 380.05333333333334,
+          "y": 132.26666666666668,
+          "width": 25.44,
+          "height": 27.56
+        }
+      }
+    ]
+  },
+  {
+    "input": "rect_top_and_bottom_over_12px",
+    "snapshot": "edited-page1.json",
+    "render_tree_sha256": "70b3cb0a057e2bddc2fe6ddb2d118f82a2008800586190724040389e1b491e03",
+    "nodes": [
+      {
+        "text": "XL00",
+        "bbox": {
+          "x": 113.38666666666667,
+          "y": 132.26666666666668,
+          "width": 32.16,
+          "height": 13.333333333333334
+        }
+      },
+      {
+        "text": "ANCHOR",
+        "bbox": {
+          "x": 113.38666666666667,
+          "y": 772.266666666667,
+          "width": 56.746666666666655,
+          "height": 13.333333333333334
+        }
+      },
+      {
+        "kind": "Rectangle",
+        "bbox": {
+          "x": 380.05333333333334,
+          "y": 981.5333333333334,
+          "width": 25.44,
+          "height": 27.56
+        }
+      }
+    ]
+  },
+  {
+    "input": "rect_top_and_bottom_over_12px",
+    "snapshot": "loaded-page1.json",
+    "render_tree_sha256": "1634b12f1aa7dd5fd173ad619a0c3b0b793cd9e6e6ecfed97a0f378238f9d026",
+    "nodes": [
+      {
+        "text": "L00",
+        "bbox": {
+          "x": 113.38666666666667,
+          "y": 132.26666666666668,
+          "width": 22.773333333333333,
+          "height": 13.333333333333334
+        }
+      },
+      {
+        "text": "ANCHOR",
+        "bbox": {
+          "x": 113.38666666666667,
+          "y": 772.266666666667,
+          "width": 56.746666666666655,
+          "height": 13.333333333333334
+        }
+      }
+    ]
+  },
+  {
+    "input": "rect_top_and_bottom_over_12px",
+    "snapshot": "loaded-page2.json",
+    "render_tree_sha256": "167144b4d65b98cb54e92f962381a2b1a072df82ddee77dd980b620895e64c70",
+    "nodes": [
+      {
+        "kind": "Rectangle",
+        "bbox": {
+          "x": 380.05333333333334,
+          "y": 132.26666666666668,
+          "width": 25.44,
+          "height": 27.56
+        }
+      }
+    ]
+  },
+  {
+    "input": "rect_top_and_bottom_over_12px",
+    "snapshot": "reopened-page1.json",
+    "render_tree_sha256": "7ccd3ea19c906190faef91fba16794b09480e415cf9815f372090e10ae168bf7",
+    "nodes": [
+      {
+        "text": "XL00",
+        "bbox": {
+          "x": 113.38666666666667,
+          "y": 132.26666666666668,
+          "width": 32.16,
+          "height": 13.333333333333334
+        }
+      },
+      {
+        "text": "ANCHOR",
+        "bbox": {
+          "x": 113.38666666666667,
+          "y": 772.266666666667,
+          "width": 56.746666666666655,
+          "height": 13.333333333333334
+        }
+      }
+    ]
+  },
+  {
+    "input": "rect_top_and_bottom_over_12px",
+    "snapshot": "reopened-page2.json",
+    "render_tree_sha256": "167144b4d65b98cb54e92f962381a2b1a072df82ddee77dd980b620895e64c70",
+    "nodes": [
+      {
+        "kind": "Rectangle",
+        "bbox": {
+          "x": 380.05333333333334,
+          "y": 132.26666666666668,
+          "width": 25.44,
+          "height": 27.56
+        }
+      }
+    ]
+  },
+  {
+    "input": "picture_in_front_fits",
+    "snapshot": "edited-page1.json",
+    "render_tree_sha256": "5d1c05f756bbad5717d6598412ce35be460307d7ee309c5f7397705ec5cb1905",
+    "nodes": [
+      {
+        "text": "XL00",
+        "bbox": {
+          "x": 113.38666666666667,
+          "y": 132.26666666666668,
+          "width": 32.16,
+          "height": 13.333333333333334
+        }
+      },
+      {
+        "text": "ANCHOR",
+        "bbox": {
+          "x": 113.38666666666667,
+          "y": 772.266666666667,
+          "width": 56.746666666666655,
+          "height": 13.333333333333334
+        }
+      },
+      {
+        "kind": "Image",
+        "bbox": {
+          "x": 380.05333333333334,
+          "y": 981.5333333333334,
+          "width": 25.44,
+          "height": 27.56
+        }
+      }
+    ]
+  },
+  {
+    "input": "picture_in_front_fits",
+    "snapshot": "loaded-page1.json",
+    "render_tree_sha256": "84d32ee9fcc00b3b2b7c88ec69b1c9f4c045b3acefe78d614a91b4fcea8f3804",
+    "nodes": [
+      {
+        "text": "L00",
+        "bbox": {
+          "x": 113.38666666666667,
+          "y": 132.26666666666668,
+          "width": 22.773333333333333,
+          "height": 13.333333333333334
+        }
+      },
+      {
+        "text": "ANCHOR",
+        "bbox": {
+          "x": 113.38666666666667,
+          "y": 772.266666666667,
+          "width": 56.746666666666655,
+          "height": 13.333333333333334
+        }
+      },
+      {
+        "kind": "Image",
+        "bbox": {
+          "x": 380.05333333333334,
+          "y": 981.5333333333334,
+          "width": 25.44,
+          "height": 27.56
+        }
+      }
+    ]
+  },
+  {
+    "input": "picture_in_front_fits",
+    "snapshot": "reopened-page1.json",
+    "render_tree_sha256": "5d1c05f756bbad5717d6598412ce35be460307d7ee309c5f7397705ec5cb1905",
+    "nodes": [
+      {
+        "text": "XL00",
+        "bbox": {
+          "x": 113.38666666666667,
+          "y": 132.26666666666668,
+          "width": 32.16,
+          "height": 13.333333333333334
+        }
+      },
+      {
+        "text": "ANCHOR",
+        "bbox": {
+          "x": 113.38666666666667,
+          "y": 772.266666666667,
+          "width": 56.746666666666655,
+          "height": 13.333333333333334
+        }
+      },
+      {
+        "kind": "Image",
+        "bbox": {
+          "x": 380.05333333333334,
+          "y": 981.5333333333334,
+          "width": 25.44,
+          "height": 27.56
+        }
+      }
+    ]
+  }
+]

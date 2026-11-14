@@ -1,0 +1,154 @@
+{
+  "chromium": "Chrome/152.0.7946.0",
+  "wasm_sha256": "e6e08941e256e8b5e1e01d4525d2c458b90eec2b8545de328945f2c980a226fa",
+  "canvas_metrics_active": false,
+  "font_environment": {
+    "documentSubstitutions": [],
+    "id": "native-webfont-0e5b38844ae4b38d55cb70d7",
+    "preserveSourceMetrics": true,
+    "substitutions": {
+      "HCR Dotum": "HCRDotum",
+      "함초롬바탕": "HCRBatang"
+    },
+    "trueTypeFaces": [
+      "HCR Batang",
+      "HCR Dotum"
+    ]
+  },
+  "results": [
+    {
+      "input": "picture_in_front_over_1px.hwp",
+      "states": [
+        {
+          "label": "loaded",
+          "page_count": 2,
+          "pages": [
+            {
+              "page": 1,
+              "objects": []
+            },
+            {
+              "page": 2,
+              "objects": [
+                {
+                  "kind": "Image",
+                  "x": 380.1,
+                  "y": 132.3,
+                  "w": 25.4,
+                  "h": 27.6
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "edited",
+          "page_count": 1,
+          "pages": [
+            {
+              "page": 1,
+              "objects": [
+                {
+                  "kind": "Image",
+                  "x": 380.1,
+                  "y": 981.5,
+                  "w": 25.4,
+                  "h": 27.6
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "reopened_page_count": 2
+    },
+    {
+      "input": "rect_top_and_bottom_over_12px.hwp",
+      "states": [
+        {
+          "label": "loaded",
+          "page_count": 2,
+          "pages": [
+            {
+              "page": 1,
+              "objects": []
+            },
+            {
+              "page": 2,
+              "objects": [
+                {
+                  "kind": "Rect",
+                  "x": 380.1,
+                  "y": 132.3,
+                  "w": 25.4,
+                  "h": 27.6
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "edited",
+          "page_count": 1,
+          "pages": [
+            {
+              "page": 1,
+              "objects": [
+                {
+                  "kind": "Rect",
+                  "x": 380.1,
+                  "y": 981.5,
+                  "w": 25.4,
+                  "h": 27.6
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "reopened_page_count": 2
+    },
+    {
+      "input": "picture_in_front_fits.hwp",
+      "states": [
+        {
+          "label": "loaded",
+          "page_count": 1,
+          "pages": [
+            {
+              "page": 1,
+              "objects": [
+                {
+                  "kind": "Image",
+                  "x": 380.1,
+                  "y": 981.5,
+                  "w": 25.4,
+                  "h": 27.6
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "edited",
+          "page_count": 1,
+          "pages": [
+            {
+              "page": 1,
+              "objects": [
+                {
+                  "kind": "Image",
+                  "x": 380.1,
+                  "y": 981.5,
+                  "w": 25.4,
+                  "h": 27.6
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "reopened_page_count": 1
+    }
+  ]
+}

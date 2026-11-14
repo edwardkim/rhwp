@@ -1,0 +1,27 @@
+{
+  "src": {
+    "validation_blob_or_tree": "7cf8fb94e62c1d0d1bab8a2f609fa1d951f87b38",
+    "documentation_blob_or_tree": "7cf8fb94e62c1d0d1bab8a2f609fa1d951f87b38",
+    "identical": true
+  },
+  "tests": {
+    "validation_blob_or_tree": "2d0f9c49e1d05bf5518a7f2f44c10e3e607194a8",
+    "documentation_blob_or_tree": "2d0f9c49e1d05bf5518a7f2f44c10e3e607194a8",
+    "identical": true
+  },
+  "Cargo.toml": {
+    "validation_blob_or_tree": "67ffbf80f174ba3465e4454d140f758395833b2e",
+    "documentation_blob_or_tree": "67ffbf80f174ba3465e4454d140f758395833b2e",
+    "identical": true
+  },
+  "Cargo.lock": {
+    "validation_blob_or_tree": "34d08aa8d5150817968568e1ab6f68af228eeeac",
+    "documentation_blob_or_tree": "34d08aa8d5150817968568e1ab6f68af228eeeac",
+    "identical": true
+  },
+  "scripts/wasm-pack-locked.sh": {
+    "validation_blob_or_tree": "855ca67dcd4b175287c297d4d015851aab3cf8af",
+    "documentation_blob_or_tree": "855ca67dcd4b175287c297d4d015851aab3cf8af",
+    "identical": true
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "source": "9a1f85f3b79fcbc777f86b70000c08369f29c01b",
+  "original_head": "b43050954c10512705d714114f5af23f1ee98ac6",
+  "shared_target": "/home/edward/mygithub/rhwp/target/pr-review",
+  "build_exit": 0,
+  "optimized": true,
+  "codegen_units": 16,
+  "jobs": 8,
+  "files": {
+    "rhwp.js": {
+      "sha256": "2d48f8a6c3ff7f848f08725bb54d04094b296af1a40ae61203081a7cf8061a1a",
+      "bytes": 586144,
+      "studio_public_equal": true
+    },
+    "rhwp_bg.wasm": {
+      "sha256": "e6e08941e256e8b5e1e01d4525d2c458b90eec2b8545de328945f2c980a226fa",
+      "bytes": 29377488,
+      "studio_public_equal": true
+    }
+  },
+  "wasm_pack_version": "0.15.0",
+  "rust_toolchain_file": "1.93.1",
+  "build_elapsed": "13m 34s",
+  "rustc_version": "1.93.1 (01f6ddf75 2026-02-11)"
+}

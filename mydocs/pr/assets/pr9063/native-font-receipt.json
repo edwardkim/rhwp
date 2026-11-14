@@ -1,0 +1,35 @@
+{
+  "backend": "native-skia",
+  "comparisonProfile": "print",
+  "fontEnvironment": {
+    "id": "native-webfont-0e5b38844ae4b38d55cb70d7",
+    "preserveSourceMetrics": true,
+    "substitutions": {
+      "HCR Dotum": "HCRDotum",
+      "함초롬바탕": "HCRBatang"
+    },
+    "trueTypeFaces": [
+      "HCR Batang",
+      "HCR Dotum"
+    ]
+  },
+  "layoutGeneration": "2022",
+  "outputDir": "output/pr-review/pr9063/font-receipt-png",
+  "pageCount": 1,
+  "pages": [
+    {
+      "bytes": 22533,
+      "page": 0,
+      "path": "output/pr-review/pr9063/font-receipt-png/at_table_n2.png",
+      "renderTreePath": null
+    }
+  ],
+  "renderedCount": 1,
+  "schemaVersion": "1.0",
+  "source": "output/pr-review/pr9063/inputs/at_table_n2.hwp",
+  "tool": "export-png",
+  "untrustedContent": true,
+  "untrustedFields": [
+    "fontEnvironment"
+  ]
+}

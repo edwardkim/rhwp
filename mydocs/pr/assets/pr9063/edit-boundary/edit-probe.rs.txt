@@ -1,0 +1,37 @@
+use rhwp::{DocumentCore, renderer::render_tree::{RenderNode, RenderNodeType}};
+use std::path::Path;
+
+fn objects(node: &RenderNode, out: &mut Vec<String>) {
+    if matches!(&node.node_type, RenderNodeType::Image(_) | RenderNodeType::Rectangle(_)) {
+        out.push(format!("y={:.3},height={:.3}", node.bbox.y, node.bbox.height));
+    }
+    for child in &node.children { objects(child, out); }
+}
+
+fn snapshot(core: &DocumentCore, label: &str, out: &Path) {
+    let count = core.page_count();
+    println!("{label}\tpages={count}");
+    for page in 0..count {
+        let tree = core.build_page_render_tree(page).unwrap();
+        let mut found = Vec::new();
+        objects(&tree.root, &mut found);
+        println!("{label}\tpage={}\tobjects={}", page + 1, found.join(";"));
+        std::fs::write(out.join(format!("{label}-page{}.json", page + 1)), serde_json::to_vec_pretty(&tree).unwrap()).unwrap();
+    }
+}
+
+fn main() {
+    let args: Vec<_> = std::env::args().collect();
+    let input = Path::new(&args[1]);
+    let out = Path::new(&args[2]);
+    std::fs::create_dir_all(out).unwrap();
+    let bytes = std::fs::read(input).unwrap();
+    let mut core = DocumentCore::from_bytes(&bytes).unwrap();
+    snapshot(&core, "loaded", out);
+    core.insert_text_native(0, 0, 0, "X").unwrap();
+    snapshot(&core, "edited", out);
+    let saved = core.export_hwp_native().unwrap();
+    std::fs::write(out.join("edited.hwp"), &saved).unwrap();
+    let reopened = DocumentCore::from_bytes(&saved).unwrap();
+    snapshot(&reopened, "reopened", out);
+}
