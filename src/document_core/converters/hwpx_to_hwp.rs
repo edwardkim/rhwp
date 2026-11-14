@@ -115,7 +115,7 @@ pub struct AdapterReport {
     pub master_page_autonum_placeholder_removed: u32,
     /// HWPX 바탕쪽 line shape rendering matrix를 HWP5 size ratio contract로 보정한 횟수
     pub master_page_line_rendering_size_ratio_materialized: u32,
-    /// HWPX 희소 바탕쪽을 HWP5 `Both`/`Odd` 저장 슬롯으로 명시화한 구역 수 (#3930)
+    /// HWPX 바탕쪽 종류를 보존하며 HWP5 Both/Even/Odd 저장 순서로 정렬한 구역 수
     pub master_page_apply_slots_materialized: u32,
     /// [#2767] 캡션이 있는 그림(gso `$pic`) CTRL_HEADER 의 한컴 캡션 비트(bit 29,
     /// 0x2000_0000) 보강 횟수. 표는 이미 `materialize_table_ctrl_header_attr` 로

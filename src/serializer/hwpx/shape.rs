@@ -1669,7 +1669,7 @@ where
     )
 }
 
-/// ColorRef (0xAABBGGRR) → "#RRGGBB" / "#AARRGGBB". 0xFFFFFFFF → "none".
+/// ColorRef (0xAABBGGRR) → "#RRGGBB" / "#AARRGGBB". 0xFFFFFFFF → "#FFFFFFFF" (한글 2018 호환).
 /// `parse_color_str` 의 역매핑 (header.rs `color_hex` 와 동일 규칙).
 pub(crate) fn color_to_hex(c: ColorRef) -> String {
     color_to_hex_with_storage(c, &crate::storage::Unbounded).expect("unbounded color")
@@ -1681,9 +1681,6 @@ pub(super) fn color_to_hex_with_storage<S: crate::storage::Storage>(
 where
     S::Error: std::fmt::Display,
 {
-    if c == 0xFFFFFFFF {
-        return super::utils::xml_value(storage, "none");
-    }
     let a = ((c >> 24) & 0xFF) as u8;
     let r = (c & 0xFF) as u8;
     let g = ((c >> 8) & 0xFF) as u8;

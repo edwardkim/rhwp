@@ -5213,19 +5213,7 @@ fn color_ref_to_hwpx_with_storage<S: crate::storage::Storage>(
 where
     S::Error: std::fmt::Display,
 {
-    if color == 0xFFFFFFFF {
-        return xml_value(storage, "none");
-    }
-
-    let a = (color >> 24) & 0xFF;
-    let r = color & 0xFF;
-    let g = (color >> 8) & 0xFF;
-    let b = (color >> 16) & 0xFF;
-    Ok(if a == 0 {
-        xml_value(storage, format_args!("#{r:02X}{g:02X}{b:02X}"))?
-    } else {
-        xml_value(storage, format_args!("#{a:02X}{r:02X}{g:02X}{b:02X}"))?
-    })
+    super::shape::color_to_hex_with_storage(color, storage)
 }
 
 fn text_wrap_to_hwpx(wrap: TextWrap) -> &'static str {

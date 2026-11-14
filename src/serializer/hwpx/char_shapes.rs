@@ -14,7 +14,7 @@ use crate::model::ColorRef;
 
 use super::char_shape_tables::{
     line_shape_str, outline_type_str, shadow_type_str, strike_shape_str, sym_mark_str,
-    underline_type_str, LANG_ATTRS, SHADE_NONE,
+    underline_type_str, LANG_ATTRS,
 };
 use super::utils::{empty_tag_with_storage as empty_tag, xml_value};
 use super::SerializeError;
@@ -80,21 +80,7 @@ fn color_hex<S: crate::storage::Storage>(
 where
     S::Error: std::fmt::Display,
 {
-    if color == SHADE_NONE {
-        return xml_value(storage, "none");
-    }
-    let a = ((color >> 24) & 0xFF) as u8;
-    let r = (color & 0xFF) as u8;
-    let g = ((color >> 8) & 0xFF) as u8;
-    let b = ((color >> 16) & 0xFF) as u8;
-    if a == 0 {
-        xml_value(storage, format_args!("#{:02X}{:02X}{:02X}", r, g, b))
-    } else {
-        xml_value(
-            storage,
-            format_args!("#{:02X}{:02X}{:02X}{:02X}", a, r, g, b),
-        )
-    }
+    super::shape::color_to_hex_with_storage(color, storage)
 }
 
 fn bool01(value: bool) -> &'static str {
