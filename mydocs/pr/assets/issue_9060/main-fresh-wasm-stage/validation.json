@@ -110,5 +110,249 @@
       "silhouette_raw_match_percent": "100.00",
       "silhouette_boundary_reconciled_pixels": "0"
     }
+  ],
+  "actual_page_count": 14,
+  "completed_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14
+  ],
+  "export_receipt_sha256": "0aea2cacffe47da2fb83acf1a0c1f12818ec84465ea199f1760eea93c9dcb75e",
+  "page_pngs": [
+    {
+      "page": 1,
+      "pngSha256": "315391a58913d44ebc3006746a94e74460e7563d78e35693e0e391b58dc71d75",
+      "width": 794,
+      "height": 1122,
+      "canvasContext": {
+        "alpha": true,
+        "colorSpace": "srgb",
+        "colorType": "unorm8",
+        "desynchronized": false,
+        "toneMapping": {
+          "mode": "standard"
+        },
+        "willReadFrequently": true
+      }
+    },
+    {
+      "page": 2,
+      "pngSha256": "439de5c4881e78cb96585747ccf6db49bdc461296bc289e6f1b41e551da678fa",
+      "width": 794,
+      "height": 1122,
+      "canvasContext": {
+        "alpha": true,
+        "colorSpace": "srgb",
+        "colorType": "unorm8",
+        "desynchronized": false,
+        "toneMapping": {
+          "mode": "standard"
+        },
+        "willReadFrequently": true
+      }
+    },
+    {
+      "page": 3,
+      "pngSha256": "638c4409ad02297a33f08f6867b1eb5c6e63f346bae10620b223552cefd00b68",
+      "width": 794,
+      "height": 1122,
+      "canvasContext": {
+        "alpha": true,
+        "colorSpace": "srgb",
+        "colorType": "unorm8",
+        "desynchronized": false,
+        "toneMapping": {
+          "mode": "standard"
+        },
+        "willReadFrequently": true
+      }
+    },
+    {
+      "page": 4,
+      "pngSha256": "abaeb1e65002e6f90fb2a1ed8430dbc4bc0ec133a5a9223593cdd9fbd0f05b2a",
+      "width": 794,
+      "height": 1122,
+      "canvasContext": {
+        "alpha": true,
+        "colorSpace": "srgb",
+        "colorType": "unorm8",
+        "desynchronized": false,
+        "toneMapping": {
+          "mode": "standard"
+        },
+        "willReadFrequently": true
+      }
+    },
+    {
+      "page": 5,
+      "pngSha256": "9f44ec8c1c29de6e3e6ac3332f51a525efb84e3ab8069a22fcecdd72bca76dba",
+      "width": 794,
+      "height": 1122,
+      "canvasContext": {
+        "alpha": true,
+        "colorSpace": "srgb",
+        "colorType": "unorm8",
+        "desynchronized": false,
+        "toneMapping": {
+          "mode": "standard"
+        },
+        "willReadFrequently": true
+      }
+    },
+    {
+      "page": 6,
+      "pngSha256": "f8b68ae0351e48633d95716e49e23cb330c26a2b5eb8c43e1aa171cffce3094c",
+      "width": 794,
+      "height": 1122,
+      "canvasContext": {
+        "alpha": true,
+        "colorSpace": "srgb",
+        "colorType": "unorm8",
+        "desynchronized": false,
+        "toneMapping": {
+          "mode": "standard"
+        },
+        "willReadFrequently": true
+      }
+    },
+    {
+      "page": 7,
+      "pngSha256": "7dd52fed40cd0fe9742b26a3660e58d5a8f2b382ac1ef202b7032a79452ce7b5",
+      "width": 794,
+      "height": 1122,
+      "canvasContext": {
+        "alpha": true,
+        "colorSpace": "srgb",
+        "colorType": "unorm8",
+        "desynchronized": false,
+        "toneMapping": {
+          "mode": "standard"
+        },
+        "willReadFrequently": true
+      }
+    },
+    {
+      "page": 8,
+      "pngSha256": "c5f6073cf08e0228b517df4856d38e0b2b9a3720fa4c9765c7bd6504a9271832",
+      "width": 794,
+      "height": 1122,
+      "canvasContext": {
+        "alpha": true,
+        "colorSpace": "srgb",
+        "colorType": "unorm8",
+        "desynchronized": false,
+        "toneMapping": {
+          "mode": "standard"
+        },
+        "willReadFrequently": true
+      }
+    },
+    {
+      "page": 9,
+      "pngSha256": "6f659653c25155af6de8b1bfb210864457385424994172b2f0a25b5090e04151",
+      "width": 794,
+      "height": 1122,
+      "canvasContext": {
+        "alpha": true,
+        "colorSpace": "srgb",
+        "colorType": "unorm8",
+        "desynchronized": false,
+        "toneMapping": {
+          "mode": "standard"
+        },
+        "willReadFrequently": true
+      }
+    },
+    {
+      "page": 10,
+      "pngSha256": "0df5f20b00a2d1db001e3b7d0b9b66fb6941e46583e5ad294488db92be59a233",
+      "width": 794,
+      "height": 1122,
+      "canvasContext": {
+        "alpha": true,
+        "colorSpace": "srgb",
+        "colorType": "unorm8",
+        "desynchronized": false,
+        "toneMapping": {
+          "mode": "standard"
+        },
+        "willReadFrequently": true
+      }
+    },
+    {
+      "page": 11,
+      "pngSha256": "71ab142b83e32f4c81a1259d10757ab21ec0b6ab25e20245b8856f97c1cc4b15",
+      "width": 794,
+      "height": 1122,
+      "canvasContext": {
+        "alpha": true,
+        "colorSpace": "srgb",
+        "colorType": "unorm8",
+        "desynchronized": false,
+        "toneMapping": {
+          "mode": "standard"
+        },
+        "willReadFrequently": true
+      }
+    },
+    {
+      "page": 12,
+      "pngSha256": "75aa7da385ca5172cb6a35afb7d69c46d5453356d75d8f354814e69a35e174b6",
+      "width": 794,
+      "height": 1122,
+      "canvasContext": {
+        "alpha": true,
+        "colorSpace": "srgb",
+        "colorType": "unorm8",
+        "desynchronized": false,
+        "toneMapping": {
+          "mode": "standard"
+        },
+        "willReadFrequently": true
+      }
+    },
+    {
+      "page": 13,
+      "pngSha256": "27dec16ace1f4d2151a4420ac6d2a938f8285340b553a32780e5cc5eb2131b51",
+      "width": 794,
+      "height": 1122,
+      "canvasContext": {
+        "alpha": true,
+        "colorSpace": "srgb",
+        "colorType": "unorm8",
+        "desynchronized": false,
+        "toneMapping": {
+          "mode": "standard"
+        },
+        "willReadFrequently": true
+      }
+    },
+    {
+      "page": 14,
+      "pngSha256": "b595a5f6eaf9e1ab668e30ef09c13ac6ae1974421230c8aee715c2a93185b923",
+      "width": 794,
+      "height": 1122,
+      "canvasContext": {
+        "alpha": true,
+        "colorSpace": "srgb",
+        "colorType": "unorm8",
+        "desynchronized": false,
+        "toneMapping": {
+          "mode": "standard"
+        },
+        "willReadFrequently": true
+      }
+    }
   ]
 }

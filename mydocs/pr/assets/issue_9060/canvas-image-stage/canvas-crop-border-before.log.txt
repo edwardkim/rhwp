@@ -1,0 +1,25 @@
+✖ 잘린 그림의 소수 목적 영역이 아래에 그린 위 테두리를 지우지 않는다 (2120.936504ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2286.448985
+
+✖ failing tests:
+
+test at scripts/tests/issue_8160_print_jpeg_frame.browser.mjs:157:1
+✖ 잘린 그림의 소수 목적 영역이 아래에 그린 위 테두리를 지우지 않는다 (2120.936504ms)
+  AssertionError [ERR_ASSERTION]: 그림 2: 위 테두리 연속 잉크 0/570
+      at TestContext.<anonymous> (file:///home/tsjang/rhwp/scripts/tests/issue_8160_print_jpeg_frame.browser.mjs:251:12)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

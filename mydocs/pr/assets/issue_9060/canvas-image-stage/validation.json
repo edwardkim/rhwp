@@ -21,13 +21,13 @@
     "exit_code": 1,
     "tests": 1,
     "failed": 1,
-    "log": "canvas-crop-border-before.log"
+    "log": "canvas-crop-border-before.log.txt"
   },
   "browser_after": {
     "exit_code": 0,
     "tests": 3,
     "passed": 3,
-    "log": "canvas-crop-border-and-jpeg-after.log"
+    "log": "canvas-crop-border-and-jpeg-after.log.txt"
   },
   "browser_aggregate": {
     "tests": 20,
@@ -36,7 +36,7 @@
     "terminal_summary_verified": true,
     "exit_code": null,
     "exit_code_note": "종료된 단독 process의 exit code는 보관되지 않아 실제 최종 test summary로 판정했다.",
-    "log": "canvas-coverage-all-browser.log"
+    "log": "canvas-coverage-all-browser.log.txt"
   },
   "browser_test_measured_sha256": "e909dc19b56a2f689d6bbbafa58be76b9aff3d51ffdb709cd338b0a2cf334978",
   "browser_test_final_sha256": "0052afbc5ad19ad6f5a86ccd6fed041ec73baa686690dbad653187398a31e16b",
@@ -61,11 +61,12 @@
   "assets_sha256": {
     "overlay_001.png": "6950e002d1972709291e29be93119a3770ba5260e8dfccf109edc8008285e169",
     "wasm_silhouette.tsv": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "canvas-crop-border-and-jpeg-after.log.txt": "7294830ec714c79d59403f77de3ad1c886034e52b6dc393b9f8a8f42ab24002b",
     "review_001.png": "c692795649228b66bc12921277e32da4e89943e86b737cb2f890e4cbcea4996f",
+    "README.md": "4229c4c4ac1a823a0b2835d2890bbf86021769495652b6ddf4e6069796f27d8b",
+    "canvas-coverage-all-browser.log.txt": "9161c1738ba0e7e3290a53fc3109980cb29ca1b1b09a6e15296cb0bd3ea8b693",
     "native_silhouette.tsv": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
-    "outline_wasm_silhouette.tsv": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
-    "canvas-crop-border-and-jpeg-after.log": "7294830ec714c79d59403f77de3ad1c886034e52b6dc393b9f8a8f42ab24002b",
-    "canvas-crop-border-before.log": "8daf7b9c9e76db4f22f96f187914252be09c2fa67bda92fabb63fc91f551ee0d",
-    "canvas-coverage-all-browser.log": "9161c1738ba0e7e3290a53fc3109980cb29ca1b1b09a6e15296cb0bd3ea8b693"
+    "canvas-crop-border-before.log.txt": "8daf7b9c9e76db4f22f96f187914252be09c2fa67bda92fabb63fc91f551ee0d",
+    "outline_wasm_silhouette.tsv": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675"
   }
 }

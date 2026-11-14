@@ -22,9 +22,9 @@ Canvas bitmap 그리기에 실제 목적 사각형의 부분 픽셀 덮임을 �
 전체 그림과 crop이 같은 scope를 사용하며 `Path2D`로 기존 context path를 변경하지 않는다.
 
 원본의 두 그림 위 테두리가 연속 잉크로 남는지 검사하는 관계형 회귀는 수정 전 두 번째
-테두리에서 연속 잉크 `0/570`으로 [실패](canvas-crop-border-before.log)했다. 기존 JPEG
-장치 프레임 검사 2건과 새 검사는 보정 fresh WASM에서 [3건 모두 통과](canvas-crop-border-and-jpeg-after.log)했다.
-기존 CI의 동일 browser aggregate 경로도 [20 PASS / 0 FAIL](canvas-coverage-all-browser.log)이다.
+테두리에서 연속 잉크 `0/570`으로 [실패](canvas-crop-border-before.log.txt)했다. 기존 JPEG
+장치 프레임 검사 2건과 새 검사는 보정 fresh WASM에서 [3건 모두 통과](canvas-crop-border-and-jpeg-after.log.txt)했다.
+기존 CI의 동일 browser aggregate 경로도 [20 PASS / 0 FAIL](canvas-coverage-all-browser.log.txt)이다.
 이 aggregate는 최종 test summary를 보존했으며, 별도 process의 exit code는 수집하지 못해
 그 값을 추정하지 않는다. 코드 실행 이후 검사 첫머리의 측정 근거 주석만 갱신했다.
 
