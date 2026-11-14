@@ -82,8 +82,12 @@ cargo nextest run --locked --cargo-profile release-test \
 - 최종 Native도 18개 입력·1,771쪽 완료, 하락 0쪽·상승 15쪽이다.
 - 실제 편람 HWPX Native gate 383쪽: 1,801.002초, 종료 코드 0, 공식 최저 99.96%. 같은 실제 TSV를 보호 대조에도 사용했다.
 - 최종 전쪽 수용 조건은 [정식 baseline 계약](final/protected-validation.json)에 기록한다. 중간 run manifest와 구분한다.
-- 정본 보호값 `1063d78078b704a2bfb712ca3929ab251596dd391b41bc1a9a44e9935e4990e5`는 아직 유지한다.
-- Native와 필수 검증까지 완료된 같은 최종 수용본으로 상승분을 상향한다. 페이지별 최댓값을 이어 붙이거나 기존 하한을 낮추지 않는다.
+- 정본 보호값을 `1063d78078b704a2bfb712ca3929ab251596dd391b41bc1a9a44e9935e4990e5`에서
+  `8f073dddd67cf8f44bea7c0315c3f9950ba73641e9393747cdbc52d24b33f9a1`로 상향했다.
+  [상향 영수증](../visual-protected-baseline/updates/pr9075-20261115.json)에 Native 15·WASM 15쪽의 이전/새 값을 기록한다.
+- Native와 필수 검증까지 완료한 같은 최종 수용본으로 상승분을 반영했다. 페이지별 최댓값을 이어 붙이거나 기존 하한을 낮추지 않았다.
+- 상향 후 관련 Python 검사 21건이 모두 통과했다. 실제 완료된 편람 manifest를 새 정본으로 재대조했고, 편람 HWPX Native 383개 하한은 이전과 바이트 단위로 같음을 확인했다.
+- 최종 3,542행 모두 상향된 하한을 충족한다. 데이터·해시 연결만 바뀌었으므로 같은 raster를 다시 산출하지 않았다.
 - 원격 PR 생성·CI·승인·병합·원 PR 종료는 아직 실행하지 않았다.
 
 ## 이전 단계의 실행 근거

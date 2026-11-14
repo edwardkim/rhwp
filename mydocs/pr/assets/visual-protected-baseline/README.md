@@ -12,7 +12,7 @@
 
 - [final.tsv](final.tsv): 입력·기준 PDF·backend·페이지별 공식 두 자리 raw 보호값.
 - [manifest.json](manifest.json): 입력/PDF SHA-256·크기·측정 조건·전쪽 수·출처 commit/TSV/열/해시와 중복 제거 내역.
-- TSV SHA-256: `1063d78078b704a2bfb712ca3929ab251596dd391b41bc1a9a44e9935e4990e5`.
+- TSV SHA-256: `8f073dddd67cf8f44bea7c0315c3f9950ba73641e9393747cdbc52d24b33f9a1`.
 - 입력 18개, Native/fresh WASM 각 18개 데이터셋·1,771쪽, 총 36개 데이터셋·3,542행.
 - 최초 통합 당시 수용 자료 56개 데이터셋 중 중복 20개를 정리했다. 이전 자료보다 공식 표시값이 낮아진 페이지는 0쪽이다.
 
@@ -23,16 +23,16 @@ HWP와 HWPX는 같은 제목이어도 별도 입력이다. 아래 최저값은 �
 
 | 입력 | 쪽수 | Native 최저 | fresh WASM 최저 |
 | --- | ---: | ---: | ---: |
-| [angle-2400.hwpx](<../../../../mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx>) | 1 | 100.00% | 100.00% |
-| [jongbu_law.hwpx](<../../../../mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx>) | 6 | 98.86% | 98.86% |
+| [angle-2400.hwpx](<../issue_8371/angle-narrow/angle-2400.hwpx>) | 1 | 100.00% | 100.00% |
+| [jongbu_law.hwpx](<../legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx>) | 6 | 98.86% | 98.86% |
 | [2025 행정업무운영 편람(최종).hwp](<../../../../samples/2025 행정업무운영 편람(최종).hwp>) | 383 | 99.96% | 99.96% |
 | [2025 행정업무운영 편람(최종).hwpx](<../../../../samples/2025 행정업무운영 편람(최종).hwpx>) | 383 | 99.96% | 99.96% |
-| [issue2007_nested_cell_pagination_42065.hwp](<../../../../samples/basic/issue2007_nested_cell_pagination_42065.hwp>) | 17 | 98.36% | 98.37% |
-| [hwp3-sample10.hwp](<../../../../samples/hwp3-sample10.hwp>) | 763 | 99.56% | 99.56% |
+| [issue2007_nested_cell_pagination_42065.hwp](<../../../../samples/basic/issue2007_nested_cell_pagination_42065.hwp>) | 17 | 98.59% | 98.59% |
+| [hwp3-sample10.hwp](<../../../../samples/hwp3-sample10.hwp>) | 763 | 99.57% | 99.57% |
 | [hwp3-sample16-hwp5-2022.hwp](<../../../../samples/hwp3-sample16-hwp5-2022.hwp>) | 64 | 100.00% | 100.00% |
 | [hwp3-sample16-hwp5-2024.hwp](<../../../../samples/hwp3-sample16-hwp5-2024.hwp>) | 64 | 99.99% | 99.99% |
 | [hwp3-sample16-hwp5.hwpx](<../../../../samples/hwp3-sample16-hwp5.hwpx>) | 64 | 99.99% | 99.99% |
-| [20099369_yeongwol_forms.hwp](<../../../../samples/issue5699/20099369_yeongwol_forms.hwp>) | 4 | 99.99% | 99.99% |
+| [20099369_yeongwol_forms.hwp](<../../../../samples/issue5699/20099369_yeongwol_forms.hwp>) | 4 | 100.00% | 100.00% |
 | [pic-crop-01.hwp](<../../../../samples/pic-crop-01.hwp>) | 1 | 100.00% | 100.00% |
 | [exam-social-insert-delete.hwp](<../../../../samples/pr8040/exam-social-insert-delete.hwp>) | 4 | 99.99% | 99.99% |
 | [exam-social-insert.hwp](<../../../../samples/pr8040/exam-social-insert.hwp>) | 4 | 99.99% | 99.99% |
@@ -40,7 +40,19 @@ HWP와 HWPX는 같은 제목이어도 별도 입력이다. 아래 최저값은 �
 | [shape-group-02.hwp](<../../../../samples/shape-group-02.hwp>) | 1 | 100.00% | 100.00% |
 | [issue3307_outline_number.hwpx](<../../../../samples/task3307/issue3307_outline_number.hwpx>) | 9 | 100.00% | 100.00% |
 | [body-list-typed-hwp.hwp](<../../../../tests/fixtures/issue_8109_saved_fonts/body-list-typed-hwp.hwp>) | 1 | 100.00% | 100.00% |
-| [control-styles-hwp.hwp](<../../../../tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp>) | 1 | 99.25% | 100.00% |
+| [control-styles-hwp.hwp](<../../../../tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp>) | 1 | 100.00% | 100.00% |
+
+## 2026-11-15 PR #9075 검토의 상승분 반영
+
+동일한 최종 제품 소스 `43adf3f7fe412e71797456887e2be44b8ef8d14f`의 Native/fresh WASM
+36개 전쪽 데이터셋·3,542행을 수용했다. 기존 하한보다 Native 15쪽·WASM 15쪽이 상승했고,
+하락·누락은 0쪽이다. [최종 수용 조건](../issue_9060/final/protected-validation.json)과
+[전체 TSV](../issue_9060/final/protected/README.md)를 먼저 `44ec0fa4ec5d3332100406f6b4779a299a022ee0`에 고정했다.
+[갱신 영수증](updates/pr9075-20261115.json)에 이전/새 TSV 해시와 상승 30행의 값을 남긴다.
+이전 source·previous_source는 source_history와 acceptance_sources에도 보존한다.
+페이지별 최댓값을 조합하지 않았고 기존 입력·독립 PDF·공급 조건·2px raw 비교 방법은 유지한다.
+편람 HWPX Native 383쪽의 보호값은 이전과 같으며, gate의 정본 해시 연결만 함께 갱신했다.
+로컬 수용 완료 기록이며 원격 CI·병합 완료를 뜻하지 않는다.
 
 ## 2026-11-14 상승 버전 반영
 
@@ -48,7 +60,7 @@ HWP와 HWPX는 같은 제목이어도 별도 입력이다. 아래 최저값은 �
 
 ## 출처 통합과 판정
 
-최초 통합은 PR #8389와 #8397의 수용된 병합 commit을 사용했다. 현재 보호값은 위 2026-11-14 최종 전쪽 결과로 갱신했으며, 두 PR 번호는 과거 출처다. 새 검증의 선택 기준은 이 정본 TSV와 manifest이고 원래 자료는 삭제하거나 덮어쓰지 않는다.
+최초 통합은 PR #8389와 #8397의 수용된 병합 commit을 사용했다. 현재 보호값은 위 2026-11-15 최종 전쪽 결과로 갱신했으며, 두 PR 번호는 과거 출처다. 새 검증의 선택 기준은 이 정본 TSV와 manifest이고 원래 자료는 삭제하거나 덮어쓰지 않는다.
 
 1. 같은 입력 SHA·독립 Print PDF SHA·compat·DPI·인쇄 프로필·계산 조건·backend가 겹칠 때 최신 수용본을 선택한다.
 2. 같은 수용 시점의 중간 표와 최종 재출력이 겹치면 명시된 최종 전쪽 표를 선택한다. 반복된 동등 대조 표는 하나로 정리한다.
