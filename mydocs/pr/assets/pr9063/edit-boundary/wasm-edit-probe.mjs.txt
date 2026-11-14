@@ -1,0 +1,50 @@
+import {createServer} from 'node:http';
+import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
+import {createRequire} from 'node:module';
+import {createHash} from 'node:crypto';
+import {findChrome} from '/home/edward/mygithub/rhwp/scripts/rasterize-svg-webfonts.mjs';
+const root='/home/edward/mygithub/rhwp';
+const out=root+'/output/pr-review/pr9063';
+const pkg='/home/edward/mygithub/rhwp-worktrees/pr-9063-restricted-object-next-page/pkg';
+const require=createRequire(root+'/rhwp-studio/package.json');
+const files=new Map([
+ ['/rhwp.js',['application/javascript',readFileSync(pkg+'/rhwp.js')]],
+ ['/rhwp_bg.wasm',['application/wasm',readFileSync(pkg+'/rhwp_bg.wasm')]],
+]);
+files.set('/font-environment',['application/json',readFileSync(root+'/output/pr-review/native-webfont-cache/environments/4f8c459a62f05f15a9fe6fe99ee5e13008f271c3a037e88a2ce9f82765172471.json')]);
+const server=createServer((req,res)=>{
+ if(req.url==='/'){res.end('<meta charset="utf-8"><canvas id="page"></canvas>');return;}
+ const f=files.get(req.url);if(!f){res.writeHead(404);res.end();return;}
+ res.setHeader('Content-Type',f[0]);res.end(f[1]);
+});
+await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+let browser;
+try{
+ browser=await require('puppeteer-core').launch({executablePath:findChrome(process.env.VISUAL_SWEEP_CHROME),headless:true,protocolTimeout:180000});
+ const page=await browser.newPage();
+ await page.goto('http://127.0.0.1:'+server.address().port);
+ await page.evaluate(async()=>{const m=await import('/rhwp.js');await m.default({module_or_path:'/rhwp_bg.wasm'});globalThis.rhwp=m;globalThis.probeFontEnvironment=await(await fetch('/font-environment')).text();});
+ const results=[];
+ for(const name of ['picture_in_front_over_1px','rect_top_and_bottom_over_12px','picture_in_front_fits']){
+  const bytes=readFileSync(out+'/inputs/'+name+'.hwp');
+  const result=await page.evaluate(async(bytes)=>{
+   const doc=new rhwp.HwpDocument(new Uint8Array(bytes));doc.setHangul2024Compat(false);doc.selectCanvasMetrics(false);doc.setFontEnvironment(globalThis.probeFontEnvironment);
+   function snapshot(label){
+    const count=doc.pageCount(),pages=[];
+    for(let i=0;i<count;i++){
+     const tree=JSON.parse(doc.getPageRenderTree(i));const objects=[];
+     function walk(n){if(['Image','Rect','Rectangle'].includes(n.type))objects.push({kind:n.type,...n.bbox});for(const c of n.children||[])walk(c);}
+     walk(tree.root||tree);pages.push({page:i+1,objects});
+    }
+    return {label,page_count:count,pages};
+   }
+   const states=[snapshot('loaded')];doc.insertText(0,0,0,'X');states.push(snapshot('edited'));
+   const saved=doc.exportHwp();doc.free();
+   const reopened=new rhwp.HwpDocument(saved);reopened.setFontEnvironment(globalThis.probeFontEnvironment);const reopenedCount=reopened.pageCount();reopened.free();
+   return {states,reopened_page_count:reopenedCount};
+  },Array.from(bytes));
+  results.push({input:name+'.hwp',...result});
+  console.log(name,JSON.stringify(result));
+ }
+ writeFileSync(out+'/wasm-edit-probe-results.json',JSON.stringify({chromium:await browser.version(),wasm_sha256:createHash('sha256').update(files.get('/rhwp_bg.wasm')[1]).digest('hex'),canvas_metrics_active:false,font_environment:JSON.parse(files.get('/font-environment')[1].toString()),results},null,2)+'\n');
+} finally {if(browser)await browser.close();await new Promise(resolve=>server.close(resolve));}

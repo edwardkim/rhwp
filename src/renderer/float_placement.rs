@@ -5926,6 +5926,72 @@ pub(crate) fn stored_picture_next_page_placement(
     None
 }
 
+/// 쪽 영역 안으로 제한한 본문 문단 기준 개체가 본문 아래 끝을 넘으면 다음 쪽 본문 맨 위에 놓는다.
+///
+/// 웹한글기안기 인쇄 실측(#8660): 문단 기준(`vert=Para`, 위 정렬)·`쪽 영역 안으로 제한`
+/// (`flow_with_text`)인 그림·사각형의 아래 끝이 본문 아래 끝을 1px 이라도 넘으면, 배치 속성
+/// (글앞·글뒤·어울림·자리차지)과 겹침 허용에 상관없이 개체만 다음 쪽 본문 위 끝에 그린다.
+/// 기준 문단과 뒤 글줄은 원래 쪽에 남고, 다음 쪽이 없으면 쪽을 새로 만든다. 다음 쪽에서
+/// 자리차지 개체는 뒤 글을 개체 아래로 밀고, 글앞 개체는 밀지 않는다.
+/// 제한을 끈 개체(`flow_with_text = false`)는 같은 쪽에서 삐져나가므로 대상이 아니다.
+/// 표 칸 안 개체(#2032)는 본문 조판 경로를 지나지 않으므로 영향이 없다.
+pub(crate) fn overflow_para_object_next_page_placement(
+    control: &Control,
+    host_flow_y: f64,
+    available_height: f64,
+    dpi: f64,
+) -> Option<ParagraphFloatPlacement> {
+    let (common, frame_height_hu) = match control {
+        Control::Picture(picture) if picture.caption.is_none() => {
+            (&picture.common, picture_flow_frame_size_hu(picture).1)
+        }
+        Control::Shape(shape)
+            if crate::renderer::composer::shape_caption_for_layout(shape).is_none() =>
+        {
+            let common = shape.common();
+            (common, signed_hwpunit(common.height))
+        }
+        _ => return None,
+    };
+    if common.treat_as_char
+        || !common.flow_with_text
+        || common.vert_rel_to != VertRelTo::Para
+        || common.vert_align != VertAlign::Top
+        || !dpi.is_finite()
+        || dpi <= 0.0
+        || !available_height.is_finite()
+        || !host_flow_y.is_finite()
+    {
+        return None;
+    }
+    let offset = hwpunit_to_px(signed_hwpunit(common.vertical_offset), dpi);
+    let frame_height = frame_height_hu
+        .checked_add(i32::from(common.margin.top))?
+        .checked_add(i32::from(common.margin.bottom))?;
+    let height = hwpunit_to_px(frame_height, dpi);
+    // 한 쪽에 들어가지 않는 개체와 위로 당긴 개체는 실측하지 않았다.
+    if offset < 0.0 || frame_height <= 0 || height > available_height {
+        return None;
+    }
+    if host_flow_y + offset + height <= available_height + 0.5 {
+        return None;
+    }
+    let next_flow_y = if common.text_wrap == TextWrap::TopAndBottom {
+        height
+    } else {
+        0.0
+    };
+    Some(ParagraphFloatPlacement {
+        flow: ParagraphFloatFlow::StoredPicture { next_flow_y },
+        anchor_y: -offset,
+        stored_host_origin: None,
+        stored_successor_line_origin: None,
+        table_left: None,
+        table_top: 0.0,
+        occupied_bottom: next_flow_y,
+    })
+}
+
 /// 앞 쪽의 빈 호스트와 본문 줄은 남고 완전한 병렬 그림 행만 다음 쪽을 소유한다.
 /// 실제 앞 커서·물리 초과·연속 저장 줄의 재시작이 모두 같은 행 높이를 증명한다.
 pub(crate) fn stored_picture_group_next_page_placements(

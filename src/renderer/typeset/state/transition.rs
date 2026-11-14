@@ -196,6 +196,61 @@ impl TypesetState {
         self.data.vpos_col_anchor = self.data.current_height;
     }
 
+    /// [#8660] 쪽 영역 안 제한 개체의 다음 쪽 이월 판정에 쓸 기준 문단 위 끝 y.
+    ///
+    /// 한컴이 저장한 첫 줄 위치(`vertical_pos`)가 있으면 흐름 누적과 저장 위치 중 작은
+    /// 쪽을 쓴다. 어울림 표 옆 글줄처럼 흐름 누적이 한컴보다 커지는 경우가 있다(실측 33px).
+    /// 저장 줄이 없는 문서는 rhwp 가 다시 조판한 흐름 위치를 쓰되, 이 단에서 기준 문단
+    /// 앞에 놓인 항목이 모두 문단 항목(글줄·글자처럼 개체)일 때만 쓴다. 앞에 떠 있는
+    /// 표·개체 항목이 있으면 그 둘레 글 흐름 재계산이 한컴과 어긋날 수 있어(실측 14~70px)
+    /// 이월을 판정하지 않고 기존 같은 쪽 하단 끌어올림을 유지한다.
+    pub(in crate::renderer::typeset) fn restricted_object_host_top(
+        &self,
+        para_index: usize,
+        para: &Paragraph,
+        flow_y: f64,
+        dpi: f64,
+    ) -> Option<f64> {
+        let profile = &self.data.profile;
+        if profile.session_edited() {
+            // 편집 후에는 앞 문단의 변경으로 저장 vpos가 더 이상 현재 쪽 원점이
+            // 아니다. 보통 문단과 표 호스트가 수용한 같은 조판 흐름 원점을 쓴다.
+            // 개체의 쪽 영역 제한 속성 자체는 편집 여부로 해제되지 않는다.
+            return flow_y.is_finite().then_some(flow_y);
+        }
+        let stored_layout = profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout();
+        // 저장기가 편집 줄에 붙인 구현용 LineSeg의 vpos는 문단 내부 좌표다.
+        // 이를 실제 저장 쪽 좌표로 재사용하면 재열기 때 앵커가 쪽 위로 이동한다.
+        let stored_line = para
+            .line_segs
+            .iter()
+            .find(|line| !crate::renderer::typeset::is_synthetic_line_seg(line));
+        if let (true, Some(seg)) = (stored_layout, stored_line) {
+            let stored_y = crate::renderer::hwpunit_to_px(
+                seg.vertical_pos
+                    .saturating_sub(self.data.vpos_page_base.unwrap_or(0)),
+                dpi,
+            );
+            return (stored_y.is_finite() && stored_y >= 0.0).then(|| flow_y.min(stored_y));
+        }
+        if stored_line.is_some() {
+            return None;
+        }
+        let text_only_before = self
+            .data
+            .current_items
+            .iter()
+            .filter(|item| item.para_index() < para_index)
+            .all(|item| {
+                matches!(
+                    item,
+                    crate::renderer::pagination::PageItem::FullParagraph { .. }
+                        | crate::renderer::pagination::PageItem::PartialParagraph { .. }
+                )
+            });
+        text_only_before.then_some(flow_y)
+    }
+
     /// 사용 가능한 본문 높이 (각주, 존 오프셋 차감)
     pub(in crate::renderer::typeset) fn available_height(&self) -> f64 {
         let base = self.base_available_height();
