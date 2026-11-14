@@ -355,6 +355,11 @@ const KNOWN_GENUINE_HIDDEN_TEXT: &[&str] = &[
 /// 문단 3 에 U+200B 2개가 잇달아 있다(문자 29, `… 배출을 제어하는 <U+200B><U+200B> 경우, …`,
 /// 앞 공백·뒤 공백). 다른 문서에서 옮겨 붙인 흔적으로 보이며 탐지 자체는 옳다.
 ///
+/// `press_release_orphan_hidden_end.hwpx`(#9026) 구역 0 문단 19 의 인용문 닫는 따옴표 뒤에
+/// U+200B 이 2개 있다(문자 85 `… 이어져야 한다”<U+200B>라며, …`, 문자 176
+/// `… 발전해야 한다”<U+200B>라고 밝혔다.`, 앞 `”`·뒤 한글 음절). 배포 원문에 든 줄 나눔
+/// 허용 표지이며 숨은 문구는 없다. 탐지 자체는 옳다.
+///
 /// 규칙을 느슨하게 하지 않고 이 문서만 뺀다. 제로폭 탐지의 감도를 낮추면
 /// 낱자 사이에 끼워 넣는 진짜 회피(`비밀<U+200B>번호`)까지 함께 놓친다.
 /// 항목을 추가할 때는 반드시 위와 같은 개별 근거(문단·코드포인트·앞뒤 문자)를 남긴다.
@@ -364,12 +369,14 @@ const KNOWN_GENUINE_ZERO_WIDTH: &[&str] = &[
     "employment_service_interim_report.hwp",
     "1351000-201800239_hpv_cohort_final_report.hwp",
     "1480000-201900510_facility_pollution_study.hwp",
+    "press_release_orphan_hidden_end.hwpx",
 ];
 
 /// `samples/` 바로 아래가 아닌 허용목록 문서. 자기검증이 조용히 건너뛰지 않게 경로를 둔다.
 const KNOWN_GENUINE_ZERO_WIDTH_SUBDIR: &[&str] = &[
     "samples/issue8692/employment_service_interim_report.hwp",
     "samples/issue8842/1351000-201800239_hpv_cohort_final_report.hwp",
+    "samples/issue9026/press_release_orphan_hidden_end.hwpx",
 ];
 
 const SECURITY_SWEEP_SAMPLES_ENV: &str = "RHWP_SECURITY_SWEEP_SAMPLES_JSON";
