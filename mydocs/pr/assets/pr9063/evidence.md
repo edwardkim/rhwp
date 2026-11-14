@@ -265,3 +265,25 @@ Oracle 원장은 기존 모든 행이 그대로이며 신규 17행은 모두 Pri
 ## 원 기여의 본문 넘침 래칫 검토
 
 원 기여 `351674bfa4`는 `body_overflow_baseline.tsv`에 제한 off 대조군 `issue8660/picture_unrestricted_over_12px.hwp`의 의도된 넘침 1건을 등록했다. 쪽 영역 제한을 끄면 개체는 같은 쪽 본문 아래 끝을 넘어 그려지며, 새 데스크톱 한컴 2020 Print에서도 1쪽의 같은 배치를 확인했다. Native/fresh WASM 전쪽 raw 100.00%와 전체 회귀의 실제 counter 검사를 근거로 값 1을 유지한다. 원 주석의 웹 Print 참조만 canonical Desktop Print로 교체했고 TSV의 비주석 행은 전후 모두 같다. 이는 새 이월 결함을 래칫에 숨긴 것이 아니다. 실제 쪽 제한을 켠 반례와 fit 대조군은 별도의 관계 회귀로 보호한다.
+
+## GitHub 수용과 검증 결과
+
+- 제출 후보 `fafc84f71187aa1edec73d5204d501abaa0aa50a`, 수용 PR [#9069](https://github.com/edwardkim/rhwp/pull/9069). 원 PR [#9063](https://github.com/edwardkim/rhwp/pull/9063)의 여섯 commit을 보존했다.
+- 제품 CI [43558842756](https://github.com/edwardkim/rhwp/actions/runs/43558842756): Archive A 3,796 / B 2,046 / C 2,467 / D 2,515 / E 2,506, 합계 13,330 passed. Native CI는 선택 검사 243 passed다. 로컬 전체 13,524건·Native 공식 4,073건과 범위를 구분한다.
+- CodeQL [43558842804](https://github.com/edwardkim/rhwp/actions/runs/43558842804), Render Diff [43558842738](https://github.com/edwardkim/rhwp/actions/runs/43558842738), Adapter [43558842599](https://github.com/edwardkim/rhwp/actions/runs/43558842599), Proptest [43558842615](https://github.com/edwardkim/rhwp/actions/runs/43558842615), 최종 정책 [43561181677](https://github.com/edwardkim/rhwp/actions/runs/43561181677) 모두 success. 최종 check 33 success / 5 정상 skip / 0 fail. CI 22개 job의 실제 step 종료도 확인했다.
+- [Self-review](https://github.com/edwardkim/rhwp/pull/9069#issuecomment-6872355751) 뒤 실제 merge `5423ce12b1553af7352c38c24fad663d3b04fcde`를 확인했다. 최신 base/실제 PR ref/실제 merge tree는 `18c2f8053ec711a649c646585cdcecb4babb2f01`로 같았다.
+- 원 PR #9063은 간접 MERGED이며 연결 이슈 #8660·#9059는 CLOSED다. 자동 완료를 API로 확인하고, 승인된 완료·감사 댓글은 devel의 archive·이미지 확인 뒤 게시한다.
+- 로컬 PR #9063 검증 종료 때 root output 전체·target/pr-review/debug·worktree의 임시 output을 정리해 16.85 GiB를 확보했다. 이후 승인된 원격 단계용 임시 output을 새로 만들었으며 후속 처리 종료 때 다시 전체 삭제한다. 원시 로그·API JSON을 Git에 추가하지 않는다.
+
+## Merge 후 확인
+
+[Duration 갱신 43561454031](https://github.com/edwardkim/rhwp/actions/runs/43561454031)은 success이며 실제 결과 `ready:true`, `successful-pr-worker-measurements`와 `published:true`를 확인했다. 게시한 duration data commit은 `15d0b35a7113ba1312110ad1545668f95575ce98`, source merge는 `5423ce12b1553af7352c38c24fad663d3b04fcde`다. 검사 재실행이나 별도 CI 시작은 하지 않았다.
+
+기여자 댓글에 쓸 네 파일의 merge commit raw HTTP 응답은 PNG이며, 실제 Git blob과 바이트·SHA-256이 같다.
+
+| 이미지 | SHA-256 | bytes |
+| --- | --- | --- |
+| `mydocs/pr/assets/pr9063/correction/native-detail.png` | `16bab6b291a4887fc61730b397adb7eaf6ecd9bf6cf538030d5baed3ecddf52d` | 22379 |
+| `mydocs/pr/assets/pr9063/correction/wasm-detail.png` | `297d99f696a6515ec7f0527b5be54a6f9a62e6e1ba4f58539c548b5d9b5bc074` | 25213 |
+| `mydocs/pr/assets/pr9063/native-detail-comparison.png` | `9feb77a8dc2af38135ca49d8afa586ce2e40c5b5f4d55e713836efd76e634159` | 42602 |
+| `mydocs/pr/assets/pr9063/wasm-detail-comparison.png` | `19edbe930fdffc6b670dd3daabfab1965a116339edb824c1a6ec9bcf35c6ed30` | 49792 |

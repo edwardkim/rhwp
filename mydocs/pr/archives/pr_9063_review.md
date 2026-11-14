@@ -2,14 +2,18 @@
 
 ## 최종 판정
 
-**메인테이너 보정 후 수용 가능.** 원 기여의 열기 개선은 유효하며,
-편집 후 제한 개체가 앞쪽으로 돌아오던 경계를 공통 조판 경로에서 보완했다.
-원 head와 보정 후보의 결과를 구분한다. 필수 로컬 검증을 모두 완료했으며 원격 수용은 별도 승인을 기다린다.
+**메인터너 보정 후 수용 가능.** 검증한 수용 후보 `fafc84f71187aa1edec73d5204d501abaa0aa50a`를
+[PR #9069](https://github.com/edwardkim/rhwp/pull/9069)로 제출하고, 해당 head의 전체 CI 성공과
+[self-review](https://github.com/edwardkim/rhwp/pull/9069#issuecomment-6872355751) 뒤 merge했다.
+실제 merge는 `5423ce12b1553af7352c38c24fad663d3b04fcde`, 2026-11-14 14:25:19 KST다.
 
-2026-11-14 KST 작업지시자가 승인한 범위는 로컬 보완·필수 검증이다.
-공개 댓글·승인 리뷰·push·새 PR·머지는 수행하지 않았다. #8660·#9059는 OPEN을 유지한다.
-[보완 계획](pr_9063_review_impl.md), [실행 원장](assets/pr9063/evidence.md),
-[원격 처리안](assets/pr9063/remote-action-plan.md)을 따른다.
+원 기여의 열기 개선을 보존하면서 편집 후 이월 해제·중복 예약·합성 저장 줄 원점의 경계를 보완했다.
+보정 없는 원 head를 별도 승인한 것으로 해석하지 않는다. 작업지시자의 원격 처리·머지·후속 처리 승인을
+확보했으며 fork branch는 변경하지 않았다. 원 PR #9063의 간접 MERGED와 #8660·#9059의 CLOSED를 API로 확인했다.
+
+[보완 계획](pr_9063_review_impl.md), [실행 원장](../assets/pr9063/evidence.md),
+[승인된 원격 처리안](../assets/pr9063/remote-action-plan.md)을 따른다. 이 archive는 원 코드 PR의
+완료 기록이며, 아래 contributor 댓글 계획에 따라 devel에 존재하는 실제 증거로 후속 댓글을 게시한다.
 
 ## 접수와 검토 범위
 
@@ -19,8 +23,8 @@
 - 최신 devel: `dc3d0ff15e6e7cdb39138c72a5466994dea0e0d4`.
 - 공통 조상: `dd7f453898776c262c00e862e10f47d22a4d6ceb`.
 - reviewer: 사용자 지시에 따라 `edwardkim`을 요청하고 REST API로 재확인했다.
-- 역할: 메인테이너 일반 검토와 작업지시자가 승인한 로컬 보완·필수 검증. 공통 이월 보완은 로컬 커밋에 기록했고, 공개 댓글·push·승인 리뷰·머지는 수행하지 않았다.
-- 연결 이슈: #8660, #9059. 해결 증거는 준비했으며 실제 통합 전에는 OPEN을 유지한다.
+- 역할: 메인테이너 일반 검토와 승인된 보완·필수 검증·원격 수용·후속 처리. 공통 이월 보완은 로컬 커밋에 기록했고, 원격 처리 승인을 받아 upstream 수용 PR에서 CI·self-review·merge를 완료했다.
+- 연결 이슈: #8660, #9059. 수용 PR merge 뒤 두 이슈의 CLOSED를 API로 확인했다.
 
 첫 metadata 조회에 본문을 포함해 reviewer 지정 선행 순서를 지키지 못했다. 이를 인지한 뒤
 reviewer 지정과 API 재확인을 마치고 소스 fetch 및 로컬 검토를 시작했다.
@@ -47,8 +51,8 @@ reviewer 지정과 API 재확인을 마치고 소스 fetch 및 로컬 검토를 
 제한했다. 이번 변경은 그리기 단계의 제한보다 앞선 조판 단계에서 다음 쪽 소유를 정한다.
 기존 검토 기록의 제한 범위와 셀 내부 개체 경로를 구분해 확인했다.
 
-#8639의 원 해결·메인테이너 수용은 [PR #8662 검토](archives/pr_8662_review.md)와
-[원 SHA 대응](archives/pr_8662_review_impl.md)에 기록되어 있다. 현재 devel에는
+#8639의 원 해결·메인테이너 수용은 [PR #8662 검토](pr_8662_review.md)와
+[원 SHA 대응](pr_8662_review_impl.md)에 기록되어 있다. 현재 devel에는
 `37f51c4e78`의 저장 줄 없는 TAC 줄 높이·공백 처리와 `1562db7133`의 변경 추적 저장 줄 보존이
 포함되어 있다. 이번 수정은 부동 앵커만 뒤에 남은 공백 분류와 줄 끝 걸기에 추가 적용된다.
 
@@ -62,15 +66,15 @@ reviewer 지정과 API 재확인을 마치고 소스 fetch 및 로컬 검토를 
 `version=8.0.0.466`이다. 이 값은 저장 메타데이터이며 합성 입력의 실제 작성 제품을 증명하지 않는다.
 현행 engine 선택 규칙에 따라 2020을 사용했다. 입력 및 PDF SHA-256, 비동기 작업 ID,
 terminal 상태와 내려받은 파일의 client/server 크기·SHA-256 일치는
-[Print 원장](assets/pr9063/evidence.md)에 기록했다.
-원본 PDF는 [개체 경계](../../pdf/issue8660/)·[꼬리 공백](../../pdf/tac_space_tail/)의 canonical 경로에,
-실제 편집 파생본은 [추가 증적 경로](../../pdf/pr9063/)에 보존한다. 글꼴 프로그램은 추가하지 않는다.
+[Print 원장](../assets/pr9063/evidence.md)에 기록했다.
+원본 PDF는 [개체 경계](../../../pdf/issue8660)·[꼬리 공백](../../../pdf/tac_space_tail)의 canonical 경로에,
+실제 편집 파생본은 [추가 증적 경로](../../../pdf/pr9063)에 보존한다. 글꼴 프로그램은 추가하지 않는다.
 
 ## 보정 결과와 로컬 검증
 
 최신 devel에서도 원 문제는 남아 있었다. #9059의 세 입력은 독립 Print 대비 raw
 52.75%·52.75%·61.27%였고, #8660의 초과 그림 세 입력은 devel 1쪽/Print 2쪽이었다.
-[수정 전 Native 전쪽 TSV](assets/pr9063/base-native/)를 보존했다. 원 PR의 기본 열기는
+[수정 전 Native 전쪽 TSV](../assets/pr9063/base-native)를 보존했다. 원 PR의 기본 열기는
 17문서·22쪽 모두 개선됐으나 일반 편집 후 이월 유지가 빠져 있어 이번 승인 범위로 보완했다.
 
 제품 source `e2d7fb08b5`, 회귀 보강 `5b028b3f03`. 실제 Native producer와 Docker 최적화 WASM의
@@ -93,12 +97,12 @@ Native와 WASM에는 같은 HCR 환경·실제 프로그램을 공급했다. 글
 | 새 독립 Print 쪽수 등록 | canonical PDF 17개와 신규 원장 17행, 실제 쪽수 17/17 일치·기존 행 변경 없음 |
 
 Rust lint·workspace build, 명시적 새 샘플 보안과 최종 쪽수 원장 회귀도 모두 exit 0이다.
-실제 명령·개수·초기 환경 오류와 복구는 [실행 원장](assets/pr9063/evidence.md)에 기록했다. 원 head의 성공 CI를
-보정 후보의 CI로 재사용하지 않았다. 보정 후보는 아직 원격에 제출하지 않았다.
+실제 명령·개수·초기 환경 오류와 복구는 [실행 원장](../assets/pr9063/evidence.md)에 기록했다. 원 head의 성공 CI를
+보정 후보의 CI로 재사용하지 않았다. 보정 후보는 수용 PR #9069에서 정확한 head의 CI를 통과해 통합됐다.
 
 ### 공통 조판 원인과 실제 소비
 
-HWP5 [CommonObjAttr bit 13](../tech/한글문서파일형식_5.0_revision1.3.md)은 문단 기준 개체의
+HWP5 [CommonObjAttr bit 13](../../tech/한글문서파일형식_5.0_revision1.3.md)은 문단 기준 개체의
 쪽 영역 제한 속성이다. 문서의 편집 상태가 그 속성을 해제하는 조건은 아니다.
 
 `section.rs`의 문단 흐름 원점 → `restricted_object_host_top` → 보통/표 호스트 controls의
@@ -117,15 +121,15 @@ InFront는 본문 흐름을 밀지 않는 기존 속성을 유지한다. 단순 
 
 ### 시각 증거와 회귀의 독립성
 
-- [Native 확대 비교](assets/pr9063/correction/native-detail.png),
-  [WASM 확대 비교](assets/pr9063/correction/wasm-detail.png),
-  [첫 쪽 본문](assets/pr9063/correction/native-page1.png),
-  [실제 Studio 편집](assets/pr9063/correction/studio-keyboard.png).
-- [Native 전쪽 TSV](assets/pr9063/correction/native/),
-  [fresh WASM 전쪽 TSV](assets/pr9063/correction/wasm/),
-  [보호 원장 3,542행](assets/pr9063/correction/protected-comparison.tsv).
-- [수정 전 실패와 원인](assets/pr9063/edit-boundary/README.md),
-  [Print·SHA·글꼴·실제 실행 영수증](assets/pr9063/evidence.md).
+- [Native 확대 비교](../assets/pr9063/correction/native-detail.png),
+  [WASM 확대 비교](../assets/pr9063/correction/wasm-detail.png),
+  [첫 쪽 본문](../assets/pr9063/correction/native-page1.png),
+  [실제 Studio 편집](../assets/pr9063/correction/studio-keyboard.png).
+- [Native 전쪽 TSV](../assets/pr9063/correction/native),
+  [fresh WASM 전쪽 TSV](../assets/pr9063/correction/wasm),
+  [보호 원장 3,542행](../assets/pr9063/correction/protected-comparison.tsv).
+- [수정 전 실패와 원인](../assets/pr9063/edit-boundary/README.md),
+  [Print·SHA·글꼴·실제 실행 영수증](../assets/pr9063/evidence.md).
 
 그림 윤곽·사각형 선, 첫 쪽 ANCHOR/AFTER00~09, 다음 쪽 그림 아래 AFTER10/11의 순서·간격·누락·겹침을
 같은 영역/배율로 직접 판독했다. 이 입력에는 수식이 없어 수식 검증을 주장하지 않는다.
@@ -136,9 +140,43 @@ raw 100.00%는 RGB 픽셀 완전 일치라는 뜻이 아니다.
 TEXT 잉크 bbox에서 얻은 3.1966 / 18.2201 / 15.0235px를 사용하며 기존 0.6px 여유는 유지했다.
 같은 원본의 기존 검사를 함께 확인했고 정상 검사는 보존했다. 새 예외나 기준 하락은 적용하지 않았다.
 
-### 후속 범위
+### 원격 검증과 수용
 
-fork `kidsnote/rhwp`는 실제 `push=false`다. 승인받은 경우 upstream의 새 Open 수용 PR에 원 기여
-여섯 commit과 보정을 함께 제출하고, 그 head의 CI·self-review 후 merge한다. 별도 원격 승인은
-[실제 처리안과 댓글 초안](assets/pr9063/remote-action-plan.md)을 기준으로 요청한다.
-merge 전에는 원 PR·연결 이슈를 닫지 않는다.
+| 검사 | 실행/실제 결과 |
+| --- | --- |
+| 제품 CI | [43558842756](https://github.com/edwardkim/rhwp/actions/runs/43558842756), 전체 22개 job·모든 step 완료, success |
+| 기본 회귀 Archive A–E | 3,796 + 2,046 + 2,467 + 2,515 + 2,506 = 13,330 passed / 0 failed |
+| Native CI 선택 검사 | 실제 로그의 25개 요약 합계 243 passed. 로컬 공식 4,073건과 실행 범위를 구분한다 |
+| CodeQL | [43558842804](https://github.com/edwardkim/rhwp/actions/runs/43558842804), 전체 success |
+| Render Diff | [43558842738](https://github.com/edwardkim/rhwp/actions/runs/43558842738), 실제 Canvas/PDF 검사 success |
+| Adapter / Proptest | [43558842599](https://github.com/edwardkim/rhwp/actions/runs/43558842599) / [43558842615](https://github.com/edwardkim/rhwp/actions/runs/43558842615), success |
+| 최종 정책 | [43561181677](https://github.com/edwardkim/rhwp/actions/runs/43561181677), success |
+
+GitHub check는 성공 33개·정상 skip 5개이며 실패는 없다. 실제 CI job·step의 종료 상태와 로그를 확인했다.
+최신 devel `dc3d0ff15e6e7cdb39138c72a5466994dea0e0d4`와의 merge-tree는 exit 0이고,
+실제 PR merge ref 및 최종 merge의 tree `18c2f8053ec711a649c646585cdcecb4babb2f01`과 같다.
+`--match-head-commit`으로 검증한 head를 지정해 정상 merge했으며 보호 설정·검사 기준의 예외는 적용하지 않았다.
+
+fork `kidsnote/rhwp`는 `push=false`여서 본 저장소 수용 branch를 사용했다. 원 head와 여섯 기여 commit은
+실제 merge의 조상이며 원 PR은 2026-11-14 14:25:22 KST에 간접 MERGED로 확인됐다. 연결 이슈 #8660·#9059도
+14:25:44/45 KST에 닫혔다. 완료·감사 댓글과 종료 정리는 승인된 후속 범위다.
+
+## Merge 후 contributor PR comment 계획
+
+- 대상: [원 PR #9063](https://github.com/edwardkim/rhwp/pull/9063). 원 기여를 먼저 인정하고,
+  편집·반복 저장 보완이 필요했던 원인과 실제 검증 결과를 존댓말로 설명한다.
+- 실제 merge: `5423ce12b1553af7352c38c24fad663d3b04fcde`. 수용 PR은 #9069이며 fork branch는 유지한다.
+- 개체 원본 8문서·13쪽과 실제 편집/저장 경계는 `correction/native-detail.png` 및
+  `correction/wasm-detail.png`로 표시한다. 그림/사각형의 다음 쪽 상단과 그림 뒤 본문을 확인했다.
+- 공백 원본 9문서·9쪽은 `native-detail-comparison.png`의 앞 네 대조 영역과
+  `wasm-detail-comparison.png`로 연결한다. `at_table_n2/n3`, `after_1fit_n2`, `after_3fit_n4`의 1쪽 TEXT·표 간격을 직접 대조했다.
+  이 이미지는 원 기여 접수의 비교이며 같은 원본의 최종 재검증 TSV도 전쪽 raw 100.00%다.
+- 전체 최종 원본/실제 저장본 39조합·Native/fresh WASM 각 58쪽은 raw 100.00%, 보호 3,542쪽의 공식값 하락 0이다.
+  수치가 자동 내용 실루엣 보조값이며 RGB 완전 일치나 사람 판정 정확도가 아님을 설명한다.
+- 게시 전 위 네 PNG의 merge SHA raw HTTP 응답이 PNG이며 해당 commit의 파일과 SHA-256·바이트가 같은지 확인한다.
+  게시 후 API의 실제 UTF-8 본문과 브라우저 이미지 표시를 확인한다. Visual Sweep 정본 링크와 전쪽 TSV·검토 기록 링크를 함께 넣는다.
+- issue #8660·#9059에는 각 증상에 해당하는 완료 근거와 비교를 따로 게시한다. 원 PR과 이슈 상태를 API로 재확인한 뒤 정리한다.
+
+## Merge 후 실행 확인
+
+[Duration data 갱신](https://github.com/edwardkim/rhwp/actions/runs/43561454031)은 success, 실제 `ready:true`·`published:true`이며 게시 commit `15d0b35a7113ba1312110ad1545668f95575ce98`을 확인했다. merge 뒤 제품 CI를 시작하거나 재실행하지 않았다. 댓글 이미지 네 개의 merge SHA raw PNG 응답은 Git blob과 동일함을 확인했다. archive·증거가 devel에 반영된 뒤 승인된 완료·감사 댓글을 게시한다.

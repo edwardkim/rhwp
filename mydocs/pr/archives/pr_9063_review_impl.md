@@ -1,6 +1,6 @@
 # PR #9063 메인테이너 보완 계획
 
-2026-11-14 KST. 작업지시자는 기존 [편집 경계 보완안](assets/pr9063/edit-boundary/README.md)에 대해
+2026-11-14 KST. 작업지시자는 기존 [편집 경계 보완안](../assets/pr9063/edit-boundary/README.md)에 대해
 **메인테이너 보완·필수 검증**을 승인했다. 이 승인은 로컬 보정과 검증 범위다.
 
 ## 기준과 원인
@@ -59,7 +59,7 @@
 확정 앵커 paint로 이어진다. 그림을 다음 쪽에 그린 뒤 본문은 그 점유 끝 아래에서 시작한다.
 
 선행 fit의 원 해결은 #6882 → #6883의 `17e34fdca3` → 수용 #6944의 `74d0a68b7491`이다.
-[기존 검토](archives/pr_6883_review.md)와 현재 호출을 확인했다. 원점 제한 없는 개체·caption·
+[기존 검토](pr_6883_review.md)와 현재 호출을 확인했다. 원점 제한 없는 개체·caption·
 음수 offset·한 쪽보다 큰 개체·다단은 기존 판정 범위에 남으며, 실제 표 성장/복구 검사를
 같이 실행한다. 속성 제한을 문서의 edited 플래그로 해제하지 않는다.
 
@@ -101,4 +101,8 @@ raw 최저 100.00%다. Native의 반복 저장·재열기 60상태·100쪽과 �
 
 2026-11-14 KST. 승인된 보완·필수 검증을 모두 완료했다. 원 기여와 공통 원점·이월·실제 예약 보정, 정식 관계 회귀를 보존한다. 원본/저장 파생본 58쪽씩 Native/fresh WASM raw 100.00%, 정본 보호 3,542쪽의 공식값 하락 0, 필수 편람 383쪽 passed다. 전체 회귀 13,524건·Native 공식 4,073건·집중 41건 및 모든 Rust lint/build가 통과했다. 최종 주석 이후의 집중 실행과 신규 17개 보안/쪽수 원장 실행도 exit 0이다.
 
-[최종 검토](pr_9063_review.md), [실행 원장](assets/pr9063/evidence.md)에 제품/검사 source와 명령·개수·환경 복구를 구분했다. 원시 JSON·로그·중복 raster는 정식 증거와 요약으로 대체한다. 원격 push·새 수용 PR·CI·self-review·merge·연결 이슈 완료는 [원격 처리안](assets/pr9063/remote-action-plan.md)의 별도 승인 대상이다.
+[최종 검토](pr_9063_review.md), [실행 원장](../assets/pr9063/evidence.md)에 제품/검사 source와 명령·개수·환경 복구를 구분했다. 원시 JSON·로그·중복 raster는 정식 증거와 요약으로 대체한다. 원격 push·새 수용 PR·CI·self-review·merge·연결 이슈 완료는 [원격 처리안](../assets/pr9063/remote-action-plan.md)의 별도 승인 대상이다.
+
+## 원격 수용 완료
+
+작업지시자가 후보 `fafc84f71187`의 원격 처리·CI 성공·self-review 후 merge 및 후속 처리를 승인했다. 수용 PR #9069는 정확한 head의 CI를 통과했고 `5423ce12b1553af7352c38c24fad663d3b04fcde`로 merge됐다. 원 PR의 간접 MERGED와 연결 이슈 두 건의 CLOSED를 확인했다. 최신 검증·댓글 계획·상태는 같은 archive의 최종 검토와 실행 원장을 따른다.
