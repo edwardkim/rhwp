@@ -1,6 +1,6 @@
 //! 검사 유형: 고정형 — 각 함수가 독립 한컴2022 Print의 표 위·아래를 ±2 CSSpx로 고정한다.
 //! 69쪽 함수는 별도로 관계형 조건(독립 빈 줄의 소유·유일성·다음 글줄과의 순서)도 검사한다.
-//! 주석 갱신: 2026-11-14T21:34:04+09:00.
+//! 주석 갱신: 2026-11-14T21:50:49+09:00.
 //! hwpctl_API_v2.4.hwp 전105쪽 Native/fresh WASM 최저99.55%, 대상13·65·69쪽은
 //! 두 경로 모두100.00%다(closing-span-clean 생산자). 같은 쪽 review·overlay를 판독했다.
 //! 기준 PDF SHA256: 1d289727dd40ed35e48135bf16df06fe4cd080d967441ff464fb0e0b205fae74.
@@ -10,9 +10,37 @@
 use serde_json::Value;
 use std::{path::PathBuf, process::Command};
 
+struct TemporaryTree(PathBuf);
+
+impl TemporaryTree {
+    fn new(page: usize) -> Self {
+        let suffix = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let path = std::env::temp_dir().join(format!(
+            "rhwp-7731-frame-{}-{page}-{suffix}",
+            std::process::id()
+        ));
+        // 기존 디렉터리를 재사용하지 않아 이 검사 소유의 경로만 정리한다.
+        std::fs::create_dir(&path).unwrap();
+        Self(path)
+    }
+
+    fn path(&self) -> &std::path::Path {
+        &self.0
+    }
+}
+
+impl Drop for TemporaryTree {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_dir_all(&self.0);
+    }
+}
+
 fn table_frame(page: usize, paragraph: u64) -> (Value, f64, f64) {
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    let temporary = tempfile::tempdir().unwrap();
+    let temporary = TemporaryTree::new(page);
     let binary = std::env::var("CARGO_BIN_EXE_rhwp")
         .unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_owned());
     let result = Command::new(binary)

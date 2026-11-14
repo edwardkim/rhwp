@@ -158,7 +158,14 @@ NBSP 끝 전진 관계를 추가한 3개 검사는 보정 후 모두 PASS다. NB
 위 밑줄·취소선과 원본 글자 위치 보존을 대조군으로 함께 확인했다.
 API의 독립 PDF 표 경계 13·65·69쪽 고정형 검사와 69쪽 독립 빈 줄 소유 관계를 추가했다.
 정확한 base Native에서 3 FAIL, 보정 후보에서 3 PASS다. 임시 독립 rustc 실행이며
-정식 파생 suite·최소 글꼴 nextest 검증은 아직 별도로 완료해야 한다.
+정식 파생 suite의 최소 글꼴 Native Skia nextest도 실행해 새3개 파일의 **7 PASS / 0 FAIL**을
+확인했다(3.353초, 선택 밖1024건). 첫 실행의 임시 폴더 helper 직접 의존성 누락은 표준
+라이브러리의 검사 소유 폴더와 Drop 정리로 수정했다. 전체 회귀는 아직 실행하지 않았다.
+
+Mac 격리에서 CoreText1875→528개, system_profiler의 글꼴 파일235개와 CoreText의
+모든 실제 경로가 OS 영역에 있음을 확인했다. 기본 한글 프로그램 파일·표시 PNG의 SHA는
+일반 환경과 같고, 일반 프로세스의 사용자 글꼴 등록 목록도 전후 동일했다.
+[최소 글꼴 집중 검증 기록](../pr/assets/issues7727_7732_20261114/focused-minimal-font-validation.json)을 따른다.
 
 독립 대조군은 [원본 HWPX](../../tests/fixtures/issue7730/underline-position-probe.hwpx),
 [한컴2020 Print PDF](../../pdf/issue7730/underline-position-probe-2020.pdf),
