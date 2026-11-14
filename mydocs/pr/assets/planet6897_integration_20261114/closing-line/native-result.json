@@ -1,0 +1,20 @@
+{
+  "parent": "4b2531701be30ad41c9c77aa479f19a97b7aa6e9",
+  "patch_sha256": "71ad2f645a5624b66082129505a67cfacb7b6e3041ecf87330c04726ba6029ea",
+  "source_files": {
+    "src/renderer/float_placement.rs": "2386d35a16b7dcb5091b505179ff5bdbf3a037aa993a820b31fdefb859d4fa33",
+    "src/renderer/typeset/paragraph/spacing.rs": "03d35b8f00a7ef40dae5a2a33264eca773ece6796573864f7f915e04a9234008",
+    "src/parser/hwpx/tracked_changes.rs": "a7dfbc83d2157187c5608a4cebf5fe1e5f156e75f08ce0974a1553af271a199f",
+    "src/renderer/layout/table_partial.rs": "56aa54a9d63b0afc576bd5993a4765227bc0e467f25e560442fb8b68a44f7bfe",
+    "src/renderer/typeset/section/tail.rs": "6298cbda0d3afd8760157d85116e98c8015f3c3f7e7e5627e9626bc116f02483",
+    "tests/cases/issue_9062_ws_host_tac_above_offset_float.rs": "87448a0aaa2f56810003a37d81553096911b08daf44f153d1e86cdffc55f0ee1"
+  },
+  "native_sha256": "fa87c3a71f5e12a7c1d80232be528a38a35c64962668efb381b750ef330abdb3",
+  "pages": 2,
+  "raw": [
+    98.76,
+    100.0
+  ],
+  "direct_review": "2쪽 끝 글줄 위치가 독립 Print와 일치한다. 표·별표 본문은 유지하며 글자 누락/중복을 보이지 않는다.",
+  "fresh_wasm": "build running, not yet accepted"
+}
