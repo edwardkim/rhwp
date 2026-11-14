@@ -1,0 +1,17 @@
+{
+  "actual_response": {
+    "url": "http://127.0.0.1:7814/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+    "status": 304,
+    "sha256": "43c75a7923b6abbc7928aeaec73762f6df30ec5e42293a3aa7b013f551e50399",
+    "bytes": 3281327
+  },
+  "root_js_sha256": "2d48f8a6c3ff7f848f08725bb54d04094b296af1a40ae61203081a7cf8061a1a",
+  "vite_source_map_original_sha256": "215ba6afbba32185ed9247ae206b27ee3a83e0e5b9188bdaf072d84cd54937e2",
+  "transformation": "Vite changed exactly one relative WASM URL to current root pkg /@fs URL. Reversing that single known URL change reproduces root pkg JS bytes. Initial module response captured during load, not a later fetch.",
+  "normalized_original_equals_root": true,
+  "wasm_response_checks": {
+    "observations": 30,
+    "sha256": "5e5847d6aec86158f53a2626af196396c674a963e47b67e3ee7c4411c0480e13"
+  },
+  "root_pkg_equals_studio_public": true
+}
