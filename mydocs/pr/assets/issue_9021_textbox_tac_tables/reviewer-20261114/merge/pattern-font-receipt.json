@@ -1,0 +1,386 @@
+[
+  {
+    "key": "59043",
+    "file": "malgun.ttf",
+    "sha256": "0086c19e81d293a542e7d75564c645fb58070cc850aefebf8fa1c397858e510c",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "HJJGT.otf",
+    "sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "SPMJ.otf",
+    "sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "ENJGT.otf",
+    "sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "timesbi.ttf",
+    "sha256": "2852329a38acf9252504669d9c23d5e88366cf77e8209d508f5e7198639648ea",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "FLSMJ.otf",
+    "sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "times.ttf",
+    "sha256": "2cff2a03d8034801979dd6d16f09b9a825c3d710fcf068f2ebfbf0e1425c87cf",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "H2MJRE.TTF",
+    "sha256": "2fda1cc69297fe605ee8804984d26666c2543b0ec22b8f50031123a18d81924e",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "HGMJ.otf",
+    "sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "timesi.ttf",
+    "sha256": "3a1c2bc8528bfa432e0414d4ec69bf5813563c474e16a9ad0f57ca262f8d24a2",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "HMEPO.otf",
+    "sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "SPJGT.otf",
+    "sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "gulim.ttc",
+    "sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "gulim.ttc",
+    "sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "gulim.ttc",
+    "sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "gulim.ttc",
+    "sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "timesbd.ttf",
+    "sha256": "621b4a765fef5d255d19530f4bf936104c6519f2e232a0eef1923474e5b9cf22",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "JPSMJ.otf",
+    "sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "batang.ttc",
+    "sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "batang.ttc",
+    "sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "batang.ttc",
+    "sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "batang.ttc",
+    "sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "NGULIM.TTF",
+    "sha256": "871b6190046c01ccabf52c80e393af623176c1a30a86a8a297f6f1acfbdd9b43",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "palab.ttf",
+    "sha256": "8e14668bbae03f78ed668dbe3261218881960dcd9fb80ad6c1d1dfb4226a57c3",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "HMKSM.otf",
+    "sha256": "99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "palai.ttf",
+    "sha256": "99f0af2d1941707fecda23da38bafbed5144a73a3720d773c05b9d4c445920ed",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "malgunbd.ttf",
+    "sha256": "a541834fb9cdde9bd6d2c3ff1565cb0bb5ccf7a15e4e9daf2cb58d9b1cf282aa",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "SPSMJ.otf",
+    "sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "malgunsl.ttf",
+    "sha256": "a7217a2e590c86141bddadc74a2bcdff2efe210db48469a77a749e0446d91ea9",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "HJMJ.otf",
+    "sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "KoPubBatang-Light.ttf",
+    "sha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "HBATANG.TTF",
+    "sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "USER.otf",
+    "sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "FLMJ.otf",
+    "sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "HGSMJ.otf",
+    "sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "HMKMM.TTF",
+    "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "palabi.ttf",
+    "sha256": "d0e722b91ffd5391cc2e7d6e976f274d5aee9fe0b8d0fedfffe093763e695cde",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "JPJGT.otf",
+    "sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "pala.ttf",
+    "sha256": "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "H2HDRM.TTF",
+    "sha256": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "ENMJ.otf",
+    "sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "JPMJ.otf",
+    "sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "ENSMJ.otf",
+    "sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
+    "found": true
+  },
+  {
+    "key": "59043",
+    "file": "HJSMJ.otf",
+    "sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9",
+    "found": true
+  },
+  {
+    "key": "hwpspec",
+    "file": "HANBatang.ttf",
+    "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+    "found": true
+  },
+  {
+    "key": "hwpspec",
+    "file": "FLSMJ.otf",
+    "sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b",
+    "found": true
+  },
+  {
+    "key": "hwpspec",
+    "file": "HANDotum.ttf",
+    "sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+    "found": true
+  },
+  {
+    "key": "hwpspec",
+    "file": "JPSMJ.otf",
+    "sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a",
+    "found": true
+  },
+  {
+    "key": "hwpspec",
+    "file": "H2GTRE.TTF",
+    "sha256": "820d3212f688b546a327ea43a7202e3379cdbbd767ebac9753997e3f3d285171",
+    "found": true
+  },
+  {
+    "key": "hwpspec",
+    "file": "HANBatangB.ttf",
+    "sha256": "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5",
+    "found": true
+  },
+  {
+    "key": "hwpspec",
+    "file": "SPSMJ.otf",
+    "sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497",
+    "found": true
+  },
+  {
+    "key": "hwpspec",
+    "file": "HANDotumB.ttf",
+    "sha256": "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4",
+    "found": true
+  },
+  {
+    "key": "hwpspec",
+    "file": "HDotum.TTF",
+    "sha256": "b05e5e2f646961c7bdcb9904a7b6d84d288d9c44c3955d60b254cc8ad2305a76",
+    "found": false
+  },
+  {
+    "key": "hwpspec",
+    "file": "HGSMJ.otf",
+    "sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0",
+    "found": true
+  },
+  {
+    "key": "hwpspec",
+    "file": "ENSMJ.otf",
+    "sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
+    "found": true
+  },
+  {
+    "key": "hwpspec",
+    "file": "HJSMJ.otf",
+    "sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9",
+    "found": true
+  },
+  {
+    "key": "patterns-hwp",
+    "file": "HANBatang.ttf",
+    "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+    "found": true
+  },
+  {
+    "key": "patterns-hwp",
+    "file": "HANDotum.ttf",
+    "sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+    "found": true
+  },
+  {
+    "key": "patterns-hwp",
+    "file": "HANBatangB.ttf",
+    "sha256": "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5",
+    "found": true
+  },
+  {
+    "key": "patterns-hwp",
+    "file": "HANDotumB.ttf",
+    "sha256": "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4",
+    "found": true
+  },
+  {
+    "key": "patterns-hwpx",
+    "file": "HANBatang.ttf",
+    "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+    "found": true
+  },
+  {
+    "key": "patterns-hwpx",
+    "file": "HANDotum.ttf",
+    "sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+    "found": true
+  },
+  {
+    "key": "patterns-hwpx",
+    "file": "HANBatangB.ttf",
+    "sha256": "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5",
+    "found": true
+  },
+  {
+    "key": "patterns-hwpx",
+    "file": "HANDotumB.ttf",
+    "sha256": "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4",
+    "found": true
+  }
+]

@@ -12,6 +12,8 @@ pub(super) struct PendingParagraphOrigin {
 }
 pub(in crate::renderer::typeset) struct StateView {
     pub(in crate::renderer::typeset) deferred_table_successor_start: Option<usize>,
+    /// 다음 문단 저장 줄이 증명한 「쪽 기준 띠 아래 빈 host 줄」의 (문단, 컨트롤, 띠 아래끝 px, 줄 전진 HU).
+    pub(in crate::renderer::typeset) page_band_host_line: Option<(usize, usize, f64, i32)>,
     pub(super) pending_table_terminal_gap: Option<DeferredTableTerminalGap>,
     /// 완성된 페이지 목록
     pub(in crate::renderer::typeset) pages: Vec<PageContent>,

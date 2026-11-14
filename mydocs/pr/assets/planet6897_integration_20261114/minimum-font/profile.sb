@@ -1,0 +1,5 @@
+(version 1)
+(allow default)
+(deny file-read* (subpath "/Library/Fonts") (subpath "/Users/tsjang/Library/Fonts") (subpath "/Users/tsjang/rhwp/ttfs"))
+(allow file-read* (subpath "/Users/tsjang/rhwp/ttfs/opensource") (subpath "/Users/tsjang/rhwp/ttfs/redistributable"))
+(deny mach-lookup (global-name "com.apple.fonts") (global-name "com.apple.fonts.atsbridge"))

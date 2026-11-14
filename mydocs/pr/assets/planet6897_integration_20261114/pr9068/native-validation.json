@@ -1,0 +1,77 @@
+{
+  "producer_head": "b60aa5e4a7ac678fe51532f37c0bb861cff2c466",
+  "binary_sha256": "bfbdf1c536b41639c665cecf4f871195e6361d1333a372f97f8ff84fed675991",
+  "scope": "Native 40 pages; fresh WASM/combined final gates pending",
+  "claimed_native": [
+    {
+      "key": "repeated",
+      "pages": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "gate": {
+        "status": "not_evaluated",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 5,
+          "pdf": 5
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      },
+      "minimum_raw": 99.8,
+      "manifest_sha256": "4854f9b394894ea7b5c47c35db4c4c5dbe2f432d4b06f2ee9a397de6bf18599d",
+      "tsv_sha256": "e805e7bce1fdbe65c9146b0896598151b4e13881e273c4a8c67f856a7377234a",
+      "direct_reading": {
+        "review_pages": [
+          4
+        ],
+        "result": "원 PR 주장대로 그림·글줄의 저장 위치와 목록/붙임 제목의 쪽 경계가 Print와 일치한다. 2쪽 기존 문단 줄 나눔 차이는 신규 회귀로 주장하지 않는다."
+      }
+    },
+    {
+      "key": "orphan",
+      "pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "gate": {
+        "status": "not_evaluated",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 8,
+          "pdf": 8
+        },
+        "page_count_mismatch": false,
+        "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+      },
+      "minimum_raw": 95.42,
+      "manifest_sha256": "eda31951f89dab54d62416f93b4fa3b67a35ed979486e74d830ff6c1b43460bc",
+      "tsv_sha256": "21712adbd6f0a5d43517dd674d6d5f6d266aea4d9929b7e5660cf4982d03f0ad",
+      "direct_reading": {
+        "review_pages": [
+          3,
+          4
+        ],
+        "result": "원 PR 주장대로 그림·글줄의 저장 위치와 목록/붙임 제목의 쪽 경계가 Print와 일치한다. 2쪽 기존 문단 줄 나눔 차이는 신규 회귀로 주장하지 않는다."
+      }
+    }
+  ]
+}

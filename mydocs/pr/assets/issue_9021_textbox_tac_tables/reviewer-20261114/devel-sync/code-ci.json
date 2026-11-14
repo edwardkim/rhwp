@@ -1,0 +1,248 @@
+[
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425361/job/132335114973",
+    "name": "Build & Test",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425361/job/132332453868",
+    "name": "test-archive-b-shard-1 / Default-feature tests (Archive B)",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425361/job/132331960167",
+    "name": "test-archive-d-shard-1 / Default-feature tests (Archive D)",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425361/job/132331592255",
+    "name": "test-archive-c-shard-1 / Default-feature tests (Archive C)",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425361/job/132331330290",
+    "name": "test-archive-e-shard-1 / Default-feature tests (Archive E)",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425361/job/132330872527",
+    "name": "test-archive-a-shard-1 / Default-feature tests (Archive A)",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/runs/132328405224",
+    "name": "CodeQL",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425361/job/132327199216",
+    "name": "build-test-archive-c / Build test archive (c)",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425361/job/132327199221",
+    "name": "build-test-archive-e / Build test archive (e)",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425361/job/132327199195",
+    "name": "build-test-archive-d / Build test archive (d)",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425361/job/132327199213",
+    "name": "build-test-archive-b / Build test archive (b)",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425234/job/132327185622",
+    "name": "Analyze (javascript-typescript)",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425234/job/132327185618",
+    "name": "Analyze (python)",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425234/job/132327185589",
+    "name": "Analyze (rust)",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425234/job/132327185620",
+    "name": "Analyze (actions)",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425361/job/132327179568",
+    "name": "build-test-archive-a / Build test archive (a)",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425361/job/132327179203",
+    "name": "Resolve nextest target duration policy",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425361/job/132327179294",
+    "name": "Frontend package gates",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425361/job/132327179230",
+    "name": "Native Skia tests",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425361/job/132327179228",
+    "name": "Lint (fmt, clippy, WASM check)",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "skipping",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425361/job/132327180300",
+    "name": "release-operations-contracts",
+    "state": "SKIPPED"
+  },
+  {
+    "bucket": "skipping",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425361/job/132327180284",
+    "name": "Workflow promotion preflight",
+    "state": "SKIPPED"
+  },
+  {
+    "bucket": "skipping",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425361/job/132327180764",
+    "name": "native-host-package",
+    "state": "SKIPPED"
+  },
+  {
+    "bucket": "skipping",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425361/job/132327180473",
+    "name": "Frontend unit gates",
+    "state": "SKIPPED"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425260/job/132327158946",
+    "name": "prop roundtrip",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425240/job/132327160156",
+    "name": "adapter inter-diff",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425260/job/132327131012",
+    "name": "Proptest preflight",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425211/job/132327129363",
+    "name": "Canvas visual diff",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425240/job/132327121852",
+    "name": "adapter inter-diff preflight",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425361/job/132327121069",
+    "name": "CI preflight",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425234/job/132327120902",
+    "name": "CodeQL preflight",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425211/job/132327088903",
+    "name": "Render Diff preflight",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425260/job/132327088997",
+    "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425234/job/132327088561",
+    "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425361/job/132327089930",
+    "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425240/job/132327088790",
+    "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "skipping",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425073/job/132327090468",
+    "name": "cancel-stale-runs",
+    "state": "SKIPPED"
+  },
+  {
+    "bucket": "skipping",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555425361/job/132327090554",
+    "name": "WASM Build",
+    "state": "SKIPPED"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555421246/job/132327079688",
+    "name": "cancel-stale-runs",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43555421233/job/132327078877",
+    "name": "Evaluate trusted CI impact policy",
+    "state": "SUCCESS"
+  },
+  {
+    "bucket": "pass",
+    "link": "https://github.com/edwardkim/rhwp/actions/runs/43558016704",
+    "name": "CI Impact Policy",
+    "state": "SUCCESS"
+  }
+]
