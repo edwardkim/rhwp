@@ -318,6 +318,37 @@ impl TypesetEngine {
                         // `find_inline_control_target_page` 의 `in_current` 검사가 `None` 을
                         // 돌려주므로 제자리 개체는 하나도 움직이지 않는다. 같은 문서의
                         // `pi=25` 가 그 경우다(`would_route=None`).
+                        // [#8660] 쪽 영역 안으로 제한한 문단 기준 개체가 본문 아래 끝을 넘으면
+                        // 한컴은 개체만 다음 쪽 본문 맨 위에 그린다(기준 문단은 남는다). 같은 쪽
+                        // 아래 끝으로 끌어올리는 그리기 단계 제한(#2032·#2075)보다 먼저 쪽을 정한다.
+                        if st.col_count == 1
+                            && (st.pages.len(), st.current_column)
+                                == (picture_host_origin.0, picture_host_origin.1)
+                        {
+                            if let Some(placement) = st
+                                .restricted_object_host_top(para_idx, para, picture_host_origin.2, self.dpi)
+                                .and_then(|host_top| {
+                                    crate::renderer::float_placement::overflow_para_object_next_page_placement(
+                                        ctrl,
+                                        host_top,
+                                        st.available_height(),
+                                        self.dpi,
+                                    )
+                                })
+                            {
+                                st.defer_stored_frame(
+                                    crate::renderer::typeset::DeferredStoredFrameControl {
+                                        following_body_para_index: None,
+                                        kind: crate::renderer::typeset::DeferredStoredFrameKind::Picture,
+                                        para_index: para_idx,
+                                        control_index: ctrl_idx,
+                                        placement,
+                                        target_page: None,
+                                    },
+                                );
+                                continue;
+                            }
+                        }
                         let routed =
                             if crate::renderer::pagination::is_routable_anchored_picture_or_shape(
                                 ctrl,

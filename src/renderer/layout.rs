@@ -17576,8 +17576,10 @@ impl LayoutEngine {
                     .get(*para_index)
                     .and_then(|para| para.controls.get(*control_index))
                     .and_then(|control| match control {
+                        // [#8660] 다음 쪽 맨 위로 넘긴 비-OLE 도형도 조판이 확정한 앵커를 쓴다.
                         Control::Shape(shape)
-                            if matches!(shape.as_ref(), ShapeObject::Ole(_)) =>
+                            if matches!(shape.as_ref(), ShapeObject::Ole(_))
+                                || !shape.common().treat_as_char =>
                         {
                             col_content
                                 .paragraph_float_placements
