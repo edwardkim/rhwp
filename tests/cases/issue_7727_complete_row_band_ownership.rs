@@ -1,12 +1,13 @@
-//! 검사 유형: 관계형 — 완료한 끝 행은 실제 원본 줄·안여백의 상자를 유지한다.
-//! 주석 갱신: 2026-11-14T22:35:49+09:00.
-//! CBTA 전204쪽은 Native 최저97.00%(96쪽)로 아직 문서 전체98% 자격 전이다.
-//! 대상162·166쪽은 Native99.94/99.95%이며 fresh WASM도 각각99.94/99.95%다.
-//! 독립 한컴2020 Print의 닫는 선은 각각724.57064/726.00936 CSSpx다.
-//! 그 절대 좌표를 고정하지 않고, 같은 줄을 온전히 받은 마지막 행의 높이가
-//! 원본 마지막 줄 끝+상하 안여백과 같다는 소유 관계를 검사한다.
-//! 조각 전체의 남은 공간을 그 행에 강제로 넣은 이전 코드는 이 관계를 위반한다.
-//! compact render tree의 소수 첫째 자리 직렬화 격자만 비교하며 원본 글꼴 설치에 의존하지 않는다.
+//! 검사 유형: 고정형 — 독립 Print162·166쪽의 닫는 선을 ±2 CSSpx로 보호한다.
+//! 검사 유형: 관계형 — 같은 끝 행의 원본 줄·안여백과 실제 높이의 소유를 함께 검사한다.
+//! 주석 갱신: 2026-11-14T23:28:54+09:00.
+//! CBTA 원본204쪽, 대상162·166쪽은 Native/fresh WASM 각각99.94/99.95%다.
+//! 2026-11-14 정본 PNG Print / compat2022 / 96DPI / raw2px, 같은 쪽 review·overlay를 판독했다.
+//! 문서 최저가98% 미만이더라도 해당 쪽의 양쪽98% 자격으로 px 회귀를 추가한다.
+//! 독립 PDF 선:162쪽724.5706380208334,166쪽726.0093587239584 CSSpx.
+//! 근거: pdf/issue7727/cbta-original-hancom2020-print-20261106.pdf와
+//! mydocs/pr/assets/issues7727_7732_20261114/complete-row-band/cause.json.
+//! 실제 완료한 원본 줄·패딩의 관계도 유지하여 남은 쪽 공간을 끝 행에 붙이는 결함을 검출한다.
 
 #![cfg(feature = "native-skia")]
 
@@ -102,12 +103,13 @@ fn check(page: usize, row: u16) {
         .collect();
     assert_eq!(files.len(), 1);
     let tree: Value = serde_json::from_slice(&std::fs::read(&files[0]).unwrap()).unwrap();
-    fn find(node: &Value, row: u16, out: &mut Vec<f64>) {
+    fn find(node: &Value, row: u16, out: &mut Vec<(f64, f64)>) {
         if node["type"] == "Cell"
             && node["row"].as_u64() == Some(u64::from(row))
             && node["col"] == 3
         {
-            out.push(node["bbox"]["h"].as_f64().unwrap());
+            let height = node["bbox"]["h"].as_f64().unwrap();
+            out.push((height, node["bbox"]["y"].as_f64().unwrap() + height));
         }
         if let Some(children) = node["children"].as_array() {
             for child in children {
@@ -119,10 +121,20 @@ fn check(page: usize, row: u16) {
     find(&tree, row, &mut heights);
     assert_eq!(heights.len(), 1, "끝 행의 누락·중복");
     assert_eq!(
-        (heights[0] * 10.0).round() as i64,
+        (heights[0].0 * 10.0).round() as i64,
         (expected * 10.0).round() as i64,
         "{page}쪽 끝 행{row}: 실제{}px, 완료한 원본 줄·안여백{expected}px",
-        heights[0]
+        heights[0].0
+    );
+    let pdf_close = match page {
+        162 => 724.5706380208334,
+        166 => 726.0093587239584,
+        _ => unreachable!(),
+    };
+    assert!(
+        (heights[0].1 - pdf_close).abs() <= 2.0,
+        "{page}쪽 끝 선: 독립 Print{pdf_close}px, 실제{}px",
+        heights[0].1
     );
 }
 

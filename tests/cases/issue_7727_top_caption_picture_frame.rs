@@ -1,9 +1,13 @@
-//! 검사 유형: 관계형 — 위 캡션 뒤의 그림과 소유 테두리가 같은 개체 프레임을 유지한다.
-//! 주석 갱신: 2026-11-14T21:18:23+09:00.
-//! CBTA 전204쪽은 보정 전 Native/fresh WASM 최저96.35%다. 98% 미만인 상태에서
-//! 독립 Print의 절대 좌표를 고정하지 않고, 그림 ID로 연결된 테두리의 소유·상대 배치를 검사한다.
-//! 원본118쪽의 위 캡션은 이미지 원점을 약27px 옮긴다. 테두리만 캡션 위에 남으면 실패한다.
-//! 시스템 글꼴의 설치 여부나 특정 글리프 폭을 기대값으로 쓰지 않는다.
+//! 검사 유형: 관계형 — 위 캡션 뒤 그림과 소유 테두리의 같은 개체 프레임을 검사한다.
+//! 검사 유형: 고정형 — Print118쪽의 독립 그림 테두리 네 변을 ±2 CSSpx로 보호한다.
+//! 주석 갱신: 2026-11-14T23:28:54+09:00.
+//! CBTA118쪽은 Native/fresh WASM 양쪽98.44%, 원본204쪽이다.
+//! 2026-11-14 정본 PNG Print / compat2022 / 96DPI / raw2px의 같은 쪽 review·overlay를 판독했다.
+//! 독립 한컴2020 Print PDF의 그림 테두리 경계는149.6800/211.9280/656.9267/923.7893 CSSpx다.
+//! PDF의 비트맵 원래 외곽은 clip 전 크기이므로 이 고정 기대값으로 혼용하지 않는다.
+//! 그림 원점은 위 캡션 때문에 약27px 움직인다. 테두리만 남는 결함을 검출한다.
+//! 근거: pdf/issue7727/cbta-original-hancom2020-print-20261106.pdf,
+//! mydocs/working/task_m100_7727_stage1.md. 글꼴 설치나 특정 글리프 폭에 의존하지 않는다.
 
 use rhwp::{
     renderer::render_tree::{RenderNode, RenderNodeType},
@@ -73,6 +77,57 @@ fn top_caption_moves_the_picture_and_its_owned_border_together() {
         assert!(
             (actual - expected).abs() <= pen + quantum,
             "{label} 테두리가 그림 프레임에서 분리됨: {actual} / {expected}, 획={pen}"
+        );
+    }
+}
+
+#[test]
+fn top_caption_border_keeps_its_independent_print_frame() {
+    use rhwp::paint::{LayerNode, LayerNodeKind, PaintOp, RenderProfile};
+    let bytes = std::fs::read(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp"
+    ))
+    .unwrap();
+    let mut core = DocumentCore::from_bytes(&bytes).unwrap();
+    core.set_hangul2024_compat(false);
+    let tree = core
+        .build_page_layer_tree_with_profile(117, RenderProfile::Print)
+        .unwrap();
+    fn borders(node: &LayerNode, out: &mut Vec<rhwp::renderer::render_tree::BoundingBox>) {
+        match &node.kind {
+            LayerNodeKind::Group { children, .. } => {
+                for child in children {
+                    borders(child, out);
+                }
+            }
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                borders(child, out)
+            }
+            LayerNodeKind::Leaf { ops } => {
+                for op in ops {
+                    if let PaintOp::Rectangle { bbox, rect } = op {
+                        if rect.image_frame_owner.is_some() {
+                            out.push(*bbox);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    let mut found = Vec::new();
+    borders(&tree.root, &mut found);
+    assert_eq!(found.len(), 1, "그림 소유 테두리 누락·중복");
+    let actual = found[0];
+    for (label, observed, independent) in [
+        ("왼쪽", actual.x, 149.68000284830728),
+        ("위", actual.y, 211.927978515625),
+        ("오른쪽", actual.x + actual.width, 656.9266764322916),
+        ("아래", actual.y + actual.height, 923.789306640625),
+    ] {
+        assert!(
+            (observed - independent).abs() <= 2.0,
+            "{label}: 실제{observed}px, 독립 Print{independent}px"
         );
     }
 }
