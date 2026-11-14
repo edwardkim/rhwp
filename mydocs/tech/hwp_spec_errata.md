@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/tech/hwp_spec_errata.md
-last_verified: 2026-07-16
+last_verified: 2026-11-12
 ---
 
 # HWP 5.0 스펙 문서 정오표
@@ -992,6 +992,42 @@ HWPX 파서·직렬화기도 같은 scalar 순서를 소비한다. 이미 보존
 | 분포 | 10k 코퍼스 HWPX 3,418건 중 평문 command 의 `dirty="0"`·내용=첫 항목 누름틀은 3건 5필드, `dirty="1"` 평문 command 는 918필드 |
 | 수정 파일 | `src/model/control.rs` (`guide_text()`) |
 | 발견일 | 2026-11-12 (#8985) |
+
+## 40. 채우기 무늬 종류 (표 29) — 0부터 시작
+
+- **발견일**: 2026-11-12, 이슈 #8978.
+- **원문**: [공식 revision 1.3 PDF](../../pdf/%ED%95%9C%EA%B8%80%EB%AC%B8%EC%84%9C%ED%8C%8C%EC%9D%BC%ED%98%95%EC%8B%9D_5.0_revision1.3-hancom-official.pdf)
+  28쪽, 표 29. 1 `-----`, 2 `|||||`, 3 `\\\\\`, 4 `/////`, 5 `+++++`, 6 `xxxxx`로 기술한다.
+  원문 PDF는 변경하지 않는다.
+- **확인한 값**: 같은 순서가 0부터 시작한다. 0 ─, 1 │, 2 ＼, 3 ／, 4 ＋, 5 ×이며 무늬 없음은 -1이다.
+  6과 그 밖의 값은 무늬를 그리지 않는다.
+  [사양 설명본 표 29](%ED%95%9C%EA%B8%80%EB%AC%B8%EC%84%9C%ED%8C%8C%EC%9D%BC%ED%98%95%EC%8B%9D_5.0_revision1.3.md#표-29-채우기-무늬-종류)를 정정한다.
+
+### 교차 확인한 근거
+
+1. `samples/issue8978/fill-patterns-0-6.hwp`
+   (SHA-256 `26062124ea6184245e967b0dbba5a2ee129a076188a0a1d8e6ff65ece5321b2b`)는 7행 표의 오른쪽 칸
+   BorderFill에 무늬 종류 0~6을 그대로 저장한 합성 입력이다. 한글 2024(13.0.0.1408)
+   Print `pdf/issue8978/fill-patterns-0-6-2024.pdf`
+   (SHA-256 `be829f0f4647f895ca9e293bad8c36ad2ea95c14442dfe8cfe4fa86d2bb68ee3`)에서
+   0~5는 위 순서로 그려지고 6은 무늬가 없다.
+2. 같은 한글이 이 파일을 HWPX로 저장한 `samples/issue8978/fill-patterns-0-6.hancom2024.hwpx`
+   (SHA-256 `4733e537608f22f6c9b6a144f97830baae998705bd610d0338807cf668075429`)의 `hatchStyle`은
+   0 `HORIZONTAL`, 1 `VERTICAL`, 2 `SLASH`, 3 `BACK_SLASH`, 4 `CROSS`, 5 `CROSS_DIAGONAL`이고
+   6은 `hatchStyle`을 쓰지 않는다. 이 HWPX의 Print도 HWP와 같은 모양이다.
+   OWPML 스키마 주석은 `BACK_SLASH`를 `\\\\\`, `SLASH`를 `/////`로 적지만 한글은 `SLASH`를 ＼로
+   그린다.
+3. 한컴이 저장한 `samples/hwpspec.hwp`
+   (SHA-256 `64df877f3c4accda0111ecf39d837da889741bb821b220cf61b6c126dc88364d`)의 BorderFill 무늬 2·3을
+   쓰는 13쪽(PDF 23쪽) 「RECORD_DATA (RD)」·「RECORD_HEADER」 행은 `pdf/hwpspec-2024.pdf`에서
+   각각 ＼·／로 그려진다. `samples/` 아래 HWP의 DocInfo 단색 채우기 6,409건은
+   -1이 6,403건, 2가 4건, 3이 2건이며 0은 없다.
+4. 한컴독스 웹 한글 Print(#8978 본문)와 한컴 2020 Print의 무늬 0(#8733
+   `pdf/issue_8733/observed_prints/imported-raw-zero-hwp-2020.pdf`)도 같은 결과다.
+
+IR `SolidFill.pattern_type`은 HWP 저장값을 그대로 둔다. HWPX 파서·직렬화기는 위 2의
+대응을 쓰고, SVG·웹 캔버스·Skia·Studio CanvasKit은 같은 0~5 표로 그린다
+(`src/model/style.rs`의 `HatchStyle`).
 
 ## 검증 원칙
 

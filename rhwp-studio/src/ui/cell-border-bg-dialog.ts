@@ -499,16 +499,10 @@ export class CellBorderBgDialog extends ModalDialog {
     const patTypeRow = this.row();
     patTypeRow.appendChild(this.label(i18nText('dialog.cellBorderBg.label.label.x0829e0')));
     this.bgPatternTypeSelect = this.selectOptions([
-      ['-1', i18nText('dialog.cellBorderBg.selectOptions.label')], ['1', i18nText('dialog.cellBorderBg.selectOptions.label.xd965c1')], ['2', i18nText('dialog.cellBorderBg.selectOptions.label.x7842b4')], ['3', i18nText('dialog.cellBorderBg.selectOptions.label.xf14cb1')],
-      ['4', i18nText('dialog.cellBorderBg.selectOptions.label.xcf200e')], ['5', i18nText('dialog.cellBorderBg.buildBackgroundTab.label')], ['6', i18nText('dialog.cellBorderBg.buildBackgroundTab.label.x432dc9')],
+      // HWP 무늬 종류: -1=없음, 0~5 = ─ │ ＼ ／ ＋ × (#8978)
+      ['-1', i18nText('dialog.cellBorderBg.selectOptions.label')], ['0', i18nText('dialog.cellBorderBg.selectOptions.label.xd965c1')], ['1', i18nText('dialog.cellBorderBg.selectOptions.label.x7842b4')], ['2', i18nText('dialog.cellBorderBg.selectOptions.label.xf14cb1')],
+      ['3', i18nText('dialog.cellBorderBg.selectOptions.label.xcf200e')], ['4', i18nText('dialog.cellBorderBg.buildBackgroundTab.label')], ['5', i18nText('dialog.cellBorderBg.buildBackgroundTab.label.x432dc9')],
     ]);
-    // HWP에서 읽은 가로 무늬 0은 그대로 보존한다. 새 단색은 -1을 사용한다.
-    // 기존 1~6 UI 계약은 유지하되, 원본 0을 빈 선택/NaN으로 바꾸지 않는다.
-    const storedHorizontal = document.createElement('option');
-    storedHorizontal.value = '0';
-    storedHorizontal.textContent = i18nText('dialog.cellBorderBg.selectOptions.label.xd965c1');
-    storedHorizontal.hidden = true;
-    this.bgPatternTypeSelect.appendChild(storedHorizontal);
     this.bgPatternTypeSelect.addEventListener('change', () => {
       this.bgColorRadio.checked = true;
       this.updateBgPreview();
@@ -544,14 +538,14 @@ export class CellBorderBgDialog extends ModalDialog {
     }
     const patColor = this.bgPatternColorPicker.value;
     const patternMap: Record<number, string> = {
-      1: `repeating-linear-gradient(0deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 4px)`,
-      2: `repeating-linear-gradient(90deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 4px)`,
+      0: `repeating-linear-gradient(0deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 4px)`,
+      1: `repeating-linear-gradient(90deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 4px)`,
+      2: `repeating-linear-gradient(45deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 5px)`,
       3: `repeating-linear-gradient(135deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 5px)`,
-      4: `repeating-linear-gradient(45deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 5px)`,
-      5: `repeating-linear-gradient(0deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 4px),repeating-linear-gradient(90deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 4px)`,
-      6: `repeating-linear-gradient(45deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 5px),repeating-linear-gradient(135deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 5px)`,
+      4: `repeating-linear-gradient(0deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 4px),repeating-linear-gradient(90deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 4px)`,
+      5: `repeating-linear-gradient(45deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 5px),repeating-linear-gradient(135deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 5px)`,
     };
-    this.bgPreviewBox.style.background = `${patternMap[patType === 0 ? 1 : patType] || ''},${faceColor}`;
+    this.bgPreviewBox.style.background = `${patternMap[patType] || ''},${faceColor}`;
   }
 
   // ─── 대각선 탭 ────────────────────────────────

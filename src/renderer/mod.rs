@@ -998,10 +998,10 @@ impl Default for TextStyle {
     }
 }
 
-/// 패턴 채우기 정보 (HWP pattern_type 1~6)
+/// 패턴 채우기 정보
 #[derive(Debug, Clone, Copy, Serialize)]
 pub struct PatternFillInfo {
-    /// 패턴 종류 (1=가로줄, 2=세로줄, 3=역대각선, 4=대각선, 5=십자, 6=격자)
+    /// HWP 무늬 종류 0~5 (`crate::model::style::HatchStyle`). 0=─, 1=│, 2=＼, 3=／, 4=＋, 5=×
     pub pattern_type: i32,
     /// 한컴 인쇄 무늬의 576HU 반복 주기를 현재 출력 DPI로 변환한 값.
     pub tile_size: f64,
@@ -1016,7 +1016,7 @@ pub struct PatternFillInfo {
 pub struct ShapeStyle {
     /// 채우기 색상 (None이면 채우기 없음)
     pub fill_color: Option<ColorRef>,
-    /// 패턴 채우기 (pattern_type > 0일 때)
+    /// 패턴 채우기 (무늬 0~5일 때)
     pub pattern: Option<PatternFillInfo>,
     /// 테두리 색상
     pub stroke_color: Option<ColorRef>,

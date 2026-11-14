@@ -28,7 +28,7 @@ fn grey_fill() -> BorderFill {
             solid: Some(SolidFill {
                 background_color: GREY,
                 pattern_color: 0,
-                pattern_type: 0,
+                pattern_type: -1,
             }),
             ..Default::default()
         },

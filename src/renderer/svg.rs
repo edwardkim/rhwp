@@ -50,7 +50,7 @@ fn expand_pua_old_hangul(text: &str) -> String {
     out
 }
 use super::layout::{is_halfwidth_cjk_quote, split_into_clusters};
-use crate::model::style::{ImageFillMode, UnderlineType};
+use crate::model::style::{HatchStyle, ImageFillMode, UnderlineType};
 use base64::Engine;
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -1607,19 +1607,19 @@ impl SvgRenderer {
         let fg = color_to_svg(info.pattern_color);
         let sz = info.tile_size;
         let stroke = sz / 8.0;
-        // 독립 Print의 1~6 hatch: 쪽 원점에 고정한 8-dot/100dpi 무늬.
+        // 독립 Print의 0~5 hatch: 쪽 원점에 고정한 8-dot/100dpi 무늬.
         let horizontal = format!("<path d=\"M0 0H{sz}M0 {sz}H{sz}\"/>");
         let vertical = format!("<path d=\"M0 0V{sz}M{sz} 0V{sz}\"/>");
-        let slash = format!("<path d=\"M{sz} 0L0 {sz}\"/>");
-        let backslash = format!("<path d=\"M0 0L{sz} {sz}\"/>");
-        let lines = match info.pattern_type {
-            1 => horizontal,
-            2 => vertical,
-            3 => slash,
-            4 => backslash,
-            5 => format!("{horizontal}{vertical}"),
-            6 => format!("{slash}{backslash}"),
-            _ => String::new(),
+        let rising = format!("<path d=\"M{sz} 0L0 {sz}\"/>");
+        let falling = format!("<path d=\"M0 0L{sz} {sz}\"/>");
+        let lines = match HatchStyle::from_pattern_type(info.pattern_type) {
+            Some(HatchStyle::Horizontal) => horizontal,
+            Some(HatchStyle::Vertical) => vertical,
+            Some(HatchStyle::Falling) => falling,
+            Some(HatchStyle::Rising) => rising,
+            Some(HatchStyle::Cross) => format!("{horizontal}{vertical}"),
+            Some(HatchStyle::DiagonalCross) => format!("{rising}{falling}"),
+            None => String::new(),
         };
         let def = format!(
             "<pattern id=\"{id}\" patternUnits=\"userSpaceOnUse\" width=\"{sz}\" height=\"{sz}\"><rect width=\"{sz}\" height=\"{sz}\" fill=\"{bg}\"/><g fill=\"none\" stroke=\"{fg}\" stroke-width=\"{stroke}\">{lines}</g></pattern>\n"

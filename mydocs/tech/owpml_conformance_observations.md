@@ -2,7 +2,7 @@
 kind: reference
 status: active
 canonical: mydocs/tech/owpml_conformance_observations.md
-last_verified: 2026-08-18
+last_verified: 2026-11-12
 ---
 
 # HWP/OWPML 정합 관찰 노트
@@ -93,10 +93,14 @@ last_verified: 2026-08-18
 
 ## 10. HWPX `hatchStyle` 생략 = 무늬없음(`-1`) — HWP 쪽 sentinel과의 비대칭
 
-- **관찰**: HWP 쪽 `pattern_type`은 `-1`이 무늬없음이고 1~6이 OWPML 스키마의 6개 `hatchStyle`
-  값에 대응한다. HWPX에서 `hatchStyle`이 생략되면 "무늬없음"으로 저장해야 하므로 호출자는
-  기본값으로 `-1`을 명시적으로 써야 한다 — 단순 `unwrap_or(0)` 등은 0번째 무늬로 오염된다.
-- **근거**: `src/parser/hwpx/utils.rs:121-126`.
+- **관찰**: HWP 쪽 `pattern_type`은 `-1`이 무늬없음이고 0~5가 무늬다. 한글 2024가 HWP를
+  HWPX로 저장하면 0 `HORIZONTAL`, 1 `VERTICAL`, 2 `SLASH`, 3 `BACK_SLASH`, 4 `CROSS`,
+  5 `CROSS_DIAGONAL`이며 무늬없음과 6은 `hatchStyle`을 생략한다. HWPX에서 `hatchStyle`이
+  생략되면 "무늬없음"으로 저장해야 하므로 호출자는 기본값으로 `-1`을 명시적으로 써야 한다 —
+  단순 `unwrap_or(0)` 등은 0번 무늬(가로줄)로 오염된다.
+- **이름과 모양**: 스키마 주석은 `BACK_SLASH`를 `\\\\\`, `SLASH`를 `/////`로 적지만 한글은
+  `SLASH`(HWP 2)를 ＼, `BACK_SLASH`(HWP 3)를 ／로 그린다. 이름이 아니라 위 대응을 따른다.
+- **근거**: `src/model/style.rs`의 `HatchStyle`, [정오표 40](hwp_spec_errata.md#40-채우기-무늬-종류-표-29--0부터-시작) (#8978).
 
 ## 11. 용지 방향 — OWPML `landscape` 값이 이름과 반대로 매핑됨
 

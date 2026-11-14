@@ -396,7 +396,7 @@ export interface CharProperties {
   fillType?: string;       // 'none' | 'solid'
   fillColor?: string;      // '#RRGGBB'
   patternColor?: string;   // '#RRGGBB'
-  patternType?: number;    // 0=없음, 1=가로줄, 2=세로줄, 3=역슬래시, 4=슬래시, 5=십자, 6=X자
+  patternType?: number;    // -1=없음, 0=가로줄, 1=세로줄, 2=역슬래시, 3=슬래시, 4=십자, 5=X자
 }
 
 /** 문단 서식 속성 (ParaShape) — WASM getParaPropertiesAt 반환 타입 */
@@ -439,7 +439,7 @@ export interface ParaProperties {
   fillType?: string;       // 'none' | 'solid'
   fillColor?: string;      // '#RRGGBB'
   patternColor?: string;   // '#RRGGBB'
-  patternType?: number;    // 0=없음, 1~6=무늬
+  patternType?: number;    // -1=없음, 0~5=무늬
   borderSpacing?: number[];  // [좌, 우, 상, 하] HWPUNIT
   borderConnect?: boolean;   // 문단 테두리 연결
   borderIgnoreMargin?: boolean; // 문단 여백 무시

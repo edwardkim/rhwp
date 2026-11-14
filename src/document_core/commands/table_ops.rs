@@ -1078,7 +1078,7 @@ impl DocumentCore {
                 "\"borderRight\":{\"type\":0,\"width\":0,\"color\":\"#000000\"},",
                 "\"borderTop\":{\"type\":0,\"width\":0,\"color\":\"#000000\"},",
                 "\"borderBottom\":{\"type\":0,\"width\":0,\"color\":\"#000000\"},",
-                "\"fillType\":\"none\",\"fillColor\":\"#ffffff\",\"patternColor\":\"#000000\",\"patternType\":0,",
+                "\"fillType\":\"none\",\"fillColor\":\"#ffffff\",\"patternColor\":\"#000000\",\"patternType\":-1,",
                 "\"diagonalLine\":0,\"diagonalSlash\":0,\"diagonalBackSlash\":0,",
                 "\"diagonalWidth\":0,\"diagonalColor\":\"#000000\",\"centerLine\":\"NONE\""
             ).to_string();
@@ -1135,7 +1135,7 @@ impl DocumentCore {
                     "\"borderRight\":{\"type\":0,\"width\":0,\"color\":\"#000000\"},",
                     "\"borderTop\":{\"type\":0,\"width\":0,\"color\":\"#000000\"},",
                     "\"borderBottom\":{\"type\":0,\"width\":0,\"color\":\"#000000\"},",
-                    "\"fillType\":\"none\",\"fillColor\":\"#ffffff\",\"patternColor\":\"#000000\",\"patternType\":0,",
+                    "\"fillType\":\"none\",\"fillColor\":\"#ffffff\",\"patternColor\":\"#000000\",\"patternType\":-1,",
                     "\"diagonalLine\":0,\"diagonalSlash\":0,\"diagonalBackSlash\":0,",
                     "\"diagonalWidth\":0,\"diagonalColor\":\"#000000\",\"centerLine\":\"NONE\""
                 ).to_string()

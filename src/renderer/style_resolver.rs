@@ -1950,10 +1950,10 @@ fn try_resolve_single_border_style<S: storage::Storage>(
 ) -> Result<ResolvedBorderStyle, S::Error> {
     let fill_color = match bf.fill.fill_type {
         FillType::Solid => bf.fill.solid.as_ref().and_then(|s| {
-            // pattern_type > 0: 패턴 채우기 → 단색 fill 아님 (background_color는 패턴 배경)
+            // 무늬(0~5)가 있으면 패턴 채우기 → 단색 fill 아님 (background_color는 패턴 배경)
             // ColorRef 상위 바이트가 0이 아니면 "채우기 없음" (투명)
             // 0xFFFFFFFF = CLR_INVALID/CLR_DEFAULT (Windows COLORREF)
-            if s.pattern_type > 0 || (s.background_color >> 24) != 0 {
+            if s.hatch().is_some() || (s.background_color >> 24) != 0 {
                 None
             } else {
                 Some(s.background_color)
@@ -1964,16 +1964,12 @@ fn try_resolve_single_border_style<S: storage::Storage>(
 
     let pattern = match bf.fill.fill_type {
         FillType::Solid => bf.fill.solid.as_ref().and_then(|s| {
-            if s.pattern_type > 0 {
-                Some(PatternFillInfo {
-                    pattern_type: s.pattern_type,
-                    tile_size: hwpunit_to_px(576, dpi),
-                    pattern_color: s.pattern_color,
-                    background_color: s.background_color,
-                })
-            } else {
-                None
-            }
+            s.hatch().map(|hatch| PatternFillInfo {
+                pattern_type: hatch.pattern_type(),
+                tile_size: hwpunit_to_px(576, dpi),
+                pattern_color: s.pattern_color,
+                background_color: s.background_color,
+            })
         }),
         _ => None,
     };

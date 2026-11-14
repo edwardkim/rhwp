@@ -1,0 +1,13 @@
+{
+  "documentSubstitutions": [],
+  "id": "native-webfont-e8fc3af137367e8aa5a0cb53",
+  "preserveSourceMetrics": true,
+  "substitutions": {
+    "함초롬돋움": "HCRDotum",
+    "함초롬바탕": "HCRBatang"
+  },
+  "trueTypeFaces": [
+    "HCR Batang",
+    "HCR Dotum"
+  ]
+}

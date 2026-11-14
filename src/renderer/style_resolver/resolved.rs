@@ -493,7 +493,7 @@ pub struct ResolvedBorderStyle {
     pub borders: [BorderLine; 4],
     /// 배경 채우기 색상 (None이면 채우기 없음)
     pub fill_color: Option<ColorRef>,
-    /// 패턴 채우기 (pattern_type > 0일 때)
+    /// 패턴 채우기 (무늬 0~5일 때)
     pub pattern: Option<PatternFillInfo>,
     /// 그라데이션 채우기 (fill_color보다 우선)
     pub gradient: Option<Box<GradientFillInfo>>,

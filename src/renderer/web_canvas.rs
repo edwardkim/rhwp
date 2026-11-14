@@ -2019,8 +2019,9 @@ impl WebCanvasRenderer {
         tile_ctx.set_stroke_style_str(&fg);
         tile_ctx.set_line_width(1.0);
 
-        match info.pattern_type {
-            1 => {
+        use crate::model::style::HatchStyle;
+        match HatchStyle::from_pattern_type(info.pattern_type) {
+            Some(HatchStyle::Horizontal) => {
                 // 가로줄 (- - - -)
                 tile_ctx.begin_path();
                 tile_ctx.move_to(0.0, 0.0);
@@ -2029,7 +2030,7 @@ impl WebCanvasRenderer {
                 tile_ctx.line_to(s, s);
                 tile_ctx.stroke();
             }
-            2 => {
+            Some(HatchStyle::Vertical) => {
                 // 세로줄 (|||||)
                 tile_ctx.begin_path();
                 tile_ctx.move_to(0.0, 0.0);
@@ -2038,21 +2039,21 @@ impl WebCanvasRenderer {
                 tile_ctx.line_to(s, s);
                 tile_ctx.stroke();
             }
-            3 => {
+            Some(HatchStyle::Rising) => {
                 // 대각선 (/////)
                 tile_ctx.begin_path();
                 tile_ctx.move_to(s, 0.0);
                 tile_ctx.line_to(0.0, s);
                 tile_ctx.stroke();
             }
-            4 => {
+            Some(HatchStyle::Falling) => {
                 // 역대각선 (\\\\\)
                 tile_ctx.begin_path();
                 tile_ctx.move_to(0.0, 0.0);
                 tile_ctx.line_to(s, s);
                 tile_ctx.stroke();
             }
-            5 => {
+            Some(HatchStyle::Cross) => {
                 // 십자 (+++++)
                 tile_ctx.begin_path();
                 tile_ctx.move_to(0.0, 0.0);
@@ -2067,7 +2068,7 @@ impl WebCanvasRenderer {
                 tile_ctx.line_to(s, s);
                 tile_ctx.stroke();
             }
-            6 => {
+            Some(HatchStyle::DiagonalCross) => {
                 // 격자 (xxxxx)
                 tile_ctx.begin_path();
                 tile_ctx.move_to(0.0, 0.0);
@@ -2078,8 +2079,8 @@ impl WebCanvasRenderer {
                 tile_ctx.line_to(0.0, s);
                 tile_ctx.stroke();
             }
-            _ => {
-                // 알 수 없는 패턴: 배경색만 (이미 채움)
+            None => {
+                // 무늬 없음: 배경색만 (이미 채움)
             }
         }
 

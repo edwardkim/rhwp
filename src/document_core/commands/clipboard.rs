@@ -2435,7 +2435,7 @@ mod clipboard_border_fill_offset_tests {
                 solid: Some(SolidFill {
                     background_color: fill_color,
                     pattern_color: 0,
-                    pattern_type: 0,
+                    pattern_type: -1,
                 }),
                 ..Default::default()
             },
