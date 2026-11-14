@@ -28,6 +28,10 @@
 - [#8973 중첩 표 줄 보정](row8973/cause.md), [표 뒤 앞 간격 보정](closing-line/cause.md), [1쪽 종료 글자 높이 보정](leading-line/cause.md).
 - [원문 #9062 마지막 두 쪽 소유·쪽수](original9062-ownership.json): 원문 전체 시각 수용과 구분한다.
 
+## 상승 결과의 정본 보호 반영
+
+사용자 지시에 따라 이번 최종 전쪽 결과 전체를 [정본 TSV](../visual-protected-baseline/final.tsv)와 [manifest](../visual-protected-baseline/manifest.json)에 반영했다. Native58쪽·WASM56쪽이 상승했고 이전 정본 대비 하락은0쪽이다. [갱신 영수증](protected-baseline-update.json)은 원 수용 TSV가 커밋 `429045f96d`의 바이트와 같고 기존 하한114개가 새 기준에서 거절됨을 확인한다. 편람383쪽의 실제 출력 manifest도 새 정본에서 다시 판정해 통과했다.
+
 ## 실제 기준 PDF
 
 owned-tac·ws-host·page-band는 데스크톱 한컴2020 Print, title-mark·repeated·orphan는 실제 PDF Creator 기준 한컴2022 `12.0.0.4547` Print다. 파일명의 연도나 서비스 engine 표기와 실제 제품을 혼동하지 않는다. 웹한글기안기/Cairo PDF로 판정하지 않았다. 유효한 기존 독립 Print를 재사용했다.
