@@ -1,0 +1,10 @@
+[RustTestSuite] issue_2225_missing_picture_placeholder -> regression_suite_003::issue_2225_missing_picture_placeholder
+[RustTestSuite] cargo nextest run --locked --test regression_suite_003 -E test(/(^|::)issue_2225_missing_picture_placeholder::/) --cargo-profile release-test --target-dir /home/tsjang/rhwp/target/pr-review --features native-skia --test-threads 12 --no-fail-fast
+    Finished `release-test` profile [optimized] target(s) in 0.56s
+────────────
+ Nextest run ID 3aec66ae-9aba-4328-b705-81b11b9b8187 with nextest profile: default
+    Starting 2 tests across 1 binary (325 tests skipped)
+        PASS [   0.091s] (1/2) rhwp::regression_suite_003 issue_2225_missing_picture_placeholder::issue_2225_missing_picture_placeholder_split
+        PASS [   2.789s] (2/2) rhwp::regression_suite_003 issue_2225_missing_picture_placeholder::issue_2225_export_png_defaults_to_screen_skia_profile
+────────────
+     Summary [   2.796s] 2 tests run: 2 passed, 325 skipped

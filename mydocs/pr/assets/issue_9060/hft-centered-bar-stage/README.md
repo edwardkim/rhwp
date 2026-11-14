@@ -8,12 +8,12 @@
 
 | 범위 | 결과 | 근거 |
 | --- | --- | --- |
-| 보정 전 공개 CFF 중심 배치 | 1 FAIL, raster 112바이트 차이 | [로그](hft-centered-bar-before.log), [영수증](before-receipt.json) |
-| 새 중심 배치와 미확인 원본 대조 | 2 PASS | [정식 suite 로그](hft-centered-bar-final-hft_centered_bar_glyph_fit.log) |
+| 보정 전 공개 CFF 중심 배치 | 1 FAIL, raster 112바이트 차이 | [로그](hft-centered-bar-before.txt), [영수증](before-receipt.json) |
+| 새 중심 배치와 미확인 원본 대조 | 2 PASS | [정식 suite 로그](hft-centered-bar-final-hft_centered_bar_glyph_fit.txt) |
 | 관련 12개 모듈 | 93 PASS | [Native 실행 기록](native-validation.json) |
-| Native lib 전체 | 주 프로세스 3,853 PASS·12 ignored, 자식 실행 15·165·2 PASS | [전체 로그](hft-centered-bar-final-lib.log) |
-| Native Clippy | exit 0, `-D warnings` | [로그](hft-centered-bar-final-clippy.log) |
-| 공용 helper 수집·격리 Node 검사 | 26 PASS | [로그](hft-centered-bar-helper-registration-node.log) |
+| Native lib 전체 | 주 프로세스 3,853 PASS·12 ignored, 자식 실행 15·165·2 PASS | [전체 로그](hft-centered-bar-final-lib.txt) |
+| Native Clippy | exit 0, `-D warnings` | [로그](hft-centered-bar-final-clippy.txt) |
+| 공용 helper 수집·격리 Node 검사 | 26 PASS | [로그](hft-centered-bar-helper-registration-node.txt) |
 | 원 PR 입력 Native 전 14쪽 | 모두 100.00% | [TSV](main-native.tsv), [실행 기록](main-native-validation.json) |
 | 중첩 표 입력 Native 전 17쪽 | 최저 98.59%, 보호값 대비 하락 0쪽 | [TSV](nested-native.tsv), [선행 검증](native-preflight.json) |
 | sample10 8쪽·sample16 6쪽 선택 대조 | 하락 0쪽 | 같은 선행 검증 기록 |

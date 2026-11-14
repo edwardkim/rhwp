@@ -1,0 +1,10 @@
+[RustTestSuite] hft_centered_bar_glyph_fit -> regression_suite_007::hft_centered_bar_glyph_fit
+[RustTestSuite] cargo nextest run --locked --test regression_suite_007 -E test(/(^|::)hft_centered_bar_glyph_fit::/) --cargo-profile release-test --target-dir /home/tsjang/rhwp/target/pr-review --features native-skia --test-threads 12 --no-fail-fast
+    Finished `release-test` profile [optimized] target(s) in 0.54s
+────────────
+ Nextest run ID b525821b-4927-47ba-8419-e8a7b5039298 with nextest profile: default
+    Starting 2 tests across 1 binary (348 tests skipped)
+        PASS [   0.156s] (1/2) rhwp::regression_suite_007 hft_centered_bar_glyph_fit::unverified_source_bar_keeps_the_supplied_program_origin
+        PASS [   0.158s] (2/2) rhwp::regression_suite_007 hft_centered_bar_glyph_fit::narrow_display_glyph_is_centered_in_the_source_hft_bar_cell_without_stretching
+────────────
+     Summary [   0.161s] 2 tests run: 2 passed, 348 skipped

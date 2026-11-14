@@ -1,0 +1,16 @@
+
+running 1 test
+
+thread 'case::narrow_display_glyph_is_centered_in_the_source_hft_bar_cell_without_stretching' (4135887) panicked at /home/tsjang/rhwp/tests/cases/hft_centered_bar_glyph_fit.rs:85:9:
+assertion `left == right` failed: 자간은 뒤 원점만 바꾸며 source 막대 칸의 glyph는 중심과 모양을 보존한다
+  left: 112
+ right: 0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test case::narrow_display_glyph_is_centered_in_the_source_hft_bar_cell_without_stretching ... FAILED
+
+failures:
+
+failures:
+    case::narrow_display_glyph_is_centered_in_the_source_hft_bar_cell_without_stretching
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
