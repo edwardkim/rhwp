@@ -49,9 +49,7 @@ fn frame(core: &DocumentCore, page: u32) -> (BoundingBox, BoundingBox) {
         .iter()
         // 개체의 paint layer에 따라 바탕쪽 부모가 여러 개일 수 있다.
         // 텍스트 전용 부모의 순서 대신 실제 검증 개체를 따라간다.
-        .find(|node| {
-            matches!(node.node_type, RenderNodeType::MasterPage) && object(node).is_some()
-        })
+        .find(|node| matches!(node.node_type, RenderNodeType::MasterPage) && object(node).is_some())
         .expect("선택한 바탕쪽");
     let body = tree
         .root
