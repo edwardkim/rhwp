@@ -81,9 +81,10 @@ fn existing_rule_derived_mappings_are_unchanged() {
 }
 
 /// 실측 근거가 없는 값은 여전히 매핑하지 않는다 — 근거 없는 구간 통과 금지 계약.
+/// (`0x3049` 는 #8912 에서 HWP3 괘선 `0x3013..=0x305F` 매핑에 포함됨)
 #[test]
 fn unmeasured_private_codes_stay_unmapped() {
-    for ch in [0x0085_u16, 0x2059, 0x2F09, 0x2BCD, 0x3049] {
+    for ch in [0x0085_u16, 0x2059, 0x2F09, 0x2BCD] {
         assert_eq!(
             decode_johab(ch),
             '?',
