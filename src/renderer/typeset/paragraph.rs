@@ -1283,6 +1283,20 @@ pub(super) fn prepare_fit_budget_with_storage<S: crate::storage::Storage>(
         st.current_height,
         dpi,
         || st.available_height(),
+        |control| {
+            st.col_count == 1
+                && st
+                    .restricted_object_host_top(para_idx, para, st.current_height, dpi)
+                    .and_then(|host_top| {
+                        crate::renderer::float_placement::overflow_para_object_next_page_placement(
+                            control,
+                            host_top,
+                            st.available_height(),
+                            dpi,
+                        )
+                    })
+                    .is_some()
+        },
     ) {
         st.advance_column_or_new_page_with_storage(storage)?;
     }

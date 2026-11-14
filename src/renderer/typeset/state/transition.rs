@@ -213,7 +213,10 @@ impl TypesetState {
     ) -> Option<f64> {
         let profile = &self.data.profile;
         if profile.session_edited() {
-            return None;
+            // 편집 후에는 앞 문단의 변경으로 저장 vpos가 더 이상 현재 쪽 원점이
+            // 아니다. 보통 문단과 표 호스트가 수용한 같은 조판 흐름 원점을 쓴다.
+            // 개체의 쪽 영역 제한 속성 자체는 편집 여부로 해제되지 않는다.
+            return flow_y.is_finite().then_some(flow_y);
         }
         let stored_layout = profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout();
         if let (true, Some(seg)) = (stored_layout, para.line_segs.first()) {
