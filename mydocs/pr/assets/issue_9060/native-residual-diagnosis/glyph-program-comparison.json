@@ -1,0 +1,178 @@
+[
+  {
+    "font": "system-malgun-6.50",
+    "character": "기",
+    "pdf_points": 14,
+    "local_points": 14,
+    "coordinates_equal": true,
+    "contours_equal": true,
+    "flags_equal": true,
+    "pdf_advance": 2048,
+    "local_advance": 2048
+  },
+  {
+    "font": "system-malgun-6.50",
+    "character": "준",
+    "pdf_points": 33,
+    "local_points": 33,
+    "coordinates_equal": true,
+    "contours_equal": true,
+    "flags_equal": true,
+    "pdf_advance": 2048,
+    "local_advance": 2048
+  },
+  {
+    "font": "system-malgun-6.50",
+    "character": "및",
+    "pdf_points": 35,
+    "local_points": 35,
+    "coordinates_equal": true,
+    "contours_equal": true,
+    "flags_equal": true,
+    "pdf_advance": 2048,
+    "local_advance": 2048
+  },
+  {
+    "font": "system-malgun-6.50",
+    "character": "받",
+    "pdf_points": 28,
+    "local_points": 28,
+    "coordinates_equal": true,
+    "contours_equal": true,
+    "flags_equal": true,
+    "pdf_advance": 2048,
+    "local_advance": 2048
+  },
+  {
+    "font": "system-malgun-6.50",
+    "character": "항",
+    "pdf_points": 60,
+    "local_points": 60,
+    "coordinates_equal": true,
+    "contours_equal": true,
+    "flags_equal": true,
+    "pdf_advance": 2048,
+    "local_advance": 2048
+  },
+  {
+    "font": "system-malgun-6.50",
+    "character": "1",
+    "pdf_points": 11,
+    "local_points": 11,
+    "coordinates_equal": false,
+    "contours_equal": true,
+    "flags_equal": false,
+    "pdf_advance": 1128,
+    "local_advance": 1128
+  },
+  {
+    "font": "system-malgun-6.50",
+    "character": "4",
+    "pdf_points": 18,
+    "local_points": 14,
+    "coordinates_equal": false,
+    "contours_equal": false,
+    "flags_equal": false,
+    "pdf_advance": 1128,
+    "local_advance": 1128
+  },
+  {
+    "font": "system-malgun-6.50",
+    "character": "6",
+    "pdf_points": 35,
+    "local_points": 37,
+    "coordinates_equal": false,
+    "contours_equal": false,
+    "flags_equal": false,
+    "pdf_advance": 1128,
+    "local_advance": 1128
+  },
+  {
+    "font": "windows-malgun-6.68",
+    "character": "기",
+    "pdf_points": 14,
+    "local_points": 14,
+    "coordinates_equal": true,
+    "contours_equal": true,
+    "flags_equal": true,
+    "pdf_advance": 2048,
+    "local_advance": 2048
+  },
+  {
+    "font": "windows-malgun-6.68",
+    "character": "준",
+    "pdf_points": 33,
+    "local_points": 33,
+    "coordinates_equal": true,
+    "contours_equal": true,
+    "flags_equal": true,
+    "pdf_advance": 2048,
+    "local_advance": 2048
+  },
+  {
+    "font": "windows-malgun-6.68",
+    "character": "및",
+    "pdf_points": 35,
+    "local_points": 35,
+    "coordinates_equal": true,
+    "contours_equal": true,
+    "flags_equal": true,
+    "pdf_advance": 2048,
+    "local_advance": 2048
+  },
+  {
+    "font": "windows-malgun-6.68",
+    "character": "받",
+    "pdf_points": 28,
+    "local_points": 28,
+    "coordinates_equal": true,
+    "contours_equal": true,
+    "flags_equal": true,
+    "pdf_advance": 2048,
+    "local_advance": 2048
+  },
+  {
+    "font": "windows-malgun-6.68",
+    "character": "항",
+    "pdf_points": 60,
+    "local_points": 60,
+    "coordinates_equal": true,
+    "contours_equal": true,
+    "flags_equal": true,
+    "pdf_advance": 2048,
+    "local_advance": 2048
+  },
+  {
+    "font": "windows-malgun-6.68",
+    "character": "1",
+    "pdf_points": 11,
+    "local_points": 11,
+    "coordinates_equal": true,
+    "contours_equal": true,
+    "flags_equal": true,
+    "pdf_advance": 1128,
+    "local_advance": 1128
+  },
+  {
+    "font": "windows-malgun-6.68",
+    "character": "4",
+    "pdf_points": 18,
+    "local_points": 18,
+    "coordinates_equal": true,
+    "contours_equal": true,
+    "flags_equal": true,
+    "pdf_advance": 1128,
+    "local_advance": 1128
+  },
+  {
+    "font": "windows-malgun-6.68",
+    "character": "6",
+    "pdf_points": 35,
+    "local_points": 35,
+    "coordinates_equal": true,
+    "contours_equal": true,
+    "flags_equal": true,
+    "pdf_advance": 1128,
+    "local_advance": 1128
+  }
+]

@@ -1,0 +1,169 @@
+{
+  "recorded_at": "2026-11-14T13:25:25.350198+00:00",
+  "status": "diagnostic-only; production-policy-unchanged",
+  "integration_source": "cb8a5e52f02a178ce33fda68c9db424ee3a816cd",
+  "producer_source": "ac5fdc7a4770352495095e4554eb2bc6e6f7c08f",
+  "source_equivalence": "통합 후보와 producer의 코드·테스트·도구는 같고 차이는 mydocs/pr/assets/issue_9060의 검토 증적뿐이다.",
+  "input_sha256": "f224d490226b3673554b484d6ce1e2b1c3bbaf0aac02340706edf5fc9d0a4025",
+  "reference_pdf_sha256": "c9ba8e9d4b4e2cb32277d030161dedb59d9067eba0a4665b40f9c0b46cc47317",
+  "render_profile": "print",
+  "layout_compat": "2022",
+  "dpi": 96,
+  "metric": "silhouette_raw_match_percent; unmodified 2px threshold",
+  "masked": false,
+  "measurements": {
+    "geometric-existing-font": [
+      {
+        "page": 2,
+        "raw_percent": 100.0,
+        "unmatched_pixels": 0,
+        "rhwp_png_sha256": "89d6bcf21e649f6e928f724cca60ab50b320883f854670aa567d1be760631ad4",
+        "pdf_png_sha256": "9b9f0ff2e6d81764a71d35d3bff0a07dd40b14e59bd4b0812ae3457e28562dd0"
+      },
+      {
+        "page": 5,
+        "raw_percent": 100.0,
+        "unmatched_pixels": 0,
+        "rhwp_png_sha256": "16be9403bdf0a9cd43b625a74b3f51876958c8e90369371aa2cbb39eaf381fa6",
+        "pdf_png_sha256": "8f58142b9d032802335b0b682b4fc94bc627c0bdaa63cbfe3ef742803d6b754c"
+      },
+      {
+        "page": 12,
+        "raw_percent": 99.9899,
+        "unmatched_pixels": 8,
+        "rhwp_png_sha256": "03f1e0f41d435b6e83b4ec6778c6a43ffec4963703b64423927e11bfdd3f53b8",
+        "pdf_png_sha256": "ce47fb94aa0edeca79d85ae70341874dc36772bc7729ebda23e32ec555842c28"
+      }
+    ],
+    "geometric-pdf-matching-font": [
+      {
+        "page": 2,
+        "raw_percent": 100.0,
+        "unmatched_pixels": 0,
+        "rhwp_png_sha256": "89d6bcf21e649f6e928f724cca60ab50b320883f854670aa567d1be760631ad4",
+        "pdf_png_sha256": "9b9f0ff2e6d81764a71d35d3bff0a07dd40b14e59bd4b0812ae3457e28562dd0"
+      },
+      {
+        "page": 5,
+        "raw_percent": 100.0,
+        "unmatched_pixels": 0,
+        "rhwp_png_sha256": "16be9403bdf0a9cd43b625a74b3f51876958c8e90369371aa2cbb39eaf381fa6",
+        "pdf_png_sha256": "8f58142b9d032802335b0b682b4fc94bc627c0bdaa63cbfe3ef742803d6b754c"
+      },
+      {
+        "page": 12,
+        "raw_percent": 100.0,
+        "unmatched_pixels": 0,
+        "rhwp_png_sha256": "eecea997235f16b1b7b01f9802bceede95f40580240aebbbd85be81910ce8365",
+        "pdf_png_sha256": "ce47fb94aa0edeca79d85ae70341874dc36772bc7729ebda23e32ec555842c28"
+      }
+    ],
+    "current-product": [
+      {
+        "page": 2,
+        "raw_percent": 99.98,
+        "unmatched_pixels": 20
+      },
+      {
+        "page": 5,
+        "raw_percent": 99.98,
+        "unmatched_pixels": 17
+      },
+      {
+        "page": 12,
+        "raw_percent": 99.72,
+        "unmatched_pixels": 219
+      }
+    ]
+  },
+  "probe_build": {
+    "command": [
+      "rustc",
+      "--edition=2021",
+      "/home/tsjang/rhwp/output/pr-review/pr9075/native-geometry-probe.rs",
+      "--extern",
+      "rhwp=/home/tsjang/rhwp/target/pr-review/release-test/deps/librhwp.rlib",
+      "-L",
+      "dependency=/home/tsjang/rhwp/target/pr-review/release-test/deps",
+      "-o",
+      "/home/tsjang/rhwp/output/pr-review/pr9075/native-geometry-probe",
+      "-L",
+      "/home/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-674521ba29e9d736/out/skia",
+      "-L",
+      "/home/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-974fa366d9cabcc9/out/skia",
+      "-L",
+      "/home/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-d3bbd036d45b3a6c/out/skia",
+      "-L",
+      "/home/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-fb9d9d27c964f89a/out/skia",
+      "-L",
+      "native=/home/tsjang/rhwp/target/pr-review/release-test/build/blake3-7496182056f3c99a/out",
+      "-L",
+      "native=/home/tsjang/rhwp/target/pr-review/release-test/build/ring-62411559129b98e5/out",
+      "-L",
+      "native=/usr/lib/x86_64-linux-gnu"
+    ],
+    "rlib": "/home/tsjang/rhwp/target/pr-review/release-test/deps/librhwp.rlib",
+    "rlib_sha256": "135f26528d66949725981a8385d3bd6d5cf6365387efec2fb06c6f692a18a58c",
+    "source_code_equivalence": "integration-branch.json",
+    "exit_code": 0
+  },
+  "probe_run_exit": 0,
+  "font_programs_distributed": false,
+  "win_malgun_sha256": "0086c19e81d293a542e7d75564c645fb58070cc850aefebf8fa1c397858e510c",
+  "evidence": [
+    {
+      "path": "mydocs/pr/assets/issue_9060/native-residual-diagnosis/README.md",
+      "sha256": "8d197f94d85f4d4874e1da33e2f44210587d0ef0b98f3ee38703221cb8d813c4"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_9060/native-residual-diagnosis/diagnostic-overlay-002.png",
+      "sha256": "c656c2f8eefd2f35ec7587de69ee15ec3f6e18c40e0433063c26cea3de8852d4"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_9060/native-residual-diagnosis/diagnostic-overlay-005.png",
+      "sha256": "c8f82db97ae2fb1f9a4fbe13db7ef2a5d48f825076fbfc8d3fefa90a06d1bbdd"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_9060/native-residual-diagnosis/diagnostic-overlay-012.png",
+      "sha256": "cc09c7b5863dd93c49e5bd20add0610f0f7c03a472a7498c7b9286e14871c510"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_9060/native-residual-diagnosis/diagnostic-review-002.png",
+      "sha256": "1bb68cfb72b8a0495dc856b25cdaaebdcd0e462fdf83ebb68e6d2644470c049f"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_9060/native-residual-diagnosis/diagnostic-review-005.png",
+      "sha256": "4164bfcef1acbf27724fd6c3a7f6d481bedc2ecdfa53507af056666439e51bd3"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_9060/native-residual-diagnosis/diagnostic-review-012.png",
+      "sha256": "d3dbb06a7665b6f6b32b87703df6bd2efb5f5b7a63e27d2f9ce2e03f94bf7055"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_9060/native-residual-diagnosis/glyph-program-comparison.json",
+      "sha256": "16e739c6b43bde5b31be6938e93d18ba3eb8cb2c25934a366f1550b2412f0940"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_9060/native-residual-diagnosis/native-geometry-probe.rs.txt",
+      "sha256": "0cd319aca8254f8e3f047add4a35a43ec4ce4e833e7c4b99f75f8d697f3c25d0"
+    }
+  ],
+  "explicit_old_font_equivalence": {
+    "exit_code": 0,
+    "font_sha256": "6706a05313c7fafb3fd8fda9538c9ecabac7cede30076b3ea85be7716f356702",
+    "rows": [
+      {
+        "page": 2,
+        "equal_to_system_geometry_png": true
+      },
+      {
+        "page": 5,
+        "equal_to_system_geometry_png": true
+      },
+      {
+        "page": 12,
+        "equal_to_system_geometry_png": true
+      }
+    ]
+  }
+}
