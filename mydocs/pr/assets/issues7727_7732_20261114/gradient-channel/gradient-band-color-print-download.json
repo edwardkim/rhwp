@@ -1,0 +1,41 @@
+{
+  "status": "success",
+  "job_id": "6c8ae335-f880-41ed-9f83-0687d078a1c4",
+  "output_path": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/gradient-band-color-probe-2020.pdf",
+  "output_filename": "gradient-band-color-probe-2020.pdf",
+  "size": 52675,
+  "sha256": "99b077124213a4f042ba2ab2a4ec5fc1910fb8d37cfca0f4f63d38d05487a0a3",
+  "server": {
+    "job_id": "6c8ae335-f880-41ed-9f83-0687d078a1c4",
+    "status": "success",
+    "target": "pdf",
+    "input_filename": "gradient-band-color-probe.hwpx",
+    "output_filename": "gradient-band-color-probe-2020.pdf",
+    "size": 52675,
+    "sha256": "99b077124213a4f042ba2ab2a4ec5fc1910fb8d37cfca0f4f63d38d05487a0a3",
+    "mime_type": "application/pdf",
+    "engine": "2020",
+    "engine_profile": "2020",
+    "hancom_version": "11.0.0.9136",
+    "backend": "hwp-managed-direct-dll-host",
+    "pdf_page_count": 6,
+    "logical_page_count": null,
+    "pdf_print_method": 0,
+    "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+    "font_scope": {
+      "mode": "session0",
+      "status": "verified",
+      "profile_source": "protected_config",
+      "session_id": 0,
+      "mapped_font_count": 2,
+      "registered_font_count": 2,
+      "failed_font_count": 0,
+      "parent_visibility": "verified",
+      "child_visibility": "verified"
+    },
+    "elapsed_ms": 12460,
+    "worker_elapsed_ms": 11649,
+    "worker_bits": 32,
+    "input_preprocess": "none"
+  }
+}

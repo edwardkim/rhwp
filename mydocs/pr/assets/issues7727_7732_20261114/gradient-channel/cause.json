@@ -1,0 +1,88 @@
+{
+  "status": "native_verified_fresh_wasm_pending",
+  "source_parent": "6197d8e680dad3ff8b466a62b9a5ab78275cde01",
+  "native_producer": {
+    "parent": "6197d8e680dad3ff8b466a62b9a5ab78275cde01",
+    "patch_sha256": "8cf4e3be991a5f06245cc0ad260fd1de8aa9e7b4da270c6f68f0c25333b739f3",
+    "binary_sha256": "5b1cf7e9932b0d45ef7a4cf270f309f6993e5ed715602e4cb958515fdd1eeab7"
+  },
+  "native_cases": [
+    {
+      "key": "recommendation",
+      "pages": 22,
+      "minimum": 98.69,
+      "minimum_page": 7,
+      "below_98": []
+    },
+    {
+      "key": "probe",
+      "pages": 6,
+      "minimum": 100.0,
+      "minimum_page": 1,
+      "below_98": []
+    },
+    {
+      "key": "radial",
+      "pages": 6,
+      "minimum": 100.0,
+      "minimum_page": 1,
+      "below_98": []
+    },
+    {
+      "key": "cbta",
+      "pages": 204,
+      "minimum": 97.0,
+      "minimum_page": 96,
+      "below_98": [
+        {
+          "page": 96,
+          "raw": 97.0
+        }
+      ]
+    },
+    {
+      "key": "exam",
+      "pages": 8,
+      "minimum": 99.49,
+      "minimum_page": 3,
+      "below_98": []
+    },
+    {
+      "key": "api",
+      "pages": 105,
+      "minimum": 99.55,
+      "minimum_page": 97,
+      "below_98": []
+    },
+    {
+      "key": "footnote",
+      "pages": 50,
+      "minimum": 98.58,
+      "minimum_page": 37,
+      "below_98": []
+    }
+  ],
+  "independent_pdf": "pdf/issue7729/gradient-band-color-probe-2020.pdf",
+  "independent_pdf_sha256": "99b077124213a4f042ba2ab2a4ec5fc1910fb8d37cfca0f4f63d38d05487a0a3",
+  "cause": "최종 RGB 반올림 대신 시작색에 대한 signed 채널 변화량을 0 방향으로 버리고 더함",
+  "file_sha256": {
+    "gradient-band-color-print-status.json": "e90702154cf418a6de7dd36bae48b0705a9c6f206c74aa1d303c2477fd54f49c",
+    "pdf-p004.png": "d035ef4d927d917cd206e13fafc4c4b956f37df5791996d8440d79f2fad1abad",
+    "gradient-band-color-print-start.json": "b255003019b52eb6310e34f8c607540b74a02a7c9ad336417d915ad1a84866ce",
+    "gradient-channel-regression-before.json": "6ffffe0b5d1650e9972fdf7ef5b84f4268eaf0abcf3197864f9c11f1ce4db50a",
+    "native-footnote.tsv": "650f6a1d30fb0cf059371d11477cd6132976a35c02bfdf4ece2244611fa4ad65",
+    "gradient-channel-producer.json": "6186ae2f856979957699be09578f259aa0bd6d921bb7dd3bbb427aedb83dc62b",
+    "native-exam.tsv": "4ee763deecfca07a600b468b5ba6528e59492044afff2ec5891c1655d7cd1419",
+    "gradient-band-color-print-download.json": "f261d67e2da2b711f7ee1506be755968d91eb0b7c657c0c733f4e30247df0027",
+    "native-p004-overlay.png": "a72720809c8ada44efe8be9641076e0c37bf80c721a9c5c152b0b3a427856b57",
+    "native-cbta.tsv": "3442371144fa583ba3519e739f447382a7c9bbb72215e92ec79fb5ffec90442c",
+    "gradient-band-color-probe-input.json": "82f9c80f016844663387c7bcbc7918a8ffaee109263ec557be72baea516aa3e1",
+    "native-probe.tsv": "cdcf3e026b8de27abee1649a14fc0767bd3b6d02806046e34dcc9164c24df91f",
+    "native-recommendation.tsv": "87565d8bedb64b4b8d99568e31a669f2c3c57bc9c5f81b0406c8abf265346b63",
+    "gradient-channel-regression-after.json": "461578c93d6448f3c4536c190fd11857903dac3ab9e3fb3b2c3ed93c5586fb50",
+    "native-api.tsv": "0d300742ef260dadda962f4474e3fb347fd3b54879acc5179cdd609b9f3746bf",
+    "native-p004-raw.png": "4e3b96ed50440ddb948db426644701c6aed839223902e0843a4202304eb4294f",
+    "native-radial.tsv": "cdcf3e026b8de27abee1649a14fc0767bd3b6d02806046e34dcc9164c24df91f",
+    "native-p004-review.png": "5cf6f8e0c00f3afe7da4955bf709e50d1080e2e1e8d159a102d16d970e438e3a"
+  }
+}
