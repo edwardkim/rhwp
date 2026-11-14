@@ -200,6 +200,54 @@ fn textbox_floating_table_offset_px(
     })
 }
 
+/// [PK-40987] 저장 줄 없는 글상자의 빈 앵커 문단에 놓인 문단 기준 자리차지(위아래) 표의 띠.
+///
+/// 한컴(웹한글기안기 인쇄·화면 실측)은 이 표를 `문단 위끝 + 세로 오프셋 + 바깥 위 여백` 에 놓고, 다음
+/// 문단을 `표 바닥 + 바깥 아래 여백` 에서 시작한다. 빈 앵커 문단의 자기 줄은 그 띠에 흡수된다.
+/// 가로·세로 정렬은 단·문단 기준 왼쪽, 문단 기준 위만 다룬다. 돌려주는 값은 문단 위끝 기준
+/// (가로 오프셋, 표 위 오프셋, 띠 아래끝) px 이며, 해당 표가 없으면 `None` 이다.
+fn textbox_topbottom_table_band_px(
+    para: &Paragraph,
+    table: &crate::model::table::Table,
+    dpi: f64,
+) -> Option<(f64, f64, f64)> {
+    let common = &table.common;
+    if common.treat_as_char
+        || common.text_wrap != TextWrap::TopAndBottom
+        || common.vert_rel_to != VertRelTo::Para
+        || common.vert_align != VertAlign::Top
+        || !matches!(common.horz_rel_to, HorzRelTo::Column | HorzRelTo::Para)
+        || common.horz_align != HorzAlign::Left
+        || !para
+            .text
+            .chars()
+            .all(|c| c.is_whitespace() || c == '\u{FFFC}')
+        || !crate::renderer::para_has_no_stored_line_segs(para)
+    {
+        return None;
+    }
+    let px = |hu: f64| hu * dpi / HWPUNIT_PER_INCH;
+    let top = common.vertical_offset as i32 as f64 + f64::from(table.outer_margin_top);
+    let bottom = top + f64::from(common.height) + f64::from(table.outer_margin_bottom);
+    Some((
+        px(common.horizontal_offset as i32 as f64 + f64::from(table.outer_margin_left)),
+        px(top),
+        px(bottom),
+    ))
+}
+
+/// [PK-40987] 문단이 가진 위 띠 표들의 가장 아래 띠 끝(문단 위끝 기준 px).
+fn textbox_topbottom_table_band_bottom_px(para: &Paragraph, dpi: f64) -> Option<f64> {
+    para.controls
+        .iter()
+        .filter_map(|control| match control {
+            Control::Table(table) => textbox_topbottom_table_band_px(para, table, dpi),
+            _ => None,
+        })
+        .map(|(_, _, bottom)| bottom)
+        .reduce(f64::max)
+}
+
 fn push_placeholder_render_node(
     tree: &mut PageLayoutContext,
     parent: &mut RenderNode,
@@ -3884,6 +3932,8 @@ impl LayoutEngine {
         let flow_first_border_range = self.para_border_ranges.borrow().len();
         let mut paragraph_origins = Vec::with_capacity(composed_paras.len());
         let mut para_y = inner_area.y + vert_offset;
+        // [PK-40987] 빈 앵커 문단의 자리차지 표 띠가 차지한 흐름의 가장 아래끝(글상자 글 영역 기준).
+        let mut topbottom_band_bottom = 0.0f64;
         for (tb_para_idx, composed) in composed_paras.iter().enumerate() {
             // vpos 기반 수직 위치: 원본 HWP 파일에서는 vertical_pos가 누적 절대값,
             // 편집 후 reflow된 문단은 vertical_pos=0이므로 incremental para_y와 비교하여
@@ -3941,13 +3991,20 @@ impl LayoutEngine {
                 None,
                 None, // 도형 컨텍스트 — wrap zone 무관
             );
+            // [PK-40987] 빈 앵커 문단의 자리차지 표는 흐름을 차지한다. 다음 문단은 표 띠 아래에서
+            // 시작하고 앵커 문단의 빈 줄은 띠에 흡수된다(띠가 줄보다 짧으면 줄을 지킨다).
+            if let Some(band) = textbox_topbottom_table_band_bottom_px(para, self.dpi) {
+                let para_start = paragraph_origins[tb_para_idx];
+                para_y = para_y.max(para_start + band);
+                topbottom_band_bottom = topbottom_band_bottom.max(para_start + band - inner_area.y);
+            }
         }
 
         if align_by_laid_out_flow {
             let flow_bottom = textbox_node.children[flow_first_child..]
                 .iter()
                 .map(|node| node.bbox.y + node.bbox.height - inner_area.y)
-                .fold(0.0f64, f64::max);
+                .fold(topbottom_band_bottom, f64::max);
             let free_space =
                 (inner_area.height - content_height_for_align.max(flow_bottom)).max(0.0);
             vert_offset = match text_box.vertical_align {
@@ -4664,12 +4721,18 @@ impl LayoutEngine {
                             .unwrap_or(Alignment::Left);
                         // 글상자 안에서 글앞으로/글뒤로 떠 있는 표는 자기 가로·세로 오프셋 자리에 놓는다.
                         // 글상자 안의 단·문단 기준은 글상자 글 영역이다.
+                        // [PK-40987] 빈 앵커 문단의 자리차지 표도 자기 오프셋 자리에 놓는다(흐름 전진은
+                        // 문단 단계가 같은 띠로 이미 반영했다).
                         let floating_offset = textbox_floating_table_offset_px(
                             &table.common,
                             table.outer_margin_left,
                             table.outer_margin_top,
                             self.dpi,
-                        );
+                        )
+                        .or_else(|| {
+                            textbox_topbottom_table_band_px(para, table, self.dpi)
+                                .map(|(dx, dy, _)| (dx, dy))
+                        });
                         let table_ctx = CellContext {
                             in_textbox: true,
                             parent_para_index: para_index,
