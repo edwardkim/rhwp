@@ -1,0 +1,26 @@
+{
+  "state": "comment-only-source-correction",
+  "stopped_waiter_pid": 4147143,
+  "reason": "원 PR 연도 설명과 첨부 PDF 메타데이터를 구분한다. 실제 Rust 검사 본문·제품 source는 불변이며 기존 빌드·Native/WASM 실제 출력은 중단하지 않는다. 전체 Rust는 아직 시작되지 않았다.",
+  "file": "tests/cases/issue_9060_rowbreak_first_line_fragment.rs",
+  "before_sha256": "01f24b782808ac63987d6af8edd7027a0b7b4968a6ace1adbe54961e63415bdc",
+  "after_sha256": "683a888f9bdf910da896811cd981aa1cb2b084861ae26ab9e10fa7c3c19ceb51",
+  "unchanged_rust_body_sha256": "5b15259780de14dd1653198c987b77f34fe51a765b3b2d172faa2dfb4ef4e2fe",
+  "previous_file_commit": "c71275f6cbc7bbb967a9de1497513070649410e2 2026-11-14T18:53:16+09:00",
+  "updated_at": "2026-11-15 04:26:18 KST",
+  "input": "samples/issue9060/86036-rowbreak-first-line-fragment.hwpx",
+  "reference_pdf": "pdf/issue9060/86036-rowbreak-first-line-fragment-2020.pdf",
+  "input_sha256": "f224d490226b3673554b484d6ce1e2b1c3bbaf0aac02340706edf5fc9d0a4025",
+  "pdf_sha256": "c9ba8e9d4b4e2cb32277d030161dedb59d9067eba0a4665b40f9c0b46cc47317",
+  "source_pr": "https://github.com/edwardkim/rhwp/pull/9075",
+  "source_pr_head": "1309dbea65b7a95e25fa7d6abd3e10b5e65e5eb4",
+  "author_description": "한컴 engine 2020 Print",
+  "observed_pdf_metadata": {
+    "Creator": "Hwp 2022 12.0.0.4547",
+    "Producer": "Hancom PDF 1.3.0.547",
+    "Pages": 14,
+    "Author": "planet"
+  },
+  "comparison_compat": "2022",
+  "reference_reprinted": false
+}
