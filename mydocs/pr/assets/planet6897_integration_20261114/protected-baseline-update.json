@@ -1,0 +1,1060 @@
+{
+  "status": "completed",
+  "evidence_commit": "429045f96dde6840d4fb87be079120836e6cbc72",
+  "code_commit": "836615963eedfac9170d45c15cbba32d23e1b4d0",
+  "previous_sha256": "ee41455cf7f05585487d92961ccb9fd8160d5d1e15c3567019ea89e2b7bf2aeb",
+  "accepted_sha256": "1063d78078b704a2bfb712ca3929ab251596dd391b41bc1a9a44e9935e4990e5",
+  "rows": 3542,
+  "datasets": 36,
+  "selection": "동일 최종 실행의 전36개 데이터셋 전체. 페이지별 최대값 조합 없음. 원본/PDF/2px/공식 두 자리 정책 변경 없음.",
+  "improved": {
+    "native": 58,
+    "wasm": 56
+  },
+  "decreased": 0,
+  "changes": [
+    {
+      "document_id": "a8e95b4accc79fa8",
+      "key": "issue7905",
+      "backend": "native",
+      "page": 3,
+      "previous": "99.80",
+      "accepted": "99.99",
+      "delta_pp": "0.19"
+    },
+    {
+      "document_id": "a8e95b4accc79fa8",
+      "key": "issue7905",
+      "backend": "wasm",
+      "page": 1,
+      "previous": "99.90",
+      "accepted": "99.97",
+      "delta_pp": "0.07"
+    },
+    {
+      "document_id": "a8e95b4accc79fa8",
+      "key": "issue7905",
+      "backend": "wasm",
+      "page": 2,
+      "previous": "98.19",
+      "accepted": "98.86",
+      "delta_pp": "0.67"
+    },
+    {
+      "document_id": "a8e95b4accc79fa8",
+      "key": "issue7905",
+      "backend": "wasm",
+      "page": 3,
+      "previous": "99.82",
+      "accepted": "100.00",
+      "delta_pp": "0.18"
+    },
+    {
+      "document_id": "a8e95b4accc79fa8",
+      "key": "issue7905",
+      "backend": "wasm",
+      "page": 4,
+      "previous": "99.99",
+      "accepted": "100.00",
+      "delta_pp": "0.01"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "native",
+      "page": 1,
+      "previous": "96.58",
+      "accepted": "98.44",
+      "delta_pp": "1.86"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "native",
+      "page": 2,
+      "previous": "98.31",
+      "accepted": "99.98",
+      "delta_pp": "1.67"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "native",
+      "page": 3,
+      "previous": "99.76",
+      "accepted": "100.00",
+      "delta_pp": "0.24"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "native",
+      "page": 4,
+      "previous": "99.91",
+      "accepted": "99.95",
+      "delta_pp": "0.04"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "native",
+      "page": 5,
+      "previous": "99.04",
+      "accepted": "99.98",
+      "delta_pp": "0.94"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "native",
+      "page": 6,
+      "previous": "98.11",
+      "accepted": "99.98",
+      "delta_pp": "1.87"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "native",
+      "page": 7,
+      "previous": "97.74",
+      "accepted": "99.98",
+      "delta_pp": "2.24"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "native",
+      "page": 8,
+      "previous": "99.49",
+      "accepted": "100.00",
+      "delta_pp": "0.51"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "native",
+      "page": 9,
+      "previous": "99.79",
+      "accepted": "100.00",
+      "delta_pp": "0.21"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "native",
+      "page": 10,
+      "previous": "97.99",
+      "accepted": "98.78",
+      "delta_pp": "0.79"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "native",
+      "page": 11,
+      "previous": "98.74",
+      "accepted": "99.06",
+      "delta_pp": "0.32"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "native",
+      "page": 12,
+      "previous": "99.54",
+      "accepted": "99.87",
+      "delta_pp": "0.33"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "native",
+      "page": 13,
+      "previous": "99.35",
+      "accepted": "99.68",
+      "delta_pp": "0.33"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "native",
+      "page": 14,
+      "previous": "98.01",
+      "accepted": "98.60",
+      "delta_pp": "0.59"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "native",
+      "page": 15,
+      "previous": "98.41",
+      "accepted": "99.13",
+      "delta_pp": "0.72"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "native",
+      "page": 16,
+      "previous": "96.00",
+      "accepted": "98.36",
+      "delta_pp": "2.36"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "native",
+      "page": 17,
+      "previous": "94.96",
+      "accepted": "99.98",
+      "delta_pp": "5.02"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "wasm",
+      "page": 1,
+      "previous": "96.35",
+      "accepted": "98.45",
+      "delta_pp": "2.10"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "wasm",
+      "page": 2,
+      "previous": "98.84",
+      "accepted": "99.98",
+      "delta_pp": "1.14"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "wasm",
+      "page": 3,
+      "previous": "99.75",
+      "accepted": "100.00",
+      "delta_pp": "0.25"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "wasm",
+      "page": 4,
+      "previous": "99.91",
+      "accepted": "99.95",
+      "delta_pp": "0.04"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "wasm",
+      "page": 5,
+      "previous": "99.24",
+      "accepted": "99.98",
+      "delta_pp": "0.74"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "wasm",
+      "page": 6,
+      "previous": "98.23",
+      "accepted": "99.98",
+      "delta_pp": "1.75"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "wasm",
+      "page": 7,
+      "previous": "98.29",
+      "accepted": "99.98",
+      "delta_pp": "1.69"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "wasm",
+      "page": 8,
+      "previous": "99.50",
+      "accepted": "100.00",
+      "delta_pp": "0.50"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "wasm",
+      "page": 9,
+      "previous": "99.74",
+      "accepted": "100.00",
+      "delta_pp": "0.26"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "wasm",
+      "page": 10,
+      "previous": "97.89",
+      "accepted": "98.76",
+      "delta_pp": "0.87"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "wasm",
+      "page": 11,
+      "previous": "98.79",
+      "accepted": "99.05",
+      "delta_pp": "0.26"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "wasm",
+      "page": 12,
+      "previous": "99.46",
+      "accepted": "99.84",
+      "delta_pp": "0.38"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "wasm",
+      "page": 13,
+      "previous": "99.19",
+      "accepted": "99.63",
+      "delta_pp": "0.44"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "wasm",
+      "page": 14,
+      "previous": "97.98",
+      "accepted": "98.59",
+      "delta_pp": "0.61"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "wasm",
+      "page": 15,
+      "previous": "98.31",
+      "accepted": "99.12",
+      "delta_pp": "0.81"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "wasm",
+      "page": 16,
+      "previous": "96.32",
+      "accepted": "98.37",
+      "delta_pp": "2.05"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "wasm",
+      "page": 17,
+      "previous": "98.46",
+      "accepted": "99.98",
+      "delta_pp": "1.52"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "native",
+      "page": 12,
+      "previous": "99.98",
+      "accepted": "99.99",
+      "delta_pp": "0.01"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "native",
+      "page": 13,
+      "previous": "99.98",
+      "accepted": "99.99",
+      "delta_pp": "0.01"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "native",
+      "page": 14,
+      "previous": "99.99",
+      "accepted": "100.00",
+      "delta_pp": "0.01"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "native",
+      "page": 15,
+      "previous": "99.98",
+      "accepted": "100.00",
+      "delta_pp": "0.02"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "native",
+      "page": 16,
+      "previous": "99.98",
+      "accepted": "99.99",
+      "delta_pp": "0.01"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "native",
+      "page": 17,
+      "previous": "99.98",
+      "accepted": "100.00",
+      "delta_pp": "0.02"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "native",
+      "page": 18,
+      "previous": "99.98",
+      "accepted": "100.00",
+      "delta_pp": "0.02"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "native",
+      "page": 20,
+      "previous": "99.99",
+      "accepted": "100.00",
+      "delta_pp": "0.01"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "native",
+      "page": 81,
+      "previous": "99.99",
+      "accepted": "100.00",
+      "delta_pp": "0.01"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "native",
+      "page": 133,
+      "previous": "99.98",
+      "accepted": "100.00",
+      "delta_pp": "0.02"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "native",
+      "page": 226,
+      "previous": "99.95",
+      "accepted": "100.00",
+      "delta_pp": "0.05"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "native",
+      "page": 251,
+      "previous": "99.84",
+      "accepted": "99.86",
+      "delta_pp": "0.02"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "native",
+      "page": 351,
+      "previous": "99.99",
+      "accepted": "100.00",
+      "delta_pp": "0.01"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "native",
+      "page": 450,
+      "previous": "99.99",
+      "accepted": "100.00",
+      "delta_pp": "0.01"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "native",
+      "page": 474,
+      "previous": "99.89",
+      "accepted": "100.00",
+      "delta_pp": "0.11"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "native",
+      "page": 509,
+      "previous": "99.89",
+      "accepted": "99.91",
+      "delta_pp": "0.02"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "native",
+      "page": 558,
+      "previous": "99.95",
+      "accepted": "99.96",
+      "delta_pp": "0.01"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "native",
+      "page": 657,
+      "previous": "99.97",
+      "accepted": "99.99",
+      "delta_pp": "0.02"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "native",
+      "page": 658,
+      "previous": "99.95",
+      "accepted": "99.99",
+      "delta_pp": "0.04"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "native",
+      "page": 659,
+      "previous": "99.98",
+      "accepted": "99.99",
+      "delta_pp": "0.01"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "native",
+      "page": 706,
+      "previous": "99.92",
+      "accepted": "99.95",
+      "delta_pp": "0.03"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "native",
+      "page": 707,
+      "previous": "99.97",
+      "accepted": "100.00",
+      "delta_pp": "0.03"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "native",
+      "page": 708,
+      "previous": "99.81",
+      "accepted": "99.88",
+      "delta_pp": "0.07"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "native",
+      "page": 717,
+      "previous": "99.98",
+      "accepted": "100.00",
+      "delta_pp": "0.02"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "native",
+      "page": 718,
+      "previous": "99.91",
+      "accepted": "100.00",
+      "delta_pp": "0.09"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "native",
+      "page": 757,
+      "previous": "99.41",
+      "accepted": "99.56",
+      "delta_pp": "0.15"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "wasm",
+      "page": 12,
+      "previous": "99.99",
+      "accepted": "100.00",
+      "delta_pp": "0.01"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "wasm",
+      "page": 13,
+      "previous": "99.99",
+      "accepted": "100.00",
+      "delta_pp": "0.01"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "wasm",
+      "page": 15,
+      "previous": "99.99",
+      "accepted": "100.00",
+      "delta_pp": "0.01"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "wasm",
+      "page": 16,
+      "previous": "99.99",
+      "accepted": "100.00",
+      "delta_pp": "0.01"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "wasm",
+      "page": 18,
+      "previous": "99.99",
+      "accepted": "100.00",
+      "delta_pp": "0.01"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "wasm",
+      "page": 133,
+      "previous": "99.98",
+      "accepted": "100.00",
+      "delta_pp": "0.02"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "wasm",
+      "page": 226,
+      "previous": "99.95",
+      "accepted": "100.00",
+      "delta_pp": "0.05"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "wasm",
+      "page": 251,
+      "previous": "99.83",
+      "accepted": "99.86",
+      "delta_pp": "0.03"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "wasm",
+      "page": 450,
+      "previous": "99.99",
+      "accepted": "100.00",
+      "delta_pp": "0.01"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "wasm",
+      "page": 474,
+      "previous": "99.90",
+      "accepted": "100.00",
+      "delta_pp": "0.10"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "wasm",
+      "page": 508,
+      "previous": "99.96",
+      "accepted": "99.99",
+      "delta_pp": "0.03"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "wasm",
+      "page": 509,
+      "previous": "99.90",
+      "accepted": "99.91",
+      "delta_pp": "0.01"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "wasm",
+      "page": 558,
+      "previous": "99.95",
+      "accepted": "99.96",
+      "delta_pp": "0.01"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "wasm",
+      "page": 657,
+      "previous": "99.95",
+      "accepted": "99.99",
+      "delta_pp": "0.04"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "wasm",
+      "page": 658,
+      "previous": "99.95",
+      "accepted": "99.99",
+      "delta_pp": "0.04"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "wasm",
+      "page": 659,
+      "previous": "99.98",
+      "accepted": "99.99",
+      "delta_pp": "0.01"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "wasm",
+      "page": 707,
+      "previous": "99.95",
+      "accepted": "100.00",
+      "delta_pp": "0.05"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "wasm",
+      "page": 708,
+      "previous": "99.82",
+      "accepted": "99.88",
+      "delta_pp": "0.06"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "wasm",
+      "page": 717,
+      "previous": "99.98",
+      "accepted": "100.00",
+      "delta_pp": "0.02"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "wasm",
+      "page": 718,
+      "previous": "99.91",
+      "accepted": "100.00",
+      "delta_pp": "0.09"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "sample10",
+      "backend": "wasm",
+      "page": 757,
+      "previous": "99.40",
+      "accepted": "99.56",
+      "delta_pp": "0.16"
+    },
+    {
+      "document_id": "7df4af8174abd82a",
+      "key": "sample16-hwp2024",
+      "backend": "native",
+      "page": 35,
+      "previous": "99.99",
+      "accepted": "100.00",
+      "delta_pp": "0.01"
+    },
+    {
+      "document_id": "43c0a207f6daa0bb",
+      "key": "sample16-hwpx",
+      "backend": "native",
+      "page": 35,
+      "previous": "99.99",
+      "accepted": "100.00",
+      "delta_pp": "0.01"
+    },
+    {
+      "document_id": "0b7e7d0538284271",
+      "key": "yeongwol",
+      "backend": "native",
+      "page": 1,
+      "previous": "99.60",
+      "accepted": "100.00",
+      "delta_pp": "0.40"
+    },
+    {
+      "document_id": "0b7e7d0538284271",
+      "key": "yeongwol",
+      "backend": "native",
+      "page": 2,
+      "previous": "99.99",
+      "accepted": "100.00",
+      "delta_pp": "0.01"
+    },
+    {
+      "document_id": "0b7e7d0538284271",
+      "key": "yeongwol",
+      "backend": "native",
+      "page": 3,
+      "previous": "99.97",
+      "accepted": "99.99",
+      "delta_pp": "0.02"
+    },
+    {
+      "document_id": "0b7e7d0538284271",
+      "key": "yeongwol",
+      "backend": "wasm",
+      "page": 1,
+      "previous": "99.59",
+      "accepted": "100.00",
+      "delta_pp": "0.41"
+    },
+    {
+      "document_id": "0b7e7d0538284271",
+      "key": "yeongwol",
+      "backend": "wasm",
+      "page": 3,
+      "previous": "99.98",
+      "accepted": "99.99",
+      "delta_pp": "0.01"
+    },
+    {
+      "document_id": "cdacd874b6e6ac66",
+      "key": "seo-pic-crop-01",
+      "backend": "wasm",
+      "page": 1,
+      "previous": "94.65",
+      "accepted": "100.00",
+      "delta_pp": "5.35"
+    },
+    {
+      "document_id": "ccd0cd0b7e76fe2f",
+      "key": "issue8040-insert-delete",
+      "backend": "native",
+      "page": 1,
+      "previous": "99.96",
+      "accepted": "100.00",
+      "delta_pp": "0.04"
+    },
+    {
+      "document_id": "ccd0cd0b7e76fe2f",
+      "key": "issue8040-insert-delete",
+      "backend": "native",
+      "page": 3,
+      "previous": "99.81",
+      "accepted": "100.00",
+      "delta_pp": "0.19"
+    },
+    {
+      "document_id": "ccd0cd0b7e76fe2f",
+      "key": "issue8040-insert-delete",
+      "backend": "native",
+      "page": 4,
+      "previous": "99.72",
+      "accepted": "99.99",
+      "delta_pp": "0.27"
+    },
+    {
+      "document_id": "ccd0cd0b7e76fe2f",
+      "key": "issue8040-insert-delete",
+      "backend": "wasm",
+      "page": 1,
+      "previous": "98.82",
+      "accepted": "100.00",
+      "delta_pp": "1.18"
+    },
+    {
+      "document_id": "ccd0cd0b7e76fe2f",
+      "key": "issue8040-insert-delete",
+      "backend": "wasm",
+      "page": 2,
+      "previous": "99.87",
+      "accepted": "100.00",
+      "delta_pp": "0.13"
+    },
+    {
+      "document_id": "ccd0cd0b7e76fe2f",
+      "key": "issue8040-insert-delete",
+      "backend": "wasm",
+      "page": 3,
+      "previous": "99.70",
+      "accepted": "100.00",
+      "delta_pp": "0.30"
+    },
+    {
+      "document_id": "ccd0cd0b7e76fe2f",
+      "key": "issue8040-insert-delete",
+      "backend": "wasm",
+      "page": 4,
+      "previous": "99.59",
+      "accepted": "99.99",
+      "delta_pp": "0.40"
+    },
+    {
+      "document_id": "71f98206e45c354a",
+      "key": "issue8040-insert",
+      "backend": "native",
+      "page": 1,
+      "previous": "99.96",
+      "accepted": "100.00",
+      "delta_pp": "0.04"
+    },
+    {
+      "document_id": "71f98206e45c354a",
+      "key": "issue8040-insert",
+      "backend": "native",
+      "page": 3,
+      "previous": "99.81",
+      "accepted": "100.00",
+      "delta_pp": "0.19"
+    },
+    {
+      "document_id": "71f98206e45c354a",
+      "key": "issue8040-insert",
+      "backend": "native",
+      "page": 4,
+      "previous": "99.72",
+      "accepted": "99.99",
+      "delta_pp": "0.27"
+    },
+    {
+      "document_id": "71f98206e45c354a",
+      "key": "issue8040-insert",
+      "backend": "wasm",
+      "page": 1,
+      "previous": "98.82",
+      "accepted": "100.00",
+      "delta_pp": "1.18"
+    },
+    {
+      "document_id": "71f98206e45c354a",
+      "key": "issue8040-insert",
+      "backend": "wasm",
+      "page": 2,
+      "previous": "99.87",
+      "accepted": "100.00",
+      "delta_pp": "0.13"
+    },
+    {
+      "document_id": "71f98206e45c354a",
+      "key": "issue8040-insert",
+      "backend": "wasm",
+      "page": 3,
+      "previous": "99.70",
+      "accepted": "100.00",
+      "delta_pp": "0.30"
+    },
+    {
+      "document_id": "71f98206e45c354a",
+      "key": "issue8040-insert",
+      "backend": "wasm",
+      "page": 4,
+      "previous": "99.59",
+      "accepted": "99.99",
+      "delta_pp": "0.40"
+    },
+    {
+      "document_id": "69bcf084e2ae31a5",
+      "key": "outline",
+      "backend": "native",
+      "page": 7,
+      "previous": "97.89",
+      "accepted": "100.00",
+      "delta_pp": "2.11"
+    },
+    {
+      "document_id": "69bcf084e2ae31a5",
+      "key": "outline",
+      "backend": "native",
+      "page": 8,
+      "previous": "99.99",
+      "accepted": "100.00",
+      "delta_pp": "0.01"
+    },
+    {
+      "document_id": "69bcf084e2ae31a5",
+      "key": "outline",
+      "backend": "wasm",
+      "page": 7,
+      "previous": "97.81",
+      "accepted": "100.00",
+      "delta_pp": "2.19"
+    },
+    {
+      "document_id": "69bcf084e2ae31a5",
+      "key": "outline",
+      "backend": "wasm",
+      "page": 8,
+      "previous": "99.94",
+      "accepted": "100.00",
+      "delta_pp": "0.06"
+    },
+    {
+      "document_id": "4314830495cfde87",
+      "key": "seo-helvetica-styles",
+      "backend": "native",
+      "page": 1,
+      "previous": "98.93",
+      "accepted": "99.25",
+      "delta_pp": "0.32"
+    },
+    {
+      "document_id": "4314830495cfde87",
+      "key": "seo-helvetica-styles",
+      "backend": "wasm",
+      "page": 1,
+      "previous": "98.79",
+      "accepted": "100.00",
+      "delta_pp": "1.21"
+    }
+  ],
+  "integrity": {
+    "all_rows_equal_committed_final_datasets": true,
+    "unique_keys": 3542,
+    "previous_lower_values_rejected": 114,
+    "handbook_contract_tests": {
+      "passed": 21,
+      "failed": 0
+    },
+    "source_commit_verified": "429045f96dde6840d4fb87be079120836e6cbc72"
+  },
+  "handbook_actual_manifest_recheck": {
+    "status": "passed",
+    "pages": 383,
+    "regressions": [],
+    "candidate_png_reused": true,
+    "reason": "같은383쪽 출력의 raw와 조건을 새 정본 해시에 대조. 새 캡처를 중복하지 않음."
+  }
+}
