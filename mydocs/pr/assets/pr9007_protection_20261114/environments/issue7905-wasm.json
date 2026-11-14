@@ -1,0 +1,13 @@
+{
+  "id": "pr8945-issue7905-independent-print-batang",
+  "preserveSourceMetrics": true,
+  "substitutions": {
+    "한컴바탕": "Batang",
+    "바탕": "Batang",
+    "굴림": "Gulim"
+  },
+  "trueTypeFaces": [
+    "Batang",
+    "Gulim"
+  ]
+}

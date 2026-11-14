@@ -1,0 +1,206 @@
+{
+  "id": "issue8946-sample10-prepared-programs-independent-triangle",
+  "substitutions": {
+    "#디나루": "Dinaru",
+    "#세나루": "Senaru",
+    "#신디나루": "Sindinaru",
+    "#신세나루": "Sinsenaru",
+    "#중고딕": "Junggothic",
+    "#태고딕": "Taegothic",
+    "Courier New": "Courier New",
+    "Times New Roman": "Times New Roman",
+    "가지": "Eggplant",
+    "강낭콩": "Kidney bean",
+    "딸기": "Strawberry",
+    "명조": "Myeongjo",
+    "바탕체": "BatangChe",
+    "복숭아": "Peach",
+    "시스템": "System",
+    "신명 디나루": "Sinmyeong Dinaru",
+    "신명 태고딕": "Sinmyeong Taegothic",
+    "오이": "Cucumber",
+    "옥수수": "Corn",
+    "한양견고딕": "HY Gyeongothic",
+    "한양궁서": "HY Gungseo",
+    "한양중고딕": "HY Junggothic",
+    "휴먼옛체": "Human Yet"
+  },
+  "selectedPrograms": {
+    "#디나루": {
+      "query": "디나루",
+      "family": "Dinaru",
+      "programId": "sweep-df37d0aad063fcc67a13f00eda6e184b306b61fa57eaf4714eb4fd64c877c54b",
+      "trueType": false,
+      "openTypeCff": true
+    },
+    "#세나루": {
+      "query": "세나루",
+      "family": "Senaru",
+      "programId": "sweep-4aee191decc2ab86c333257d291b5d46fac1717bed5dbd1f8705e6b720e95f70",
+      "trueType": false,
+      "openTypeCff": true
+    },
+    "#신디나루": {
+      "query": "신디나루",
+      "family": "Sindinaru",
+      "programId": "sweep-f814256e1a58ae8d898222c9105ab70535291e100fa9d84c780d3c24a30c219b",
+      "trueType": false,
+      "openTypeCff": true
+    },
+    "#신세나루": {
+      "query": "신세나루",
+      "family": "Sinsenaru",
+      "programId": "sweep-7e735396377e6e6a303f2c69d2e13c72add42d6ec79ab9807c905d1beeaf95e1",
+      "trueType": false,
+      "openTypeCff": true
+    },
+    "#중고딕": {
+      "query": "중고딕",
+      "family": "Junggothic",
+      "programId": "sweep-a5682f13446b5e4c336f8222cd24d4b4a9afd516885e261ba96feafd5b76dce3",
+      "trueType": false,
+      "openTypeCff": true
+    },
+    "#태고딕": {
+      "query": "태고딕",
+      "family": "Taegothic",
+      "programId": "sweep-da4f226e7df89a487af199b836be7d8ea90704330d44b7dbd14dc85d960c4859",
+      "trueType": false,
+      "openTypeCff": true
+    },
+    "Courier New": {
+      "query": "Courier New",
+      "family": "Courier New",
+      "programId": "sweep-d89f593d4d7144e7200e97a5cf140d11a322806135e75828ce2edb3b718823a9",
+      "trueType": true,
+      "openTypeCff": false
+    },
+    "Times New Roman": {
+      "query": "Times New Roman",
+      "family": "Times New Roman",
+      "programId": "sweep-2cff2a03d8034801979dd6d16f09b9a825c3d710fcf068f2ebfbf0e1425c87cf",
+      "trueType": true,
+      "openTypeCff": false
+    },
+    "가지": {
+      "query": "가지",
+      "family": "Eggplant",
+      "programId": "sweep-5a75da50547d1700f457df56b5bea3d0d508dd87593c93590a278fd2f349eb37",
+      "trueType": false,
+      "openTypeCff": true
+    },
+    "강낭콩": {
+      "query": "강낭콩",
+      "family": "Kidney bean",
+      "programId": "sweep-a93c32d8a696a0c069bd74f3f42cee8f0f2a6410b6cbd4b77395c44d1603f1e9",
+      "trueType": false,
+      "openTypeCff": true
+    },
+    "딸기": {
+      "query": "딸기",
+      "family": "Strawberry",
+      "programId": "sweep-6844aed54084783e28e7be0da351d08f4c0fe9e16e0844cbad4e4164c47488ca",
+      "trueType": false,
+      "openTypeCff": true
+    },
+    "명조": {
+      "query": "명조",
+      "family": "Myeongjo",
+      "programId": "sweep-ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+      "trueType": false,
+      "openTypeCff": true
+    },
+    "바탕체": {
+      "query": "바탕체",
+      "family": "BatangChe",
+      "programId": "sweep-f42c29a06c7261a960842300eecfa4e510aecd4c846da4fd3f478517c960e27e",
+      "trueType": true,
+      "openTypeCff": false,
+      "collectionFace": true
+    },
+    "복숭아": {
+      "query": "복숭아",
+      "family": "Peach",
+      "programId": "sweep-1ea92a217d1d5d0ce36073b7b3d1661a3253bfb1a6d2a4dc95535433a2c0ea63",
+      "trueType": false,
+      "openTypeCff": true
+    },
+    "시스템": {
+      "query": "시스템",
+      "family": "System",
+      "programId": "sweep-f11137ccccd429956b6e386edd8b197f1ff17c9f9385c40752cb8ed2c8b30546",
+      "trueType": false,
+      "openTypeCff": true
+    },
+    "신명 디나루": {
+      "query": "신명 디나루",
+      "family": "Sinmyeong Dinaru",
+      "programId": "sweep-d292d1972ff9de8641c52e3bff41fa0d5ba012c3fd0a1b6514f49e4a5f29fced",
+      "trueType": false,
+      "openTypeCff": true
+    },
+    "신명 태고딕": {
+      "query": "신명 태고딕",
+      "family": "Sinmyeong Taegothic",
+      "programId": "sweep-201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3",
+      "trueType": false,
+      "openTypeCff": true
+    },
+    "오이": {
+      "query": "오이",
+      "family": "Cucumber",
+      "programId": "sweep-64b0415c50c1a61d43f0c3c85406ee38986f154f01a3b6b87d20364dd93ab48f",
+      "trueType": false,
+      "openTypeCff": true
+    },
+    "옥수수": {
+      "query": "옥수수",
+      "family": "Corn",
+      "programId": "sweep-c380338aa87f488419c607aae0595c08a373cf756e6ef58dfc82f1e4d05f040f",
+      "trueType": false,
+      "openTypeCff": true
+    },
+    "한양견고딕": {
+      "query": "한양견고딕",
+      "family": "HY Gyeongothic",
+      "programId": "sweep-d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9",
+      "trueType": false,
+      "openTypeCff": true
+    },
+    "한양궁서": {
+      "query": "한양궁서",
+      "family": "HY Gungseo",
+      "programId": "sweep-ed503552219ae16332e595c4b2999a3462d55509a4032dfce29c5ee4d0407346",
+      "trueType": false,
+      "openTypeCff": true
+    },
+    "한양중고딕": {
+      "query": "한양중고딕",
+      "family": "HY Junggothic",
+      "programId": "sweep-25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+      "trueType": false,
+      "openTypeCff": true
+    },
+    "휴먼옛체": {
+      "query": "휴먼옛체",
+      "family": "Human Yet",
+      "programId": "sweep-f2122c5200148d46a3f13b703e27536748fc5abf912a9b44d8ccd0f2b7f4ce97",
+      "trueType": false,
+      "openTypeCff": true
+    }
+  },
+  "trueTypeFaces": [
+    "BatangChe",
+    "Courier New",
+    "Times New Roman"
+  ],
+  "preserveSourceMetrics": true,
+  "glyphFallbacks": {
+    "HY Junggothic": [
+      "RHWP Hancom Junggothic Symbols"
+    ],
+    "한양중고딕": [
+      "RHWP Hancom Junggothic Symbols"
+    ]
+  }
+}

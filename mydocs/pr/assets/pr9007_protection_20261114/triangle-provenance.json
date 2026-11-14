@@ -1,0 +1,9 @@
+{
+  "family": "RHWP Hancom Junggothic Symbols",
+  "input_sha256": "3fe661efd7c03ab643e514e0f3a62ea8693ad19c42d8c037fd99f748b3a9f5bc",
+  "pdf_sha256": "3080dcb77bd907eafabb8acac38704c0029dce6a365b547854225d21f862cf93",
+  "font_sha256": "d0b9dbcab53228c46a301c07cc09b688dd0c574b7d3e320d890eb79d41252602",
+  "regular_program_sha256": "d87e3c652276bcea7903b7485dba482feca6482655a3ae044d93f371c27889bd",
+  "bold_program_sha256": "7adaf0f9256ee310e0f2919dbf1a6f3fe767492d95d76a79ccfc6cce1fb1a7a3",
+  "identity_outline_advance": true
+}

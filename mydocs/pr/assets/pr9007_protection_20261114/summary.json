@@ -1,0 +1,13 @@
+{
+  "baseline_sha256": "ee41455cf7f05585487d92961ccb9fd8160d5d1e15c3567019ea89e2b7bf2aeb",
+  "completed_rows": 3542,
+  "expected_rows": 3542,
+  "drops": [],
+  "complete": true,
+  "passed": true,
+  "minimum_raw": 98.09,
+  "native_binary_sha256": "f5683b5d827e93da553f21f0d6c935e59a99d700675e01377282f95449c2da37",
+  "wasm_sha256": "833760f0cf544d9723a220783d573938375c78874a418a8d527cb6c4f260255b",
+  "producer_head": "4d42913568e60565b26d1270739484dd57864714",
+  "code_head": "abc4c1e82c34e4a112473c32886703b8356089d9"
+}
