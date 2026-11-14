@@ -43,8 +43,8 @@ pub(crate) fn print_help() {
 
 /// 기존 긴 도움말에서 해당 절만 모은 **보조 설명**.
 ///
-/// 명령의 존재·그룹·사용법·옵션·예시는 `metadata::HelpSpec`이 정본이다. 이 캡처는
-/// 표·입출력 제약처럼 아직 서술형으로 유지한 세부 설명을 그 정본 아래에 붙일 뿐이다.
+/// 명령의 존재·그룹·사용법·예시는 `metadata::HelpSpec`이 정본이다. edit 하위 명령의
+/// 옵션은 이 원문의 인자·설명을 구조화된 블록에서도 재사용한다.
 fn legacy_detail_lines(head: &str, sub: Option<&str>) -> Vec<String> {
     sink::collect(head, sub, || {
         public::print();
@@ -121,18 +121,35 @@ pub(crate) fn scoped_help(rest: &[String]) -> Option<i32> {
         .get(1)
         .map(String::as_str)
         .filter(|s| !s.starts_with('-') && metadata::is_declared_subcommand(head, s));
-    let spec = metadata::command_help(head, sub)?;
+    let mut spec = metadata::command_help(head, sub)?;
+    let detail = if sub.is_some() || spec.subcommands.is_empty() {
+        legacy_detail_lines(head, sub)
+    } else {
+        Vec::new()
+    };
+    if head == "edit" && sub.is_some() {
+        // 옵션의 인자·설명도 상세 절과 같은 원문에서 가져온다.
+        let options: Vec<String> = detail
+            .iter()
+            .map(|line| line.trim())
+            .filter(|line| line.starts_with('-'))
+            .map(str::to_owned)
+            .collect();
+        if !options.is_empty() {
+            spec.options = options;
+        }
+    }
+    if head == "edit" && sub == Some("replace-text") {
+        spec.usage = crate::cli::metadata::capabilities::REPLACE_TEXT_USAGE.to_string();
+    }
     let mut lines = structured_lines(&spec);
 
     // 그룹 자체의 짧은 index는 구조화된 메타데이터만으로 충분하다. 개별 명령과
     // 하위 명령은 기존의 긴 계약을 보조 설명으로 덧붙인다.
-    if sub.is_some() || spec.subcommands.is_empty() {
-        let detail = legacy_detail_lines(head, sub);
-        if !detail.is_empty() {
-            lines.push(String::new());
-            lines.push("세부 설명:".to_string());
-            lines.extend(detail);
-        }
+    if !detail.is_empty() {
+        lines.push(String::new());
+        lines.push("세부 설명:".to_string());
+        lines.extend(detail);
     }
 
     for line in &lines {
