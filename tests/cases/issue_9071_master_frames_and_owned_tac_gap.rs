@@ -50,7 +50,7 @@ fn frame(core: &DocumentCore, page: u32) -> (BoundingBox, BoundingBox) {
         // 개체의 paint layer에 따라 바탕쪽 부모가 여러 개일 수 있다.
         // 텍스트 전용 부모의 순서 대신 실제 검증 개체를 따라간다.
         .find(|node| matches!(node.node_type, RenderNodeType::MasterPage) && object(node).is_some())
-        .expect("선택한 바탕쪽");
+        .unwrap_or_else(|| panic!("바탕쪽 개체 없음: page={}", page + 1));
     let body = tree
         .root
         .children
@@ -102,10 +102,14 @@ fn both_master_picture_rectangle_and_table_share_the_facing_frame() {
         "samples/pr9071/master-frame-controls/rectangle-normalized.hwpx",
         "samples/pr9071/master-frame-controls/table-normalized.hwpx",
     ] {
+        eprintln!("master frame input: {sample}");
         assert_shared_frame(&load(sample));
     }
     let mut original = load("samples/pr9071/issue9046/hancom/02-both.hwpx");
-    let saved = original.export_hwp_native().unwrap();
+    eprintln!("master frame input: actual HWP roundtrip");
+    // 독립 Print와 비교한 실제 CLI의 HWPX → HWP 저장 경로를 사용한다.
+    // native serializer에 원 HWPX IR을 직접 넘기면 형식 lowering을 생략한다.
+    let saved = original.export_hwp_with_adapter().unwrap();
     assert_shared_frame(&DocumentCore::from_bytes(&saved).unwrap());
 }
 

@@ -25,3 +25,8 @@
 - 원본 여백 차이는 `(5669 - 11338) / 100 = -56.69pt`이며, 반전은 +56.69pt다. 독립 PDF의 raster 배치 반올림과 대응한다. 0으로 clamp하거나 끝의 일부만 그리도록 조건을 추가하지 않는다.
 
 값의 생산·소비는 `PageAreas`의 홀수 쪽 본문 원점 → `PageLayoutInfo.unmirrored_body_x`의 보존/최종 여백 갱신 → `master_page_paper_frame`의 현재 본문 원점과의 차이 → `build_master_page`의 공통 용지 프레임이다. 도형·그림은 `ObjectPlacementFrame.paper`로, 표는 같은 프레임 원점으로 소비한다. 물리 페이지 bbox와 본문/문단 기준은 이동시키지 않고, 바탕쪽 작업 뒤 본문의 물리 용지 원점을 복원한다. backend별 보정·저장 IR 변경·수치 보정은 추가하지 않는다. 실제 전쪽 검증은 보완 뒤 실행하며 현재 통과로 판정하지 않는다.
+
+
+## 저장 검사 경로 정정
+
+새 배치 회귀의 최초 HWP 저장 검사는 HWPX IR을 `DocumentCore::export_hwp_native`에 직접 넘겨 형식 어댑터를 생략했다. 실제 CLI는 `src/cli/commands/conversion.rs`의 `export_hwp_with_adapter`, Studio도 같은 형식 lowering의 snapshot 경로를 쓴다. `commands/document.rs`는 이를 HWPX → HWP 저장의 단일 진입점으로 명시한다. 실제 검증된 CLI 경로와 검사의 경로가 달랐으며 원 기여의 슬롯 회귀로 분류하지 않는다. 원 HWPX/대조군 5개는 모두 통과했고 직접 native 저장 후의 1쪽에서만 개체가 빠짐을 실행 로그로 확인했다. 검사는 기존 배치 assertion을 유지하면서 실제 형식 변환 API를 호출하도록 정정한다.

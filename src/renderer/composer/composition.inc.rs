@@ -657,7 +657,8 @@ fn stored_successor_closes_full_gap(seg: &LineSeg, next: &Paragraph) -> bool {
 /// 완전한 TAC 저장 줄 뒤에서 후속 문단의 저장 축이 다시 시작하면,
 /// 그 새 축은 앞 줄의 나머지 반간격을 복원할 수 없다. 줄 상자와 바깥
 /// 여백의 소유가 확인된 원본 줄은 후행 간격 전량을 현재 흐름에 남긴다.
-/// 단순 vpos 동률만 보지 않고 실제 한 줄을 혼자 소유한 TAC 상자를 확인한다.
+/// 원점 0에서 다시 시작하는 저장 축과 실제 한 줄을 혼자 소유한 TAC 상자를 확인한다.
+/// 좌표 감소만으로 새 축을 추정하지 않는다. 양수 원점의 닫힘은 별도 공통 계약으로 검증한다.
 fn stored_successor_restarts_owned_tac_frame(
     para: &Paragraph,
     seg: &LineSeg,
@@ -678,8 +679,9 @@ fn stored_successor_restarts_owned_tac_frame(
     next.line_segs.first().is_some_and(|first| {
         first.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
             && first.line_height > 0
-            && first.vertical_pos >= 0
-            && first.vertical_pos <= seg.vertical_pos
+            // 원점에서 시작하는 새 저장 축만 이 경계의 독립 근거다.
+            // 양수 vpos의 단순 되감김은 앞 줄 간격의 소유를 증명하지 않는다.
+            && first.vertical_pos == 0
     }) && para.controls.iter().enumerate().any(|(index, _)| {
         stored_owned_tac_line(para, index)
             .is_some_and(|(_, owner)| std::ptr::eq(owner, seg))
