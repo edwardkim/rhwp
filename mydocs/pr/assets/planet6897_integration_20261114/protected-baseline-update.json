@@ -1,7 +1,7 @@
 {
   "status": "completed",
-  "evidence_commit": "429045f96dde6840d4fb87be079120836e6cbc72",
-  "code_commit": "836615963eedfac9170d45c15cbba32d23e1b4d0",
+  "evidence_commit": "64a951fd7a689e4f14b2103f77976422e2bb1e6c",
+  "code_commit": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
   "previous_sha256": "ee41455cf7f05585487d92961ccb9fd8160d5d1e15c3567019ea89e2b7bf2aeb",
   "accepted_sha256": "1063d78078b704a2bfb712ca3929ab251596dd391b41bc1a9a44e9935e4990e5",
   "rows": 3542,
@@ -1048,7 +1048,7 @@
       "passed": 21,
       "failed": 0
     },
-    "source_commit_verified": "429045f96dde6840d4fb87be079120836e6cbc72"
+    "source_commit_verified": "64a951fd7a689e4f14b2103f77976422e2bb1e6c"
   },
   "handbook_actual_manifest_recheck": {
     "status": "passed",
@@ -1056,5 +1056,19 @@
     "regressions": [],
     "candidate_png_reused": true,
     "reason": "같은383쪽 출력의 raw와 조건을 새 정본 해시에 대조. 새 캡처를 중복하지 않음."
+  },
+  "source_rebinding": {
+    "previous_local_evidence_commit": "429045f96dde6840d4fb87be079120836e6cbc72",
+    "current_evidence_commit": "64a951fd7a689e4f14b2103f77976422e2bb1e6c",
+    "current_runtime_source": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+    "all_3542_values_equal_previous_accepted_table": true,
+    "accepted_sha256_unchanged": "1063d78078b704a2bfb712ca3929ab251596dd391b41bc1a9a44e9935e4990e5",
+    "pagewise_maximum_mixing": false,
+    "handbook_contract_tests": {
+      "passed": 21,
+      "failed": 0,
+      "log_sha256": "b6bdbd7cdc421120e0c8de0d9ad661f090a8485db1e6bfb25daa0238416cb79a",
+      "command": "PYTHONPATH=.:scripts/tests venv/bin/python -m unittest test_visual_sweep_handbook"
+    }
   }
 }
