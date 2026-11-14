@@ -1,8 +1,5 @@
 {
-  "parent": "0fe9e02170",
-  "overlay": {
-    "src/renderer/composer/composition.inc.rs": "65d0464417fc42baaf65258815a2bb703d2f0c632d855dd38317b7862975869a"
-  },
-  "buildExit": 0,
-  "nativeSha256": "55a684e9f86c53c26cb30d5e4b86385e8270cd8e0dacfd9f1012594c7d463c47"
+  "source": "eeaecff59e834f28437c98b509089bbb36a7682d",
+  "buildExitCode": 0,
+  "nativeSha256": "095de7a5bd69cd627cf62017f513bb82760d3c4d145d13a6719700ba74297f11"
 }

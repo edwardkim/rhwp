@@ -1,12 +1,13 @@
 //! 관계형·고정형: 바탕쪽 프레임 이동·내용 보존과 독립 Print의 3쪽 소속 계약.
-//! 주석 갱신: 2026-11-14T22:19:08+09:00; 신규 파일.
+//! 주석 갱신: 2026-11-14T23:50:16+09:00; 직전 파일 변경: eeaecff59e834f28437c98b509089bbb36a7682d 2026-11-14T23:14:44+09:00.
 //! 측정: 2026-11-14, 96dpi, compat 2022, 색상 경계 보정 전 2px 내용 실루엣 raw.
 //! Both HWPX/HWP, Even HWPX, symmetric/reverse HWPX: 각 3쪽, Native/fresh WASM 전쪽 최저 각각 100.00%.
 //! rectangle/table 한컴 재저장 HWPX: 각 3쪽, Native/fresh WASM 전쪽 최저 각각 100.00%.
 //! 서식2-간단 원 HWP/실제 HWPX 저장본: 각 3쪽, Native/fresh WASM 전쪽 최저 각각 100.00%.
-//! 전체 측정 범위 양쪽 각각 27쪽·최저 100.00%; 독립 PDF 확대 판독 완료. 절대 px 핀은 두지 않는다.
+//! #8307의 실제 2018 Print: 원 HWP/정상 HWPX 각 3쪽, Native/fresh WASM 모두 최저 100.00%.
+//! 전체 측정 범위 양쪽 각각 33쪽·최저 100.00%; 독립 PDF 확대 판독 완료. 절대 px 핀은 두지 않는다.
 //! 근거: mydocs/pr/assets/pr9071/README.md, native/·wasm/의 전쪽 TSV와 frame-contact.png·color-contact.png.
-//! before: Both 짝수 쪽 47.76%, 서식2-간단 3쪽 Native 16.74%·WASM 16.64%; source 5e61789786에서 보완.
+//! before: Both 짝수 쪽 47.76%, 서식2-간단 3쪽 Native 16.74%·WASM 16.64%; 최종 제품 source eeaecff59e에서 재검증.
 
 use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
@@ -164,6 +165,8 @@ fn owned_tac_gap_keeps_successor_content_after_the_page_boundary_on_save() {
         .map(|paragraph| paragraph.text.clone())
         .collect();
     assert_successors_on_third_page(&original);
+    // 같은 원 신고의 순수 HWPX는 기존의 올바른 새 쪽 배치를 유지한다.
+    assert_successors_on_third_page(&load("samples/pr9071/issue8307/서식2-간단.hwpx"));
     let saved = original.export_hwpx_native().unwrap();
     let reopened = DocumentCore::from_bytes(&saved).unwrap();
     assert_successors_on_third_page(&reopened);
