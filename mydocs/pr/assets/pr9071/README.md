@@ -28,6 +28,13 @@ Both의 원 HWPX/HWP는 보완 전 짝수 쪽 Native 47.76%였다. 대칭 여백
 
 ## 생산자와 글꼴
 
-WASM은 source `5e617897863e4fb3628404be6fad8a1c8081bf2c`에서 Docker wasm-pack·실제 wasm-opt를 완료했다. [JS/WASM 해시](wasm-producer.json). Native는 `0fe9e02170`와 이어 커밋한 composition 변경을 함께 lib/bin 빌드했다. [실제 overlay·실행 파일 해시](native-producer.json). 뒤의 회귀·증적 전용 변경은 제품 source를 바꾸지 않는다. 최종 Rust gate와 생산자의 source 일치는 최종 검토에서 다시 확인한다.
+WASM은 최종 제품 source `eeaecff59e834f28437c98b509089bbb36a7682d`에서 Docker wasm-pack·실제 wasm-opt를 완료했다. [JS/WASM 해시](wasm-producer.json). Native도 같은 source에서 lib/bin을 함께 빌드했다. [실제 실행 파일 해시](native-producer.json). 회귀 검증 head `3b5e750d66`와 제품 경로의 Git diff는 0이다. 최종 집중 27쪽의 PNG가 앞서 직접 판독한 출력과 모두 같음은 [전쪽 비교](final-pixel-preservation.json)로 확인했다.
 
 공급 글꼴은 로컬 Windows `HANBatang.ttf`이며 두 경로에 같은 프로그램을 공급했다. 글꼴 파일은 포함하지 않는다. 이 시각 비교와 상용 글꼴을 숨긴 최소 글꼴 Rust 회귀는 별도의 검증이다. 전체 바탕쪽 11조합·저장 재열기와 정본 보호 검증 결과는 최종 검토에 별도로 기록하며 이 27쪽 결과로 대신하지 않는다.
+
+
+## 원 신고 #8307의 추가 확인
+
+원 HWP와 정상 한컴 HWPX를 신고 당시 실제 한컴 2018 Print에 대조한 경로별 6쪽도 전쪽 100.00%다. 집중 검증 합계는 Native/fresh WASM 각각 33쪽이다. [원본 해시·2018 PDF 출처·전쪽 TSV·직접 판독](issue8307/README.md)을 보존하며 새 2018 앱 실행을 주장하지 않는다.
+
+TAC의 초기 원점 판정은 최종 source에서 원점 0 재시작과 단순 양수 되감김을 구분하도록 보완했다. 기존 #8191/#7445 기대값은 유지했고 최종 전체 회귀 13,574개에서 해당 기존 검사와 새 검사 3개가 모두 PASS했다. 특별 보호값 재현은 [공통 원장](../jinho-von-choi-20261114/README.md)의 별도 보류 조건이다.

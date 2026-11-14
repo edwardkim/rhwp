@@ -27,3 +27,12 @@
 7. 각 PR의 `pr_N_review.md`에 판정·근거·필요한 보완 범위를 기록한다. source 보정이나 conflict 해소가 필요하면 실제 근거·제한 보정안을 준비해 담당/범위 승인을 확인한다.
 
 현재 원격 승인은 reviewer 지정까지다. 댓글·승인 review·push·새 PR·merge·issue close·workflow 조작은 수행하지 않는다. 로컬 조사·검증과 기록을 완료한 뒤 구체적인 후속 범위만 별도로 요청한다.
+
+
+## 재개 후 기준과 실제 검증
+
+최신 devel `53da4d2da28ae0cacf8feac3a989cc6a69fb2622`를 `a1975f149e`에 통합했다. 2026-11-15 00:30 KST 원격을 다시 읽어 base·원 head 3개·reviewer가 그대로이고 본인 열린 PR이 0개임을 확인했다. fork의 실제 push 권한은 false다. 아직 원격 수용 경로를 실행하지 않았다.
+
+기본 경로는 `maintainer_general`, 보조는 `intake_and_review`, `local_validation`, `multi_pr_update_branch`, `visual_fixture_evidence`, `post_merge`다. 모 router·선택표와 해당 자식 문서 및 개발 환경·시각 정본을 로드했다. [개별 #9070](pr_9070_review.md) · [#9071](pr_9071_review.md) · [#9072](pr_9072_review.md)의 판정과 원격 승인을 분리한다.
+
+승인된 공통 보완을 제품 source `eeaecff59e`로 확정했고 회귀 검증 head `3b5e750d66`와 제품 경로가 같다. 전체 회귀 13,574개와 lint·편람 gate·Native/fresh WASM 각 134쪽 비교는 통과했다. Native 공식 3종 4,073개 통과와 남은 과거 특별 보호값 107행 재현 조건을 [최종 원장](assets/jinho-von-choi-20261114/README.md)에 기록한다. 필수 판정 미완료를 원격 CI나 미검증 표시로 대신하지 않는다.

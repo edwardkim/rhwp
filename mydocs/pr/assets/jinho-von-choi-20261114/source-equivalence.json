@@ -1,6 +1,6 @@
 {
-  "validation_head": "b60322c765a49e4851f005c10c3ca22635ac0f2f",
-  "wasm_product_source": "5e617897863e4fb3628404be6fad8a1c8081bf2c",
+  "validation_head": "3b5e750d66351799fe81c0e1b67c5e78323763f5",
+  "built_product_source": "eeaecff59e834f28437c98b509089bbb36a7682d",
   "identical_product_paths": [
     "src",
     "vendor",
@@ -8,8 +8,5 @@
     "Cargo.lock",
     "build.rs"
   ],
-  "git_diff_exit": 0,
-  "native_build_parent": "0fe9e02170",
-  "native_composition_overlay_sha256": "65d0464417fc42baaf65258815a2bb703d2f0c632d855dd38317b7862975869a",
-  "overlay_equals_committed_product": true
+  "git_diff_exit": 0
 }

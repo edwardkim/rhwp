@@ -1,0 +1,263 @@
+{
+  "recordedAt": "2026-11-14T15:43:09.933502+00:00",
+  "validationHead": "3b5e750d66351799fe81c0e1b67c5e78323763f5",
+  "productSource": "eeaecff59e834f28437c98b509089bbb36a7682d",
+  "allStepsPassed": true,
+  "regression": {
+    "passed": 13574,
+    "failed": 0,
+    "skipped": 45
+  },
+  "focused": {
+    "passed": 126,
+    "newHarnessExecutionVerified": true
+  },
+  "nativeOfficial": {
+    "passed": 4073,
+    "groups": {
+      "native-lib": 4035,
+      "native-placeholder": 2,
+      "native-direct-pdf": 36
+    }
+  },
+  "executedBoundaryTests": [
+    "PASS [   0.021s] (12323/13574) rhwp::regression_suite_025 issue_9071_master_frames_and_owned_tac_gap::both_master_picture_rectangle_and_table_share_the_facing_frame",
+    "PASS [   0.011s] (12324/13574) rhwp::regression_suite_025 issue_9071_master_frames_and_owned_tac_gap::even_only_master_uses_its_own_frame_and_keeps_other_pages_clear",
+    "PASS [   0.015s] (12325/13574) rhwp::regression_suite_025 issue_9071_master_frames_and_owned_tac_gap::owned_tac_gap_keeps_successor_content_after_the_page_boundary_on_save",
+    "PASS [   0.008s] ( 1966/13574) rhwp renderer::composer::tests::owned_rowbreak_tac_height_selects_current_or_multirow_frames"
+  ],
+  "exposedFontFiles": [
+    "NotoSansSymbols2-Regular.ttf",
+    "NotoSansKR-ExtraLight.ttf",
+    "RHWPOldHangul-Regular.otf",
+    "NotoSansKR-Regular.ttf",
+    "RHWPPublicBatang-Regular.ttf"
+  ],
+  "fontDiscovery": {
+    "systemFontDirectoriesHidden": true,
+    "userFontDirectoriesNotMounted": true,
+    "privateCheckoutTtfsHidden": true,
+    "RHWP_FONT_PATH": "unset",
+    "actualFontconfigFiles": 5
+  },
+  "steps": [
+    {
+      "step": "manifest-prepare",
+      "started": "2026-11-14T14:50:47.465656+00:00",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exitCode": 0,
+      "completed": "2026-11-14T14:50:49.234961+00:00",
+      "logSha256": "53dd0900b5ebf5c21d2859cce6f8cd256d76725abb03d49f0f1e44272ed34b25"
+    },
+    {
+      "step": "fmt",
+      "started": "2026-11-14T14:50:49.235237+00:00",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exitCode": 0,
+      "completed": "2026-11-14T14:51:20.403870+00:00",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "full-regression",
+      "started": "2026-11-14T14:51:20.404167+00:00",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--tests",
+        "--test-threads",
+        "4",
+        "--no-fail-fast"
+      ],
+      "exitCode": 0,
+      "completed": "2026-11-14T15:19:25.619841+00:00",
+      "logSha256": "138454c26826e57b052740d18de18dcd11093289da1f393fff70b474713958e3"
+    },
+    {
+      "step": "clippy-root",
+      "started": "2026-11-14T15:19:25.620600+00:00",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exitCode": 0,
+      "completed": "2026-11-14T15:20:23.447888+00:00",
+      "logSha256": "eb4dc99b239897e76e3ccdcb417ecbc39d9d3a515128c8b0010933f12c54e1e8"
+    },
+    {
+      "step": "clippy-wasm",
+      "started": "2026-11-14T15:20:23.448229+00:00",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exitCode": 0,
+      "completed": "2026-11-14T15:21:19.027293+00:00",
+      "logSha256": "5e556d76f1a3a64a59852ec9a14cd9f67ca79253d94c0ed911eaface032225a1"
+    },
+    {
+      "step": "workspace-build",
+      "started": "2026-11-14T15:21:19.027626+00:00",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review"
+      ],
+      "exitCode": 0,
+      "completed": "2026-11-14T15:22:26.470136+00:00",
+      "logSha256": "041a34722e714e506fa003d8405934a961fad44f11e23b568a038014951698d5"
+    },
+    {
+      "step": "clippy-workspace",
+      "started": "2026-11-14T15:22:26.470421+00:00",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exitCode": 0,
+      "completed": "2026-11-14T15:23:58.867801+00:00",
+      "logSha256": "fd9c25d587870d8b47d666343551ed914503ad8a0563c6454923f19a31fd9aa8"
+    },
+    {
+      "step": "manifest-check",
+      "started": "2026-11-14T15:23:58.868121+00:00",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "53da4d2da2"
+      ],
+      "exitCode": 0,
+      "completed": "2026-11-14T15:23:59.870488+00:00",
+      "logSha256": "25eccc3f8e62db5b6e6f14c157f81e43b6e62052e8e0a1c19ca39d4c9d0439c2"
+    },
+    {
+      "step": "native-lib",
+      "started": "2026-11-14T15:23:59.870779+00:00",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "4"
+      ],
+      "exitCode": 0,
+      "completed": "2026-11-14T15:30:49.912706+00:00",
+      "logSha256": "8844d31e06fc0152fa1d7ef5730312e91790060ff3761e91e52abcdd34078495"
+    },
+    {
+      "step": "native-placeholder",
+      "started": "2026-11-14T15:30:49.913063+00:00",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "4"
+      ],
+      "exitCode": 0,
+      "completed": "2026-11-14T15:37:01.131632+00:00",
+      "logSha256": "9758cfd1c34ab67bddcbf9c8c644e71beba9b5e77ec22eab3cbed98831f38b17"
+    },
+    {
+      "step": "native-direct-pdf",
+      "started": "2026-11-14T15:37:01.131976+00:00",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "4"
+      ],
+      "exitCode": 0,
+      "completed": "2026-11-14T15:37:23.329155+00:00",
+      "logSha256": "47dc41cf64d7d11b6781a0de672f7c9697d6e78d1978c1ede76df7d5632a0eef"
+    },
+    {
+      "step": "native-build",
+      "started": "2026-11-14T15:37:23.329540+00:00",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp"
+      ],
+      "exitCode": 0,
+      "completed": "2026-11-14T15:43:09.417854+00:00",
+      "logSha256": "aab11b84460bed0f67747b78265019223de3ce58a88763c6e4df9219f04eef42"
+    }
+  ]
+}

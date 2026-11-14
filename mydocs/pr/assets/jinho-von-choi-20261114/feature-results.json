@@ -637,6 +637,60 @@
       "pages": 3,
       "minimum": 100.0,
       "evidence": "../pr9071/wasm/table.tsv"
+    },
+    {
+      "backend": "native",
+      "key": "hwp-source",
+      "pages": 3,
+      "minimum": 100.0,
+      "source": "samples/pr9071/issue8318/서식2-간단.hwp",
+      "reference": "pdf/pr9071/서식2-간단-2018.pdf",
+      "tsv": "native/hwp-source.tsv",
+      "group": "issue8307-2018",
+      "evidence": "../pr9071/issue8307/native/hwp-source.tsv"
+    },
+    {
+      "backend": "native",
+      "key": "hwpx-source",
+      "pages": 3,
+      "minimum": 100.0,
+      "source": "samples/pr9071/issue8307/서식2-간단.hwpx",
+      "reference": "pdf/pr9071/서식2-간단-2018.pdf",
+      "tsv": "native/hwpx-source.tsv",
+      "group": "issue8307-2018",
+      "evidence": "../pr9071/issue8307/native/hwpx-source.tsv"
+    },
+    {
+      "backend": "wasm",
+      "key": "hwp-source",
+      "pages": 3,
+      "minimum": 100.0,
+      "source": "samples/pr9071/issue8318/서식2-간단.hwp",
+      "reference": "pdf/pr9071/서식2-간단-2018.pdf",
+      "tsv": "wasm/hwp-source.tsv",
+      "group": "issue8307-2018",
+      "evidence": "../pr9071/issue8307/wasm/hwp-source.tsv"
+    },
+    {
+      "backend": "wasm",
+      "key": "hwpx-source",
+      "pages": 3,
+      "minimum": 100.0,
+      "source": "samples/pr9071/issue8307/서식2-간단.hwpx",
+      "reference": "pdf/pr9071/서식2-간단-2018.pdf",
+      "tsv": "wasm/hwpx-source.tsv",
+      "group": "issue8307-2018",
+      "evidence": "../pr9071/issue8307/wasm/hwpx-source.tsv"
     }
-  ]
+  ],
+  "totals": {
+    "native": {
+      "comparisons": 134,
+      "minimum": 93.3
+    },
+    "wasm": {
+      "comparisons": 134,
+      "minimum": 92.46
+    }
+  }
 }

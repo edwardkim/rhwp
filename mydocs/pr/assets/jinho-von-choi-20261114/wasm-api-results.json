@@ -2467,6 +2467,476 @@
       ]
     }
   ],
+  "repeatedSave": [
+    {
+      "scope": "root",
+      "format": "hwpx",
+      "cycle": 1,
+      "section": 0,
+      "para": 0,
+      "fieldCount": 12,
+      "restored": {
+        "fieldId": 1629316078,
+        "fieldType": "clickhere",
+        "cellField": false,
+        "name": "검증0",
+        "guide": "안내",
+        "command": "Clickhere:set:44:Direction:wstring:2:안내 HelpState:wstring:0:  ",
+        "value": "",
+        "location": {
+          "sectionIndex": 0,
+          "paraIndex": 0
+        },
+        "startCharIdx": 0,
+        "endCharIdx": 0,
+        "editableInForm": true,
+        "listId": 0,
+        "paraInList": 0,
+        "startPos": 24,
+        "endPos": 26
+      }
+    },
+    {
+      "scope": "root",
+      "format": "hwpx",
+      "cycle": 2,
+      "section": 0,
+      "para": 0,
+      "fieldCount": 12,
+      "restored": {
+        "fieldId": 1629316078,
+        "fieldType": "clickhere",
+        "cellField": false,
+        "name": "검증0",
+        "guide": "안내",
+        "command": "Clickhere:set:44:Direction:wstring:2:안내 HelpState:wstring:0:  ",
+        "value": "",
+        "location": {
+          "sectionIndex": 0,
+          "paraIndex": 0
+        },
+        "startCharIdx": 0,
+        "endCharIdx": 0,
+        "editableInForm": true,
+        "listId": 0,
+        "paraInList": 0,
+        "startPos": 24,
+        "endPos": 26
+      }
+    },
+    {
+      "scope": "root",
+      "format": "hwp",
+      "cycle": 1,
+      "section": 0,
+      "para": 0,
+      "fieldCount": 12,
+      "restored": {
+        "fieldId": 1629316078,
+        "fieldType": "clickhere",
+        "cellField": false,
+        "name": "검증0",
+        "guide": "안내",
+        "command": "Clickhere:set:44:Direction:wstring:2:안내 HelpState:wstring:0:  ",
+        "value": "",
+        "location": {
+          "sectionIndex": 0,
+          "paraIndex": 0
+        },
+        "startCharIdx": 0,
+        "endCharIdx": 0,
+        "editableInForm": true,
+        "listId": 0,
+        "paraInList": 0,
+        "startPos": 24,
+        "endPos": 26
+      }
+    },
+    {
+      "scope": "root",
+      "format": "hwp",
+      "cycle": 2,
+      "section": 0,
+      "para": 0,
+      "fieldCount": 12,
+      "restored": {
+        "fieldId": 1629316078,
+        "fieldType": "clickhere",
+        "cellField": false,
+        "name": "검증0",
+        "guide": "안내",
+        "command": "Clickhere:set:44:Direction:wstring:2:안내 HelpState:wstring:0:  ",
+        "value": "",
+        "location": {
+          "sectionIndex": 0,
+          "paraIndex": 0
+        },
+        "startCharIdx": 0,
+        "endCharIdx": 0,
+        "editableInForm": true,
+        "listId": 0,
+        "paraInList": 0,
+        "startPos": 24,
+        "endPos": 26
+      }
+    },
+    {
+      "scope": "root",
+      "format": "hwpx",
+      "cycle": 1,
+      "section": 1,
+      "para": 12,
+      "fieldCount": 12,
+      "restored": {
+        "fieldId": 1629316078,
+        "fieldType": "clickhere",
+        "cellField": false,
+        "name": "검증1",
+        "guide": "안내",
+        "command": "Clickhere:set:44:Direction:wstring:2:안내 HelpState:wstring:0:  ",
+        "value": "",
+        "location": {
+          "sectionIndex": 1,
+          "paraIndex": 0
+        },
+        "startCharIdx": 0,
+        "endCharIdx": 0,
+        "editableInForm": true,
+        "listId": 0,
+        "paraInList": 12,
+        "startPos": 32,
+        "endPos": 34
+      }
+    },
+    {
+      "scope": "root",
+      "format": "hwpx",
+      "cycle": 2,
+      "section": 1,
+      "para": 12,
+      "fieldCount": 12,
+      "restored": {
+        "fieldId": 1629316078,
+        "fieldType": "clickhere",
+        "cellField": false,
+        "name": "검증1",
+        "guide": "안내",
+        "command": "Clickhere:set:44:Direction:wstring:2:안내 HelpState:wstring:0:  ",
+        "value": "",
+        "location": {
+          "sectionIndex": 1,
+          "paraIndex": 0
+        },
+        "startCharIdx": 0,
+        "endCharIdx": 0,
+        "editableInForm": true,
+        "listId": 0,
+        "paraInList": 12,
+        "startPos": 32,
+        "endPos": 34
+      }
+    },
+    {
+      "scope": "root",
+      "format": "hwp",
+      "cycle": 1,
+      "section": 1,
+      "para": 12,
+      "fieldCount": 12,
+      "restored": {
+        "fieldId": 1629316078,
+        "fieldType": "clickhere",
+        "cellField": false,
+        "name": "검증1",
+        "guide": "안내",
+        "command": "Clickhere:set:44:Direction:wstring:2:안내 HelpState:wstring:0:  ",
+        "value": "",
+        "location": {
+          "sectionIndex": 1,
+          "paraIndex": 0
+        },
+        "startCharIdx": 0,
+        "endCharIdx": 0,
+        "editableInForm": true,
+        "listId": 0,
+        "paraInList": 12,
+        "startPos": 32,
+        "endPos": 34
+      }
+    },
+    {
+      "scope": "root",
+      "format": "hwp",
+      "cycle": 2,
+      "section": 1,
+      "para": 12,
+      "fieldCount": 12,
+      "restored": {
+        "fieldId": 1629316078,
+        "fieldType": "clickhere",
+        "cellField": false,
+        "name": "검증1",
+        "guide": "안내",
+        "command": "Clickhere:set:44:Direction:wstring:2:안내 HelpState:wstring:0:  ",
+        "value": "",
+        "location": {
+          "sectionIndex": 1,
+          "paraIndex": 0
+        },
+        "startCharIdx": 0,
+        "endCharIdx": 0,
+        "editableInForm": true,
+        "listId": 0,
+        "paraInList": 12,
+        "startPos": 32,
+        "endPos": 34
+      }
+    },
+    {
+      "scope": "root",
+      "format": "hwpx",
+      "cycle": 1,
+      "section": 2,
+      "para": 13,
+      "fieldCount": 12,
+      "restored": {
+        "fieldId": 1629316078,
+        "fieldType": "clickhere",
+        "cellField": false,
+        "name": "검증2",
+        "guide": "안내",
+        "command": "Clickhere:set:44:Direction:wstring:2:안내 HelpState:wstring:0:  ",
+        "value": "",
+        "location": {
+          "sectionIndex": 2,
+          "paraIndex": 0
+        },
+        "startCharIdx": 0,
+        "endCharIdx": 0,
+        "editableInForm": true,
+        "listId": 0,
+        "paraInList": 13,
+        "startPos": 24,
+        "endPos": 26
+      }
+    },
+    {
+      "scope": "root",
+      "format": "hwpx",
+      "cycle": 2,
+      "section": 2,
+      "para": 13,
+      "fieldCount": 12,
+      "restored": {
+        "fieldId": 1629316078,
+        "fieldType": "clickhere",
+        "cellField": false,
+        "name": "검증2",
+        "guide": "안내",
+        "command": "Clickhere:set:44:Direction:wstring:2:안내 HelpState:wstring:0:  ",
+        "value": "",
+        "location": {
+          "sectionIndex": 2,
+          "paraIndex": 0
+        },
+        "startCharIdx": 0,
+        "endCharIdx": 0,
+        "editableInForm": true,
+        "listId": 0,
+        "paraInList": 13,
+        "startPos": 24,
+        "endPos": 26
+      }
+    },
+    {
+      "scope": "root",
+      "format": "hwp",
+      "cycle": 1,
+      "section": 2,
+      "para": 13,
+      "fieldCount": 12,
+      "restored": {
+        "fieldId": 1629316078,
+        "fieldType": "clickhere",
+        "cellField": false,
+        "name": "검증2",
+        "guide": "안내",
+        "command": "Clickhere:set:44:Direction:wstring:2:안내 HelpState:wstring:0:  ",
+        "value": "",
+        "location": {
+          "sectionIndex": 2,
+          "paraIndex": 0
+        },
+        "startCharIdx": 0,
+        "endCharIdx": 0,
+        "editableInForm": true,
+        "listId": 0,
+        "paraInList": 13,
+        "startPos": 24,
+        "endPos": 26
+      }
+    },
+    {
+      "scope": "root",
+      "format": "hwp",
+      "cycle": 2,
+      "section": 2,
+      "para": 13,
+      "fieldCount": 12,
+      "restored": {
+        "fieldId": 1629316078,
+        "fieldType": "clickhere",
+        "cellField": false,
+        "name": "검증2",
+        "guide": "안내",
+        "command": "Clickhere:set:44:Direction:wstring:2:안내 HelpState:wstring:0:  ",
+        "value": "",
+        "location": {
+          "sectionIndex": 2,
+          "paraIndex": 0
+        },
+        "startCharIdx": 0,
+        "endCharIdx": 0,
+        "editableInForm": true,
+        "listId": 0,
+        "paraInList": 13,
+        "startPos": 24,
+        "endPos": 26
+      }
+    },
+    {
+      "scope": "nested",
+      "format": "hwpx",
+      "cycle": 1,
+      "restored": {
+        "fieldId": 1,
+        "fieldType": "clickhere",
+        "cellField": false,
+        "name": "셀검증",
+        "guide": "셀안내",
+        "command": "Clickhere:set:45:Direction:wstring:3:셀안내 HelpState:wstring:0:  ",
+        "value": "",
+        "location": {
+          "sectionIndex": 0,
+          "paraIndex": 1,
+          "path": [
+            {
+              "type": "cell",
+              "controlIndex": 0,
+              "cellIndex": 0,
+              "paraIndex": 0
+            }
+          ]
+        },
+        "startCharIdx": 0,
+        "endCharIdx": 0,
+        "editableInForm": true,
+        "listId": 2,
+        "paraInList": 0,
+        "startPos": 8,
+        "endPos": 11
+      }
+    },
+    {
+      "scope": "nested",
+      "format": "hwpx",
+      "cycle": 2,
+      "restored": {
+        "fieldId": 1,
+        "fieldType": "clickhere",
+        "cellField": false,
+        "name": "셀검증",
+        "guide": "셀안내",
+        "command": "Clickhere:set:45:Direction:wstring:3:셀안내 HelpState:wstring:0:  ",
+        "value": "",
+        "location": {
+          "sectionIndex": 0,
+          "paraIndex": 1,
+          "path": [
+            {
+              "type": "cell",
+              "controlIndex": 0,
+              "cellIndex": 0,
+              "paraIndex": 0
+            }
+          ]
+        },
+        "startCharIdx": 0,
+        "endCharIdx": 0,
+        "editableInForm": true,
+        "listId": 2,
+        "paraInList": 0,
+        "startPos": 8,
+        "endPos": 11
+      }
+    },
+    {
+      "scope": "nested",
+      "format": "hwp",
+      "cycle": 1,
+      "restored": {
+        "fieldId": 1,
+        "fieldType": "clickhere",
+        "cellField": false,
+        "name": "셀검증",
+        "guide": "셀안내",
+        "command": "Clickhere:set:45:Direction:wstring:3:셀안내 HelpState:wstring:0:  ",
+        "value": "",
+        "location": {
+          "sectionIndex": 0,
+          "paraIndex": 1,
+          "path": [
+            {
+              "type": "cell",
+              "controlIndex": 0,
+              "cellIndex": 0,
+              "paraIndex": 0
+            }
+          ]
+        },
+        "startCharIdx": 0,
+        "endCharIdx": 0,
+        "editableInForm": true,
+        "listId": 2,
+        "paraInList": 0,
+        "startPos": 8,
+        "endPos": 11
+      }
+    },
+    {
+      "scope": "nested",
+      "format": "hwp",
+      "cycle": 2,
+      "restored": {
+        "fieldId": 1,
+        "fieldType": "clickhere",
+        "cellField": false,
+        "name": "셀검증",
+        "guide": "셀안내",
+        "command": "Clickhere:set:45:Direction:wstring:3:셀안내 HelpState:wstring:0:  ",
+        "value": "",
+        "location": {
+          "sectionIndex": 0,
+          "paraIndex": 1,
+          "path": [
+            {
+              "type": "cell",
+              "controlIndex": 0,
+              "cellIndex": 0,
+              "paraIndex": 0
+            }
+          ]
+        },
+        "startCharIdx": 0,
+        "endCharIdx": 0,
+        "editableInForm": true,
+        "listId": 2,
+        "paraInList": 0,
+        "startPos": 8,
+        "endPos": 11
+      }
+    }
+  ],
   "title": {
     "fieldId": 1615242335,
     "fieldType": "clickhere",
@@ -2562,5 +3032,6 @@
   },
   "invalidRejected": true,
   "wasmSha256": "38c420ea5f5d33bd01e805de2342dae7c827797063b755f75482357177e38407",
-  "browser": "Chrome/152.0.7946.0"
+  "browser": "Chrome/152.0.7946.0",
+  "productSource": "eeaecff59e834f28437c98b509089bbb36a7682d"
 }
