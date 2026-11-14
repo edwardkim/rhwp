@@ -610,7 +610,8 @@ impl EmbeddedTextMeasurer {
                                 measure_segment_from(&chars, &cluster_len, i + 1, &char_width)
                             });
                             // 자동 우측도 실제 명시적 정지를 소비한다.
-                            total = inline_right_tab::text_start(style, total, tab_target, seg_w);
+                            total =
+                                inline_right_tab::text_start(style, total, tab_target, seg_w, ext);
                         } else if inline_type_hi == 0
                             && !has_more_tabs_after
                             && (tab_suffix_is_ascii_page_number(&chars, i + 1)
@@ -636,7 +637,7 @@ impl EmbeddedTextMeasurer {
                                         &char_width,
                                     );
                                     total = inline_right_tab::text_start(
-                                        style, total, tab_target, seg_w,
+                                        style, total, tab_target, seg_w, ext,
                                     );
                                 }
                                 1 => {
@@ -791,7 +792,7 @@ impl EmbeddedTextMeasurer {
                     measure_segment_from(&chars, &cluster_len, seg_start, &char_width)
                 };
                 // 측정과 같은 명시적/자동 정지를 소비한다. 문단 우단으로 덮어쓰지 않는다.
-                x = inline_right_tab::text_start(style, x, tab_target, seg_w);
+                x = inline_right_tab::text_start(style, x, tab_target, seg_w, ext);
             } else if inline_type_hi == 0
                 && !has_more_tabs_after
                 && (tab_suffix_is_ascii_page_number(&chars, i + 1)
@@ -842,7 +843,7 @@ impl EmbeddedTextMeasurer {
                         if has_content_after {
                             let seg_w_full =
                                 measure_segment_from(&chars, &cluster_len, i + 1, &char_width);
-                            x = inline_right_tab::text_start(style, x, tab_target, seg_w_full);
+                            x = inline_right_tab::text_start(style, x, tab_target, seg_w_full, ext);
                         } else {
                             let seg_w = measure_segment_from(
                                 &chars,
