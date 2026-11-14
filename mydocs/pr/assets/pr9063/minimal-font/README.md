@@ -1,5 +1,9 @@
-# 최소 글꼴 집중 회귀
+# PR #9063 최소 글꼴 실행 환경
 
-2026-11-14 KST. bwrap에서 사용자 HOME·상용 글꼴·시스템 추가 글꼴·Visual Sweep 웹폰트 캐시를 숨겼다. Fontconfig 노출 5개 프로그램은 `exposed-fonts.txt`를 따른다. 자동 수집 suite의 컴파일에는 라이선스를 확인한 명시적 fixture `ttfs/redistributable/happiness-sans/HappinessSansVF.ttf`도 허용했다. 이는 ambient 시스템 글꼴 요구가 아니다.
+`run.sh`는 Linux bwrap으로 시스템·사용자 설치 글꼴과 웹폰트 cache를 숨기고 저장소 소유 공개 글꼴 5종만 ambient 공급한다. 실제 목록은 [노출 목록](exposed-fonts.txt)과 같다. fixture는 기존 라이선스가 확인된 `ttfs/redistributable`을 명시 공급한다. 설치 여부에 따른 조용한 skip은 추가하지 않았다.
 
-최종 집중 회귀 12건은 전부 통과했다. 첫 시도에서는 새 worktree의 ignored suite wrapper를 준비하지 않아 컴파일하지 못했고, `--prepare` 뒤에는 명시적 Happiness fixture를 격리에서 허용하지 않아 컴파일하지 못했다. 두 실행 준비 문제를 보정한 최종 실행 결과만 통과로 계산했다. 제품 assertion 실패로 분류하지 않았다. nextest 0.9.137의 권장 버전 0.9.140 경고는 유지했으며 도구를 임의로 갱신하지 않았다.
+Node launcher에는 기존 NVM Node 24.15.0 runtime 디렉터리만 read-only로 연결했다. HOME의 사용자 글꼴을 노출하지 않는다. Cargo는 기본 작업공간의 절대 `target/pr-review` 하나를 사용하며 동시에 빌드하지 않는다.
+
+WSL의 `/etc/resolv.conf`는 `/mnt/wsl/resolv.conf`를 가리키므로 그 대상 파일도 read-only로 연결했다. 이 연결이 없는 첫 Skia Clippy는 의존 도구 다운로드의 DNS 조회에서 중단됐다. 수정 후 같은 wrapper의 실제 DNS 조회를 확인하고 해당 검사만 재실행했다. 글꼴 격리·제품 소스·검사 기준은 바꾸지 않았다.
+
+이번 실행은 기본 작업공간의 `output/pr-review/pr9063-correction/minimal-font/fonts.conf`에 이 디렉터리의 설정을 복사한 뒤 수행했다. 집중·전체 release-test·Native 공식 3종·lint의 실제 source·명령·exit·개수는 상위 [실행 원장](../evidence.md)을 따른다. 원시 로그는 최종 PR에 포함하지 않는다.

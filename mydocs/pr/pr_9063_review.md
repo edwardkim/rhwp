@@ -2,20 +2,14 @@
 
 ## 최종 판정
 
-**머지 보류.** 기본 열기의 개선은 유효하지만, #8660의 개체 이월이 일반 편집 후 유지되지 않는다.
-첫 문단 `L00`에 `X` 한 글자를 넣으면 그림·사각형이 2쪽 상단에서 1쪽 하단으로 돌아가며,
-저장 후 다시 열면 다시 2쪽이 된다. Native와 최적화한 fresh WASM의 실제 Chromium에서 모두
-재현했다. 기준 문단 원점은 같고 독립 한컴 Print는 편집 전후 모두
-2쪽을 유지한다. [실행 결과·원인·보완 제안](assets/pr9063/edit-boundary/README.md)을 따른다.
+**메인테이너 보정 후 수용 가능.** 원 기여의 열기 개선은 유효하며,
+편집 후 제한 개체가 앞쪽으로 돌아오던 경계를 공통 조판 경로에서 보완했다.
+원 head와 보정 후보의 결과를 구분한다. 필수 로컬 검증을 모두 완료했으며 원격 수용은 별도 승인을 기다린다.
 
-이는 기존 devel 대비 새 악화라는 판정이 아니라, PR의 열기 개선이 편집 경로에 적용되지 않는
-미해결 경계다. 높은 기본 열기 일치율이나 기존 테스트 통과로 이 경계를 면제하지 않는다.
-`Closes #8660`으로 완료하기 전에 편집·미편집의 같은 쪽 영역 제한 규칙을 공통으로 적용하고,
-그림·도형·fit·제한 off·자리차지 뒤 본문을 Native/fresh WASM에서 재검증해야 한다.
-
-2026-11-14 KST 작업지시자가 **메인테이너 보완·필수 검증**을 승인했다.
-[보완 계획](pr_9063_review_impl.md)에 따라 로컬 제품 보정과 검증을 진행한다.
-공개 코멘트·승인 리뷰·push·머지는 수행하지 않았다. #8660·#9059는 OPEN을 유지한다.
+2026-11-14 KST 작업지시자가 승인한 범위는 로컬 보완·필수 검증이다.
+공개 댓글·승인 리뷰·push·새 PR·머지는 수행하지 않았다. #8660·#9059는 OPEN을 유지한다.
+[보완 계획](pr_9063_review_impl.md), [실행 원장](assets/pr9063/evidence.md),
+[원격 처리안](assets/pr9063/remote-action-plan.md)을 따른다.
 
 ## 접수와 검토 범위
 
@@ -25,8 +19,8 @@
 - 최신 devel: `dc3d0ff15e6e7cdb39138c72a5466994dea0e0d4`.
 - 공통 조상: `dd7f453898776c262c00e862e10f47d22a4d6ceb`.
 - reviewer: 사용자 지시에 따라 `edwardkim`을 요청하고 REST API로 재확인했다.
-- 역할: 메인테이너 일반 검토. 로컬 검토만 승인되었으며 제품 보정·공개 댓글·push·승인 리뷰·머지는 아직 수행하지 않았다.
-- 연결 이슈: #8660, #9059. 검토 중이며 두 이슈의 완료 여부를 아직 판정하지 않았다.
+- 역할: 메인테이너 일반 검토와 작업지시자가 승인한 로컬 보완·필수 검증. 공통 이월 보완은 로컬 커밋에 기록했고, 공개 댓글·push·승인 리뷰·머지는 수행하지 않았다.
+- 연결 이슈: #8660, #9059. 해결 증거는 준비했으며 실제 통합 전에는 OPEN을 유지한다.
 
 첫 metadata 조회에 본문을 포함해 reviewer 지정 선행 순서를 지키지 못했다. 이를 인지한 뒤
 reviewer 지정과 API 재확인을 마치고 소스 fetch 및 로컬 검토를 시작했다.
@@ -68,57 +62,83 @@ reviewer 지정과 API 재확인을 마치고 소스 fetch 및 로컬 검토를 
 `version=8.0.0.466`이다. 이 값은 저장 메타데이터이며 합성 입력의 실제 작성 제품을 증명하지 않는다.
 현행 engine 선택 규칙에 따라 2020을 사용했다. 입력 및 PDF SHA-256, 비동기 작업 ID,
 terminal 상태와 내려받은 파일의 client/server 크기·SHA-256 일치는
-[Print 원장](assets/pr9063/desktop-print-index.json) 및 개별 영수증에 기록했다.
-PDF는 [정식 증적 경로](../../pdf/pr9063/)에 보존한다. 글꼴 프로그램은 추가하지 않는다.
+[Print 원장](assets/pr9063/evidence.md)에 기록했다.
+원본 PDF는 [개체 경계](../../pdf/issue8660/)·[꼬리 공백](../../pdf/tac_space_tail/)의 canonical 경로에,
+실제 편집 파생본은 [추가 증적 경로](../../pdf/pr9063/)에 보존한다. 글꼴 프로그램은 추가하지 않는다.
 
-## 로컬 검증
+## 보정 결과와 로컬 검증
 
-| 검증 | 결과 |
+최신 devel에서도 원 문제는 남아 있었다. #9059의 세 입력은 독립 Print 대비 raw
+52.75%·52.75%·61.27%였고, #8660의 초과 그림 세 입력은 devel 1쪽/Print 2쪽이었다.
+[수정 전 Native 전쪽 TSV](assets/pr9063/base-native/)를 보존했다. 원 PR의 기본 열기는
+17문서·22쪽 모두 개선됐으나 일반 편집 후 이월 유지가 빠져 있어 이번 승인 범위로 보완했다.
+
+제품 source `e2d7fb08b5`, 회귀 보강 `5b028b3f03`. 실제 Native producer와 Docker 최적화 WASM의
+제품 입력은 같고, `src`·Cargo·toolchain·build.rs·locked wrapper의 Git object를 대조했다.
+Native와 WASM에는 같은 HCR 환경·실제 프로그램을 공급했다. 글꼴 파일은 커밋하지 않는다.
+
+| 검사 | 실제 범위와 결과 |
 | --- | --- |
-| 최신 devel 재현 | #9059의 3문서가 raw 52.75%·52.75%·61.27%. #8660의 그림 3문서는 1쪽/독립 Print 2쪽 불일치. 이월 뒤 본문 사례도 차이가 남는다 |
-| 후보 Native, 같은 공개 입력 17문서·22쪽 | 전쪽 raw 100.00%, 독립 Print 쪽수 일치. [전쪽 원본 TSV](assets/pr9063/native/), [점수 원장](assets/pr9063/head-native-score-index.json) |
-| 최소 글꼴 집중 회귀 | 공식 자동 수집 suite 2개에서 해당 12건 전부 PASS. [실제 로그](assets/pr9063/focused-tests.log), [글꼴 격리](assets/pr9063/minimal-font/README.md) |
-| Native 편집 API | 그림·도형의 2→1→2쪽 변화 재현. fit 대조군은 1→1→1쪽 유지 |
-| 편집본 독립 Print | 그림·도형 모두 2쪽. 원 입력과 편집본의 2쪽 96 DPI RGB가 동일하며 `ANCHOR` bbox도 같다 |
-| fresh WASM, 같은 공개 입력 17문서·22쪽 | 최적화 포함 빌드 성공. Native와 같은 HCR 환경·프로그램을 명시한 최종 전쪽 raw 100.00%. [전쪽 원본 TSV](assets/pr9063/wasm/), [점수 원장](assets/pr9063/head-wasm-score-index.json) |
-| WASM 편집 API | 실제 Chromium `152.0.7946.0`에서 그림·도형 2→1→2쪽 재현. fit 대조군 1→1→1쪽 유지. [실제 결과](assets/pr9063/edit-boundary/wasm-results.json) |
-| diff 및 문서 링크 | `git diff --check` 통과. 최종 검토 문서 4개 내부 링크 검사 통과 |
+| 원본·실제 저장 파생본 | 39조합·Native/fresh WASM 각 58쪽, 전쪽 raw 100.00%와 Print 쪽수 일치 |
+| Native 실제 편집·반복 저장 | 12개 × live·두 형식의 첫째/둘째 재열기 = 60상태·100쪽, raw 100.00% |
+| fresh WASM live·반복 저장 | live 12개·20쪽 raw 100.00%, HWP/HWPX 두 번씩 재열기 48상태의 쪽 소유·본문 순서/내용 보존 |
+| 실제 출력 소비 | SVG 6개·10쪽 raw 100.00%, Studio 실제 키보드·Canvas2D 4개에서 이월/fit 유지 |
+| 최신 devel 기능 보존 | #9042·#9066의 표·빈 머리말/꼬리말·한컴 재저장본 4개, Native/fresh WASM 각 8쪽 raw 100.00% |
+| 정본 보호 | Native/fresh WASM 합계 3,542쪽, 공식 두 자리 표시값 하락 0·누락 0 |
+| 편람 필수 gate | Native HWPX 383쪽 passed, 기준 하락 0 |
+| 최소 글꼴 전체 회귀 | 13,524 passed / 0 failed / 45 config-skipped |
+| Native 공식 3종 | lib 4,035 passed / 12 ignored, placeholder 2 passed, direct PDF 36 passed, 합계 4,073 passed |
+| 집중 회귀 | 개체 12·공백 4·기존 표 성장/Enter 5·편집 들여쓰기 20, 합계 41 passed |
+| 새 입력의 보안 검사 | 원본·파생본 43개 × hidden-text/injection/unicode = 129회, 모두 clean |
+| 새 독립 Print 쪽수 등록 | canonical PDF 17개와 신규 원장 17행, 실제 쪽수 17/17 일치·기존 행 변경 없음 |
 
-광범위 회귀·Native 공식 전체 검사는 원 exact head의 성공한 Full CI를 확인했고 이번 로컬 검토에서
-반복하지 않았다. 새 제품 보정을 수행하면 그 후보에서 4.3의 필수 로컬 검증을 다시 완료해야 한다.
-원 head와 최신 devel의 자동 병합에는 source 충돌이 없으며 원 기여 여섯 커밋은 보존했다.
+Rust lint·workspace build, 명시적 새 샘플 보안과 최종 쪽수 원장 회귀도 모두 exit 0이다.
+실제 명령·개수·초기 환경 오류와 복구는 [실행 원장](assets/pr9063/evidence.md)에 기록했다. 원 head의 성공 CI를
+보정 후보의 CI로 재사용하지 않았다. 보정 후보는 아직 원격에 제출하지 않았다.
 
-Native 검증 source와 문서 commit 사이의 `src`·`tests`·Cargo 입력·WASM wrapper의 Git object는
-[모두 동일](assets/pr9063/source-identity.json)하다. 빌드 source와 파일 SHA는 각 실행 파일 영수증에
-구분했다. source를 바꾸지 않은 문서 기록을 제품 보정 SHA로 표기하지 않는다.
-
-WASM은 Docker Compose에서 기본 작업공간의 같은 물리적 `target/pr-review`를 `/review-target`에
-연결해 locked wrapper·최적화를 완료했다. Rust 1.93.1, wasm-pack 0.15.0이며 pkg와 해당 worktree의
-Studio public JS/WASM 해시가 같다. [빌드 영수증](assets/pr9063/fresh-wasm-receipt.json)을 따른다.
-브라우저는 CI의 고정 Chromium build `1660786`을 명시했다. 편집 재현은 브라우저의 실제
-`HwpDocument` API 검사이며 Studio UI 클릭 E2E와 구분한다.
-
-첫 WASM 실행은 명시적 환경이 없어 Noto Serif KR을 선택했다. 그 결과는 진단용으로 분리하고
-최종 TSV에 사용하지 않았다. 최종 검증은 Native의 `HCR Dotum`→`HCRDotum`,
-`함초롬바탕`→`HCRBatang` 환경과 같은 프로그램 파일을 공급했다. 실제 WASM loaded SHA와
-Native 공급 파일 SHA, 공개 source URL은 [글꼴 원장](assets/pr9063/font-supply.json)에 연결했다.
-글꼴 파일 자체는 Git에 추가하지 않았다.
-
-## 조판 원칙과 직접 판독
+### 공통 조판 원인과 실제 소비
 
 HWP5 [CommonObjAttr bit 13](../tech/한글문서파일형식_5.0_revision1.3.md)은 문단 기준 개체의
-세로 위치를 본문 영역으로 제한하는 속성이다. 저장 줄 캐시의 신뢰 여부와 개체의 쪽 영역 제한은
-같은 상태가 아니다. 편집되지 않은 다른 문단의 원점이 유효한데도 전체 edited 플래그만으로
-이월 판정을 중단하는 경계가 실제 재현되었다.
+쪽 영역 제한 속성이다. 문서의 편집 상태가 그 속성을 해제하는 조건은 아니다.
 
-기준 문단 원점 생산 → `restricted_object_host_top` 선택 → 두 controls 호출자의
-`overflow_para_object_next_page_placement` → `defer_stored_frame`의 다음 쪽 소유 →
-`layout_column_shapes_pass`의 확정 앵커 소비를 추적했다. edited 경로에서는 첫 helper가
-`None`을 반환해 이 연결이 끊기며 기존 paint 하단 제한으로 돌아간다.
+`section.rs`의 문단 흐름 원점 → `restricted_object_host_top` → 보통/표 호스트 controls의
+`overflow_para_object_next_page_placement` → `defer_stored_frame` → transition의 확정 앵커와
+`next_flow_y` 예약 → layout의 최종 배치를 추적했다. 편집 시 현재 유효 흐름 원점을 사용하고,
+실제 저장 줄은 기존 계약을 유지하되 구현용 합성 LineSeg의 문단 내부 vpos를 쪽 좌표로 재사용하지 않는다.
 
-[같은 배율의 Native 확대 대조](assets/pr9063/native-detail-comparison.png)와
-[fresh WASM 확대 대조](assets/pr9063/wasm-detail-comparison.png)에서 공백 뒤 본문,
-부동 표의 위치와 글자 크기, 그림·사각형의 다음 쪽 상단 배치를 직접 판독했다. 그림은 작은
-윤곽 이미지이며 빈 2쪽으로 오인하지 않았다. 확대판은 96 DPI 원본 픽셀을 같은 영역으로
-자르고 바깥 라벨만 추가했으며 원본·기준의 확대·왜곡·내용 변경은 하지 않았다.
-이 공개 샘플에는 수식이 없어 수식 일치 검증을 했다고 주장하지 않는다.
+자리차지 그림은 기존 선행 fit이 개체 높이를 호스트에 더해 문단까지 먼저 옮기는 경계가 있었다.
+`prepare_fit_budget_with_storage`가 같은 공통 이월 계획을 소비해 별도 쪽 소유가 있는 개체의 높이를
+중복 예약하지 않는다. 다음 쪽에서 TopAndBottom은 실제 개체 점유 끝 다음에 본문을 배치하며,
+InFront는 본문 흐름을 밀지 않는 기존 속성을 유지한다. 단순 helper 이름만으로 공유를 주장하지 않고
+선행 fit·queue·전이·최종 원점까지 대조했다. 다단·caption·비제한 개체 등의 기존 적용 경계도 보존한다.
+
+문서 ID·임의 높이 상수·clamp·출력 숨김은 추가하지 않았다. 빈 글줄/개체 가시성과 흐름 예약을
+같은 상태로 취급하지 않았다. 저장 줄 없는 합성 입력이라는 사실과 실제 한컴 Print 관측을 구분했다.
+
+### 시각 증거와 회귀의 독립성
+
+- [Native 확대 비교](assets/pr9063/correction/native-detail.png),
+  [WASM 확대 비교](assets/pr9063/correction/wasm-detail.png),
+  [첫 쪽 본문](assets/pr9063/correction/native-page1.png),
+  [실제 Studio 편집](assets/pr9063/correction/studio-keyboard.png).
+- [Native 전쪽 TSV](assets/pr9063/correction/native/),
+  [fresh WASM 전쪽 TSV](assets/pr9063/correction/wasm/),
+  [보호 원장 3,542행](assets/pr9063/correction/protected-comparison.tsv).
+- [수정 전 실패와 원인](assets/pr9063/edit-boundary/README.md),
+  [Print·SHA·글꼴·실제 실행 영수증](assets/pr9063/evidence.md).
+
+그림 윤곽·사각형 선, 첫 쪽 ANCHOR/AFTER00~09, 다음 쪽 그림 아래 AFTER10/11의 순서·간격·누락·겹침을
+같은 영역/배율로 직접 판독했다. 이 입력에는 수식이 없어 수식 검증을 주장하지 않는다.
+raw 100.00%는 RGB 픽셀 완전 일치라는 뜻이 아니다.
+
+시각 선행 조건을 완료한 뒤 기존 두 회귀 파일에 실제 편집·반복 저장 관계 검사 4개를 보강했다.
+절대 페이지 px 핀은 추가하지 않았다. TAC 상대 이동은 웹 Print의 과거 값 대신 독립 Desktop Print의
+TEXT 잉크 bbox에서 얻은 3.1966 / 18.2201 / 15.0235px를 사용하며 기존 0.6px 여유는 유지했다.
+같은 원본의 기존 검사를 함께 확인했고 정상 검사는 보존했다. 새 예외나 기준 하락은 적용하지 않았다.
+
+### 후속 범위
+
+fork `kidsnote/rhwp`는 실제 `push=false`다. 승인받은 경우 upstream의 새 Open 수용 PR에 원 기여
+여섯 commit과 보정을 함께 제출하고, 그 head의 CI·self-review 후 merge한다. 별도 원격 승인은
+[실제 처리안과 댓글 초안](assets/pr9063/remote-action-plan.md)을 기준으로 요청한다.
+merge 전에는 원 PR·연결 이슈를 닫지 않는다.

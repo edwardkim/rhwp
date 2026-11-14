@@ -263,5 +263,6 @@ issue8882/36404364-reflowed-cell-tac-row-floor.hwpx	1
 # 17쪽 표 아래끝 1035px·19쪽 1077px = rhwp 1034.8·1076.9px, 두 쪽 raw Native 99.64·99.63). 수정 전후 같다.
 issue8993/31675-rowbreak-overflowing-frame.hwp	2
 # #8660 대조군: 쪽 영역 안으로 제한하지 않은 문단 기준 그림은 한컴도 본문 아래 끝을 넘겨 같은 쪽에 그린다
-# (pdf/issue8660/picture_unrestricted_over_12px-webhwp-print.pdf, 1쪽). 의도된 넘침 1건.
+# (pdf/issue8660/picture_unrestricted_over_12px-hwp-2020.pdf, 데스크톱 한컴 2020 Print 1쪽).
+# Native/fresh WASM 전쪽 raw 100.00%로 같은 배치를 확인했다. 의도된 넘침 1건.
 issue8660/picture_unrestricted_over_12px.hwp	1

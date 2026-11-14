@@ -1,6 +1,8 @@
 # 편집 후 제한 개체 이월이 해제되는 경계
 
-2026-11-14 KST 메인테이너 로컬 검토. 제품 보정은 아직 수행하지 않았다.
+> 보정 전의 접수 진단이다. 승인된 공통 보완과 최종 검증은 [검토 기록](../../../pr_9063_review.md) 및 [실행 원장](../evidence.md)을 따른다.
+
+2026-11-14 KST 메인테이너의 보정 전 로컬 검토 기록이다. 아래 실패는 당시 source의 결과이며, 보정 후 결과는 상위 최종 기록과 구분한다.
 
 ## Native 재현
 
@@ -21,24 +23,24 @@
 다시 돌아오므로, PR의 `Closes #8660` 완료 판단 전에 해결해야 한다.
 
 진단 source는 [edit-probe.rs.txt](edit-probe.rs.txt), 실행 결과는
-[native-results.txt](native-results.txt), 실제 render tree의 개체·첫 문단·기준 문단 bbox와 원본 tree 해시는 [native-node-evidence.json](native-node-evidence.json)에 있다.
+[Native 실행 요약](../evidence.md), 실제 개체·첫 문단·기준 문단의 위치와 산출물 신원은 [실행 원장](../evidence.md)에 있다.
 진단 HWP는 RHWP의 실제 편집·직렬화 API로 만든 공개 파생본이며 정식 회귀 suite에 등록하지 않았다.
 
 같은 명시적 HCR 글꼴 환경을 적용하고 실제 Print PNG도 출력했다.
 [Native 직접 비교](native-edit-review.png), [실제 PNG 진단 source](edit-png-probe.rs.txt),
-[PNG 실행 결과](native-png-results.txt)를 따른다. 원본 픽셀을 그대로 가로 배치하고 바깥 라벨만
+[PNG 실행 결과](../evidence.md)를 따른다. 원본 픽셀을 그대로 가로 배치하고 바깥 라벨만
 추가했다. 그림 위치를 고치거나 이미지를 확대·축소하지 않았다.
 
 최적화한 fresh WASM을 실제 Chromium `152.0.7946.0`에서 실행해도 그림·사각형은
-2→1→2쪽, fit 대조군은 1→1→1쪽이다. [실제 WASM 결과](wasm-results.json)와
+2→1→2쪽, fit 대조군은 1→1→1쪽이다. [실제 WASM 결과](../evidence.md)와
 [브라우저 API 진단 source](wasm-edit-probe.mjs.txt)를 보존했다. 이 probe는 Native와 같은
 명시적 FontEnvironment를 적용한 portable 조판 API 검사다. 실제 HCR 프로그램 loaded SHA는
-별도의 최종 전쪽 Print Canvas 검증과 [글꼴 원장](../font-supply.json)에서 확인했다.
+별도의 최종 전쪽 Print Canvas 검증과 [글꼴 원장](../evidence.md)에서 확인했다.
 
 편집본 Print는 `pdf/pr9063/edited-*-2020.pdf`다. 실제 출력은 Windows 한컴 2020
 `11.0.0.9136`, `pdf_print_method=0`, `hancom2020_pdf_driver_one_up`이며 작업 영수증은
-상위 `desktop-receipts/edited-*.json`을 따른다. 원 입력과 편집본의 한컴 2쪽은 96 DPI RGB가 [동일](../desktop-edited-page2-identity.json)하다. `ANCHOR` bbox도
-[별도 기록](../desktop-edited-anchor-positions.json)에서 같다.
+상위 [실행 원장](../evidence.md)을 따른다. 원 입력과 편집본의 한컴 2쪽은 96 DPI RGB가 [동일](../evidence.md)하다. `ANCHOR` bbox도
+[별도 기록](../evidence.md)에서 같다.
 
 ## 원인 경로
 

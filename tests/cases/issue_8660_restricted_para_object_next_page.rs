@@ -1,12 +1,12 @@
 //! 관계형·고정형: #8660 제한 개체의 독립 쪽 소유, 본문 순서·포함·예약과 독립 Print 쪽수.
-//! 주석 갱신: 2026-11-14 12:32 KST. 직전 파일 변경: 2026-11-14 03:24:28 +09:00,
+//! 주석 갱신: 2026-11-14 13:26 KST. 직전 파일 변경: 2026-11-14 03:24:28 +09:00,
 //! commit 351674bfa464d4a09385f7e5e0bc2755843eff1e(Git 확인; 측정 시각과 구분).
 //! 측정: 2026-11-14 KST, source e2d7fb08b5, Native Skia/fresh 최적화 WASM Canvas,
 //! `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`, 색상 경계 보정 전 2px raw.
 //! 원 8문서 전 13쪽: Native/fresh WASM 각각 100.00%, 독립 Desktop Print 쪽수 일치.
 //! 실제 편집 12종 전 20쪽: Native/fresh WASM 모두 raw 최저 100.00%.
 //! 첫 문단 X, 기준 문단 X, 실제 Enter, HWPX 재조판과 HWP/HWPX 반복 저장을 구분했다.
-//! 독립 기준: `pdf/pr9063/`의 한컴 2020 11.0.0.9136 Print(method 0, one-up).
+//! 독립 기준: `pdf/issue8660/*-hwp-2020.pdf`와 `pdf/pr9063/`의 한컴 2020 11.0.0.9136 Print(method 0, one-up).
 //! 원본은 RHWP 합성 공개 HWP이며 실제 편집·저장 바이트도 Print했다. 웹 Print를 판정에 쓰지 않았다.
 //! 증거: `mydocs/pr/assets/pr9063/evidence.md`와 최종 `correction/`의 전쪽 TSV·대표 PNG.
 //! 위치는 다음 쪽 본문 상단·셀/본문 포함·앞뒤 내용 관계로 보호한다. 절대 페이지 px 핀은 추가하지 않는다.
@@ -14,7 +14,7 @@
 //! #8660: 쪽 영역 안으로 제한(`flowWithText`)한 문단 기준 개체가 본문 아래 끝을 넘으면
 //! 한컴은 개체만 다음 쪽 본문 맨 위에 그리고, 기준 문단과 뒤 글은 원래 쪽에 남긴다.
 //!
-//! 기준: `pdf/pr9063/*-2020.pdf` (데스크톱 한컴 2020 Print). 보통 줄 30개 뒤 기준 문단
+//! 기준: `pdf/issue8660/*-hwp-2020.pdf` (데스크톱 한컴 2020 Print). 보통 줄 30개 뒤 기준 문단
 //! `ANCHOR` 에 그림(1908×2067 HU) 또는 사각형을 문단 기준 세로 오프셋으로 붙였다.
 //! - 아래 끝이 본문 끝에 딱 맞으면 1쪽(`picture_in_front_fits`)
 //! - 1px 넘으면 2쪽, 그림은 2쪽 본문 위 끝(`picture_in_front_over_1px`)
