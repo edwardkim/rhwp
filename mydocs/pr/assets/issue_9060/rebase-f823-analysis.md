@@ -89,3 +89,7 @@ shape-group-02 1쪽·sample16 HWPX1쪽·8040 insert4쪽의 같은 쪽 review/ove
 권고안4쪽은 새 base와 후보의 실제 WASM paint JSON 전체가 바이트로 같고, 공통 반경 생산과
 CanvasKit 소비 코드도 같다. 기존 실제 CK 반경 검증을 이 범위에서 재사용한다. 이 Node 검사는
 host font 없이 paint 계약을 확인한 것이며 새 CK 캡처·일치율을 산출했다고 주장하지 않는다.
+
+## 새 base 주요 페이지의 직접 판독
+
+[다섯 입력의 실제 Native/fresh WASM 14개 review·overlay 쌍](final/rebase-f823-reading/README.md)을 직접 확인했다. CBTA 118·162·166쪽, 권고안 4쪽, 영어 시험지 2쪽, API 35쪽, 각주 표 37쪽이다. 원 PR #9075의 원 문서 증적과 구분한다. 같은 환경 전쪽 대조와 전체 Rust 완료는 별도 조건으로 유지한다.
