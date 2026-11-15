@@ -514,6 +514,32 @@ pre.dialog-pdf-import-json { margin: 0; max-height: 160px; overflow: auto; }
 
 /* ── 제품 정보 다이얼로그 ── */
 
+/* 낮거나 좁은 화면에서도 제목 줄·닫기 버튼이 화면 안에 남도록 본문만 스크롤한다 (#8905). */
+.dialog-wrap.about-dialog {
+  display: flex;
+  flex-direction: column;
+  max-width: calc(100vw - 24px);
+  max-height: calc(100dvh - 24px);
+  overflow: hidden;
+}
+
+.about-dialog > .dialog-title,
+.about-dialog > .dialog-footer {
+  flex: 0 0 auto;
+}
+
+/* 스크롤되는 본문과 닫기 버튼 줄을 구분한다. */
+.about-dialog > .dialog-footer {
+  padding-top: 8px;
+  border-top: 1px solid var(--ui-border-subtle);
+}
+
+.about-dialog > .about-body {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
 .about-body {
   text-align: center;
   padding: 16px 24px;
