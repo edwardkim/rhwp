@@ -411,7 +411,7 @@ pub(crate) fn resolve_styles_with_environment(
                         // 같은 주 프로그램의 가용성 인증은 저장 HFT의 물리 Print
                         // 종이 프레임을 바꾸는 요청이 아니다. 전진 프로그램과
                         // source가 소유한 paint 프레임을 별개로 보존한다.
-                        if !primary_true_type_program || !preserve_source_metrics {
+                        if !preserve_source_metrics {
                             style.font_families_hft_print_frame[lang] = false;
                         }
                         style.font_families_original_glyph_metric_face[lang] = None;
@@ -900,11 +900,15 @@ pub(crate) fn try_resolve_single_char_style<A: storage::Storage>(
         font_families_hft_hangul
             .push(decision.substitution_boundary == Some(FontSubstitutionBoundary::Hft));
         font_families_hft_fullwidth_dot.push(decision.alt_type == Some(2) && !substituted);
-        // 물리 Print 프레임은 원 HFT 슬롯의 소유다. 표시용 치환으로 TTF를
-        // 선택해도 논리 원점은 같은 device CTM을 거친다. 명시적 자연 전진/
-        // 프로그램 선택으로 프레임을 바꾸는 요청은 환경 적용 단계에서 처리한다.
-        font_families_hft_print_frame
-            .push(source_font.is_some_and(|face| face.alt_type == 2 && !face.is_embedded));
+        // 비내장 원본 TTF/HFT는 같은 Print device CTM을 소비한다.
+        // 표시 치환은 이 원점 계약을 바꾸지 않는다. HWP3의 유형 미상 HFT
+        // 추론도 기존처럼 보존하며 명시적 자연 프로그램 선택은 아래에서 해제한다.
+        font_families_hft_print_frame.push(
+            source_font.is_some_and(|face| matches!(face.alt_type, 1 | 2) && !face.is_embedded)
+                || (decision.alt_type == Some(2)
+                    && !substituted
+                    && decision.embedded != Some(true)),
+        );
         // [#7391] legacy-latin은 선언 face의 기존 표를 사용한다. HFT는
         // 프로그램 자체를 확인한 표만 사용하며 표시용 TTF와 구분한다.
         // HWP3 ASCII 반각 여부는 기존 문서의 저장 줄 증인이 계속 결정한다.

@@ -107,3 +107,12 @@ Python 공급기 보완 뒤에도 실제 Native 재출력은 굵은 압축체를
 첫 `7bac062a66`은 Column의 `paint_order::children`만 보완했다. 최적화 WASM `f39e2f3b87`의 실제 Canvas는 여전히 두 그림 모두 `strokeRect → drawImage`, raw 94.65%였다. 따라서 첫 보완을 완료로 인정하지 않는다. 실제 tree에서는 bitmap·border의 layer가 이미 같으며, 더 앞의 `LayoutEngine::sort_paper_render_nodes`가 doc_path 없는 외곽을 owner보다 먼저 정렬한 것이 확인됐다. Column에 도달하기 전 원래 순서를 잃으므로 안정 정렬만으로 되돌릴 수 없었다.
 
 공통 `paint_order::sibling_keys`가 같은 부모의 `image_frame_owner`에 해당하는 Image 키를 선택하고, Column paint 정렬과 종이 기준 `sort_paper_render_nodes`가 이 결과를 함께 사용하게 한다. 각 경로의 기존 plane/z-order/문서 주소 계산은 그대로 쓰며 picture_border가 아닌 도형과 실제 owner 없는 노드는 자기 키를 유지한다. `layout append → paper 정렬 → Column 소비 → LayerBuilder → 실제 replay` 전체 경로를 새 출력과 실제 PaintOp 순서로 재검증한다.
+
+
+### 정밀 종이 CTM의 원본 TTF 대조
+
+영월 원문의 `월별누계`는 새굴림 **TTF, 비내장, 13pt**다. 대상 Print의 New Gulim과 실제 공급 Gulim의 윤곽·hmtx가 같음을 확인했다. 원문 종이는 59528×84188HU이며 기존 600dpi 종이 프레임 계산은 sx=0.9994624739635827, sy=0.9989072595971114다. 독립 Print의 13pt TTF는 600dpi의 108 device em(12.96pt)에 같은 CTM을 적용한 12.949415pt이며 실제 PDF 값 12.9494152069pt와 맞는다. 대상 PDF에서 산출한 보정 상수나 임의 scale을 추가하지 않는다. 별도 font em 반올림 구현을 이번 값만으로 도입하지 않으며, 기존 종이 프레임을 원래 TTF도 소비해야 한다는 근거로 사용한다.
+
+기존 HFT만의 자격 제한은 이 비내장 TTF 출력 계약을 누락했다. 원본의 명시적 TTF/HFT 슬롯과 기존 HWP3의 유형 미상 HFT 추론이 같은 `paper_viewport` 결과를 소비하도록 자격을 보존한다. Screen에는 적용하지 않으며 embedded 원본과 명시적 자연 프로그램 좌표 선택의 기존 경계는 유지한다. `preserveSourceMetrics=true`의 표시 치환은 프레임 해제로 해석하지 않는다. 초기 합성 대조군의 TTF 프레임 미적용 가정도 독립 TTF Print 근거에 따라 수정했으며 실제 대상 출력의 재검증을 계속한다.
+
+`08c83701b8` Native의 실제 중간 재출력은 body-list 100.00%, 그림 100.00%, nested 16쪽 99.99%, 영월 1쪽 100.00%·3쪽 99.98%다. 이 중간 head의 두 Native focused harness 컴파일은 추가 좌표 보완 때문에 중단했고 통과 결과로 계상하지 않는다. 최종 source에서 정식 전체/집중 검사를 다시 실행한다.

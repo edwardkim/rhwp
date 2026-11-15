@@ -113,7 +113,16 @@ fn declared_hft_display_substitution_keeps_its_print_frame_until_natural_program
     declared.set_document(document);
     assert!(frames(&declared).iter().all(|frame| *frame));
     let direct = core("Gulim", "검증", None);
-    assert!(frames(&direct).iter().all(|frame| !frame));
+    assert!(frames(&direct).iter().all(|frame| *frame));
+    declared
+        .set_font_environment(Some(
+            FontEnvironment::from_json(
+                r#"{"id":"display-only-control","substitutions":{"휴먼명조":"Gulim"},"trueTypeFaces":["Gulim"],"preserveSourceMetrics":true}"#,
+            )
+            .unwrap(),
+        ))
+        .unwrap();
+    assert!(frames(&declared).iter().all(|frame| *frame));
     declared.set_font_environment(Some(FontEnvironment::from_json(
         r#"{"id":"explicit-natural-control","substitutions":{"휴먼명조":"Gulim"},"trueTypeFaces":["Gulim"],"preserveSourceMetrics":false}"#
     ).unwrap())).unwrap();

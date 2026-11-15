@@ -181,7 +181,7 @@ impl PagePaintContext {
     /// 출력을 6→3자리로 바꾼다. 2020의 BorderFill 배경은 바꾸지 않지만
     /// 2024의 같은 셀 배경은 바꾼다(동일 입력 C308/C311).
     /// 이 상태는 q/Q와 쪽 경계를 넘어 유지된다(C275/C307/C308 대조).
-    /// 원본 HFT의 논리 좌표는 fill 전의 정밀 CTM만 물리 종이에 투영한다.
+    /// 원본 비내장 TTF/HFT의 논리 좌표는 fill 전의 정밀 CTM으로 물리 종이에 투영한다.
     /// Source bbox·run·clip은 그대로 두고 모든 glyph 대안에 같은 결정을 전달한다.
     pub(crate) fn publish_glyph_geometry(
         self,

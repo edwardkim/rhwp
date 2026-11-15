@@ -410,7 +410,8 @@ pub struct TextStyle {
     /// 원본 언어 슬롯의 글자 위치(%). 0은 기존 직렬화와 같이 생략한다.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub font_position: Option<i8>,
-    /// 유지된 원본 HFT의 인쇄 paint 좌표 계약. 논리 조판/전진 폭과 별개다.
+    /// 원본 비내장 TTF/HFT의 정밀 Print 좌표 계약. 논리 조판/전진 폭과 별개다.
+    /// 필드 이름은 기존 내부 HFT 경로와의 호환을 유지한다.
     #[serde(skip_serializing)]
     pub hft_print_frame: bool,
     /// 명시적으로 선택한 실제 프로그램의 잉크 폭. 논리 전진과 구분한다.
