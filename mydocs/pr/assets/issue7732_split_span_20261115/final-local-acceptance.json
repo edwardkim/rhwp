@@ -28,5 +28,22 @@
     "private_fonts_committed": false
   },
   "remote_ci_merge": "not yet executed",
-  "canvaskit_scope": "각주3쪽 두모드 실제 직접 출력. 중첩5쪽은 기존 문서 전체 미지원 및 자원 미준비로 Canvas2D 전환, 직접 CK 성공으로 세지 않음."
+  "canvaskit_scope": "각주3쪽 두모드 실제 직접 출력. 중첩5쪽은 기존 문서 전체 미지원 및 자원 미준비로 Canvas2D 전환, 직접 CK 성공으로 세지 않음.",
+  "current_base_comparison": {
+    "path": "mydocs/pr/assets/issue7732_split_span_20261115/current-base-67b4/validation.json",
+    "sha256": "31f873e7827c4506b2f41561ab128f6e7eb20d7de46e32f23d27be809192329b",
+    "datasets": 4,
+    "pages": 134,
+    "over2pp_declines": 0
+  },
+  "final_collection_policy": {
+    "final-suite-check.log": {
+      "sha256": "73800ed40afc493e520391f0b55bef86912791b768a3df5de9b939e2ee349317",
+      "summary": "[RustTestSuite] 확인 완료: 2374 sources / 9836 static test attrs / 28 suites + 20 exceptions = 48/48 integration targets / nextest 최소 6288 cases / weight 2085115..2089812"
+    },
+    "final-unit-tier-check.log": {
+      "sha256": "b0d22c7e9e78b2de09250df5931d136093b5d2ad3c7474ab5c37aa9c3dc75ad0",
+      "summary": "[RustUnitTier] 확인 완료: 4094 tests / 295 modules / ready 0 / support 85 / white-box 4005 / cfg support items 28"
+    }
+  }
 }
