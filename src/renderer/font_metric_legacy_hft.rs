@@ -186,6 +186,37 @@ static RANGES_4: [LatinRange; 5] = [
     single(0x3005, &[1000]),
 ];
 
+// [#9087] 명시적 대체 글꼴이 없는 신명 순명조 HFT 의 Type3 /Widths. 탐침
+// samples/issue9087/hft-sinmyeong_sunmyeongjo-probe.hwpx(일곱 슬롯 모두 HFT 신명 순명조)의
+// 독립 한컴 2022 Print(pdf/issue9087/, 12.0.0.4547)에서 읽었다. 굵게 탐침의 /Widths 도 같다.
+// 이 프로그램으로 그린 글자만 싣는다. CJK 기호·화살표 등은 한컴바탕으로 대체된다.
+static ASCII_5: [u16; 95] = [
+    400, 500, 400, 600, 600, 1000, 1000, 400, 500, 500, 500, 1000, 400, 500, 400, 500, 600, 600,
+    600, 600, 600, 600, 600, 600, 600, 600, 500, 500, 500, 1000, 500, 600, 1000, 725, 798, 788,
+    846, 771, 692, 850, 847, 374, 654, 769, 646, 961, 792, 845, 659, 854, 753, 711, 671, 834, 742,
+    969, 768, 689, 683, 500, 500, 500, 500, 500, 400, 648, 705, 607, 708, 605, 389, 620, 745, 372,
+    371, 703, 372, 1027, 748, 644, 706, 663, 500, 607, 451, 768, 607, 859, 644, 698, 563, 500, 500,
+    500, 1000,
+];
+static RANGES_5: [LatinRange; 4] = [
+    LatinRange {
+        start: 0x0020,
+        end: 0x007e,
+        widths: &ASCII_5,
+    },
+    single(0x00b7, &[384]),
+    LatinRange {
+        start: 0x2018,
+        end: 0x2019,
+        widths: &[200, 200],
+    },
+    LatinRange {
+        start: 0x201c,
+        end: 0x201d,
+        widths: &[400, 400],
+    },
+];
+
 const fn single(code: u32, widths: &'static [u16]) -> LatinRange {
     LatinRange {
         start: code,
@@ -194,7 +225,7 @@ const fn single(code: u32, widths: &'static [u16]) -> LatinRange {
     }
 }
 
-pub(super) static METRICS: [FontMetric; 7] = [
+pub(super) static METRICS: [FontMetric; 8] = [
     FontMetric {
         name: "신명 디나루 (HFT)",
         bold: false,
@@ -235,6 +266,14 @@ pub(super) static METRICS: [FontMetric; 7] = [
         latin_ranges: &RANGES_4,
         hangul: None,
     },
+    FontMetric {
+        name: "신명 순명조 (HFT)",
+        bold: false,
+        italic: false,
+        em_size: 1000,
+        latin_ranges: &RANGES_5,
+        hangul: None,
+    },
     konghan::METRIC,
     system::METRIC,
 ];
@@ -247,6 +286,7 @@ pub(crate) fn metric_face_name(requested: &str) -> Option<&'static str> {
         "신명 디나루" => Some("신명 디나루 (HFT)"),
         "신명 신그래픽" => Some("신명 신그래픽 (HFT)"),
         "신명 중고딕" => Some("신명 중고딕 (HFT)"),
+        "신명 순명조" => Some("신명 순명조 (HFT)"),
         "중간공한" | "Konghan Normal" => Some("중간공한 (HFT)"),
         "시스템" => Some("시스템 (HFT)"),
         _ => None,
