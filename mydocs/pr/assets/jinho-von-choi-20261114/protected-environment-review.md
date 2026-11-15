@@ -162,11 +162,11 @@ Python 공급기 보완 뒤에도 실제 Native 재출력은 굵은 압축체를
 
 2026-11-15 12:27 KST. `7fbc8ba62b`에서 Latin 원 프로그램 소유 보정 후 Native 8쪽은
 99.97%, 9쪽은99.99%이며 남은 차이는 U+2027이다. 원 Print의 해당 Type3 charproc에는
-전진500과 빈 fill만 있고, 실제 잉크는 별도 600dpi bitmap XObject다. 로컬 변환 HFT OTF에는
+전진 500과 빈 fill만 있고, 실제 잉크는 별도 600dpi bitmap XObject다. 로컬 변환 HFT OTF에는
 이 문자가 없다. 대상 PDF에서 윤곽·비트맵을 추출해 공급하지 않는다.
 
-깨끗한 blank HWPX에 한양중고딕 HFT의 U+2027을11·13pt로 넣고, 별도 원격 한컴2020
-11.0.0.9136의 전체 쪽 Print(method0·one-up)로 독립 표본을 확보했다. job은
+깨끗한 blank HWPX에 한양중고딕 HFT의 U+2027을 11·13pt로 넣고, 별도 원격 한컴 2020
+11.0.0.9136의 전체 쪽 Print(method 0·one-up)로 독립 표본을 확보했다. job은
 `b9c59e1c-a048-433c-93dd-79d88ca76a9a`다. 로컬 Windows Hwp.exe·COM·자동 인쇄는
 실행하지 않았다. 독립 bitmap의 원 검정 픽셀과 실제 text/image 행렬로 em 윤곽을 만들며
 대상 점수에 맞춘 이동·배율·획 보정은 하지 않는다. 입력 SHA-256은
@@ -175,10 +175,9 @@ Python 공급기 보완 뒤에도 실제 Native 재출력은 굵은 압축체를
 `71a1a1827048cd71cd23bfbd2f04e3403980ac723c1859723a6c6a0d354ed642`다. 상용 글꼴 자료는
 재배포하지 않고 `/home/edward/mygithub/ttfs/local-validation/hft-symbols`에서 명시 공급한다.
 
-이 동일 공급 조건의 Native 중첩 표17쪽은 보호값 하락0건이며, 8·9·12쪽은100.00%다.
-WASM도 세 쪽은100.00%지만 자연 Gulim 선택을 사용한10·11·14·15쪽에서 과거 보호값보다
-0.06–0.15%p 낮았다. 글자 원점·내용·레이아웃 tree는 Native와 같다. Native Print는 실제 TTF의
-힌팅 없는 윤곽을 사용하지만, WASM은 원 HFT의 CFF 분기에서 TTF를 발견해도 Print TTF
+이 동일 공급 조건의 Native 중첩 표 17쪽은 보호값 하락 0건이며, 8·9·12쪽은 100.00%다.
+WASM도 세 쪽은 100.00%지만 자연 Gulim 선택을 사용한 10·11·14·15쪽에서 과거 보호값보다
+0.06–0.15%p 낮았다. 글자 원점·내용·레이아웃 tree는 Native와 같다. Native Print와 WASM의 글자 재생 경로가 다르며, WASM은 원 HFT의 CFF 분기에서 TTF를 발견해도 Print TTF
 공급 경로로 이어지지 않고 브라우저 글자 API로 되돌아간다.
 
 `HftOutlineFonts::print_fallback_glyph → WebCanvasRenderer::draw_hft_outline → positioned
@@ -186,18 +185,89 @@ text paint`가 실제 등록된 정적 TTF의 같은 윤곽을 소비하게 한�
 원 HFT의 **명시 자연 프로그램 선택**이며, 자동 표시 치환·화면·굵기·기울임·가변/컬러 face·
 공급자 미확인·문맥 shaping은 확대하지 않는다. 원문 유형·레이아웃 전진·좌표는 바꾸지 않는다.
 저장소의 OFL TTF로 실제 WASM·FontFace·Canvas를 실행한 새 관계 검사는 수정 전 package에서
-Print의 `fillText` 두 호출과 path0개를 검출해 실패했다. 수정 후 fresh WASM과 네 쪽의 재출력,
-대조군·전체 보호·필수 게이트는 아직 완료하지 않았다. 앞서 시작한7fbc 전체 회귀는 컴파일 단계에서
-중단했고 통과 수에 넣지 않는다. Native32개 focused와 Python14개 검사는 해당7fbc 결과로 구분한다.
+Print의 `fillText` 두 호출과 path 0개를 검출해 실패했다. 수정 후 fresh WASM과 네 쪽의 재출력,
+대조군·전체 보호·필수 게이트는 아직 완료하지 않았다. 앞서 시작한 7fbc 전체 회귀는 컴파일 단계에서
+중단했고 통과 수에 넣지 않는다. Native 32개 focused와 Python 14개 검사는 해당7fbc 결과로 구분한다.
 
-첫 WASM 보완 `bd77ca1b46`의 검증은 정상 대조3건이 통과하고 새 자연 TTF 검사1건이 실패했다.
+첫 WASM 보완 `bd77ca1b46`의 검증은 정상 대조 3건이 통과하고 새 자연 TTF 검사 1건이 실패했다.
 명시 2024 Print로 같은 검사를 실행하면 통과했다. 원인은 실제 TTF 공급·윤곽 추출이 아니라
 `preserves_raster_text_geometry`가 기존 2020/2022 Print에서 false인 점이다. 명시 자연 HFT
 프로그램의 정적 TTF replay만 Print 전 세대에서 허용하고, 보통 원 TTF fallback의 기존 세대별
-정책과 Screen·HighQuality는 보존한다. 같은 관계 검사가2022·2024를 각각 실제 실행하도록
+정책과 Screen·HighQuality는 보존한다. 같은 관계 검사가 2022·2024를 각각 실제 실행하도록
 보완한다. 대상 글자의 좌표·크기·레이아웃 전진에는 새 보정을 넣지 않는다.
 
-Native `7fbc8ba62b`의 보호18 dataset·1,771쪽은 전쪽 raw 최저98.58%, 공식값 하락0건으로
-완료했다. 별도 편람383쪽 gate도 통과했다. 이후 두 Rust 변경은 wasm32 함수/모듈에 한정되며
+Native `7fbc8ba62b`의 보호 18 dataset·1,771쪽은 전쪽 raw 최저 98.58%, 공식값 하락 0건으로
+완료했다. 별도 편람 383쪽 gate도 통과했다. 이후 두 Rust 변경은 wasm32 함수/모듈에 한정되며
 Native 시각 producer를 이후 SHA로 바꿔 적지 않는다. 최종 Rust 게이트와 실제 새 WASM 검증은
 계속 진행 중이다.
+
+2026-11-15 13:08 KST 정정: Native의 `preserves_raster_text_geometry`도 세대별 정책이다.
+따라서 앞선 “Native는 무힌팅” 설명을 2020/2022에 일괄 적용하지 않는다. 이 보완은 Native
+정책을 변경하지 않고 명시 자연 TTF의 실제 윤곽을 WASM Print에 재생하는 처리다.
+2024 경로의 진단에서 네 쪽은 각각 98.83·99.08·98.69·99.18%로 보호값 이상이지만, 이 결과를
+2022 최종 통과로 계상하지 않는다. 최종 2022 fresh WASM을 별도로 빌드·측정한다.
+보완 전 최적화 WASM 전수 1,771쪽의 하락은 위 네 쪽뿐이며 나머지 1,767쪽에는 하락이 없다.
+
+
+### 전체 회귀에서 확인한 프로그램 자격 경계 보완
+
+최적화 WASM `e29231c1f5`의 실제 2022 Print 재출력에서 중첩 표 10·11·14·15쪽은
+98.83·99.09·98.69·99.19%로 각각 과거 보호값 이상이다. 8·9·12쪽과 그림 테두리·영문
+대조군도 100.00%를 유지했다. 이는 작은 경계 확인이며 전쪽 최종 gate로 확대하지 않는다.
+
+직전 전체 회귀는 13,597건 중 13,593건 통과, 4건 실패였다. 실제 기존 검사 3건은
+`source_hft_original_program_print_frame`의 다른 프로그램 조회와
+`issue_7445_hft_glyph_paint_frame`의 HWP3 대체·원 TTF 무인증 경로를 보호한다.
+원 frame 보완 `19f08478296e`가 수용된 [통합 PR #8857](https://github.com/edwardkim/rhwp/pull/8857)과
+독립 Print·보호 검사 복원 `c9b60993e79b`의 [PR #8188](https://github.com/edwardkim/rhwp/pull/8188),
+기존 독립 Print 기록을 먼저 대조했다. 두 원격 수용 상태도 읽기 전용 API로 재확인했다.
+새 보완의 원문 유형 비트·자동 표시 치환만으로 프레임을 부여한 처리가 이 경계를 넓혔다.
+기존 기대값은 바꾸지 않고 공통 resolver가 이미 사용하는 실제 원 primary 선택 자격으로
+TTF text device frame을 제한했다. 다른 프로그램을 조회하면 HFT 프레임을 해제하는
+기존 계약도 복원했다.
+
+나머지 실패 1건은 이번에 추가한 합성 프로그램 소유 검사다. 수동 `alt_type` 선언과 Gulim
+표시 치환을 실제 원 프로그램 인증으로 가정한 입력을 고쳤다. 원 프로그램의 명시 선택,
+유형 미상 원문 보존, 자연 프로그램 선택을 각각 검사하며 실제 기존 3개 검사를 유지한다.
+수정 source는 `b5cda1957036dd4e800a9335e251469cf8ca172f`다. 이 source의 집중 회귀,
+Native/fresh WASM 재빌드·전쪽 보호·필수 게이트가 끝나기 전에는 완료로 판정하지 않는다.
+
+
+집중 재검증은 최종 합성 입력 보완 `411cb7a7e807abbea90c6ab6b6ca0c66b6c3ad71`에서
+27건 모두 통과했다. 원래 정확한 검사 3건의 기대값은 유지했다. 새 합성 검사는 기존 폭 검증이
+있는 Times New Roman primary를 명시하고, fill 대조는 `control_index`가 있는 원 도형을
+사용한다. 일반 배경 사각형은 2022 Print의 polygon fill과 다른 계약이므로 이를 혼동하지 않는다.
+`b5cda19570`/`5ae3222ad6`의 각 실패 결과도 보존하며 성공 수로 합산하지 않는다.
+
+
+2026-11-15 14:12 KST 최적화 fresh WASM `411cb7a7e8`을 완료했다. 파일 SHA-256은
+`4635f221ed76429fa7dd8c0fa1f0e943257afbd580297a3939130e69604f8d0d`다. 기존 CI가 수집하는
+실제 브라우저 묶음 20건이 모두 통과했다. 새 자연 TTF의 2022·2024 및 기존 인쇄 기하,
+Screen 복귀·미공급·가변 face 경계도 이 묶음에서 실제 실행했다. 경계 21쪽의 Native/WASM
+보호값 하락은 양쪽 모두 0건이다. 필드·중첩 표·범위 초과 방어와 HWP/HWPX 두 차례 반복
+저장·재열기도 새 WASM에서 통과했다.
+
+현재 Native 목표·대조군 134쪽과 최신 devel 추가 389쪽은 측정을 완료했다. 같은 입력·PDF를
+exact base `f8234f6f90cb25d9601c9d5d762e0a565aea19e4`와 대조한 정밀 raw 값(표시 반올림 전)의
+최대 하락은 추가 389쪽에서 0.10884%p, 앞선 41쪽 보존군에서 0.05736%p다. 2%p 초과는 0건이다.
+바탕쪽 66쪽·색상 6쪽·추가 여백/도형/저장 대조 18쪽은 모두 100.00%다. 이 수치를 최종
+전쪽 보호 3,542행과 전체 회귀 완료로 확대하지 않으며 남은 전수·필수 게이트를 계속 실행한다.
+
+
+### 확대 판독에서 남은 legacy Print의 그림 pen
+
+`411cb7a7e8`의 전체 회귀 13,597건·Native 보호 1,771쪽·편람 gate는 모두 통과했다.
+그러나 원본 PDF·현재 Native/WASM 그림의 네 변을 확대하자 2022 경로의 선폭이 여전히
+얇았다. 높은 점수로 이 차이를 면제하지 않았다. 공개 `pic-crop-01-2022.pdf`의 compound
+fill path에서 바깥/안쪽 차이는 0.480pt, 외곽 pen은 0.120pt다. 96dpi에서는 물리 띠
+0.64px와 pen 0.16px이며 600dpi에서는 각각 4·1 device pixel이다.
+
+원 보완은 `c417310cab62`·PR #8389다. 동일 source를 기존 2024 Print 경로로 출력하면
+실제 pen은 `[0.64, 0.16]`, 최종 raster 선폭은 1.64px이고 독립 2022 PDF의 왼쪽 edge coverage와
+같다. 기존 2022 경로는 이 metadata가 없고 최종 1px만 그린다. 원인은 공통 `LayerBuilder`가
+`picture_border_pen`의 장치 픽셀까지 비트맵 색상 세대 옵션으로 걸러 낸 것이다.
+
+`41be35bbb4`는 같은 공통 pen 함수에 장치 픽셀을 그대로 전달한다. 그림 소유·원문 폭·crop·
+일반 사각형의 세대별 좌표·비트맵 색상 옵션은 바꾸지 않는다. 문서별 상수나 새 선폭 보정도
+추가하지 않는다. 직전 411 checkpoint는 보존하고 새 Native/fresh WASM의 작은 실제 비교부터
+진행한다. 최종 전수·필수 게이트를 다시 완료하기 전에는 새 source의 완료로 판정하지 않는다.
