@@ -1,0 +1,118 @@
+[
+  {
+    "stream": "BodyText/Section0",
+    "tag": 67,
+    "offset": 4728,
+    "bytes": 100,
+    "tab": [
+      [
+        9,
+        1868,
+        0,
+        515,
+        32,
+        32,
+        32,
+        9
+      ]
+    ],
+    "text": "제2장 ICAO가 제시하는 CBTA의 개념, 목적, 적용 범위 등 분석\t݌\u0000ȃ   \t10\r"
+  },
+  {
+    "stream": "BodyText/Section0",
+    "tag": 68,
+    "offset": 4832,
+    "bytes": 24,
+    "char_shapes": [
+      [
+        0,
+        14
+      ],
+      [
+        4,
+        106
+      ],
+      [
+        39,
+        14
+      ]
+    ]
+  },
+  {
+    "stream": "BodyText/Section0",
+    "tag": 69,
+    "offset": 4860,
+    "bytes": 36,
+    "line_segs": [
+      [
+        0,
+        19720,
+        1500,
+        1500,
+        1275,
+        2100,
+        0,
+        48188,
+        393216
+      ]
+    ]
+  },
+  {
+    "stream": "ViewText/Section0",
+    "tag": 67,
+    "offset": 4728,
+    "bytes": 100,
+    "tab": [
+      [
+        9,
+        1868,
+        0,
+        515,
+        32,
+        32,
+        32,
+        9
+      ]
+    ],
+    "text": "제2장 ICAO가 제시하는 CBTA의 개념, 목적, 적용 범위 등 분석\t݌\u0000ȃ   \t10\r"
+  },
+  {
+    "stream": "ViewText/Section0",
+    "tag": 68,
+    "offset": 4832,
+    "bytes": 24,
+    "char_shapes": [
+      [
+        0,
+        14
+      ],
+      [
+        4,
+        106
+      ],
+      [
+        39,
+        14
+      ]
+    ]
+  },
+  {
+    "stream": "ViewText/Section0",
+    "tag": 69,
+    "offset": 4860,
+    "bytes": 36,
+    "line_segs": [
+      [
+        0,
+        19720,
+        1500,
+        1500,
+        1275,
+        2100,
+        0,
+        48188,
+        393216
+      ]
+    ]
+  }
+]

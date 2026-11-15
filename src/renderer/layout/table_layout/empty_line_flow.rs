@@ -153,9 +153,21 @@ impl LayoutEngine {
         {
             return None;
         }
-        let previous = cell.paragraphs.get(index.checked_sub(1)?)?;
         let paragraph = cell.paragraphs.get(index)?;
         let next = cell.paragraphs.get(index + 1)?;
+        // 첫 빈 문단도 선언된 시작 프레임을 닫으면 독립 줄 상자를 소유한다.
+        // 다음 문단의 0 원점만으로 판정하지 않고 컷과 같은 원본 조회를 쓴다.
+        if index == 0
+            && paragraph.text.trim().is_empty()
+            && paragraph.controls.is_empty()
+            && self.declared_nested_opening_frame_reset(table) == Some(index + 1)
+        {
+            let [line] = paragraph.line_segs.as_slice() else {
+                return None;
+            };
+            return line.line_height.checked_add(line.line_spacing);
+        }
+        let previous = cell.paragraphs.get(index.checked_sub(1)?)?;
         if [previous, paragraph, next].iter().any(|para| {
             para.stored_text_partition_is_dirty() || para.cell_format_vpos_dirty
         }) || !paragraph.text.trim().is_empty()

@@ -8322,6 +8322,31 @@ impl LayoutEngine {
             current_line_reserved_tac_picture_height =
                 emit_state.current_line_reserved_tac_picture_height;
 
+            if comp_line.runs.is_empty() {
+                // 번호만 소유한 저장 줄을 텍스트 없는 빈 줄로 버리지 않는다.
+                // 폭 계산과 같은 주석·스타일·선두 제외를 써서 이 줄에 한 번 방출한다.
+                let references = super::note_reference::empty_line(
+                    para,
+                    styles,
+                    fn_positions,
+                    (line_idx == 0 && start_line == 0).then_some(comp_line.char_start),
+                );
+                super::note_reference::append(
+                    tree,
+                    &mut line_node,
+                    &references,
+                    (x, text_y),
+                    (line_height, baseline),
+                    (section_index, para_index),
+                );
+                x += references
+                    .iter()
+                    .map(|reference| reference.width)
+                    .sum::<f64>();
+                char_offset += references.len();
+                emitted_inline_slots += references.len();
+            }
+
             if let Some(para) = para {
                 for child in &mut line_node.children {
                     if let RenderNodeType::TextRun(run) = &mut child.node_type {
@@ -11597,6 +11622,17 @@ impl LayoutEngine {
             est_x += note_width;
             run_char_pos_est = run_char_end_est;
             inline_tab_cursor_est += run.text.chars().filter(|c| *c == '\t').count();
+        }
+        if comp_line.runs.is_empty() {
+            est_x += super::note_reference::empty_line(
+                para,
+                styles,
+                fn_positions,
+                (line_idx == 0 && start_line == 0).then_some(comp_line.char_start),
+            )
+            .iter()
+            .map(|reference| reference.width)
+            .sum::<f64>();
         }
         LineWidthEst {
             est_x,

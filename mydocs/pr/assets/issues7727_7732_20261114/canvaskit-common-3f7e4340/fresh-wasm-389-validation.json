@@ -1,0 +1,52 @@
+{
+  "head": "3f7e4340ae3038ea77917ff0f45f816e8342770e",
+  "pages": 389,
+  "all_above_98": true,
+  "png_identical_pages": 389,
+  "cases": [
+    {
+      "key": "cbta",
+      "pages": 204,
+      "minimum": 98.13,
+      "minimum_page": 58,
+      "png_bytes_identical_to_1123f322": 204,
+      "tsv_sha256": "0b14f231561f52f20539bd54964a67b8811c5e616d24f68c21f9cf81ee5ca4cd"
+    },
+    {
+      "key": "recommendation",
+      "pages": 22,
+      "minimum": 98.68,
+      "minimum_page": 7,
+      "png_bytes_identical_to_1123f322": 22,
+      "tsv_sha256": "cc669817ace630a67f88bc4a571f82c5622172e095fc549242cbe6d26b41ed26"
+    },
+    {
+      "key": "exam",
+      "pages": 8,
+      "minimum": 99.49,
+      "minimum_page": 3,
+      "png_bytes_identical_to_1123f322": 8,
+      "tsv_sha256": "4ee763deecfca07a600b468b5ba6528e59492044afff2ec5891c1655d7cd1419"
+    },
+    {
+      "key": "api",
+      "pages": 105,
+      "minimum": 99.55,
+      "minimum_page": 97,
+      "png_bytes_identical_to_1123f322": 105,
+      "tsv_sha256": "76f12f9f4b677b340aa930d1894188256638a1e4c8d20a8356d5f7900863a2ac"
+    },
+    {
+      "key": "footnote",
+      "pages": 50,
+      "minimum": 98.75,
+      "minimum_page": 37,
+      "png_bytes_identical_to_1123f322": 50,
+      "tsv_sha256": "1e7ec85986045afd1dd77a87d88a53c1fa3f61951494d428ba1c2714acdaca6f"
+    }
+  ],
+  "native_font_policy_binary_source": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+  "native_font_policy_binary_sha256": "6cb34b87414c9780aa24158bf7879d64638922f3dcdc69d00c65e72be1efacc5",
+  "source_reuse_audit": "unchanged-path-reuse-audit.json",
+  "fresh_wasm_manifest": "wasm-build-manifest.json"
+}

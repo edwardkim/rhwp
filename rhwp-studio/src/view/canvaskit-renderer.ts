@@ -146,7 +146,7 @@ import { projectedSubstituteTargets } from '@/core/font-rule-runtime';
 import type { CanvasKitBundledFontSource } from '@/core/font-loader';
 import type { FontDecisionTraceRecordV1 } from '@/core/font-decision-trace';
 import { readBoundedResponseArrayBuffer } from './canvaskit/bounded-response';
-import { localFontFaceStyle } from './canvaskit/local-font-style';
+import { closestLocalFontStyle, localFontFaceStyle } from './canvaskit/local-font-style';
 import { canvasKitEffectCrop, canvasKitImageEffectKey, makeCanvasKitEffectImage } from './canvaskit/image-effects';
 import { BoundedReplayLog, emptyImageEffectDiagnostics,
   type CanvasKitEquationReplayDiagnostic, type CanvasKitImageRecoveryDiagnostic,
@@ -4678,14 +4678,10 @@ export class CanvasKitLayerRenderer {
     const record = resolveRendererLocalFont(primaryFontFamily(fontFamily), hostFontStyle(style));
     let local = record ? this.localTypefaces.get(localFontFaceKey(record)) ?? null : null;
     if (!hasHostFontProvider()) {
-      let bestScore = Number.POSITIVE_INFINITY;
-      for (const candidate of this.localTypefaces.values()) {
-        if (!candidate.record?.aliases.some(alias => normalizedFontFamily(alias) === key)) continue;
-        const physical = localFontFaceStyle(candidate.record);
-        const score = (physical.italic === (style?.italic === true) ? 0 : 2000)
-          + Math.abs(physical.weight - (style?.bold === true ? 700 : 400));
-        if (score < bestScore) { local = candidate; bestScore = score; }
-      }
+      local = closestLocalFontStyle(local,
+        [...this.localTypefaces.values()].filter(candidate =>
+          candidate.record?.aliases.some(alias => normalizedFontFamily(alias) === key)),
+        style?.bold === true, style?.italic === true);
     }
     const bundled = this.findBundledTypeface(key, style);
     if (key === normalizedFontFamily(OLD_HANGUL_FONT_FAMILY)) {
@@ -5676,9 +5672,15 @@ export class CanvasKitLayerRenderer {
       }
     }
     if (gradientType >= 2 && gradientType <= 3) {
-      const cx = bounds.x + bounds.width * ((gradient.centerX ?? 50) / 100);
-      const cy = bounds.y + bounds.height * ((gradient.centerY ?? 50) / 100);
-      const radius = Math.max(bounds.width, bounds.height) / 2;
+      // 원형은 Native·Canvas와 같은 생산 결과를 소비한다. 원뿔/구형 JSON의 근사는 유지한다.
+      const circle = gradientType === 2 ? gradient.radialCircle : undefined;
+      if (circle && (circle.length !== 3 || !circle.every(Number.isFinite) || circle[2] <= 0)) {
+        this.unsupportedOps.add('gradientFill:invalidRadialCircle');
+        return null;
+      }
+      const cx = circle?.[0] ?? bounds.x + bounds.width * ((gradient.centerX ?? 50) / 100);
+      const cy = circle?.[1] ?? bounds.y + bounds.height * ((gradient.centerY ?? 50) / 100);
+      const radius = circle?.[2] ?? Math.max(bounds.width, bounds.height) / 2;
       return shaderApi.MakeRadialGradient?.(
         [cx, cy],
         radius,

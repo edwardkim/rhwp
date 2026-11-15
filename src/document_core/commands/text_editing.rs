@@ -1177,13 +1177,15 @@ fn replace_paragraph_text(
     after_inline_control: bool,
 ) -> usize {
     if !text.is_empty() && has_clickhere_field_range(para) {
-        return para.replace_text_keeping_slots(
+        let deleted = para.replace_text_keeping_slots(
             char_offset,
             delete_count,
             text,
             active,
             after_inline_control,
         );
+        para.invalidate_layout_inputs();
+        return deleted;
     }
     let replaced_memos = para.memos_within(char_offset, char_offset + delete_count);
     let deleted = if delete_count > 0 {
@@ -1201,6 +1203,11 @@ fn replace_paragraph_text(
     };
     let inserted_at = para.insert_text_at_caret(char_offset, text, after_inline_control);
     para.regrow_replaced_memos(&replaced_memos, inserted_at, text.chars().count());
+    // 본문·셀·중첩 셀이 공유하는 실제 입력 편집 경계다. 줄 구성 자체나
+    // Undo의 원본 메타 복원과 구분해, 옛 줄의 탭 전진을 다시 수용하지 않는다.
+    if deleted > 0 || !text.is_empty() {
+        para.invalidate_layout_inputs();
+    }
     deleted
 }
 

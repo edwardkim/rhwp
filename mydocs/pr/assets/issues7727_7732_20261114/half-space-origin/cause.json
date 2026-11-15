@@ -1,0 +1,201 @@
+{
+  "verified_at": "2026-11-14T22:23:15+09:00",
+  "producer": {
+    "parent": "d04b21df67a3384735d4274f068495de250fae31",
+    "patch_sha256": "406ae228d79ca7f416b9e6817e0a8eb87daaeaf61b471efa52273fd492ae6761",
+    "binary_sha256": "e9ba75ff2cc6c40d2cb33f1fb6bc36c0ade5e992cb0b8834f66bcaa8da15e901",
+    "kind": "fresh WASM Mac locked wrapper --no-opt local alternative",
+    "files": {
+      "rhwp.js": "2d48f8a6c3ff7f848f08725bb54d04094b296af1a40ae61203081a7cf8061a1a",
+      "LICENSE": "1c3a7d5643b163a3ead4965e1bea33b832caee5bfca265efe42afcd7bc696b5b",
+      "rhwp_bg.wasm.d.ts": "82c7eb153245410295a69565fa09a2acd5c17caa7441c9edf38eb078f9ea50d4",
+      "README.md": "b61d728c2adc15aa0583b4d5a4932d5cd91c799265b8db2af154a18279cbc280",
+      "rhwp_bg.wasm": "2a8b660575a4876196fe985986d51a4e0882133433f88408778c4cc95e8548b8",
+      ".gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+      "package.json": "5dd1526473c7d0b8e59067ca464a926ef651dd15d5e3258465af863400ec0a19",
+      "rhwp.d.ts": "65673c1196e0d7d36a6eda973c99e80fa45ef04f66c571154daa4a388e156716"
+    }
+  },
+  "input_and_pdf": {
+    "issue": 7730,
+    "key": "exam",
+    "doc": "samples/exam_eng.hwp",
+    "pdf": "pdf/exam_eng-hwp-2020.pdf",
+    "expected_pages": 8,
+    "input_sha256": "7a5755a2f773fce4d295cbfeb1c5d722edb02c7f920bb067fa56940e8cd6a05b",
+    "input_bytes": 3486208,
+    "pdf_sha256": "4f5b9e0b7be65fcb915b2fecc41e9b397b1d85d369b64545209a172bc7b36c98",
+    "pdf_bytes": 1047484,
+    "pdfinfo": [
+      "Creator:         Hwp 2022 0.0.0.0",
+      "Producer:        Hancom PDF 1.3.0.550",
+      "Pages:           8"
+    ]
+  },
+  "scope": "영어시험지 전8쪽 및 API105·각주50·권고22·CBTA집중6쪽; 최신 후보 전389쪽 완료가 아님",
+  "measurements": {
+    "native": [
+      {
+        "key": "exam",
+        "exit_code": 0,
+        "pages": 8,
+        "minimum": 99.49,
+        "minimum_page": 3,
+        "below_98": [],
+        "tsv_sha256": "4ee763deecfca07a600b468b5ba6528e59492044afff2ec5891c1655d7cd1419"
+      },
+      {
+        "key": "recommendation",
+        "exit_code": 0,
+        "pages": 22,
+        "minimum": 97.44,
+        "minimum_page": 4,
+        "below_98": [
+          {
+            "page": 4,
+            "raw": 97.44
+          }
+        ],
+        "tsv_sha256": "4ad3a8b235609df412380a6c19f037ab44752bcd28f32ef125b2cbb28e814a4e"
+      },
+      {
+        "key": "footnote",
+        "exit_code": 0,
+        "pages": 50,
+        "minimum": 98.58,
+        "minimum_page": 37,
+        "below_98": [],
+        "tsv_sha256": "650f6a1d30fb0cf059371d11477cd6132976a35c02bfdf4ece2244611fa4ad65"
+      },
+      {
+        "key": "api",
+        "exit_code": 0,
+        "pages": 105,
+        "minimum": 99.55,
+        "minimum_page": 97,
+        "below_98": [],
+        "tsv_sha256": "0d300742ef260dadda962f4474e3fb347fd3b54879acc5179cdd609b9f3746bf"
+      },
+      {
+        "key": "cbta",
+        "exit_code": 0,
+        "pages": 6,
+        "minimum": 96.35,
+        "minimum_page": 162,
+        "below_98": [
+          {
+            "page": 96,
+            "raw": 97.0
+          },
+          {
+            "page": 162,
+            "raw": 96.35
+          },
+          {
+            "page": 166,
+            "raw": 96.76
+          }
+        ],
+        "tsv_sha256": "d8396256ac4a2bf689784d2b99c18cc0d2710cfeb449e3bddf3304fedb2b6944"
+      }
+    ],
+    "wasm": [
+      {
+        "key": "exam",
+        "exit_code": 0,
+        "pages": 8,
+        "minimum": 99.49,
+        "minimum_page": 3,
+        "below_98": [],
+        "tsv_sha256": "4ee763deecfca07a600b468b5ba6528e59492044afff2ec5891c1655d7cd1419"
+      },
+      {
+        "key": "recommendation",
+        "exit_code": 0,
+        "pages": 22,
+        "minimum": 97.44,
+        "minimum_page": 4,
+        "below_98": [
+          {
+            "page": 4,
+            "raw": 97.44
+          }
+        ],
+        "tsv_sha256": "3b3ac85c6caab7f510830a0abad01d07bbdf7ab12ddc2cc900683b1d210f0a13"
+      },
+      {
+        "key": "footnote",
+        "exit_code": 0,
+        "pages": 50,
+        "minimum": 98.58,
+        "minimum_page": 37,
+        "below_98": [],
+        "tsv_sha256": "650f6a1d30fb0cf059371d11477cd6132976a35c02bfdf4ece2244611fa4ad65"
+      },
+      {
+        "key": "api",
+        "exit_code": 0,
+        "pages": 105,
+        "minimum": 99.55,
+        "minimum_page": 97,
+        "below_98": [],
+        "tsv_sha256": "76f12f9f4b677b340aa930d1894188256638a1e4c8d20a8356d5f7900863a2ac"
+      },
+      {
+        "key": "cbta",
+        "exit_code": 0,
+        "pages": 6,
+        "minimum": 96.35,
+        "minimum_page": 162,
+        "below_98": [
+          {
+            "page": 96,
+            "raw": 96.99
+          },
+          {
+            "page": 162,
+            "raw": 96.35
+          },
+          {
+            "page": 166,
+            "raw": 96.76
+          }
+        ],
+        "tsv_sha256": "b19f2b8778e32b6f949ee6c976a2566c771d8669f46689d5902769b65871ab5d"
+      }
+    ]
+  },
+  "cause": "반각 공백을 현재 영문 상대 크기의 절반으로 계산하여 낱말 공백까지 106% 확대했다. 한글 슬롯의 em을 공유하며 명시적 글꼴 공백·상속 전진은 보존한다.",
+  "independent_probe": {
+    "job_id": "e2f7be42-a029-49db-920e-ac993c38cd66",
+    "engine": "2020",
+    "version": "11.0.0.9136",
+    "relative_sizes_percent": [
+      100,
+      106,
+      120
+    ],
+    "space_advance_pt_approx": 5.7,
+    "limitation": "HWPX 대조군은 layout_half_space=false 경로이므로 Native 전후93.05%다. 독립 Print의 공백 전진 근거이며 이 HWPX의 시각 수용을 주장하지 않는다."
+  },
+  "fixed_regression": {
+    "page": 2,
+    "text": "bike",
+    "pdf_origin_pt": 326.759979,
+    "expected_origin_csspx": 435.679972,
+    "expected_baseline_csspx": 308.799988,
+    "before_origin_csspx": 443.44,
+    "tolerance_csspx": 2
+  },
+  "files": {
+    "exam-native-silhouette.tsv": "4ee763deecfca07a600b468b5ba6528e59492044afff2ec5891c1655d7cd1419",
+    "exam-wasm-silhouette.tsv": "4ee763deecfca07a600b468b5ba6528e59492044afff2ec5891c1655d7cd1419",
+    "native-p002-raw.png": "b7092251e81e8960ca1a14889b751716e9ad14561dd3e993f64b9b34f63f74ba",
+    "wasm-p002-raw.png": "cb7851d69e4fd95a84def427468c7ae3d043f21426cfc8faedfffa11996ae5cb",
+    "print-p002.png": "22a8ec5ccfd077b0c262beb647e548fa96778c14a3d2a2361be8ec3e1ea69d80",
+    "native-p002-review.png": "d89c8a9dd91c403a65f1542c4dec35d82207fe3d42758ac544bf6cff541c83ed",
+    "native-p002-overlay.png": "4b3756c32d9dfc5727a0783f26ca4ba2e409240c242b0384eeece20f7a43c7f2",
+    "tests/fixtures/issue7730/relative-size-half-space-probe.hwpx": "f773ef87043c646f417dc29f4cb5366fc583c54025c61d7902c1cc2c30ec6139",
+    "pdf/issue7730/relative-size-half-space-probe-2020.pdf": "3666e08834b42cc453287ecc9a5c7f1daac74270c1786ea3070fc1ff3760c390"
+  }
+}

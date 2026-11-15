@@ -1,0 +1,218 @@
+{
+  "verified_at": "2026-11-14T22:42:11+09:00",
+  "producer": {
+    "parent": "9b07db20029c6a99e115c85dbe4aede1f74d47cb",
+    "patch_sha256": "cdfd85f01e40fb63bfbb8033f083c1a7e8afb40ba5ff773764af591cb31cfc73",
+    "binary_sha256": "3610a476f7c1dcadfce4ffb2d7933f6327550f2873b9b53c429662a856191e75"
+  },
+  "cause": "refit 뒤의 완료 행에 남은 물리 쪽 공간을 미리 합쳐, 뒤의 실제 병합 칸 잔여 소유 계산이 그 증가를 되돌릴 수 없었다. 그 쪽 끝 띠는 emit의 공통 crossing_span_page_end_band가 원본 선언·내용·앞 행 수용 원장으로 한 번만 정한다.",
+  "origin_commit": "1147d7b70a2ebb5c07eeee2e535c3425ff2738d2",
+  "native": [
+    {
+      "key": "cbta",
+      "exit_code": 0,
+      "pages": 204,
+      "minimum": 97.0,
+      "minimum_page": 96,
+      "below_98": [
+        {
+          "page": 96,
+          "raw": 97.0
+        }
+      ],
+      "tsv_sha256": "3442371144fa583ba3519e739f447382a7c9bbb72215e92ec79fb5ffec90442c"
+    },
+    {
+      "key": "exam",
+      "exit_code": 0,
+      "pages": 8,
+      "minimum": 99.49,
+      "minimum_page": 3,
+      "below_98": [],
+      "tsv_sha256": "4ee763deecfca07a600b468b5ba6528e59492044afff2ec5891c1655d7cd1419"
+    },
+    {
+      "key": "recommendation",
+      "exit_code": 0,
+      "pages": 22,
+      "minimum": 97.44,
+      "minimum_page": 4,
+      "below_98": [
+        {
+          "page": 4,
+          "raw": 97.44
+        }
+      ],
+      "tsv_sha256": "4ad3a8b235609df412380a6c19f037ab44752bcd28f32ef125b2cbb28e814a4e"
+    },
+    {
+      "key": "footnote",
+      "exit_code": 0,
+      "pages": 50,
+      "minimum": 98.58,
+      "minimum_page": 37,
+      "below_98": [],
+      "tsv_sha256": "650f6a1d30fb0cf059371d11477cd6132976a35c02bfdf4ece2244611fa4ad65"
+    },
+    {
+      "key": "api",
+      "exit_code": 0,
+      "pages": 105,
+      "minimum": 99.55,
+      "minimum_page": 97,
+      "below_98": [],
+      "tsv_sha256": "0d300742ef260dadda962f4474e3fb347fd3b54879acc5179cdd609b9f3746bf"
+    }
+  ],
+  "wasm_status": "completed: all389 pages",
+  "target_pages": [
+    {
+      "page": 162,
+      "before_raw": 96.35,
+      "after_raw": 99.94,
+      "row": 188,
+      "before_row_height_csspx": 45.3,
+      "source_complete_height_csspx": 38.42666666666667,
+      "after_row_height_csspx": 38.4,
+      "pdf_bottom_csspx": 724.57064
+    },
+    {
+      "page": 166,
+      "before_raw": 96.76,
+      "after_raw": 99.95,
+      "row": 252,
+      "before_row_height_csspx": 44.0,
+      "source_complete_height_csspx": 38.42666666666667,
+      "after_row_height_csspx": 38.4,
+      "pdf_bottom_csspx": 726.00936
+    }
+  ],
+  "native_original_comparison": {
+    "pages": 204,
+    "decreased_pages": 0,
+    "changed_pages": [
+      118,
+      162,
+      166
+    ],
+    "note": "비교 전쪽 생산자 closing-span-clean에는 이후 캡션 보정이 없어118쪽도 개선으로 나타난다."
+  },
+  "regression": {
+    "kind": "관계형",
+    "before": {
+      "passed": 0,
+      "failed": 2,
+      "seconds": 3.18
+    },
+    "after": {
+      "passed": 2,
+      "failed": 0,
+      "seconds": 3.15
+    },
+    "execution": "정식 최소 글꼴 NativeSkia nextest:10개 실행/10PASS/0FAIL,2.834초,1360건 선택 밖",
+    "before_binary": "half-space-origin-native",
+    "after_binary": "complete-row-band-native",
+    "limitation": "처음의166쪽 검사 가정은 col3만 두 줄이라고 잘못 잡아 실패했다. 같은 행의 모든 단일 칸 중 실제 마지막 줄 끝·안여백 최댓값으로 정정한v2의 전후 결과만 인정한다.",
+    "minimal_profile_sha256": "f0ffac3b2f44d33f447aa1dc3674719f7699c1c979146cff40fbca37098e35a0",
+    "log_sha256": "d6679e434fcd99fe1714b42acb7137ee4e4aece979a7da7b2b2c20e4239abd97",
+    "public_compile_font": "ttfs/redistributable/happiness-sans/HappinessSansVF.ttf",
+    "coretext_faces": {
+      "normal": 1875,
+      "isolated": 528,
+      "isolated_non_os": 0
+    }
+  },
+  "files": {
+    "recommendation-wasm-silhouette.tsv": "3b3ac85c6caab7f510830a0abad01d07bbdf7ab12ddc2cc900683b1d210f0a13",
+    "wasm-p162-review.png": "0ffe7fe3edbe981a223207ac9e316da504cf300076a19c9ed17abea257e0dc47",
+    "exam-wasm-silhouette.tsv": "4ee763deecfca07a600b468b5ba6528e59492044afff2ec5891c1655d7cd1419",
+    "native-p162-review.png": "53a027b130d3096431ff009b2d0c996f897bde38e95128b6462dc8c3857665fe",
+    "print-p166.png": "daf25aec13a5ad71356458bbb6a93ad74895ca9a3981c255a482636cf26e6fe1",
+    "native-p166-overlay.png": "fea8af5fad0efd74e177904373ebbba1083b4e38cab492072108087fdb49d9ef",
+    "footnote-wasm-silhouette.tsv": "650f6a1d30fb0cf059371d11477cd6132976a35c02bfdf4ece2244611fa4ad65",
+    "wasm-p162-overlay.png": "fc6b6d5019d420a8d5eb3c4ed3f7027e8715c011c127e2b11032f9c70eb0599e",
+    "native-p162-raw.png": "2237b40b851fdebaeb58cdc92e030c4f7ecb09b63e57a21fa8db3cbae4e0f850",
+    "print-p162.png": "97f254a1969dd26949af475ef0149957897352114b20d5bb2194b0bfea91b7b9",
+    "wasm-p162-raw.png": "185e5782b7b4c74c2d3e729262cf37a05c859836e615cb7a203d2c0edf93f109",
+    "recommendation-native-silhouette.tsv": "4ad3a8b235609df412380a6c19f037ab44752bcd28f32ef125b2cbb28e814a4e",
+    "native-p166-raw.png": "8107cb27611437b38476f615bf208306b0a1b8f6c6a9ac8916908567d0f45412",
+    "wasm-p166-review.png": "4afac69f09bbc5ca502d7096f4df192047ba8b22369c05da7af4c28e33f3cceb",
+    "api-native-silhouette.tsv": "0d300742ef260dadda962f4474e3fb347fd3b54879acc5179cdd609b9f3746bf",
+    "cbta-native-silhouette.tsv": "3442371144fa583ba3519e739f447382a7c9bbb72215e92ec79fb5ffec90442c",
+    "wasm-p166-raw.png": "af4ab98915fb4d66835f1c85c46fb6f18d43229538cd8625e37c32435ee46359",
+    "wasm-p166-overlay.png": "b6a86b615413fdf0c0a6985fdb03f17e4a7bba570421e487387aeacb605b133e",
+    "native-p166-review.png": "011aa72215db1e7f63b69c078e1232845d3abce93dfd84760b04e441350776a9",
+    "footnote-native-silhouette.tsv": "650f6a1d30fb0cf059371d11477cd6132976a35c02bfdf4ece2244611fa4ad65",
+    "native-p162-overlay.png": "7aa312c1f618c3299efd3e36a019c9dc29bcb7558bc9fe572b61959a766dd58f",
+    "exam-native-silhouette.tsv": "4ee763deecfca07a600b468b5ba6528e59492044afff2ec5891c1655d7cd1419",
+    "cbta-wasm-silhouette.tsv": "6b93bc1fea55690751732ccbefbb6d6ed0278687e1cdbd64e7b9d3d902234eb2",
+    "api-wasm-silhouette.tsv": "76f12f9f4b677b340aa930d1894188256638a1e4c8d20a8356d5f7900863a2ac"
+  },
+  "wasm": [
+    {
+      "key": "cbta",
+      "exit_code": 0,
+      "pages": 204,
+      "minimum": 96.99,
+      "minimum_page": 96,
+      "below_98": [
+        {
+          "page": 96,
+          "raw": 96.99
+        }
+      ],
+      "tsv_sha256": "6b93bc1fea55690751732ccbefbb6d6ed0278687e1cdbd64e7b9d3d902234eb2"
+    },
+    {
+      "key": "exam",
+      "exit_code": 0,
+      "pages": 8,
+      "minimum": 99.49,
+      "minimum_page": 3,
+      "below_98": [],
+      "tsv_sha256": "4ee763deecfca07a600b468b5ba6528e59492044afff2ec5891c1655d7cd1419"
+    },
+    {
+      "key": "recommendation",
+      "exit_code": 0,
+      "pages": 22,
+      "minimum": 97.44,
+      "minimum_page": 4,
+      "below_98": [
+        {
+          "page": 4,
+          "raw": 97.44
+        }
+      ],
+      "tsv_sha256": "3b3ac85c6caab7f510830a0abad01d07bbdf7ab12ddc2cc900683b1d210f0a13"
+    },
+    {
+      "key": "footnote",
+      "exit_code": 0,
+      "pages": 50,
+      "minimum": 98.58,
+      "minimum_page": 37,
+      "below_98": [],
+      "tsv_sha256": "650f6a1d30fb0cf059371d11477cd6132976a35c02bfdf4ece2244611fa4ad65"
+    },
+    {
+      "key": "api",
+      "exit_code": 0,
+      "pages": 105,
+      "minimum": 99.55,
+      "minimum_page": 97,
+      "below_98": [],
+      "tsv_sha256": "76f12f9f4b677b340aa930d1894188256638a1e4c8d20a8356d5f7900863a2ac"
+    }
+  ],
+  "wasm_producer": {
+    "parent": "9b07db20029c6a99e115c85dbe4aede1f74d47cb",
+    "patch_sha256": "cdfd85f01e40fb63bfbb8033f083c1a7e8afb40ba5ff773764af591cb31cfc73",
+    "binary_sha256": "3610a476f7c1dcadfce4ffb2d7933f6327550f2873b9b53c429662a856191e75",
+    "kind": "Mac fresh WASM locked wrapper --target web --no-opt local alternative",
+    "files": {
+      "rhwp.js": "2d48f8a6c3ff7f848f08725bb54d04094b296af1a40ae61203081a7cf8061a1a",
+      "rhwp_bg.wasm": "84b6af8cc01a435eac43c5887a0a3657eb08e35d2686a3c04915f7e36eb6b2e2"
+    }
+  }
+}

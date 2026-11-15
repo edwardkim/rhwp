@@ -1,0 +1,38 @@
+[
+  {
+    "test": "undo-boundary-after",
+    "exit_code": 0,
+    "seconds": 4.475,
+    "command": [
+      "sandbox-exec",
+      "-f",
+      "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/minimal-font/font-test-public-fixture.sb",
+      "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-right-tab-repair/undo-boundary-after",
+      "--nocapture"
+    ]
+  },
+  {
+    "test": "legacy-2342-after",
+    "exit_code": 0,
+    "seconds": 0.013,
+    "command": [
+      "sandbox-exec",
+      "-f",
+      "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/minimal-font/font-test-public-fixture.sb",
+      "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-right-tab-repair/legacy-2342-after",
+      "--nocapture"
+    ]
+  },
+  {
+    "test": "6844-owned-bbox-undo-after",
+    "exit_code": 0,
+    "seconds": 0.038,
+    "command": [
+      "sandbox-exec",
+      "-f",
+      "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/minimal-font/font-test-public-fixture.sb",
+      "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-right-tab-repair/6844-owned-bbox-undo-after",
+      "--nocapture"
+    ]
+  }
+]

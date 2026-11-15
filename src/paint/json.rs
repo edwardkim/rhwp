@@ -672,7 +672,7 @@ impl PaintOp {
                 let _ = write!(buf, ",\"borderWidth\":{:.3}", background.border_width);
                 if let Some(gradient) = &background.gradient {
                     buf.push_str(",\"gradient\":");
-                    write_gradient(buf, gradient);
+                    write_gradient(buf, gradient, *bbox);
                 }
                 if let Some(image) = &background.image {
                     let preserve_color_watermark = image.is_real_picture_watermark_tone_preset();
@@ -1085,7 +1085,7 @@ impl PaintOp {
                 }
                 if let Some(gradient) = &rect.gradient {
                     buf.push_str(",\"gradient\":");
-                    write_gradient(buf, gradient);
+                    write_gradient(buf, gradient, *bbox);
                 }
                 buf.push_str(",\"transform\":");
                 write_transform(buf, rect.transform);
@@ -1099,7 +1099,7 @@ impl PaintOp {
                 write_shape_style(buf, &ellipse.style);
                 if let Some(gradient) = &ellipse.gradient {
                     buf.push_str(",\"gradient\":");
-                    write_gradient(buf, gradient);
+                    write_gradient(buf, gradient, *bbox);
                 }
                 buf.push_str(",\"transform\":");
                 write_transform(buf, ellipse.transform);
@@ -1115,7 +1115,7 @@ impl PaintOp {
                 write_shape_style(buf, &path.style);
                 if let Some(gradient) = &path.gradient {
                     buf.push_str(",\"gradient\":");
-                    write_gradient(buf, gradient);
+                    write_gradient(buf, gradient, *bbox);
                 }
                 if let Some((x1, y1, x2, y2)) = path.connector_endpoints {
                     let _ = write!(
@@ -3184,7 +3184,7 @@ fn write_shadow_style(buf: &mut String, shadow: &ShadowStyle) {
     );
 }
 
-fn write_gradient(buf: &mut String, gradient: &GradientFillInfo) {
+fn write_gradient(buf: &mut String, gradient: &GradientFillInfo, bbox: BoundingBox) {
     buf.push('{');
     let _ = write!(
         buf,
@@ -3205,7 +3205,18 @@ fn write_gradient(buf: &mut String, gradient: &GradientFillInfo) {
         }
         let _ = write!(buf, "{:.3}", position);
     }
-    buf.push_str("]}");
+    buf.push(']');
+    // Native·Canvas와 같은 물리 원을 전달해 소비자가 반경을 다시 계산하지 않게 한다.
+    if gradient.gradient_type == 2 {
+        if let Some((cx, cy, radius)) = crate::renderer::gradient_geometry::radial_circle(
+            (bbox.x, bbox.y, bbox.width, bbox.height),
+            gradient.center_x,
+            gradient.center_y,
+        ) {
+            let _ = write!(buf, ",\"radialCircle\":[{cx:.6},{cy:.6},{radius:.6}]");
+        }
+    }
+    buf.push('}');
 }
 
 fn write_line_style(buf: &mut String, style: &LineStyle) {

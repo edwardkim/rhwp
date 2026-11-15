@@ -1,0 +1,15 @@
+{
+  "status": "passed",
+  "tests": 12,
+  "passed": 12,
+  "failed": 0,
+  "selection_outside": 1707,
+  "runtime_seconds": 3.385,
+  "log_sha256": "29fff6d1da016ce4df329b436d905c890904e7245755eee9a7841332fc5d975b",
+  "profile_sha256": "f0ffac3b2f44d33f447aa1dc3674719f7699c1c979146cff40fbca37098e35a0",
+  "scope": "새 RGB 2개와 기존 핵심 10개; 전체 회귀 아님",
+  "corrected_invocation": "처음 -j 8과 --test-threads 8이 nextest에서 중복되어 실행 전 종료. -j를 빼고 CARGO_BUILD_JOBS=8로 빌드 병렬도 지정.",
+  "compiled_test_source_sha256": "477126d9b303b61b8a7e2b8ab4958e14620543381b98f3fbe6a7456fe21cc192",
+  "current_test_source_sha256": "a3f5b7654698a30e7a6a337f06f5d91eb5580cc1abe36665621db6fe2e799281",
+  "post_execution_change": "검증 결과를 파일 첫머리 문서 주석에 반영. assertion 변경 없음."
+}

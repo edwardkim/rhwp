@@ -1,0 +1,30 @@
+{
+  "kind": "standalone public API regression; normal installed fonts; minimum-font full suite pending",
+  "before": {
+    "pass": 2,
+    "fail": 1,
+    "reason": "edited paragraph retained original RIGHT width"
+  },
+  "after": [
+    {
+      "key": "edit-invalidation-after",
+      "exit_code": 0,
+      "elapsed": 5.304,
+      "source_sha256": "40594b6939ec2b07cd596be9c0132e67430460d7fa649c89ca0d3002aecda04e",
+      "library_sha256": "56c615e92127130cbf63cf912e4bc9ef545d4d40e0e255127c09d3b9a5e382ca"
+    },
+    {
+      "key": "6844-owned-bbox-after",
+      "exit_code": 0,
+      "elapsed": 0.652,
+      "source_sha256": "baa7e1411fc749c1083bc0fd5c5fb96dc2ec239a62e1580da98057a9ee0085bf",
+      "library_sha256": "56c615e92127130cbf63cf912e4bc9ef545d4d40e0e255127c09d3b9a5e382ca"
+    }
+  ],
+  "tested_formats": [
+    "hwp",
+    "hwpx"
+  ],
+  "save_reload_cycles_per_format": 2,
+  "raw_logs_directory": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-right-tab-repair"
+}

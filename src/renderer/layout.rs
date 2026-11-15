@@ -4930,22 +4930,45 @@ impl LayoutEngine {
         });
     }
 
-    /// 이미 렌더된 인라인 이미지 노드의 y 좌표를 dy만큼 이동 (캡션 Top 보정)
+    /// 위 캡션이 차지한 만큼 이미지와 그 이미지 소유의 테두리를 함께 이동한다.
     fn offset_inline_image_y(
         node: &mut RenderNode,
         para_index: usize,
         control_index: usize,
         dy: f64,
     ) {
-        for child in node.children.iter_mut() {
-            if let RenderNodeType::Image(ref img) = child.node_type {
+        fn image_owner(
+            node: &RenderNode,
+            para_index: usize,
+            control_index: usize,
+        ) -> Option<crate::renderer::render_tree::NodeId> {
+            if let RenderNodeType::Image(img) = &node.node_type {
                 if img.para_index == Some(para_index) && img.control_index == Some(control_index) {
-                    child.bbox.y += dy;
-                    return;
+                    return Some(node.id);
                 }
             }
-            // 재귀 탐색 (line_node 등 하위 노드)
-            Self::offset_inline_image_y(child, para_index, control_index, dy);
+            node.children
+                .iter()
+                .find_map(|child| image_owner(child, para_index, control_index))
+        }
+        fn offset_frame(
+            node: &mut RenderNode,
+            owner: crate::renderer::render_tree::NodeId,
+            dy: f64,
+        ) {
+            // 형제 또는 별도 줄 아래에 있는 테두리도 좌표 추정 없이 소유 ID로 찾는다.
+            if node.id == owner
+                || matches!(&node.node_type, RenderNodeType::Rectangle(rect)
+                    if rect.image_frame_owner == Some(owner))
+            {
+                node.bbox.y += dy;
+            }
+            for child in &mut node.children {
+                offset_frame(child, owner, dy);
+            }
+        }
+        if let Some(owner) = image_owner(node, para_index, control_index) {
+            offset_frame(node, owner, dy);
         }
     }
 
@@ -15815,6 +15838,10 @@ impl LayoutEngine {
                     && !is_current_visible_para_float
                     && !is_current_whitespace_para_float
                     && !host_before_consumed
+                    // 폭0의 저장 어울림 앵커는 독립 글줄이 아니다. 표는
+                    // 문단 앞 간격 이전 원점에서 바깥 여백을 한 번 소비한다.
+                    && !matches!(para.controls.get(control_index), Some(Control::Table(table))
+                        if crate::renderer::float_placement::stored_empty_square_host_uses_paragraph_origin(para, table))
                     // [#8836] 쪽·용지 기준 자리차지 표도 흐름 커서로 놓이지 않는다. 여기서 더한
                     // 앞 간격은 host 글줄만 밀고, 그 글줄의 배치가 앞 간격을 다시 소비한다 —
                     // 위 #6267 과 같은 이중 계상이다(표가 민 첫 줄은 조판이 확정한 남은 앞 간격).
@@ -15992,7 +16019,26 @@ impl LayoutEngine {
             // [#8735] 공백 host 의 표 뒤에는 host 자기 줄(PartialParagraph)이 이어진다. 저장
             // 사다리는 그 줄을 「표 아래끝 + 바깥 아래 여백」에 둔다(6500000-201700118 58쪽:
             // 42327 = 35080 + 1417 + 5264 + 566). 표를 줄처럼 보고 뒤 간격·줄간격을 더하지 않는다.
-            if is_current_whitespace_para_float && !tac_seg_applied && !is_outside_body {
+            let closed_square_margin = (self.profile.get().hwp5_stored_pagination_layout()
+                && !self.profile.get().session_edited())
+            .then(|| {
+                para.controls.get(control_index).and_then(|control| {
+                    let Control::Table(table) = control else {
+                        return None;
+                    };
+                    crate::renderer::float_placement::stored_empty_square_host_closing_margin(
+                        para,
+                        paragraphs.get(para_index + 1),
+                        table,
+                        styles,
+                        self.dpi,
+                    )
+                })
+            })
+            .flatten();
+            if let Some(margin) = closed_square_margin {
+                y_offset += margin;
+            } else if is_current_whitespace_para_float && !tac_seg_applied && !is_outside_body {
                 if let Some(Control::Table(t)) = para.controls.get(control_index) {
                     y_offset += hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi);
                 }

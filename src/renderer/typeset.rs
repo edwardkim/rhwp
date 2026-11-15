@@ -4526,6 +4526,19 @@ impl TypesetEngine {
             }
         } else if let Some(owned_row_height) = owned_single_tac_row_height {
             owned_row_height
+        } else if let Some((owner, _)) =
+            crate::renderer::composer::stored_owned_tac_line(para, ctrl_idx).filter(|(owner, _)| {
+                !st.profile.session_edited()
+                    && !self.render_normalization.table_text_reflowed(table)
+                    && fmt.line_heights.len() == para.line_segs.len()
+                    && *owner > 0
+                    && *owner + 1 < fmt.line_heights.len()
+            })
+        {
+            // 저장 표 줄 앞의 공백 전진은 포함하되, 표 뒤 독립 줄은 그 줄의
+            // PartialParagraph가 소비한다. 문단 전체 적합 높이로 예약하면 꼬리까지
+            // 표에 넣은 뒤 다시 쌓게 된다.
+            fmt.line_content_height(0..owner + 1, 0.0)
         } else if tac_table_line_idx == Some(0) && fmt.line_heights.len() > 1 {
             // PR #1088 follow-up: hwp-multi-001 pi=46 처럼 TAC 표가 문단의
             // 첫 줄이고 뒤따르는 제목 줄이 같은 문단의 line1(vpos reset)로
@@ -6048,7 +6061,15 @@ impl TypesetEngine {
             .iter()
             .filter(|c| matches!(c, Control::Table(t) if self.is_effective_tac_table(para, t, fmt)))
             .count();
-        let post_table_start = if tac_wrap_split {
+        let stored_owned_table_line = (!st.profile.session_edited()
+            && fmt.line_heights.len() == para.line_segs.len())
+        .then(|| crate::renderer::composer::stored_owned_tac_line(para, ctrl_idx))
+        .flatten();
+        let post_table_start = if let Some((owner, _)) = stored_owned_table_line {
+            // 앞 공백 줄의 line_height가 개체 최대 높이를 반복해도 소유 줄은
+            // 제어 슬롯이 결정한다. 이미 소비한 표 줄을 꼬리에 다시 넣지 않는다.
+            (owner + 1).min(total_lines)
+        } else if tac_wrap_split {
             (pre_table_end_line + 1).min(total_lines).max(1)
         } else if self.uses_tac_table_flow(table) {
             pre_table_end_line.max(1)
@@ -6614,8 +6635,9 @@ impl TypesetEngine {
         }
     }
 
-    /// 표 줄 0 다음 글줄이 같은 저장 프레임에서 끊김 없이 이어질 때, 표 줄 원점에서
-    /// 그 글줄 원점까지의 저장 걸음(px). 되감김·합성 줄·편집 세션은 `None` 이다.
+    /// 표 줄 다음 글줄이 같은 저장 프레임에서 끊김 없이 이어질 때의 저장 걸음(px).
+    /// 앞 공백 줄이 따로 있으면 같은 구성에서 소비한 앞 전진도 포함한다.
+    /// 되감김·합성 줄·편집 세션은 `None` 이다.
     fn stored_tac_line_step_to_post_text(
         &self,
         para: &Paragraph,
@@ -6623,13 +6645,36 @@ impl TypesetEngine {
         fmt: &FormattedParagraph,
         post_table_start: usize,
     ) -> Option<f64> {
-        if post_table_start != 1
-            || self.profile.get().session_edited()
-            || self.tac_table_line_index(para, table, fmt) != Some(0)
-        {
+        let owner = self.tac_table_line_index(para, table, fmt)?;
+        if post_table_start != owner + 1 || self.profile.get().session_edited() {
             return None;
         }
-        let (table_line, post_line) = para.line_segs.first().zip(para.line_segs.get(1))?;
+        let (table_line, post_line) = para
+            .line_segs
+            .get(owner)
+            .zip(para.line_segs.get(post_table_start))?;
+        let prefix = if owner == 0 {
+            0.0
+        } else {
+            let control = para.controls.iter().position(|control| {
+                matches!(control, Control::Table(candidate) if std::ptr::eq(candidate.as_ref(), table))
+            })?;
+            let (stored_owner, _) =
+                crate::renderer::composer::stored_owned_tac_line(para, control)?;
+            let advance = fmt.line_advances_sum(0..owner);
+            let stored_advance = hwpunit_to_px(
+                table_line
+                    .vertical_pos
+                    .checked_sub(para.line_segs.first()?.vertical_pos)?,
+                self.dpi,
+            );
+            if stored_owner != owner
+                || (advance - stored_advance).abs() > hwpunit_to_px(1, self.dpi)
+            {
+                return None;
+            }
+            advance
+        };
         // 줄간격은 음수일 수도 있다. 뒤 글줄이 그 간격만큼 표 줄 끝보다 위에서 시작한다는
         // 저장 증언도 같은 프레임의 흐름이다.
         if is_synthetic_line_seg(table_line)
@@ -6642,8 +6687,9 @@ impl TypesetEngine {
             .vertical_pos
             .checked_add(table_line.line_height)?
             .checked_add(table_line.line_spacing)?;
-        (post_line.vertical_pos == step)
-            .then(|| hwpunit_to_px(table_line.line_height + table_line.line_spacing, self.dpi))
+        (post_line.vertical_pos == step).then(|| {
+            prefix + hwpunit_to_px(table_line.line_height + table_line.line_spacing, self.dpi)
+        })
     }
 
     fn tac_flow_query(&self) -> controls::tac_flow::TacFlowQuery<'_> {

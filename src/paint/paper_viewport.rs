@@ -513,9 +513,10 @@ impl PagePaintContext {
                         {
                             continue;
                         }
-                        let (font_size, baseline) = run
-                            .style
-                            .script_draw_metrics(run.style.font_size, run.baseline);
+                        // 아래 밑줄의 종이 프레임도 장식 재생과 같은 줄 기준선이다.
+                        // 위의 guard로 첨자는 제외했으며 글자 위치는 글리프에만 적용한다.
+                        let font_size = run.style.font_size;
+                        let baseline = run.baseline;
                         let underline_y = bbox.y
                             + baseline
                             + font_size

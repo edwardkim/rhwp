@@ -6,7 +6,7 @@ use crate::model::{
 };
 use crate::renderer::{
     composer::{
-        project_current_body_box_rows, project_current_marker_height_rows,
+        project_current_body_box_rows, project_current_marker_geometry_rows,
         project_current_source_program_rows, project_stored_soft_wraps,
         projects_current_marker_geometry, ParagraphBox,
     },
@@ -462,7 +462,7 @@ fn normalize_flow_with_storage<S: crate::storage::Storage>(
                 }
                 if current_rows.is_none() {
                     current_rows = crate::storage::optional(
-                        crate::renderer::composer::project_current_marker_height_rows_with_storage(
+                        crate::renderer::composer::project_current_marker_geometry_rows_with_storage(
                             &paragraph, &box_, styles, dpi, storage,
                         ),
                         failure,
