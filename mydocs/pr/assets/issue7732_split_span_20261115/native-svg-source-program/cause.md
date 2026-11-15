@@ -26,4 +26,9 @@ Native Skia 지원 CLI의 layer SVG에서 공통 `prepare_native_otf_fonts`를 �
 
 올바르게 수집한 합성 CLI/API 관계 검사는 보정 전1FAIL(2.596초) → 보정 후1PASS(2.439초)다.
 최초 파일명 가정 오류와 suite 재생성 누락 실행은 제품 실패·성공 증거로 사용하지 않는다.
-실물 Native SVG 전50쪽의 새 캡처와 실제 브라우저 검증은 별도로 완료해야 한다.
+실물 Native SVG 전50쪽을 새 바이너리로 다시 산출해 최저99.08%·98% 미만0쪽을 확인했다.
+7쪽94.37%→100.00%, 28쪽97.19%→99.23%이며, 같은 쪽의 review·overlay에서 책괄호 뒤
+한글의 전진·줄 끝과 다음 문단, 표·각주의 내용 소유를 직접 대조했다.
+[전쪽 TSV·대표 이미지·생산 기록](after-native-svg/validation.json)을 따른다.
+전체 최소 글꼴 회귀13,617PASS·45SKIP과 필수 Native/WASM lint도
+[현재 검증](current-validation/results.json) 및 [lint 기록](current-validation/push-lints.json)에 고정했다.
