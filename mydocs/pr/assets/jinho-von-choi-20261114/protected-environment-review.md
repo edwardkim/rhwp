@@ -339,3 +339,8 @@ NativeOtfMetrics → TextStyle.native_otf_metrics → PagePaintContext::publish_
 이후 검증의 문서 전체 설정은 기존 원본 메트릭을 보존한다. 과거의 자연 Gulim 전진 선택을
 제거하고, 독립 Print에서 확인한 `GulimChe`/`굴림체 → Haansoft Batang` 결측 연결을 추가했다.
 두 backend에 같은 JSON을 공급하며 다른 페이지별 환경을 선택하지 않는다.
+
+
+## 2026-11-15 최종 완료
+
+제품 `8ad1c5c08a`의 Native/fresh WASM 각 1,771쪽은 최신 정본 대비 공식값 하락 0건이다. 기존 107행의 미재현 예외를 적용하지 않았고 영문 네 스타일·그림 외곽·원 기호의 직접 판독도 마쳤다. 실제 공급 정적 TTF의 형식을 메트릭 축약 전에 보존하고, 논리 원문 유형·전진을 유지한 채 공통 Print text 프레임을 소비한다. 정확한 최신 base와 원 사례 134쪽·추가 403쪽씩도 같은 조건으로 대조했고 2%p 초과 감소는 없다. 모든 필수 실행과 상승 19행 반영은 [최종 원장](final-source-8ad/README.md)에 있다. 이전 절의 미완료·실패 수치는 각 당시 source의 이력이며 현재 판정을 대신하지 않는다.

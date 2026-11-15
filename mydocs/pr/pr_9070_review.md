@@ -1,19 +1,14 @@
 # PR #9070 메인테이너 검토
 
-## 2026-11-15 재검증 상태
+## 2026-11-15 최종 로컬 판정
 
-메인테이너가 기존 보호값 미재현·영문 글꼴·그림 테두리 차이의 예외를 거절했으므로
-이전 제출 제안은 철회하고 추가 보완 중이다. 최신 제품 보완은 `8ad1c5c08a`, 통합 base는
-`e7ee272cfa33a960b0d0d924983d29e6509903e0`다. 원 PR 3개의 기여 SHA는 보존했다.
-직전 source `235da09ed6`은 Native 전쪽 1,771행 하락 0건이지만 WASM 두 쪽의 0.01%p
-미재현이 남았다. 정확한 최신 devel도 같은 환경에서 그 두 수치를 내므로 통합 회귀는 아니다.
-예외를 적용하지 않고 실제 공급 TTF의 형식 증거와 공통 Print text 프레임을 보완했다.
-새 source의 중첩 표 Native 17쪽·전체 문서 작은 경계 22쪽은 하락 0건이다.
-새 최적화 WASM·전수·필수 검증은 미완료이며 원격 push·PR·공개 댓글·merge는 수행하지 않았다.
-이하 과거 수치는 해당 producer의 이력이며 최신 후보의 완료 결과로 합산하지 않는다.
-
-
-**최종 판정: 머지 보류.** 원 기능과 승인된 보완의 로컬 검증은 통과했지만 공통 특별 보호값 재현 조건이 남아 있다.
+**메인테이너 보완 후 수용 가능.** 기존 보호값·영문 스타일·그림 외곽의 차이를 예외 없이 보완했다.
+제품 source는 `8ad1c5c08a`, 최신 base는 `2d83fa4c8a`이며 실제 비교용 `e7ee272cfa`와 제품·시각 harness가 같다.
+전체 회귀 13,608건·Native 공식 4,073건·모든 lint와 필수 편람 gate를 통과했다.
+Native/fresh WASM 보호 각 1,771쪽·3,542행의 공식값 하락은 0건이며 상승 19행을 새 하한에 반영했다.
+원 사례·대조군 각 134쪽의 최저는 93.31%·92.35%다. 직접 확대 판독·최신 base 전쪽 비교도 완료했다.
+[최종 검증·생산자·전쪽 TSV](assets/jinho-von-choi-20261114/final-source-8ad/README.md).
+원격 push·새 PR·공개 review/comment·merge·issue close는 아직 수행하지 않았다.
 
 - 작성자: JinHo-von-Choi. 원 head: `8669ec6dc4b91a57d6af8e6b82dd391dff0832af`.
 - 원 이슈: #8912. 사용자 지시로 reviewer `edwardkim`을 지정했고 원 commit을 보존했다.
@@ -25,7 +20,7 @@
 
 [승인된 보완 계획](pr_9070_review_impl.md)에 따라 77개를 실제 한컴 HWPX의 plane-15 문자로 복원했다. 공통 `native_pua_fonts`의 측정·paint 경로에서 실제 SFNT 프로그램을 함께 소비한다. 기존 지원 11개 순서를 유지하고 중복 없는 75개를 추가했다. 글꼴 bytes·윤곽·문서별 좌표 상수는 추가하지 않았다. 원본 SFNT가 없을 때의 기존 대체 계약도 유지한다.
 
-실제 CLI 대조는 괘선 오인이 65자에서 0자로 줄었다. 정상 specimen의 원 HWP3·HWP 저장본·HWPX 저장본은 각각 전 1쪽 Native 98.56783%·최적화 fresh WASM 98.55072%다. 실제 독립 한컴 HWP5 재열기·HWPX 저장에서도 77개 문자가 같다. [문자 대조](assets/pr9070/linechar-before-after.json) · [한컴 재열기 영수증](assets/pr9070/hancom-hwp5-reopen.json) · [전쪽 TSV·Print·글꼴 근거](assets/pr9070/README.md).
+실제 CLI 대조는 괘선 오인이 65자에서 0자로 줄었다. 정상 specimen의 원 HWP3·HWP 저장본·HWPX 저장본은 각각 전 1쪽이며 세 입력의 최저는 Native 98.46736%·최적화 fresh WASM 98.47794%다. 실제 독립 한컴 HWP5 재열기·HWPX 저장에서도 77개 문자가 같다. [문자 대조](assets/pr9070/linechar-before-after.json) · [한컴 재열기 영수증](assets/pr9070/hancom-hwp5-reopen.json) · [최종 전쪽 TSV](assets/jinho-von-choi-20261114/final-source-8ad/feature-validation.json) · [Print·글꼴 근거](assets/pr9070/README.md).
 
 ## 입력·시각 근거와 호스트 장애
 
@@ -33,13 +28,15 @@
 
 호스트 자동 인쇄 실패와 사용자 재부팅은 [중단·복구 기록](jinho_von_choi_20261114_interruption.md)에 남겼다. Windows 호스트의 Hwp.exe·COM·인쇄 자동화는 계속 비활성이다. 사용자 수동 Print와 별도 원격 MCP 정상 재열기를 호스트 자동화 성공으로 바꾸어 기록하지 않는다.
 
-## 공통 검증과 남은 조건
+## 최종 공통 검증과 다음 조건
 
-제품 source `eeaecff59e834f28437c98b509089bbb36a7682d`와 검증 head `3b5e750d66351799fe81c0e1b67c5e78323763f5`의 제품 경로는 같다. 최종 전체 회귀 13,574개·실패 0, fmt·root/WASM32/workspace Clippy·workspace build·manifest 검사와 편람 Native 383쪽 gate를 통과했다. Native 공식 3종도 4,073개 모두 통과했다. [최종 실행 기록](assets/jinho-von-choi-20261114/local-validation.json).
+[최종 원장](assets/jinho-von-choi-20261114/final-source-8ad/README.md)의 17개 필수 단계가 모두 통과했다.
+정본 보호의 하락·누락은 0행이며 수용 예외를 적용하지 않았다. 최신 devel의 추가 문서 389쪽과
+RowBreak 14쪽씩도 실제 source로 대조했다. 원 사례와 추가 문서의 2%p 초과 감소는 모두 0쪽이다.
+감소 영역은 원본 Print·base·후보를 같은 배율로 직접 읽고 실제 export의 bbox·내용·순서를 확인했다.
 
-Native/fresh WASM 각각 134쪽의 최저 raw는 93.30%·92.46%이고 독립 Print의 전체 쪽수가 일치한다. 새 devel 기능 보존 41쪽씩의 PNG 82쌍은 수정 전후 같다. 반면 정본 보호 3,542행 중 과거 공식값 미재현은 Native 51행·WASM 56행이다. Native는 최신 devel과 후보의 전 1,771행이 같으며 WASM 미재현 56행도 exact base와 값·PNG가 모두 같다. 특별 하락 금지 gate의 통과·예외를 아직 선언하지 않는다. [보호값 재현 조사](assets/jinho-von-choi-20261114/protected-environment-review.md).
-
-초기 집중 60개에는 새 바탕쪽 모듈이 실제로 실행되지 않아 그 통과 주장을 정정했다. 이후 집중 126개와 최종 전체 회귀에서 새 검사 3개의 실제 PASS를 확인했다. `b60322c765`의 두 실패도 최종 source에서 보완·재검증했으며 정확한 기존 기대값은 유지했다. 원 head의 CI와 누적 보완 후보의 CI는 구분한다. 아직 공개 댓글·push·새 PR·승인 review·merge·issue close는 수행하지 않았다.
-
-
-검증 입력 커밋 확인: **충족**. [113개 입력/PDF의 실제 Git blob·실행 SHA-256 대조](assets/jinho-von-choi-20261114/input-commit-verification.json), 확인 commit `0844c7d115`. 검증한 변환/재저장본도 동일 bytes로 보존했고 상용 글꼴 프로그램은 포함하지 않았다.
+실행 입력·독립 PDF 118개는 실제 SHA-256과 Git blob을 대조했고 미커밋 입력은 0개다.
+초기 잘못된 필터 호출·보안 입력 전달·중간 source의 미달은 [조사 이력](assets/jinho-von-choi-20261114/protected-environment-review.md)에
+보존했다. 과거 실패를 지우거나 과거 통과 수를 최종 검증에 합산하지 않는다.
+현재 다음 조건은 준비한 upstream 수용 PR 경로의 원격 승인, 해당 최신 head CI·self-review·merge다.
+원 기여 SHA와 fork branch를 보존하고 연결 이슈는 각 검증 범위에 맞게 후속 처리한다.

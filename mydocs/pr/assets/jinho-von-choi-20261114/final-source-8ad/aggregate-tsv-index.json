@@ -1,0 +1,37 @@
+{
+  "scope": "134 original/control pages +403 incoming preservation pages +9 repeated direct-review pages per backend. All original TSV string columns are retained; role/backend/group/document/page identify each row. Per-document original bytes are indexed separately.",
+  "files": [
+    {
+      "role": "base",
+      "backend": "native",
+      "pages": 546,
+      "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/base-native-all-pages.tsv",
+      "bytes": 22298,
+      "sha256": "f22bdd839eaae6dce7e0cdc7de5b5f0230f4bb0bba075cbf7589e82f583e5357"
+    },
+    {
+      "role": "base",
+      "backend": "wasm",
+      "pages": 546,
+      "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/base-wasm-all-pages.tsv",
+      "bytes": 22289,
+      "sha256": "c967f702476a6be0e8150f9aab18407b8e5bbf703a0e8339405ee3ff29c28693"
+    },
+    {
+      "role": "candidate",
+      "backend": "native",
+      "pages": 546,
+      "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/candidate-native-all-pages.tsv",
+      "bytes": 22326,
+      "sha256": "18feede398eb2c288c77ba969a113fc9e79157bd2f07c3d3eec74c8a8a5f4864"
+    },
+    {
+      "role": "candidate",
+      "backend": "wasm",
+      "pages": 546,
+      "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/candidate-wasm-all-pages.tsv",
+      "bytes": 22319,
+      "sha256": "e8cdc38de7662b92b71901a924729e4c1c454a6e4e7692d3b789eb78ec382b97"
+    }
+  ]
+}

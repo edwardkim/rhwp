@@ -24,3 +24,13 @@
 이 증거의 범위는 실제 export가 제공하는 문단·셀·글자의 bbox·내용·순서이며,
 paint 색상까지 같다는 주장으로 확대하지 않는다. 정밀 raw 비교는 별도 전쪽 TSV의
 Decimal 값으로 수행했고 2%p 초과 하락은 없다. 수용 예외나 기준 변경은 적용하지 않았다.
+
+
+## 원 사례의 최신 기준 감소 쪽
+
+[보도자료 5쪽](original-incoming9026-repeated-005.png)과
+[계획서 1쪽](original-incoming9016-001.png)을 같은 다섯 열로 직접 확대 판독했다.
+[영수증](original-decrease-review-receipts.json)과 [실제 렌더 트리 대조](original-decrease-geometry.json)를
+보존한다. 두 쪽의 문단·셀·글자 bbox·내용·순서는 base와 같다. 글리프 모양·장식·줄 간격·겹침·
+누락을 확인했고 새 결함은 발견하지 않았다. 안티앨리어싱 채움의 작은 차이를 RGB 동일로 기록하지 않는다.
+원 사례 정밀 비교의 최대 감소는 0.15084%p이며 2%p 초과 하락은 0쪽이다.

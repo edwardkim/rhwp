@@ -1,19 +1,14 @@
 # PR #9072 메인테이너 검토
 
-## 2026-11-15 재검증 상태
+## 2026-11-15 최종 로컬 판정
 
-메인테이너가 기존 보호값 미재현·영문 글꼴·그림 테두리 차이의 예외를 거절했으므로
-이전 제출 제안은 철회하고 추가 보완 중이다. 최신 제품 보완은 `8ad1c5c08a`, 통합 base는
-`e7ee272cfa33a960b0d0d924983d29e6509903e0`다. 원 PR 3개의 기여 SHA는 보존했다.
-직전 source `235da09ed6`은 Native 전쪽 1,771행 하락 0건이지만 WASM 두 쪽의 0.01%p
-미재현이 남았다. 정확한 최신 devel도 같은 환경에서 그 두 수치를 내므로 통합 회귀는 아니다.
-예외를 적용하지 않고 실제 공급 TTF의 형식 증거와 공통 Print text 프레임을 보완했다.
-새 source의 중첩 표 Native 17쪽·전체 문서 작은 경계 22쪽은 하락 0건이다.
-새 최적화 WASM·전수·필수 검증은 미완료이며 원격 push·PR·공개 댓글·merge는 수행하지 않았다.
-이하 과거 수치는 해당 producer의 이력이며 최신 후보의 완료 결과로 합산하지 않는다.
-
-
-**최종 판정: 머지 보류.** 이 PR의 기능 검증에서 미해결 결함은 발견하지 않았지만, 현재 누적 후보의 필수 보호 판정은 아직 완료되지 않았다.
+**메인테이너 보완 후 수용 가능.** 기존 보호값·영문 스타일·그림 외곽의 차이를 예외 없이 보완했다.
+제품 source는 `8ad1c5c08a`, 최신 base는 `2d83fa4c8a`이며 실제 비교용 `e7ee272cfa`와 제품·시각 harness가 같다.
+전체 회귀 13,608건·Native 공식 4,073건·모든 lint와 필수 편람 gate를 통과했다.
+Native/fresh WASM 보호 각 1,771쪽·3,542행의 공식값 하락은 0건이며 상승 19행을 새 하한에 반영했다.
+원 사례·대조군 각 134쪽의 최저는 93.31%·92.35%다. 직접 확대 판독·최신 base 전쪽 비교도 완료했다.
+[최종 검증·생산자·전쪽 TSV](assets/jinho-von-choi-20261114/final-source-8ad/README.md).
+원격 push·새 PR·공개 review/comment·merge·issue close는 아직 수행하지 않았다.
 
 작성자 JinHo-von-Choi, 원 head `d268b792eda1aa678ac5d67d285455f6760a2754`. reviewer `edwardkim`이며 원 commit을 보존했다. 이슈 #7381·#7711·#8083을 [검토 계획](jinho_von_choi_20261114_review_plan.md)의 maintainer 일반 누적 경로로 검토했다.
 
@@ -23,17 +18,19 @@
 - **#7711 커서 주소:** 본문 FieldInfo는 앞 구역의 문단 수를 누적한 전역 주소를 만들고 생성 API도 이를 구역·문단으로 해소한다. 중첩 리스트의 로컬 주소와 host 구역 로컬 주소는 따로 보존한다. field-01의 3구역·16문단에서 제목은 구역 2·로컬 0·전역 13이다. 실제 최적화 WASM Chrome에서 상태 0x12, 세 구역·중첩 셀 생성과 HWP/HWPX 각 2회 저장·재열기 16개 비교, 전역 16의 거부·무변경을 확인했다.
 - **#8083 텍스트:** CLI export-text가 실제 render tree의 TextLine 밖 TextRun·수식·각주·양식 텍스트를 순서대로 모은다. 같은 소유·셀·방향·기준선의 fragment만 같은 줄로 묶고 첫 body run을 기준으로 줄 소속을 정한다. 실제 5개 TAC 원본의 원문·순서·단일 출현, 크기·굵기·첨자 대조를 확인했다.
 
-[실제 CLI 실행·텍스트](assets/jinho-von-choi-20261114/cli-results.json) · [fresh WASM API 실행·프로그램 해시](assets/jinho-von-choi-20261114/wasm-api-results.json).
+[실제 CLI 실행·텍스트](assets/jinho-von-choi-20261114/final-source-8ad/cli-text-help.json) · [fresh WASM API 실행·프로그램 해시](assets/jinho-von-choi-20261114/final-source-8ad/typed-frame-wasm-functional-repeated-result.json).
 
 WASM getPageText는 웹 컨트롤의 IR 본문 JSON 문자열 계약이고 CLI export-text는 셀을 포함한 render-tree 줄 추출 계약이다. 두 결과가 같아야 한다고 비교했던 초기 진단은 성립하지 않으며 회귀 근거로 사용하지 않는다. 실제 필드 주소·저장·텍스트 보존을 각 API 계약으로 검증했다.
 
-## 공통 검증과 남은 조건
+## 최종 공통 검증과 다음 조건
 
-제품 source `eeaecff59e834f28437c98b509089bbb36a7682d`와 검증 head `3b5e750d66351799fe81c0e1b67c5e78323763f5`의 제품 경로는 같다. 최종 전체 회귀 13,574개·실패 0, fmt·root/WASM32/workspace Clippy·workspace build·manifest 검사와 편람 Native 383쪽 gate를 통과했다. Native 공식 3종도 4,073개 모두 통과했다. [최종 실행 기록](assets/jinho-von-choi-20261114/local-validation.json).
+[최종 원장](assets/jinho-von-choi-20261114/final-source-8ad/README.md)의 17개 필수 단계가 모두 통과했다.
+정본 보호의 하락·누락은 0행이며 수용 예외를 적용하지 않았다. 최신 devel의 추가 문서 389쪽과
+RowBreak 14쪽씩도 실제 source로 대조했다. 원 사례와 추가 문서의 2%p 초과 감소는 모두 0쪽이다.
+감소 영역은 원본 Print·base·후보를 같은 배율로 직접 읽고 실제 export의 bbox·내용·순서를 확인했다.
 
-Native/fresh WASM 각각 134쪽의 최저 raw는 93.30%·92.46%이고 독립 Print의 전체 쪽수가 일치한다. 새 devel 기능 보존 41쪽씩의 PNG 82쌍은 수정 전후 같다. 반면 정본 보호 3,542행 중 과거 공식값 미재현은 Native 51행·WASM 56행이다. Native는 최신 devel과 후보의 전 1,771행이 같으며 WASM 미재현 56행도 exact base와 값·PNG가 모두 같다. 특별 하락 금지 gate의 통과·예외를 아직 선언하지 않는다. [보호값 재현 조사](assets/jinho-von-choi-20261114/protected-environment-review.md).
-
-초기 집중 60개에는 새 바탕쪽 모듈이 실제로 실행되지 않아 그 통과 주장을 정정했다. 이후 집중 126개와 최종 전체 회귀에서 새 검사 3개의 실제 PASS를 확인했다. `b60322c765`의 두 실패도 최종 source에서 보완·재검증했으며 정확한 기존 기대값은 유지했다. 원 head의 CI와 누적 보완 후보의 CI는 구분한다. 아직 공개 댓글·push·새 PR·승인 review·merge·issue close는 수행하지 않았다.
-
-
-검증 입력 커밋 확인: **충족**. [113개 입력/PDF의 실제 Git blob·실행 SHA-256 대조](assets/jinho-von-choi-20261114/input-commit-verification.json), 확인 commit `0844c7d115`. 검증한 변환/재저장본도 동일 bytes로 보존했고 상용 글꼴 프로그램은 포함하지 않았다.
+실행 입력·독립 PDF 118개는 실제 SHA-256과 Git blob을 대조했고 미커밋 입력은 0개다.
+초기 잘못된 필터 호출·보안 입력 전달·중간 source의 미달은 [조사 이력](assets/jinho-von-choi-20261114/protected-environment-review.md)에
+보존했다. 과거 실패를 지우거나 과거 통과 수를 최종 검증에 합산하지 않는다.
+현재 다음 조건은 준비한 upstream 수용 PR 경로의 원격 승인, 해당 최신 head CI·self-review·merge다.
+원 기여 SHA와 fork branch를 보존하고 연결 이슈는 각 검증 범위에 맞게 후속 처리한다.

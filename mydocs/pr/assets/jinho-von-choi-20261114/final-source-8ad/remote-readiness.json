@@ -1,0 +1,41 @@
+{
+  "checkedAt": "2026-11-15T10:18:16.157893+00:00",
+  "originalPRs": [
+    {
+      "number": 9070,
+      "state": "open",
+      "head": "8669ec6dc4b91a57d6af8e6b82dd391dff0832af",
+      "headRef": "task/8912-hwp3-parser-fixes",
+      "reviewers": [
+        "edwardkim"
+      ],
+      "url": "https://github.com/edwardkim/rhwp/pull/9070"
+    },
+    {
+      "number": 9071,
+      "state": "open",
+      "head": "a1bd3fa4edb8bb79c0ae312166358b6be299e5d0",
+      "headRef": "task/7631-hwpx-hwp-attr-fidelity",
+      "reviewers": [
+        "edwardkim"
+      ],
+      "url": "https://github.com/edwardkim/rhwp/pull/9071"
+    },
+    {
+      "number": 9072,
+      "state": "open",
+      "head": "d268b792eda1aa678ac5d67d285455f6760a2754",
+      "headRef": "task/7381-cli-field-export-fixes",
+      "reviewers": [
+        "edwardkim"
+      ],
+      "url": "https://github.com/edwardkim/rhwp/pull/9072"
+    }
+  ],
+  "originalHeadsPreservedAsAncestors": true,
+  "ownOpenPRs": [],
+  "forkPushPermission": false,
+  "route": "upstream acceptance integration PR; preserve original SHAs and fork branches",
+  "latestDevel": "2d83fa4c8a5ed3513afcde26367fb5ffebeb294c",
+  "remoteMutationsPerformed": false
+}
