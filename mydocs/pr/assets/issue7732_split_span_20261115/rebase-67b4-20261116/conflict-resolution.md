@@ -23,3 +23,17 @@
 아직 실행하지 않은 검사는 이 충돌 해소를 근거로 통과 처리하지 않는다.
 재현 명령은 `git fetch upstream devel`, `git rebase upstream/devel`, 세 문서 해소 뒤
 `GIT_EDITOR=true git rebase --continue`다. 로그 원문은 ignored output에 보존하며 SHA는 감사 JSON에 기록한다.
+
+## 유입 범위 실제 검증
+
+[리베이스 후 검사](incoming-validation.json)에서 새 base의 suite 수집·unit tier·CI 분류 계약을
+통과했다. Python 계약은 `PYTHONPATH=scripts/tests`를 지정해 109건을 실제 통과했다.
+최초 호출은 모듈 경로 누락에 따른 import 오류였으며 통과 기록과 구분해 보존했다.
+About 대화상자는 Mac의 별도 Vite 7787에서 800×360·360×640·1280×900 화면의 닫기·스크롤·
+Escape·overlay 종료를 실제 확인했다. 사용자 서버 7700은 건드리지 않았다.
+
+[공개 4문서 검사](public-four-validation.json)의 Native/fresh WASM 8건이 모두 통과했고,
+각 1쪽의 공식 raw 두 자리 표시는 모두 100.00%다. crop 문서의 반올림 전 값은 99.99756%이며,
+픽셀 자체가 전부 동일하다는 뜻은 아니다. 각 backend의 review·overlay 16개를 직접 판독해
+영문 줄 소속·좁은 글상자의 꺾쇠와 연도·그림 자르기·그룹 도형과 그림자 보존을 확인했다.
+이 8건은 전체 정본 3,542행 및 각주·실제 소비 경로의 남은 검증을 대체하지 않는다.
