@@ -64,6 +64,23 @@ pub(crate) fn children(node: &RenderNode) -> Children<'_> {
         return Children::Document(node.children.iter());
     }
     let mut ordered: Vec<_> = node.children.iter().collect();
-    ordered.sort_by_key(|child| key(child));
+    // 그림 외곽은 owner와 하나의 paint 개체다. layer가 없는 외곽을 일반
+    // 흐름으로 먼저 보내면 뒤의 그림이 자기 선을 덮는다. 실제 같은 부모의
+    // owner 키를 공유하며 안정 정렬로 원래 image → border 순서를 보존한다.
+    let images: std::collections::HashMap<_, _> = node
+        .children
+        .iter()
+        .filter(|child| matches!(child.node_type, RenderNodeType::Image(_)))
+        .map(|child| (child.id, child))
+        .collect();
+    ordered.sort_by_key(|child| {
+        let owner = match &child.node_type {
+            RenderNodeType::Rectangle(rect) if rect.picture_border => rect
+                .image_frame_owner
+                .and_then(|id| images.get(&id).copied()),
+            _ => None,
+        };
+        key(owner.unwrap_or(child))
+    });
     Children::Paint(ordered.into_iter())
 }

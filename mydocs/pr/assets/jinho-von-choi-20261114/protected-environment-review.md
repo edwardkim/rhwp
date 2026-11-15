@@ -71,3 +71,12 @@ Native의 정확한 base 비교는 전쪽 동일 측정값이지만, 동일하�
 4. 최종 Native/fresh WASM 전쪽 보호 3,542행의 하락 0건, 원 PR 목표 범위·새 devel 기능 보존, 필수 회귀·lint·Native·편람 검사를 완료한다. 새 코드를 예전 통과 결과로 판정하지 않는다.
 
 확정한 기존 차이 보완 범위에 대해 같은 승인을 반복 요청하지 않는다. 독립 근거가 부족한 원인은 조사 상태로 남기고 실제 보정·검증을 계속하며 원격 수용은 보류한다.
+
+
+### 첫 원인 확인: 실제 대체 face 공급과 그림의 paint 소유 순서
+
+- #8109/#8132의 `f45878c7caafb43ca1fd017ddd93484a0acc6ad2`와 기존 네 스타일 회귀는 원문 Helvetica·스타일 face와 명시 대체 Arial을 함께 보존한다. 독립 Print의 내장 프로그램도 ArialMT/Bold/Italic/BoldItalic이다. 이전 공급 준비는 #8896의 제한 목록을 재사용해 Arial 4개를 빠뜨렸다. 원문·font environment·제품 코드를 바꾸지 않고 실제 Arial을 추가 공급한 Native/fresh WASM 전 1쪽이 모두 100.00%다. Native body-list의 99.95%는 그대로이므로 이 발견으로 다른 미재현을 해결했다고 확대하지 않는다.
+- 그림 프레임 공유는 `7b2c77dd34`에서 현재 `picture_border.rs`로 통합됐다. 하지만 `paint_order::children`는 Column 자식을 layer/z-order로 정렬하면서 owner Image는 앵커 plane, 그 테두리는 layer 없는 일반 흐름으로 분리한다. 실제 Print Canvas의 호출 기록에서 `strokeRect → drawImage`가 두 그림 모두 재현됐다. 그림이 자기 테두리를 나중에 덮으므로 위·왼쪽 외곽이 사라진다. 같은 원본의 독립 PDF에는 두 그림의 네 외곽과 fill+stroke가 존재한다.
+- 보완할 공통 결과는 테두리의 paint 정렬 키다. `RectangleNode.image_frame_owner`로 같은 부모의 실제 Image를 찾아 그 Image의 layer/z-order/문서 주소 키를 소비한다. 안정 정렬에서 원래 발행된 image→border 순서는 유지한다. owner 없는 도형·다른 clip 부모·비그림 Rectangle은 기존 규칙을 유지한다. SVG·Native·Canvas는 같은 `paint_order::children` 결과를 소비하며 별도의 backend 보정은 추가하지 않는다. 좌표·선폭·이미지 crop·원본 z-order를 변경하지 않는다.
+
+후속 Native/fresh WASM 실제 출력·뒤/앞 개체 대조와 정식 관계 회귀로 수정 전 FAIL/수정 후 PASS를 확인한 뒤 최종 보호 검증을 다시 실행한다.
