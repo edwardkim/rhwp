@@ -1,5 +1,5 @@
 {
-  "status": "representatives_preserved_with_curated_direct_read",
+  "status": "representatives_direct_read_complete",
   "source_product_commit": "2749e491e843ec851de12467751ec200ab551014",
   "images": [
     {
@@ -81,9 +81,10 @@
       "overlay": "representatives/native/seo-re-03-latin/overlay/overlay_001.png",
       "raw_sha256": "dda627d1e61fec54b31abeab531d6040a5803083deccadca097745ef6397a939",
       "pdf_sha256": "0484984565f05f6fec9931a654f0c4d03162494b79357e669ab11d1e83c29b18",
-      "direct_read": false,
+      "direct_read": true,
       "review_sha256": "5bc06d177332f21e0fd7aa1b3a73bb01857025bf1836c01906d601bae6d8e65a",
-      "overlay_sha256": "95ebbc2e67033a1aa38003c223d031f729872d9fb8a02960220b552ca7004393"
+      "overlay_sha256": "95ebbc2e67033a1aa38003c223d031f729872d9fb8a02960220b552ca7004393",
+      "observation": "세 줄의 영문 연속 문자열과 줄 끝·다음 줄 시작을 보존한다. 윤곽의 미세 래스터 차이를 글자 누락으로 오인하지 않는다."
     },
     {
       "key": "angle-narrow",
@@ -94,9 +95,10 @@
       "overlay": "representatives/native/angle-narrow/overlay/overlay_001.png",
       "raw_sha256": "193a8956459ba0111dfe5e0b05791c6b8d85e5d5f1f2e04df42772d287904366",
       "pdf_sha256": "0ae88b7f24731245932eb3a7688a494ae25b0fb0f9b5c652ce2509ba247fc2c3",
-      "direct_read": false,
+      "direct_read": true,
       "review_sha256": "506690e706b771c9a0c588af254a691505fb11f7ed22ccdc2d28ed0761a2f40e",
-      "overlay_sha256": "c5a26b9b3bd694f067c326a2321b705d113506803140c00fa81a641eafaa0d4c"
+      "overlay_sha256": "c5a26b9b3bd694f067c326a2321b705d113506803140c00fa81a641eafaa0d4c",
+      "observation": "좁은 본문의 끝·개정·2020·닫는 부호가 같은 네 줄에 속한다. 괄호를 다른 줄로 당기지 않는다."
     },
     {
       "key": "outline",
@@ -191,9 +193,10 @@
       "overlay": "representatives/native/issue8040-insert-delete/overlay/overlay_004.png",
       "raw_sha256": "9c552e1b73ed1da6a1304b989ec5688af1564d21ceefa6e0e79272828ae2623c",
       "pdf_sha256": "f7dd05bdb8fbf609f38a9fc051badac7aa6ccacce31f2000e8aac9b17ce28018",
-      "direct_read": false,
+      "direct_read": true,
       "review_sha256": "582c523370212a87ed8f180efcae9dad4c10c88d7009bc18713ed347e52a46bf",
-      "overlay_sha256": "554a9a94caeeb9eb7ee6a4a9f46d37a8c66a046670ad1ec9b2d46e274f7a4fcd"
+      "overlay_sha256": "554a9a94caeeb9eb7ee6a4a9f46d37a8c66a046670ad1ec9b2d46e274f7a4fcd",
+      "observation": "삽입 후 삭제한 시험지의 두 단, 표·수식·그림·문항 소속과 아래 쪽번호를 보존한다. 이미지 내부 리샘플링 차이는 별개이며 공식값99.99가 유지된다."
     },
     {
       "key": "seo-pic-crop-01",
@@ -204,9 +207,10 @@
       "overlay": "representatives/native/seo-pic-crop-01/overlay/overlay_001.png",
       "raw_sha256": "e5e6a4200d8ed21af5afe56acf00db910f1c20c1906847c14242ee0acec1ab53",
       "pdf_sha256": "2772ea412033a38c80fde729906374a90de94c0d7c5f33c2ede1e5071ac25ac8",
-      "direct_read": false,
+      "direct_read": true,
       "review_sha256": "04b66645443f51430158de67def3f2055567adec018c7a99825027de7543e72a",
-      "overlay_sha256": "75f014f697dd6e0d43808c18fde93966b96ab6e619802869856ba45f73229934"
+      "overlay_sha256": "75f014f697dd6e0d43808c18fde93966b96ab6e619802869856ba45f73229934",
+      "observation": "상하 두 배너의 원본/잘림 범위와 외곽선을 보존한다. 이미지 내부 리샘플링·색상 차이는 보이며 실루엣100.00을 RGB 동일성으로 표현하지 않는다."
     },
     {
       "key": "seo-shape-group-02",
@@ -217,9 +221,10 @@
       "overlay": "representatives/native/seo-shape-group-02/overlay/overlay_001.png",
       "raw_sha256": "7f4061326e61afc0d52cecf46af2f6af98ed61d978217e164f78316d7e43c00f",
       "pdf_sha256": "b62d8f17bc72a37824dbbf37f9aa81a8b872bbd19f6b1d170a940edb951a6f85",
-      "direct_read": false,
+      "direct_read": true,
       "review_sha256": "1673fa2f26665c45680d57c6d3ebbb570ff5a25a7acd3b8f4eada98029511c8d",
-      "overlay_sha256": "61bd1406ba31050b6910254f5f57e83870e0e6ed018b9a0c8b0cfb66316ef7da"
+      "overlay_sha256": "61bd1406ba31050b6910254f5f57e83870e0e6ed018b9a0c8b0cfb66316ef7da",
+      "observation": "지도 그룹의 섬·외곽선·그림자와 그라데이션 방향을 보존한다. 가장자리의 한두 픽셀 래스터 차이가 남을 수 있다."
     },
     {
       "key": "seo-helvetica-styles",
@@ -230,9 +235,10 @@
       "overlay": "representatives/native/seo-helvetica-styles/overlay/overlay_001.png",
       "raw_sha256": "7ab9eb6b45d7fc4ce6becb8b44aa984f181a74932252e3198f6e94870a9e11c4",
       "pdf_sha256": "a446d324676f30a04c23b2b2a4d5f0972b676b4a952a46d86ab041373252b266",
-      "direct_read": false,
+      "direct_read": true,
       "review_sha256": "655bc922a44a7b7735e4d27c3034636704f09745deda1b1a042d658b75dff238",
-      "overlay_sha256": "62121fe70b3053e37895b703207f3532b85d07c029e233058967bcb5613141ca"
+      "overlay_sha256": "62121fe70b3053e37895b703207f3532b85d07c029e233058967bcb5613141ca",
+      "observation": "일반·굵게·기울임·굵은 기울임의 네 줄 순서와 소속을 보존한다. Native/WASM의 획 농도·기울임 래스터 모양에는 기존 차이가 보이나 보호 공식값의 하락은 없다."
     },
     {
       "key": "sample10",
@@ -313,9 +319,10 @@
       "overlay": "representatives/wasm/seo-helvetica-styles/overlay/overlay_001.png",
       "raw_sha256": "3350506dcf79192bb29fb32942c37835b32ff6df3844d66dc02c733d67ce47d6",
       "pdf_sha256": "a446d324676f30a04c23b2b2a4d5f0972b676b4a952a46d86ab041373252b266",
-      "direct_read": false,
+      "direct_read": true,
       "review_sha256": "a7bf13bcc7380d6dd54c4b17d88025245a5558cbd43889beea8bfff2779c4763",
-      "overlay_sha256": "ac39d3fa6034ae0774b81ea3fdc263074635bf2137fb8706aefee00a5264a2e4"
+      "overlay_sha256": "ac39d3fa6034ae0774b81ea3fdc263074635bf2137fb8706aefee00a5264a2e4",
+      "observation": "일반·굵게·기울임·굵은 기울임의 네 줄 순서와 소속을 보존한다. Native/WASM의 획 농도·기울임 래스터 모양에는 기존 차이가 보이나 보호 공식값의 하락은 없다."
     },
     {
       "key": "sample16-hwpx",
@@ -354,9 +361,10 @@
       "overlay": "representatives/wasm/seo-re-03-latin/overlay/overlay_001.png",
       "raw_sha256": "26500f988818109a14f3b57fa37df36487f2f3975504d94bceab5ff87c3d0b84",
       "pdf_sha256": "0484984565f05f6fec9931a654f0c4d03162494b79357e669ab11d1e83c29b18",
-      "direct_read": false,
+      "direct_read": true,
       "review_sha256": "3791ab06306a5dfbff8c13980b7083d624458c2e46c96af3c0c025fe90c16b81",
-      "overlay_sha256": "fa7a462ab407293fac38a520ddafd562ab948ac9d859a15ae2f6d8768344696b"
+      "overlay_sha256": "fa7a462ab407293fac38a520ddafd562ab948ac9d859a15ae2f6d8768344696b",
+      "observation": "세 줄의 영문 연속 문자열과 줄 끝·다음 줄 시작을 보존한다. 윤곽의 미세 래스터 차이를 글자 누락으로 오인하지 않는다."
     },
     {
       "key": "angle-narrow",
@@ -367,9 +375,10 @@
       "overlay": "representatives/wasm/angle-narrow/overlay/overlay_001.png",
       "raw_sha256": "8b29fa5c09118ac9571cd7da9af44fb5f1847f3144863506a71c4a77876e96f7",
       "pdf_sha256": "0ae88b7f24731245932eb3a7688a494ae25b0fb0f9b5c652ce2509ba247fc2c3",
-      "direct_read": false,
+      "direct_read": true,
       "review_sha256": "98dcc01096c9eba5faa99fcbd1c2eb4c0908739fb1a0fc0d82036df9e18d9825",
-      "overlay_sha256": "80b2cfdad78b42f6fb78c6c78a26dbd6ac5002729052ae534e2685efec9cb79f"
+      "overlay_sha256": "80b2cfdad78b42f6fb78c6c78a26dbd6ac5002729052ae534e2685efec9cb79f",
+      "observation": "좁은 본문의 끝·개정·2020·닫는 부호가 같은 네 줄에 속한다. 괄호를 다른 줄로 당기지 않는다."
     },
     {
       "key": "outline",
@@ -450,9 +459,10 @@
       "overlay": "representatives/wasm/issue8040-insert-delete/overlay/overlay_004.png",
       "raw_sha256": "bbf25d3fd5c93abba977c0e8333fce6c237b14d29bd9ed7cff96f5cc8bd94785",
       "pdf_sha256": "f7dd05bdb8fbf609f38a9fc051badac7aa6ccacce31f2000e8aac9b17ce28018",
-      "direct_read": false,
+      "direct_read": true,
       "review_sha256": "8580c0146ca3fc80961bef3b99b5e0e4853c51981f81ac2499824a4b1270a0f4",
-      "overlay_sha256": "2afc08a92049a230a91dea322fad14f44514c64c759b0fbca64e2fff82414a73"
+      "overlay_sha256": "2afc08a92049a230a91dea322fad14f44514c64c759b0fbca64e2fff82414a73",
+      "observation": "삽입 후 삭제한 시험지의 두 단, 표·수식·그림·문항 소속과 아래 쪽번호를 보존한다. 이미지 내부 리샘플링 차이는 별개이며 공식값99.99가 유지된다."
     },
     {
       "key": "seo-pic-crop-01",
@@ -463,9 +473,10 @@
       "overlay": "representatives/wasm/seo-pic-crop-01/overlay/overlay_001.png",
       "raw_sha256": "cb53476747bd2a4ad1a4d9f12254a2361316cb2e05a61888271e5d3da25a4d16",
       "pdf_sha256": "2772ea412033a38c80fde729906374a90de94c0d7c5f33c2ede1e5071ac25ac8",
-      "direct_read": false,
+      "direct_read": true,
       "review_sha256": "faf87afc4c9c37e66078377813d54501d7976f482cea41f6d733f5b2b94a98a1",
-      "overlay_sha256": "585b091c12bf9816bbe69eb01767b1e1d30fded34b1acdbff25b7f6841512ced"
+      "overlay_sha256": "585b091c12bf9816bbe69eb01767b1e1d30fded34b1acdbff25b7f6841512ced",
+      "observation": "상하 두 배너의 원본/잘림 범위와 외곽선을 보존한다. 이미지 내부 리샘플링·색상 차이는 보이며 실루엣100.00을 RGB 동일성으로 표현하지 않는다."
     },
     {
       "key": "seo-shape-group-02",
@@ -476,9 +487,10 @@
       "overlay": "representatives/wasm/seo-shape-group-02/overlay/overlay_001.png",
       "raw_sha256": "deeef7d29ac39d0d6c8dc37e83d0447552cc5d29fd0313bb93810d817cdee24f",
       "pdf_sha256": "b62d8f17bc72a37824dbbf37f9aa81a8b872bbd19f6b1d170a940edb951a6f85",
-      "direct_read": false,
+      "direct_read": true,
       "review_sha256": "86e743f167a4844aabb2b094d929d3e05d589ceb1fa5ac8258022cb76203fbd1",
-      "overlay_sha256": "2d8404f156b23e69ad2b71917917a3d9264893bcf268f6dae868393992c1fea2"
+      "overlay_sha256": "2d8404f156b23e69ad2b71917917a3d9264893bcf268f6dae868393992c1fea2",
+      "observation": "지도 그룹의 섬·외곽선·그림자와 그라데이션 방향을 보존한다. 가장자리의 한두 픽셀 래스터 차이가 남을 수 있다."
     },
     {
       "key": "sample10",
@@ -495,7 +507,7 @@
       "observation": "줄·표·그림의 내용 소속과 페이지 경계를 보존한다. 기존 글리프·래스터 경계의 미세 차이가 남을 수 있으며 공식 두 자리 값 하락은 없다."
     }
   ],
-  "direct_read_pair_count": 24,
-  "unread_pair_count": 12,
-  "scope_note": "전36데이터셋의 최저 페이지 PNG 쌍 보존. 이 가운데 원본·주요 보호 경계 24쌍을 직접 판독했으며 미판독 12쌍을 완료로 세지 않는다. SVG 출력 미달 2쪽은 별도 조사 중이며 이 PNG 원장이 SVG 수용을 대신하지 않는다."
+  "direct_read_pair_count": 36,
+  "unread_pair_count": 0,
+  "scope_note": "전36데이터셋의 최저 페이지 review·overlay를 모두 직접 판독했다. 2px 실루엣 공식값은 모든 픽셀·색상·글리프 윤곽의 동일성을 뜻하지 않는다. Native SVG 후속 재검증과 실제 브라우저 전체 수용은 별도 원장에서 판단한다."
 }
