@@ -306,3 +306,26 @@ Haansoft Batang으로 표시한다. 로컬의 기존 명시 fallback은 `Gulim`�
 원본 프로그램·원 메트릭의 인증과 실제 공급한 TrueType paint 프로그램의 물리 text 좌표는
 서로 다른 상태이므로, `NativeOtfMetrics → TextStyle → PagePaintContext::publish`의 소비를
 추적한다. 미공급·CFF·명시 자연 잉크·Screen 대조 계약을 보존하고 실제 독립 출력으로 검증한다.
+
+
+### 실제 공급 TrueType의 물리 text 프레임 보완 실험
+
+정확한 devel `e7ee272cfa33a960b0d0d924983d29e6509903e0`의 frozen Native와 최적화
+WASM을 현재와 같은 문서 전체 설정으로 실행했다. 두 경로의 11·14쪽은 현재 후보와 같으며,
+WASM의 99.09%·98.69%도 그대로다. 이번 통합이 만든 하락은 아니지만 예외를 적용하지 않는다.
+
+별도의 공개 TTF/CFF/가변 글꼴 최소 대조에서 실제 정적 TTF를 공급해도 Print text 프레임이
+발행되지 않는 두 경계(2022·2024)를 재현했다. 미공급·CFF·가변·명시 자연 잉크·Screen/HQ
+46개 음성 대조도 분리했다. `NativeOtfMetrics`는 cmap/hmtx만 남기는 축약을 수행하므로
+paint에서 그 바이트를 다시 분석해 원 프로그램 종류를 추정할 수 없다. 원 글꼴 유형·폭 표
+인증을 실제 paint 프로그램 형식의 대용으로 사용하는 현재 경계를 보완한다.
+
+실험은 등록 시 실제 SFNT의 정적 glyf·비가변·비컬러·비SVG 사실을 보존하고, 그 family의
+실제 공급 후보가 전부 이 계약을 지킬 때만 기존 Type0 text device 프레임을 사용한다.
+원문 유형·전진·소스 bbox·기존 HFT의 fill 경계는 바꾸지 않는다. 명시 자연 잉크와 PDF의
+자체 text paint 기하는 제외한다. `register_otf_for_source → NativeOtfProgram 형식 증거 →
+NativeOtfMetrics → TextStyle.native_otf_metrics → PagePaintContext::publish_glyph_geometry →
+동일 source의 TextRun/GlyphRun/GlyphOutline paintTransform`을 통해 공통 결과를 소비한다.
+확인된 TTF의 Type0 text 좌표는 Type3 도형 fill 상태와 독립적이라는 기존 Print 계약을
+사용하며 새 좌표나 글꼴별 상수를 만들지 않는다. 이 보완의 실제 출력·기존 대조·필수 검증은
+아직 미완료이며, 점수가 개선되지 않거나 다른 계약이 후퇴하면 가정을 재검토한다.

@@ -114,6 +114,7 @@ struct NativeOtfProgram {
     selection_digest: [u8; 32],
     faux_bold: bool,
     cff: bool,
+    static_truetype: bool,
     verified_hft_bold_tracking: bool,
 }
 
@@ -128,6 +129,12 @@ impl PartialEq for NativeOtfMetrics {
 }
 
 impl NativeOtfMetrics {
+    /// 실제 공급자의 윤곽 형식은 cmap/hmtx 축약 전에 확인한다.
+    /// 원본 유형·폭 표의 신뢰나 뒤 후보의 형식으로 주 프로그램을 추정하지 않는다.
+    pub(crate) fn has_static_truetype_paint_programs(&self) -> bool {
+        !self.programs.is_empty() && self.programs.iter().all(|program| program.static_truetype)
+    }
+
     /// 원 HFT 주 프로그램의 coverage다. 뒤의 표시용 TTF가 결측 글자를
     /// 가졌다고 원문의 별도 영문 슬롯까지 그 TTF가 소유하지 않는다.
     pub(crate) fn primary_cff_has_glyph(&self, character: char) -> Option<bool> {
@@ -315,6 +322,12 @@ impl NativePuaFonts {
         let face =
             ttf_parser::Face::parse(bytes, face_index).map_err(|_| "invalid native font face")?;
         let cff = is_cff_program(bytes, face_index);
+        // compact_metrics가 윤곽 표를 제거해도 실제 paint 프로그램의 형식 증거는 보존한다.
+        let static_truetype = face.tables().glyf.is_some()
+            && !cff
+            && !face.is_variable()
+            && face.tables().colr.is_none()
+            && face.tables().svg.is_none();
         let source_digest: [u8; 32] = Sha256::digest(bytes).into();
         let source_face_index = face_index;
         // FontEnvironment의 Native 신원 생성과 같은 입력·collection face를 소비한다.
@@ -388,6 +401,7 @@ impl NativePuaFonts {
             selection_digest,
             faux_bold,
             cff,
+            static_truetype,
             verified_hft_bold_tracking,
         });
         self.otf_programs
