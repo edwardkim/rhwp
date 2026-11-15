@@ -186,3 +186,14 @@ Helvetica 대조군은 PDF에서 확인한 Arial 설정으로 base/후보 Native
 
 보정 후 최소 글꼴 검사7건은 실제7PASS/0FAIL(0.018초)이며, 새 Native·WASM 빌드와
 11쪽 실제 출력 검증을 시작했다. [집중 검사 증적](../pr/assets/issue7732_split_span_20261115/soft-wrap-decoration/focused-tests.json)을 보존한다.
+
+## 2026-11-15 18:58 KST — 11쪽 보호값 복원 확인
+
+`2c90fa288b` 새 Native·fresh WASM 빌드에서11쪽을 canonical Visual Sweep으로
+실제 재출력했다. Native99.08498→99.08811%(공식99.08→99.09),
+fresh WASM99.09499→99.09810%(공식99.09→99.10)로 보호값을 복원했다.
+전후 render tree·PDF PNG는 동일하다. review·overlay 및 밑줄 끝 확대를 직접 판독했고,
+분리된 공백까지 이어지던 초과 밑줄이 제거됐음을 확인했다.
+[보정 증적](../pr/assets/issue7732_split_span_20261115/soft-wrap-decoration/README.md)을
+보존한다. 그 뒤 새 소스의 nested 전17쪽과 최소 글꼴 Rust 게이트를 시작했다.
+전체 보호 검증과 PR 준비 완료는 아직 아니다.

@@ -1,0 +1,102 @@
+[RustTestSuite] issue_6117_layer_decoration_trim -> regression_suite_014::issue_6117_layer_decoration_trim
+[RustTestSuite] cargo nextest run --locked --test regression_suite_014 -E test(/(^|::)issue_6117_layer_decoration_trim::/) --cargo-profile release-test --target-dir target/pr-review --features native-skia -j 8
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 1m 44s
+────────────
+ Nextest run ID 4a118026-f7f5-4d67-8e4d-6fc581ebdacc with nextest profile: default
+    Starting 7 tests across 1 binary (349 tests skipped)
+        PASS [   0.042s] (1/7) rhwp::regression_suite_014 issue_6117_layer_decoration_trim::issue_6117_trims_trailing_spaces_of_the_last_visible_run
+        PASS [   0.045s] (2/7) rhwp::regression_suite_014 issue_6117_layer_decoration_trim::issue_6117_keeps_author_spaces_on_a_paragraph_end_run
+        PASS [   0.050s] (3/7) rhwp::regression_suite_014 issue_6117_layer_decoration_trim::issue_6117_keeps_space_only_form_lines
+        FAIL [   0.040s] (4/7) rhwp::regression_suite_014 issue_6117_layer_decoration_trim::issue_6117_keeps_split_author_spaces_at_paragraph_end
+  stdout ───
+
+    running 1 test
+    test issue_6117_layer_decoration_trim::issue_6117_keeps_split_author_spaces_at_paragraph_end ... FAILED
+
+    failures:
+
+    failures:
+        issue_6117_layer_decoration_trim::issue_6117_keeps_split_author_spaces_at_paragraph_end
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 355 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'issue_6117_layer_decoration_trim::issue_6117_keeps_split_author_spaces_at_paragraph_end' (238359795) panicked at tests/generated/../cases/issue_6117_layer_decoration_trim.rs:123:5:
+    assertion `left == right` failed
+      left: [2, 0]
+     right: [0, 0]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 3 tests still running
+        FAIL [   0.045s] (5/7) rhwp::regression_suite_014 issue_6117_layer_decoration_trim::issue_6117_keeps_split_author_spaces_before_explicit_break
+  stdout ───
+
+    running 1 test
+    test issue_6117_layer_decoration_trim::issue_6117_keeps_split_author_spaces_before_explicit_break ... FAILED
+
+    failures:
+
+    failures:
+        issue_6117_layer_decoration_trim::issue_6117_keeps_split_author_spaces_before_explicit_break
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 355 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'issue_6117_layer_decoration_trim::issue_6117_keeps_split_author_spaces_before_explicit_break' (238359798) panicked at tests/generated/../cases/issue_6117_layer_decoration_trim.rs:133:5:
+    assertion `left == right` failed
+      left: [2, 0]
+     right: [0, 0]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.045s] (6/7) rhwp::regression_suite_014 issue_6117_layer_decoration_trim::issue_6117_trims_every_split_tail_run_of_the_same_soft_wrap
+  stdout ───
+
+    running 1 test
+    test issue_6117_layer_decoration_trim::issue_6117_trims_every_split_tail_run_of_the_same_soft_wrap ... FAILED
+
+    failures:
+
+    failures:
+        issue_6117_layer_decoration_trim::issue_6117_trims_every_split_tail_run_of_the_same_soft_wrap
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 355 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'issue_6117_layer_decoration_trim::issue_6117_trims_every_split_tail_run_of_the_same_soft_wrap' (238359797) panicked at tests/generated/../cases/issue_6117_layer_decoration_trim.rs:143:5:
+    assertion `left == right` failed
+      left: [2, 0, 0]
+     right: [2, 1, 2]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.052s] (7/7) rhwp::regression_suite_014 issue_6117_layer_decoration_trim::issue_6117_trims_space_only_runs_after_soft_wrapped_text
+  stdout ───
+
+    running 1 test
+    test issue_6117_layer_decoration_trim::issue_6117_trims_space_only_runs_after_soft_wrapped_text ... FAILED
+
+    failures:
+
+    failures:
+        issue_6117_layer_decoration_trim::issue_6117_trims_space_only_runs_after_soft_wrapped_text
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 355 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'issue_6117_layer_decoration_trim::issue_6117_trims_space_only_runs_after_soft_wrapped_text' (238359802) panicked at tests/generated/../cases/issue_6117_layer_decoration_trim.rs:114:5:
+    assertion `left == right` failed
+      left: [2, 0]
+     right: [2, 3]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.081s] 7 tests run: 3 passed, 4 failed, 349 skipped
+        FAIL [   0.040s] (4/7) rhwp::regression_suite_014 issue_6117_layer_decoration_trim::issue_6117_keeps_split_author_spaces_at_paragraph_end
+        FAIL [   0.045s] (5/7) rhwp::regression_suite_014 issue_6117_layer_decoration_trim::issue_6117_keeps_split_author_spaces_before_explicit_break
+        FAIL [   0.045s] (6/7) rhwp::regression_suite_014 issue_6117_layer_decoration_trim::issue_6117_trims_every_split_tail_run_of_the_same_soft_wrap
+        FAIL [   0.052s] (7/7) rhwp::regression_suite_014 issue_6117_layer_decoration_trim::issue_6117_trims_space_only_runs_after_soft_wrapped_text
+error: test run failed
