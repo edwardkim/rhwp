@@ -7166,6 +7166,26 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 표 셀·글상자·머리말/꼬리말 안 도형에 글상자를 붙이거나 뗀다(경로는 `setCellShapePropertiesByPath`와 같다).
+    #[wasm_bindgen(js_name = setTextBoxAtByPath)]
+    pub fn set_text_box_at_by_path(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        cell_path_json: &str,
+        inner_control_idx: u32,
+        attach: bool,
+    ) -> Result<String, JsValue> {
+        self.set_text_box_at_by_path_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            cell_path_json,
+            inner_control_idx as usize,
+            attach,
+        )
+        .map_err(|e| e.into())
+    }
+
     /// 개체에 캡션을 붙인다 — 웹한글컨트롤 `Run("ShapeObjAttachCaption")`.
     #[wasm_bindgen(js_name = attachCaptionAt)]
     pub fn attach_caption_at_api(
