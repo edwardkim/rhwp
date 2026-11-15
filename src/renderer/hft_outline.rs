@@ -198,6 +198,10 @@ pub(crate) struct HftOutlineFonts {
     faces: HashMap<String, Vec<Arc<SourceFace>>>,
     #[cfg(target_arch = "wasm32")]
     print_faces: HashMap<(String, u16), Arc<SourceFace>>,
+    #[cfg(target_arch = "wasm32")]
+    print_primaries: HashMap<String, print_text::PrintPrimary>,
+    #[cfg(target_arch = "wasm32")]
+    print_complete_cff_families: HashSet<String>,
     cache: Arc<Mutex<ContourCache<SourceGlyphKey>>>,
 }
 
@@ -222,6 +226,8 @@ impl HftOutlineFonts {
         #[cfg(target_arch = "wasm32")]
         self.print_faces
             .retain(|(name, _), _| name != &first_family(family).to_lowercase());
+        #[cfg(target_arch = "wasm32")]
+        self.clear_print_primary(family);
     }
 
     /// 실제 FontFace의 우선순위를 원자적으로 교체한다. 첫 cmap 소유 face만 소비한다.
@@ -240,6 +246,8 @@ impl HftOutlineFonts {
         if family.is_empty() {
             return Err("invalid outline font family");
         }
+        #[cfg(target_arch = "wasm32")]
+        self.print_complete_cff_families.remove(&family);
         let mut prepared = Vec::new();
         let mut programs = HashSet::new();
         let mut total = 0usize;
@@ -453,6 +461,7 @@ impl HftOutlineFonts {
     #[cfg(target_arch = "wasm32")]
     pub(crate) fn register_print_font(&mut self, family: &str, bytes: &[u8], index: u32) {
         let family = first_family(family).to_lowercase();
+        self.clear_print_primary(&family);
         let usable = || {
             if bytes.len() > MAX_SOURCE_BYTES {
                 return None;
@@ -507,3 +516,7 @@ impl HftOutlineFonts {
         self.print_faces.insert(key, source);
     }
 }
+
+#[cfg(target_arch = "wasm32")]
+#[path = "hft_outline/print_text.rs"]
+mod print_text;

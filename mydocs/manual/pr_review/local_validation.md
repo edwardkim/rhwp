@@ -191,6 +191,8 @@ review·overlay에서 확인한 WMF 차이를 그대로 기록한다.
 collaborator·maintainer는 이 기능 보존 검증에
 [정본 보호 TSV의 공식 두 자리 표시값 보존](../verification/visual_verification_governance.md#정본-보호-tsv의-공식-표시값-보존)도
 적용한다. 일반 사용자·외부 contributor에게 원본 OTF 설치나 이 특별 보호 검증의 재현을 요구하지 않는다.
+수용한 최종 전쪽 검증에서 공식 표시값이 상승하면 위 정본 절차에 따라 보호 하한도 상향하고,
+이후 검증에 갱신한 TSV와 manifest를 사용한다.
 
 ### 고정 review target과 실행 환경
 

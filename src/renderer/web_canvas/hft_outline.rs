@@ -18,12 +18,19 @@ impl WebCanvasRenderer {
             return false;
         }
         let Some(commands) = self.hft_outline_fonts.as_ref().and_then(|fonts| {
-            if supports_style(style) {
-                fonts.glyph(&style.font_family, character)
-            } else if self.print_text_geometry
+            let original = supports_style(style)
+                .then(|| fonts.glyph(&style.font_family, character))
+                .flatten();
+            if original.is_some() {
+                original
+            } else if self.render_profile == crate::paint::RenderProfile::Print
                 && !crate::renderer::contextual_text::is_contextual(text)
             {
-                fonts.print_fallback_glyph(style, character)
+                fonts.print_primary_glyph(style, character).or_else(|| {
+                    self.print_text_geometry
+                        .then(|| fonts.print_fallback_glyph(style, character))
+                        .flatten()
+                })
             } else {
                 None
             }

@@ -53,6 +53,7 @@ mod symbol_slot_chars;
 mod nimbus_roman;
 
 pub(crate) use legacy_hft::{
+    centered_bar_advance_em as original_hft_centered_bar_advance_em,
     is_metric_face as is_legacy_hft_metric_face, metric_face_name as legacy_hft_metric_face,
 };
 
@@ -506,6 +507,13 @@ pub(crate) fn find_metric_decision_for_character<'a>(
     character: char,
 ) -> Option<MetricLookupDecision<'a>> {
     let mut decision = find_metric_decision(name, bold, italic)?;
+    // 부분 HFT 표에 새로 확인한 일반 glyph를 굵게·기울임의 공급 근거로
+    // 상속하지 않는다. 확인하지 않은 서식은 기존 표시 대체 조회가 폭을 소유한다.
+    if legacy_hft::is_metric_face(decision.metric.name)
+        && legacy_hft::rejects_regular_bar_style(decision.metric.name, bold, italic, character)
+    {
+        return None;
+    }
     if character.is_whitespace() {
         return Some(decision);
     }
