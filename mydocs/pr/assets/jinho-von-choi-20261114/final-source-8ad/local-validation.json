@@ -1,0 +1,508 @@
+{
+  "state": "required_local_gates_passed",
+  "createdAt": "2026-11-15T09:56:59.632486+00:00",
+  "runtimeSource": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+  "gateHead": "56a470cd15412f732016ba24b9b96a57b166dfe5",
+  "fullRegression": {
+    "passed": 13608,
+    "skipped": 45,
+    "failed": 0
+  },
+  "nativeOfficial3": {
+    "passed": 4073,
+    "libIgnored": 12,
+    "steps": {
+      "native-lib": 4035,
+      "native-placeholder": 2,
+      "native-direct-pdf": 36
+    }
+  },
+  "focused": {
+    "focused-supplied-font": 21,
+    "native-hft-focused": 24,
+    "native-webfont-focused": 8,
+    "incoming9060-native": 4,
+    "native-supplied-font": 21
+  },
+  "steps": [
+    {
+      "step": "manifest-prepare",
+      "started": "2026-11-15T08:53:28.732311+00:00",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exitCode": 0,
+      "completed": "2026-11-15T08:53:31.900988+00:00",
+      "logSha256": "f6d943cb8442a1ba91af4487f69d8de78df363575ee995c6da0e7a84df3e3f09"
+    },
+    {
+      "step": "fmt",
+      "started": "2026-11-15T08:53:31.901786+00:00",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exitCode": 0,
+      "completed": "2026-11-15T08:54:13.954188+00:00",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "focused-supplied-font",
+      "started": "2026-11-15T08:54:13.954451+00:00",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_7445_original_font_program_ownership",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--test-threads",
+        "4"
+      ],
+      "exitCode": 0,
+      "completed": "2026-11-15T09:03:16.043762+00:00",
+      "logSha256": "97395171eeec84b1e15578e77d10862da6323d2e1ff3c3e54f1582e3a75675c8"
+    },
+    {
+      "step": "full-regression",
+      "started": "2026-11-15T09:03:16.044758+00:00",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--tests",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exitCode": 0,
+      "completed": "2026-11-15T09:29:19.712775+00:00",
+      "logSha256": "67f1314932e4aa3172cf784af4998fdcc869e0180ff6a7bf7267689e8165c8d9"
+    },
+    {
+      "step": "clippy-root",
+      "started": "2026-11-15T09:29:19.713266+00:00",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exitCode": 0,
+      "completed": "2026-11-15T09:30:27.876915+00:00",
+      "logSha256": "aa6ee3d405516c4d294b791c55bc1f21ea77fd15b1d7234b36281a5f91f49eef"
+    },
+    {
+      "step": "clippy-wasm",
+      "started": "2026-11-15T09:30:27.877247+00:00",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exitCode": 0,
+      "completed": "2026-11-15T09:31:35.792938+00:00",
+      "logSha256": "8cc10b45bb0f66c73e6b6991298d82641fb098a924d9704e4e4c943fcab3f71a"
+    },
+    {
+      "step": "workspace-build",
+      "started": "2026-11-15T09:31:35.793265+00:00",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review"
+      ],
+      "exitCode": 0,
+      "completed": "2026-11-15T09:32:57.417217+00:00",
+      "logSha256": "1be222961b29b0be32600347e80ec8f4e4aa5cbf7ac2c7d239c658979c275c2f"
+    },
+    {
+      "step": "clippy-workspace",
+      "started": "2026-11-15T09:32:57.417788+00:00",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exitCode": 0,
+      "completed": "2026-11-15T09:34:42.285363+00:00",
+      "logSha256": "362613a0f31cee8d4a421e37ac2186e10c49b8da6ad62cb613d24defbbbd8c61"
+    },
+    {
+      "step": "manifest-check",
+      "started": "2026-11-15T09:34:42.285780+00:00",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "e7ee272cfa33a960b0d0d924983d29e6509903e0"
+      ],
+      "exitCode": 0,
+      "completed": "2026-11-15T09:34:43.200128+00:00",
+      "logSha256": "3ef506c03fa3e29392f2418c18d48f11e4a89a96ef1bdcf2328e4d1858970e24"
+    },
+    {
+      "step": "native-lib",
+      "started": "2026-11-15T09:34:43.200481+00:00",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "8"
+      ],
+      "exitCode": 0,
+      "completed": "2026-11-15T09:41:14.862034+00:00",
+      "logSha256": "02764b49a32aacccd00589ecd2f9a5a5a0c32f3da639654b228f043f90917c1a"
+    },
+    {
+      "step": "native-placeholder",
+      "started": "2026-11-15T09:41:14.862376+00:00",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "exitCode": 0,
+      "completed": "2026-11-15T09:47:07.353888+00:00",
+      "logSha256": "762fc8108481234f13b08f6247063618f004319643d6e76fe9579da73f06171d"
+    },
+    {
+      "step": "native-direct-pdf",
+      "started": "2026-11-15T09:47:07.354218+00:00",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "exitCode": 0,
+      "completed": "2026-11-15T09:47:34.134093+00:00",
+      "logSha256": "d3a6199980c6a7da587a6eec88be007cbdf2445514845fec2e73bc613f1ef186"
+    },
+    {
+      "step": "native-hft-focused",
+      "started": "2026-11-15T09:47:34.134453+00:00",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "hft_outline_font_contract",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "4"
+      ],
+      "exitCode": 0,
+      "completed": "2026-11-15T09:47:56.865688+00:00",
+      "logSha256": "e99f4138f428ac59fd4d59e93126c94c9a2f724144dd9cf8b208e7b912533cdc"
+    },
+    {
+      "step": "native-webfont-focused",
+      "started": "2026-11-15T09:47:56.866040+00:00",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8533_native_webfont_supply",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "4"
+      ],
+      "exitCode": 0,
+      "completed": "2026-11-15T09:48:17.761969+00:00",
+      "logSha256": "01864636d75b74e8ce0a9a54cfb7f3d48638e5524dcd407f4cc0556f79a58b4d"
+    },
+    {
+      "step": "incoming9060-native",
+      "started": "2026-11-15T09:48:17.762316+00:00",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_9060_rowbreak_first_line_fragment",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "4"
+      ],
+      "exitCode": 0,
+      "completed": "2026-11-15T09:48:19.087266+00:00",
+      "logSha256": "338ad14c13a3e26d61f8effe4989fc3eb9d2b013e375ac8f70ef82cbc95e45f7"
+    },
+    {
+      "step": "native-supplied-font",
+      "started": "2026-11-15T09:48:19.087629+00:00",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_7445_original_font_program_ownership",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "4"
+      ],
+      "exitCode": 0,
+      "completed": "2026-11-15T09:48:40.460260+00:00",
+      "logSha256": "fe8e167690c58f03e440575aa29ef5f8a37a1cfb2f10fb47cadb47f24f488e87"
+    },
+    {
+      "step": "native-build",
+      "started": "2026-11-15T09:48:40.460704+00:00",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--bin",
+        "rhwp"
+      ],
+      "exitCode": 0,
+      "completed": "2026-11-15T09:54:58.600186+00:00",
+      "logSha256": "fec9c1f343df947efa547fce877abda892b2e22f16b98ec44eda1ff302f55d1b"
+    }
+  ],
+  "isolation": [
+    "bwrap",
+    "--ro-bind",
+    "/usr",
+    "/usr",
+    "--symlink",
+    "usr/bin",
+    "/bin",
+    "--symlink",
+    "usr/lib",
+    "/lib",
+    "--symlink",
+    "usr/lib64",
+    "/lib64",
+    "--ro-bind",
+    "/etc",
+    "/etc",
+    "--ro-bind",
+    "/mnt/wsl/resolv.conf",
+    "/mnt/wsl/resolv.conf",
+    "--proc",
+    "/proc",
+    "--dev",
+    "/dev",
+    "--ro-bind",
+    "/sys",
+    "/sys",
+    "--bind",
+    "/tmp",
+    "/tmp",
+    "--dir",
+    "/home/edward",
+    "--bind",
+    "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity",
+    "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity",
+    "--bind",
+    "/home/edward/mygithub/rhwp/target/pr-review",
+    "/home/edward/mygithub/rhwp/target/pr-review",
+    "--bind",
+    "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114",
+    "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114",
+    "--bind",
+    "/home/edward/.cargo",
+    "/home/edward/.cargo",
+    "--ro-bind",
+    "/home/edward/.rustup",
+    "/home/edward/.rustup",
+    "--ro-bind",
+    "/home/edward/.nvm/versions/node/v24.15.0",
+    "/home/edward/.nvm/versions/node/v24.15.0",
+    "--ro-bind",
+    "/home/edward/mygithub/rhwp/.git",
+    "/home/edward/mygithub/rhwp/.git",
+    "--tmpfs",
+    "/usr/share/fonts",
+    "--tmpfs",
+    "/usr/local/share/fonts",
+    "--tmpfs",
+    "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/ttfs",
+    "--ro-bind",
+    "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/ttfs/opensource",
+    "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/ttfs/opensource",
+    "--ro-bind",
+    "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/ttfs/redistributable",
+    "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/ttfs/redistributable",
+    "--setenv",
+    "HOME",
+    "/home/edward",
+    "--setenv",
+    "FONTCONFIG_FILE",
+    "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/minimal-font/fonts.conf",
+    "--unsetenv",
+    "RHWP_FONT_PATH",
+    "--chdir",
+    "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity"
+  ],
+  "exposedFontInventory": [
+    "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+    "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+    "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/ttfs/opensource/RHWPOldHangul-Regular.otf",
+    "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/ttfs/opensource/NotoSansKR-Regular.ttf",
+    "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/ttfs/opensource/RHWPPublicBatang-Regular.ttf"
+  ],
+  "studio": {
+    "runtimeSource": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+    "testHead": "56a470cd15412f732016ba24b9b96a57b166dfe5",
+    "wasmSha256": "7c8074771ec32fcc0503ba072fe8f3e077a7322c1a871eeff5dffc98e1dc0c07",
+    "steps": [
+      {
+        "name": "bindings",
+        "command": [
+          "node",
+          "--test",
+          "scripts/frontend-wasm-bindings.test.mjs"
+        ],
+        "started": "2026-11-15T08:54:23.267490+00:00",
+        "exitCode": 0,
+        "completed": "2026-11-15T08:54:23.397927+00:00"
+      },
+      {
+        "name": "studio",
+        "command": [
+          "npm",
+          "test"
+        ],
+        "started": "2026-11-15T08:54:23.506923+00:00",
+        "exitCode": 0,
+        "completed": "2026-11-15T08:54:52.323006+00:00"
+      },
+      {
+        "name": "typescript",
+        "command": [
+          "npx",
+          "tsc",
+          "--noEmit"
+        ],
+        "started": "2026-11-15T08:54:52.407658+00:00",
+        "exitCode": 0,
+        "completed": "2026-11-15T08:54:54.026430+00:00"
+      },
+      {
+        "name": "studio-build",
+        "command": [
+          "npm",
+          "run",
+          "build"
+        ],
+        "started": "2026-11-15T08:54:54.095587+00:00",
+        "exitCode": 0,
+        "completed": "2026-11-15T08:55:00.322304+00:00"
+      }
+    ]
+  },
+  "browserContracts": {
+    "command": [
+      "node",
+      "--test",
+      "scripts/tests/visual-sweep-canvas-fonts.browser.mjs"
+    ],
+    "tests": 26,
+    "passed": 26,
+    "failed": 0,
+    "logSha256": "bfd83951682fd0132d9e1d8004a4120b62ef64c8fd7f0666aa24e06b49a58d99"
+  },
+  "sideChecks": {
+    "nativeWebfontsPython": {
+      "tests": 14,
+      "passed": 14,
+      "logSha256": "c238e138384d4be690a4ea8c6d8462d70df525b549214677ace53213f0643a53"
+    },
+    "actualFontRegistrationBrowser": {
+      "tests": 2,
+      "passed": 2,
+      "logSha256": "c33f6fc56ac7c50f42992bd88467f131b66e3ac39f2b7c41e33123ed3ddb399a",
+      "initialAttempt": "VISUAL_SWEEP_CHROME was omitted; browser did not start. Corrected invocation explicitly names Chromium 1660786."
+    }
+  }
+}
