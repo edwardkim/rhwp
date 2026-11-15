@@ -3,6 +3,8 @@ mod bookmark_query;
 mod cursor_nav;
 mod cursor_rect;
 pub(crate) mod doc_tree_nav;
+/// 한컴 문서 정보 창의 문서 요약·그림 정보·저작권·개체 수.
+pub mod document_info;
 /// [#3828] `explain` 명령 전용 집계(각주/미주 개수) — 다른 조회가 채우지 못하는 구멍.
 pub mod explain;
 /// [#gym] `explore` 명령의 어포던스 라우터 — 기존 조회 개수에서 문서별 행동 메뉴를 유도.

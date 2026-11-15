@@ -6991,6 +6991,39 @@ impl HwpDocument {
         self.table_edit_at_cursor(list_id, op).map_err(|e| e.into())
     }
 
+    /// 문서 요약(제목·주제·지은이·날짜·키워드·기타·마지막 저장한 사람·만든 날짜·마지막 저장한 날짜) —
+    /// 한컴 파일 > 문서 정보의 문서 요약·문서 통계 탭.
+    #[wasm_bindgen(js_name = getDocumentSummary)]
+    pub fn get_document_summary(&self) -> String {
+        self.core.document_summary_json()
+    }
+
+    /// 문서 요약을 고친다. JSON 에 든 칸만 바꾸고 HWP·HWPX 저장 자리를 함께 쓴다.
+    #[wasm_bindgen(js_name = setDocumentSummary)]
+    pub fn set_document_summary(&mut self, json: &str) -> Result<String, JsValue> {
+        self.core
+            .set_document_summary_json(json)
+            .map_err(|e| e.into())
+    }
+
+    /// 문서에 든 그림 파일(BinData) — 삽입·연결, 경로, 처음 그리는 쪽. 문서 정보 > 그림 정보.
+    #[wasm_bindgen(js_name = getBinDataList)]
+    pub fn get_bin_data_list(&self) -> String {
+        self.core.bin_data_infos_json()
+    }
+
+    /// 문서의 저작권 표시(`{type, flag, lang}` 또는 `null`). 문서 정보 > 저작권.
+    #[wasm_bindgen(js_name = getLicenseMark)]
+    pub fn get_license_mark(&self) -> String {
+        self.core.license_mark_json()
+    }
+
+    /// 표·그림·글상자 수(본문·머리말·꼬리말·바탕쪽). 문서 정보 > 문서 통계.
+    #[wasm_bindgen(js_name = getObjectCount)]
+    pub fn get_object_count(&self) -> String {
+        self.core.object_count_json()
+    }
+
     /// 문서가 담은 컨트롤 사슬 — `HeadCtrl`·`LastCtrl` 과 `Next`·`Prev` 가 딛는다.
     #[wasm_bindgen(js_name = getControls)]
     pub fn get_controls(&self) -> String {
