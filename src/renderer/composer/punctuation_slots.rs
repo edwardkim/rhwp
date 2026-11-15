@@ -99,17 +99,23 @@ fn slot(
                 style.italic,
             )
             .is_some_and(|font| {
-                !font.has_glyph(ch)
-                    && (styles.source_hwp3_native
-                        || (style.source_hft_for_lang(inherited)
-                            && style.source_hft_for_lang(1)
-                            && font.has_only_cff_programs()))
+                if styles.source_hwp3_native {
+                    !font.has_glyph(ch)
+                } else {
+                    style.source_hft_for_lang(inherited)
+                        && style.source_hft_for_lang(1)
+                        && font.primary_cff_has_glyph(ch) == Some(false)
+                }
             })
         && styles
             .native_pua_fonts
             .get_otf(style.font_family_for_lang(1), style.bold, style.italic)
             .is_some_and(|font| {
-                font.has_glyph(ch) && (styles.source_hwp3_native || font.has_only_cff_programs())
+                if styles.source_hwp3_native {
+                    font.has_glyph(ch)
+                } else {
+                    font.primary_cff_has_glyph(ch) == Some(true)
+                }
             });
     // HWP5 한자 뒤 ASCII 괄호는 앞 한자의 프로그램을 상속하지 않는다.
     // 독립 Print의 궁서/굴림/바탕 등 같은 크기 대조에서 영문 슬롯을 확인했다.

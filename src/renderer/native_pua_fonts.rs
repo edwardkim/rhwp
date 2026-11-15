@@ -128,9 +128,15 @@ impl PartialEq for NativeOtfMetrics {
 }
 
 impl NativeOtfMetrics {
-    /// HFT의 분리 프로그램 소유를 확인할 때 TTF 대체 공급과 구분한다.
-    pub(crate) fn has_only_cff_programs(&self) -> bool {
-        !self.programs.is_empty() && self.programs.iter().all(|program| program.cff)
+    /// 원 HFT 주 프로그램의 coverage다. 뒤의 표시용 TTF가 결측 글자를
+    /// 가졌다고 원문의 별도 영문 슬롯까지 그 TTF가 소유하지 않는다.
+    pub(crate) fn primary_cff_has_glyph(&self, character: char) -> Option<bool> {
+        let program = self.programs.first().filter(|program| program.cff)?;
+        let face = ttf_parser::Face::parse(&program.bytes, program.face_index).ok()?;
+        Some(
+            face.glyph_index(character)
+                .is_some_and(|glyph| glyph.0 != 0),
+        )
     }
 
     /// 실제 공급을 마친 동일 family TrueType 요청의 전진만 허용한다.
