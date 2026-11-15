@@ -56,3 +56,15 @@ Native binary SHA-256은 `25ac5b6d9eb366ac78177e0849fcdbf706e1b9f36b2b25bec50ba9
 새 Native 바이너리로 재출력한 전 14쪽 PNG는 이전 source43의 실제 PNG와 각각 바이트가 같다.
 이에 따라 이전 독립 Print의 같은 쪽·같은 배율 직접 판독을 재사용한다. 컴파일·IR·SVG 해시로
 PNG 재출력을 대신하지 않았으며 전체 14쪽의 새 실루엣 측정도 완료했다. fresh WASM은 별도 검증 중이다.
+
+## 최적화 WASM·Studio 선행 검증 완료
+
+source `833c22d0de3e6ec8cbe090a1358a6d457bac8039`의 최적화 WASM binary SHA-256은 `d40ecc2600f0f5a37e1783555d6575050044d529f18a7a9fba83c885162f632d`이다.
+실제 Canvas browser23개가 통과했고, 새 package로 재출력한 원 문서 전14쪽도 모두 raw100.00%다.
+Native·WASM 각각 전14쪽의 PNG가 이전 직접 판독 PNG와 바이트가 같아 그 판독을 재사용한다.
+표 조각의 원문·소유 감사와 같은 쪽 review/overlay 재산출도 완료했다.
+
+같은 package를 root pkg와 Studio public 실행 경로에 동기화했다. JS 바이트는 같고 두 타입 선언의
+생성 순서가 바뀌어 실제 생성본으로 갱신한다. 바인딩/embed3개·타입 검사·Node2,796개·프로덕션
+빌드가 모두 통과했다. 원시 로그·중간 JSON은 output에만 보존한다. 보호 전쪽·새 base의 같은
+Linux 조건 전389쪽 대조와 전체 Rust 검증은 아직 실행 중이므로 PR 완료를 선언하지 않는다.
