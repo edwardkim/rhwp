@@ -543,6 +543,7 @@ class CiImpactWorkflowTests(unittest.TestCase):
         expected_defaults = {
             "rust_required": "'true'",
             "frontend_mode": "'package'",
+            "frontend_canvas_required": "'true'",
             "render_required": "'true'",
             "native_skia_required": "'true'",
             "codeql_languages": "'javascript-typescript,python,rust,actions'",
@@ -698,6 +699,23 @@ class CiImpactWorkflowTests(unittest.TestCase):
         self.assertEqual(expected_commands, actual_commands)
         self.assertNotIn("--offline", install)
         self.assertNotIn("--ignore-scripts", install)
+
+    def test_frontend_canvas_shares_one_release_package_and_requires_browser_execution(self) -> None:
+        package = self._job("frontend-package-gates")
+        optimized = self._step("Build optimized WASM for frontend Canvas gates", package)
+        development = self._step("Build fresh WASM package for frontend gates", package)
+        browser = self._step("Run frontend Canvas gates", package)
+        self.assertIn("frontend_canvas_required == 'true'", optimized)
+        self.assertIn("frontend_canvas_required != 'true'", development)
+        self.assertIn("--profile release --build-mode standard", optimized)
+        self.assertIn("frontend_canvas_required == 'true'", browser)
+        self.assertIn("node scripts/frontend-canvas-gates.mjs", browser)
+        self.assertIn("/output/frontend-canvas-build/build.json", browser)
+        self.assertNotIn("continue-on-error", browser)
+        for command in ("cargo build", "export-pdf", "RHWP_RENDER_DIFF_PDF"):
+            self.assertNotIn(command, browser)
+        bindings = self._step("Verify WASM bindings and editor embed contract", package)
+        self.assertIn("scripts/tests/frontend-canvas-gates.test.mjs", bindings)
 
     def test_rust_lint_and_archive_builder_require_rust_axis(self) -> None:
         lint = self._job("lint")
