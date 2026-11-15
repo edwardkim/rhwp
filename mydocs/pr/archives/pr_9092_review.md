@@ -69,6 +69,6 @@ CodeQL의 네 언어 분석 job은 모두 success다. 별도 CodeQL 비교 check
 
 - 정확한 원 head·필수 check·정책 상태를 다시 확인했고 최신 devel `d954632aab5b80aadbea39cece4f5a783634856b`의 병합 시뮬레이션이 exit 0이었다. 원 PR merge 직전 상태는 CLEAN이었다.
 - [duration 자동 작업](https://github.com/edwardkim/rhwp/actions/runs/43734626476)은 success다. 새 실측이 없어 `no-verified-pr-duration-measurements`로 갱신을 보류하고 기존 metrics를 유지했다. [수집 근거](../assets/pr9092/duration.json)를 확인했으며 검증 CI는 재실행하지 않았다.
-- 메인테이너 옵션 M으로 이 archive·UI asset·오늘할일만 devel에 반영한다. 소스·test·workflow·baseline 변경은 없다.
-- [이슈 상태](../assets/pr9092/issue-state.json)는 CLOSED/completed다. 운영 기록 반영·devel 동기화 후 이슈와 원 PR에 실제 merge·검증·수정 전후 UI 이미지를 담은 댓글을 게시한다.
-- 원 fork `JinHeeWond/rhwp`의 `task/8905-about-dialog-overflow`는 보존한다. 전용 worktree `/home/edward/mygithub/rhwp-worktrees/pr-9092-about-dialog-overflow`·로컬 review branch·루트 output와 review debug는 종료 시 정리한다. 실제 실행 영수증은 `local/pr-9092-closure/closure.json`에 기록한다.
+- 메인테이너 옵션 M으로 이 archive·UI asset·오늘할일만 `30f97a0edd5ba515e6a7f4055bc4ab54bfa6ee8d`로 devel에 반영했다. 소스·test·workflow·baseline 변경은 없다.
+- [이슈 상태](../assets/pr9092/issue-state.json)는 CLOSED/completed다. 운영 기록 반영·devel 동기화 후 [이슈 완료 댓글](https://github.com/edwardkim/rhwp/issues/8905#issuecomment-6897580190)과 [첫 기여 환영·감사 댓글](https://github.com/edwardkim/rhwp/pull/9092#issuecomment-6897580874)을 게시했다. API 본문과 실제 GitHub 화면의 이미지 3개씩·총 6개 표시를 확인했다.
+- 원 fork `JinHeeWond/rhwp`의 `task/8905-about-dialog-overflow`는 보존한다. 전용 worktree `/home/edward/mygithub/rhwp-worktrees/pr-9092-about-dialog-overflow`·로컬 review branch·전용 fetch ref·루트 `output/`·review debug를 사용 종료 후 제거했다. 약 12.17 GiB를 확보했고 종료 시 여유는 127.68 GiB다. [댓글·브라우저·정리 영수증](../assets/pr9092/closure.json)에 정확한 삭제 경로·전후 용량을 보존했으며 로컬 최신 동기화 로그는 `local/pr-9092-closure/closure.json`이다.
