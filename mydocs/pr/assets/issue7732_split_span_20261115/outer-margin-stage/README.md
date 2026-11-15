@@ -69,3 +69,16 @@ Native 전17쪽·fresh WASM과 전체 보호 검증은 이 단계의 최종 소�
 [14쪽 review](wasm/p014/review.png)·[overlay](wasm/p014/overlay.png).
 Mac locked wrapper의 `--target web --out-dir pkg --no-opt` 로컬 대체 빌드이며
 Docker 최적화 빌드로 보고하지 않는다. 실제 Studio 소비 경로의 검증은 별도 기록한다.
+
+
+## Gulim 공급의 판정 범위
+
+[프로그램과 글리프의 구분 기록](gulim-supply-qualification.json)에 따라 Native에는 Windows 원본 5.03을 명시 공급했다.
+WASM은 실제 선택 기록에서 기존 공급 TTF 2.21(`6ff0f495…`)을 확인했다. 두 경로가 같은 버전을
+선택했다고 기록하지 않으며 2.21 또한 사용된 366개 글리프의 윤곽·전진폭이 모두 일치했다.
+수용 기록의 TTC 전체 파일 SHA와 같다고 주장하지 않는다. 독립 Print가 사용한 366개 글리프는
+Windows 5.03 원본의 윤곽·전진폭과 모두 일치하고 누락이 없으며 PDF revision도 5.03이다.
+PDF 내장 FontFile2는 읽기 전용 대조에만 사용했고 새 폰트 생성·렌더링 입력으로 사용하지 않았다.
+사용자 지시에 따라 원 TTC 위치를 다시 질문하지 않고 이 실제 공급 신원과 사용 글리프 대조를
+분리해 기록했다. 현재 소스의 Native/fresh WASM 전17쪽 보호 하락 0쪽과 직접 판독을 함께 확인했다.
+비공개 글꼴은 Git에 포함하지 않는다.
