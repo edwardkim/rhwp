@@ -42,5 +42,15 @@
 --test-threads 12 --no-fail-fast`다. Cargo 빌드 잡은8개다.
 
 주석의 갱신 시각은 집중 검사 종료 뒤 실제 기록 시각이며 실행한 assertion과 제품 코드는 같다.
-새 제품의 실제 Native/fresh WASM 출력·전쪽 보호·전체 회귀와 필수 lint는 다음 단계에서 검증한다.
+이 집중 검사 단계에서는 실제 출력·전쪽 보호·전체 회귀와 필수 lint가 후속 조건이었다. 완료한 최종 결과는 아래 절과 최종 검증 기록을 따른다.
 이 집중 검사 통과를 PR 생성·원격 CI·통합 완료로 표시하지 않는다.
+
+## 실제 출력과 최종 검증 완료
+
+제품 source `c95f9ade4e8acf9d901c01136ef2b9bacd60c497`에서 Native 47쪽은 98.61% → 99.18%로 개선됐으며 뒤 영문 원점은 같은 Native base의 x384.8로 복구됐다. WASM은 자체 base와 같은 x394.1·98.54%를 유지한다. backend 사이의 좌표 동일성을 요구하지 않는다. 두 경로의 실제 review·overlay를 직접 판독했다.
+
+최종 CBTA 47쪽: Native [review](final/rebase-f823-reading/en-dash-p047/final-native-review-047.png)·[overlay](final/rebase-f823-reading/en-dash-p047/final-native-overlay-047.png), fresh WASM [review](final/rebase-f823-reading/en-dash-p047/final-wasm-review-047.png)·[overlay](final/rebase-f823-reading/en-dash-p047/final-wasm-overlay-047.png). 이전 보정 전 그림과 구분한다.
+
+선행 진단에서 두 backend 모두 Native base 좌표를 요구했던 오류는 같은 backend끼리 비교하도록 정정했다. WASM의 기존 후보와 새 후보 PNG 차이는 막대 가장자리 1픽셀이며, 공식 raw와 TextRun 원점은 같다. 제품 코드나 TSV·보호 하한·허용폭을 바꿔 진단을 통과시키지 않았다.
+
+일반 중첩 표 17쪽은 Native·fresh WASM 모두 최저 98.59%로 상향된 보호값을 유지했다. 원 PR 문서는 양쪽 전 14쪽 raw 100.00%이며 누락·중복 검사도 통과했다. 전체 보호·최소 글꼴 회귀·Native 3종·필수 lint·Studio 결과는 [최종 검증 기록](verification-record.md)에 연결했다. 원격 CI와 병합 완료는 이 로컬 검증 기록으로 대신하지 않는다.

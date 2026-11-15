@@ -1,4 +1,165 @@
-# PR #9075 검증 기록
+# PR #9075 최종 검증 기록
+
+기록: 2026-11-15T14:03:30.073291+09:00.
+
+제품 source: `c95f9ade4e8acf9d901c01136ef2b9bacd60c497`. 전체 회귀의 시작 head는 `c95f9ade4e8acf9d901c01136ef2b9bacd60c497`이며 그 사이 제품 파일과 최종 검증 종료 시점의 파일 SHA가 같다. base는 `f8234f6f90cb25d9601c9d5d762e0a565aea19e4`다.
+
+원 PR head: `1309dbea65b7a95e25fa7d6abd3e10b5e65e5eb4`. 기존 원본·독립 PDF를 바꾸거나 재인쇄하지 않았다.
+
+Native binary SHA-256: `26005bcb8af59ff85b35c5b05f376cab93833ef5e24d640e036828cae774c53f`.
+fresh WASM SHA-256: `7ccf4e7c338d3d083acfa453cf4128d026869e60739e5b703ac912f14ce8c637`.
+
+## 실제 완료 결과
+
+- 원 문서는 Native/fresh WASM 각각 전 14쪽 raw 100.00%이며 실제 PNG 전 14쪽이 이전 판독본과 각각 바이트가 같다. [같은 입력 4·5·6쪽의 직접 판독과 review/overlay](final/main/README.md)를 연결한다.
+- 특별 보호 36개 데이터셋·3,542행은 상향된 정본 대비 하락 0행이다. 상승 행 수는 수용 조건 계약의 실제 결과를 따른다. 이전 수용 상승 30행의 하한을 그대로 지킨다. [전쪽 TSV](final/protected/README.md)·[수용 조건](final/protected-validation.json).
+- 실제 필수 편람 HWPX Native gate 383쪽은 종료 코드0, 최저 99.96%다. 130쪽의 기존 WMF 차이를 포함하며 마스킹하지 않는다.
+- 새 base의 다섯 원본은 같은 Linux·글꼴 조건에서 전 389쪽씩 대조했다. [양쪽 TSV](final/hft-style-coverage-tsv/README.md)와 [대표 직접 판독](final/rebase-f823-reading/README.md)을 구분한다.
+- 최소 공개 글꼴 격리에서 전체 Rust·원 주장 4건·Native 3종·필수 lint와 workspace 검사를 실행했다. 실제 터미널 요약과 로그 해시는 아래와 같다.
+- fresh Canvas browser 23 PASS, Studio Node 2,796 PASS·binding/embed 3 PASS·TypeScript 및 production build exit 0.
+- Cargo 빌드 잡 8개, 테스트 스레드 12개, 공유 target/pr-review를 재사용하고 Cargo 실행을 직렬화했다. 회귀는 시스템·사용자 글꼴을 격리한 공개 5개 자원, 시각 측정은 원래 실제 공급 프로그램 환경이다.
+- 원시 로그·run manifest·중간 JSON·중간 raster는 output에서만 관리한다. 비공개 글꼴 프로그램은 제출하지 않는다.
+
+## 단계별 실제 종료 코드·로그 SHA
+
+| 실행 | exit | 초 | 원시 로그 SHA-256 |
+| --- | ---: | ---: | --- |
+| `suite-prepare` | 0 | 1.999 | `6f4e880764b006aef181122ae2fff7b1dc1624b4edf7f29e326bf61833d6077c` |
+| `format-check` | 0 | 36.958 | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` |
+| `native-cli-build` | 0 | 420.222 | `b3df2ca5311471fcb295e87adcb2be50ffdadc0f125fbdb9ca69bb6dd91cbba0` |
+| `original-native-focused` | 0 | 443.138 | `bcc8f0b385fbc3680b349df06a62bfda803fc40c30b6d9920c03ce4317687adf` |
+| `fresh-wasm-build` | 0 | 548.658 | `929e4fe9382f6c8fcc0dea547dcd28a3ba8b62d21688de6e2997774ecc9e2abe` |
+| `canvas-browser` | 0 | 85.697 | `e4c3a64711cca3a12304d73b26d57d43dfdee5408aa2e5074dcc08057b12f530` |
+| `hft-style-coverage-final-suite-prepare` | 0 | 3.439 | `6f4e880764b006aef181122ae2fff7b1dc1624b4edf7f29e326bf61833d6077c` |
+| `hft-style-coverage-final-format` | 0 | 47.258 | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` |
+| `hft-style-coverage-final-suite-manifest` | 0 | 2.681 | `9d1ebbfd0387295d16a4bcb4ef7c2ac9a0a3d11897e2d1a87f980c8f5da7da69` |
+| `hft-style-coverage-final-unit-tiers` | 0 | 29.773 | `b0d22c7e9e78b2de09250df5931d136093b5d2ad3c7474ab5c37aa9c3dc75ad0` |
+| `hft-style-coverage-final-full-minimal-rust` | 0 | 3487.316 | `7c76d6c85783ca79dbdf51b8dbeb5222b23b8cf854cdec71910649ee2137d0ba` |
+| `hft-style-coverage-final-original-claim-native-focused` | 0 | 583.651 | `f6d1f20d6ffe46f90063fc89bf5f5c24789a7cd4e170102ff93e600ac5eb9f3e` |
+| `hft-style-coverage-final-final-native-lib` | 0 | 625.773 | `016b458ce781b74b16acd68f36fa041c1623fd14b94e8cc5f02dc52c6f2c88b7` |
+| `hft-style-coverage-final-final-native-picture-placeholder` | 0 | 71.788 | `6f13956d5c3a38f4e6e21507e7e9fa0809ed4a231f1ea3036828553944431851` |
+| `hft-style-coverage-final-final-native-direct-pdf` | 0 | 25.770 | `2f23746086a3a696a3276ac67a1f436ac02b24bee414354f1472071a53ac0059` |
+| `hft-style-coverage-final-original-claim-native-clippy` | 0 | 132.892 | `e5bcca3b29354d22cbc2b8f13ba4cb1e326648696db488e1332a2e0c0b09a797` |
+| `hft-style-coverage-final-default-clippy` | 0 | 125.547 | `bd49b259977ec1c213066b98cec9c803cff2f7e793b9f2a4db3648f89f6813ef` |
+| `hft-style-coverage-final-wasm-clippy` | 0 | 128.694 | `935754f5998c4ceb7c123e5eb6a05baaf90d791938cef4db70254f16541ed411` |
+| `hft-style-coverage-final-workspace-build` | 0 | 240.683 | `c0946556fe9a474c9a4cc0f5d860baba32d820366b2d506140f47c7f3d8d71c3` |
+| `hft-style-coverage-final-workspace-clippy` | 0 | 152.045 | `bb84194e42045a4cb962fe24b7dad84f355454ab9d689cc10ad40b566bed49ed` |
+| `bindings-and-embed` | 0 | 0.285 | `165308b3c7e5d8eb83670b72faf469168a1e80cdd3c1d76024a3aaad48550ca4` |
+| `typecheck` | 0 | 7.120 | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` |
+| `node` | 0 | 47.405 | `17ace5b99bca1e46dd4b25d9f83f69f78668eede3dde74380b82bc007399b253` |
+| `production-build` | 0 | 29.725 | `5d2ec94e5ff8f7400dc72bb188d8f84d6ca8ac140db9735411a54f78fe430c12` |
+| `suite-helper-contract` | 0 | 14.982 | `dd0dc6c36b49a0b529050695d671402fbbbaf0d499f97913f308907d2350d62a` |
+| `font-registration-contract` | 0 | 4.280 | `9a56d58a9c776536abfd087dfe47fcc804dfe98625bda7a94b8014413ae04a27` |
+| `handbook-contract` | 0 | 3.370 | `ac8d115f5895b5fcbf789db518fec795cc3736d31a9d608a7f09bb198b8db8e4` |
+| `new-sample-security` | 0 | 472.967 | `e0ffb1527a21dab4543766db16555f49c253e326a4ada65b81d932da3aba5e74` |
+| `changed-native-cases-clippy` | 0 | 12.054 | `ed00b7e40f0b21f6aa83f81a034701b1b1275862530cffe4e0af2283d12ad156` |
+
+## 터미널의 최종 요약
+
+### original-native-focused
+
+```text
+Summary [   0.079s] 4 tests run: 4 passed, 339 skipped
+```
+
+### canvas-browser
+
+```text
+ℹ tests 23
+ℹ pass 23
+ℹ fail 0
+ℹ skipped 0
+```
+
+### hft-style-coverage-final-full-minimal-rust
+
+```text
+Summary [1294.861s] 13583 tests run: 13583 passed (11 slow), 45 skipped
+```
+
+### hft-style-coverage-final-original-claim-native-focused
+
+```text
+Summary [   0.128s] 4 tests run: 4 passed, 339 skipped
+```
+
+### hft-style-coverage-final-final-native-lib
+
+```text
+test result: ok. 3853 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 26.91s
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+```
+
+### hft-style-coverage-final-final-native-picture-placeholder
+
+```text
+Summary [   3.506s] 2 tests run: 2 passed, 324 skipped
+```
+
+### hft-style-coverage-final-final-native-direct-pdf
+
+```text
+Summary [   2.881s] 36 tests run: 36 passed, 292 skipped
+```
+
+### bindings-and-embed
+
+```text
+ℹ tests 3
+ℹ pass 3
+ℹ fail 0
+ℹ skipped 0
+```
+
+### node
+
+```text
+ℹ tests 2796
+ℹ pass 2796
+ℹ fail 0
+ℹ skipped 0
+```
+
+### suite-helper-contract
+
+```text
+ℹ tests 24
+ℹ pass 24
+ℹ fail 0
+ℹ skipped 0
+```
+
+### font-registration-contract
+
+```text
+ℹ tests 2
+ℹ pass 2
+ℹ fail 0
+ℹ skipped 0
+```
+
+### new-sample-security
+
+```text
+Summary [  20.824s] 20 tests run: 20 passed, 628 skipped
+```
+
+## 저장 경로와 증거의 한계
+
+원문 셀의 전체 내용과 두 조각, 후속 제목의 누락·중복을 실제 render tree와 독립 PDF로 대조했다. HWPX serializer는 IR의 저장 line_segs를 소비하며 렌더링에서 그 값을 덮어쓰지 않는다. glyph-fit·Print glyph cache와 소수 paint 목적 영역은 저장 IR을 갱신하지 않는다. 이 변경에 반복 저장 검증을 생략한 근거는 해당 소비 경계이며 모든 조판 변경에 대한 일반 면제가 아니다.
+
+권고안4쪽의 base/후보 WASM paint JSON 전체와 CanvasKit 소비 코드가 같다. 기존 실제 CanvasKit 반경 전달 증거를 재사용하며 새 CanvasKit 캡처·새 CK 점수를 주장하지 않는다.
+
+로컬 검증 완료는 원격 CI·PR 생성·병합 완료를 뜻하지 않는다. 실제 원격 결과는 후속 PR review에 기록한다.
+
+
+## 리베이스 이전 검증 기록
+
+다음은 이전 base53/source43에서 완료한 역사적 실행이며 현재 head의 통과를 대신하지 않는다.
+
+### 이전 실행 기록
 
 > 새 base `f8234f6f90` 반영 뒤 재검증 중이다. 아래 수치는 리베이스 전 source43의 완료 기록이며 새 head의 통과로 대신하지 않는다. [리베이스 보고서](rebase-f823-analysis.md)를 따른다.
 
@@ -189,3 +350,11 @@ cargo nextest run --locked --cargo-profile release-test \
 | `wasm-clippy` | 0 | 3.199 | `5c05bd74bc59c78d52c4084fbf3111ec685ca88e6c55da828e347ae58c7e2576` |
 | `workspace-build` | 0 | 2.449 | `8f8b1dce1679886c7a6a71d75b3045d4de5bc0750769a34a065ab4f0bf2212e4` |
 | `workspace-clippy` | 0 | 30.111 | `34a594dd70fe68c1686c1ab55efe4d88674499d4607880bcc9f3ed5a27b19224` |
+
+## 보안 검사 실행 범위 정정
+
+최초 보안 명령의 `--tests`가 필터와 무관한 전체 suite 재컴파일까지 요청하는 것을 확인했다. 해당 실행만 중단하고 실제 두 보안 모듈의 `regression_suite_021`·`regression_suite_010`을 명시해 다시 실행했다. 신규 입력·세 검출기·assertion은 바꾸지 않았다. 위 완료 결과는 정정한 명령의 실제 종료 코드이며, 중단한 실행을 통과로 계산하지 않는다. 이미 완료한 전체 Rust 13,583건 결과는 별도다.
+
+## 제출 문서 확인
+
+정본 `scripts/check_markdown_links.py`의 동일 경로 수집·내부 링크·capability 등록부 검사 함수를 대상 Markdown 27개에 실행해 오류 0건을 확인했다. 변경하지 않은 redirect 검사를 위해 모든 추적 바이너리를 읽던 중복 범용 실행은 종료했다. 검사기 SHA-256은 `03a292f69bff96e9fc91ae1d111596e9fa76b6634224b78aed2cd679c6ded009`이며 검사기 자체는 수정하지 않았다. `git diff --check`도 통과했다.

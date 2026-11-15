@@ -1,12 +1,9 @@
 # 최종 전쪽 보호 검증 원본
 
-Native·fresh WASM 각 18개 입력·1,771쪽, 총 36개 데이터셋·3,542쪽을 같은 조건으로 대조했다.
-기존 정본 대비 **하락 0쪽·상승 30쪽(Native 15·WASM 15)**이다.
-제품 소스는 `43adf3f7fe412e71797456887e2be44b8ef8d14f`다.
+제품 source: `c95f9ade4e8acf9d901c01136ef2b9bacd60c497`. Native·fresh WASM 각각 18개 입력·1,771쪽, 총 36개 데이터셋·3,542행을 같은 조건으로 대조했다.
+상향된 정본 `8f073dddd67cf8f44bea7c0315c3f9950ba73641e9393747cdbc52d24b33f9a1` 대비 하락 0행·누락 0행·추가 상승 0행이다. 앞서 수용한 30행의 상향 하한을 유지한다.
 
-[수용 조건 계약](../protected-validation.json)은 정본 보호 baseline의 관리 대상 manifest다.
-입력/PDF·Native binary·WASM package의 SHA, 실제 글꼴 공급·명시 환경·raster 조건과
-전체 TSV SHA·범위·최저값·필수 게이트 결과를 연결한다. 중간 run manifest·원시 로그는 포함하지 않는다.
+[수용 조건 계약](../protected-validation.json)에 입력·독립 PDF·생산 프로그램·실제 글꼴 공급·계산 조건과 전쪽 TSV 해시를 연결했다. 중간 run manifest와 원시 로그는 제출하지 않는다.
 
 | 입력 식별자 | 쪽수 | Native 최저 | fresh WASM 최저 | 전쪽 TSV |
 | --- | ---: | ---: | ---: | --- |
@@ -29,9 +26,6 @@ Native·fresh WASM 각 18개 입력·1,771쪽, 총 36개 데이터셋·3,542쪽�
 | `seo-shape-group-02` | 1 | 100.00% | 100.00% | [Native](native/seo-shape-group-02.tsv) · [WASM](wasm/seo-shape-group-02.tsv) |
 | `yeongwol` | 4 | 100.00% | 100.00% | [Native](native/yeongwol.tsv) · [WASM](wasm/yeongwol.tsv) |
 
-각 입력·backend의 전체 결과는 같은 최종 실행에서 선택했다. 페이지별 최댓값을 이어 붙이지 않았다.
-편람 HWPX Native 383쪽은 별도 실제 `--handbook-gate` 실행의 전체 TSV를 같은 입력의 보호 대조에도 재사용했다.
-gate는 1,801.002초에 종료 코드 0으로 통과했고 공식 최저값은 99.96%다.
-기존 WMF 차이는 숨기지 않으며 전쪽 범위에 포함한다.
-원시 실행 로그·분석 JSON은 ignored output에서만 관리한다.
-원격 CI·통합 PR·병합 완료를 뜻하지 않는다.
+각 입력·backend의 전체 결과는 같은 최종 실행에서 선택했다. 페이지별 최댓값을 조합하지 않았다. 편람 HWPX Native 383쪽은 실제 `--handbook-gate` 실행 결과이며 종료 코드 0이다. 130쪽의 기존 WMF 차이를 포함하고 마스킹하지 않는다.
+
+공식 두 자리 raw는 2px 내용 실루엣의 보호 판정값이며 RGB 픽셀 동일성이나 모든 기존 그래픽 차이의 해결을 뜻하지 않는다. 원격 CI·통합 PR·병합 결과는 PR review에서 별도로 기록한다.

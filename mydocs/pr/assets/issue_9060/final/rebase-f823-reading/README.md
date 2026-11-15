@@ -36,3 +36,9 @@
 ## CanvasKit 기존 실행 근거의 재사용 경계
 
 권고안 4쪽의 실제 WASM paint JSON 전체가 새 base와 후보에서 바이트로 같으며 SHA-256은 `7f55004481831b80ecc948e6e293f6c8d82457469323cbd3a50fc2803a56342d`이다. `radialCircle`을 생산하는 공통 코드와 CanvasKit 소비 코드, 실제 `wasm-bridge.ts`·`renderer-session.ts`가 새 base와 같다. 기존 PR #9083의 실제 CanvasKit 반경 전달 증거를 이 경계에서 재사용한다. 새 CanvasKit PNG나 새 측정값을 산출했다고 주장하지 않는다.
+
+## 최종 후보의 동일 그림 확인
+
+제품 source `c95f9ade4e8acf9d901c01136ef2b9bacd60c497`로 다시 출력한 위 14개 주요 쪽 PNG는 이전 직접 판독 PNG와 각각 바이트가 같다. 따라서 같은 원본·쪽의 기존 review·overlay와 판독을 재사용했다. 실제 전쪽 TSV는 [최종 같은 환경 대조](../hft-style-coverage-tsv/README.md)에 연결한다. 점수만으로 그림 동일성을 추정하지 않았다.
+
+CBTA 47쪽은 새 서식 범위 보정 뒤 다시 판독했다. Native raw 99.18%의 [review](en-dash-p047/final-native-review-047.png)·[overlay](en-dash-p047/final-native-overlay-047.png), fresh WASM raw 98.54%의 [review](en-dash-p047/final-wasm-review-047.png)·[overlay](en-dash-p047/final-wasm-overlay-047.png)를 최종 그림으로 사용한다. 기존 `candidate-*` 그림은 source833의 보정 전 기록이다.

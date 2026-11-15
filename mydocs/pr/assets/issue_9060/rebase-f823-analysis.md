@@ -1,5 +1,9 @@
 # f8234f6f90 리베이스와 기능 보존 검증
 
+## 최종 제품 검증 상태
+
+제품 source `c95f9ade4e8acf9d901c01136ef2b9bacd60c497`의 최종 검증은 [검증 기록](verification-record.md)에 통합했다. 아래 source833 및 실행 중 표시는 당시 단계별 역사적 기록이며 현재 후보의 미완료 판정이 아니다. 새 굵게 반례와 일반 대조군의 결론은 [HFT 서식 범위 보정](hft-bar-style-coverage-analysis.md)을 따른다. 원격 CI·PR·병합 결과는 아직 별도 확인 대상이다.
+
 ## 리베이스 결과
 
 - 이전 base: `53da4d2da28ae0cacf8feac3a989cc6a69fb2622`.

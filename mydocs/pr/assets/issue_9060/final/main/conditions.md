@@ -1,6 +1,6 @@
 # 원 문서의 실제 공급 조건
 
-검증 제품 소스는 `43adf3f7fe412e71797456887e2be44b8ef8d14f`다.
+검증 제품 소스는 `c95f9ade4e8acf9d901c01136ef2b9bacd60c497`다.
 기존 한컴 Print PDF를 재사용했고 두 경로 모두 compat 2022·Print·96 DPI로 측정했다.
 [Native 명시적 환경](native-font-environment.json)은 실제 입력 설정이며 원본 저장 폭을 유지한다.
 아래는 실제 등록·공급된 프로그램의 식별값이며 글꼴 프로그램 자체는 포함하지 않는다.
@@ -58,17 +58,15 @@ CLI에 전달한 디렉터리·파일 입력을 펼친 9개 프로그램이다.
 
 ## 실제 실행 명령
 
-```text
-/home/tsjang/rhwp/venv/bin/python scripts/visual_sweep.py --silhouette-only --hwp /home/tsjang/rhwp/samples/issue9060/86036-rowbreak-first-line-fragment.hwpx --pdf /home/tsjang/rhwp/pdf/issue9060/86036-rowbreak-first-line-fragment-2020.pdf --key print-primary-final-main --rhwp-bin /home/tsjang/rhwp/output/pr-review/pr9075/rhwp-print-primary-final --compat 2022 --dpi 96 --page-workers 1 --font-environment /home/tsjang/rhwp/output/pr-review/pr9075/independent-print-font-environment-win-malgun.json --embed-fonts=full --font-path /home/tsjang/rhwp/output/pr-review/pr9075/print-fonts --font-path /home/tsjang/rhwp/output/pr-review/pr9075/font-version-candidates --out /home/tsjang/rhwp/output/pr-review/pr9075/print-primary-final-main
+```bash
+/home/tsjang/rhwp/venv/bin/python scripts/visual_sweep.py --silhouette-only --hwp /home/tsjang/rhwp/samples/issue9060/86036-rowbreak-first-line-fragment.hwpx --pdf /home/tsjang/rhwp/pdf/issue9060/86036-rowbreak-first-line-fragment-2020.pdf --key hft-style-coverage-main --rhwp-bin /home/tsjang/rhwp/output/pr-review/pr9075/rhwp-hft-style-coverage --compat 2022 --dpi 96 --page-workers 1 --font-environment /home/tsjang/rhwp/output/pr-review/pr9075/independent-print-font-environment-win-malgun.json --embed-fonts=full --font-path /home/tsjang/rhwp/output/pr-review/pr9075/print-fonts --font-path /home/tsjang/rhwp/output/pr-review/pr9075/font-version-candidates --out /home/tsjang/rhwp/output/pr-review/pr9075/hft-style-coverage-main
 ```
 
-```text
-node scripts/export-wasm-png-for-sweep.mjs --pkg /home/tsjang/rhwp/output/pr-review/pr9075/wasm-print-primary-css-final --input /home/tsjang/rhwp/samples/issue9060/86036-rowbreak-first-line-fragment.hwpx --out /home/tsjang/rhwp/output/pr-review/pr9075/print-primary-css-final-main-wasm --fonts /home/tsjang/rhwp/output/pr-review/pr9075/win-malgun-wasm-scores/win-malgun-wasm/silhouette-parts/p0001-0001/font-catalog.json --options /home/tsjang/rhwp/output/pr-review/pr9075/print-primary-final-main-wasm-options.json
+```bash
+node scripts/export-wasm-png-for-sweep.mjs --pkg /home/tsjang/rhwp/output/pr-review/pr9075/wasm-hft-style-coverage --input /home/tsjang/rhwp/samples/issue9060/86036-rowbreak-first-line-fragment.hwpx --out /home/tsjang/rhwp/output/pr-review/pr9075/hft-style-coverage-main-wasm-export --fonts /home/tsjang/rhwp/output/pr-review/pr9075/win-malgun-wasm-scores/win-malgun-wasm/silhouette-parts/p0001-0001/font-catalog.json --options /home/tsjang/rhwp/output/pr-review/pr9075/hft-style-coverage-main-wasm-options.json
 ```
 
-위 명령의 output 경로는 당시 로컬 실행을 식별한다. 검토 종료 시 임시 경로는 정리한다.
-최종 TSV·대표 PNG·제품 SHA와 관측값은 [검증 기록](../../verification-record.md)에 보존한다.
-WASM catalog SHA-256: `39eda841367769811a27a428f6ecd48fd6efea69b39ff3756ef22afadd0d3f43`. 실제 exporter가 원본·공급 프로그램의 SHA를 대조했다.
+명령의 output 경로는 실제 로컬 실행을 식별하며 검토 종료 때 정리한다. WASM catalog SHA-256은 `39eda841367769811a27a428f6ecd48fd6efea69b39ff3756ef22afadd0d3f43`이며 exporter가 실제 프로그램 SHA를 대조했다.
 
 ## 실제 실행 경로의 fresh package 반영
 
@@ -76,5 +74,5 @@ WASM catalog SHA-256: `39eda841367769811a27a428f6ecd48fd6efea69b39ff3756ef22afad
 새 빌드는 수행하지 않았으며 JS·WASM·타입 선언의 바이트 해시가 검증 package와 같은지 확인했다.
 기존 `pkg/rhwp.d.ts`의 오래된 내보내기 선언 때문에 실패하던 바인딩 검사는 산출물 반영 뒤
 3/3건 통과했고, Studio TypeScript 검사는 종료 코드 0이다. 기대값은 변경하지 않았다.
-Studio 소스는 이전 2,794건 통과 단계와 같고, 실제 브라우저 23건에서 사용한 package의 바이트를 그대로 소비한다.
+이번 새 package로 Studio Node 2,796건과 실제 브라우저 23건을 검증했다. Studio는 그 검증한 package의 바이트를 그대로 소비한다.
 Git에는 기존에 추적하는 JS·타입 선언 3개를 반영하며 생성 WASM binary는 기존 ignore 규칙을 따른다.

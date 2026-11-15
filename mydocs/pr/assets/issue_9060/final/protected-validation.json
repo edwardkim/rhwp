@@ -1,226 +1,38 @@
 {
   "state": "complete",
-  "created_at": "2026-11-14T22:56:34.013345+00:00",
-  "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-  "baseline_sha256": "1063d78078b704a2bfb712ca3929ab251596dd391b41bc1a9a44e9935e4990e5",
+  "created_at": "2026-11-15T05:03:28.905745+00:00",
+  "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+  "baseline_sha256": "8f073dddd67cf8f44bea7c0315c3f9950ba73641e9393747cdbc52d24b33f9a1",
   "dataset_count": 36,
   "row_count": 3542,
   "declines": [],
   "missing": [],
-  "increased_row_count": 30,
-  "increases": [
-    {
-      "key": "yeongwol",
-      "backend": "native",
-      "page": 3,
-      "previous": "99.99",
-      "candidate": "100.00"
-    },
-    {
-      "key": "seo-helvetica-styles",
-      "backend": "native",
-      "page": 1,
-      "previous": "99.25",
-      "candidate": "100.00"
-    },
-    {
-      "key": "nested",
-      "backend": "native",
-      "page": 1,
-      "previous": "98.44",
-      "candidate": "98.59"
-    },
-    {
-      "key": "nested",
-      "backend": "native",
-      "page": 2,
-      "previous": "99.98",
-      "candidate": "99.99"
-    },
-    {
-      "key": "nested",
-      "backend": "native",
-      "page": 5,
-      "previous": "99.98",
-      "candidate": "99.99"
-    },
-    {
-      "key": "nested",
-      "backend": "native",
-      "page": 6,
-      "previous": "99.98",
-      "candidate": "100.00"
-    },
-    {
-      "key": "nested",
-      "backend": "native",
-      "page": 7,
-      "previous": "99.98",
-      "candidate": "99.99"
-    },
-    {
-      "key": "nested",
-      "backend": "native",
-      "page": 10,
-      "previous": "98.78",
-      "candidate": "98.85"
-    },
-    {
-      "key": "nested",
-      "backend": "native",
-      "page": 11,
-      "previous": "99.06",
-      "candidate": "99.08"
-    },
-    {
-      "key": "nested",
-      "backend": "native",
-      "page": 12,
-      "previous": "99.87",
-      "candidate": "100.00"
-    },
-    {
-      "key": "nested",
-      "backend": "native",
-      "page": 13,
-      "previous": "99.68",
-      "candidate": "99.85"
-    },
-    {
-      "key": "nested",
-      "backend": "native",
-      "page": 14,
-      "previous": "98.60",
-      "candidate": "98.70"
-    },
-    {
-      "key": "nested",
-      "backend": "native",
-      "page": 15,
-      "previous": "99.13",
-      "candidate": "99.19"
-    },
-    {
-      "key": "nested",
-      "backend": "native",
-      "page": 16,
-      "previous": "98.36",
-      "candidate": "99.99"
-    },
-    {
-      "key": "sample10",
-      "backend": "native",
-      "page": 757,
-      "previous": "99.56",
-      "candidate": "99.57"
-    },
-    {
-      "key": "nested",
-      "backend": "wasm",
-      "page": 1,
-      "previous": "98.45",
-      "candidate": "98.59"
-    },
-    {
-      "key": "nested",
-      "backend": "wasm",
-      "page": 4,
-      "previous": "99.95",
-      "candidate": "99.96"
-    },
-    {
-      "key": "nested",
-      "backend": "wasm",
-      "page": 5,
-      "previous": "99.98",
-      "candidate": "99.99"
-    },
-    {
-      "key": "nested",
-      "backend": "wasm",
-      "page": 6,
-      "previous": "99.98",
-      "candidate": "100.00"
-    },
-    {
-      "key": "nested",
-      "backend": "wasm",
-      "page": 7,
-      "previous": "99.98",
-      "candidate": "99.99"
-    },
-    {
-      "key": "nested",
-      "backend": "wasm",
-      "page": 10,
-      "previous": "98.76",
-      "candidate": "98.83"
-    },
-    {
-      "key": "nested",
-      "backend": "wasm",
-      "page": 11,
-      "previous": "99.05",
-      "candidate": "99.10"
-    },
-    {
-      "key": "nested",
-      "backend": "wasm",
-      "page": 12,
-      "previous": "99.84",
-      "candidate": "100.00"
-    },
-    {
-      "key": "nested",
-      "backend": "wasm",
-      "page": 13,
-      "previous": "99.63",
-      "candidate": "99.85"
-    },
-    {
-      "key": "nested",
-      "backend": "wasm",
-      "page": 14,
-      "previous": "98.59",
-      "candidate": "98.70"
-    },
-    {
-      "key": "nested",
-      "backend": "wasm",
-      "page": 15,
-      "previous": "99.12",
-      "candidate": "99.19"
-    },
-    {
-      "key": "nested",
-      "backend": "wasm",
-      "page": 16,
-      "previous": "98.37",
-      "candidate": "99.99"
-    },
-    {
-      "key": "yeongwol",
-      "backend": "wasm",
-      "page": 3,
-      "previous": "99.99",
-      "candidate": "100.00"
-    },
-    {
-      "key": "issue7905",
-      "backend": "wasm",
-      "page": 1,
-      "previous": "99.97",
-      "candidate": "99.98"
-    },
-    {
-      "key": "sample10",
-      "backend": "wasm",
-      "page": 757,
-      "previous": "99.56",
-      "candidate": "99.57"
-    }
-  ],
+  "increased_row_count": 0,
+  "increases": [],
   "datasets": [
+    {
+      "key": "nested",
+      "document_id": "78e1720edfe2277d",
+      "backend": "native",
+      "identity": {
+        "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+        "reference_pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 17,
+      "minimum_display": "98.59",
+      "complete": true,
+      "passed": true,
+      "exit_code": 0,
+      "declines": [],
+      "path": "mydocs/pr/assets/issue_9060/final/protected/native/nested.tsv",
+      "sha256": "66a699bae01af9f0c8b2cc73418381de8a298e995e323a964b44fd79c9ba1f14",
+      "condition_id": "31946f2b69cdcc56fbc0e73bdc368d8eafdedfb0a9622449786a6e6b873ce9c1"
+    },
     {
       "key": "seo-body-list-typed",
       "document_id": "2b43ec3782a748e1",
@@ -427,29 +239,6 @@
       "path": "mydocs/pr/assets/issue_9060/final/protected/native/issue8040-insert.tsv",
       "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
       "condition_id": "0ae832b931d3bd5702eef2a11a99383bfd845f30c4a01102e657ef56d8d397e7"
-    },
-    {
-      "key": "nested",
-      "document_id": "78e1720edfe2277d",
-      "backend": "native",
-      "identity": {
-        "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
-        "reference_pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
-        "compat": "2022",
-        "dpi": 96,
-        "profile": "print",
-        "metric": "silhouette_raw_match_percent",
-        "radius_px": 2
-      },
-      "page_count": 17,
-      "minimum_display": "98.59",
-      "complete": true,
-      "passed": true,
-      "exit_code": 0,
-      "declines": [],
-      "path": "mydocs/pr/assets/issue_9060/final/protected/native/nested.tsv",
-      "sha256": "66a699bae01af9f0c8b2cc73418381de8a298e995e323a964b44fd79c9ba1f14",
-      "condition_id": "31946f2b69cdcc56fbc0e73bdc368d8eafdedfb0a9622449786a6e6b873ce9c1"
     },
     {
       "key": "sample16-hwp2024",
@@ -1051,15 +840,186 @@
     }
   ],
   "native_binary": {
-    "path": "/home/tsjang/rhwp/output/pr-review/pr9075/rhwp-print-primary-final",
-    "sha256": "5e9c68af4bb8b902b56b5a80678156da193bbcd983080a7b804e0d16ca1dccd6"
+    "path": "/home/tsjang/rhwp/output/pr-review/pr9075/rhwp-hft-style-coverage",
+    "sha256": "26005bcb8af59ff85b35c5b05f376cab93833ef5e24d640e036828cae774c53f"
   },
   "wasm_package": {
     "rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
-    "rhwp_bg.wasm": "b2fd15c785c7201c63b5c1942f47ae2b244db9c303614338638daa439d1b9f3c"
+    "rhwp_bg.wasm": "7ccf4e7c338d3d083acfa453cf4128d026869e60739e5b703ac912f14ce8c637"
   },
   "wasm_native_auxiliary_scope": "기존 Native는 입력 정보·실루엣 실행의 보조 CLI로만 사용한다. 새 WASM package의 페이지를 실제 재출력한다. 이 기록만으로 새 Native 빌드 완료를 주장하지 않는다.",
   "condition_sets": {
+    "31946f2b69cdcc56fbc0e73bdc368d8eafdedfb0a9622449786a6e6b873ce9c1": {
+      "font_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "files": [
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/pr9075/approved-cff-programs/016526d6700359164c27eaecb599c03b8908c4adc9767e891b0889797c0d3b59.otf",
+            "sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/pr9075/approved-cff-programs/0b6c5d9bbd45d90df3d5f4d5fd62830fa409676c3315b8c76d204cd0d789989d.otf",
+            "sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/pr9075/approved-cff-programs/16ea5d7d31cb6749978f98993de77fbe28ae4c249e35e6496bd3f5458ac3c14a.otf",
+            "sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/pr9075/approved-cff-programs/1fd7e301e828b77b80781953d7e1fced20086ccd0cb81a38ccf96915be5e1842.otf",
+            "sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/pr9075/approved-cff-programs/5920b2a255986f0cc22669cbf19f786d6bc72306b0019ef8bd439cbddccbf4eb.otf",
+            "sha256": "4d1cee6065faf8306d01715349b6878982e7e4ecc809956be79a30d95185e8dd"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/pr9075/approved-cff-programs/7bfcf7cf1285f05e6519b2f0c8fb15bdd42d44fb01e9fb3b21547140acfcae1e.otf",
+            "sha256": "4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/pr9075/approved-cff-programs/9d07b699622f035eeb78771920f60c89e5e49317dc2fbad88715f77dffb95d31.otf",
+            "sha256": "7853ab58b7a8dfab3159e28b1ad8ab157fe534c2c5bcfdd2246a8a547bdac75c"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/pr9075/approved-cff-programs/d1d1d8e02020ebe081cb0af257453477ca781ae9cda063e18c8f10cb46aa18c7.otf",
+            "sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/pr9075/protected-print-fonts/NGULIM.TTF",
+            "sha256": "871b6190046c01ccabf52c80e393af623176c1a30a86a8a297f6f1acfbdd9b43"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/pr9075/protected-print-fonts/batang.ttc",
+            "sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/pr9075/protected-print-fonts/gulim.ttc",
+            "sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226"
+          }
+        ]
+      },
+      "font_environment": {
+        "sha256": "69d9e65b9ee3d8f6b7fa891e5b66791a62cc5a50771b9630feb7360e543a6722",
+        "configuration": {
+          "documentSubstitutions": [
+            {
+              "fontId": 8,
+              "languageSlot": 0,
+              "programId": "d1d1d8e02020ebe081cb0af257453477ca781ae9cda063e18c8f10cb46aa18c7",
+              "query": "휴먼고딕",
+              "source": "휴먼고딕",
+              "target": "Human Gothic"
+            }
+          ],
+          "id": "approved-print-gulim-preserve-other-programs",
+          "preserveSourceMetrics": true,
+          "selectedPrograms": {
+            "HCI Hollyhock": {
+              "family": "HCI Hollyhock",
+              "openTypeCff": true,
+              "programId": "7bfcf7cf1285f05e6519b2f0c8fb15bdd42d44fb01e9fb3b21547140acfcae1e",
+              "query": "HCI Hollyhock",
+              "trueType": false
+            },
+            "HCI Poppy": {
+              "family": "HCI Poppy",
+              "openTypeCff": true,
+              "programId": "16ea5d7d31cb6749978f98993de77fbe28ae4c249e35e6496bd3f5458ac3c14a",
+              "query": "HCI Poppy",
+              "trueType": false
+            },
+            "명조": {
+              "family": "Myeongjo",
+              "openTypeCff": true,
+              "programId": "0b6c5d9bbd45d90df3d5f4d5fd62830fa409676c3315b8c76d204cd0d789989d",
+              "query": "명조",
+              "trueType": false
+            },
+            "신명 태고딕": {
+              "family": "Sinmyeong Taegothic",
+              "openTypeCff": true,
+              "programId": "9d07b699622f035eeb78771920f60c89e5e49317dc2fbad88715f77dffb95d31",
+              "query": "신명 태고딕",
+              "trueType": false
+            },
+            "신명 태그래픽": {
+              "family": "Sinmyeong Taegraphic",
+              "openTypeCff": true,
+              "programId": "5920b2a255986f0cc22669cbf19f786d6bc72306b0019ef8bd439cbddccbf4eb",
+              "query": "신명 태그래픽",
+              "trueType": false
+            },
+            "한양신명조": {
+              "family": "HY Sinmyeongjo",
+              "openTypeCff": true,
+              "programId": "016526d6700359164c27eaecb599c03b8908c4adc9767e891b0889797c0d3b59",
+              "query": "한양신명조",
+              "trueType": false
+            },
+            "한양중고딕": {
+              "family": "HY Junggothic",
+              "openTypeCff": true,
+              "programId": "1fd7e301e828b77b80781953d7e1fced20086ccd0cb81a38ccf96915be5e1842",
+              "query": "한양중고딕",
+              "trueType": false
+            }
+          },
+          "substitutions": {
+            "HCI Hollyhock": "HCI Hollyhock",
+            "HCI Poppy": "HCI Poppy",
+            "명조": "Myeongjo",
+            "바탕": "NotoSerifKRExtraLight-Regular",
+            "바탕체": "NotoSerifKRExtraLight-Regular",
+            "신명 태고딕": "Sinmyeong Taegothic",
+            "신명 태그래픽": "Sinmyeong Taegraphic",
+            "한양신명조": "HY Sinmyeongjo",
+            "한양중고딕": "HY Junggothic",
+            "휴먼명조": "Gulim"
+          },
+          "trueTypeFaces": [
+            "Gulim"
+          ],
+          "glyphFallbacks": {
+            "Gulim": [
+              "Haansoft Batang"
+            ]
+          }
+        }
+      },
+      "image_decoding": {
+        "alpha_background": "#ffffff",
+        "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+      },
+      "pdf_rasterizer": {
+        "program": "pypdfium2",
+        "backend": "pdfium",
+        "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+        "antialias": {
+          "text": true,
+          "image": true,
+          "path": true
+        },
+        "coordinate_transform": {
+          "scale": "dpi/72 on both axes",
+          "buffer_extent": "ceil(page_points*dpi/72)",
+          "annotations": true
+        },
+        "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+        "available": true,
+        "executable": "/usr/bin/python3.12",
+        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+        "library": "/home/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+        "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+        "version": "153.0.7999.0",
+        "wrapper_version": "5.13.0",
+        "version_exit_code": 0
+      },
+      "raster_backend": "native-skia",
+      "sweep_script_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+      "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9"
+    },
     "0ae832b931d3bd5702eef2a11a99383bfd845f30c4a01102e657ef56d8d397e7": {
       "font_supply": {
         "mode": "direct-font-programs",
@@ -3184,177 +3144,6 @@
             "Times New Roman",
             "휴먼명조"
           ]
-        }
-      },
-      "image_decoding": {
-        "alpha_background": "#ffffff",
-        "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
-      },
-      "pdf_rasterizer": {
-        "program": "pypdfium2",
-        "backend": "pdfium",
-        "policy": "pdfium_smooth_rgb_exact_dpi_v2",
-        "antialias": {
-          "text": true,
-          "image": true,
-          "path": true
-        },
-        "coordinate_transform": {
-          "scale": "dpi/72 on both axes",
-          "buffer_extent": "ceil(page_points*dpi/72)",
-          "annotations": true
-        },
-        "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
-        "available": true,
-        "executable": "/usr/bin/python3.12",
-        "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
-        "library": "/home/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
-        "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
-        "version": "153.0.7999.0",
-        "wrapper_version": "5.13.0",
-        "version_exit_code": 0
-      },
-      "raster_backend": "native-skia",
-      "sweep_script_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
-      "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9"
-    },
-    "31946f2b69cdcc56fbc0e73bdc368d8eafdedfb0a9622449786a6e6b873ce9c1": {
-      "font_supply": {
-        "mode": "direct-font-programs",
-        "source": "explicit",
-        "files": [
-          {
-            "path": "/home/tsjang/rhwp/output/pr-review/pr9075/approved-cff-programs/016526d6700359164c27eaecb599c03b8908c4adc9767e891b0889797c0d3b59.otf",
-            "sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a"
-          },
-          {
-            "path": "/home/tsjang/rhwp/output/pr-review/pr9075/approved-cff-programs/0b6c5d9bbd45d90df3d5f4d5fd62830fa409676c3315b8c76d204cd0d789989d.otf",
-            "sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f"
-          },
-          {
-            "path": "/home/tsjang/rhwp/output/pr-review/pr9075/approved-cff-programs/16ea5d7d31cb6749978f98993de77fbe28ae4c249e35e6496bd3f5458ac3c14a.otf",
-            "sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385"
-          },
-          {
-            "path": "/home/tsjang/rhwp/output/pr-review/pr9075/approved-cff-programs/1fd7e301e828b77b80781953d7e1fced20086ccd0cb81a38ccf96915be5e1842.otf",
-            "sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63"
-          },
-          {
-            "path": "/home/tsjang/rhwp/output/pr-review/pr9075/approved-cff-programs/5920b2a255986f0cc22669cbf19f786d6bc72306b0019ef8bd439cbddccbf4eb.otf",
-            "sha256": "4d1cee6065faf8306d01715349b6878982e7e4ecc809956be79a30d95185e8dd"
-          },
-          {
-            "path": "/home/tsjang/rhwp/output/pr-review/pr9075/approved-cff-programs/7bfcf7cf1285f05e6519b2f0c8fb15bdd42d44fb01e9fb3b21547140acfcae1e.otf",
-            "sha256": "4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52"
-          },
-          {
-            "path": "/home/tsjang/rhwp/output/pr-review/pr9075/approved-cff-programs/9d07b699622f035eeb78771920f60c89e5e49317dc2fbad88715f77dffb95d31.otf",
-            "sha256": "7853ab58b7a8dfab3159e28b1ad8ab157fe534c2c5bcfdd2246a8a547bdac75c"
-          },
-          {
-            "path": "/home/tsjang/rhwp/output/pr-review/pr9075/approved-cff-programs/d1d1d8e02020ebe081cb0af257453477ca781ae9cda063e18c8f10cb46aa18c7.otf",
-            "sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9"
-          },
-          {
-            "path": "/home/tsjang/rhwp/output/pr-review/pr9075/protected-print-fonts/NGULIM.TTF",
-            "sha256": "871b6190046c01ccabf52c80e393af623176c1a30a86a8a297f6f1acfbdd9b43"
-          },
-          {
-            "path": "/home/tsjang/rhwp/output/pr-review/pr9075/protected-print-fonts/batang.ttc",
-            "sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89"
-          },
-          {
-            "path": "/home/tsjang/rhwp/output/pr-review/pr9075/protected-print-fonts/gulim.ttc",
-            "sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226"
-          }
-        ]
-      },
-      "font_environment": {
-        "sha256": "69d9e65b9ee3d8f6b7fa891e5b66791a62cc5a50771b9630feb7360e543a6722",
-        "configuration": {
-          "documentSubstitutions": [
-            {
-              "fontId": 8,
-              "languageSlot": 0,
-              "programId": "d1d1d8e02020ebe081cb0af257453477ca781ae9cda063e18c8f10cb46aa18c7",
-              "query": "휴먼고딕",
-              "source": "휴먼고딕",
-              "target": "Human Gothic"
-            }
-          ],
-          "id": "approved-print-gulim-preserve-other-programs",
-          "preserveSourceMetrics": true,
-          "selectedPrograms": {
-            "HCI Hollyhock": {
-              "family": "HCI Hollyhock",
-              "openTypeCff": true,
-              "programId": "7bfcf7cf1285f05e6519b2f0c8fb15bdd42d44fb01e9fb3b21547140acfcae1e",
-              "query": "HCI Hollyhock",
-              "trueType": false
-            },
-            "HCI Poppy": {
-              "family": "HCI Poppy",
-              "openTypeCff": true,
-              "programId": "16ea5d7d31cb6749978f98993de77fbe28ae4c249e35e6496bd3f5458ac3c14a",
-              "query": "HCI Poppy",
-              "trueType": false
-            },
-            "명조": {
-              "family": "Myeongjo",
-              "openTypeCff": true,
-              "programId": "0b6c5d9bbd45d90df3d5f4d5fd62830fa409676c3315b8c76d204cd0d789989d",
-              "query": "명조",
-              "trueType": false
-            },
-            "신명 태고딕": {
-              "family": "Sinmyeong Taegothic",
-              "openTypeCff": true,
-              "programId": "9d07b699622f035eeb78771920f60c89e5e49317dc2fbad88715f77dffb95d31",
-              "query": "신명 태고딕",
-              "trueType": false
-            },
-            "신명 태그래픽": {
-              "family": "Sinmyeong Taegraphic",
-              "openTypeCff": true,
-              "programId": "5920b2a255986f0cc22669cbf19f786d6bc72306b0019ef8bd439cbddccbf4eb",
-              "query": "신명 태그래픽",
-              "trueType": false
-            },
-            "한양신명조": {
-              "family": "HY Sinmyeongjo",
-              "openTypeCff": true,
-              "programId": "016526d6700359164c27eaecb599c03b8908c4adc9767e891b0889797c0d3b59",
-              "query": "한양신명조",
-              "trueType": false
-            },
-            "한양중고딕": {
-              "family": "HY Junggothic",
-              "openTypeCff": true,
-              "programId": "1fd7e301e828b77b80781953d7e1fced20086ccd0cb81a38ccf96915be5e1842",
-              "query": "한양중고딕",
-              "trueType": false
-            }
-          },
-          "substitutions": {
-            "HCI Hollyhock": "HCI Hollyhock",
-            "HCI Poppy": "HCI Poppy",
-            "명조": "Myeongjo",
-            "바탕": "NotoSerifKRExtraLight-Regular",
-            "바탕체": "NotoSerifKRExtraLight-Regular",
-            "신명 태고딕": "Sinmyeong Taegothic",
-            "신명 태그래픽": "Sinmyeong Taegraphic",
-            "한양신명조": "HY Sinmyeongjo",
-            "한양중고딕": "HY Junggothic",
-            "휴먼명조": "Gulim"
-          },
-          "trueTypeFaces": [
-            "Gulim"
-          ],
-          "glyphFallbacks": {
-            "Gulim": [
-              "Haansoft Batang"
-            ]
-          }
         }
       },
       "image_decoding": {
@@ -45581,79 +45370,99 @@
   },
   "required_gates": [
     {
-      "name": "print-primary-final-suite-prepare",
+      "name": "hft-style-coverage-final-suite-prepare",
       "exit_code": 0,
-      "source_log_sha256": "df56e6fbfe92ac822748362989f870708b99101c9b63fb328616b90fefa10e37"
+      "source_log_sha256": "6f4e880764b006aef181122ae2fff7b1dc1624b4edf7f29e326bf61833d6077c"
     },
     {
-      "name": "print-primary-final-format",
+      "name": "hft-style-coverage-final-format",
       "exit_code": 0,
       "source_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
-      "name": "print-primary-final-suite-manifest",
+      "name": "hft-style-coverage-final-suite-manifest",
       "exit_code": 0,
-      "source_log_sha256": "c3bf3a7aa783ddaed73ab2fd72696e7e88cd2dc6166c9b2ee0c2668299790a3c"
+      "source_log_sha256": "9d1ebbfd0387295d16a4bcb4ef7c2ac9a0a3d11897e2d1a87f980c8f5da7da69"
     },
     {
-      "name": "print-primary-final-unit-tiers",
+      "name": "hft-style-coverage-final-unit-tiers",
       "exit_code": 0,
       "source_log_sha256": "b0d22c7e9e78b2de09250df5931d136093b5d2ad3c7474ab5c37aa9c3dc75ad0"
     },
     {
-      "name": "print-primary-final-full-minimal-rust",
+      "name": "hft-style-coverage-final-full-minimal-rust",
       "exit_code": 0,
-      "source_log_sha256": "ac7c10970c2ac64e78ee02645595af3406fedb315207ea410507974af6dfb94e"
+      "source_log_sha256": "7c76d6c85783ca79dbdf51b8dbeb5222b23b8cf854cdec71910649ee2137d0ba"
     },
     {
-      "name": "print-primary-final-original-claim-native-focused",
+      "name": "hft-style-coverage-final-original-claim-native-focused",
       "exit_code": 0,
-      "source_log_sha256": "127ece4277e37e22578e3f525ffaaed64b9beb8bce72c8910280ea09898138f1"
+      "source_log_sha256": "f6d1f20d6ffe46f90063fc89bf5f5c24789a7cd4e170102ff93e600ac5eb9f3e"
     },
     {
-      "name": "print-primary-final-final-native-lib",
+      "name": "hft-style-coverage-final-final-native-lib",
       "exit_code": 0,
-      "source_log_sha256": "f657ad700c64125dd7b90ce3077891e3994fddfabb20410eb2221ae5c9a4fbd6"
+      "source_log_sha256": "016b458ce781b74b16acd68f36fa041c1623fd14b94e8cc5f02dc52c6f2c88b7"
     },
     {
-      "name": "print-primary-final-final-native-picture-placeholder",
+      "name": "hft-style-coverage-final-final-native-picture-placeholder",
       "exit_code": 0,
-      "source_log_sha256": "73bb64894444dbcaf1ff04e16ccd23d8c531adb9ca8e15080bee57e8eda7e2f7"
+      "source_log_sha256": "6f13956d5c3a38f4e6e21507e7e9fa0809ed4a231f1ea3036828553944431851"
     },
     {
-      "name": "print-primary-final-final-native-direct-pdf",
+      "name": "hft-style-coverage-final-final-native-direct-pdf",
       "exit_code": 0,
-      "source_log_sha256": "4d232c59e629c4a5ae9675c07050a6e5c121094fe23263b3ac3a47dcae9c62f0"
+      "source_log_sha256": "2f23746086a3a696a3276ac67a1f436ac02b24bee414354f1472071a53ac0059"
     },
     {
-      "name": "print-primary-final-final-native-cli-build",
+      "name": "hft-style-coverage-final-original-claim-native-clippy",
       "exit_code": 0,
-      "source_log_sha256": "8ab31e1a41e5824e88a67b41f926aad2b4c93b40976b33d8f096abe0f22b8e4f"
+      "source_log_sha256": "e5bcca3b29354d22cbc2b8f13ba4cb1e326648696db488e1332a2e0c0b09a797"
     },
     {
-      "name": "print-primary-final-original-claim-native-clippy",
+      "name": "hft-style-coverage-final-default-clippy",
       "exit_code": 0,
-      "source_log_sha256": "4d9e92e3c2d21c16df0d5d6149121916dc7fac9c50e9c2fcfbe11abec57fa677"
+      "source_log_sha256": "bd49b259977ec1c213066b98cec9c803cff2f7e793b9f2a4db3648f89f6813ef"
     },
     {
-      "name": "print-primary-final-default-clippy",
+      "name": "hft-style-coverage-final-wasm-clippy",
       "exit_code": 0,
-      "source_log_sha256": "834f7552cb29ad1d460ccc1de090941aecefc19ba13e791425c57ff0cf33925a"
+      "source_log_sha256": "935754f5998c4ceb7c123e5eb6a05baaf90d791938cef4db70254f16541ed411"
     },
     {
-      "name": "print-primary-final-wasm-clippy",
+      "name": "hft-style-coverage-final-workspace-build",
       "exit_code": 0,
-      "source_log_sha256": "74c73d7fd8515c2fd68f76dc77b7f5905dd2e2200f7750e3477d6d9913a64267"
+      "source_log_sha256": "c0946556fe9a474c9a4cc0f5d860baba32d820366b2d506140f47c7f3d8d71c3"
     },
     {
-      "name": "print-primary-final-workspace-build",
+      "name": "hft-style-coverage-final-workspace-clippy",
       "exit_code": 0,
-      "source_log_sha256": "1399392ce0c535f6c7ceb7e5bdcc29554660af882b32d4938024e6ab5aeaaa9d"
+      "source_log_sha256": "bb84194e42045a4cb962fe24b7dad84f355454ab9d689cc10ad40b566bed49ed"
     },
     {
-      "name": "print-primary-final-workspace-clippy",
+      "name": "suite-helper-contract",
       "exit_code": 0,
-      "source_log_sha256": "6322a4eb1fbc1e0216b9a715b2df52ba59c1aac9bdccf91d38f39b4991b631c9"
+      "source_log_sha256": "dd0dc6c36b49a0b529050695d671402fbbbaf0d499f97913f308907d2350d62a"
+    },
+    {
+      "name": "font-registration-contract",
+      "exit_code": 0,
+      "source_log_sha256": "9a56d58a9c776536abfd087dfe47fcc804dfe98625bda7a94b8014413ae04a27"
+    },
+    {
+      "name": "handbook-contract",
+      "exit_code": 0,
+      "source_log_sha256": "ac8d115f5895b5fcbf789db518fec795cc3736d31a9d608a7f09bb198b8db8e4"
+    },
+    {
+      "name": "new-sample-security",
+      "exit_code": 0,
+      "source_log_sha256": "e0ffb1527a21dab4543766db16555f49c253e326a4ada65b81d932da3aba5e74"
+    },
+    {
+      "name": "changed-native-cases-clippy",
+      "exit_code": 0,
+      "source_log_sha256": "ed00b7e40f0b21f6aa83f81a034701b1b1275862530cffe4e0af2283d12ad156"
     }
   ],
   "managed_contract": "정본 보호 baseline의 최종 수용 출처·생산·글꼴 조건 계약. 중간 run manifest가 아니다.",
