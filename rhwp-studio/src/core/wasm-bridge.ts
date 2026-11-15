@@ -229,7 +229,6 @@ import { substituteCssFontFamily } from './font-substitution';
 import { rememberRawCanvasFontDescriptor } from './canvas-font-raw';
 import type { FileSystemFileHandleLike } from '@/command/file-system-access';
 
-
 let canvasFontSubstitutionInstalled = false;
 
 const canvasFontResolution = new CanvasFontResolutionScope(
