@@ -1,0 +1,168 @@
+{
+  "source": "4e0b20d2922953ee7ab9a1716ac819b921fe484b",
+  "dpi": 96,
+  "radius_px": 2,
+  "profile": "print",
+  "records": [
+    {
+      "document_id": "52ee61fe7201e36b",
+      "backend": "native",
+      "input": "samples/re-03-latin-only-hancom.hwp",
+      "minimum": "100.0",
+      "files": {
+        "tsv": {
+          "path": "common/native/latin.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        },
+        "review": {
+          "path": "common/native/latin-review.png",
+          "sha256": "7b684ec49eb8708f8eda516cc5650f424ccdb764f8ac95cd3f0527f756710377"
+        },
+        "overlay": {
+          "path": "common/native/latin-overlay.png",
+          "sha256": "de3610451f9766facb42e7b18118f3ee3ffe68a1efa36cc2edf6ccf64ef0b566"
+        }
+      }
+    },
+    {
+      "document_id": "52ee61fe7201e36b",
+      "backend": "wasm",
+      "input": "samples/re-03-latin-only-hancom.hwp",
+      "minimum": "100.0",
+      "files": {
+        "tsv": {
+          "path": "common/wasm/latin.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        },
+        "review": {
+          "path": "common/wasm/latin-review.png",
+          "sha256": "c1da3f078d17256368e2c8db583a88acf649fec95b4b994aa62c57c2dc71accc"
+        },
+        "overlay": {
+          "path": "common/wasm/latin-overlay.png",
+          "sha256": "2973eb9b1eef833bc480beec6f360bae8aadb51c2e7ba308bcd283964fc327d8"
+        }
+      }
+    },
+    {
+      "document_id": "59f6ab1155623bda",
+      "backend": "native",
+      "input": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "minimum": "100.0",
+      "files": {
+        "tsv": {
+          "path": "common/native/angle-narrow.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        },
+        "review": {
+          "path": "common/native/angle-narrow-review.png",
+          "sha256": "3c96b0aec8df19375b019a46c80e451a9935525219ccaa6107bf62c05ae0644a"
+        },
+        "overlay": {
+          "path": "common/native/angle-narrow-overlay.png",
+          "sha256": "eb44f6d3ad2a003b75414f062745a50d6d9acfc9d1d283de1f0cc81eecabd54b"
+        }
+      }
+    },
+    {
+      "document_id": "59f6ab1155623bda",
+      "backend": "wasm",
+      "input": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "minimum": "100.0",
+      "files": {
+        "tsv": {
+          "path": "common/wasm/angle-narrow.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        },
+        "review": {
+          "path": "common/wasm/angle-narrow-review.png",
+          "sha256": "5e81f978b802305f15aa96164be9187072eb038bf06ffe939c6dde6f6525be5e"
+        },
+        "overlay": {
+          "path": "common/wasm/angle-narrow-overlay.png",
+          "sha256": "ccfc2537f232d4a93071bfb0e12b39863a8c6a63a04c8919fc0df695f0547c73"
+        }
+      }
+    },
+    {
+      "document_id": "cdacd874b6e6ac66",
+      "backend": "native",
+      "input": "samples/pic-crop-01.hwp",
+      "minimum": "99.99756",
+      "files": {
+        "tsv": {
+          "path": "common/native/picture-crop.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        },
+        "review": {
+          "path": "common/native/picture-crop-review.png",
+          "sha256": "26f15bc8707e4218df82d5791747f96ae701d3ae24f3cbe447d04ce2cee7b1a0"
+        },
+        "overlay": {
+          "path": "common/native/picture-crop-overlay.png",
+          "sha256": "e7962930ce5f59ec253d092ff7f7bd2ae736b8992389625dbbe5f07eedde8f72"
+        }
+      }
+    },
+    {
+      "document_id": "cdacd874b6e6ac66",
+      "backend": "wasm",
+      "input": "samples/pic-crop-01.hwp",
+      "minimum": "99.99756",
+      "files": {
+        "tsv": {
+          "path": "common/wasm/picture-crop.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        },
+        "review": {
+          "path": "common/wasm/picture-crop-review.png",
+          "sha256": "f31346d10dd5de5770d11f5164ff7af5e8614dfe386bc16f3b4201d7924bb23c"
+        },
+        "overlay": {
+          "path": "common/wasm/picture-crop-overlay.png",
+          "sha256": "cadb3f18846a98c3587aa27013590f87c4a7b24fe8ae235a5ffb72a510becb1f"
+        }
+      }
+    },
+    {
+      "document_id": "d03a9dde3d5dc7ac",
+      "backend": "native",
+      "input": "samples/shape-group-02.hwp",
+      "minimum": "100.0",
+      "files": {
+        "tsv": {
+          "path": "common/native/shape-group.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        },
+        "review": {
+          "path": "common/native/shape-group-review.png",
+          "sha256": "7bdd2775089f406463d82653e98c218e783eb9018b7d179b6077d2cbbe6b4938"
+        },
+        "overlay": {
+          "path": "common/native/shape-group-overlay.png",
+          "sha256": "984dd58b52fef6b3b2d3edfc3070991c23b576ffb3304cb6b8a85886d357e358"
+        }
+      }
+    },
+    {
+      "document_id": "d03a9dde3d5dc7ac",
+      "backend": "wasm",
+      "input": "samples/shape-group-02.hwp",
+      "minimum": "100.0",
+      "files": {
+        "tsv": {
+          "path": "common/wasm/shape-group.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        },
+        "review": {
+          "path": "common/wasm/shape-group-review.png",
+          "sha256": "fdc521012b730a4671296f57d566c953d53fb86da373841bf0402f546f5a7cd6"
+        },
+        "overlay": {
+          "path": "common/wasm/shape-group-overlay.png",
+          "sha256": "b7f4322132ecbb5a57340a595da2b1d3215e611edc65cfadd5831aceb1aa8778"
+        }
+      }
+    }
+  ]
+}
