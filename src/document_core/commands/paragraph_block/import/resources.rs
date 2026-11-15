@@ -4,6 +4,7 @@ mod styles;
 
 use super::super::{budget, invalid, validation::Resource};
 use super::ImportParagraphBlockLimits;
+use crate::document_core::commands::numbering_char_shape::map_para_head_char_refs;
 use crate::{
     error::HwpError,
     model::{
@@ -247,11 +248,6 @@ impl Resources {
                     }
                     (3, Resource::Number(id)) => {
                         let original = &src.numberings[id as usize - 1];
-                        if original.raw_para_heads.is_some() {
-                            return Err(invalid(format!(
-                                "Number({id}): opaque HWPX paraHead import is not supported"
-                            )));
-                        }
                         meter.charge(original)?;
                         let mut v = original.clone();
                         v.raw_data = None;
@@ -259,6 +255,22 @@ impl Resources {
                             if h.char_shape_id != u32::MAX {
                                 h.char_shape_id = result.id(Resource::Char(h.char_shape_id))?;
                             }
+                        }
+                        // HWPX 원본 수준 구간은 저장 때 그대로 다시 쓰므로 그 안의 글자 모양
+                        // 참조도 대상 ID로 바꾼다. 읽은 수준 값과 다른 참조는 고치지 않고 거부한다.
+                        if let Some(raw) = &original.raw_para_heads {
+                            let mapped = v.heads;
+                            let raw = map_para_head_char_refs(raw, |level, old| {
+                                let index = level.checked_sub(1)?;
+                                (original.heads.get(index)?.char_shape_id == old)
+                                    .then_some(mapped[index].char_shape_id)
+                            })
+                            .ok_or_else(|| {
+                                invalid(format!(
+                                    "Number({id}): HWPX paraHead charPrIDRef differs from the parsed levels"
+                                ))
+                            })?;
+                            v.raw_para_heads = Some(raw);
                         }
                         intern(
                             &dst.numberings,
@@ -271,16 +283,24 @@ impl Resources {
                     }
                     (3, Resource::Bullet(id)) => {
                         let original = &src.bullets[id as usize - 1];
-                        if original.raw_para_head.is_some() {
-                            return Err(invalid(format!(
-                                "Bullet({id}): opaque HWPX paraHead import is not supported"
-                            )));
-                        }
                         meter.charge(original)?;
                         let mut v = original.clone();
                         v.raw_data = None;
                         if v.char_shape_id != u32::MAX {
                             v.char_shape_id = result.id(Resource::Char(v.char_shape_id))?;
+                        }
+                        // 그림 글머리표는 검증 단계에서 거부하므로 원본 구간의 참조는 글자 모양뿐이다.
+                        if let Some(raw) = &original.raw_para_head {
+                            let mapped = v.char_shape_id;
+                            let raw = map_para_head_char_refs(raw, |_, old| {
+                                (original.char_shape_id == old).then_some(mapped)
+                            })
+                            .ok_or_else(|| {
+                                invalid(format!(
+                                    "Bullet({id}): HWPX paraHead charPrIDRef differs from the parsed bullet"
+                                ))
+                            })?;
+                            v.raw_para_head = Some(raw);
                         }
                         intern(
                             &dst.bullets,
