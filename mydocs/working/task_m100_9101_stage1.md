@@ -9,7 +9,7 @@ Issue: https://github.com/edwardkim/rhwp/issues/9101
 기존 `visual_sweep_handbook.py`의 해시 검증·웹폰트 공급·전쪽 판정과
 `scripts/visual_sweep_resume.py`의 공식 checkpoint를 재사용한다. 측정 알고리즘과 기존 정본은 변경하지 않는다.
 
-공개 글꼴만 노출한 Linux 환경과 Windows OS 기본 글꼴 19개를 추가한 환경을 구분한다.
+공개 시스템 글꼴과 등록 웹폰트만 노출한 Linux 환경과 Windows OS 기본 글꼴 19개를 추가한 환경을 구분한다.
 OS 글꼴은 원 호스트에서 해시를 확인한 실행용 사본이며 Git·배포물에 포함하지 않는다.
 Windows/macOS에서 직접 실행한 결과로 표현하지 않는다.
 

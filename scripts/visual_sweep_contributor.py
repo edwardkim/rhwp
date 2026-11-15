@@ -119,7 +119,7 @@ def make_reviews(root, doc, backend, base, manifest):
         images.append(path)
     for name in ('compare', 'overlay', 'review'):
         (base / name).mkdir(exist_ok=True)
-    label = f'{Path(doc["input"]["path"]).name} ({backend}) p{page:03d}'
+    label = f'{Path(doc["input"]["path"]).name} ({backend})'
     compares = sweep.make_compares([images[0]], [images[1]], base / 'compare', label)
     overlays = sweep.make_overlay_compares([images[0]], [images[1]], base / 'overlay', label,
                                           pixel_diff_threshold=sweep.DEFAULT_PIXEL_DIFF_THRESHOLD)

@@ -56,10 +56,10 @@ RGBA·LA·팔레트 PNG의 투명 영역은 **흰 종이 위에 합성한 RGB**�
 - **명시적 SVG clip이 glyph 근사 band의 상·하단을 2px 이상 부분 절단하는 후보**
 - **구조 heuristic에 걸리지 않는 glyph·PUA·제품명 표시 차이**의 review 후보
 
-## 기여자 공통 보호 검사
+### 기여자 공통 보호 검사
 
 조판 영향 PR은 변경 대상 자체의 전쪽 검증과 편람 `--handbook-gate` 외에 아래 공통 검사도
-최종 제출 source에서 실행한다. 공개 웹폰트만 있는 Linux 환경과 OS 기본 글꼴을 추가한 환경에서
+최종 제출 source에서 실행한다. 공개 시스템 글꼴·등록 웹폰트가 있는 Linux 환경과 Windows 기본 글꼴을 추가한 환경에서
 Native/fresh WASM의 재현을 확인한 짧은 보호 문서를 사용한다. 원본·독립 Print PDF는 이미
 저장소에 있으므로 다시 출력하거나 MCP로 변환하지 않는다.
 
@@ -75,7 +75,7 @@ Native/fresh WASM의 재현을 확인한 짧은 보호 문서를 사용한다. �
 행을 선택하며, 표본을 삭제하거나 해당 행을 낮춰 통과시키지 않는다.
 공개 환경의 등록 근거와 OS 글꼴 의존 문서의 차이는 [이슈 #9101 증적](../../pr/assets/issue_9101/README.md)에 기록한다.
 
-### 실행과 제출물
+#### 실행과 제출물
 
 Visual Sweep의 Python 의존성과 Chrome을 [로컬 환경 절차](../pr_review/local_validation.md)에 따라
 준비한다. Native는 `native-skia`로 빌드하고 WASM은 같은 source의 fresh 최적화 package를 사용한다.
@@ -114,6 +114,31 @@ Linux에서 정품 Windows 기본 글꼴을 추가한 측정이며, Windows/macO
 예를 들어 공개 Helvetica 대체에서 굵기·장평이 달랐던 `body-list-typed-hwp.hwp`와
 기본 Arial이 필요했던 `control-styles-hwp.hwp`는 이 공개 공통 대상에 포함하지 않았다.
 이 표본들의 통과를 변경 문서 전체의 통과로 보고하지 않는다.
+
+#### OS 기본 글꼴과 추가 설치 글꼴의 구분
+
+기여자의 로컬 글꼴에는 해당 OS가 제공하는 기본 글꼴도 포함한다. 다음은 2026-11-16에
+공식 목록으로 확인한 주요 검증 후보이며, 모든 OS의 공통 기본 글꼴이라는 뜻은 아니다.
+
+| 환경 | OS 제공 글꼴의 주요 예 | 기본 설치와 구분할 조건 |
+| --- | --- | --- |
+| macOS Sequoia/Tahoe | Arial, Helvetica, Helvetica Neue, Times New Roman, Courier New, Palatino, Apple SD Gothic Neo, AppleGothic, AppleMyungjo | Apple의 system font·downloadable·document support 분류를 확인한다. 목록에 있다는 이유만으로 다운로드 완료를 가정하지 않는다. |
+| Windows 10/11 Desktop | Arial, Times New Roman, Courier New, 맑은 고딕(Malgun Gothic), Palatino Linotype | 바탕·굴림·돋움·궁서와 각 Che 계열은 Korean Supplemental Fonts다. 한국어 기능 설치 여부를 확인한다. |
+| Ubuntu 24.04 Desktop | `fonts-dejavu-core` 의존성, `fonts-liberation`, `fonts-noto-cjk`, `fonts-noto-core`, `fonts-ubuntu` 권장 패키지 | 권장 패키지 생략·최소/서버 설치에서는 같은 구성을 보장하지 않는다. 다른 Linux 배포판에도 이 목록을 일괄 적용하지 않는다. |
+
+근거: [Apple System Fonts](https://developer.apple.com/fonts/system-fonts/),
+[macOS Tahoe 목록](https://support.apple.com/en-ie/122869),
+[Windows 10](https://learn.microsoft.com/en-us/typography/fonts/windows_10_font_list)·
+[Windows 11 목록](https://learn.microsoft.com/en-us/typography/fonts/windows_11_font_list),
+[Windows 추가 글꼴 조건](https://learn.microsoft.com/en-us/windows/deployment/windows-missing-fonts),
+[Ubuntu Desktop 패키지 구성](https://packages.ubuntu.com/noble/ubuntu-desktop).
+
+같은 이름도 OS·버전별 프로그램이 다를 수 있다. macOS의 `Palatino`와 Windows의
+`Palatino Linotype`, AppleMyungjo와 바탕을 같은 파일·동일 측정 조건으로 취급하지 않는다.
+공식 목록은 공급 가능성의 근거이고 실제 설치·선택의 증거는 실행 환경의 face·스타일·경로·해시다.
+macOS는 Font Book의 설치/다운로드 상태, Windows는 글꼴과 언어 추가 기능, Linux는 설치 패키지와
+`fc-list`의 실제 파일을 대조한다. 로컬 글꼴이 없으면 등록 웹폰트 경로를 사용하고 전쪽 TSV로
+다시 확인한다. 다른 OS의 글꼴 복사나 글꼴 바이너리의 PR 첨부를 요구하지 않는다.
 
 ### PDF와 같은 인쇄 프로필
 
