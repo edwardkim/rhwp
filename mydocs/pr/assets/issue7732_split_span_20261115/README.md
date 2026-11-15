@@ -53,7 +53,9 @@ Native SVG의 7쪽은94.37%→100.00%, 28쪽은97.19%→99.23%다.
 ([전쪽 TSV·gate](handbook-current-847/gate.json)). 상승이 있는 중첩 표의 Native/WASM 각 전17쪽만
 정본에 반영해14행을 상향했으며 다른34데이터셋 출처는 유지했다
 ([갱신 영수증](../visual-protected-baseline/updates/issue7732-20261116.json)).
-로컬 준비를 완료했으며 원격 CI·병합 결과는 PR 생성 이후 별도로 확인한다.
+로컬 준비와 PR #9106의 code head `5de0973ab1` 원격 CI를 완료했다.
+[원격 CI 원장](code-ci-9106.json)에 CI·CodeQL·Render Diff·Proptest·Adapter의 success를 기록했다.
+[최종 리뷰](../../archives/pr_9106_review.md)·오늘할일을 문서 trailing으로 추가하며, 해당 head 검사와 병합은 별도 확인한다.
 실행 전·진행 중·실패한 기록을 완료 결과로 세지 않는다. 완료한 게이트는 소스와 입력의 신원을
 확인해 재사용하며 문서 커밋만으로 같은 Rust 빌드를 반복하지 않는다.
 

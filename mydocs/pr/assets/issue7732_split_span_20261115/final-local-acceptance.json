@@ -27,7 +27,12 @@
     "preserve_during_postmerge_cleanup": true,
     "private_fonts_committed": false
   },
-  "remote_ci_merge": "not yet executed",
+  "remote_ci_merge": {
+    "code_head": "5de0973ab13d468c0da5defcc3214398efc847d7",
+    "code_ci": "all_required_workflows_success",
+    "receipt": "code-ci-9106.json",
+    "trailing_and_merge": "pending"
+  },
   "canvaskit_scope": "각주3쪽 두모드 실제 직접 출력. 중첩5쪽은 기존 문서 전체 미지원 및 자원 미준비로 Canvas2D 전환, 직접 CK 성공으로 세지 않음.",
   "current_base_comparison": {
     "path": "mydocs/pr/assets/issue7732_split_span_20261115/current-base-67b4/validation.json",
