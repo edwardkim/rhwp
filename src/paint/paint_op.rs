@@ -2131,7 +2131,7 @@ impl From<&TextStyle> for PaintTextStyle {
         Self {
             script_metrics: style.script_metrics,
             font_family: style.font_family.clone(),
-            font_size: style.font_size,
+            font_size: style.effective_font_size(),
             font_position: style.font_position,
             color: style.color,
             bold: style.bold,

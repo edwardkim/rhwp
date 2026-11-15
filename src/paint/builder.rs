@@ -247,6 +247,9 @@ impl LayerBuilder {
             tree.frame.horizontal_shaping_sidecars(),
             &mut layer_tree.resources,
         ));
+        if !self.hangul2024_print {
+            context.publish_text_ink_em(&mut layer_tree.root, &claimed_glyph_run_sources);
+        }
         lower_font_native_glyph_sidecars_excluding(
             &mut layer_tree.root,
             &mut layer_tree.resources,
