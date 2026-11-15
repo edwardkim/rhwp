@@ -940,11 +940,15 @@ impl LayerBuilder {
     }
 }
 
-fn line_decoration_trim_target(
+fn line_decoration_trim_targets(
     children: &[LayerNode],
-) -> Option<(crate::paint::TextSourceSpan, usize)> {
-    fn scan(node: &LayerNode, found: &mut Option<Option<(crate::paint::TextSourceSpan, usize)>>) {
-        if found.is_some() {
+) -> Vec<(crate::paint::TextSourceSpan, usize)> {
+    fn scan(
+        node: &LayerNode,
+        targets: &mut Vec<(crate::paint::TextSourceSpan, usize)>,
+        finished: &mut bool,
+    ) {
+        if *finished {
             return;
         }
         match &node.kind {
@@ -956,14 +960,19 @@ fn line_decoration_trim_target(
                         ..
                     } = op
                     {
+                        // 문단 끝·명시적 줄바꿈의 공백은 서명란 등 저자 콘텐츠다.
+                        // 공백이 별도 run으로 나뉘어도 앞 run까지 함께 보존한다.
+                        if run.is_para_end || run.is_line_break_end {
+                            targets.clear();
+                            *finished = true;
+                            return;
+                        }
+                        let trailing = run.text.chars().rev().take_while(|ch| *ch == ' ').count();
+                        if trailing > 0 {
+                            targets.push((source.clone(), trailing));
+                        }
                         if run.text.chars().any(|ch| ch != ' ') {
-                            if run.is_para_end || run.is_line_break_end {
-                                *found = Some(None);
-                                return;
-                            }
-                            let trailing =
-                                run.text.chars().rev().take_while(|ch| *ch == ' ').count();
-                            *found = Some((trailing > 0).then_some((source.clone(), trailing)));
+                            *finished = true;
                             return;
                         }
                     }
@@ -971,25 +980,30 @@ fn line_decoration_trim_target(
             }
             LayerNodeKind::Group { children, .. } => {
                 for child in children.iter().rev() {
-                    scan(child, found);
-                    if found.is_some() {
+                    scan(child, targets, finished);
+                    if *finished {
                         return;
                     }
                 }
             }
             LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
-                scan(child, found)
+                scan(child, targets, finished)
             }
         }
     }
-    let mut found = None;
+    let mut targets = Vec::new();
+    let mut finished = false;
     for child in children.iter().rev() {
-        scan(child, &mut found);
-        if found.is_some() {
+        scan(child, &mut targets, &mut finished);
+        if finished {
             break;
         }
     }
-    found.flatten()
+    // 가시 본문이 없는 공백 전용 줄은 밑줄 입력란일 수 있으므로 유지한다.
+    if !finished {
+        targets.clear();
+    }
+    targets
 }
 
 fn publish_line_decoration_trims(node: &mut LayerNode) {
@@ -999,7 +1013,7 @@ fn publish_line_decoration_trims(node: &mut LayerNode) {
         ..
     } = &mut node.kind
     {
-        if let Some((source, trim)) = line_decoration_trim_target(children) {
+        for (source, trim) in line_decoration_trim_targets(children) {
             set_decoration_trim_for_source(children, &source, trim);
         }
     }
