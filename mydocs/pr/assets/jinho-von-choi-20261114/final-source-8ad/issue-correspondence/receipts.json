@@ -1,0 +1,398 @@
+{
+  "candidate": "b6a91166761b212d8501faf70b4b13e19b26474e",
+  "runtimeSource": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+  "method": "Canonical make_overlay_page/make_compares/make_review_panels on existing final native and optimized WASM PNG pairs. No rerender, input change, mask change, threshold change, or Hancom execution.",
+  "evidenceCommitPlaceholder": "__RECORD_SHA__",
+  "existingInputAndTsvCommitPlaceholder": "__MERGE_SHA__",
+  "captureCheckoutNote": "Original run metadata preserves then-current checkout; actual renderer binary/module hashes identify runtimeSource via final-source-8ad producer receipts.",
+  "items": [
+    {
+      "key": "issue9046-even-odd",
+      "issue": 9046,
+      "backend": "native",
+      "inputKey": "05-even-odd-hwp",
+      "page": 2,
+      "dpi": 96,
+      "input": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/inputs/corrected-roundtrip/05-even-odd.hwp",
+        "sha256": "9e4f65d3b9efb83709289f9c09491b7bbff434e27e0f4c7cb74d96add09afb5c"
+      },
+      "referencePdf": {
+        "path": "pdf/pr9071/master-pages/05-even-odd-2020.pdf",
+        "sha256": "ca8490fb692daf20bd83e58a4b271485ebb254e9bd3cbc96f7994009996c5118"
+      },
+      "actualPng": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-feature-native/masters/05-even-odd-hwp/rhwp_png/rhwp_002.png",
+        "sha256": "6a4b78ff486081048ce887c9efb58a6a6c06def2d2012248bfa58b18344263b5"
+      },
+      "referencePng": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-feature-native/masters/05-even-odd-hwp/pdf_png/pdf-002.png",
+        "sha256": "c7343db13423bd5fd57caa657fd99a999e5f4ea6e084aca930fb0c5ee5ccbb5e"
+      },
+      "wholePageTsv": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/tsv-originals/candidate/native/masters/05-even-odd-hwp.tsv",
+        "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+        "pages": 3,
+        "minimumRaw": "100.00"
+      },
+      "runtimeSource": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+      "captureCheckout": "6203a1fa3e98648230f809e4a099d2bdff768815",
+      "captureManifestSha256": "aad2788761027bac7498538b7c042ebf5460e57aee9b470a92ce2c60fd0c0768",
+      "raw": 100.0,
+      "pixel_match_percent": 99.96576,
+      "visual_accuracy_proxy_percent": 75.83201,
+      "flagged": null,
+      "flaggedReason": "Original silhouette-only run did not compute flagged page candidates.",
+      "review": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue9046-even-odd-native-review.png",
+        "sha256": "12164f5c418f39451f665621a8dd699a7d832a41f0b5b409091d697513231c19",
+        "bytes": 34768
+      },
+      "overlay": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue9046-even-odd-native-overlay.png",
+        "sha256": "a77bf9d5efee8b3da70d693c773f1d271d6999375cf3c57b42c94db7a6f838aa",
+        "bytes": 23377
+      }
+    },
+    {
+      "key": "issue9046-even-odd",
+      "issue": 9046,
+      "backend": "wasm",
+      "inputKey": "05-even-odd-hwp",
+      "page": 2,
+      "dpi": 96,
+      "input": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/inputs/corrected-roundtrip/05-even-odd.hwp",
+        "sha256": "9e4f65d3b9efb83709289f9c09491b7bbff434e27e0f4c7cb74d96add09afb5c"
+      },
+      "referencePdf": {
+        "path": "pdf/pr9071/master-pages/05-even-odd-2020.pdf",
+        "sha256": "ca8490fb692daf20bd83e58a4b271485ebb254e9bd3cbc96f7994009996c5118"
+      },
+      "actualPng": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-feature-wasm/masters/05-even-odd-hwp/rhwp_png/rhwp_002.png",
+        "sha256": "452c3c4c835059ab77029d99cc64aa67ee7d5ef3fa6e8572fd1db4ec465ec230"
+      },
+      "referencePng": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-feature-wasm/masters/05-even-odd-hwp/pdf_png/pdf-002.png",
+        "sha256": "c7343db13423bd5fd57caa657fd99a999e5f4ea6e084aca930fb0c5ee5ccbb5e"
+      },
+      "wholePageTsv": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/tsv-originals/candidate/wasm/masters/05-even-odd-hwp.tsv",
+        "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+        "pages": 3,
+        "minimumRaw": "100.00"
+      },
+      "runtimeSource": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+      "captureCheckout": "56a470cd15412f732016ba24b9b96a57b166dfe5",
+      "captureManifestSha256": "fa28232a75e3373f8c10a6b2ac6713f98b2cf00944ff40219120b2e842a038fa",
+      "raw": 100.0,
+      "pixel_match_percent": 99.96565,
+      "visual_accuracy_proxy_percent": 75.75277,
+      "flagged": null,
+      "flaggedReason": "Original silhouette-only run did not compute flagged page candidates.",
+      "review": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue9046-even-odd-wasm-review.png",
+        "sha256": "699c0a4f51c83203cf9f69b79a1bd1f4948d846d496f7d25de3203722ab45055",
+        "bytes": 34795
+      },
+      "overlay": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue9046-even-odd-wasm-overlay.png",
+        "sha256": "53ff11d9cfa6f0a5ef95218cbcbbc2214080c6ca79e5b90b7e51f12dd4b3bd7f",
+        "bytes": 23410
+      }
+    },
+    {
+      "key": "issue9046-both-even-odd",
+      "issue": 9046,
+      "backend": "native",
+      "inputKey": "10-both-even-odd-hwp",
+      "page": 2,
+      "dpi": 96,
+      "input": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/inputs/corrected-roundtrip/10-both-even-odd.hwp",
+        "sha256": "7e47c91046424db3a8551d5ba8f5c169a82695bbcf35834e44c09fd3838aff88"
+      },
+      "referencePdf": {
+        "path": "pdf/pr9071/master-pages/10-both-even-odd-2020.pdf",
+        "sha256": "89823466d1d5c36cd68cf6c13fed9b912be1bacff9a2ba60f2147786772483f9"
+      },
+      "actualPng": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-feature-native/masters/10-both-even-odd-hwp/rhwp_png/rhwp_002.png",
+        "sha256": "6a4b78ff486081048ce887c9efb58a6a6c06def2d2012248bfa58b18344263b5"
+      },
+      "referencePng": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-feature-native/masters/10-both-even-odd-hwp/pdf_png/pdf-002.png",
+        "sha256": "c7343db13423bd5fd57caa657fd99a999e5f4ea6e084aca930fb0c5ee5ccbb5e"
+      },
+      "wholePageTsv": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/tsv-originals/candidate/native/masters/10-both-even-odd-hwp.tsv",
+        "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+        "pages": 3,
+        "minimumRaw": "100.00"
+      },
+      "runtimeSource": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+      "captureCheckout": "6203a1fa3e98648230f809e4a099d2bdff768815",
+      "captureManifestSha256": "04c1ac98cfd3cbae39511cc4780c8f59a56c5f774bb7ea62ae2cfa7d62b12d65",
+      "raw": 100.0,
+      "pixel_match_percent": 99.96576,
+      "visual_accuracy_proxy_percent": 75.83201,
+      "flagged": null,
+      "flaggedReason": "Original silhouette-only run did not compute flagged page candidates.",
+      "review": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue9046-both-even-odd-native-review.png",
+        "sha256": "a0b585e83956bc0a5673a901433b9cc7af0dbc3c31875164b1c789bbf96ecc03",
+        "bytes": 35105
+      },
+      "overlay": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue9046-both-even-odd-native-overlay.png",
+        "sha256": "3c06066f86e89adbfcdeea4afa5632f57d9ac78d002f94379515f551440a8ecb",
+        "bytes": 23713
+      }
+    },
+    {
+      "key": "issue9046-both-even-odd",
+      "issue": 9046,
+      "backend": "wasm",
+      "inputKey": "10-both-even-odd-hwp",
+      "page": 2,
+      "dpi": 96,
+      "input": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/inputs/corrected-roundtrip/10-both-even-odd.hwp",
+        "sha256": "7e47c91046424db3a8551d5ba8f5c169a82695bbcf35834e44c09fd3838aff88"
+      },
+      "referencePdf": {
+        "path": "pdf/pr9071/master-pages/10-both-even-odd-2020.pdf",
+        "sha256": "89823466d1d5c36cd68cf6c13fed9b912be1bacff9a2ba60f2147786772483f9"
+      },
+      "actualPng": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-feature-wasm/masters/10-both-even-odd-hwp/rhwp_png/rhwp_002.png",
+        "sha256": "452c3c4c835059ab77029d99cc64aa67ee7d5ef3fa6e8572fd1db4ec465ec230"
+      },
+      "referencePng": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-feature-wasm/masters/10-both-even-odd-hwp/pdf_png/pdf-002.png",
+        "sha256": "c7343db13423bd5fd57caa657fd99a999e5f4ea6e084aca930fb0c5ee5ccbb5e"
+      },
+      "wholePageTsv": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/tsv-originals/candidate/wasm/masters/10-both-even-odd-hwp.tsv",
+        "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+        "pages": 3,
+        "minimumRaw": "100.00"
+      },
+      "runtimeSource": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+      "captureCheckout": "56a470cd15412f732016ba24b9b96a57b166dfe5",
+      "captureManifestSha256": "fc9e25cf4ff3ba9001ebcb24419773d74f7e87908e536b8a51473910256e5146",
+      "raw": 100.0,
+      "pixel_match_percent": 99.96565,
+      "visual_accuracy_proxy_percent": 75.75277,
+      "flagged": null,
+      "flaggedReason": "Original silhouette-only run did not compute flagged page candidates.",
+      "review": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue9046-both-even-odd-wasm-review.png",
+        "sha256": "2958b73687db9b35157c9f7035a1f3c81e92bc6ff716e114a2f9e1e8facfea25",
+        "bytes": 35133
+      },
+      "overlay": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue9046-both-even-odd-wasm-overlay.png",
+        "sha256": "0c0784170f41b58043efc48e472ecaccdc288e2118378c336fca9da327aba43b",
+        "bytes": 23749
+      }
+    },
+    {
+      "key": "issue8318-color-p1",
+      "issue": 8318,
+      "backend": "native",
+      "inputKey": "color-saved",
+      "page": 1,
+      "dpi": 96,
+      "input": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/inputs/corrected-roundtrip/color.hwpx",
+        "sha256": "dafdd5bec972a6fd60c04fc16a9a9c2660fdee7eaeb83f0c73885721f52e6e51"
+      },
+      "referencePdf": {
+        "path": "pdf/pr9071/서식2-간단-2020.pdf",
+        "sha256": "ab05896eba19c391c6cb7b2ebee600cc56c49ae828cb80bd8e74e77ad43ccfd9"
+      },
+      "actualPng": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-feature-native/color/color-saved/rhwp_png/rhwp_001.png",
+        "sha256": "6efaf6efcb63933cb2759a02c59391cb14a6e4e9d0f254cec1ee22151a40109b"
+      },
+      "referencePng": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-feature-native/color/color-saved/pdf_png/pdf-001.png",
+        "sha256": "81c6a4068d05df527d0c36c7ac4bdf2b8f3a7c4dbe77833af5d95d548a305565"
+      },
+      "wholePageTsv": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/tsv-originals/candidate/native/color/color-saved.tsv",
+        "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+        "pages": 3,
+        "minimumRaw": "100.00"
+      },
+      "runtimeSource": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+      "captureCheckout": "6203a1fa3e98648230f809e4a099d2bdff768815",
+      "captureManifestSha256": "f1c22e3181702c64598eb63e0f4815cd9673df91105ec9bd6f3769cbf819bb25",
+      "raw": 100.0,
+      "pixel_match_percent": 99.46098,
+      "visual_accuracy_proxy_percent": 25.2607,
+      "flagged": null,
+      "flaggedReason": "Original silhouette-only run did not compute flagged page candidates.",
+      "review": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue8318-color-p1-native-review.png",
+        "sha256": "c4e6adf441f936bc0ab55e4ccb5266c616c9062ffdcc81ad16d5c3e8d8816187",
+        "bytes": 31009
+      },
+      "overlay": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue8318-color-p1-native-overlay.png",
+        "sha256": "5314f67663d0a260143de44fd09b4c2b2f82f1e6ced1b0dd8e8c9d03ff086d01",
+        "bytes": 21907
+      }
+    },
+    {
+      "key": "issue8318-color-p1",
+      "issue": 8318,
+      "backend": "wasm",
+      "inputKey": "color-saved",
+      "page": 1,
+      "dpi": 96,
+      "input": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/inputs/corrected-roundtrip/color.hwpx",
+        "sha256": "dafdd5bec972a6fd60c04fc16a9a9c2660fdee7eaeb83f0c73885721f52e6e51"
+      },
+      "referencePdf": {
+        "path": "pdf/pr9071/서식2-간단-2020.pdf",
+        "sha256": "ab05896eba19c391c6cb7b2ebee600cc56c49ae828cb80bd8e74e77ad43ccfd9"
+      },
+      "actualPng": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-feature-wasm/color/color-saved/rhwp_png/rhwp_001.png",
+        "sha256": "8bfca43cf8217bb0bfdf8ae356284b5607efaea1e83b26d92351492ecaa953a3"
+      },
+      "referencePng": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-feature-wasm/color/color-saved/pdf_png/pdf-001.png",
+        "sha256": "81c6a4068d05df527d0c36c7ac4bdf2b8f3a7c4dbe77833af5d95d548a305565"
+      },
+      "wholePageTsv": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/tsv-originals/candidate/wasm/color/color-saved.tsv",
+        "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+        "pages": 3,
+        "minimumRaw": "100.00"
+      },
+      "runtimeSource": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+      "captureCheckout": "56a470cd15412f732016ba24b9b96a57b166dfe5",
+      "captureManifestSha256": "81a10e7c2d7b9f810eda23cb73fecd3c06515125ba6f5fa94c00e2943a298485",
+      "raw": 100.0,
+      "pixel_match_percent": 99.46098,
+      "visual_accuracy_proxy_percent": 25.27233,
+      "flagged": null,
+      "flaggedReason": "Original silhouette-only run did not compute flagged page candidates.",
+      "review": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue8318-color-p1-wasm-review.png",
+        "sha256": "27e195ea20b4dbfa868273b2f4180fd36337dfc450e827816cc376836711564d",
+        "bytes": 31016
+      },
+      "overlay": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue8318-color-p1-wasm-overlay.png",
+        "sha256": "170abae5321ca3df156f8a4f6c75d6bef70349d5db45d3e0327110be3081cfb1",
+        "bytes": 21905
+      }
+    },
+    {
+      "key": "issue8318-color-p2",
+      "issue": 8318,
+      "backend": "native",
+      "inputKey": "color-saved",
+      "page": 2,
+      "dpi": 96,
+      "input": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/inputs/corrected-roundtrip/color.hwpx",
+        "sha256": "dafdd5bec972a6fd60c04fc16a9a9c2660fdee7eaeb83f0c73885721f52e6e51"
+      },
+      "referencePdf": {
+        "path": "pdf/pr9071/서식2-간단-2020.pdf",
+        "sha256": "ab05896eba19c391c6cb7b2ebee600cc56c49ae828cb80bd8e74e77ad43ccfd9"
+      },
+      "actualPng": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-feature-native/color/color-saved/rhwp_png/rhwp_002.png",
+        "sha256": "59f0fd178473568c9d78fdc7b5dac329bd6eba636966f4653c3ba0c74b44a5fa"
+      },
+      "referencePng": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-feature-native/color/color-saved/pdf_png/pdf-002.png",
+        "sha256": "a998e12c589c5775ab8e7e4dcfff84298546722e58aec7b3454fed345e739f13"
+      },
+      "wholePageTsv": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/tsv-originals/candidate/native/color/color-saved.tsv",
+        "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+        "pages": 3,
+        "minimumRaw": "100.00"
+      },
+      "runtimeSource": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+      "captureCheckout": "6203a1fa3e98648230f809e4a099d2bdff768815",
+      "captureManifestSha256": "f1c22e3181702c64598eb63e0f4815cd9673df91105ec9bd6f3769cbf819bb25",
+      "raw": 100.0,
+      "pixel_match_percent": 99.4575,
+      "visual_accuracy_proxy_percent": 25.20891,
+      "flagged": null,
+      "flaggedReason": "Original silhouette-only run did not compute flagged page candidates.",
+      "review": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue8318-color-p2-native-review.png",
+        "sha256": "7284e250a1045c04a6c637e9d6afdadebb6b99503a1969a91a22bd087d0712f7",
+        "bytes": 31766
+      },
+      "overlay": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue8318-color-p2-native-overlay.png",
+        "sha256": "f07a32404dea1535c7f02d5dc8a3772b324e2c9a7d198b05e67971d4710ba2a0",
+        "bytes": 22254
+      }
+    },
+    {
+      "key": "issue8318-color-p2",
+      "issue": 8318,
+      "backend": "wasm",
+      "inputKey": "color-saved",
+      "page": 2,
+      "dpi": 96,
+      "input": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/inputs/corrected-roundtrip/color.hwpx",
+        "sha256": "dafdd5bec972a6fd60c04fc16a9a9c2660fdee7eaeb83f0c73885721f52e6e51"
+      },
+      "referencePdf": {
+        "path": "pdf/pr9071/서식2-간단-2020.pdf",
+        "sha256": "ab05896eba19c391c6cb7b2ebee600cc56c49ae828cb80bd8e74e77ad43ccfd9"
+      },
+      "actualPng": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-feature-wasm/color/color-saved/rhwp_png/rhwp_002.png",
+        "sha256": "ca44c4282e5b4d18e1265d6cdec506d42e8a1007545e7b8c240f18fab153e2cd"
+      },
+      "referencePng": {
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-feature-wasm/color/color-saved/pdf_png/pdf-002.png",
+        "sha256": "a998e12c589c5775ab8e7e4dcfff84298546722e58aec7b3454fed345e739f13"
+      },
+      "wholePageTsv": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/tsv-originals/candidate/wasm/color/color-saved.tsv",
+        "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+        "pages": 3,
+        "minimumRaw": "100.00"
+      },
+      "runtimeSource": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+      "captureCheckout": "56a470cd15412f732016ba24b9b96a57b166dfe5",
+      "captureManifestSha256": "81a10e7c2d7b9f810eda23cb73fecd3c06515125ba6f5fa94c00e2943a298485",
+      "raw": 100.0,
+      "pixel_match_percent": 99.4575,
+      "visual_accuracy_proxy_percent": 25.20891,
+      "flagged": null,
+      "flaggedReason": "Original silhouette-only run did not compute flagged page candidates.",
+      "review": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue8318-color-p2-wasm-review.png",
+        "sha256": "6a5233cb29bf9de811cdcdc0aa6fc8fae8bac41f48773666c789ef1e74986d21",
+        "bytes": 31748
+      },
+      "overlay": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue8318-color-p2-wasm-overlay.png",
+        "sha256": "cf6cb072f5c8550984a56713ad9f8b87bf3c2c6e1cd147b9fb1980edfc107d3f",
+        "bytes": 22254
+      }
+    }
+  ],
+  "sentinelContract": {
+    "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue8318-sentinel-contract.json",
+    "sha256": "85479996f0fdf4f993eda8bbb3445be4773a9c770b822fcb57a3e1b45a73fdbe"
+  }
+}

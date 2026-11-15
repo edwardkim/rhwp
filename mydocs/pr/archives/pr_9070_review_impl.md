@@ -6,7 +6,7 @@
 
 원 head `8669ec6dc4b91a57d6af8e6b82dd391dff0832af`, 최신 devel `88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc`를 대조한다. #5860의 원 해결 `3c6199ab44`, #6380의 `ce8015138f`는 한컴 저장본과 실제 문자·횟수·문맥이 일치한 집합을 보존한다. 기존 공통 표시 매핑은 `src/renderer/hancom_pua.rs`에 독립 PDF 근거를 기록했다.
 
-공개 #8912 첨부의 77개 괘선 코드를 실제 한컴 2020으로 HWPX 변환했다. 이는 파일을 한컴이 정상 생성했다는 뜻이 아니다. 원 HWP3는 제보자가 바이트를 조립한 합성 입력이다. 변환 job `125b8593-c1cf-470e-ab30-8bb833a40079`와 원본·반환 바이트 해시는 ignored 검토 로그에 보존했다. 변환본은 [공식 경로](../../samples/pr9070/hancom-reference/hwp3-linechars-symbols-2020.hwpx)에 두었다.
+공개 #8912 첨부의 77개 괘선 코드를 실제 한컴 2020으로 HWPX 변환했다. 이는 파일을 한컴이 정상 생성했다는 뜻이 아니다. 원 HWP3는 제보자가 바이트를 조립한 합성 입력이다. 변환 job `125b8593-c1cf-470e-ab30-8bb833a40079`와 원본·반환 바이트 해시는 ignored 검토 로그에 보존했다. 변환본은 [공식 경로](../../../samples/pr9070/hancom-reference/hwp3-linechars-symbols-2020.hwpx)에 두었다.
 
 | HWP3 코드 | 원 후보의 새 디코딩 | 독립 한컴 변환 | 기존 검증된 표시 근거 |
 | --- | --- | --- | --- |
@@ -29,4 +29,4 @@ LibreOffice `hwpfilter/source/hcode.cxx`의 `LINEBASE`·`LineCharDir`는 77개 �
 
 ## 승인 후 실제 보완
 
-사용자가 메인테이너 보완·필수 검증을 승인했다. 저장 문자 77개와 공통 원 PUA 공급 경로를 보완했고, [수동 Print·Native/fresh WASM 근거](assets/pr9070/README.md)를 확보했다. 최소 글꼴 환경에서 실제 manifest의 현재 suite를 다시 해석해 집중 63개를 모두 실행·통과했다. 초기 stale suite 선택의 58개 결과는 전체 63개 통과로 바꾸지 않고 구분한다. 원본의 문자 순서와 HWP/HWPX 반복 저장도 새 검사에서 통과했다. 원격 승인은 reviewer 지정까지이며 PR·push·댓글·merge는 수행하지 않았다.
+사용자가 메인테이너 보완·필수 검증을 승인했다. 저장 문자 77개와 공통 원 PUA 공급 경로를 보완했고, [수동 Print·Native/fresh WASM 근거](../assets/pr9070/README.md)를 확보했다. 최소 글꼴 환경에서 실제 manifest의 현재 suite를 다시 해석해 집중 63개를 모두 실행·통과했다. 초기 stale suite 선택의 58개 결과는 전체 63개 통과로 바꾸지 않고 구분한다. 원본의 문자 순서와 HWP/HWPX 반복 저장도 새 검사에서 통과했다. 원격 승인은 reviewer 지정까지이며 PR·push·댓글·merge는 수행하지 않았다.
