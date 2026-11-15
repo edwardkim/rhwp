@@ -89,3 +89,14 @@ Native의 정확한 base 비교는 전쪽 동일 측정값이지만, 동일하�
 Native 영문 대조군에는 공급 도구의 독립적인 우선순위 오류도 확인했다. `visual_sweep_native_webfonts.prepare`는 원 face가 없을 때 문서에 선언된 로컬 Arial이 있어도 registry의 Helvetica Black Condensed를 먼저 내려받았다. 실제 manifest의 `Helvetica → HelveticaNeueW02-97BlackCn`과 PNG의 원래 없는 굵은 압축체를 확인했다. #8565 `5551091085` → #8583 `96827b3acc` → 변환 신원 보완 `72216ada1c`를 대조한 뒤, 기존 원본/embedded/exact alias 우선순위는 유지하며 선언된 실제 로컬 대체를 registry보다 먼저 사용하도록 공통 준비 함수를 보완했다. 원문 IR·font mapping·정본 수치·비교 마스크는 바꾸지 않는다.
 
 새 공급 경로 관계 검사는 수정 전 웹 다운로드 발생으로 FAIL, 수정 후 전체 관련 14건 PASS다. 합성 공급 계약이며 그 자체를 실제 시각 통과로 주장하지 않는다. 실제 입력의 Native 재출력·fresh WASM과 최종 전쪽 검증은 계속 진행한다. nested·yeongwol의 잔여 차이도 별도로 유지한다.
+
+
+### Native CLI 공급과 원본 HFT Print 프레임의 추가 추적
+
+Python 공급기 보완 뒤에도 실제 Native 재출력은 굵은 압축체를 그렸다. manifest의 Python mappings가 비어 있음을 확인하고 후속 호출 `cli/outputs::apply_font_environment → native_webfonts::prepare → merge_into_environment`까지 추적했다. Native의 공통 공급기에도 같은 registry 우선 분기가 있었다. #8597 `606c2bee0d`와 후속 `bf6282b640`·#8692 `0c888319aa`를 확인한 뒤 문서의 실제 로컬 대체를 registry보다 먼저 사용하도록 함께 보완한다. 일반 미공급 진단·원래 exact/embedded 우선순위는 유지한다.
+
+중첩 표 16쪽은 실제 원문이 HFT 휴먼명조를 요청하고 한컴 Print는 Gulim의 동일 윤곽·hmtx를 쓴다. PDF의 Gulim과 Type3 모두 같은 종이 device CTM을 소비하며 15pt의 물리 글자 크기는 14.987749pt다. 현재 Print SVG의 해당 Gulim run은 source 20px/원점을 그대로 발행하고 transform이 없다. `style_resolver` 초기화는 치환된 슬롯의 HFT Print 자격을 먼저 버리고 이후 `preserveSourceMetrics` 환경도 복원하지 못한다. `paper_viewport::publish_glyph_geometry`가 이 자격을 소비하므로 backend별 원점 보정으로 해결하지 않는다.
+
+보완은 원래 비내장 HFT 슬롯이 소유한 프레임을 표시 치환과 분리해 보존한다. 명시적 자연 프로그램 선택은 기존 환경 적용 단계에서 계속 프레임을 해제하며 원래 TTF 슬롯·내장 글꼴은 새로 활성화하지 않는다. 직전 `19f0847829`와 `2e262d0d4b`의 공통 프레임·원본 메트릭 보존 계약을 대조했다. 실제 원본 전쪽 재출력과 소유 관계 검사를 완료하기 전 통과로 판정하지 않는다.
+
+추가 글꼴 공급 근거도 대상 PDF에서 추출한 윤곽을 재료로 사용하지 않았다. 로컬 SPMJ의 원래 U+2013 윤곽·1000em 전진은 독립 Print의 T6과 경로 방향/시작점만 다르며 같은 모든 선분이다. 원문의 기호 슬롯 HFT 한양신명조에 없는 글리프는 이 실제 Myeongjo 프로그램을, HCI Poppy에 없는 가운데점은 원문 기호 슬롯의 HY Sinmyeongjo를 사용하도록 명시한다. 영월 Print의 New Gulim은 실제 제공 Gulim의 네 표본 glyph 윤곽·hmtx가 모두 같고 Malgun Gothic과 다르므로 확인된 원 프로그램을 공급한다. 설정·프로그램·전체 쪽 결과를 최종 증거에 보존한다.

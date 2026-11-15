@@ -1,6 +1,6 @@
 //! 관계형·고정형: 원본 글꼴 프로그램과 기호의 소유 계약.
 //! 이번 보정: 2026-11-04T16:04:21+09:00; Screen과 portable Print에서 기존 원점·소속 검사를 모두 유지한다.
-//! 주석 갱신: 2026-10-30T12:45:07+09:00; 직전 파일 커밋: 2026-10-29T17:36:06+09:00 (55d447871d).
+//! 주석 갱신: 2026-11-15T09:57:56+09:00; 직전 파일 커밋: 2026-11-04T18:33:15+09:00 (96827b3accd98ad0b80f76260b42fba24eded504)
 //! 2026-10-24 측정 raw(96dpi, PDFium, 2px): Native / fresh WASM(no-opt).
 //! 일·생활균형 HWPX 4쪽 99.69% / 99.69%, 5쪽 99.98% / 99.98%; 전 6쪽 최저 98.95% / 98.94%.
 //! 자산관리 HWPX 56쪽 99.98% / 99.98%; 전 60쪽 최저 96.08% / 96.08%.
@@ -58,6 +58,66 @@ fn record(core: &DocumentCore, character: &str) -> Value {
         .find(|r| r["source"]["character"] == character)
         .expect("원본 글자 기록")
         .clone()
+}
+
+#[test]
+fn declared_hft_display_substitution_keeps_its_print_frame_until_natural_program_selection() {
+    use rhwp::paint::{LayerNode, LayerNodeKind, PaintOp, RenderProfile};
+    fn visit(node: &LayerNode, frames: &mut Vec<bool>) {
+        match &node.kind {
+            LayerNodeKind::Group { children, .. } => {
+                for child in children {
+                    visit(child, frames);
+                }
+            }
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                visit(child, frames);
+            }
+            LayerNodeKind::Leaf { ops } => {
+                for op in ops {
+                    if let PaintOp::TextRun {
+                        run,
+                        paint_transform,
+                        ..
+                    } = op
+                    {
+                        if run.text.chars().any(|c| matches!(c, '검' | '증')) {
+                            frames.push(paint_transform.is_some());
+                        }
+                    }
+                }
+            }
+        }
+    }
+    fn frames(core: &DocumentCore) -> Vec<bool> {
+        let tree = core
+            .build_page_layer_tree_with_profile(0, RenderProfile::Print)
+            .unwrap();
+        let mut frames = Vec::new();
+        visit(&tree.root, &mut frames);
+        assert!(!frames.is_empty(), "검증 본문을 실제 paint까지 발행한다");
+        frames
+    }
+    // 독립 Print의 HFT 슬롯은 표시 TTF도 같은 물리 CTM에서 그린다.
+    // 선언·명시적 자연 프로그램의 차이를 검사하며 좌표나 글꼴 설치를 가정하지 않는다.
+    let mut declared = core("휴먼명조", "검증", None);
+    let mut document = declared.document().clone();
+    for face in document.doc_info.font_faces.iter_mut().flatten() {
+        face.alt_type = 2;
+        face.subst_font = Some(rhwp::model::style::SubstFont {
+            face: "Gulim".into(),
+            font_type: 1,
+            ..Default::default()
+        });
+    }
+    declared.set_document(document);
+    assert!(frames(&declared).iter().all(|frame| *frame));
+    let direct = core("Gulim", "검증", None);
+    assert!(frames(&direct).iter().all(|frame| !frame));
+    declared.set_font_environment(Some(FontEnvironment::from_json(
+        r#"{"id":"explicit-natural-control","substitutions":{"휴먼명조":"Gulim"},"trueTypeFaces":["Gulim"],"preserveSourceMetrics":false}"#
+    ).unwrap())).unwrap();
+    assert!(frames(&declared).iter().all(|frame| !frame));
 }
 
 fn advance(record: &Value) -> f64 {
