@@ -122,17 +122,17 @@ fn verified_ttf_program_selects_its_text_frame_without_reclassifying_source() {
     }
     // 글꼴 이름·유형 비트만으로 실제 프로그램의 인쇄 좌표를 확정하지 않는다.
     // 독립 Print에서 확인한 실제 원 primary의 명시 선택과 자연 프로그램 요청을 구분한다.
-    let mut direct = core("Gulim", "검증", None);
+    let mut direct = core("Times New Roman", "검증", None);
     assert!(frames(&direct, false).iter().all(|frame| !frame));
     direct.set_font_environment(Some(FontEnvironment::from_json(
-        r#"{"id":"verified-primary-ttf","substitutions":{"Gulim":"Gulim"},"trueTypeFaces":["Gulim"],"preserveSourceMetrics":true}"#
+        r#"{"id":"verified-primary-ttf","substitutions":{"Times New Roman":"Times New Roman"},"trueTypeFaces":["Times New Roman"],"preserveSourceMetrics":true}"#
     ).unwrap())).unwrap();
     assert!(frames(&direct, false).iter().all(|frame| *frame));
     assert!(
         frames(&direct, true).iter().all(|frame| *frame),
         "확인한 원 primary의 TTF text 좌표는 fill 뒤에도 정밀 프레임을 보존"
     );
-    let mut unknown = core("Gulim", "검증", None);
+    let mut unknown = core("Times New Roman", "검증", None);
     let mut raw = unknown.document().clone();
     for face in raw.doc_info.font_faces.iter_mut().flatten() {
         face.alt_type = 0;
@@ -140,7 +140,7 @@ fn verified_ttf_program_selects_its_text_frame_without_reclassifying_source() {
     unknown.set_document(raw);
     assert!(frames(&unknown, false).iter().all(|frame| !frame));
     unknown.set_font_environment(Some(FontEnvironment::from_json(
-        r#"{"id":"verified-session-ttf","substitutions":{"Gulim":"Gulim"},"trueTypeFaces":["Gulim"],"preserveSourceMetrics":true}"#
+        r#"{"id":"verified-session-ttf","substitutions":{"Times New Roman":"Times New Roman"},"trueTypeFaces":["Times New Roman"],"preserveSourceMetrics":true}"#
     ).unwrap())).unwrap();
     assert!(frames(&unknown, true).iter().all(|frame| *frame));
     assert!(
@@ -166,7 +166,7 @@ fn verified_ttf_program_selects_its_text_frame_without_reclassifying_source() {
     );
 
     direct.set_font_environment(Some(FontEnvironment::from_json(
-        r#"{"id":"explicit-natural-control","substitutions":{"Gulim":"Gulim"},"trueTypeFaces":["Gulim"],"preserveSourceMetrics":false}"#
+        r#"{"id":"explicit-natural-control","substitutions":{"Times New Roman":"Times New Roman"},"trueTypeFaces":["Times New Roman"],"preserveSourceMetrics":false}"#
     ).unwrap())).unwrap();
     assert!(frames(&direct, false).iter().all(|frame| !frame));
 }
