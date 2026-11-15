@@ -21,11 +21,11 @@ PR #9083 병합 `f8234f6f90cb25d9601c9d5d762e0a565aea19e4` 뒤 사용자가37쪽
 
 `stored_span_cut_owns_alignment`의 원본 슬롯 정렬 계약은 이미 존재하지만 그 소비를
 높이로 고른straddle 컷에만 연결했다. 실제 BlockCut의 동일한 선택 범위는 읽지 않았다.
-보정은측정·줄 선택에서 수용한 동일cut_units를 먼저 확정하고, 원본 프레임의 정렬 소유도
+보정은 측정·줄 선택에서 수용한 동일cut_units를 먼저 확정하고, 원본 프레임의 정렬 소유도
 그 범위를 읽게 한다. 문서ID·쪽수·문구별 예외나 고정 위치 덧셈을 추가하지 않는다.
 일반 임의 컷·원본 재시작 중간·개체/중첩 셀 등 기존 helper가 거절하는 계약은 유지한다.
 
-원 해결 이력은저장 프레임/병합 정렬의 `265039cb583459956226313a1df82aea1788e686`,
+원 해결 이력은 저장 프레임/병합 정렬의 `265039cb583459956226313a1df82aea1788e686`,
 후속 통합 `84764fa21c96cd5f8a0e158658e4162a4fb3ce9e` 및 #9083의 공통 유닛/paint 보정을
 대조했다. 관련 소유 메서드와 실제 최종원점의 소비를 바꾸며 범용 렌더러를 새로 만들지 않는다.
 
@@ -53,3 +53,21 @@ Native37쪽98.75228%→99.29420%,38쪽99.84367% 유지다. 선택 라벨은 옆�
 [집중 결과](../pr/assets/issue7732_split_span_20261115/focused-native-result.json) ·
 [37쪽 review](../pr/assets/issue7732_split_span_20261115/after-native/review-037.png) ·
 [overlay](../pr/assets/issue7732_split_span_20261115/after-native/overlay-037.png).
+
+## 2026-11-15T14:00:11+09:00 — 정식 집중 회귀와 두 경로 전50쪽
+
+정식 Cargo 자동 수집의 새 검사2건은 최소 글꼴 환경에서 모두 PASS했다(0.125초).
+Native와 fresh WASM 각각50쪽을 새로 산출했고, 공식 두 자리 값은 두 경로 모두
+37쪽만98.75%→99.29%로 상승했다. 나머지49쪽은 기존 값과 같고 전쪽 최저는47쪽99.23%다.
+독립 Print의 다음 문단 `재정조달`은38쪽에서 한 번만 남고37쪽에 중복하지 않는다.
+새 WASM은 Mac locked wrapper의 `--target web --out-dir pkg --no-opt` 대체 빌드이며
+root `pkg`와 Studio `public`의 JS/WASM 해시 일치를 확인했다. Docker 최적화 완료가 아니다.
+
+정본 보호 Native18조건1,771쪽은 전부 기존 값과 동일했다. 사용자 지시에 따라 상승한 조건은
+최종 전쪽 TSV와 manifest를 함께 갱신하지만, 현재 Native 상승0쪽이므로 기준을 낮추거나
+임의로 바꾸지 않는다. 보호 fresh WASM·필수 편람 gate·전체 회귀·실제 소비 경로는 진행 중이다.
+최소 글꼴 프로필이 공개 테스트 fixture인 Happiness Sans까지 차단했던 컴파일 실패는
+원인과 로그를 보존하고 그 파일 하나를 허용한 뒤 all-target Clippy를 실제 재실행해 PASS했다.
+제품 또는 회귀 기대값은 이 실행 환경 오류 때문에 바꾸지 않았다.
+
+[전50쪽 결과와 판독](../pr/assets/issue7732_split_span_20261115/whole-footnote-validation.json).
