@@ -1,6 +1,7 @@
-//! 관계형 회귀: 글상자 안 글자 없는 문단에 미기입 누름틀이 있어도 글자처럼 취급 표는 한/글
+//! 관계형·고정형 회귀: 글상자 안 글자 없는 문단에 미기입 누름틀이 있어도 글자처럼 취급 표는 한/글
 //! 인쇄처럼 한 줄에 하나씩 글상자 안에 놓인다.
-//! 주석 갱신: 2026-11-14 (KST), 새 파일.
+//! 주석 갱신: 2026-11-16T03:27:25+09:00 (Asia/Seoul).
+//! 직전 파일 변경: 2026-11-15T05:28:15+09:00, commit 3a2fcbf7d12d4f57fa3fcff33721ff7ed9059738.
 //!
 //! [#9076] 한/글은 미기입 누름틀의 안내문을 문단 글자로 저장하고 저장 줄(LINE_SEG)도 그 글자를
 //! 넣고 나눈다. 적재할 때 안내문은 값에서 빠지고 `Field::guide_residue` 로만 남으므로, 그
@@ -30,17 +31,17 @@
 //!
 //! fixture 계약(안내문 잔재와 저장 줄 수), 둘째 표가 첫째 표 아래 줄에서 같은 x 로 시작하고
 //! 두 표가 글상자 안에 있음, 누름틀 유무로 표 위치가 달라지지 않음(관계 검사).
-//! 절대 좌표는 고정하지 않는다. 실제 위치는 독립 PDF 와의 Visual Sweep 으로 확인한다.
+//! 글상자 탐색 시 전체 1쪽을 고정하고, 절대 좌표는 고정하지 않는다. 실제 위치는 독립 PDF 와의 Visual Sweep 으로 확인한다.
 //!
 //! # 측정
 //!
-//! 2026-11-15, `scripts/visual_sweep.py --silhouette-only --compat 2022 --dpi 96`, 판정값
+//! 2026-11-16, `scripts/visual_sweep.py --silhouette-only --compat 2022 --dpi 96`, 판정값
 //! `silhouette_raw_match_percent`(색상 경계 보정 전 2px 내용 실루엣). 두 문서 모두 전체 1쪽 =
 //! PDF 1쪽이고, 인쇄되는 글자가 없어 글꼴이 결과에 관여하지 않는다.
-//! - 누름틀 있음: Native 100.00 / fresh WASM 100.00 (수정 전 devel `53da4d2da2`: 29.43 / 29.43)
+//! - 누름틀 있음: Native 100.00 / fresh WASM 100.00 (수정 전 devel `7ee4fe0327`: 29.43 / 29.43)
 //! - 누름틀 없음: Native 100.00 / fresh WASM 100.00 (수정 전과 같음)
 //!
-//! 증거: `mydocs/pr/assets/issue_9076_textbox_unfilled_field_rows/`(전 쪽 TSV, review·overlay PNG).
+//! 증거: `mydocs/pr/assets/johndoekim-20261116/`(전 쪽 TSV, review·overlay PNG).
 
 #![cfg(not(target_arch = "wasm32"))]
 
