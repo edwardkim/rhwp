@@ -62,3 +62,11 @@ macOS 기본/다운로드/문서 지원, Windows Desktop/한국어 추가 기능
 목록이라고 표현하지 않는다.
 
 공식 목록 대조로 실험의 19개 파일이 Desktop 17개와 한국어 추가 TTC 2개임을 명확히 구분했다. Windows 기본 글꼴 전체나 macOS를 직접 실행한 결과로 일반화하지 않는다.
+
+## 제출·code CI 확정
+
+충돌 없는 리베이스 뒤 code head `5e0d8b6bc07e81065f572d55bdad4a71c9fe61df`로 PR #9102를 제출했다.
+2026-11-16 01:38 KST 확인에서 CI·CodeQL·Adapter·Proptest·정책 검사 다섯 실행이 모두 success다.
+CI lint의 Python 267건 실제 실행과 Native Skia·기본 archive A–E·frontend 성공도 확인했다.
+이전 중간 상태의 진행 중 관측은 전체 조사 완료·최종 결과로 해소됐다. 정확한 check별 URL은
+`mydocs/pr/assets/issue_9101/code-ci.json`에 보존하고 review·오늘할일 trailing 기록을 진행한다.
