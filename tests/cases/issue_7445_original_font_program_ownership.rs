@@ -61,7 +61,7 @@ fn record(core: &DocumentCore, character: &str) -> Value {
 }
 
 #[test]
-fn declared_hft_display_substitution_keeps_its_print_frame_until_natural_program_selection() {
+fn verified_ttf_program_selects_its_text_frame_without_reclassifying_source() {
     use rhwp::paint::{LayerNode, LayerNodeKind, PaintOp, RenderProfile};
     fn visit(node: &LayerNode, frames: &mut Vec<bool>) {
         match &node.kind {
@@ -120,25 +120,17 @@ fn declared_hft_display_substitution_keeps_its_print_frame_until_natural_program
         assert!(!frames.is_empty(), "검증 본문을 실제 paint까지 발행한다");
         frames
     }
-    // 독립 Print의 HFT 슬롯은 표시 TTF도 같은 물리 CTM에서 그린다.
-    // 선언·명시적 자연 프로그램의 차이를 검사하며 좌표나 글꼴 설치를 가정하지 않는다.
-    let mut declared = core("휴먼명조", "검증", None);
-    let mut document = declared.document().clone();
-    for face in document.doc_info.font_faces.iter_mut().flatten() {
-        face.alt_type = 2;
-        face.subst_font = Some(rhwp::model::style::SubstFont {
-            face: "Gulim".into(),
-            font_type: 1,
-            ..Default::default()
-        });
-    }
-    declared.set_document(document);
-    assert!(frames(&declared, false).iter().all(|frame| *frame));
-    let direct = core("Gulim", "검증", None);
+    // 글꼴 이름·유형 비트만으로 실제 프로그램의 인쇄 좌표를 확정하지 않는다.
+    // 독립 Print에서 확인한 실제 원 primary의 명시 선택과 자연 프로그램 요청을 구분한다.
+    let mut direct = core("Gulim", "검증", None);
+    assert!(frames(&direct, false).iter().all(|frame| !frame));
+    direct.set_font_environment(Some(FontEnvironment::from_json(
+        r#"{"id":"verified-primary-ttf","substitutions":{"Gulim":"Gulim"},"trueTypeFaces":["Gulim"],"preserveSourceMetrics":true}"#
+    ).unwrap())).unwrap();
     assert!(frames(&direct, false).iter().all(|frame| *frame));
     assert!(
         frames(&direct, true).iter().all(|frame| *frame),
-        "TTF text 좌표는 fill 뒤에도 정밀 프레임을 보존"
+        "확인한 원 primary의 TTF text 좌표는 fill 뒤에도 정밀 프레임을 보존"
     );
     let mut unknown = core("Gulim", "검증", None);
     let mut raw = unknown.document().clone();
@@ -173,19 +165,10 @@ fn declared_hft_display_substitution_keeps_its_print_frame_until_natural_program
         "HFT의 기존 Type3 fill 경계는 유지"
     );
 
-    declared
-        .set_font_environment(Some(
-            FontEnvironment::from_json(
-                r#"{"id":"display-only-control","substitutions":{"휴먼명조":"Gulim"},"trueTypeFaces":["Gulim"],"preserveSourceMetrics":true}"#,
-            )
-            .unwrap(),
-        ))
-        .unwrap();
-    assert!(frames(&declared, false).iter().all(|frame| *frame));
-    declared.set_font_environment(Some(FontEnvironment::from_json(
-        r#"{"id":"explicit-natural-control","substitutions":{"휴먼명조":"Gulim"},"trueTypeFaces":["Gulim"],"preserveSourceMetrics":false}"#
+    direct.set_font_environment(Some(FontEnvironment::from_json(
+        r#"{"id":"explicit-natural-control","substitutions":{"Gulim":"Gulim"},"trueTypeFaces":["Gulim"],"preserveSourceMetrics":false}"#
     ).unwrap())).unwrap();
-    assert!(frames(&declared, false).iter().all(|frame| !frame));
+    assert!(frames(&direct, false).iter().all(|frame| !frame));
 }
 
 fn advance(record: &Value) -> f64 {

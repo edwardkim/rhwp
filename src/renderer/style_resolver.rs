@@ -318,14 +318,6 @@ pub(crate) fn resolve_styles_with_environment(
                     {
                         style.font_families_hft_print_frame[lang] = true;
                     }
-                    // 유형 미상 원문도 명시 선택한 실제 TTF의 text 프레임을
-                    // 소유할 수 있다. 원문의 source_ttf는 변경하지 않는다.
-                    if preserve_source_metrics
-                        && original.embedded != Some(true)
-                        && environment.is_some_and(|env| env.selects_true_type(target))
-                    {
-                        style.font_families_print_text_device_frame[lang] = true;
-                    }
                     // 실제 원본 TTF를 조회해 인증한 family 별칭은 기존 폭 신뢰를
                     // 잃지 않는다. 대체 쿼리·HFT·다른 메트릭의 선택은 포함하지 않는다.
                     let verified_source_alias = original.substitution_boundary.is_none()
@@ -353,6 +345,15 @@ pub(crate) fn resolve_styles_with_environment(
                         && (metric_widths_verified_face(target)
                             || verified_source_alias
                             || matches!(target, "휴먼명조" | "HumanMyeongJo"));
+                    // 원문 유형 선언이나 자동 대체만으로 text device 좌표를
+                    // 부여하지 않는다. 실제 원 primary를 선택한 세션만 같은
+                    // 자격을 사용하며 원문의 source_ttf는 변경하지 않는다.
+                    if preserve_source_metrics
+                        && original.embedded != Some(true)
+                        && primary_true_type_program
+                    {
+                        style.font_families_print_text_device_frame[lang] = true;
+                    }
                     // 자동 표시용 선택은 저장된 원본 HFT 메트릭의 변경이 아니다.
                     let keep_source_metrics = !primary_true_type_program
                         && preserve_source_metrics
@@ -421,7 +422,7 @@ pub(crate) fn resolve_styles_with_environment(
                         // 같은 주 프로그램의 가용성 인증은 저장 HFT의 물리 Print
                         // 종이 프레임을 바꾸는 요청이 아니다. 전진 프로그램과
                         // source가 소유한 paint 프레임을 별개로 보존한다.
-                        if !preserve_source_metrics {
+                        if !primary_true_type_program || !preserve_source_metrics {
                             style.font_families_hft_print_frame[lang] = false;
                         }
                         style.font_families_original_glyph_metric_face[lang] = None;
@@ -914,14 +915,11 @@ pub(crate) fn try_resolve_single_char_style<A: storage::Storage>(
         // 원 HFT의 그래픽 프레임과 TTF text device 프레임을 분리한다.
         // 표시 치환은 원문 유형을 바꾸지 않는다. HWP3의 유형 미상 HFT
         // 추론도 보존하며 실제 세션 TTF 선택은 환경 적용 단계에서 해소한다.
-        font_families_hft_print_frame.push(
-            source_font.is_some_and(|face| face.alt_type == 2 && !face.is_embedded)
-                || (decision.alt_type == Some(2)
-                    && !substituted
-                    && decision.embedded != Some(true)),
-        );
-        font_families_print_text_device_frame
-            .push(source_font.is_some_and(|face| face.alt_type == 1 && !face.is_embedded));
+        font_families_hft_print_frame
+            .push(decision.alt_type == Some(2) && !substituted && decision.embedded != Some(true));
+        // 실제 프로그램 선택은 environment 단계에서 확인한다. 명시 TTF
+        // 이름도 같은 이름의 CFF·대체 프로그램을 증명하지 않는다.
+        font_families_print_text_device_frame.push(false);
         // [#7391] legacy-latin은 선언 face의 기존 표를 사용한다. HFT는
         // 프로그램 자체를 확인한 표만 사용하며 표시용 TTF와 구분한다.
         // HWP3 ASCII 반각 여부는 기존 문서의 저장 줄 증인이 계속 결정한다.
