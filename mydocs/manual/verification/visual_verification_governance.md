@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-11-08
+last_verified: 2026-11-16
 ---
 
 # PR 시각 검증 거버넌스 (OVL-step)
@@ -103,6 +103,11 @@ Native·fresh WASM TSV 원본, 비교 명령·전쪽 수·최대 하락폭 및 �
 이 특별 보호 검증의 재현을 제출 조건으로 요구하지 않는다. 통합 담당 collaborator·maintainer가
 원본 글꼴 공급 조건을 확인한 환경에서 수행하며, 이를 위해 비공개 글꼴을 저장소에 배포하지 않는다.
 일반 시각 검증 의무와 90%·완료 페이지 98% 기준은 각 정본의 적용 범위를 유지한다.
+
+일반 기여자는 이 전체 특별 검증과 구분하여, 공개 환경에서 재현을 확인한 4개 문서의
+[기여자 공통 보호 검사](visual_sweep_guide.md#기여자-공통-보호-검사)를 수행한다.
+해당 등록 문서에 한해서 동일 입력·PDF·backend의 정본 표시값 하락을 검사한다.
+공통 검사 통과를 정본 전체 통과로 간주하거나 비공개 글꼴을 요구하는 근거로 사용하지 않는다.
 
 1. 정본 보호 TSV와 manifest의 commit SHA·경로·SHA-256을 고정한다. manifest의
    `table_sha256`을 확인하고, 입력 SHA·기준 PDF SHA·compat·DPI가 일치하는 `document_id`의
