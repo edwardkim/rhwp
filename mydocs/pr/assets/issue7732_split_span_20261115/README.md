@@ -9,6 +9,24 @@
 [내용 신원 감사](rebase-67b4-20261116/source-read-path-reuse.json)로 Rust·Cargo·fixture·기존 출력
 runtime이 같은 것을 확인했다. asset을 담은 커밋과 실제 실행 파일을 생산한 소스를 구분한다.
 
+## Native SVG CLI의 후속 준비 보정
+
+`8472674645`는 Native Skia 지원 CLI의 layer SVG에 PNG와 같은 원본 프로그램 준비를
+연결했다. [후속 읽기 경로 감사](native-svg-source-program/followup-read-path-reuse.json)에서
+공통 조판·PNG·WASM·입력·실행기 코드가273 생산 소스와 같은 것을 확인했다. 위의273 생산
+표기는 이 PNG/WASM 증거의 출처이며 새 Native SVG CLI의 바이너리 출처는847이다.
+리베이스로 유입한 About UI·dialog CSS 변경은 별도로 기록하고 실제 UI 검증을 재사용한다.
+Studio 전체가273과 동일하다고 주장하지 않는다.
+
+Native SVG 7·28쪽의 전진 차이를 공개 합성 TTF로 검출해1FAIL→1PASS를 확인했다.
+현재 fresh WASM SVG 전50쪽은최저99.16%로 통과했고 Native SVG의 새 전50쪽 캡처는
+실제 브라우저 캡처 종료 뒤 순차 실행한다. Native Skia all-target Clippy와fmt는 통과했으며
+새 전체 nextest는 실행 중이다. 이전13,617PASS를 이 추가 변경의 새 전체 실행으로 세지 않는다.
+
+실제 Studio Print의 완료된 부분 측정은 각주36쪽 SVG99.83%·Canvas2D99.76%·두CanvasKit99.83%,
+37쪽 SVG99.16%·Canvas2D99.08%·두CanvasKit99.17%다. 36쪽review/overlay를 직접 판독했다.
+이 두 쪽의 값은 실제8쪽 소비 경로 전체나 필수 편람 gate의 완료를 뜻하지 않는다.
+
 ## 현재 실제 결과
 
 | 범위 | 확인한 결과 | 증거 |
