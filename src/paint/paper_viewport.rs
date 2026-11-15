@@ -135,6 +135,7 @@ impl PagePaintContext {
                     if run.is_vertical
                         || style.superscript
                         || style.subscript
+                        || style.font_position.is_some_and(|position| position != 0)
                         || style.preserve_glyph_ink
                         || style.text_paint.is_some()
                         || !style

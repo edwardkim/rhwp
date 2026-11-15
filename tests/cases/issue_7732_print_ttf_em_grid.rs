@@ -1,5 +1,5 @@
 //! 검사 유형: 관계형. 독립 Print의 장치 em과 논리 글자 크기·전진을 구분한다.
-//! 주석 갱신: 2026-11-16 01:21 KST.
+//! 주석 갱신: 2026-11-16 01:53:01 KST.
 //! 실문서 좌표의 px 고정 검사가 아닌 합성 글꼴의 단위·소비 계약이다.
 //! 독립 한컴 2020 Print 표본의 8/10/11/13pt는 각각 67/83/92/108 장치 em이다.
 //! 설치 글꼴 없이 MIT 합성 TTF를 공급하며 Screen·2024·윤곽 보존 선택을 구분한다.
@@ -140,7 +140,7 @@ fn screen_quality_and_explicit_ink_preservation_keep_their_size() {
 
 #[test]
 fn actual_document_print_generation_selects_legacy_em_only() {
-    for modern in [false, true] {
+    for (modern, position) in [(false, 0), (true, 0), (false, 25)] {
         let mut core = rhwp::DocumentCore::new_empty();
         core.create_blank_document_native().unwrap();
         core.insert_text_native(0, 0, 0, "AA").unwrap();
@@ -154,6 +154,7 @@ fn actual_document_print_generation_selects_legacy_em_only() {
             style.ratios = [100; 7];
             style.spacings = [0; 7];
             style.relative_sizes = [100; 7];
+            style.char_offsets = [position; 7];
         }
         core.set_document(doc);
         core.set_hangul2024_compat(modern);
@@ -195,12 +196,12 @@ fn actual_document_print_generation_selects_legacy_em_only() {
         collect(&tree.root, &mut sizes);
         assert!(!sizes.is_empty());
         assert!(
-            sizes.iter().all(|size| if modern {
+            sizes.iter().all(|size| if modern || position != 0 {
                 size.is_none()
             } else {
                 size.is_some_and(|value| (value - 13.28).abs() < 1e-9)
             }),
-            "modern={modern}: {sizes:?}"
+            "modern={modern}, position={position}: {sizes:?}"
         );
     }
 }
