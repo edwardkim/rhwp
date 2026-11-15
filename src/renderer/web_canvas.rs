@@ -3441,6 +3441,11 @@ impl Renderer for WebCanvasRenderer {
                 w,
                 h,
             );
+            let _coverage = image_coverage::DestinationCoverage::for_print(
+                &self.ctx,
+                (x, y, w, h),
+                self.render_profile,
+            );
             let _ = self
                 .ctx
                 .draw_image_with_html_canvas_element_and_dw_and_dh(&canvas, x, y, w, h);
@@ -3465,6 +3470,11 @@ impl Renderer for WebCanvasRenderer {
                     f64::from(img.natural_height()),
                     w,
                     h,
+                );
+                let _coverage = image_coverage::DestinationCoverage::for_print(
+                    &self.ctx,
+                    (x, y, w, h),
+                    self.render_profile,
                 );
                 let _ = self
                     .ctx
@@ -3533,6 +3543,11 @@ impl Renderer for WebCanvasRenderer {
                     f64::from(img.natural_height()),
                     w,
                     h,
+                );
+                let _coverage = image_coverage::DestinationCoverage::for_print(
+                    &self.ctx,
+                    (x, y, w, h),
+                    self.render_profile,
                 );
                 let _ = self
                     .ctx
@@ -3662,6 +3677,11 @@ impl WebCanvasRenderer {
             {
                 return;
             }
+            let _coverage = image_coverage::DestinationCoverage::for_print(
+                &self.ctx,
+                (dx, dy, dw, dh),
+                self.render_profile,
+            );
             let _ = self
                 .ctx
                 .draw_image_with_html_canvas_element_and_sw_and_sh_and_dx_and_dy_and_dw_and_dh(
@@ -3681,6 +3701,11 @@ impl WebCanvasRenderer {
 
         if let Some(img) = cached {
             if img.complete() && img.natural_width() > 0 {
+                let _coverage = image_coverage::DestinationCoverage::for_print(
+                    &self.ctx,
+                    (dx, dy, dw, dh),
+                    self.render_profile,
+                );
                 let _ = self
                     .ctx
                     .draw_image_with_html_image_element_and_sw_and_sh_and_dx_and_dy_and_dw_and_dh(

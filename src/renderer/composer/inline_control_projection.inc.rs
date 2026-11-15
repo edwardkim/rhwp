@@ -189,8 +189,9 @@ fn try_inject_char_overlap_text<S: crate::storage::Storage>(
         let char_style_id = if composition.is_some() {
             host_style_id
         } else {
-            // 별도 글자모양이 없는 원 PUA 겹침도 제어 슬롯의 서식을 상속한다.
-            // 명시 ID 0은 누락과 구분해 그대로 보존한다.
+            // 짧은 HWP tcps payload에는 내부 ID 자체가 없을 수 있다.
+            // PUA 별도 해독도 그 경우 제어 슬롯의 서식을 상속한다.
+            // 명시적 0번은 누락과 구분하며 저장한 참조를 그대로 유지한다.
             stored_char_style_id.unwrap_or(host_style_id)
         };
         storage.push(

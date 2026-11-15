@@ -24,16 +24,21 @@ impl WebCanvasRenderer {
             let original = supports_style(style)
                 .then(|| fonts.glyph(&style.font_family, character))
                 .flatten();
-            original.or_else(|| {
-                // 명시 자연 프로그램의 실제 윤곽은 2020/2022 Print도 소비한다.
-                // 보통 TTF fallback의 기존 인쇄 세대별 힌팅 정책은 유지한다.
-                ((self.print_text_geometry
-                    || (self.render_profile == crate::paint::RenderProfile::Print
-                        && has_natural_hft_program(style)))
-                    && !crate::renderer::contextual_text::is_contextual(text))
-                .then(|| fonts.print_fallback_glyph(style, character))
-                .flatten()
-            })
+            if original.is_some() {
+                original
+            } else if self.render_profile == crate::paint::RenderProfile::Print
+                && !crate::renderer::contextual_text::is_contextual(text)
+            {
+                // 실제 CSS 주 프로그램의 소유를 먼저 확인한다. 명시 자연 HFT의
+                // 정적 TTF 재생도 보존하며 화면·문맥 shaping으로 확대하지 않는다.
+                fonts.print_primary_glyph(style, character).or_else(|| {
+                    (self.print_text_geometry || has_natural_hft_program(style))
+                        .then(|| fonts.print_fallback_glyph(style, character))
+                        .flatten()
+                })
+            } else {
+                None
+            }
         }) else {
             return false;
         };
