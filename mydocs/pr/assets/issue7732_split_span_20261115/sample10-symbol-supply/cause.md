@@ -3,7 +3,7 @@
 기존 본문 프로그램의 선택은 보존하고 누락 기호만 독립 Print에서 확인한 `Haansoft Batang`으로
 공급하자 Native와 fresh WASM의 공식 raw 표시값이 99.96%에서 100.00%로 복원됐다.
 [집중 결과](focused-results.json)의 각 review·overlay를 직접 판독해 등호 10개 뒤 이중선 25개의
-굵기와 끝 위치, 제목·본문 줄 소속을 확인했다. **전 763쪽은 별도로 검증 중이며 아직 전체 수용이 아니다.**
+굵기와 끝 위치, 제목·본문 줄 소속을 확인했다. **Native 전 763쪽은 보호 하락 0쪽·최저 99.57%로 완료했다. WASM 전 763쪽은 별도로 진행 중이므로 양쪽 전체 수용은 아직 아니다.**
 
 입력은 `samples/hwp3-sample10.hwp`, 기준은 독립 한컴 2020 Print
 `pdf/issue8371/hwp3-sample10-2020.pdf`다. 소스·원본 문자·기준 PDF·96 DPI·compat 2022·
@@ -30,3 +30,5 @@ Native 95.79%·WASM 95.93%로 악화했다. 이 실패 조건은 채택하지 �
 [브라우저 소비 증거](consumer-font-proof.json)에는 `HY Junggothic,Haansoft Batang`의 실제
 PUA 공급자와 원본 SHA·브라우저 정규화 후 SHA를 구분해 기록했다. 비공개 글꼴 파일과
 윤곽 좌표는 Git에 포함하지 않는다.
+
+[Native 전쪽 결과](native-full-results.json)와 [전763쪽 TSV](native/full-silhouette.tsv)에 동일 공급 조건의 전체 기록을 보존한다. 474쪽은 100.00%다.
