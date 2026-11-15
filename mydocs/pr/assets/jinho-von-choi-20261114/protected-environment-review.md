@@ -116,3 +116,12 @@ Python 공급기 보완 뒤에도 실제 Native 재출력은 굵은 압축체를
 기존 HFT만의 자격 제한은 이 비내장 TTF 출력 계약을 누락했다. 원본의 명시적 TTF/HFT 슬롯과 기존 HWP3의 유형 미상 HFT 추론이 같은 `paper_viewport` 결과를 소비하도록 자격을 보존한다. Screen에는 적용하지 않으며 embedded 원본과 명시적 자연 프로그램 좌표 선택의 기존 경계는 유지한다. `preserveSourceMetrics=true`의 표시 치환은 프레임 해제로 해석하지 않는다. 초기 합성 대조군의 TTF 프레임 미적용 가정도 독립 TTF Print 근거에 따라 수정했으며 실제 대상 출력의 재검증을 계속한다.
 
 `08c83701b8` Native의 실제 중간 재출력은 body-list 100.00%, 그림 100.00%, nested 16쪽 99.99%, 영월 1쪽 100.00%·3쪽 99.98%다. 이 중간 head의 두 Native focused harness 컴파일은 추가 좌표 보완 때문에 중단했고 통과 결과로 계상하지 않는다. 최종 source에서 정식 전체/집중 검사를 다시 실행한다.
+
+
+### 최신 devel과 원본 TTF의 fill 이후 text 좌표
+
+최종 전수 검증 전에 원격을 확인하니 #9083이 `f8234f6f90cb25d9601c9d5d762e0a565aea19e4`로 추가됐다. 원 기여 head 세 개와 모든 보완 SHA를 보존하기 위해 같은 통합 branch에 최신 devel을 충돌 없이 병합했다(`475d22a74d5a1b754748879aac401d272477c888`). 제품 변경은 paragraph/표/각주 소유, 영문 반각 em/탭, 공통 gradient·밑줄 paint, CanvasKit 전달이다. 해당 다섯 원본 389쪽과 편집/저장 반례의 유지도 최종 검증에 포함한다. 이전 기준의 통과를 이 새 base의 검증으로 대체하지 않는다.
+
+`32ce8e6eca` Native의 작은 대조는 nested 16쪽·body-list·그림 각100.00%, 영월1쪽100.00%·3쪽99.98%다. 영월 Print SVG의 `누`와 바탕 본문에는 정밀 CTM이 여전히 없었고 현재 source y=963.5333은 sy를 적용하면 독립 PDF y≈962.4682와 일치한다. 원본 TTF text의 device 좌표와 도형 fill에 따른 기존 HFT Type3 그래픽 상태를 혼동해 TTF까지 정밀 좌표를 해제한 것이 남은 원인이다. 같은 비내장 source 자격을 사용하되 원래 TTF는 fill 뒤에도 정밀 text 프레임을 유지한다. HFT의 기존 fill 전/후 경계와 명시적 자연 프로그램 해제는 보존한다.
+
+영월의 바탕 본문도 PDF의 실제 Batang과 로컬 Windows Batang의 `누·+·＊·월·계` 윤곽·hmtx가 모두 같다. 이전 관측 설정의 Haansoft Batang과 구분해 두 원 프로그램 Gulim/Batang을 명시 공급한다. 현재 진단을 대상 PDF의 글리프를 추출한 대체 글꼴이나 수치 맞춤에 사용하지 않는다.

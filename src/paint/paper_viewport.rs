@@ -275,7 +275,12 @@ impl PagePaintContext {
                             ..
                         } = op
                         {
-                            if run.style.hft_print_frame && !*rounded {
+                            // 원본 TTF의 text device 좌표는 도형 fill의 Type3
+                            // 그래픽 CTM 상태에 종속되지 않는다. HFT의 기존
+                            // fill 전/후 경계와 명시적 자연 프로그램 해제는 유지한다.
+                            if run.style.hft_print_frame
+                                && (!*rounded || run.style.source_font_is_ttf)
+                            {
                                 sources.insert(source.id.0);
                             }
                         }

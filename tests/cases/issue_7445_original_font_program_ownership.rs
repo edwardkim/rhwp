@@ -89,10 +89,32 @@ fn declared_hft_display_substitution_keeps_its_print_frame_until_natural_program
             }
         }
     }
-    fn frames(core: &DocumentCore) -> Vec<bool> {
-        let tree = core
-            .build_page_layer_tree_with_profile(0, RenderProfile::Print)
-            .unwrap();
+    fn frames(core: &DocumentCore, after_fill: bool) -> Vec<bool> {
+        let tree = if after_fill {
+            use rhwp::renderer::render_tree::{
+                BoundingBox, RectangleNode, RenderNode, RenderNodeType,
+            };
+            let mut render = core.build_page_render_tree(0).unwrap();
+            render.root.children.insert(
+                0,
+                RenderNode::new(
+                    u32::MAX,
+                    RenderNodeType::Rectangle(RectangleNode::new(
+                        0.0,
+                        rhwp::renderer::ShapeStyle {
+                            fill_color: Some(0),
+                            ..Default::default()
+                        },
+                        None,
+                    )),
+                    BoundingBox::new(0.0, 0.0, 10.0, 10.0),
+                ),
+            );
+            rhwp::paint::LayerBuilder::new(RenderProfile::Print).build(&render)
+        } else {
+            core.build_page_layer_tree_with_profile(0, RenderProfile::Print)
+                .unwrap()
+        };
         let mut frames = Vec::new();
         visit(&tree.root, &mut frames);
         assert!(!frames.is_empty(), "검증 본문을 실제 paint까지 발행한다");
@@ -111,9 +133,25 @@ fn declared_hft_display_substitution_keeps_its_print_frame_until_natural_program
         });
     }
     declared.set_document(document);
-    assert!(frames(&declared).iter().all(|frame| *frame));
+    assert!(frames(&declared, false).iter().all(|frame| *frame));
     let direct = core("Gulim", "검증", None);
-    assert!(frames(&direct).iter().all(|frame| *frame));
+    assert!(frames(&direct, false).iter().all(|frame| *frame));
+    assert!(
+        frames(&direct, true).iter().all(|frame| *frame),
+        "TTF text 좌표는 fill 뒤에도 정밀 프레임을 보존"
+    );
+    let mut original_hft = core("한양신명조", "검증", None);
+    let mut original = original_hft.document().clone();
+    for face in original.doc_info.font_faces.iter_mut().flatten() {
+        face.alt_type = 2;
+    }
+    original_hft.set_document(original);
+    assert!(frames(&original_hft, false).iter().all(|frame| *frame));
+    assert!(
+        frames(&original_hft, true).iter().all(|frame| !frame),
+        "HFT의 기존 Type3 fill 경계는 유지"
+    );
+
     declared
         .set_font_environment(Some(
             FontEnvironment::from_json(
@@ -122,11 +160,11 @@ fn declared_hft_display_substitution_keeps_its_print_frame_until_natural_program
             .unwrap(),
         ))
         .unwrap();
-    assert!(frames(&declared).iter().all(|frame| *frame));
+    assert!(frames(&declared, false).iter().all(|frame| *frame));
     declared.set_font_environment(Some(FontEnvironment::from_json(
         r#"{"id":"explicit-natural-control","substitutions":{"휴먼명조":"Gulim"},"trueTypeFaces":["Gulim"],"preserveSourceMetrics":false}"#
     ).unwrap())).unwrap();
-    assert!(frames(&declared).iter().all(|frame| !frame));
+    assert!(frames(&declared, false).iter().all(|frame| !frame));
 }
 
 fn advance(record: &Value) -> f64 {
