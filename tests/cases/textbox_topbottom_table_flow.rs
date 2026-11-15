@@ -11,6 +11,13 @@
 //! - 위 정렬: `T1`→`A1` 거리는 오프셋 0 에서 125.8, 2000 에서 152.7(오프셋 20pt 만큼 더 밀림)
 //! - 가운데 정렬: `T1` 이 위 정렬보다 오프셋 0 에서 182.7, 2000 에서 169.3 아래(띠가 내용 높이에 듦)
 //!
+//!
+//! 표 문단에 글 `ANCHOR` 가 있는 4벌(`_text`)은 띠에 걸리는 앵커 줄만 띠 아래로 간다:
+//! - 오프셋 0: 표가 문단 위끝에 놓이고 `ANCHOR` 가 띠 아래(빈 앵커의 `A1` 자리), `A1` 은 그 다음 줄
+//!   (`T1`→`ANCHOR` 125.8, `T1`→`A1` 147.2)
+//! - 오프셋 2000: 띠가 앵커 줄 아래에서 시작해 `ANCHOR` 는 제자리(`T1`→`ANCHOR` 42.9),
+//!   `A1` 은 띠 아래(`T1`→`A1` 152.7, 빈 앵커와 같음)
+//!
 //! 수정 전 rhwp 는 표를 흐름에 넣지 않아 `A1` 이 표 문단 바로 다음 줄에 놓이고(표와 겹침),
 //! 세로 오프셋을 버렸으며, 가운데 정렬 높이에서도 표를 뺐다.
 #![cfg(not(target_arch = "wasm32"))]
@@ -33,6 +40,7 @@ fn load(name: &str) -> DocumentCore {
 #[derive(Default)]
 struct Found {
     t1: Option<f64>,
+    anchor: Option<f64>,
     a1: Option<f64>,
     table: Option<BoundingBox>,
 }
@@ -42,6 +50,7 @@ fn collect(node: &RenderNode, found: &mut Found) {
         RenderNodeType::TextRun(run) => match run.text.trim() {
             "T1" if found.t1.is_none() => found.t1 = Some(node.bbox.y),
             "A1" if found.a1.is_none() => found.a1 = Some(node.bbox.y),
+            "ANCHOR" if found.anchor.is_none() => found.anchor = Some(node.bbox.y),
             _ => {}
         },
         RenderNodeType::Table(_) if found.table.is_none() => {
@@ -111,6 +120,45 @@ fn centered_textbox_counts_topbottom_table_band() {
             let (center_t1, _, _) = positions(&format!("textbox_tb_table_center_v{voff}.{ext}"));
             assert_near(
                 &format!("{ext} v{voff} 가운데 정렬 T1 이동"),
+                center_t1 - top_t1,
+                shift,
+            );
+        }
+    }
+}
+
+#[test]
+fn text_anchor_lines_overlapping_band_move_below_table() {
+    for ext in EXTS {
+        for (voff, t1_to_anchor, t1_to_a1) in [(0, 125.8, 147.2), (2000, 42.9, 152.7)] {
+            let name = format!("textbox_tb_table_top_v{voff}_text.{ext}");
+            let core = load(&name);
+            assert_eq!(core.page_count(), 1, "{name}: 한 쪽");
+            let tree = core.build_page_render_tree(0).unwrap();
+            let mut found = Found::default();
+            collect(&tree.root, &mut found);
+            let (t1, anchor, a1) = (
+                found.t1.expect("T1 줄"),
+                found.anchor.expect("ANCHOR 줄"),
+                found.a1.expect("A1 줄"),
+            );
+            let table = found.table.expect("글상자 안 표");
+            assert_near(&format!("{name} T1→ANCHOR"), anchor - t1, t1_to_anchor);
+            assert_near(&format!("{name} T1→A1"), a1 - t1, t1_to_a1);
+            let table_bottom = table.y + table.height;
+            assert!(
+                anchor + 0.5 >= table_bottom || anchor + 21.0 <= table.y + 0.5,
+                "{name}: ANCHOR({anchor:.1}) 가 표({:.1}~{table_bottom:.1})와 겹치면 안 된다",
+                table.y
+            );
+        }
+        // 가운데 정렬: 오프셋 0 은 띠 + 앵커 줄, 2000 은 앵커 줄 + 띠가 내용 높이에 든다.
+        for (voff, shift) in [(0, 172.0), (2000, 169.3)] {
+            let (top_t1, _, _) = positions(&format!("textbox_tb_table_top_v{voff}_text.{ext}"));
+            let (center_t1, _, _) =
+                positions(&format!("textbox_tb_table_center_v{voff}_text.{ext}"));
+            assert_near(
+                &format!("{ext} v{voff} 글 앵커 가운데 정렬 T1 이동"),
                 center_t1 - top_t1,
                 shift,
             );
