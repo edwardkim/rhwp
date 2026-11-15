@@ -157,3 +157,35 @@ Python 공급기 보완 뒤에도 실제 Native 재출력은 굵은 압축체를
 
 새 수정의 Native/fresh WASM 및 전체 필수 게이트는 아직 실행 전이다. 기준값·허용치·쪽수는 유지하며
 원격 처리 승인은 없다.
+
+### 원 HFT의 독립 비트맵 기호와 명시 자연 TTF의 WASM Print
+
+2026-11-15 12:27 KST. `7fbc8ba62b`에서 Latin 원 프로그램 소유 보정 후 Native 8쪽은
+99.97%, 9쪽은99.99%이며 남은 차이는 U+2027이다. 원 Print의 해당 Type3 charproc에는
+전진500과 빈 fill만 있고, 실제 잉크는 별도 600dpi bitmap XObject다. 로컬 변환 HFT OTF에는
+이 문자가 없다. 대상 PDF에서 윤곽·비트맵을 추출해 공급하지 않는다.
+
+깨끗한 blank HWPX에 한양중고딕 HFT의 U+2027을11·13pt로 넣고, 별도 원격 한컴2020
+11.0.0.9136의 전체 쪽 Print(method0·one-up)로 독립 표본을 확보했다. job은
+`b9c59e1c-a048-433c-93dd-79d88ca76a9a`다. 로컬 Windows Hwp.exe·COM·자동 인쇄는
+실행하지 않았다. 독립 bitmap의 원 검정 픽셀과 실제 text/image 행렬로 em 윤곽을 만들며
+대상 점수에 맞춘 이동·배율·획 보정은 하지 않는다. 입력 SHA-256은
+`cf3ad6c2075bacb54c45d3c62f82f454c70232efe8b6a9e1308bc8962d17d2ce`, 독립 Print는
+`a298eaa707b883c10572c43e4801ee62abb5c59693acfa8294798ac1a99a7fa0`, 로컬 표시 프로그램은
+`71a1a1827048cd71cd23bfbd2f04e3403980ac723c1859723a6c6a0d354ed642`다. 상용 글꼴 자료는
+재배포하지 않고 `/home/edward/mygithub/ttfs/local-validation/hft-symbols`에서 명시 공급한다.
+
+이 동일 공급 조건의 Native 중첩 표17쪽은 보호값 하락0건이며, 8·9·12쪽은100.00%다.
+WASM도 세 쪽은100.00%지만 자연 Gulim 선택을 사용한10·11·14·15쪽에서 과거 보호값보다
+0.06–0.15%p 낮았다. 글자 원점·내용·레이아웃 tree는 Native와 같다. Native Print는 실제 TTF의
+힌팅 없는 윤곽을 사용하지만, WASM은 원 HFT의 CFF 분기에서 TTF를 발견해도 Print TTF
+공급 경로로 이어지지 않고 브라우저 글자 API로 되돌아간다.
+
+`HftOutlineFonts::print_fallback_glyph → WebCanvasRenderer::draw_hft_outline → positioned
+text paint`가 실제 등록된 정적 TTF의 같은 윤곽을 소비하게 한다. 적용은 기존 원 TTF 대체와
+원 HFT의 **명시 자연 프로그램 선택**이며, 자동 표시 치환·화면·굵기·기울임·가변/컬러 face·
+공급자 미확인·문맥 shaping은 확대하지 않는다. 원문 유형·레이아웃 전진·좌표는 바꾸지 않는다.
+저장소의 OFL TTF로 실제 WASM·FontFace·Canvas를 실행한 새 관계 검사는 수정 전 package에서
+Print의 `fillText` 두 호출과 path0개를 검출해 실패했다. 수정 후 fresh WASM과 네 쪽의 재출력,
+대조군·전체 보호·필수 게이트는 아직 완료하지 않았다. 앞서 시작한7fbc 전체 회귀는 컴파일 단계에서
+중단했고 통과 수에 넣지 않는다. Native32개 focused와 Python14개 검사는 해당7fbc 결과로 구분한다.

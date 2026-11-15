@@ -1,6 +1,6 @@
 // 관계형: 실제 WASM·FontFace·Canvas의 공급 프로그램 선택을 검사한다. 실물 raw 측정과 구분한다.
-// 주석 갱신: 2026-11-08T08:10:55.558137+09:00. 직전 변경 631ba67cee528e4bd65c23042d9071b29622dfba
-// (Git 커밋 시각 2026-11-08T07:11:47+09:00).
+// 주석 갱신: 2026-11-15T12:27:15+09:00. 직전 변경 fe6df8a2e5ac430482da7646a6dacad27030e93b
+// (Git 커밋 시각 2026-11-09T21:28:12+09:00).
 // 저장소 소유 CFF·OFL TTF를 직접 공급하며 시스템 글꼴 설치나 상용 프로그램 배포에 의존하지 않는다.
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
@@ -13,6 +13,72 @@ import {findChrome} from '../rasterize-svg-webfonts.mjs';
 
 const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const require = createRequire(join(root, 'rhwp-studio/package.json'));
+
+test('HFT 원문의 명시 자연 TTF는 Print에서 실제 등록 윤곽을 쓰고 화면·자동 치환은 보존한다', async t => {
+  const pkg = resolve(process.env.RHWP_SWEEP_TEST_WASM_PKG || join(root, 'pkg'));
+  const files = new Map([
+    ['/rhwp.js', ['application/javascript', readFileSync(join(pkg, 'rhwp.js'))]],
+    ['/rhwp_bg.wasm', ['application/wasm', readFileSync(join(pkg, 'rhwp_bg.wasm'))]],
+    ['/source.ttf', ['application/octet-stream', readFileSync(join(root, 'ttfs/opensource/NotoSansKR-Regular.ttf'))]],
+    ['/variable.ttf', ['application/octet-stream', readFileSync(join(root, 'ttfs/redistributable/happiness-sans/HappinessSansVF.ttf'))]],
+  ]);
+  const server = createSweepServer(files, new Map());
+  await new Promise((accept, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', accept); });
+  t.after(async () => { server.closeAllConnections(); await new Promise(accept => server.close(accept)); });
+  const profile = createSweepBrowserProfile(join(root, 'output/pr-review/browser-profile-tests'), 'natural-hft-ttf');
+  let browser;
+  t.after(async () => {
+    if (browser) await browser.close();
+    rmSync(profile, {recursive: true, force: true, maxRetries: 5, retryDelay: 100});
+  });
+  browser = await require('puppeteer-core').launch({
+    executablePath: findChrome(process.env.VISUAL_SWEEP_CHROME), headless: true, userDataDir: profile,
+  });
+  const page = await browser.newPage();
+  await page.goto(`http://127.0.0.1:${server.address().port}`);
+  const rows = await page.evaluate(async () => {
+    const wasm = await import('/rhwp.js'); await wasm.default();
+    const bytes = new Uint8Array(await (await fetch('/source.ttf')).arrayBuffer());
+    const variable = new Uint8Array(await (await fetch('/variable.ttf')).arrayBuffer());
+    const family = 'RHWP Explicit Natural TTF';
+    const face = new FontFace(family, bytes); await face.load(); document.fonts.add(face);
+    const languages = ['Hangul', 'Latin', 'Hanja', 'Japanese', 'Other', 'Symbol', 'User'];
+    const source = new TextEncoder().encode(`<HWPML Version="2.91"><HEAD SecCnt="1"><MAPPINGTABLE>
+      <FACENAMELIST>${languages.map(lang => `<FONTFACE Count="1" Lang="${lang}">
+      <FONT Id="0" Name="RHWP Original HFT" Type="hft"/></FONTFACE>`).join('')}</FACENAMELIST>
+      <CHARSHAPELIST Count="1"><CHARSHAPE Id="0" Height="1100"/></CHARSHAPELIST>
+      </MAPPINGTABLE></HEAD><BODY><SECTION Id="0"><P ParaShape="0"><TEXT CharShape="0">
+      <CHAR>가나</CHAR></TEXT></P></SECTION></BODY></HWPML>`);
+    const rows = [];
+    for (const profile of ['print', 'screen']) {
+      for (const supply of ['static', 'missing', 'variable', 'cleared']) {
+        for (const natural of [true, false]) {
+          const doc = new wasm.HwpDocument(source);
+          try {
+            doc.setFontEnvironment(JSON.stringify({id: 'natural-hft-ttf-control',
+              substitutions: {'RHWP Original HFT': family}, trueTypeFaces: [family],
+              preserveSourceMetrics: !natural}));
+            if (supply !== 'missing') doc.registerTextFontGlyphCoverage(family, supply === 'variable' ? variable : bytes, 0);
+            if (supply === 'cleared') doc.clearTextFontFamily(family);
+            const canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+            const texts = [], fillText = ctx.fillText.bind(ctx), moveTo = ctx.moveTo.bind(ctx);
+            let contours = 0;
+            ctx.fillText = (text, ...args) => { texts.push(text); return fillText(text, ...args); };
+            ctx.moveTo = (...args) => { contours++; return moveTo(...args); };
+            doc.renderPageToCanvasFilteredWithProfile(0, canvas, 1, 'all', profile);
+            rows.push({profile, supply, natural, texts, contours});
+          } finally { doc.free(); }
+        }
+      }
+    }
+    return rows;
+  });
+  for (const row of rows) {
+    const outline = row.profile === 'print' && row.supply === 'static' && row.natural;
+    assert.equal(row.texts.some(text => /[가나]/.test(text)), !outline, JSON.stringify(row));
+    if (outline) assert.ok(row.contours > 0, '실제 선택 TTF 윤곽을 소비해야 한다');
+  }
+});
 
 // 관계형: 같은 실제 CFF의 보통 윤곽을 합성 굵기의 fill·stroke도 소비해야 한다.
 // 저장소 소유 합성 글꼴의 계약 검사이며 실물 페이지의 위치 핀이나 시각 gate를 대신하지 않는다.

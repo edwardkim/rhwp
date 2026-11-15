@@ -18,15 +18,14 @@ impl WebCanvasRenderer {
             return false;
         }
         let Some(commands) = self.hft_outline_fonts.as_ref().and_then(|fonts| {
-            if supports_style(style) {
-                fonts.glyph(&style.font_family, character)
-            } else if self.print_text_geometry
-                && !crate::renderer::contextual_text::is_contextual(text)
-            {
-                fonts.print_fallback_glyph(style, character)
-            } else {
-                None
-            }
+            let original = supports_style(style)
+                .then(|| fonts.glyph(&style.font_family, character))
+                .flatten();
+            original.or_else(|| {
+                (self.print_text_geometry && !crate::renderer::contextual_text::is_contextual(text))
+                    .then(|| fonts.print_fallback_glyph(style, character))
+                    .flatten()
+            })
         }) else {
             return false;
         };

@@ -9,7 +9,7 @@
       "target": "Human Gothic"
     }
   ],
-  "id": "nested-independent-font-programs-and-symbol-slots",
+  "id": "nested-independent-hft-bitmap-symbol",
   "preserveSourceMetrics": true,
   "selectedPrograms": {
     "HCI Hollyhock": {
@@ -95,6 +95,12 @@
     ],
     "HCI Poppy": [
       "HY Sinmyeongjo"
+    ],
+    "HY Junggothic": [
+      "RHWP Independent HFT Symbols"
+    ],
+    "한양중고딕": [
+      "RHWP Independent HFT Symbols"
     ]
   },
   "replaceSourceMetricsFor": [
