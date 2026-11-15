@@ -83,7 +83,16 @@
           ]
         }
       },
-      "pdf": "pdf/issue7732-outer-margin/nested-margin-original-2020.pdf"
+      "pdf": "pdf/issue7732-outer-margin/nested-margin-original-2020.pdf",
+      "print_receipt": {
+        "engine": "2020",
+        "engine_profile": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      }
     },
     "top0": {
       "job_id": "5b0e4b4f-7b50-4d55-9ba5-69dd6a50dafb",
@@ -165,7 +174,16 @@
           ]
         }
       },
-      "pdf": "pdf/issue7732-outer-margin/nested-margin-top0-2020.pdf"
+      "pdf": "pdf/issue7732-outer-margin/nested-margin-top0-2020.pdf",
+      "print_receipt": {
+        "engine": "2020",
+        "engine_profile": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      }
     },
     "right0": {
       "job_id": "095ba14d-8905-4512-aecb-a7a4b170975e",
@@ -247,7 +265,16 @@
           ]
         }
       },
-      "pdf": "pdf/issue7732-outer-margin/nested-margin-right0-2020.pdf"
+      "pdf": "pdf/issue7732-outer-margin/nested-margin-right0-2020.pdf",
+      "print_receipt": {
+        "engine": "2020",
+        "engine_profile": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "input_preprocess": "scripts_disabled"
+      }
     }
   },
   "observed_deltas_pt": {

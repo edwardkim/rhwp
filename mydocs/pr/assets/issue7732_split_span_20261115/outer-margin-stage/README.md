@@ -46,3 +46,26 @@ TAC 부정 대조도 포함한다. 공통 보정 후 최소 글꼴 검사 3건�
 로컬에서 수정했고, 실제 소비 지점까지 검출한 실패 로그는 output에 보존한다.
 Native 전17쪽·fresh WASM과 전체 보호 검증은 이 단계의 최종 소스에서
 별도로 확인하며, 결과가 나오기 전에 통과로 표시하지 않는다.
+
+
+## Native 전17쪽 재검증
+
+`2749e491e843ec851de12467751ec200ab551014`의 실제 Native 바이너리로 같은 원본·기준을
+재출력했다. [전쪽 TSV](native-after.tsv)·[생산/검증 기록](native-after-result.json)에서
+17쪽 일치, 보호값 하락0쪽, 최저99.86%를 확인했다. 1·11·14·15쪽은100.00%, 10쪽99.86%다.
+1·10·11·14·15쪽의 review·overlay를 모두 직접 판독했다.
+[1쪽 review](native/p001/review.png)·[overlay](native/p001/overlay.png),
+[10쪽 review](native/p010/review.png)·[overlay](native/p010/overlay.png).
+전체 보호 검증·최종 Rust 게이트를 이 Native 결과로 대체하지 않는다.
+
+
+## fresh WASM 전17쪽 재검증
+
+같은 소스의 새 WASM으로 [전쪽 TSV](wasm-after.tsv)·[생산/검증 기록](wasm-after-result.json)을
+확보했다. Native와 같이 17쪽 일치, 보호값 하락 0쪽, 최저 99.86%다.
+1·10·11·14·15쪽의 review·overlay를 직접 판독했으며 원문 소속·순서의 새 누락·중복은 관측되지 않았다.
+[1쪽 review](wasm/p001/review.png)·[overlay](wasm/p001/overlay.png),
+[10쪽 review](wasm/p010/review.png)·[overlay](wasm/p010/overlay.png),
+[14쪽 review](wasm/p014/review.png)·[overlay](wasm/p014/overlay.png).
+Mac locked wrapper의 `--target web --out-dir pkg --no-opt` 로컬 대체 빌드이며
+Docker 최적화 빌드로 보고하지 않는다. 실제 Studio 소비 경로의 검증은 별도 기록한다.
