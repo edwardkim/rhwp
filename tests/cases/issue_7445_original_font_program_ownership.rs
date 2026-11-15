@@ -1,6 +1,6 @@
 //! 관계형·고정형: 원본 글꼴 프로그램과 기호의 소유 계약.
 //! 이번 보정: 2026-11-04T16:04:21+09:00; Screen과 portable Print에서 기존 원점·소속 검사를 모두 유지한다.
-//! 주석 갱신: 2026-11-15T09:57:56+09:00; 직전 파일 커밋: 2026-11-04T18:33:15+09:00 (96827b3accd98ad0b80f76260b42fba24eded504)
+//! 주석 갱신: 2026-11-15T13:51:00+09:00; 직전 파일 커밋: 2026-11-04T18:33:15+09:00 (96827b3accd98ad0b80f76260b42fba24eded504)
 //! 2026-10-24 측정 raw(96dpi, PDFium, 2px): Native / fresh WASM(no-opt).
 //! 일·생활균형 HWPX 4쪽 99.69% / 99.69%, 5쪽 99.98% / 99.98%; 전 6쪽 최저 98.95% / 98.94%.
 //! 자산관리 HWPX 56쪽 99.98% / 99.98%; 전 60쪽 최저 96.08% / 96.08%.
@@ -11,7 +11,7 @@
 //! 근거: mydocs/pr/assets/issue7445/completed-20261009/regression-policy-20261015/sample11-current-20261019/README.md.
 //! 수치는 각 증거의 당시 측정이며 현재 head를 재측정한 결과가 아니다.
 //! 원본 글꼴 프로그램·기호 소유는 공개 글꼴 결정 API로 확인한다.
-//! 전쪽 Native/fresh WASM90%와 해당 쪽98%·직접 판독을 마친 실물 경계는
+//! 전쪽 Native/fresh WASM 90%와 해당 쪽 98%·직접 판독을 마친 실물 경계는
 //! 내용 관계와 독립±2CSSpx로 함께 보호한다. 근거: stage5 C75/C76 보고서.
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -99,14 +99,17 @@ fn verified_ttf_program_selects_its_text_frame_without_reclassifying_source() {
                 0,
                 RenderNode::new(
                     u32::MAX,
-                    RenderNodeType::Rectangle(RectangleNode::new(
-                        0.0,
-                        rhwp::renderer::ShapeStyle {
-                            fill_color: Some(0),
-                            ..Default::default()
-                        },
-                        None,
-                    )),
+                    RenderNodeType::Rectangle(RectangleNode {
+                        control_index: Some(0),
+                        ..RectangleNode::new(
+                            0.0,
+                            rhwp::renderer::ShapeStyle {
+                                fill_color: Some(0),
+                                ..Default::default()
+                            },
+                            None,
+                        )
+                    }),
                     BoundingBox::new(0.0, 0.0, 10.0, 10.0),
                 ),
             );
