@@ -1,0 +1,32 @@
+{
+  "status": "local_required_validation_complete",
+  "product_source": "2749e491e843ec851de12467751ec200ab551014",
+  "native_cli_followup": "8472674645",
+  "baseline_validation": {
+    "all3542_source_rows_match": true,
+    "contract_tests": {
+      "count": 33,
+      "passed": true,
+      "invalid_initial_invocation": "최초 호출의 PYTHONPATH에 scripts/tests가 없어 import 실패. 올바른 경로로 다시 실행해33PASS, 제품 실패로 세지 않음"
+    },
+    "markdown_links_exit": 0,
+    "baseline_sha256": "2280e97844b2cb262ea73e9c49f09f56c434097fed49af75fd9a7f6198d43da7"
+  },
+  "font_archive": {
+    "status": "passed",
+    "path": "/Users/tsjang/rhwp/output/visual-sweep-protected-fonts-20261115.zip",
+    "sha256": "34a0705321226f9a6ba7b66fdf149122877ccf10f7f70b52e58cc2e3042eeef0",
+    "bytes": 565551566,
+    "program_count": 183,
+    "archive_entries": 206,
+    "previous_archive": {
+      "sha256": "eec4ab5280070de66534ddd75d0e66572d5694a1e3467c593b160e922dfb58d8",
+      "bytes": 564519204
+    },
+    "baseline_sha256": "2280e97844b2cb262ea73e9c49f09f56c434097fed49af75fd9a7f6198d43da7",
+    "preserve_during_postmerge_cleanup": true,
+    "private_fonts_committed": false
+  },
+  "remote_ci_merge": "not yet executed",
+  "canvaskit_scope": "각주3쪽 두모드 실제 직접 출력. 중첩5쪽은 기존 문서 전체 미지원 및 자원 미준비로 Canvas2D 전환, 직접 CK 성공으로 세지 않음."
+}

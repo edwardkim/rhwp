@@ -1,0 +1,170 @@
+{
+  "status": "applied",
+  "baseline_sha256": "43c59cf77a4a86b3744d3df30eb71469de70b584ccc9cb165fa8f7b7884d2e1f",
+  "evidence_commit": "c59db063b00e399a45adf4ab652d32d4232d68b8",
+  "condition_evidence": "mydocs/pr/assets/issue7732_split_span_20261115/final-2749-67b4/protected-validation.json",
+  "condition_evidence_sha256": "fc1b37d9bef6812313e9043a3f9568156ec544535ad6f067c327547561d425e8",
+  "row_count": 3542,
+  "datasets": [
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "native",
+      "key": "nested",
+      "all_pages": 17,
+      "whole_tsv": "mydocs/pr/assets/issue7732_split_span_20261115/final-2749-67b4/protected/native/nested.tsv",
+      "whole_tsv_sha256": "4144f4d00c98c54b8c35b26309c00c86caedeee413aa78059bef0bc231ae1fcc",
+      "evidence_commit": "c59db063b00e399a45adf4ab652d32d4232d68b8",
+      "source_product_commit": "2749e491e843ec851de12467751ec200ab551014",
+      "previous_source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/native/nested.tsv",
+        "sha256": "5f4f11cc5d2e3495ac05b347bc74f9b9c186091d0175ea26f2595837722ac479",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      }
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "wasm",
+      "key": "nested",
+      "all_pages": 17,
+      "whole_tsv": "mydocs/pr/assets/issue7732_split_span_20261115/final-2749-67b4/protected/wasm/nested.tsv",
+      "whole_tsv_sha256": "4144f4d00c98c54b8c35b26309c00c86caedeee413aa78059bef0bc231ae1fcc",
+      "evidence_commit": "c59db063b00e399a45adf4ab652d32d4232d68b8",
+      "source_product_commit": "2749e491e843ec851de12467751ec200ab551014",
+      "previous_source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/wasm/nested.tsv",
+        "sha256": "451d72cddb6f90e6327e1602b046efaed1de4162e472ee989cac313fb0b64aa9",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      }
+    }
+  ],
+  "increases": [
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "native",
+      "page": 1,
+      "before": "98.63",
+      "after": "100.00"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "native",
+      "page": 5,
+      "before": "99.99",
+      "after": "100.00"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "native",
+      "page": 10,
+      "before": "99.50",
+      "after": "99.86"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "native",
+      "page": 11,
+      "before": "99.67",
+      "after": "100.00"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "native",
+      "page": 13,
+      "before": "99.95",
+      "after": "100.00"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "native",
+      "page": 14,
+      "before": "99.42",
+      "after": "100.00"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "native",
+      "page": 15,
+      "before": "99.65",
+      "after": "100.00"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "wasm",
+      "page": 1,
+      "before": "98.65",
+      "after": "100.00"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "wasm",
+      "page": 5,
+      "before": "99.99",
+      "after": "100.00"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "wasm",
+      "page": 10,
+      "before": "99.43",
+      "after": "99.86"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "wasm",
+      "page": 11,
+      "before": "99.63",
+      "after": "100.00"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "wasm",
+      "page": 13,
+      "before": "99.95",
+      "after": "100.00"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "wasm",
+      "page": 14,
+      "before": "99.35",
+      "after": "100.00"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "wasm",
+      "page": 15,
+      "before": "99.61",
+      "after": "100.00"
+    }
+  ],
+  "unchanged_datasets": 34,
+  "apply_conditions": [
+    "current Rust full-nextest pass",
+    "Native SVG current whole50 all>=98",
+    "actual consumers8pages32Printpairs complete >=98 and direct read",
+    "explicit --handbook-gate current383 pass"
+  ],
+  "rule": "상승이 있는 nested Native/WASM의 각 전17쪽 원문 TSV만 수용한다. 다른34dataset의 source를 재지정하지 않으며 행별max혼합 금지.",
+  "applied_at": "2026-11-15T20:35:27.073491+00:00",
+  "previous_table_sha256": "43c59cf77a4a86b3744d3df30eb71469de70b584ccc9cb165fa8f7b7884d2e1f",
+  "table_sha256": "2280e97844b2cb262ea73e9c49f09f56c434097fed49af75fd9a7f6198d43da7",
+  "declines": [],
+  "missing": [],
+  "increased_row_count": 14
+}

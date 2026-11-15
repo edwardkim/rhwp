@@ -12,7 +12,7 @@
 
 - [final.tsv](final.tsv): 입력·기준 PDF·backend·페이지별 공식 두 자리 raw 보호값.
 - [manifest.json](manifest.json): 입력/PDF SHA-256·크기·측정 조건·전쪽 수·출처 commit/TSV/열/해시와 중복 제거 내역.
-- TSV SHA-256: `43c59cf77a4a86b3744d3df30eb71469de70b584ccc9cb165fa8f7b7884d2e1f`.
+- TSV SHA-256: `2280e97844b2cb262ea73e9c49f09f56c434097fed49af75fd9a7f6198d43da7`.
 - 입력 18개, Native/fresh WASM 각 18개 데이터셋·1,771쪽, 총 36개 데이터셋·3,542행.
 - 최초 통합 당시 수용 자료 56개 데이터셋 중 중복 20개를 정리했다. 이전 자료보다 공식 표시값이 낮아진 페이지는 0쪽이다.
 
@@ -27,7 +27,7 @@ HWP와 HWPX는 같은 제목이어도 별도 입력이다. 아래 최저값은 �
 | [jongbu_law.hwpx](<../legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx>) | 6 | 98.86% | 98.86% |
 | [2025 행정업무운영 편람(최종).hwp](<../../../../samples/2025 행정업무운영 편람(최종).hwp>) | 383 | 99.97% | 99.96% |
 | [2025 행정업무운영 편람(최종).hwpx](<../../../../samples/2025 행정업무운영 편람(최종).hwpx>) | 383 | 99.97% | 99.96% |
-| [issue2007_nested_cell_pagination_42065.hwp](<../../../../samples/basic/issue2007_nested_cell_pagination_42065.hwp>) | 17 | 98.63% | 98.65% |
+| [issue2007_nested_cell_pagination_42065.hwp](<../../../../samples/basic/issue2007_nested_cell_pagination_42065.hwp>) | 17 | 99.86% | 99.86% |
 | [hwp3-sample10.hwp](<../../../../samples/hwp3-sample10.hwp>) | 763 | 99.57% | 99.57% |
 | [hwp3-sample16-hwp5-2022.hwp](<../../../../samples/hwp3-sample16-hwp5-2022.hwp>) | 64 | 100.00% | 100.00% |
 | [hwp3-sample16-hwp5-2024.hwp](<../../../../samples/hwp3-sample16-hwp5-2024.hwp>) | 64 | 99.99% | 99.99% |
@@ -102,3 +102,10 @@ HWP와 HWPX는 같은 제목이어도 별도 입력이다. 아래 최저값은 �
 보호 표는 이전 표의 모든 3,542행 이상이며, 이 브랜치의 이전 6개 상승값도 이미 포함한다.
 따라서 현행 표·manifest·검사 해시는 최신 devel의 값을 그대로 유지하고, 이전 값으로 내리지 않는다.
 [충돌 해소 보고서](../issue7732_split_span_20261115/rebase-4e0b20d2/conflict-resolution.md)를 따른다.
+
+## 2026-11-16 분할 셀 후속 보정의 상승분 반영
+
+같은 조건의 최종 36개 데이터셋·3,542행에서 하락·누락 0쪽을 확인했습니다. 상승이 있는
+중첩 표 Native/fresh WASM 각 전17쪽 TSV만 수용하여 14행을 상향했고, 다른 34개 데이터셋의
+출처는 유지했습니다. [갱신 영수증](updates/issue7732-20261116.json)에 이전/새 해시와 생산 소스,
+전쪽 증거 및 상승값을 기록했습니다. 페이지별 최댓값을 조합하지 않았습니다.

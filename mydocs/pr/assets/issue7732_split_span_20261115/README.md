@@ -19,13 +19,22 @@ runtime이 같은 것을 확인했다. asset을 담은 커밋과 실제 실행 �
 Studio 전체가273과 동일하다고 주장하지 않는다.
 
 Native SVG 7·28쪽의 전진 차이를 공개 합성 TTF로 검출해1FAIL→1PASS를 확인했다.
-현재 fresh WASM SVG 전50쪽은최저99.16%로 통과했고 Native SVG의 새 전50쪽 캡처는
-실제 브라우저 캡처 종료 뒤 순차 실행한다. Native Skia all-target Clippy와fmt는 통과했으며
-새 전체 nextest는 실행 중이다. 이전13,617PASS를 이 추가 변경의 새 전체 실행으로 세지 않는다.
+fresh WASM SVG 전50쪽은 최저99.16%, 새 Native SVG 전50쪽은 최저99.08%로 통과했다.
+Native SVG의 7쪽은94.37%→100.00%, 28쪽은97.19%→99.23%다.
+[전쪽 TSV와 대표 이미지](native-svg-source-program/after-native-svg/validation.json)를 따른다.
+추가 변경 뒤 최소 글꼴 전체 nextest도 새로 실행해13,617PASS·0FAIL·45SKIP을 확인했다
+(실제 검사561.270초). Native Skia all-target Clippy 및 필수 Native/WASM lint도 통과했다.
+[현재 회귀](native-svg-source-program/current-validation/results.json)와
+[현재 lint](native-svg-source-program/current-validation/push-lints.json)를 이전 실행과 구분한다.
 
-실제 Studio Print의 완료된 부분 측정은 각주36쪽 SVG99.83%·Canvas2D99.76%·두CanvasKit99.83%,
-37쪽 SVG99.16%·Canvas2D99.08%·두CanvasKit99.17%다. 36쪽review/overlay를 직접 판독했다.
-이 두 쪽의 값은 실제8쪽 소비 경로 전체나 필수 편람 gate의 완료를 뜻하지 않는다.
+실제 Studio 8쪽은 screen/print 48캡처와 별도 SVG Print 8캡처를 완료했다.
+독립 PDF Print 32쌍의 수치는 모두98% 이상이며 최저는 각주37쪽 Canvas2D99.08%다.
+**CanvasKit 직접 출력은 각주3쪽의 두 모드뿐이다.** 중첩5쪽은 기존 전쪽 preflight 미지원
+연산과 지정 자원 미준비로 Canvas2D에 전환됐고, 전환 계약20건을 별도로 확인했다.
+이를 CanvasKit 통과로 세지 않으며 지원 판정·작업 한도·fallback guard를 우회하지 않았다.
+엄격한 backend 간 픽셀 비교 reportOnly12건의 FAIL도 별도 기록하며, 독립 PDF의 canonical
+2px 판정과 섞지 않는다. [실행·신원·지원 범위](actual-current-2749/validation.json)와
+[직접 판독](actual-current-2749/direct-reading.json)을 따른다.
 
 ## 현재 실제 결과
 
@@ -39,8 +48,12 @@ Native SVG 7·28쪽의 전진 차이를 공개 합성 TTF로 검출해1FAIL→1P
 
 [정본 전체 보호 결과](final-2749-67b4/protected-validation.json)는 36데이터셋·3,542행 모두
 보호 하락0이며 14행이 상승했다. 각 데이터셋의 전체 TSV를 같은 실행 단위로 보존했다.
-**최종 전체 시각 수용과 PR 제출은 아직 완료되지 않았다.** 각주 원본 전50쪽 Native/fresh WASM PNG·SVG,
-실제 Studio SVG/Canvas2D/지원 CanvasKit, 명시적 `--handbook-gate`를 순차 검증한다.
+각주 원본 전50쪽 Native/fresh WASM PNG·SVG와 실제 Studio 지원 경로 검증을 완료했다.
+명시적 `--handbook-gate` Native383쪽도 새847 실행 파일에서 통과했다
+([전쪽 TSV·gate](handbook-current-847/gate.json)). 상승이 있는 중첩 표의 Native/WASM 각 전17쪽만
+정본에 반영해14행을 상향했으며 다른34데이터셋 출처는 유지했다
+([갱신 영수증](../visual-protected-baseline/updates/issue7732-20261116.json)).
+로컬 준비를 완료했으며 원격 CI·병합 결과는 PR 생성 이후 별도로 확인한다.
 실행 전·진행 중·실패한 기록을 완료 결과로 세지 않는다. 완료한 게이트는 소스와 입력의 신원을
 확인해 재사용하며 문서 커밋만으로 같은 Rust 빌드를 반복하지 않는다.
 
