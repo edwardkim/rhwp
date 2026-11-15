@@ -69,7 +69,6 @@ hwp5rb	hwp_table_test-m.hwp	sections[].paragraphs[].controls[].cells[].list_head
 hwp5rb	hwp_table_test.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	46
 hwp5rb	hwp_table_test_saved.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	46
 hwp5rb	hwpctl_API_v2.4.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1024
-hwp5rb	hwpctl_API_v2.4.hwp	sections[].paragraphs[].field_ranges[].inner_slot_count	1
 hwp5rb	hwpctl_Action_Table__v1.1.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	939
 hwp5rb	hwpctl_Action_Table__v1.1.hwp	sections[].section_def.master_pages.len	1
 hwp5rb	hwpctl_ParameterSetID_Item_v1.2.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1786
