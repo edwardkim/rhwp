@@ -1,6 +1,6 @@
 # SVG Print의 옅은 표 괘선 래스터 차이
 
-Issue: #7732, #7445. 2026-11-15 조사·보정 진행 중이다.
+Issue: #7732, #7445. 2026-11-15 SVG 보정·실제 소비 확인 기록이다.
 
 ## 입력과 독립 기준
 
@@ -38,5 +38,32 @@ SVG Print/HighQuality의 가는 직교 실선이 공통 `raster_line_geometry`�
 실물 문서의 낮은 기존 점수를 절대 px 핀으로 고정하지 않는다. 최소 글꼴 환경에서
 보정 전 실제 1 PASS / 2 FAIL(0.013초), 보정 후 실제 3 PASS / 0 FAIL(0.018초)을 확인했다.
 기울어진 그룹에서 정상 형제 선으로 복귀하는 경계와 분수 위치·점선·복합 획·화살표·화면
-대조군을 포함한다. 실제 Studio SVG 재출력, 같은 쪽 review/overlay와 전쪽 시각 검증은
-완료 후 이 기록에 연결한다.
+대조군을 포함한다.
+
+## 제품 재출력
+
+제품 소스 `d26f3bedf4fc3398164ed6a4640275c66ab9ccd9`, 고정 base
+`1805d8f08cb3a54bccda8dfa6647432b7799f074`에서 같은 50쪽 원본과 독립 PDF를 비교했다.
+Native SVG 전 50쪽 최저는 94.74%, fresh WASM SVG 전 50쪽 최저는 99.16%로
+미달·누락 쪽은 없다. 이 수치는 기존 정본 보호 검사인 Native/WASM **PNG** 값과 구분한다.
+Native SVG 7쪽의 94.74%는 base와 SVG 바이트가 동일하며, 새 하락이 아니다.
+
+| 경로 | 36쪽 | 37쪽 | 38쪽 |
+| --- | ---: | ---: | ---: |
+| Native SVG | 99.72% | 99.08% | 99.53% |
+| fresh WASM SVG | 99.99% | 99.38% | 99.83% |
+| 실제 Studio Print SVG | 99.82661% | 99.15609% | 99.65759% |
+| 실제 Studio Canvas2D Print | 99.75605% | 99.07736% | 99.57140% |
+
+실제 Studio 36쪽 SVG는 이전 88.253%에서 99.82661%로 개선됐다.
+같은 페이지의 review와 overlay를 함께 열어 괘선·셀 내용·문단 소속을 확인했다.
+Canvas2D 세 쪽의 PNG는 보정 전과 바이트가 같아 기존 raster 경로를 바꾸지 않았음을 확인했다.
+원본 괘선의 좌표·선폭·색은 유지하며, 옅은 선의 픽셀 coverage만 달라진다.
+
+리베이스 전후 Rust 소스는 같아 기존 동일 경로 자료를 재사용한다.
+새 devel의 #9093 글꼴 별칭 E2E와 Studio 단위 검사는 실제 실행해 통과했다.
+root pkg·Studio public·실제 브라우저 초기화 응답의 WASM SHA가 같음을 확인했다.
+HTTP JavaScript는 Vite의 모듈 변환 응답이므로 디스크 원본과 별도 해시로 기록한다.
+Mac WASM은 locked wrapper `--target web --out-dir pkg --no-opt`의 로컬 대체 빌드다.
+
+이 절은 새 SVG 경로의 실제 측정이며 전체 Rust 게이트·PR·CI 완료 선언은 아니다.

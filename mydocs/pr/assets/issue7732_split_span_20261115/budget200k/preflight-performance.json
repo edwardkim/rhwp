@@ -1,0 +1,278 @@
+{
+  "before": {
+    "durations_ms": [
+      429.6,
+      447.2,
+      426.5
+    ],
+    "median_ms": 429.6,
+    "preflight_reports": [
+      {
+        "schemaVersion": 1,
+        "mode": "default",
+        "profile": "print",
+        "status": "incomplete",
+        "eligible": false,
+        "complete": false,
+        "pageCount": 50,
+        "scannedPages": 48,
+        "scannedWorkUnits": 100000,
+        "limits": {
+          "maxPages": 128,
+          "maxWorkUnits": 100000,
+          "maxBlockers": 32,
+          "maxRequiredFontFamilies": 256
+        },
+        "summary": {
+          "totalItems": 12126,
+          "directItems": 12126,
+          "directRequiredItems": 0,
+          "compatOverlayItems": 0,
+          "textFallbackItems": 0,
+          "unsupportedItems": 0,
+          "hiddenOverlayViolations": 0
+        },
+        "blockers": [
+          {
+            "pageIndex": 48,
+            "code": "workLimitExceeded",
+            "detail": "stage=preLowering;maxWorkUnits=100000;remainingWorkUnits=3286"
+          }
+        ],
+        "requiredFontFamilies": [
+          "HCI Poppy",
+          "HY Junggothic",
+          "HY Sinmyeongjo",
+          "HY견명조",
+          "Myeongjo",
+          "중고딕",
+          "함초롬돋움",
+          "함초롬바탕",
+          "휴먼명조"
+        ],
+        "capabilityDigest": "blake3:4ce58d3ce5f719a715b738d28c0da029c132a7834a4cec38fb6022ee7b64f625"
+      },
+      {
+        "schemaVersion": 1,
+        "mode": "default",
+        "profile": "print",
+        "status": "incomplete",
+        "eligible": false,
+        "complete": false,
+        "pageCount": 50,
+        "scannedPages": 48,
+        "scannedWorkUnits": 100000,
+        "limits": {
+          "maxPages": 128,
+          "maxWorkUnits": 100000,
+          "maxBlockers": 32,
+          "maxRequiredFontFamilies": 256
+        },
+        "summary": {
+          "totalItems": 12126,
+          "directItems": 12126,
+          "directRequiredItems": 0,
+          "compatOverlayItems": 0,
+          "textFallbackItems": 0,
+          "unsupportedItems": 0,
+          "hiddenOverlayViolations": 0
+        },
+        "blockers": [
+          {
+            "pageIndex": 48,
+            "code": "workLimitExceeded",
+            "detail": "stage=preLowering;maxWorkUnits=100000;remainingWorkUnits=3286"
+          }
+        ],
+        "requiredFontFamilies": [
+          "HCI Poppy",
+          "HY Junggothic",
+          "HY Sinmyeongjo",
+          "HY견명조",
+          "Myeongjo",
+          "중고딕",
+          "함초롬돋움",
+          "함초롬바탕",
+          "휴먼명조"
+        ],
+        "capabilityDigest": "blake3:4ce58d3ce5f719a715b738d28c0da029c132a7834a4cec38fb6022ee7b64f625"
+      },
+      {
+        "schemaVersion": 1,
+        "mode": "default",
+        "profile": "print",
+        "status": "incomplete",
+        "eligible": false,
+        "complete": false,
+        "pageCount": 50,
+        "scannedPages": 48,
+        "scannedWorkUnits": 100000,
+        "limits": {
+          "maxPages": 128,
+          "maxWorkUnits": 100000,
+          "maxBlockers": 32,
+          "maxRequiredFontFamilies": 256
+        },
+        "summary": {
+          "totalItems": 12126,
+          "directItems": 12126,
+          "directRequiredItems": 0,
+          "compatOverlayItems": 0,
+          "textFallbackItems": 0,
+          "unsupportedItems": 0,
+          "hiddenOverlayViolations": 0
+        },
+        "blockers": [
+          {
+            "pageIndex": 48,
+            "code": "workLimitExceeded",
+            "detail": "stage=preLowering;maxWorkUnits=100000;remainingWorkUnits=3286"
+          }
+        ],
+        "requiredFontFamilies": [
+          "HCI Poppy",
+          "HY Junggothic",
+          "HY Sinmyeongjo",
+          "HY견명조",
+          "Myeongjo",
+          "중고딕",
+          "함초롬돋움",
+          "함초롬바탕",
+          "휴먼명조"
+        ],
+        "capabilityDigest": "blake3:4ce58d3ce5f719a715b738d28c0da029c132a7834a4cec38fb6022ee7b64f625"
+      }
+    ]
+  },
+  "after": {
+    "durations_ms": [
+      451.8,
+      451.4,
+      418.1
+    ],
+    "median_ms": 451.4,
+    "preflight_reports": [
+      {
+        "schemaVersion": 1,
+        "mode": "default",
+        "profile": "print",
+        "status": "eligible",
+        "eligible": true,
+        "complete": true,
+        "pageCount": 50,
+        "scannedPages": 50,
+        "scannedWorkUnits": 102415,
+        "limits": {
+          "maxPages": 128,
+          "maxWorkUnits": 200000,
+          "maxBlockers": 32,
+          "maxRequiredFontFamilies": 256
+        },
+        "summary": {
+          "totalItems": 13162,
+          "directItems": 13162,
+          "directRequiredItems": 0,
+          "compatOverlayItems": 0,
+          "textFallbackItems": 0,
+          "unsupportedItems": 0,
+          "hiddenOverlayViolations": 0
+        },
+        "blockers": [],
+        "requiredFontFamilies": [
+          "HCI Poppy",
+          "HY Junggothic",
+          "HY Sinmyeongjo",
+          "HY견명조",
+          "Myeongjo",
+          "중고딕",
+          "한컴바탕",
+          "함초롬돋움",
+          "함초롬바탕",
+          "휴먼명조"
+        ],
+        "capabilityDigest": "blake3:33a26c3cb01fba8564b43ca5b86ed771c2fb942f1ad3b75f056bfd760814a41b"
+      },
+      {
+        "schemaVersion": 1,
+        "mode": "default",
+        "profile": "print",
+        "status": "eligible",
+        "eligible": true,
+        "complete": true,
+        "pageCount": 50,
+        "scannedPages": 50,
+        "scannedWorkUnits": 102415,
+        "limits": {
+          "maxPages": 128,
+          "maxWorkUnits": 200000,
+          "maxBlockers": 32,
+          "maxRequiredFontFamilies": 256
+        },
+        "summary": {
+          "totalItems": 13162,
+          "directItems": 13162,
+          "directRequiredItems": 0,
+          "compatOverlayItems": 0,
+          "textFallbackItems": 0,
+          "unsupportedItems": 0,
+          "hiddenOverlayViolations": 0
+        },
+        "blockers": [],
+        "requiredFontFamilies": [
+          "HCI Poppy",
+          "HY Junggothic",
+          "HY Sinmyeongjo",
+          "HY견명조",
+          "Myeongjo",
+          "중고딕",
+          "한컴바탕",
+          "함초롬돋움",
+          "함초롬바탕",
+          "휴먼명조"
+        ],
+        "capabilityDigest": "blake3:33a26c3cb01fba8564b43ca5b86ed771c2fb942f1ad3b75f056bfd760814a41b"
+      },
+      {
+        "schemaVersion": 1,
+        "mode": "default",
+        "profile": "print",
+        "status": "eligible",
+        "eligible": true,
+        "complete": true,
+        "pageCount": 50,
+        "scannedPages": 50,
+        "scannedWorkUnits": 102415,
+        "limits": {
+          "maxPages": 128,
+          "maxWorkUnits": 200000,
+          "maxBlockers": 32,
+          "maxRequiredFontFamilies": 256
+        },
+        "summary": {
+          "totalItems": 13162,
+          "directItems": 13162,
+          "directRequiredItems": 0,
+          "compatOverlayItems": 0,
+          "textFallbackItems": 0,
+          "unsupportedItems": 0,
+          "hiddenOverlayViolations": 0
+        },
+        "blockers": [],
+        "requiredFontFamilies": [
+          "HCI Poppy",
+          "HY Junggothic",
+          "HY Sinmyeongjo",
+          "HY견명조",
+          "Myeongjo",
+          "중고딕",
+          "한컴바탕",
+          "함초롬돋움",
+          "함초롬바탕",
+          "휴먼명조"
+        ],
+        "capabilityDigest": "blake3:33a26c3cb01fba8564b43ca5b86ed771c2fb942f1ad3b75f056bfd760814a41b"
+      }
+    ]
+  },
+  "scope": "각주 원본 50쪽의 Print preflight 3회. 최대 메모리·대표 성능 벤치마크가 아닌 해당 경계의 관측이다."
+}
