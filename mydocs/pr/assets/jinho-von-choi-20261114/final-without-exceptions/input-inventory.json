@@ -1,8 +1,8 @@
 {
-  "auditHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+  "auditHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
   "sourceScope": "Actual document inputs and independent target references; licensed private font source material is recorded separately",
-  "files": 116,
-  "pendingInputCommits": 2,
+  "files": 118,
+  "pendingInputCommits": 0,
   "inputs": [
     {
       "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/pr9071/issue9046/hancom/01-none.hwpx",
@@ -12,7 +12,7 @@
       "roles": [
         "original masters input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -23,7 +23,7 @@
       "roles": [
         "original masters reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -34,7 +34,7 @@
       "roles": [
         "original masters input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -45,7 +45,7 @@
       "roles": [
         "original masters input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -56,7 +56,7 @@
       "roles": [
         "original masters reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -67,7 +67,7 @@
       "roles": [
         "original masters input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -78,7 +78,7 @@
       "roles": [
         "original masters input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -90,7 +90,7 @@
         "original master-direct reference",
         "original masters reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -102,7 +102,7 @@
         "original master-direct input",
         "original masters input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -113,7 +113,7 @@
       "roles": [
         "original masters input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -124,7 +124,7 @@
       "roles": [
         "original masters reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -135,7 +135,7 @@
       "roles": [
         "original masters input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -146,7 +146,7 @@
       "roles": [
         "original masters input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -157,7 +157,7 @@
       "roles": [
         "original masters reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -168,7 +168,7 @@
       "roles": [
         "original masters input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -179,7 +179,7 @@
       "roles": [
         "original masters input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -190,7 +190,7 @@
       "roles": [
         "original masters reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -201,7 +201,7 @@
       "roles": [
         "original masters input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -212,7 +212,7 @@
       "roles": [
         "original masters input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -223,7 +223,7 @@
       "roles": [
         "original masters reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -234,7 +234,7 @@
       "roles": [
         "original masters input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -245,7 +245,7 @@
       "roles": [
         "original masters input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -256,7 +256,7 @@
       "roles": [
         "original masters reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -267,7 +267,7 @@
       "roles": [
         "original masters input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -278,7 +278,7 @@
       "roles": [
         "original masters input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -289,7 +289,7 @@
       "roles": [
         "original masters reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -300,7 +300,7 @@
       "roles": [
         "original masters input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -311,7 +311,7 @@
       "roles": [
         "original masters input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -323,7 +323,7 @@
         "original master-direct reference",
         "original masters reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -335,7 +335,7 @@
         "original master-direct input",
         "original masters input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -346,7 +346,7 @@
       "roles": [
         "original masters input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -357,7 +357,7 @@
       "roles": [
         "original masters reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -368,7 +368,7 @@
       "roles": [
         "original masters input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -380,7 +380,7 @@
         "additional control input",
         "original color input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -392,7 +392,7 @@
         "original color reference",
         "original color-direct reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -404,7 +404,7 @@
         "original color input",
         "original color-direct input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -415,7 +415,7 @@
       "roles": [
         "original incoming input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -426,7 +426,7 @@
       "roles": [
         "original incoming reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -437,7 +437,7 @@
       "roles": [
         "original incoming input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -448,7 +448,7 @@
       "roles": [
         "original incoming reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -459,7 +459,7 @@
       "roles": [
         "original incoming input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -470,7 +470,7 @@
       "roles": [
         "original incoming reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -481,7 +481,7 @@
       "roles": [
         "original incoming input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -492,7 +492,7 @@
       "roles": [
         "original incoming reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -503,7 +503,7 @@
       "roles": [
         "original incoming input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -514,7 +514,7 @@
       "roles": [
         "original incoming reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -525,7 +525,7 @@
       "roles": [
         "original incoming input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -536,7 +536,7 @@
       "roles": [
         "original incoming reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -547,7 +547,7 @@
       "roles": [
         "original incoming input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -558,7 +558,7 @@
       "roles": [
         "original incoming reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -569,7 +569,7 @@
       "roles": [
         "original specimen input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -580,7 +580,7 @@
       "roles": [
         "original specimen reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -591,7 +591,7 @@
       "roles": [
         "original specimen input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -602,7 +602,7 @@
       "roles": [
         "original specimen input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -613,7 +613,7 @@
       "roles": [
         "protected yeongwol input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -624,7 +624,7 @@
       "roles": [
         "protected yeongwol reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -635,7 +635,7 @@
       "roles": [
         "protected seo-body-list-typed input"
       ],
-      "blobVerifiedAtHead": null,
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -646,7 +646,7 @@
       "roles": [
         "protected seo-body-list-typed reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -657,7 +657,7 @@
       "roles": [
         "protected handbook-hwp input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -668,7 +668,7 @@
       "roles": [
         "protected handbook-hwp reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -679,7 +679,7 @@
       "roles": [
         "protected seo-helvetica-styles input"
       ],
-      "blobVerifiedAtHead": null,
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -690,7 +690,7 @@
       "roles": [
         "protected seo-helvetica-styles reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -701,7 +701,7 @@
       "roles": [
         "protected sample16-hwpx input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -712,7 +712,7 @@
       "roles": [
         "protected sample16-hwpx reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -723,7 +723,7 @@
       "roles": [
         "protected sample16-hwp2022 input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -734,7 +734,7 @@
       "roles": [
         "protected sample16-hwp2022 reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -745,7 +745,7 @@
       "roles": [
         "protected seo-re-03-latin input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -756,7 +756,7 @@
       "roles": [
         "protected seo-re-03-latin reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -767,7 +767,7 @@
       "roles": [
         "protected angle-narrow input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -778,7 +778,7 @@
       "roles": [
         "protected angle-narrow reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -789,7 +789,7 @@
       "roles": [
         "protected outline input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -800,7 +800,7 @@
       "roles": [
         "protected outline reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -811,7 +811,7 @@
       "roles": [
         "protected issue8040-insert input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -822,7 +822,7 @@
       "roles": [
         "protected issue8040-insert reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -833,7 +833,7 @@
       "roles": [
         "protected nested input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -844,7 +844,7 @@
       "roles": [
         "protected nested reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -855,7 +855,7 @@
       "roles": [
         "protected sample16-hwp2024 input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -866,7 +866,7 @@
       "roles": [
         "protected sample16-hwp2024 reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -877,7 +877,7 @@
       "roles": [
         "protected handbook-hwpx input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -888,7 +888,7 @@
       "roles": [
         "protected handbook-hwpx reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -899,7 +899,7 @@
       "roles": [
         "protected issue7905 input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -910,7 +910,7 @@
       "roles": [
         "protected issue7905 reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -921,7 +921,7 @@
       "roles": [
         "protected sample10 input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -932,7 +932,7 @@
       "roles": [
         "protected sample10 reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": true
     },
     {
@@ -943,7 +943,7 @@
       "roles": [
         "protected issue8040-insert-delete input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -954,7 +954,7 @@
       "roles": [
         "protected issue8040-insert-delete reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -965,7 +965,7 @@
       "roles": [
         "protected seo-pic-crop-01 input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -976,7 +976,7 @@
       "roles": [
         "protected seo-pic-crop-01 reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -987,7 +987,7 @@
       "roles": [
         "protected seo-shape-group-02 input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -998,7 +998,7 @@
       "roles": [
         "protected seo-shape-group-02 reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -1009,7 +1009,7 @@
       "roles": [
         "incoming9083 cbta"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -1020,7 +1020,7 @@
       "roles": [
         "incoming9083 cbta reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -1031,7 +1031,7 @@
       "roles": [
         "incoming9083 recommendation"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -1042,7 +1042,7 @@
       "roles": [
         "incoming9083 recommendation reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -1053,7 +1053,7 @@
       "roles": [
         "incoming9083 exam"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -1064,7 +1064,7 @@
       "roles": [
         "incoming9083 exam reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -1075,7 +1075,7 @@
       "roles": [
         "incoming9083 api"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -1086,7 +1086,7 @@
       "roles": [
         "incoming9083 api reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -1097,7 +1097,7 @@
       "roles": [
         "incoming9083 footnote"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -1108,7 +1108,7 @@
       "roles": [
         "incoming9083 footnote reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -1119,7 +1119,7 @@
       "roles": [
         "additional control input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -1130,7 +1130,7 @@
       "roles": [
         "additional control reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -1141,7 +1141,7 @@
       "roles": [
         "additional control input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -1152,7 +1152,7 @@
       "roles": [
         "additional control reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -1163,7 +1163,7 @@
       "roles": [
         "additional control input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -1174,7 +1174,7 @@
       "roles": [
         "additional control reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -1185,7 +1185,7 @@
       "roles": [
         "additional control input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -1196,7 +1196,7 @@
       "roles": [
         "additional control reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -1207,7 +1207,7 @@
       "roles": [
         "additional control reference"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -1218,7 +1218,7 @@
       "roles": [
         "additional control input"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -1229,7 +1229,7 @@
       "roles": [
         "actual functional API"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -1240,7 +1240,7 @@
       "roles": [
         "actual functional API"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -1251,7 +1251,7 @@
       "roles": [
         "actual functional API"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -1262,7 +1262,7 @@
       "roles": [
         "actual functional API"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -1273,7 +1273,7 @@
       "roles": [
         "actual functional API"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     },
     {
@@ -1284,7 +1284,29 @@
       "roles": [
         "actual functional API"
       ],
-      "blobVerifiedAtHead": "e29231c1f5cd86e6fc31445d672641423bcb1def",
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/issue9060/86036-rowbreak-first-line-fragment.hwpx",
+      "repositoryPath": "samples/issue9060/86036-rowbreak-first-line-fragment.hwpx",
+      "sha256": "f224d490226b3673554b484d6ce1e2b1c3bbaf0aac02340706edf5fc9d0a4025",
+      "bytes": 66410,
+      "roles": [
+        "incoming9088 original input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/issue9060/86036-rowbreak-first-line-fragment-2020.pdf",
+      "repositoryPath": "pdf/issue9060/86036-rowbreak-first-line-fragment-2020.pdf",
+      "sha256": "c9ba8e9d4b4e2cb32277d030161dedb59d9067eba0a4665b40f9c0b46cc47317",
+      "bytes": 227646,
+      "roles": [
+        "incoming9088 independent reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
       "existingLargePdf": false
     }
   ]

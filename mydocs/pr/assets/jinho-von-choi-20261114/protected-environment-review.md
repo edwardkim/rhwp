@@ -285,3 +285,24 @@ fill path에서 바깥/안쪽 차이는 0.480pt, 외곽 pen은 0.120pt다. 96dpi
 이 통합 직전의 중간 결과는 `final-without-exceptions/`에 producer별로 보존했다.
 새 base의 14쪽 원본·글꼴 경계와 기존 세 PR의 기능, 전체 보호·필수 검증을 새 source에서
 다시 실행한다. 기존 결과를 새 source로 바꾸어 기록하거나 보호 하한을 되돌리지 않는다.
+
+
+### 상향 하한의 실제 세 경계 재검토
+
+통합 source `235da09ed62d23425dad71dddac2bffa9f70cdc1`의 Native 전쪽 1,771행은
+하락 0건이다. 같은 source의 WASM 작은 경계에서는 중첩 표 4·11·14쪽이 새 하한보다
+각각 0.01%p 낮았다. 기존 차이 예외나 표시값 재반올림으로 수용하지 않는다.
+
+4쪽은 실제 형상이 다른 결측 기호였다. 원문 `굴림체` U+21E9를 독립 Print는
+Haansoft Batang으로 표시한다. 로컬의 기존 명시 fallback은 `Gulim`만 대상으로 삼아
+`GulimChe` 요청은 다른 시스템 기호로 넘어갔다. `GulimChe`·`굴림체`의 결측 체인을
+같은 Haansoft Batang으로 연결한 문서 전체 설정에서 Native/WASM 4쪽이 모두 100.00%다.
+글자·본문 좌표·문서 식별자나 쪽별 조건을 바꾸지 않는다. 글꼴 설치본 자체는 배포하지 않는다.
+
+나머지 두 쪽은 별도 조사 중이다. 보호 생산자의 Gulim TTC 해시와 로컬 파일 해시는 다르지만,
+기준 PDF에 포함된 370개 윤곽을 직접 대조했다. ToUnicode의 네 오기(3·데·접·남)를 분리하자
+로컬 실제 글리프와 대응했다. PDF subset을 출력 공급자로 등록하거나 검증용 글꼴로 추출해
+사용하지 않았다. 파일 해시 차이만으로 glyph 결함이나 새 글꼴 요구를 확정하지 않는다.
+원본 프로그램·원 메트릭의 인증과 실제 공급한 TrueType paint 프로그램의 물리 text 좌표는
+서로 다른 상태이므로, `NativeOtfMetrics → TextStyle → PagePaintContext::publish`의 소비를
+추적한다. 미공급·CFF·명시 자연 잉크·Screen 대조 계약을 보존하고 실제 독립 출력으로 검증한다.
