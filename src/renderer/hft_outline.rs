@@ -27,6 +27,13 @@ pub(crate) fn supports_style(style: &TextStyle) -> bool {
         && !style.engrave
 }
 
+/// 원 HFT의 명시 자연 프로그램 선택은 자동 표시 치환과 구분한다.
+/// 실제 정적 TTF 여부와 글리프 소유는 등록 공급자에서 별도로 확인한다.
+#[cfg(target_arch = "wasm32")]
+pub(crate) fn has_natural_hft_program(style: &TextStyle) -> bool {
+    style.source_font_is_hft && style.natural_program_metrics && style.preserve_glyph_ink
+}
+
 pub(crate) fn first_family(family: &str) -> &str {
     family
         .split(',')
@@ -343,8 +350,7 @@ impl HftOutlineFonts {
     ) -> Option<Arc<[PathCommand]>> {
         // 원 HFT의 명시 자연 프로그램 선택도 Native Print와 같은 실제 TTF를
         // 소비한다. 원문의 HFT 유형을 TTF로 바꾸거나 자동 표시 치환까지 확대하지 않는다.
-        let selected_natural_program =
-            style.source_font_is_hft && style.natural_program_metrics && style.preserve_glyph_ink;
+        let selected_natural_program = has_natural_hft_program(style);
         if !(style.source_font_is_ttf || selected_natural_program)
             || style.is_visually_bold()
             || style.italic

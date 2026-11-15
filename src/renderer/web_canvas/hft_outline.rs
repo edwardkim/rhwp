@@ -1,7 +1,10 @@
 //! 실제 FontFace와 같은 바이트에서 얻은 윤곽만 현재 paint 변환에 재생한다.
 
 use super::WebCanvasRenderer;
-use crate::renderer::{hft_outline::supports_style, PathCommand, TextStyle};
+use crate::renderer::{
+    hft_outline::{has_natural_hft_program, supports_style},
+    PathCommand, TextStyle,
+};
 
 impl WebCanvasRenderer {
     pub(super) fn draw_hft_outline(&self, text: &str, style: &TextStyle, font_size: f64) -> bool {
@@ -22,9 +25,14 @@ impl WebCanvasRenderer {
                 .then(|| fonts.glyph(&style.font_family, character))
                 .flatten();
             original.or_else(|| {
-                (self.print_text_geometry && !crate::renderer::contextual_text::is_contextual(text))
-                    .then(|| fonts.print_fallback_glyph(style, character))
-                    .flatten()
+                // 명시 자연 프로그램의 실제 윤곽은 2020/2022 Print도 소비한다.
+                // 보통 TTF fallback의 기존 인쇄 세대별 힌팅 정책은 유지한다.
+                ((self.print_text_geometry
+                    || (self.render_profile == crate::paint::RenderProfile::Print
+                        && has_natural_hft_program(style)))
+                    && !crate::renderer::contextual_text::is_contextual(text))
+                .then(|| fonts.print_fallback_glyph(style, character))
+                .flatten()
             })
         }) else {
             return false;

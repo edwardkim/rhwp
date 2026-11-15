@@ -189,3 +189,15 @@ text paint`가 실제 등록된 정적 TTF의 같은 윤곽을 소비하게 한�
 Print의 `fillText` 두 호출과 path0개를 검출해 실패했다. 수정 후 fresh WASM과 네 쪽의 재출력,
 대조군·전체 보호·필수 게이트는 아직 완료하지 않았다. 앞서 시작한7fbc 전체 회귀는 컴파일 단계에서
 중단했고 통과 수에 넣지 않는다. Native32개 focused와 Python14개 검사는 해당7fbc 결과로 구분한다.
+
+첫 WASM 보완 `bd77ca1b46`의 검증은 정상 대조3건이 통과하고 새 자연 TTF 검사1건이 실패했다.
+명시 2024 Print로 같은 검사를 실행하면 통과했다. 원인은 실제 TTF 공급·윤곽 추출이 아니라
+`preserves_raster_text_geometry`가 기존 2020/2022 Print에서 false인 점이다. 명시 자연 HFT
+프로그램의 정적 TTF replay만 Print 전 세대에서 허용하고, 보통 원 TTF fallback의 기존 세대별
+정책과 Screen·HighQuality는 보존한다. 같은 관계 검사가2022·2024를 각각 실제 실행하도록
+보완한다. 대상 글자의 좌표·크기·레이아웃 전진에는 새 보정을 넣지 않는다.
+
+Native `7fbc8ba62b`의 보호18 dataset·1,771쪽은 전쪽 raw 최저98.58%, 공식값 하락0건으로
+완료했다. 별도 편람383쪽 gate도 통과했다. 이후 두 Rust 변경은 wasm32 함수/모듈에 한정되며
+Native 시각 producer를 이후 SHA로 바꿔 적지 않는다. 최종 Rust 게이트와 실제 새 WASM 검증은
+계속 진행 중이다.

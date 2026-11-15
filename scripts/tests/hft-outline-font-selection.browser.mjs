@@ -50,11 +50,12 @@ test('HFT 원문의 명시 자연 TTF는 Print에서 실제 등록 윤곽을 쓰
       </MAPPINGTABLE></HEAD><BODY><SECTION Id="0"><P ParaShape="0"><TEXT CharShape="0">
       <CHAR>가나</CHAR></TEXT></P></SECTION></BODY></HWPML>`);
     const rows = [];
-    for (const profile of ['print', 'screen']) {
+    for (const printer of [2022, 2024]) for (const profile of ['print', 'screen']) {
       for (const supply of ['static', 'missing', 'variable', 'cleared']) {
         for (const natural of [true, false]) {
           const doc = new wasm.HwpDocument(source);
           try {
+            doc.setHangul2024Compat(printer === 2024);
             doc.setFontEnvironment(JSON.stringify({id: 'natural-hft-ttf-control',
               substitutions: {'RHWP Original HFT': family}, trueTypeFaces: [family],
               preserveSourceMetrics: !natural}));
@@ -66,7 +67,7 @@ test('HFT 원문의 명시 자연 TTF는 Print에서 실제 등록 윤곽을 쓰
             ctx.fillText = (text, ...args) => { texts.push(text); return fillText(text, ...args); };
             ctx.moveTo = (...args) => { contours++; return moveTo(...args); };
             doc.renderPageToCanvasFilteredWithProfile(0, canvas, 1, 'all', profile);
-            rows.push({profile, supply, natural, texts, contours});
+            rows.push({printer, profile, supply, natural, texts, contours});
           } finally { doc.free(); }
         }
       }
