@@ -1,0 +1,51 @@
+{
+  "status": "read_path_reuse_verified",
+  "previous_product_commit": "2749e491e843ec851de12467751ec200ab551014",
+  "followup_product_commit": "8472674645743d111d53de80d43d230449beaa3d",
+  "changed_rust_product_paths": [
+    "src/cli/outputs/vector.rs"
+  ],
+  "unchanged_paths_checked": [
+    "src/renderer",
+    "src/document_core",
+    "src/wasm_api",
+    "src/wasm_api.rs",
+    "crates",
+    "Cargo.toml",
+    "Cargo.lock",
+    "samples",
+    "tests/fixtures",
+    "scripts/visual_sweep.py",
+    "rhwp-studio/src/core"
+  ],
+  "unchanged_diff_exit": 0,
+  "rebased_ui_changes": [
+    "rhwp-studio/src/styles/dialogs.css",
+    "rhwp-studio/src/styles/responsive.css",
+    "rhwp-studio/src/ui/about-dialog.ts"
+  ],
+  "rebased_ui_validation": "../rebase-67b4-20261116/incoming-validation.json",
+  "decisions": {
+    "protected_png_36_datasets_3542_pages": "공통 조판·paint·PNG·WASM·입력·실행기 내용이 같다. 기존273 생산 결과를 신원 근거와 함께 재사용하며 새 Native SVG CLI 결과로 표시하지 않는다.",
+    "wasm_svg_50_pages": "WASM 소비 코드와 실제 패키지 해시가 같다. 현재 실제50쪽99.16% 결과를 재사용한다.",
+    "native_svg_50_pages": "CLI 원본 프로그램 준비 변경의 실제 영향 경로다. 새 바이너리로 전50쪽 재캡처한다.",
+    "rust": "새 합성 반례와 NativeSkia all-target Clippy PASS. generated suite 변경을 포함한 전체 nextest를 새 소스로 실행 중이다.",
+    "actual_consumers": "같은 WASM 패키지와 리베이스 후 실제 Studio로 진행 중. 초기화 응답·지원·fallback·문서 전쪽 preflight를 검증한다."
+  },
+  "frozen_native_cli": "fccca6a5d7abc8f803ec3522501be1a79b2d36eedbd5e70ee49dcc977420c98e",
+  "partial_actual_print": {
+    "footnote36": {
+      "svg": "99.83",
+      "canvas2d": "99.76",
+      "canvaskit_compat": "99.83",
+      "canvaskit_default": "99.83"
+    },
+    "footnote37": {
+      "svg": "99.16",
+      "canvas2d": "99.08",
+      "canvaskit_compat": "99.17",
+      "canvaskit_default": "99.17"
+    },
+    "status": "두 쪽의 현재 부분 측정이며8쪽 전체 수용이 아님"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "baseline": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
+  "baseline_sha256": "2280e97844b2cb262ea73e9c49f09f56c434097fed49af75fd9a7f6198d43da7",
+  "metric": "silhouette_raw_match_percent",
+  "backend": "native-skia",
+  "precision": "0.01 percentage points",
+  "pages": 383,
+  "regressions": [],
+  "manifest": "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/svg-print-final/post-rebase-4e0b20d2/margin-controls/required-handbook-current/required-handbook-8153-native/silhouette_manifest.json",
+  "source_product_commit": "8472674645",
+  "comparison_reuse": "동일383쪽 원문 결과를 새 정본과 canonical compare로 재판정. 상향은 nested뿐이며 편람383행 불변. 재캡처를 주장하지 않음."
+}

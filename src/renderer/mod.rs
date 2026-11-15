@@ -426,6 +426,9 @@ pub struct TextStyle {
     /// 원본 글자 스타일에서 크기를 해소했는지. 명시적인 0과 미지정을 구별한다.
     #[serde(skip_serializing)]
     pub resolved_font_size: bool,
+    /// 공통 Print paint가 확정한 표시 em. 원본 크기·조판 전진은 유지한다.
+    #[serde(skip)]
+    pub print_ink_font_size: Option<f64>,
     /// 원본 언어 슬롯의 글자 위치(%). 0은 기존 직렬화와 같이 생략한다.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub font_position: Option<i8>,
@@ -626,7 +629,7 @@ pub struct TextStyle {
     #[serde(skip_serializing)]
     pub ascii_punct_latin: Option<Box<LatinSlotMetrics>>,
 }
-crate::storage::clone_fields!(TextStyle, {literal_soft_hyphen, text_paint, continuous_shadow, inherited_half_space_em, script_metrics, shadow_offset_percent, space_compression, literal_figure_space, literal_figure_space_em, native_pua_metrics, native_otf_metrics, bidi_layout, emphasis_skip_first_cluster, top_underline_font_size, top_underline_phase, supplemental_metrics, isolated_jamo_font, font_family, font_size, fixed_glyph_advances, source_font_is_hft, source_font_is_ttf, selected_primary_font_program, source_verified_hft_bold_tracking, source_hwp3_hft_bold, resolved_font_size, font_position, hft_print_frame, print_text_device_frame, preserve_glyph_ink, natural_program_metrics, color, bold, italic, underline, strikethrough, kerning, letter_spacing, ratio, default_tab_width, tab_stops, auto_tab_right, auto_left_tab_position, available_width, line_x_offset, text_start_offset, right_tab_block_width_override, tab_leaders, inline_tabs, extra_word_spacing, unjustified_leading_spaces, extra_char_spacing, extra_dash_advance, outline_type, shadow_type, shadow_color, shadow_offset_x, shadow_offset_y, emboss, engrave, superscript, subscript, emphasis_dot, underline_shape, strike_shape, underline_color, strike_color, shade_color, font_metric_trusted, glyph_fallback_advance_explicit, metric_font_family, original_glyph_metric_family, font_space_em, layout_half_space, layout_half_space_em, regenerated_font_metrics, hft_hangul_face, hft_font_face, hft_fullwidth_dot, ascii_punct_latin});
+crate::storage::clone_fields!(TextStyle, {literal_soft_hyphen, text_paint, continuous_shadow, inherited_half_space_em, script_metrics, shadow_offset_percent, space_compression, literal_figure_space, literal_figure_space_em, native_pua_metrics, native_otf_metrics, bidi_layout, emphasis_skip_first_cluster, top_underline_font_size, top_underline_phase, supplemental_metrics, isolated_jamo_font, font_family, font_size, fixed_glyph_advances, source_font_is_hft, source_font_is_ttf, selected_primary_font_program, source_verified_hft_bold_tracking, source_hwp3_hft_bold, resolved_font_size, print_ink_font_size, font_position, hft_print_frame, print_text_device_frame, preserve_glyph_ink, natural_program_metrics, color, bold, italic, underline, strikethrough, kerning, letter_spacing, ratio, default_tab_width, tab_stops, auto_tab_right, auto_left_tab_position, available_width, line_x_offset, text_start_offset, right_tab_block_width_override, tab_leaders, inline_tabs, extra_word_spacing, unjustified_leading_spaces, extra_char_spacing, extra_dash_advance, outline_type, shadow_type, shadow_color, shadow_offset_x, shadow_offset_y, emboss, engrave, superscript, subscript, emphasis_dot, underline_shape, strike_shape, underline_color, strike_color, shade_color, font_metric_trusted, glyph_fallback_advance_explicit, metric_font_family, original_glyph_metric_family, font_space_em, layout_half_space, layout_half_space_em, regenerated_font_metrics, hft_hangul_face, hft_font_face, hft_fullwidth_dot, ascii_punct_latin});
 
 /// [#7418] 영문 슬롯의 기본 메트릭 — [`TextStyle::ascii_punct_latin`] 참조.
 #[derive(Debug, Clone, PartialEq)]
@@ -687,6 +690,9 @@ pub(crate) fn faux_bold_stroke_width(style: &TextStyle, font_size: f64) -> Optio
 impl TextStyle {
     /// 원본의 0 크기를 보존한다. 해소되지 않은 기본 스타일에만 기존 폴백을 쓴다.
     pub(crate) fn effective_font_size(&self) -> f64 {
+        if let Some(size) = self.print_ink_font_size {
+            return size;
+        }
         if self.resolved_font_size || self.font_size > 0.0 {
             self.font_size
         } else {
@@ -845,6 +851,7 @@ impl Default for TextStyle {
             source_verified_hft_bold_tracking: false,
             source_hwp3_hft_bold: false,
             resolved_font_size: false,
+            print_ink_font_size: None,
             font_position: None,
             hft_print_frame: false,
             print_text_device_frame: false,

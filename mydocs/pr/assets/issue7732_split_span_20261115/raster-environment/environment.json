@@ -1,0 +1,12 @@
+{
+  "scope": "same software Chrome launch for base and candidate; normal supplied fonts",
+  "chrome_flags": [
+    "--disable-gpu"
+  ],
+  "wrapper_sha256": "478bdff1a1efb975fb357c75118d84220af1d0cbacdfe4cb3e81cc8918313a0d",
+  "normal_gpu_issue7905_p1": "99.97",
+  "software_diagnostic_issue7905_p1": "99.98",
+  "layout_tree_and_fonts_identical": true,
+  "baseline_or_threshold_changed": false,
+  "product_commit": "2c90fa288bb4d48764eb82dbb025df4a12637ea9"
+}

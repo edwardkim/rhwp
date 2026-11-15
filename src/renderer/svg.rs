@@ -187,6 +187,9 @@ pub struct SvgRenderer {
     /// 372.520px 로 보는데 레이아웃은 다음 run 을 372.853px 에 놓아, 조각 사이에
     /// 0.333px(0.25pt) 실틈이 남았다. bbox 는 `101.9+271.0=372.9` 로 정확히 이어진다.
     active_decoration_width: Option<f64>,
+    /// 직교 장치 선에만 raster 힌트를 전달한다. 그룹 변환을 벗어나면 이전 상태로 복원한다.
+    axis_stroke_hint_allowed: bool,
+    axis_stroke_hint_stack: Vec<bool>,
 }
 
 /// 디버그 오버레이용 문단 경계 정보
@@ -280,6 +283,8 @@ impl SvgRenderer {
             active_decoration_trim: 0,
             suppress_text_glyphs: false,
             active_decoration_width: None,
+            axis_stroke_hint_allowed: true,
+            axis_stroke_hint_stack: Vec::new(),
         }
     }
 
@@ -334,6 +339,9 @@ impl SvgRenderer {
 
     /// 공통 그룹의 좌표계만 직렬화한다. 자식의 논리 bbox는 다시 배치하지 않는다.
     pub(super) fn begin_layer_transform(&mut self, [a, b, c, d, e, f]: [f64; 6]) {
+        self.axis_stroke_hint_stack
+            .push(self.axis_stroke_hint_allowed);
+        self.axis_stroke_hint_allowed &= (b == 0.0 && c == 0.0) || (a == 0.0 && d == 0.0);
         self.output.push_str(&format!(
             "<g transform=\"matrix({a} {b} {c} {d} {e} {f})\">\n"
         ));
@@ -341,6 +349,7 @@ impl SvgRenderer {
 
     pub(super) fn end_layer_transform(&mut self) {
         self.output.push_str("</g>\n");
+        self.axis_stroke_hint_allowed = self.axis_stroke_hint_stack.pop().unwrap_or(true);
     }
 
     /// Closes the SVG document consumed by direct `PageLayerTree` replay.
@@ -1034,9 +1043,12 @@ impl SvgRenderer {
             }
             RenderNodeType::Line(line) => {
                 self.open_shape_transform(&line.transform, &node.bbox);
+                let axis_hint = self.axis_stroke_hint_allowed;
+                self.axis_stroke_hint_allowed &= !line.transform.has_transform();
                 for stroke in line.paint_strokes() {
                     self.draw_line(stroke.x1, stroke.y1, stroke.x2, stroke.y2, &stroke.style);
                 }
+                self.axis_stroke_hint_allowed = axis_hint;
             }
             RenderNodeType::Ellipse(ellipse) => {
                 self.open_shape_transform(&ellipse.transform, &node.bbox);
@@ -3390,6 +3402,8 @@ impl Renderer for SvgRenderer {
         self.overlay_skip_depth = 0;
         self.overlay_page_section = -1;
         self.metric_faces.clear();
+        self.axis_stroke_hint_allowed = true;
+        self.axis_stroke_hint_stack.clear();
         // xmlns:xlink 필수: SVG 가 <img> 로 로드될 때(예: blob URL 미리보기)
         // 엄격한 XML 파싱으로 인해 xmlns:xlink 미선언 시 <image xlink:href=...> 가 무시됨.
         self.output.push_str(&format!(
@@ -4271,6 +4285,23 @@ impl Renderer for SvgRenderer {
             "x1=\"{}\" y1=\"{}\" x2=\"{}\" y2=\"{}\" stroke=\"{}\" stroke-width=\"{}\"",
             lx1, ly1, lx2, ly2, color, width,
         );
+        if self.axis_stroke_hint_allowed
+            && !style.preserve_fractional_position
+            && style.dash_pattern.is_none()
+        {
+            let source = super::render_tree::LineNode::new(x1, y1, x2, y2, style.clone());
+            let raster = super::raster_stroke::raster_line_geometry(
+                &source,
+                [1.0, 0.0, 0.0, 1.0, 0.0, 0.0],
+                self.profile,
+                width,
+            );
+            if raster.4 > width {
+                // 원본 벡터 좌표·선폭은 그대로 두고 Print의 가는 직교선에만
+                // 브라우저의 장치 픽셀 coverage 처리를 요청한다.
+                attrs.push_str(" shape-rendering=\"crispEdges\"");
+            }
+        }
         if let Some(intervals) = &style.dash_pattern {
             attrs.push_str(&format!(
                 " stroke-dasharray=\"{}\"",

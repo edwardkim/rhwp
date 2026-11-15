@@ -94,6 +94,73 @@ impl PagePaintContext {
         self
     }
 
+    /// 독립 한컴 2020 Print의 600dpi 정수 em을 표시 크기에만 적용한다.
+    /// 먼저 원본 문자 원점을 고정하여 재생 중 폭을 다시 계산하지 않는다.
+    pub(crate) fn publish_text_ink_em(
+        self,
+        node: &mut LayerNode,
+        shaped_sources: &std::collections::HashSet<u32>,
+    ) {
+        if !self.print || self.print_paper.is_some() {
+            return;
+        }
+        match &mut node.kind {
+            LayerNodeKind::Group { children, .. } => {
+                for child in children {
+                    self.publish_text_ink_em(child, shaped_sources);
+                }
+            }
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                self.publish_text_ink_em(child, shaped_sources);
+            }
+            LayerNodeKind::Leaf { ops } => {
+                for op in ops {
+                    // 원문과 장식의 정본 run은 같은 표시 크기와 원점을 소비한다.
+                    let (run, source) = match op {
+                        PaintOp::TextRun { run, source, .. }
+                        | PaintOp::TextDecoration { run, source, .. }
+                        | PaintOp::TabLeader { run, source, .. }
+                        | PaintOp::TextControlMark { run, source, .. } => (run, source),
+                        _ => continue,
+                    };
+                    // 겹침·shaping은 별도로 확정한 글리프 투영의 크기를 유지한다.
+                    if run.char_overlap.is_some()
+                        || source
+                            .as_ref()
+                            .is_some_and(|s| shaped_sources.contains(&s.id.0))
+                    {
+                        continue;
+                    }
+                    let style = &run.style;
+                    if run.is_vertical
+                        || style.superscript
+                        || style.subscript
+                        || style.font_position.is_some_and(|position| position != 0)
+                        || style.preserve_glyph_ink
+                        || style.text_paint.is_some()
+                        || !style
+                            .native_otf_metrics
+                            .as_ref()
+                            .is_some_and(|font| font.has_static_truetype_paint_programs())
+                    {
+                        continue;
+                    }
+                    let size = style.effective_font_size();
+                    if !size.is_finite() || size <= 0.0 {
+                        continue;
+                    }
+                    let ink_size = (size * 600.0 / 96.0).round() * 96.0 / 600.0;
+                    if ink_size <= 0.0 {
+                        continue;
+                    }
+                    let positions = run.replay_positions_for(run.display_or_text()).into_owned();
+                    run.layout_positions = Some(positions);
+                    run.style.print_ink_font_size = Some(ink_size);
+                }
+            }
+        }
+    }
+
     /// 표 괘선은 논리 조판 상자를 유지하되 물리 Print 종이의 정밀 CTM을 쓴다.
     /// 독립 Print의 가로·세로 괘선에서 확인한 공통 프레임이며, 장치 정수
     /// 반올림이나 끝점의 pen 확장은 이 좌표 변환으로 추측하지 않는다.

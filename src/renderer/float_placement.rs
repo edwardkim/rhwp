@@ -2485,7 +2485,13 @@ pub(crate) fn stored_square_sibling_outer_frame(para: &Paragraph) -> bool {
 /// 표 바깥 여백 상자가 흐름에서 빠져 표와 뒤 문단이 여백만큼 올라간다.
 pub(crate) fn control_leaves_table_anchor_empty(control: &Control) -> bool {
     match control {
-        Control::SectionDef(_) | Control::ColumnDef(_) => true,
+        // 책갈피와 번호 재시작은 위치·카운터의 의미만 가지며 글줄의
+        // 잉크·공간을 점유하지 않는다. 이 설정이 표와 같은 문단에 있다는
+        // 이유로 빈 앵커의 바깥여백 상자를 버리지 않는다.
+        Control::SectionDef(_)
+        | Control::ColumnDef(_)
+        | Control::Bookmark(_)
+        | Control::NewNumber(_) => true,
         Control::Picture(picture) => detached_from_anchor_line(&picture.common),
         Control::Shape(shape) => detached_from_anchor_line(shape.common()),
         _ => false,

@@ -39,6 +39,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `canvas-metric-recovery.test.mjs` | 상시 | active | #7084 실제 CanvasView descriptor 오류의 1회 자동 복구·지속 오류 제한·오래된 view 거부·일반 오류 분리 | issue3587/c-form-labnote-001-stage11-filled.hwp/.hwpx | npm e2e:canvas-metric-recovery | 통제 오류 주입, 자연 발생 폰트 장애와 구분 |
 | `canvaskit-font-coverage.test.mjs` | 상시 | active | CanvasKit 번들 폰트와 exact TTC GlyphRun 등록/픽셀 replay 검증 | — | npm+CI |  |
 | `canvaskit-font-preparation-issue7688.test.mjs` | 상시 | active | #7688 명시 CanvasKit의 문서 글꼴 준비·Regular/Bold 실제 outline 선택·자원 실패 Canvas2D fallback | group-drawing-02.hwp, 번들 NotoSerifKR | npm e2e:issue-7688-fonts | software surface, 두 face 공급 순서와 screen/print 대조 |
+| `canvaskit-local-face-identity.test.mjs` | 상시 | active | 표시 이름이 같은 두 local face를 고유 PostScript 식별자로 준비하고 실제 replay를 대조 | 공개 NotoSerifKR·NotoSansSymbols2, 합성 Local Font Access 메타데이터 | 수동 | 설치 글꼴에 의존하지 않으며 두 실제 프로그램의 직접 공급과 비교 |
 | `canvaskit-font-family-fallback-issue7445.test.mjs` | 상시 | active | #7445 선언 글꼴 후보의 glyph coverage·선택 순서·기본 face 소유·결측 진단 | 합성 LayerTree, 공개 NotoSansKR/Pretendard/NanumGothic | npm e2e:issue-7445-font-family | 실제 software CanvasKit의 screen/print를 독립 face 대조군과 비교 |
 | `footnote-marker-replay-contract.mjs` | 유틸 | active | 각주 표식의 저장 기준선과 기존 fallback 소비 계약 | 합성 footnoteMarker | 수동 | `renderer-contract.test.mjs`에서 간접 import |
 | `pattern-image-replay-api.mjs` | 유틸 | active | 반복 이미지 shader의 생성·소유·해제 계약용 API 모형 | 합성 pattern image | 수동 | `renderer-contract.test.mjs`에서 간접 import |

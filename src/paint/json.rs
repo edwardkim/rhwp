@@ -759,7 +759,7 @@ impl PaintOp {
                 buf.push_str(",\"style\":");
                 write_text_style(buf, &run.style);
                 buf.push_str(",\"paintStyle\":");
-                write_text_style(buf, &run.style);
+                write_text_paint_style(buf, &run.style);
                 write_text_legacy_visuals(buf, run, leaf_visuals);
                 if leaf_visuals.control_marks {
                     buf.push_str(",\"controlMarks\":");
@@ -922,7 +922,7 @@ impl PaintOp {
                 buf.push_str(",\"style\":");
                 write_text_style(buf, &run.style);
                 buf.push_str(",\"paintStyle\":");
-                write_text_style(buf, &run.style);
+                write_text_paint_style(buf, &run.style);
                 buf.push_str(",\"positions\":");
                 let complete = write_bounded_text_positions(buf, &run.text, &run.style);
                 let _ = write!(buf, ",\"positionsComplete\":{complete}");
@@ -1860,6 +1860,17 @@ fn clip_kind_str(value: ClipKind) -> &'static str {
         ClipKind::TextBox => "textBox",
         ClipKind::Generic => "generic",
         ClipKind::PrintBitmapFill => "printBitmapFill",
+    }
+}
+
+// 원문 스타일은 보존하고 표시 크기만 paintStyle에 전달한다.
+fn write_text_paint_style(buf: &mut String, style: &TextStyle) {
+    if style.print_ink_font_size.is_some() {
+        let mut paint = style.clone();
+        paint.font_size = style.effective_font_size();
+        write_text_style(buf, &paint);
+    } else {
+        write_text_style(buf, style);
     }
 }
 
