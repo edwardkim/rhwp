@@ -48,10 +48,42 @@ Print exporter는 Studio의 이 setter를 소비하지 않으므로 그 TSV를 �
 
 수정 전 CSS 관계 검사 3개가 실제로 실패했다. 원래 4개는 통과했다.
 수정 후 추가한 로컬 공급 검사까지 8/8 통과했다. 기존 글꼴 정책·호스트 공급·해소 scope와
-음성 대조도 집중 실행했다. 최종 전체 검증과 브라우저 결과는 완료 후 아래에 기록한다.
+음성 대조도 집중 실행했다. 최종 실행은 아래와 같다.
+
+| 명령 | 결과 |
+| --- | --- |
+| `scripts/wasm-pack-locked.ps1 --target web --out-dir pkg --mode no-install` | release 컴파일·wasm-opt 포함 성공, 전체 35분 53초 |
+| `npx.cmd tsc --noEmit` (Studio) | 성공 |
+| `npm.cmd --prefix rhwp-studio test` | 2,800건 중 2,798 PASS, 0 FAIL, 기존 선택 검사 2 SKIP |
+| `npm.cmd run build` (Studio) | TypeScript·Vite·PWA production build 성공 |
+| `npm.cmd run e2e:issue-9077` (Studio) | headless Chrome 157, 명시 Canvas2D, 12/12 조합 PASS |
+| `venv/Scripts/python.exe scripts/check_e2e_manifest.py` | tracked 191개 / manifest 191개, 이상 없음 |
+| `git diff --check` | 통과 |
+
+검증한 source는 `d255fc603f5fca7c5e8cefa7bff0cecd264a3b6e`다.
+WASM 빌드 시작 시점은 `92a3778ea5`이며 이후 변경은 테스트·기록과 TypeScript 공백 정리다.
+`src`, `crates`, `vendor`, `Cargo.toml`, `Cargo.lock`, `build.rs`의 diff가 비어 있음을 확인했다.
+Rust 1.93.1, wasm-pack 0.15.0, Cargo.lock과 일치하는 wasm-bindgen-cli 0.2.127을 사용했다.
+WASM은 27,649,950바이트이며 SHA-256은
+`16e3f571c57b82d666ec87967e2d0144db5c41d7f5bef04cbd8a30986da38f54`다.
+초기화 시 브라우저가 실제 받은 응답의 SHA-256도 같으며 HTTP 200, `matched: true`다.
+
+웹 등록 이름과 별도의 로컬 공급 이름 각각에 대해 별칭 없음, TTF 미공급, intrinsic 미공급,
+두 별칭 미공급, TTF 공급, intrinsic 공급을 검사했다. 미공급 8건은 원시 setter로 실제 face를
+고른 대조군과 Canvas 전체 픽셀·측정 폭이 동일하고 시스템 fallback의 그림과 다르다.
+공급된 4건은 별도 Italic 프로그램을 직접 고른 대조군과 동일하며 일반 프로그램과 다르다.
+실제 screenshot에서도 테스트 프로그램의 의도된 기울어진 합성 윤곽을 확인했다.
+
+건너뛴 2건은 `pkg-node` 전용 기존 편집 검사다. 이 작업은 web WASM과 Canvas2D CSS 경로를
+검증하며 Node 전용 package를 만들거나 skip 조건을 추가하지 않았다. 런타임은 fresh JS/WASM을
+유지하고, 동기화 과정에서 변경된 tracked 생성 타입 선언 2개는 검증 후 복원한다.
 
 중간 로그는 Git 제외 경로 `output/issue9077/`에 보관한다. 기존 전체 검사에서
 Windows CRLF를 LF로 읽어야 하는 `chrome-mode` source 검사가 실패해 해당 working tree의
 줄바꿈만 정규화했다. Git blob은 변경 전과 같은
 `f3051e6f6d8c80591a6ddaf709e1343daff9afb3`이며 13/13이 통과했다.
-동기화 전 WASM에서 `insertMemo`를 찾지 못한 검사는 새 빌드로 재검증한다.
+동기화 전 WASM에서 `insertMemo`를 찾지 못한 검사도 새 빌드에서 통과했다.
+최종 로그는 `studio-test-final.log`, `studio-build.log`, `e2e.log`, `wasm-build.json`이며
+실제 초기화 응답 해시는 `output/issue9077/consumption/`에 있다. 대표 screenshot과 HTML은
+각각 `rhwp-studio/e2e/screenshots/issue9077-canvas-font-alias.png`,
+`output/e2e/canvas-font-alias-issue9077-report.html`이다.
