@@ -17,10 +17,11 @@ runtime이 같은 것을 확인했다. asset을 담은 커밋과 실제 실행 �
 | 중첩 표의 기존 기능 보존 | Native/fresh WASM 각각 전17쪽 보호값 하락0, 최저99.86% | [원인·독립 Print·TSV·대표 이미지](outer-margin-stage/README.md) |
 | 리베이스 유입 기능 | suite 정책·CI 분류·Python109건·About 실제 브라우저·문서 링크 PASS | [새 base 검사](rebase-67b4-20261116/incoming-validation.json) |
 | 공개 4문서 공통 검사 | Native/fresh WASM 8건 모두 공식 두 자리100.00%. 반올림 전 crop99.99756% | [전쪽 TSV·각 review/overlay](rebase-67b4-20261116/public-four-validation.json) |
-| sample10 기호 공급 정합 | 474쪽 양쪽100.00%, Native 전763쪽 보호 하락0·최저99.57%. WASM 전쪽은 진행 중 | [공급 분석](sample10-symbol-supply/cause.md), [Native 전쪽](sample10-symbol-supply/native-full-results.json) |
+| sample10 기호 공급 정합 | 474쪽 양쪽100.00%, Native/fresh WASM 각각 전763쪽 보호 하락0·최저99.57% | [공급 분석](sample10-symbol-supply/cause.md), [Native 전쪽](sample10-symbol-supply/native-full-results.json) |
 
-**최종 전체 시각 수용과 PR 제출은 아직 완료되지 않았다.** 같은 소스의 정본 36데이터셋·3,542행 중
-WASM sample10 전쪽 재검증을 마무리하고, 각주 원본 전50쪽 Native/fresh WASM PNG·SVG,
+[정본 전체 보호 결과](final-2749-67b4/protected-validation.json)는 36데이터셋·3,542행 모두
+보호 하락0이며 14행이 상승했다. 각 데이터셋의 전체 TSV를 같은 실행 단위로 보존했다.
+**최종 전체 시각 수용과 PR 제출은 아직 완료되지 않았다.** 각주 원본 전50쪽 Native/fresh WASM PNG·SVG,
 실제 Studio SVG/Canvas2D/지원 CanvasKit, 명시적 `--handbook-gate`를 순차 검증한다.
 실행 전·진행 중·실패한 기록을 완료 결과로 세지 않는다. 완료한 게이트는 소스와 입력의 신원을
 확인해 재사용하며 문서 커밋만으로 같은 Rust 빌드를 반복하지 않는다.
