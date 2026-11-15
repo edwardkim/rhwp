@@ -9,7 +9,7 @@
       "target": "Human Gothic"
     }
   ],
-  "id": "nested-independent-hft-bitmap-symbol",
+  "id": "nested-independent-font-link-gulimche",
   "preserveSourceMetrics": true,
   "selectedPrograms": {
     "HCI Hollyhock": {
@@ -101,11 +101,14 @@
     ],
     "한양중고딕": [
       "RHWP Independent HFT Symbols"
+    ],
+    "GulimChe": [
+      "Haansoft Batang"
+    ],
+    "굴림체": [
+      "Haansoft Batang"
     ]
   },
-  "replaceSourceMetricsFor": [
-    "휴먼명조"
-  ],
   "documentGlyphFallbacks": [
     {
       "languageSlot": 0,

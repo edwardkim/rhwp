@@ -329,3 +329,13 @@ NativeOtfMetrics → TextStyle.native_otf_metrics → PagePaintContext::publish_
 확인된 TTF의 Type0 text 좌표는 Type3 도형 fill 상태와 독립적이라는 기존 Print 계약을
 사용하며 새 좌표나 글꼴별 상수를 만들지 않는다. 이 보완의 실제 출력·기존 대조·필수 검증은
 아직 미완료이며, 점수가 개선되지 않거나 다른 계약이 후퇴하면 가정을 재검토한다.
+
+
+첫 Native 재검증은 source `8ad1c5c08a`의 frozen binary다. 같은 문서 전체 환경에서
+17쪽 모두 새 보호 하한 이상이며 11·14쪽은 각각 99.67%·99.42%로 개선됐다.
+4·8·9·12·16쪽은 모두 100.00%다. 최저 98.63%와 전쪽 결과를 기록하며 아직 전체
+최종 보호·새 WASM·필수 게이트의 완료로 확대하지 않는다.
+
+이후 검증의 문서 전체 설정은 기존 원본 메트릭을 보존한다. 과거의 자연 Gulim 전진 선택을
+제거하고, 독립 Print에서 확인한 `GulimChe`/`굴림체 → Haansoft Batang` 결측 연결을 추가했다.
+두 backend에 같은 JSON을 공급하며 다른 페이지별 환경을 선택하지 않는다.
