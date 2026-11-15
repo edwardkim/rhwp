@@ -1,4 +1,8 @@
 // 관계형: 실제 WASM·FontFace·Canvas의 공급 프로그램 선택을 검사한다. 실물 raw 측정과 구분한다.
+// 추가 관계 검증: 2026-11-15T17:38:44+09:00; 직전 파일 e29231c1f5cd86e6fc31445d672641423bcb1def (2026-11-15T12:51:50+09:00).
+// source 8ad1c5c08a, 독립 Print/PDFium/96dpi/2px raw: 중첩 표 전 17쪽 Native 최저 98.63%, optimized fresh WASM 최저 98.65%.
+// 11쪽 99.67/99.63%, 14쪽 99.42/99.35%; 좌표를 고정하지 않고 공급 형식·프레임·실제 Canvas 소비를 대조한다.
+// 증거: mydocs/pr/assets/jinho-von-choi-20261114/supplied-ttf-frame/README.md.
 // 주석 갱신: 2026-11-15T12:27:15+09:00. 직전 변경 fe6df8a2e5ac430482da7646a6dacad27030e93b
 // (Git 커밋 시각 2026-11-09T21:28:12+09:00).
 // 저장소 소유 CFF·OFL TTF를 직접 공급하며 시스템 글꼴 설치나 상용 프로그램 배포에 의존하지 않는다.
@@ -283,6 +287,90 @@ test('실제 HFT 윤곽 replay가 옛한글 우선 face와 화면 경로를 보�
     } else {
       assert.equal(row.after.some(call => call.text === row.text), false,
         `일반 HFT 윤곽 경로를 전체 비활성화해 통과하면 안 된다: ${JSON.stringify(row)}`);
+    }
+  }
+});
+
+// 관계형: 실제 SFNT 형식 공급의 Print 프레임을 검사하며 원문 유형·전진·Screen/HQ를 보존한다.
+test('supplied static TrueType keeps its Print frame after metric compaction', async t => {
+  const pkg = resolve(process.env.RHWP_SWEEP_TEST_WASM_PKG || join(root, 'pkg'));
+  const files = new Map([
+    ['/rhwp.js', ['application/javascript', readFileSync(join(pkg, 'rhwp.js'))]],
+    ['/rhwp_bg.wasm', ['application/wasm', readFileSync(join(pkg, 'rhwp_bg.wasm'))]],
+    ['/static.ttf', ['application/octet-stream', readFileSync(join(root, 'tests/fixtures/fonts/RHWPEquationCJKRegular.ttf'))]],
+    ['/cff.otf', ['application/octet-stream', readFileSync(join(root, 'tests/fixtures/fonts/RHWPHftOutline.otf'))]],
+    ['/variable.ttf', ['application/octet-stream', readFileSync(join(root, 'ttfs/redistributable/happiness-sans/HappinessSansVF.ttf'))]],
+  ]);
+  const server = createSweepServer(files, new Map());
+  await new Promise((accept, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', accept); });
+  t.after(async () => { server.closeAllConnections(); await new Promise(accept => server.close(accept)); });
+  const userDataDir = createSweepBrowserProfile(join(root, 'output/pr-review/browser-profile-tests'), 'supplied-ttf-frame');
+  let browser;
+  t.after(async () => {
+    if (browser) await browser.close();
+    rmSync(userDataDir, {recursive: true, force: true, maxRetries: 5, retryDelay: 100});
+  });
+  browser = await require('puppeteer-core').launch({executablePath: findChrome(process.env.VISUAL_SWEEP_CHROME), headless: true, userDataDir});
+  const page = await browser.newPage(); await page.goto(`http://127.0.0.1:${server.address().port}`);
+  const rows = await page.evaluate(async () => {
+    const wasm = await import('/rhwp.js'); await wasm.default();
+    const programs = {};
+    for (const [name, url] of [['static', '/static.ttf'], ['cff', '/cff.otf'], ['variable', '/variable.ttf']]) {
+      programs[name] = new Uint8Array(await (await fetch(url)).arrayBuffer());
+    }
+    const languages = ['Hangul', 'Latin', 'Hanja', 'Japanese', 'Other', 'Symbol', 'User'];
+    const source = new TextEncoder().encode(`<HWPML Version="2.91"><HEAD SecCnt="1"><MAPPINGTABLE>
+      <FACENAMELIST>${languages.map(lang => `<FONTFACE Count="1" Lang="${lang}"><FONT Id="0" Name="휴먼명조" Type="hft"/></FONTFACE>`).join('')}</FACENAMELIST>
+      <CHARSHAPELIST Count="1"><CHARSHAPE Id="0" Height="1100"/></CHARSHAPELIST>
+      </MAPPINGTABLE></HEAD><BODY><SECTION Id="0"><P ParaShape="0"><TEXT CharShape="0"><CHAR>가</CHAR></TEXT></P></SECTION></BODY></HWPML>`);
+    function collect(value, found) {
+      if (Array.isArray(value)) { for (const item of value) collect(item, found); }
+      else if (value && typeof value === 'object') {
+        if (value.type === 'textRun' && value.text.includes('가')) found.push(value.paintTransform ?? null);
+        for (const [key, item] of Object.entries(value)) if (!['fontResources', 'resources', 'data'].includes(key)) collect(item, found);
+      }
+    }
+    const rows = [];
+    for (const printer of [2022, 2024]) for (const supply of ['missing', 'static', 'cff', 'variable']) {
+      for (const natural of [false, true]) {
+        const doc = new wasm.HwpDocument(source); const family = `RHWP Supplied Paint ${supply}`;
+        try {
+          doc.setHangul2024Compat(printer === 2024);
+          doc.setFontEnvironment(JSON.stringify({id: 'supplied-ttf-frame-contract', substitutions: {'휴먼명조': family},
+            trueTypeFaces: [family], preserveSourceMetrics: !natural}));
+          let supplied = 0;
+          if (supply !== 'missing') {
+            const bytes = programs[supply]; const face = new FontFace(family, bytes); await face.load(); document.fonts.add(face);
+            doc.registerTextFontGlyphCoverage(family, bytes, 0);
+            doc.prepareNativeOtfFonts(raw => {
+              const request = JSON.parse(raw);
+              if (!request.family.split(',').some(name => name.trim() === family)) return null;
+              supplied++; return bytes;
+            });
+          }
+          for (const profile of ['print', 'screen', 'high-quality']) {
+            const frames = []; collect(JSON.parse(doc.getPageLayerTreeWithProfile(0, profile)), frames);
+            const canvas = document.createElement('canvas'), context = canvas.getContext('2d'), observed = [];
+            const transform = context.transform.bind(context);
+            context.transform = (...matrix) => { observed.push(matrix); return transform(...matrix); };
+            doc.renderPageToCanvasFilteredWithProfile(0, canvas, 1, 'all', profile);
+            rows.push({printer, supply, natural, profile, supplied, frames, observed});
+          }
+        } finally { doc.free(); }
+      }
+    }
+    return rows;
+  });
+  assert.equal(rows.length, 48);
+  for (const row of rows) {
+    assert.ok(row.frames.length > 0, '실제 본문이 paint까지 발행되어야 한다');
+    assert.equal(row.supplied > 0, row.supply !== 'missing', '공급자 호출만이 아니라 실제 바이트 전달을 확인한다');
+    const expected = row.supply === 'static' && !row.natural && row.profile === 'print';
+    assert.ok(row.frames.every(frame => Boolean(frame) === expected), JSON.stringify(row));
+    if (expected) for (const frame of row.frames) {
+      const matrix = ['a', 'b', 'c', 'd', 'e', 'f'].map(key => frame[key]);
+      assert.ok(row.observed.some(actual => actual.every((value, i) => Math.abs(value - matrix[i]) <= 1e-6)),
+        'JSON 행렬의 소수 6자리 직렬화 정밀도 안에서 실제 Canvas가 같은 paint 프레임을 소비한다');
     }
   }
 });
