@@ -125,3 +125,12 @@ Python 공급기 보완 뒤에도 실제 Native 재출력은 굵은 압축체를
 `32ce8e6eca` Native의 작은 대조는 nested 16쪽·body-list·그림 각100.00%, 영월1쪽100.00%·3쪽99.98%다. 영월 Print SVG의 `누`와 바탕 본문에는 정밀 CTM이 여전히 없었고 현재 source y=963.5333은 sy를 적용하면 독립 PDF y≈962.4682와 일치한다. 원본 TTF text의 device 좌표와 도형 fill에 따른 기존 HFT Type3 그래픽 상태를 혼동해 TTF까지 정밀 좌표를 해제한 것이 남은 원인이다. 같은 비내장 source 자격을 사용하되 원래 TTF는 fill 뒤에도 정밀 text 프레임을 유지한다. HFT의 기존 fill 전/후 경계와 명시적 자연 프로그램 해제는 보존한다.
 
 영월의 바탕 본문도 PDF의 실제 Batang과 로컬 Windows Batang의 `누·+·＊·월·계` 윤곽·hmtx가 모두 같다. 이전 관측 설정의 Haansoft Batang과 구분해 두 원 프로그램 Gulim/Batang을 명시 공급한다. 현재 진단을 대상 PDF의 글리프를 추출한 대체 글꼴이나 수치 맞춤에 사용하지 않는다.
+
+
+### HWP 원문 유형과 실제 프로그램 종류의 분리 정정
+
+앞 절의 “원문 TTF”라는 표현은 HWPX 변환본의 표기를 읽은 것으로, HWP 원본의 유형 확정 근거가 아니므로 정정한다. 별도 원문 font-decision 조회에서 영월의 새굴림·바탕은 **altType=0, embedded=false, substFont=null**이다. HWP5 FACE_NAME 하위 비트를 TTF로 확정하지 않는 기존 `try_resolve_styles_for_document`의 표20 해석을 보존한다. 원문 유형을1로 바꾸거나 변환본의 기본 TTF 표기로 덮어쓰지 않는다.
+
+필요한 공통 결과는 기존 HFT 그래픽 프레임 자격과 별도의 `print_text_device_frame`이다. 명시적 HWPX TTF 슬롯은 초기값을 가지며 원 HWP5의 유형 미상 슬롯은 초기 TTF 자격을 얻지 않는다. `preserveSourceMetrics=true`로 실제 TTF를 선택한 세션만 프로그램의 text device 자격을 부여한다. 원문의 `source_font_is_ttf`는 변경하지 않는다. 자연 프로그램 선택·내장 원본의 기존 경계를 보존한다.
+
+`ResolvedCharStyle → 언어별 TextStyle → PagePaintContext → TextRun/GlyphRun/GlyphOutline/CharOverlap`이 같은 결과를 전달·소비한다. TTF text는 fill의 Type3 그래픽 상태와 분리하고 기존 HFT의 fill 전/후 경계는 유지한다. 합성 관계 검사는 유형 미상 원문→명시 세션 TTF→fill 뒤 paint까지 실행하며 원문 altType=0 보존도 확인한다. 실제 시각 수용은 프로그램 파일을 함께 공급한 전쪽 실행으로 별도 확인한다.

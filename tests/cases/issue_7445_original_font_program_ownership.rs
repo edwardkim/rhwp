@@ -140,6 +140,27 @@ fn declared_hft_display_substitution_keeps_its_print_frame_until_natural_program
         frames(&direct, true).iter().all(|frame| *frame),
         "TTF text 좌표는 fill 뒤에도 정밀 프레임을 보존"
     );
+    let mut unknown = core("Gulim", "검증", None);
+    let mut raw = unknown.document().clone();
+    for face in raw.doc_info.font_faces.iter_mut().flatten() {
+        face.alt_type = 0;
+    }
+    unknown.set_document(raw);
+    assert!(frames(&unknown, false).iter().all(|frame| !frame));
+    unknown.set_font_environment(Some(FontEnvironment::from_json(
+        r#"{"id":"verified-session-ttf","substitutions":{"Gulim":"Gulim"},"trueTypeFaces":["Gulim"],"preserveSourceMetrics":true}"#
+    ).unwrap())).unwrap();
+    assert!(frames(&unknown, true).iter().all(|frame| *frame));
+    assert!(
+        unknown
+            .document()
+            .doc_info
+            .font_faces
+            .iter()
+            .flatten()
+            .all(|face| face.alt_type == 0),
+        "세션 프로그램 선택은 원문 유형을 변경하지 않는다"
+    );
     let mut original_hft = core("한양신명조", "검증", None);
     let mut original = original_hft.document().clone();
     for face in original.doc_info.font_faces.iter_mut().flatten() {

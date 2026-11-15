@@ -63,6 +63,7 @@ pub(crate) fn try_resolve_styles_for_document<S: storage::Storage>(
         // rhwp가 변환한 문서는 명시적 type을 이 비트에 저장하므로 보존한다.
         for style in &mut styles.char_styles {
             style.font_families_source_ttf.fill(false);
+            style.font_families_print_text_device_frame.fill(false);
         }
     }
     if missing_fonts::missing_char_table(document) {
@@ -317,6 +318,14 @@ pub(crate) fn resolve_styles_with_environment(
                     {
                         style.font_families_hft_print_frame[lang] = true;
                     }
+                    // 유형 미상 원문도 명시 선택한 실제 TTF의 text 프레임을
+                    // 소유할 수 있다. 원문의 source_ttf는 변경하지 않는다.
+                    if preserve_source_metrics
+                        && original.embedded != Some(true)
+                        && environment.is_some_and(|env| env.selects_true_type(target))
+                    {
+                        style.font_families_print_text_device_frame[lang] = true;
+                    }
                     // 실제 원본 TTF를 조회해 인증한 family 별칭은 기존 폭 신뢰를
                     // 잃지 않는다. 대체 쿼리·HFT·다른 메트릭의 선택은 포함하지 않는다.
                     let verified_source_alias = original.substitution_boundary.is_none()
@@ -395,6 +404,7 @@ pub(crate) fn resolve_styles_with_environment(
                     // 자동 표시용 공급은 기존 인쇄 프레임을 그대로 소비한다.
                     if style.font_families_preserve_glyph_ink[lang] {
                         style.font_families_hft_print_frame[lang] = false;
+                        style.font_families_print_text_device_frame[lang] = false;
                     }
                     // 결측 글리프 체인만 추가한 세션은 원 face의 TTF/HFT 신뢰를 바꾸지 않는다.
                     if !keep_source_metrics && (explicit_true_type || explicit_replacement) {
@@ -834,6 +844,7 @@ pub(crate) fn try_resolve_single_char_style<A: storage::Storage>(
     let mut font_families_source_ttf = storage.vec(LANG_COUNT)?;
     let mut font_families_verified_hft_bold_tracking = storage.vec(LANG_COUNT)?;
     let mut font_families_hft_print_frame = storage.vec(LANG_COUNT)?;
+    let mut font_families_print_text_device_frame = storage.vec(LANG_COUNT)?;
     let mut font_families_hft_fullwidth_dot = storage.vec(LANG_COUNT)?;
     let mut font_families_metric_face: Vec<Option<String>> = storage.vec(LANG_COUNT)?;
     let mut font_families_original_glyph_metric_face = storage.vec(LANG_COUNT)?;
@@ -900,15 +911,17 @@ pub(crate) fn try_resolve_single_char_style<A: storage::Storage>(
         font_families_hft_hangul
             .push(decision.substitution_boundary == Some(FontSubstitutionBoundary::Hft));
         font_families_hft_fullwidth_dot.push(decision.alt_type == Some(2) && !substituted);
-        // 비내장 원본 TTF/HFT는 같은 Print device CTM을 소비한다.
-        // 표시 치환은 이 원점 계약을 바꾸지 않는다. HWP3의 유형 미상 HFT
-        // 추론도 기존처럼 보존하며 명시적 자연 프로그램 선택은 아래에서 해제한다.
+        // 원 HFT의 그래픽 프레임과 TTF text device 프레임을 분리한다.
+        // 표시 치환은 원문 유형을 바꾸지 않는다. HWP3의 유형 미상 HFT
+        // 추론도 보존하며 실제 세션 TTF 선택은 환경 적용 단계에서 해소한다.
         font_families_hft_print_frame.push(
-            source_font.is_some_and(|face| matches!(face.alt_type, 1 | 2) && !face.is_embedded)
+            source_font.is_some_and(|face| face.alt_type == 2 && !face.is_embedded)
                 || (decision.alt_type == Some(2)
                     && !substituted
                     && decision.embedded != Some(true)),
         );
+        font_families_print_text_device_frame
+            .push(source_font.is_some_and(|face| face.alt_type == 1 && !face.is_embedded));
         // [#7391] legacy-latin은 선언 face의 기존 표를 사용한다. HFT는
         // 프로그램 자체를 확인한 표만 사용하며 표시용 TTF와 구분한다.
         // HWP3 ASCII 반각 여부는 기존 문서의 저장 줄 증인이 계속 결정한다.
@@ -1043,6 +1056,7 @@ pub(crate) fn try_resolve_single_char_style<A: storage::Storage>(
         font_families_primary_program: vec![None; LANG_COUNT],
         font_families_verified_hft_bold_tracking,
         font_families_hft_print_frame,
+        font_families_print_text_device_frame,
         font_families_preserve_glyph_ink: vec![false; LANG_COUNT],
         font_families_natural_program_metrics: vec![false; LANG_COUNT],
         font_families_hft_fullwidth_dot,
