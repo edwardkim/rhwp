@@ -71,3 +71,27 @@ root `pkg`와 Studio `public`의 JS/WASM 해시 일치를 확인했다. Docker �
 제품 또는 회귀 기대값은 이 실행 환경 오류 때문에 바꾸지 않았다.
 
 [전50쪽 결과와 판독](../pr/assets/issue7732_split_span_20261115/whole-footnote-validation.json).
+
+## 현재 base f8234f6f의 검증 완료와 PR9088 선행 병합
+
+최소 글꼴 전체 회귀는13,567 PASS·0 FAIL·45 skip(테스트890.642초), Native Skia
+라이브러리4,034 PASS·12 ignore, 그림2 PASS, 직접 PDF36 PASS다. 필수 lint11단계 모두
+최종 exit0을 확인했다. 보호36조건3,542쪽의 상승·하락은 모두0쪽이며 필수 편람383쪽 gate도 PASS했다.
+[전체 Rust 실행](../pr/assets/issue7732_split_span_20261115/rust-validation.json)과
+[전쪽 보호 결과](../pr/assets/issue7732_split_span_20261115/protected-validation.json)를 보존한다.
+
+실제 설치 SFNT metadata/blob를 공급한 Local Font Access API adapter에서 Studio Canvas2D
+36·37·38쪽은99.75605·99.07736·99.57140%다. 실제 OS 열거 성공을 주장하지 않는다.
+같은 조건의 base37쪽98.52771%보다 개선했고36·38쪽은 같다. 초기 JS 응답의 Vite 소스맵에서
+WASM URL 재작성 한 곳을 복원하면 root JS와 바이트가 같고 초기 WASM 응답도 동결 package와 같다.
+
+추가 SVG 진단은 주의가 필요하다. 준비된 동일 프로그램의36쪽은 base/후보 모두88.253%로
+기존 미달이고37쪽은89.97757%→90.23439%,38쪽은91.98205% 유지다. CanvasKit 요청6건은
+실제 Canvas2D fallback이므로 CK PASS가 아니다. 같은 프로그램을 준비하지 않은 별도 SVG
+진단89.89609/89.445%와 검증 모듈 공급·portable metric 선택 오류도 로그를 보존했다.
+이 결과를 숨기거나 문턱을 바꾸지 않는다. [소비 경로 판정](../pr/assets/issue7732_split_span_20261115/consumer-validation-before-rebase.json).
+
+사용자는 PR 제출을 보류하고 #9088 병합 뒤 리베이스하도록 지시했다. #9088의 실제 병합
+`e7ee272cfa33a960b0d0d924983d29e6509903e0`을 확인했다. 그 PR은 인쇄/글꼴 소비 경로와
+보호 기준30행을 바꾸므로 위 결과를 새 source의 결과로 바꾸어 쓰지 않는다. 현재 기록을
+커밋하고 리베이스·영향 확인 후 준비 범위까지만 진행하며 원격 push·PR 생성·댓글·merge는 하지 않는다.
