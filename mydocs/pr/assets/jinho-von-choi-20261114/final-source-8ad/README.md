@@ -1,6 +1,6 @@
 # JinHo-von-Choi 3건의 최종 로컬 검증
 
-제품 source는 `8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992`다.
+Rust 제품 source는 `8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992`다.
 최신 base는 `2d83fa4c8a5ed3513afcde26367fb5ffebeb294c`이며, 실제 비교용으로 빌드한
 `e7ee272cfa33a960b0d0d924983d29e6509903e0`와 제품·시각 harness가 같다.
 [실제 source 대응](source-equivalence.json), [Native](native-producer.json)·[최적화 WASM](wasm-producer.json)의
@@ -55,3 +55,9 @@ Windows의 Hwp.exe·COM·인쇄 자동화는 실행하지 않았다.
 ## PR 본문의 원본 TSV·대표 이미지
 
 [문서별 원본 TSV 인덱스](tsv-original-index.json)는 base/후보·Native/WASM의 파일별 SHA-256·바이트 수와 경로를 제공한다. 이미 생성된 silhouette.tsv는 바이트 그대로 보존했고, full 모드만 기존 실제 페이지 metric JSON을 같은 공식 다섯 열·정밀도로 내보냈다. [네 개의 전쪽 통합 TSV 인덱스](aggregate-tsv-index.json)도 역할·문서·쪽을 구분해 원 열을 유지한다. [대표 review·standalone overlay](representatives/receipts.json)는 같은 실제 PNG 쌍에 canonical 함수를 적용한 결과이며 새 렌더나 마스크 변경을 뜻하지 않는다.
+
+## 제출 중 최신 devel 반영
+
+#9093의 Studio 글꼴 별칭 변경을 `1805d8f08c`에서 로컬로 병합하고 새 경로를 실제 브라우저로 재검증했다.
+앞선 `2d83fa4c8a` 비교 기록은 그 실행 시점의 근거이며, 현재 base와의 대응·새 검증은
+[추가 검증 원장](incoming9093/README.md)을 따른다. 후보 Studio 전체 결과는 2,798 PASS·2 기존 SKIP이다.

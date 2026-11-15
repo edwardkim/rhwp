@@ -1,14 +1,14 @@
 # PR #9071 메인테이너 검토
 
-## 2026-11-15 최종 로컬 판정
+## 최종 판정
 
-**메인테이너 보완 후 수용 가능.** 기존 보호값·영문 스타일·그림 외곽의 차이를 예외 없이 보완했다.
+**메인터너 보정 후 수용 가능.** 기존 보호값·영문 스타일·그림 외곽의 차이를 예외 없이 보완했다.
 제품 source는 `8ad1c5c08a`, 최신 base는 `2d83fa4c8a`이며 실제 비교용 `e7ee272cfa`와 제품·시각 harness가 같다.
 전체 회귀 13,608건·Native 공식 4,073건·모든 lint와 필수 편람 gate를 통과했다.
 Native/fresh WASM 보호 각 1,771쪽·3,542행의 공식값 하락은 0건이며 상승 19행을 새 하한에 반영했다.
 원 사례·대조군 각 134쪽의 최저는 93.31%·92.35%다. 직접 확대 판독·최신 base 전쪽 비교도 완료했다.
 [최종 검증·생산자·전쪽 TSV](assets/jinho-von-choi-20261114/final-source-8ad/README.md).
-원격 push·새 PR·공개 review/comment·merge·issue close는 아직 수행하지 않았다.
+사용자 승인 후 [수용 PR #9096](https://github.com/edwardkim/rhwp/pull/9096)을 생성했다. 공개 최종 review·merge·issue close는 최신 head CI 확인 뒤 진행한다.
 
 작성자 JinHo-von-Choi, 원 head `a1bd3fa4edb8bb79c0ae312166358b6be299e5d0`. reviewer `edwardkim`이며 원 commit을 보존했다. 원 이슈는 #7631·#8318·#9046·#9049이고 추가 보완의 같은 원 신고는 #8307이다. 라우팅은 [검토 계획](jinho_von_choi_20261114_review_plan.md)과 공통 원장에 기록한다.
 
@@ -45,3 +45,7 @@ RowBreak 14쪽씩도 실제 source로 대조했다. 원 사례와 추가 문서�
 보존했다. 과거 실패를 지우거나 과거 통과 수를 최종 검증에 합산하지 않는다.
 현재 다음 조건은 준비한 upstream 수용 PR 경로의 원격 승인, 해당 최신 head CI·self-review·merge다.
 원 기여 SHA와 fork branch를 보존하고 연결 이슈는 각 검증 범위에 맞게 후속 처리한다.
+
+## 제출 중 최신 devel 재검증
+
+#9093을 포함한 `1805d8f08c`를 로컬 후보에 병합했다. [실제 Studio 기능 보존](assets/jinho-von-choi-20261114/final-source-8ad/incoming9093/README.md)에서 양쪽 12개 조합이 같고 후보 전체 2,798건·브라우저 26건이 통과했다. Rust·독립 시각 검증 경로는 바뀌지 않았다.
