@@ -4652,6 +4652,9 @@ enum FrameStart {
     SourceUtf16(u32),
 }
 
+/// "한 줄로 입력" 문단의 줄 채움 폭. 어떤 글도 넘지 않을 만큼 크고 HWPUNIT 환산에서 넘치지 않는다.
+const UNBROKEN_LINE_WIDTH_PX: f64 = 1.0e6;
+
 fn try_layout_paragraph_in_frame_impl<S: Storage>(
     para: &Paragraph,
     frame: &mut LayoutFrame,
@@ -4997,7 +5000,15 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
                     .then_some(terminal_inline_spacing_height)
                     .flatten();
                 let mut row_terminated = false;
+                // "한 줄로 입력" 문단은 글이 구간 폭을 넘어도 줄을 나누지 않는다.
+                let line_wrap_squeeze = styles
+                    .para_styles
+                    .get(para.para_shape_id as usize)
+                    .is_some_and(|style| style.line_wrap_squeeze);
                 let interval_width = |index: usize, interval: &std::ops::Range<i32>| {
+                    if line_wrap_squeeze {
+                        return UNBROKEN_LINE_WIDTH_PX;
+                    }
                     let width = crate::renderer::hwpunit_to_px(
                         interval.end.saturating_sub(interval.start),
                         dpi,
@@ -6205,6 +6216,13 @@ fn try_reflow_line_segs_impl<S: Storage>(
     };
     let (marker_hang_px, indent_px) = list_marker_breaker_box(para, styles, indent_px);
     let available_width_px = (paragraph_box.width_px(dpi) - marker_hang_px).max(1.0);
+    // "한 줄로 입력" 문단은 글이 폭을 넘어도 줄을 나누지 않는다.
+    let line_wrap_squeeze = para_style.is_some_and(|style| style.line_wrap_squeeze);
+    let available_width_px = if line_wrap_squeeze {
+        UNBROKEN_LINE_WIDTH_PX
+    } else {
+        available_width_px
+    };
 
     if !split_stale_cell_reflow
         && (supports_inline_picture_frame_controls(para)

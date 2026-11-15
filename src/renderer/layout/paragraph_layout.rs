@@ -7643,7 +7643,12 @@ impl LayoutEngine {
                                     <= effective_col_w + 2.0
                         })
                 });
+            // 문단 「한 줄로 입력」은 줄을 나누지 않고 자간을 좁혀 한 줄에 담는다.
+            // 한 줄로 조합된 이 문단의 넘침은 잘라낼 내용이 아니라 좁힐 대상이다.
+            let line_wrap_squeeze = composed.lines.len() == 1
+                && para_style.is_some_and(|style| style.line_wrap_squeeze);
             let suppress_cell_overflow_spacing = cell_ctx.is_some()
+                && !line_wrap_squeeze
                 && total_text_width > available_width * 1.15
                 && !stored_single_line_fits_cell
                 && !stored_ladder_fits_frame;
