@@ -100,3 +100,10 @@ Python 공급기 보완 뒤에도 실제 Native 재출력은 굵은 압축체를
 보완은 원래 비내장 HFT 슬롯이 소유한 프레임을 표시 치환과 분리해 보존한다. 명시적 자연 프로그램 선택은 기존 환경 적용 단계에서 계속 프레임을 해제하며 원래 TTF 슬롯·내장 글꼴은 새로 활성화하지 않는다. 직전 `19f0847829`와 `2e262d0d4b`의 공통 프레임·원본 메트릭 보존 계약을 대조했다. 실제 원본 전쪽 재출력과 소유 관계 검사를 완료하기 전 통과로 판정하지 않는다.
 
 추가 글꼴 공급 근거도 대상 PDF에서 추출한 윤곽을 재료로 사용하지 않았다. 로컬 SPMJ의 원래 U+2013 윤곽·1000em 전진은 독립 Print의 T6과 경로 방향/시작점만 다르며 같은 모든 선분이다. 원문의 기호 슬롯 HFT 한양신명조에 없는 글리프는 이 실제 Myeongjo 프로그램을, HCI Poppy에 없는 가운데점은 원문 기호 슬롯의 HY Sinmyeongjo를 사용하도록 명시한다. 영월 Print의 New Gulim은 실제 제공 Gulim의 네 표본 glyph 윤곽·hmtx가 모두 같고 Malgun Gothic과 다르므로 확인된 원 프로그램을 공급한다. 설정·프로그램·전체 쪽 결과를 최종 증거에 보존한다.
+
+
+### 종이 기준 개체의 선행 정렬까지 연결
+
+첫 `7bac062a66`은 Column의 `paint_order::children`만 보완했다. 최적화 WASM `f39e2f3b87`의 실제 Canvas는 여전히 두 그림 모두 `strokeRect → drawImage`, raw 94.65%였다. 따라서 첫 보완을 완료로 인정하지 않는다. 실제 tree에서는 bitmap·border의 layer가 이미 같으며, 더 앞의 `LayoutEngine::sort_paper_render_nodes`가 doc_path 없는 외곽을 owner보다 먼저 정렬한 것이 확인됐다. Column에 도달하기 전 원래 순서를 잃으므로 안정 정렬만으로 되돌릴 수 없었다.
+
+공통 `paint_order::sibling_keys`가 같은 부모의 `image_frame_owner`에 해당하는 Image 키를 선택하고, Column paint 정렬과 종이 기준 `sort_paper_render_nodes`가 이 결과를 함께 사용하게 한다. 각 경로의 기존 plane/z-order/문서 주소 계산은 그대로 쓰며 picture_border가 아닌 도형과 실제 owner 없는 노드는 자기 키를 유지한다. `layout append → paper 정렬 → Column 소비 → LayerBuilder → 실제 replay` 전체 경로를 새 출력과 실제 PaintOp 순서로 재검증한다.

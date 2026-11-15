@@ -4727,7 +4727,9 @@ impl LayoutEngine {
     }
 
     fn sort_paper_render_nodes(paper_images: &mut [RenderNode]) {
-        paper_images.sort_by_key(Self::paper_node_sort_key);
+        let keys =
+            crate::renderer::paint_order::sibling_keys(paper_images, Self::paper_node_sort_key);
+        paper_images.sort_by_key(|node| keys[&node.id].clone());
     }
 
     /// 빈 줄 감추기 문단 집합 설정
