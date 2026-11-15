@@ -34,6 +34,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `bridge-lifecycle.test.mjs` | 상시 | active | Studio Bridge — 부모 페이지에서 createStudio 로 chrome·커맨드·hwpctrl 제어와 destroy 회수 | table-001.hwp | npm e2e:bridge |  |
 | `bridge-perf.test.mjs` | 상시 | active | 브리지 성능 게이트 — 배치 RPC 1왕복·배치 이득·undo 1스텝·수명 잔여 (계획서 §6) | table-001.hwp | npm e2e:bridge-perf |  |
 | `canvas-render-diff.test.mjs` | 상시 | active | Browser canvas visual diff between the legacy PageRenderTree path  | — | npm+CI |  |
+| `canvas-font-alias-issue9077.test.mjs` | 상시 | active | #9077 미공급/공급된 TTF·intrinsic 별칭의 실제 Studio font setter·measureText·fillText 선택 | 라이선스 확인 RHWPHostFixture TTF | npm e2e:issue-9077 | 웹/로컬 공급을 원시 Canvas와 픽셀·폭 비교; 문서 조판 golden 아님 |
 | `canvas-metric-recovery.test.mjs` | 상시 | active | #7084 실제 CanvasView descriptor 오류의 1회 자동 복구·지속 오류 제한·오래된 view 거부·일반 오류 분리 | issue3587/c-form-labnote-001-stage11-filled.hwp/.hwpx | npm e2e:canvas-metric-recovery | 통제 오류 주입, 자연 발생 폰트 장애와 구분 |
 | `canvaskit-font-coverage.test.mjs` | 상시 | active | CanvasKit 번들 폰트와 exact TTC GlyphRun 등록/픽셀 replay 검증 | — | npm+CI |  |
 | `canvaskit-font-preparation-issue7688.test.mjs` | 상시 | active | #7688 명시 CanvasKit의 문서 글꼴 준비·Regular/Bold 실제 outline 선택·자원 실패 Canvas2D fallback | group-drawing-02.hwp, 번들 NotoSerifKR | npm e2e:issue-7688-fonts | software surface, 두 face 공급 순서와 screen/print 대조 |
