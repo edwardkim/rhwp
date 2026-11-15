@@ -1,0 +1,2646 @@
+{
+  "recorded_at": "2026-11-15T21:58:02.761989+09:00",
+  "pr": 9093,
+  "code_head": "f68c4d9bd7d3f037f43e1820e49783af6b979479",
+  "checks": [
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:25:20Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738346/job/132810689874",
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "startedAt": "2026-11-15T12:25:14Z",
+      "status": "COMPLETED",
+      "workflowName": "Adapter inter-diff"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:25:19Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132810690696",
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "startedAt": "2026-11-15T12:25:14Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:25:24Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738349/job/132810692229",
+      "name": "Evaluate trusted CI impact policy",
+      "startedAt": "2026-11-15T12:25:15Z",
+      "status": "COMPLETED",
+      "workflowName": "CI Impact Policy Controller"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:25:18Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738307/job/132810689981",
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "startedAt": "2026-11-15T12:25:14Z",
+      "status": "COMPLETED",
+      "workflowName": "CodeQL"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:25:20Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738309/job/132810690004",
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "startedAt": "2026-11-15T12:25:15Z",
+      "status": "COMPLETED",
+      "workflowName": "Proptest roundtrip"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:25:24Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738324/job/132810689805",
+      "name": "Render Diff preflight",
+      "startedAt": "2026-11-15T12:25:14Z",
+      "status": "COMPLETED",
+      "workflowName": "Render Diff"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:25:12Z",
+      "conclusion": "SKIPPED",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132810692482",
+      "name": "WASM Build",
+      "startedAt": "2026-11-15T12:25:13Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:25:58Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738346/job/132810726037",
+      "name": "adapter inter-diff preflight",
+      "startedAt": "2026-11-15T12:25:23Z",
+      "status": "COMPLETED",
+      "workflowName": "Adapter inter-diff"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:26:44Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738307/job/132810718737",
+      "name": "CodeQL preflight",
+      "startedAt": "2026-11-15T12:25:21Z",
+      "status": "COMPLETED",
+      "workflowName": "CodeQL"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:25:58Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738309/job/132810726493",
+      "name": "Proptest preflight",
+      "startedAt": "2026-11-15T12:25:23Z",
+      "status": "COMPLETED",
+      "workflowName": "Proptest roundtrip"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:56:28Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738324/job/132810741504",
+      "name": "Canvas visual diff",
+      "startedAt": "2026-11-15T12:25:26Z",
+      "status": "COMPLETED",
+      "workflowName": "Render Diff"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:33:40Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738346/job/132810893112",
+      "name": "adapter inter-diff",
+      "startedAt": "2026-11-15T12:26:01Z",
+      "status": "COMPLETED",
+      "workflowName": "Adapter inter-diff"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:26:44Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132810719822",
+      "name": "CI preflight",
+      "startedAt": "2026-11-15T12:25:21Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:33:04Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738307/job/132811083787",
+      "name": "Analyze (javascript-typescript)",
+      "startedAt": "2026-11-15T12:26:47Z",
+      "status": "COMPLETED",
+      "workflowName": "CodeQL"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:34:52Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738309/job/132810892101",
+      "name": "prop roundtrip",
+      "startedAt": "2026-11-15T12:26:00Z",
+      "status": "COMPLETED",
+      "workflowName": "Proptest roundtrip"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:26:51Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738307/job/132811083893",
+      "name": "Analyze (python)",
+      "startedAt": "2026-11-15T12:26:47Z",
+      "status": "COMPLETED",
+      "workflowName": "CodeQL"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:26:51Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738307/job/132811083844",
+      "name": "Analyze (rust)",
+      "startedAt": "2026-11-15T12:26:47Z",
+      "status": "COMPLETED",
+      "workflowName": "CodeQL"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:26:49Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738307/job/132811083862",
+      "name": "Analyze (actions)",
+      "startedAt": "2026-11-15T12:26:46Z",
+      "status": "COMPLETED",
+      "workflowName": "CodeQL"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:26:44Z",
+      "conclusion": "SKIPPED",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086217",
+      "name": "release-operations-contracts",
+      "startedAt": "2026-11-15T12:26:45Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:26:44Z",
+      "conclusion": "SKIPPED",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086362",
+      "name": "native-host-package",
+      "startedAt": "2026-11-15T12:26:45Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:26:44Z",
+      "conclusion": "SKIPPED",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811085927",
+      "name": "Resolve nextest target duration policy",
+      "startedAt": "2026-11-15T12:26:45Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:26:44Z",
+      "conclusion": "SKIPPED",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086086",
+      "name": "build-test-archive-a",
+      "startedAt": "2026-11-15T12:26:45Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:26:44Z",
+      "conclusion": "SKIPPED",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086140",
+      "name": "Lint (fmt, clippy, WASM check)",
+      "startedAt": "2026-11-15T12:26:45Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:26:44Z",
+      "conclusion": "SKIPPED",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086133",
+      "name": "Native Skia tests",
+      "startedAt": "2026-11-15T12:26:45Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:26:44Z",
+      "conclusion": "SKIPPED",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086227",
+      "name": "Frontend unit gates",
+      "startedAt": "2026-11-15T12:26:45Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:41:54Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811084807",
+      "name": "Frontend package gates",
+      "startedAt": "2026-11-15T12:26:46Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:26:44Z",
+      "conclusion": "SKIPPED",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086375",
+      "name": "Workflow promotion preflight",
+      "startedAt": "2026-11-15T12:26:45Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:26:44Z",
+      "conclusion": "SKIPPED",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086172",
+      "name": "build-test-archive-b",
+      "startedAt": "2026-11-15T12:26:45Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:26:44Z",
+      "conclusion": "SKIPPED",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086555",
+      "name": "build-test-archive-c",
+      "startedAt": "2026-11-15T12:26:45Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:26:44Z",
+      "conclusion": "SKIPPED",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086364",
+      "name": "build-test-archive-d",
+      "startedAt": "2026-11-15T12:26:45Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:26:44Z",
+      "conclusion": "SKIPPED",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086008",
+      "name": "build-test-archive-e",
+      "startedAt": "2026-11-15T12:26:45Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:26:44Z",
+      "conclusion": "SKIPPED",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086171",
+      "name": "test-archive-a-shard-1",
+      "startedAt": "2026-11-15T12:26:45Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:26:44Z",
+      "conclusion": "SKIPPED",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086703",
+      "name": "test-archive-b-shard-1",
+      "startedAt": "2026-11-15T12:26:45Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:26:44Z",
+      "conclusion": "SKIPPED",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086244",
+      "name": "test-archive-c-shard-1",
+      "startedAt": "2026-11-15T12:26:45Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:26:44Z",
+      "conclusion": "SKIPPED",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086304",
+      "name": "test-archive-d-shard-1",
+      "startedAt": "2026-11-15T12:26:45Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:26:44Z",
+      "conclusion": "SKIPPED",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086623",
+      "name": "test-archive-e-shard-1",
+      "startedAt": "2026-11-15T12:26:45Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:42:04Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132814991445",
+      "name": "Build & Test",
+      "startedAt": "2026-11-15T12:41:58Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-15T12:32:57Z",
+      "conclusion": "NEUTRAL",
+      "detailsUrl": "https://github.com/edwardkim/rhwp/runs/132812698485",
+      "name": "CodeQL",
+      "startedAt": "2026-11-15T12:32:54Z",
+      "status": "COMPLETED",
+      "workflowName": ""
+    },
+    {
+      "__typename": "StatusContext",
+      "context": "CI Impact Policy",
+      "startedAt": "2026-11-15T12:56:43Z",
+      "state": "SUCCESS",
+      "targetUrl": "https://github.com/edwardkim/rhwp/actions/runs/43716389807"
+    }
+  ],
+  "runs": [
+    {
+      "attempt": 1,
+      "conclusion": "success",
+      "databaseId": 43713738530,
+      "headSha": "f68c4d9bd7d3f037f43e1820e49783af6b979479",
+      "jobs": [
+        {
+          "completedAt": "2026-11-15T12:25:19Z",
+          "conclusion": "success",
+          "databaseId": 132810690696,
+          "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+          "startedAt": "2026-11-15T12:25:14Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-11-15T12:25:16Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-11-15T12:25:15Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:16Z",
+              "conclusion": "success",
+              "name": "Default to full verification",
+              "number": 2,
+              "startedAt": "2026-11-15T12:25:16Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:16Z",
+              "conclusion": "success",
+              "name": "Capture PR merge-tree evidence",
+              "number": 3,
+              "startedAt": "2026-11-15T12:25:16Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:17Z",
+              "conclusion": "success",
+              "name": "Upload PR merge-tree evidence",
+              "number": 4,
+              "startedAt": "2026-11-15T12:25:16Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:17Z",
+              "conclusion": "skipped",
+              "name": "Resolve trusted source base parent",
+              "number": 5,
+              "startedAt": "2026-11-15T12:25:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:17Z",
+              "conclusion": "skipped",
+              "name": "Checkout trusted verifier",
+              "number": 6,
+              "startedAt": "2026-11-15T12:25:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:17Z",
+              "conclusion": "skipped",
+              "name": "Evaluate exact PR workflow evidence",
+              "number": 7,
+              "startedAt": "2026-11-15T12:25:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:17Z",
+              "conclusion": "skipped",
+              "name": "Publish validated Archive B duration measurement",
+              "number": 8,
+              "startedAt": "2026-11-15T12:25:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:17Z",
+              "conclusion": "skipped",
+              "name": "Publish validated Archive C duration measurement",
+              "number": 9,
+              "startedAt": "2026-11-15T12:25:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:17Z",
+              "conclusion": "skipped",
+              "name": "Publish validated Archive D duration measurement",
+              "number": 10,
+              "startedAt": "2026-11-15T12:25:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:17Z",
+              "conclusion": "skipped",
+              "name": "Publish validated Archive E duration measurement",
+              "number": 11,
+              "startedAt": "2026-11-15T12:25:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:17Z",
+              "conclusion": "success",
+              "name": "Finalize reuse after validated evidence publication",
+              "number": 12,
+              "startedAt": "2026-11-15T12:25:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:17Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 13,
+              "startedAt": "2026-11-15T12:25:17Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132810690696"
+        },
+        {
+          "completedAt": "2026-11-15T12:25:12Z",
+          "conclusion": "skipped",
+          "databaseId": 132810692482,
+          "name": "WASM Build",
+          "startedAt": "2026-11-15T12:25:13Z",
+          "status": "completed",
+          "steps": [],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132810692482"
+        },
+        {
+          "completedAt": "2026-11-15T12:26:44Z",
+          "conclusion": "success",
+          "databaseId": 132810719822,
+          "name": "CI preflight",
+          "startedAt": "2026-11-15T12:25:21Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-11-15T12:25:23Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-11-15T12:25:22Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:23Z",
+              "conclusion": "success",
+              "name": "Select test profile policy",
+              "number": 2,
+              "startedAt": "2026-11-15T12:25:23Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:40Z",
+              "conclusion": "success",
+              "name": "Detect review-only fast pass",
+              "number": 3,
+              "startedAt": "2026-11-15T12:25:23Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:40Z",
+              "conclusion": "skipped",
+              "name": "Check out current-base merge tree inputs",
+              "number": 4,
+              "startedAt": "2026-11-15T12:26:40Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:40Z",
+              "conclusion": "skipped",
+              "name": "Verify current-base merge tree",
+              "number": 5,
+              "startedAt": "2026-11-15T12:26:40Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:40Z",
+              "conclusion": "success",
+              "name": "Finalize review-only fast pass",
+              "number": 6,
+              "startedAt": "2026-11-15T12:26:40Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:41Z",
+              "conclusion": "success",
+              "name": "Check out trusted CI impact classifier",
+              "number": 7,
+              "startedAt": "2026-11-15T12:26:40Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:42Z",
+              "conclusion": "success",
+              "name": "Collect CI impact input",
+              "number": 8,
+              "startedAt": "2026-11-15T12:26:41Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:42Z",
+              "conclusion": "success",
+              "name": "Classify CI impact",
+              "number": 9,
+              "startedAt": "2026-11-15T12:26:42Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:42Z",
+              "conclusion": "success",
+              "name": "Summarize CI impact classification",
+              "number": 10,
+              "startedAt": "2026-11-15T12:26:42Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:42Z",
+              "conclusion": "success",
+              "name": "Post Check out trusted CI impact classifier",
+              "number": 20,
+              "startedAt": "2026-11-15T12:26:42Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:43Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 21,
+              "startedAt": "2026-11-15T12:26:42Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132810719822"
+        },
+        {
+          "completedAt": "2026-11-15T12:41:54Z",
+          "conclusion": "success",
+          "databaseId": 132811084807,
+          "name": "Frontend package gates",
+          "startedAt": "2026-11-15T12:26:46Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-11-15T12:26:48Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-11-15T12:26:47Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:30:53Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-11-15T12:26:48Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:30:53Z",
+              "conclusion": "success",
+              "name": "Free disk space (remove unused pre-installed toolchains)",
+              "number": 3,
+              "startedAt": "2026-11-15T12:30:53Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:31:02Z",
+              "conclusion": "success",
+              "name": "Install Rust toolchain",
+              "number": 4,
+              "startedAt": "2026-11-15T12:30:53Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:31:02Z",
+              "conclusion": "success",
+              "name": "Install wasm-pack",
+              "number": 5,
+              "startedAt": "2026-11-15T12:31:02Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:31:07Z",
+              "conclusion": "success",
+              "name": "Restore frontend WASM cargo cache",
+              "number": 6,
+              "startedAt": "2026-11-15T12:31:02Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:34:07Z",
+              "conclusion": "success",
+              "name": "Build fresh WASM package for frontend gates",
+              "number": 7,
+              "startedAt": "2026-11-15T12:31:07Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:34:08Z",
+              "conclusion": "success",
+              "name": "Set up Node.js",
+              "number": 8,
+              "startedAt": "2026-11-15T12:34:07Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:34:21Z",
+              "conclusion": "success",
+              "name": "Install frontend package dependencies",
+              "number": 9,
+              "startedAt": "2026-11-15T12:34:08Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:34:50Z",
+              "conclusion": "success",
+              "name": "Verify WASM bindings and editor embed contract",
+              "number": 10,
+              "startedAt": "2026-11-15T12:34:21Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:35:03Z",
+              "conclusion": "success",
+              "name": "Verify build dependency compatibility",
+              "number": 11,
+              "startedAt": "2026-11-15T12:34:50Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:35:04Z",
+              "conclusion": "success",
+              "name": "Run editor package tests when declared",
+              "number": 12,
+              "startedAt": "2026-11-15T12:35:03Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:35:04Z",
+              "conclusion": "success",
+              "name": "Run shared and extension service worker tests",
+              "number": 13,
+              "startedAt": "2026-11-15T12:35:04Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:35:05Z",
+              "conclusion": "success",
+              "name": "Run Chrome extension options UI tests",
+              "number": 14,
+              "startedAt": "2026-11-15T12:35:04Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:35:46Z",
+              "conclusion": "success",
+              "name": "Run Studio unit tests",
+              "number": 15,
+              "startedAt": "2026-11-15T12:35:05Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:35:46Z",
+              "conclusion": "success",
+              "name": "Install headless Chrome",
+              "number": 16,
+              "startedAt": "2026-11-15T12:35:46Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:37:19Z",
+              "conclusion": "success",
+              "name": "Validate Visual Sweep Canvas font binding",
+              "number": 17,
+              "startedAt": "2026-11-15T12:35:46Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:39:03Z",
+              "conclusion": "success",
+              "name": "Run undo depth measurement gate (#5769)",
+              "number": 18,
+              "startedAt": "2026-11-15T12:37:19Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:41:27Z",
+              "conclusion": "success",
+              "name": "Run Studio responsive toolbar gate (#6118,",
+              "number": 19,
+              "startedAt": "2026-11-15T12:39:03Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:41:32Z",
+              "conclusion": "success",
+              "name": "Build Studio",
+              "number": 20,
+              "startedAt": "2026-11-15T12:41:27Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:41:38Z",
+              "conclusion": "success",
+              "name": "Build browser extensions",
+              "number": 21,
+              "startedAt": "2026-11-15T12:41:32Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:41:38Z",
+              "conclusion": "success",
+              "name": "Verify extension distributions",
+              "number": 22,
+              "startedAt": "2026-11-15T12:41:38Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:41:51Z",
+              "conclusion": "success",
+              "name": "Compile VS Code extension",
+              "number": 23,
+              "startedAt": "2026-11-15T12:41:38Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:41:51Z",
+              "conclusion": "success",
+              "name": "Verify VS Code webview outline keyboard contract",
+              "number": 24,
+              "startedAt": "2026-11-15T12:41:51Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:41:52Z",
+              "conclusion": "success",
+              "name": "Verify font asset contracts",
+              "number": 25,
+              "startedAt": "2026-11-15T12:41:51Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:41:52Z",
+              "conclusion": "skipped",
+              "name": "Save frontend WASM cargo cache",
+              "number": 26,
+              "startedAt": "2026-11-15T12:41:52Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:41:53Z",
+              "conclusion": "success",
+              "name": "Post Set up Node.js",
+              "number": 51,
+              "startedAt": "2026-11-15T12:41:52Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:41:53Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 52,
+              "startedAt": "2026-11-15T12:41:53Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:41:53Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 53,
+              "startedAt": "2026-11-15T12:41:53Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811084807"
+        },
+        {
+          "completedAt": "2026-11-15T12:26:44Z",
+          "conclusion": "skipped",
+          "databaseId": 132811085927,
+          "name": "Resolve nextest target duration policy",
+          "startedAt": "2026-11-15T12:26:45Z",
+          "status": "completed",
+          "steps": [],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811085927"
+        },
+        {
+          "completedAt": "2026-11-15T12:26:44Z",
+          "conclusion": "skipped",
+          "databaseId": 132811086008,
+          "name": "build-test-archive-e",
+          "startedAt": "2026-11-15T12:26:45Z",
+          "status": "completed",
+          "steps": [],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086008"
+        },
+        {
+          "completedAt": "2026-11-15T12:26:44Z",
+          "conclusion": "skipped",
+          "databaseId": 132811086086,
+          "name": "build-test-archive-a",
+          "startedAt": "2026-11-15T12:26:45Z",
+          "status": "completed",
+          "steps": [],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086086"
+        },
+        {
+          "completedAt": "2026-11-15T12:26:44Z",
+          "conclusion": "skipped",
+          "databaseId": 132811086133,
+          "name": "Native Skia tests",
+          "startedAt": "2026-11-15T12:26:45Z",
+          "status": "completed",
+          "steps": [],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086133"
+        },
+        {
+          "completedAt": "2026-11-15T12:26:44Z",
+          "conclusion": "skipped",
+          "databaseId": 132811086140,
+          "name": "Lint (fmt, clippy, WASM check)",
+          "startedAt": "2026-11-15T12:26:45Z",
+          "status": "completed",
+          "steps": [],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086140"
+        },
+        {
+          "completedAt": "2026-11-15T12:26:44Z",
+          "conclusion": "skipped",
+          "databaseId": 132811086171,
+          "name": "test-archive-a-shard-1",
+          "startedAt": "2026-11-15T12:26:45Z",
+          "status": "completed",
+          "steps": [],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086171"
+        },
+        {
+          "completedAt": "2026-11-15T12:26:44Z",
+          "conclusion": "skipped",
+          "databaseId": 132811086172,
+          "name": "build-test-archive-b",
+          "startedAt": "2026-11-15T12:26:45Z",
+          "status": "completed",
+          "steps": [],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086172"
+        },
+        {
+          "completedAt": "2026-11-15T12:26:44Z",
+          "conclusion": "skipped",
+          "databaseId": 132811086217,
+          "name": "release-operations-contracts",
+          "startedAt": "2026-11-15T12:26:45Z",
+          "status": "completed",
+          "steps": [],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086217"
+        },
+        {
+          "completedAt": "2026-11-15T12:26:44Z",
+          "conclusion": "skipped",
+          "databaseId": 132811086227,
+          "name": "Frontend unit gates",
+          "startedAt": "2026-11-15T12:26:45Z",
+          "status": "completed",
+          "steps": [],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086227"
+        },
+        {
+          "completedAt": "2026-11-15T12:26:44Z",
+          "conclusion": "skipped",
+          "databaseId": 132811086244,
+          "name": "test-archive-c-shard-1",
+          "startedAt": "2026-11-15T12:26:45Z",
+          "status": "completed",
+          "steps": [],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086244"
+        },
+        {
+          "completedAt": "2026-11-15T12:26:44Z",
+          "conclusion": "skipped",
+          "databaseId": 132811086304,
+          "name": "test-archive-d-shard-1",
+          "startedAt": "2026-11-15T12:26:45Z",
+          "status": "completed",
+          "steps": [],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086304"
+        },
+        {
+          "completedAt": "2026-11-15T12:26:44Z",
+          "conclusion": "skipped",
+          "databaseId": 132811086362,
+          "name": "native-host-package",
+          "startedAt": "2026-11-15T12:26:45Z",
+          "status": "completed",
+          "steps": [],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086362"
+        },
+        {
+          "completedAt": "2026-11-15T12:26:44Z",
+          "conclusion": "skipped",
+          "databaseId": 132811086364,
+          "name": "build-test-archive-d",
+          "startedAt": "2026-11-15T12:26:45Z",
+          "status": "completed",
+          "steps": [],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086364"
+        },
+        {
+          "completedAt": "2026-11-15T12:26:44Z",
+          "conclusion": "skipped",
+          "databaseId": 132811086375,
+          "name": "Workflow promotion preflight",
+          "startedAt": "2026-11-15T12:26:45Z",
+          "status": "completed",
+          "steps": [],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086375"
+        },
+        {
+          "completedAt": "2026-11-15T12:26:44Z",
+          "conclusion": "skipped",
+          "databaseId": 132811086555,
+          "name": "build-test-archive-c",
+          "startedAt": "2026-11-15T12:26:45Z",
+          "status": "completed",
+          "steps": [],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086555"
+        },
+        {
+          "completedAt": "2026-11-15T12:26:44Z",
+          "conclusion": "skipped",
+          "databaseId": 132811086623,
+          "name": "test-archive-e-shard-1",
+          "startedAt": "2026-11-15T12:26:45Z",
+          "status": "completed",
+          "steps": [],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086623"
+        },
+        {
+          "completedAt": "2026-11-15T12:26:44Z",
+          "conclusion": "skipped",
+          "databaseId": 132811086703,
+          "name": "test-archive-b-shard-1",
+          "startedAt": "2026-11-15T12:26:45Z",
+          "status": "completed",
+          "steps": [],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132811086703"
+        },
+        {
+          "completedAt": "2026-11-15T12:42:04Z",
+          "conclusion": "success",
+          "databaseId": 132814991445,
+          "name": "Build & Test",
+          "startedAt": "2026-11-15T12:41:58Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-11-15T12:42:01Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-11-15T12:41:59Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:42:01Z",
+              "conclusion": "skipped",
+              "name": "Download archive A expected count",
+              "number": 2,
+              "startedAt": "2026-11-15T12:42:01Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:42:01Z",
+              "conclusion": "skipped",
+              "name": "Download archive B expected count",
+              "number": 3,
+              "startedAt": "2026-11-15T12:42:01Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:42:01Z",
+              "conclusion": "skipped",
+              "name": "Download archive C expected count",
+              "number": 4,
+              "startedAt": "2026-11-15T12:42:01Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:42:01Z",
+              "conclusion": "skipped",
+              "name": "Download archive D expected count",
+              "number": 5,
+              "startedAt": "2026-11-15T12:42:01Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:42:01Z",
+              "conclusion": "skipped",
+              "name": "Download archive E expected count",
+              "number": 6,
+              "startedAt": "2026-11-15T12:42:01Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:42:01Z",
+              "conclusion": "skipped",
+              "name": "Download shard counts",
+              "number": 7,
+              "startedAt": "2026-11-15T12:42:01Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:42:01Z",
+              "conclusion": "skipped",
+              "name": "Verify archive shard totals",
+              "number": 8,
+              "startedAt": "2026-11-15T12:42:01Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:42:01Z",
+              "conclusion": "success",
+              "name": "Check Build & Test worker results",
+              "number": 9,
+              "startedAt": "2026-11-15T12:42:01Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:42:01Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 10,
+              "startedAt": "2026-11-15T12:42:01Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738530/job/132814991445"
+        }
+      ],
+      "name": "CI",
+      "status": "completed",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738530"
+    },
+    {
+      "attempt": 1,
+      "conclusion": "success",
+      "databaseId": 43713738324,
+      "headSha": "f68c4d9bd7d3f037f43e1820e49783af6b979479",
+      "jobs": [
+        {
+          "completedAt": "2026-11-15T12:25:24Z",
+          "conclusion": "success",
+          "databaseId": 132810689805,
+          "name": "Render Diff preflight",
+          "startedAt": "2026-11-15T12:25:14Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-11-15T12:25:15Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-11-15T12:25:15Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:18Z",
+              "conclusion": "success",
+              "name": "Detect review-only fast pass",
+              "number": 2,
+              "startedAt": "2026-11-15T12:25:15Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:18Z",
+              "conclusion": "skipped",
+              "name": "Check out current-base merge tree inputs",
+              "number": 3,
+              "startedAt": "2026-11-15T12:25:18Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:18Z",
+              "conclusion": "skipped",
+              "name": "Verify current-base merge tree",
+              "number": 4,
+              "startedAt": "2026-11-15T12:25:18Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:18Z",
+              "conclusion": "success",
+              "name": "Finalize review-only fast pass",
+              "number": 5,
+              "startedAt": "2026-11-15T12:25:18Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:19Z",
+              "conclusion": "success",
+              "name": "Check out trusted CI impact classifier",
+              "number": 6,
+              "startedAt": "2026-11-15T12:25:18Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:20Z",
+              "conclusion": "success",
+              "name": "Collect Render Diff impact input",
+              "number": 7,
+              "startedAt": "2026-11-15T12:25:19Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:22Z",
+              "conclusion": "success",
+              "name": "Classify Render Diff impact",
+              "number": 8,
+              "startedAt": "2026-11-15T12:25:20Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:22Z",
+              "conclusion": "success",
+              "name": "Summarize Render Diff impact",
+              "number": 9,
+              "startedAt": "2026-11-15T12:25:22Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:22Z",
+              "conclusion": "success",
+              "name": "Post Check out trusted CI impact classifier",
+              "number": 18,
+              "startedAt": "2026-11-15T12:25:22Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:22Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 19,
+              "startedAt": "2026-11-15T12:25:22Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738324/job/132810689805"
+        },
+        {
+          "completedAt": "2026-11-15T12:56:28Z",
+          "conclusion": "success",
+          "databaseId": 132810741504,
+          "name": "Canvas visual diff",
+          "startedAt": "2026-11-15T12:25:26Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-11-15T12:25:28Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-11-15T12:25:27Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:28Z",
+              "conclusion": "success",
+              "name": "Render Diff identity PR #9093 base 2d83fa4c8a5ed3513afcde26367fb5ffebeb294c",
+              "number": 2,
+              "startedAt": "2026-11-15T12:25:28Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:29:29Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 3,
+              "startedAt": "2026-11-15T12:25:28Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:29:29Z",
+              "conclusion": "success",
+              "name": "Free disk space (remove unused pre-installed toolchains)",
+              "number": 4,
+              "startedAt": "2026-11-15T12:29:29Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:29:42Z",
+              "conclusion": "success",
+              "name": "Install Rust toolchain",
+              "number": 5,
+              "startedAt": "2026-11-15T12:29:29Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:29:55Z",
+              "conclusion": "success",
+              "name": "Install PDF raster tools",
+              "number": 6,
+              "startedAt": "2026-11-15T12:29:42Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:29:56Z",
+              "conclusion": "success",
+              "name": "Install wasm-pack",
+              "number": 7,
+              "startedAt": "2026-11-15T12:29:55Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:29:56Z",
+              "conclusion": "success",
+              "name": "Resolve WASM build configuration",
+              "number": 8,
+              "startedAt": "2026-11-15T12:29:56Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:30:05Z",
+              "conclusion": "success",
+              "name": "Restore cargo registry & build cache",
+              "number": 9,
+              "startedAt": "2026-11-15T12:29:56Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:48:36Z",
+              "conclusion": "success",
+              "name": "Build WASM package",
+              "number": 10,
+              "startedAt": "2026-11-15T12:30:05Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:52:25Z",
+              "conclusion": "success",
+              "name": "Build native CLI for PDF report",
+              "number": 11,
+              "startedAt": "2026-11-15T12:48:36Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:52:25Z",
+              "conclusion": "skipped",
+              "name": "Save cargo registry & build cache",
+              "number": 12,
+              "startedAt": "2026-11-15T12:52:25Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:52:26Z",
+              "conclusion": "success",
+              "name": "Setup Node.js",
+              "number": 13,
+              "startedAt": "2026-11-15T12:52:25Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:52:33Z",
+              "conclusion": "success",
+              "name": "Install Studio dependencies",
+              "number": 14,
+              "startedAt": "2026-11-15T12:52:26Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:52:46Z",
+              "conclusion": "success",
+              "name": "Validate Visual Sweep Canvas font registration",
+              "number": 15,
+              "startedAt": "2026-11-15T12:52:33Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:52:53Z",
+              "conclusion": "success",
+              "name": "Install Chromium",
+              "number": 16,
+              "startedAt": "2026-11-15T12:52:46Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:52:57Z",
+              "conclusion": "success",
+              "name": "Check render diff script syntax",
+              "number": 17,
+              "startedAt": "2026-11-15T12:52:53Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:54:54Z",
+              "conclusion": "success",
+              "name": "Run canvas visual diff and PDF report",
+              "number": 18,
+              "startedAt": "2026-11-15T12:52:57Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:56:24Z",
+              "conclusion": "success",
+              "name": "Run selected CanvasKit readiness gate",
+              "number": 19,
+              "startedAt": "2026-11-15T12:54:54Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:56:24Z",
+              "conclusion": "success",
+              "name": "Add render diff summary",
+              "number": 20,
+              "startedAt": "2026-11-15T12:56:24Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:56:25Z",
+              "conclusion": "success",
+              "name": "Upload render diff artifacts",
+              "number": 21,
+              "startedAt": "2026-11-15T12:56:24Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:56:25Z",
+              "conclusion": "success",
+              "name": "Post Setup Node.js",
+              "number": 41,
+              "startedAt": "2026-11-15T12:56:25Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:56:26Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 42,
+              "startedAt": "2026-11-15T12:56:25Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:56:26Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 43,
+              "startedAt": "2026-11-15T12:56:26Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738324/job/132810741504"
+        }
+      ],
+      "name": "Render Diff",
+      "status": "completed",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738324"
+    },
+    {
+      "attempt": 1,
+      "conclusion": "success",
+      "databaseId": 43713738346,
+      "headSha": "f68c4d9bd7d3f037f43e1820e49783af6b979479",
+      "jobs": [
+        {
+          "completedAt": "2026-11-15T12:25:20Z",
+          "conclusion": "success",
+          "databaseId": 132810689874,
+          "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+          "startedAt": "2026-11-15T12:25:14Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-11-15T12:25:16Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-11-15T12:25:15Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:16Z",
+              "conclusion": "success",
+              "name": "Default to full verification",
+              "number": 2,
+              "startedAt": "2026-11-15T12:25:16Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:17Z",
+              "conclusion": "success",
+              "name": "Capture PR merge-tree evidence",
+              "number": 3,
+              "startedAt": "2026-11-15T12:25:16Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:18Z",
+              "conclusion": "success",
+              "name": "Upload PR merge-tree evidence",
+              "number": 4,
+              "startedAt": "2026-11-15T12:25:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:18Z",
+              "conclusion": "skipped",
+              "name": "Resolve trusted source base parent",
+              "number": 5,
+              "startedAt": "2026-11-15T12:25:18Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:18Z",
+              "conclusion": "skipped",
+              "name": "Checkout trusted verifier",
+              "number": 6,
+              "startedAt": "2026-11-15T12:25:18Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:18Z",
+              "conclusion": "skipped",
+              "name": "Evaluate exact PR workflow evidence",
+              "number": 7,
+              "startedAt": "2026-11-15T12:25:18Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:18Z",
+              "conclusion": "skipped",
+              "name": "Publish validated Archive B duration measurement",
+              "number": 8,
+              "startedAt": "2026-11-15T12:25:18Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:18Z",
+              "conclusion": "skipped",
+              "name": "Publish validated Archive C duration measurement",
+              "number": 9,
+              "startedAt": "2026-11-15T12:25:18Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:18Z",
+              "conclusion": "skipped",
+              "name": "Publish validated Archive D duration measurement",
+              "number": 10,
+              "startedAt": "2026-11-15T12:25:18Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:18Z",
+              "conclusion": "skipped",
+              "name": "Publish validated Archive E duration measurement",
+              "number": 11,
+              "startedAt": "2026-11-15T12:25:18Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:18Z",
+              "conclusion": "success",
+              "name": "Finalize reuse after validated evidence publication",
+              "number": 12,
+              "startedAt": "2026-11-15T12:25:18Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:18Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 13,
+              "startedAt": "2026-11-15T12:25:18Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738346/job/132810689874"
+        },
+        {
+          "completedAt": "2026-11-15T12:25:58Z",
+          "conclusion": "success",
+          "databaseId": 132810726037,
+          "name": "adapter inter-diff preflight",
+          "startedAt": "2026-11-15T12:25:23Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-11-15T12:25:25Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-11-15T12:25:24Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:55Z",
+              "conclusion": "success",
+              "name": "Classify review-only or trusted trailing review tail",
+              "number": 2,
+              "startedAt": "2026-11-15T12:25:25Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:55Z",
+              "conclusion": "skipped",
+              "name": "Check out current-base merge tree inputs",
+              "number": 3,
+              "startedAt": "2026-11-15T12:25:55Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:55Z",
+              "conclusion": "skipped",
+              "name": "Verify current-base merge tree",
+              "number": 4,
+              "startedAt": "2026-11-15T12:25:55Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:55Z",
+              "conclusion": "success",
+              "name": "Finalize adapter impact",
+              "number": 5,
+              "startedAt": "2026-11-15T12:25:55Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:55Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 6,
+              "startedAt": "2026-11-15T12:25:55Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738346/job/132810726037"
+        },
+        {
+          "completedAt": "2026-11-15T12:33:40Z",
+          "conclusion": "success",
+          "databaseId": 132810893112,
+          "name": "adapter inter-diff",
+          "startedAt": "2026-11-15T12:26:01Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-11-15T12:26:03Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-11-15T12:26:02Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:30:12Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-11-15T12:26:03Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:30:20Z",
+              "conclusion": "success",
+              "name": "Install Rust toolchain",
+              "number": 3,
+              "startedAt": "2026-11-15T12:30:12Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:30:28Z",
+              "conclusion": "success",
+              "name": "Rust build cache",
+              "number": 4,
+              "startedAt": "2026-11-15T12:30:20Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:30:29Z",
+              "conclusion": "success",
+              "name": "Check adapter-diff runner contract",
+              "number": 5,
+              "startedAt": "2026-11-15T12:30:28Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:30:29Z",
+              "conclusion": "success",
+              "name": "Check adapter-diff harness",
+              "number": 6,
+              "startedAt": "2026-11-15T12:30:29Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:30:29Z",
+              "conclusion": "success",
+              "name": "Discover adapters (honest skip)",
+              "number": 7,
+              "startedAt": "2026-11-15T12:30:29Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:30:30Z",
+              "conclusion": "success",
+              "name": "Prepare derived Rust test suites",
+              "number": 8,
+              "startedAt": "2026-11-15T12:30:29Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:33:36Z",
+              "conclusion": "success",
+              "name": "Run adapter inter-diff case",
+              "number": 9,
+              "startedAt": "2026-11-15T12:30:30Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:33:37Z",
+              "conclusion": "success",
+              "name": "Post Rust build cache",
+              "number": 17,
+              "startedAt": "2026-11-15T12:33:37Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:33:37Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 18,
+              "startedAt": "2026-11-15T12:33:37Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:33:38Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 19,
+              "startedAt": "2026-11-15T12:33:37Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738346/job/132810893112"
+        }
+      ],
+      "name": "Adapter inter-diff",
+      "status": "completed",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738346"
+    },
+    {
+      "attempt": 1,
+      "conclusion": "success",
+      "databaseId": 43713738307,
+      "headSha": "f68c4d9bd7d3f037f43e1820e49783af6b979479",
+      "jobs": [
+        {
+          "completedAt": "2026-11-15T12:25:18Z",
+          "conclusion": "success",
+          "databaseId": 132810689981,
+          "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+          "startedAt": "2026-11-15T12:25:14Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-11-15T12:25:15Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-11-15T12:25:15Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:16Z",
+              "conclusion": "success",
+              "name": "Default to full verification",
+              "number": 2,
+              "startedAt": "2026-11-15T12:25:15Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:16Z",
+              "conclusion": "success",
+              "name": "Capture PR merge-tree evidence",
+              "number": 3,
+              "startedAt": "2026-11-15T12:25:16Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:17Z",
+              "conclusion": "success",
+              "name": "Upload PR merge-tree evidence",
+              "number": 4,
+              "startedAt": "2026-11-15T12:25:16Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:17Z",
+              "conclusion": "skipped",
+              "name": "Resolve trusted source base parent",
+              "number": 5,
+              "startedAt": "2026-11-15T12:25:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:17Z",
+              "conclusion": "skipped",
+              "name": "Checkout trusted verifier",
+              "number": 6,
+              "startedAt": "2026-11-15T12:25:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:17Z",
+              "conclusion": "skipped",
+              "name": "Evaluate exact PR workflow evidence",
+              "number": 7,
+              "startedAt": "2026-11-15T12:25:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:17Z",
+              "conclusion": "skipped",
+              "name": "Publish validated Archive B duration measurement",
+              "number": 8,
+              "startedAt": "2026-11-15T12:25:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:17Z",
+              "conclusion": "skipped",
+              "name": "Publish validated Archive C duration measurement",
+              "number": 9,
+              "startedAt": "2026-11-15T12:25:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:17Z",
+              "conclusion": "skipped",
+              "name": "Publish validated Archive D duration measurement",
+              "number": 10,
+              "startedAt": "2026-11-15T12:25:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:17Z",
+              "conclusion": "skipped",
+              "name": "Publish validated Archive E duration measurement",
+              "number": 11,
+              "startedAt": "2026-11-15T12:25:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:17Z",
+              "conclusion": "success",
+              "name": "Finalize reuse after validated evidence publication",
+              "number": 12,
+              "startedAt": "2026-11-15T12:25:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:17Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 13,
+              "startedAt": "2026-11-15T12:25:17Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738307/job/132810689981"
+        },
+        {
+          "completedAt": "2026-11-15T12:26:44Z",
+          "conclusion": "success",
+          "databaseId": 132810718737,
+          "name": "CodeQL preflight",
+          "startedAt": "2026-11-15T12:25:21Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-11-15T12:25:22Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-11-15T12:25:22Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:39Z",
+              "conclusion": "success",
+              "name": "Detect review-only fast pass",
+              "number": 2,
+              "startedAt": "2026-11-15T12:25:22Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:39Z",
+              "conclusion": "skipped",
+              "name": "Check out current-base merge tree inputs",
+              "number": 3,
+              "startedAt": "2026-11-15T12:26:39Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:39Z",
+              "conclusion": "skipped",
+              "name": "Verify current-base merge tree",
+              "number": 4,
+              "startedAt": "2026-11-15T12:26:39Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:39Z",
+              "conclusion": "success",
+              "name": "Finalize review-only fast pass",
+              "number": 5,
+              "startedAt": "2026-11-15T12:26:39Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:41Z",
+              "conclusion": "success",
+              "name": "Check out trusted CodeQL impact classifier",
+              "number": 6,
+              "startedAt": "2026-11-15T12:26:39Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:41Z",
+              "conclusion": "success",
+              "name": "Collect CodeQL impact input",
+              "number": 7,
+              "startedAt": "2026-11-15T12:26:41Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:41Z",
+              "conclusion": "success",
+              "name": "Classify CodeQL impact",
+              "number": 8,
+              "startedAt": "2026-11-15T12:26:41Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:41Z",
+              "conclusion": "success",
+              "name": "Finalize CodeQL language selection",
+              "number": 9,
+              "startedAt": "2026-11-15T12:26:41Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:41Z",
+              "conclusion": "success",
+              "name": "Summarize CodeQL impact classification",
+              "number": 10,
+              "startedAt": "2026-11-15T12:26:41Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:41Z",
+              "conclusion": "success",
+              "name": "Post Check out trusted CodeQL impact classifier",
+              "number": 20,
+              "startedAt": "2026-11-15T12:26:41Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:41Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 21,
+              "startedAt": "2026-11-15T12:26:41Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738307/job/132810718737"
+        },
+        {
+          "completedAt": "2026-11-15T12:33:04Z",
+          "conclusion": "success",
+          "databaseId": 132811083787,
+          "name": "Analyze (javascript-typescript)",
+          "startedAt": "2026-11-15T12:26:47Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-11-15T12:26:49Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-11-15T12:26:48Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:49Z",
+              "conclusion": "skipped",
+              "name": "Skip unselected language",
+              "number": 2,
+              "startedAt": "2026-11-15T12:26:49Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:30:38Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 3,
+              "startedAt": "2026-11-15T12:26:49Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:30:57Z",
+              "conclusion": "success",
+              "name": "Initialize CodeQL (non-Rust)",
+              "number": 4,
+              "startedAt": "2026-11-15T12:30:38Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:30:57Z",
+              "conclusion": "skipped",
+              "name": "Initialize CodeQL (Rust)",
+              "number": 5,
+              "startedAt": "2026-11-15T12:30:57Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:30:57Z",
+              "conclusion": "skipped",
+              "name": "Initialize CodeQL (Rust post-merge)",
+              "number": 6,
+              "startedAt": "2026-11-15T12:30:57Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:30:57Z",
+              "conclusion": "skipped",
+              "name": "Initialize CodeQL (Rust full scan)",
+              "number": 7,
+              "startedAt": "2026-11-15T12:30:57Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:30:57Z",
+              "conclusion": "skipped",
+              "name": "Install Rust toolchain",
+              "number": 8,
+              "startedAt": "2026-11-15T12:30:57Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:33:01Z",
+              "conclusion": "success",
+              "name": "Perform CodeQL Analysis",
+              "number": 9,
+              "startedAt": "2026-11-15T12:30:57Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:33:01Z",
+              "conclusion": "success",
+              "name": "Post Perform CodeQL Analysis",
+              "number": 16,
+              "startedAt": "2026-11-15T12:33:01Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:33:01Z",
+              "conclusion": "success",
+              "name": "Post Initialize CodeQL (non-Rust)",
+              "number": 17,
+              "startedAt": "2026-11-15T12:33:01Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:33:02Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 18,
+              "startedAt": "2026-11-15T12:33:01Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:33:02Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 19,
+              "startedAt": "2026-11-15T12:33:02Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738307/job/132811083787"
+        },
+        {
+          "completedAt": "2026-11-15T12:26:51Z",
+          "conclusion": "success",
+          "databaseId": 132811083844,
+          "name": "Analyze (rust)",
+          "startedAt": "2026-11-15T12:26:47Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-11-15T12:26:50Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-11-15T12:26:47Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:50Z",
+              "conclusion": "success",
+              "name": "Skip unselected language",
+              "number": 2,
+              "startedAt": "2026-11-15T12:26:50Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:50Z",
+              "conclusion": "skipped",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 3,
+              "startedAt": "2026-11-15T12:26:50Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:50Z",
+              "conclusion": "skipped",
+              "name": "Initialize CodeQL (non-Rust)",
+              "number": 4,
+              "startedAt": "2026-11-15T12:26:50Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:50Z",
+              "conclusion": "skipped",
+              "name": "Initialize CodeQL (Rust)",
+              "number": 5,
+              "startedAt": "2026-11-15T12:26:50Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:50Z",
+              "conclusion": "skipped",
+              "name": "Initialize CodeQL (Rust post-merge)",
+              "number": 6,
+              "startedAt": "2026-11-15T12:26:50Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:50Z",
+              "conclusion": "skipped",
+              "name": "Initialize CodeQL (Rust full scan)",
+              "number": 7,
+              "startedAt": "2026-11-15T12:26:50Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:50Z",
+              "conclusion": "skipped",
+              "name": "Install Rust toolchain",
+              "number": 8,
+              "startedAt": "2026-11-15T12:26:50Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:50Z",
+              "conclusion": "skipped",
+              "name": "Perform CodeQL Analysis",
+              "number": 9,
+              "startedAt": "2026-11-15T12:26:50Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:50Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 10,
+              "startedAt": "2026-11-15T12:26:50Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738307/job/132811083844"
+        },
+        {
+          "completedAt": "2026-11-15T12:26:49Z",
+          "conclusion": "success",
+          "databaseId": 132811083862,
+          "name": "Analyze (actions)",
+          "startedAt": "2026-11-15T12:26:46Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-11-15T12:26:48Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-11-15T12:26:47Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:48Z",
+              "conclusion": "success",
+              "name": "Skip unselected language",
+              "number": 2,
+              "startedAt": "2026-11-15T12:26:48Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:48Z",
+              "conclusion": "skipped",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 3,
+              "startedAt": "2026-11-15T12:26:48Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:48Z",
+              "conclusion": "skipped",
+              "name": "Initialize CodeQL (non-Rust)",
+              "number": 4,
+              "startedAt": "2026-11-15T12:26:48Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:48Z",
+              "conclusion": "skipped",
+              "name": "Initialize CodeQL (Rust)",
+              "number": 5,
+              "startedAt": "2026-11-15T12:26:48Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:48Z",
+              "conclusion": "skipped",
+              "name": "Initialize CodeQL (Rust post-merge)",
+              "number": 6,
+              "startedAt": "2026-11-15T12:26:48Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:48Z",
+              "conclusion": "skipped",
+              "name": "Initialize CodeQL (Rust full scan)",
+              "number": 7,
+              "startedAt": "2026-11-15T12:26:48Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:48Z",
+              "conclusion": "skipped",
+              "name": "Install Rust toolchain",
+              "number": 8,
+              "startedAt": "2026-11-15T12:26:48Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:48Z",
+              "conclusion": "skipped",
+              "name": "Perform CodeQL Analysis",
+              "number": 9,
+              "startedAt": "2026-11-15T12:26:48Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:48Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 10,
+              "startedAt": "2026-11-15T12:26:48Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738307/job/132811083862"
+        },
+        {
+          "completedAt": "2026-11-15T12:26:51Z",
+          "conclusion": "success",
+          "databaseId": 132811083893,
+          "name": "Analyze (python)",
+          "startedAt": "2026-11-15T12:26:47Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-11-15T12:26:49Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-11-15T12:26:48Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:49Z",
+              "conclusion": "success",
+              "name": "Skip unselected language",
+              "number": 2,
+              "startedAt": "2026-11-15T12:26:49Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:49Z",
+              "conclusion": "skipped",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 3,
+              "startedAt": "2026-11-15T12:26:49Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:49Z",
+              "conclusion": "skipped",
+              "name": "Initialize CodeQL (non-Rust)",
+              "number": 4,
+              "startedAt": "2026-11-15T12:26:49Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:49Z",
+              "conclusion": "skipped",
+              "name": "Initialize CodeQL (Rust)",
+              "number": 5,
+              "startedAt": "2026-11-15T12:26:49Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:49Z",
+              "conclusion": "skipped",
+              "name": "Initialize CodeQL (Rust post-merge)",
+              "number": 6,
+              "startedAt": "2026-11-15T12:26:49Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:49Z",
+              "conclusion": "skipped",
+              "name": "Initialize CodeQL (Rust full scan)",
+              "number": 7,
+              "startedAt": "2026-11-15T12:26:49Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:49Z",
+              "conclusion": "skipped",
+              "name": "Install Rust toolchain",
+              "number": 8,
+              "startedAt": "2026-11-15T12:26:49Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:49Z",
+              "conclusion": "skipped",
+              "name": "Perform CodeQL Analysis",
+              "number": 9,
+              "startedAt": "2026-11-15T12:26:49Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:26:49Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 10,
+              "startedAt": "2026-11-15T12:26:49Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738307/job/132811083893"
+        }
+      ],
+      "name": "CodeQL",
+      "status": "completed",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738307"
+    },
+    {
+      "attempt": 1,
+      "conclusion": "success",
+      "databaseId": 43713738309,
+      "headSha": "f68c4d9bd7d3f037f43e1820e49783af6b979479",
+      "jobs": [
+        {
+          "completedAt": "2026-11-15T12:25:20Z",
+          "conclusion": "success",
+          "databaseId": 132810690004,
+          "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+          "startedAt": "2026-11-15T12:25:15Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-11-15T12:25:17Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-11-15T12:25:16Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:17Z",
+              "conclusion": "success",
+              "name": "Default to full verification",
+              "number": 2,
+              "startedAt": "2026-11-15T12:25:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:17Z",
+              "conclusion": "success",
+              "name": "Capture PR merge-tree evidence",
+              "number": 3,
+              "startedAt": "2026-11-15T12:25:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:18Z",
+              "conclusion": "success",
+              "name": "Upload PR merge-tree evidence",
+              "number": 4,
+              "startedAt": "2026-11-15T12:25:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:18Z",
+              "conclusion": "skipped",
+              "name": "Resolve trusted source base parent",
+              "number": 5,
+              "startedAt": "2026-11-15T12:25:18Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:18Z",
+              "conclusion": "skipped",
+              "name": "Checkout trusted verifier",
+              "number": 6,
+              "startedAt": "2026-11-15T12:25:18Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:18Z",
+              "conclusion": "skipped",
+              "name": "Evaluate exact PR workflow evidence",
+              "number": 7,
+              "startedAt": "2026-11-15T12:25:18Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:18Z",
+              "conclusion": "skipped",
+              "name": "Publish validated Archive B duration measurement",
+              "number": 8,
+              "startedAt": "2026-11-15T12:25:18Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:18Z",
+              "conclusion": "skipped",
+              "name": "Publish validated Archive C duration measurement",
+              "number": 9,
+              "startedAt": "2026-11-15T12:25:18Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:18Z",
+              "conclusion": "skipped",
+              "name": "Publish validated Archive D duration measurement",
+              "number": 10,
+              "startedAt": "2026-11-15T12:25:18Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:18Z",
+              "conclusion": "skipped",
+              "name": "Publish validated Archive E duration measurement",
+              "number": 11,
+              "startedAt": "2026-11-15T12:25:18Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:18Z",
+              "conclusion": "success",
+              "name": "Finalize reuse after validated evidence publication",
+              "number": 12,
+              "startedAt": "2026-11-15T12:25:18Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:19Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 13,
+              "startedAt": "2026-11-15T12:25:18Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738309/job/132810690004"
+        },
+        {
+          "completedAt": "2026-11-15T12:25:58Z",
+          "conclusion": "success",
+          "databaseId": 132810726493,
+          "name": "Proptest preflight",
+          "startedAt": "2026-11-15T12:25:23Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-11-15T12:25:25Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-11-15T12:25:24Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:55Z",
+              "conclusion": "success",
+              "name": "Detect review-only or trusted trailing review tail",
+              "number": 2,
+              "startedAt": "2026-11-15T12:25:25Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:55Z",
+              "conclusion": "skipped",
+              "name": "Check out current-base merge tree inputs",
+              "number": 3,
+              "startedAt": "2026-11-15T12:25:55Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:55Z",
+              "conclusion": "skipped",
+              "name": "Verify current-base merge tree",
+              "number": 4,
+              "startedAt": "2026-11-15T12:25:55Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:55Z",
+              "conclusion": "success",
+              "name": "Finalize fast pass",
+              "number": 5,
+              "startedAt": "2026-11-15T12:25:55Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:25:55Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 6,
+              "startedAt": "2026-11-15T12:25:55Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738309/job/132810726493"
+        },
+        {
+          "completedAt": "2026-11-15T12:34:52Z",
+          "conclusion": "success",
+          "databaseId": 132810892101,
+          "name": "prop roundtrip",
+          "startedAt": "2026-11-15T12:26:00Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-11-15T12:26:02Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-11-15T12:26:01Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:30:03Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 2,
+              "startedAt": "2026-11-15T12:26:02Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:30:12Z",
+              "conclusion": "success",
+              "name": "Install Rust toolchain",
+              "number": 3,
+              "startedAt": "2026-11-15T12:30:03Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:30:22Z",
+              "conclusion": "success",
+              "name": "Rust build cache",
+              "number": 4,
+              "startedAt": "2026-11-15T12:30:12Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:30:23Z",
+              "conclusion": "success",
+              "name": "Check property runner contract",
+              "number": 5,
+              "startedAt": "2026-11-15T12:30:22Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:30:25Z",
+              "conclusion": "success",
+              "name": "Prepare derived Rust test suites",
+              "number": 6,
+              "startedAt": "2026-11-15T12:30:23Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:34:49Z",
+              "conclusion": "success",
+              "name": "Run property roundtrip cases",
+              "number": 7,
+              "startedAt": "2026-11-15T12:30:25Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:34:49Z",
+              "conclusion": "success",
+              "name": "Post Rust build cache",
+              "number": 13,
+              "startedAt": "2026-11-15T12:34:49Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:34:50Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "number": 14,
+              "startedAt": "2026-11-15T12:34:49Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-11-15T12:34:50Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 15,
+              "startedAt": "2026-11-15T12:34:50Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738309/job/132810892101"
+        }
+      ],
+      "name": "Proptest roundtrip",
+      "status": "completed",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/43713738309"
+    }
+  ],
+  "scope": "Frontend-only local validation as explicitly instructed; CI workflows unchanged."
+}
