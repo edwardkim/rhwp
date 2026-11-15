@@ -59,7 +59,9 @@ static SQUARE_ROOT_2: [u16; 1] = [1000];
 // 재지 않는다. 별도 HFT 프로그램 표를 선택해도 확인된 전각 계약을 보존한다.
 static BULLET_2: [u16; 1] = [1000];
 // nested 독립 Print T6의 U+2013: /Widths와 HFT376 d1은 모두 1000/1000em이다.
-// 기호 슬롯의 원 HFT 전진이며 TrueType 궁서 등의 자연 반각 전진과 구분한다.
+// 일반 정체의 원 HFT 전진이며 다른 서식의 glyph 공급을 인증하지 않는다.
+// CBTA Print47쪽의 굵게는 HCI Poppy CID83의500/1000em을 소비한다.
+// 조회와 glyph-fit은 아래 서식 범위를 함께 확인하며 기존 대체 폭을 보존한다.
 static EN_DASH_2: [u16; 1] = [1000];
 static RANGES_2: [LatinRange; 4] = [
     LatinRange {
@@ -255,13 +257,36 @@ pub(crate) fn is_metric_face(name: &str) -> bool {
     METRICS.iter().any(|metric| metric.name == name)
 }
 
-/// 독립 Print의 중심 막대가 소유하는 원 HFT 칸이다. 표시 glyph의 hmtx와 구분한다.
-/// T6/HFT376은 1em 칸의 가운데에 잉크를 둔다. 다른 source 프로그램에는 적용하지 않는다.
-pub(crate) fn centered_bar_advance_em(face: &str, character: char) -> Option<f64> {
+fn owns_regular_bar(face: &str, character: char) -> bool {
     let source = metric_face_name(face).unwrap_or(face);
-    if character != '\u{2013}' || source != "한양신명조 (HFT)" {
+    character == '\u{2013}' && source == "한양신명조 (HFT)"
+}
+
+/// 부분 표의 일반 막대 근거를 확인하지 않은 서식으로 상속하지 않는다.
+/// 굵게의 독립 Print는 다른 공급자를 사용하므로 기존 표시 대체 조회를 유지한다.
+pub(crate) fn rejects_regular_bar_style(
+    face: &str,
+    bold: bool,
+    italic: bool,
+    character: char,
+) -> bool {
+    owns_regular_bar(face, character) && (bold || italic)
+}
+
+/// 독립 Print의 일반 막대가 소유하는 원 HFT 칸이다. 표시 glyph의 hmtx와 구분한다.
+/// 측정과 같은 프로그램·서식 범위에서만 1em 칸 가운데에 잉크를 둔다.
+pub(crate) fn centered_bar_advance_em(
+    face: &str,
+    bold: bool,
+    italic: bool,
+    character: char,
+) -> Option<f64> {
+    if !owns_regular_bar(face, character)
+        || rejects_regular_bar_style(face, bold, italic, character)
+    {
         return None;
     }
+    let source = metric_face_name(face).unwrap_or(face);
     let metric = METRICS.iter().find(|metric| metric.name == source)?;
     Some(f64::from(metric.get_width(character)?) / f64::from(metric.em_size))
 }

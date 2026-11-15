@@ -157,9 +157,12 @@ pub(crate) fn canvas_cluster_fit(
                 .map(String::as_str)
                 .or(style.metric_font_family.as_deref())
                 .unwrap_or(&style.font_family);
-            if let Some(em) =
-                super::font_metrics_data::original_hft_centered_bar_advance_em(source, character)
-            {
+            if let Some(em) = super::font_metrics_data::original_hft_centered_bar_advance_em(
+                source,
+                style.bold,
+                style.italic,
+                character,
+            ) {
                 let (size, _) = style.script_draw_metrics(style.effective_font_size(), 0.0);
                 let advance = size * style.ratio_draw_params(1.0).1 * em;
                 if advance.is_finite()
