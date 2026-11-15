@@ -77,6 +77,7 @@ await runTest('#9077 Canvas 예약 별칭의 실제 face 선택', async ({ page 
       for (const face of supplied) document.fonts.delete(face);
     }
   }, programs);
+  assert.equal(result.backend, 'canvas2d');
   for (const check of result.checks) {
     assert.equal(check.samePixels, true, JSON.stringify(check));
     assert.equal(check.width, check.expectedWidth, JSON.stringify(check));
