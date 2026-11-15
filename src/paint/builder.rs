@@ -463,7 +463,10 @@ impl LayerBuilder {
                     .metafile_device_pixel_width
                     .filter(|_| self.hancom2024_print_bitmap);
                 if let Some(context) = self.page_context {
-                    context.picture_border_pen(&mut rect, pixel);
+                    // 그림의 물리 띠·외곽 pen은 비트맵 색상 세대와 별개의
+                    // Print 계약이다. 독립 2022·2024 Print가 같은 600dpi
+                    // pen을 사용하며 일반 사각형의 세대별 좌표는 유지한다.
+                    context.picture_border_pen(&mut rect, self.metafile_device_pixel_width);
                 }
                 let image_frame = rect
                     .image_frame_owner
