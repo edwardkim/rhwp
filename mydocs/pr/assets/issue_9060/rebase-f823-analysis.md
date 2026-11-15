@@ -93,3 +93,7 @@ host font 없이 paint 계약을 확인한 것이며 새 CK 캡처·일치율을
 ## 새 base 주요 페이지의 직접 판독
 
 [다섯 입력의 실제 Native/fresh WASM 14개 review·overlay 쌍](final/rebase-f823-reading/README.md)을 직접 확인했다. CBTA 118·162·166쪽, 권고안 4쪽, 영어 시험지 2쪽, API 35쪽, 각주 표 37쪽이다. 원 PR #9075의 원 문서 증적과 구분한다. 같은 환경 전쪽 대조와 전체 Rust 완료는 별도 조건으로 유지한다.
+
+## Native/fresh WASM 특별 보호 전쪽 완료
+
+상향된 정본 `8f073dddd67cf8f44bea7c0315c3f9950ba73641e9393747cdbc52d24b33f9a1`을 기준으로 Native18개·fresh WASM18개, 전3,542행을 모두 완료했다. 공식 두 자리 raw 표시값의 하락0행·누락0행·추가 상승0행이다. 앞서 수용한 상승30행의 새 하한을 유지하며 더 낮은 과거 기준으로 돌리지 않는다. 전체 Rust·새 base의 동일 환경 비교 완료와 PR 생성은 아직 별도 조건이다.
