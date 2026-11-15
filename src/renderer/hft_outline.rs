@@ -27,6 +27,13 @@ pub(crate) fn supports_style(style: &TextStyle) -> bool {
         && !style.engrave
 }
 
+/// 원 HFT의 명시 자연 프로그램 선택은 자동 표시 치환과 구분한다.
+/// 실제 정적 TTF 여부와 글리프 소유는 등록 공급자에서 별도로 확인한다.
+#[cfg(target_arch = "wasm32")]
+pub(crate) fn has_natural_hft_program(style: &TextStyle) -> bool {
+    style.source_font_is_hft && style.natural_program_metrics && style.preserve_glyph_ink
+}
+
 pub(crate) fn first_family(family: &str) -> &str {
     family
         .split(',')
@@ -341,7 +348,7 @@ impl HftOutlineFonts {
         None
     }
 
-    /// 실제 공급 목록이 선택한 정적 TTF 대체 face의 unhinted 윤곽이다.
+    /// 실제 공급 목록이 선택한 정적 TTF face의 unhinted 윤곽이다.
     /// 원 face의 정상 글리프·조판 전진·문맥 shaping은 바꾸지 않는다.
     #[cfg(target_arch = "wasm32")]
     pub(crate) fn print_fallback_glyph(
@@ -349,7 +356,10 @@ impl HftOutlineFonts {
         style: &TextStyle,
         character: char,
     ) -> Option<Arc<[PathCommand]>> {
-        if !style.source_font_is_ttf
+        // 원 HFT의 명시 자연 프로그램 선택도 Native Print와 같은 실제 TTF를
+        // 소비한다. 원문의 HFT 유형을 TTF로 바꾸거나 자동 표시 치환까지 확대하지 않는다.
+        let selected_natural_program = has_natural_hft_program(style);
+        if !(style.source_font_is_ttf || selected_natural_program)
             || style.is_visually_bold()
             || style.italic
             || style.outline_type != 0
@@ -367,7 +377,8 @@ impl HftOutlineFonts {
         // 앞 후보의 coverage가 없으면 그 글자의 실제 공급자를 확정할 수 없다.
         // faux bold와 같이 실제 CSS 사다리를 아는 Canvas painter에 맡긴다.
         if !selected.predecessors_known
-            || selected.family == first_family(&style.font_family).to_lowercase()
+            || (!selected_natural_program
+                && selected.family == first_family(&style.font_family).to_lowercase())
         {
             return None;
         }

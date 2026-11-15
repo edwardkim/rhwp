@@ -1007,6 +1007,7 @@ fn try_char_style_to_text_style<S: crate::renderer::style_resolver::storage::Sto
             source_hwp3_hft_bold: (styles.hwp3_variant || styles.source_hwp3_native)
                 && cs.source_hft_for_lang(lang_index),
             hft_print_frame: cs.hft_print_frame_for_lang(lang_index),
+            print_text_device_frame: cs.print_text_device_frame_for_lang(lang_index),
             preserve_glyph_ink: cs
                 .font_families_preserve_glyph_ink
                 .get(lang_index)

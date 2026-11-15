@@ -6,6 +6,8 @@
 mod core;
 mod extended;
 
+pub(crate) const REPLACE_TEXT_USAGE: &str = "rhwp edit replace-text <파일.hwp|파일.hwpx> --find <문자열> --replace <문자열> [-o <출력>] [--ignore-case] [--occurrence <k>] [--dry-run] [--json] [--verify] [--expect-sha256 <해시>]";
+
 fn capability_spec(name: &str) -> &'static crate::cli::catalog::CommandSpec {
     let spec = crate::cli::catalog::find(name)
         .unwrap_or_else(|| panic!("capabilities 명령이 catalog에 없습니다: {name}"));
@@ -68,7 +70,7 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 114] = [
     ),
     (
         "replace-text",
-        "본문 일괄 치환 — --find/--replace, --occurrence 로 k번째만",
+        "본문·표 셀 일괄 치환 — --find/--replace, --occurrence 로 문서 순서 k번째만 (0부터, 생략 시 전체)",
     ),
     ("set-cell", "표 셀 텍스트 기록 — --table/--row/--col/--text"),
     (

@@ -16,7 +16,7 @@ pub fn is_book_bracket(character: char) -> bool {
 }
 /// 실제 공급한 같은 SFNT의 원 PUA 표시와 전진을 보존할 기호다.
 /// 이 기호는 Unicode 대체와 폭·윤곽이 달라 실제 공급한 원 glyph가 필요하다.
-pub const SUPPORTED_SYMBOLS: [char; 11] = [
+const EXISTING_SUPPORTED_SYMBOLS: [char; 11] = [
     '\u{F0854}',
     '\u{F0855}',
     '\u{F02FC}',
@@ -32,6 +32,44 @@ pub const SUPPORTED_SYMBOLS: [char; 11] = [
     // 원 프로그램이 없으면 기존 U+25B8 표시 대체를 그대로 사용한다.
     '\u{F02FB}',
 ];
+
+/// 원본 글꼴이 공급된 HWP3 괘선도 같은 측정·paint 경로에서 원 glyph를 쓴다.
+/// 앞선 11개 기호의 공급 순서는 유지하고, 독립 한컴 저장값 77개 중 기존 2개를
+/// 제외한 75개만 추가한다. 방향·굵기·점선의 Unicode 추정으로 IR을 바꾸지 않는다.
+pub const SUPPORTED_SYMBOLS: [char; 86] = with_hwp3_line_symbols();
+
+const fn with_hwp3_line_symbols() -> [char; 86] {
+    let mut symbols = ['\0'; 86];
+    let mut count = 0;
+    while count < EXISTING_SUPPORTED_SYMBOLS.len() {
+        symbols[count] = EXISTING_SUPPORTED_SYMBOLS[count];
+        count += 1;
+    }
+    let rows = crate::parser::hwp3::johab_map::HWP3_LINE_CHARS;
+    let mut row = 0;
+    while row < rows.len() {
+        let mut column = 0;
+        while column < rows[row].len() {
+            let character = rows[row][column];
+            let mut index = 0;
+            let mut present = false;
+            while index < count {
+                if symbols[index] == character {
+                    present = true;
+                }
+                index += 1;
+            }
+            if !present {
+                symbols[count] = character;
+                count += 1;
+            }
+            column += 1;
+        }
+        row += 1;
+    }
+    assert!(count == symbols.len());
+    symbols
+}
 
 pub fn is_supported_symbol(character: char) -> bool {
     SUPPORTED_SYMBOLS.contains(&super::composer::hancom_symbol_display_key(character))
@@ -76,6 +114,7 @@ struct NativeOtfProgram {
     selection_digest: [u8; 32],
     faux_bold: bool,
     cff: bool,
+    static_truetype: bool,
     verified_hft_bold_tracking: bool,
 }
 
@@ -90,9 +129,21 @@ impl PartialEq for NativeOtfMetrics {
 }
 
 impl NativeOtfMetrics {
-    /// HFT의 분리 프로그램 소유를 확인할 때 TTF 대체 공급과 구분한다.
-    pub(crate) fn has_only_cff_programs(&self) -> bool {
-        !self.programs.is_empty() && self.programs.iter().all(|program| program.cff)
+    /// 실제 공급자의 윤곽 형식은 cmap/hmtx 축약 전에 확인한다.
+    /// 원본 유형·폭 표의 신뢰나 뒤 후보의 형식으로 주 프로그램을 추정하지 않는다.
+    pub(crate) fn has_static_truetype_paint_programs(&self) -> bool {
+        !self.programs.is_empty() && self.programs.iter().all(|program| program.static_truetype)
+    }
+
+    /// 원 HFT 주 프로그램의 coverage다. 뒤의 표시용 TTF가 결측 글자를
+    /// 가졌다고 원문의 별도 영문 슬롯까지 그 TTF가 소유하지 않는다.
+    pub(crate) fn primary_cff_has_glyph(&self, character: char) -> Option<bool> {
+        let program = self.programs.first().filter(|program| program.cff)?;
+        let face = ttf_parser::Face::parse(&program.bytes, program.face_index).ok()?;
+        Some(
+            face.glyph_index(character)
+                .is_some_and(|glyph| glyph.0 != 0),
+        )
     }
 
     /// 실제 공급을 마친 동일 family TrueType 요청의 전진만 허용한다.
@@ -271,6 +322,12 @@ impl NativePuaFonts {
         let face =
             ttf_parser::Face::parse(bytes, face_index).map_err(|_| "invalid native font face")?;
         let cff = is_cff_program(bytes, face_index);
+        // compact_metrics가 윤곽 표를 제거해도 실제 paint 프로그램의 형식 증거는 보존한다.
+        let static_truetype = face.tables().glyf.is_some()
+            && !cff
+            && !face.is_variable()
+            && face.tables().colr.is_none()
+            && face.tables().svg.is_none();
         let source_digest: [u8; 32] = Sha256::digest(bytes).into();
         let source_face_index = face_index;
         // FontEnvironment의 Native 신원 생성과 같은 입력·collection face를 소비한다.
@@ -344,6 +401,7 @@ impl NativePuaFonts {
             selection_digest,
             faux_bold,
             cff,
+            static_truetype,
             verified_hft_bold_tracking,
         });
         self.otf_programs

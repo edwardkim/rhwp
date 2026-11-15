@@ -1,0 +1,116 @@
+[
+  {
+    "page": 4,
+    "crop": [
+      435,
+      855,
+      500,
+      960
+    ],
+    "displayScale": 6,
+    "measurementCrop": false,
+    "files": [
+      {
+        "role": "Independent",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-gulimche-link-native/nested/pdf_png/pdf-004.png",
+        "sha256": "064ed840f32420e57f4f384da1383f83f967213425341bbf8ad1f7641711f33b"
+      },
+      {
+        "role": "Native 235",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/integrated-native-probe/nested/nested/rhwp_png/rhwp_004.png",
+        "sha256": "263a102b8d02da8516356b96b89dc7c8ad71c78f31feb991c61ff98094a75bef"
+      },
+      {
+        "role": "Native 8ad",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-gulimche-link-native/nested/rhwp_png/rhwp_004.png",
+        "sha256": "b76f65668fc929abe3aca0970f372bc8dbbb61d208bf1a592321e6fd67214990"
+      },
+      {
+        "role": "WASM 235",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/integrated-wasm-probe/nested/nested/rhwp_png/rhwp_004.png",
+        "sha256": "4056c90000d2a6e474a8ea064e4c6044715d29824d0f70a2cc52233edb078afa"
+      },
+      {
+        "role": "WASM 8ad",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-gulimche-link-wasm/nested/rhwp_png/rhwp_004.png",
+        "sha256": "9d3cb1791533b461e20c5f2908bad1d78dc4081641b3aafe1e637c342e7911b9"
+      }
+    ]
+  },
+  {
+    "page": 11,
+    "crop": [
+      410,
+      310,
+      555,
+      420
+    ],
+    "displayScale": 4,
+    "measurementCrop": false,
+    "files": [
+      {
+        "role": "Independent",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-gulimche-link-native/nested/pdf_png/pdf-011.png",
+        "sha256": "f49e38427c452afad0aa3e67990ba5334c568524adf8832c15595b128ec99687"
+      },
+      {
+        "role": "Native 235",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/integrated-native-probe/nested/nested/rhwp_png/rhwp_011.png",
+        "sha256": "cd4bf097c7006e6464c459b5797a15de7e36c121896f18cb6dbf41e6b40b7663"
+      },
+      {
+        "role": "Native 8ad",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-gulimche-link-native/nested/rhwp_png/rhwp_011.png",
+        "sha256": "926f4e6723a5d7b49dbdc9dae1776476216618fd0551cf59c834f1cfd00a42c2"
+      },
+      {
+        "role": "WASM 235",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/integrated-wasm-probe/nested/nested/rhwp_png/rhwp_011.png",
+        "sha256": "555c051934bd832d1ed56883cbb08d57e423b7d06926695bf545ea29975a711b"
+      },
+      {
+        "role": "WASM 8ad",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-gulimche-link-wasm/nested/rhwp_png/rhwp_011.png",
+        "sha256": "59f3527d7863fc952f6d61cdacc11352b70fe0b2c4ce24de8554bb59e8016115"
+      }
+    ]
+  },
+  {
+    "page": 14,
+    "crop": [
+      420,
+      635,
+      565,
+      775
+    ],
+    "displayScale": 4,
+    "measurementCrop": false,
+    "files": [
+      {
+        "role": "Independent",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-gulimche-link-native/nested/pdf_png/pdf-014.png",
+        "sha256": "f0234defaf4a720338e7bcc69f7d94d96b0354265f57b9dcc77550ed7d889ffe"
+      },
+      {
+        "role": "Native 235",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/integrated-native-probe/nested/nested/rhwp_png/rhwp_014.png",
+        "sha256": "b88a779169d3ac3deb5e706b24ee7a877af56a9440734540764c79af121e82ab"
+      },
+      {
+        "role": "Native 8ad",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-gulimche-link-native/nested/rhwp_png/rhwp_014.png",
+        "sha256": "71a7a6c65460d11a03444151460cc1a90cd7f4a51e2c627a27e77cc8633c21ee"
+      },
+      {
+        "role": "WASM 235",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/integrated-wasm-probe/nested/nested/rhwp_png/rhwp_014.png",
+        "sha256": "ab52013087714c40cce488b118efd58158f355acf85b050281a39cd99f9bedab"
+      },
+      {
+        "role": "WASM 8ad",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-gulimche-link-wasm/nested/rhwp_png/rhwp_014.png",
+        "sha256": "1344a2221c426613cb05795e645645a05547233d4f90dade7fe7ea72041172f1"
+      }
+    ]
+  }
+]

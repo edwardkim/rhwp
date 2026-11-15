@@ -181,7 +181,7 @@ impl PagePaintContext {
     /// 출력을 6→3자리로 바꾼다. 2020의 BorderFill 배경은 바꾸지 않지만
     /// 2024의 같은 셀 배경은 바꾼다(동일 입력 C308/C311).
     /// 이 상태는 q/Q와 쪽 경계를 넘어 유지된다(C275/C307/C308 대조).
-    /// 원본 HFT의 논리 좌표는 fill 전의 정밀 CTM만 물리 종이에 투영한다.
+    /// 원본 비내장 TTF/HFT의 논리 좌표는 fill 전의 정밀 CTM으로 물리 종이에 투영한다.
     /// Source bbox·run·clip은 그대로 두고 모든 glyph 대안에 같은 결정을 전달한다.
     pub(crate) fn publish_glyph_geometry(
         self,
@@ -275,7 +275,19 @@ impl PagePaintContext {
                             ..
                         } = op
                         {
-                            if run.style.hft_print_frame && !*rounded {
+                            // 원본 TTF의 text device 좌표는 도형 fill의 Type3
+                            // 그래픽 CTM 상태에 종속되지 않는다. HFT의 기존
+                            // fill 전/후 경계와 명시적 자연 프로그램 해제는 유지한다.
+                            let supplied_truetype =
+                                !run.style.preserve_glyph_ink
+                                    && run.style.text_paint.is_none()
+                                    && run.style.native_otf_metrics.as_ref().is_some_and(|font| {
+                                        font.has_static_truetype_paint_programs()
+                                    });
+                            if run.style.print_text_device_frame
+                                || supplied_truetype
+                                || (run.style.hft_print_frame && !*rounded)
+                            {
                                 sources.insert(source.id.0);
                             }
                         }

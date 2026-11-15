@@ -1,4 +1,6 @@
 //! 검사 유형: 관계형. 합성 글꼴 프로그램의 선택·대체 계약을 검증한다.
+//! 주석 갱신: 2026-11-15T11:40:50+09:00; 직전 파일 커밋: 2026-11-14T05:31:54+09:00 (9e2794796787b46815462fcecd1536ab74ac8528).
+//! 추가 검사는 MIT 합성 프로그램 또는 내부 글자모양 소유 관계이며 설치 글꼴·절대 배치를 가정하지 않는다.
 //! 주석 갱신: 2026-11-12T01:00:43+09:00; 직전 변경: 2026-11-09T21:28:38+09:00, 89ef796bf5e72418d7ad9a120bf1be5435d934a3.
 //! 실제 입력 `samples/hwp3-sample10.hwp`, 한컴 2020 Print, 96 DPI, 2px 이웃 raw.
 //! 2026-10-30 측정: 1쪽 Native/fresh WASM 각 99.96%; 전 763쪽 최저 각 99.41% / 99.40%.
@@ -1380,4 +1382,58 @@ fn static_cff_registration_preserves_source_cmap_and_advances() {
             .map(|width| f64::from(width) / f64::from(source.units_per_em()));
         assert_eq!(metrics.advance_em(ch), expected, "원본 cmap/hmtx: {ch:?}");
     }
+}
+
+#[cfg(feature = "native-skia")]
+#[test]
+fn original_hft_latin_punctuation_precedes_a_hangul_slots_display_ttf_fallback() {
+    use rhwp::renderer::{
+        font_environment::FontEnvironment,
+        render_tree::{RenderNode, RenderNodeType},
+        skia::SkiaLayerRenderer,
+    };
+    fn punctuation(node: &RenderNode, output: &mut Vec<String>) {
+        if let RenderNodeType::TextRun(run) = &node.node_type {
+            if run.text.contains('(') {
+                output.push(run.style.font_family.clone());
+            }
+        }
+        for child in &node.children {
+            punctuation(child, output);
+        }
+    }
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    core.insert_text_native(0, 0, 0, "가(가").unwrap();
+    let mut document = core.document().clone();
+    document.provenance.format = rhwp::model::provenance::SourceFormat::Hwpx;
+    for (lang, faces) in document.doc_info.font_faces.iter_mut().enumerate() {
+        faces[0].name = if lang == 1 { FAMILY } else { "fixture-korean" }.into();
+        faces[0].alt_type = 2;
+    }
+    for style in &mut document.doc_info.char_shapes {
+        style.font_ids = [0; 7];
+        style.relative_sizes = [100; 7];
+        style.ratios = [100; 7];
+        style.spacings = [0; 7];
+    }
+    core.set_document(document);
+    core.set_font_environment(Some(FontEnvironment::from_json(
+        r#"{"id":"primary-cff-with-ttf-fallback","substitutions":{},"preserveSourceMetrics":true,"glyphFallbacks":{"fixture-korean":["RHWP Equation Contract"]}}"#
+    ).unwrap())).unwrap();
+    let korean = cff_named("fixture-korean");
+    let latin = synthetic_cff_for('(');
+    let ttf = include_bytes!("../fixtures/fonts/RHWPEquationLatinOnly.ttf").to_vec();
+    let renderer = SkiaLayerRenderer::new()
+        .try_with_font_data(&[korean, latin, ttf])
+        .unwrap();
+    renderer.prepare_native_otf_fonts(&mut core).unwrap();
+    let mut owners = Vec::new();
+    punctuation(&core.build_page_render_tree(0).unwrap().root, &mut owners);
+    assert_eq!(owners.len(), 1, "원문의 구두점 누락·중복 금지");
+    assert!(
+        owners[0].starts_with(FAMILY),
+        "원 HFT 영문 프로그램이 괄호를 소유한다: {owners:?}"
+    );
+    assert_eq!(core.document().sections[0].paragraphs[0].text, "가(가");
 }

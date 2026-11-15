@@ -1,6 +1,9 @@
 """관계형: 편람 기준 TSV 하한·backend 신원과 웹폰트 공급 계약을 검사한다.
 
-주석 갱신: 2026-11-08T22:50:22+09:00 (Asia/Seoul).
+주석 갱신: 2026-11-15T18:58:51+09:00 (Asia/Seoul).
+직전 파일 변경: 36f54a38bb80bf61bf580db6205033317b593f1c, 2026-11-09T21:28:27+09:00.
+근거: final-source-8ad/protected-validation.json의 Native/WASM 편람 각 383쪽.
+최종 raw 하한은 Native 99.97%, WASM 99.96%이며 source 8ad1c5c08a에서 전쪽 검증했다.
 실물 절대 px 좌표를 고정하는 검사가 아니다.
 """
 import copy
@@ -45,12 +48,13 @@ class HandbookGateTests(unittest.TestCase):
         self.assertEqual(result['regressions'], [])
 
     def test_consolidated_baseline_selects_only_handbook_hwpx_and_requested_backend(self):
-        for backend, label in [('native-skia', 'native'), ('wasm-canvas2d', 'wasm')]:
+        for backend, label, minimum in [('native-skia', 'native', '99.97'),
+                                         ('wasm-canvas2d', 'wasm', '99.96')]:
             rows = handbook.baseline_rows(ROOT, backend)
             self.assertEqual([int(row['page']) for row in rows], list(range(1, 384)))
             self.assertEqual({row['input_path'] for row in rows}, {str(handbook.DOC)})
             self.assertEqual({row['backend'] for row in rows}, {label})
-            self.assertEqual(rows[129][handbook.METRIC], '99.96')
+            self.assertEqual(rows[129][handbook.METRIC], minimum)
             self.assertTrue(all(row[handbook.METRIC] == '100.00'
                                 for row in rows if row['page'] != '130'))
 

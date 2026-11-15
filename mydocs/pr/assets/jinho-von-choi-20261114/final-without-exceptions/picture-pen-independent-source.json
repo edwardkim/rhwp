@@ -1,0 +1,36 @@
+{
+  "inputPdf": "pdf/pic-crop-01-2022.pdf",
+  "sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+  "independentPaths": [
+    {
+      "rightOuterPoints": 535.5120239257812,
+      "rightInnerPoints": 535.031982421875,
+      "physicalBandPoints": 0.48,
+      "outlinePoints": 0.11999999731779099,
+      "type": "fs",
+      "sequence": 1,
+      "sourceRule": "Outer and inner vertical segments of the independent compound fill path"
+    },
+    {
+      "rightOuterPoints": 535.5120239257812,
+      "rightInnerPoints": 535.031982421875,
+      "physicalBandPoints": 0.48,
+      "outlinePoints": 0.11999999731779099,
+      "type": "fs",
+      "sequence": 4,
+      "sourceRule": "Outer and inner vertical segments of the independent compound fill path"
+    }
+  ],
+  "measuredBandPoints": "0.480",
+  "measuredBandCssAt96Dpi": "0.64",
+  "measuredOutlinePoints": "0.120",
+  "measuredOutlineCssAt96Dpi": "0.16",
+  "source600DpiPixels": {
+    "band": 4,
+    "outline": 1
+  },
+  "existingImplementation": "src/paint/paper_viewport.rs::picture_border_pen; src/renderer/print_picture_pen.rs::raster_width",
+  "originalImplementationCommit": "c417310cab62bd7dcf8ef131f72001bb4a1fd3d9",
+  "originalPr": 8389,
+  "finding": "2022 caller incorrectly filtered physical picture pen by the 2024 bitmap color flag. Same 2024 primitive already exactly matches independent 2022 left-edge coverage. No new pixel/width constants are added."
+}

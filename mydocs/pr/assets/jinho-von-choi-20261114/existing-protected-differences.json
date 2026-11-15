@@ -1,0 +1,479 @@
+{
+  "base": "53da4d2da28ae0cacf8feac3a989cc6a69fb2622",
+  "candidateProductSource": "eeaecff59e834f28437c98b509089bbb36a7682d",
+  "unreproducedOfficialRows": 107,
+  "native": {
+    "rows": 51,
+    "sameMetrics": true,
+    "samePngBytes": true,
+    "checks": [
+      {
+        "key": "yeongwol",
+        "backend": "native",
+        "page": "3",
+        "baseline": "99.99",
+        "candidate": "99.95",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "39dcf1dc875943b197aa813a222d99f713499f6d42ef317625315d6c94a8510a"
+      },
+      {
+        "key": "seo-body-list-typed",
+        "backend": "native",
+        "page": "1",
+        "baseline": "100.00",
+        "candidate": "99.95",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "778239b7af51140ec5cade0c180737ce564b5425c83584578439426b7271d1a9"
+      },
+      {
+        "key": "seo-helvetica-styles",
+        "backend": "native",
+        "page": "1",
+        "baseline": "99.25",
+        "candidate": "98.47",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "5ca98d2ea2f874fc9da018500c3727cc5f65010d5c43fc51605a05cd8bfbd809"
+      },
+      {
+        "key": "sample16-hwpx",
+        "backend": "native",
+        "page": "43",
+        "baseline": "100.00",
+        "candidate": "99.99",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "97b832f2be5740f2f1b14e915155cd64c4a85597ffd8cf85f3ee2521f518c301"
+      },
+      {
+        "key": "sample16-hwpx",
+        "backend": "native",
+        "page": "51",
+        "baseline": "100.00",
+        "candidate": "99.90",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "3a7c0a96bd3ab1d3bb893379b524a1353fba542bed99517f5a96e8e9a914a841"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "4",
+        "baseline": "100.00",
+        "candidate": "99.54",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "48cc65db526b0f0e01f6f50e8971c1ed4820394bed2a22dc89f429c3dde4785d"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "5",
+        "baseline": "100.00",
+        "candidate": "99.91",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "f2f5c64d19b8448de2d0e18f5c000b6b221bd0044587258e2141731b131a3b32"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "6",
+        "baseline": "100.00",
+        "candidate": "99.95",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "cb59cf1b66f07ba57e27d256123626ba107edaa43ec17dbca9b205a39aade1c9"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "8",
+        "baseline": "100.00",
+        "candidate": "99.97",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "895a49c1c1f53051e4a073e212a0da1104bed4c455e4d90cfec9398b93916bd5"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "10",
+        "baseline": "100.00",
+        "candidate": "99.79",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "0b1f6837dbb2bae740a2306d371b1da066db1b2e4f08c1c30af9818002e7dfea"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "11",
+        "baseline": "100.00",
+        "candidate": "99.74",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "358a23f94fc95c03720c00cdccd7d239f621f49b407340700644dc4d10edbeb4"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "12",
+        "baseline": "100.00",
+        "candidate": "99.65",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "ed579d97672b5c49b0e61745b01c06d3cfaeeaf3e77085270621ab22e11f888b"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "13",
+        "baseline": "100.00",
+        "candidate": "99.91",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "bb611887210c81d46df269d22d2b32837f1633c43124e3cdf8d3402d404a56f7"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "14",
+        "baseline": "100.00",
+        "candidate": "99.72",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "b257177747f1f857281f234020869d9061374aa9d934cb0dee998ce91c587704"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "15",
+        "baseline": "100.00",
+        "candidate": "99.80",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "e94044e9beee85c22feea895d8260ece4d0c80766511392d8c80cf338862618c"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "16",
+        "baseline": "100.00",
+        "candidate": "99.89",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "0a5b50b12a3ec53aa574b27a8137ab228cfaab02220217dcaf1aad4c4d8e6823"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "17",
+        "baseline": "100.00",
+        "candidate": "99.68",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "dcca5ec5ebb014b15f8d2f9775a2b3ecc7c78bcc706654bb0f9c126c3b6712bc"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "18",
+        "baseline": "100.00",
+        "candidate": "99.94",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "c20bb018c0295527c01a8c951a5164676834d10bd76b578af6b4d20f04378eb6"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "19",
+        "baseline": "100.00",
+        "candidate": "99.89",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "d6311b828d2ecb0a2d32c60c4660567e02799d4d935c2163d1b34ef2acc49745"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "20",
+        "baseline": "100.00",
+        "candidate": "99.95",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "40dfb13aaa763debb2743fb503e25e5d1fc8b1f1f9e329df218f318d2950b6c5"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "21",
+        "baseline": "100.00",
+        "candidate": "99.92",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "d99b9bfefd16dc8259cc791c10dbb399f2d6d361926bab6e31e833b603967d17"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "22",
+        "baseline": "100.00",
+        "candidate": "99.96",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "55dfd0732f55f6afad2238a02ca0349fab581a18db9c11bc7cd142ae8f93e3bf"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "23",
+        "baseline": "100.00",
+        "candidate": "99.95",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "7cb18df2598c589942b4fe2741e4b4b154cf4de96a2db3e6d4754415f8223341"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "24",
+        "baseline": "100.00",
+        "candidate": "99.98",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "3192fdd5b8e3eb728ec558607b034401b1ba47e083e3dfb68d35adb473208789"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "25",
+        "baseline": "100.00",
+        "candidate": "99.89",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "d773aedadfe374d5bd61604604f5199da38f7dc122842fe43b4217978362c5ea"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "27",
+        "baseline": "100.00",
+        "candidate": "99.95",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "195fee9a1521dc9ff2dedc9c6f840164b3a67c4d8a40699fe6a3ce59ee066995"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "28",
+        "baseline": "100.00",
+        "candidate": "99.65",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "3122d7823f7be2e9b2dd974ff30f084cbbf9eafdce4c7fc382720c54e0c41088"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "29",
+        "baseline": "100.00",
+        "candidate": "99.65",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "579b29c7b388bd4119a031a89624c59a863d6a3b9b6108539585adc0d5708ba4"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "30",
+        "baseline": "100.00",
+        "candidate": "99.50",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "d3dbe5bc36557bb9c075986453fd40441247d321fb32f3dbc595064c5adaebe7"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "31",
+        "baseline": "100.00",
+        "candidate": "99.62",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "92123afae221e805ad8c2de7ef438b3d54408d770a28fbca019f97ebf324002d"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "32",
+        "baseline": "100.00",
+        "candidate": "99.95",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "49ca7e52907254939258047ecbdd403f00deea3fe38ea94992e7199f04e69faf"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "33",
+        "baseline": "100.00",
+        "candidate": "99.76",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "49ad9c646d8be3539eba7dd1274544a775b8579835939f8ee10f49f895fb4a88"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "34",
+        "baseline": "100.00",
+        "candidate": "99.69",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "70690d6c8d6d2a73a9d42acbd7e8017943ce27170ae9192a28edb596bbdc89fb"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "38",
+        "baseline": "100.00",
+        "candidate": "99.64",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "fdbe405370a77531d54608f851cf5ca2ac9224fce7ef48005ee95bbede7eee81"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "43",
+        "baseline": "100.00",
+        "candidate": "99.99",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "3bc050ddbe679e6690c7f27fbce98e70c095b371504a8b712fcf8c577953fa35"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "45",
+        "baseline": "100.00",
+        "candidate": "99.98",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "be41c3b4d40e109508314f02ff5f0ce5445c31e21ab0a6c935630ea3417a4d3d"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "46",
+        "baseline": "100.00",
+        "candidate": "99.89",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "89475e561c6f3806d1500335b39b6e356133ac5d8d6050fd40c6ccea541a2dd1"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "47",
+        "baseline": "100.00",
+        "candidate": "99.92",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "991f7446a6c11022f7aa5ecbc541dfc0e458eae87ef0ca5e4691c1ca3cc03281"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "48",
+        "baseline": "100.00",
+        "candidate": "99.93",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "88aae16fdcf9253415449664b37a9a46ed0ee2e9f909fbd94b1d1fbd2f7ad8f5"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "49",
+        "baseline": "100.00",
+        "candidate": "99.91",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "64755611c2130b5cd859c4d19568062c4f0cfc3409b99c654116ddddfa746797"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "50",
+        "baseline": "100.00",
+        "candidate": "99.91",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "e6379bb85446d04f0bf7830c279b1f6ade4b953513f2ae3ced0978619286fb5e"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "51",
+        "baseline": "100.00",
+        "candidate": "99.94",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "40a04016397f8cc2c9c78d335639ec5346d3f6edd39dbc51f3c7c7d9cadd965a"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "backend": "native",
+        "page": "53",
+        "baseline": "100.00",
+        "candidate": "99.83",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "4430f61f625875bf55183691afa76a828470d24cded7adb83d692274f7cf6fe2"
+      },
+      {
+        "key": "nested",
+        "backend": "native",
+        "page": "5",
+        "baseline": "99.98",
+        "candidate": "99.97",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "f9d28c06880b780a86d02e7a716629d64ad0402662f939b29f0e3a0a8b8e3e82"
+      },
+      {
+        "key": "nested",
+        "backend": "native",
+        "page": "6",
+        "baseline": "99.98",
+        "candidate": "99.92",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "8d1b1013b5531617a624b7f8fd5226a263a24c57bf18990263e490830a84f8be"
+      },
+      {
+        "key": "nested",
+        "backend": "native",
+        "page": "8",
+        "baseline": "100.00",
+        "candidate": "99.22",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "78dc95db06804bfbf815b5b89a3aa2edd10451f74ffe71ad681bc0fc9af40036"
+      },
+      {
+        "key": "nested",
+        "backend": "native",
+        "page": "9",
+        "baseline": "100.00",
+        "candidate": "98.95",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "e4ce2c0040e955e7304bcc92b8b90643cc6a9b30357b29e7ad13e9e5656f50a4"
+      },
+      {
+        "key": "nested",
+        "backend": "native",
+        "page": "12",
+        "baseline": "99.87",
+        "candidate": "99.83",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "0dae6a31d8943e776ec8e5e5a64bad22d18fbe13e634b9e72fd464c1a9b954a2"
+      },
+      {
+        "key": "nested",
+        "backend": "native",
+        "page": "16",
+        "baseline": "98.36",
+        "candidate": "97.99",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "89b3303fc2b8bd7d6cabd0f03f6a712f9aca1bb0e466b71134dbf28535cf7fa3"
+      },
+      {
+        "key": "sample16-hwp2024",
+        "backend": "native",
+        "page": "43",
+        "baseline": "100.00",
+        "candidate": "99.99",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "97b832f2be5740f2f1b14e915155cd64c4a85597ffd8cf85f3ee2521f518c301"
+      },
+      {
+        "key": "sample16-hwp2024",
+        "backend": "native",
+        "page": "51",
+        "baseline": "100.00",
+        "candidate": "99.90",
+        "decline": "True",
+        "baseAndCandidatePngSha256": "0d8e8c5a9492c685e989e80776b8ed7d1fd4789d0ac5531f615706469dcbb497"
+      }
+    ]
+  },
+  "wasm": {
+    "rows": 56,
+    "sameMetrics": true,
+    "samePngBytes": true,
+    "details": "protected-base-wasm-selected.json"
+  },
+  "formalProtectedGate": "not_passed",
+  "exceptionApproved": false
+}

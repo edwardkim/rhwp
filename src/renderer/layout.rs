@@ -3929,6 +3929,8 @@ pub struct LayoutEngine {
     show_control_codes: std::cell::Cell<bool>,
     /// 현재 페이지 용지 너비 (표 HorzRelTo::Paper 위치 계산용)
     current_paper_width: std::cell::Cell<f64>,
+    /// 현재 용지 기준 개체 프레임의 원점. 양쪽 바탕쪽은 맞쪽 이동량을 공유한다.
+    current_paper_origin_x: std::cell::Cell<f64>,
     /// 현재 페이지 본문 영역 (표 HorzRelTo::Page / VertRelTo::Page 위치 계산용)
     /// (x, y, width, height). 미설정 시 (0, 0, 0, 0) — 호출부에서 col_area로 폴백.
     current_body_area: std::cell::Cell<(f64, f64, f64, f64)>,
@@ -4193,6 +4195,7 @@ impl LayoutEngine {
             active_field: std::cell::RefCell::new(None),
             show_control_codes: std::cell::Cell::new(false),
             current_paper_width: std::cell::Cell::new(0.0),
+            current_paper_origin_x: std::cell::Cell::new(0.0),
             current_body_area: std::cell::Cell::new((0.0, 0.0, 0.0, 0.0)),
             reflow_block_host_anchor: std::cell::Cell::new(None),
             current_page_height: std::cell::Cell::new(0.0),
@@ -4724,7 +4727,9 @@ impl LayoutEngine {
     }
 
     fn sort_paper_render_nodes(paper_images: &mut [RenderNode]) {
-        paper_images.sort_by_key(Self::paper_node_sort_key);
+        let keys =
+            crate::renderer::paint_order::sibling_keys(paper_images, Self::paper_node_sort_key);
+        paper_images.sort_by_key(|node| keys[&node.id].clone());
     }
 
     /// 빈 줄 감추기 문단 집합 설정
@@ -6124,21 +6129,23 @@ impl LayoutEngine {
                 // placeholder level instead of disabling master-page numbering wholesale.
                 self.current_page_number.set(page_number);
                 let mp_id = tree.next_id();
-                let paper_area = LayoutRect {
+                let physical_paper_area = LayoutRect {
                     x: 0.0,
                     y: 0.0,
                     width: layout.page_width,
                     height: layout.page_height,
                 };
+                let paper_area = layout.master_page_paper_frame(mp);
                 let body_area = &layout.body_area;
                 // HWP/HWPX에서 `PAGE` 기준은 물리 용지(PAPER)가 아니라 본문 영역 기준이다.
                 // 바탕쪽은 본문보다 먼저 렌더링되므로 표 위치 계산용 현재 페이지 context를
                 // 여기서 명시적으로 채워야 `vertRelTo=PAGE`, `horzRelTo=PAGE`가 올바르게 동작한다.
                 self.prime_page_layout_env(layout);
+                self.current_paper_origin_x.set(paper_area.x);
                 let mut mp_node = RenderNode::new(
                     mp_id,
                     RenderNodeType::MasterPage,
-                    layout_rect_to_bbox(&paper_area),
+                    layout_rect_to_bbox(&physical_paper_area),
                 );
                 // 바탕쪽 그룹에 provenance layer 부여 (#2318): layer 없는 자식(텍스트 라인 등)이
                 // 상속받아 replay plane 분류에서 BehindText 상한이 적용된다.
@@ -6163,14 +6170,14 @@ impl LayoutEngine {
                                 ctrl,
                                 pi,
                                 ci,
-                                &paper_area,
+                                &physical_paper_area,
                                 body_area,
                             );
                             let mut temp_parent = layer.map(|_| {
                                 RenderNode::new(
                                     0,
                                     RenderNodeType::MasterPage,
-                                    layout_rect_to_bbox(&paper_area),
+                                    layout_rect_to_bbox(&physical_paper_area),
                                 )
                             });
                             let target_node = temp_parent.as_mut().unwrap_or(&mut mp_node);
@@ -6223,8 +6230,8 @@ impl LayoutEngine {
                                         &pic.common,
                                         pic_w,
                                         pic_h,
-                                        &paper_area,
-                                        &paper_area,
+                                        &physical_paper_area,
+                                        &physical_paper_area,
                                         body_area,
                                         &paper_area,
                                         paper_area.y,
@@ -6276,7 +6283,7 @@ impl LayoutEngine {
                                         section_index,
                                         styles,
                                         0,
-                                        &paper_area,
+                                        &physical_paper_area,
                                         0.0,
                                         bin_data_content,
                                         None,
@@ -6380,6 +6387,7 @@ impl LayoutEngine {
                     mark_front(&mut mp_node);
                 }
                 tree.root.children.push(mp_node);
+                self.prime_page_layout_env(layout);
                 self.current_page_number.set(previous_page_number);
             }
         }
@@ -7461,6 +7469,7 @@ impl LayoutEngine {
             page_height: col_area.y + col_area.height,
             header_area: *col_area,
             body_area: *col_area,
+            unmirrored_body_x: col_area.x,
             column_areas: vec![*col_area],
             column_direction: crate::model::page::ColumnDirection::LeftToRight,
             footnote_area: *col_area,
@@ -8066,6 +8075,7 @@ impl LayoutEngine {
     /// 페이지·바탕쪽·단 프로브가 같은 물리 용지와 본문 좌표계를 소비한다.
     fn prime_page_layout_env(&self, layout: &PageLayoutInfo) {
         self.current_paper_width.set(layout.page_width);
+        self.current_paper_origin_x.set(0.0);
         self.current_page_height.set(layout.page_height);
         let ba = &layout.body_area;
         self.current_body_area

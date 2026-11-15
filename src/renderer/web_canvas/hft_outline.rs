@@ -1,7 +1,10 @@
 //! 실제 FontFace와 같은 바이트에서 얻은 윤곽만 현재 paint 변환에 재생한다.
 
 use super::WebCanvasRenderer;
-use crate::renderer::{hft_outline::supports_style, PathCommand, TextStyle};
+use crate::renderer::{
+    hft_outline::{has_natural_hft_program, supports_style},
+    PathCommand, TextStyle,
+};
 
 impl WebCanvasRenderer {
     pub(super) fn draw_hft_outline(&self, text: &str, style: &TextStyle, font_size: f64) -> bool {
@@ -26,8 +29,10 @@ impl WebCanvasRenderer {
             } else if self.render_profile == crate::paint::RenderProfile::Print
                 && !crate::renderer::contextual_text::is_contextual(text)
             {
+                // 실제 CSS 주 프로그램의 소유를 먼저 확인한다. 명시 자연 HFT의
+                // 정적 TTF 재생도 보존하며 화면·문맥 shaping으로 확대하지 않는다.
                 fonts.print_primary_glyph(style, character).or_else(|| {
-                    self.print_text_geometry
+                    (self.print_text_geometry || has_natural_hft_program(style))
                         .then(|| fonts.print_fallback_glyph(style, character))
                         .flatten()
                 })

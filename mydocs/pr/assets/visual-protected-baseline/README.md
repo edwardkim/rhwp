@@ -12,7 +12,7 @@
 
 - [final.tsv](final.tsv): 입력·기준 PDF·backend·페이지별 공식 두 자리 raw 보호값.
 - [manifest.json](manifest.json): 입력/PDF SHA-256·크기·측정 조건·전쪽 수·출처 commit/TSV/열/해시와 중복 제거 내역.
-- TSV SHA-256: `8f073dddd67cf8f44bea7c0315c3f9950ba73641e9393747cdbc52d24b33f9a1`.
+- TSV SHA-256: `43c59cf77a4a86b3744d3df30eb71469de70b584ccc9cb165fa8f7b7884d2e1f`.
 - 입력 18개, Native/fresh WASM 각 18개 데이터셋·1,771쪽, 총 36개 데이터셋·3,542행.
 - 최초 통합 당시 수용 자료 56개 데이터셋 중 중복 20개를 정리했다. 이전 자료보다 공식 표시값이 낮아진 페이지는 0쪽이다.
 
@@ -25,9 +25,9 @@ HWP와 HWPX는 같은 제목이어도 별도 입력이다. 아래 최저값은 �
 | --- | ---: | ---: | ---: |
 | [angle-2400.hwpx](<../issue_8371/angle-narrow/angle-2400.hwpx>) | 1 | 100.00% | 100.00% |
 | [jongbu_law.hwpx](<../legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx>) | 6 | 98.86% | 98.86% |
-| [2025 행정업무운영 편람(최종).hwp](<../../../../samples/2025 행정업무운영 편람(최종).hwp>) | 383 | 99.96% | 99.96% |
-| [2025 행정업무운영 편람(최종).hwpx](<../../../../samples/2025 행정업무운영 편람(최종).hwpx>) | 383 | 99.96% | 99.96% |
-| [issue2007_nested_cell_pagination_42065.hwp](<../../../../samples/basic/issue2007_nested_cell_pagination_42065.hwp>) | 17 | 98.59% | 98.59% |
+| [2025 행정업무운영 편람(최종).hwp](<../../../../samples/2025 행정업무운영 편람(최종).hwp>) | 383 | 99.97% | 99.96% |
+| [2025 행정업무운영 편람(최종).hwpx](<../../../../samples/2025 행정업무운영 편람(최종).hwpx>) | 383 | 99.97% | 99.96% |
+| [issue2007_nested_cell_pagination_42065.hwp](<../../../../samples/basic/issue2007_nested_cell_pagination_42065.hwp>) | 17 | 98.63% | 98.65% |
 | [hwp3-sample10.hwp](<../../../../samples/hwp3-sample10.hwp>) | 763 | 99.57% | 99.57% |
 | [hwp3-sample16-hwp5-2022.hwp](<../../../../samples/hwp3-sample16-hwp5-2022.hwp>) | 64 | 100.00% | 100.00% |
 | [hwp3-sample16-hwp5-2024.hwp](<../../../../samples/hwp3-sample16-hwp5-2024.hwp>) | 64 | 99.99% | 99.99% |
@@ -90,3 +90,7 @@ HWP와 HWPX는 같은 제목이어도 별도 입력이다. 아래 최저값은 �
 ## PR #9075 최종 source의 수용 출처
 
 최종 제품 `c95f9ade4e8acf9d901c01136ef2b9bacd60c497`의 36개 데이터셋·3,542행도 상향된 하한을 모두 유지했다. 추가 상승·하락·누락은 각각 0행이다. 보호 값과 표 해시 `8f073dddd67cf8f44bea7c0315c3f9950ba73641e9393747cdbc52d24b33f9a1`은 바꾸지 않고, 최신 [완료 증적](../issue_9060/final/protected-validation.json)을 수용 출처로 연결했다. [최종 검증 영수증](updates/pr9075-20261115-final-validation.json)과 앞선 [30행 상향 영수증](updates/pr9075-20261115.json)을 구분한다. 원격 CI·병합 상태는 별도 PR review를 따른다.
+
+## 2026-11-15 PR #9070–#9072 검토의 상승분 반영
+
+최종 제품 `8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992`의 Native/fresh WASM 각 1,771쪽·36개 데이터셋을 수용했다. 같은 전쪽 실행에서 상승한 19행만 상향했고 하락·누락은 0쪽이다. [검증 원본](../jinho-von-choi-20261114/final-source-8ad/protected-validation.json)과 [갱신 영수증](updates/pr9070-9072-20261115.json)에 생산자·이전/새 해시·개별 상승값을 기록했다. 중간 실행의 페이지별 최댓값을 합치지 않았으며 이전 출처도 보존했다. CI·원격 병합 완료를 뜻하지 않는다.

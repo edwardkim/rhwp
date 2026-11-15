@@ -1,0 +1,108 @@
+{
+  "source": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+  "method": "Canonical make_overlay_page/make_compares/make_review_panels on the already validated unchanged whole-page PNG pair; no rerender, crop, changed mask or threshold.",
+  "items": [
+    {
+      "key": "linechar",
+      "backend": "native",
+      "inputKey": "hwp3-specimen",
+      "page": 1,
+      "nativeOrWasmPngSha256": "c978aad201423154ad7d91dd2baefa4fcfb3b9f6f4bac25db842a8e3a45b9554",
+      "referencePngSha256": "dc50bacf791cc951c45a0d6dd69042ee7b469a7692df9194619fd113327f2cca",
+      "raw": 98.46736,
+      "review": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/representatives/linechar-native-review.png",
+        "sha256": "c25bca481d39fbebab3b8120f5088bf3d5267bbff7e8bc806b31f93209ca6cdb"
+      },
+      "overlay": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/representatives/linechar-native-overlay.png",
+        "sha256": "3b4359059049bd027c0d8d8ded8eafb89e10ebb39b83905d9f4d24efce0c1efc"
+      }
+    },
+    {
+      "key": "linechar",
+      "backend": "wasm",
+      "inputKey": "hwp3-specimen",
+      "page": 1,
+      "nativeOrWasmPngSha256": "e76edd31d034851d9f93e68961af8303ba0f8ce68819455f42303b3bfd13614c",
+      "referencePngSha256": "dc50bacf791cc951c45a0d6dd69042ee7b469a7692df9194619fd113327f2cca",
+      "raw": 98.47794,
+      "review": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/representatives/linechar-wasm-review.png",
+        "sha256": "98078741931503d076ef09e8a7e4a92df8efc041434cf996d062d328bcb8369c"
+      },
+      "overlay": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/representatives/linechar-wasm-overlay.png",
+        "sha256": "05b11eb99756e1b5f696b3140743087cc098fa6b4d63d5832ce074dead7785c1"
+      }
+    },
+    {
+      "key": "master",
+      "backend": "native",
+      "inputKey": "02-both-source",
+      "page": 2,
+      "nativeOrWasmPngSha256": "321d3a11b60dcce3815d96b4859ab34040c35e9063a8b9dda5cd7a1e6de89c43",
+      "referencePngSha256": "e2fb1bc8458c7d50adbd967b75acdfa94e66d660ee0c29cc7ff3ea3bbd3cea34",
+      "raw": 100.0,
+      "review": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/representatives/master-native-review.png",
+        "sha256": "3b3e4a5f7a41d51f122744b1e227be99da65cd386d4a70ca8207bcb6ada3785a"
+      },
+      "overlay": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/representatives/master-native-overlay.png",
+        "sha256": "eba1c6d86c4a60aae982aeaddd8d954a019cf5a164a456116120f7c7ccfc37be"
+      }
+    },
+    {
+      "key": "master",
+      "backend": "wasm",
+      "inputKey": "02-both-source",
+      "page": 2,
+      "nativeOrWasmPngSha256": "5f170bfb7ef1c6b119b963aeae48b9adcc46be0322427374ebeaac3674bbcfae",
+      "referencePngSha256": "e2fb1bc8458c7d50adbd967b75acdfa94e66d660ee0c29cc7ff3ea3bbd3cea34",
+      "raw": 100.0,
+      "review": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/representatives/master-wasm-review.png",
+        "sha256": "3344512d655234212a55c18796b438bdb4643c3ce7b2d2d82afcafe998945de4"
+      },
+      "overlay": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/representatives/master-wasm-overlay.png",
+        "sha256": "b6c9e77e1c6587bdad438c7a6dbe434a1223211ad2399988877e8ac509503b6f"
+      }
+    },
+    {
+      "key": "tac",
+      "backend": "native",
+      "inputKey": "color-source",
+      "page": 3,
+      "nativeOrWasmPngSha256": "4384a8bb6af7e1b07d73ca41243c0f914fe4b86f0615930659f46283e4ce2a49",
+      "referencePngSha256": "72dfa94a7459afac7168275dd34847751cef24f6602a35afcd9ca09d03a64ea9",
+      "raw": 100.0,
+      "review": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/representatives/tac-native-review.png",
+        "sha256": "ec9ea9afe8676a573e3dfe7f12a64926c81498c9a67b97977479f6ca5edd0cc3"
+      },
+      "overlay": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/representatives/tac-native-overlay.png",
+        "sha256": "b59bbea138b3baace169bc7560e892778fef1498751ccd68c982a94a67118431"
+      }
+    },
+    {
+      "key": "tac",
+      "backend": "wasm",
+      "inputKey": "color-source",
+      "page": 3,
+      "nativeOrWasmPngSha256": "f262b1dae820ddb714b0c65d50a3027d68964ca4a21ecc02385e00d987acb552",
+      "referencePngSha256": "72dfa94a7459afac7168275dd34847751cef24f6602a35afcd9ca09d03a64ea9",
+      "raw": 100.0,
+      "review": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/representatives/tac-wasm-review.png",
+        "sha256": "19fcf15c638830f66ea1f559c7c7faa7177c959be447e15bdc4b4b6eee244877"
+      },
+      "overlay": {
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/representatives/tac-wasm-overlay.png",
+        "sha256": "d0ab5fb6030a40a5eb33957c7c9a2fe5bfb762a752ac87ea8e9adebca36d1a30"
+      }
+    }
+  ]
+}

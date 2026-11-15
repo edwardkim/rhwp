@@ -1,0 +1,12 @@
+{
+  "id": "yeongwol-independent-print-qualified-source-programs",
+  "preserveSourceMetrics": true,
+  "substitutions": {
+    "바탕": "Batang",
+    "새굴림": "Gulim"
+  },
+  "trueTypeFaces": [
+    "Gulim",
+    "Batang"
+  ]
+}
