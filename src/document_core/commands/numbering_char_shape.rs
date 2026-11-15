@@ -89,19 +89,49 @@ impl DocumentCore {
 /// HWPX 원본 `paraHead` 구간에서 `level` 수준(1부터)의 `charPrIDRef`를 `id`로 바꾼다.
 /// 그 수준이나 속성을 찾지 못하면 `None`이라 저장은 모델의 수준 값으로 다시 쓴다.
 fn set_para_head_char_shape(raw: &str, level: usize, id: u32) -> Option<String> {
-    let level = format!(" level=\"{level}\"");
-    let key = " charPrIDRef=\"";
+    let mut found = false;
+    let raw = map_para_head_char_refs(raw, |at, old| {
+        if at == level {
+            found = true;
+            Some(id)
+        } else {
+            Some(old)
+        }
+    })?;
+    found.then_some(raw)
+}
+
+/// HWPX 원본 `paraHead` 구간의 `charPrIDRef`를 태그마다 `map(수준, 원래 값)`의 값으로 바꾼다.
+/// 수준은 `level` 속성(1부터)이고 없으면 0이다. `map`이 `None`을 돌려주거나 값을 읽지 못하면 `None`이다.
+pub(super) fn map_para_head_char_refs(
+    raw: &str,
+    mut map: impl FnMut(usize, u32) -> Option<u32>,
+) -> Option<String> {
+    const LEVEL: &str = " level=\"";
+    const KEY: &str = " charPrIDRef=\"";
+    let mut out = String::with_capacity(raw.len());
+    let mut copied = 0;
     let mut from = 0;
     while let Some(open) = raw[from..].find('<').map(|i| from + i) {
         let close = open + raw[open..].find('>')?;
         let tag = &raw[open..close];
         let name = tag[1..].split(char::is_whitespace).next().unwrap_or("");
-        if name.rsplit(':').next() == Some("paraHead") && tag.contains(&level) {
-            let start = open + tag.find(key)? + key.len();
-            let end = start + raw[start..].find('"')?;
-            return Some(format!("{}{id}{}", &raw[..start], &raw[end..]));
+        if name.rsplit(':').next() == Some("paraHead") {
+            if let Some(at) = tag.find(KEY) {
+                let level = match tag.find(LEVEL) {
+                    Some(l) => tag[l + LEVEL.len()..].split('"').next()?.parse().ok()?,
+                    None => 0,
+                };
+                let start = open + at + KEY.len();
+                let end = start + raw[start..close].find('"')?;
+                let id = map(level, raw[start..end].parse().ok()?)?;
+                out.push_str(&raw[copied..start]);
+                out.push_str(&id.to_string());
+                copied = end;
+            }
         }
         from = close + 1;
     }
-    None
+    out.push_str(&raw[copied..]);
+    Some(out)
 }

@@ -376,15 +376,139 @@ fn sparse_target_storage_collision_and_opaque_numbering_are_not_silently_repaire
         .doc_info
         .numberings
         .push(rhwp::model::style::Numbering {
-            raw_para_heads: Some("<hh:paraHead charPrIDRef=\"0\"/>".into()),
+            // 읽은 1수준 값(글자 모양 0)과 다른 원본 참조는 고쳐 옮기지 않는다.
+            raw_para_heads: Some("<hh:paraHead level=\"1\" charPrIDRef=\"7\"/>".into()),
             ..Default::default()
         });
     assert!(target
         .import_paragraph_block_native(source.document(), &request())
         .unwrap_err()
         .to_string()
-        .contains("opaque HWPX"));
+        .contains("charPrIDRef differs"));
     assert_eq!(unchanged(&target), before);
+}
+
+/// HWPX에서 연 번호·글머리표 정의는 원본 `hh:paraHead` 구간을 그대로 다시 쓴다.
+/// 다른 문서로 옮기면 그 안의 글자 모양 참조도 대상 문서의 ID로 바뀌어야 한다.
+#[test]
+fn hwpx_numbering_and_bullet_import_with_target_char_shape_references() {
+    use rhwp::model::style::HeadType;
+    use rhwp::wasm_api::HwpDocument;
+
+    fn blank(texts: &[&str]) -> HwpDocument {
+        let mut doc = HwpDocument::create_empty();
+        doc.create_blank_document_native().unwrap();
+        for (para, text) in texts.iter().enumerate() {
+            if para > 0 {
+                let end = texts[para - 1].chars().count();
+                doc.split_paragraph_native(0, para - 1, end, None).unwrap();
+            }
+            doc.insert_text_native(0, para, 0, text).unwrap();
+        }
+        doc
+    }
+    fn reopen(doc: &DocumentCore, hwpx: bool) -> DocumentCore {
+        let bytes = if hwpx {
+            doc.export_hwpx_native().unwrap()
+        } else {
+            doc.export_hwp_native().unwrap()
+        };
+        DocumentCore::from_bytes(&bytes).unwrap()
+    }
+    /// 원본 구간에서 `level` 수준(글머리표는 첫 태그)의 `charPrIDRef` 값.
+    fn raw_char_ref(raw: &str, level: Option<usize>) -> u32 {
+        let tag = raw
+            .split('<')
+            .filter(|tag| tag.contains("paraHead") && tag.contains("charPrIDRef=\""))
+            .find(|tag| level.is_none_or(|level| tag.contains(&format!(" level=\"{level}\""))))
+            .unwrap();
+        let value = tag.split("charPrIDRef=\"").nth(1).unwrap();
+        value[..value.find('"').unwrap()].parse().unwrap()
+    }
+
+    let mut list = blank(&["head", "numb", "bull", "tail"]);
+    let number =
+        list.create_numbering(r#"{"levelFormats":["^1."],"numberFormats":[0],"startNumber":1}"#);
+    list.set_numbering_char_shape_native(number, 0, Some(r#"{"bold":true,"fontSize":1500}"#))
+        .unwrap();
+    list.apply_para_format_native(
+        0,
+        1,
+        &format!(r#"{{"headType":"Number","paraLevel":0,"numberingId":{number}}}"#),
+    )
+    .unwrap();
+    let bullet = list
+        .create_bullet_native(
+            r#"{"char":"●","charShape":{"italic":true,"fontSize":1200}}"#,
+            None,
+        )
+        .unwrap();
+    list.apply_para_format_native(
+        0,
+        2,
+        &format!(r#"{{"headType":"Bullet","numberingId":{bullet}}}"#),
+    )
+    .unwrap();
+    let source = reopen(&list, true);
+    let info = &source.document().doc_info;
+    let source_number = &info.numberings[usize::from(number) - 1];
+    let source_bullet = &info.bullets[usize::from(bullet) - 1];
+    assert!(source_number.raw_para_heads.is_some() && source_bullet.raw_para_head.is_some());
+
+    // 대상에 글자 모양을 먼저 쌓아 원본과 같은 ID가 다른 모양을 가리키게 한다.
+    let mut target = blank(&["first", "last"]);
+    for (index, size) in [700, 800, 900, 1100].into_iter().enumerate() {
+        target
+            .apply_char_format_native(0, 0, index, index + 1, &format!(r#"{{"fontSize":{size}}}"#))
+            .unwrap();
+    }
+    let result = target
+        .import_paragraph_block_native(
+            source.document(),
+            &ImportParagraphBlockRequest {
+                source_start: 1,
+                source_end: 3,
+                count: 1,
+                ..request()
+            },
+        )
+        .unwrap();
+    assert_eq!(result.inserted, 1..3);
+
+    let check = |doc: &DocumentCore| {
+        let info = &doc.document().doc_info;
+        let paras = &doc.document().sections[0].paragraphs;
+        let number_shape = &info.para_shapes[usize::from(paras[1].para_shape_id)];
+        let bullet_shape = &info.para_shapes[usize::from(paras[2].para_shape_id)];
+        assert_eq!(number_shape.head_type, HeadType::Number);
+        assert_eq!(bullet_shape.head_type, HeadType::Bullet);
+        let number = &info.numberings[usize::from(number_shape.numbering_id) - 1];
+        let bullet = &info.bullets[usize::from(bullet_shape.numbering_id) - 1];
+        let number_char = &info.char_shapes[number.heads[0].char_shape_id as usize];
+        let bullet_char = &info.char_shapes[bullet.char_shape_id as usize];
+        assert!(number_char.bold && number_char.base_size == 1500);
+        assert!(bullet_char.italic && bullet_char.base_size == 1200);
+        if let Some(raw) = &number.raw_para_heads {
+            assert_eq!(raw_char_ref(raw, Some(1)), number.heads[0].char_shape_id);
+        }
+        if let Some(raw) = &bullet.raw_para_head {
+            assert_eq!(raw_char_ref(raw, None), bullet.char_shape_id);
+        }
+    };
+    check(&target);
+    let imported = &target.document().doc_info;
+    let paras = &target.document().sections[0].paragraphs;
+    let number_id = imported.para_shapes[usize::from(paras[1].para_shape_id)].numbering_id;
+    assert_ne!(
+        imported.numberings[usize::from(number_id) - 1].heads[0].char_shape_id,
+        source_number.heads[0].char_shape_id,
+        "the fixture must move the reference to a different target ID"
+    );
+    for hwpx in [true, false] {
+        let saved = reopen(&target, hwpx);
+        check(&saved);
+        check(&reopen(&saved, hwpx));
+    }
 }
 
 #[test]
