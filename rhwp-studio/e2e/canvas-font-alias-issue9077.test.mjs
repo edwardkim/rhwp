@@ -54,12 +54,14 @@ await runTest('#9077 Canvas 예약 별칭의 실제 face 선택', async ({ page 
             distinctFallback: control.pixels !== fallback.pixels, leading: names.slice(0, aliases.length + 1) });
         }
         // 공급된 예약 별칭은 일반 face보다 먼저 실제 별도 프로그램을 선택한다.
-        const alias = `__rhwp_ttf__${family}`;
-        await supply(alias, 'Italic');
-        const actual = paint(`64px "${alias}", "${family}", serif`);
-        const expected = paint(`64px "${alias}"`, true);
-        checks.push({ family, prepared: true, samePixels: actual.pixels === expected.pixels,
-          distinctOriginal: actual.pixels !== control.pixels, width: actual.width, expectedWidth: expected.width });
+        for (const prefix of ['__rhwp_ttf__', '__rhwp_intrinsic__']) {
+          const alias = `${prefix}${family}`;
+          await supply(alias, 'Italic');
+          const actual = paint(`64px "${alias}", "${family}", serif`);
+          const expected = paint(`64px "${alias}"`, true);
+          checks.push({ family, alias, prepared: true, samePixels: actual.pixels === expected.pixels,
+            distinctOriginal: actual.pixels !== control.pixels, width: actual.width, expectedWidth: expected.width });
+        }
       }
       const sheet = document.createElement('canvas'); sheet.width = 360; sheet.height = 110;
       const context = sheet.getContext('2d');
@@ -69,7 +71,7 @@ await runTest('#9077 Canvas 예약 별칭의 실제 face 선택', async ({ page 
       sheet.id = 'issue9077-preview';
       sheet.style.cssText = 'position:fixed;bottom:0;right:0;z-index:2147483647;border:1px solid black';
       document.body.append(sheet);
-      return { checks, backend: window.__renderBackend };
+      return { checks, backend: window.__renderBackend, browser: navigator.userAgent };
     } finally {
       clearLoadedLocalFontFaces();
       for (const face of supplied) document.fonts.delete(face);
