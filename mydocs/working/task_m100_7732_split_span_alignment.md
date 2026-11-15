@@ -142,3 +142,24 @@ Native/fresh WASM 비교는 새 base 대비 하락 0쪽이다. 다만 설치 전
 Helvetica 1쪽과 nested 4·10·14쪽의 보호 하한 미달이 남았으므로 전체 보호 통과가 아니다.
 설치 후에는 같은 프로그램·설정을 공급한 고정 base/head 대조부터 재검증한다.
 사용자 지시대로 PR 생성·push는 하지 않는다.
+
+
+## 2026-11-15 17:44 KST — nested 4쪽 화살표의 실제 Print 대체 확인
+
+설치 후 남은 Native4쪽99.94%를 확대 판독했다. 50개 raw 미대응 픽셀은
+`⇩`(U+21E9) 두 개에 모여 있었다. 원본은 굴림체를 요청하지만 실제 Native는
+D2Coding을 선택했고, 독립 PDF는 두 문자 모두 Haansoft Batang을 사용했다.
+PDF 기준선은671.3862915·708.3059082pt다. 기준 PDF를 글꼴 공급원으로 사용하지 않았다.
+
+기존 비교 환경에 굴림체/GulimChe의 누락 문자 fallback을 Haansoft Batang으로
+명시했다. 원본 프로그램·전진폭 소유는 유지하며 제품 코드나 판정 기준을 바꾸지 않았다.
+동일 환경의 새 base와 후보에서 전17쪽을 Native/fresh WASM 각각 재측정했다.
+4쪽은 네 실행 모두100.00%이고 Native 전17쪽의 보호 하락은0쪽이다.
+다만 WASM11쪽은 두 source 모두99.09%/보호99.10%로 남아 전체 보호 통과가 아니다.
+Helvetica 대조군은 PDF에서 확인한 Arial 설정으로 base/후보 Native가 모두100.00%다.
+[비교 조건·전쪽 TSV·4쪽 review/overlay](../pr/assets/issue7732_split_span_20261115/post-rebase-print-font-conditions/comparison.json)를 보존한다.
+
+사용자가 요청한 보호 검증용 ZIP은 output 아래에 생성한다. 보호18종·각1771쪽의
+글꼴 의존 기록에서 실제 적재 프로그램과 동일 family 선택 후보를 모았고, Native 직접
+공급 파일을 합쳐 SHA 중복을 제거했다. OS 전체 글꼴을 묶지 않으며 비공개 바이너리는
+커밋하지 않는다. ZIP 생성은 전체 보호 검증의 통과나 PR 제출을 의미하지 않는다.
