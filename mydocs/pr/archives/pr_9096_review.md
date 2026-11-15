@@ -20,5 +20,20 @@
 - 옵션 M으로 archive·오늘할일·검증 asset만 devel에 직접 반영한다. 테스트 주석의 기존 문서 경로 2곳은 완료 기록 안내문으로 유지한다. 제품·test·workflow·baseline 변경은 없다.
 - 연결 이슈 [#8912](https://github.com/edwardkim/rhwp/issues/8912) · [#7631](https://github.com/edwardkim/rhwp/issues/7631) · [#8318](https://github.com/edwardkim/rhwp/issues/8318) · [#8307](https://github.com/edwardkim/rhwp/issues/8307) · [#9046](https://github.com/edwardkim/rhwp/issues/9046) · [#9049](https://github.com/edwardkim/rhwp/issues/9049) · [#7381](https://github.com/edwardkim/rhwp/issues/7381) · [#7711](https://github.com/edwardkim/rhwp/issues/7711) · [#8083](https://github.com/edwardkim/rhwp/issues/8083)는 병합 후 자동으로 completed 종료됐다. 부모 [#7445](https://github.com/edwardkim/rhwp/issues/7445)·[#7620](https://github.com/edwardkim/rhwp/issues/7620)은 OPEN을 유지한다. [실제 상태](../assets/jinho-von-choi-20261114/post-merge/issue-states.json).
 - #9049는 기존 해결의 회귀 보강, #7381은 핵심 occurrence·도움말 계약의 완료다. 전체 옵션 리팩터링을 구현했다고 확대하지 않는다.
-- 개별 archive의 댓글 계획에 따라 운영 기록 반영·devel 동기화 뒤 이슈 9건과 원 PR 3건에 결과를 게시한다. 원 신고 쪽의 [추가 대응 증적](../assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/README.md)은 이미 완료한 최종 캡처에서 생산했으며 새 검증이나 제품 변경이 아니다.
-- 게시·정리의 최종 실행 영수증은 `local/pr-9096-closure/closure.json`에 기록한다. 우리 전용 worktree 3곳·통합 branch·루트 output·공유 review debug를 실제 사용 종료 후 정리하고 다른 worktree·fork branch·글꼴은 보존한다.
+- 개별 archive의 댓글 계획에 따라 운영 기록 반영·devel 동기화 뒤 이슈 9건과 원 PR 3건에 결과 댓글을 게시했다. API 본문과 실제 GitHub 브라우저의 12개 댓글·48개 이미지 표시를 확인했다. 원 신고 쪽의 [추가 대응 증적](../assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/README.md)은 이미 완료한 최종 캡처에서 생산했으며 새 검증이나 제품 변경이 아니다.
+- 우리 전용 worktree 3곳·로컬/원격 통합 branch·루트 `output/`·공유 review debug를 실제 사용 종료 후 제거했다. 확보 공간은 약 66.39 GiB, 종료 시 여유 공간은 129.34 GiB다. 다른 worktree·fork branch·글꼴과 다른 target profile은 보존했다. [댓글·브라우저·삭제 경로·전후 용량 영수증](../assets/jinho-von-choi-20261114/post-merge/closure.json), 로컬 최신 동기화 기록은 `local/pr-9096-closure/closure.json`이다.
+
+## 결과 댓글
+
+- [이슈 #7381](https://github.com/edwardkim/rhwp/issues/7381#issuecomment-6895392803)
+- [이슈 #7631](https://github.com/edwardkim/rhwp/issues/7631#issuecomment-6895393599)
+- [이슈 #7711](https://github.com/edwardkim/rhwp/issues/7711#issuecomment-6895394324)
+- [이슈 #8083](https://github.com/edwardkim/rhwp/issues/8083#issuecomment-6895395183)
+- [이슈 #8307](https://github.com/edwardkim/rhwp/issues/8307#issuecomment-6895395919)
+- [이슈 #8318](https://github.com/edwardkim/rhwp/issues/8318#issuecomment-6895396669)
+- [이슈 #8912](https://github.com/edwardkim/rhwp/issues/8912#issuecomment-6895397431)
+- [이슈 #9046](https://github.com/edwardkim/rhwp/issues/9046#issuecomment-6895398251)
+- [이슈 #9049](https://github.com/edwardkim/rhwp/issues/9049#issuecomment-6895399109)
+- [원 PR #9070](https://github.com/edwardkim/rhwp/pull/9070#issuecomment-6895400152)
+- [원 PR #9071](https://github.com/edwardkim/rhwp/pull/9071#issuecomment-6895401143)
+- [원 PR #9072](https://github.com/edwardkim/rhwp/pull/9072#issuecomment-6895402243)

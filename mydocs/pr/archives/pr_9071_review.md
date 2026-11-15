@@ -2,13 +2,13 @@
 
 ## 최종 판정
 
-**메인터너 보정 후 수용 가능.** 기존 보호값·영문 스타일·그림 외곽의 차이를 예외 없이 보완했다.
-제품 source는 `8ad1c5c08a`, 최신 base는 `2d83fa4c8a`이며 실제 비교용 `e7ee272cfa`와 제품·시각 harness가 같다.
+**승인·통합 완료.** 기존 보호값·영문 스타일·그림 외곽의 차이를 예외 없이 보완했다.
+Rust 제품 source는 `8ad1c5c08a`, Rust 검증 기준 base는 `2d83fa4c8a`이며 실제 비교용 `e7ee272cfa`와 제품·시각 harness가 같다. 최종 제출은 새 devel `1805d8f08c`를 병합하고 frontend 기능 보존을 재검증한 `b6a9116676`이다.
 전체 회귀 13,608건·Native 공식 4,073건·모든 lint와 필수 편람 gate를 통과했다.
 Native/fresh WASM 보호 각 1,771쪽·3,542행의 공식값 하락은 0건이며 상승 19행을 새 하한에 반영했다.
 원 사례·대조군 각 134쪽의 최저는 93.31%·92.35%다. 직접 확대 판독·최신 base 전쪽 비교도 완료했다.
 [최종 검증·생산자·전쪽 TSV](../assets/jinho-von-choi-20261114/final-source-8ad/README.md).
-사용자 승인 후 [수용 PR #9096](https://github.com/edwardkim/rhwp/pull/9096)을 생성했다. 공개 최종 review·merge·issue close는 최신 head CI 확인 뒤 진행한다.
+사용자 승인 후 [수용 PR #9096](https://github.com/edwardkim/rhwp/pull/9096)의 모든 CI·공개 self-review를 완료하고 `e4f8ff2d637d5b0a313211455ae3ccc53444d969`로 병합했다. 원 PR의 MERGED 상태·연결 이슈의 completed 종료와 [결과 댓글](https://github.com/edwardkim/rhwp/pull/9071#issuecomment-6895401143)을 확인했다.
 
 작성자 JinHo-von-Choi, 원 head `a1bd3fa4edb8bb79c0ae312166358b6be299e5d0`. reviewer `edwardkim`이며 원 commit을 보존했다. 원 이슈는 #7631·#8318·#9046·#9049이고 추가 보완의 같은 원 신고는 #8307이다. 라우팅은 [검토 계획](jinho_von_choi_20261114_review_plan.md)과 공통 원장에 기록한다.
 
