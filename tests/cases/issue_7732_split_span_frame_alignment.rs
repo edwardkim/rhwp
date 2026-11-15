@@ -56,6 +56,7 @@ fn owned_text<'a>(cell: &'a RenderNode, text: &str) -> (&'a RenderNode, f64) {
     runs[0]
 }
 
+/// 고정형: 독립 Print 기준선 ±2 CSSpx.
 #[test]
 fn first_saved_span_fragment_keeps_the_independent_print_baseline() {
     let core = source();
@@ -69,6 +70,7 @@ fn first_saved_span_fragment_keeps_the_independent_print_baseline() {
     );
 }
 
+/// 관계형: 같은 물리 행의 한 줄 Center 라벨과 번호의 기준선·문단 소유.
 #[test]
 fn split_label_uses_the_same_center_as_the_complete_peer_in_its_physical_row() {
     let core = source();

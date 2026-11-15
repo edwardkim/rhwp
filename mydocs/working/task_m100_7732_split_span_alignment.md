@@ -39,3 +39,17 @@ PR #9083 병합 `f8234f6f90cb25d9601c9d5d762e0a565aea19e4` 뒤 사용자가37쪽
 [독립 값·원본/PDF hash·보정 전 실행](../pr/assets/issue7732_split_span_20261115/before-analysis.json).
 제품 보정 뒤 정식 Cargo 수집·집중/전체 회귀·Native/fresh WASM 전50쪽·정상 대조군과 보호 문서를
 검증한다. 과거 PR의 실행을 후속 코드의 새 실행으로 바꾸어 쓰지 않는다. 후속 PR은 사용자 승인 범위다.
+
+## 2026-11-15T13:25:12+09:00 — 공통 선택 컷 연결과 Native 집중 결과
+
+실제 `cut_units` 계산을 정렬 소유 판정 앞으로 옮겨 RowCut/BlockCut의 표현과 관계없이
+같은 수용 유닛 범위를 읽게 했다. 기존 원본 슬롯/현재 프로그램/저장 프레임 인증 helper를
+재사용하며 수치나 문서별 예외는 추가하지 않았다.
+
+Native37쪽98.75228%→99.29420%,38쪽99.84367% 유지다. 선택 라벨은 옆의31과
+같은 기준선으로 옮겨졌고 review/overlay를 직접 판독했다. 최소 글꼴 진단2PASS·0FAIL이다.
+정식 Cargo 수집과 전체 회귀·Native/fresh WASM50쪽·보호 검증은 아직 실행 전이다.
+
+[집중 결과](../pr/assets/issue7732_split_span_20261115/focused-native-result.json) ·
+[37쪽 review](../pr/assets/issue7732_split_span_20261115/after-native/review-037.png) ·
+[overlay](../pr/assets/issue7732_split_span_20261115/after-native/overlay-037.png).
