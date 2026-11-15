@@ -200,29 +200,25 @@ fn textbox_floating_table_offset_px(
     })
 }
 
-/// [PK-40987] 저장 줄 없는 글상자의 빈 앵커 문단에 놓인 문단 기준 자리차지(위아래) 표의 띠.
+/// [PK-40987] 저장 줄 없는 글상자 문단에 놓인 문단 기준 자리차지(위아래) 표의 띠.
 ///
 /// 한컴(웹한글기안기 인쇄·화면 실측)은 이 표를 `문단 위끝 + 세로 오프셋 + 바깥 위 여백` 에 놓고, 다음
-/// 문단을 `표 바닥 + 바깥 아래 여백` 에서 시작한다. 빈 앵커 문단의 자기 줄은 그 띠에 흡수된다.
-/// 가로·세로 정렬은 단·문단 기준 왼쪽, 문단 기준 위만 다룬다. 돌려주는 값은 문단 위끝 기준
-/// (가로 오프셋, 표 위 오프셋, 띠 아래끝) px 이며, 해당 표가 없으면 `None` 이다.
+/// 문단을 `표 바닥 + 바깥 아래 여백` 에서 시작한다. 빈 앵커 문단의 자기 줄은 그 띠에 흡수되고,
+/// 글 있는 앵커 문단은 띠에 걸리는 줄만 띠 아래로 간다(띠 위의 줄은 제자리).
+/// 가로·세로 정렬은 단·문단 기준 왼쪽, 문단 기준 위만 다룬다. 앵커 문단의 컨트롤은 이런 표뿐이어야 한다.
+/// 돌려주는 값은 문단 위끝 기준 (가로 오프셋, 표 위 오프셋, 띠 아래끝) px 이며, 해당하지 않으면 `None` 이다.
 fn textbox_topbottom_table_band_px(
     para: &Paragraph,
     table: &crate::model::table::Table,
     dpi: f64,
 ) -> Option<(f64, f64, f64)> {
     let common = &table.common;
-    if common.treat_as_char
-        || common.text_wrap != TextWrap::TopAndBottom
-        || common.vert_rel_to != VertRelTo::Para
-        || common.vert_align != VertAlign::Top
-        || !matches!(common.horz_rel_to, HorzRelTo::Column | HorzRelTo::Para)
-        || common.horz_align != HorzAlign::Left
-        || !para
-            .text
-            .chars()
-            .all(|c| c.is_whitespace() || c == '\u{FFFC}')
+    if !textbox_topbottom_table_shape(table)
         || !crate::renderer::para_has_no_stored_line_segs(para)
+        || !para.controls.iter().all(|control| match control {
+            Control::Table(other) => textbox_topbottom_table_shape(other),
+            _ => false,
+        })
     {
         return None;
     }
@@ -236,16 +232,27 @@ fn textbox_topbottom_table_band_px(
     ))
 }
 
-/// [PK-40987] 문단이 가진 위 띠 표들의 가장 아래 띠 끝(문단 위끝 기준 px).
-fn textbox_topbottom_table_band_bottom_px(para: &Paragraph, dpi: f64) -> Option<f64> {
+/// [PK-40987] 띠 계약이 다루는 표 형상(글자처럼 아님, 자리차지, 문단 기준 위, 단·문단 기준 왼쪽).
+fn textbox_topbottom_table_shape(table: &crate::model::table::Table) -> bool {
+    let common = &table.common;
+    !common.treat_as_char
+        && common.text_wrap == TextWrap::TopAndBottom
+        && common.vert_rel_to == VertRelTo::Para
+        && common.vert_align == VertAlign::Top
+        && matches!(common.horz_rel_to, HorzRelTo::Column | HorzRelTo::Para)
+        && common.horz_align == HorzAlign::Left
+}
+
+/// [PK-40987] 문단이 가진 띠 표들의 (가장 위 표 위, 가장 아래 띠 끝)(문단 위끝 기준 px).
+fn textbox_topbottom_table_band_extent_px(para: &Paragraph, dpi: f64) -> Option<(f64, f64)> {
     para.controls
         .iter()
         .filter_map(|control| match control {
             Control::Table(table) => textbox_topbottom_table_band_px(para, table, dpi),
             _ => None,
         })
-        .map(|(_, _, bottom)| bottom)
-        .reduce(f64::max)
+        .map(|(_, top, bottom)| (top, bottom))
+        .reduce(|(t0, b0), (t1, b1)| (t0.min(t1), b0.max(b1)))
 }
 
 fn push_placeholder_render_node(
@@ -3937,6 +3944,7 @@ impl LayoutEngine {
                 },
             };
             let is_last_para = tb_para_idx + 1 == composed_paras.len();
+            let para_first_child = textbox_node.children.len();
             para_y = self.layout_composed_paragraph(
                 tree,
                 &mut textbox_node,
@@ -3959,8 +3967,30 @@ impl LayoutEngine {
             );
             // [PK-40987] 빈 앵커 문단의 자리차지 표는 흐름을 차지한다. 다음 문단은 표 띠 아래에서
             // 시작하고 앵커 문단의 빈 줄은 띠에 흡수된다(띠가 줄보다 짧으면 줄을 지킨다).
-            if let Some(band) = textbox_topbottom_table_band_bottom_px(para, self.dpi) {
+            if let Some((band_top, band)) = textbox_topbottom_table_band_extent_px(para, self.dpi) {
                 let para_start = paragraph_origins[tb_para_idx];
+                let anchor_has_text = !para
+                    .text
+                    .chars()
+                    .all(|c| c.is_whitespace() || c == '\u{FFFC}');
+                if anchor_has_text {
+                    // 글 있는 앵커: 띠에 걸리는 첫 줄부터 이 문단의 뒤 줄을 띠 아래로 민다.
+                    let (top, bottom) = (para_start + band_top, para_start + band);
+                    let mut shift = 0.0f64;
+                    for node in &mut textbox_node.children[para_first_child..] {
+                        if shift == 0.0
+                            && matches!(node.node_type, RenderNodeType::TextLine(_))
+                            && node.bbox.y < bottom
+                            && node.bbox.y + node.bbox.height > top
+                        {
+                            shift = bottom - node.bbox.y;
+                        }
+                        if shift > 0.0 {
+                            Self::translate_subtree_y(node, shift);
+                        }
+                    }
+                    para_y += shift;
+                }
                 para_y = para_y.max(para_start + band);
                 topbottom_band_bottom = topbottom_band_bottom.max(para_start + band - inner_area.y);
             }
