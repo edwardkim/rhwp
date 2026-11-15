@@ -3,7 +3,7 @@
   "created_at": "2026-11-08T22:37:56.286882+09:00",
   "baseline_kind": "수용된 최종 전쪽 검증의 상승분을 반영한 보호 하한. CI·병합 상태는 별도 기록한다.",
   "table": "final.tsv",
-  "table_sha256": "8f073dddd67cf8f44bea7c0315c3f9950ba73641e9393747cdbc52d24b33f9a1",
+  "table_sha256": "43c59cf77a4a86b3744d3df30eb71469de70b584ccc9cb165fa8f7b7884d2e1f",
   "row_count": 3542,
   "document_count": 18,
   "dataset_count": 36,
@@ -48,8 +48,22 @@
         "radius_px": 2
       },
       "page_count": 4,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/native/yeongwol.tsv",
+        "sha256": "4475a64f14dc6abd397b9c38d09fd626931074cd6cd12472af9ac2c101c929a1",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "100.00",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -60,20 +74,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "100.00",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/native/yeongwol.tsv",
-        "sha256": "4475a64f14dc6abd397b9c38d09fd626931074cd6cd12472af9ac2c101c929a1",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -114,6 +114,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/native/yeongwol.tsv",
+          "sha256": "4475a64f14dc6abd397b9c38d09fd626931074cd6cd12472af9ac2c101c929a1",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -141,8 +154,22 @@
         "radius_px": 2
       },
       "page_count": 4,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/wasm/yeongwol.tsv",
+        "sha256": "4475a64f14dc6abd397b9c38d09fd626931074cd6cd12472af9ac2c101c929a1",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "100.00",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -153,20 +180,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "100.00",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/yeongwol.tsv",
-        "sha256": "4475a64f14dc6abd397b9c38d09fd626931074cd6cd12472af9ac2c101c929a1",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -207,6 +220,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/yeongwol.tsv",
+          "sha256": "4475a64f14dc6abd397b9c38d09fd626931074cd6cd12472af9ac2c101c929a1",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -234,8 +260,22 @@
         "radius_px": 2
       },
       "page_count": 1,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/native/seo-body-list-typed.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "100.00",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -246,20 +286,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "100.00",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/native/seo-body-list-typed.tsv",
-        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -300,6 +326,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/native/seo-body-list-typed.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -327,8 +366,22 @@
         "radius_px": 2
       },
       "page_count": 1,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/wasm/seo-body-list-typed.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "100.00",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -339,20 +392,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "100.00",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/seo-body-list-typed.tsv",
-        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -393,6 +432,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/seo-body-list-typed.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -420,8 +472,22 @@
         "radius_px": 2
       },
       "page_count": 383,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/native/handbook-hwp.tsv",
+        "sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "99.97",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -432,20 +498,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "99.96",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/native/handbook-hwp.tsv",
-        "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -486,6 +538,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/native/handbook-hwp.tsv",
+          "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -513,8 +578,22 @@
         "radius_px": 2
       },
       "page_count": 383,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/wasm/handbook-hwp.tsv",
+        "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "99.96",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -525,20 +604,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "99.96",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/handbook-hwp.tsv",
-        "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -579,6 +644,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/handbook-hwp.tsv",
+          "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -606,8 +684,22 @@
         "radius_px": 2
       },
       "page_count": 1,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/native/seo-helvetica-styles.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "100.00",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -618,20 +710,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "100.00",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/native/seo-helvetica-styles.tsv",
-        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -672,6 +750,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/native/seo-helvetica-styles.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -699,8 +790,22 @@
         "radius_px": 2
       },
       "page_count": 1,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/wasm/seo-helvetica-styles.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "100.00",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -711,20 +816,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "100.00",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/seo-helvetica-styles.tsv",
-        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -765,6 +856,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/seo-helvetica-styles.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -792,8 +896,22 @@
         "radius_px": 2
       },
       "page_count": 64,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/native/sample16-hwpx.tsv",
+        "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "99.99",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -804,20 +922,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "99.99",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/native/sample16-hwpx.tsv",
-        "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -858,6 +962,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/native/sample16-hwpx.tsv",
+          "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -885,8 +1002,22 @@
         "radius_px": 2
       },
       "page_count": 64,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/wasm/sample16-hwpx.tsv",
+        "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "99.99",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -897,20 +1028,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "99.99",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/sample16-hwpx.tsv",
-        "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -951,6 +1068,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/sample16-hwpx.tsv",
+          "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -978,8 +1108,22 @@
         "radius_px": 2
       },
       "page_count": 64,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/native/sample16-hwp2022.tsv",
+        "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "100.00",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -990,20 +1134,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "100.00",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/native/sample16-hwp2022.tsv",
-        "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -1044,6 +1174,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/native/sample16-hwp2022.tsv",
+          "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -1071,8 +1214,22 @@
         "radius_px": 2
       },
       "page_count": 64,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/wasm/sample16-hwp2022.tsv",
+        "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "100.00",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -1083,20 +1240,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "100.00",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/sample16-hwp2022.tsv",
-        "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -1137,6 +1280,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/sample16-hwp2022.tsv",
+          "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -1164,8 +1320,22 @@
         "radius_px": 2
       },
       "page_count": 1,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/native/seo-re-03-latin.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "100.00",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -1176,20 +1346,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "100.00",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/native/seo-re-03-latin.tsv",
-        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -1230,6 +1386,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/native/seo-re-03-latin.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -1257,8 +1426,22 @@
         "radius_px": 2
       },
       "page_count": 1,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/wasm/seo-re-03-latin.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "100.00",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -1269,20 +1452,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "100.00",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/seo-re-03-latin.tsv",
-        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -1323,6 +1492,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/seo-re-03-latin.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -1350,8 +1532,22 @@
         "radius_px": 2
       },
       "page_count": 1,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/native/angle-narrow.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "100.00",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -1362,20 +1558,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "100.00",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/native/angle-narrow.tsv",
-        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -1416,6 +1598,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/native/angle-narrow.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -1443,8 +1638,22 @@
         "radius_px": 2
       },
       "page_count": 1,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/wasm/angle-narrow.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "100.00",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -1455,20 +1664,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "100.00",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/angle-narrow.tsv",
-        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -1509,6 +1704,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/angle-narrow.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -1536,8 +1744,22 @@
         "radius_px": 2
       },
       "page_count": 9,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/native/outline.tsv",
+        "sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "100.00",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -1548,20 +1770,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "100.00",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/native/outline.tsv",
-        "sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -1602,6 +1810,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/native/outline.tsv",
+          "sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -1629,8 +1850,22 @@
         "radius_px": 2
       },
       "page_count": 9,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/wasm/outline.tsv",
+        "sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "100.00",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -1641,20 +1876,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "100.00",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/outline.tsv",
-        "sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -1695,6 +1916,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/outline.tsv",
+          "sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -1722,8 +1956,22 @@
         "radius_px": 2
       },
       "page_count": 4,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/native/issue8040-insert.tsv",
+        "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "99.99",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -1734,20 +1982,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "99.99",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/native/issue8040-insert.tsv",
-        "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -1788,6 +2022,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/native/issue8040-insert.tsv",
+          "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -1815,8 +2062,22 @@
         "radius_px": 2
       },
       "page_count": 4,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/wasm/issue8040-insert.tsv",
+        "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "99.99",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -1827,20 +2088,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "99.99",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/issue8040-insert.tsv",
-        "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -1881,6 +2128,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/issue8040-insert.tsv",
+          "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -1908,8 +2168,22 @@
         "radius_px": 2
       },
       "page_count": 17,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/native/nested.tsv",
+        "sha256": "5f4f11cc5d2e3495ac05b347bc74f9b9c186091d0175ea26f2595837722ac479",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "98.63",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -1920,20 +2194,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "98.59",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/native/nested.tsv",
-        "sha256": "66a699bae01af9f0c8b2cc73418381de8a298e995e323a964b44fd79c9ba1f14",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -1974,6 +2234,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/native/nested.tsv",
+          "sha256": "66a699bae01af9f0c8b2cc73418381de8a298e995e323a964b44fd79c9ba1f14",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -2001,8 +2274,22 @@
         "radius_px": 2
       },
       "page_count": 17,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/wasm/nested.tsv",
+        "sha256": "451d72cddb6f90e6327e1602b046efaed1de4162e472ee989cac313fb0b64aa9",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "98.65",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -2013,20 +2300,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "98.59",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/nested.tsv",
-        "sha256": "f29c9e340c05e9a340a1d4cd7d2f2e24c6fcb6e0a0a6e43b4d76bf6dd191743b",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -2067,6 +2340,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/nested.tsv",
+          "sha256": "f29c9e340c05e9a340a1d4cd7d2f2e24c6fcb6e0a0a6e43b4d76bf6dd191743b",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -2094,8 +2380,22 @@
         "radius_px": 2
       },
       "page_count": 64,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/native/sample16-hwp2024.tsv",
+        "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "99.99",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -2106,20 +2406,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "99.99",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/native/sample16-hwp2024.tsv",
-        "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -2160,6 +2446,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/native/sample16-hwp2024.tsv",
+          "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -2187,8 +2486,22 @@
         "radius_px": 2
       },
       "page_count": 64,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/wasm/sample16-hwp2024.tsv",
+        "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "99.99",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -2199,20 +2512,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "99.99",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/sample16-hwp2024.tsv",
-        "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -2253,6 +2552,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/sample16-hwp2024.tsv",
+          "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -2280,8 +2592,22 @@
         "radius_px": 2
       },
       "page_count": 383,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/native/handbook-hwpx.tsv",
+        "sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "99.97",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -2292,20 +2618,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "99.96",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/native/handbook-hwpx.tsv",
-        "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -2346,6 +2658,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/native/handbook-hwpx.tsv",
+          "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -2373,8 +2698,22 @@
         "radius_px": 2
       },
       "page_count": 383,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/wasm/handbook-hwpx.tsv",
+        "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "99.96",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -2385,20 +2724,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "99.96",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/handbook-hwpx.tsv",
-        "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -2439,6 +2764,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/handbook-hwpx.tsv",
+          "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -2466,8 +2804,22 @@
         "radius_px": 2
       },
       "page_count": 6,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/native/issue7905.tsv",
+        "sha256": "b828c10e23bcef9c5e7078451d3c8d92e1cb9811a7ac3a952c084a741f6ac6fe",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "98.86",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -2478,20 +2830,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "98.86",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/native/issue7905.tsv",
-        "sha256": "b828c10e23bcef9c5e7078451d3c8d92e1cb9811a7ac3a952c084a741f6ac6fe",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -2532,6 +2870,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/native/issue7905.tsv",
+          "sha256": "b828c10e23bcef9c5e7078451d3c8d92e1cb9811a7ac3a952c084a741f6ac6fe",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -2559,8 +2910,22 @@
         "radius_px": 2
       },
       "page_count": 6,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/wasm/issue7905.tsv",
+        "sha256": "8da442a73d4de191337083da11f5c507b66d668d80821b86f82f29d4fa556d98",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "98.86",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -2571,20 +2936,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "98.86",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/issue7905.tsv",
-        "sha256": "8da442a73d4de191337083da11f5c507b66d668d80821b86f82f29d4fa556d98",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -2625,6 +2976,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/issue7905.tsv",
+          "sha256": "8da442a73d4de191337083da11f5c507b66d668d80821b86f82f29d4fa556d98",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -2652,8 +3016,22 @@
         "radius_px": 2
       },
       "page_count": 763,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/native/sample10.tsv",
+        "sha256": "248740c943667ee2121afdfc125ed838ae7e196e1c90265284613afc48f508bd",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "99.57",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -2664,20 +3042,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "99.57",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/native/sample10.tsv",
-        "sha256": "248740c943667ee2121afdfc125ed838ae7e196e1c90265284613afc48f508bd",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -2718,6 +3082,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/native/sample10.tsv",
+          "sha256": "248740c943667ee2121afdfc125ed838ae7e196e1c90265284613afc48f508bd",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -2745,8 +3122,22 @@
         "radius_px": 2
       },
       "page_count": 763,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/wasm/sample10.tsv",
+        "sha256": "f0ff5f22ed2dfb65f1063f73a3b80fad44ba4f331d714a4acc16657628498de5",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "99.57",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -2757,20 +3148,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "99.57",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/sample10.tsv",
-        "sha256": "f0ff5f22ed2dfb65f1063f73a3b80fad44ba4f331d714a4acc16657628498de5",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -2811,6 +3188,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/sample10.tsv",
+          "sha256": "f0ff5f22ed2dfb65f1063f73a3b80fad44ba4f331d714a4acc16657628498de5",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -2838,8 +3228,22 @@
         "radius_px": 2
       },
       "page_count": 4,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/native/issue8040-insert-delete.tsv",
+        "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "99.99",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -2850,20 +3254,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "99.99",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/native/issue8040-insert-delete.tsv",
-        "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -2904,6 +3294,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/native/issue8040-insert-delete.tsv",
+          "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -2931,8 +3334,22 @@
         "radius_px": 2
       },
       "page_count": 4,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/wasm/issue8040-insert-delete.tsv",
+        "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "99.99",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -2943,20 +3360,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "99.99",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/issue8040-insert-delete.tsv",
-        "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -2997,6 +3400,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/issue8040-insert-delete.tsv",
+          "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -3024,8 +3440,22 @@
         "radius_px": 2
       },
       "page_count": 1,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/native/seo-pic-crop-01.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "100.00",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -3036,20 +3466,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "100.00",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/native/seo-pic-crop-01.tsv",
-        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -3090,6 +3506,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/native/seo-pic-crop-01.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -3117,8 +3546,22 @@
         "radius_px": 2
       },
       "page_count": 1,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/wasm/seo-pic-crop-01.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "100.00",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -3129,20 +3572,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "100.00",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/seo-pic-crop-01.tsv",
-        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -3183,6 +3612,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/seo-pic-crop-01.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -3210,8 +3652,22 @@
         "radius_px": 2
       },
       "page_count": 1,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/native/seo-shape-group-02.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "100.00",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -3222,20 +3678,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "100.00",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/native/seo-shape-group-02.tsv",
-        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -3276,6 +3718,19 @@
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/native/seo-shape-group-02.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
     },
@@ -3303,8 +3758,22 @@
         "radius_px": 2
       },
       "page_count": 1,
-      "accepted_at": "2026-11-15T05:08:44.411336+00:00",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+        "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected/wasm/seo-shape-group-02.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "100.00",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
         "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
@@ -3315,20 +3784,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
         "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "100.00",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
-        "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
-        "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/seo-shape-group-02.tsv",
-        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
-        "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -3368,6 +3823,19 @@
           "document_filter": null,
           "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
           "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+          "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+          "path": "mydocs/pr/assets/issue_9060/final/protected/wasm/seo-shape-group-02.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+          "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
@@ -4019,9 +4487,19 @@
       "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
       "acceptance_basis": "사용자 지시: 동일 최종 전쪽 검증의 상승분을 보호 하한에 반영. 하락·누락 0쪽.",
       "integration_ci_merge": "pending; not claimed completed"
+    },
+    {
+      "pr": null,
+      "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+      "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+      "accepted_at": "2026-11-15T09:57:39.532819+00:00",
+      "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+      "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+      "acceptance_basis": "예외 없는 보완 후 같은 최종 Native/fresh WASM 전쪽 3,542행을 수용하고 상승분을 보호 하한에 반영. 하락·누락 0쪽.",
+      "integration_ci_merge": "not executed; remote approval pending"
     }
   ],
-  "updated_at": "2026-11-15T05:08:44.411336+00:00",
+  "updated_at": "2026-11-15T09:57:39.532819+00:00",
   "previous_table_sha256": "8f073dddd67cf8f44bea7c0315c3f9950ba73641e9393747cdbc52d24b33f9a1",
-  "deduplication_scope": "source_dataset_count·removed_duplicate_datasets·deduplicated_sources는 2026-11-08 최초 통합의 이력이다. 현재 보호 하한은 2026-11-14 동일 최종 실행의 전36개 데이터셋에서 선택했다."
+  "deduplication_scope": "source_dataset_count·removed_duplicate_datasets·deduplicated_sources는 최초 통합의 이력이다. 현재 하한은 동일한 최종 source 8ad1c5c08a의 전 36개 데이터셋에서 선택했다."
 }
