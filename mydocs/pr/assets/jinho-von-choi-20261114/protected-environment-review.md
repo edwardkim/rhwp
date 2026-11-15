@@ -80,3 +80,12 @@ Native의 정확한 base 비교는 전쪽 동일 측정값이지만, 동일하�
 - 보완할 공통 결과는 테두리의 paint 정렬 키다. `RectangleNode.image_frame_owner`로 같은 부모의 실제 Image를 찾아 그 Image의 layer/z-order/문서 주소 키를 소비한다. 안정 정렬에서 원래 발행된 image→border 순서는 유지한다. owner 없는 도형·다른 clip 부모·비그림 Rectangle은 기존 규칙을 유지한다. SVG·Native·Canvas는 같은 `paint_order::children` 결과를 소비하며 별도의 backend 보정은 추가하지 않는다. 좌표·선폭·이미지 crop·원본 z-order를 변경하지 않는다.
 
 후속 Native/fresh WASM 실제 출력·뒤/앞 개체 대조와 정식 관계 회귀로 수정 전 FAIL/수정 후 PASS를 확인한 뒤 최종 보호 검증을 다시 실행한다.
+
+
+### 실제 실행 복원과 Native 자동 공급 우선순위 보완
+
+선행 #8896의 최종 `font-supply/sample16-*-font-environment.json`은 원래 HFT에 없는 기호를 검증한 Myeongjo·독립 구형 수식 프로그램으로 공급한다. 이번 최초 보호 명령은 앞선 `pr8389_8397` 설정을 사용해 이 연결을 빠뜨렸다. 글꼴 파일 목록만 복원한 것으로 환경 전체를 복원했다고 판단한 것은 검토자의 누락이다. 기존 최종 설정과 실제 파일을 함께 공급하자 선택한 sample16 2022의 6·30·43·51쪽과 HWPX/2024의 43·51쪽은 Native/fresh WASM 모두 100.00%다. 아직 전쪽 보호 gate 완료는 아니다.
+
+Native 영문 대조군에는 공급 도구의 독립적인 우선순위 오류도 확인했다. `visual_sweep_native_webfonts.prepare`는 원 face가 없을 때 문서에 선언된 로컬 Arial이 있어도 registry의 Helvetica Black Condensed를 먼저 내려받았다. 실제 manifest의 `Helvetica → HelveticaNeueW02-97BlackCn`과 PNG의 원래 없는 굵은 압축체를 확인했다. #8565 `5551091085` → #8583 `96827b3acc` → 변환 신원 보완 `72216ada1c`를 대조한 뒤, 기존 원본/embedded/exact alias 우선순위는 유지하며 선언된 실제 로컬 대체를 registry보다 먼저 사용하도록 공통 준비 함수를 보완했다. 원문 IR·font mapping·정본 수치·비교 마스크는 바꾸지 않는다.
+
+새 공급 경로 관계 검사는 수정 전 웹 다운로드 발생으로 FAIL, 수정 후 전체 관련 14건 PASS다. 합성 공급 계약이며 그 자체를 실제 시각 통과로 주장하지 않는다. 실제 입력의 Native 재출력·fresh WASM과 최종 전쪽 검증은 계속 진행한다. nested·yeongwol의 잔여 차이도 별도로 유지한다.
