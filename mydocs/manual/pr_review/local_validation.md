@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-11-10
+last_verified: 2026-11-16
 ---
 
 # 로컬 사전 검증
@@ -29,6 +29,14 @@ code head의 기존 CI·증적 재사용은 그 조건을 확인해 기록한다
 편람 gate와 별도로, [정본 보호 TSV 전체의 특별 하락 금지 검증](../verification/visual_verification_governance.md#정본-보호-tsv의-공식-표시값-보존)은
 통합 담당 collaborator·maintainer만 수행한다. 일반 기여자에게 비공개 원본 OTF 설치나 이 특별 검증의 재현을 요구하지 않는다.
 일반 시각 검증의 90%·쪽수·내용 보존과 페이지별 98% px 회귀 조건은 계속 적용한다.
+
+조판 영향 PR은 편람 검사와 함께 **기여자 공통 보호 검사**도 제출 전 최종 head에서 실행한다.
+공개 웹폰트로 재현을 확인한 4개 문서의 Native/fresh WASM을 한 번에 검사하며,
+입력·기존 Print PDF·측정 조건을 자동 선택한다. 한컴 설치·MCP·비공개 OTF는 필요하지 않다.
+[공통 검사 명령과 제출물](../verification/visual_sweep_guide.md#기여자-공통-보호-검사)을 따른다.
+두 경로의 전쪽 TSV와 대표 review·overlay를 제출하고, 실행 실패·누락·쪽수 불일치 또는
+해당 문서의 정본 raw 표시값 하락이면 제출을 보류한다. 이 검사는 변경 대상 문서 자체의
+시각 검증과 통합 담당자의 정본 전체 특별 검증을 대체하지 않는다.
 
 일반 제출은 **검증을 완료한 Open PR**로 한다. Draft는 미완성 설계·WIP의 조기 논의처럼 특별한
 목적을 명시한 경우에만 사용하며, 에이전트는 작업지시자의 명시적 Draft 지시가 있어야 생성한다.

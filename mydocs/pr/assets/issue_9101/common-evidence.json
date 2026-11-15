@@ -1,0 +1,193 @@
+{
+  "engine_source": "4e0b20d2922953ee7ab9a1716ac819b921fe484b",
+  "producer_commit": "1dd9869dbb96ff997551bb604a139c353baf4969",
+  "driver_sha256": "4988748fa9706e9817d843d421eebbeb934c81b89aa2e0391b89698ccc7f407a",
+  "catalog_sha256": "f354f42e912c805c3bdaab9c2bb55ba88df832f3cff85ec30f23b47c29b364e8",
+  "native_binary": {
+    "configured": "/home/tsjang/rhwp/target/pr-review/release-test/rhwp",
+    "path": "target/pr-review/release-test/rhwp",
+    "sha256": "7ba1e956ebb98d4e4e35cd1bfece31258a89f684ff8b34dd7d4a9d7062885371"
+  },
+  "wasm": {
+    "files": [
+      {
+        "path": "/home/tsjang/rhwp/output/contributor-protected-fonts-20261115/pkg/rhwp.js",
+        "sha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365"
+      },
+      {
+        "path": "/home/tsjang/rhwp/output/contributor-protected-fonts-20261115/pkg/rhwp_bg.wasm",
+        "sha256": "2cd435a09af85bc1ca230ea93934240b81be6eee4152b3d1ee3d9d17ee29f038"
+      }
+    ],
+    "exporter_sha256": "480f5d7c8b8463058e12958fed013ad2c011ea59f41f0b0706ee4bc0c3f2c218",
+    "font_registration_sha256": null,
+    "comparison_profile": "print",
+    "font_policy": "same-input native export-svg --font-style --profile print; font-face CSS only",
+    "render_tree": "WASM getPageRenderTree"
+  },
+  "dpi": 96,
+  "radius_px": 2,
+  "profile": "print",
+  "records": [
+    {
+      "document_id": "52ee61fe7201e36b",
+      "backend": "native",
+      "input": "samples/re-03-latin-only-hancom.hwp",
+      "minimum": "100.0",
+      "files": {
+        "tsv": {
+          "path": "common/native/latin.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        },
+        "review": {
+          "path": "common/native/latin-review.png",
+          "sha256": "3ae24eb564b77cff3620bb29707921c56a5a3fde14bbef5015432cf0daea371f"
+        },
+        "overlay": {
+          "path": "common/native/latin-overlay.png",
+          "sha256": "edbaf409f2c99bd3b0c32e3156467b87fe7c4d6b4554c08319912c2a94a381a4"
+        }
+      }
+    },
+    {
+      "document_id": "52ee61fe7201e36b",
+      "backend": "wasm",
+      "input": "samples/re-03-latin-only-hancom.hwp",
+      "minimum": "100.0",
+      "files": {
+        "tsv": {
+          "path": "common/wasm/latin.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        },
+        "review": {
+          "path": "common/wasm/latin-review.png",
+          "sha256": "e6c1f49efd01768a0e65e927972d75b60f2dc18e115df0dd6485cdbed4604772"
+        },
+        "overlay": {
+          "path": "common/wasm/latin-overlay.png",
+          "sha256": "9952f9c9b1a62b0e5e41d3c4fa4a52992eff2105f805e8f6d17a7dfc271e5acf"
+        }
+      }
+    },
+    {
+      "document_id": "59f6ab1155623bda",
+      "backend": "native",
+      "input": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "minimum": "100.0",
+      "files": {
+        "tsv": {
+          "path": "common/native/angle-narrow.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        },
+        "review": {
+          "path": "common/native/angle-narrow-review.png",
+          "sha256": "9021bb5e84d0fdafb32ccafaeb2ecf5e5da0ebc1ff5fbe1d6562de81f7040754"
+        },
+        "overlay": {
+          "path": "common/native/angle-narrow-overlay.png",
+          "sha256": "6768269185d4f90bd8a891598a77e90bd027cdd40bb09ff99c575185a6c4f63d"
+        }
+      }
+    },
+    {
+      "document_id": "59f6ab1155623bda",
+      "backend": "wasm",
+      "input": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "minimum": "100.0",
+      "files": {
+        "tsv": {
+          "path": "common/wasm/angle-narrow.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        },
+        "review": {
+          "path": "common/wasm/angle-narrow-review.png",
+          "sha256": "3e5ed751b7f0dbefb3f8275787c83103d5048983e62b7186a82dc2656cafd141"
+        },
+        "overlay": {
+          "path": "common/wasm/angle-narrow-overlay.png",
+          "sha256": "85b59b568d747208f1ead266463e2f47bc25bf10f52ce02265ed8925a2098e5a"
+        }
+      }
+    },
+    {
+      "document_id": "cdacd874b6e6ac66",
+      "backend": "native",
+      "input": "samples/pic-crop-01.hwp",
+      "minimum": "99.99756",
+      "files": {
+        "tsv": {
+          "path": "common/native/picture-crop.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        },
+        "review": {
+          "path": "common/native/picture-crop-review.png",
+          "sha256": "8ae93a85525666d5df563119a25f43aac3705f9bd003c0aad2da71eb8474ec38"
+        },
+        "overlay": {
+          "path": "common/native/picture-crop-overlay.png",
+          "sha256": "e492665747dd06f00373e8a93934f59652f6eda4af703575e77bd2ec71d8fb34"
+        }
+      }
+    },
+    {
+      "document_id": "cdacd874b6e6ac66",
+      "backend": "wasm",
+      "input": "samples/pic-crop-01.hwp",
+      "minimum": "99.99756",
+      "files": {
+        "tsv": {
+          "path": "common/wasm/picture-crop.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        },
+        "review": {
+          "path": "common/wasm/picture-crop-review.png",
+          "sha256": "8abc67a85b0bab59101a3db8d71ad5f101790ac3fd73149e21915408bccbffbe"
+        },
+        "overlay": {
+          "path": "common/wasm/picture-crop-overlay.png",
+          "sha256": "35a911ebe2d4755ac652a082beed6921272ebb49e6e6605dda0a3b91b0db5626"
+        }
+      }
+    },
+    {
+      "document_id": "d03a9dde3d5dc7ac",
+      "backend": "native",
+      "input": "samples/shape-group-02.hwp",
+      "minimum": "100.0",
+      "files": {
+        "tsv": {
+          "path": "common/native/shape-group.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        },
+        "review": {
+          "path": "common/native/shape-group-review.png",
+          "sha256": "2aa82e664eba1bf96b69864941d873d9f0962caa0b800417f91e5dc741611ee5"
+        },
+        "overlay": {
+          "path": "common/native/shape-group-overlay.png",
+          "sha256": "13aa1d8844d06bd3593d96bcdb19fa5a29e28beebfa28e78dbaf7ea4dcd4de2d"
+        }
+      }
+    },
+    {
+      "document_id": "d03a9dde3d5dc7ac",
+      "backend": "wasm",
+      "input": "samples/shape-group-02.hwp",
+      "minimum": "100.0",
+      "files": {
+        "tsv": {
+          "path": "common/wasm/shape-group.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        },
+        "review": {
+          "path": "common/wasm/shape-group-review.png",
+          "sha256": "60aab5e68772376dd2a2148c6319829729548195a4a0c88a431cbfc4385de467"
+        },
+        "overlay": {
+          "path": "common/wasm/shape-group-overlay.png",
+          "sha256": "eda0ab33f824f0baf982af9ce058789cb72828b57b66359374735c2eccbf49fc"
+        }
+      }
+    }
+  ]
+}
