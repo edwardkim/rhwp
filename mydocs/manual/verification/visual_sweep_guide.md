@@ -386,6 +386,16 @@ PR을 재검토한다.** Native/WASM 교차 비교나 다른 backend 점수의 �
    기록하되, **보호 기준 통과로 처리하지 않는다.** 파일·face·배치·래스터 경로 중 원인을
    확인하고 보정·재검증한다. OS 차이라는 추정, 미세 하락 또는 평균 상승으로 면제하지 않는다.
 
+글꼴·render tree·기준 PDF가 같은데도 브라우저의 가속 경로가 다르면 Chrome 버전과
+CDP `SystemInfo.getInfo`의 `gpu.featureStatus`를 함께 기록한다. 최종 Canvas의
+`willReadFrequently: true`만으로 같은 래스터 경로라고 판단하지 않는다. 기준 환경의
+소프트웨어 재생을 Mac에서 재현해야 하면 `VISUAL_SWEEP_CHROME`에
+`--disable-gpu`를 전달하는 실행 wrapper를 지정하고, 같은 고정 조건으로 base와 후보의
+전쪽을 다시 산출한다. 원 GPU 결과와 조건 대조도 보존하며 다른 조건의 쪽별 최고값을
+합치지 않는다. wrapper·브라우저·JS/WASM·글꼴의 실행 신원과 별도 output을 기록하고,
+기존 보호 하한과 판정 기준을 그대로 적용한다. 실제 Studio의 GPU 소비 경로 검증은
+이 소프트웨어 Print 비교와 구분해 수행한다.
+
 공용 `target/pr-review`에서 base/head를 순차 빌드할 때는 다음 빌드 전에 실행 파일·WASM package를
 서로 다른 output 경로에 고정하고 source/build 명령·실제 파일 SHA를 기록한다. 빠른 Cargo 성공만으로
 원하는 producer가 만들어졌다고 판단하지 않는다. 변경 경계의 실제 출력으로 생산자를 확인하고,

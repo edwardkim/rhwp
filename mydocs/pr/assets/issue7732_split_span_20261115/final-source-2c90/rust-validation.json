@@ -1,0 +1,265 @@
+{
+  "status": "passed",
+  "results": [
+    {
+      "name": "underline-counterexamples",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/minimal-font.sb",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test",
+        "regression_suite_025",
+        "--test",
+        "regression_suite_028",
+        "--test-threads",
+        "8",
+        "-E",
+        "test(issue_6028_underline_soft_wrap_trailing_space::) | test(issue_6451_underline_run_fragments::)"
+      ],
+      "exit": 0,
+      "seconds": 24.411,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/p11-softwrap-final/rust-gates/underline-counterexamples.log"
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/minimal-font.sb",
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 14.63,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/p11-softwrap-final/rust-gates/fmt.log"
+    },
+    {
+      "name": "native-clippy",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/minimal-font.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 25.745,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/p11-softwrap-final/rust-gates/native-clippy.log"
+    },
+    {
+      "name": "wasm-clippy",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/minimal-font.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 23.227,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/p11-softwrap-final/rust-gates/wasm-clippy.log"
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/minimal-font.sb",
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review"
+      ],
+      "exit": 0,
+      "seconds": 30.005,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/p11-softwrap-final/rust-gates/workspace-build.log"
+    },
+    {
+      "name": "all-target-clippy",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/minimal-font.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 40.039,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/p11-softwrap-final/rust-gates/all-target-clippy.log"
+    },
+    {
+      "name": "manifest",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/minimal-font.sb",
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "e7ee272cfa33a960b0d0d924983d29e6509903e0"
+      ],
+      "exit": 0,
+      "seconds": 1.36,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/p11-softwrap-final/rust-gates/manifest.log"
+    },
+    {
+      "name": "unit-tiers",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/minimal-font.sb",
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "e7ee272cfa33a960b0d0d924983d29e6509903e0"
+      ],
+      "exit": 0,
+      "seconds": 16.757,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/p11-softwrap-final/rust-gates/unit-tiers.log"
+    },
+    {
+      "name": "full-nextest",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/minimal-font.sb",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--tests",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit": 0,
+      "seconds": 1576.582,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/p11-softwrap-final/rust-gates/full-nextest.log"
+    },
+    {
+      "name": "native-skia-lib",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/minimal-font.sb",
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "8"
+      ],
+      "exit": 0,
+      "seconds": 532.154,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/p11-softwrap-final/rust-gates/native-skia-lib.log"
+    },
+    {
+      "name": "native-skia-placeholder",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/minimal-font.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "exit": 0,
+      "seconds": 672.711,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/p11-softwrap-final/rust-gates/native-skia-placeholder.log"
+    },
+    {
+      "name": "native-skia-pdf",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/minimal-font.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "exit": 0,
+      "seconds": 96.638,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/p11-softwrap-final/rust-gates/native-skia-pdf.log"
+    }
+  ],
+  "source": "2c90fa288bb4d48764eb82dbb025df4a12637ea9",
+  "full_nextest": {
+    "executed": 13580,
+    "passed": 13580,
+    "failed": 0,
+    "skipped": 45,
+    "test_runtime_seconds": 921.437,
+    "environment": "macOS minimal-font sandbox"
+  }
+}
