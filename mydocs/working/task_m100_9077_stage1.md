@@ -76,7 +76,7 @@ WASM은 27,649,950바이트이며 SHA-256은
 
 건너뛴 2건은 `pkg-node` 전용 기존 편집 검사다. 이 작업은 web WASM과 Canvas2D CSS 경로를
 검증하며 Node 전용 package를 만들거나 skip 조건을 추가하지 않았다. 런타임은 fresh JS/WASM을
-유지하고, 동기화 과정에서 변경된 tracked 생성 타입 선언 2개는 검증 후 복원한다.
+유지하고, 동기화 과정에서 변경된 tracked 생성 타입 선언 2개는 검증 후 복원했다.
 
 중간 로그는 Git 제외 경로 `output/issue9077/`에 보관한다. 기존 전체 검사에서
 Windows CRLF를 LF로 읽어야 하는 `chrome-mode` source 검사가 실패해 해당 working tree의
@@ -87,3 +87,25 @@ Windows CRLF를 LF로 읽어야 하는 `chrome-mode` source 검사가 실패해 
 실제 초기화 응답 해시는 `output/issue9077/consumption/`에 있다. 대표 screenshot과 HTML은
 각각 `rhwp-studio/e2e/screenshots/issue9077-canvas-font-alias.png`,
 `output/e2e/canvas-font-alias-issue9077-report.html`이다.
+
+## PR 제출 준비
+
+2026-11-15 사용자가 PR 생성을 승인하고 frontend 검증만 적용하도록 명시했다.
+완료된 타입 검사·전체 단위 테스트·production build·Chrome Canvas 계약 검증을 재사용한다.
+최종 구현의 frontend tree는 검증한 `d255fc603f`와 동일하다.
+
+base route: `collaborator_self_merge.md`.
+modifiers: `local_validation.md`의 frontend 범위.
+loaded documents: `pr_review_workflow.md`, `pr_review/README.md`,
+`collaborator_self_merge.md`, `local_validation.md`, `intake_and_review.md`,
+`visual_fixture_evidence.md`, `codex/docs_and_git_workflow.md`.
+
+인증 계정은 `jangster77`, 저장소 권한은 `write`다. 본인 열린 PR은 모든 base·Draft를 포함해
+0건이었고 리뷰어 지정 예외 및 기존 PR 사이의 병합 시뮬레이션 대상도 0건이다.
+생성 직전에 목록과 원격 SHA를 다시 확인한다.
+
+최신 base `2d83fa4c8a5ed3513afcde26367fb5ffebeb294c`와 후보
+`61dd0e81bd9c99144dccb9247f44d29a48971472`의
+`git merge-tree --write-tree <base> <candidate>`는 exit 0이며 결과 tree는
+`e22211b135c31e9d893b45fc79a1f6ef460267f3`다. 추가 변경은 이 제출 기록뿐이며,
+원격 push 전 최종 후보 SHA로 시뮬레이션을 다시 실행한다.
