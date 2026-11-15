@@ -73,7 +73,7 @@ impl DocumentCore {
     }
 
     /// 번호 정의를 문단 모양(번호·개요)이나 구역의 개요 번호가 가리키는지.
-    fn numbering_in_use(&self, numbering_id: u16) -> bool {
+    pub(super) fn numbering_in_use(&self, numbering_id: u16) -> bool {
         use crate::model::style::HeadType;
         self.document.doc_info.para_shapes.iter().any(|ps| {
             matches!(ps.head_type, HeadType::Number | HeadType::Outline)
