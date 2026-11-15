@@ -97,3 +97,34 @@ host font 없이 paint 계약을 확인한 것이며 새 CK 캡처·일치율을
 ## Native/fresh WASM 특별 보호 전쪽 완료
 
 상향된 정본 `8f073dddd67cf8f44bea7c0315c3f9950ba73641e9393747cdbc52d24b33f9a1`을 기준으로 Native18개·fresh WASM18개, 전3,542행을 모두 완료했다. 공식 두 자리 raw 표시값의 하락0행·누락0행·추가 상승0행이다. 앞서 수용한 상승30행의 새 하한을 유지하며 더 낮은 과거 기준으로 돌리지 않는다. 전체 Rust·새 base의 동일 환경 비교 완료와 PR 생성은 아직 별도 조건이다.
+
+## 같은 환경 778행 대조와 추가 보정 경계
+
+다섯 원본을 Native/fresh WASM 전389쪽씩 실제 대조했다. 일반 페이지별 raw 하락은32행,
+최대0.55%p(CBTA Native47쪽99.16%→98.61%)다.2%p 초과 하락은0행이고 CBTA118·162·166쪽은
+양쪽98% 이상이다. 특별 보호36조건3,542행은 여전히 별도 기준 하락0행이다.
+
+그러나 최대 하락 쪽의 실제 review/overlay와 render tree를 대조하니 굵은 en dash 다음
+영문 시작점이 x384.8→394.1 CSSpx로 바뀌었다. `한양신명조 (HFT)`의 일반 U+2013을
+1em으로 보충한 부분 표가 굵게 fallback에도 상속된 결과다. 허용폭 이내라는 이유만으로
+배치 보존을 선언하지 않는다. 이 경계의 추가 보정과 일반 en dash 보호 대조를 완료한 뒤 제출한다.
+
+- 원본: `samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp`,
+  Section0 문단501·글자모양36·U+2013 offset23, 기호 슬롯5·한양신명조·altType2·bold.
+- 새 WASM 읽기 전용 font decision trace: HFT 부분 표 hit, baseAdvance1400HU·final1472HU,
+  `boldFallback`으로 regularMetricAdvance를 상속했다. 실제 Native 두 render tree도 위 원점 차이를 보인다.
+- 독립 PDF `pdf/issue7727/cbta-original-hancom2020-print-20261106.pdf`47쪽은
+  `/F4`(xref26, HCI Poppy)의 ToUnicode `<0053> <2013>`와 CID83의 `/W=500`을 사용한다.
+  PDF parser는 원본의 공백 있는 BaseFont 이름에 경고를 냈으나 이 CMap·폭과 실제 PDF raster는 확인했다.
+- 기존 중첩 문서16쪽의 일반 en dash는 Type3 T6/HFT376의1000/1000em이다.
+  굵게 대체 경로의500과 구분하며 일반 계약을 반각으로 되돌리지 않는다.
+- [base review](final/rebase-f823-reading/en-dash-p047/base-review-047.png) ·
+  [overlay](final/rebase-f823-reading/en-dash-p047/base-overlay-047.png),
+  [후보 review](final/rebase-f823-reading/en-dash-p047/candidate-review-047.png) ·
+  [overlay](final/rebase-f823-reading/en-dash-p047/candidate-overlay-047.png).
+
+기준 측정 기록 프로세스가 종료된 두 결과는 완료 PNG와 묶음 manifest·출력 SHA를 먼저 확인했다.
+문서 커밋으로 Git HEAD가 바뀌어 export `--resume`가 provenance를 거부했으므로 그 검사를
+완화하지 않았다. 기존 실제 PNG·계산 체크포인트를 공식 `--png-pair --resume`로 재대조해
+원래 묶음별 TSV와 동일한309행을 복구했다. 원본 재렌더·PDF 재인쇄·소스 변경은 없고,
+기존 raster의 head·실제 base binary/WASM·글꼴·입력·PDF SHA를 그대로 보존했다.
