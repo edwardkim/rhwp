@@ -1,5 +1,10 @@
 # Dependabot 16개 PR 통합 검토 — 원인과 검증 범위
 
+현재: 최소 글꼴 Rust 필수15단계·전체13,617건, Native18종전쪽1,771쪽, 제품3종 build와
+Studio/Chrome 실제 소비 검증을 완료했습니다. fresh WASM build도 완료했으며, 정본 WASM
+전쪽·공개 공통/편람·추가 출력 소비 검증은 진행 중입니다. PR 생성·CI·병합은 아직 하지 않았습니다.
+아래 시간별 실행 기록은 당시 상태이며, 완료 범위는 각 최종 JSON 증거를 따릅니다.
+
 2026-11-16, `review/integration-20261116-dependabot`에서 최신 고정 devel
 `6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0` 위로 원 작성자와 원 SHA를 보존해
 16개 PR을 누적 체리픽했습니다. [원 PR·SHA·파일 목록](source-prs.json)을 따릅니다.
@@ -162,3 +167,15 @@ Studio AI 패널·설정·공급자 mock3종과 Chrome 확장의 smoke·다운�
 새 package와 대조했습니다. 유료 API 호출이나 실제 비밀 키는 사용하지 않았습니다.
 Firefox 편집·저장 E2E와 정본 보호·공통 게이트·출력 백엔드 검증은 별도로 남아 있습니다.
 [Native 대표22쪽 판독](native-direct-reading.json)은 같은 쪽의 review·overlay 쌍으로 확인했습니다.
+
+
+## 최신 devel의 영향 경계와 재사용 판단
+
+추가된 #9126의 두 제품 경로와 새 회귀·실제 저장 증거를 확인했습니다.
+[읽기 경로 감사](upstream-protected-read-path-audit.json)에서 보호18종의 중첩·머리말·꼬리말·
+master page를 포함한 실제 모델을 순회했고, 새 미기입 안내문 개체 줄 분기에 해당하는
+글상자 문단은 모두0개였습니다. serializer 변경은 Print 캡처가 호출하지 않는 저장 경로입니다.
+정본 TSV·manifest 변경은 없고 현재 후보와 새 devel의 merge-tree도 exit0입니다.
+단순 devel 전진만으로 검증된 head를 반복 리베이스하지 않는 현행 지침에 따라 기존 생산 SHA와
+증거를 유지합니다. 원래 source를 새 source의 출력으로 바꾸어 적지 않으며, PR 직전 최신
+head·병합 시뮬레이션을 다시 확인하고 실제 merge CI에서 새 필드 기능 검사도 확인합니다.
