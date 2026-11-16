@@ -40,7 +40,12 @@ Haansoft Batang으로 명시하자 같은 base·후보 Native 474쪽이 모두 1
 [overlay](sample10-symbol-provider/overlay-474.png)를 직접 판독했다.
 이 집중 결과만으로 전 763쪽과 fresh WASM 보호 검증 완료를 주장하지 않는다.
 
-## WASM 공급 조건의 추가 확인
+## Native 전쪽 완료와 WASM 공급 조건의 추가 확인
 
 Native에서 복원한 issue7905·outline은 fresh WASM의 자동 선택에서 각각 98.68%·99.99%였다.
-실제 공급 receipt와 Native 선택을 대조 중이며, Native 통과를 WASM 통과로 재사용하지 않는다.
+기존 수용 조건의 software Chrome(`--disable-gpu`)을 적용한 집중 검사는 각각 98.86%·100.00%로 복원됐다.
+이 조건의 문서 전체와 같은 base를 다시 비교하며 Native 통과를 WASM 통과로 재사용하지 않는다.
+
+후보 Native 18종·1,771쪽의 [최종 전쪽 TSV 집계](native-protected-final.json)는
+보호값 하락·누락·쪽수 불일치 0쪽이다. sample10 763쪽도 수정한 같은 공급 조건으로
+전쪽을 다시 산출했으며 최저 99.57%·하락 0쪽이다. 474쪽의 집중 최고값만 전쪽 결과에 섞지 않았다.

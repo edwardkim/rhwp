@@ -56,3 +56,22 @@ suite 정책·unit tier·문서 테스트를 포함한 [Rust 13단계](../assets
 이 집계는 다른 PR의 입력을 이 PR만의 개선으로 계산한 값이 아니다. PR별 주장·반례는 위 접수 범위와
 개별 보정 증거로 판정한다. 정본 보호 전쪽·실제 소비 경로와 최종 base/head 대조가 남아 있어
 전체 PR 검토 완료나 머지 승인으로 기록하지 않는다.
+
+
+
+## 원 PR 주장 페이지의 직접 판독
+
+[입력·PDF 신원과 판독 기록](../assets/all_open_prs_20261116/claim-page-evidence/index.json)을 연결했다.
+
+`textbox_stored_center_tb_v2000-hwpx`, 1쪽.
+
+- Native 100.00%: [raw](../assets/all_open_prs_20261116/claim-page-evidence/9137/textbox_stored_center_tb_v2000-hwpx/native/raw-001.png) · [review](../assets/all_open_prs_20261116/claim-page-evidence/9137/textbox_stored_center_tb_v2000-hwpx/native/review/review_001.png) · [overlay](../assets/all_open_prs_20261116/claim-page-evidence/9137/textbox_stored_center_tb_v2000-hwpx/native/overlay/overlay_001.png).
+- fresh WASM 100.00%: [raw](../assets/all_open_prs_20261116/claim-page-evidence/9137/textbox_stored_center_tb_v2000-hwpx/wasm/raw-001.png) · [review](../assets/all_open_prs_20261116/claim-page-evidence/9137/textbox_stored_center_tb_v2000-hwpx/wasm/review/review_001.png) · [overlay](../assets/all_open_prs_20261116/claim-page-evidence/9137/textbox_stored_center_tb_v2000-hwpx/wasm/overlay/overlay_001.png).
+
+`textbox_stored_top_tb_v0_pushed-hwp`, 1쪽.
+
+- Native 97.48%: [raw](../assets/all_open_prs_20261116/claim-page-evidence/9137/textbox_stored_top_tb_v0_pushed-hwp/native/raw-001.png) · [review](../assets/all_open_prs_20261116/claim-page-evidence/9137/textbox_stored_top_tb_v0_pushed-hwp/native/review/review_001.png) · [overlay](../assets/all_open_prs_20261116/claim-page-evidence/9137/textbox_stored_top_tb_v0_pushed-hwp/native/overlay/overlay_001.png).
+- fresh WASM 97.37%: [raw](../assets/all_open_prs_20261116/claim-page-evidence/9137/textbox_stored_top_tb_v0_pushed-hwp/wasm/raw-001.png) · [review](../assets/all_open_prs_20261116/claim-page-evidence/9137/textbox_stored_top_tb_v0_pushed-hwp/wasm/review/review_001.png) · [overlay](../assets/all_open_prs_20261116/claim-page-evidence/9137/textbox_stored_top_tb_v0_pushed-hwp/wasm/overlay/overlay_001.png).
+
+`_pushed`의 A1·A2는 한 줄 피치 낮은 차이가 남는다. BOX·BODY의 공용 점유·정렬 개선과
+이 공개 잔여를 구분하며 모든 위치가 일치했다고 기록하지 않는다.

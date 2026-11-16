@@ -42,3 +42,19 @@ suite 정책·unit tier·문서 테스트를 포함한 [Rust 13단계](../assets
 이 집계는 다른 PR의 입력을 이 PR만의 개선으로 계산한 값이 아니다. PR별 주장·반례는 위 접수 범위와
 개별 보정 증거로 판정한다. 정본 보호 전쪽·실제 소비 경로와 최종 base/head 대조가 남아 있어
 전체 PR 검토 완료나 머지 승인으로 기록하지 않는다.
+
+
+
+## 원 PR 주장 페이지의 직접 판독
+
+[입력·PDF 신원과 판독 기록](../assets/all_open_prs_20261116/claim-page-evidence/index.json)을 연결했다.
+
+`textbox_tb_table_center_v2000_text-hwpx`, 1쪽.
+
+- Native 100.00%: [raw](../assets/all_open_prs_20261116/claim-page-evidence/9109/textbox_tb_table_center_v2000_text-hwpx/native/raw-001.png) · [review](../assets/all_open_prs_20261116/claim-page-evidence/9109/textbox_tb_table_center_v2000_text-hwpx/native/review/review_001.png) · [overlay](../assets/all_open_prs_20261116/claim-page-evidence/9109/textbox_tb_table_center_v2000_text-hwpx/native/overlay/overlay_001.png).
+- fresh WASM 100.00%: [raw](../assets/all_open_prs_20261116/claim-page-evidence/9109/textbox_tb_table_center_v2000_text-hwpx/wasm/raw-001.png) · [review](../assets/all_open_prs_20261116/claim-page-evidence/9109/textbox_tb_table_center_v2000_text-hwpx/wasm/review/review_001.png) · [overlay](../assets/all_open_prs_20261116/claim-page-evidence/9109/textbox_tb_table_center_v2000_text-hwpx/wasm/overlay/overlay_001.png).
+
+`textbox_tb_table_top_v0_text-hwp`, 1쪽.
+
+- Native 100.00%: [raw](../assets/all_open_prs_20261116/claim-page-evidence/9109/textbox_tb_table_top_v0_text-hwp/native/raw-001.png) · [review](../assets/all_open_prs_20261116/claim-page-evidence/9109/textbox_tb_table_top_v0_text-hwp/native/review/review_001.png) · [overlay](../assets/all_open_prs_20261116/claim-page-evidence/9109/textbox_tb_table_top_v0_text-hwp/native/overlay/overlay_001.png).
+- fresh WASM 100.00%: [raw](../assets/all_open_prs_20261116/claim-page-evidence/9109/textbox_tb_table_top_v0_text-hwp/wasm/raw-001.png) · [review](../assets/all_open_prs_20261116/claim-page-evidence/9109/textbox_tb_table_top_v0_text-hwp/wasm/review/review_001.png) · [overlay](../assets/all_open_prs_20261116/claim-page-evidence/9109/textbox_tb_table_top_v0_text-hwp/wasm/overlay/overlay_001.png).
