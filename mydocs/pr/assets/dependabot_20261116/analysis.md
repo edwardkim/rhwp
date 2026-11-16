@@ -210,3 +210,16 @@ PDF와 모든 RGB가 같다는 뜻이나 기존 미세 잉크 차이의 새 해�
 실제 CanvasKit 선·사각형 raster 관계 검사는 보정 전 2FAIL/1PASS에서 보정 후 12PASS로
 확인했습니다. [원인·실행 근거](canvaskit-empty-stroke-cause.json)를 따릅니다.
 홀수 패턴 일반화나 readiness 예외는 추가하지 않았습니다. 최종 브라우저·제품 build는 재검증 중입니다.
+
+## 브라우저 검증 종료 경로
+
+새 Puppeteer의 stdout/stderr 로그 수집기가 종료된 Mac 검증 Chrome의 crashpad/updater가
+상속한 파이프 두 개를 기다리고 있었습니다. 실제 자식 종료·fd peer·보고서 완료를 확인했습니다.
+공용 E2E helper는 browser.close가 성공하고 해당 로컬 자식 종료가 확인된 경우에만 그 자식의
+stdout/stderr를 닫습니다. 사용자 원격 브라우저와 종료 실패 상태는 그대로 보존합니다.
+[수정 전후 관계 검사와 원인](browser-lifecycle-cause.json)을 기록하고 강제 exit 없이
+정상 종료하는 실제 출력 검사를 다시 수행합니다.
+Firefox160의 확장 문맥 검사는 공식 Remote Agent 계약에 필요한
+`MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1`을 이번 격리 테스트 프로세스에만 공급합니다.
+[Mozilla 공식 계약](https://firefox-source-docs.mozilla.org/remote/Security.html)을 따르며
+사용자 Firefox 프로필과 시스템 설정은 변경하지 않습니다.

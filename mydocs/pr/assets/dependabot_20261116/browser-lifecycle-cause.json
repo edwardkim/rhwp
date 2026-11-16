@@ -1,0 +1,40 @@
+{
+  "scope": "검증용 로컬 브라우저 종료 후 자체 stdio 정리",
+  "observation": {
+    "node_pid": 77127,
+    "browser_process_exited": true,
+    "active_handles": [
+      "PipeWrap fd14",
+      "PipeWrap fd16"
+    ],
+    "peer_processes": [
+      "이번 검증 브라우저가 실행한 chrome_crashpad_handler",
+      "그 브라우저가 실행한 GoogleUpdater"
+    ],
+    "report_completed": true,
+    "renderer_hard_violations": 0
+  },
+  "before": {
+    "tests": 3,
+    "pass": 2,
+    "fail": 1
+  },
+  "after_initial": {
+    "tests": 3,
+    "pass": 3,
+    "fail": 0
+  },
+  "final_normal_lifecycle_rerun_required": true,
+  "remote_user_browser_unchanged": true,
+  "failed_close_not_hidden": true,
+  "logs": {
+    "browser-lifecycle-before-final": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/logs/browser-lifecycle-before-final.log",
+      "sha256": "2ac7b94839bf96622beddf768208f9862c1083e4b5dab9ae05a5b30eb915a650"
+    },
+    "browser-lifecycle-after": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/logs/browser-lifecycle-after.log",
+      "sha256": "af9fb9fda500d41f5ac0dd948e0189c2762e9ee2196cc34673484b02fc0efe10"
+    }
+  }
+}
