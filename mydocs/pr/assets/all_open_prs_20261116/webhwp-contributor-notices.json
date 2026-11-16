@@ -1,6 +1,11 @@
 {
   "guideline_commit": "1ac78ce9c9",
   "policy_commit": "ccf84733c3",
+  "hancom_printer_policy_commit": "fbad35aea0",
+  "mcp_manual_kept_unchanged_commit": "556d083c06",
+  "comment_body_reverified_after_update": true,
+  "hancom_pdf_printer_explicit": true,
+  "microsoft_print_to_pdf_excluded": true,
   "verified_comments": [
     {
       "pr": 9022,

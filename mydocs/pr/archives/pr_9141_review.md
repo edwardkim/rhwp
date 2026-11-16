@@ -18,6 +18,10 @@
 `samples/issue9082/textbox_filled_field_tac_tables.hwp`를 검토한다. 같은 입력에 대응하는
 기존 한컴 2022 `Microsoft Print to PDF` 세 건은 새 사용자 지시에 따라 공식 기준에서 제외하고
 참고 자료로 보존한다. 같은 원본을 현행 MCP의 한컴 2020 `Hancom PDF` Print로 새로 확보한다.
+새 Print 세 건은 모두 MCP 수신을 완료했고 `Hancom PDF 1.3.0.550`·1쪽을 확인했다.
+[61건 Print 영수증](../assets/all_open_prs_20261116/mcp-print-references.json)에 원본/PDF SHA와
+실제 제품·job·출력 경로를 기록했다. 기존 Microsoft 기준의 측정값은 공식 결과로 재사용하지 않고
+새 Print로 재측정한다.
 저장 제품·직접 Print 제품·MCP engine을 혼동하지 않는다. 웹한글기안기 PDF도 공식 기준이 아니다.
 
 필드 안 글 입력과 빈 상태, FIELD_END 앞뒤·후행 컨트롤·글자 없는 문단의 소속을 검증한다.

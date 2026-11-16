@@ -1,9 +1,63 @@
 {
   "source_snapshot": "5d7999054bd26cb0f93c3a24a8c11cb9edc2d864",
-  "count": 58,
+  "count": 61,
   "output_kind": "Windows desktop Hancom Print; web-HWP PDFs not accepted",
   "preprocess_note": "none and service-reported scripts_disabled are recorded separately; scripts_disabled applies to HWP/engine2020 only",
   "records": [
+    {
+      "input": "mydocs/pr/assets/johndoekim-20261116/issue9058/field_end_slot_textbox_with_cursor.hwp",
+      "input_sha256": "384c46a75ea7a7f80e7baf94cc0d446c7c18717aafb45b729c3571e81e4101f5",
+      "pdf": "pdf/pr-review-all-open-20261116/field_end_slot_textbox_with_cursor-hwp-2020.pdf",
+      "pdf_sha256": "32d885aaf56d48f5af8eedce68cc11350541f4e7027fa8239bc71fc5592a6612",
+      "bytes": 6621,
+      "pages": 1,
+      "job_id": "90f53226-9ba3-41b7-8900-c59bfb868c3c",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "backend": "hwp-managed-direct-dll-host",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+      "input_preprocess": "scripts_disabled",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2022",
+        "version": "12.0.0.535"
+      },
+      "pdf_metadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "PDF version": "1.4",
+        "Page size": "595 x 841 pts (A4)"
+      },
+      "replaces_reference_kind": "Microsoft Print to PDF is retained as reference only; not an official comparison PDF"
+    },
+    {
+      "input": "mydocs/pr/assets/johndoekim-20261116/issue9058/field_end_slot_textbox_with_text.hwp",
+      "input_sha256": "4fe0ecb6c7723f752097c43696557eea02d986649bce12c300926108aa42dea2",
+      "pdf": "pdf/pr-review-all-open-20261116/field_end_slot_textbox_with_text-hwp-2020.pdf",
+      "pdf_sha256": "5a0dc272d643e6634500494ccf1c5e1eeb66d403805ef9dcc1f4ac44752b7819",
+      "bytes": 10173,
+      "pages": 1,
+      "job_id": "0c7db288-fec6-446e-aad4-0d81e14be840",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "backend": "hwp-managed-direct-dll-host",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+      "input_preprocess": "scripts_disabled",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2022",
+        "version": "12.0.0.535"
+      },
+      "pdf_metadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "PDF version": "1.4",
+        "Page size": "595 x 841 pts (A4)"
+      },
+      "replaces_reference_kind": "Microsoft Print to PDF is retained as reference only; not an official comparison PDF"
+    },
     {
       "input": "samples/approval_cell/approval-cell-stamp-rows.hwp",
       "input_sha256": "2a4457fbcd237537027b9672a8ff4762ca9a198d07652ba8dcbed3dcb44869d9",
@@ -327,6 +381,33 @@
         "PDF version": "1.6",
         "Page size": "595 x 841 pts (A4)"
       }
+    },
+    {
+      "input": "samples/issue9082/textbox_filled_field_tac_tables.hwp",
+      "input_sha256": "a4dd2bd52c02ca3d25414e63e8c8af7cefc96d53b00e49fa635ed6f1610cb069",
+      "pdf": "pdf/pr-review-all-open-20261116/textbox_filled_field_tac_tables-hwp-2020.pdf",
+      "pdf_sha256": "fd8dfdfae138a58069dfed1b377ba27c1c9778da8df667462b93e3fae9cb0d09",
+      "bytes": 10123,
+      "pages": 1,
+      "job_id": "65ecc9f0-4758-433f-9f0b-91b7e625e4a2",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "backend": "hwp-managed-direct-dll-host",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+      "input_preprocess": "scripts_disabled",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2022",
+        "version": "12.0.0.535"
+      },
+      "pdf_metadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "PDF version": "1.4",
+        "Page size": "595 x 841 pts (A4)"
+      },
+      "replaces_reference_kind": "Microsoft Print to PDF is retained as reference only; not an official comparison PDF"
     },
     {
       "input": "samples/photo_caption_rows/photo-caption-rows-page-end.hwp",
