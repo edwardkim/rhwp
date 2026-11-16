@@ -65,7 +65,7 @@
     max-width: 100%;
     max-height: 90dvh;
     border-radius: 12px 12px 0 0;
-    overflow-y: auto;
+    overflow: hidden;
     -webkit-overflow-scrolling: touch;
   }
   .dialog-wrap.recovery-dialog {
