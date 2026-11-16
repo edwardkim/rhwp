@@ -1,0 +1,125 @@
+{
+  "status": "passed",
+  "scope": "fresh WASM public HwpDocument API edit/save/open/resave/open/delete/save/open; HWP/HWPX and encrypted variants",
+  "input": {
+    "path": "samples/re-font-batang-hancom.hwp",
+    "sha256": "99ec0cd2f55ba45493b97c550333db6d0275831ae6150a041bdbe5e2bd174049"
+  },
+  "wasm_sha256": "dd58a4fa7680674379adb94f874123029c39001a94600e7d1a369aec823a11bb",
+  "temporary_random_password": true,
+  "no_password_or_keys_recorded": true,
+  "results": [
+    {
+      "format": "hwp",
+      "encrypted": false,
+      "password_rejection_checked": false,
+      "status": "passed",
+      "insert_response_ok": true,
+      "cycles": [
+        {
+          "cycle": 1,
+          "bytes": 8192,
+          "sha256": "fd50243685fa725a284b88c53388092544b94612ea786045ddb82419e5aa63fd",
+          "entire_text_preserved": true
+        },
+        {
+          "cycle": 2,
+          "bytes": 8192,
+          "sha256": "fd50243685fa725a284b88c53388092544b94612ea786045ddb82419e5aa63fd",
+          "entire_text_preserved": true
+        }
+      ],
+      "delete_response_ok": true,
+      "original_text_sha256": "f728db07e00a6b6685d2bbcbb51d4ef3baf1f9e34944b1c58a1196b8a1b370de",
+      "after_repeated_open_text_sha256": "bf9cb23c5fc662b324b226b310ed476ca1ef5236d3cabfeb4ee59775a59708b5",
+      "restored_text_sha256": "f728db07e00a6b6685d2bbcbb51d4ef3baf1f9e34944b1c58a1196b8a1b370de",
+      "restore_bytes": 8192,
+      "restore_sha256": "9b00642ffdf520c7e6f5d78e706713f985f81012ef102e24939ba20911b94776"
+    },
+    {
+      "format": "hwp",
+      "encrypted": true,
+      "password_rejection_checked": true,
+      "status": "passed",
+      "insert_response_ok": true,
+      "cycles": [
+        {
+          "cycle": 1,
+          "bytes": 8192,
+          "sha256": "54fb657fa5d968e2187e9af590747b62c21b30b4c634c82da180b69c0c4e49e6",
+          "entire_text_preserved": true
+        },
+        {
+          "cycle": 2,
+          "bytes": 8192,
+          "sha256": "54fb657fa5d968e2187e9af590747b62c21b30b4c634c82da180b69c0c4e49e6",
+          "entire_text_preserved": true
+        }
+      ],
+      "delete_response_ok": true,
+      "original_text_sha256": "f728db07e00a6b6685d2bbcbb51d4ef3baf1f9e34944b1c58a1196b8a1b370de",
+      "after_repeated_open_text_sha256": "bf9cb23c5fc662b324b226b310ed476ca1ef5236d3cabfeb4ee59775a59708b5",
+      "restored_text_sha256": "f728db07e00a6b6685d2bbcbb51d4ef3baf1f9e34944b1c58a1196b8a1b370de",
+      "restore_bytes": 8192,
+      "restore_sha256": "3cc9a60c716cc23fa0e6ef76513066384ebec9cfb72e07e398fd50b844974e4b"
+    },
+    {
+      "format": "hwpx",
+      "encrypted": false,
+      "password_rejection_checked": false,
+      "status": "passed",
+      "insert_response_ok": true,
+      "cycles": [
+        {
+          "cycle": 1,
+          "bytes": 7495,
+          "sha256": "479e574484f04c03d68de7569ada94138e079a41926288ad7db8a9e87aec5464",
+          "entire_text_preserved": true
+        },
+        {
+          "cycle": 2,
+          "bytes": 7495,
+          "sha256": "479e574484f04c03d68de7569ada94138e079a41926288ad7db8a9e87aec5464",
+          "entire_text_preserved": true
+        }
+      ],
+      "delete_response_ok": true,
+      "original_text_sha256": "f728db07e00a6b6685d2bbcbb51d4ef3baf1f9e34944b1c58a1196b8a1b370de",
+      "after_repeated_open_text_sha256": "bf9cb23c5fc662b324b226b310ed476ca1ef5236d3cabfeb4ee59775a59708b5",
+      "restored_text_sha256": "f728db07e00a6b6685d2bbcbb51d4ef3baf1f9e34944b1c58a1196b8a1b370de",
+      "restore_bytes": 7467,
+      "restore_sha256": "d7abefa0ae8ca2de5913a93a8bbbb4b84710fee849ff6f5a52d35732dad31587"
+    },
+    {
+      "format": "hwpx",
+      "encrypted": true,
+      "password_rejection_checked": true,
+      "status": "passed",
+      "insert_response_ok": true,
+      "cycles": [
+        {
+          "cycle": 1,
+          "bytes": 8284,
+          "sha256": "88084e633c81d1f523f378ae13e56fbe9a3bf1f13e5ca699fdf6123702163eb1",
+          "entire_text_preserved": true
+        },
+        {
+          "cycle": 2,
+          "bytes": 8282,
+          "sha256": "a8a9baf2fe4899231c94401b04d4f3ed4247e7ad5f4c787039c902e4882acb8d",
+          "entire_text_preserved": true
+        }
+      ],
+      "delete_response_ok": true,
+      "original_text_sha256": "f728db07e00a6b6685d2bbcbb51d4ef3baf1f9e34944b1c58a1196b8a1b370de",
+      "after_repeated_open_text_sha256": "bf9cb23c5fc662b324b226b310ed476ca1ef5236d3cabfeb4ee59775a59708b5",
+      "restored_text_sha256": "f728db07e00a6b6685d2bbcbb51d4ef3baf1f9e34944b1c58a1196b8a1b370de",
+      "restore_bytes": 8267,
+      "restore_sha256": "9ea98509d07db236510fd91085d00ca457aeb20df56274fbd29a29595ef35149"
+    }
+  ],
+  "verified_at": "2026-11-16T15:16:57.587249+09:00",
+  "driver_sha256": "7bee907c4ed8b2bacccc63ed4e73abb343555bdd2e284bcaa9b05409fa36d126",
+  "log_sha256": "b59b9f2cde9a5f50b4f5c9e086415b2b5657a301ef473056b19b9e67a0fff6c8",
+  "product_source": "87c78424bc261f90e1167ecedc6a0f2106864d37"
+}
