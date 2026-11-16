@@ -3,7 +3,7 @@
 브랜치 `review/integration-20261116-open-prs`, 검증 base
 `53774cc1508591b6ac794950f0063452fbaf6e87`, 제품 소스
 `167921b3c52d78d3da180b746b22d91af9b3d3cc`의 검토 기록이다.
-2026-11-17 현재 필수 로컬 검증을 완료했다. 통합 PR 제출·CI·병합은 아직 완료하지 않았다.
+2026-11-17 현재 필수 로컬 검증을 완료했다. [통합 PR #9143](https://github.com/edwardkim/rhwp/pull/9143)을 제출했고 code head CI를 완료했다. 병합·후속 처리는 아직 완료하지 않았다.
 
 ## 원 PR별 근거
 
@@ -88,3 +88,13 @@ Root pkg·Studio public·frozen JS/WASM과 실제 응답의 신원을 확인했�
 [66개 입력·독립 Print PDF·base/후보 Native/WASM TSV 색인](visual-evidence-index.md)에 전체 원문을 연결했다.
 개별 원 PR 판정은 로컬 검증 결과로 갱신했다. 통합 PR 최신 CI·병합·원 PR과 실제 해결 이슈의
 종료·duration·devel 동기화·정리는 아직 원격 실행 결과를 확인해야 하는 후속 단계다.
+
+## 통합 code head CI 완료
+
+[code CI 영수증](code-ci-final.json)의 exact head `8fdcff5525`에서 여섯 workflow와 39개 check의
+실제 결과를 확인했다. 기본 회귀 다섯 archive는 13,511 PASS·0 FAIL·45 skip이며
+로컬 최소 글꼴 macOS 전체 13,696 PASS와 구분한다. Native Skia·frontend package gate도 성공했다.
+전체 로그 다운로드의 GitHub storage HTTP 503은 개별 job 로그 수집으로 보완했으며 테스트 실패가 아니다.
+339개 원격 파일의 해시와 PR 본문 이미지 23개의 실제 브라우저 표시도 확인했다.
+현재 기록은 녹색 code CI 뒤 추가하는 문서-only trailing이며, 최신 check·병합·duration·이슈/원 PR 종료·정리는
+실제 실행 뒤 별도로 확인한다.

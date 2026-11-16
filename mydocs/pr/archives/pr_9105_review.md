@@ -78,3 +78,14 @@ base/후보 Native/WASM 네 실행은 각각 전 763쪽 최저 99.57%·보호 �
 원본과 맞지 않는 opaque 원문 및 미지원 자원의 원자적 거부 검사도 같은 14건에 포함된다.
 
 원문 속성 보정 SHA는 `5d0bbeef10`이다. 전체 회귀에서도 [실제 가져오기 14건](../assets/all_open_prs_20261116/scope-test-coverage.json)의 PASS를 개별 확인했다.
+
+## 통합 PR #9143의 code head CI
+
+[통합 PR #9143](https://github.com/edwardkim/rhwp/pull/9143)의 code head
+`8fdcff552506c7d4a51edf6fcbebe2d63a1a729a`에서 [CI](https://github.com/edwardkim/rhwp/actions/runs/43948529913),
+CodeQL·Render Diff·Proptest·Adapter·CI 정책 판정이 모두 완료·성공했다.
+원격 기본 회귀 다섯 archive는 **13,511 PASS·0 FAIL·45 skip**이며 로컬 최소 글꼴 macOS의
+13,696 PASS와 실행 환경·선택 범위를 구분한다. Native Skia와 frontend package gate도 성공했다.
+[정확한 workflow·job·head와 실제 summary](../assets/all_open_prs_20261116/code-ci-final.json)를 보존했다.
+문서 전용 trailing의 최신 required check·mergeability를 확인한 뒤 통합하며, 아직 merge나 원 PR 종료가
+완료됐다고 기록하지 않는다. contributor 원 head·fork branch는 보존한다.

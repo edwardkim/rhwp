@@ -99,3 +99,14 @@ base/후보 Native/WASM 네 실행은 각각 전 763쪽 최저 99.57%·보호 �
 
 보정 SHA는 `e4ca059525`(제한 프레임), `167921b3c5`(본문 커서 공유), `af0a5b9519`(기존 함수의 관계 검사)다.
 97%대 `_pushed`는 고정 px 핀 대신 저장 줄 끝·원본 오프셋·표 바깥 여백과 실제 포함·순서를 보호한다.
+
+## 통합 PR #9143의 code head CI
+
+[통합 PR #9143](https://github.com/edwardkim/rhwp/pull/9143)의 code head
+`8fdcff552506c7d4a51edf6fcbebe2d63a1a729a`에서 [CI](https://github.com/edwardkim/rhwp/actions/runs/43948529913),
+CodeQL·Render Diff·Proptest·Adapter·CI 정책 판정이 모두 완료·성공했다.
+원격 기본 회귀 다섯 archive는 **13,511 PASS·0 FAIL·45 skip**이며 로컬 최소 글꼴 macOS의
+13,696 PASS와 실행 환경·선택 범위를 구분한다. Native Skia와 frontend package gate도 성공했다.
+[정확한 workflow·job·head와 실제 summary](../assets/all_open_prs_20261116/code-ci-final.json)를 보존했다.
+문서 전용 trailing의 최신 required check·mergeability를 확인한 뒤 통합하며, 아직 merge나 원 PR 종료가
+완료됐다고 기록하지 않는다. contributor 원 head·fork branch는 보존한다.
