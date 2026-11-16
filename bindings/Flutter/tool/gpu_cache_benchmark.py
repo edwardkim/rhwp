@@ -61,36 +61,43 @@ def summarize(trace):
     for event in events:
         if not isinstance(event, dict):
             raise ValueError('invalid trace event')
-        if event.get('stage') != 'producerReady' or event.get('producerDiagnostics') is None:
+        if event.get('stage') != 'producerReady':
             continue
         if not integer(event.get('generation')) or not integer(event.get('elapsedMicros')):
             raise ValueError('invalid producer milestone')
+        if event.get('producerDiagnostics') is None:
+            # Preserve an unknown publication so it cannot bridge measured
+            # frames or make an older gauge look like the latest frame.
+            samples.append(None)
+            continue
         value = sample(event['producerDiagnostics'])
-        identity = (event['generation'], tuple(value['stamp'][key] for key in STAMP_FIELDS))
+        identity = (event['generation'], value['backend'], value['members'],
+                    tuple(value['stamp'][key] for key in STAMP_FIELDS))
         if identity not in seen:
             samples.append(value)
             seen.add(identity)
-    result = {'scope': SCOPE, 'measuredSamples': len(samples), 'unknownCounterIncreases': [], 'unknownGauges': [],
+    result = {'scope': SCOPE, 'measuredSamples': sum(v is not None for v in samples), 'unknownCounterIncreases': [], 'unknownGauges': [],
               'counterIncreases': {}, 'lastCounters': {}, 'gauges': {}}
+    last = samples[-1] if samples else None
     # A presenter replacement or another document invalidates cumulative deltas.
     epochs = {(v['backend'], v['members'], *(v['stamp'][key] for key in
-              ('documentId', 'revision', 'fontGeneration', 'deviceGeneration'))) for v in samples}
+              ('documentId', 'revision', 'fontGeneration', 'deviceGeneration'))) for v in samples if v is not None}
     for key in COUNTERS:
-        if samples and key in samples[-1]['counters']:
-            result['lastCounters'][key] = samples[-1]['counters'][key]
-        values = [v['counters'].get(key) for v in samples]
+        if last is not None and key in last['counters']:
+            result['lastCounters'][key] = last['counters'][key]
+        values = [v['counters'].get(key) if v is not None else None for v in samples]
         if (len(values) >= 2 and len(epochs) == 1 and all(integer(v) for v in values) and
                 all(a <= b for a, b in zip(values, values[1:]))):
             result['counterIncreases'][key] = values[-1] - values[0]
         else:
             result['unknownCounterIncreases'].append(key)
     for key in GAUGES:
-        values = [v['counters'][key] for v in samples if key in v['counters']]
+        values = [v['counters'][key] for v in samples if v is not None and key in v['counters']]
         if values:
             result['gauges'][key] = {'measuredSamples': len(values), 'observedMin': min(values),
                                      'observedMax': max(values)}
-            if key in samples[-1]['counters']:
-                result['gauges'][key]['lastPublishedFrame'] = samples[-1]['counters'][key]
+            if last is not None and key in last['counters']:
+                result['gauges'][key]['lastPublishedFrame'] = last['counters'][key]
         else:
             result['unknownGauges'].append(key)
     timing = trace.get('requestToProducerReadyMicros', {})

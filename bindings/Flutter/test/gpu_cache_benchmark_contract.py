@@ -47,6 +47,40 @@ class CacheBenchmarkContracts(unittest.TestCase):
         del value['events'][1]['producerDiagnostics']['counters']['cacheHits']
         self.assertNotIn('cacheHits', collector.summarize(value)['counterIncreases'])
 
+    def test_missing_middle_diagnostics_do_not_bridge_an_unknown_frame(self):
+        for explicit_null in (False, True):
+            with self.subTest(explicit_null=explicit_null):
+                value = trace()
+                if explicit_null:
+                    value['events'][1]['producerDiagnostics'] = None
+                else:
+                    del value['events'][1]['producerDiagnostics']
+                result = collector.summarize(value)
+                self.assertEqual(result['measuredSamples'], 2)
+                self.assertEqual(result['counterIncreases'], {})
+                self.assertEqual(result['lastCounters']['cacheHits'], 9)
+                self.assertEqual(result['gauges']['cachedBytes']['lastPublishedFrame'], 1024)
+
+    def test_missing_last_diagnostics_do_not_label_an_older_frame_as_latest(self):
+        value = trace()
+        del value['events'][-1]['producerDiagnostics']
+        result = collector.summarize(value)
+        self.assertEqual(result['counterIncreases'], {})
+        self.assertEqual(result['lastCounters'], {})
+        self.assertEqual(result['gauges']['cachedBytes']['observedMax'], 512)
+        self.assertNotIn('lastPublishedFrame', result['gauges']['cachedBytes'])
+
+    def test_deduplication_does_not_hide_a_changed_producer_epoch(self):
+        for change in [{'backend': 'd3d12Ganesh'}, {'members': 2}]:
+            with self.subTest(change=change):
+                value = trace()
+                replacement = copy.deepcopy(value['events'][0])
+                replacement['producerDiagnostics'].update(change)
+                value['events'].insert(1, replacement)
+                result = collector.summarize(value)
+                self.assertEqual(result['measuredSamples'], 4)
+                self.assertEqual(result['counterIncreases'], {})
+
     def test_reset_or_another_presenter_does_not_produce_negative_deltas(self):
         value = trace()
         value['events'][-1]['producerDiagnostics']['counters']['cacheHits'] = 0
