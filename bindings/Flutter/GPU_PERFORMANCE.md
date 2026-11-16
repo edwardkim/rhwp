@@ -57,8 +57,21 @@ stamp가 현재 요청과 일치할 때만 기존 status/snapshot 검사를 앞�
 진행 중인 status 조회 사이에 도착한 새 알림은 후속 조회 한 번으로 합친다. 닫힌·정지된 owner의
 알림은 무시하고, 마지막 controller가 종료되면 구독을 취소한다.
 
-이벤트 미지원·누락·오류에서는 기존 100ms polling이 계속 동작한다. 가상 시계 회귀는 accepted
-직후 조회에서 아직 준비되지 않은 producer가 이벤트로 다음 tick 전에 표시 가능한 상태가 되는지,
-잘못된 stamp·늦은 알림이 cover/ownership 검증을 우회하지 않는지 확인한다. 이는 실제 화면 지연
-측정과 구분한다. 실행 경로는 `flutter test test/native_producer_ready_test.dart`와 기존
-`native_texture_performance_test.dart`이며, native queue 계약은 Linux plugin 검사에 포함된다.
+P127은 이벤트 구독의 `listen` 성공 응답까지 확인한 뒤, 현재 publication을 status와 snapshot으로
+검증하여 표시 중일 때 유휴 GPU status/snapshot RPC를 생략한다. 100ms local timer는 유지하며
+문서 revision·font·raster·다른 viewport의 presentation 세대·DPR의 현재 여부를 검사한다.
+문서나 geometry 변경은 기존 invalidation 경로로 capture와 전체 stamp 검증을 다시 시작한다.
+캐시된 pixels에 대한 같은 stamp의 원격 재검사를 매 tick 반복하지 않는 변경이며, 이벤트 자체로
+표시 권한이나 snapshot 소유권을 부여하지 않는다.
+
+진행 중인 publication은 알림이 누락돼도 기존 100ms fallback polling을 유지하며 2초 publication
+기한 안에 준비되거나 실패해야 한다. 이벤트 미지원·listen 실패·stream 종료·오류/잘못된 envelope는
+유휴 상태에서도 기존 polling으로 돌아간다. native cover와 registration retirement는 별도
+경로와 기한을 유지한다. 유휴 상태의 물리 device 오류는 다음 native 호출에서 판정하며, 이 변경은
+주기적인 원격 장치 health check나 consumer GPU 완료 보장이 아니다.
+
+가상 시계 회귀는 accepted 직후 조회와 ready 이벤트, 유휴 10초간 GPU RPC 없음, 실패 시 polling
+복귀, 두 타일 publication·문서/DPR 변경·cover·종료 및 deadline을 검사한다. 이는 실제 GPU의
+전력·CPU 사용량·화면 지연 측정과 구분한다. 실행 경로는
+`flutter test test/native_producer_ready_test.dart test/native_texture_idle_polling_test.dart`와
+기존 `native_texture_performance_test.dart`이며, native queue 계약은 Linux plugin 검사에 포함된다.
