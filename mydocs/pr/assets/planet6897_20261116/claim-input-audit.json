@@ -1,0 +1,102 @@
+{
+  "source_code": "c72c16d88efc615c592b8640320899ed31e28c0e",
+  "pdf_reuse": "원 PR에 명시된 한컴 2022 12.0.0.4547 Print·Hancom PDF 1.3.0.547 첨부본 재사용. 웹한글기안기 기준 아님.",
+  "cases": [
+    {
+      "key": "proficiency_test_result_form",
+      "input": "samples/issue9073/proficiency_test_result_form.hwpx",
+      "pdf": "pdf/issue9073/proficiency_test_result_form-print-2022.pdf",
+      "input_sha256": "90fddbce3698f3abe64b3be97a3d3e87d69322675149af45b4a09f50301acd7d",
+      "pdf_sha256": "2a701f188ee646c4485550b6172905e87a3c9e6cc277315f06cd60c0934b0ffc",
+      "pdf_sha1": "8c357911a36bf1787ad635c52387ce4a11c10a8c",
+      "pdfinfo": "Author:          planet\nCreator:         Hwp 2022 12.0.0.4547\nProducer:        Hancom PDF 1.3.0.547\nCreationDate:    Sun Nov  1 08:11:59 2026 KST\nModDate:         Sun Nov  1 08:11:59 2026 KST\nCustom Metadata: yes\nMetadata Stream: yes\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           1\nEncrypted:       no\nPage size:       595 x 841 pts (A4)\nPage rot:        0\nFile size:       41221 bytes\nOptimized:       no\nPDF version:     1.4\n",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.7936"
+      },
+      "format": "hwpx",
+      "issue": 9073
+    },
+    {
+      "key": "veterans_summer_support_press_release",
+      "input": "samples/issue9073/veterans_summer_support_press_release.hwpx",
+      "pdf": "pdf/issue9073/veterans_summer_support_press_release-print-2022.pdf",
+      "input_sha256": "8a09e6f5fdf88bc54e801738b205e013fb23cd30765b16f8b1ceb9ba66aa356f",
+      "pdf_sha256": "19554002f6266f0137dd4287631e017a04c74d57262be09b32a420b375132a7f",
+      "pdf_sha1": "f17a6965b06981ff398b6fa3e19b364789f1c9a0",
+      "pdfinfo": "Author:          planet\nCreator:         Hwp 2022 12.0.0.4547\nProducer:        Hancom PDF 1.3.0.547\nCreationDate:    Sun Nov  1 09:14:30 2026 KST\nModDate:         Sun Nov  1 09:14:30 2026 KST\nCustom Metadata: yes\nMetadata Stream: yes\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           2\nEncrypted:       no\nPage size:       595 x 841 pts (A4)\nPage rot:        0\nFile size:       152064 bytes\nOptimized:       no\nPDF version:     1.4\n",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2022",
+        "version": "12.0.0.535"
+      },
+      "format": "hwpx",
+      "issue": 9073
+    },
+    {
+      "key": "black_stork_restoration_press_release",
+      "input": "samples/issue9079/black_stork_restoration_press_release.hwpx",
+      "pdf": "pdf/issue9079/black_stork_restoration_press_release-print-2022.pdf",
+      "input_sha256": "d3d881a47428936b5700f5efa2b5419aeff93d31cd6e02121aa5202cef537c7b",
+      "pdf_sha256": "09f9f1272fa9088bc64e6adcbf4261a61f5aeffbea28736528a2789f82e17289",
+      "pdf_sha1": "c841d03a79ee3d138873da93d762d26cfeaba615",
+      "pdfinfo": "Author:          planet\nCreator:         Hwp 2022 12.0.0.4547\nProducer:        Hancom PDF 1.3.0.547\nCreationDate:    Sat Nov 14 11:51:55 2026 KST\nModDate:         Sat Nov 14 11:51:55 2026 KST\nCustom Metadata: yes\nMetadata Stream: yes\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           6\nEncrypted:       no\nPage size:       595 x 841 pts (A4)\nPage rot:        0\nFile size:       1272731 bytes\nOptimized:       no\nPDF version:     1.4\n",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2018",
+        "version": "10.0.0.14850"
+      },
+      "format": "hwpx",
+      "issue": 9079
+    },
+    {
+      "key": "facility_fee_reduction_criteria",
+      "input": "samples/issue9085/facility_fee_reduction_criteria.hwpx",
+      "pdf": "pdf/issue9085/facility_fee_reduction_criteria-print-2022.pdf",
+      "input_sha256": "a30ce89ad8659e14ade23ff8aea09d9e369b80058ace0ac44b9a4d14455578ff",
+      "pdf_sha256": "42c2a8d94466516aad6af8c10e58400772c7863648e4fe63ed1673d7e3ef516d",
+      "pdf_sha1": "be5a3660c94727b45044d6d7510f436946bec19b",
+      "pdfinfo": "Author:          planet\nCreator:         Hwp 2022 12.0.0.4547\nProducer:        Hancom PDF 1.3.0.547\nCreationDate:    Sun Nov  1 15:28:09 2026 KST\nModDate:         Sun Nov  1 15:28:09 2026 KST\nCustom Metadata: yes\nMetadata Stream: yes\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           1\nEncrypted:       no\nPage size:       595 x 841 pts (A4)\nPage rot:        0\nFile size:       48105 bytes\nOptimized:       no\nPDF version:     1.4\n",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2018",
+        "version": "10.0.0.14727"
+      },
+      "format": "hwpx",
+      "issue": 9085
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-bold-probe",
+      "input": "samples/issue9087/hft-sinmyeong_sunmyeongjo-bold-probe.hwpx",
+      "pdf": "pdf/issue9087/hft-sinmyeong_sunmyeongjo-bold-probe-2022.pdf",
+      "input_sha256": "fa1aa40d06b8617f628a18b6e2263e072725586f90252d939b8ce89f8584a245",
+      "pdf_sha256": "cc5f80351a7ebdaf66bb3c25074cb72c8cc1be39dec577e598f7fe7049d090ff",
+      "pdf_sha1": "f3cdc44d4d9e6d760e6679b07e41749a44d6e41d",
+      "pdfinfo": "Author:          planet\nCreator:         Hwp 2022 12.0.0.4547\nProducer:        Hancom PDF 1.3.0.547\nCreationDate:    Sun Nov 15 13:25:50 2026 KST\nModDate:         Sun Nov 15 13:25:50 2026 KST\nCustom Metadata: yes\nMetadata Stream: yes\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           4\nEncrypted:       no\nPage size:       595 x 841 pts (A4)\nPage rot:        0\nFile size:       61111 bytes\nOptimized:       no\nPDF version:     1.4\n",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.7257"
+      },
+      "format": "hwpx",
+      "issue": 9087
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-probe",
+      "input": "samples/issue9087/hft-sinmyeong_sunmyeongjo-probe.hwpx",
+      "pdf": "pdf/issue9087/hft-sinmyeong_sunmyeongjo-probe-2022.pdf",
+      "input_sha256": "94c4832df0fcf621b47d25cbafa49820d066fea94070fa8525063f2809934cf2",
+      "pdf_sha256": "452361f51b1a62832f9cf7175dcfcfd773b9799117ea015e6ddb113566083fd0",
+      "pdf_sha1": "ca0c272f6df6ff34f9bae3555cd00958fec5f98d",
+      "pdfinfo": "Author:          planet\nCreator:         Hwp 2022 12.0.0.4547\nProducer:        Hancom PDF 1.3.0.547\nCreationDate:    Sun Nov 15 13:25:47 2026 KST\nModDate:         Sun Nov 15 13:25:47 2026 KST\nCustom Metadata: yes\nMetadata Stream: yes\nTagged:          no\nUserProperties:  no\nSuspects:        no\nForm:            none\nJavaScript:      no\nPages:           4\nEncrypted:       no\nPage size:       595 x 841 pts (A4)\nPage rot:        0\nFile size:       60726 bytes\nOptimized:       no\nPDF version:     1.4\n",
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2020",
+        "version": "11.0.0.7257"
+      },
+      "format": "hwpx",
+      "issue": 9087
+    }
+  ]
+}
