@@ -16,8 +16,9 @@
 
 기존 `mydocs/pr/assets/johndoekim-20261116/issue9058/`의 cursor/text 원본과
 `samples/issue9082/textbox_filled_field_tac_tables.hwp`를 검토한다. 같은 입력에 대응하는
-기존 한컴 2022 수동 Print PDF 세 건은 생성 출처와 SHA를 확인해 재사용한다.
-저장 제품·직접 Print 제품·MCP engine을 혼동하지 않는다. 웹한글기안기 PDF는 공식 기준이 아니다.
+기존 한컴 2022 `Microsoft Print to PDF` 세 건은 새 사용자 지시에 따라 공식 기준에서 제외하고
+참고 자료로 보존한다. 같은 원본을 현행 MCP의 한컴 2020 `Hancom PDF` Print로 새로 확보한다.
+저장 제품·직접 Print 제품·MCP engine을 혼동하지 않는다. 웹한글기안기 PDF도 공식 기준이 아니다.
 
 필드 안 글 입력과 빈 상태, FIELD_END 앞뒤·후행 컨트롤·글자 없는 문단의 소속을 검증한다.
 HWP/HWPX 저장→재열기→재저장 결과와 인접 #9074·#9021·#8199 계약을 확인한다.
