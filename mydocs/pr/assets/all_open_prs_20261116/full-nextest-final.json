@@ -11,5 +11,5 @@
   "test_seconds": 533.964,
   "command_seconds": 1240.909,
   "log_sha256": "29c0f022d5a7276890332c3ca1e5717ebb154e9326d03f35bc837c6fc9faac31",
-  "other_gates_status": "Native Skia and lint/build still running"
+  "other_gates_status": "All remaining Rust gates subsequently passed; see rust-gates-final.json"
 }

@@ -261,5 +261,31 @@
         "8"
       ]
     }
-  ]
+  ],
+  "native_skia_lib_summary": {
+    "rhwp_passed": 3852,
+    "rhwp_failed": 0,
+    "rhwp_ignored": 12,
+    "other_workspace_library_passed": [
+      15,
+      165,
+      2
+    ],
+    "summaries": [
+      "test result: ok. 3852 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 17.18s",
+      "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+    ],
+    "log_sha256": "807fda3e57bf329b9aa65cb7d1ed9ada6008a80b51ead3433023543698f966e9"
+  },
+  "native_direct_pdf_summary": {
+    "passed": 36,
+    "failed": 0,
+    "log_sha256": "36280d797d37d944b453a92db465552aa04f435c26a519a13f11fb77fb1388da"
+  },
+  "native_picture_placeholder_summary": {
+    "passed": 2,
+    "failed": 0
+  }
 }
