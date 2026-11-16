@@ -279,6 +279,21 @@ class NativeBridge final : public Bridge {
     set_int(command.value, "deviceGeneration", generation);
     Value result(request(presenter, command.value));
   }
+  rhwp::cache::TrimReceipt trim_cache(uint64_t presenter, uint64_t context, uint64_t generation, uint64_t target) override {
+    Value command(fl_value_new_map());
+    set_text(command.value, "op", "trimCache");
+    set_int(command.value, "contextId", context); set_int(command.value, "deviceGeneration", generation);
+    set_int(command.value, "targetBytes", target);
+    Value result(request(presenter, command.value));
+    auto* busy = field(result.value, "busy");
+    if (!boolean(result.value, "ok") || fl_value_get_type(busy) != FL_VALUE_TYPE_BOOL)
+      throw Failure("contract", "missing Native cache trim receipt");
+    rhwp::cache::TrimReceipt receipt;
+    receipt.before = integer(result.value, "before"); receipt.after = integer(result.value, "after");
+    receipt.trimmed = integer(result.value, "trimmed"); receipt.busy = fl_value_get_bool(busy);
+    if (integer(result.value, "targetBytes") != target) throw Failure("contract", "cache trim target changed");
+    return receipt;
+  }
   void abandon(uint64_t presenter) override {
     Value command(fl_value_new_map());
     set_text(command.value, "op", "abandon");
@@ -644,10 +659,46 @@ FlValue* group_reply(Plugin& plugin) {
   if(complete)group.terminal=std::shared_ptr<FlValue>(fl_value_ref(reply),fl_value_unref);
   return fl_value_ref(reply);
 }
+FlValue* trim_value(uint64_t texture, uint64_t generation, const rhwp::cache::TrimReceipt& trim) {
+  auto* value = fl_value_new_map();
+  set_int(value,"textureId",texture); set_int(value,"deviceGeneration",generation);
+  set_int(value,"requestId",trim.request); set_int(value,"targetBytes",trim.target);
+  set_int(value,"before",trim.before); set_int(value,"after",trim.after); set_int(value,"trimmed",trim.trimmed);
+  set_bool(value,"pending",trim.pending); set_bool(value,"busy",trim.busy);
+  set_text(value,"reason",trim.reason); set_text(value,"scope","managedGpuTargets"); return value;
+}
 FlValue* invoke(Plugin& plugin, const std::string& method, FlValue* args, uint64_t creation_device=0) {
   if(method=="capabilities") {
     auto* reply=fl_value_new_map();set_bool(reply,"tileGroups",true);set_int(reply,"maxTileGroupTiles",2);
-    set_int(reply,"maxTileGroupSnapshots",4);set_bool(reply,"sharedSnapshotLeases",true);return reply;
+    set_int(reply,"maxTileGroupSnapshots",4);set_bool(reply,"sharedSnapshotLeases",true);set_bool(reply,"cacheTrim",true);return reply;
+  }
+  if ((method=="trimCache" || method=="trimCacheStatus") && (!args || fl_value_get_type(args)!=FL_VALUE_TYPE_MAP))
+    throw Failure("invalidArgument","cache trim requires a bounded argument map");
+  if ((method=="trimCache" || method=="trimCacheStatus") && fl_value_lookup_string(args,"groupId")) {
+    if (!plugin.group || !plugin.group->identity.matches(integer(args,"groupId")) ||
+        integer(args,"deviceGeneration") != plugin.group->identity.generation || plugin.group->terminal)
+      throw Failure("contextChanged","unknown, retired or stale trim group");
+    const auto generation=plugin.group->identity.generation;
+    const auto request=integer(args,"requestId");
+    const auto target=method=="trimCache" && fl_value_lookup_string(args,"targetBytes") ? integer(args,"targetBytes") : 0;
+    auto* result=fl_value_new_map(); Value owned(result); auto* members=fl_value_new_list();
+    fl_value_set_string_take(result,"members",members);
+    rhwp::cache::TrimReceipt combined; combined.request=request; combined.target=target; combined.busy=false;
+    for (const auto id : plugin.group->identity.textures) {
+      auto found=plugin.textures.find(int64_t(id));
+      if(found==plugin.textures.end())throw Failure("closing","trim group member is closed");
+      auto notice=*found->second->notice;
+      const auto receipt=notice->state->trim_cache(request,generation,target,method=="trimCacheStatus");
+      combined.target=receipt.target;combined.before+=receipt.before;combined.after+=receipt.after;combined.trimmed+=receipt.trimmed;
+      combined.pending=combined.pending||receipt.pending;combined.busy=combined.busy||receipt.busy;
+      fl_value_append_take(members,trim_value(id,generation,receipt));
+      if(method=="trimCache")notify(notice->state);
+    }
+    combined.reason=combined.pending?"queued":combined.busy?"memberBusy":"completed";
+    Value summary(trim_value(plugin.group->identity.id(),generation,combined));
+    for (const char* key : {"textureId","deviceGeneration","requestId","targetBytes","before","after","trimmed","pending","busy","reason","scope"})
+      fl_value_set_string_take(result,key,fl_value_ref(field(summary.value,key)));
+    set_int(result,"groupId",plugin.group->identity.id()); return fl_value_ref(result);
   }
   if(method=="createGroup") {
     if(plugin.group&&!plugin.group->terminal)throw Failure("backpressure","one tile group is already retained");
@@ -753,6 +804,13 @@ FlValue* invoke(Plugin& plugin, const std::string& method, FlValue* args, uint64
     return value;
   }
   auto notice = *plugin.find(args)->notice;
+  if(method=="trimCache" || method=="trimCacheStatus") {
+    const auto generation=integer(args,"deviceGeneration"),request=integer(args,"requestId");
+    const auto target=method=="trimCache" && fl_value_lookup_string(args,"targetBytes") ? integer(args,"targetBytes") : 0;
+    const auto receipt=notice->state->trim_cache(request,generation,target,method=="trimCacheStatus");
+    if(method=="trimCache")notify(notice->state);
+    return trim_value(notice->texture_id,generation,receipt);
+  }
   if (method == "status") return status_value(notice);
   if (method == "close") {
     notice->state->close();

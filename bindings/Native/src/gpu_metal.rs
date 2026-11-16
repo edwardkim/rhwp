@@ -36,6 +36,7 @@ pub extern "C" fn rhwp_metal_capabilities() -> *mut c_char {
             "ok":true,"abiVersion":1,
             "available":cfg!(all(feature="native-skia-metal",target_os="macos")),
             "backend":"metalGanesh","typedPointers":true,"ownerThreadHandles":true,
+            "cacheTrim":cfg!(all(feature="native-skia-metal",target_os="macos")),
             "pixelFormat":"bgra8UnormPremultiplied","origin":"topLeft","colorSpace":"srgb",
             "producerGpuCompletion":"synchronousOwnerThread","consumerGpuCompletion":false,
             "hardwareAccelerationVerified":false,
@@ -253,6 +254,10 @@ mod enabled {
     #[serde(tag = "op", rename_all = "camelCase", deny_unknown_fields)]
     enum Request {
         Info {},
+        TrimCache {
+            #[serde(default, rename = "targetBytes")]
+            target_bytes: usize,
+        },
         Release {},
         Abandon {},
     }
@@ -270,6 +275,7 @@ mod enabled {
             let presenter = owners.get_mut(&id).ok_or_else(invalid_handle)?;
             match request {
                 Request::Info {} => Ok(json!({"ok":true,"info":presenter.info()?})),
+                Request::TrimCache { target_bytes } => presenter.trim_cache(target_bytes),
                 Request::Release {} => {
                     presenter.release()?;
                     owners.remove(&id);

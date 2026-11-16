@@ -2,6 +2,7 @@
 #define RHWP_WINDOWS_D3D_PRODUCER_H_
 #include "FrameLifetime.h"
 #include "PrivateTargetPool.h"
+#include "../common/cache_trim.h"
 #include "SurfaceImportTickets.h"
 #include "NativeApi.h"
 #include <flutter_texture_registrar.h>
@@ -80,6 +81,7 @@ struct State : std::enable_shared_from_this<State> {
   std::string error_code;
   bool device_failure = false;
   std::shared_ptr<NativeApi> api;
+  rhwp::cache::TrimMailbox cache_trim;
   std::shared_ptr<Job> pending;
   std::shared_ptr<Published> current;
   std::map<uint64_t, std::weak_ptr<SnapshotLease>> leases;

@@ -86,6 +86,13 @@ std::string stamp_json(const Stamp& stamp) {
       << ",\"viewGeneration\":" << stamp.view << ",\"deviceGeneration\":" << stamp.device << ",\"deviceScale\":" << stamp.scale << '}';
   return out.str();
 }
+Value trim_value(uint64_t texture, uint64_t generation, const rhwp::cache::TrimReceipt& trim) {
+  return Value(Map{{Value("textureId"),unsigned_value(texture)},{Value("deviceGeneration"),unsigned_value(generation)},
+      {Value("requestId"),unsigned_value(trim.request)},{Value("targetBytes"),unsigned_value(trim.target)},
+      {Value("before"),unsigned_value(trim.before)},{Value("after"),unsigned_value(trim.after)},
+      {Value("trimmed"),unsigned_value(trim.trimmed)},{Value("pending"),Value(trim.pending)},
+      {Value("busy"),Value(trim.busy)},{Value("reason"),Value(trim.reason)},{Value("scope"),Value("managedGpuTargets")}});
+}
 Value limits(PublicationMode mode = PublicationMode::LegacyImmutable, bool close_ack = false) {
   const auto stats = frames().stats();
   const auto imports = SurfaceImports::stats();
@@ -306,7 +313,31 @@ class RhwpD3dPlugin final : public flutter::Plugin {
   Value invoke(const std::string& method, const Map& args, uint64_t group_generation = 0) {
     if (method == "capabilities") return Value(Map{{Value("tileGroups"), Value(true)},
         {Value("maxTileGroupTiles"),Value(2)},{Value("maxTileGroupSnapshots"),Value(4)},
-        {Value("sharedSnapshotLeases"),Value(true)},{Value("consumerGpuCompletionVerified"),Value(false)}});
+        {Value("sharedSnapshotLeases"),Value(true)},{Value("consumerGpuCompletionVerified"),Value(false)},
+        {Value("cacheTrim"),Value(true)}});
+    if ((method=="trimCache" || method=="trimCacheStatus") && args.count(Value("groupId"))) {
+      if (!group_ || !group_->identity.matches(integer(args,"groupId")) ||
+          integer(args,"deviceGeneration") != group_->identity.generation ||
+          !std::holds_alternative<std::monostate>(group_->terminal))
+        throw MethodError("contextChanged","unknown, retired or stale trim group");
+      const auto generation=group_->identity.generation,request=integer(args,"requestId");
+      const auto target=method=="trimCache" && args.count(Value("targetBytes")) ? integer(args,"targetBytes") : 0;
+      rhwp::cache::TrimReceipt combined;combined.request=request;combined.target=target;combined.busy=false;
+      List members;
+      for (const auto id : group_->identity.textures) {
+        Map child{{Value("textureId"),unsigned_value(id)},{Value("deviceGeneration"),unsigned_value(generation)},
+            {Value("requestId"),unsigned_value(request)},{Value("targetBytes"),unsigned_value(target)}};
+        auto member=invoke(method,child);const auto& value=std::get<Map>(member);
+        combined.target=integer(value,"targetBytes");combined.before+=integer(value,"before");
+        combined.after+=integer(value,"after");combined.trimmed+=integer(value,"trimmed");
+        combined.pending=combined.pending||std::get<bool>(field(value,"pending"));
+        combined.busy=combined.busy||std::get<bool>(field(value,"busy"));members.push_back(std::move(member));
+      }
+      combined.reason=combined.pending?"queued":combined.busy?"memberBusy":"completed";
+      auto summary=std::get<Map>(trim_value(group_->identity.id(),generation,combined));
+      summary[Value("groupId")]=unsigned_value(group_->identity.id());summary[Value("members")]=Value(std::move(members));
+      return Value(std::move(summary));
+    }
     if (method == "createGroup") {
       prune();
       if (group_ && std::holds_alternative<std::monostate>(group_->terminal))
@@ -443,6 +474,20 @@ class RhwpD3dPlugin final : public flutter::Plugin {
       throw MethodError("invalidArgument", "unknown GPU texture ID");
     }
     check_generation(args, item->state->generation, item->state->close_ack_required);
+    if (method=="trimCache" || method=="trimCacheStatus") {
+      const auto generation=integer(args,"deviceGeneration"),request=integer(args,"requestId");
+      if (generation != item->state->generation) throw MethodError("contextChanged","cache trim owner generation changed");
+      const auto target=method=="trimCache" && args.count(Value("targetBytes")) ? integer(args,"targetBytes") : 0;
+      rhwp::cache::TrimReceipt receipt;
+      {
+        std::lock_guard<std::mutex> lock(item->state->mutex);
+        if (item->state->closed) throw MethodError("closing","GPU texture is closing");
+        if (!item->state->ready) throw MethodError("notReady","GPU producer is not ready");
+        receipt=method=="trimCacheStatus" ? item->state->cache_trim.poll(request) : item->state->cache_trim.enqueue(request,target);
+      }
+      if (method=="trimCache") item->state->changed.notify_one();
+      return trim_value(id,generation,receipt);
+    }
     if (method == "status") return status(item->state);
     if (method == "close") { close(*item); return status(item->state); }
     if (method == "retireAck") {
