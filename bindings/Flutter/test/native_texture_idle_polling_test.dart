@@ -27,7 +27,9 @@ class RetiringReadyPlugin extends ReadyPlugin {
   };
 }
 
-Future<(GpuTransport, NativeDocument, NativeTextureController, FakePresentation)>
+Future<
+  (GpuTransport, NativeDocument, NativeTextureController, FakePresentation)
+>
 startIdle(WidgetTester tester, ReadyPlugin plugin) async {
   plugin.publish = false;
   plugin.install();
@@ -80,7 +82,10 @@ void main() {
       tester,
     ) async {
       final plugin = ReadyPlugin(platform);
-      final (_, document, controller, metadata) = await startIdle(tester, plugin);
+      final (_, document, controller, metadata) = await startIdle(
+        tester,
+        plugin,
+      );
       try {
         await publishIdle(tester, plugin, controller);
         final status = plugin.statusCalls, snapshots = metadata.checks.length;
@@ -160,7 +165,11 @@ void main() {
     });
   }
 
-  for (final failure in ['end of stream', 'error envelope', 'malformed envelope']) {
+  for (final failure in [
+    'end of stream',
+    'error envelope',
+    'malformed envelope',
+  ]) {
     testWidgets('$failure restores idle fallback polling', (tester) async {
       final plugin = ReadyPlugin(NativeTexturePlatform.linux);
       final (_, document, controller, _) = await startIdle(tester, plugin);
@@ -233,26 +242,27 @@ void main() {
     plugin.uninstall();
   });
 
-  testWidgets('a missing ready hint keeps pending publication polling bounded', (
-    tester,
-  ) async {
-    final plugin = ReadyPlugin(NativeTexturePlatform.linux);
-    final (_, document, controller, _) = await startIdle(tester, plugin);
-    try {
-      final accepted = plugin.statusCalls;
-      await legacyTicks(tester, 3);
-      expect(controller.canDisplay, isFalse);
-      expect(plugin.statusCalls, accepted + 3);
-      plugin.publish = true; // Deliberately send no event.
-      await legacyTicks(tester, 1);
-      expect(controller.canDisplay, isTrue);
-      final published = plugin.statusCalls;
-      await tester.pump(const Duration(seconds: 5));
-      expect(plugin.statusCalls, published);
-    } finally {
-      await finish(tester, document, controller, plugin);
-    }
-  });
+  testWidgets(
+    'a missing ready hint keeps pending publication polling bounded',
+    (tester) async {
+      final plugin = ReadyPlugin(NativeTexturePlatform.linux);
+      final (_, document, controller, _) = await startIdle(tester, plugin);
+      try {
+        final accepted = plugin.statusCalls;
+        await legacyTicks(tester, 3);
+        expect(controller.canDisplay, isFalse);
+        expect(plugin.statusCalls, accepted + 3);
+        plugin.publish = true; // Deliberately send no event.
+        await legacyTicks(tester, 1);
+        expect(controller.canDisplay, isTrue);
+        final published = plugin.statusCalls;
+        await tester.pump(const Duration(seconds: 5));
+        expect(plugin.statusCalls, published);
+      } finally {
+        await finish(tester, document, controller, plugin);
+      }
+    },
+  );
 
   testWidgets('an event-capable stalled producer still reaches its deadline', (
     tester,
@@ -274,30 +284,37 @@ void main() {
     }
   });
 
-  testWidgets('document revision wakes an idle owner and rechecks publication', (
-    tester,
-  ) async {
-    final plugin = ReadyPlugin(NativeTexturePlatform.linux);
-    final (transport, document, controller, _) = await startIdle(tester, plugin);
-    try {
-      await publishIdle(tester, plugin, controller);
-      final submissions = plugin.submissions.length;
-      plugin.publish = false;
-      ++transport.revision;
-      final refresh = document.refreshInfo();
-      await until(tester, () => document.info?.revision == transport.revision);
-      await refresh;
-      await until(tester, () => plugin.submissions.length > submissions);
-      expect(controller.canDisplay, isFalse);
-      expect(plugin.acceptedStamp!['revision'], transport.revision);
-      await publishIdle(tester, plugin, controller);
-      final published = plugin.statusCalls;
-      await tester.pump(const Duration(seconds: 3));
-      expect(plugin.statusCalls, published);
-    } finally {
-      await finish(tester, document, controller, plugin);
-    }
-  });
+  testWidgets(
+    'document revision wakes an idle owner and rechecks publication',
+    (tester) async {
+      final plugin = ReadyPlugin(NativeTexturePlatform.linux);
+      final (transport, document, controller, _) = await startIdle(
+        tester,
+        plugin,
+      );
+      try {
+        await publishIdle(tester, plugin, controller);
+        final submissions = plugin.submissions.length;
+        plugin.publish = false;
+        ++transport.revision;
+        final refresh = document.refreshInfo();
+        await until(
+          tester,
+          () => document.info?.revision == transport.revision,
+        );
+        await refresh;
+        await until(tester, () => plugin.submissions.length > submissions);
+        expect(controller.canDisplay, isFalse);
+        expect(plugin.acceptedStamp!['revision'], transport.revision);
+        await publishIdle(tester, plugin, controller);
+        final published = plugin.statusCalls;
+        await tester.pump(const Duration(seconds: 3));
+        expect(plugin.statusCalls, published);
+      } finally {
+        await finish(tester, document, controller, plugin);
+      }
+    },
+  );
 
   testWidgets('DPR change rejects the old hint and wakes an idle owner', (
     tester,
@@ -351,59 +368,61 @@ void main() {
     }
   });
 
-  testWidgets('native view pause cover and resume work after idle polling stops', (
-    tester,
-  ) async {
-    final plugin = ReadyPlugin(NativeTexturePlatform.macosMetalView);
-    final (_, document, controller, _) = await startIdle(tester, plugin);
-    try {
-      await publishIdle(tester, plugin, controller);
-      final paused = controller.pause();
-      await tester.pump();
-      await paused;
-      expect(controller.isPaused, isTrue);
-      expect(plugin.covered, isTrue);
-      final status = plugin.statusCalls;
-      await tester.pump(const Duration(seconds: 3));
-      expect(plugin.statusCalls, status);
-      plugin.publish = false;
-      controller.resume();
-      expect(controller.canDisplay, isFalse);
-      await until(tester, () => plugin.submissions.length == 2);
-      await publishIdle(tester, plugin, controller);
-      expect(plugin.covered, isFalse);
-    } finally {
-      await finish(tester, document, controller, plugin);
-    }
-  });
+  testWidgets(
+    'native view pause cover and resume work after idle polling stops',
+    (tester) async {
+      final plugin = ReadyPlugin(NativeTexturePlatform.macosMetalView);
+      final (_, document, controller, _) = await startIdle(tester, plugin);
+      try {
+        await publishIdle(tester, plugin, controller);
+        final paused = controller.pause();
+        await tester.pump();
+        await paused;
+        expect(controller.isPaused, isTrue);
+        expect(plugin.covered, isTrue);
+        final status = plugin.statusCalls;
+        await tester.pump(const Duration(seconds: 3));
+        expect(plugin.statusCalls, status);
+        plugin.publish = false;
+        controller.resume();
+        expect(controller.canDisplay, isFalse);
+        await until(tester, () => plugin.submissions.length == 2);
+        await publishIdle(tester, plugin, controller);
+        expect(plugin.covered, isFalse);
+      } finally {
+        await finish(tester, document, controller, plugin);
+      }
+    },
+  );
 
-  testWidgets('idle suspension never suppresses registration retirement polls', (
-    tester,
-  ) async {
-    final plugin = RetiringReadyPlugin();
-    final (_, document, controller, _) = await startIdle(tester, plugin);
-    try {
-      await publishIdle(tester, plugin, controller);
-      final idle = plugin.statusCalls;
-      await tester.pump(const Duration(seconds: 1));
-      expect(plugin.statusCalls, idle);
-      var closed = false;
-      final closing = controller.close().then((_) => closed = true);
-      await tester.pump();
-      expect(plugin.cancels, 1);
-      await legacyTicks(tester, 3);
-      expect(closed, isFalse);
-      expect(plugin.statusCalls, greaterThan(idle));
-      plugin.holdRetirement = false;
-      await legacyTicks(tester, 1);
-      await closing;
-      expect(closed, isTrue);
-      expect(controller.retirementPending, isFalse);
-    } finally {
-      plugin.holdRetirement = false;
-      await finish(tester, document, controller, plugin);
-    }
-  });
+  testWidgets(
+    'idle suspension never suppresses registration retirement polls',
+    (tester) async {
+      final plugin = RetiringReadyPlugin();
+      final (_, document, controller, _) = await startIdle(tester, plugin);
+      try {
+        await publishIdle(tester, plugin, controller);
+        final idle = plugin.statusCalls;
+        await tester.pump(const Duration(seconds: 1));
+        expect(plugin.statusCalls, idle);
+        var closed = false;
+        final closing = controller.close().then((_) => closed = true);
+        await tester.pump();
+        expect(plugin.cancels, 1);
+        await legacyTicks(tester, 3);
+        expect(closed, isFalse);
+        expect(plugin.statusCalls, greaterThan(idle));
+        plugin.holdRetirement = false;
+        await legacyTicks(tester, 1);
+        await closing;
+        expect(closed, isTrue);
+        expect(controller.retirementPending, isFalse);
+      } finally {
+        plugin.holdRetirement = false;
+        await finish(tester, document, controller, plugin);
+      }
+    },
+  );
 
   testWidgets('tile group polls until both members publish then becomes idle', (
     tester,
@@ -422,7 +441,8 @@ void main() {
       platform: NativeTexturePlatform.linux,
       useTileGroups: true,
     );
-    int statusCalls() => plugin.calls.where((call) => call == 'statusGroup').length;
+    int statusCalls() =>
+        plugin.calls.where((call) => call == 'statusGroup').length;
     try {
       controller.configure(
         NativePageViewport.fit(
