@@ -200,3 +200,13 @@ head·병합 시뮬레이션을 다시 확인하고 실제 merge CI에서 새 �
 Native/fresh WASM base·후보의 원본 PNG 총7,084개를 파일 바이트로 다시 해시했고,
 캡처 manifest와 모두 일치하며 각 backend의 같은 쪽 base/head도 전1,771개가 동일했습니다.
 PDF와 모든 RGB가 같다는 뜻이나 기존 미세 잉크 차이의 새 해결 주장은 아닙니다.
+
+## 실제 CanvasKit 인쇄 소비 보정
+
+공개 image-crop의 Print에서 기존 base WASM도 빈 일반 선 패턴 `[]`를 MakeDash에 전달하여
+같은 예외가 발생했습니다. 원 경로 c7be19d7d07과 배열 지원 통합 #8120(80968497c2c)을
+추적했습니다. Canvas/SVG의 빈 패턴은 실선인데 CanvasKit 소비가 이를 구분하지 않았습니다.
+일반 빈 패턴만 실선으로 그리며 명시적 물리 패턴의 빈 배열 거부는 유지합니다.
+실제 CanvasKit 선·사각형 raster 관계 검사는 보정 전 2FAIL/1PASS에서 보정 후 12PASS로
+확인했습니다. [원인·실행 근거](canvaskit-empty-stroke-cause.json)를 따릅니다.
+홀수 패턴 일반화나 readiness 예외는 추가하지 않았습니다. 최종 브라우저·제품 build는 재검증 중입니다.

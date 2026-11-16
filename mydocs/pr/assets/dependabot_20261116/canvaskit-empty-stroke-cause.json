@@ -1,0 +1,46 @@
+{
+  "recorded_at": "2026-11-16T16:00:37.638778+09:00",
+  "source_before": "937be7226b44245accc8a9a24ba1985d06d75351",
+  "scope": "CanvasKit 일반 선 패턴의 빈 배열을 실선으로 소비",
+  "original_program": "c7be19d7d07",
+  "array_support_commit": "80968497c2c (#8120)",
+  "base_wasm_sha256": "1cc3864ad1097224f125ceb5513ba55e110cd3517de5b84237dfada4b51bfe7e",
+  "base_reproduced": [
+    {
+      "backend": "canvaskit-compat",
+      "error": "dash-diagnostic:[] Error\n    at http://127.0.0.1:7789/src/view/canvaskit-renderer.ts:5186:113\n    at CanvasKitLayerRenderer.drawStrokeWithDash (http://127.0.0.1:7789/src/view/canvaskit-renderer.ts:5188:5)\n    at CanvasKitLayerRenderer.drawStyledShape (http://127.0.0.1:7789/src/view/canvaskit-renderer.ts:4915:10)\n    at http://127.0.0.1:7789/src/view/canvaskit-renderer.ts:1932:9\n    at CanvasKitLayerRenderer.withImageTransform (http://127.0.0.1:7789/src/view/canvaskit-renderer.ts:2730:4)\n    at CanvasKitLayerRenderer.renderRectangle (http://127.0.0.1:7789/src/view/canvaskit-renderer.ts:1925:8)\n    at CanvasKitLayerRenderer.renderOp (http://127.0.0.1:7789/src/view/canvaskit-renderer.ts:1801:10)\n    at CanvasKitLayerRenderer.renderLeaf (http://127.0.0.1:7789/src/view/canvaskit-renderer.ts:1788:10)\n    at CanvasKitLayerRenderer.renderNodeContents (http://127.0.0.1:7789/src/view/canvaskit-renderer.ts:1691:8)\n    at CanvasKitLayerRenderer.renderNode (http://127.0.0.1:7789/src/view/canvaskit-renderer.ts:1528:9)"
+    },
+    {
+      "backend": "canvaskit-default",
+      "error": "dash-diagnostic:[] Error\n    at http://127.0.0.1:7789/src/view/canvaskit-renderer.ts:5186:113\n    at CanvasKitLayerRenderer.drawStrokeWithDash (http://127.0.0.1:7789/src/view/canvaskit-renderer.ts:5188:5)\n    at CanvasKitLayerRenderer.drawStyledShape (http://127.0.0.1:7789/src/view/canvaskit-renderer.ts:4915:10)\n    at http://127.0.0.1:7789/src/view/canvaskit-renderer.ts:1932:9\n    at CanvasKitLayerRenderer.withImageTransform (http://127.0.0.1:7789/src/view/canvaskit-renderer.ts:2730:4)\n    at CanvasKitLayerRenderer.renderRectangle (http://127.0.0.1:7789/src/view/canvaskit-renderer.ts:1925:8)\n    at CanvasKitLayerRenderer.renderOp (http://127.0.0.1:7789/src/view/canvaskit-renderer.ts:1801:10)\n    at CanvasKitLayerRenderer.renderLeaf (http://127.0.0.1:7789/src/view/canvaskit-renderer.ts:1788:10)\n    at CanvasKitLayerRenderer.renderNodeContents (http://127.0.0.1:7789/src/view/canvaskit-renderer.ts:1691:8)\n    at CanvasKitLayerRenderer.renderNode (http://127.0.0.1:7789/src/view/canvaskit-renderer.ts:1528:9)"
+    }
+  ],
+  "before": {
+    "tests": 3,
+    "passed": 1,
+    "failed": 2,
+    "reason": "Intervals array must have even length"
+  },
+  "after": {
+    "tests": 12,
+    "passed": 12,
+    "failed": 0
+  },
+  "physical_pattern_guard_unchanged": true,
+  "rust_and_wasm_inputs_changed": false,
+  "diagnostic_transform_only_in_output": true,
+  "logs": {
+    "base-crop-diagnostic": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/logs/base-crop-diagnostic.log",
+      "sha256": "7f90a5af0fbb4c84dd4daaff7d8ada99f3751871244f39b5a70b85a69aca65be"
+    },
+    "canvaskit-solid-before": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/logs/canvaskit-solid-before.log",
+      "sha256": "65db90e0b7712f7036ac4c5948ad254bcc9129f64106b35912685ae8f9245b75"
+    },
+    "canvaskit-solid-after-final": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/logs/canvaskit-solid-after-final.log",
+      "sha256": "778d0b85be5932b5986e03a1cfa76627d6c1a4e3d49fa41c19c6e9803350c91f"
+    }
+  }
+}
