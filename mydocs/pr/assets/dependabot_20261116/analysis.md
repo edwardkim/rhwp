@@ -46,3 +46,19 @@
 통합 병합과 devel 반영을 확인하기 전에는 원 PR을 close하지 않습니다.
 원 PR별 개별 판정·원 SHA·실제 검증을 댓글로 남긴 뒤 supersede close하고 원 bot branch는 보존합니다.
 사용자가 요청한 비공개 글꼴 ZIP과 다른 작업의 자료를 보존합니다.
+
+## 1차 실제 검증 완료
+
+- 새 Skia0.157 Native CLI `--locked --profile release-test --features native-skia` 빌드를
+ 5분8초에 완료했습니다. 제품 API 호환 보정은 현재까지 필요하지 않았습니다.
+- Studio·Chrome·Firefox npm ci, Studio TypeScript와 전체 단위2,798PASS·0FAIL·2SKIP을
+ 완료했습니다. [결과](npm-validation.json)와 [실제 해석 버전](resolved-versions.json)을 보존합니다.
+- actionlint 전체 호출은 기존 advisory 두 곳의 SC2016 info를 보고했습니다. 같은 base와 후보의
+ 두 스크립트가 action SHA 외에는 byte-identical이며, 단일 인용 echo가 Markdown backtick을
+ 그대로 출력하는 의도임을 확인했습니다. 제품 결함으로 수정하거나 허용치를 바꾸지 않았습니다.
+ Shellcheck를 제외한 actionlint 구문 검사와 Node CI 계약·Python workflow250건은 통과했습니다.
+ [명령·결과](workflow-validation.json), [기존 진단 분석](actionlint-existing-shellcheck.json)을 구분합니다.
+- 새 sandbox는 CoreText1890face 중 OS528face만 노출하며 비공개183개 프로그램 읽기를 모두
+ 거부했습니다. 기존 라이선스 확인 vendor bundled 글꼴은 명시적으로 허용했습니다.
+ 최초 프로필이 이 두 공개 DejaVu 파일까지 막아 발생한 컴파일 실패는 환경 구성 오류로 보존하고,
+ [수정된 격리 조건](minimal-font-qualification.json)에서 필수 게이트를 다시 실행 중입니다.

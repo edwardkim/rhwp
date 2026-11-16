@@ -1,0 +1,10 @@
+{
+  "coretext_normal_faces": 1890,
+  "coretext_isolated_faces": 528,
+  "isolated_non_os_faces": 0,
+  "normal_private_faces": 1235,
+  "profile_sha256": "ecf7f95bd5c60f290f85d1acf33d8c09bf26c55b1346e2f85ec1097d627e68a7",
+  "private_programs_tested": 183,
+  "private_programs_denied": 183,
+  "public_bundled_allowance": "vendor/rhwp-pdf-import-backend/src/fonts/assets existing licensed DejaVu/Droid/Noto"
+}

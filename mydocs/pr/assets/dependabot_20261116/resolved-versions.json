@@ -1,0 +1,29 @@
+{
+  "cargo_targets": {
+    "ureq": "3.5.2",
+    "flate2": "1.1.11",
+    "zip": "9.5.1",
+    "read-fonts": "0.47.0",
+    "skera": "0.10.0",
+    "crc32fast": "1.5.5",
+    "aes": "0.9.4",
+    "skia-safe": "0.157.0",
+    "skia-bindings": "0.157.0"
+  },
+  "npm": {
+    "rhwp-studio": {
+      "vite": "8.3.8",
+      "puppeteer-core": "25.17.0",
+      "@anthropic-ai/sdk": "1.8.0"
+    },
+    "rhwp-chrome": {
+      "vite": "8.3.8",
+      "puppeteer-core": "25.17.0",
+      "puppeteer": "25.17.0"
+    },
+    "rhwp-firefox": {
+      "vite": "8.3.8"
+    }
+  },
+  "cargo_lock_sha256": "972bdb0994b216f0cef357b856ce0807ce3d437af6791377446b62f2e26c05a1"
+}

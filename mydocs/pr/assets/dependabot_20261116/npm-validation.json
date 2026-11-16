@@ -1,0 +1,63 @@
+{
+  "status": "completed",
+  "results": [
+    {
+      "name": "studio-install",
+      "cwd": "rhwp-studio",
+      "command": [
+        "npm",
+        "ci",
+        "--no-audit",
+        "--no-fund"
+      ],
+      "exit": 0,
+      "seconds": 5.268
+    },
+    {
+      "name": "chrome-install",
+      "cwd": "rhwp-chrome",
+      "command": [
+        "npm",
+        "ci",
+        "--no-audit",
+        "--no-fund"
+      ],
+      "exit": 0,
+      "seconds": 0.994
+    },
+    {
+      "name": "firefox-install",
+      "cwd": "rhwp-firefox",
+      "command": [
+        "npm",
+        "ci",
+        "--no-audit",
+        "--no-fund"
+      ],
+      "exit": 0,
+      "seconds": 0.504
+    },
+    {
+      "name": "studio-types",
+      "cwd": "rhwp-studio",
+      "command": [
+        "npx",
+        "--no-install",
+        "tsc",
+        "--noEmit"
+      ],
+      "exit": 0,
+      "seconds": 1.219
+    },
+    {
+      "name": "studio-unit",
+      "cwd": "rhwp-studio",
+      "command": [
+        "npm",
+        "test"
+      ],
+      "exit": 0,
+      "seconds": 64.418
+    }
+  ]
+}
