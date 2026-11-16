@@ -1,0 +1,203 @@
+{
+  "source": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+  "nativeSha256": "4e826ffa5e12fa69dbb1e58f6cb803cbaf99b41a4e3ceb8d016a138fc9275254",
+  "documents": 2,
+  "results": [
+    {
+      "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-without-exceptions/inputs/body-list-typed-hwp-ebe04aa214.hwp",
+      "detector": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/rhwp-typed-frame-native",
+        "inspect",
+        "hidden-text",
+        "mydocs/pr/assets/jinho-von-choi-20261114/final-without-exceptions/inputs/body-list-typed-hwp-ebe04aa214.hwp",
+        "--json"
+      ],
+      "exitCode": 0,
+      "report": {
+        "clean": true,
+        "hiddenCharCount": 0,
+        "hiddenText": [],
+        "includeOffPage": false,
+        "schemaVersion": "1.0",
+        "source": "mydocs/pr/assets/jinho-von-choi-20261114/final-without-exceptions/inputs/body-list-typed-hwp-ebe04aa214.hwp",
+        "thresholdPt": 1.0,
+        "untrustedContent": false,
+        "untrustedFields": []
+      }
+    },
+    {
+      "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-without-exceptions/inputs/body-list-typed-hwp-ebe04aa214.hwp",
+      "detector": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/rhwp-typed-frame-native",
+        "inspect",
+        "injection",
+        "mydocs/pr/assets/jinho-von-choi-20261114/final-without-exceptions/inputs/body-list-typed-hwp-ebe04aa214.hwp",
+        "--json",
+        "--include-fields"
+      ],
+      "exitCode": 0,
+      "report": {
+        "clean": true,
+        "highestConfidence": null,
+        "includeFields": true,
+        "injectionSignals": [],
+        "minConfidence": "low",
+        "scanScopes": [
+          "body",
+          "tableCell",
+          "textBox",
+          "equation",
+          "footnote",
+          "endnote",
+          "header",
+          "footer",
+          "caption",
+          "fieldName",
+          "fieldGuide",
+          "fieldCommand",
+          "hiddenComment",
+          "fieldMemo"
+        ],
+        "schemaVersion": "1.0",
+        "signalCount": 0,
+        "source": "mydocs/pr/assets/jinho-von-choi-20261114/final-without-exceptions/inputs/body-list-typed-hwp-ebe04aa214.hwp",
+        "untrustedContent": false,
+        "untrustedFields": []
+      }
+    },
+    {
+      "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-without-exceptions/inputs/body-list-typed-hwp-ebe04aa214.hwp",
+      "detector": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/rhwp-typed-frame-native",
+        "inspect",
+        "unicode",
+        "mydocs/pr/assets/jinho-von-choi-20261114/final-without-exceptions/inputs/body-list-typed-hwp-ebe04aa214.hwp",
+        "--json"
+      ],
+      "exitCode": 0,
+      "report": {
+        "clean": true,
+        "findingCount": 0,
+        "findings": [],
+        "kindCounts": {
+          "bidi_override": 0,
+          "confusable": 0,
+          "tag_char": 0,
+          "zero_width": 0
+        },
+        "kindFilter": "all",
+        "scannedChars": 37,
+        "schemaVersion": "1.0",
+        "severityCounts": {
+          "high": 0,
+          "low": 0,
+          "medium": 0
+        },
+        "source": "mydocs/pr/assets/jinho-von-choi-20261114/final-without-exceptions/inputs/body-list-typed-hwp-ebe04aa214.hwp",
+        "untrustedContent": false,
+        "untrustedFields": []
+      }
+    },
+    {
+      "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-without-exceptions/inputs/control-styles-hwp-2095908091.hwp",
+      "detector": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/rhwp-typed-frame-native",
+        "inspect",
+        "hidden-text",
+        "mydocs/pr/assets/jinho-von-choi-20261114/final-without-exceptions/inputs/control-styles-hwp-2095908091.hwp",
+        "--json"
+      ],
+      "exitCode": 0,
+      "report": {
+        "clean": true,
+        "hiddenCharCount": 0,
+        "hiddenText": [],
+        "includeOffPage": false,
+        "schemaVersion": "1.0",
+        "source": "mydocs/pr/assets/jinho-von-choi-20261114/final-without-exceptions/inputs/control-styles-hwp-2095908091.hwp",
+        "thresholdPt": 1.0,
+        "untrustedContent": false,
+        "untrustedFields": []
+      }
+    },
+    {
+      "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-without-exceptions/inputs/control-styles-hwp-2095908091.hwp",
+      "detector": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/rhwp-typed-frame-native",
+        "inspect",
+        "injection",
+        "mydocs/pr/assets/jinho-von-choi-20261114/final-without-exceptions/inputs/control-styles-hwp-2095908091.hwp",
+        "--json",
+        "--include-fields"
+      ],
+      "exitCode": 0,
+      "report": {
+        "clean": true,
+        "highestConfidence": null,
+        "includeFields": true,
+        "injectionSignals": [],
+        "minConfidence": "low",
+        "scanScopes": [
+          "body",
+          "tableCell",
+          "textBox",
+          "equation",
+          "footnote",
+          "endnote",
+          "header",
+          "footer",
+          "caption",
+          "fieldName",
+          "fieldGuide",
+          "fieldCommand",
+          "hiddenComment",
+          "fieldMemo"
+        ],
+        "schemaVersion": "1.0",
+        "signalCount": 0,
+        "source": "mydocs/pr/assets/jinho-von-choi-20261114/final-without-exceptions/inputs/control-styles-hwp-2095908091.hwp",
+        "untrustedContent": false,
+        "untrustedFields": []
+      }
+    },
+    {
+      "path": "mydocs/pr/assets/jinho-von-choi-20261114/final-without-exceptions/inputs/control-styles-hwp-2095908091.hwp",
+      "detector": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/rhwp-typed-frame-native",
+        "inspect",
+        "unicode",
+        "mydocs/pr/assets/jinho-von-choi-20261114/final-without-exceptions/inputs/control-styles-hwp-2095908091.hwp",
+        "--json"
+      ],
+      "exitCode": 0,
+      "report": {
+        "clean": true,
+        "findingCount": 0,
+        "findings": [],
+        "kindCounts": {
+          "bidi_override": 0,
+          "confusable": 0,
+          "tag_char": 0,
+          "zero_width": 0
+        },
+        "kindFilter": "all",
+        "scannedChars": 52,
+        "schemaVersion": "1.0",
+        "severityCounts": {
+          "high": 0,
+          "low": 0,
+          "medium": 0
+        },
+        "source": "mydocs/pr/assets/jinho-von-choi-20261114/final-without-exceptions/inputs/control-styles-hwp-2095908091.hwp",
+        "untrustedContent": false,
+        "untrustedFields": []
+      }
+    }
+  ]
+}

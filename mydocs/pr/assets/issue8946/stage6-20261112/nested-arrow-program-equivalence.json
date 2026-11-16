@@ -1,0 +1,33 @@
+{
+  "pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+  "glyphs": [
+    {
+      "page": 4,
+      "unicode": "U+21E9",
+      "pdf_font": "Haansoft Batang",
+      "pdf_font_xref": 52,
+      "pdf_glyph_id": 6,
+      "source_font_sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+      "pdf_units_per_em": 1024,
+      "source_units_per_em": 1024,
+      "contours_equal": false,
+      "pdf_advance": 1024,
+      "source_advance": 1024,
+      "contour_sha256": "437535ead22bb9d5c6e5f87e048d5ceb91970857bb5a16e82898c7d2f08698ed"
+    },
+    {
+      "page": 4,
+      "unicode": "U+21E9",
+      "pdf_font": "Haansoft Batang",
+      "pdf_font_xref": 52,
+      "pdf_glyph_id": 6,
+      "source_font_sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+      "pdf_units_per_em": 1024,
+      "source_units_per_em": 1024,
+      "contours_equal": false,
+      "pdf_advance": 1024,
+      "source_advance": 1024,
+      "contour_sha256": "437535ead22bb9d5c6e5f87e048d5ceb91970857bb5a16e82898c7d2f08698ed"
+    }
+  ]
+}

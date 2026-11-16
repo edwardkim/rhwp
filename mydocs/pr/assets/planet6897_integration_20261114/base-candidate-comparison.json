@@ -1,0 +1,466 @@
+[
+  {
+    "pr": 8976,
+    "key": "owned-tac",
+    "backend": "native",
+    "base_source": "dc3d0ff15e6e7cdb39138c72a5466994dea0e0d4",
+    "base_pages": 11,
+    "candidate_pages": 11,
+    "pdf_pages": 11,
+    "base_page_count_mismatch": false,
+    "base_scope": "all pages",
+    "candidate_source": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+    "current_base": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
+    "base_reuse_evidence": "rebase-base-read-path-audit.json",
+    "pages": [
+      {
+        "page": 1,
+        "base": 100.0,
+        "candidate": 100.0,
+        "delta_pp": 0.0
+      },
+      {
+        "page": 2,
+        "base": 86.9755,
+        "candidate": 99.99263,
+        "delta_pp": 13.01713
+      },
+      {
+        "page": 3,
+        "base": 100.0,
+        "candidate": 100.0,
+        "delta_pp": 0.0
+      },
+      {
+        "page": 4,
+        "base": 64.86366,
+        "candidate": 100.0,
+        "delta_pp": 35.13634
+      },
+      {
+        "page": 5,
+        "base": 99.10161,
+        "candidate": 99.10161,
+        "delta_pp": 0.0
+      },
+      {
+        "page": 6,
+        "base": 95.63889,
+        "candidate": 95.63889,
+        "delta_pp": 0.0
+      },
+      {
+        "page": 7,
+        "base": 98.62165,
+        "candidate": 98.62165,
+        "delta_pp": 0.0
+      },
+      {
+        "page": 8,
+        "base": 99.73214,
+        "candidate": 99.73214,
+        "delta_pp": 0.0
+      },
+      {
+        "page": 9,
+        "base": 99.80852,
+        "candidate": 99.80852,
+        "delta_pp": 0.0
+      },
+      {
+        "page": 10,
+        "base": 80.98088,
+        "candidate": 100.0,
+        "delta_pp": 19.01912
+      },
+      {
+        "page": 11,
+        "base": 99.96163,
+        "candidate": 99.96163,
+        "delta_pp": 0.0
+      }
+    ],
+    "declines_over_2pp": []
+  },
+  {
+    "pr": 8976,
+    "key": "owned-tac",
+    "backend": "wasm",
+    "base_source": "dc3d0ff15e6e7cdb39138c72a5466994dea0e0d4",
+    "base_pages": 11,
+    "candidate_pages": 11,
+    "pdf_pages": 11,
+    "base_page_count_mismatch": false,
+    "base_scope": "all pages",
+    "candidate_source": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+    "current_base": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
+    "base_reuse_evidence": "rebase-base-read-path-audit.json",
+    "pages": [
+      {
+        "page": 1,
+        "base": 100.0,
+        "candidate": 100.0,
+        "delta_pp": 0.0
+      },
+      {
+        "page": 2,
+        "base": 86.95091,
+        "candidate": 100.0,
+        "delta_pp": 13.04909
+      },
+      {
+        "page": 3,
+        "base": 100.0,
+        "candidate": 100.0,
+        "delta_pp": 0.0
+      },
+      {
+        "page": 4,
+        "base": 64.87106,
+        "candidate": 100.0,
+        "delta_pp": 35.12894
+      },
+      {
+        "page": 5,
+        "base": 99.11098,
+        "candidate": 99.11098,
+        "delta_pp": 0.0
+      },
+      {
+        "page": 6,
+        "base": 95.64295,
+        "candidate": 95.64295,
+        "delta_pp": 0.0
+      },
+      {
+        "page": 7,
+        "base": 98.62138,
+        "candidate": 98.62138,
+        "delta_pp": 0.0
+      },
+      {
+        "page": 8,
+        "base": 99.73395,
+        "candidate": 99.73395,
+        "delta_pp": 0.0
+      },
+      {
+        "page": 9,
+        "base": 99.79885,
+        "candidate": 99.79885,
+        "delta_pp": 0.0
+      },
+      {
+        "page": 10,
+        "base": 80.99875,
+        "candidate": 100.0,
+        "delta_pp": 19.00125
+      },
+      {
+        "page": 11,
+        "base": 100.0,
+        "candidate": 100.0,
+        "delta_pp": 0.0
+      }
+    ],
+    "declines_over_2pp": []
+  },
+  {
+    "pr": 9064,
+    "key": "ws-host",
+    "backend": "native",
+    "base_source": "dc3d0ff15e6e7cdb39138c72a5466994dea0e0d4",
+    "base_pages": 3,
+    "candidate_pages": 2,
+    "pdf_pages": 2,
+    "base_page_count_mismatch": true,
+    "base_scope": "all common PDF pages; excess source page has no reference and no invented score",
+    "candidate_source": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+    "current_base": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
+    "base_reuse_evidence": "rebase-base-read-path-audit.json",
+    "pages": [
+      {
+        "page": 1,
+        "base": 91.78812,
+        "candidate": 100.0,
+        "delta_pp": 8.21188
+      },
+      {
+        "page": 2,
+        "base": 92.59765,
+        "candidate": 100.0,
+        "delta_pp": 7.40235
+      }
+    ],
+    "declines_over_2pp": [],
+    "page_correspondence_limit": "base의 여분 쪽이 있는 쪽수 결함 입력. 공통 쪽 번호의 raw 비교는 진단값이며 전체 내용 대응을 대신하지 않음. 후보 전체 쪽수·제어 소유·종료 내용은 관계 검사와 직접 판독으로 별도 확인."
+  },
+  {
+    "pr": 9064,
+    "key": "ws-host",
+    "backend": "wasm",
+    "base_source": "dc3d0ff15e6e7cdb39138c72a5466994dea0e0d4",
+    "base_pages": 3,
+    "candidate_pages": 2,
+    "pdf_pages": 2,
+    "base_page_count_mismatch": true,
+    "base_scope": "all common PDF pages; excess source page has no reference and no invented score",
+    "candidate_source": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+    "current_base": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
+    "base_reuse_evidence": "rebase-base-read-path-audit.json",
+    "pages": [
+      {
+        "page": 1,
+        "base": 91.78661,
+        "candidate": 100.0,
+        "delta_pp": 8.21339
+      },
+      {
+        "page": 2,
+        "base": 92.59694,
+        "candidate": 100.0,
+        "delta_pp": 7.40306
+      }
+    ],
+    "declines_over_2pp": [],
+    "page_correspondence_limit": "base의 여분 쪽이 있는 쪽수 결함 입력. 공통 쪽 번호의 raw 비교는 진단값이며 전체 내용 대응을 대신하지 않음. 후보 전체 쪽수·제어 소유·종료 내용은 관계 검사와 직접 판독으로 별도 확인."
+  },
+  {
+    "pr": 9065,
+    "key": "page-band",
+    "backend": "native",
+    "base_source": "dc3d0ff15e6e7cdb39138c72a5466994dea0e0d4",
+    "base_pages": 4,
+    "candidate_pages": 4,
+    "pdf_pages": 4,
+    "base_page_count_mismatch": false,
+    "base_scope": "all pages",
+    "candidate_source": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+    "current_base": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
+    "base_reuse_evidence": "rebase-base-read-path-audit.json",
+    "pages": [
+      {
+        "page": 1,
+        "base": 84.43337,
+        "candidate": 99.82946,
+        "delta_pp": 15.39609
+      },
+      {
+        "page": 2,
+        "base": 61.72118,
+        "candidate": 99.94557,
+        "delta_pp": 38.22439
+      },
+      {
+        "page": 3,
+        "base": 28.38208,
+        "candidate": 95.97412,
+        "delta_pp": 67.59204
+      },
+      {
+        "page": 4,
+        "base": 99.99356,
+        "candidate": 99.99356,
+        "delta_pp": 0.0
+      }
+    ],
+    "declines_over_2pp": []
+  },
+  {
+    "pr": 9065,
+    "key": "page-band",
+    "backend": "wasm",
+    "base_source": "dc3d0ff15e6e7cdb39138c72a5466994dea0e0d4",
+    "base_pages": 4,
+    "candidate_pages": 4,
+    "pdf_pages": 4,
+    "base_page_count_mismatch": false,
+    "base_scope": "all pages",
+    "candidate_source": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+    "current_base": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
+    "base_reuse_evidence": "rebase-base-read-path-audit.json",
+    "pages": [
+      {
+        "page": 1,
+        "base": 84.49841,
+        "candidate": 99.82915,
+        "delta_pp": 15.33074
+      },
+      {
+        "page": 2,
+        "base": 61.92965,
+        "candidate": 99.94611,
+        "delta_pp": 38.01646
+      },
+      {
+        "page": 3,
+        "base": 28.77087,
+        "candidate": 96.01502,
+        "delta_pp": 67.24415
+      },
+      {
+        "page": 4,
+        "base": 99.99363,
+        "candidate": 99.99363,
+        "delta_pp": 0.0
+      }
+    ],
+    "declines_over_2pp": []
+  },
+  {
+    "pr": 9067,
+    "key": "title-mark",
+    "backend": "native",
+    "base_source": "dc3d0ff15e6e7cdb39138c72a5466994dea0e0d4",
+    "base_pages": 11,
+    "candidate_pages": 10,
+    "pdf_pages": 10,
+    "base_page_count_mismatch": true,
+    "base_scope": "all common PDF pages; excess source page has no reference and no invented score",
+    "candidate_source": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+    "current_base": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
+    "base_reuse_evidence": "rebase-base-read-path-audit.json",
+    "pages": [
+      {
+        "page": 1,
+        "base": 94.38083,
+        "candidate": 94.38083,
+        "delta_pp": 0.0
+      },
+      {
+        "page": 2,
+        "base": 100.0,
+        "candidate": 100.0,
+        "delta_pp": 0.0
+      },
+      {
+        "page": 3,
+        "base": 99.99106,
+        "candidate": 99.99106,
+        "delta_pp": 0.0
+      },
+      {
+        "page": 4,
+        "base": 99.98638,
+        "candidate": 99.98638,
+        "delta_pp": 0.0
+      },
+      {
+        "page": 5,
+        "base": 99.99586,
+        "candidate": 99.99586,
+        "delta_pp": 0.0
+      },
+      {
+        "page": 6,
+        "base": 100.0,
+        "candidate": 100.0,
+        "delta_pp": 0.0
+      },
+      {
+        "page": 7,
+        "base": 100.0,
+        "candidate": 100.0,
+        "delta_pp": 0.0
+      },
+      {
+        "page": 8,
+        "base": 100.0,
+        "candidate": 100.0,
+        "delta_pp": 0.0
+      },
+      {
+        "page": 9,
+        "base": 69.20556,
+        "candidate": 100.0,
+        "delta_pp": 30.79444
+      },
+      {
+        "page": 10,
+        "base": 8.04673,
+        "candidate": 100.0,
+        "delta_pp": 91.95327
+      }
+    ],
+    "declines_over_2pp": [],
+    "page_correspondence_limit": "base의 여분 쪽이 있는 쪽수 결함 입력. 공통 쪽 번호의 raw 비교는 진단값이며 전체 내용 대응을 대신하지 않음. 후보 전체 쪽수·제어 소유·종료 내용은 관계 검사와 직접 판독으로 별도 확인."
+  },
+  {
+    "pr": 9067,
+    "key": "title-mark",
+    "backend": "wasm",
+    "base_source": "dc3d0ff15e6e7cdb39138c72a5466994dea0e0d4",
+    "base_pages": 11,
+    "candidate_pages": 10,
+    "pdf_pages": 10,
+    "base_page_count_mismatch": true,
+    "base_scope": "all common PDF pages; excess source page has no reference and no invented score",
+    "candidate_source": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+    "current_base": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
+    "base_reuse_evidence": "rebase-base-read-path-audit.json",
+    "pages": [
+      {
+        "page": 1,
+        "base": 94.48671,
+        "candidate": 94.48671,
+        "delta_pp": 0.0
+      },
+      {
+        "page": 2,
+        "base": 100.0,
+        "candidate": 100.0,
+        "delta_pp": 0.0
+      },
+      {
+        "page": 3,
+        "base": 99.96795,
+        "candidate": 99.96795,
+        "delta_pp": 0.0
+      },
+      {
+        "page": 4,
+        "base": 99.9513,
+        "candidate": 99.9513,
+        "delta_pp": 0.0
+      },
+      {
+        "page": 5,
+        "base": 99.9835,
+        "candidate": 99.9835,
+        "delta_pp": 0.0
+      },
+      {
+        "page": 6,
+        "base": 100.0,
+        "candidate": 100.0,
+        "delta_pp": 0.0
+      },
+      {
+        "page": 7,
+        "base": 100.0,
+        "candidate": 100.0,
+        "delta_pp": 0.0
+      },
+      {
+        "page": 8,
+        "base": 100.0,
+        "candidate": 100.0,
+        "delta_pp": 0.0
+      },
+      {
+        "page": 9,
+        "base": 69.21008,
+        "candidate": 100.0,
+        "delta_pp": 30.78992
+      },
+      {
+        "page": 10,
+        "base": 8.04264,
+        "candidate": 100.0,
+        "delta_pp": 91.95736
+      }
+    ],
+    "declines_over_2pp": [],
+    "page_correspondence_limit": "base의 여분 쪽이 있는 쪽수 결함 입력. 공통 쪽 번호의 raw 비교는 진단값이며 전체 내용 대응을 대신하지 않음. 후보 전체 쪽수·제어 소유·종료 내용은 관계 검사와 직접 판독으로 별도 확인."
+  }
+]

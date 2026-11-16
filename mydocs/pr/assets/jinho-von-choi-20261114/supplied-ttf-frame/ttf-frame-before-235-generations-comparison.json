@@ -1,0 +1,434 @@
+[
+  {
+    "printer": 2022,
+    "supply": "none",
+    "profile": "print",
+    "natural": false,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2022,
+    "supply": "none",
+    "profile": "screen",
+    "natural": false,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2022,
+    "supply": "none",
+    "profile": "high-quality",
+    "natural": false,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2022,
+    "supply": "none",
+    "profile": "print",
+    "natural": true,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2022,
+    "supply": "none",
+    "profile": "screen",
+    "natural": true,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2022,
+    "supply": "none",
+    "profile": "high-quality",
+    "natural": true,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2022,
+    "supply": "static",
+    "profile": "print",
+    "natural": false,
+    "expectedFrame": true,
+    "observedFrame": false,
+    "pass": false
+  },
+  {
+    "printer": 2022,
+    "supply": "static",
+    "profile": "screen",
+    "natural": false,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2022,
+    "supply": "static",
+    "profile": "high-quality",
+    "natural": false,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2022,
+    "supply": "static",
+    "profile": "print",
+    "natural": true,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2022,
+    "supply": "static",
+    "profile": "screen",
+    "natural": true,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2022,
+    "supply": "static",
+    "profile": "high-quality",
+    "natural": true,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2022,
+    "supply": "cff",
+    "profile": "print",
+    "natural": false,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2022,
+    "supply": "cff",
+    "profile": "screen",
+    "natural": false,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2022,
+    "supply": "cff",
+    "profile": "high-quality",
+    "natural": false,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2022,
+    "supply": "cff",
+    "profile": "print",
+    "natural": true,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2022,
+    "supply": "cff",
+    "profile": "screen",
+    "natural": true,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2022,
+    "supply": "cff",
+    "profile": "high-quality",
+    "natural": true,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2022,
+    "supply": "variable",
+    "profile": "print",
+    "natural": false,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2022,
+    "supply": "variable",
+    "profile": "screen",
+    "natural": false,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2022,
+    "supply": "variable",
+    "profile": "high-quality",
+    "natural": false,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2022,
+    "supply": "variable",
+    "profile": "print",
+    "natural": true,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2022,
+    "supply": "variable",
+    "profile": "screen",
+    "natural": true,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2022,
+    "supply": "variable",
+    "profile": "high-quality",
+    "natural": true,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2024,
+    "supply": "none",
+    "profile": "print",
+    "natural": false,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2024,
+    "supply": "none",
+    "profile": "screen",
+    "natural": false,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2024,
+    "supply": "none",
+    "profile": "high-quality",
+    "natural": false,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2024,
+    "supply": "none",
+    "profile": "print",
+    "natural": true,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2024,
+    "supply": "none",
+    "profile": "screen",
+    "natural": true,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2024,
+    "supply": "none",
+    "profile": "high-quality",
+    "natural": true,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2024,
+    "supply": "static",
+    "profile": "print",
+    "natural": false,
+    "expectedFrame": true,
+    "observedFrame": false,
+    "pass": false
+  },
+  {
+    "printer": 2024,
+    "supply": "static",
+    "profile": "screen",
+    "natural": false,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2024,
+    "supply": "static",
+    "profile": "high-quality",
+    "natural": false,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2024,
+    "supply": "static",
+    "profile": "print",
+    "natural": true,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2024,
+    "supply": "static",
+    "profile": "screen",
+    "natural": true,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2024,
+    "supply": "static",
+    "profile": "high-quality",
+    "natural": true,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2024,
+    "supply": "cff",
+    "profile": "print",
+    "natural": false,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2024,
+    "supply": "cff",
+    "profile": "screen",
+    "natural": false,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2024,
+    "supply": "cff",
+    "profile": "high-quality",
+    "natural": false,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2024,
+    "supply": "cff",
+    "profile": "print",
+    "natural": true,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2024,
+    "supply": "cff",
+    "profile": "screen",
+    "natural": true,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2024,
+    "supply": "cff",
+    "profile": "high-quality",
+    "natural": true,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2024,
+    "supply": "variable",
+    "profile": "print",
+    "natural": false,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2024,
+    "supply": "variable",
+    "profile": "screen",
+    "natural": false,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2024,
+    "supply": "variable",
+    "profile": "high-quality",
+    "natural": false,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2024,
+    "supply": "variable",
+    "profile": "print",
+    "natural": true,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2024,
+    "supply": "variable",
+    "profile": "screen",
+    "natural": true,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  },
+  {
+    "printer": 2024,
+    "supply": "variable",
+    "profile": "high-quality",
+    "natural": true,
+    "expectedFrame": false,
+    "observedFrame": false,
+    "pass": true
+  }
+]

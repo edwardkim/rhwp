@@ -1,5 +1,11 @@
 //! 관계형·고정형: Print의 소수 원점과 Screen 격자를 합성 glyph로 대조한다.
-//! 주석 갱신: 2026-10-30T14:56:45+09:00; 직전 파일 커밋: 2026-10-30T14:55:31+09:00 (80ca89e99f).
+//! 주석 갱신: 2026-11-14T22:28:43+09:00; 직전 파일 커밋: 2026-11-12T17:10:31+09:00 (eed1c5a06431c4c9409e4ad9fd8ed976a2eec869).
+//! #9075 추가 검사는 공개 TTF의 상대 이동 계약이며 사설 설치 글꼴에 의존하지 않는다.
+//! 관련 86036 HWPX 전 14쪽: 2026-11-14, 96 DPI, 독립 한컴 Print PDFium, 보정 전 2px raw.
+//! Native 최저 99.72%(12쪽), fresh WASM 최저 99.99%(2·12쪽). 절대 px 기대값을 추가하지 않는다.
+//! 근거: mydocs/pr/assets/issue_9060/review-measurement.json 및 native-residual-diagnosis/README.md.
+//! [#8986] Print 장치 clip 은 인쇄 세대와 무관하다 — 기준 raster(PDFium)가 2020 Print PDF 의 축 정렬
+//! clip 도 바깥 화소로 넓힌다(36325899 2쪽 칸 위끝 중첩 표 테두리). 글자 기하만 세대별로 남는다.
 //! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
 //! 이 검사는 합성 입력을 사용하며 아래 수치는 관련 편람의 별도 시각 검증이다.
 //! 관련 실사례 HWP 79쪽 Native 100.00% / fresh WASM 100.00%.
@@ -35,10 +41,13 @@ fn explicit_print_generation_survives_layer_cache_transitions() {
             .build_page_layer_tree_with_profile(0, RenderProfile::Print)
             .unwrap();
         assert_eq!(print.preserves_raster_text_geometry(), enabled);
-        assert_eq!(print.uses_raster_clip_coverage(), enabled);
+        assert!(
+            print.uses_raster_clip_coverage(),
+            "Print 장치 clip 은 세대와 무관"
+        );
         let exported: serde_json::Value = serde_json::from_str(&print.to_json()).unwrap();
         assert_eq!(exported["rasterTextGeometry"], enabled);
-        assert_eq!(exported["rasterClipCoverage"], enabled);
+        assert_eq!(exported["rasterClipCoverage"], true);
         let screen = core
             .build_page_layer_tree_with_profile(0, RenderProfile::Screen)
             .unwrap();
@@ -83,7 +92,7 @@ fn print_generation_uses_distinct_native_picture_cache_entries() {
         );
         tree.text_sources = Default::default();
         assert_eq!(tree.preserves_raster_text_geometry(), enabled);
-        assert_eq!(tree.uses_raster_clip_coverage(), enabled);
+        assert!(tree.uses_raster_clip_coverage());
         trees.push(tree);
     }
     let renderer = SkiaLayerRenderer::new();
@@ -112,6 +121,7 @@ fn glyph_at(
     y: f64,
     fixed_glyph_advances: bool,
     profile: RenderProfile,
+    generation: Option<bool>,
 ) -> RasterPixels {
     let run = TextRunNode {
         text: "H".into(),
@@ -149,6 +159,16 @@ fn glyph_at(
         ),
     );
     tree.profile = profile;
+    if let Some(enabled) = generation {
+        let mut core = rhwp::DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        core.set_hangul2024_compat(enabled);
+        tree.resources = core
+            .build_page_layer_tree_with_profile(0, profile)
+            .unwrap()
+            .resources;
+        assert_eq!(tree.preserves_raster_text_geometry(), enabled);
+    }
     renderer
         .render_pixels_with_options(&tree, RasterRenderOptions::default())
         .expect("글리프를 투명 RGBA에 재생한다")
@@ -170,10 +190,10 @@ fn ink_center(image: &RasterPixels) -> (f64, f64) {
     (x_sum / mass, y_sum / mass)
 }
 
-fn check(renderer: &SkiaLayerRenderer, profile: RenderProfile) {
-    let original = ink_center(&glyph_at(renderer, 4.1, false, profile));
-    let quarter = ink_center(&glyph_at(renderer, 4.35, false, profile));
-    let whole = ink_center(&glyph_at(renderer, 5.1, false, profile));
+fn check(renderer: &SkiaLayerRenderer, profile: RenderProfile, generation: Option<bool>) {
+    let original = ink_center(&glyph_at(renderer, 4.1, false, profile, generation));
+    let quarter = ink_center(&glyph_at(renderer, 4.35, false, profile, generation));
+    let whole = ink_center(&glyph_at(renderer, 5.1, false, profile, generation));
     let shift = quarter.1 - original.1;
     if profile == RenderProfile::Print {
         assert!(
@@ -193,11 +213,11 @@ fn renderer() -> SkiaLayerRenderer {
 }
 #[test]
 fn print_ordinary_ttf_preserves_fractional_baseline() {
-    check(&renderer(), RenderProfile::Print);
+    check(&renderer(), RenderProfile::Print, None);
 }
 #[test]
 fn screen_ordinary_ttf_keeps_existing_baseline_grid() {
-    check(&renderer(), RenderProfile::Screen);
+    check(&renderer(), RenderProfile::Screen, None);
 }
 #[test]
 fn print_screen_print_roundtrip_keeps_each_raster_contract() {
@@ -207,6 +227,16 @@ fn print_screen_print_roundtrip_keeps_each_raster_contract() {
         RenderProfile::Screen,
         RenderProfile::Print,
     ] {
-        check(&renderer, profile);
+        check(&renderer, profile, None);
+    }
+}
+
+#[test]
+fn legacy_print_ttf_preserves_fractional_baseline_across_generation_changes() {
+    let renderer = renderer();
+    for enabled in [false, true, false] {
+        // 합성 입력의 동일한 1/4px 이동 관계다. 실문서 좌표를 핀으로 고정하지 않는다.
+        check(&renderer, RenderProfile::Print, Some(enabled));
+        check(&renderer, RenderProfile::Screen, None);
     }
 }

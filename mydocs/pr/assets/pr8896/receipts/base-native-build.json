@@ -1,0 +1,23 @@
+{
+  "source": "4c876654d86d071d342fc78706c51cfff6ddbde4",
+  "command": [
+    "cargo",
+    "build",
+    "--locked",
+    "--profile",
+    "release-test",
+    "--features",
+    "native-skia",
+    "--lib",
+    "--bin",
+    "rhwp",
+    "-vv"
+  ],
+  "returncode": 0,
+  "seconds": 517.59,
+  "forced_source_mtime_refresh": [
+    "src/lib.rs",
+    "src/main.rs"
+  ],
+  "binary_sha256": "0df8a7d3bd2d18f994ad03f048d2f3f9b9d75d8cb86a03d92141599af32a22d8"
+}

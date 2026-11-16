@@ -1,0 +1,132 @@
+{
+  "documentGlyphFallbacks": [
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 8,
+      "languageSlot": 0,
+      "source": "HY신명조"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 9,
+      "languageSlot": 0,
+      "source": "HY중고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 10,
+      "languageSlot": 1,
+      "source": "HY신명조"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 11,
+      "languageSlot": 1,
+      "source": "HY중고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 8,
+      "languageSlot": 2,
+      "source": "HY신명조"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 9,
+      "languageSlot": 2,
+      "source": "HY중고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 8,
+      "languageSlot": 3,
+      "source": "HY신명조"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 9,
+      "languageSlot": 3,
+      "source": "HY중고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 8,
+      "languageSlot": 4,
+      "source": "HY신명조"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 7,
+      "languageSlot": 5,
+      "source": "HY신명조"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 8,
+      "languageSlot": 5,
+      "source": "HY중고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 6,
+      "languageSlot": 6,
+      "source": "HY신명조"
+    }
+  ],
+  "documentSubstitutions": [],
+  "id": "native-webfont-d6afe7107ce7c4c2f9f06475",
+  "preserveSourceMetrics": true,
+  "selectedPrograms": {
+    "Times New Roman": {
+      "family": "Times New Roman",
+      "openTypeCff": false,
+      "programId": "05431e66ef394384694c35739bcff3bd67242cc74aca1f13b54c7a92822f0fde",
+      "query": "Times New Roman",
+      "trueType": true
+    }
+  },
+  "substitutions": {
+    "HY견고딕": "NotoSansKRThin-Bold",
+    "HY견명조": "NotoSerifKRExtraLight-Bold",
+    "HY신명조": "NotoSerifKRExtraLight-Regular",
+    "HY중고딕": "NotoSansKR-Regular",
+    "HY헤드라인M": "NotoSansKRThin-Bold",
+    "Times New Roman": "Times New Roman",
+    "굴림체": "D2Coding",
+    "궁서": "GowunBatang-Regular",
+    "한컴돋움": "HCRDotum",
+    "한컴바탕": "HCRBatang",
+    "함초롬돋움": "HCRDotum",
+    "함초롬바탕": "HCRBatang",
+    "휴먼명조": "NotoSansKR-Regular"
+  },
+  "trueTypeFaces": [
+    "HCR Batang",
+    "HCR Dotum",
+    "Times New Roman"
+  ]
+}

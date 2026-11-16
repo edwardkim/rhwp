@@ -1,0 +1,20 @@
+{
+  "source": "1506a1c34672931c4f5aa5cb6363fba776225949",
+  "pages": [
+    {
+      "page": 1,
+      "live_sha256": "33ea82a50b5a6f11150bb3d94403580549638d4af36cc96336d275a0d796327b",
+      "saved_sha256": "33ea82a50b5a6f11150bb3d94403580549638d4af36cc96336d275a0d796327b",
+      "rgb_identical": true
+    },
+    {
+      "page": 2,
+      "live_sha256": "3eb6d8b4303746ecd2b6a8e942acd06362a5442e58017fb4dafb83f5af3b0f5c",
+      "saved_sha256": "3eb6d8b4303746ecd2b6a8e942acd06362a5442e58017fb4dafb83f5af3b0f5c",
+      "rgb_identical": true
+    }
+  ],
+  "dpi96_minimum": 100.0,
+  "direct_reading": "384 DPI independent re-render confirms End of body and Body end remain inside their respective cells; 96 DPI grid hinting is distinguished from a line-frame overlap.",
+  "zoom": "output/pr-review/pr9042/edited-native-real384-zoom.png"
+}

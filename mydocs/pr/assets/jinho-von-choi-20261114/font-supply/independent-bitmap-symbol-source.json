@@ -1,0 +1,74 @@
+{
+  "method": "unaltered black bitmap runs normalized by independent Print text and image matrices; no target PDF geometry used",
+  "family": "RHWP Independent HFT Symbols",
+  "inputSha256": "cf3ad6c2075bacb54c45d3c62f82f454c70232efe8b6a9e1308bc8962d17d2ce",
+  "pdfSha256": "a298eaa707b883c10572c43e4801ee62abb5c59693acfa8294798ac1a99a7fa0",
+  "jobId": "b9c59e1c-a048-433c-93dd-79d88ca76a9a",
+  "engine": "2020",
+  "hancomVersion": "11.0.0.9136",
+  "printMethod": 0,
+  "programSha256": "71a1a1827048cd71cd23bfbd2f04e3403980ac723c1859723a6c6a0d354ed642",
+  "glyphs": [
+    {
+      "stylePt": 11,
+      "deviceEm": 92.0,
+      "imagePixels": [
+        106,
+        117
+      ],
+      "imageStreamSha256": "71866fbc39b6e2c0315212199d97d9e723700b5676c6c30ec4c7cb664d1c9c35",
+      "blackPixels": 65,
+      "bitmapPhysicalMatrix": [
+        12.472999572753906,
+        0.0,
+        -0.0,
+        14.024999618530273,
+        87.072998046875,
+        97.4530258178711
+      ],
+      "textPhysicalScale": [
+        11.03402,
+        11.027948
+      ],
+      "baseline": [
+        85.0339126586914,
+        108.4814453125
+      ],
+      "glyphName": "hyphenationPoint0"
+    },
+    {
+      "stylePt": 13,
+      "deviceEm": 108.0,
+      "imagePixels": [
+        125,
+        138
+      ],
+      "imageStreamSha256": "1fb7bd536a1978f68cc0ef0e1b8093f90f7eb1daca3670c55564cea9468958b2",
+      "blackPixels": 80,
+      "bitmapPhysicalMatrix": [
+        14.751999855041504,
+        0.0,
+        -0.0,
+        16.54199981689453,
+        87.43299865722656,
+        114.83397674560547
+      ],
+      "textPhysicalScale": [
+        12.95298,
+        12.945852
+      ],
+      "baseline": [
+        85.0339126586914,
+        127.78035736083984
+      ],
+      "glyphName": "hyphenationPoint1"
+    }
+  ],
+  "privateProgramDirectory": "/home/edward/mygithub/ttfs/local-validation/hft-symbols",
+  "fontSourceScope": "Independent clean specimen only; target document glyphs are comparison material, never program input",
+  "localOnly": "Commercial font program and standalone glyph PDF are not redistributed",
+  "sourceRecipeSha256": {
+    "create-hft-symbol-probe.py": "12a8727f5ad271337deeb5350cd79712d51b500a771b7a8969fc37cc309551d8",
+    "prepare-independent-hft-symbol.py": "46f00f2c95e96426513e50cca2702184baace0f490d56971dd44b186b5651cfc"
+  }
+}

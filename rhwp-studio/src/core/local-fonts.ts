@@ -5,7 +5,7 @@
  * 글꼴 목록을 조회한다. 저장된 감지 결과는 재사용하되, 새 목록 조회는
  * 사용자 승인 흐름에서만 호출하도록 API를 분리한다.
  */
-import { HostFontSource, type HostFontProvider, type HostFontReference, type HostFontData } from './host-font-provider.ts';
+import { HostFontSource, type HostFontProvider, type HostFontOptions, type HostFontReference, type HostFontData } from './host-font-provider.ts';
 import { normalizeFontFaceData } from './sfnt-face.ts';
 import { REGISTERED_FONTS } from './font-loader.ts';
 import { setRawCanvasFont } from './canvas-font-raw.ts';
@@ -1294,12 +1294,14 @@ hostFontSource.subscribe(() => {
 
 export interface LocalFontStyleRequest { weight: number; slant: 'normal' | 'italic' | 'oblique' }
 
-export function setHostFontProvider(provider: HostFontProvider | null): Promise<void> {
-  return hostFontSource.setProvider(provider);
+export function setHostFontProvider(provider: HostFontProvider | null, options: HostFontOptions = {}): Promise<void> {
+  return hostFontSource.setProvider(provider, options);
 }
 export function onHostFontsChanged(listener: () => void): () => void {
   return hostFontSource.subscribe(listener);
 }
+export function releaseHostLayoutPrograms(): void { hostFontSource.releaseLayoutPrograms(); }
+export function hostFontLayoutEnabled(): boolean { return hostFontSource.layoutEnabled; }
 export function hasHostFontProvider(): boolean { return hostFontSource.active; }
 export function prepareHostFontCatalog(): Promise<void> { return hostFontSource.ready(); }
 export function getHostFontState(): { active: boolean; generation: number; count: number; lastError: string | null } {

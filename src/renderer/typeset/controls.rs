@@ -23,7 +23,7 @@
 //! 표 포맷/분할 본체와 나머지 float 경로는 상위 구현에 남아 있다.
 
 mod composed_tail;
-mod decoration_host;
+pub(super) mod decoration_host;
 pub(super) mod decoration_table;
 pub(super) mod deferred;
 pub(super) mod deferred_picture;
@@ -537,6 +537,31 @@ pub(super) fn place_table_host_shape_with_storage<S: crate::storage::Storage>(
     // 놓은 자리차지 밴드는 다시 배치하지 않는다.
     if st.has_spilled_page_tail_float(para_idx, ctrl_idx) {
         return Ok(());
+    }
+    // [#8660] 쪽 영역 안으로 제한한 문단 기준 개체가 본문 아래 끝을 넘으면 개체만 다음 쪽
+    // 본문 맨 위에 놓는다. 표를 품은 기준 문단도 본문 문단과 같다(표 칸 안 개체는 무관).
+    if st.col_count == 1 {
+        if let Some(placement) = st
+            .restricted_object_host_top(para_idx, para, para_start_height, dpi)
+            .and_then(|host_top| {
+                crate::renderer::float_placement::overflow_para_object_next_page_placement(
+                    ctrl,
+                    host_top,
+                    st.available_height(),
+                    dpi,
+                )
+            })
+        {
+            st.defer_stored_frame(super::DeferredStoredFrameControl {
+                following_body_para_index: None,
+                kind: super::DeferredStoredFrameKind::Picture,
+                para_index: para_idx,
+                control_index: ctrl_idx,
+                placement,
+                target_page: None,
+            });
+            return Ok(());
+        }
     }
     let mut flow = shape_flow::prepare(ctrl, para, ctrl_idx, dpi);
     // [#8458] 자기 줄이 이미 글줄 항목으로 이 쪽에 놓였으면 그 줄 높이는 소비됐다.

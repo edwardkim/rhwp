@@ -1,0 +1,332 @@
+{
+  "status": "investigating_not_fixed",
+  "document_sha256": "8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7",
+  "pdf_sha256": "0db1eb55eda0f1a4985eeaf187656c23499616b7dccddcbb7c874c0937e1b2e0",
+  "prepared_native_trace": [
+    {
+      "source": {
+        "status": "complete",
+        "sectionIndex": 0,
+        "paragraphIndex": 919,
+        "nestedPath": [],
+        "runIndex": 22,
+        "charOffset": 0,
+        "character": "I",
+        "codePoint": 73,
+        "charShapeId": 14
+      },
+      "layoutName": {
+        "requestedFace": "HCI Poppy",
+        "normalizedFace": "HCI Poppy",
+        "cssFamilyChain": [
+          "HCI Poppy"
+        ],
+        "steps": [
+          {
+            "kind": "fontEnvironment",
+            "input": "HCI Poppy",
+            "output": "HCI Poppy",
+            "reason": "declared-program-00ea664271dc90aaefd853f3dc00bdb3fd1df5a50d2ea36962f923ca3b6959ca"
+          }
+        ]
+      },
+      "layoutMetric": {
+        "requestedFace": "HCI Poppy",
+        "aliasResolvedFace": "HCI Poppy",
+        "matchKind": "exact",
+        "metricEntry": 632,
+        "characterMatch": "hit",
+        "widthSource": "embeddedMetric",
+        "baseAdvanceHwpunit": 583,
+        "transforms": [],
+        "finalAdvanceHwpunit": 584
+      }
+    },
+    {
+      "source": {
+        "status": "complete",
+        "sectionIndex": 0,
+        "paragraphIndex": 919,
+        "nestedPath": [],
+        "runIndex": 22,
+        "charOffset": 1,
+        "character": "C",
+        "codePoint": 67,
+        "charShapeId": 14
+      },
+      "layoutName": {
+        "requestedFace": "HCI Poppy",
+        "normalizedFace": "HCI Poppy",
+        "cssFamilyChain": [
+          "HCI Poppy"
+        ],
+        "steps": [
+          {
+            "kind": "fontEnvironment",
+            "input": "HCI Poppy",
+            "output": "HCI Poppy",
+            "reason": "declared-program-00ea664271dc90aaefd853f3dc00bdb3fd1df5a50d2ea36962f923ca3b6959ca"
+          }
+        ]
+      },
+      "layoutMetric": {
+        "requestedFace": "HCI Poppy",
+        "aliasResolvedFace": "HCI Poppy",
+        "matchKind": "exact",
+        "metricEntry": 632,
+        "characterMatch": "hit",
+        "widthSource": "embeddedMetric",
+        "baseAdvanceHwpunit": 1083,
+        "transforms": [],
+        "finalAdvanceHwpunit": 1084
+      }
+    },
+    {
+      "source": {
+        "status": "complete",
+        "sectionIndex": 0,
+        "paragraphIndex": 919,
+        "nestedPath": [],
+        "runIndex": 22,
+        "charOffset": 2,
+        "character": "A",
+        "codePoint": 65,
+        "charShapeId": 14
+      },
+      "layoutName": {
+        "requestedFace": "HCI Poppy",
+        "normalizedFace": "HCI Poppy",
+        "cssFamilyChain": [
+          "HCI Poppy"
+        ],
+        "steps": [
+          {
+            "kind": "fontEnvironment",
+            "input": "HCI Poppy",
+            "output": "HCI Poppy",
+            "reason": "declared-program-00ea664271dc90aaefd853f3dc00bdb3fd1df5a50d2ea36962f923ca3b6959ca"
+          }
+        ]
+      },
+      "layoutMetric": {
+        "requestedFace": "HCI Poppy",
+        "aliasResolvedFace": "HCI Poppy",
+        "matchKind": "exact",
+        "metricEntry": 632,
+        "characterMatch": "hit",
+        "widthSource": "embeddedMetric",
+        "baseAdvanceHwpunit": 1166,
+        "transforms": [],
+        "finalAdvanceHwpunit": 1168
+      }
+    },
+    {
+      "source": {
+        "status": "complete",
+        "sectionIndex": 0,
+        "paragraphIndex": 919,
+        "nestedPath": [],
+        "runIndex": 22,
+        "charOffset": 3,
+        "character": "O",
+        "codePoint": 79,
+        "charShapeId": 14
+      },
+      "layoutName": {
+        "requestedFace": "HCI Poppy",
+        "normalizedFace": "HCI Poppy",
+        "cssFamilyChain": [
+          "HCI Poppy"
+        ],
+        "steps": [
+          {
+            "kind": "fontEnvironment",
+            "input": "HCI Poppy",
+            "output": "HCI Poppy",
+            "reason": "declared-program-00ea664271dc90aaefd853f3dc00bdb3fd1df5a50d2ea36962f923ca3b6959ca"
+          }
+        ]
+      },
+      "layoutMetric": {
+        "requestedFace": "HCI Poppy",
+        "aliasResolvedFace": "HCI Poppy",
+        "matchKind": "exact",
+        "metricEntry": 632,
+        "characterMatch": "hit",
+        "widthSource": "embeddedMetric",
+        "baseAdvanceHwpunit": 1248,
+        "transforms": [],
+        "finalAdvanceHwpunit": 1248
+      }
+    },
+    {
+      "source": {
+        "status": "complete",
+        "sectionIndex": 0,
+        "paragraphIndex": 919,
+        "nestedPath": [],
+        "runIndex": 23,
+        "charOffset": 4,
+        "character": "가",
+        "codePoint": 44032,
+        "charShapeId": 14
+      },
+      "layoutName": {
+        "requestedFace": "휴먼명조",
+        "normalizedFace": "휴먼명조",
+        "cssFamilyChain": [
+          "휴먼명조",
+          "Haansoft Batang"
+        ],
+        "steps": [
+          {
+            "kind": "fontEnvironment",
+            "input": "휴먼명조",
+            "output": "휴먼명조",
+            "reason": "declared-program-00ea664271dc90aaefd853f3dc00bdb3fd1df5a50d2ea36962f923ca3b6959ca"
+          }
+        ]
+      },
+      "layoutMetric": {
+        "requestedFace": "휴먼명조",
+        "aliasResolvedFace": "HumanMyeongJo",
+        "matchKind": "nameFirst",
+        "metricEntry": 599,
+        "characterMatch": "hit",
+        "widthSource": "embeddedMetric",
+        "baseAdvanceHwpunit": 1500,
+        "transforms": [
+          {
+            "kind": "boldFallback",
+            "input": "bold",
+            "output": "regularMetricAdvance",
+            "reason": "fauxBoldDoesNotChangeLayoutAdvance"
+          }
+        ],
+        "finalAdvanceHwpunit": 1500
+      }
+    },
+    {
+      "source": {
+        "status": "complete",
+        "sectionIndex": 0,
+        "paragraphIndex": 919,
+        "nestedPath": [],
+        "runIndex": 23,
+        "charOffset": 5,
+        "character": " ",
+        "codePoint": 32,
+        "charShapeId": 14
+      },
+      "layoutName": {
+        "requestedFace": "휴먼명조",
+        "normalizedFace": "휴먼명조",
+        "cssFamilyChain": [
+          "휴먼명조",
+          "Haansoft Batang"
+        ],
+        "steps": [
+          {
+            "kind": "fontEnvironment",
+            "input": "휴먼명조",
+            "output": "휴먼명조",
+            "reason": "declared-program-00ea664271dc90aaefd853f3dc00bdb3fd1df5a50d2ea36962f923ca3b6959ca"
+          }
+        ]
+      },
+      "layoutMetric": {
+        "requestedFace": "휴먼명조",
+        "aliasResolvedFace": "HumanMyeongJo",
+        "matchKind": "nameFirst",
+        "metricEntry": 599,
+        "characterMatch": "hit",
+        "widthSource": "metricHalfSpace",
+        "baseAdvanceHwpunit": 750,
+        "transforms": [
+          {
+            "kind": "boldFallback",
+            "input": "bold",
+            "output": "regularMetricAdvance",
+            "reason": "fauxBoldDoesNotChangeLayoutAdvance"
+          },
+          {
+            "kind": "extraWordSpacing",
+            "input": "4.1644444444444275",
+            "output": null,
+            "reason": "layoutSpacingAdjustment"
+          }
+        ],
+        "finalAdvanceHwpunit": 1060
+      }
+    },
+    {
+      "source": {
+        "status": "complete",
+        "sectionIndex": 0,
+        "paragraphIndex": 919,
+        "nestedPath": [],
+        "runIndex": 23,
+        "charOffset": 22,
+        "character": "련",
+        "codePoint": 47144,
+        "charShapeId": 14
+      },
+      "layoutName": {
+        "requestedFace": "휴먼명조",
+        "normalizedFace": "휴먼명조",
+        "cssFamilyChain": [
+          "휴먼명조",
+          "Haansoft Batang"
+        ],
+        "steps": [
+          {
+            "kind": "fontEnvironment",
+            "input": "휴먼명조",
+            "output": "휴먼명조",
+            "reason": "declared-program-00ea664271dc90aaefd853f3dc00bdb3fd1df5a50d2ea36962f923ca3b6959ca"
+          }
+        ]
+      },
+      "layoutMetric": {
+        "requestedFace": "휴먼명조",
+        "aliasResolvedFace": "HumanMyeongJo",
+        "matchKind": "nameFirst",
+        "metricEntry": 599,
+        "characterMatch": "hit",
+        "widthSource": "embeddedMetric",
+        "baseAdvanceHwpunit": 1500,
+        "transforms": [
+          {
+            "kind": "boldFallback",
+            "input": "bold",
+            "output": "regularMetricAdvance",
+            "reason": "fauxBoldDoesNotChangeLayoutAdvance"
+          }
+        ],
+        "finalAdvanceHwpunit": 1500
+      }
+    }
+  ],
+  "pdf_font_dictionary": "<< /Type /Font\n/Subtype /Type0\n/Name /F4\n/BaseFont /HCI Poppy\n/Encoding /Identity-H\n\n/DescendantFonts [ 1070 0 R\n ] \n/ToUnicode 1071 0 R\n >>\n",
+  "pdf_heading_stream_excerpt": "/F4 125.000 Tf\n2 Tr 2.500 w\n1.000 0.000 0.000 -1.000 617.000 1762.000 Tm\n[<000d>-67.000<000c>13.000<000b>-131.000<000e>]TJ\nET\nQ\nq\n0.120 0.000 0.000 -0.120 0.000 841.000 cm\n0 G\n0 g\nBT\n/F3 125.000 Tf\n2 Tr 2.500 w\n1.000 0.000 0.000 -1.000 943.000 1762.000 Tm\n[<001b0001>]TJ\nET\nQ\nq\n0.120 0.000 0.000 -0.120 0.000 841.000 cm\n0 G\n0 g\nBT\n/F3 125.000 Tf\n2 Tr 2.500 w\n1.000 0.000 0.000 -1.000 1138.000 1762.000 Tm\n",
+  "native_heading_first_latin_width_css_px": 54.45333333333333,
+  "pdf_first_latin_to_korean_css_px": 52.160000000000004,
+  "current_stored_first_line_end": "교육훈",
+  "independent_print_first_line_end": "교육훈련",
+  "source_contracts": [
+    "fa7aefdf10: 번호 문단의 저장 꼬리를 현재 프레임에서 다시 나누는 계약",
+    "17225375ff: HCI Poppy 원본 일반/굵은 HFT 전진을 분리하는 계약"
+  ],
+  "next_step": "원본 번호 마커의 실제 프레임과 같은 줄 수에서 문자 경계만 이동하는 경우의 공통 캐시 수용을 독립 표본으로 확인. 일반/굵은 폭 표를 일괄 바꾸지 않음.",
+  "fresh_reflow_diagnostic": {
+    "source_sha256": "63ae6388d86842498f6e3d233b0b45dae362428d9f6eff65beec5edcb01b91d3",
+    "log_sha256": "311ec819c43b6d5954df81b1cf566ab141eb62713e164cd13388517360cad9af",
+    "new_line_text_starts": [
+      0,
+      36
+    ],
+    "old_continuation_text_start": 34,
+    "row_count": 2,
+    "status": "관측용 IR 재조판; 제품/원본 수정 없음"
+  }
+}

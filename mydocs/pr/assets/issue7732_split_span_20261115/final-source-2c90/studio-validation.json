@@ -1,0 +1,15 @@
+{
+  "status": "passed",
+  "results": [
+    {
+      "name": "unit",
+      "exit": 0,
+      "seconds": 160.462
+    },
+    {
+      "name": "typescript",
+      "exit": 0,
+      "seconds": 0.648
+    }
+  ]
+}

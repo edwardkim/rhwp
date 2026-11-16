@@ -1,0 +1,55 @@
+{
+  "key": "pr7668-grid-soft-hancom",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1
+  ],
+  "completed_pages": [
+    1
+  ],
+  "missing_pages": [],
+  "tsv": "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/canonical-tsv/final-base-native/pr7668-grid-soft-hancom/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/final-base-native/pr7668-grid-soft-hancom/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "b8447c60279d934f11126da0b79121ecce91b526dc5e940ec85423fca31ac34d",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/jeong-sik-integration-20261114/final-base-native/pr7668-grid-soft-hancom/pdf_png/pdf-001.png",
+      "pdf_sha256": "2ce2840e59e16e967067f912a22ca93a08153567c1aedb43ebf9290d61c17717"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.97213,
+      "silhouette_raw_unmatched_pixels": 29,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 104040,
+      "tolerant_content_match_percent": 99.97213
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 1,
+      "pdf": 1
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  }
+}

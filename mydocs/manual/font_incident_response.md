@@ -131,6 +131,14 @@ fc-match -f '%{family}\n%{file}\n' 'RHWP Hancom Legacy Equation'
 출력한 `.provenance.json`에 기록한다. 대상 PDF의 윤곽을 재료로 쓰거나 점수에 맞춰
 윤곽·전진·기준선을 변형하지 않는다. 글꼴 공급 준비는 배치 차이의 해결·시각 통과를 뜻하지 않는다.
 
+구형 `×`·`÷`도 필요하면 `create`에 `--include-arithmetic-operators`를 추가한다.
+독립 표본은 86문자, 복원할 Type3는 77자가 되며 `recover`는 해당 manifest의 버전을 확인한다.
+기존 84문자·75자 manifest도 계속 사용할 수 있다. 본문 원 가족에 해당 기호가 없는 경우는
+독립 Print에서 원 프로그램을 확인한 뒤 `glyphFallbacks`로 이 가족을 추가한다. 현대
+`HYHWPEQ.TTF` 공급만으로 구형 표시까지 같아졌다고 판정하지 않는다. 복합 구형 분수의
+공통 글꼴 요청도 같은 `RHWP Hancom Legacy Equation`을 먼저 사용하며 이전 로컬 이름과
+현대 수식 글꼴은 결측 시의 후보로 유지한다.
+
 ## 4. RED fixture 최소 분할
 
 폰트 감지 코드를 변경할 때 최소한 다음 상태를 자동 테스트한다.

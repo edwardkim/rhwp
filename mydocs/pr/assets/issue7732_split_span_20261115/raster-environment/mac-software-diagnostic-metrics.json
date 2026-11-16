@@ -1,0 +1,33 @@
+{
+  "identity": {
+    "rhwp_sha256": "c54028779cb7c76cfc4a24a303b59a1bc26651f87885a059856221cd67a46e85",
+    "pdf_sha256": "46b37b542a259a21086a6fa630192d3ca53414b205c29f3b228c98942057c17f",
+    "excluded": [],
+    "method": "threshold_boundary_color_support_v1",
+    "producer": {
+      "sweep": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+      "image_helpers": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6",
+      "exclusion_evidence": null,
+      "image_decoding": {
+        "alpha_background": "#ffffff",
+        "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+      }
+    }
+  },
+  "details": {
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "silhouette_raw_match_percent": 99.98059,
+    "silhouette_raw_unmatched_pixels": 13,
+    "silhouette_boundary_reconciled_pixels": 0,
+    "silhouette_color_tolerance": 32,
+    "silhouette_content_union_pixels": 66972,
+    "tolerant_content_match_percent": 99.98059
+  },
+  "inputs": {
+    "page": 1,
+    "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/issue7905-software-diagnostic/issue7905/rhwp_png/rhwp_001.png",
+    "rhwp_sha256": "c54028779cb7c76cfc4a24a303b59a1bc26651f87885a059856221cd67a46e85",
+    "pdf_png": "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/issue7905-software-diagnostic/issue7905/pdf_png/pdf-001.png",
+    "pdf_sha256": "46b37b542a259a21086a6fa630192d3ca53414b205c29f3b228c98942057c17f"
+  }
+}

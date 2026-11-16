@@ -1,0 +1,235 @@
+{
+  "code_head": "0c9819d698bcbe3e3d83f563a0154ccb00eb6f07",
+  "results": [
+    {
+      "name": "candidate-fresh-wasm",
+      "exit": 0,
+      "elapsed_seconds": 370.305724,
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ]
+    },
+    {
+      "name": "full-nextest",
+      "exit": 0,
+      "elapsed_seconds": 993.895553,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/minimal-font/profile.sb",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--tests",
+        "--build-jobs",
+        "8",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ]
+    },
+    {
+      "name": "fmt",
+      "exit": 0,
+      "elapsed_seconds": 16.332966,
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ]
+    },
+    {
+      "name": "native-clippy",
+      "exit": 0,
+      "elapsed_seconds": 74.857544,
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    },
+    {
+      "name": "wasm-clippy",
+      "exit": 0,
+      "elapsed_seconds": 59.857228,
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    },
+    {
+      "name": "workspace-build",
+      "exit": 0,
+      "elapsed_seconds": 173.712177,
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review",
+        "-j",
+        "8"
+      ]
+    },
+    {
+      "name": "all-target-clippy",
+      "exit": 0,
+      "elapsed_seconds": 142.141412,
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    },
+    {
+      "name": "native-skia-lib",
+      "exit": 0,
+      "elapsed_seconds": 359.978516,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/minimal-font/profile.sb",
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "-j",
+        "8",
+        "--lib",
+        "--",
+        "--test-threads",
+        "8"
+      ]
+    },
+    {
+      "name": "native-skia-placeholder",
+      "exit": 0,
+      "elapsed_seconds": 296.486687,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/minimal-font/profile.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "--build-jobs",
+        "8",
+        "--test-threads",
+        "8"
+      ]
+    },
+    {
+      "name": "native-skia-pdf",
+      "exit": 0,
+      "elapsed_seconds": 18.166872,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/minimal-font/profile.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "--build-jobs",
+        "8",
+        "--test-threads",
+        "8"
+      ]
+    },
+    {
+      "name": "suite-manifest",
+      "exit": 0,
+      "elapsed_seconds": 1.403695,
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "80b1c354c29b7a02fb2b3c14a274da7f5b653ada"
+      ]
+    }
+  ],
+  "native_summaries": {
+    "native-skia-lib": [
+      "test result: ok. 3852 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 23.64s",
+      "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+    ],
+    "native-skia-placeholder": [
+      "Summary [   2.478s] 2 tests run: 2 passed, 323 skipped"
+    ],
+    "native-skia-pdf": [
+      "Summary [   2.243s] 36 tests run: 36 passed, 289 skipped"
+    ]
+  },
+  "cargo_jobs": 8,
+  "test_threads": 8,
+  "minimum_font_execution": [
+    "full-nextest",
+    "native-skia-lib",
+    "native-skia-placeholder",
+    "native-skia-pdf"
+  ],
+  "fresh_wasm": "macOS --no-opt local substitute; not Docker optimized build"
+}

@@ -1,0 +1,587 @@
+{
+  "standalone_actual_initializer": {
+    "kind": "actual initializer HTTP responses observed before module import",
+    "observer_network_buffer_mib": 128,
+    "extra_fetch": false,
+    "draw_code_changed": false,
+    "expected": {
+      "/rhwp.js": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+      "/rhwp_bg.wasm": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+    },
+    "records": [
+      {
+        "url": "http://127.0.0.1:60217/rhwp.js",
+        "pathname": "/rhwp.js",
+        "status": 200,
+        "fromServiceWorker": false,
+        "at": "2026-11-13T08:23:13.584Z",
+        "bytes": 583724,
+        "sha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094"
+      },
+      {
+        "url": "http://127.0.0.1:60217/rhwp_bg.wasm",
+        "pathname": "/rhwp_bg.wasm",
+        "status": 200,
+        "fromServiceWorker": false,
+        "at": "2026-11-13T08:23:13.613Z",
+        "bytes": 31840491,
+        "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+      }
+    ],
+    "valid": true
+  },
+  "actual_studio_initializer": {
+    "kind": "actual initializer HTTP responses observed before module import",
+    "observer_network_buffer_mib": 128,
+    "extra_fetch": false,
+    "draw_code_changed": false,
+    "expected": {
+      "/rhwp.js": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+      "/rhwp_bg.wasm": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+    },
+    "records": [
+      {
+        "url": "http://127.0.0.1:61204/@fs<repo>/pkg/rhwp.js",
+        "pathname": "/@fs<repo>/pkg/rhwp.js",
+        "resource": "/rhwp.js",
+        "status": 200,
+        "fromServiceWorker": false,
+        "at": "2026-11-13T08:31:15.350Z",
+        "bytes": 3268199,
+        "sha256": "12dab7329c321bbbffd3b8dc696c6a12df80222dd9de734939ae86ce63623ca9"
+      },
+      {
+        "url": "http://127.0.0.1:61204/@fs<repo>/pkg/rhwp_bg.wasm",
+        "pathname": "/@fs<repo>/pkg/rhwp_bg.wasm",
+        "resource": "/rhwp_bg.wasm",
+        "status": 200,
+        "fromServiceWorker": false,
+        "at": "2026-11-13T08:31:15.529Z",
+        "bytes": 31840491,
+        "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+      }
+    ],
+    "valid": false
+  },
+  "studio_js_interpretation": "The Vite development response is transformed JS with an inline source map. Its response SHA is different from pkg/rhwp.js. The executed code, excluding trailing whitespace and the inline map, matches the canonical Vite transform of the current pkg byte-for-byte. WASM is an exact response/build byte match.",
+  "vite_transform_control": {
+    "source": "<repo>/pkg/rhwp.js",
+    "source_sha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+    "actual_response_sha256": "12dab7329c321bbbffd3b8dc696c6a12df80222dd9de734939ae86ce63623ca9",
+    "actual_code_sha256": "6b06fa35c031edf87c42e97c5a7b77230538a6686f9851bfa477300290b4fcc2",
+    "canonical_vite_code_sha256": "6b06fa35c031edf87c42e97c5a7b77230538a6686f9851bfa477300290b4fcc2",
+    "exact_code_equal_except_trailing_whitespace": true,
+    "actual_includes_inline_sourcemap": true,
+    "source_is_current_candidate_pkg": true,
+    "extra_response_fetch": false
+  },
+  "studio_wasm_capture_receipts": [
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvaskit&canvaskitMode=compat&renderProfile=print&canvaskitSurface=software",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvaskit&canvaskitMode=default&renderProfile=print&canvaskitSurface=software",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvaskit&canvaskitMode=default&renderProfile=print&canvaskitSurface=software",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvas2d&renderProfile=print",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvaskit&canvaskitMode=compat&renderProfile=screen&canvaskitSurface=software",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvaskit&canvaskitMode=compat&renderProfile=print&canvaskitSurface=software",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvaskit&canvaskitMode=default&renderProfile=print&canvaskitSurface=software",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvaskit&canvaskitMode=compat&renderProfile=print&canvaskitSurface=software",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvas2d&renderProfile=screen",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvaskit&canvaskitMode=default&renderProfile=screen&canvaskitSurface=software",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvas2d&renderProfile=print",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvas2d&renderProfile=print",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvaskit&canvaskitMode=default&renderProfile=screen&canvaskitSurface=software",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvaskit&canvaskitMode=default&renderProfile=screen&canvaskitSurface=software",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvaskit&canvaskitMode=compat&renderProfile=screen&canvaskitSurface=software",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvaskit&canvaskitMode=compat&renderProfile=screen&canvaskitSurface=software",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvaskit&canvaskitMode=compat&renderProfile=screen&canvaskitSurface=software",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvaskit&canvaskitMode=compat&renderProfile=screen&canvaskitSurface=software",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvaskit&canvaskitMode=default&renderProfile=print&canvaskitSurface=software",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvaskit&canvaskitMode=default&renderProfile=print&canvaskitSurface=software",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvas2d&renderProfile=screen",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvaskit&canvaskitMode=compat&renderProfile=print&canvaskitSurface=software",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvas2d&renderProfile=print",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvaskit&canvaskitMode=default&renderProfile=print&canvaskitSurface=software",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvas2d&renderProfile=print",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvas2d&renderProfile=screen",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvaskit&canvaskitMode=compat&renderProfile=print&canvaskitSurface=software",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvaskit&canvaskitMode=default&renderProfile=screen&canvaskitSurface=software",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvas2d&renderProfile=screen",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvaskit&canvaskitMode=default&renderProfile=screen&canvaskitSurface=software",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvaskit&canvaskitMode=compat&renderProfile=screen&canvaskitSurface=software",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvaskit&canvaskitMode=compat&renderProfile=print&canvaskitSurface=software",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvas2d&renderProfile=screen",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvaskit&canvaskitMode=default&renderProfile=screen&canvaskitSurface=software",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvas2d&renderProfile=screen",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    },
+    {
+      "source_sha": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+      "profile": "Mac locked wrapper --no-opt local substitute",
+      "expected_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+      "page": "http://127.0.0.1:7700/?renderer=canvas2d&renderProfile=print",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7700/@fs<repo>/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+        }
+      ]
+    }
+  ],
+  "verified": true,
+  "draw_code_changed": false,
+  "extra_diagnostic_asset_fetch": false
+}

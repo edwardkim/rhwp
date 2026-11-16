@@ -1,0 +1,17 @@
+{
+  "evaluatedAt": "2026-11-15T10:00:29.405300+00:00",
+  "method": "Re-evaluate the same completed actual 383-page capture after raising the accepted floor. Source, PNGs, DPI, programs and metrics are unchanged; no new renderer execution is claimed.",
+  "runtimeSource": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+  "captureManifestSha256": "a0208e40005458136cb83354f90d5845213aa0cb86b98174f004c1eb575d411b",
+  "originalGateBaseline": "8f073dddd67cf8f44bea7c0315c3f9950ba73641e9393747cdbc52d24b33f9a1",
+  "result": {
+    "status": "passed",
+    "baseline": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
+    "baseline_sha256": "43c59cf77a4a86b3744d3df30eb71469de70b584ccc9cb165fa8f7b7884d2e1f",
+    "metric": "silhouette_raw_match_percent",
+    "backend": "native-skia",
+    "precision": "0.01 percentage points",
+    "pages": 383,
+    "regressions": []
+  }
+}

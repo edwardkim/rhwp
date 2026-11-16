@@ -1,0 +1,125 @@
+{
+  "head": "89701eb34af54502e94afa6319240596e98a1367",
+  "package": {
+    "rhwp.js": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+    "rhwp_bg.wasm": "5b1d5ca7c637602dad34df1b3593500ee08111465299987cb70038f6d088e801"
+  },
+  "actual_initialization_responses": [
+    {
+      "url": "http://127.0.0.1:7739/@fs/Users/tsjang/rhwp/pkg/rhwp.js?t=1794574905708",
+      "status": 200,
+      "sha256": "12dab7329c321bbbffd3b8dc696c6a12df80222dd9de734939ae86ce63623ca9",
+      "bytes": 3268199
+    },
+    {
+      "url": "http://127.0.0.1:7739/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+      "status": 200,
+      "sha256": "5b1d5ca7c637602dad34df1b3593500ee08111465299987cb70038f6d088e801",
+      "bytes": 31856361
+    }
+  ],
+  "rows": [
+    {
+      "alignment": "left",
+      "empty": {
+        "api": {
+          "pageIndex": 0,
+          "x": 113.4,
+          "y": 132.3,
+          "height": 13.3
+        },
+        "dom": "position: absolute; width: 2px; background: rgb(0, 0, 0); pointer-events: none; z-index: 10; display: block; left: 133.55px; top: 142.3px; height: 13.3px; transform-origin: 0px 0px; opacity: 1;"
+      },
+      "typed": {
+        "before": {
+          "pageIndex": 0,
+          "x": 113.4,
+          "y": 132.9,
+          "height": 13.3
+        },
+        "after": {
+          "pageIndex": 0,
+          "x": 126.3,
+          "y": 132.9,
+          "height": 13.3
+        },
+        "text": "가",
+        "dom": "position: absolute; width: 2px; background: rgb(0, 0, 0); pointer-events: none; z-index: 10; display: block; left: 146.45px; top: 142.9px; height: 13.3px; transform-origin: 0px 0px; opacity: 1;"
+      }
+    },
+    {
+      "alignment": "center",
+      "empty": {
+        "api": {
+          "pageIndex": 0,
+          "x": 396.9,
+          "y": 132.3,
+          "height": 13.3
+        },
+        "dom": "position: absolute; width: 2px; background: rgb(0, 0, 0); pointer-events: none; z-index: 10; display: block; left: 417.05px; top: 142.3px; height: 13.3px; transform-origin: 0px 0px; opacity: 1;"
+      },
+      "typed": {
+        "before": {
+          "pageIndex": 0,
+          "x": 390.4,
+          "y": 132.9,
+          "height": 13.3
+        },
+        "after": {
+          "pageIndex": 0,
+          "x": 403.3,
+          "y": 132.9,
+          "height": 13.3
+        },
+        "text": "가",
+        "dom": "position: absolute; width: 2px; background: rgb(0, 0, 0); pointer-events: none; z-index: 10; display: block; left: 423.45px; top: 142.9px; height: 13.3px; transform-origin: 0px 0px; opacity: 1;"
+      }
+    },
+    {
+      "alignment": "right",
+      "empty": {
+        "api": {
+          "pageIndex": 0,
+          "x": 680.3,
+          "y": 132.3,
+          "height": 13.3
+        },
+        "dom": "position: absolute; width: 2px; background: rgb(0, 0, 0); pointer-events: none; z-index: 10; display: block; left: 700.45px; top: 142.3px; height: 13.3px; transform-origin: 0px 0px; opacity: 1;"
+      },
+      "typed": {
+        "before": {
+          "pageIndex": 0,
+          "x": 667.4,
+          "y": 132.9,
+          "height": 13.3
+        },
+        "after": {
+          "pageIndex": 0,
+          "x": 680.3,
+          "y": 132.9,
+          "height": 13.3
+        },
+        "text": "가",
+        "dom": "position: absolute; width: 2px; background: rgb(0, 0, 0); pointer-events: none; z-index: 10; display: block; left: 700.45px; top: 142.9px; height: 13.3px; transform-origin: 0px 0px; opacity: 1;"
+      }
+    }
+  ],
+  "zip_files": [
+    {
+      "file": "picture-before.hwpx",
+      "bin_data_count": 1,
+      "sha256": "c562c187f4e34ac56c1f1e4c852f76809cc22408b638e6b5be546b57ee3b99a9"
+    },
+    {
+      "file": "picture-deleted.hwpx",
+      "bin_data_count": 0,
+      "sha256": "775dc6f2b6d53d679c466b0b550d7e7d8d337de1945660255fa4fe54ecc48341"
+    },
+    {
+      "file": "picture-round2.hwpx",
+      "bin_data_count": 0,
+      "sha256": "775dc6f2b6d53d679c466b0b550d7e7d8d337de1945660255fa4fe54ecc48341"
+    }
+  ],
+  "page_errors": []
+}

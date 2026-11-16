@@ -1,0 +1,337 @@
+{
+  "phase": "complete",
+  "pid": 32921,
+  "code_head": "d0cc46573c7505633721c19062e504faff017d59",
+  "binary_sha256": "fa6ea5d9412181f4fbcd3362952fc8bf0ea07c3e136d2db003aaca69bbc3c381",
+  "commands": [
+    {
+      "label": "receipt-save",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/bin/footnote-frame-scope-trial-native",
+        "export-hwpx",
+        "samples/issue-986-receipt.hwp",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/actual-cli/receipt-saved.hwpx",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/actual-cli/receipt-save.json",
+      "stdout_sha256": "217432e2232bbb085670157654acff8d95162bd91b580479d9025b24b13c1416"
+    },
+    {
+      "label": "receipt-resave",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/bin/footnote-frame-scope-trial-native",
+        "export-hwpx",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/actual-cli/receipt-saved.hwpx",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/actual-cli/receipt-resaved.hwpx",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/actual-cli/receipt-resave.json",
+      "stdout_sha256": "0b822169d7ebd17430adc0f665fd8607c97430fbd85f0feda19098cf39a7ff42"
+    },
+    {
+      "label": "pr9003-save",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/bin/footnote-frame-scope-trial-native",
+        "export-hwpx",
+        "samples/80168_regulatory_analysis.hwp",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/actual-cli/pr9003-saved.hwpx",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/actual-cli/pr9003-save.json",
+      "stdout_sha256": "5e957f11952502d6f078c9ee63d3a597da7c9858fa39007cf9ff1b43ec53b671"
+    },
+    {
+      "label": "pr9003-resave",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/bin/footnote-frame-scope-trial-native",
+        "export-hwpx",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/actual-cli/pr9003-saved.hwpx",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/actual-cli/pr9003-resaved.hwpx",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/actual-cli/pr9003-resave.json",
+      "stdout_sha256": "ccd48e65e58d19790694462113c1dcafa6651876827d546890e4396bbb40df32"
+    },
+    {
+      "label": "pr8959-edit",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/bin/footnote-frame-scope-trial-native",
+        "edit",
+        "insert-table",
+        "samples/issue8939/attach_form_reset.hwp",
+        "--rows",
+        "2",
+        "--cols",
+        "2",
+        "--section",
+        "0",
+        "--para",
+        "7",
+        "--offset",
+        "0",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/actual-cli/pr8959/edited.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/actual-cli/pr8959-edit.json",
+      "stdout_sha256": "c926f2f69f6d6c022a7321fe865d732bd15b4c4bd1e932de66c26dbd38ee2550"
+    },
+    {
+      "label": "pr8959-save",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/bin/footnote-frame-scope-trial-native",
+        "convert",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/actual-cli/pr8959/edited.hwp",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/actual-cli/pr8959/saved.hwp",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/actual-cli/pr8959-save.json",
+      "stdout_sha256": "b99dfb0db6730828142243b126c759b3ca9f85f7922840aba888540436557f0c"
+    },
+    {
+      "label": "pr8959-resave",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/bin/footnote-frame-scope-trial-native",
+        "convert",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/actual-cli/pr8959/saved.hwp",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/actual-cli/pr8959/resaved.hwp",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/actual-cli/pr8959-resave.json",
+      "stdout_sha256": "759b5217c0ac0d013dd9cb7636a731b75950defb40580a06e78158ca96fd8e58"
+    },
+    {
+      "label": "pr8991-search",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/bin/footnote-frame-scope-trial-native",
+        "search",
+        "tests/fixtures/issue8989/nested-values.hml",
+        "42,360명",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/actual-cli/pr8991-search.json",
+      "stdout_sha256": "bf49d13b49b050f62b542821ed693519c8ec949078bdca31c42b99f1d137616b"
+    },
+    {
+      "label": "pr8991-extract",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/bin/footnote-frame-scope-trial-native",
+        "extract-data",
+        "tests/fixtures/issue8989/nested-values.hml",
+        "--json"
+      ],
+      "exit": 0,
+      "stdout": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/actual-cli/pr8991-extract.json",
+      "stdout_sha256": "09e51e8fa8dafdebb5814ff203c78d41a16e03f8adfc619ab885ebf26037b5f9"
+    }
+  ],
+  "checks": [
+    {
+      "key": "receipt",
+      "saved_sha256": "21fc0d7ffe6f3644a84b7ca45e5b93d1a54af4e43189bd05d63e1db60f6b1dc1",
+      "repeated_save_equal": true,
+      "same_as_committed_input": true,
+      "verify_pages": {
+        "after": 1,
+        "before": 1,
+        "identical": true
+      }
+    },
+    {
+      "key": "pr9003",
+      "saved_sha256": "511bb5b430d2ede35c7c0dfc617f7a4f29ee5ee24d24615efbb4fe4b1ed1c15d",
+      "repeated_save_equal": true,
+      "same_as_committed_input": true,
+      "verify_pages": {
+        "after": 157,
+        "before": 157,
+        "identical": true
+      }
+    },
+    {
+      "key": "pr8959",
+      "all_outputs_byte_equal_prior_independent_cfb_audit": true,
+      "prior_marker_audit": {
+        "commands": [
+          {
+            "stage": "edit",
+            "command": [
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/bin/candidate-native",
+              "edit",
+              "insert-table",
+              "samples/issue8939/attach_form_reset.hwp",
+              "--rows",
+              "2",
+              "--cols",
+              "2",
+              "--section",
+              "0",
+              "--para",
+              "7",
+              "--offset",
+              "0",
+              "-o",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/actual-cli-pr8959/edited.hwp",
+              "--json"
+            ],
+            "exit": 0
+          },
+          {
+            "stage": "save",
+            "command": [
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/bin/candidate-native",
+              "convert",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/actual-cli-pr8959/edited.hwp",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/actual-cli-pr8959/saved.hwp",
+              "--verify-pages",
+              "--json"
+            ],
+            "exit": 0
+          },
+          {
+            "stage": "resave",
+            "command": [
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/bin/candidate-native",
+              "convert",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/actual-cli-pr8959/saved.hwp",
+              "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/actual-cli-pr8959/resaved.hwp",
+              "--verify-pages",
+              "--json"
+            ],
+            "exit": 0
+          }
+        ],
+        "files": [
+          {
+            "file": "edited.hwp",
+            "sha256": "0e02a74a3d831a46ef2c97dd4bded9d8cd82f52adcc8bc7fde7c86fc48388120",
+            "marker_sha256": "ffb2fa4e56505561257651d61c6df80665eeff7ba34d4feab9e10723681b504b",
+            "sections": [
+              {
+                "stream": "BodyText/Section0",
+                "sha256": "b753718bc7e56cc2384fbf41ed29c4c208499683abcebba9be9406b5427a203b",
+                "marker_matches": true
+              }
+            ]
+          },
+          {
+            "file": "saved.hwp",
+            "sha256": "0e02a74a3d831a46ef2c97dd4bded9d8cd82f52adcc8bc7fde7c86fc48388120",
+            "marker_sha256": "ffb2fa4e56505561257651d61c6df80665eeff7ba34d4feab9e10723681b504b",
+            "sections": [
+              {
+                "stream": "BodyText/Section0",
+                "sha256": "b753718bc7e56cc2384fbf41ed29c4c208499683abcebba9be9406b5427a203b",
+                "marker_matches": true
+              }
+            ]
+          },
+          {
+            "file": "resaved.hwp",
+            "sha256": "0e02a74a3d831a46ef2c97dd4bded9d8cd82f52adcc8bc7fde7c86fc48388120",
+            "marker_sha256": "ffb2fa4e56505561257651d61c6df80665eeff7ba34d4feab9e10723681b504b",
+            "sections": [
+              {
+                "stream": "BodyText/Section0",
+                "sha256": "b753718bc7e56cc2384fbf41ed29c4c208499683abcebba9be9406b5427a203b",
+                "marker_matches": true
+              }
+            ]
+          }
+        ],
+        "repeated_body_and_marker_preserved": true
+      }
+    },
+    {
+      "key": "pr8991",
+      "input": "tests/fixtures/issue8989/nested-values.hml",
+      "sha256": "005bb353af0ea5ff4788eb31a34d0f4bbcb55848838b0ccb787e4942e3e521e6",
+      "nested_search_and_values_equal_prior": true
+    },
+    {
+      "key": "pr9013",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/bin/footnote-frame-scope-trial-native",
+        "export-svg",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/actual-cli/long-name/18058585_[별표 6] 국방부 한시조직에 두는 공무원(군인제외) 정원표(제2조제1항·제5조제1항 관련)(국방부와 그 소속기관 직제 시행규칙)가가가가가가가가가가가가가가가가가가가가가가가가가.hwp",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/actual-cli/pr9013-export-svg"
+      ],
+      "exit": 0,
+      "source_sha256": "ae694583e739ac48af97cb12ce573c2da9f4cb637721fdf84e5af4bf7ca17c13",
+      "files": [
+        {
+          "name": "18058585_[별표 6] 국방부 한시조직에 두는 공무원(군인제외) 정원표(제2조제1항·제5조제1항 관련)(국방부와 그 소속기관 직제 시행규칙)가가가가가가가가가가가가가가가가가가가가가가가_002.svg",
+          "bytes_utf8": 253,
+          "sha256": "f235c06d201ff638604aa9abd5aa3dc63cb4d509869bf161f060f5bf19b67d3d"
+        },
+        {
+          "name": "18058585_[별표 6] 국방부 한시조직에 두는 공무원(군인제외) 정원표(제2조제1항·제5조제1항 관련)(국방부와 그 소속기관 직제 시행규칙)가가가가가가가가가가가가가가가가가가가가가가가_003.svg",
+          "bytes_utf8": 253,
+          "sha256": "ace25e550bac218f154f20308ddb12a02104eb951f3d597d19d2e8a8391ce744"
+        },
+        {
+          "name": "18058585_[별표 6] 국방부 한시조직에 두는 공무원(군인제외) 정원표(제2조제1항·제5조제1항 관련)(국방부와 그 소속기관 직제 시행규칙)가가가가가가가가가가가가가가가가가가가가가가가_001.svg",
+          "bytes_utf8": 253,
+          "sha256": "5980de1a5c8c3ecaaa2a89675c3bf934566c8026f30ceb13ab9d06bcdf777754"
+        },
+        {
+          "name": "18058585_[별표 6] 국방부 한시조직에 두는 공무원(군인제외) 정원표(제2조제1항·제5조제1항 관련)(국방부와 그 소속기관 직제 시행규칙)가가가가가가가가가가가가가가가가가가가가가가가_004.svg",
+          "bytes_utf8": 253,
+          "sha256": "96d838bee2f34268f8219d0ff9778cd3f59a6c3c2b99c60718d8d0c92ab8d02e"
+        }
+      ],
+      "macos_note": "APFS에서 원 devel의 259바이트 이름도 성공했다는 기존 기록을 유지하며 Linux ENAMETOOLONG 재현이라고 주장하지 않는다."
+    },
+    {
+      "key": "pr9013",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/bin/footnote-frame-scope-trial-native",
+        "export-text",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/actual-cli/long-name/18058585_[별표 6] 국방부 한시조직에 두는 공무원(군인제외) 정원표(제2조제1항·제5조제1항 관련)(국방부와 그 소속기관 직제 시행규칙)가가가가가가가가가가가가가가가가가가가가가가가가가.hwp",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/counterexample-final/actual-cli/pr9013-export-text"
+      ],
+      "exit": 0,
+      "source_sha256": "ae694583e739ac48af97cb12ce573c2da9f4cb637721fdf84e5af4bf7ca17c13",
+      "files": [
+        {
+          "name": "18058585_[별표 6] 국방부 한시조직에 두는 공무원(군인제외) 정원표(제2조제1항·제5조제1항 관련)(국방부와 그 소속기관 직제 시행규칙)가가가가가가가가가가가가가가가가가가가가가가가_004.txt",
+          "bytes_utf8": 253,
+          "sha256": "bf44c2a9e70f4e012d7efcf9154ce4b33ef44161ff7bb3e3cc852b93bfaddb6d"
+        },
+        {
+          "name": "18058585_[별표 6] 국방부 한시조직에 두는 공무원(군인제외) 정원표(제2조제1항·제5조제1항 관련)(국방부와 그 소속기관 직제 시행규칙)가가가가가가가가가가가가가가가가가가가가가가가_001.txt",
+          "bytes_utf8": 253,
+          "sha256": "43205e06494053e9cd430ae6f298d7040678f233fb1fb8308db21afbfb8a054a"
+        },
+        {
+          "name": "18058585_[별표 6] 국방부 한시조직에 두는 공무원(군인제외) 정원표(제2조제1항·제5조제1항 관련)(국방부와 그 소속기관 직제 시행규칙)가가가가가가가가가가가가가가가가가가가가가가가_002.txt",
+          "bytes_utf8": 253,
+          "sha256": "571b408bdc4f2e92e3adfa48592f3163bf34594d9a27defacc50e879c68e91c7"
+        },
+        {
+          "name": "18058585_[별표 6] 국방부 한시조직에 두는 공무원(군인제외) 정원표(제2조제1항·제5조제1항 관련)(국방부와 그 소속기관 직제 시행규칙)가가가가가가가가가가가가가가가가가가가가가가가_003.txt",
+          "bytes_utf8": 253,
+          "sha256": "70ebc2a37fe1d16dd1859cbd0a414da578fef7fcaae2588025d3dd41a1e89e4a"
+        }
+      ],
+      "macos_note": "APFS에서 원 devel의 259바이트 이름도 성공했다는 기존 기록을 유지하며 Linux ENAMETOOLONG 재현이라고 주장하지 않는다."
+    }
+  ],
+  "completed_at": "2026-11-12T19:47:08.548587+00:00"
+}

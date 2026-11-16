@@ -506,6 +506,7 @@ impl TypesetEngine {
                     && !boundary.reconsider_synthetic_break
                     && !reset_consumed_by_empty_prefix
                     && !st.stored_paragraph_boundary_already_open(paragraphs, para_idx)
+                    && !st.stored_boundary_crossed_by_overflow(paragraphs, para_idx, self.dpi)
                     && !stored_boundary_invalidated_by_reflow
                     && !omit_pushed_empty_page
                     && !hangul2024_refit

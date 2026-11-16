@@ -1,0 +1,151 @@
+{
+  "base": "e7ee272cfa33a960b0d0d924983d29e6509903e0",
+  "candidate": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+  "precision": "Original raw Decimal, no display rounding before 2pp comparison",
+  "unique_target_pages_per_backend": 134,
+  "additional_repeated_direct_review_pages_per_backend": 9,
+  "rows": 286,
+  "over_2pp": 0,
+  "groups": [
+    {
+      "backend": "native",
+      "group": "masters",
+      "pages": 66,
+      "base_minimum": "47.14286",
+      "candidate_minimum": "100.0",
+      "base_below90": 4,
+      "over_2pp": 0,
+      "maximum_decline_pp": "0.0"
+    },
+    {
+      "backend": "native",
+      "group": "color",
+      "pages": 6,
+      "base_minimum": "18.00512",
+      "candidate_minimum": "100.0",
+      "base_below90": 4,
+      "over_2pp": 0,
+      "maximum_decline_pp": "0.0"
+    },
+    {
+      "backend": "native",
+      "group": "incoming",
+      "pages": 41,
+      "base_minimum": "93.33461",
+      "candidate_minimum": "93.30651",
+      "base_below90": 0,
+      "over_2pp": 0,
+      "maximum_decline_pp": "0.11929"
+    },
+    {
+      "backend": "native",
+      "group": "specimen",
+      "pages": 3,
+      "base_minimum": "70.37675",
+      "candidate_minimum": "98.46736",
+      "base_below90": 1,
+      "over_2pp": 0,
+      "maximum_decline_pp": "-2.24146"
+    },
+    {
+      "backend": "native",
+      "group": "master-direct",
+      "pages": 6,
+      "base_minimum": "100.0",
+      "candidate_minimum": "100.0",
+      "base_below90": 0,
+      "over_2pp": 0,
+      "maximum_decline_pp": "0.0"
+    },
+    {
+      "backend": "native",
+      "group": "color-direct",
+      "pages": 3,
+      "base_minimum": "18.00512",
+      "candidate_minimum": "100.0",
+      "base_below90": 2,
+      "over_2pp": 0,
+      "maximum_decline_pp": "0.0"
+    },
+    {
+      "backend": "native",
+      "group": "other-controls",
+      "pages": 18,
+      "base_minimum": "17.11574",
+      "candidate_minimum": "100.0",
+      "base_below90": 5,
+      "over_2pp": 0,
+      "maximum_decline_pp": "0.0"
+    },
+    {
+      "backend": "wasm",
+      "group": "masters",
+      "pages": 66,
+      "base_minimum": "47.18477",
+      "candidate_minimum": "100.0",
+      "base_below90": 4,
+      "over_2pp": 0,
+      "maximum_decline_pp": "0.0"
+    },
+    {
+      "backend": "wasm",
+      "group": "color",
+      "pages": 6,
+      "base_minimum": "18.00512",
+      "candidate_minimum": "100.0",
+      "base_below90": 4,
+      "over_2pp": 0,
+      "maximum_decline_pp": "0.0"
+    },
+    {
+      "backend": "wasm",
+      "group": "incoming",
+      "pages": 41,
+      "base_minimum": "92.46042",
+      "candidate_minimum": "92.35336",
+      "base_below90": 0,
+      "over_2pp": 0,
+      "maximum_decline_pp": "0.15084"
+    },
+    {
+      "backend": "wasm",
+      "group": "specimen",
+      "pages": 3,
+      "base_minimum": "70.64272",
+      "candidate_minimum": "98.47794",
+      "base_below90": 1,
+      "over_2pp": 0,
+      "maximum_decline_pp": "-2.26309"
+    },
+    {
+      "backend": "wasm",
+      "group": "master-direct",
+      "pages": 6,
+      "base_minimum": "100.0",
+      "candidate_minimum": "100.0",
+      "base_below90": 0,
+      "over_2pp": 0,
+      "maximum_decline_pp": "0.0"
+    },
+    {
+      "backend": "wasm",
+      "group": "color-direct",
+      "pages": 3,
+      "base_minimum": "18.00512",
+      "candidate_minimum": "100.0",
+      "base_below90": 2,
+      "over_2pp": 0,
+      "maximum_decline_pp": "0.0"
+    },
+    {
+      "backend": "wasm",
+      "group": "other-controls",
+      "pages": 18,
+      "base_minimum": "17.12979",
+      "candidate_minimum": "100.0",
+      "base_below90": 5,
+      "over_2pp": 0,
+      "maximum_decline_pp": "0.0"
+    }
+  ]
+}

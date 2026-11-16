@@ -1,0 +1,70 @@
+use rhwp::{DocumentCore, renderer::render_tree::{RenderNode, RenderNodeType}};
+use std::path::{Path, PathBuf};
+use rhwp::{paint::RenderProfile, renderer::font_environment::FontEnvironment, document_core::queries::rendering::PngExportOptions};
+
+fn objects(node: &RenderNode, out: &mut Vec<String>) {
+    if matches!(&node.node_type, RenderNodeType::Image(_) | RenderNodeType::Rectangle(_)) {
+        out.push(format!("y={:.3},height={:.3}", node.bbox.y, node.bbox.height));
+    }
+    for child in &node.children { objects(child, out); }
+}
+
+fn snapshot(core: &DocumentCore, label: &str, out: &Path) {
+    let count = core.page_count();
+    println!("{label}\tpages={count}");
+    for page in 0..count {
+        let tree = core.build_page_render_tree(page).unwrap();
+        let options = PngExportOptions { scale: Some(1.0), dpi: Some(96.0), font_paths: vec![
+            PathBuf::from("/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf"),
+            PathBuf::from("/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c")
+        ], ..Default::default() };
+        let png = core.render_page_png_native_with_profile_and_export_options(page, RenderProfile::Print, &options).unwrap();
+        std::fs::write(out.join(format!("{label}-page{}.png", page + 1)), png).unwrap();
+        if label == "edited" {
+            let svg = core.render_page_svg_with_fonts_and_profile(page, rhwp::renderer::svg::FontEmbedMode::Full, &options.font_paths, RenderProfile::Print).unwrap();
+            std::fs::write(out.join(format!("edited-page{}.svg", page + 1)), svg).unwrap();
+        }
+        let mut found = Vec::new();
+        objects(&tree.root, &mut found);
+        println!("{label}\tpage={}\tobjects={}", page + 1, found.join(";"));
+    }
+}
+
+fn main() {
+    let args: Vec<_> = std::env::args().collect();
+    let input = Path::new(&args[1]);
+    let out = Path::new(&args[2]);
+    std::fs::create_dir_all(out).unwrap();
+    let bytes = std::fs::read(input).unwrap();
+    let mut core = DocumentCore::from_bytes(&bytes).unwrap();
+    if args.get(3).is_some_and(|arg| arg == "hwpx") {
+        core = DocumentCore::from_bytes(&core.export_hwpx_native().unwrap()).unwrap();
+    }
+    let font_json = std::fs::read_to_string("/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/environments/4f8c459a62f05f15a9fe6fe99ee5e13008f271c3a037e88a2ce9f82765172471.json").unwrap();
+    core.set_font_environment(Some(FontEnvironment::from_json(&font_json).unwrap())).unwrap();
+    snapshot(&core, "loaded", out);
+    match args.get(3).map(String::as_str) {
+        Some("split") => { core.split_paragraph_native(0, 0, 3, None).unwrap(); }
+        Some("host") => { let host = core.document().sections[0].paragraphs.iter().position(|para| para.controls.iter().any(|ctrl| matches!(ctrl, rhwp::model::control::Control::Picture(_) | rhwp::model::control::Control::Shape(_)))).unwrap();
+            core.insert_text_native(0, host, 0, "X").unwrap(); }
+        _ => { core.insert_text_native(0, 0, 0, "X").unwrap(); }
+    }
+    snapshot(&core, "edited", out);
+    let saved = core.export_hwp_native().unwrap();
+    std::fs::write(out.join("edited.hwp"), &saved).unwrap();
+    let mut reopened = DocumentCore::from_bytes(&saved).unwrap();
+    reopened.set_font_environment(Some(FontEnvironment::from_json(&font_json).unwrap())).unwrap();
+    snapshot(&reopened, "reopened", out);
+    for extension in ["hwp", "hwpx"] {
+        let saved = if extension == "hwp" { core.export_hwp_native().unwrap() } else { core.export_hwpx_native().unwrap() };
+        std::fs::write(out.join(format!("edited.{extension}")), &saved).unwrap();
+        let mut roundtrip = DocumentCore::from_bytes(&saved).unwrap();
+        roundtrip.set_font_environment(Some(FontEnvironment::from_json(&font_json).unwrap())).unwrap();
+        snapshot(&roundtrip, &format!("reopened-{extension}"), out);
+        let saved2 = if extension == "hwp" { roundtrip.export_hwp_native().unwrap() } else { roundtrip.export_hwpx_native().unwrap() };
+        std::fs::write(out.join(format!("second.{extension}")), &saved2).unwrap();
+        let mut again = DocumentCore::from_bytes(&saved2).unwrap();
+        again.set_font_environment(Some(FontEnvironment::from_json(&font_json).unwrap())).unwrap();
+        snapshot(&again, &format!("second-{extension}"), out);
+    }
+}

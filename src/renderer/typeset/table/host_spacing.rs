@@ -244,9 +244,14 @@ pub(super) fn resolve(
     //   의미 필드+소스 게이트(table_wrap_take_place)로 교체되었고, 본 예외는
     //   그 판정이 발동하는 경로(HWP5-native 파스)에 적용된다 (메인테이너 통합:
     //   PR #1927 × #1928 동일 라인 충돌 해소).
-    let before = if !is_tac
-        && table_wrap_take_place
-        && !(is_topbottom_empty_anchor && next_is_empty_table_anchor)
+    let square_paragraph_origin =
+        crate::renderer::float_placement::stored_empty_square_host_uses_paragraph_origin(
+            para, table,
+        );
+    let before = if square_paragraph_origin
+        || (!is_tac
+            && table_wrap_take_place
+            && !(is_topbottom_empty_anchor && next_is_empty_table_anchor))
     {
         outer_top
     } else if suppress_empty_anchor_spacing && !is_column_top {
@@ -276,7 +281,16 @@ pub(super) fn resolve(
     } else {
         host_line_spacing
     };
-    let after = sa + outer_bottom + host_line_tail + positive_empty_host_rowbreak_tail;
+    let closed_square_margin = (profile().hwp5_stored_pagination_layout()
+        && !profile().session_edited())
+    .then(|| {
+        crate::renderer::float_placement::stored_empty_square_host_closing_margin(
+            para, next_para, table, styles, dpi,
+        )
+    })
+    .flatten();
+    let after = closed_square_margin
+        .unwrap_or(sa + outer_bottom + host_line_tail + positive_empty_host_rowbreak_tail);
     let host_spacing = HostSpacing {
         before,
         // 위 세 갈래 모두 단 상단에서는 바깥 위 여백만 남는다.

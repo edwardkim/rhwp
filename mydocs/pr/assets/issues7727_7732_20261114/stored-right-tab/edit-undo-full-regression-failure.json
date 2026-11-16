@@ -1,0 +1,21 @@
+{
+  "head": "fe8425e66db9e3b6fbb4232e6931ec1ea7fa5e81",
+  "summary": "Summary [ 356.908s] 13563 tests run: 13558 passed (1 slow), 5 failed, 45 skipped",
+  "test_seconds": 356.908,
+  "command_seconds": 829.311,
+  "log_sha256": "7f290c1e06e6263f74186adf1da8ea360de2dd861ff05702077382fd9080e6f8",
+  "failures": [
+    "FAIL [   0.016s] (  625/13563) rhwp document_core::commands::text_editing::tests::merge_paragraph_undo_restores_removed_paragraph_meta",
+    "FAIL [   0.016s] (11797/13563) rhwp::regression_suite_024 issue_2342_cell_merge_para_meta::cell_merge_undo_restores_removed_paragraph_meta",
+    "FAIL [   0.018s] (11798/13563) rhwp::regression_suite_024 issue_2342_cell_merge_para_meta::nested_cell_merge_undo_restores_removed_paragraph_meta",
+    "FAIL [   0.017s] (11799/13563) rhwp::regression_suite_024 issue_2342_cell_merge_para_meta::textbox_merge_undo_restores_removed_paragraph_meta",
+    "FAIL [   0.017s] (11800/13563) rhwp::regression_suite_024 issue_2342_cell_merge_para_meta::picture_caption_merge_undo_restores_removed_paragraph_meta",
+    "FAIL [   0.016s] (  625/13563) rhwp document_core::commands::text_editing::tests::merge_paragraph_undo_restores_removed_paragraph_meta",
+    "FAIL [   0.016s] (11797/13563) rhwp::regression_suite_024 issue_2342_cell_merge_para_meta::cell_merge_undo_restores_removed_paragraph_meta",
+    "FAIL [   0.018s] (11798/13563) rhwp::regression_suite_024 issue_2342_cell_merge_para_meta::nested_cell_merge_undo_restores_removed_paragraph_meta",
+    "FAIL [   0.017s] (11799/13563) rhwp::regression_suite_024 issue_2342_cell_merge_para_meta::textbox_merge_undo_restores_removed_paragraph_meta",
+    "FAIL [   0.017s] (11800/13563) rhwp::regression_suite_024 issue_2342_cell_merge_para_meta::picture_caption_merge_undo_restores_removed_paragraph_meta"
+  ],
+  "cause": "재조판마다 RIGHT 캐시를 무조건 삭제하여 Undo의 원본 메타 복원까지 바꾸었음",
+  "next_fix": "실제 입력 변경이 기존 dirty 출처를 게시하고, 무효화한 실제 탭의 폭만 재조판에서 비움; Undo 복원과 빈 입력은 보존"
+}

@@ -1,0 +1,11 @@
+{
+  "productSource": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+  "command": [
+    "node",
+    "--test",
+    "--test-name-pattern=supplied static TrueType",
+    "scripts/tests/hft-outline-font-selection.browser.mjs"
+  ],
+  "exitCode": 1,
+  "expectedFailure": true
+}

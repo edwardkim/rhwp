@@ -1,0 +1,7 @@
+{
+  "file": "src/lib.rs",
+  "content_sha256_before": "02049d37656973486cfee45609728847ef415c9836bac1afdf29d6e4c222d737",
+  "content_sha256_after": "02049d37656973486cfee45609728847ef415c9836bac1afdf29d6e4c222d737",
+  "action": "mtime refresh only; force current root package recompilation after baseline worktree used shared target",
+  "failed_execution": "merge-result-focused.log"
+}

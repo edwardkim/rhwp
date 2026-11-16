@@ -1,0 +1,26 @@
+[
+  {
+    "mode": "normal",
+    "font_path": "C:\\Windows\\Fonts\\malgun.ttf",
+    "font_name": [
+      "Malgun Gothic",
+      "Regular"
+    ],
+    "missing_korean": [],
+    "raw": 99.9984,
+    "font_sha256": "0086c19e81d293a542e7d75564c645fb58070cc850aefebf8fa1c397858e510c",
+    "overlay": "C:\\Users\\admin\\rhwp\\output\\pr9018-label-review\\after-normal\\overlay_001.png"
+  },
+  {
+    "mode": "latin-candidate",
+    "font_path": "C:\\Windows\\Fonts\\malgun.ttf",
+    "font_name": [
+      "Malgun Gothic",
+      "Regular"
+    ],
+    "missing_korean": [],
+    "raw": 99.9984,
+    "font_sha256": "0086c19e81d293a542e7d75564c645fb58070cc850aefebf8fa1c397858e510c",
+    "overlay": "C:\\Users\\admin\\rhwp\\output\\pr9018-label-review\\after-latin-candidate\\overlay_001.png"
+  }
+]

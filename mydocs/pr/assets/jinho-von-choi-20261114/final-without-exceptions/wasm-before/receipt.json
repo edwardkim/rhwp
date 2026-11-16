@@ -1,0 +1,63 @@
+{
+  "source": "7fbc8ba62b23edd490391c1968bd7ebb87f0c5fe",
+  "producer": {
+    "source": "7fbc8ba62b23edd490391c1968bd7ebb87f0c5fe",
+    "started": "2026-11-15T03:03:28.758304+00:00",
+    "completed": "2026-11-15T03:16:54.849655+00:00",
+    "exitCode": 0,
+    "optimized": true,
+    "artifacts": {
+      "rhwp.js": {
+        "bytes": 586144,
+        "sha256": "2d48f8a6c3ff7f848f08725bb54d04094b296af1a40ae61203081a7cf8061a1a"
+      },
+      "rhwp_bg.wasm": {
+        "bytes": 29352108,
+        "sha256": "0046d35ec6e3c05f9e040736ae71955c39c5e790b508f2e9bb063c51f3df2caf"
+      }
+    }
+  },
+  "summary": {
+    "backend": "wasm",
+    "complete": true,
+    "datasets": 18,
+    "rows": 1771,
+    "declines": 4,
+    "minimum": 98.46
+  },
+  "declines": [
+    {
+      "key": "nested",
+      "backend": "wasm",
+      "page": "10",
+      "baseline": "98.76",
+      "candidate": "98.61",
+      "decline": "True"
+    },
+    {
+      "key": "nested",
+      "backend": "wasm",
+      "page": "11",
+      "baseline": "99.05",
+      "candidate": "98.92",
+      "decline": "True"
+    },
+    {
+      "key": "nested",
+      "backend": "wasm",
+      "page": "14",
+      "baseline": "98.59",
+      "candidate": "98.46",
+      "decline": "True"
+    },
+    {
+      "key": "nested",
+      "backend": "wasm",
+      "page": "15",
+      "baseline": "99.12",
+      "candidate": "99.06",
+      "decline": "True"
+    }
+  ],
+  "scope": "Pre-correction optimized WASM evidence; not the acceptance result"
+}

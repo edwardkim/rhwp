@@ -1,0 +1,136 @@
+{
+  "documentSubstitutions": [],
+  "id": "native-webfont-c5af05d2f7ece2d5333e9378",
+  "preserveSourceMetrics": true,
+  "selectedPrograms": {
+    "-윤고딕120": {
+      "family": "Haansoft Batang",
+      "openTypeCff": false,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "Haansoft Batang",
+      "trueType": true
+    },
+    "-윤명조120": {
+      "family": "Haansoft Batang",
+      "openTypeCff": false,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "Haansoft Batang",
+      "trueType": true
+    },
+    "-윤명조140": {
+      "family": "Haansoft Batang",
+      "openTypeCff": false,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "Haansoft Batang",
+      "trueType": true
+    },
+    "Dinbol": {
+      "family": "Haansoft Batang",
+      "openTypeCff": false,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "Haansoft Batang",
+      "trueType": true
+    },
+    "KoPub돋움체 Bold": {
+      "family": "KoPubDotum Bold",
+      "openTypeCff": false,
+      "programId": "b5a3b58aba479c6a96b5f292c583efc2fb461ec04b1fd3951f37897c89711b4f",
+      "query": "KoPub돋움체 Bold",
+      "trueType": true
+    },
+    "KoPub돋움체 Light": {
+      "family": "KoPubDotum Light",
+      "openTypeCff": false,
+      "programId": "6d6953f3c854de69eb2b947d2abbdd108512617b3cd542cde6d00a1dd496824b",
+      "query": "KoPub돋움체 Light",
+      "trueType": true
+    },
+    "KoPub돋움체 Medium": {
+      "family": "KoPubDotum Medium",
+      "openTypeCff": false,
+      "programId": "f08d9184a96a35fa7306c8e625f47cfd4e2b74a74bd1b596d34cba18de444ca9",
+      "query": "KoPub돋움체 Medium",
+      "trueType": true
+    },
+    "KoPub바탕체 Bold": {
+      "family": "KoPubBatang Bold",
+      "openTypeCff": false,
+      "programId": "ace790df68f1d4d089f242df25ea370225b82d380b0a27c769de0a17b0b22835",
+      "query": "KoPub바탕체 Bold",
+      "trueType": true
+    },
+    "KoPub바탕체 Light": {
+      "family": "KoPubBatang Light",
+      "openTypeCff": false,
+      "programId": "3518b7160348c029ed9ba9fcbfb7c2e73ee60259e4b4ac93e321b802105bdb12",
+      "query": "KoPub바탕체 Light",
+      "trueType": true
+    },
+    "KoPub바탕체 Medium": {
+      "family": "KoPubBatang Medium",
+      "openTypeCff": false,
+      "programId": "cbc430b0a5cb28356a7c8aceac553906c3226c56662f85067c6c30c8d5fd2acf",
+      "query": "KoPub바탕체 Medium",
+      "trueType": true
+    },
+    "Times New Roman": {
+      "family": "Times New Roman",
+      "openTypeCff": false,
+      "programId": "05431e66ef394384694c35739bcff3bd67242cc74aca1f13b54c7a92822f0fde",
+      "query": "Times New Roman",
+      "trueType": true
+    },
+    "Yoon가변 윤명조 120_TT": {
+      "family": "Haansoft Batang",
+      "openTypeCff": false,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "Haansoft Batang",
+      "trueType": true
+    },
+    "정부상징 부처명_16040911": {
+      "family": "Haansoft Batang",
+      "openTypeCff": false,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "Haansoft Batang",
+      "trueType": true
+    }
+  },
+  "substitutions": {
+    "#태고딕": "NotoSansKR-Regular",
+    "-윤고딕120": "Haansoft Batang",
+    "-윤명조120": "Haansoft Batang",
+    "-윤명조140": "Haansoft Batang",
+    "Dinbol": "Haansoft Batang",
+    "GulimChe": "NotoSansKR-Regular",
+    "HCI Poppy": "NotoSerifKRExtraLight-Regular",
+    "HYGraphic-Medium": "NotoSansKR-Regular",
+    "HYgprM": "NotoSansKR-Regular",
+    "KoPub돋움체 Bold": "KoPubDotum Bold",
+    "KoPub돋움체 Light": "KoPubDotum Light",
+    "KoPub돋움체 Medium": "KoPubDotum Medium",
+    "KoPub바탕체 Bold": "KoPubBatang Bold",
+    "KoPub바탕체 Light": "KoPubBatang Light",
+    "KoPub바탕체 Medium": "KoPubBatang Medium",
+    "Malgun Gothic": "Pretendard-Regular",
+    "Times New Roman": "Times New Roman",
+    "Yoon가변 윤명조 120_TT": "Haansoft Batang",
+    "명조": "NotoSerifKRExtraLight-Bold",
+    "신명 세명조": "NotoSerifKRExtraLight-Regular",
+    "신명 신명조": "NotoSerifKRExtraLight-Regular",
+    "정부상징 부처명_16040911": "Haansoft Batang",
+    "한양견고딕": "NotoSansKR-Regular",
+    "한양신명조": "NotoSansKR-Regular",
+    "한양중고딕": "NotoSansKR-Regular",
+    "휴먼명조": "NotoSansKR-Regular"
+  },
+  "trueTypeFaces": [
+    "Haansoft Batang",
+    "KoPubBatang Bold",
+    "KoPubBatang Light",
+    "KoPubBatang Medium",
+    "KoPubDotum Bold",
+    "KoPubDotum Light",
+    "KoPubDotum Medium",
+    "Times New Roman"
+  ]
+}

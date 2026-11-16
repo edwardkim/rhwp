@@ -1,0 +1,33 @@
+{
+  "records": [
+    {
+      "output": "native-png",
+      "source_product_commit": "2749e491e843ec851de12467751ec200ab551014",
+      "pages": 50,
+      "minimum": 99.29,
+      "tsv": "native-png.tsv",
+      "tsv_sha256": "b0f4569fc81ed7cf7c4d8bf85328442400e24050d6c8cc534befe054bba66411",
+      "bytes": 1118
+    },
+    {
+      "output": "wasm-png",
+      "source_product_commit": "2749e491e843ec851de12467751ec200ab551014",
+      "pages": 50,
+      "minimum": 99.29,
+      "tsv": "wasm-png.tsv",
+      "tsv_sha256": "fc354d107646cf192b0c9faea41a2a6b5a13f9cc07d0c8b5561a905d85ed8866",
+      "bytes": 1111
+    },
+    {
+      "output": "wasm-svg",
+      "source_product_commit": "2749e491e843ec851de12467751ec200ab551014",
+      "pages": 50,
+      "minimum": 99.16,
+      "tsv": "wasm-svg.tsv",
+      "tsv_sha256": "95c623e2b8a39521092c0fab093401cb8a0acd672f8d0bb1941af9aa8d194dc1",
+      "bytes": 1075
+    }
+  ],
+  "native_cli_followup": "8472674645",
+  "reuse_basis": "후속 변경은 Native layer SVG 진입점뿐이며 PNG/WASM은 공통 생산 소스273과 동일하다. followup-read-path-reuse.json을 따른다."
+}

@@ -1,0 +1,1597 @@
+{
+  "key": "sample16-hwp2022",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64
+  ],
+  "completed_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64
+  ],
+  "missing_pages": [],
+  "tsv": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "9a4d365f2b992d4cf483bb8d0bffb1700136e39a38063b7e655fd6486217166b",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-001.png",
+      "pdf_sha256": "dadd39d960f9e74022953e80b7a2c53dbcda94b2937013bc05421994a6e4d5e8"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "8f28b333bcba53b9eb9d538e0c2857321b522c406763e1b5ee915120a89b444f",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-002.png",
+      "pdf_sha256": "035328f5bd7f6f29ea449ccb78ac9a7dab672b95832c37f9f4ab1270d202040a"
+    },
+    {
+      "page": 3,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_003.png",
+      "rhwp_sha256": "16f32385b95114ed06ec2274be11ec1d5bf164e208ebdd9322afdb4cd08261b7",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-003.png",
+      "pdf_sha256": "5a8e3788dfd8be9f8d3c0efbd1fb7023042d022e938c61d7d34a30eba5dc5f19"
+    },
+    {
+      "page": 4,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_004.png",
+      "rhwp_sha256": "95168e87803a1f40b6cdc4decad4b5416713ac668a8eee76418c61b233de6238",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-004.png",
+      "pdf_sha256": "2c059e333d719a24b37154108dd5d9a3d8b7efd74e1ae00e9b1f1123e6863b19"
+    },
+    {
+      "page": 5,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_005.png",
+      "rhwp_sha256": "2dc31ea54c8eff6c86ff5928f8f4027d08d4ee7dfcf408c281698644f7bfd710",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-005.png",
+      "pdf_sha256": "06932c1eef596075b3312ec72d8f213b78eb6230fe4312c722cbbd4222e2994e"
+    },
+    {
+      "page": 6,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_006.png",
+      "rhwp_sha256": "2021f9480c90fd3bb9a2662ce0a349a04070c60b4c0fa05e10e8758654049679",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-006.png",
+      "pdf_sha256": "4623f01d2bc8029eddd4864f7081371d98281286e6f0c4c4bdc5a6af60c56fd8"
+    },
+    {
+      "page": 7,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_007.png",
+      "rhwp_sha256": "a463d95090c1faa955a9dc36912905b2325f0b85fa031b44c0349c22ee203163",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-007.png",
+      "pdf_sha256": "fa9b3b8e3075a925077eb06cc02f3b03f025ddaddcd6cb5eaac4edc073f35aed"
+    },
+    {
+      "page": 8,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_008.png",
+      "rhwp_sha256": "3a5b7315cab95a1205acb51eac00007fb1bd09547872c82696ca1383162cebbd",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-008.png",
+      "pdf_sha256": "c53a1a52fa8ad8ea2e673e502876b7f0c1323e23110742bf0676798db2fb086f"
+    },
+    {
+      "page": 9,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_009.png",
+      "rhwp_sha256": "ba42b3d55e1bbd3cd30a5a25dbfcbe2c5fbcdf21f86a6841295149ac9e5bcff2",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-009.png",
+      "pdf_sha256": "ec5112d795552d2d59d2c0cba5ac9d0da1c032a69535bbcb76521c2b33449f0f"
+    },
+    {
+      "page": 10,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_010.png",
+      "rhwp_sha256": "57a485be217f8e2418b627f6f7e5ea0493392cac59f10c219368d9590c6a315a",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-010.png",
+      "pdf_sha256": "d0ded03ad511546d7fb86a8ded67391488984f7c5788f4e0e5b1649ff3f7e7e5"
+    },
+    {
+      "page": 11,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_011.png",
+      "rhwp_sha256": "40485fd41eb2e2e831097d26923fd032592e8d134c5eff8be3aa9ffb4901072c",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-011.png",
+      "pdf_sha256": "6f09cbab5bc568a384a6962be5de1ec55c47f2afc4754a0f5c94f152cc2d76f5"
+    },
+    {
+      "page": 12,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_012.png",
+      "rhwp_sha256": "959b06df7a7c65f199637945fcbd8f35e6cb40ffd78abc3ef64ea0b97a10ced2",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-012.png",
+      "pdf_sha256": "af7864697781f4cff65a9f2496166ee29608389a250fd4e8c1189c821dc04476"
+    },
+    {
+      "page": 13,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_013.png",
+      "rhwp_sha256": "58cd7bd8b750aba8e15fa03dc34c2025b1547a7bedef015d3d0af8dbf65ed501",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-013.png",
+      "pdf_sha256": "4d7fde43f2cb5a11fac4160fc0ff7d9c481672854bd4ff0fc9e39131fb27a86d"
+    },
+    {
+      "page": 14,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_014.png",
+      "rhwp_sha256": "427f6002df290d70f4596464ea7eb121c57a806d00401a8625fa8860bbd14b7b",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-014.png",
+      "pdf_sha256": "f70a84ae2e16b445865c148d0540c2cad329578c1400271d2432b02f1b2b3cca"
+    },
+    {
+      "page": 15,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_015.png",
+      "rhwp_sha256": "b6efc3102b2fbd6eb1564392be5a43987889a6bbc815fdab964bf95c2e3e133d",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-015.png",
+      "pdf_sha256": "2df143cae87d43864a39d9607a544967621ae59f201522531c450c2f2892d50b"
+    },
+    {
+      "page": 16,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_016.png",
+      "rhwp_sha256": "5203c81a58de59c14bc51a29c718ebe10a0f6cc33c8ae5a01766c8979c240b6f",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-016.png",
+      "pdf_sha256": "857514e9f0d7c4316aa9a8a2069abee751c56fea117b3e62efcb4cff96bbc681"
+    },
+    {
+      "page": 17,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_017.png",
+      "rhwp_sha256": "dabeb92a703445fe26b9e9d8e229e2bfab715c64982ea92d49ee8124a84caeeb",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-017.png",
+      "pdf_sha256": "ef79496de0bb1c8a7da32e9dfbcace39edae784a4a791af74c5bc47cd5a9cdba"
+    },
+    {
+      "page": 18,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_018.png",
+      "rhwp_sha256": "a5fe1b7ac128837f870d520f56f7b7408ede91b7c2e227c051d5ae17671ebf2c",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-018.png",
+      "pdf_sha256": "40efd213fd88a6318f1319a9d4c0f8e893bb042dd1fea2839db3ab50f6b58c07"
+    },
+    {
+      "page": 19,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_019.png",
+      "rhwp_sha256": "635c3d6aae794ae2830ce9e8ece8374e085ec1437e97d407c2af30a69758f7f2",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-019.png",
+      "pdf_sha256": "32c0f525145199b1f435b5e4e7499fcd83d4105e61584f517b70e44a292dd63c"
+    },
+    {
+      "page": 20,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_020.png",
+      "rhwp_sha256": "95ac9bc3c62792b0754f4f9497bccb9740c07eb60af78d1e2ba168041bc61b62",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-020.png",
+      "pdf_sha256": "ac9c4465911a3a537126e72681ad9f7a78e4712538dffcf9a0339193d3b3ba72"
+    },
+    {
+      "page": 21,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_021.png",
+      "rhwp_sha256": "826e49a27bb919d8e1fb4185dcfde8db9163ec8158f8451758154101ec7ac074",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-021.png",
+      "pdf_sha256": "178ba62a3adc5aa03e954707cf47e382c2730ce02fcbe26ca4caaf067163d068"
+    },
+    {
+      "page": 22,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_022.png",
+      "rhwp_sha256": "16715f90ba20ada2a3ee598610afc674d6776a4b5923cbe8d66abcdb382dbfde",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-022.png",
+      "pdf_sha256": "fb5fde0e91b76fe5db7c85ec4cfe2fa94a307f7697503cfb55e8a5d593b5f55d"
+    },
+    {
+      "page": 23,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_023.png",
+      "rhwp_sha256": "2ea909e1e5ddf4562c851d4c5042e1d71854aeff065d73a5a34ba08cddb5e03f",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-023.png",
+      "pdf_sha256": "1f7e1df2ee286be822b0b5be2a090606e305c151bb5c44370e3073684ab02041"
+    },
+    {
+      "page": 24,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_024.png",
+      "rhwp_sha256": "336470912dd2ea6ea0c27cd31ae1c8971bc63aeee765fda87c4895cd72208238",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-024.png",
+      "pdf_sha256": "5cb6b27fc22e0423826d6ddcf7296f5df50cabdeef4feade62a1a3116d3bab16"
+    },
+    {
+      "page": 25,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_025.png",
+      "rhwp_sha256": "05fafb0c1649231c23d124b5abea51fe31cdc9059b88823270c191abf0976ff8",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-025.png",
+      "pdf_sha256": "86cd6acc3f114475b0a03c7a9a7212098205cb4ab8c7d18db5815fa68e18fb32"
+    },
+    {
+      "page": 26,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_026.png",
+      "rhwp_sha256": "63bcdac0ecb63a9c8569c4fedd60a4e3631eea6ae39bf57db4687c4489736651",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-026.png",
+      "pdf_sha256": "e22eaec550a339a42d978535119538b1c2e0928dd746933404eadfa6aee7caac"
+    },
+    {
+      "page": 27,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_027.png",
+      "rhwp_sha256": "4d2607ec9b7a1b76d29079e64620312294d91e849791af9750c336d3a71eac87",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-027.png",
+      "pdf_sha256": "5ef4c97d539474ba1d77de38a44945affa77ea2e4c6718c6d3a8197d0a10b904"
+    },
+    {
+      "page": 28,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_028.png",
+      "rhwp_sha256": "2df7a6714aed9f9e9422d0de15a30d08b6ad41694eeec75f260fe10d99c389fc",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-028.png",
+      "pdf_sha256": "ef1293f83cc4696d03c79874a05def625a08049f15a39776f8b202cb79e29ccd"
+    },
+    {
+      "page": 29,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_029.png",
+      "rhwp_sha256": "1e00a54508f2bc30116d00b02cf3fbc23da60e5a41303c490b813296b0393ebc",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-029.png",
+      "pdf_sha256": "62ab0484b15e68251d402a1d0799b879d3c24de1d0fa83651c744bd8d809650c"
+    },
+    {
+      "page": 30,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_030.png",
+      "rhwp_sha256": "e8b11a4e41c00d7879f726b68ec008462942ac22aa2209fa45c7a50f77bb31b9",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-030.png",
+      "pdf_sha256": "b1cea3e66a88e425404117ab4673237c57afdd4f3d8206f2976110c9f135370e"
+    },
+    {
+      "page": 31,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_031.png",
+      "rhwp_sha256": "8a0e0f230584292673bb151b74659e52a7b9647e0effbec07b367b5e605732d8",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-031.png",
+      "pdf_sha256": "081ef57db29061c1f7dfa7459d005f79e4b931fe7b3a303f93d966ef55dc0b7a"
+    },
+    {
+      "page": 32,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_032.png",
+      "rhwp_sha256": "c82785fbeb78fca4630c9df7055d49d102004005db09d35ef5fadf0863ea7837",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-032.png",
+      "pdf_sha256": "dbada23a06a28d27ab5a7d6dfad6edd57440a5dcaf2cc3708f6929539cff0e46"
+    },
+    {
+      "page": 33,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_033.png",
+      "rhwp_sha256": "ac7cfd6aa63e7f3d3e9291551fb9d4bb2104d2d20fc223eb14020cf0c6d589fb",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-033.png",
+      "pdf_sha256": "8ea6c55070882ebfd60b77475a880e4738cec27ae003c3a591f9e4fcef1e96b7"
+    },
+    {
+      "page": 34,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_034.png",
+      "rhwp_sha256": "e29085f05985971c913f2c10ec39294853678a94a097eab72a0efd411ed780cf",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-034.png",
+      "pdf_sha256": "95b8cbdf2e59f68c1617adcf319185237ca968bb4e823c5a7dd5f97bf0f41ab5"
+    },
+    {
+      "page": 35,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_035.png",
+      "rhwp_sha256": "408055bcc0c09dcc01eed57490804d61ad16c6249980618134559210263b0140",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-035.png",
+      "pdf_sha256": "9187d13d8f6d9433448a735784182cc6eeaf7ea2168eec8fab462b271c12ff7d"
+    },
+    {
+      "page": 36,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_036.png",
+      "rhwp_sha256": "0510f0b1201df0b5827ecb0e6a9c6286183e0522c7604b28e601f904c42f3239",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-036.png",
+      "pdf_sha256": "3fd9585936126455a9b39e310fb8109ff05c5bc8b19a02d5a34f8a9f719f6d0e"
+    },
+    {
+      "page": 37,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_037.png",
+      "rhwp_sha256": "c5b4f6c79705c305e0f44199fc177f8809171de2da20f0a747424ef9b1867f81",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-037.png",
+      "pdf_sha256": "9cc41f3f49a2f0ea881ce5a66529e855095484e7a0b844df3232a0e78c517d61"
+    },
+    {
+      "page": 38,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_038.png",
+      "rhwp_sha256": "0cbfefdfe2b13a2fdc0f43d1bfe8813d847ee15efdb37a81b71926b1d2473f01",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-038.png",
+      "pdf_sha256": "5c62f79e966a7853e97b351ac55723a6c62f8da6e4c9f4d623deddd2211ea4b3"
+    },
+    {
+      "page": 39,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_039.png",
+      "rhwp_sha256": "4e2a24fb3f3379c632178dd812e9164f2294499c5bed407dce7ad65e753d8510",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-039.png",
+      "pdf_sha256": "22e576d10e7f384e080764f1e096a5b8279372b811357cb92f353e516727abac"
+    },
+    {
+      "page": 40,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_040.png",
+      "rhwp_sha256": "4a38d763ae63a4e8bba160ff6241cd8c1a6ecfbd18942b084d64c456d033d093",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-040.png",
+      "pdf_sha256": "a325bb84f0a7ef140c17e0af5d71b25dc6cd2f3a5e45c01d68f450f955e17a9e"
+    },
+    {
+      "page": 41,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_041.png",
+      "rhwp_sha256": "571a23dd15682508c715b528bd3531204bdce51f1a32296274efba872183d71e",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-041.png",
+      "pdf_sha256": "0ab448fd82e6dad61050d89cc470ce24ab194d99b4837ef1558e261c0844b178"
+    },
+    {
+      "page": 42,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_042.png",
+      "rhwp_sha256": "2ef39473caa6b02306854a53cd939e3d7964b00c9fd3714d480735d7d6f1a114",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-042.png",
+      "pdf_sha256": "d17dbe9a97c8dbc0690bd4627224ea041f9494aeef5c6d364a11caae85a89f42"
+    },
+    {
+      "page": 43,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_043.png",
+      "rhwp_sha256": "868d2499aed15072672d510fcbbc450f8ec86a642c96025dbfad6732681a1075",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-043.png",
+      "pdf_sha256": "3367ee17fd1c17f9d35c08fecc973d605bd7b7f41bbb71f659a6ceff08d74e2c"
+    },
+    {
+      "page": 44,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_044.png",
+      "rhwp_sha256": "dba85670e818304952b6e3064af5bd82daedd3b8944bd8582741d96206ed199c",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-044.png",
+      "pdf_sha256": "f3babf6dd39e4a8c1152fb6baeff408e08dc8a4193e852d95acdd1186dbbb158"
+    },
+    {
+      "page": 45,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_045.png",
+      "rhwp_sha256": "3a82fb2afd69669852ea7e92089c4d158c45ef007f68cfe5d6b1a32ed71278b4",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-045.png",
+      "pdf_sha256": "eebb8ac5af49411a7ceaac544f75b04c88e857de16d8e8e037750fc774e64fd0"
+    },
+    {
+      "page": 46,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_046.png",
+      "rhwp_sha256": "4cd0ad2d8fb335e409ddcb46d6023720e180e048c70e2ff45cdc4f0e818ffcdc",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-046.png",
+      "pdf_sha256": "35d35f21b2deebfb4b472de0930a975d083be6e156f4b05891eb1d231c2b3e0b"
+    },
+    {
+      "page": 47,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_047.png",
+      "rhwp_sha256": "f1f91e45a1ebbef89b511690e62c6c4e1b182583c857ea9d36149b8f12ea8e65",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-047.png",
+      "pdf_sha256": "1bfd75d46d66686ce7847940e9ad7a2d3b0cb3c5cb4b7cda796bc02cb9b190ab"
+    },
+    {
+      "page": 48,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_048.png",
+      "rhwp_sha256": "d1bb17a4dae8ec49d7dd43669c9d8e6a56dd88452ef3b4cb8a8cd19272270528",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-048.png",
+      "pdf_sha256": "d38c4dc05ab80d65a2aad88aeae759ed433bb31f300ccec26ba88826374cc180"
+    },
+    {
+      "page": 49,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_049.png",
+      "rhwp_sha256": "d2eb31919327be342f046336c2dbe8284d77b0becad8bdb8cccb02f38acddd33",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-049.png",
+      "pdf_sha256": "a81a448e5b5f3d64e2bafe72d3dd150a09b3ecc566bf96cd84d866971fabdbd3"
+    },
+    {
+      "page": 50,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_050.png",
+      "rhwp_sha256": "d12aa4ac08d43902f284c063962bdebda632d4d5037a33bfd1f57f33985c1de7",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-050.png",
+      "pdf_sha256": "b579cf78499fdac3c3aaf32fc0eff2c6748a82920cc7f76a98df80a324c1d90f"
+    },
+    {
+      "page": 51,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_051.png",
+      "rhwp_sha256": "72013c2004d5cd19e5b19c70c29470db0bfd43d39ff79c426e0a4262c9f09552",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-051.png",
+      "pdf_sha256": "28b656d37d21e4b570afe181c0158d3e1beefef401f96a0d372cded4f729daf8"
+    },
+    {
+      "page": 52,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_052.png",
+      "rhwp_sha256": "c0e3db6337da97e4a7c9f82117ac84d3d19ed0588543b0b0f176764c32461eb5",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-052.png",
+      "pdf_sha256": "95138c87812912ca97208d810151de684e87027bc324d468b5f4dcda6e880f1e"
+    },
+    {
+      "page": 53,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_053.png",
+      "rhwp_sha256": "2d429255de573faea20adcaef3f5c0899fa5a504724683699aca99a93f80028f",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-053.png",
+      "pdf_sha256": "28af76594a1229359a9ee97bbe449fe06ad5df7c6a63c22730b7d1774e943e71"
+    },
+    {
+      "page": 54,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_054.png",
+      "rhwp_sha256": "2a030692342ba48a5afaac8e434aa61ae3dd9b3a65a9480d36062a522781e502",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-054.png",
+      "pdf_sha256": "bd1e798555b3eadf00db10ac0956586f48b32b9f7dc0b0a285f5cb4054e59d91"
+    },
+    {
+      "page": 55,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_055.png",
+      "rhwp_sha256": "83052f75bb25dd61da82e4be6f34d29968932794a21df7ba653e30f1175e63a2",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-055.png",
+      "pdf_sha256": "6504d3121f29b447169166b1678593ca490cb5bd3cc153f358186555e3548d40"
+    },
+    {
+      "page": 56,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_056.png",
+      "rhwp_sha256": "67f98e37c03ea9fc1e192a8742e4a64177379b67bfc49d23d2d95471c391dc8c",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-056.png",
+      "pdf_sha256": "e94494c5e3124639c8e205adc60162aba72b86ecd0c186556ecd21b9ffb7b69d"
+    },
+    {
+      "page": 57,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_057.png",
+      "rhwp_sha256": "63866cfc17269d6ea33f9e30f1fae0e2b9c46a569d8514cd84f7c94573e73193",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-057.png",
+      "pdf_sha256": "104462fb7b647ef1a7ae6483cbace4d69a52755ffaa1e4821f2b4ec84e0a5a87"
+    },
+    {
+      "page": 58,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_058.png",
+      "rhwp_sha256": "7b7c12887d0f8da681c4205641e961116e5b6755ac31c55b7c7e433768874eba",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-058.png",
+      "pdf_sha256": "9195ec09f5eee206fb25f21eeaa10c162b3197bd5d4b7dcb23d2cce1c914b8d0"
+    },
+    {
+      "page": 59,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_059.png",
+      "rhwp_sha256": "c68b05eaea2dde0eaee25e6f70368b73c64121cf69a1f7db16639cf9a627fd8a",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-059.png",
+      "pdf_sha256": "c5c0c9f2a123e037352da7e5a44ecab8918f2b50dad41813ed34e42c806a2a7b"
+    },
+    {
+      "page": 60,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_060.png",
+      "rhwp_sha256": "ee415398b8aefc5ad213195a45d83ec28d6aa598a7ad93be6e63fd1aa5449fb9",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-060.png",
+      "pdf_sha256": "b32e9077981aa03e8dea3b951679b0a5658c1d2d6b8d1721359fd878e59eabe3"
+    },
+    {
+      "page": 61,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_061.png",
+      "rhwp_sha256": "658aa0aafe285fcc8f69e93fc0e805089c13f1be603680103bfa0626ce1edc44",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-061.png",
+      "pdf_sha256": "1173c6698f55ffd6b878efbef45f772c1b9ca5abe1a99e011f92c3124207d411"
+    },
+    {
+      "page": 62,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_062.png",
+      "rhwp_sha256": "0626c5ca34d8b8257dcbe2b20afdae719203382ddb8fee50e984a0a8b36b19cb",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-062.png",
+      "pdf_sha256": "2cd18058e3385c9cb23515ed4f775bcfb438ef6f55fa1ad7150c47330d85993d"
+    },
+    {
+      "page": 63,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_063.png",
+      "rhwp_sha256": "5ee35e2dff9af494d41e1aed9995558428fa48fae1ea895e9f9ea9471dbcf830",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-063.png",
+      "pdf_sha256": "71d8cd80643c6c0e1231914e8f4424552e54bbd47ff2c5772ea92980908aec21"
+    },
+    {
+      "page": 64,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/rhwp_png/rhwp_064.png",
+      "rhwp_sha256": "95aeb60aa03f2f4af4771bbdd2d0d14edc9e9035c969ef55f8bd7e0558c75fe4",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/pdf_png/pdf-064.png",
+      "pdf_sha256": "d44460c190302cbff435fde7b5deeb002b0ef61c6048dac34b4dc2f24cbf7bd9"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 61725,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 64273,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 123902,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 91593,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 5,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 103059,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 6,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 106763,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 7,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 79058,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 8,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 118486,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 9,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 59004,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 10,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 80184,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 11,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 82224,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 12,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 99609,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 13,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 126167,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 14,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 95518,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 15,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 93371,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 16,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 73457,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 17,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 88371,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 18,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 276414,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 19,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 215624,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 20,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 286906,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 21,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 125278,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 22,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 115828,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 23,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 108572,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 24,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 107956,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 25,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 94594,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 26,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 127498,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 27,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 158413,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 28,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 153293,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 29,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 107145,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 30,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 119893,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 31,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 132053,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 32,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 168218,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 33,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 136202,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 34,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 56650,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 35,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 162620,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 36,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 150826,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 37,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 133054,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 38,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 75482,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 39,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 94055,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 40,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 107502,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 41,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 45767,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 42,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 137988,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 43,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 121499,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 44,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 93988,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 45,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 151443,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 46,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 166048,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 47,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 186695,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 48,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 178145,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 49,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 150612,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 50,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 201687,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 51,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 49459,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 52,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 114467,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 53,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 118952,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 54,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 49145,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 55,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 91673,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 56,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 90186,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 57,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 132423,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 58,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 50374,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 59,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 144601,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 60,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 60334,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 61,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 48399,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 62,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 70540,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 63,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 22034,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 64,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 32118,
+      "tolerant_content_match_percent": 100.0
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 64,
+      "pdf": 64
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "samples/hwp3-sample16-hwp5-2022.hwp",
+      "sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe"
+    },
+    "pdf": {
+      "path": "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+      "sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33"
+    },
+    "git_head": "39f0ac047778eb3ac382cc36143b92f3a5bf4d94",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/producers/rhwp-candidate",
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/producers/rhwp-candidate",
+      "sha256": "8b2c7a3a51d5e226729857f07fc7dd9239c4e828445d2723aa08db8b437487fc"
+    },
+    "raster_backend": "wasm-canvas2d",
+    "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+    "layout_generation": "2022",
+    "font_environment": {
+      "path": "/home/edward/mygithub/rhwp-worktrees/review-integration-8942-bongseop-html-clipboard/mydocs/pr/assets/pr8896/font-supply/sample16-hwp2022-font-environment.json",
+      "sha256": "e64dc04a55787efcbd55dcddd9f7a9fc8454a1df06a20c4cd9e99c9dd88de36b"
+    },
+    "wasm": {
+      "files": [
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/review-integration-8942-bongseop-html-clipboard/pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/review-integration-8942-bongseop-html-clipboard/pkg/rhwp_bg.wasm",
+          "sha256": "dc791e8a463208459055bf395162445529213b185fb07720f2ac55709619c501"
+        }
+      ],
+      "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+      "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+      "comparison_profile": "print",
+      "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files": [
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/ENGGT.otf",
+          "sha256": "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/ENGRP.otf",
+          "sha256": "472830cfd4f5edc2d9dc9d0a8e3078839977c4bb0e317b198549ce278075bd26"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/ENGS.otf",
+          "sha256": "ed503552219ae16332e595c4b2999a3462d55509a4032dfce29c5ee4d0407346"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/ENJGT.otf",
+          "sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/ENMJ.otf",
+          "sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/ENSMJ.otf",
+          "sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/ENSMJI.otf",
+          "sha256": "6f63dc09433ea5cb856020e68e9e9a94ad847504487710c3769e67708eb5cf0b"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/ENSS.otf",
+          "sha256": "dbdf067e6e1d40bb8baeae72ca06289a4b8be15ded97f831262f28e8901ee54f"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/FLMJ.otf",
+          "sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/FLSMJ.otf",
+          "sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/HCENGRP.otf",
+          "sha256": "a953806c6ec22f68e9c636efe875b4d83e9306ac29391f0f105214a00e5a57d6"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/HCENTGT.otf",
+          "sha256": "da4f226e7df89a487af199b836be7d8ea90704330d44b7dbd14dc85d960c4859"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/HCHGGRP.otf",
+          "sha256": "d33ce840dd69a599a9e2cd4e1b06129b817b2bb3679375adde95ea131c9ce679"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/HCHGTGT.otf",
+          "sha256": "fc0a42f9de898629e3c0e18ba59b7f243deba0ab2595425a760e2344195034cf"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/HCHJTGT.otf",
+          "sha256": "8db67a2414128fff3b26353393d8f49fb1851cf846947293eed79bde926cc426"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/HCJPTGT.otf",
+          "sha256": "2b97862b3496d11adce1c77ef1eca63b4bd15cb188d9a408b29c189bab024882"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/HCSPGRP.otf",
+          "sha256": "9332b9367ca26fd755c4a8c49097768b3caffb9336de499e0fb44056426aa68c"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/HCSPTGT.otf",
+          "sha256": "869158e2be56c343baf14e40c32d8497b8de3f691747d3ae38b555b606788d07"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/HGGGT.otf",
+          "sha256": "da42e4819214f960b3561d4acf51571ad0c887f258e3dc034f5c2fae5c842a68"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/HGGRP.otf",
+          "sha256": "85a60f7efbc9926e8a634e702442edc0245e86874af3efe640f6402ae56e36f7"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/HGGS.otf",
+          "sha256": "b654b6944b6c45a5581d218b8aa0e2e4125a7f348b9f8f91803831f29ce37040"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/HGMJ.otf",
+          "sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/HGSMJ.otf",
+          "sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/HJJGT.otf",
+          "sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/HJMJ.otf",
+          "sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/HJSMJ.otf",
+          "sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/HMEHL.otf",
+          "sha256": "4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/HMEPO.otf",
+          "sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/HMKMG.otf",
+          "sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/HMKOLD.otf",
+          "sha256": "f2122c5200148d46a3f13b703e27536748fc5abf912a9b44d8ccd0f2b7f4ce97"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/HMKSM.otf",
+          "sha256": "99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/JPJGT.otf",
+          "sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/JPMJ.otf",
+          "sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/JPSMJ.otf",
+          "sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/SPJGT.otf",
+          "sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/SPMJ.otf",
+          "sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/SPSMJ.otf",
+          "sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/TAENMREN.otf",
+          "sha256": "aef1b4e32ba55e42764385e1042b0bc5fbb51998571a380ce7b5e63a0a82c4b2"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/TAENMRKR.otf",
+          "sha256": "691205fe589ff8e46e7c840304316ea6d0459e54259b16eef6e49dfa66018e2a"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/TESEMEN.otf",
+          "sha256": "464e83498110c175392228b406fef6c3c86a54464700fb03cc993f7aae7b8a06"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/TESEMHG.otf",
+          "sha256": "d475b282463329667b2f7018812556c143e1b07bad31f07287600ef78997af27"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/TESEMHJ.otf",
+          "sha256": "4287579604bb420cf62906b885228b070f2a093b3fb09dfa617822862a0c7d3d"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/TESMJEN.otf",
+          "sha256": "1d7e232e98ba8a11e763ea69ff7be6cf36b2fc2c2d632a6b3115c4723969f0e9"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/TESMJHG.otf",
+          "sha256": "3f13c08d9c437a79e27f359dc8f6931aa1a82718ebede2b83a9a51c3cb0c3963"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/TESMJJP.otf",
+          "sha256": "91839ccb18c63ab15463648c4927429c9b098bf422dcab55269a55314cdcccfd"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/TESSMEN.otf",
+          "sha256": "7c073a836d6837771668cc5be0f1816f502e54d5397f8e05e7b2f0281647219a"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/TESSMHG.otf",
+          "sha256": "49bfc7e5f23e6dc28a687bcd671e2eba5fa15bbae8b46aff5a64fca97931b269"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/TETGTEN.otf",
+          "sha256": "201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/TETGTHG.otf",
+          "sha256": "dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/TETGTHJ.otf",
+          "sha256": "99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/TETGTJP.otf",
+          "sha256": "0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/00-hft/USER.otf",
+          "sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/01-hwp/HBATANG.TTF",
+          "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/01-hwp/HMKMM.TTF",
+          "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/02-windows/batang.ttc",
+          "sha256": "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/02-windows/cour.ttf",
+          "sha256": "6aab1f79264ccda1e7129dba62dbe3750b10eaa27408a327dadb808724e62c84"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/02-windows/courbd.ttf",
+          "sha256": "e376f24c9f27eb7370b25aa366d78da731834a1aea651858801c9a14e8906943"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/02-windows/courbi.ttf",
+          "sha256": "ac3b362cf998eb33475655e12ab7cb2f6a35d1f2eff6f76af00ebb6f81c53ee7"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/02-windows/couri.ttf",
+          "sha256": "546406ddbb3e3f6b876a5e8a5dee62ac090d1448662e98d8844b22393813dd13"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/02-windows/gulim.ttc",
+          "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/02-windows/times.ttf",
+          "sha256": "fbb57cdb0079137adc0e478913ca134dfee02aa2ef443738ec5e839bf97a1f7f"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/02-windows/timesbd.ttf",
+          "sha256": "e94ff9111656f17bd81e9f822f1e234edcd370bcbacfdebf998b8938f525ac77"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/02-windows/timesbi.ttf",
+          "sha256": "8d2c8d8d25d9fc529d08558c42effa771617914a455603881e212a26e2f2ddcd"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protection-fonts/sample16-hwp2022/02-windows/timesi.ttf",
+          "sha256": "c2c134968be4259aaa78845d3aca5e91c4a0bd10d98e4d2e48ac3c12f3c63b89"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/font-probes/legacy-arithmetic.otf",
+          "sha256": "6be71c2e207ce7e07402ae4154ecc364674ef3074ade7bfce9c22b771c3feebf"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYHWPEQ.TTF",
+          "sha256": "c4f768c176ce26de91d6115bfb30c2d87c43c03d054f79e909fd340b1e46740a"
+        }
+      ]
+    }
+  },
+  "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/protected/wasm/sample16-hwp2022-run/sample16-hwp2022/silhouette-checkpoint.json"
+}

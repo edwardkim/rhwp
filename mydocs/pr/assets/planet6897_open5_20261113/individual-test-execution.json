@@ -1,0 +1,57 @@
+{
+  "head": "c6e852a92b3661136552a432d649e168e27f88d4",
+  "full_summary": "Summary [ 632.595s] 13430 tests run: 13430 passed (3 slow), 45 skipped",
+  "records": [
+    {
+      "issue": "8960",
+      "module": "issue_8960_text_dominant_empty_tac_line",
+      "passed": 1,
+      "execution_lines": [
+        "PASS [   0.025s] (12826/13430) rhwp::regression_suite_027 issue_8960_text_dominant_empty_tac_line::separator_tac_table_sits_on_baseline_and_keeps_stored_line_height"
+      ]
+    },
+    {
+      "issue": "9027",
+      "module": "issue_9027_float_table_band_overflow",
+      "passed": 1,
+      "execution_lines": [
+        "PASS [   0.066s] ( 4614/13430) rhwp::regression_suite_002 issue_9027_float_table_band_overflow::band_overflowing_float_table_moves_alone_and_band_ends_at_absorbed_lines"
+      ]
+    },
+    {
+      "issue": "9029",
+      "module": "issue_9029_docinfo_reserved_tail",
+      "passed": 2,
+      "execution_lines": [
+        "PASS [   0.030s] ( 9939/13430) rhwp::regression_suite_018 issue_9029_docinfo_reserved_tail::reserved_tag_tail_after_valid_docinfo_records_still_opens_the_document",
+        "PASS [   0.022s] ( 9941/13430) rhwp::regression_suite_018 issue_9029_docinfo_reserved_tail::saving_keeps_one_bindata_stream_when_docinfo_extension_case_differs"
+      ]
+    },
+    {
+      "issue": "9032",
+      "module": "issue_9032_hwp3_date_code_hchars",
+      "passed": 1,
+      "execution_lines": [
+        "PASS [   0.030s] ( 6506/13430) rhwp::regression_suite_008 issue_9032_hwp3_date_code_hchars::date_code_counts_its_whole_structure_in_the_paragraph_char_count"
+      ]
+    },
+    {
+      "issue": "9035",
+      "module": "issue_9035_float_pushed_tac_table_line",
+      "passed": 1,
+      "execution_lines": [
+        "PASS [   0.035s] ( 9222/13430) rhwp::regression_suite_016 issue_9035_float_pushed_tac_table_line::float_pushed_tac_table_line_does_not_overlap_previous_signature_line"
+      ]
+    },
+    {
+      "issue": "7620",
+      "module": "issue_7620_cellbreak_float_row_carry",
+      "passed": 3,
+      "execution_lines": [
+        "PASS [   0.242s] ( 9179/13430) rhwp::regression_suite_016 issue_7620_cellbreak_float_row_carry::issue_7620_cell_line_checks_reject_counterexamples",
+        "PASS [   0.239s] ( 9180/13430) rhwp::regression_suite_016 issue_7620_cellbreak_float_row_carry::issue_7620_cellbreak_float_table_carries_whole_row",
+        "PASS [   0.189s] ( 9181/13430) rhwp::regression_suite_016 issue_7620_cellbreak_float_row_carry::issue_7620_rowbreak_float_table_splits_row_at_line"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "head": "cc6c60381dfeff9b7892e836b8bf01803d0a5c1a",
+  "records": [
+    {
+      "file": "probe-empty-field-before.hwp",
+      "sha256": "ba36bf1bab3fe65b37e2f4c8d5b892513b412a905151d22bfb3cee129db0b8fd",
+      "char_count": 65,
+      "line_starts": [
+        0,
+        56
+      ]
+    },
+    {
+      "file": "probe-empty-field-after.hwp",
+      "sha256": "39f60df09b2703637117feb1911abf5953bf71f295a7b72a7770c56c9e8efe72",
+      "char_count": 73,
+      "line_starts": [
+        0,
+        56
+      ]
+    }
+  ],
+  "independent_reader": "olefile plus HWP5 raw record headers; not model line queries",
+  "result": "passed",
+  "scope": "metadata invariants only, not synthetic-document visual acceptance"
+}

@@ -93,11 +93,12 @@ test('review-only changes require no code worker', () => {
     {
       rust_required: 'false',
       frontend_mode: 'none',
+      frontend_canvas_required: 'false',
       render_required: 'false',
       native_skia_required: 'false',
       codeql_languages: 'none',
       classification_status: 'classified',
-      classifier_version: '8',
+      classifier_version: '9',
       reason: 'classified:review-only',
     },
   );
@@ -115,11 +116,12 @@ test('mixed Studio package and Rust changes union modes and CodeQL languages', (
     {
       rust_required: 'true',
       frontend_mode: 'package',
+      frontend_canvas_required: 'false',
       render_required: 'false',
       native_skia_required: 'false',
       codeql_languages: 'javascript-typescript,rust',
       classification_status: 'classified',
-      classifier_version: '8',
+      classifier_version: '9',
       reason: 'classified:rust+studio-package',
     },
   );
@@ -191,7 +193,7 @@ test('every CLI output adapter belongs to one explicit impact bucket', () => {
     assert.equal(result.native_skia_required, nativeSkiaRequired, filename);
     assert.equal(result.codeql_languages, 'rust', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '8', filename);
+    assert.equal(result.classifier_version, '9', filename);
     assert.equal(result.reason, reason, filename);
   }
 });
@@ -271,7 +273,7 @@ test('Native Skia source, integration test and support changes run Rust and Nati
     assert.equal(result.native_skia_required, 'true', filename);
     assert.equal(result.codeql_languages, 'rust', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '8', filename);
+    assert.equal(result.classifier_version, '9', filename);
     assert.equal(result.reason, 'classified:native-skia-rust', filename);
   }
 });
@@ -292,7 +294,7 @@ test('Rust test input changes keep default Rust tests alongside render gates', (
     assert.equal(result.native_skia_required, 'true', filename);
     assert.equal(result.codeql_languages, 'none', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '8', filename);
+    assert.equal(result.classifier_version, '9', filename);
     assert.equal(result.reason, 'classified:rust-test-input', filename);
   }
 });
@@ -325,24 +327,61 @@ test('a new repository-root docs path fails closed', () => {
   assert.equal(result.reason, 'fail-closed:unclassified-path');
 });
 
-test('Studio package configuration and broad runtime sources remain render-impacting', () => {
+test('Studio configuration, public resources and unknown browser paths retain full Render Diff', () => {
   for (const filename of [
     'rhwp-studio/package.json',
     'rhwp-studio/vite.config.ts',
+    'rhwp-studio/public/fonts/font.woff2',
+    'rhwp-studio/src/unknown-adapter/new-runtime.ts',
+    'rhwp-studio/e2e/pdf-render-diff-report.mjs',
+  ]) {
+    const result = classifyChanges({ files: [{ filename, status: 'modified' }] });
+    assert.equal(result.render_required, 'true', filename);
+    assert.equal(result.classification_status, 'classified', filename);
+    assert.equal(result.frontend_mode, 'package', filename);
+  }
+});
+
+test('known Studio browser consumers and the direct font regression use frontend Canvas gates', () => {
+  for (const filename of [
     'rhwp-studio/src/style.css',
+    'rhwp-studio/src/core/font-substitution.ts',
     'rhwp-studio/src/core/wasm-bridge.ts',
     'rhwp-studio/src/view/page-renderer.ts',
     'rhwp-studio/src/ui/hwp-password-dialog.ts',
     'rhwp-studio/src/engine/input-handler-keyboard.ts',
+    'rhwp-studio/e2e/canvas-font-alias-issue9077.test.mjs',
   ]) {
     const result = classifyChanges({
       eventName: 'pull_request',
       files: [{ filename, status: 'modified' }],
     });
-    assert.equal(result.render_required, 'true', filename);
+    assert.equal(result.render_required, 'false', filename);
+    assert.equal(result.frontend_canvas_required, 'true', filename);
+    assert.equal(result.rust_required, 'false', filename);
+    assert.equal(result.native_skia_required, 'false', filename);
     assert.equal(result.classification_status, 'classified', filename);
     assert.equal(result.frontend_mode, 'package', filename);
   }
+});
+
+test('mixing a Canvas consumer with renderer or PDF input keeps both validation axes', () => {
+  for (const filename of ['src/renderer/canvas.rs', 'src/cli/outputs/pdf.rs', 'ttfs/fixture.ttf']) {
+    const result = classifyChanges({ files: [
+      { filename: 'rhwp-studio/src/core/font-substitution.ts', status: 'modified' },
+      { filename, status: 'modified' },
+    ] });
+    assert.equal(result.frontend_canvas_required, 'true');
+    assert.equal(result.render_required, 'true');
+    assert.equal(result.rust_required, 'true');
+  }
+});
+
+test('Canvas runner execution changes cannot bypass full CI via review reuse', () => {
+  const result = classifyChanges({ files: [{ filename: 'scripts/frontend-canvas-gates.mjs', status: 'modified' }] });
+  assert.equal(result.classification_status, 'full');
+  assert.equal(result.frontend_canvas_required, 'true');
+  assert.equal(result.render_required, 'true');
 });
 
 test('command-layer sources require the package lane for the undo depth gate', () => {
@@ -396,7 +435,7 @@ test('new sample documents run only the targeted security sweep lane', () => {
     assert.equal(result.native_skia_required, 'false', filename);
     assert.equal(result.codeql_languages, 'none', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '8', filename);
+    assert.equal(result.classifier_version, '9', filename);
     assert.equal(result.reason, 'classified:sample-security-sweep', filename);
   }
 });
@@ -417,7 +456,7 @@ test('new review reference assets require no product or CodeQL worker', () => {
     assert.equal(result.native_skia_required, 'false', filename);
     assert.equal(result.codeql_languages, 'none', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '8', filename);
+    assert.equal(result.classifier_version, '9', filename);
     assert.equal(result.reason, 'classified:review-only', filename);
   }
 });
@@ -438,7 +477,7 @@ test('Gym-only changes require no product or CodeQL worker', () => {
     assert.equal(result.native_skia_required, 'false', filename);
     assert.equal(result.codeql_languages, 'none', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '8', filename);
+    assert.equal(result.classifier_version, '9', filename);
     assert.equal(result.reason, 'classified:gym-benchmark', filename);
   }
 });
@@ -457,7 +496,7 @@ test('existing PDF reference updates require no product or CodeQL worker', () =>
     assert.equal(result.native_skia_required, 'false', filename);
     assert.equal(result.codeql_languages, 'none', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '8', filename);
+    assert.equal(result.classifier_version, '9', filename);
     assert.equal(result.reason, 'classified:review-only', filename);
   }
 });

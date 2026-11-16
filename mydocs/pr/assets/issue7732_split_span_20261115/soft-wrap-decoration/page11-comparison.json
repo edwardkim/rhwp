@@ -1,0 +1,132 @@
+[
+  {
+    "backend": "native",
+    "before": {
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.08498,
+      "silhouette_raw_unmatched_pixels": 1404,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 153440,
+      "tolerant_content_match_percent": 99.08498
+    },
+    "after": {
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.08811,
+      "silhouette_raw_unmatched_pixels": 1399,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 153418,
+      "tolerant_content_match_percent": 99.08811
+    },
+    "render_tree_unchanged": true,
+    "pdf_png_unchanged": true,
+    "raw_sha256": "2c552120a417df92ac0c17d657e0598f458ffd1b7554c0d5f03b86f4f4dd0cf7",
+    "pdf_png_sha256": "4632924769ed1cc80f030d94cbdda13ce1db14189ea0a4cc3f18a64d853b1a53",
+    "input": {
+      "path": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626"
+    },
+    "reference_pdf": {
+      "path": "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+      "sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b"
+    },
+    "dpi": 96,
+    "comparison_profile": "print",
+    "before_identity": {
+      "rhwp_sha256": "dec6e503c4630a9260e896e503a29fd1a31681e42912f989732471b4c4f4d6d8",
+      "pdf_sha256": "4632924769ed1cc80f030d94cbdda13ce1db14189ea0a4cc3f18a64d853b1a53",
+      "excluded": [],
+      "method": "threshold_boundary_color_support_v1",
+      "producer": {
+        "sweep": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "image_helpers": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6",
+        "exclusion_evidence": null,
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        }
+      }
+    },
+    "after_identity": {
+      "rhwp_sha256": "2c552120a417df92ac0c17d657e0598f458ffd1b7554c0d5f03b86f4f4dd0cf7",
+      "pdf_sha256": "4632924769ed1cc80f030d94cbdda13ce1db14189ea0a4cc3f18a64d853b1a53",
+      "excluded": [],
+      "method": "threshold_boundary_color_support_v1",
+      "producer": {
+        "sweep": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "image_helpers": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6",
+        "exclusion_evidence": null,
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        }
+      }
+    }
+  },
+  {
+    "backend": "wasm",
+    "before": {
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.09499,
+      "silhouette_raw_unmatched_pixels": 1397,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 154363,
+      "tolerant_content_match_percent": 99.09499
+    },
+    "after": {
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.0981,
+      "silhouette_raw_unmatched_pixels": 1392,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 154341,
+      "tolerant_content_match_percent": 99.0981
+    },
+    "render_tree_unchanged": true,
+    "pdf_png_unchanged": true,
+    "raw_sha256": "fbcfb378443856a545f79dff710ff31cd645db71d8bf1213d261972a9e4ffb79",
+    "pdf_png_sha256": "4632924769ed1cc80f030d94cbdda13ce1db14189ea0a4cc3f18a64d853b1a53",
+    "input": {
+      "path": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626"
+    },
+    "reference_pdf": {
+      "path": "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+      "sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b"
+    },
+    "dpi": 96,
+    "comparison_profile": "print",
+    "before_identity": {
+      "rhwp_sha256": "7e609e4de9107e04966c1cc22b213541f47942e9917bb98c470633292d653d31",
+      "pdf_sha256": "4632924769ed1cc80f030d94cbdda13ce1db14189ea0a4cc3f18a64d853b1a53",
+      "excluded": [],
+      "method": "threshold_boundary_color_support_v1",
+      "producer": {
+        "sweep": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "image_helpers": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6",
+        "exclusion_evidence": null,
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        }
+      }
+    },
+    "after_identity": {
+      "rhwp_sha256": "fbcfb378443856a545f79dff710ff31cd645db71d8bf1213d261972a9e4ffb79",
+      "pdf_sha256": "4632924769ed1cc80f030d94cbdda13ce1db14189ea0a4cc3f18a64d853b1a53",
+      "excluded": [],
+      "method": "threshold_boundary_color_support_v1",
+      "producer": {
+        "sweep": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "image_helpers": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6",
+        "exclusion_evidence": null,
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        }
+      }
+    }
+  }
+]

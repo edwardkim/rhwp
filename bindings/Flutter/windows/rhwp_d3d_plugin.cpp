@@ -185,8 +185,11 @@ std::shared_ptr<Job> parse_job(const Map& args, PublicationMode mode) {
 class RhwpD3dPlugin final : public flutter::Plugin {
  public:
   RhwpD3dPlugin(flutter::PluginRegistrarWindows* registrar,
-      FlutterDesktopTextureRegistrarRef texture_registrar) : registrar_(registrar),
-      texture_registrar_(texture_registrar) {
+      FlutterDesktopTextureRegistrarRef texture_registrar,
+      FlutterDesktopMessengerRef messenger) : registrar_(registrar),
+      texture_registrar_(texture_registrar),
+      messenger_(FlutterDesktopMessengerAddRef(messenger),
+          &FlutterDesktopMessengerRelease) {
     channel_ = std::make_unique<flutter::MethodChannel<Value>>(registrar->messenger(), "rhwp_native/texture_windows",
         &flutter::StandardMethodCodec::GetInstance());
     channel_->SetMethodCallHandler([this](const auto& call, auto result) {
@@ -197,7 +200,15 @@ class RhwpD3dPlugin final : public flutter::Plugin {
     });
   }
   ~RhwpD3dPlugin() override {
-    channel_->SetMethodCallHandler(nullptr);
+    // Registrar destruction can follow engine shutdown. The C++ messenger is
+    // non-owning and SetMethodCallHandler otherwise dereferences a dead engine.
+    // Retain the C messenger and honor its availability under the SDK lock.
+    {
+      std::unique_ptr<FlutterDesktopMessenger, decltype(&FlutterDesktopMessengerUnlock)> lock(
+          FlutterDesktopMessengerLock(messenger_.get()), &FlutterDesktopMessengerUnlock);
+      if (FlutterDesktopMessengerIsAvailable(messenger_.get()))
+        channel_->SetMethodCallHandler(nullptr);
+    }
     for (auto& item : textures_.records()) close(item.second);
   }
  private:
@@ -205,6 +216,7 @@ class RhwpD3dPlugin final : public flutter::Plugin {
   struct ClosedReceipt { Value value; PublicationMode mode; bool close_ack; uint64_t generation; };
   flutter::PluginRegistrarWindows* registrar_;
   FlutterDesktopTextureRegistrarRef texture_registrar_;
+  std::unique_ptr<FlutterDesktopMessenger, decltype(&FlutterDesktopMessengerRelease)> messenger_;
   std::unique_ptr<flutter::MethodChannel<Value>> channel_;
   CloseRecordRegistry<Record, ClosedReceipt> textures_;
   struct TileGroup { rhwp::tiles::Identity identity; Value terminal; };
@@ -460,5 +472,5 @@ void RhwpD3dPluginRegisterWithRegistrar(FlutterDesktopPluginRegistrarRef registr
   // The C registration entry owns the public raw registrar. The C++ wrapper's
   // registrar() accessor is protected and is not a plugin-facing API.
   auto* texture_registrar = FlutterDesktopRegistrarGetTextureRegistrar(registrar);
-  wrapper->AddPlugin(std::make_unique<rhwp::d3d::RhwpD3dPlugin>(wrapper, texture_registrar));
+  wrapper->AddPlugin(std::make_unique<rhwp::d3d::RhwpD3dPlugin>(wrapper, texture_registrar, FlutterDesktopPluginRegistrarGetMessenger(registrar)));
 }

@@ -1,0 +1,66 @@
+[
+  {
+    "document": "patterns-hwp",
+    "backend": "native",
+    "pages": 1,
+    "base_min": 96.68419234754576,
+    "head_min": 99.96608301182854,
+    "declines": 0
+  },
+  {
+    "document": "patterns-hwpx",
+    "backend": "native",
+    "pages": 1,
+    "base_min": 88.98209449292807,
+    "head_min": 99.96608301182854,
+    "declines": 0
+  },
+  {
+    "document": "hwpspec",
+    "backend": "native",
+    "pages": 178,
+    "base_min": 95.20564490496471,
+    "head_min": 95.20564490496471,
+    "declines": 1
+  },
+  {
+    "document": "59043",
+    "backend": "native",
+    "pages": 37,
+    "base_min": 38.34055823203993,
+    "head_min": 38.34055823203993,
+    "declines": 1
+  },
+  {
+    "document": "patterns-hwp",
+    "backend": "wasm",
+    "pages": 1,
+    "base_min": 88.21724455354403,
+    "head_min": 99.98795277487751,
+    "declines": 0
+  },
+  {
+    "document": "patterns-hwpx",
+    "backend": "wasm",
+    "pages": 1,
+    "base_min": 99.98795277487751,
+    "head_min": 99.98795277487751,
+    "declines": 0
+  },
+  {
+    "document": "hwpspec",
+    "backend": "wasm",
+    "pages": 178,
+    "base_min": 95.20692460216584,
+    "head_min": 95.20692460216584,
+    "declines": 0
+  },
+  {
+    "document": "59043",
+    "backend": "wasm",
+    "pages": 37,
+    "base_min": 38.336022258503924,
+    "head_min": 38.336022258503924,
+    "declines": 0
+  }
+]

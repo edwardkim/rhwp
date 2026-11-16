@@ -1,0 +1,39 @@
+{
+  "browser": "Chrome/156.0.8078.47",
+  "results": [
+    {
+      "key": "original",
+      "format": "hwp",
+      "cycle": 1,
+      "pages": 2,
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-history-probe/original-1.hwp",
+      "sha256": "5d554c7bfa7f80307648651b5d1b264f7e65d0a1972dcbfad81e2590b16d1439"
+    },
+    {
+      "key": "original",
+      "format": "hwp",
+      "cycle": 2,
+      "pages": 2,
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-history-probe/original-2.hwp",
+      "sha256": "5d554c7bfa7f80307648651b5d1b264f7e65d0a1972dcbfad81e2590b16d1439"
+    },
+    {
+      "key": "original",
+      "format": "hwpx",
+      "cycle": 1,
+      "pages": 2,
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-history-probe/original-1.hwpx",
+      "sha256": "ec88ca41d2c3fcc69fc6b6c63efed4cea786b59e744497c8a3667a86bc52ce1d"
+    },
+    {
+      "key": "original",
+      "format": "hwpx",
+      "cycle": 2,
+      "pages": 2,
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-history-probe/original-2.hwpx",
+      "sha256": "ec88ca41d2c3fcc69fc6b6c63efed4cea786b59e744497c8a3667a86bc52ce1d"
+    }
+  ],
+  "source": "d66d5f05f9efa4d182228494cd970614d479fb7a",
+  "scope": "actual engine saveSnapshot/restoreSnapshot before and after BodyX; checks text, two pages, table frame, and both formats twice; Studio UI history E2E was not used"
+}

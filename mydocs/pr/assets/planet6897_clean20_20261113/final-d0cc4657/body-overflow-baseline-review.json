@@ -1,0 +1,228 @@
+{
+  "source_commit": "b3e07abff48aa8f6f5c2016ae5a5c03b33d0070d",
+  "source_original": "f8e54f993109c481215e57cff25b0bf5d4bbf0f8",
+  "rows": [
+    {
+      "role": "base",
+      "command": [
+        "output/pr-review/planet6897-clean20-integration-20261113/bin/base-native",
+        "layout-anomaly",
+        "samples/issue8993/31675-rowbreak-overflowing-frame.hwp",
+        "--overflow-tolerance",
+        "2",
+        "--json"
+      ],
+      "producer_sha256": "9300b48af51c5ef56c3039141bfd6677b23371d033bff328ca6718b2a010b673",
+      "keys": [
+        "emptyPageCount",
+        "hasSignal",
+        "mode",
+        "offCanvasCount",
+        "overflowCount",
+        "overflowTolerancePx",
+        "overlapCount",
+        "overlapTolerancePx",
+        "pageCount",
+        "pageFilter",
+        "pages",
+        "schemaVersion",
+        "source",
+        "storedLineEscapeCount",
+        "storedLineTolerancePx",
+        "strict",
+        "textOverlapCount",
+        "types",
+        "untrustedContent",
+        "untrustedFields"
+      ],
+      "overflow": [
+        {
+          "bbox": {
+            "h": 919.5199999999996,
+            "w": 640.0800000000002,
+            "x": 77.46666666666667,
+            "y": 115.26666666666667
+          },
+          "boundary": {
+            "h": 914.6266666666668,
+            "w": 642.5333333333334,
+            "x": 75.58666666666667,
+            "y": 113.38666666666667
+          },
+          "maxOver": 6.773333333332857,
+          "nodeType": "Table",
+          "overBottom": 6.773333333332857,
+          "overLeft": 0.0,
+          "overRight": 0.0,
+          "overTop": 0.0,
+          "path": "Page/Body/Column0/Table0",
+          "page": 16
+        },
+        {
+          "bbox": {
+            "h": 961.6533333333326,
+            "w": 639.6400000000001,
+            "x": 77.46666666666667,
+            "y": 115.26666666666667
+          },
+          "boundary": {
+            "h": 914.6266666666668,
+            "w": 642.5333333333334,
+            "x": 75.58666666666667,
+            "y": 113.38666666666667
+          },
+          "maxOver": 48.90666666666584,
+          "nodeType": "Table",
+          "overBottom": 48.90666666666584,
+          "overLeft": 0.0,
+          "overRight": 0.0,
+          "overTop": 0.0,
+          "path": "Page/Body/Column0/Table0",
+          "page": 18
+        }
+      ]
+    },
+    {
+      "role": "candidate",
+      "command": [
+        "output/pr-review/planet6897-clean20-integration-20261113/bin/footnote-frame-scope-trial-native",
+        "layout-anomaly",
+        "samples/issue8993/31675-rowbreak-overflowing-frame.hwp",
+        "--overflow-tolerance",
+        "2",
+        "--json"
+      ],
+      "producer_sha256": "fa6ea5d9412181f4fbcd3362952fc8bf0ea07c3e136d2db003aaca69bbc3c381",
+      "keys": [
+        "emptyPageCount",
+        "hasSignal",
+        "mode",
+        "offCanvasCount",
+        "overflowCount",
+        "overflowTolerancePx",
+        "overlapCount",
+        "overlapTolerancePx",
+        "pageCount",
+        "pageFilter",
+        "pages",
+        "schemaVersion",
+        "source",
+        "storedLineEscapeCount",
+        "storedLineTolerancePx",
+        "strict",
+        "textOverlapCount",
+        "types",
+        "untrustedContent",
+        "untrustedFields"
+      ],
+      "overflow": [
+        {
+          "bbox": {
+            "h": 919.5199999999996,
+            "w": 640.0800000000002,
+            "x": 77.46666666666667,
+            "y": 115.26666666666667
+          },
+          "boundary": {
+            "h": 914.6266666666668,
+            "w": 642.5333333333334,
+            "x": 75.58666666666667,
+            "y": 113.38666666666667
+          },
+          "maxOver": 6.773333333332857,
+          "nodeType": "Table",
+          "overBottom": 6.773333333332857,
+          "overLeft": 0.0,
+          "overRight": 0.0,
+          "overTop": 0.0,
+          "path": "Page/Body/Column0/Table0",
+          "page": 16
+        },
+        {
+          "bbox": {
+            "h": 961.6533333333326,
+            "w": 639.6400000000001,
+            "x": 77.46666666666667,
+            "y": 115.26666666666667
+          },
+          "boundary": {
+            "h": 914.6266666666668,
+            "w": 642.5333333333334,
+            "x": 75.58666666666667,
+            "y": 113.38666666666667
+          },
+          "maxOver": 48.90666666666584,
+          "nodeType": "Table",
+          "overBottom": 48.90666666666584,
+          "overLeft": 0.0,
+          "overRight": 0.0,
+          "overTop": 0.0,
+          "path": "Page/Body/Column0/Table0",
+          "page": 18
+        }
+      ]
+    }
+  ],
+  "visual_pages": [
+    {
+      "backend": "native",
+      "page": 17,
+      "raw_match": 100.0,
+      "read_by_reviewer": true,
+      "raw": "mydocs/pr/assets/planet6897_clean20_20261113/final-d0cc4657/body-overflow-panels/native/raw-p017.png",
+      "raw_sha256": "a1fc25efcf27d43cce7a174b656669e1660d83350aa552862a6e5cdeb08c770a",
+      "pdf": "mydocs/pr/assets/planet6897_clean20_20261113/final-d0cc4657/body-overflow-panels/native/pdf-p017.png",
+      "pdf_sha256": "8bf070510b31aa4df1259a7811a5ef175519088ffe1ec61414c8b98e1ee50030",
+      "review": "mydocs/pr/assets/planet6897_clean20_20261113/final-d0cc4657/body-overflow-panels/native/review-p017.png",
+      "review_sha256": "b6fe561eaf0aaff054a6318388771add6aa381012cce600ffdcb0de830a0a141",
+      "overlay": "mydocs/pr/assets/planet6897_clean20_20261113/final-d0cc4657/body-overflow-panels/native/overlay-p017.png",
+      "overlay_sha256": "ec265efb437859fa4ae51ba0d2d064f8fc7dcdeb8d3a16641138e43490027af2",
+      "observation": "현금흐름/재정운영 보고서의 큰 TAC 표와 마지막 합계 행이 독립 Print와 같은 위치·내용으로 남는다. body 경계 밖으로 나오는 기존 큰 표2건이며 새 증가가 아니다."
+    },
+    {
+      "backend": "native",
+      "page": 19,
+      "raw_match": 100.0,
+      "read_by_reviewer": true,
+      "raw": "mydocs/pr/assets/planet6897_clean20_20261113/final-d0cc4657/body-overflow-panels/native/raw-p019.png",
+      "raw_sha256": "500323f10093f9da5dadc0c9e6d92b9015ded58fa7a564e21b15cb174fb1e26d",
+      "pdf": "mydocs/pr/assets/planet6897_clean20_20261113/final-d0cc4657/body-overflow-panels/native/pdf-p019.png",
+      "pdf_sha256": "77ef900751f636d5d6375e494f2582bb9d2f8d6f6674716ab2adb0150187045c",
+      "review": "mydocs/pr/assets/planet6897_clean20_20261113/final-d0cc4657/body-overflow-panels/native/review-p019.png",
+      "review_sha256": "fb9a3ca846e42b549d784a6a7c0d1341917375ee727574a5541da0eea3856ac2",
+      "overlay": "mydocs/pr/assets/planet6897_clean20_20261113/final-d0cc4657/body-overflow-panels/native/overlay-p019.png",
+      "overlay_sha256": "a31cecac1943460568583efd4361af0808ba2d0b70a2f98a3a4fed10e9139cf7",
+      "observation": "현금흐름/재정운영 보고서의 큰 TAC 표와 마지막 합계 행이 독립 Print와 같은 위치·내용으로 남는다. body 경계 밖으로 나오는 기존 큰 표2건이며 새 증가가 아니다."
+    },
+    {
+      "backend": "wasm",
+      "page": 17,
+      "raw_match": 100.0,
+      "read_by_reviewer": false,
+      "raw": "mydocs/pr/assets/planet6897_clean20_20261113/final-d0cc4657/body-overflow-panels/wasm/raw-p017.png",
+      "raw_sha256": "bf3ce3f446c9aed07655fb8aa0288a61bd7d1283e098e219379b901a5cfb2ddc",
+      "pdf": "mydocs/pr/assets/planet6897_clean20_20261113/final-d0cc4657/body-overflow-panels/wasm/pdf-p017.png",
+      "pdf_sha256": "8bf070510b31aa4df1259a7811a5ef175519088ffe1ec61414c8b98e1ee50030",
+      "review": "mydocs/pr/assets/planet6897_clean20_20261113/final-d0cc4657/body-overflow-panels/wasm/review-p017.png",
+      "review_sha256": "9856c7e4adccc5b005c5e9cf478f284ab1671c7db3d79a4b9ee5584bb43ed353",
+      "overlay": "mydocs/pr/assets/planet6897_clean20_20261113/final-d0cc4657/body-overflow-panels/wasm/overlay-p017.png",
+      "overlay_sha256": "2a240f75482ab617ecaeef510580b75c17d607bd975396870808d305ba803aba"
+    },
+    {
+      "backend": "wasm",
+      "page": 19,
+      "raw_match": 100.0,
+      "read_by_reviewer": true,
+      "raw": "mydocs/pr/assets/planet6897_clean20_20261113/final-d0cc4657/body-overflow-panels/wasm/raw-p019.png",
+      "raw_sha256": "0f7f2434007eb6882ba97385907ad3d0bc700ec2f8b8e9e6b56f13ceaa040f0c",
+      "pdf": "mydocs/pr/assets/planet6897_clean20_20261113/final-d0cc4657/body-overflow-panels/wasm/pdf-p019.png",
+      "pdf_sha256": "77ef900751f636d5d6375e494f2582bb9d2f8d6f6674716ab2adb0150187045c",
+      "review": "mydocs/pr/assets/planet6897_clean20_20261113/final-d0cc4657/body-overflow-panels/wasm/review-p019.png",
+      "review_sha256": "7724fa74291f587a74aecbc4ce4e34fd80bca03224f52c47adb0a5df62ea05a1",
+      "overlay": "mydocs/pr/assets/planet6897_clean20_20261113/final-d0cc4657/body-overflow-panels/wasm/overlay-p019.png",
+      "overlay_sha256": "7fdd716ac6e5e8f89d444bd0f6c0e244866448a7a8117d4c767507c539322990",
+      "observation": "현금흐름/재정운영 보고서의 큰 TAC 표와 마지막 합계 행이 독립 Print와 같은 위치·내용으로 남는다. body 경계 밖으로 나오는 기존 큰 표2건이며 새 증가가 아니다."
+    }
+  ],
+  "note": "새 fixture의 독립 Print 전19쪽과 같은 큰 TAC 표의17·19쪽을 실제 base/후보로 재측정했다. 기존 원장의2건을 늘리거나 문턱을 완화하지 않는다."
+}

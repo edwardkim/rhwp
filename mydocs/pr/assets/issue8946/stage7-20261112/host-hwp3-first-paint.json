@@ -1,0 +1,90 @@
+{
+  "input": "hwp3",
+  "raw_program_sha256": "6844aed54084783e28e7be0da351d08f4c0fe9e16e0844cbad4e4164c47488ca",
+  "face_index": 0,
+  "indexed_program_id": "26b2cba13463ea796f7bd409703362ef4d4ccbd5edd689006f8280595e73ed31",
+  "trace": {
+    "source": {
+      "status": "complete",
+      "sectionIndex": 0,
+      "paragraphIndex": 23,
+      "nestedPath": [],
+      "runIndex": 21,
+      "charOffset": 0,
+      "character": "창",
+      "codePoint": 52285,
+      "charShapeId": 49
+    },
+    "document": {
+      "languageSlot": 0,
+      "inheritedLanguageSlot": null,
+      "face": "딸기",
+      "altType": 0,
+      "embedded": false,
+      "substFont": null
+    },
+    "layoutName": {
+      "requestedFace": "딸기",
+      "normalizedFace": "딸기",
+      "cssFamilyChain": [
+        "딸기"
+      ],
+      "steps": [
+        {
+          "kind": "fontEnvironment",
+          "input": "딸기",
+          "output": "딸기",
+          "reason": "declared-program-28e648bff08ad85a60b776508a0961867d5b551b7c5be1e9d624ec38708aeda5"
+        }
+      ]
+    },
+    "layoutMetric": {
+      "requestedFace": "딸기",
+      "aliasResolvedFace": "딸기",
+      "matchKind": "none",
+      "metricEntry": null,
+      "characterMatch": "notApplicable",
+      "widthSource": "nativeOtf",
+      "baseAdvanceHwpunit": 1800,
+      "transforms": [],
+      "finalAdvanceHwpunit": 1892
+    }
+  },
+  "events": [
+    {
+      "phase": "open",
+      "kind": "readFace",
+      "id": "211",
+      "revision": "R1",
+      "sha": "6844aed54084783e28e7be0da351d08f4c0fe9e16e0844cbad4e4164c47488ca"
+    },
+    {
+      "phase": "open",
+      "kind": "buildFontEnvironmentFromAvailablePrograms",
+      "programs": [
+        {
+          "query": "딸기",
+          "family": "딸기",
+          "trueType": false,
+          "openTypeCff": true,
+          "programId": "26b2cba13463ea796f7bd409703362ef4d4ccbd5edd689006f8280595e73ed31"
+        }
+      ],
+      "env": "declared-program-28e648bff08ad85a60b776508a0961867d5b551b7c5be1e9d624ec38708aeda5"
+    },
+    {
+      "phase": "open",
+      "kind": "prepareCanvasMetrics.end",
+      "docGen": 2,
+      "startPhase": "open",
+      "result": true
+    },
+    {
+      "phase": "open",
+      "kind": "paint0",
+      "docGen": 2
+    }
+  ],
+  "paint_evidence": "initial-screens/host-hwp3-enabled.png",
+  "limitation": "단일 배경 canvas PNG를 합성 화면의 증거로 사용하지 않는다. 세 그림 decode 완료 후 별도 DOM screenshot으로 보완했다. Rust trace의 paint unsupported 항목을 실제 paint 증거로 사용하지 않는다. 실제 화면 PNG, 소유 프로그램 E2E, readFace/환경/메트릭 준비 순서를 함께 대조했다."
+}

@@ -26,6 +26,10 @@ ChangeTime을 유지한다. Windows 양쪽 identity는 정확한 `birthtime_ns`�
 mode·device/file ID·size·mtime·단일 link 검사는 유지하고, path의 원래 metadata 전후와 fd의 원래
 ChangeTime 전후도 각각 비교한다. 생성 시각 metadata가 없으면 명시적으로 실패하며 시각을 반올림하거나
 mtime/ctime 검사를 끄지 않는다. POSIX identity는 기존 ctime 검사를 그대로 유지한다.
+Windows의 경로 조회는 `.exe`·`.bat`·`.cmd`·`.com` 확장자로 실행 비트를 합성하지만 열린
+descriptor 조회는 파일명을 사용하지 않는다. 교차 identity에서 이 실행 비트만 정규화하며,
+실제 파일 종류·읽기/쓰기 비트와 각 권위의 원시 metadata 전후 검사는 유지한다.
+이 합성 비트는 Windows ACL 실행 권한을 나타내지 않는다. POSIX 실행 권한은 정규화하지 않는다.
 [공식 문서](https://docs.python.org/3.12/library/os.html#os.stat_result.st_birthtime_ns)의
 Windows 생성 시각 구분을 따른다. 읽기 오류에는 제한된 상대 이름과 scan/path/fd의 숫자 metadata만
 기록하고 host 절대 경로나 파일 내용은 출력하지 않는다.

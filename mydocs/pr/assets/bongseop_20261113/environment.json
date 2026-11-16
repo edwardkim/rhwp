@@ -1,0 +1,15 @@
+{
+  "macos": "26.6.2",
+  "architecture": "arm64",
+  "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)",
+  "node": "v24.15.0",
+  "wasm_pack": "wasm-pack 0.15.1",
+  "system_profiler_groups": {
+    "SPFontsDataType": 237
+  },
+  "sandbox_profile": "mydocs/pr/assets/issue8856/final-20261110/minimal-font.sb",
+  "sandbox_sha256": "1b8ba67f5e14b1adbdbd748ad6a35c9dd548e85ca0cfed5b119c17a9b9e8cf85",
+  "coretext_faces": 528,
+  "coretext_private_paths": 0,
+  "korean_covered": true
+}

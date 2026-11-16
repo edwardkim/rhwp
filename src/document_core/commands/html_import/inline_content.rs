@@ -129,6 +129,15 @@ impl DocumentCore {
             })
             .collect();
 
+        // 첫 서식 구간 앞의 평문에도 구간을 연다. 안 열면 문단의 첫 CharShapeRef 가 0 에서
+        // 시작하지 않아, 그 서식(굵게 등)이 앞 평문까지 덮는다.
+        if let Some(&(first_start, _, _)) = style_runs.first() {
+            if first_start > 0 {
+                let char_shape_id = self.css_to_char_shape_id("");
+                style_runs.insert(0, (0, first_start, char_shape_id));
+            }
+        }
+
         // 스타일 범위를 CharShapeRef로 변환
         for (start, _end, char_shape_id) in &style_runs {
             // char index → UTF-16 위치

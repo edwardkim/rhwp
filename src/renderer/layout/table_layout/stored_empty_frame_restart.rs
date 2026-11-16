@@ -63,6 +63,7 @@ impl LayoutEngine {
             let composed = self.compose_cell_unit_paragraph(
                 paragraph,
                 cell.text_direction,
+                cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
                 inner_width,
                 styles,
             );

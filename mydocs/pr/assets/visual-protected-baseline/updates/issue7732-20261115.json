@@ -1,0 +1,67 @@
+{
+  "state": "complete",
+  "created_at": "2026-11-15T20:40:34.001101+09:00",
+  "previous_table_sha256": "8f073dddd67cf8f44bea7c0315c3f9950ba73641e9393747cdbc52d24b33f9a1",
+  "table_sha256": "f405558ec760560f38bc0179864b629736c2a12a53a3c6103150eaa5df5dc569",
+  "evidence_commit": "1db9701c37d9fb5476be7e8d08370da299a83658",
+  "code_commit": "2c90fa288bb4d48764eb82dbb025df4a12637ea9",
+  "condition_evidence": "mydocs/pr/assets/issue7732_split_span_20261115/final-source-2c90/protected-validation.json",
+  "condition_evidence_sha256": "d31a9543a579c433ebbc17d20ceaccb2fd089d5332c66bce6f112f242d126fc4",
+  "dataset_count": 36,
+  "row_count": 3542,
+  "declines": [],
+  "missing": [],
+  "increased_row_count": 6,
+  "increases": [
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "native",
+      "page": 1,
+      "previous": "98.59",
+      "accepted": "98.60"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "native",
+      "page": 4,
+      "previous": "99.95",
+      "accepted": "100.00"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "native",
+      "page": 11,
+      "previous": "99.08",
+      "accepted": "99.09"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "wasm",
+      "page": 4,
+      "previous": "99.96",
+      "accepted": "100.00"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "wasm",
+      "page": 14,
+      "previous": "98.70",
+      "accepted": "98.71"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "wasm",
+      "page": 15,
+      "previous": "99.19",
+      "accepted": "99.20"
+    }
+  ],
+  "rebase_resolution": {
+    "status": "historical_update_already_dominated_by_current_baseline",
+    "current_table_sha256": "43c59cf77a4a86b3744d3df30eb71469de70b584ccc9cb165fa8f7b7884d2e1f",
+    "current_base": "4e0b20d2922953ee7ab9a1716ac819b921fe484b",
+    "applied_new_rows_at_rebase": 0,
+    "preserved_previous_increase_count": 6,
+    "reason": "새 devel의 전쪽 수용 표가 이전 브랜치의 모든 행 이상이다. 현행 보호 하한·출처를 이전 값으로 덮지 않는다."
+  }
+}

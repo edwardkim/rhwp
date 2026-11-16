@@ -91,9 +91,10 @@ fn araea_with_filler_leading_survives() {
 }
 
 /// 실측 근거가 없는 이웃 코드는 여전히 매핑하지 않는다.
+/// (`0x3016` 은 #8912 에서 HWP3 괘선 `0x3013..=0x305F` 매핑에 포함됨)
 #[test]
 fn unmeasured_neighbours_stay_unmapped() {
-    for code in [0x2C27_u16, 0x2C43, 0x3016] {
+    for code in [0x2C27_u16, 0x2C43] {
         assert_eq!(decode_johab(code), '?', "0x{code:04X} 는 실측 근거가 없다");
     }
 }

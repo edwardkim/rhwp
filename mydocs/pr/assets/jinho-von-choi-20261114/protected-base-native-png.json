@@ -1,0 +1,126 @@
+{
+  "base": "53da4d2da28ae0cacf8feac3a989cc6a69fb2622",
+  "candidate_product_source": "eeaecff59e834f28437c98b509089bbb36a7682d",
+  "rows": 1771,
+  "different": 9,
+  "results": [
+    {
+      "key": "yeongwol",
+      "pages": 4,
+      "identical": 4,
+      "different_pages": []
+    },
+    {
+      "key": "seo-body-list-typed",
+      "pages": 1,
+      "identical": 1,
+      "different_pages": []
+    },
+    {
+      "key": "handbook-hwp",
+      "pages": 383,
+      "identical": 383,
+      "different_pages": []
+    },
+    {
+      "key": "seo-helvetica-styles",
+      "pages": 1,
+      "identical": 1,
+      "different_pages": []
+    },
+    {
+      "key": "sample16-hwpx",
+      "pages": 64,
+      "identical": 64,
+      "different_pages": []
+    },
+    {
+      "key": "sample16-hwp2022",
+      "pages": 64,
+      "identical": 64,
+      "different_pages": []
+    },
+    {
+      "key": "seo-re-03-latin",
+      "pages": 1,
+      "identical": 1,
+      "different_pages": []
+    },
+    {
+      "key": "angle-narrow",
+      "pages": 1,
+      "identical": 1,
+      "different_pages": []
+    },
+    {
+      "key": "outline",
+      "pages": 9,
+      "identical": 9,
+      "different_pages": []
+    },
+    {
+      "key": "issue8040-insert",
+      "pages": 4,
+      "identical": 4,
+      "different_pages": []
+    },
+    {
+      "key": "nested",
+      "pages": 17,
+      "identical": 17,
+      "different_pages": []
+    },
+    {
+      "key": "sample16-hwp2024",
+      "pages": 64,
+      "identical": 64,
+      "different_pages": []
+    },
+    {
+      "key": "handbook-hwpx",
+      "pages": 383,
+      "identical": 383,
+      "different_pages": []
+    },
+    {
+      "key": "issue7905",
+      "pages": 6,
+      "identical": 6,
+      "different_pages": []
+    },
+    {
+      "key": "sample10",
+      "pages": 763,
+      "identical": 754,
+      "different_pages": [
+        761,
+        690,
+        732,
+        753,
+        729,
+        688,
+        760,
+        730,
+        746
+      ]
+    },
+    {
+      "key": "issue8040-insert-delete",
+      "pages": 4,
+      "identical": 4,
+      "different_pages": []
+    },
+    {
+      "key": "seo-pic-crop-01",
+      "pages": 1,
+      "identical": 1,
+      "different_pages": []
+    },
+    {
+      "key": "seo-shape-group-02",
+      "pages": 1,
+      "identical": 1,
+      "different_pages": []
+    }
+  ]
+}

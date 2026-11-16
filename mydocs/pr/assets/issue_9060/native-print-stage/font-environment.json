@@ -1,0 +1,18 @@
+{
+  "id": "pr9075-independent-print-programs-win-malgun",
+  "preserveSourceMetrics": true,
+  "substitutions": {
+    "HCI Poppy": "Palatino Linotype",
+    "한양신명조": "HYSinMyeongJo-Medium",
+    "한양중고딕": "HYGothic-Medium",
+    "바탕체": "BatangChe",
+    "맑은 고딕": "Malgun Gothic"
+  },
+  "trueTypeFaces": [
+    "Palatino Linotype",
+    "HYSinMyeongJo-Medium",
+    "HYGothic-Medium",
+    "BatangChe",
+    "Malgun Gothic"
+  ]
+}

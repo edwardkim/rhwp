@@ -1,0 +1,43 @@
+{
+  "type": "minimum-font standalone Rust tests linked to Native Skia rlib, not Cargo whole suite",
+  "passed": 34,
+  "failed": 0,
+  "cases": [
+    {
+      "case": "margin",
+      "passed": 1,
+      "failed": 0,
+      "log_sha256": "61bb6d8f72bfed3a87404e2c0f7c89256d798c445fc4d0406e9bfae18f22437c"
+    },
+    {
+      "case": "toc",
+      "passed": 2,
+      "failed": 0,
+      "log_sha256": "7f27b849c325438e3ba04709acbce43ac2fdde947de9b7eb8aee9dfa7390cc2a"
+    },
+    {
+      "case": "regulatory",
+      "passed": 4,
+      "failed": 0,
+      "log_sha256": "43abe5e62cc5fd636674b20c7d93556e3409d539f297320eb1922e27608f1ae1"
+    },
+    {
+      "case": "edu",
+      "passed": 24,
+      "failed": 0,
+      "log_sha256": "dbb297383e4c59eda766bf0cc88330d06d1ad9f3fd5f4af6aa6575b18d34ae8c"
+    },
+    {
+      "case": "note",
+      "passed": 1,
+      "failed": 0,
+      "log_sha256": "9d370f04dd8e1155576780c66d94ce694171b0c31a751551077e09cf4540e766"
+    },
+    {
+      "case": "marker",
+      "passed": 2,
+      "failed": 0,
+      "log_sha256": "9f52d004281849fa170059f05e6a3d7a951d853f9d745ce32964c615a78e94e9"
+    }
+  ]
+}

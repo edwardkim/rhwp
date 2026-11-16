@@ -1,5 +1,8 @@
 //! 검사 유형: 관계형·고정형.
-//! 주석 갱신: 2026-11-08 21:40:40 KST. 직전 변경: 2026-11-08T20:27:19+09:00, 1b159d1f855c82a28de8b909b6f15a9b1d65c7b7.
+//! 주석 갱신: 2026-11-15 02:14:08 KST. 직전 변경: 2026-11-09T21:28:27+09:00, c64b647b6e5924b9dda2e2788e5b81ce8a048f18.
+//! 새 합성 기울임 선택은 MIT RHWPHftOutline.otf 두 face만 공급하는 관계형 font-only 계약이다.
+//! 시스템 선택·글리프 소유와 명시 공급의 실제 raster를 비교하며 문서 좌표·설치 글꼴에 의존하지 않는다.
+//! 실제 원인과 반례: mydocs/pr/assets/issue_9060/native-synthetic-slant-family-analysis.md.
 //! 프로그램 선택은 관계형 계약이며 실문서 raw는 비해당이다. Linux·Mac은 MIT 합성 TTF 두 개만 공급한다.
 //! Linux는 자식의 Fontconfig, macOS는 CoreText의 process 범위 등록으로 실제 OS 선택을 대조한다.
 //! Windows는 DirectWrite의 기본 face를 독립 조회한 뒤 같은 프로그램의 명시 공급 출력과 대조한다.
@@ -804,4 +807,142 @@ mod system_program_preference {
 #[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
 fn same_format_system_program_keeps_os_preference() {
     system_program_preference::check_system_program_preference();
+}
+
+#[cfg(target_os = "linux")]
+mod synthetic_slant_family_coverage {
+    use rhwp::paint::RenderProfile;
+    use rhwp::renderer::layer_renderer::RasterRenderOptions;
+    use rhwp::renderer::skia::SkiaLayerRenderer;
+    use rhwp::DocumentCore;
+
+    const FAMILY: &str = "RHWP HFT Outline Fixture";
+    const CFF: &[u8] = include_bytes!("../fixtures/fonts/RHWPHftOutline.otf");
+
+    fn second_glyph_program() -> Vec<u8> {
+        let mut bytes = CFF.to_vec();
+        let count = u16::from_be_bytes([bytes[4], bytes[5]]) as usize;
+        let cmap = (0..count)
+            .find_map(|i| {
+                let at = 12 + i * 16;
+                (bytes.get(at..at + 4) == Some(b"cmap")).then(|| {
+                    u32::from_be_bytes(bytes[at + 8..at + 12].try_into().unwrap()) as usize
+                })
+            })
+            .expect("합성 face의 cmap");
+        let sub =
+            cmap + u32::from_be_bytes(bytes[cmap + 8..cmap + 12].try_into().unwrap()) as usize;
+        assert_eq!(u16::from_be_bytes([bytes[sub], bytes[sub + 1]]), 4);
+        for at in [sub + 14, sub + 20] {
+            assert_eq!(&bytes[at..at + 2], &[0xac, 0x00]);
+            bytes[at..at + 2].copy_from_slice(&('나' as u16).to_be_bytes());
+        }
+        bytes[sub + 24..sub + 26].copy_from_slice(&1u16.wrapping_sub('나' as u16).to_be_bytes());
+        bytes
+    }
+
+    #[test]
+    fn same_family_split_glyphs_survive_synthetic_slant() {
+        const MARKER: &str = "RHWP_TEST_SPLIT_CFF_SLANT_CHILD";
+        if std::env::var_os(MARKER).is_none() {
+            let stamp = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos();
+            let dir = std::env::temp_dir()
+                .join(format!("rhwp-split-slant-{}-{stamp}", std::process::id()));
+            std::fs::create_dir_all(dir.join("fonts")).unwrap();
+            std::fs::create_dir_all(dir.join("cache")).unwrap();
+            std::fs::write(dir.join("fonts/first.otf"), CFF).unwrap();
+            std::fs::write(dir.join("fonts/second.otf"), second_glyph_program()).unwrap();
+            let config = format!(
+                r#"<?xml version="1.0"?><!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd"><fontconfig>
+<dir>{}/fonts</dir><cachedir>{}/cache</cachedir>
+<match target="font"><test name="slant"><const>roman</const></test><test target="pattern" name="slant" compare="not_eq"><const>roman</const></test><edit name="matrix" mode="assign"><times><name>matrix</name><matrix><double>1</double><double>0.2</double><double>0</double><double>1</double></matrix></times></edit><edit name="slant" mode="assign"><const>oblique</const></edit><edit name="embeddedbitmap" mode="assign"><bool>false</bool></edit></match>
+<match target="font"><test name="weight" compare="less_eq"><const>medium</const></test><test target="pattern" name="weight" compare="more_eq"><const>bold</const></test><edit name="embolden" mode="assign"><bool>true</bool></edit><edit name="weight" mode="assign"><const>bold</const></edit></match>
+</fontconfig>"#,
+                dir.display(),
+                dir.display()
+            );
+            let conf = dir.join("fonts.conf");
+            std::fs::write(&conf, config).unwrap();
+            let result = std::process::Command::new(std::env::current_exe().unwrap())
+                .args([
+                    "same_family_split_glyphs_survive_synthetic_slant",
+                    "--nocapture",
+                ])
+                .env(MARKER, "1")
+                .env("FONTCONFIG_FILE", conf)
+                .output()
+                .unwrap();
+            std::fs::remove_dir_all(dir).unwrap();
+            assert!(
+                result.status.success(),
+                "격리된 합성 기울임 선택:\n{}\n{}",
+                String::from_utf8_lossy(&result.stdout),
+                String::from_utf8_lossy(&result.stderr)
+            );
+            return;
+        }
+        for bold in [false, true] {
+            let mut core = DocumentCore::new_empty();
+            core.create_blank_document_native().unwrap();
+            core.insert_text_native(0, 0, 0, "가나").unwrap();
+            let mut document = core.document().clone();
+            for faces in &mut document.doc_info.font_faces {
+                for face in faces {
+                    face.name = FAMILY.into();
+                }
+            }
+            for shape in &mut document.doc_info.char_shapes {
+                shape.bold = bold;
+                shape.italic = true;
+            }
+            core.set_document(document);
+            let actual = SkiaLayerRenderer::new();
+            let trace: serde_json::Value = serde_json::from_str(
+                &actual
+                    .get_font_decision_trace(&core, 0, r#"{"maxCharacters":16}"#)
+                    .unwrap(),
+            )
+            .unwrap();
+            for character in ["가", "나"] {
+                let record = trace["records"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .find(|r| r["source"]["character"] == character)
+                    .expect("글자별 실제 공급 관측");
+                assert_eq!(record["paint"]["native"]["resolved"], FAMILY,
+                    "합성 기울임에서 같은 family의 분리 glyph를 보존한다: bold={bold}, char={character}");
+                assert_eq!(record["paint"]["native"]["source"], "system");
+            }
+            let expected = SkiaLayerRenderer::new()
+                .try_with_font_data(&[CFF.to_vec(), second_glyph_program()])
+                .unwrap();
+            let tree = core
+                .build_page_layer_tree_with_profile(0, RenderProfile::Print)
+                .unwrap();
+            let observed = actual
+                .render_pixels_with_options(&tree, RasterRenderOptions::default())
+                .unwrap();
+            let reference = expected
+                .render_pixels_with_options(&tree, RasterRenderOptions::default())
+                .unwrap();
+            assert_eq!(
+                (observed.width, observed.height),
+                (reference.width, reference.height)
+            );
+            let changed = observed
+                .bytes
+                .chunks_exact(4)
+                .zip(reference.bytes.chunks_exact(4))
+                .filter(|(actual, expected)| actual != expected)
+                .count();
+            assert_eq!(
+                changed, 0,
+                "최종 raster의 같은 공개 프로그램 공급: bold={bold}"
+            );
+        }
+    }
 }

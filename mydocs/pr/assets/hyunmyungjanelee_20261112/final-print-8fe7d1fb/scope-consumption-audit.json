@@ -1,0 +1,114 @@
+{
+  "source_head": "8fe7d1fb8bc5024d0377ff7aa37d98c78e8f071a",
+  "base": "80b1c354c29b7a02fb2b3c14a274da7f5b653ada",
+  "changed_product_sources": [
+    {
+      "file": "crates/rhwp-ooxml-chart/src/renderer.rs",
+      "sha256": "8639e36115168a85771ae87ca0b3c8d70261761cdff303f1efe6e05c84090316"
+    },
+    {
+      "file": "crates/rhwp-ooxml-chart/src/renderer/cartesian_layout.rs",
+      "sha256": "d88c4fbb9b84a49f6fd1ad5be167becc0de3417c00bedb9c6ecbde59616c8cff"
+    },
+    {
+      "file": "src/renderer/canvas_text_font.rs",
+      "sha256": "2c50c0196f6d1f505296440e4e86d7bae77f32aba2a015843dc6d603fc452ce1"
+    },
+    {
+      "file": "src/renderer/cell_paragraph_spacing.rs",
+      "sha256": "57bec0c9e24ea7610334d4d8f5cf0b2f2ba0bde037d699ddae3bfc6712592347"
+    },
+    {
+      "file": "src/renderer/composer/line_breaking.rs",
+      "sha256": "6b80c2950bcf88103faa2e6b876c12a171a01400207e7f4460d214953bb67aa4"
+    },
+    {
+      "file": "src/renderer/float_placement.rs",
+      "sha256": "938e3f53ec8e6274a895ed6380afbca01611c2c63dec55a5301959dd746a9151"
+    },
+    {
+      "file": "src/renderer/font_metrics_overlays.rs",
+      "sha256": "32d8e9a8d5951c19e8dc90f7b4b8ded5f283d4b492354ddfe493acba3884a616"
+    },
+    {
+      "file": "src/renderer/height_measurer.rs",
+      "sha256": "a7c0b74c599ca417e70d7c2a3cfd92231b38ff138dd70dfb01587f5338195a29"
+    },
+    {
+      "file": "src/renderer/inline_flow.rs",
+      "sha256": "4519548231ffedb0c48a41997c476e84956e6a2720fa6dbc4f6472ab8c62864e"
+    },
+    {
+      "file": "src/renderer/layout.rs",
+      "sha256": "b3f545e1a5f66335b49d716bc9573a78a1add7d0abe6e223aa994bb54beaacbc"
+    },
+    {
+      "file": "src/renderer/layout/paragraph_layout.rs",
+      "sha256": "5da2c38f77c85559317fae2bc7b363797e7039cb6db6fff2d2e26e6ade9680ea"
+    },
+    {
+      "file": "src/renderer/layout/table_layout.rs",
+      "sha256": "1693b2ebb747201769b85f39125dbb5ecbf4dba84e5c5114f0d4da3abd44c8aa"
+    },
+    {
+      "file": "src/renderer/layout/table_partial.rs",
+      "sha256": "d600770461ac2164981271f6792c10f42a5cc200d65c365ddf8e70dbca191912"
+    },
+    {
+      "file": "src/renderer/mod.rs",
+      "sha256": "555289430dde7e97dee0e8af0886bf6b94be219daed02df1d8bdfb14f98d5325"
+    },
+    {
+      "file": "src/renderer/typeset.rs",
+      "sha256": "d6b155898a87f4b5dd59cd8dcfdbd7d81a91f88d4b37ede426f4d6596982f0e9"
+    },
+    {
+      "file": "src/renderer/typeset/controls.rs",
+      "sha256": "f79b49900c0ca735c1c9da7fbab9608dff8fb30214bd57c486bf9603e35b00e6"
+    },
+    {
+      "file": "src/renderer/typeset/controls/decoration_host.rs",
+      "sha256": "75683f87f5702b7d97169c5f5d409666b9b161a2629c0188a48f27049b8573e7"
+    },
+    {
+      "file": "src/renderer/typeset/controls/paragraph_flow.rs",
+      "sha256": "f17e996ccde737c35ac4957b16c9b571f38c5cf725f5393a8e6e0ef7db017fd8"
+    },
+    {
+      "file": "src/renderer/typeset/paragraph.rs",
+      "sha256": "ebe4ff15bd6a8839ad41876fc41d347c3cd71aeef19ab8173bc1797d47384b21"
+    },
+    {
+      "file": "src/renderer/typeset/section/columns.rs",
+      "sha256": "0d5aa711fed772dab5d435a1f6f1ca4e84aa027e063e877cfc3ad8c5c20d9aaa"
+    },
+    {
+      "file": "src/renderer/typeset/state/commands.rs",
+      "sha256": "376359326ea5c3c9b90f6bd2e1fbfecd50dc3f6eef1efa83fcd9da3d83eeae57"
+    },
+    {
+      "file": "src/renderer/typeset/state/data.rs",
+      "sha256": "0309f2ef222a400d5aab8feb70d13297aad27f0397e11b9cdd4bbf3e3f3c61de"
+    },
+    {
+      "file": "src/renderer/typeset/state/transition.rs",
+      "sha256": "573cbc8cbfc0eccb0a887e4f0491a717c8ae9074783c165ce2d62aacf8f848d0"
+    },
+    {
+      "file": "src/renderer/typeset/table/block/entry.rs",
+      "sha256": "7d00177441665c8758e34b0acb1a1426dc81497f9db1409ac4e7141e3996f5c6"
+    },
+    {
+      "file": "src/renderer/typeset/table/block/whole_fit.rs",
+      "sha256": "05a6680e4541535c3672e4ed3d16e95e445202f976979ddd9510546440d6fd0b"
+    },
+    {
+      "file": "src/renderer/typeset/table/continuation/fragment/budget.rs",
+      "sha256": "bef3cb3c3a97828064c9aacf9a1d41ec9410335d1602b82d5108a5c73f6267c6"
+    }
+  ],
+  "no_parser_writer_document_core_studio_shared_or_workflow_changes": true,
+  "repeat_save_validation": "not applicable: changes are renderer layout/typeset/paint and glyph supplier selection, no editing or serialization path changes",
+  "consumer_validation": "native-skia export-png; fresh WASM direct print PNG exporter; actual Studio Canvas2D/CanvasKit screen+print queued after whole capture",
+  "source_input_policy": "34 input and 34 Windows desktop Print PDFs already committed at source head; previous web-HWP/Cairo outputs are not acceptance references"
+}

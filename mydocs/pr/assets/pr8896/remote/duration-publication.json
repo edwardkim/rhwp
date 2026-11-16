@@ -1,0 +1,64 @@
+{
+  "workflow_id": 43139004399,
+  "workflow_conclusion": "failure",
+  "error": "duration-publish: published ref identity mismatch",
+  "actual_publication_verified": true,
+  "metrics_commit": "5ec85702fe11ba733da4af4b41fcdcf371a4bdfd",
+  "source_merge": "f0a2e5379a42d2ff4d18f192634397dbce805833",
+  "policy_blob_sha": "40013082d4d8e766eacc2a603ce4350a9fdd2523",
+  "policy_sha256": "74ad1f1c8b0b662cdf01d20fddfa91699bf5a93c10ba7c0a88fd8761f25ad147",
+  "reproduced_from_all_four_original_artifacts": true,
+  "byte_identical": true,
+  "targets": 44,
+  "measurement_sources": {
+    "b": {
+      "run_id": "43135030779",
+      "ref": "refs/pull/8984/merge",
+      "sha": "3383a9f7308ce34acd8ca571f11f5f5f19e783fa",
+      "run_attempt": "1",
+      "repository": "edwardkim/rhwp",
+      "repository_id": "1193345564",
+      "pull_number": "8984",
+      "head_repository_id": "1193345564",
+      "head_sha": "1343907a8340fc032423ce5adb6d248aa80534dd",
+      "head_ref": "review/pr-8896-table-terminal-fragment"
+    },
+    "c": {
+      "run_id": "43135030779",
+      "ref": "refs/pull/8984/merge",
+      "sha": "3383a9f7308ce34acd8ca571f11f5f5f19e783fa",
+      "run_attempt": "1",
+      "repository": "edwardkim/rhwp",
+      "repository_id": "1193345564",
+      "pull_number": "8984",
+      "head_repository_id": "1193345564",
+      "head_sha": "1343907a8340fc032423ce5adb6d248aa80534dd",
+      "head_ref": "review/pr-8896-table-terminal-fragment"
+    },
+    "d": {
+      "run_id": "43135030779",
+      "ref": "refs/pull/8984/merge",
+      "sha": "3383a9f7308ce34acd8ca571f11f5f5f19e783fa",
+      "run_attempt": "1",
+      "repository": "edwardkim/rhwp",
+      "repository_id": "1193345564",
+      "pull_number": "8984",
+      "head_repository_id": "1193345564",
+      "head_sha": "1343907a8340fc032423ce5adb6d248aa80534dd",
+      "head_ref": "review/pr-8896-table-terminal-fragment"
+    },
+    "e": {
+      "run_id": "43135030779",
+      "ref": "refs/pull/8984/merge",
+      "sha": "3383a9f7308ce34acd8ca571f11f5f5f19e783fa",
+      "run_attempt": "1",
+      "repository": "edwardkim/rhwp",
+      "repository_id": "1193345564",
+      "pull_number": "8984",
+      "head_repository_id": "1193345564",
+      "head_sha": "1343907a8340fc032423ce5adb6d248aa80534dd",
+      "head_ref": "review/pr-8896-table-terminal-fragment"
+    }
+  },
+  "followup": "Immediate ref verification may have observed a stale identity; preserve workflow failure and investigate independently. No workflow rerun or source change."
+}

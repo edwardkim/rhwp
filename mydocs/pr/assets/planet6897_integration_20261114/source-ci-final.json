@@ -1,0 +1,225 @@
+{
+  "checked_at": "2026-11-14T08:54:44.497Z",
+  "source_heads_unchanged": true,
+  "selected_prs": [
+    {
+      "pr": 8976,
+      "head": "e725859e24f9bd0d4631a95ad2d4d37e521193c5",
+      "checks": [
+        {
+          "name": "CodeQL",
+          "id": 43426510488,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43426510488"
+        },
+        {
+          "name": "CI",
+          "id": 43426510629,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43426510629"
+        },
+        {
+          "name": "Render Diff",
+          "id": 43426510464,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43426510464"
+        },
+        {
+          "name": "Cancel stale PR runs",
+          "id": 43426510451,
+          "status": "completed",
+          "conclusion": "skipped",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43426510451"
+        },
+        {
+          "name": "Proptest roundtrip",
+          "id": 43426510699,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43426510699"
+        },
+        {
+          "name": "Adapter inter-diff",
+          "id": 43426511136,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43426511136"
+        }
+      ]
+    },
+    {
+      "pr": 9064,
+      "head": "0cc72f29257a566ff5f9d0526ab7de0a7c4bf1d4",
+      "checks": [
+        {
+          "name": "CodeQL",
+          "id": 43514397584,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43514397584"
+        },
+        {
+          "name": "Adapter inter-diff",
+          "id": 43514397318,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43514397318"
+        },
+        {
+          "name": "CI",
+          "id": 43514397439,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43514397439"
+        },
+        {
+          "name": "Render Diff",
+          "id": 43514397296,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43514397296"
+        },
+        {
+          "name": "Proptest roundtrip",
+          "id": 43514397410,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43514397410"
+        }
+      ]
+    },
+    {
+      "pr": 9065,
+      "head": "c4fa5598ba272c405369571f637ee0028b1bc203",
+      "checks": [
+        {
+          "name": "Proptest roundtrip",
+          "id": 43522718536,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43522718536"
+        },
+        {
+          "name": "Adapter inter-diff",
+          "id": 43522718571,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43522718571"
+        },
+        {
+          "name": "CodeQL",
+          "id": 43522718421,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43522718421"
+        },
+        {
+          "name": "CI",
+          "id": 43522718579,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43522718579"
+        },
+        {
+          "name": "Render Diff",
+          "id": 43522718513,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43522718513"
+        }
+      ]
+    },
+    {
+      "pr": 9067,
+      "head": "02ea378e337cc82756f26eb80644448dea848826",
+      "checks": [
+        {
+          "name": "Adapter inter-diff",
+          "id": 43539279795,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43539279795"
+        },
+        {
+          "name": "CodeQL",
+          "id": 43539279789,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43539279789"
+        },
+        {
+          "name": "Proptest roundtrip",
+          "id": 43539279844,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43539279844"
+        },
+        {
+          "name": "CI",
+          "id": 43539279767,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43539279767"
+        },
+        {
+          "name": "Render Diff",
+          "id": 43539279829,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43539279829"
+        }
+      ]
+    },
+    {
+      "pr": 9068,
+      "head": "3da35b96822fb58ce4cc249d6ff4829185a17d06",
+      "checks": [
+        {
+          "name": "CI",
+          "id": 43556225753,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43556225753"
+        },
+        {
+          "name": "Render Diff",
+          "id": 43556225741,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43556225741"
+        },
+        {
+          "name": "CodeQL",
+          "id": 43556225798,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43556225798"
+        },
+        {
+          "name": "Proptest roundtrip",
+          "id": 43556225726,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43556225726"
+        },
+        {
+          "name": "Adapter inter-diff",
+          "id": 43556225715,
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43556225715"
+        },
+        {
+          "name": "Cancel stale PR runs",
+          "id": 43556225849,
+          "status": "completed",
+          "conclusion": "skipped",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/43556225849"
+        }
+      ]
+    }
+  ]
+}

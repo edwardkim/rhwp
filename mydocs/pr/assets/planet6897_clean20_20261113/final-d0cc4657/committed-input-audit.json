@@ -1,0 +1,943 @@
+{
+  "checked_commit": "e6194b1596e2de1c5996d0b015cf459e430126d9",
+  "product_code": "d0cc46573c7505633721c19062e504faff017d59",
+  "product_paths_unchanged_since_validated_build": true,
+  "files": [
+    {
+      "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+      "roles": [
+        "protected-cases.json:angle-narrow:pdf"
+      ],
+      "bytes": 10328,
+      "sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+      "git_blob_sha": "512875fda389b4eef8987e2b9911e03408f29006",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "roles": [
+        "protected-cases.json:angle-narrow:input"
+      ],
+      "bytes": 6848,
+      "sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+      "git_blob_sha": "8f5511811a26703a906360ea22a5e3cf141f8b73",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx",
+      "roles": [
+        "protected-cases.json:issue7905:input"
+      ],
+      "bytes": 140149,
+      "sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1",
+      "git_blob_sha": "a056d1a117139644d05a0d42f32dea1969b995ab",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law_hancom2018_print.pdf",
+      "roles": [
+        "protected-cases.json:issue7905:pdf"
+      ],
+      "bytes": 287952,
+      "sha256": "1ce35eb7e2d6f93e41834215d6cf7653e3a09ea2fc544856b3df3a89e6d24511",
+      "git_blob_sha": "74ae2b665f50d81f5747246273afcd4ab7e8f156",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_clean20_20261113/counterexamples/1543000-202100035-food-security-report.hwp",
+      "roles": [
+        "actual-counterexample-or-cli"
+      ],
+      "bytes": 2528256,
+      "sha256": "8cc9b219a5c54fdc2324f63da32b224a1ac23877c6c92976c407e6c42475317c",
+      "git_blob_sha": "73cb841a4230f0cc8b127702c4fcb4e395296a6a",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_clean20_20261113/counterexamples/3930000-201800017-health-report.hwp",
+      "roles": [
+        "actual-counterexample-or-cli"
+      ],
+      "bytes": 868864,
+      "sha256": "6f7734dfd51d9b0196a5f13706393756d3d9a73b2e17bd9314b61a852c8292aa",
+      "git_blob_sha": "1428dd4083e28e71dce83ee217b0d2999634c606",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_clean20_20261113/serialized-inputs/pr9003-saved.hwpx",
+      "roles": [
+        "final-claim-cases-committed.json:pr9003-saved:input"
+      ],
+      "bytes": 169015,
+      "sha256": "511bb5b430d2ede35c7c0dfc617f7a4f29ee5ee24d24615efbb4fe4b1ed1c15d",
+      "git_blob_sha": "c9a82203d44cf3fc88f3b59573eae78ea3c6acf9",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_clean20_20261113/serialized-inputs/receipt-saved.hwpx",
+      "roles": [
+        "final-claim-cases-committed.json:receipt-saved:input"
+      ],
+      "bytes": 18804,
+      "sha256": "21fc0d7ffe6f3644a84b7ca45e5b93d1a54af4e43189bd05d63e1db60f6b1dc1",
+      "git_blob_sha": "bbabe74d05b04b15d7c6b1c23cd8243c6f1a5b05",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf",
+      "roles": [
+        "protected-cases.json:handbook-hwp:pdf"
+      ],
+      "bytes": 4692840,
+      "sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+      "git_blob_sha": "e51c11b3802be0c7b7c047c579e86ba3084a0503",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+      "roles": [
+        "protected-cases.json:handbook-hwpx:pdf"
+      ],
+      "bytes": 4692840,
+      "sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+      "git_blob_sha": "c1ffffbf60fd0ff522cfdaa869e8dfca98a2545e",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+      "roles": [
+        "protected-cases.json:sample16-hwp2022:pdf"
+      ],
+      "bytes": 1830277,
+      "sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+      "git_blob_sha": "cb168a9199f86c9f935af695af055bfa382e9e8b",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/hwp3-sample16-hwp5-2024-hwp-2024.pdf",
+      "roles": [
+        "protected-cases.json:sample16-hwp2024:pdf"
+      ],
+      "bytes": 2234015,
+      "sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b",
+      "git_blob_sha": "5974ae3ecf91fca171b847c4d3fdad640920d567",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+      "roles": [
+        "protected-cases.json:sample16-hwpx:pdf"
+      ],
+      "bytes": 2234018,
+      "sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+      "git_blob_sha": "d729d2c89320ccd332c9a7ba2fe370629444a0e2",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/issue7642-failed-inputs-followup-20261011/20099369_yeongwol_forms-2020.pdf",
+      "roles": [
+        "protected-cases.json:yeongwol:pdf"
+      ],
+      "bytes": 91696,
+      "sha256": "a04da624238d77da4832dd302017c7d2f559a01da02e4c1b4ae12cfd3f77b123",
+      "git_blob_sha": "66188bfaf0cf278efb90c072f65d1d112020ce30",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/issue8109/print/body-list-typed-hwp-2020.pdf",
+      "roles": [
+        "protected-cases.json:seo-body-list-typed:pdf"
+      ],
+      "bytes": 19110,
+      "sha256": "d4c80383b977a0f61e057adadb9f302d591bbb26e0917c61128ee36d37aed5b3",
+      "git_blob_sha": "fa874649942acdedaeb5ff774467e08b0920ccf4",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/issue8109/print/control-styles-hwp-2020.pdf",
+      "roles": [
+        "protected-cases.json:seo-helvetica-styles:pdf"
+      ],
+      "bytes": 43664,
+      "sha256": "fd8672dcb24dd7bb1d50983b0545033e7c2513bbb2ecfc48edde1cb4e77058ba",
+      "git_blob_sha": "eaf9b43202a8df7de4e36d3cf6cd3f4ef8d0fc1c",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/issue8371/hwp3-sample10-2020.pdf",
+      "roles": [
+        "protected-cases.json:sample10:pdf"
+      ],
+      "bytes": 96185197,
+      "sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+      "local_path": "/Users/tsjang/rhwp/pdf/issue8371/hwp3-sample10-2020.pdf",
+      "tracked_before_this_pr": true,
+      "status": "충족 — 대용량 PDF 로컬 재사용. 이 PR에는 새 PDF 파일·사본 변경 없음."
+    },
+    {
+      "path": "pdf/issue8931/36341965-cell-square-picture-tac-title-2020.pdf",
+      "roles": [
+        "final-claim-cases-committed.json:pr8932:pdf"
+      ],
+      "bytes": 263796,
+      "sha256": "3c7601f12e29cc7e87fe2d799823ba25b28aef5d42a982274be7fa58729b3a66",
+      "git_blob_sha": "b332dc79c44df5ed0c2f1d2cd9e791cf89a279f5",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/issue8934/square_host_lane_tail-2020.pdf",
+      "roles": [
+        "final-claim-cases-committed.json:pr8938:pdf"
+      ],
+      "bytes": 39010,
+      "sha256": "646884eb3d510ef049a28dde147eb488effb3ded6705bfd61caf9321dd7a8a88",
+      "git_blob_sha": "b23de98f8341ee2bcf9b83e4112858cd5f138817",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/issue8935/36454139-reflowed-cell-row-growth-2020.pdf",
+      "roles": [
+        "final-claim-cases-committed.json:pr8936:pdf"
+      ],
+      "bytes": 52753,
+      "sha256": "b11d7d1ae9eaaf0920991a81e64504d9a34131d917cdb80e594c6a49b9b2f917",
+      "git_blob_sha": "858ce096c026a81be75fb849b205c671d4fd92d1",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/issue8939/3930000-201800017-health-report-2020.pdf",
+      "roles": [
+        "actual-counterexample-or-cli"
+      ],
+      "bytes": 367189,
+      "sha256": "630019bac17826f6fb1ffeab096566df9a7e9b04af7f9cee74bc34401f24693c",
+      "git_blob_sha": "d36c85ae6d6d561576208478b2bf05903e600d8e",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/issue8939/attach_form_reset-2020.pdf",
+      "roles": [
+        "final-claim-cases-committed.json:pr8959:pdf"
+      ],
+      "bytes": 120596,
+      "sha256": "24dccbe14de832a5a11ffd56dc71e72e629fa250dcf636dbebfe9d2e45804b76",
+      "git_blob_sha": "a49e3e22abe1fd7ddb650c34959b6f00f69ef4ab",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/issue8947/36481164-squeeze-title-cell-2020.pdf",
+      "roles": [
+        "final-claim-cases-committed.json:pr8949:pdf"
+      ],
+      "bytes": 46899,
+      "sha256": "defb28623048ced692c66fb99542d490de7018678bc02493a842344191ce6b1a",
+      "git_blob_sha": "ae644354000f5504556382a121413ef339a89b43",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/issue8950/36421178-variants-2020.pdf",
+      "roles": [
+        "final-claim-cases-committed.json:pr8955-v2:pdf"
+      ],
+      "bytes": 42235,
+      "sha256": "f3162386bf46007110758c410a1908ac42f6b9939298428f2812396d2c6fd7d4",
+      "git_blob_sha": "b958aa8404b152a8a0deadff5f0cdaedc68e5748",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/issue8950/36446447-forbidden-head-2020.pdf",
+      "roles": [
+        "final-claim-cases-committed.json:pr8955-original:pdf"
+      ],
+      "bytes": 39257,
+      "sha256": "5451086b76fd3f3ec3d67691bf8f1f40298a43d04b3641df2d024cbb1522867b",
+      "git_blob_sha": "14e0f873494f28a56e0077c0f14fe6ca4e0f2eff",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/issue8950/36446447-variants-2020.pdf",
+      "roles": [
+        "final-claim-cases-committed.json:pr8955-v1:pdf"
+      ],
+      "bytes": 40778,
+      "sha256": "305efa417f770291344db55d89d08e9134d46db9667076aef7106520adc4134f",
+      "git_blob_sha": "c1b281759820652799cbbecf2e55b7255a1eae42",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/issue8968/stored_rows_reflowed_cell-2020.pdf",
+      "roles": [
+        "final-claim-cases-committed.json:pr8974:pdf"
+      ],
+      "bytes": 55989,
+      "sha256": "11ca7cf057169cdf51c169a3bb7a97dd813f64af266e1d518a17950872707628",
+      "git_blob_sha": "139de64aca8c216605d8a88ef0fb15374675e466",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/issue8971/36400701-picture-cell-empty-line-2020.pdf",
+      "roles": [
+        "final-claim-cases-committed.json:pr8987:pdf"
+      ],
+      "bytes": 391345,
+      "sha256": "d7ca1129962060d3c90a8a4d7adfa31018da9ad0636409ab5d0a8b69f92d440e",
+      "git_blob_sha": "44c7be7f7aeca1cca4165bd03a9635127679910b",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/issue8981/overlap_spacer_paragraph_bands-2020.pdf",
+      "roles": [
+        "final-claim-cases-committed.json:pr8994:pdf"
+      ],
+      "bytes": 64008,
+      "sha256": "0b325abb69ed801351fdbf1f64ee6fdcbdc6a95d55021e444732f868713957cb",
+      "git_blob_sha": "14ac13bf2937e4832951baa0fffccedf869036cb",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/issue8985/3066825-2020.pdf",
+      "roles": [
+        "final-claim-cases-committed.json:pr8990-3066825:pdf"
+      ],
+      "bytes": 33521,
+      "sha256": "c7a9aa080afc3243c6c01b58891fc7726e1b75e0a96648634ef977208ac8cff7",
+      "git_blob_sha": "096fdb13ef8492b715ebad62b35241d5a7bc3f22",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/issue8985/36385713-2020.pdf",
+      "roles": [
+        "final-claim-cases-committed.json:pr8990-36385713:pdf"
+      ],
+      "bytes": 63208,
+      "sha256": "e4a2515feaa46c88c5e6dbeb4dae36ca48eae682c46fb1c37a4b632d2be29c00",
+      "git_blob_sha": "18da0ea0f862f024d5d90b9d9e855dd6a6aee813",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/issue8986/36325899-2020.pdf",
+      "roles": [
+        "final-claim-cases-committed.json:pr8999:pdf"
+      ],
+      "bytes": 66992,
+      "sha256": "11187f270723648d0693e249877f3fea3bd983ce73f7667519e7f4f6e594b26b",
+      "git_blob_sha": "ed69ddf6357ecbdefc51f88785f078e46b386a76",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/issue8993/31675-rowbreak-overflowing-frame-2020.pdf",
+      "roles": [
+        "final-claim-cases-committed.json:pr9001:pdf"
+      ],
+      "bytes": 196869,
+      "sha256": "abad2bc7b5691e5bd6c4b3a5fbaae0eb95b21662f6bc5a3a7472d9027acbb73d",
+      "git_blob_sha": "538c3a5ff3f33adb95f90c92840f60cead5b671a",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/issue8995/36358528_gyeoljae-2020.pdf",
+      "roles": [
+        "final-claim-cases-committed.json:pr9004-control:pdf"
+      ],
+      "bytes": 34516,
+      "sha256": "46205cd2152dbd8a4973b0a940c99e57b8ebc675acca66989fb4b233f34ae2c9",
+      "git_blob_sha": "6b791d308c402bccb43682e87dcd77d3f777a62d",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/issue8995/reflowed_cell_tac_after_spaces-2020.pdf",
+      "roles": [
+        "final-claim-cases-committed.json:pr9004:pdf"
+      ],
+      "bytes": 97414,
+      "sha256": "b7f4292e735594a310fab692420378ba29844f6ffe168a89478c83e67923ad07",
+      "git_blob_sha": "2e7e4280b8767275fb95300c6b7cd1bb4bad3048",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/issue8996/80168-hwp-2020.pdf",
+      "roles": [
+        "final-claim-cases-committed.json:pr9003-hwp:pdf"
+      ],
+      "bytes": 1050443,
+      "sha256": "65ec5efa7032afa6c7df4d8351b931d4fb95c927c269bfd213f76c6b57740fec",
+      "git_blob_sha": "5296591b984fc454765d3c9a40a274b6b52c403d",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/issue8996/80168-rhwp-hwpx-2020.pdf",
+      "roles": [
+        "final-claim-cases-committed.json:pr9003-saved:pdf"
+      ],
+      "bytes": 1050455,
+      "sha256": "ede3439ae8981b952b4d68e301a499f85a9c56d688068aeaf21cef96911d460b",
+      "git_blob_sha": "541764e568f5857d05cd25b7d93eeb75ce92a5e4",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/issue8997/1543000-202100035-food-security-report-2020.pdf",
+      "roles": [
+        "actual-counterexample-or-cli"
+      ],
+      "bytes": 1894417,
+      "sha256": "4c2d909332e5fe3be5044a76cc9d5448e29e98087b4688907fdf1ce093dccc04",
+      "git_blob_sha": "8ad6087140b47140e6be91ad85b9e72980b3be25",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/issue8998/issue-986-receipt-rhwp-hwpx-2020.pdf",
+      "roles": [
+        "final-claim-cases-committed.json:receipt-saved:pdf"
+      ],
+      "bytes": 89152,
+      "sha256": "37e312be6724837f1929eef0ea7a52dfb315240ba6e097f9d9b8240f85e062dd",
+      "git_blob_sha": "29806ca5a8e2e89ba04863a2e3a1f17434b591a6",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/issue9005/issue-986-receipt-hwp-2020.pdf",
+      "roles": [
+        "final-claim-cases-committed.json:receipt:pdf"
+      ],
+      "bytes": 89152,
+      "sha256": "a7748c192e47a54b97e7f2bd10c37c94f25c4fd42b2f9484ddcecd4b7b0529ea",
+      "git_blob_sha": "c2e17a02317b5a9933fb00d91e5798127aafcdfd",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/issue9009/1430000-column-break-after-table-continuation-2020.pdf",
+      "roles": [
+        "final-claim-cases-committed.json:pr9015:pdf"
+      ],
+      "bytes": 378118,
+      "sha256": "66c18d4b85e52aafe7b63e6885eea8a1b26e62dcee78577ece62f0ec007781f3",
+      "git_blob_sha": "bb42014f384fa70fbf3b45d18a5e636f30603cc8",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/pic-crop-01-2022.pdf",
+      "roles": [
+        "protected-cases.json:seo-pic-crop-01:pdf"
+      ],
+      "bytes": 19211,
+      "sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+      "git_blob_sha": "171d9dfe4e3511ec9ed8c8078e47cfa5ac2ac7e2",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/pr8040/exam-social-insert-2020.pdf",
+      "roles": [
+        "protected-cases.json:issue8040-insert:pdf"
+      ],
+      "bytes": 641866,
+      "sha256": "d368c0ded6f0d9309784e9165aad7360b326a86c01d9938beb95c768ae0d4e74",
+      "git_blob_sha": "07aa6d3a95d37994429bd7df341f4e7b60443fa1",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/pr8040/exam-social-insert-delete-2020.pdf",
+      "roles": [
+        "protected-cases.json:issue8040-insert-delete:pdf"
+      ],
+      "bytes": 641867,
+      "sha256": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d",
+      "git_blob_sha": "e291015645b6d35b15f9982da9d22a86f1132d35",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+      "roles": [
+        "protected-cases.json:seo-re-03-latin:pdf"
+      ],
+      "bytes": 11752,
+      "sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+      "git_blob_sha": "007f057f67b46042b6ec6e67f6aa597226ec00e2",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+      "roles": [
+        "protected-cases.json:nested:pdf"
+      ],
+      "bytes": 625577,
+      "sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+      "git_blob_sha": "23f9278e8a0d0a047c2e12b10076932881dcf7c1",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/shape-group-02-hwp-2020.pdf",
+      "roles": [
+        "protected-cases.json:seo-shape-group-02:pdf"
+      ],
+      "bytes": 89651,
+      "sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+      "git_blob_sha": "58e8dc8d8a4c11df34acee1058470239c4aea1e3",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "pdf/task3307/issue3307_outline_number-2020.pdf",
+      "roles": [
+        "protected-cases.json:outline:pdf"
+      ],
+      "bytes": 237518,
+      "sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb",
+      "git_blob_sha": "8780c4d81dd263c2cad63ca20830e933b7b9a268",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/2025 행정업무운영 편람(최종).hwp",
+      "roles": [
+        "protected-cases.json:handbook-hwp:input"
+      ],
+      "bytes": 10687488,
+      "sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+      "git_blob_sha": "492e1702dcfbd59d119af1214e83b99fa8d7cf9f",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/2025 행정업무운영 편람(최종).hwpx",
+      "roles": [
+        "protected-cases.json:handbook-hwpx:input"
+      ],
+      "bytes": 13639865,
+      "sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+      "git_blob_sha": "961e91f0af177689fbef4c240c0947b88c674af5",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/80168_regulatory_analysis.hwp",
+      "roles": [
+        "final-claim-cases-committed.json:pr9003-hwp:input"
+      ],
+      "bytes": 218624,
+      "sha256": "c8ad10fe9f07be5119cd804278017aefa46e555bbee4f05f0f5132fe4f591a22",
+      "git_blob_sha": "b2e9369c8ccfbd1581745e51afd413bdd9645907",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "roles": [
+        "protected-cases.json:nested:input"
+      ],
+      "bytes": 51712,
+      "sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "git_blob_sha": "f6f047708aed3ca5b603fde2c8d41d40c2ba4b98",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/hwp3-sample10.hwp",
+      "roles": [
+        "protected-cases.json:sample10:input"
+      ],
+      "bytes": 945360,
+      "sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+      "git_blob_sha": "88e507c2cef0637eb4ffdaa9da3532a9cc7515c9",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/hwp3-sample16-hwp5-2022.hwp",
+      "roles": [
+        "protected-cases.json:sample16-hwp2022:input"
+      ],
+      "bytes": 3048448,
+      "sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+      "git_blob_sha": "ce4fc4fddbd57ea4cfcaef2c5e2f4f72991e4f7b",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/hwp3-sample16-hwp5-2024.hwp",
+      "roles": [
+        "protected-cases.json:sample16-hwp2024:input"
+      ],
+      "bytes": 3044864,
+      "sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+      "git_blob_sha": "1e7b1834277effd9240a2aa24724799c55b210f1",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/hwp3-sample16-hwp5.hwpx",
+      "roles": [
+        "protected-cases.json:sample16-hwpx:input"
+      ],
+      "bytes": 3061900,
+      "sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+      "git_blob_sha": "119f835b1a7d296e21a43e91715c52ebf1ecb912",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/issue-986-receipt.hwp",
+      "roles": [
+        "final-claim-cases-committed.json:receipt:input"
+      ],
+      "bytes": 84992,
+      "sha256": "38371563b4f9a53a1b7c2584eb5cd77b6cc2bb13dbf37294d0b797516b1c6715",
+      "git_blob_sha": "821b5d7611aa0fddbebc101cd098d5aef3e7ccfc",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/issue5699/20099369_yeongwol_forms.hwp",
+      "roles": [
+        "protected-cases.json:yeongwol:input"
+      ],
+      "bytes": 20800,
+      "sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09",
+      "git_blob_sha": "c9832b79acaa3cf88307f540a1e70a859cc2cec4",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/issue8931/36341965-cell-square-picture-tac-title.hwpx",
+      "roles": [
+        "final-claim-cases-committed.json:pr8932:input"
+      ],
+      "bytes": 71350,
+      "sha256": "2fd2d841ce212c319960b1955fec32effeb55f6a1323c98422f13992446f7da3",
+      "git_blob_sha": "d82232a053f62dc5637a5f8e61f6b2959a2f6612",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/issue8934/square_host_lane_tail.hwp",
+      "roles": [
+        "final-claim-cases-committed.json:pr8938:input"
+      ],
+      "bytes": 37888,
+      "sha256": "33d4311c6c99b961dc6096152e1404b46d02d29d98291c9de0bccefa7162c946",
+      "git_blob_sha": "f3dd324011d16a63594a042e3dcc63579c9bccd3",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/issue8935/36454139-reflowed-cell-row-growth.hwpx",
+      "roles": [
+        "final-claim-cases-committed.json:pr8936:input"
+      ],
+      "bytes": 59485,
+      "sha256": "dad39e1c5ddf8a290420b0158b6a5a7185a406847ab0c8e53fbab382fbbc7dff",
+      "git_blob_sha": "c987f03e8f50f3d6f213efab1a38b3587c2793ce",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/issue8939/attach_form_reset.hwp",
+      "roles": [
+        "final-claim-cases-committed.json:pr8959:input"
+      ],
+      "bytes": 47104,
+      "sha256": "49fdefd36c8555fa39029ce2dc1f783c6f753c8d7a11b9075d116fa69ccc7e68",
+      "git_blob_sha": "c1bc68b4e4af6ea2dc0331ae787bc67f5960bf11",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/issue8947/36481164-squeeze-title-cell.hwpx",
+      "roles": [
+        "final-claim-cases-committed.json:pr8949:input"
+      ],
+      "bytes": 22846,
+      "sha256": "7cb752425acbb9eaebb144e6f27a895d2d3eabc6fbc6b3059d0c9dce6c46640b",
+      "git_blob_sha": "f59b6562a93278736dab32b33ffd648eefdcbf7e",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/issue8950/36421178-variants.hwpx",
+      "roles": [
+        "final-claim-cases-committed.json:pr8955-v2:input"
+      ],
+      "bytes": 31925,
+      "sha256": "9bb1572d98d58ba66da8c4614c73ddb63b5096dba903823382063e14bde0afca",
+      "git_blob_sha": "1f23c133bbe3fb38acafb51efc2e988b4f4c7f41",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/issue8950/36446447-forbidden-head-before-long-run.hwpx",
+      "roles": [
+        "final-claim-cases-committed.json:pr8955-original:input"
+      ],
+      "bytes": 35503,
+      "sha256": "5b58a630c7c0fbc038692686589d8926b6a9b70b74d49071f5a0ea6bb5a6eae2",
+      "git_blob_sha": "0e63d0dc0125125301ca493e7c0ee77f4a296332",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/issue8950/36446447-variants.hwpx",
+      "roles": [
+        "final-claim-cases-committed.json:pr8955-v1:input"
+      ],
+      "bytes": 31567,
+      "sha256": "d68b79eafe3e4025bc0c4293416afa679cca7610ba6df087963090d73ec1c8ea",
+      "git_blob_sha": "1c1ac13d2b9f3d997e18a97cc86264c65df9a16b",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/issue8968/stored_rows_reflowed_cell.hwpx",
+      "roles": [
+        "final-claim-cases-committed.json:pr8974:input"
+      ],
+      "bytes": 36461,
+      "sha256": "bd0ebc3237c97826b3921040e7da93a3d585c1e27e7dac71f7511d59b4190f18",
+      "git_blob_sha": "38d90f6106bcc252de96dc5b4547a6a8d08e61b7",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/issue8971/36400701-picture-cell-empty-line.hwpx",
+      "roles": [
+        "final-claim-cases-committed.json:pr8987:input"
+      ],
+      "bytes": 35900,
+      "sha256": "d3be7513fa996f26ef95166ffa9b4a679905bc117c59e39dde827238db23ea01",
+      "git_blob_sha": "bf760e2fdff437330d8b4a8f2d7a58f47390d4e6",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/issue8981/overlap_spacer_paragraph_bands.hwp",
+      "roles": [
+        "final-claim-cases-committed.json:pr8994:input"
+      ],
+      "bytes": 15360,
+      "sha256": "fbef5ac8925ca8ce2cad2eb21c249b87f5f188475b00da251f3680bbb8c93a77",
+      "git_blob_sha": "371effdfdea1629a2d47a7060590b006caf250a1",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/issue8985/3066825-plain-command-guides.hwpx",
+      "roles": [
+        "final-claim-cases-committed.json:pr8990-3066825:input"
+      ],
+      "bytes": 17612,
+      "sha256": "ac4d8559dc21acbf7df551e1d188d5649073206e4fa29e614509026f5ef5bfa1",
+      "git_blob_sha": "aed6c19914ba1de986ba4c86b96e2e2252f0c5ce",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/issue8985/36385713-plain-command-guide.hwpx",
+      "roles": [
+        "final-claim-cases-committed.json:pr8990-36385713:input"
+      ],
+      "bytes": 17053,
+      "sha256": "b2b8e6eb29da8dc82bd302694f01232ab6f9131292f0c6410d74f58105e9087f",
+      "git_blob_sha": "5d2f0eae8b5993c9880e130e5292ae15eb7858bd",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/issue8986/36325899-nested-table-top-border.hwpx",
+      "roles": [
+        "final-claim-cases-committed.json:pr8999:input"
+      ],
+      "bytes": 16667,
+      "sha256": "ac7d16633d39eed788c65b305613471c709622f698a228bd7bc1008d605fee86",
+      "git_blob_sha": "0242f52657671bab83602891ad4a20a9924810e6",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/issue8993/31675-rowbreak-overflowing-frame.hwp",
+      "roles": [
+        "final-claim-cases-committed.json:pr9001:input"
+      ],
+      "bytes": 728576,
+      "sha256": "03c35242f6d88dd33bde907b64b31b061e600f54ee5e66758e3b5a8c18d84a84",
+      "git_blob_sha": "320bbdd1e4d7a7b0db0fccd4acb2da1d7540067c",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/issue8995/reflowed_cell_tac_after_spaces.hwpx",
+      "roles": [
+        "final-claim-cases-committed.json:pr9004:input"
+      ],
+      "bytes": 147947,
+      "sha256": "bab55a32bb1a4b5e248bda6d11d77d4c0ed31f42a0174a1a0cdcb23d5e915ac8",
+      "git_blob_sha": "69e51982f2525d05511745799ff1719308cbd54c",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/issue9009/1430000-column-break-after-table-continuation.hwp",
+      "roles": [
+        "final-claim-cases-committed.json:pr9015:input"
+      ],
+      "bytes": 70144,
+      "sha256": "88482013fb80aa95d994489b44559f2bb53ef3e292a1ea3c3273567a00f83a6a",
+      "git_blob_sha": "235f14ab432d1cbdf43e36319ed127a1fb572401",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/pic-crop-01.hwp",
+      "roles": [
+        "protected-cases.json:seo-pic-crop-01:input"
+      ],
+      "bytes": 131072,
+      "sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+      "git_blob_sha": "2ae41567f46adfdecebab27b327500f76b74c4e1",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/pr8040/exam-social-insert-delete.hwp",
+      "roles": [
+        "protected-cases.json:issue8040-insert-delete:input"
+      ],
+      "bytes": 514560,
+      "sha256": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee",
+      "git_blob_sha": "dcead6985001e73751ca67c325245a62de698597",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/pr8040/exam-social-insert.hwp",
+      "roles": [
+        "protected-cases.json:issue8040-insert:input"
+      ],
+      "bytes": 514560,
+      "sha256": "3c3ff50b430c3129a4ce06575b1a398d01fbd4ec17d9dd895f467a945f656e82",
+      "git_blob_sha": "1eed74550baf7bcc70d09a4a04d586dfb6584b4b",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/re-03-latin-only-hancom.hwp",
+      "roles": [
+        "protected-cases.json:seo-re-03-latin:input"
+      ],
+      "bytes": 9216,
+      "sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+      "git_blob_sha": "b55553422f96b5d2b5c2fd6ee1cf06bdd129f573",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/shape-group-02.hwp",
+      "roles": [
+        "protected-cases.json:seo-shape-group-02:input"
+      ],
+      "bytes": 16384,
+      "sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+      "git_blob_sha": "ceb34fdaad8f81674881bfeae7a1089e68aab262",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/task2279/36358528_gyeoljae.hwpx",
+      "roles": [
+        "final-claim-cases-committed.json:pr9004-control:input"
+      ],
+      "bytes": 35684,
+      "sha256": "7eaad132e6227f89c1b1cc129a76effc19d3fd487cf712095ea433c32842f518",
+      "git_blob_sha": "4a6a9627d249f6534d6a0e46e5aa8da93702e1b4",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "samples/task3307/issue3307_outline_number.hwpx",
+      "roles": [
+        "protected-cases.json:outline:input"
+      ],
+      "bytes": 57890,
+      "sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d",
+      "git_blob_sha": "135d3265a8520e4c022a726e7c0677cb4c79c640",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "tests/fixtures/issue8989/nested-values.hml",
+      "roles": [
+        "actual-counterexample-or-cli"
+      ],
+      "bytes": 1239,
+      "sha256": "005bb353af0ea5ff4788eb31a34d0f4bbcb55848838b0ccb787e4942e3e521e6",
+      "git_blob_sha": "7e3eb3b6ada6507efeaa59411918bdddb6c0c16b",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "tests/fixtures/issue_8109_saved_fonts/body-list-typed-hwp.hwp",
+      "roles": [
+        "protected-cases.json:seo-body-list-typed:input"
+      ],
+      "bytes": 4096,
+      "sha256": "ebe04aa214d85ca3f472083ae749f534de446ecf6f58eec532a6c2149839e687",
+      "git_blob_sha": "f8fbd777c431df7cda843626c1cb2f707188d6eb",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    },
+    {
+      "path": "tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp",
+      "roles": [
+        "protected-cases.json:seo-helvetica-styles:input"
+      ],
+      "bytes": 4096,
+      "sha256": "2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da",
+      "git_blob_sha": "4c82c1bb6f8576c5e875f1508ae0279d77682520",
+      "commit_content_equals_executed_file": true,
+      "status": "충족"
+    }
+  ],
+  "all_qualified": true
+}

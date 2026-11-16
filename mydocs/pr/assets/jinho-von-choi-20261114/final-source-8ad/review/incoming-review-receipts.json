@@ -1,0 +1,135 @@
+[
+  {
+    "key": "cbta",
+    "page": 45,
+    "crop": [
+      300,
+      270,
+      560,
+      470
+    ],
+    "displayScale": 2,
+    "changedRGBbbox": [
+      167,
+      380,
+      673,
+      449
+    ],
+    "measurementMaskChanged": false,
+    "target": "review/incoming-cbta-045.png",
+    "artifacts": [
+      {
+        "role": "Independent Print",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/incoming9083-typed-frame-native/cbta/cbta/pdf_png/pdf-045.png",
+        "sha256": "2e0d86bee2f57c96263e359d5c3e1b337b116cac025177070e34aa00d65bd637"
+      },
+      {
+        "role": "Native base e7ee",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/incoming9083-base-e7ee-native/cbta/cbta/rhwp_png/rhwp_045.png",
+        "sha256": "2c32276beb87eff7d8d86c1ec31eda38c898a0f5e103ecd2727d56e4fb75aa67"
+      },
+      {
+        "role": "Native candidate 8ad",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/incoming9083-typed-frame-native/cbta/cbta/rhwp_png/rhwp_045.png",
+        "sha256": "363b0a9a8be9ab71abab28f0760589b7f3078b4f5bc868f6f7a013338410de54"
+      },
+      {
+        "role": "WASM base e7ee",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/incoming9083-base-e7ee-wasm/cbta/cbta/rhwp_png/rhwp_045.png",
+        "sha256": "9cb2ff619fb61677da1a6d508dd5c924b2f41167704690837107d1671101c7fb"
+      },
+      {
+        "role": "WASM candidate 8ad",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/incoming9083-typed-frame-wasm/cbta/cbta/rhwp_png/rhwp_045.png",
+        "sha256": "55ce089c87360225527e0e6bfcfae98d3221d393e2116a3d6550de9696c589d7"
+      }
+    ]
+  },
+  {
+    "key": "exam",
+    "page": 3,
+    "crop": [
+      750,
+      270,
+      1010,
+      470
+    ],
+    "displayScale": 2,
+    "changedRGBbbox": [
+      132,
+      215,
+      1006,
+      1421
+    ],
+    "measurementMaskChanged": false,
+    "target": "review/incoming-exam-003.png",
+    "artifacts": [
+      {
+        "role": "Independent Print",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/incoming9083-typed-frame-native/exam/exam/pdf_png/pdf-003.png",
+        "sha256": "d25360e3e9e6cbf2bb2788a04e471d1877e94a8fdbd9e6656fe00903b40f9002"
+      },
+      {
+        "role": "Native base e7ee",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/incoming9083-base-e7ee-native/exam/exam/rhwp_png/rhwp_003.png",
+        "sha256": "e31c109e6b72a325bee65801be3f00f86851dd4ca3ba0a2d51ebd4770d358c81"
+      },
+      {
+        "role": "Native candidate 8ad",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/incoming9083-typed-frame-native/exam/exam/rhwp_png/rhwp_003.png",
+        "sha256": "7bb34bea8e54ce8b16757a847233cb62b3728f4e208e4065536a6c03a197db35"
+      },
+      {
+        "role": "WASM base e7ee",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/incoming9083-base-e7ee-wasm/exam/exam/rhwp_png/rhwp_003.png",
+        "sha256": "5e6d53618390738319254db4ccd60982926e42063eb00c879a1b6d053bad50bc"
+      },
+      {
+        "role": "WASM candidate 8ad",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/incoming9083-typed-frame-wasm/exam/exam/rhwp_png/rhwp_003.png",
+        "sha256": "3d7159dd84a53b4dc030c8d5383f6e28ed9b79fe0ba4edd49b0da4e963c3956d"
+      }
+    ]
+  },
+  {
+    "key": "rowbreak-first-fragment",
+    "page": 1,
+    "crop": [
+      0,
+      0,
+      260,
+      200
+    ],
+    "displayScale": 2,
+    "changedRGBbbox": null,
+    "measurementMaskChanged": false,
+    "target": "review/incoming-rowbreak-first-fragment-001.png",
+    "artifacts": [
+      {
+        "role": "Independent Print",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/incoming9088-typed-frame-native/rowbreak-first-fragment/pdf_png/pdf-001.png",
+        "sha256": "3199ecfa6e46184726516a467733603a376cb793775dc37606d9ca1aa4f68b97"
+      },
+      {
+        "role": "Native base e7ee",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/incoming9088-base-e7ee-native/rowbreak-first-fragment/rhwp_png/rhwp_001.png",
+        "sha256": "7c09e13d9348d7828b24933e9db2625a03922b0f6b620f908e931c74f6c642bb"
+      },
+      {
+        "role": "Native candidate 8ad",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/incoming9088-typed-frame-native/rowbreak-first-fragment/rhwp_png/rhwp_001.png",
+        "sha256": "7c09e13d9348d7828b24933e9db2625a03922b0f6b620f908e931c74f6c642bb"
+      },
+      {
+        "role": "WASM base e7ee",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/incoming9088-base-e7ee-wasm/rowbreak-first-fragment/rhwp_png/rhwp_001.png",
+        "sha256": "ac090a989f2d66bdc9fa35efafa6d73ea84d472c897b691e1ce7a0c2706b1dcb"
+      },
+      {
+        "role": "WASM candidate 8ad",
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/incoming9088-typed-frame-wasm/rowbreak-first-fragment/rhwp_png/rhwp_001.png",
+        "sha256": "ac090a989f2d66bdc9fa35efafa6d73ea84d472c897b691e1ce7a0c2706b1dcb"
+      }
+    ]
+  }
+]

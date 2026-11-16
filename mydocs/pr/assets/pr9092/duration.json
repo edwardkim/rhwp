@@ -1,0 +1,87 @@
+{
+  "run": {
+    "id": 43734626476,
+    "name": "Refresh nextest target duration data",
+    "head_sha": "4c4bd16a7a9bc8b00738e6c3cd74bca04ab3345c",
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43734626476"
+  },
+  "jobs": [
+    {
+      "id": 132874387694,
+      "name": "Refresh nextest target duration data",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-15T16:17:23Z",
+          "completed_at": "2026-11-15T16:17:24Z"
+        },
+        {
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-15T16:17:24Z",
+          "completed_at": "2026-11-15T16:21:42Z"
+        },
+        {
+          "name": "Collect verified PR duration measurements",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-15T16:21:42Z",
+          "completed_at": "2026-11-15T16:21:44Z"
+        },
+        {
+          "name": "Prepare duration policy data",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 4,
+          "started_at": "2026-11-15T16:21:44Z",
+          "completed_at": "2026-11-15T16:21:44Z"
+        },
+        {
+          "name": "Publish duration policy with guarded Git Data API",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 5,
+          "started_at": "2026-11-15T16:21:44Z",
+          "completed_at": "2026-11-15T16:21:44Z"
+        },
+        {
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-11-15T16:21:44Z",
+          "completed_at": "2026-11-15T16:21:44Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-11-15T16:21:44Z",
+          "completed_at": "2026-11-15T16:21:44Z"
+        }
+      ]
+    }
+  ],
+  "collection": {
+    "ready": false,
+    "reason": "no-verified-pr-duration-measurements"
+  },
+  "publication": "held: no verified PR duration measurements; prior metrics preserved",
+  "originalCIArtifacts": {
+    "run": 43696397797,
+    "names": [
+      "trusted-postmerge-fork-merge-tree-v1-9092-1193345564-1458593099-2-505444e191e40aa930a891f9b758840ced3d1eee-7c5c190acc173379f7465e045d6321d52431b955"
+    ]
+  }
+}

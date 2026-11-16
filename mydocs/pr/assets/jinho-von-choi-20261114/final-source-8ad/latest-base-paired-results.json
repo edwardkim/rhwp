@@ -1,0 +1,44 @@
+{
+  "precision": "five-decimal raw measurement preserved via Decimal; no display rounding before comparison",
+  "base": "e7ee272cfa33a960b0d0d924983d29e6509903e0",
+  "groups": [
+    {
+      "backend": "native",
+      "group": "incoming9083",
+      "pages": 389,
+      "minimum": "98.21527",
+      "maximum_decline_pp": "0.10853",
+      "over_2pp": 0,
+      "same_png": 198
+    },
+    {
+      "backend": "native",
+      "group": "incoming9088",
+      "pages": 14,
+      "minimum": "97.03785",
+      "maximum_decline_pp": "0.00041",
+      "over_2pp": 0,
+      "same_png": 13
+    },
+    {
+      "backend": "wasm",
+      "group": "incoming9083",
+      "pages": 389,
+      "minimum": "98.2193",
+      "maximum_decline_pp": "0.11980",
+      "over_2pp": 0,
+      "same_png": 198
+    },
+    {
+      "backend": "wasm",
+      "group": "incoming9088",
+      "pages": 14,
+      "minimum": "99.59335",
+      "maximum_decline_pp": "0.00000",
+      "over_2pp": 0,
+      "same_png": 14
+    }
+  ],
+  "rows": 806,
+  "over_2pp": 0
+}

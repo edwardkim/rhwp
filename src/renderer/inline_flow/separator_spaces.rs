@@ -20,6 +20,12 @@ pub(super) struct SeparatorSpaces {
     /// 줄상자를 주지 않으므로(#7500·#7160 `absorb_whitespace_only_rows`) 넘쳐도
     /// 앞 줄 끝에 걸린다.
     pub trailing: BTreeSet<usize>,
+    /// 뒤에 부동 앵커(글앞·글뒤 표·도형 등 폭 없는 개체)만 남은 문단 끝 공백.
+    /// 한/글은 이 공백이 넘치면 일반 글줄과 같은 공백 걸기(#7168·#8639)를 쓴다:
+    /// 넘친 첫 공백을 앞 줄 끝에 걸고, 그 앞이 글자·글자처럼 개체면 하나를 더 건다.
+    /// 나머지는 다음 줄로 넘어가 그 줄 높이를 정한다(웹한글기안기 인쇄 실측,
+    /// `samples/tac_space_tail`).
+    pub float_tail: BTreeSet<usize>,
     pub object: BTreeSet<usize>,
     pub first_object: BTreeSet<usize>,
 }
@@ -32,6 +38,8 @@ pub(super) fn classify_with_storage<S: crate::storage::Storage>(
     let mut separators = BTreeSet::new();
     let mut object_separators = BTreeSet::new();
     let mut trailing = BTreeSet::new();
+    let mut float_tail = BTreeSet::new();
+    let mut only_float_anchors_after = true;
     let mut followed_by_flow = false;
     let mut followed_by_object = false;
     let mut at_paragraph_end = true;
@@ -43,6 +51,8 @@ pub(super) fn classify_with_storage<S: crate::storage::Storage>(
             }) if !range.is_empty() && chars[range.clone()].iter().all(|ch| *ch == ' ') => {
                 if at_paragraph_end {
                     storage.insert_tree_set(&mut trailing, range.start)?;
+                } else if only_float_anchors_after {
+                    storage.insert_tree_set(&mut float_tail, range.start)?;
                 }
                 if followed_by_flow {
                     storage.insert_tree_set(&mut separators, range.start)?;
@@ -52,9 +62,19 @@ pub(super) fn classify_with_storage<S: crate::storage::Storage>(
                 }
             }
             Atom::Box(InlineFlowBox {
+                content:
+                    InlineFlowContent::FloatingTable { .. } | InlineFlowContent::FloatingShape { .. },
+                ..
+            }) => {
+                at_paragraph_end = false;
+                followed_by_flow = false;
+                followed_by_object = false;
+            }
+            Atom::Box(InlineFlowBox {
                 content: InlineFlowContent::Table { .. } | InlineFlowContent::Picture { .. },
                 ..
             }) => {
+                only_float_anchors_after = false;
                 at_paragraph_end = false;
                 followed_by_flow = true;
                 followed_by_object = true;
@@ -63,12 +83,14 @@ pub(super) fn classify_with_storage<S: crate::storage::Storage>(
                 content: InlineFlowContent::Text { .. },
                 ..
             }) => {
+                only_float_anchors_after = false;
                 at_paragraph_end = false;
                 followed_by_flow = true;
                 followed_by_object = false;
             }
             // 부동 앵커와 명시적 개행은 자기 줄을 소유한다.
             _ => {
+                only_float_anchors_after = false;
                 at_paragraph_end = false;
                 followed_by_flow = false;
                 followed_by_object = false;
@@ -96,6 +118,7 @@ pub(super) fn classify_with_storage<S: crate::storage::Storage>(
     Ok(SeparatorSpaces {
         wrap: separators,
         trailing,
+        float_tail,
         object: object_separators,
         first_object,
     })
