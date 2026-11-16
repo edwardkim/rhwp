@@ -4,9 +4,9 @@
 
 **메인터너 보정 후 수용 가능.** 최신 devel `6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0`를 실제 병합한 source `4deadfa9638baffc3b4dc7e9d56a3edff9f83aeb`에서 필수 로컬 검증을 완료했다. 전체 회귀 13,632개·Native 공식 4,073개·모든 lint·목표 Native/fresh WASM 전쪽 100.00%·편람·공개 공통 검사가 통과했다.
 
-특별 보호 3,542쪽은 승인된 Native 10쪽 1행의 기존 차이(99.86% → 99.85%)만 예외로 수용한다. 다른 하락·누락은 0건이며 [정확한 결정](assets/johndoekim-20261116/native-floor-decision.md)을 연결한다. [최종 실행·전쪽 증적](assets/johndoekim-20261116/latest-devel-revalidation.md)을 기준으로 한다.
+특별 보호 3,542쪽은 승인된 Native 10쪽 1행의 기존 차이(99.86% → 99.85%)만 예외로 수용한다. 다른 하락·누락은 0건이며 [정확한 결정](../assets/johndoekim-20261116/native-floor-decision.md)을 연결한다. [최종 실행·전쪽 증적](../assets/johndoekim-20261116/latest-devel-revalidation.md)을 기준으로 한다.
 
-작업지시자가 push·Open 수용 PR·해당 head CI·self-review·merge와 후속 처리를 승인했다. 수용 PR #9126의 code head `529ba31acb` CI·실제 worker·정책 감사는 모두 성공했다. 문서-only trailing head와 실제 merge는 별도로 확인한다. 원 기여 SHA·fork branch와 #9058 OPEN을 보존한다.
+작업지시자가 push·Open 수용 PR·해당 head CI·self-review·merge와 후속 처리를 승인했다. 수용 PR #9126의 code/trailing head CI·실제 fast-pass·셀프 리뷰를 완료했고 `fb7367574f13e65111f162bb79238cb0af45b36e`로 병합됐다. [후속 원장](../assets/johndoekim-20261116/closure.md)에서 실제 종료 상태를 확인한다. 원 기여 SHA·fork branch와 #9058 OPEN을 보존한다.
 
 ## 접수 정보
 
@@ -51,8 +51,8 @@ Native는 실제 Skia PNG, WASM은 최적화 완료 web package를 Chromium에�
 | 안내문 있음 | 29.43% / 29.43% | 100.00% / 100.00% | 양쪽·PDF 각 1쪽 |
 | 누름틀 없음 | 100.00% / 100.00% | 100.00% / 100.00% | 양쪽·PDF 각 1쪽 |
 
-[전쪽 TSV](assets/johndoekim-20261116/README.md)와
-[Print·base·Native·fresh WASM 확대 비교](assets/johndoekim-20261116/guide-table-zoom.png)를 직접 판독했다.
+[전쪽 TSV](../assets/johndoekim-20261116/README.md)와
+[Print·base·Native·fresh WASM 확대 비교](../assets/johndoekim-20261116/guide-table-zoom.png)를 직접 판독했다.
 base는 둘째 표가 오른쪽으로 밀려 보이지 않았고 첫 표도 앞 줄에 놓였다. 후보의 두 표는 Print와 같은
 순서·열 구성·상하 간격으로 글상자 안에 들어간다. 작은 획의 raster coverage 차이와 실제 줄 배치를 구분했다.
 
@@ -66,7 +66,7 @@ base/후보 PNG가 바이트 단위로 같았고, 기존 줄 소속 문제는 �
 - [원 head CI](https://github.com/edwardkim/rhwp/actions/runs/43644452017)는 성공했지만 새 제출 후보의 CI로 대신 쓰지 않는다.
 - #9102 공개 공통 검사와 #9106의 실제 분할 셀·Print TTF em·괘선·Native SVG 글꼴 준비·CanvasKit 예산의 선행 근거와 현재 소비 경로를 대조했다. 새 base와 후보의 각주 50쪽·중첩 표 17쪽은 Native/WASM 각각 PNG 67개가 모두 같다.
 - Native 편람 383쪽과 공개 공통 Native/WASM 8개 실행이 통과했다. 특별 보호 3,542쪽은 Native 10쪽 한 행의 승인된 기존 차이 외 하락 0건이다.
-- 실제 source·프로그램 해시·전쪽 TSV·직접 판독·독립 글꼴 복원은 [최종 기록](assets/johndoekim-20261116/latest-devel-revalidation.md)에 구분했다.
+- 실제 source·프로그램 해시·전쪽 TSV·직접 판독·독립 글꼴 복원은 [최종 기록](../assets/johndoekim-20261116/latest-devel-revalidation.md)에 구분했다.
 
 ## 조판 원칙 준수 검토
 
@@ -95,11 +95,11 @@ base/후보 PNG가 바이트 단위로 같았고, 기존 줄 소속 문제는 �
 
 구형 수식 글꼴은 독립 문자표 Print로 복구했고 77개 원본 프로그램이 이전 provenance와 일치한다.
 직전 후보에서는 공식값 하락 0건이었으며 새 #9106 하한에서는 Native 10쪽 한 행의 기존 차이를 별도로 승인받았다. 기준값·허용치는 변경하지 않았다.
-[공급·빌드 기록](assets/johndoekim-20261116/validation-record.md)과
-[보호 전쪽 TSV](assets/johndoekim-20261116/protected-validation.md)를 연결한다.
+[공급·빌드 기록](../assets/johndoekim-20261116/validation-record.md)과
+[보호 전쪽 TSV](../assets/johndoekim-20261116/protected-validation.md)를 연결한다.
 
 전체 회귀 13,632개와 Native 공식 4,073개를 모두 통과해 수용 후보를 확정했다.
-실행 당시 임시 SHA와 공개할 제출 코드의 Rust·test·검증 입력은 같으며 [실행 기록](assets/johndoekim-20261116/validation-record.md)에 구분했다.
+실행 당시 임시 SHA와 공개할 제출 코드의 Rust·test·검증 입력은 같으며 [실행 기록](../assets/johndoekim-20261116/validation-record.md)에 구분했다.
 작업지시자의 원격 승인은 확보했다. 새 PR의 exact-head GitHub CI·self-review를 실제 완료한 뒤 병합한다.
 
 ## Merge 후 contributor PR comment 계획
@@ -111,4 +111,8 @@ Native·WASM raw와 두 원본의 전쪽 TSV, 각 backend review·overlay를 정
 
 ## 수용 PR code CI 완료
 
-[수용 PR #9126](https://github.com/edwardkim/rhwp/pull/9126)의 code head `529ba31acbdea187a2ed5d9528be419f26686132`에서 [필수 CI와 실제 실행](assets/johndoekim-20261116/code-ci-529ba31.md)을 모두 확인했다. 셀프 리뷰 기록 뒤 trailing head 검사·merge·후속 처리를 진행한다.
+[수용 PR #9126](https://github.com/edwardkim/rhwp/pull/9126)의 code head `529ba31acbdea187a2ed5d9528be419f26686132`에서 [필수 CI와 실제 실행](../assets/johndoekim-20261116/code-ci-529ba31.md)을 모두 확인했다. 셀프 리뷰 기록 뒤 trailing head 검사·merge·후속 처리를 진행한다.
+
+## 원격 통합 결과
+
+[수용 PR #9126](https://github.com/edwardkim/rhwp/pull/9126)은 최종 head `2d80477a8c817041576157aa2d786293b877fe97`의 모든 check·정책·`CLEAN`과 최신 base 병합 tree를 재확인한 뒤 정상 merge commit `fb7367574f13e65111f162bb79238cb0af45b36e`로 병합됐다. 원 PR의 간접 MERGED와 연결 이슈의 completed 자동 종료도 확인했다. 댓글·duration·정리의 실제 결과는 [후속 원장](../assets/johndoekim-20261116/closure.md)에 기록한다. 앞 절의 남은 조건은 각 단계 당시 기록이다.

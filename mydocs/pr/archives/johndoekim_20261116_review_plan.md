@@ -28,7 +28,7 @@
 - #9058: `Paragraph::control_source_positions_with_storage`에서 짝 있는 끝 표식의 슬롯을 세지 않는
   기존 배치 문제다. 실제 한컴 저장본 3개와 독립 Print PDF를 확보했다. #9084의 저장 순서 수정과
   동일한 결함으로 간주하지 않으며, 구조 보존 검토에 조판 검증을 일괄 요구하지 않는
-  [접수 절차 2.7](../manual/pr_review/intake_and_review.md#27-조판-원칙-준수-검토)을 적용한다.
+  [접수 절차 2.7](../../manual/pr_review/intake_and_review.md#27-조판-원칙-준수-검토)을 적용한다.
 
 ## 검증과 종료 조건
 
@@ -65,7 +65,7 @@ Native 공식 3종도 같은 최소 글꼴 환경에서 4073개 모두 통과했
 
 원 사례 Native/fresh WASM은 각 100.00%, 보호 3,542쪽은 예외 없이 하락 0건이다.
 별도 사설 수식 글꼴은 독립 문자표 Print로 복구해 원본 77개 프로그램의 동일성과 실제 출력을 확인했다.
-[검증 기록](assets/johndoekim-20261116/README.md)과 [원격 처리안](assets/johndoekim-20261116/remote-action-plan.md)에
+[검증 기록](../assets/johndoekim-20261116/README.md)과 [원격 처리안](../assets/johndoekim-20261116/remote-action-plan.md)에
 필수 검사 완료 뒤의 구체적인 범위와 승인 경계를 기록한다.
 
 ## 원격 승인 뒤 새 devel #9106 반영
@@ -89,4 +89,8 @@ Native 공식 3종도 같은 최소 글꼴 환경에서 4073개 모두 통과했
 
 `4deadfa9638baffc3b4dc7e9d56a3edff9f83aeb`에서 전체 회귀 13,632개·집중 30개·Native 공식 4,073개·모든 lint·편람 383쪽·공개 공통 8개 실행을 실제 완료했다. 목표 전쪽 Native/fresh WASM은 모두 100.00%, 새 base와 후보의 각주/중첩 표 각 67쪽 PNG는 동일하다. 실제 CLI와 최적화 WASM API의 두 차례 HWP 저장·재열기·HWPX 교차 저장도 완료했다.
 
-보호 3,542쪽 중 Native 중첩 표 10쪽 한 행의 99.86%/99.85% 기존 차이만 작업지시자가 한정 수용했다. 다른 하락·누락은 0건이며 정본·허용치는 변경하지 않았다. [최종 실행 기록](assets/johndoekim-20261116/latest-devel-revalidation.md)과 [확정된 원격 범위](assets/johndoekim-20261116/remote-action-plan.md)를 따른다. 현재 로컬 필수 검증을 완료했고, 새 PR의 CI·self-review·merge·후속 처리는 승인된 다음 실행 단계다.
+보호 3,542쪽 중 Native 중첩 표 10쪽 한 행의 99.86%/99.85% 기존 차이만 작업지시자가 한정 수용했다. 다른 하락·누락은 0건이며 정본·허용치는 변경하지 않았다. [최종 실행 기록](../assets/johndoekim-20261116/latest-devel-revalidation.md)과 [확정된 원격 범위](../assets/johndoekim-20261116/remote-action-plan.md)를 따른다. 현재 로컬 필수 검증을 완료했고, 새 PR의 CI·self-review·merge·후속 처리는 승인된 다음 실행 단계다.
+
+## 원격 통합 완료
+
+[수용 PR #9126](https://github.com/edwardkim/rhwp/pull/9126)의 code/trailing head CI·self-review를 실제 완료하고 `fb7367574f13e65111f162bb79238cb0af45b36e`로 원 기여 두 SHA를 보존해 병합했다. 이 문서의 이전 단계 상태는 당시 기록이며 현재 완료 상태는 [후속 원장](../assets/johndoekim-20261116/closure.md)을 따른다.

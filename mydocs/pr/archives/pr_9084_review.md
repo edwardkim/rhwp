@@ -4,9 +4,9 @@
 
 **승인.** 최신 devel `6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0`를 실제 병합한 source `4deadfa9638baffc3b4dc7e9d56a3edff9f83aeb`에서 필수 로컬 검증을 완료했다. 전체 회귀 13,632개·Native 공식 4,073개·모든 lint·목표 Native/fresh WASM 전쪽 100.00%·편람·공개 공통 검사가 통과했다.
 
-특별 보호 3,542쪽은 승인된 Native 10쪽 1행의 기존 차이(99.86% → 99.85%)만 예외로 수용한다. 다른 하락·누락은 0건이며 [정확한 결정](assets/johndoekim-20261116/native-floor-decision.md)을 연결한다. [최종 실행·전쪽 증적](assets/johndoekim-20261116/latest-devel-revalidation.md)을 기준으로 한다.
+특별 보호 3,542쪽은 승인된 Native 10쪽 1행의 기존 차이(99.86% → 99.85%)만 예외로 수용한다. 다른 하락·누락은 0건이며 [정확한 결정](../assets/johndoekim-20261116/native-floor-decision.md)을 연결한다. [최종 실행·전쪽 증적](../assets/johndoekim-20261116/latest-devel-revalidation.md)을 기준으로 한다.
 
-작업지시자가 push·Open 수용 PR·해당 head CI·self-review·merge와 후속 처리를 승인했다. 수용 PR #9126의 code head `529ba31acb` CI·실제 worker·정책 감사는 모두 성공했다. 문서-only trailing head와 실제 merge는 별도로 확인한다. 원 기여 SHA·fork branch와 #9058 OPEN을 보존한다.
+작업지시자가 push·Open 수용 PR·해당 head CI·self-review·merge와 후속 처리를 승인했다. 수용 PR #9126의 code/trailing head CI·실제 fast-pass·셀프 리뷰를 완료했고 `fb7367574f13e65111f162bb79238cb0af45b36e`로 병합됐다. [후속 원장](../assets/johndoekim-20261116/closure.md)에서 실제 종료 상태를 확인한다. 원 기여 SHA·fork branch와 #9058 OPEN을 보존한다.
 
 ## 접수 정보
 
@@ -42,7 +42,7 @@
   원 head에 포함된 SHA-256은 `a4dd2bd52c02ca3d25414e63e8c8af7cefc96d53b00e49fa635ed6f1610cb069`이다.
 - `mydocs/pr/assets/issue7445/hwpctl_API_v2.4.hwp`: 본문의 값이 든 누름틀 뒤에 책갈피가 있는 기존 대조군.
 - #9058의 네 글자 값 실제 저장본과 #9081의 안내문 입력은 보조 대조군으로 사용했다.
-  공개 원본·해시는 [공유 증적](assets/johndoekim-20261116/README.md)에 보존한다.
+  공개 원본·해시는 [공유 증적](../assets/johndoekim-20261116/README.md)에 보존한다.
 
 | 실행 | 결과 |
 | --- | --- |
@@ -57,23 +57,23 @@
 네 글자 입력도 원본의 끝 12·표 20·표 28을 보존한다. 안내문 대조군은 수정 전후 동일하다.
 글자 값 조회는 수정 전에도 통과하므로 단독 판정 근거로 사용하지 않았다.
 
-[집중 실행 영수증](assets/johndoekim-20261116/validation-record.md)과
-[실제 HWP 저장 순서](assets/johndoekim-20261116/validation-record.md),
-[HWPX 순서](assets/johndoekim-20261116/validation-record.md)를 연결한다.
+[집중 실행 영수증](../assets/johndoekim-20261116/validation-record.md)과
+[실제 HWP 저장 순서](../assets/johndoekim-20261116/validation-record.md),
+[HWPX 순서](../assets/johndoekim-20261116/validation-record.md)를 연결한다.
 `bwrap`으로 시스템·사용자·Windows/HFT 글꼴 경로를 가렸고 저장소의 공개 글꼴만 노출한 실행이다.
 
 원 head와 누적 후보의 `src/serializer/body_text.rs` Git blob은 같다.
-[component 증거](assets/johndoekim-20261116/validation-record.md)를 확인했으며
+[component 증거](../assets/johndoekim-20261116/validation-record.md)를 확인했으며
 #9084의 제품·test·baseline 보정은 없다. 누적 후보에서는 별도 #9081의 주석을 보완했으므로
 같은 검증 입력으로 전체 Rust lint·release-test 13,632개·Native 공식 4,073개를 모두 통과했다.
 실제 실행 당시 로컬 SHA와 제출 코드 SHA의 입력 동일성은 공유 검증 기록에 있다. 원 head의 녹색 CI를 새 제출 후보의 GitHub CI로 대체하지 않는다.
 
-같은 최적화 WASM의 공개 API에서도 세 입력을 실제 삽입·HWP 저장·재열기·삭제·재저장·재열기 후 HWPX로 교차 저장했다. 독립 CFB 토큰 판독과 필드 값·HWPX XML 순서가 CLI와 같은 결과임을 확인했다. [실제 WASM 저장 기록](assets/johndoekim-20261116/latest-devel-revalidation.md)을 연결한다.
+같은 최적화 WASM의 공개 API에서도 세 입력을 실제 삽입·HWP 저장·재열기·삭제·재저장·재열기 후 HWPX로 교차 저장했다. 독립 CFB 토큰 판독과 필드 값·HWPX XML 순서가 CLI와 같은 결과임을 확인했다. [실제 WASM 저장 기록](../assets/johndoekim-20261116/latest-devel-revalidation.md)을 연결한다.
 
 ## 조판 원칙 적용과 기존 이슈의 구분
 
 이번 수정은 필드 끝 표식의 저장 구조 보존이다. renderer의 저장 줄·개체 주소 계산은 수정하지 않는다.
-따라서 [접수 절차 2.7](../manual/pr_review/intake_and_review.md#27-조판-원칙-준수-검토)의 구조 보존 범위를 적용한다.
+따라서 [접수 절차 2.7](../../manual/pr_review/intake_and_review.md#27-조판-원칙-준수-검토)의 구조 보존 범위를 적용한다.
 렌더링 회귀·좌표 pin·시각 baseline 변경은 비해당이다.
 
 #9058의 기존 배치 문제는 `Paragraph::control_source_positions_with_storage`가 짝 있는 FIELD_END 슬롯을
@@ -91,4 +91,8 @@
 
 ## 수용 PR code CI 완료
 
-[수용 PR #9126](https://github.com/edwardkim/rhwp/pull/9126)의 code head `529ba31acbdea187a2ed5d9528be419f26686132`에서 [필수 CI와 실제 실행](assets/johndoekim-20261116/code-ci-529ba31.md)을 모두 확인했다. 셀프 리뷰 기록 뒤 trailing head 검사·merge·후속 처리를 진행한다.
+[수용 PR #9126](https://github.com/edwardkim/rhwp/pull/9126)의 code head `529ba31acbdea187a2ed5d9528be419f26686132`에서 [필수 CI와 실제 실행](../assets/johndoekim-20261116/code-ci-529ba31.md)을 모두 확인했다. 셀프 리뷰 기록 뒤 trailing head 검사·merge·후속 처리를 진행한다.
+
+## 원격 통합 결과
+
+[수용 PR #9126](https://github.com/edwardkim/rhwp/pull/9126)은 최종 head `2d80477a8c817041576157aa2d786293b877fe97`의 모든 check·정책·`CLEAN`과 최신 base 병합 tree를 재확인한 뒤 정상 merge commit `fb7367574f13e65111f162bb79238cb0af45b36e`로 병합됐다. 원 PR의 간접 MERGED와 연결 이슈의 completed 자동 종료도 확인했다. 댓글·duration·정리의 실제 결과는 [후속 원장](../assets/johndoekim-20261116/closure.md)에 기록한다. 앞 절의 남은 조건은 각 단계 당시 기록이다.
