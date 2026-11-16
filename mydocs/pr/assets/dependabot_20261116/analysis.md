@@ -93,3 +93,12 @@ OS528face·비공개183개 파일 읽기 차단을 다시 확인했습니다. �
 내용이 그대로입니다. 12개는 patch-id도 동일하며 나머지는 인접 갱신의 문맥 차이입니다.
 #9121은 #9116이 이미 추가한 동일 read-fonts0.47 package stanza를 중복 추가하지 않은 차이만
 있습니다. skera·skrifa·write-fonts의 갱신과 최종 read-fonts0.47 노드는 보존했습니다.
+
+## CI action의 원본 및 정책 경계 확인
+
+[원본 action과 YAML 감사](action-source-audit.json)에서 rust-cache의 정확한 이전/새 SHA를
+비교해 macOS purge 호출 수정과 dist 재생성을 확인했습니다. install-action2.90.3은 다른 tool의
+manifest와 release 문서 변경이며 nextest manifest·설치 runtime을 바꾸지 않습니다.
+저장소 workflow8개는 승인된 두 action의 SHA와 version 주석만 치환한 결과가 실제 후보와
+완전히 같습니다. trigger·권한·cache key·save-if·설치 tool을 바꾸지 않았습니다.
+로컬 Mac에서 action의 sudo purge를 실행하지 않았으며 실제 GitHub CI는 로컬 게이트 뒤 확인합니다.
