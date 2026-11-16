@@ -64,6 +64,23 @@ Native/fresh WASM 정본 보호 36조건·3,542행의 [전쪽 대조](protected-
 현재 Native와 WASM의 미일치 화소는 각각 176개로 같지만 내용 합집합 화소 수가 달라 표시값이 갈린다.
 이는 이전 WASM 원본 PNG와의 동일성을 입증하지 않으며 하락을 면제하지 않는다.
 
-고정 base/후보의 두 출력 비교, 공개 공통 4조건, 명시적 Native 편람 383쪽 gate와
-실제 Native/Studio Canvas2D/지원 CanvasKit 소비 검증도 남아 있다.
-이 항목의 최종 결과·직접 판독을 확인하고 원 PR별 판정을 갱신한 뒤 통합 PR을 제출한다.
+[고정 base 대비 Native](native-base-head-comparison.json)도 66종·74쪽 전체 대조를 마쳤으며
+2%p 초과 하락은 없다. [공개 공통 4문서 Native/WASM 8조건과 명시적 Native 편람 383쪽](public-gates-final.json)은
+모두 보호 하한을 통과했다.
+
+[실제 소비 경로](actual-consumers-final.json)는 Native PNG 16개·Studio 화면/Print 48개를 산출했고,
+CanvasKit 32개 캡처 모두 요청 backend를 사용했으며 runtime fallback·replay hard 위반은 없었다.
+Native↔CanvasKit 대조 16건은 통과했다. 별도의 report-only Canvas2D↔CanvasKit 대조 32건은
+축소 fixture에 맞지 않는 `minimumInkPixels` 조건 때문에 FAIL이며 통과로 표시하지 않는다.
+차이 예산은 모두 충족했고 자동 선택 readiness gate는 실행하지 않았다. 실제 같은 Print 페이지를
+네 출력 경로에서 직접 읽어 그림·표·문단 소속을 확인했다.
+
+초기 48건의 CDP WASM 본문이 진단 캐시에서 사라진 문제는 별도 실제 초기화 재실행으로 보완했다.
+Root pkg·Studio public·frozen JS/WASM과 실제 응답의 신원을 확인했다. Vite가 JS의 로컬 WASM URL과
+비실행 sourcemap을 바꾼 내역을 구분하며, WASM 응답은 원 바이트 해시가 일치했다.
+
+sample10 757쪽은 이전 수용 기록의 직접 원본 프로그램 공급 방식으로 base·후보 모두 99.57%를
+회복했고 474쪽도 100%였다. 정확히 확보한 원본 프로그램 66개와 미확보 14개를 구분했으며,
+이 집중 결과를 전체 수용으로 대신하지 않고 같은 조건으로 763쪽 전체 base/후보를 재산출한다.
+위의 이전 조건 실패 결과는 보존한다. 관계형 검사 변경 뒤 최소 글꼴 전체 회귀·lint 재검증도
+진행 중이다. 남은 최종 결과를 확인하고 원 PR별 판정을 갱신한 뒤 통합 PR을 제출한다.
