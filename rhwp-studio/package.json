@@ -106,7 +106,7 @@
   },
   "devDependencies": {
     "@types/chrome": "^0.3.7",
-    "puppeteer-core": "^25.16.0",
+    "puppeteer-core": "^25.17.0",
     "typescript": "^7.0.2",
     "vite": "^8.3.8",
     "vite-plugin-pwa": "^2.0.0",
