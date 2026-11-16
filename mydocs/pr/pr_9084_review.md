@@ -6,7 +6,7 @@
 
 특별 보호 3,542쪽은 승인된 Native 10쪽 1행의 기존 차이(99.86% → 99.85%)만 예외로 수용한다. 다른 하락·누락은 0건이며 [정확한 결정](assets/johndoekim-20261116/native-floor-decision.md)을 연결한다. [최종 실행·전쪽 증적](assets/johndoekim-20261116/latest-devel-revalidation.md)을 기준으로 한다.
 
-작업지시자가 push·Open 수용 PR·해당 head CI·self-review·merge와 후속 처리를 승인했다. 새 PR의 CI와 실제 merge는 실행 뒤 확인하며 현재 성공으로 기록하지 않는다. 원 기여 SHA·fork branch와 #9058 OPEN을 보존한다.
+작업지시자가 push·Open 수용 PR·해당 head CI·self-review·merge와 후속 처리를 승인했다. 수용 PR #9126의 code head `529ba31acb` CI·실제 worker·정책 감사는 모두 성공했다. 문서-only trailing head와 실제 merge는 별도로 확인한다. 원 기여 SHA·fork branch와 #9058 OPEN을 보존한다.
 
 ## 접수 정보
 
@@ -88,3 +88,7 @@
 이 PR의 수용 근거는 저장 구조이며, renderer 변경 #9081의 이미지를 #9084 해결 증거로 게시하지 않는다.
 문안은 한국어 존댓말 `--body-file`로 전달하고 API로 본문·issue 상태를 재조회한다.
 원 fork branch는 보존한다. 원격 처리와 후속 범위는 승인받았으며 새 수용 PR의 exact-head CI·self-review 뒤 실행한다.
+
+## 수용 PR code CI 완료
+
+[수용 PR #9126](https://github.com/edwardkim/rhwp/pull/9126)의 code head `529ba31acbdea187a2ed5d9528be419f26686132`에서 [필수 CI와 실제 실행](assets/johndoekim-20261116/code-ci-529ba31.md)을 모두 확인했다. 셀프 리뷰 기록 뒤 trailing head 검사·merge·후속 처리를 진행한다.
