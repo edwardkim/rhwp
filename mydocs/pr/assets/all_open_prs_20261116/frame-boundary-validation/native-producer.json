@@ -1,0 +1,23 @@
+{
+  "status": "passed",
+  "head": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+  "command": [
+    "cargo",
+    "build",
+    "--locked",
+    "--profile",
+    "release-test",
+    "--target-dir",
+    "${REPO}/target/pr-review",
+    "--features",
+    "native-skia",
+    "--bin",
+    "rhwp",
+    "-j",
+    "8"
+  ],
+  "started_at": "2026-11-16T15:57:05.770238+00:00",
+  "exit": 0,
+  "seconds": 212.984,
+  "sha256": "7baff70e9b0a37a939b8c965589542cd31dade2b43b32adec73ef9260b69ae04"
+}

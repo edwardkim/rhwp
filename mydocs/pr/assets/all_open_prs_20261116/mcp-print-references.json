@@ -1,6 +1,6 @@
 {
   "source_snapshot": "5d7999054bd26cb0f93c3a24a8c11cb9edc2d864",
-  "count": 61,
+  "count": 66,
   "output_kind": "Windows desktop Hancom Print; web-HWP PDFs not accepted",
   "preprocess_note": "none and service-reported scripts_disabled are recorded separately; scripts_disabled applies to HWP/engine2020 only",
   "records": [
@@ -1836,6 +1836,82 @@
         "PDF version": "1.4",
         "Page size": "595 x 841 pts (A4)"
       }
+    },
+    {
+      "input": "samples/textbox_stored_table/textbox_nostored_header_front_zero_offset.hwpx",
+      "input_sha256": "7ffa08421223931b7c09549160027269f44b11ab509e8d4f566aa63296cef12e",
+      "pdf": "pdf/pr-review-all-open-20261116/textbox_nostored_header_front_zero_offset-hwpx-2020.pdf",
+      "pdf_sha256": "d03f3ea6de0b4d96ea343532040549a8b4a3bcd46bb1706dc471aed57dd76a5f",
+      "bytes": 10625,
+      "pages": 1,
+      "job_id": "1c75bf0e-b37c-41f6-b8b7-7c099c6845ed",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "backend": "hwp-managed-direct-dll-host",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+      "input_preprocess": "none"
+    },
+    {
+      "input": "samples/textbox_stored_table/textbox_nostored_header_front_unrestricted.hwpx",
+      "input_sha256": "2b921fbc833ad8544988c2cd68385d940e1a691661c8e5dfc3e65a280ed3d571",
+      "pdf": "pdf/pr-review-all-open-20261116/textbox_nostored_header_front_unrestricted-hwpx-2020.pdf",
+      "pdf_sha256": "6e9752a62074d03d70a8198ff3d4e87c71a808081070f0e9509b9c04266e785f",
+      "bytes": 10626,
+      "pages": 1,
+      "job_id": "bae8308b-7b2e-4999-8305-e0ba8139e67c",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "backend": "hwp-managed-direct-dll-host",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+      "input_preprocess": "none"
+    },
+    {
+      "input": "samples/textbox_stored_table/textbox_nostored_header_front_resolved_height.hwpx",
+      "input_sha256": "faabd1877977cc8e7d04e0c8577413b144344e0dc5314f43a928e2db3508bda6",
+      "pdf": "pdf/pr-review-all-open-20261116/textbox_nostored_header_front_resolved_height-hwpx-2020.pdf",
+      "pdf_sha256": "91c8578147a44a42bcd475094226a709100955d98e6d9af8898110ba0e1ea4f1",
+      "bytes": 10625,
+      "pages": 1,
+      "job_id": "1469c9bf-cb97-44e4-a21f-1ded1ba27a67",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "backend": "hwp-managed-direct-dll-host",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+      "input_preprocess": "none"
+    },
+    {
+      "input": "samples/issue8695/cell-second-host-without-picture.hwpx",
+      "input_sha256": "8c53a7c32a0fe70b3215c5d5f1e69368e6db318d5e988602d66b84e8c5024c9d",
+      "pdf": "pdf/pr-review-all-open-20261116/cell-second-host-without-picture-hwpx-2024.pdf",
+      "pdf_sha256": "8c86fd06074ba8b41fa15b21fb55d5f7d7b525c3951b368cc80629a47a338a7e",
+      "bytes": 11535,
+      "pages": 1,
+      "job_id": "8de633b6-be8e-45e2-b733-17fb8e20387c",
+      "engine": "2024",
+      "hancom_version": "13.0.0.3901",
+      "backend": "hwp-managed-direct-dll-host",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+      "input_preprocess": "none"
+    },
+    {
+      "input": "samples/issue8695/cell-two-square-picture-hosts.hwpx",
+      "input_sha256": "f9a54247bc0588c07b2fc4e03a48292c885568e93a5890743a15287267d25fbd",
+      "pdf": "pdf/pr-review-all-open-20261116/cell-two-square-picture-hosts-hwpx-2024.pdf",
+      "pdf_sha256": "dc2f185262f958a670db989ec50e844e354640afca8cbae41f678b660acedf4c",
+      "bytes": 12882,
+      "pages": 1,
+      "job_id": "55bf659d-0e75-4b52-b199-47ab928c1a57",
+      "engine": "2024",
+      "hancom_version": "13.0.0.3901",
+      "backend": "hwp-managed-direct-dll-host",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+      "input_preprocess": "none"
     }
-  ]
+  ],
+  "review_controls_note": "기여자 원본 61종에 reviewer 그림 호스트 대조군 2종과 단일 속성 글상자 대조군 3종을 더했다."
 }

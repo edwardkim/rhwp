@@ -1,3 +1,8 @@
+//! 공식 대조 자료: `pdf/pr-review-all-open-20261116/`의 동일 입력별 한컴 2020 Hancom PDF Print.
+//! 아래 원 PR의 웹한글기안기 설명은 이력이며 이번 검토의 공식 PDF가 아니다.
+//! 새 저장 줄 없는 검사 3건은 함수별로 관계형/고정형을 구분하고 Native/fresh WASM 100.00%를 확인했다.
+//! 주석 갱신: 2026-11-17T01:21:02+09:00
+//!
 //! 저장 줄이 있는 세로 가운데 정렬 글상자는 끝 문단의 비글자처럼 표(글 앞으로·자리차지)까지
 //! 바깥 여백을 넣어 내용 높이를 잡고, 자리차지 표도 자기 세로 오프셋 자리에 놓는다.
 //!
@@ -24,7 +29,8 @@
 use std::path::Path;
 
 use rhwp::{
-    renderer::render_tree::{RenderNode, RenderNodeType},
+    model::control::Control,
+    renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType},
     DocumentCore,
 };
 
@@ -100,33 +106,186 @@ fn pushed_anchor_line_places_topbottom_table_at_previous_paragraph_end() {
     }
 }
 
-/// 저장 줄 없는 글상자는 이 저장 줄 경로의 표 높이 규칙을 쓰지 않는다(회귀 가드).
-///
-/// 재현물 `textbox_nostored_header_{none,front_tall}.hwpx`: 낮은 가운데 정렬 글상자(5940 HU) 첫 문단(공백)에
-/// 음수 오프셋(−388 HU) 글 앞으로 표(높이 5983 HU, 글상자 안 높이보다 큼)를 둔 결재 칸 형상과 표 없는 대조군.
-/// 사내 실문서(같은 형상의 교육계획안 머리 결재 칸)에서 이 규칙을 저장 줄 없는 글상자에도 쓰면 결재 칸이
-/// 정답(웹한글기안기 화면)보다 약 7px 위로 올라가 본문 표와 떨어졌다. 그래서 저장 줄 없는 글상자의 `TITLE`
-/// 은 표 없는 대조군과 같은 자리여야 한다.
-///
-/// 알려진 차이: 웹한글기안기 인쇄(`pdf/textbox_stored_table/textbox_nostored_header_front_tall-webhwp-print.pdf`)는
-/// 이 합성본에서 `TITLE` 을 대조군보다 18.5px 위에 둔다(표를 정렬 높이에 넣음). 실문서 정답은 결재 칸 자리가
-/// 이 가드의 동작과 같고 제목은 약 5px 차이라, 결재 칸 자리를 지키는 쪽을 택했다. 글 앞으로 표가 가운데 정렬
-/// 오프셋을 따라 움직이지 않는 한컴 규칙을 밝히면 이 가드를 웹한글기안기 값으로 바꾼다.
+// 아래 저장 줄 없는 5개 원본은 한컴 2020 Hancom PDF Print와 Native/fresh WASM 모두
+// 100.00%에서 검토했다. 웹한글기안기 추정으로 TITLE이 표 없는 대조군과 같다고 하던
+// 기존 가드는 독립 Print와 반대였으므로 원본 프레임·소속 관계로 교체한다.
+
+#[derive(Debug)]
+struct UnstoredFrame {
+    outer: BoundingBox,
+    content: BoundingBox,
+    table: Option<BoundingBox>,
+    title_y: f64,
+    body_y: f64,
+}
+
+fn unstored_frame(name: &str) -> UnstoredFrame {
+    unstored_frame_with_table_offset(name, None)
+}
+
+fn unstored_frame_with_table_offset(name: &str, table_offset: Option<i32>) -> UnstoredFrame {
+    fn find_box(node: &RenderNode, predicate: fn(&RenderNode) -> bool) -> Option<BoundingBox> {
+        if predicate(node) {
+            return Some(node.bbox);
+        }
+        node.children
+            .iter()
+            .find_map(|child| find_box(child, predicate))
+    }
+    let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/textbox_stored_table")
+        .join(format!("textbox_nostored_header_{name}.hwpx"));
+    let mut core = DocumentCore::from_bytes(&std::fs::read(path).expect("원본")).unwrap();
+    if let Some(offset) = table_offset {
+        let mut changed = 0;
+        for para in &mut core.document_mut().sections[0].paragraphs {
+            for control in &mut para.controls {
+                let Control::Shape(shape) = control else {
+                    continue;
+                };
+                let Some(textbox) = shape
+                    .drawing_mut()
+                    .and_then(|drawing| drawing.text_box.as_mut())
+                else {
+                    continue;
+                };
+                for inner in &mut textbox.paragraphs {
+                    for control in &mut inner.controls {
+                        if let Control::Table(table) = control {
+                            assert_eq!(
+                                table.common.vertical_offset as i32, -388,
+                                "원본의 부호 있는 오프셋"
+                            );
+                            table.common.vertical_offset = offset as u32;
+                            changed += 1;
+                        }
+                    }
+                }
+            }
+        }
+        assert_eq!(changed, 1, "다른 속성을 바꾸지 않는 단일 표 대조군");
+        core = DocumentCore::from_bytes(&core.export_hwpx_native().unwrap()).unwrap();
+    }
+    assert_eq!(core.page_count(), 1, "독립 Print와 같은 한 쪽");
+    let tree = core.build_page_render_tree(0).unwrap();
+    fn occurrences(node: &RenderNode, text: &str) -> usize {
+        usize::from(
+            matches!(&node.node_type, RenderNodeType::TextRun(run) if run.text.trim() == text),
+        ) + node
+            .children
+            .iter()
+            .map(|child| occurrences(child, text))
+            .sum::<usize>()
+    }
+    for text in ["TITLE", "BODY"] {
+        assert_eq!(
+            occurrences(&tree.root, text),
+            1,
+            "{name}: {text} 누락·중복 금지"
+        );
+    }
+    let outer = find_box(&tree.root, |node| {
+        matches!(node.node_type, RenderNodeType::Rectangle(_))
+            && node
+                .children
+                .iter()
+                .any(|child| matches!(child.node_type, RenderNodeType::TextBox))
+    })
+    .expect("글상자 바깥 프레임");
+    let content = find_box(&tree.root, |node| {
+        matches!(node.node_type, RenderNodeType::TextBox)
+    })
+    .expect("글상자 내용 프레임");
+    UnstoredFrame {
+        outer,
+        content,
+        table: find_box(&tree.root, |node| {
+            matches!(node.node_type, RenderNodeType::Table(_))
+        }),
+        title_y: first_y(&tree.root, "TITLE").expect("제목 보존"),
+        body_y: first_y(&tree.root, "BODY").expect("뒤 본문 보존"),
+    }
+}
+
+/// 관계형: 제한 표의 바깥 여백을 포함한 프레임·제목 정렬·뒤 본문의 소속을 함께 보호한다.
+/// Native/fresh WASM: 원본과 세 대조군·표 없는 대조군 모두 100.00%.
 #[test]
-fn unstored_textbox_keeps_alignment_without_table_height_rule() {
-    let title = |name: &str| {
-        let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("samples/textbox_stored_table")
-            .join(name);
-        let bytes = std::fs::read(&path).expect("재현물");
-        let core = DocumentCore::from_bytes(&bytes).unwrap();
-        let tree = core.build_page_render_tree(0).unwrap();
-        first_y(&tree.root, "TITLE").expect("TITLE 줄")
-    };
-    let none = title("textbox_nostored_header_none.hwpx");
-    let with_table = title("textbox_nostored_header_front_tall.hwpx");
+fn unstored_restricted_table_shares_its_expanded_frame_with_following_body() {
+    let none = unstored_frame("none");
+    let zero = unstored_frame("front_zero_offset");
+    let canonical_table = zero.table.expect("오프셋 0의 표");
+    for name in ["front_tall", "front_zero_offset", "front_resolved_height"] {
+        let frame = unstored_frame(name);
+        let table = frame.table.expect("제한 표");
+        assert!(
+            frame.outer.height > none.outer.height,
+            "{name}: 표와 두 여백을 담는 프레임"
+        );
+        assert!(
+            frame.title_y < none.title_y,
+            "{name}: 제한 표를 세로 정렬 높이에 포함"
+        );
+        assert!(
+            table.y >= frame.content.y,
+            "{name}: 음수 오프셋은 내용 위끝에서 제한"
+        );
+        assert!(
+            table.y + table.height <= frame.content.y + frame.content.height,
+            "{name}: 표는 확장한 내용 프레임 안에 있어야 한다"
+        );
+        assert!(
+            frame.body_y + 1e-6 >= frame.outer.y + frame.outer.height,
+            "{name}: 뒤 본문이 늘어난 흰 프레임에 가려지면 안 된다: {frame:?}"
+        );
+        assert!(
+            (table.y - canonical_table.y).abs() < 1e-6,
+            "{name}: 제한된 음수 오프셋·정리 전 공통 높이도 같은 물리 표 원점"
+        );
+    }
+}
+
+/// 관계형: 자유 배치 표는 글자의 가운데 정렬 전 원점을 유지하며 본문 프레임을 늘리지 않는다.
+/// Native/fresh WASM: 자유 배치·표 없는 대조군 각각 100.00%.
+#[test]
+fn unstored_unrestricted_table_keeps_its_signed_offset_before_text_alignment() {
+    let none = unstored_frame("none");
+    let free = unstored_frame("front_unrestricted");
+    let zero = unstored_frame_with_table_offset("front_unrestricted", Some(0));
+    let table = free.table.expect("자유 배치 표");
     assert!(
-        (with_table - none).abs() <= 0.5,
-        "저장 줄 없는 글상자의 TITLE 은 표 없는 대조군 자리: {with_table:.1} / {none:.1}"
+        (free.title_y - none.title_y).abs() < 1e-6,
+        "글자만 가운데 정렬한다"
     );
+    assert!(
+        (free.outer.height - none.outer.height).abs() < 1e-6,
+        "자유 표는 본문 높이를 예약하지 않는다"
+    );
+    assert!(
+        (table.y - zero.table.expect("오프셋 0 대조군").y - (-388.0 * 96.0 / 7200.0)).abs() < 1e-6,
+        "자유 표의 음수 오프셋을 임의로 자르지 않는다: {free:?}, {zero:?}"
+    );
+    assert!(
+        (free.title_y - zero.title_y).abs() < 1e-6,
+        "자유 표만 옮겨도 글자 정렬은 그대로다"
+    );
+    assert!(
+        free.body_y + 1e-6 >= free.outer.y + free.outer.height,
+        "뒤 본문은 자기 프레임 뒤에 남는다"
+    );
+}
+
+/// 고정형: 완료 원본 쪽의 독립 Hancom PDF 경계·본문 위치를 ±2px로 고정한다.
+/// Native/fresh WASM 각각 100.00%, 같은 쪽 review·overlay 직접 판독 완료.
+#[test]
+fn completed_unstored_header_preserves_independent_print_frame_and_body_positions() {
+    let frame = unstored_frame("front_tall");
+    // 독립 PDF의 path 상자 세로 68.205pt와 BODY bbox 위끝 167.35031pt를 96dpi로 환산.
+    // 경계 stroke와 논리 상자의 차이는 허용 오차 안에 있으며 기준 PDF 자체는 바꾸지 않는다.
+    let expected_height = 68.205 * 96.0 / 72.0;
+    let expected_body_y = 167.35031 * 96.0 / 72.0;
+    assert!(
+        (frame.outer.height - expected_height).abs() <= 2.0,
+        "{frame:?}"
+    );
+    assert!((frame.body_y - expected_body_y).abs() <= 2.0, "{frame:?}");
 }

@@ -1,3 +1,8 @@
+//! 새 복수 호스트 검사: 관계형. 한컴 2024 Hancom PDF Print와 Native/fresh WASM 각각 100.00%.
+//! 큰 그림 → 뒤 호스트의 작은 그림 → 글줄의 순서와 칸 안 포함·누락·중복을 보호한다.
+//! 원 PR의 웹한글기안기 설명은 이력이며 공식 대조는 `pdf/pr-review-all-open-20261116/`를 사용한다.
+//! 주석 갱신: 2026-11-17T01:23:44+09:00
+//!
 //! [#8576 후속] 칸 안에 겹침 허용 안 함으로 쌓인 어울림 그림 뒤의 글은 그림 아래로 간다.
 //!
 //! 표 칸의 글자 없는 첫 문단에 Square 그림 3장(앞 두 장은 나란히, 셋째는 두 장과
@@ -185,4 +190,96 @@ fn caption_below_single_full_width_picture_grows_row() {
         "행이 그림 + 이름표를 담도록 커져야 한다: 칸 {cell:?}, 이름표 {line:?}"
     );
     assert!(pic.y >= cell.y - TOL_PX, "그림은 칸 위에서 시작한다");
+}
+
+/// 관계형: 새 호스트가 앞 호스트의 배제 상자를 잊어 그림·글줄을 다시 위로 올리지 않는다.
+/// 원본·빈 뒤 호스트 대조군 모두 Native/fresh WASM 100.00%, 같은 쪽 직접 판독 후 추가.
+#[test]
+fn later_picture_host_preserves_all_preceding_picture_boxes_and_text_ownership() {
+    let (cell, pictures, lines) =
+        cell_parts("samples/issue8695/cell-two-square-picture-hosts.hwpx");
+    let (_, control_pictures, control_lines) =
+        cell_parts("samples/issue8695/cell-second-host-without-picture.hwpx");
+    assert_eq!(pictures.len(), 2, "원본 그림 두 장을 각각 한 번 발행");
+    assert_eq!(
+        control_pictures.len(),
+        1,
+        "빈 뒤 호스트는 그림을 만들지 않는다"
+    );
+    assert_eq!(
+        lines
+            .iter()
+            .map(|(text, _)| text.as_str())
+            .collect::<Vec<_>>(),
+        ["가나다라"],
+        "뒤 문단의 순서·누락·중복 금지"
+    );
+    assert_eq!(
+        control_lines
+            .iter()
+            .map(|(text, _)| text.as_str())
+            .collect::<Vec<_>>(),
+        ["가나다라"]
+    );
+    assert!(
+        (pictures[0].y - control_pictures[0].y).abs() <= TOL_PX,
+        "뒤 그림을 추가해도 앞 호스트 원점은 바뀌지 않는다"
+    );
+    assert!(
+        pictures[1].y + TOL_PX >= pictures[0].y + pictures[0].h,
+        "뒤 호스트의 그림이 앞의 큰 그림과 겹치면 안 된다: {pictures:?}"
+    );
+    let bottom = pictures.iter().map(|r| r.y + r.h).fold(f64::MIN, f64::max);
+    for (text, line) in &lines {
+        assert!(
+            line.y + TOL_PX >= bottom,
+            "{text}: 앞의 모든 그림 아래에 있어야 한다"
+        );
+        assert!(
+            line.y + line.h <= cell.y + cell.h + TOL_PX,
+            "{text}: 칸 밖으로 잘리면 안 된다"
+        );
+    }
+    // 두 독립 한컴 PDF의 이름표 bbox도 같다. 작은 그림 높이는 뒤 호스트의 빈 줄
+    // 전진 안에 들어가므로 그림을 없애도 그 빈 문단까지 제거된 것으로 계산하지 않는다.
+    assert!(
+        (lines[0].1.y - control_lines[0].1.y).abs() <= TOL_PX,
+        "작은 그림 유무와 별개로 뒤 호스트의 빈 줄 전진은 보존된다"
+    );
+}
+
+/// 관계형: END는 표 칸 안의 이름표가 아니라 표 다음 본문 문단이며 한 번만 남아야 한다.
+#[test]
+fn following_body_keeps_its_ownership_after_multiple_picture_hosts() {
+    for rel in [
+        "samples/issue8695/cell-two-square-picture-hosts.hwpx",
+        "samples/issue8695/cell-second-host-without-picture.hwpx",
+    ] {
+        let (cell, _, lines) = cell_parts(rel);
+        assert!(
+            lines.iter().all(|(text, _)| text != "END"),
+            "END를 칸 안으로 이동하지 않는다"
+        );
+        let core = DocumentCore::from_bytes(
+            &std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join(rel)).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(core.page_count(), 1);
+        fn end_lines(node: &RenderNode, result: &mut Vec<Rect>) {
+            if matches!(&node.node_type, RenderNodeType::TextRun(run) if run.text.trim() == "END") {
+                result.push(rect(node));
+            }
+            for child in &node.children {
+                end_lines(child, result);
+            }
+        }
+        let tree = core.build_page_render_tree(0).unwrap();
+        let mut ends = Vec::new();
+        end_lines(&tree.root, &mut ends);
+        assert_eq!(ends.len(), 1, "뒤 본문 END의 누락·중복 금지");
+        assert!(
+            ends[0].y + TOL_PX >= cell.y + cell.h,
+            "뒤 본문은 표 뒤에 남는다"
+        );
+    }
 }
