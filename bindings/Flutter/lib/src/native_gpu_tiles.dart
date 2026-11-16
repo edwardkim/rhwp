@@ -131,7 +131,10 @@ class NativeTileGroupChannel extends MethodChannel {
     }
     if (method == 'trimCache' || method == 'trimCacheStatus') {
       if (_group == null || _device == null || _textures.length != 2) {
-        throw const NativeCallException('closed', 'The tile cache owner is unavailable.');
+        throw const NativeCallException(
+          'closed',
+          'The tile cache owner is unavailable.',
+        );
       }
       final raw = await delegate.invokeMapMethod<String, Object?>(method, {
         ...args,
@@ -144,13 +147,21 @@ class NativeTileGroupChannel extends MethodChannel {
           raw?['requestId'] != args['requestId'] ||
           members is! List ||
           members.length != 2) {
-        throw const NativeCallException('invalidTileReply', 'The cache trim group identity changed.');
+        throw const NativeCallException(
+          'invalidTileReply',
+          'The cache trim group identity changed.',
+        );
       }
       for (var index = 0; index < 2; index++) {
         final member = members[index];
-        if (member is! Map || member['textureId'] != _textures[index] ||
-            member['deviceGeneration'] != _device || member['requestId'] != args['requestId']) {
-          throw const NativeCallException('invalidTileReply', 'A cache trim member identity changed.');
+        if (member is! Map ||
+            member['textureId'] != _textures[index] ||
+            member['deviceGeneration'] != _device ||
+            member['requestId'] != args['requestId']) {
+          throw const NativeCallException(
+            'invalidTileReply',
+            'A cache trim member identity changed.',
+          );
         }
       }
       return <String, Object?>{...raw!, 'textureId': _group} as T?;
