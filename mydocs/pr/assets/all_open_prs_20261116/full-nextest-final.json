@@ -1,0 +1,15 @@
+{
+  "status": "passed",
+  "head": "21950b8ab84777fb5642036e5dea9bb0dbf6eac7",
+  "base": "53774cc1508591b6ac794950f0063452fbaf6e87",
+  "environment": "validated macOS minimum-font sandbox",
+  "summary": "Summary [ 533.964s] 13696 tests run: 13696 passed (1 slow), 45 skipped",
+  "run": 13696,
+  "passed": 13696,
+  "failed": 0,
+  "skipped": 45,
+  "test_seconds": 533.964,
+  "command_seconds": 1240.909,
+  "log_sha256": "29c0f022d5a7276890332c3ca1e5717ebb154e9326d03f35bc837c6fc9faac31",
+  "other_gates_status": "Native Skia and lint/build still running"
+}

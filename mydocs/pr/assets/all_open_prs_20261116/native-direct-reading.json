@@ -1,0 +1,136 @@
+{
+  "source": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+  "status": "native_focused_reading_completed_wasm_and_protected_gates_pending",
+  "records": [
+    {
+      "key": "approval-cell-stamp-rows-hwp",
+      "backend": "native Skia",
+      "page": 2,
+      "base_raw": "93.91",
+      "candidate_raw": "93.91",
+      "direct_reading": "base와 후보 PNG가 같다. 결재·사진은 칸 안에 남으며 둘째 조각 사진/가나다의 미세 세로 차이는 기존 대조군의 차이다.",
+      "images": [
+        {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/native-direct-reading/approval-cell-stamp-rows-hwp/rhwp_002.png",
+          "sha256": "b4399f9b39e56eda74dc12328b5ce2f41002f095c1631dacefcdc66271aef559"
+        },
+        {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/native-direct-reading/approval-cell-stamp-rows-hwp/pdf-002.png",
+          "sha256": "248e4309dd18c6243414dfa337ddf56263d2e6ec08fc6a9e9485ba118468a75a"
+        },
+        {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/native-direct-reading/approval-cell-stamp-rows-hwp/review_002.png",
+          "sha256": "01947dc432489f00008fbd6b00527542f6a6c459b3e8b8f9319628ca35a44804"
+        },
+        {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/native-direct-reading/approval-cell-stamp-rows-hwp/overlay_002.png",
+          "sha256": "48e7b9a50695e0d0c92755f955654a99dfa5c023a46cebda207d750e64bb785d"
+        }
+      ]
+    },
+    {
+      "key": "photo-caption-rows-page-end-hwp",
+      "backend": "native Skia",
+      "page": 1,
+      "base_raw": "93.33",
+      "candidate_raw": "93.33",
+      "direct_reading": "base와 후보 PNG가 같다. 끝 결재 글 하나의 쪽 소속과 세로 병합 제목 위치가 PDF와 다르다. 두 쪽 합계 결재 21개·제목 7개는 양쪽 동일하며 누락·중복이 아니다. 원 PR이 변화시키지 않는 경계 대조군으로 명시한 입력이다.",
+      "images": [
+        {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/native-direct-reading/photo-caption-rows-page-end-hwp/rhwp_001.png",
+          "sha256": "a46f8284b2ec00dd7a0b567608b0c7c43d06e29f347e227a076094d8d014ef9b"
+        },
+        {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/native-direct-reading/photo-caption-rows-page-end-hwp/pdf-001.png",
+          "sha256": "50570fc1a76c71b3f26307774910cbd07ff6a0d4dc179d6d4c96dab90c5fe091"
+        },
+        {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/native-direct-reading/photo-caption-rows-page-end-hwp/review_001.png",
+          "sha256": "6a9c7c4a724d285d0707242f14dc50c30c30a5efb2dedbfa4abbc66f54756eeb"
+        },
+        {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/native-direct-reading/photo-caption-rows-page-end-hwp/overlay_001.png",
+          "sha256": "b9177ac874041679b0caace8c6969ab9d5e0c6ca5ed37477715c8b3d4952b151"
+        }
+      ]
+    },
+    {
+      "key": "square-photo-row-split-hwp",
+      "backend": "native Skia",
+      "page": 1,
+      "base_raw": "88.49",
+      "candidate_raw": "99.92",
+      "direct_reading": "사진 여덟 장과 R0~R7·L1·L2가 같은 첫 쪽에 남는다. 마지막 사진/줄의 작은 위치 차이는 남고 100%로 표시하지 않는다.",
+      "images": [
+        {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/native-direct-reading/square-photo-row-split-hwp/rhwp_001.png",
+          "sha256": "e339c816b3dcecfb4392c847ebfe93e094ad63b14fd896b7dbe8a7109ace278c"
+        },
+        {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/native-direct-reading/square-photo-row-split-hwp/pdf-001.png",
+          "sha256": "130877ed463cfd9fcc79d25e2f5807acdf44c34db0bcbf8b33c5fd8e05bfad5b"
+        },
+        {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/native-direct-reading/square-photo-row-split-hwp/review_001.png",
+          "sha256": "618573f1e5c2d8dbe315a3b684206296c8028d11169974cb000ece05fd3b4246"
+        },
+        {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/native-direct-reading/square-photo-row-split-hwp/overlay_001.png",
+          "sha256": "2e1075071f8daa647fe6990c6060c9360b4dfd1460f1a9952dd352ce8f370b4c"
+        }
+      ]
+    },
+    {
+      "key": "textbox_stored_top_tb_v0_pushed-hwp",
+      "backend": "native Skia",
+      "page": 1,
+      "base_raw": "72.06",
+      "candidate_raw": "97.48",
+      "direct_reading": "T1·T2·BOX·BODY와 글상자/표 프레임이 보존된다. BOX는 독립 Print 위치와 겹치며 A1/A2가 한 줄 낮은 차이는 남는다. 이 PR의 저장 표 위치 주장의 완료와 문서 전체의 완전 일치를 구분한다.",
+      "images": [
+        {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/native-direct-reading/textbox_stored_top_tb_v0_pushed-hwp/rhwp_001.png",
+          "sha256": "ba363acc284367fa028232e48a899cf4cad5ff071c01681740ad9a6e41391f15"
+        },
+        {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/native-direct-reading/textbox_stored_top_tb_v0_pushed-hwp/pdf-001.png",
+          "sha256": "c24ae46595f1f108bae0a5f9990d33cf6eaf935db4ad40476ea6b605592ff7ef"
+        },
+        {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/native-direct-reading/textbox_stored_top_tb_v0_pushed-hwp/review_001.png",
+          "sha256": "4a5eabb1226d426136d2046cfade4d9945294337d2d255e3a5b61c9bced47850"
+        },
+        {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/native-direct-reading/textbox_stored_top_tb_v0_pushed-hwp/overlay_001.png",
+          "sha256": "ca23e0863925ab6c6b6a1d4321ac32c11c283f6faf734b5b5dbafcf1300c3931"
+        }
+      ]
+    },
+    {
+      "key": "textbox_stored_top_tb_v2000_pushed-hwp",
+      "backend": "native Skia",
+      "page": 1,
+      "base_raw": "73.76",
+      "candidate_raw": "97.40",
+      "direct_reading": "오프셋을 바꾼 BOX가 독립 Print와 겹치며 각 텍스트는 한 번 남는다. A1/A2의 뒤 줄 위치 차이는 남는다.",
+      "images": [
+        {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/native-direct-reading/textbox_stored_top_tb_v2000_pushed-hwp/rhwp_001.png",
+          "sha256": "e62129321ac0ce44a7194bb09c6ba98b628bdcfb09cfb580fba3ee3c41814905"
+        },
+        {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/native-direct-reading/textbox_stored_top_tb_v2000_pushed-hwp/pdf-001.png",
+          "sha256": "e24ce363149b45881497f551d838d29d505844fa5fc7942142989d12f51952ba"
+        },
+        {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/native-direct-reading/textbox_stored_top_tb_v2000_pushed-hwp/review_001.png",
+          "sha256": "eb3d812e8b93db4992307194e1f19f11abaf094bdc9defa1f8ab3b96c9d5ded5"
+        },
+        {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/native-direct-reading/textbox_stored_top_tb_v2000_pushed-hwp/overlay_001.png",
+          "sha256": "df3cf70954a2d143bcb2171d657f1ffaebc1a27aba803f16ea9382de01007ff8"
+        }
+      ]
+    }
+  ]
+}

@@ -34,3 +34,16 @@ fallback 배치가 소비하는지 대조한다. Native/fresh WASM 전쪽 TSV와
 최종 CI·통합 merge SHA·실제 편집/저장 결과와 세 원본의 같은 페이지 raw·review·overlay를
 한국어 존댓말 코멘트에 표시한다. #9058의 원 이슈와 다른 하위 범위를 확인해 완전 해결된
 범위만 종료하고, 이 PR을 통합한 사실과 남은 범위가 있으면 구분한다.
+
+
+## 통합 후보 최종 소스의 중간 검증 결과
+
+제품 소스 `167921b3c5`와 검증 head `21950b8ab8`에서 최소 글꼴 macOS 전체 회귀는
+**13,696 PASS·0 FAIL·45 skip**이다. Native Skia·세 Clippy·workspace build·fmt·
+suite 정책·unit tier·문서 테스트를 포함한 [Rust 13단계](../assets/all_open_prs_20261116/rust-gates-final.json)는 통과했다.
+통합 검토의 공식 데스크톱 Print 66종·74쪽은
+[Native](../assets/all_open_prs_20261116/native-claims-final.json)·
+[fresh WASM](../assets/all_open_prs_20261116/wasm-claims-final.json) 각각 전쪽 90% 이상이다.
+이 집계는 다른 PR의 입력을 이 PR만의 개선으로 계산한 값이 아니다. PR별 주장·반례는 위 접수 범위와
+개별 보정 증거로 판정한다. 정본 보호 전쪽·실제 소비 경로와 최종 base/head 대조가 남아 있어
+전체 PR 검토 완료나 머지 승인으로 기록하지 않는다.

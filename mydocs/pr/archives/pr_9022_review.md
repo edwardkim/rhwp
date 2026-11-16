@@ -40,3 +40,28 @@ TAC float 회피와 #8939 저장 줄 높이 보존의 충돌 해소 내용은
 한국어 존댓말로 설명한다. 이 PR의 각 주장에 대응하는 같은 페이지 raw·review·overlay 이미지를
 merge SHA 고정 URL로 본문에 표시하고, 게시 후 API와 화면을 확인한다.
 #8695·#9008의 실제 해결 범위를 대조한 뒤 완전 해결된 이슈와 원 PR을 종료한다.
+
+
+## 독립 Print 보정 경계의 최종 제품 집중 검증
+
+제품 source `167921b3c5`에서 두 그림 호스트 원본과 그림 하나를 제거한 대조군은
+Native/fresh WASM 모두 100.00%다. 제목 뒤 사진 행 원본도 전 3쪽 양쪽 100.00%다.
+기존·새 그림 호스트 회귀 7건과 사진 행 회귀 3건은 최소 글꼴 환경에서 모두 통과했다.
+[호스트 raw](../assets/all_open_prs_20261116/frame-boundary-validation/two-hosts/native/rhwp_001.png)·
+[review](../assets/all_open_prs_20261116/frame-boundary-validation/two-hosts/native/review_001.png)·
+[overlay](../assets/all_open_prs_20261116/frame-boundary-validation/two-hosts/native/overlay_001.png),
+[사진 행 원인과 결과](../assets/all_open_prs_20261116/title-photo-cause.md)를 따른다.
+이 집중 결과를 전체 66종·보호 문서·전체 회귀 완료로 확대하지 않는다.
+
+
+## 통합 후보 최종 소스의 중간 검증 결과
+
+제품 소스 `167921b3c5`와 검증 head `21950b8ab8`에서 최소 글꼴 macOS 전체 회귀는
+**13,696 PASS·0 FAIL·45 skip**이다. Native Skia·세 Clippy·workspace build·fmt·
+suite 정책·unit tier·문서 테스트를 포함한 [Rust 13단계](../assets/all_open_prs_20261116/rust-gates-final.json)는 통과했다.
+통합 검토의 공식 데스크톱 Print 66종·74쪽은
+[Native](../assets/all_open_prs_20261116/native-claims-final.json)·
+[fresh WASM](../assets/all_open_prs_20261116/wasm-claims-final.json) 각각 전쪽 90% 이상이다.
+이 집계는 다른 PR의 입력을 이 PR만의 개선으로 계산한 값이 아니다. PR별 주장·반례는 위 접수 범위와
+개별 보정 증거로 판정한다. 정본 보호 전쪽·실제 소비 경로와 최종 base/head 대조가 남아 있어
+전체 PR 검토 완료나 머지 승인으로 기록하지 않는다.

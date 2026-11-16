@@ -37,3 +37,16 @@ renderer 소유 관측에서 해당 custom 프로그램을 선택했고 실제 N
 Mac 일반 고딕에서 Apple SD Gothic Neo가 먼저인 기존 순서는 변경하지 않았다.
 Linux·Windows의 설치 목록 실행을 완료했다고 확대하지 않으며, 글꼴 바이너리는 Git에 넣지 않는다.
 [실제 소비 기록](../assets/all_open_prs_20261116/noto-cjk-native-consumer.json).
+
+
+## 통합 후보 최종 소스의 중간 검증 결과
+
+제품 소스 `167921b3c5`와 검증 head `21950b8ab8`에서 최소 글꼴 macOS 전체 회귀는
+**13,696 PASS·0 FAIL·45 skip**이다. Native Skia·세 Clippy·workspace build·fmt·
+suite 정책·unit tier·문서 테스트를 포함한 [Rust 13단계](../assets/all_open_prs_20261116/rust-gates-final.json)는 통과했다.
+통합 검토의 공식 데스크톱 Print 66종·74쪽은
+[Native](../assets/all_open_prs_20261116/native-claims-final.json)·
+[fresh WASM](../assets/all_open_prs_20261116/wasm-claims-final.json) 각각 전쪽 90% 이상이다.
+이 집계는 다른 PR의 입력을 이 PR만의 개선으로 계산한 값이 아니다. PR별 주장·반례는 위 접수 범위와
+개별 보정 증거로 판정한다. 정본 보호 전쪽·실제 소비 경로와 최종 base/head 대조가 남아 있어
+전체 PR 검토 완료나 머지 승인으로 기록하지 않는다.

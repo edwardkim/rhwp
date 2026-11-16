@@ -1,0 +1,234 @@
+[
+  {
+    "pdf_family": "/INPILL+ArialMT",
+    "candidate_file": "output/pr-review/all-open-pr-integration-20261116/protected-fonts/arial-windows/arial.ttf",
+    "candidate_sha256": "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1",
+    "upem_equal": true,
+    "checks": [
+      {
+        "character": "E",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "L",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "S",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "T",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "Y",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": " ",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "1",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "A",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "H",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "P",
+        "outline_equal": true,
+        "advance_equal": true
+      }
+    ]
+  },
+  {
+    "pdf_family": "/INPILL+Arial-BoldMT",
+    "candidate_file": "output/pr-review/all-open-pr-integration-20261116/protected-fonts/arial-windows/arialbd.ttf",
+    "candidate_sha256": "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69",
+    "upem_equal": true,
+    "checks": [
+      {
+        "character": "E",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "L",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "S",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "T",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "Y",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": " ",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "2",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "A",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "H",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "P",
+        "outline_equal": true,
+        "advance_equal": true
+      }
+    ]
+  },
+  {
+    "pdf_family": "/INPILL+Arial-ItalicMT",
+    "candidate_file": "output/pr-review/all-open-pr-integration-20261116/protected-fonts/arial-windows/ariali.ttf",
+    "candidate_sha256": "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62",
+    "upem_equal": true,
+    "checks": [
+      {
+        "character": "E",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "L",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "S",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "T",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "Y",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": " ",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "3",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "A",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "H",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "P",
+        "outline_equal": true,
+        "advance_equal": true
+      }
+    ]
+  },
+  {
+    "pdf_family": "/INPILL+Arial-BoldItalicMT",
+    "candidate_file": "output/pr-review/all-open-pr-integration-20261116/protected-fonts/arial-windows/arialbi.ttf",
+    "candidate_sha256": "e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994",
+    "upem_equal": true,
+    "checks": [
+      {
+        "character": "E",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "L",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "S",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "T",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "Y",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": " ",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "4",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "A",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "H",
+        "outline_equal": true,
+        "advance_equal": true
+      },
+      {
+        "character": "P",
+        "outline_equal": true,
+        "advance_equal": true
+      }
+    ]
+  }
+]

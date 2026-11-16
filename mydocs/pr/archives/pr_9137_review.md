@@ -28,3 +28,31 @@ Print를 확보했다. `textbox_nostored_header_front_tall.hwpx`는 이 독립 P
 통합 PR·merge SHA·CI와 실제 Print 제품을 한국어 존댓말로 알린다. 저장 줄이 있는 이 PR의
 각 주장에 대응하는 같은 쪽 raw·review·overlay를 본문에 표시한다. #9109 공유 범위와
 메인터너 보정 범위가 있으면 구분하며 #9108의 완전 해결 여부를 확인한 뒤 종료한다.
+
+
+## 제한 표 대조군의 보정과 집중 검증
+
+독립 Print에서 확인한 제한 표·자유 표의 차이를 공통 프레임 계산과 실제 본문 커서에
+함께 반영했다. 제품 source `167921b3c5`의 원본·세 단일 속성 대조군·표 없는 대조군은
+Native/fresh WASM 모두 100.00%다. 기존 저장 줄 검사 3건과 새 관계형 2건·
+완료 쪽 Print 위치 고정형 1건, 총 6건은 최소 글꼴 환경에서 통과했다.
+[원인과 최종 집중 결과](../assets/all_open_prs_20261116/header-front-cause.md),
+[Native raw](../assets/all_open_prs_20261116/frame-boundary-validation/restricted-header/native/rhwp_001.png)·
+[review](../assets/all_open_prs_20261116/frame-boundary-validation/restricted-header/native/review_001.png)·
+[overlay](../assets/all_open_prs_20261116/frame-boundary-validation/restricted-header/native/overlay_001.png),
+[WASM review](../assets/all_open_prs_20261116/frame-boundary-validation/restricted-header/wasm/review_001.png)·
+[overlay](../assets/all_open_prs_20261116/frame-boundary-validation/restricted-header/wasm/overlay_001.png)를 보존했다.
+전체 원 PR 입력·정본 보호·전체 회귀가 남아 있어 최종 판정은 계속 보류다.
+
+
+## 통합 후보 최종 소스의 중간 검증 결과
+
+제품 소스 `167921b3c5`와 검증 head `21950b8ab8`에서 최소 글꼴 macOS 전체 회귀는
+**13,696 PASS·0 FAIL·45 skip**이다. Native Skia·세 Clippy·workspace build·fmt·
+suite 정책·unit tier·문서 테스트를 포함한 [Rust 13단계](../assets/all_open_prs_20261116/rust-gates-final.json)는 통과했다.
+통합 검토의 공식 데스크톱 Print 66종·74쪽은
+[Native](../assets/all_open_prs_20261116/native-claims-final.json)·
+[fresh WASM](../assets/all_open_prs_20261116/wasm-claims-final.json) 각각 전쪽 90% 이상이다.
+이 집계는 다른 PR의 입력을 이 PR만의 개선으로 계산한 값이 아니다. PR별 주장·반례는 위 접수 범위와
+개별 보정 증거로 판정한다. 정본 보호 전쪽·실제 소비 경로와 최종 base/head 대조가 남아 있어
+전체 PR 검토 완료나 머지 승인으로 기록하지 않는다.
