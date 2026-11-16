@@ -99,3 +99,34 @@ fn pushed_anchor_line_places_topbottom_table_at_previous_paragraph_end() {
         }
     }
 }
+
+/// 저장 줄 없는 글상자는 이 저장 줄 경로의 표 높이 규칙을 쓰지 않는다(회귀 가드).
+///
+/// 재현물 `textbox_nostored_header_{none,front_tall}.hwpx`: 낮은 가운데 정렬 글상자(5940 HU) 첫 문단(공백)에
+/// 음수 오프셋(−388 HU) 글 앞으로 표(높이 5983 HU, 글상자 안 높이보다 큼)를 둔 결재 칸 형상과 표 없는 대조군.
+/// 사내 실문서(같은 형상의 교육계획안 머리 결재 칸)에서 이 규칙을 저장 줄 없는 글상자에도 쓰면 결재 칸이
+/// 정답(웹한글기안기 화면)보다 약 7px 위로 올라가 본문 표와 떨어졌다. 그래서 저장 줄 없는 글상자의 `TITLE`
+/// 은 표 없는 대조군과 같은 자리여야 한다.
+///
+/// 알려진 차이: 웹한글기안기 인쇄(`pdf/textbox_stored_table/textbox_nostored_header_front_tall-webhwp-print.pdf`)는
+/// 이 합성본에서 `TITLE` 을 대조군보다 18.5px 위에 둔다(표를 정렬 높이에 넣음). 실문서 정답은 결재 칸 자리가
+/// 이 가드의 동작과 같고 제목은 약 5px 차이라, 결재 칸 자리를 지키는 쪽을 택했다. 글 앞으로 표가 가운데 정렬
+/// 오프셋을 따라 움직이지 않는 한컴 규칙을 밝히면 이 가드를 웹한글기안기 값으로 바꾼다.
+#[test]
+fn unstored_textbox_keeps_alignment_without_table_height_rule() {
+    let title = |name: &str| {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("samples/textbox_stored_table")
+            .join(name);
+        let bytes = std::fs::read(&path).expect("재현물");
+        let core = DocumentCore::from_bytes(&bytes).unwrap();
+        let tree = core.build_page_render_tree(0).unwrap();
+        first_y(&tree.root, "TITLE").expect("TITLE 줄")
+    };
+    let none = title("textbox_nostored_header_none.hwpx");
+    let with_table = title("textbox_nostored_header_front_tall.hwpx");
+    assert!(
+        (with_table - none).abs() <= 0.5,
+        "저장 줄 없는 글상자의 TITLE 은 표 없는 대조군 자리: {with_table:.1} / {none:.1}"
+    );
+}
