@@ -402,6 +402,38 @@ CDP `SystemInfo.getInfo`의 `gpu.featureStatus`를 함께 기록한다. 최종 C
 이전 producer가 잘못 복사됐으면 해당 결과를 무효로 구분한 뒤 올바른 산출물로 재검증한다.
 정상 결과와 무효 결과를 섞거나 공유 target 전체를 삭제해 해결하지 않는다.
 
+### 원본 글꼴 프로그램의 형식 순서와 명시적 환경 설정
+
+문서의 글꼴 이름·저장 형식과 실제 설치 프로그램의 이름·형식을 구분한다. 예를 들어
+문서가 요청하는 `한양중고딕`의 TTF 원본은 `H2GTRM.TTF`이며, 설치 이름은
+`HY중고딕`·`HYGothic-Medium`, PostScript 이름은 `H2gtrM`으로 표시될 수 있다.
+이 경우 검증된 원본 별칭으로 조회하며, 이름이 다르다는 이유로 일반 고딕 대체를 먼저 적용하지 않는다.
+
+자동 선택은 **같은 원본 글꼴과 검증된 별칭의 읽을 수 있는 프로그램** 안에서
+TTF → TTC의 해당 face → OpenType 프로그램 순서로 수행하고, 원본을 찾지 못하면 대체 글꼴로
+진행한다. OTF는 컨테이너이며 CFF는 그 안의 윤곽 형식일 수 있으므로 OTF와 CFF를 서로 다른
+두 단계로 검증했다고 쓰지 않는다. 다른 family의 TTF가 원본 OTF보다 우선한다는 뜻도 아니다.
+실제 파일 형식·face index와 글리프 포함 여부를 확인한다.
+
+`--font-environment`를 지정하면 자동 선택보다 명시적 설정이 먼저 소비될 수 있다.
+`selectedPrograms`의 `trueType`·`openTypeCff`·프로그램 신원뿐 아니라 `substitutions`,
+`documentSubstitutions`, `glyphFallbacks`, `trueTypeFaces`, `preserveSourceMetrics`를 확인한다.
+과거 JSON이 CFF를 고정했다면 설치된 TTF나 `--font-path` 순서만 바꾸어도 같은 선택이 남을 수 있다.
+과거 수용 JSON은 당시 증거로 보존하고, 변경한 조건은 새 JSON과 별도 output에 기록한다.
+
+1. JSON 없는 자동 선택과, 다른 Print 대체·메트릭 설정을 유지한 조건 대조를 구분해 실행한다.
+   JSON 전체를 제거하면 다른 글꼴·기호·메트릭도 바뀔 수 있으므로 전체 점수 차이를 한 글꼴의
+   형식 선택 때문이라고 단정하지 않는다. 원본 별칭 누락은 공통 선택 경로에서 보정한다.
+2. Native의 실제 선택 영수증과 WASM의 `font-catalog.json`·`wasm-export-complete.json`을
+   확인한다. 파일 SHA-256, face index를 포함한 프로그램 신원, 브라우저 공급을 위해 정규화한
+   바이트 SHA는 각각 구분한다. 설치 목록이나 로드 성공만으로 원본 프로그램 선택을 입증하지 않는다.
+3. 글꼴 조건을 바꿨으면 같은 조건의 고정 base와 후보로 Native/fresh WASM 전쪽 TSV를 산출한다.
+   쪽수·내용 소속·누락·중복과 같은 페이지의 review·overlay를 직접 대조하며 기존 보호 하한을
+   유지한다. 한쪽의 최고값이나 부분 페이지 결과로 전쪽 수용을 대신하지 않는다.
+
+비공개 글꼴 바이너리는 제출하지 않는다. 검증용 공급 파일은 ignored output에 두고 출처와
+프로그램 대응 근거만 기록한다. 일반 기여자에게 비공개 원본 보유를 요구하는 규칙은 아니다.
+
 ### macOS 외부 연결 그림 공급
 
 Linux·Windows에서 사용한 검증 명령이나 manifest를 Mac으로 옮길 때는 연결 그림의

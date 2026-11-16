@@ -1,0 +1,239 @@
+{
+  "source": "0d587554b804183b5cc6d090f396acc47525c089",
+  "selected_wasm_program": {
+    "query": "HY중고딕",
+    "family": "HYGothic-Medium",
+    "programId": "sweep-febb15c4b79dffd48f7424d656fa8456586575216f007a40d962801d0a5280fd",
+    "trueType": true,
+    "openTypeCff": false
+  },
+  "loaded_programs": [
+    {
+      "family": "한양중고딕",
+      "registeredFamily": "한양중고딕",
+      "sourceSha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63",
+      "sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [],
+      "sourceKind": "external"
+    },
+    {
+      "family": "HY중고딕",
+      "registeredFamily": "HY중고딕",
+      "sourceSha256": "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5",
+      "sha256": "febb15c4b79dffd48f7424d656fa8456586575216f007a40d962801d0a5280fd",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [
+        "cmap-format4-terminal-notdef"
+      ],
+      "sourceKind": "external"
+    },
+    {
+      "family": "HYGothic-Medium",
+      "registeredFamily": "HYGothic-Medium",
+      "sourceSha256": "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5",
+      "sha256": "febb15c4b79dffd48f7424d656fa8456586575216f007a40d962801d0a5280fd",
+      "faceIndex": 0,
+      "weight": 400,
+      "style": "normal",
+      "repairs": [
+        "cmap-format4-terminal-notdef"
+      ],
+      "sourceKind": "external"
+    }
+  ],
+  "p5": {
+    "page": "5",
+    "tolerant_content_match_percent": "99.10",
+    "below_90": "0",
+    "silhouette_raw_match_percent": "99.10",
+    "silhouette_boundary_reconciled_pixels": "0"
+  },
+  "selected_native_program": {
+    "family": "HYGothic-Medium",
+    "openTypeCff": false,
+    "programId": "f19bd4435ac004182cf09af592a7353c03155fc41620d3cf8b76e556c857cfe4",
+    "query": "HY중고딕",
+    "trueType": true
+  },
+  "rebased_head": "6ca77c5ee23d1950399697bf0e2314854d74a462",
+  "render_read_paths_unchanged": true,
+  "rows": [
+    {
+      "key": "nested-auto-no-json",
+      "backend": "native",
+      "pages": 17,
+      "minimum": 97.54,
+      "exit": 0
+    },
+    {
+      "key": "hwp3-specimen",
+      "backend": "native",
+      "pages": 1,
+      "minimum": 98.48,
+      "exit": 0
+    },
+    {
+      "key": "02-both-source",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "exit": 0
+    },
+    {
+      "key": "color-source",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "exit": 0
+    },
+    {
+      "key": "nested-auto-no-json",
+      "backend": "wasm",
+      "pages": 17,
+      "minimum": 97.75,
+      "exit": 0
+    },
+    {
+      "key": "hwp3-specimen",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": 98.48,
+      "exit": 0
+    },
+    {
+      "key": "02-both-source",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "exit": 0
+    },
+    {
+      "key": "color-source",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "exit": 0
+    },
+    {
+      "key": "proficiency_test_result_form",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": 100.0,
+      "exit": 0
+    },
+    {
+      "key": "veterans_summer_support_press_release",
+      "backend": "wasm",
+      "pages": 2,
+      "minimum": 99.99,
+      "exit": 0
+    },
+    {
+      "key": "black_stork_restoration_press_release",
+      "backend": "wasm",
+      "pages": 6,
+      "minimum": 98.72,
+      "exit": 0
+    },
+    {
+      "key": "facility_fee_reduction_criteria",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": 99.83,
+      "exit": 0
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-bold-probe",
+      "backend": "wasm",
+      "pages": 4,
+      "minimum": 97.51,
+      "exit": 0
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-probe",
+      "backend": "wasm",
+      "pages": 4,
+      "minimum": 97.39,
+      "exit": 0
+    },
+    {
+      "key": "proficiency_test_result_form",
+      "backend": "native",
+      "pages": 1,
+      "minimum": 100.0,
+      "exit": 0
+    },
+    {
+      "key": "veterans_summer_support_press_release",
+      "backend": "native",
+      "pages": 2,
+      "minimum": 99.99,
+      "exit": 0
+    },
+    {
+      "key": "black_stork_restoration_press_release",
+      "backend": "native",
+      "pages": 6,
+      "minimum": 98.25,
+      "exit": 0
+    },
+    {
+      "key": "facility_fee_reduction_criteria",
+      "backend": "native",
+      "pages": 1,
+      "minimum": 99.82,
+      "exit": 0
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-bold-probe",
+      "backend": "native",
+      "pages": 4,
+      "minimum": 97.6,
+      "exit": 0
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-probe",
+      "backend": "native",
+      "pages": 4,
+      "minimum": 97.42,
+      "exit": 0
+    },
+    {
+      "key": "nested-observed-print-ttf",
+      "backend": "native",
+      "pages": 17,
+      "minimum": 99.86,
+      "exit": 0
+    },
+    {
+      "key": "nested-observed-print-ttf",
+      "backend": "wasm",
+      "pages": 17,
+      "minimum": 99.86,
+      "exit": 0
+    }
+  ],
+  "rebase": {
+    "old_head": "0d587554b804183b5cc6d090f396acc47525c089",
+    "new_head": "6ca77c5ee23d1950399697bf0e2314854d74a462",
+    "base": "443dafb08107152e066689544e88d90988339567",
+    "exit_code": 0,
+    "rust_source_hashes_identical": true
+  },
+  "producer": {
+    "native_sha256": "a8f9b5c0f8f0ee7c14926a743aab2e4784ebfe57ac2e2506f3c08e5237cbce19",
+    "wasm_sha256": "d1702a3b077f849804f63bace85f6e8c5547ca8e6c26b3bef3382beab96e166f",
+    "js_sha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365"
+  },
+  "direct_reading": {
+    "nested_p5": "2개 ※의 기준선·크기·앞뒤 내용 소속 보존을 Native review와 WASM overlay로 확인. 2px 판정 100%가 모든 픽셀 동일성을 뜻하지 않음.",
+    "both_p2": "짝수 바탕쪽 MP-BOTH와 page 2 소속·위치 보존",
+    "color_p3": "3쪽 본문과 색상 보존"
+  },
+  "acceptance": "focused evidence only; protected whole and final gates pending"
+}
