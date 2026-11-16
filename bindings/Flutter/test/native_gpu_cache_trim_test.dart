@@ -502,11 +502,21 @@ void main() {
     final plugin = TrimPlugin()..gate = gate;
     final (document, controller) = await ready(tester, plugin);
     try {
-      final trimming = controller.trimCaches();
+      NativeGpuCacheTrimResult? cancelled;
+      unawaited(
+        controller.trimCaches().then((result) {
+          cancelled = result;
+        }),
+      );
       await until(tester, () => plugin.trims.isNotEmpty);
       final closing = controller.close();
       await tester.pump();
-      expect((await trimming).reason, 'closed');
+      expect(
+        cancelled,
+        isNotNull,
+        reason: 'Close completes local observation immediately.',
+      );
+      expect(cancelled!.reason, 'closed');
       await closing;
       expect(controller.phase, NativeTexturePhase.closed);
       gate.completeError(PlatformException(code: 'lateNativeError'));
