@@ -1,4 +1,5 @@
-//! Native foreign template import contracts; synthetic inputs are not Hancom visual oracles.
+//! 관계형: Native 문단 블록 가져오기의 리소스 소유·참조·원자성과 반복 저장 계약.
+//! 합성 입력의 구조를 검사하며 한컴 PDF의 시각 일치율이나 실물 px 좌표를 고정하지 않는다.
 use rhwp::{
     document_core::{DocumentCore, ImportParagraphBlockLimits, ImportParagraphBlockRequest},
     model::{
@@ -392,6 +393,22 @@ fn sparse_target_storage_collision_and_opaque_numbering_are_not_silently_repaire
 /// 다른 문서로 옮기면 그 안의 글자 모양 참조도 대상 문서의 ID로 바뀌어야 한다.
 #[test]
 fn hwpx_numbering_and_bullet_import_with_target_char_shape_references() {
+    check_hwpx_list_import_char_refs("canonical");
+}
+
+#[test]
+fn hwpx_numbering_and_bullet_import_preserves_single_quoted_char_references() {
+    check_hwpx_list_import_char_refs("single_quotes");
+}
+
+#[test]
+fn hwpx_numbering_and_bullet_import_preserves_spaced_char_reference_attributes() {
+    check_hwpx_list_import_char_refs("attribute_whitespace");
+}
+
+// 관계형: 공개 가져오기 API와 HWP/HWPX 반복 저장에서 같은 글자 모양을 가리키는지
+// 검사한다. 합성 입력의 ID 충돌·XML 표기만 달리하며 실물 배치의 px 기대값은 만들지 않는다.
+fn check_hwpx_list_import_char_refs(xml_spelling: &str) {
     use rhwp::model::style::HeadType;
     use rhwp::wasm_api::HwpDocument;
 
@@ -417,13 +434,37 @@ fn hwpx_numbering_and_bullet_import_with_target_char_shape_references() {
     }
     /// 원본 구간에서 `level` 수준(글머리표는 첫 태그)의 `charPrIDRef` 값.
     fn raw_char_ref(raw: &str, level: Option<usize>) -> u32 {
-        let tag = raw
-            .split('<')
-            .filter(|tag| tag.contains("paraHead") && tag.contains("charPrIDRef=\""))
-            .find(|tag| level.is_none_or(|level| tag.contains(&format!(" level=\"{level}\""))))
-            .unwrap();
-        let value = tag.split("charPrIDRef=\"").nth(1).unwrap();
-        value[..value.find('"').unwrap()].parse().unwrap()
+        let mut reader = quick_xml::Reader::from_str(raw);
+        loop {
+            match reader.read_event().unwrap() {
+                quick_xml::events::Event::Start(tag) | quick_xml::events::Event::Empty(tag)
+                    if tag.local_name().as_ref() == "paraHead" =>
+                {
+                    let attributes: Vec<_> = tag.attributes().map(Result::unwrap).collect();
+                    let at = attributes
+                        .iter()
+                        .find(|a| a.key.as_ref() == "level")
+                        .map(|a| {
+                            a.normalized_value(quick_xml::XmlVersion::Implicit1_0)
+                                .unwrap()
+                                .parse::<usize>()
+                                .unwrap()
+                        });
+                    if level.is_none() || at == level {
+                        return attributes
+                            .iter()
+                            .find(|a| a.key.as_ref() == "charPrIDRef")
+                            .unwrap()
+                            .normalized_value(quick_xml::XmlVersion::Implicit1_0)
+                            .unwrap()
+                            .parse()
+                            .unwrap();
+                    }
+                }
+                quick_xml::events::Event::Eof => panic!("paraHead 참조가 없다"),
+                _ => {}
+            }
+        }
     }
 
     let mut list = blank(&["head", "numb", "bull", "tail"]);
@@ -449,7 +490,25 @@ fn hwpx_numbering_and_bullet_import_with_target_char_shape_references() {
         &format!(r#"{{"headType":"Bullet","numberingId":{bullet}}}"#),
     )
     .unwrap();
-    let source = reopen(&list, true);
+    let mut source = reopen(&list, true);
+    let rewrite = |raw: &str| match xml_spelling {
+        "canonical" => raw.to_owned(),
+        "single_quotes" => raw.replace('"', "'"),
+        "attribute_whitespace" => raw.replace(" charPrIDRef=", "\tcharPrIDRef = "),
+        _ => unreachable!(),
+    };
+    for numbering in &mut source.document_mut().doc_info.numberings {
+        if let Some(raw) = numbering.raw_para_heads.as_mut() {
+            *raw = rewrite(raw);
+        }
+    }
+    for bullet in &mut source.document_mut().doc_info.bullets {
+        if let Some(raw) = bullet.raw_para_head.as_mut() {
+            *raw = rewrite(raw);
+        }
+    }
+    // 표기가 다른 실제 HWPX 바이트를 파싱한 뒤 가져온다. 원시 모델만 바꾼 검사가 아니다.
+    let source = reopen(&source, true);
     let info = &source.document().doc_info;
     let source_number = &info.numberings[usize::from(number) - 1];
     let source_bullet = &info.bullets[usize::from(bullet) - 1];
