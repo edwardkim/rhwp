@@ -1,9 +1,11 @@
-//! [#9087] 관계형 계약 — HFT 「신명 순명조」가 직접 그리는 글자의 전진폭은 독립 한컴 Print 의 Type3 `/Widths` 비율이고, 굵게는 글자마다 0.05em 더 전진한다.
+//! [#9087] 관계형·고정형 계약 — HFT 「신명 순명조」가 직접 그리는 글자의 전진폭은 독립 한컴 Print 의 Type3 `/Widths` 비율이고, 굵게는 글자마다 0.05em 더 전진한다.
 //!
-//! 주석 갱신: 2026-11-15 20:30 KST(+09:00). 새 파일.
+//! 주석 갱신: 2026-11-16 18:26 KST(+09:00).
+//! 직전 파일 변경: 2026-11-16 17:39:14 KST, `709bd6962c3b46f81de15b35560e023eb2246908`.
 //!
 //! 유형: 같은 줄 앞뒤 글자 사이 간격이 글자 크기 × 폭/1000 인지 보는 관계형이다. 절대 px 좌표는
-//! 고정하지 않는다. 설치 글꼴을 가정하지 않는다.
+//! 고정하지 않는다. 추가 고정형 검사는 독립 Print 3쪽의 기호 뒤 「가」 x 좌표를 96 DPI에서 ±2px로
+//! 보호한다. 모든 검사는 설치 글꼴을 가정하지 않는다.
 //!
 //! 대상: `samples/issue9087/hft-sinmyeong_sunmyeongjo-probe.hwpx`·`…-bold-probe.hwpx`. 일곱 언어 슬롯을
 //! 모두 HFT 「신명 순명조」로 둔 합성 탐침(`samples/lang_slot/gen_lang_slot_probe.py`, FTYPE=HFT)이고
@@ -19,11 +21,16 @@
 //! - 일반 탐침: 수정 전 Native 98.93·99.65·95.82·94.54 → 수정 후 Native 99.85·99.82·90.38·93.64 / fresh WASM 99.93·99.95·94.42·93.90.
 //! - 굵게 탐침: 수정 전 Native 95.22·95.35·92.83·93.70 → 수정 후 Native 99.86·99.92·91.57·93.90 / fresh WASM 99.93·99.95·95.39·94.51.
 //!   전쪽 최저: 일반 Native 90.38·fresh WASM 93.90, 굵게 Native 91.57·fresh WASM 94.51.
-//! - 3·4쪽은 한/글이 한컴바탕으로 대체해 그리는 CJK 기호 쪽이다. 〄 々 〆 〒 등을 rhwp 는 반각으로
-//!   전진해 뒤 「가」가 한컴보다 왼쪽에 놓인다(수정 전 5.2px, 수정 후 6.4px — 앞 글자들이 한컴 위치로
-//!   1.2px 옮겨 간 만큼). 일반 탐침 3쪽 Native 가 95.82 → 90.38 로 내려간 까닭이다. 대체 글자의 폭은
-//!   이 수정이 다루지 않는 축이고 이 파일은 검사하지 않는다.
-//! - 증거: `mydocs/pr/assets/issue_9087/`(전쪽 Native·fresh WASM TSV, 대표 review·overlay PNG).
+//! - 위 수치는 원 PR의 기록이다. 통합 후보 `10d0d6ae`의 전각 기호 폭 보정 후 측정(2026-11-16,
+//!   canonical PNG/96 DPI/compat 2022/2px, Windows 원본 HBATANG + Mac 사용자 글꼴 공급):
+//!   일반 Native 100.00·100.00·99.66029·97.42349 / fresh WASM 100.00·100.00·99.66062·97.39462.
+//!   굵게 Native 99.99536·99.99537·99.65994·97.59521 / fresh WASM 99.99536·99.99537·99.66001·97.50866.
+//!   각 4쪽이며 전쪽 최저는 일반 Native 97.42349·WASM 97.39462, 굵게 Native 97.59521·WASM 97.50866.
+//! - 추가 관계형 기대값: 독립 Print의 Haansoft Batang 기호 원점 간격/동일 줄 한글 전각 전진 = 1em.
+//!   추가 고정형 기대값: 일반 Print 3쪽 기호 뒤 「가」 원점 105.54280pt × 96/72 = 140.72373px.
+//!   3쪽 양쪽 98% 이상 및 같은 쪽 review/overlay 직접 판독 후 ±2px만 고정한다. 4쪽은 고정하지 않는다.
+//! - 증거: `mydocs/pr/assets/planet6897_20261116/cjk-advance-before.json` 및
+//!   `mydocs/pr/assets/planet6897_20261116/cjk-advance-validation.json`(독립 PDF·생산자·전쪽 결과).
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::paint::RenderProfile;
@@ -173,4 +180,52 @@ fn bold_sinmyeong_sunmyeongjo_hft_adds_bold_tracking_to_its_own_glyphs() {
         0.05,
         WIDTHS,
     );
+}
+
+/// 독립 Print가 전각으로 그린 대체 기호도 뒤 한글을 반각만큼 앞당기지 않는다.
+#[test]
+fn cjk_fallback_symbols_preserve_independent_print_full_em_advance() {
+    check(
+        "samples/issue9087/hft-sinmyeong_sunmyeongjo-probe.hwpx",
+        0.0,
+        &[
+            ('、', 1000),
+            ('。', 1000),
+            ('〄', 1000),
+            ('々', 1000),
+            ('〆', 1000),
+            ('〇', 1000),
+            ('〈', 1000),
+            ('【', 1000),
+            ('〤', 1000),
+        ],
+    );
+}
+
+/// 99.66%로 대조·판독한 3쪽에서 전각 기호 뒤 한글의 독립 Print x 원점을 보호한다.
+#[test]
+fn cjk_page_three_following_hangul_keeps_independent_print_x_origin() {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/issue9087/hft-sinmyeong_sunmyeongjo-probe.hwpx");
+    let core =
+        DocumentCore::from_bytes(&std::fs::read(path).expect("탐침 입력")).expect("탐침 열기");
+    let svg = core
+        .render_page_svg_layer_with_profile_native(2, RenderProfile::Print)
+        .expect("독립 Print와 대조한 3쪽");
+    let glyphs = glyphs(&svg);
+    // PDFium의 독립 PDF 문자 원점을 pt→96 DPI px로 변환한 값이다.
+    let pdf_x_px = 105.542_800_903_320_31 * 96.0 / 72.0;
+    for symbol in ["、", "〄", "〈", "【", "〤"] {
+        let target = glyphs.iter().find(|g| g.text == symbol).expect("기호 존재");
+        let following = glyphs
+            .iter()
+            .filter(|g| g.text == "가" && (g.y - target.y).abs() < 0.5 && g.x > target.x)
+            .min_by(|a, b| a.x.total_cmp(&b.x))
+            .expect("같은 줄 뒤 한글 존재");
+        assert!(
+            (following.x - pdf_x_px).abs() <= 2.0,
+            "{symbol:?} 뒤 한글 x={}px, 독립 Print {pdf_x_px}px ±2px",
+            following.x
+        );
+    }
 }
