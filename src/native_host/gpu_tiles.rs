@@ -5,6 +5,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
+#[path = "gpu_tiles/cache_trim.rs"]
 pub(crate) mod cache_trim;
 
 pub(crate) fn trim_receipt(
@@ -26,6 +27,7 @@ use skia_safe::Surface;
     all(feature = "native-skia-metal", target_os = "macos"),
     all(feature = "native-skia-d3d", target_os = "windows"),
 ))]
+#[path = "gpu_tiles/frame_resources.rs"]
 pub(crate) mod frame_resources;
 
 use super::super::paint::{LayerOutputOptions, RenderProfile};
