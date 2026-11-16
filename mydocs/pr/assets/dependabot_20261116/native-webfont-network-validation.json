@@ -1,0 +1,144 @@
+{
+  "status": "passed",
+  "purpose": "ureq3.5.2 Native cold download/cache reuse API check, not Visual Sweep scoring",
+  "source": "87c78424bc261f90e1167ecedc6a0f2106864d37",
+  "binary_sha256": "ed7be1ef4b4ca40714ae38b899efabde538dd35faeef04f7668cad3c5baea47e",
+  "input": "/Users/tsjang/rhwp/samples/re-font-batang-hancom.hwp",
+  "input_sha256": "99ec0cd2f55ba45493b97c550333db6d0275831ae6150a041bdbe5e2bd174049",
+  "profile_sha256": "dab5a29efd05b091cf0308729b49d34c7922ea399dc823d70457cde0c1367e8c",
+  "runs": [
+    {
+      "phase": "cold",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/minimal-font/profile-v3.sb",
+        "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/candidate/rhwp-native",
+        "export-png",
+        "/Users/tsjang/rhwp/samples/re-font-batang-hancom.hwp",
+        "--profile",
+        "print",
+        "--json",
+        "--dpi",
+        "96",
+        "--compat",
+        "2024",
+        "-p",
+        "0",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/native-webfont-network/cold"
+      ],
+      "exit": 0,
+      "seconds": 1.143,
+      "resource_receipts": [
+        {
+          "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff",
+          "sourceSha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+          "nativeSha256": "24b49246526c86ddd7bf44d3ee88a3cc044f51f51af4e01c29a1e699059981e1",
+          "nativeBytes": 28413328
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/edwardkim/rhwp@7d06d5c706f1d89f1662e739abf2b1b25d2a98e4/assets/fonts/NotoSerifKR-Regular.woff2",
+          "sourceSha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45",
+          "nativeSha256": "35f7479023ae8fa60fde58eb702070d03fbdb43de9228c4a7f8b1c27ffe80518",
+          "nativeBytes": 8434876
+        }
+      ],
+      "pngs": {
+        "re-font-batang-hancom.png": "42a8e114aa037f5a05eb28c5453d246a264871e3f524273c88fced2c475acb1e"
+      }
+    },
+    {
+      "phase": "warm",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/minimal-font/profile-v3.sb",
+        "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/candidate/rhwp-native",
+        "export-png",
+        "/Users/tsjang/rhwp/samples/re-font-batang-hancom.hwp",
+        "--profile",
+        "print",
+        "--json",
+        "--dpi",
+        "96",
+        "--compat",
+        "2024",
+        "-p",
+        "0",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/native-webfont-network/warm"
+      ],
+      "exit": 0,
+      "seconds": 0.487,
+      "resource_receipts": [
+        {
+          "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff",
+          "sourceSha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+          "nativeSha256": "24b49246526c86ddd7bf44d3ee88a3cc044f51f51af4e01c29a1e699059981e1",
+          "nativeBytes": 28413328
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/edwardkim/rhwp@7d06d5c706f1d89f1662e739abf2b1b25d2a98e4/assets/fonts/NotoSerifKR-Regular.woff2",
+          "sourceSha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45",
+          "nativeSha256": "35f7479023ae8fa60fde58eb702070d03fbdb43de9228c4a7f8b1c27ffe80518",
+          "nativeBytes": 8434876
+        }
+      ],
+      "pngs": {
+        "re-font-batang-hancom.png": "42a8e114aa037f5a05eb28c5453d246a264871e3f524273c88fced2c475acb1e"
+      }
+    },
+    {
+      "phase": "offline-warm",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/minimal-font/native-webfont-offline.sb",
+        "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/candidate/rhwp-native",
+        "export-png",
+        "/Users/tsjang/rhwp/samples/re-font-batang-hancom.hwp",
+        "--profile",
+        "print",
+        "--json",
+        "--dpi",
+        "96",
+        "--compat",
+        "2024",
+        "-p",
+        "0",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/native-webfont-network/offline-warm"
+      ],
+      "exit": 0,
+      "seconds": 1.215,
+      "network_denied_by_process_sandbox": true,
+      "profile_sha256": "710216b078346a6cadc884f8487327156917c887ae89a93409186a1c75a41c79",
+      "resource_receipts": [
+        {
+          "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff",
+          "sourceSha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+          "nativeSha256": "24b49246526c86ddd7bf44d3ee88a3cc044f51f51af4e01c29a1e699059981e1",
+          "nativeBytes": 28413328
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/edwardkim/rhwp@7d06d5c706f1d89f1662e739abf2b1b25d2a98e4/assets/fonts/NotoSerifKR-Regular.woff2",
+          "sourceSha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45",
+          "nativeSha256": "35f7479023ae8fa60fde58eb702070d03fbdb43de9228c4a7f8b1c27ffe80518",
+          "nativeBytes": 8434876
+        }
+      ],
+      "pngs": {
+        "re-font-batang-hancom.png": "42a8e114aa037f5a05eb28c5453d246a264871e3f524273c88fced2c475acb1e"
+      },
+      "cache_files_unchanged": true,
+      "cold_png_hashes_equal": true
+    }
+  ],
+  "started_at": "2026-11-16T13:53:39.323057+09:00",
+  "cold_warm_program_receipts_equal": true,
+  "cold_warm_png_hashes_equal": true,
+  "completed_at": "2026-11-16T13:55:08.033712+09:00",
+  "offline_cache_verified": true,
+  "direct_reading": "다운로드 후 한글·라틴·숫자·문장부호가 실제 PNG에 표시됨을 판독. 독립 PDF 실루엣 점수 검증은 아님."
+}

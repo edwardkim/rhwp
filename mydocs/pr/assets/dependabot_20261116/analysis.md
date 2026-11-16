@@ -110,3 +110,16 @@ manifest와 release 문서 변경이며 nextest manifest·설치 runtime을 바�
 현재 head 사이의 제품·테스트·빌드·공개 fixture 입력 변경이 없음을 확인했습니다.
 Native Skia 별도 범위·lint·fresh WASM·전쪽 보호 및 실제 소비 검증은 진행 중이므로
 이 결과만으로 모든 로컬 게이트 완료나 PR 준비 완료로 기록하지 않습니다.
+
+## Native Skia 범위와 HTTP 실제 소비 확인
+
+[Native Skia 필수 3종](native-skia-validation.json)의 lib·누락 그림 placeholder·직접 PDF
+검사를 모두 실제 통과했습니다. Native root Clippy도 통과했고 나머지 lint/build는 순차 진행 중입니다.
+
+#9114 ureq3.5.2는 [실제 Native 웹폰트 공급](native-webfont-network-validation.json)으로도
+확인했습니다. 저장소의 기존 짧은 입력을 사용하고 별도 빈 캐시에 공개 등록 URL의 WOFF/WOFF2
+자원2개를 제품 HTTP client로 내려받았습니다. 재사용 실행과 네트워크를 프로세스별로 차단한
+재사용 실행까지 성공했으며, 원본/변환 프로그램 receipt·PNG hash가 같고 캐시 파일도 바뀌지
+않았습니다. [실제 표시 PNG](ureq-native-font-cold.png)에서 한글·라틴·숫자·문장부호를 판독했습니다.
+이는 HTTP·decode·캐시·Native 소비 확인이며 독립 PDF 일치율이나 Visual Sweep 증거를 대신하지
+않습니다. 개인 폰트·시스템 네트워크 설정은 바꾸지 않았고 다운로드 글꼴 바이너리는 Git에 넣지 않습니다.
