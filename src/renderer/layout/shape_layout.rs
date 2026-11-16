@@ -500,6 +500,19 @@ fn matrix_textbox_lines_need_reflow(para: &Paragraph) -> bool {
         && para.line_segs.len() > 1
 }
 
+/// [#9076] 글자 없는 문단의 저장 줄이 미기입 누름틀 안내문을 넣고 나눈 사다리이고, 그 문단에
+/// 글자처럼 취급 개체가 있는가.
+///
+/// 한/글은 안내문을 문단 글자로 저장하고 인쇄에서는 안내문 없이 줄을 다시 나눈다(#9005).
+/// 안내문만 있던 줄이 사라지고 개체가 앞 줄로 올라오므로 저장 줄로는 개체의 줄을 정할 수 없다.
+/// 개체 줄은 높이가 개체에서 나와, 다시 나눈 사다리가 안내문 없는 한/글 저장값과 같다.
+/// 글자가 있는 문단은 다시 나누면 한/글의 글자 줄 높이를 잃으므로 저장 줄을 그대로 쓴다.
+fn hidden_guide_object_rows_need_reflow(para: &Paragraph) -> bool {
+    para.text.is_empty()
+        && para.stored_rows_include_hidden_guide()
+        && para.controls.iter().any(Control::is_treat_as_char_object)
+}
+
 /// A content-grown, unprotected inline textbox may retain a wrapped cache after
 /// its full text fits the unchanged width. Project both its text and host frame
 /// together; a paint-only collapse would leave the old height in pagination.
@@ -3440,7 +3453,7 @@ impl LayoutEngine {
         // (0=가로, 1=영문 눕힘, 2=영문 세움)
         // 주의: 테이블 셀은 bit 16~18이지만 글상자 LIST_HEADER는 bit 0~2
         let text_direction = (text_box.list_attr & 0x07) as u8;
-        let reflowed_textbox_paragraphs = if should_reflow_matrix_textbox_lines(
+        let reflows_matrix_lines = should_reflow_matrix_textbox_lines(
             matrix_positioned,
             drawing,
             text_box,
@@ -3448,20 +3461,41 @@ impl LayoutEngine {
             inner_area.width,
             inner_area.height,
             self.dpi,
-        ) {
+        );
+        // [#9076] 안내문을 넣고 나눈 개체 줄도 같은 사전 단계에서 이 글상자 폭으로 다시 나눈다.
+        let reflows_hidden_guide_rows = text_direction == 0
+            && inner_area.width > 0.0
+            && text_box
+                .paragraphs
+                .iter()
+                .any(hidden_guide_object_rows_need_reflow);
+        let reflowed_textbox_paragraphs = if reflows_matrix_lines || reflows_hidden_guide_rows {
             let mut paragraphs = text_box.paragraphs.clone();
             for index in 0..paragraphs.len() {
-                if !matrix_textbox_lines_need_reflow(&paragraphs[index]) {
+                let matrix_lines =
+                    reflows_matrix_lines && matrix_textbox_lines_need_reflow(&paragraphs[index]);
+                let hidden_guide_rows = reflows_hidden_guide_rows
+                    && hidden_guide_object_rows_need_reflow(&paragraphs[index]);
+                if !matrix_lines && !hidden_guide_rows {
                     continue;
                 }
                 let previous_end =
                     crate::renderer::composer::paragraph_flow_end(&paragraphs[index]);
-                reflow_matrix_textbox_para(
-                    &mut paragraphs[index],
-                    inner_area.width,
-                    styles,
-                    self.dpi,
-                );
+                if matrix_lines {
+                    reflow_matrix_textbox_para(
+                        &mut paragraphs[index],
+                        inner_area.width,
+                        styles,
+                        self.dpi,
+                    );
+                } else {
+                    textbox_reflow::in_frame(
+                        &mut paragraphs[index],
+                        inner_area.width,
+                        styles,
+                        self.dpi,
+                    );
+                }
                 // 줄 수가 바뀌면 뒤 문단도 새 흐름 끝에서 이어진다. 저장 쪽/글상자
                 // 리셋은 공통 vpos 재계산기가 보존하며 이전 줄의 끝과 구분한다.
                 if crate::renderer::composer::paragraph_flow_end(&paragraphs[index]) != previous_end

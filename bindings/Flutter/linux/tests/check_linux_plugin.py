@@ -29,6 +29,9 @@ def main():
     events = output / "producer-ready-test"
     run(common + [str(source.parent / "common/producer_ready_test.cc"), "-o", str(events)])
     run([str(events)])
+    trims = output / "cache-trim-test"
+    run(common + [str(source.parent / "common/cache_trim_test.cc"), "-o", str(trims)])
+    run([str(trims)])
     if not args.flutter_engine:
         return
     includes = ["-I" + str(args.flutter_engine.resolve())]

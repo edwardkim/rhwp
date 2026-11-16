@@ -14,7 +14,7 @@ class ReadyPlugin extends FakeTexturePlugin {
   bool available = true;
   bool rejectListen = false;
   int listens = 0, cancels = 0;
-  Completer<void>? frozenGate, cancelGate;
+  Completer<void>? frozenGate, cancelGate, listenGate;
   int get statusCalls => calls.where((call) => call == 'status').length;
   String get eventName => '${platform.channelName}/events';
 
@@ -23,7 +23,10 @@ class ReadyPlugin extends FakeTexturePlugin {
     super.install();
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(MethodChannel(eventName), (call) async {
-          if (call.method == 'listen') ++listens;
+          if (call.method == 'listen') {
+            ++listens;
+            await listenGate?.future;
+          }
           if (call.method == 'listen' && rejectListen) {
             throw PlatformException(code: 'unavailable');
           }

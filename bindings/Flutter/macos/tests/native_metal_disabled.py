@@ -45,6 +45,9 @@ class DisabledMetalAbi(unittest.TestCase):
         self.assertIs(result['available'], False, 'use a build without macOS Metal')
         self.assertIs(result['consumerGpuCompletion'], False)
         self.assertEqual(result['wholeFrameReadbacks'], 0)
+        self.assertEqual(result['maxPresentersPerThread'], 2)
+        self.assertEqual(result['maxPresentersPerProcess'], 4)
+        self.assertEqual(result['contextCredits'], {'inUse': 0, 'quarantined': 0, 'limit': 4})
 
     def test_disabled_calls_do_not_dereference_typed_pointers_or_byte_spans(self):
         maximum = ctypes.c_size_t(-1).value
