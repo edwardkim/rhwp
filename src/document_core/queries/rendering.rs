@@ -9372,6 +9372,7 @@ fn table_summary_json(
 /// 2. reset 발견: reset 직전 줄의 vpos + line_height (HWP 가 단을 끊은 위치)
 /// 3. reset 미발견: 단의 마지막 처리 줄 (FullParagraph: 마지막, PartialParagraph: end_line-1)
 /// 4. Table/Shape 만 있는 항목은 추정 불가 (None)
+/// 5. 단이 rhwp 임시 줄(bit 31, `TAG_IMPLEMENTATION_PROPERTY`)을 읽으면 한컴 근거가 아니므로 None
 fn compute_hwp_used_height(
     cc: &crate::renderer::pagination::ColumnContent,
     paragraphs: &[Paragraph],
@@ -9379,6 +9380,13 @@ fn compute_hwp_used_height(
 ) -> Option<f64> {
     use crate::renderer::hwpunit_to_px;
     use crate::renderer::pagination::PageItem;
+
+    // [Task #9142] rhwp 가 계산해 넣은 임시 줄(bit 31)은 한컴이 저장한 값이 아니다. 그런 줄을 근거로
+    // 추정하면 조판이 맞아도 가짜 diff 가 나오므로, 이 단은 추정 불가로 둔다.
+    // #8939 이후 IR 의 bit 31 은 rhwp 합성 표지만 뜻한다(한/글 저장 비트는 파서가 지움).
+    if column_reads_synthetic_lines(cc, paragraphs) {
+        return None;
+    }
 
     // [Task #1612] vpos 는 다페이지에서 누적값(예: page2 vpos≈66568~127587 HU)이므로, per-page
     // `used_height` 와 비교하려면 이 페이지 시작 오프셋을 빼야 한다. 차감하지 않으면 페이지마다
@@ -9477,6 +9485,35 @@ fn compute_hwp_used_height(
     let seg = p.line_segs.get(line_idx)?;
     let bottom_hwpu = seg.vertical_pos + seg.line_height + seg.line_spacing;
     Some(hwpunit_to_px((bottom_hwpu - base_top).max(0), dpi))
+}
+
+/// 단이 읽는 줄 가운데 rhwp 임시 줄(bit 31)이 하나라도 있는지.
+fn column_reads_synthetic_lines(
+    cc: &crate::renderer::pagination::ColumnContent,
+    paragraphs: &[Paragraph],
+) -> bool {
+    use crate::model::paragraph::LineSeg;
+    use crate::renderer::pagination::PageItem;
+
+    cc.items.iter().any(|item| {
+        let (para_index, lines) = match item {
+            PageItem::FullParagraph { para_index } => (*para_index, 0..usize::MAX),
+            PageItem::PartialParagraph {
+                para_index,
+                start_line,
+                end_line,
+            } => (*para_index, *start_line..*end_line),
+            PageItem::Table { para_index, .. } | PageItem::PartialTable { para_index, .. } => {
+                (*para_index, 0..1)
+            }
+            _ => return false,
+        };
+        paragraphs.get(para_index).is_some_and(|p| {
+            p.line_segs.iter().enumerate().any(|(i, seg)| {
+                lines.contains(&i) && seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+            })
+        })
+    })
 }
 
 /// [#3697] vpos 범위 분석 결과 — 텍스트(`format_vpos_range`)/JSON(`vpos_range_json`)
@@ -10146,6 +10183,74 @@ mod tests {
             h < 100.0,
             "per-page 높이(누적 vpos 차감)여야 하는데 {h:.1}px (누적값 미차감 의심)"
         );
+    }
+
+    /// [Task #9142] `compute_hwp_used_height` 는 한컴이 저장한 LINE_SEG 만 근거로 삼아야 한다.
+    /// bit 31(`TAG_IMPLEMENTATION_PROPERTY`) 줄은 rhwp 가 계산해 넣은 임시 줄이라
+    /// "한컴 원본 높이" 가 아니므로, 그런 줄을 읽는 단은 추정 불가(None) 여야 한다.
+    /// 그렇지 않으면 dump-pages 가 조판이 맞는데도 가짜 diff 를 보고한다.
+    #[test]
+    fn hwp_used_height_ignores_rhwp_synthetic_lines() {
+        use crate::model::paragraph::{LineSeg, Paragraph};
+        use crate::renderer::pagination::{ColumnContent, PageItem};
+
+        let column = |items: Vec<PageItem>| ColumnContent {
+            paragraph_origins: Default::default(),
+            computed_paragraphs: Default::default(),
+            column_index: 0,
+            start_height: 0.0,
+            endnote_flow: false,
+            items,
+            zone_layout: None,
+            zone_y_offset: 0.0,
+            wrap_around_paras: vec![],
+            used_height: 0.0,
+            wrap_anchors: std::collections::HashMap::new(),
+            overlay_continuations: Vec::new(),
+            overlay_cuts: Vec::new(),
+            inline_placements: Default::default(),
+            inline_flow_plans: Default::default(),
+            stored_paragraph_flow_ends: Default::default(),
+            host_compositions: Default::default(),
+            stored_column_top_spacings: Default::default(),
+            paragraph_float_placements: Default::default(),
+            float_pushed_line_spacings: Default::default(),
+            page_band_flow_starts: Default::default(),
+        };
+        let para = |tag: u32| Paragraph {
+            line_segs: vec![
+                LineSeg {
+                    vertical_pos: 0,
+                    line_height: 1700,
+                    tag: 0x0006_0000,
+                    ..Default::default()
+                },
+                LineSeg {
+                    vertical_pos: 1700,
+                    line_height: 1700,
+                    tag,
+                    ..Default::default()
+                },
+            ],
+            ..Default::default()
+        };
+        let full = column(vec![PageItem::FullParagraph { para_index: 0 }]);
+
+        // 한컴 저장 줄만 있으면 값이 나온다.
+        let stored = vec![para(0x0006_0000)];
+        assert!(compute_hwp_used_height(&full, &stored, 96.0).is_some());
+
+        // 같은 줄에 bit 31 이 서 있으면 rhwp 임시 줄이므로 추정하지 않는다.
+        let synthetic = vec![para(0x8006_0000)];
+        assert_eq!(compute_hwp_used_height(&full, &synthetic, 96.0), None);
+
+        // PartialParagraph 는 그 단이 읽는 줄 범위만 본다: 임시 줄(1번)을 안 읽으면 값이 나온다.
+        let first_line_only = column(vec![PageItem::PartialParagraph {
+            para_index: 0,
+            start_line: 0,
+            end_line: 1,
+        }]);
+        assert!(compute_hwp_used_height(&first_line_only, &synthetic, 96.0).is_some());
     }
 
     #[test]
