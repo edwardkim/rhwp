@@ -32929,7 +32929,7 @@ impl CellSquareFirstLine {
 /// 칸 문단을 차례로 놓으며 어울림 그림 아래로 글줄을 내리는 상태.
 #[derive(Default)]
 pub(crate) struct CellSquareStackTextFloor {
-    host: Option<StackHost>,
+    hosts: Vec<StackHost>,
     /// 칸 첫 문단의 시작 y(칸 내용 위)
     content_top: Option<f64>,
 }
@@ -32943,6 +32943,8 @@ struct StackHost {
     width: Option<f64>,
     /// 호스트 빈 줄의 (높이, 필요한 폭, 전진량)
     line: (f64, f64, f64),
+    /// 앞 그림을 피해 내려간 빈 호스트 줄은 다음 문단 전에 전진을 소비한다.
+    displaced_line_bottom: Option<f64>,
 }
 
 impl CellSquareStackTextFloor {
@@ -33043,6 +33045,57 @@ impl CellSquareStackTextFloor {
                 .map(|l| hwpunit_to_px(l.segment_width, dpi))
                 .filter(|w| *w > 0.0)
         };
+        if !crate::renderer::para_has_no_stored_line_segs(para) {
+            return y;
+        }
+        let text_follows = |from: usize| {
+            paragraphs
+                .iter()
+                .skip(from)
+                .any(|p| !p.text.trim().is_empty())
+        };
+        let width = inner_w(composed).or_else(|| self.hosts.last().and_then(|host| host.width));
+        let mut top = y;
+        if let Some(width) = width {
+            for host in &self.hosts {
+                if let Some(bottom) = host.displaced_line_bottom {
+                    top = top.max(bottom);
+                }
+            }
+            // 여러 그림을 담은 호스트의 빈 줄이 자체 그림 아래로 내려가면 그 줄의
+            // 전진도 한 번 소비한다. 뒤 문단이 또 다른 그림 호스트인 경우에도 같다.
+            if let Some(host) = self.hosts.last().filter(|host| {
+                pidx == host.pidx + 1
+                    && host.stack.boxes.len() > 1
+                    && text_follows(host.pidx + 1)
+            }) {
+                let (host_h, host_need, host_advance) = host.line;
+                let host_top = host.stack.text_line_top(0.0, host_h, host_need, width);
+                if host_top > 0.0 {
+                    top = (top + host_top).max(host.origin + host_top + host_advance);
+                }
+            }
+            // 호스트마다 다른 원점을 칸 좌표로 옮겨 모든 그림의 합집합에서 빈 폭을
+            // 판단한다. 새 작은 그림이 앞 큰 그림을 지우거나 각각의 틈을 따로 계산해
+            // 실제로는 없는 글자 자리를 만들지 않는다.
+            let obstacles = crate::renderer::float_placement::CellSquareTextObstacles {
+                boxes: self
+                    .hosts
+                    .iter()
+                    .flat_map(|host| {
+                        host.stack.boxes.iter().map(move |&(x0, x1, y0, y1)| {
+                            (x0, x1, host.origin + y0, host.origin + y1)
+                        })
+                    })
+                    .collect(),
+            };
+            top = CellSquareFirstLine::of(composed, para, styles, dpi).top(
+                &obstacles,
+                top,
+                width,
+                text_follows(pidx + 1),
+            );
+        }
         if let Some(stack) = crate::renderer::float_placement::cell_paragraph_square_text_obstacles(
             paragraphs, pidx, dpi,
         ) {
@@ -33055,7 +33108,7 @@ impl CellSquareStackTextFloor {
                 // 음수 세로 오프셋 그림은 칸 내용 위까지만 올라간다. 나란한 여러 장은
                 // 배치가 음수 오프셋을 버리므로(문단 원점에 함께 걸림) 여기서도 버린다.
                 let room_above = if stack.boxes.len() == 1 {
-                    y - self.content_top.unwrap_or(y)
+                    top - self.content_top.unwrap_or(top)
                 } else {
                     0.0
                 };
@@ -33067,50 +33120,17 @@ impl CellSquareStackTextFloor {
                         b.3 = b.2 + h;
                     }
                 }
-                self.host = Some(StackHost {
+                self.hosts.push(StackHost {
                     pidx,
-                    origin: y,
+                    origin: top,
                     stack,
                     width: inner_w(composed),
                     line: (h, line.em, advance),
+                    displaced_line_bottom: (top > y).then_some(top + advance),
                 });
             }
-            return y;
+            return top;
         }
-        let Some(host) = self.host.as_ref() else {
-            return y;
-        };
-        if !crate::renderer::para_has_no_stored_line_segs(para) {
-            return y;
-        }
-        let Some(width) = inner_w(composed).or(host.width) else {
-            return y;
-        };
-        let mut start = y;
-        // 그림이 한 장뿐이면 호스트 빈 줄은 그림 옆(폭 0 자리)에 남고 뒤 문단만 그림
-        // 아래로 간다. 한컴 저장 줄도 호스트 줄을 문단 원점(폭 0)에 두고 다음 문단을
-        // 그림 바닥에 둔다. 여러 장일 때는 호스트 빈 줄도 그림 아래로 내려간다.
-        let text_follows = |from: usize| {
-            paragraphs
-                .iter()
-                .skip(from)
-                .any(|p| !p.text.trim().is_empty())
-        };
-        if pidx == host.pidx + 1 && host.stack.boxes.len() > 1 && text_follows(host.pidx + 1) {
-            let (host_h, host_need, host_advance) = host.line;
-            let host_top = host.stack.text_line_top(0.0, host_h, host_need, width);
-            if host_top > 0.0 {
-                // 그림 아래로 내려간 호스트 빈 줄은 줄 높이와 줄 간격을 차지한다
-                // (그림만 든 호스트 줄을 높이 없이 접는 경우에도).
-                start = (start + host_top).max(host.origin + host_top + host_advance);
-            }
-        }
-        host.origin
-            + CellSquareFirstLine::of(composed, para, styles, dpi).top(
-                &host.stack,
-                start - host.origin,
-                width,
-                text_follows(pidx + 1),
-            )
+        top
     }
 }
