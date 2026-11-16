@@ -1,0 +1,516 @@
+{
+  "source": "87c78424bc261f90e1167ecedc6a0f2106864d37",
+  "recaptured": false,
+  "scope": "18개 입력의 각 최저 쪽과 sample16 38쪽·nested8쪽, 총22개 대표 쪽",
+  "method": "동일 raw/PDF에서 canonical review+overlay 생성 후 쌍으로 직접 판독",
+  "pages": [
+    {
+      "key": "angle-narrow",
+      "page": 1,
+      "raw_match_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/angle-narrow/native/raw-p001.png",
+          "sha256": "193a8956459ba0111dfe5e0b05791c6b8d85e5d5f1f2e04df42772d287904366"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/angle-narrow/native/pdf-p001.png",
+          "sha256": "0ae88b7f24731245932eb3a7688a494ae25b0fb0f9b5c652ce2509ba247fc2c3"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/angle-narrow/native/overlay-p001.png",
+          "sha256": "8b7265c8823d054d7c190940a8264b19d840bcb3e43ccbe13d712ef082fe0007"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/angle-narrow/native/review-p001.png",
+          "sha256": "7e2b048c2662c694985fa66fd7e721ee8c2f7da15f9827006b12df278ed0a82d"
+        }
+      }
+    },
+    {
+      "key": "handbook-hwp",
+      "page": 130,
+      "raw_match_percent": "99.97",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/handbook-hwp/native/raw-p130.png",
+          "sha256": "5b4b4fc96c408041bda4f81b71afb942d94947dff0a7b203cc3b676f27770b78"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/handbook-hwp/native/pdf-p130.png",
+          "sha256": "554b6a770060086a59af0a08f5b9f377fc058bfda47e2e62e05f9a63f49c3abd"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/handbook-hwp/native/overlay-p130.png",
+          "sha256": "c6faf3ed2fe65c6da407d787fcd4f7906a965f8a8a263ee0d33b627b63356ea2"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/handbook-hwp/native/review-p130.png",
+          "sha256": "1eb39f56bbf30b23e751a1b99c3dc28efd8bdfc19bbba4caa1a37feae4573f6a"
+        }
+      }
+    },
+    {
+      "key": "handbook-hwpx",
+      "page": 130,
+      "raw_match_percent": "99.97",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/handbook-hwpx/native/raw-p130.png",
+          "sha256": "5b4b4fc96c408041bda4f81b71afb942d94947dff0a7b203cc3b676f27770b78"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/handbook-hwpx/native/pdf-p130.png",
+          "sha256": "554b6a770060086a59af0a08f5b9f377fc058bfda47e2e62e05f9a63f49c3abd"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/handbook-hwpx/native/overlay-p130.png",
+          "sha256": "8a1a08499c70c7d5d83a569ade9abba508f277f52c82ef81444a8f4723137f56"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/handbook-hwpx/native/review-p130.png",
+          "sha256": "8042549e90944d8e3c9101e12d2a3e21f96182a1665a46ac7c6ae9f237099c1d"
+        }
+      }
+    },
+    {
+      "key": "issue7905",
+      "page": 2,
+      "raw_match_percent": "98.86",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/issue7905/native/raw-p002.png",
+          "sha256": "e37e588757be95aa3f798f6640deba0e04657bd1e9988aee96edf16a6c2ed476"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/issue7905/native/pdf-p002.png",
+          "sha256": "c3410229c04a7b0ee181e42587d3f34e87dcbad789f38060f4aa9f137bc175ed"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/issue7905/native/overlay-p002.png",
+          "sha256": "38a3b38cf57064b9ec6c58602701242306fc33e999cc3550d91cf81e4e5f5063"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/issue7905/native/review-p002.png",
+          "sha256": "6ae35d10aa4556c6fa7604d8bc4dd78b568ce182990e2b056a2db20cb03c0896"
+        }
+      }
+    },
+    {
+      "key": "issue8040-insert",
+      "page": 4,
+      "raw_match_percent": "99.99",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/issue8040-insert/native/raw-p004.png",
+          "sha256": "9c552e1b73ed1da6a1304b989ec5688af1564d21ceefa6e0e79272828ae2623c"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/issue8040-insert/native/pdf-p004.png",
+          "sha256": "f7dd05bdb8fbf609f38a9fc051badac7aa6ccacce31f2000e8aac9b17ce28018"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/issue8040-insert/native/overlay-p004.png",
+          "sha256": "6e84564c274a1e15b28e66f50e79c00336369f4f0f09198427a8b3a940f66332"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/issue8040-insert/native/review-p004.png",
+          "sha256": "70d22f7c46e30788d84c7cfa912b5e3c959b0a68931f9eadce1809885d40baa1"
+        }
+      }
+    },
+    {
+      "key": "issue8040-insert-delete",
+      "page": 4,
+      "raw_match_percent": "99.99",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/issue8040-insert-delete/native/raw-p004.png",
+          "sha256": "9c552e1b73ed1da6a1304b989ec5688af1564d21ceefa6e0e79272828ae2623c"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/issue8040-insert-delete/native/pdf-p004.png",
+          "sha256": "f7dd05bdb8fbf609f38a9fc051badac7aa6ccacce31f2000e8aac9b17ce28018"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/issue8040-insert-delete/native/overlay-p004.png",
+          "sha256": "920de15dce833854ad1f8aca7b6127548115d56daab686d8cbd1feca66f29017"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/issue8040-insert-delete/native/review-p004.png",
+          "sha256": "a46c42fefe48f61b5a9f27d17fe79523f6a51c636b3e77e7cfdf19cc87445c46"
+        }
+      }
+    },
+    {
+      "key": "nested",
+      "page": 8,
+      "raw_match_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/nested/native/raw-p008.png",
+          "sha256": "a10a42e37afdab7ace76658bca3a74666e3fb891ca4fd928bc5a3b55816c9a7d"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/nested/native/pdf-p008.png",
+          "sha256": "6b3863f866f88b34abd3044c31e7e4e0571423e99047f02b917fad84c4bb7cda"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/nested/native/overlay-p008.png",
+          "sha256": "110d8a2c851d0218ca22675616ea7ce9700d9d959c13d3ea58e29a2c5d5b283e"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/nested/native/review-p008.png",
+          "sha256": "af91bc907f48b64995b18ecb628a771de7590a62e78298b814b71293d5e41c45"
+        }
+      }
+    },
+    {
+      "key": "nested",
+      "page": 10,
+      "raw_match_percent": "99.86",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/nested/native/raw-p010.png",
+          "sha256": "ca803a4d83a56195a9022cdc5321a0dc8dc59339d05d27a61ad85ee38590c586"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/nested/native/pdf-p010.png",
+          "sha256": "549692cbfd5f56f866579e6ea21e1207d2005df4df4ee345451227214af25cc6"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/nested/native/overlay-p010.png",
+          "sha256": "43dc0ad2745bb6b25fb2ac0185f44667c7fc833709a1f070c389bcb644bc9c06"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/nested/native/review-p010.png",
+          "sha256": "2b5ab436ef0f533f12971a58fcda71161df32ece7757ad7741e94ed478fb09cd"
+        }
+      }
+    },
+    {
+      "key": "outline",
+      "page": 1,
+      "raw_match_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/outline/native/raw-p001.png",
+          "sha256": "29e8a6b811b637e69bb6441deddc0150fa12b947f00f6233c9d43fa7299862d3"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/outline/native/pdf-p001.png",
+          "sha256": "634982a267b61d09b2959a069d58551609b372cd856e0bb4aeae93ebe75cc900"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/outline/native/overlay-p001.png",
+          "sha256": "c45d498b92f2d9ac6619692b594857606d7640720b7eb285a552cb64f451ab5d"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/outline/native/review-p001.png",
+          "sha256": "e539d1b752a218cdfb6e84b769bdced5aa084b41fc8114184a1d6d905f899c22"
+        }
+      }
+    },
+    {
+      "key": "sample10",
+      "page": 757,
+      "raw_match_percent": "99.57",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample10/native/raw-p757.png",
+          "sha256": "9e21eb9f9e0b73e875bf3f43c4715e6722c05d97e115a3fb61c08edd6a886ee0"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample10/native/pdf-p757.png",
+          "sha256": "5cc81bef8fe49d264fc3273a166a03a0bfef2fd2709020eb2307ac12b52c41d5"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample10/native/overlay-p757.png",
+          "sha256": "8f6d4e7e324e06eeb895b6c456551c2355aa2ddde9f866aa9d5780570e1f9ffd"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample10/native/review-p757.png",
+          "sha256": "a11687510d4dc572943a293809b7a0dbac48a60162427a3103607cb7700985be"
+        }
+      }
+    },
+    {
+      "key": "sample16-hwp2022",
+      "page": 1,
+      "raw_match_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2022/native/raw-p001.png",
+          "sha256": "61f95393232d20e072c4054c99f10a8a081aede6607b35c51624e02efdef1666"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2022/native/pdf-p001.png",
+          "sha256": "3b89c85f5d040784116957be06ec420d4084cb93554edfe2363cec9e569fb270"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2022/native/overlay-p001.png",
+          "sha256": "1963bda31f2d70d516eed5fd21986f21d3c5999043815498bea2855225fce4d1"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2022/native/review-p001.png",
+          "sha256": "e1b45539cd1a1ce6357341defbb076fe27ffabc9e5a59f75e7cdf6ddaf75184a"
+        }
+      }
+    },
+    {
+      "key": "sample16-hwp2022",
+      "page": 38,
+      "raw_match_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2022/native/raw-p038.png",
+          "sha256": "aea55a7e8921813524cd5d6a0d83f29ce16b8102c07d4eec90074dafb8108f9d"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2022/native/pdf-p038.png",
+          "sha256": "e7c2fc4f391fb1bef6005fed2854feb5f9b5cb493aba6a5bcef5646737c988a1"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2022/native/overlay-p038.png",
+          "sha256": "38f380d3417963b29d93b435cbe4dd9050f1b2574b118954a7d3571e79e48781"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2022/native/review-p038.png",
+          "sha256": "bb30c2b7b001480cf4b6e47614f3ebede01cb4d31a2cda8606a527f3a3e18c97"
+        }
+      }
+    },
+    {
+      "key": "sample16-hwp2024",
+      "page": 18,
+      "raw_match_percent": "99.99",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2024/native/raw-p018.png",
+          "sha256": "6275f7555480265576214d5be70ec5503b07364ffc6fa535943aad8633e08846"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2024/native/pdf-p018.png",
+          "sha256": "2caac70f82807ddb96858b5030fe3574b04489dc11349529f7d9c34914f3d61e"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2024/native/overlay-p018.png",
+          "sha256": "701d46ddb5192b02ea754b86edbbe523cb62988f820bf5504138e89631e51d86"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2024/native/review-p018.png",
+          "sha256": "aa25c5619642128cdbec5ba01c617b812225e98732d32ccbdd023d099c92c9cd"
+        }
+      }
+    },
+    {
+      "key": "sample16-hwp2024",
+      "page": 38,
+      "raw_match_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2024/native/raw-p038.png",
+          "sha256": "b5558521018429412f0f5dd4d1310b17bbf5a86356d1bb143d1993d3856d4101"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2024/native/pdf-p038.png",
+          "sha256": "eb625e35cb1579afd02cb0f924a35e384de2b69f23eb5e2afe79f05dc53e8b2b"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2024/native/overlay-p038.png",
+          "sha256": "60b815121c73ad6f1ea067419e89e39505e2ddfc13c65fca7292565c8bde95ec"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2024/native/review-p038.png",
+          "sha256": "111210d33e19402e939867e48bcf236e2d0cf13942ffe66d3e8ba5355c25a112"
+        }
+      }
+    },
+    {
+      "key": "sample16-hwpx",
+      "page": 18,
+      "raw_match_percent": "99.99",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwpx/native/raw-p018.png",
+          "sha256": "6275f7555480265576214d5be70ec5503b07364ffc6fa535943aad8633e08846"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwpx/native/pdf-p018.png",
+          "sha256": "2caac70f82807ddb96858b5030fe3574b04489dc11349529f7d9c34914f3d61e"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwpx/native/overlay-p018.png",
+          "sha256": "555e6aaab26ea28626b12ff2ebfdb13faf7a28ad3edc6b080c259b8a3ebbb0d4"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwpx/native/review-p018.png",
+          "sha256": "692cea9c9157a19e6cc3e25b05c58b167b67ba4879abac4c16fdf1f19c9aa9dc"
+        }
+      }
+    },
+    {
+      "key": "sample16-hwpx",
+      "page": 38,
+      "raw_match_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwpx/native/raw-p038.png",
+          "sha256": "b5558521018429412f0f5dd4d1310b17bbf5a86356d1bb143d1993d3856d4101"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwpx/native/pdf-p038.png",
+          "sha256": "eb625e35cb1579afd02cb0f924a35e384de2b69f23eb5e2afe79f05dc53e8b2b"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwpx/native/overlay-p038.png",
+          "sha256": "69656008bc581ac92a35c4f1dc942d7c7c82bd44b8cd2540d8a4be8a35b944fc"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwpx/native/review-p038.png",
+          "sha256": "86727216688079a7e5eadb7af3c1a824fd88a6fbb97d7d59db88949395c39988"
+        }
+      }
+    },
+    {
+      "key": "seo-body-list-typed",
+      "page": 1,
+      "raw_match_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-body-list-typed/native/raw-p001.png",
+          "sha256": "0768914a19dc0741ab7c24c997e4668d205ab8361f80e6f8fd692c9b94b30f9d"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-body-list-typed/native/pdf-p001.png",
+          "sha256": "31eda666566c0a8975d7225e7109b1c9f063b0eb82cae6b860014ef40660546a"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-body-list-typed/native/overlay-p001.png",
+          "sha256": "cf01e6e3b59be069b76b02577de37430de50a3eeeb879c91c6ca2a34818d91ed"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-body-list-typed/native/review-p001.png",
+          "sha256": "f289e6b50f98fbbfd88fd84a92fddf21551617dc9da48de64478d8b3f728c136"
+        }
+      }
+    },
+    {
+      "key": "seo-helvetica-styles",
+      "page": 1,
+      "raw_match_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-helvetica-styles/native/raw-p001.png",
+          "sha256": "7ab9eb6b45d7fc4ce6becb8b44aa984f181a74932252e3198f6e94870a9e11c4"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-helvetica-styles/native/pdf-p001.png",
+          "sha256": "a446d324676f30a04c23b2b2a4d5f0972b676b4a952a46d86ab041373252b266"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-helvetica-styles/native/overlay-p001.png",
+          "sha256": "755f6f0b2012a0ae18fad0c4853be05dd30e1b1dfeeb2e96e36950570ea23c70"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-helvetica-styles/native/review-p001.png",
+          "sha256": "d7614f9dbe1d988c22083f657e59206f2bcdf64af4f738413ebb1f67ede75aee"
+        }
+      }
+    },
+    {
+      "key": "seo-pic-crop-01",
+      "page": 1,
+      "raw_match_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-pic-crop-01/native/raw-p001.png",
+          "sha256": "e5e6a4200d8ed21af5afe56acf00db910f1c20c1906847c14242ee0acec1ab53"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-pic-crop-01/native/pdf-p001.png",
+          "sha256": "2772ea412033a38c80fde729906374a90de94c0d7c5f33c2ede1e5071ac25ac8"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-pic-crop-01/native/overlay-p001.png",
+          "sha256": "776feb70d32c2db77d368bba865b555a05138e9ee63643c19e65f5bdd6cab308"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-pic-crop-01/native/review-p001.png",
+          "sha256": "c210c7ba81c5de369b29acde02dbe39f76dd89facbab052e1040184bebfb6cab"
+        }
+      }
+    },
+    {
+      "key": "seo-re-03-latin",
+      "page": 1,
+      "raw_match_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-re-03-latin/native/raw-p001.png",
+          "sha256": "dda627d1e61fec54b31abeab531d6040a5803083deccadca097745ef6397a939"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-re-03-latin/native/pdf-p001.png",
+          "sha256": "0484984565f05f6fec9931a654f0c4d03162494b79357e669ab11d1e83c29b18"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-re-03-latin/native/overlay-p001.png",
+          "sha256": "2786e8859db64ba6df08ac048b7aa72c787b5a2d3da1b59ba39a4c1e64ace541"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-re-03-latin/native/review-p001.png",
+          "sha256": "4c68f4360bf16dfbaf3583c37016142a1bea5a27817f66f0574218b6bc3114be"
+        }
+      }
+    },
+    {
+      "key": "seo-shape-group-02",
+      "page": 1,
+      "raw_match_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-shape-group-02/native/raw-p001.png",
+          "sha256": "7f4061326e61afc0d52cecf46af2f6af98ed61d978217e164f78316d7e43c00f"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-shape-group-02/native/pdf-p001.png",
+          "sha256": "b62d8f17bc72a37824dbbf37f9aa81a8b872bbd19f6b1d170a940edb951a6f85"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-shape-group-02/native/overlay-p001.png",
+          "sha256": "88e57ddc3516c6346744913f821b11b77247445eb3ff0c177576e955cec6eacc"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-shape-group-02/native/review-p001.png",
+          "sha256": "34fcfcc348a51e113707cf4fdfe046ad1ef4a439c8f53ca7078b750cdd1f5a5d"
+        }
+      }
+    },
+    {
+      "key": "yeongwol",
+      "page": 1,
+      "raw_match_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/yeongwol/native/raw-p001.png",
+          "sha256": "30a12802a375151b9d104894457e309697088f7ffaeb62fb77af06f5db3a8a40"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/yeongwol/native/pdf-p001.png",
+          "sha256": "1c663ee4b56f8560de850d46c02f9e398f49fd5afea94c1157d99b28688536ad"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/yeongwol/native/overlay-p001.png",
+          "sha256": "e3ccf9acc1d0199666ebd00ed3775d1d054df31f87bc99f28790894a36d1d689"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/yeongwol/native/review-p001.png",
+          "sha256": "cff54cffba92ac429db4b8d676322585be2ee3979291c805db352da540d4279f"
+        }
+      }
+    }
+  ],
+  "conclusion": "문단·표·그림·머리말/꼬리말의 위치·내용이 유지됨. 모든1771쪽 base/head raw PNG hash 동일. 법령2쪽·sample10·편람130쪽 등의 기존 미세 잉크·래스터 차이는 새 의존성 개선으로 주장하지 않음. 실루엣100은 PDF와 RGB 전체동일을 뜻하지 않음.",
+  "tool_labels": "한글 범례와 페이지·수치 표시를 확인했으며 두부문자나 ?? 없음"
+}

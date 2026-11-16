@@ -1,0 +1,33 @@
+{
+  "key": "issue7905",
+  "page": 2,
+  "raw_match_percent": "98.86",
+  "input_source": {
+    "page": 2,
+    "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/protected-wasm-software/candidate/issue7905/rhwp_png/rhwp_002.png",
+    "rhwp_sha256": "aca749c41f3b721f545079da5767b7fbe1a838e090a9076775cc6001704ac5ad",
+    "pdf_png": "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/protected-wasm-software/candidate/issue7905/pdf_png/pdf-002.png",
+    "pdf_sha256": "c3410229c04a7b0ee181e42587d3f34e87dcbad789f38060f4aa9f137bc175ed"
+  },
+  "files": {
+    "raw": {
+      "path": "mydocs/pr/assets/dependabot_20261116/cases/issue7905/wasm/raw-p002.png",
+      "sha256": "aca749c41f3b721f545079da5767b7fbe1a838e090a9076775cc6001704ac5ad"
+    },
+    "pdf": {
+      "path": "mydocs/pr/assets/dependabot_20261116/cases/issue7905/wasm/pdf-p002.png",
+      "sha256": "c3410229c04a7b0ee181e42587d3f34e87dcbad789f38060f4aa9f137bc175ed"
+    },
+    "overlay": {
+      "path": "mydocs/pr/assets/dependabot_20261116/cases/issue7905/wasm/overlay-p002.png",
+      "sha256": "60a9985133ccaee5be74e4455e6ba0173e20c53ce1d5183088b25e883080f813"
+    },
+    "review": {
+      "path": "mydocs/pr/assets/dependabot_20261116/cases/issue7905/wasm/review-p002.png",
+      "sha256": "a7997227253fdbdf78823fd252818748487a31c11f060051696deb68df7868a8"
+    }
+  },
+  "canonical_functions": "make_overlay_compares/make_compares/make_review_panels",
+  "pixel_diff_threshold": 32,
+  "recaptured": false
+}

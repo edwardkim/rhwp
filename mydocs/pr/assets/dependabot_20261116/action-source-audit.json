@@ -1,0 +1,93 @@
+{
+  "source": "GitHub connector compare and exact-ref source inspection",
+  "rust_cache": {
+    "repository": "Swatinem/rust-cache",
+    "base": "c8037a86dde8214a8310e9f54a8fc61ab362aa31",
+    "head": "eedcf2fb1c22f010a0eb66b92f378c110977f266",
+    "total_commits": 2,
+    "changed_files": [
+      "dist/cache-BqdT1UO_.js",
+      "dist/cache-DOeVf6hi.js",
+      "dist/cleanup-ChjhZSHu.js",
+      "dist/restore.js",
+      "dist/save.js",
+      "src/save.ts"
+    ],
+    "head_commit": "https://github.com/Swatinem/rust-cache/commit/eedcf2fb1c22f010a0eb66b92f378c110977f266",
+    "change": "macOS purge 호출을 Node execFile 기반으로 변경하고 dist bundle 재생성. 동일 sudo /usr/sbin/purge 인수 유지. 로컬 사용자 시스템에서 action 또는 sudo purge를 실행하지 않음.",
+    "source_refs": [
+      "https://github.com/Swatinem/rust-cache/blob/c8037a86dde8214a8310e9f54a8fc61ab362aa31/src/save.ts",
+      "https://github.com/Swatinem/rust-cache/blob/eedcf2fb1c22f010a0eb66b92f378c110977f266/src/save.ts"
+    ]
+  },
+  "install_action": {
+    "repository": "taiki-e/install-action",
+    "base": "3a3daafd3b7f23b8f65d9f5ba2db203fb59b79e2",
+    "head": "cfdb7ed4ccc7c7dce37759eae89dc5674b469b39",
+    "total_commits": 9,
+    "changed_files": [
+      "CHANGELOG.md",
+      "manifests/biome.json",
+      "manifests/kingfisher.json",
+      "manifests/mise.json",
+      "manifests/protoc-gen-connect-openapi.json",
+      "manifests/rclone.json",
+      "manifests/syft.json",
+      "manifests/vacuum.json",
+      "manifests/yq.json"
+    ],
+    "change": "2.90.3 release 및 다른 도구 manifest 갱신; nextest manifest와 installer runtime 미변경"
+  },
+  "local_policy": "권한·trigger·cache key·save-if·tool 선택은 원본 YAML과 정규화 비교; 실제 CI는 아직 대기",
+  "workflow_scope": [
+    {
+      "path": ".github/workflows/adapter-diff.yml",
+      "only_approved_action_pin_and_version_comment_changed": true,
+      "before_sha256": "b29346839554776b25d71323c241bed95d4aff6a7d7d9ba45d8c9db9e71fb45b",
+      "after_sha256": "5b6079661dcd296d2c87007c33f412c334770634b71569c834e487dcfb262bf3"
+    },
+    {
+      "path": ".github/workflows/build-nextest-archives.yml",
+      "only_approved_action_pin_and_version_comment_changed": true,
+      "before_sha256": "e93032a126a442326698c9d47d2de584ad4b6b86a9e61f637d336feafcf78b95",
+      "after_sha256": "e71cd9e942c3b703c62e6ccdffcec5fff25a2b4bde10e8caa0d1173b46dc5693"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "only_approved_action_pin_and_version_comment_changed": true,
+      "before_sha256": "f2ff8438bff65640f30de817b16be45e157aa069821fb2883af0fba56ea889c7",
+      "after_sha256": "7e9f079603ffd5a28efa39980275eae17683203ea6d9227037f4e119e93cd80b"
+    },
+    {
+      "path": ".github/workflows/fuzz-smoke.yml",
+      "only_approved_action_pin_and_version_comment_changed": true,
+      "before_sha256": "fd8fdf3506233d627fc491acdf6ac74b2d2360160072227ebbda81204f9c52f5",
+      "after_sha256": "595d10c91e8248a1a79db59e360d39d8edb71611b6ca16707ff53e794b49fb6f"
+    },
+    {
+      "path": ".github/workflows/layout-anomaly-advisory.yml",
+      "only_approved_action_pin_and_version_comment_changed": true,
+      "before_sha256": "a99f79d4c69ab2818fb7e729ca6a113273421ba62b6ee4b46deeb903d8a95de3",
+      "after_sha256": "dfc5ea673f25dc3b7cdee411a67575100e2eac8ba6089033796255a2de060669"
+    },
+    {
+      "path": ".github/workflows/oracle-public-advisory.yml",
+      "only_approved_action_pin_and_version_comment_changed": true,
+      "before_sha256": "7564ebf07f0728231ba779b1a3c276d1a16213d6a17aa1cfd5a2b6b3449c63db",
+      "after_sha256": "b0eefa68dfd578aebdce7564092d4bd0d5d560d0f4bd709cbb285861b3686d62"
+    },
+    {
+      "path": ".github/workflows/proptest-roundtrip.yml",
+      "only_approved_action_pin_and_version_comment_changed": true,
+      "before_sha256": "1f7cced83277efcecf0536d6fdbef9d8dc6ac0ccf5bbfbe9c8003a6a75fd226f",
+      "after_sha256": "d3a37a9cfc4d15833c5124b420bdad4a026c97ada5e73ca89dfa696f5b00121e"
+    },
+    {
+      "path": ".github/workflows/run-nextest-archives.yml",
+      "only_approved_action_pin_and_version_comment_changed": true,
+      "before_sha256": "9c7c1cd4db39e133e826a458eb980227afcdd38646adc2137f605e2c3927b5a4",
+      "after_sha256": "f1c253a08f10f1d7a62e85c8af3885172328a85f3449092f5737ff673ce75a4d"
+    }
+  ],
+  "permissions_triggers_cache_keys_save_if_and_tools_unchanged": true
+}

@@ -1,0 +1,232 @@
+{
+  "base": "6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0",
+  "branch": "review/integration-20261116-dependabot",
+  "sources": [
+    {
+      "number": 9110,
+      "url": "https://github.com/edwardkim/rhwp/pull/9110",
+      "title": "chore(deps-dev): bump vite from 8.3.6 to 8.3.8 in /rhwp-studio in the vite-stack group",
+      "source_sha": "bc10af451374b283f8869918a2002231df0fdffd",
+      "base_sha": "6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0",
+      "base": "devel",
+      "reviewer": "jangster77",
+      "changed_files": [
+        "rhwp-studio/package-lock.json",
+        "rhwp-studio/package.json"
+      ],
+      "integrated_sha": "049677dd2353b1db6d01d4c6944824b4aa1cbd7a"
+    },
+    {
+      "number": 9111,
+      "url": "https://github.com/edwardkim/rhwp/pull/9111",
+      "title": "chore(deps-dev): bump puppeteer-core from 25.16.0 to 25.17.0 in /rhwp-studio",
+      "source_sha": "278d652414e61403580106f97960cecc875d2c7f",
+      "base_sha": "6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0",
+      "base": "devel",
+      "reviewer": "jangster77",
+      "changed_files": [
+        "rhwp-studio/package-lock.json",
+        "rhwp-studio/package.json"
+      ],
+      "integrated_sha": "66fe55672b73dbb1b460037528eca5d197d055d7"
+    },
+    {
+      "number": 9112,
+      "url": "https://github.com/edwardkim/rhwp/pull/9112",
+      "title": "chore(deps): bump @anthropic-ai/sdk from 1.6.0 to 1.8.0 in /rhwp-studio",
+      "source_sha": "667bf5cd99d11e414e4d06ac060ae675b085b606",
+      "base_sha": "6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0",
+      "base": "devel",
+      "reviewer": "jangster77",
+      "changed_files": [
+        "rhwp-studio/package-lock.json",
+        "rhwp-studio/package.json"
+      ],
+      "integrated_sha": "099ff67b63b9ebe46957daee973fcf2a037888a7"
+    },
+    {
+      "number": 9113,
+      "url": "https://github.com/edwardkim/rhwp/pull/9113",
+      "title": "chore(deps-dev): bump puppeteer from 25.16.0 to 25.17.0 in /rhwp-chrome",
+      "source_sha": "eedeec54ba2e52d50a4401837ceafb4084753eec",
+      "base_sha": "6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0",
+      "base": "devel",
+      "reviewer": "jangster77",
+      "changed_files": [
+        "rhwp-chrome/package-lock.json",
+        "rhwp-chrome/package.json"
+      ],
+      "integrated_sha": "a4e08c5571d1d943b975053436fb45609b9528e3"
+    },
+    {
+      "number": 9114,
+      "url": "https://github.com/edwardkim/rhwp/pull/9114",
+      "title": "chore(deps): bump ureq from 3.5.1 to 3.5.2",
+      "source_sha": "311e2218334c5ca3dda3573ee2b845e162d4e2d8",
+      "base_sha": "6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0",
+      "base": "devel",
+      "reviewer": "jangster77",
+      "changed_files": [
+        "Cargo.lock"
+      ],
+      "integrated_sha": "28007f90ea80974c15e69b1512a91284089a2587"
+    },
+    {
+      "number": 9115,
+      "url": "https://github.com/edwardkim/rhwp/pull/9115",
+      "title": "chore(deps-dev): bump vite from 8.3.6 to 8.3.8 in /rhwp-chrome",
+      "source_sha": "19b1b058bdbf6d9aae520467c752f042c867a9f4",
+      "base_sha": "6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0",
+      "base": "devel",
+      "reviewer": "jangster77",
+      "changed_files": [
+        "rhwp-chrome/package-lock.json",
+        "rhwp-chrome/package.json"
+      ],
+      "integrated_sha": "8ba3ade93a5aa3ed23f259bac9dc313164a79498"
+    },
+    {
+      "number": 9116,
+      "url": "https://github.com/edwardkim/rhwp/pull/9116",
+      "title": "chore(deps): bump read-fonts from 0.46.0 to 0.47.0",
+      "source_sha": "60445ffb0b70b1c60b1069d0c58d7f00d86ce95b",
+      "base_sha": "6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0",
+      "base": "devel",
+      "reviewer": "jangster77",
+      "changed_files": [
+        "Cargo.lock",
+        "Cargo.toml"
+      ],
+      "integrated_sha": "e5872f9c45dd89eed6e3cd566dbe9fbf32f7c8bc"
+    },
+    {
+      "number": 9117,
+      "url": "https://github.com/edwardkim/rhwp/pull/9117",
+      "title": "chore(deps-dev): bump vite from 8.3.6 to 8.3.8 in /rhwp-firefox",
+      "source_sha": "cf1e36465afd86fbe3248da6797353457f48984f",
+      "base_sha": "6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0",
+      "base": "devel",
+      "reviewer": "jangster77",
+      "changed_files": [
+        "rhwp-firefox/package-lock.json",
+        "rhwp-firefox/package.json"
+      ],
+      "integrated_sha": "8ac8d7058798ab6494ce413b52e6761466acfdb5"
+    },
+    {
+      "number": 9118,
+      "url": "https://github.com/edwardkim/rhwp/pull/9118",
+      "title": "chore(deps): bump flate2 from 1.1.10 to 1.1.11",
+      "source_sha": "323b6e679e2cecdd547a24d02ddb73675470c409",
+      "base_sha": "6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0",
+      "base": "devel",
+      "reviewer": "jangster77",
+      "changed_files": [
+        "Cargo.lock"
+      ],
+      "integrated_sha": "a89a3f64843094b5bb1c381c5a27b60732532646"
+    },
+    {
+      "number": 9119,
+      "url": "https://github.com/edwardkim/rhwp/pull/9119",
+      "title": "chore(deps): bump Swatinem/rust-cache from c8037a86dde8214a8310e9f54a8fc61ab362aa31 to eedcf2fb1c22f010a0eb66b92f378c110977f266",
+      "source_sha": "35b4eb1d32ce48047e599237674fb71677d17314",
+      "base_sha": "6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0",
+      "base": "devel",
+      "reviewer": "jangster77",
+      "changed_files": [
+        ".github/workflows/adapter-diff.yml",
+        ".github/workflows/build-nextest-archives.yml",
+        ".github/workflows/ci.yml",
+        ".github/workflows/fuzz-smoke.yml",
+        ".github/workflows/layout-anomaly-advisory.yml",
+        ".github/workflows/oracle-public-advisory.yml",
+        ".github/workflows/proptest-roundtrip.yml"
+      ],
+      "integrated_sha": "2b5ecf53af744233ab45da7159c57278be9ac98a"
+    },
+    {
+      "number": 9120,
+      "url": "https://github.com/edwardkim/rhwp/pull/9120",
+      "title": "chore(deps): bump zip from 9.4.0 to 9.5.1",
+      "source_sha": "df3402457cec6a8460da983554ed6e30d586cdcf",
+      "base_sha": "6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0",
+      "base": "devel",
+      "reviewer": "jangster77",
+      "changed_files": [
+        "Cargo.lock"
+      ],
+      "integrated_sha": "929e5b43a8a59b1b9408cd3cd35c5e463b712e4b"
+    },
+    {
+      "number": 9121,
+      "url": "https://github.com/edwardkim/rhwp/pull/9121",
+      "title": "chore(deps): bump skera from 0.9.0 to 0.10.0",
+      "source_sha": "99a2a983e3bb5ab68cd89180b8d5a2a51613f8c3",
+      "base_sha": "6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0",
+      "base": "devel",
+      "reviewer": "jangster77",
+      "changed_files": [
+        "Cargo.lock",
+        "Cargo.toml"
+      ],
+      "integrated_sha": "5623263f4c8a1ab8242f30eb09013c005ccdbc4e"
+    },
+    {
+      "number": 9122,
+      "url": "https://github.com/edwardkim/rhwp/pull/9122",
+      "title": "chore(deps): bump crc32fast from 1.5.4 to 1.5.5",
+      "source_sha": "aa1803a119d8601a7e997c3294ebc628b07ada84",
+      "base_sha": "6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0",
+      "base": "devel",
+      "reviewer": "jangster77",
+      "changed_files": [
+        "Cargo.lock"
+      ],
+      "integrated_sha": "e3c19f33ee2b8caca5fb53e4e7a3513b44dfacfe"
+    },
+    {
+      "number": 9123,
+      "url": "https://github.com/edwardkim/rhwp/pull/9123",
+      "title": "chore(deps): bump taiki-e/install-action from 2.90.2 to 2.90.3",
+      "source_sha": "a48a87263145cfe1a39b97609e5e5ec0b08ab645",
+      "base_sha": "6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0",
+      "base": "devel",
+      "reviewer": "jangster77",
+      "changed_files": [
+        ".github/workflows/build-nextest-archives.yml",
+        ".github/workflows/run-nextest-archives.yml"
+      ],
+      "integrated_sha": "72482671b137f311cff51685b1a6dd8b7a53faef"
+    },
+    {
+      "number": 9124,
+      "url": "https://github.com/edwardkim/rhwp/pull/9124",
+      "title": "chore(deps): bump aes from 0.9.3 to 0.9.4",
+      "source_sha": "c82f19e4ec17423ec2bb4264068bbb719a444ab0",
+      "base_sha": "6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0",
+      "base": "devel",
+      "reviewer": "jangster77",
+      "changed_files": [
+        "Cargo.lock"
+      ],
+      "integrated_sha": "9b833a1c63de393d76fbf9c8d5b08527320e1dd2"
+    },
+    {
+      "number": 9125,
+      "url": "https://github.com/edwardkim/rhwp/pull/9125",
+      "title": "chore(deps): bump skia-safe from 0.156.0 to 0.157.0",
+      "source_sha": "e4095fb524b10e6f23c83d699a809f2a84decb0b",
+      "base_sha": "6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0",
+      "base": "devel",
+      "reviewer": "jangster77",
+      "changed_files": [
+        "Cargo.lock",
+        "Cargo.toml"
+      ],
+      "integrated_sha": "9e4a097ff401a1c483d1dccaa4b12afa9ffcbcaa"
+    }
+  ],
+  "reviewer_verified_by_api": true,
+  "owner_review_not_requested": true
+}

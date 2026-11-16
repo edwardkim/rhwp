@@ -1,0 +1,261 @@
+{
+  "checked_at": "2026-11-16T13:37:00.036144+09:00",
+  "base": "6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0",
+  "head": "fab2d01ef0682cf3265daf43cd8c8e178b3bd048",
+  "rows": [
+    {
+      "pr": 9110,
+      "source": "bc10af451374b283f8869918a2002231df0fdffd",
+      "applied": "049677dd2353b1db6d01d4c6944824b4aa1cbd7a",
+      "original_patch_id": "81b54038a4972b23f42a21bd43eb307ceb04047c",
+      "applied_patch_id": "81b54038a4972b23f42a21bd43eb307ceb04047c",
+      "patch_id_equal": true,
+      "added_removed_payload_equal": true
+    },
+    {
+      "pr": 9111,
+      "source": "278d652414e61403580106f97960cecc875d2c7f",
+      "applied": "66fe55672b73dbb1b460037528eca5d197d055d7",
+      "original_patch_id": "6e6d3fc2fa373fb493f56fa041432c5e8531b354",
+      "applied_patch_id": "9fd8658752e5bf5f1bc2c0fd342ec5d4f6c80ae0",
+      "patch_id_equal": false,
+      "added_removed_payload_equal": true,
+      "difference": "인접 의존성 갱신으로 문맥만 변경"
+    },
+    {
+      "pr": 9112,
+      "source": "667bf5cd99d11e414e4d06ac060ae675b085b606",
+      "applied": "099ff67b63b9ebe46957daee973fcf2a037888a7",
+      "original_patch_id": "059bf2c1eb6f851deeaa00da259d66a336daf940",
+      "applied_patch_id": "059bf2c1eb6f851deeaa00da259d66a336daf940",
+      "patch_id_equal": true,
+      "added_removed_payload_equal": true
+    },
+    {
+      "pr": 9113,
+      "source": "eedeec54ba2e52d50a4401837ceafb4084753eec",
+      "applied": "a4e08c5571d1d943b975053436fb45609b9528e3",
+      "original_patch_id": "1f7da17ef4c5b7dd311eddb3ab417c8076d33313",
+      "applied_patch_id": "1f7da17ef4c5b7dd311eddb3ab417c8076d33313",
+      "patch_id_equal": true,
+      "added_removed_payload_equal": true
+    },
+    {
+      "pr": 9114,
+      "source": "311e2218334c5ca3dda3573ee2b845e162d4e2d8",
+      "applied": "28007f90ea80974c15e69b1512a91284089a2587",
+      "original_patch_id": "e9c11cbd9f6e7ee54ea0e311f2a4a9ff177e87a5",
+      "applied_patch_id": "e9c11cbd9f6e7ee54ea0e311f2a4a9ff177e87a5",
+      "patch_id_equal": true,
+      "added_removed_payload_equal": true
+    },
+    {
+      "pr": 9115,
+      "source": "19b1b058bdbf6d9aae520467c752f042c867a9f4",
+      "applied": "8ba3ade93a5aa3ed23f259bac9dc313164a79498",
+      "original_patch_id": "d1aaceadde8630579df46471f52b7825ba52c19c",
+      "applied_patch_id": "517cbe287de242d6170ca8a8497edec23a83688a",
+      "patch_id_equal": false,
+      "added_removed_payload_equal": true,
+      "difference": "인접 의존성 갱신으로 문맥만 변경"
+    },
+    {
+      "pr": 9116,
+      "source": "60445ffb0b70b1c60b1069d0c58d7f00d86ce95b",
+      "applied": "e5872f9c45dd89eed6e3cd566dbe9fbf32f7c8bc",
+      "original_patch_id": "c8e22ab6180112c0e900b390fd723fe75acd6802",
+      "applied_patch_id": "c8e22ab6180112c0e900b390fd723fe75acd6802",
+      "patch_id_equal": true,
+      "added_removed_payload_equal": true
+    },
+    {
+      "pr": 9117,
+      "source": "cf1e36465afd86fbe3248da6797353457f48984f",
+      "applied": "8ac8d7058798ab6494ce413b52e6761466acfdb5",
+      "original_patch_id": "62ede47057b47e4bfdba9880aeee150a52f04173",
+      "applied_patch_id": "62ede47057b47e4bfdba9880aeee150a52f04173",
+      "patch_id_equal": true,
+      "added_removed_payload_equal": true
+    },
+    {
+      "pr": 9118,
+      "source": "323b6e679e2cecdd547a24d02ddb73675470c409",
+      "applied": "a89a3f64843094b5bb1c381c5a27b60732532646",
+      "original_patch_id": "e92442671d6a0bce7d81e59ed2f9215a4a915701",
+      "applied_patch_id": "e92442671d6a0bce7d81e59ed2f9215a4a915701",
+      "patch_id_equal": true,
+      "added_removed_payload_equal": true
+    },
+    {
+      "pr": 9119,
+      "source": "35b4eb1d32ce48047e599237674fb71677d17314",
+      "applied": "2b5ecf53af744233ab45da7159c57278be9ac98a",
+      "original_patch_id": "0e85176c9279e81bd3695915fe064a4a8e971acd",
+      "applied_patch_id": "0e85176c9279e81bd3695915fe064a4a8e971acd",
+      "patch_id_equal": true,
+      "added_removed_payload_equal": true
+    },
+    {
+      "pr": 9120,
+      "source": "df3402457cec6a8460da983554ed6e30d586cdcf",
+      "applied": "929e5b43a8a59b1b9408cd3cd35c5e463b712e4b",
+      "original_patch_id": "e4c4a9d42f73e7a7f8b9896fe07932f53aa6adbb",
+      "applied_patch_id": "e4c4a9d42f73e7a7f8b9896fe07932f53aa6adbb",
+      "patch_id_equal": true,
+      "added_removed_payload_equal": true
+    },
+    {
+      "pr": 9121,
+      "source": "99a2a983e3bb5ab68cd89180b8d5a2a51613f8c3",
+      "applied": "5623263f4c8a1ab8242f30eb09013c005ccdbc4e",
+      "original_patch_id": "7b77769bca6eed48fe9065449c20f65d53be086f",
+      "applied_patch_id": "6150b317bd8baee07c832d8aa52df78ff0c43d44",
+      "patch_id_equal": false,
+      "added_removed_payload_equal": false,
+      "difference": "원 PR이 추가하는 read-fonts0.47 package stanza는 #9116에서 이미 동일하게 들어왔으므로 누적 체리픽에서 중복 추가되지 않았다. skera0.10·skrifa0.50·write-fonts0.56 갱신은 보존했다."
+    },
+    {
+      "pr": 9122,
+      "source": "aa1803a119d8601a7e997c3294ebc628b07ada84",
+      "applied": "e3c19f33ee2b8caca5fb53e4e7a3513b44dfacfe",
+      "original_patch_id": "4bf91cef28667ef1e2abe1ca50d5d0b29b239af0",
+      "applied_patch_id": "4bf91cef28667ef1e2abe1ca50d5d0b29b239af0",
+      "patch_id_equal": true,
+      "added_removed_payload_equal": true
+    },
+    {
+      "pr": 9123,
+      "source": "a48a87263145cfe1a39b97609e5e5ec0b08ab645",
+      "applied": "72482671b137f311cff51685b1a6dd8b7a53faef",
+      "original_patch_id": "3d44e75ed0969e88e240c4e3ff20cbb2631052fa",
+      "applied_patch_id": "3d44e75ed0969e88e240c4e3ff20cbb2631052fa",
+      "patch_id_equal": true,
+      "added_removed_payload_equal": true
+    },
+    {
+      "pr": 9124,
+      "source": "c82f19e4ec17423ec2bb4264068bbb719a444ab0",
+      "applied": "9b833a1c63de393d76fbf9c8d5b08527320e1dd2",
+      "original_patch_id": "4c034a763c173734c99deda2c63d311e47a8585e",
+      "applied_patch_id": "4c034a763c173734c99deda2c63d311e47a8585e",
+      "patch_id_equal": true,
+      "added_removed_payload_equal": true
+    },
+    {
+      "pr": 9125,
+      "source": "e4095fb524b10e6f23c83d699a809f2a84decb0b",
+      "applied": "9e4a097ff401a1c483d1dccaa4b12afa9ffcbcaa",
+      "original_patch_id": "fd73977b9287dcef7511a6dc70267d694afdff22",
+      "applied_patch_id": "874e2f6a5843be84ca803414a84fb75361fc0446",
+      "patch_id_equal": false,
+      "added_removed_payload_equal": true,
+      "difference": "인접 의존성 갱신으로 문맥만 변경"
+    }
+  ],
+  "maintainer_lock_repairs": [
+    "6bd9a7c403",
+    "87c78424bc"
+  ],
+  "exact_added_removed_payload_equal_count": 15,
+  "current_graph": {
+    "read-fonts": [
+      {
+        "version": "0.39.2",
+        "dependencies": [
+          "bytemuck",
+          "font-types 0.11.3"
+        ]
+      },
+      {
+        "version": "0.47.0",
+        "dependencies": [
+          "bytemuck",
+          "foldhash",
+          "font-types 0.12.7",
+          "once_cell",
+          "smallvec",
+          "yoke"
+        ]
+      }
+    ],
+    "skera": [
+      {
+        "version": "0.10.0",
+        "dependencies": [
+          "foldhash",
+          "hashbrown",
+          "read-fonts 0.47.0",
+          "skrifa 0.50.0",
+          "thiserror",
+          "write-fonts 0.56.0"
+        ]
+      }
+    ],
+    "skrifa": [
+      {
+        "version": "0.42.1",
+        "dependencies": [
+          "bytemuck",
+          "read-fonts 0.39.2"
+        ]
+      },
+      {
+        "version": "0.50.0",
+        "dependencies": [
+          "bytemuck",
+          "once_cell",
+          "read-fonts 0.47.0",
+          "smallvec",
+          "yoke"
+        ]
+      }
+    ],
+    "write-fonts": [
+      {
+        "version": "0.48.1",
+        "dependencies": [
+          "font-types 0.11.3",
+          "indexmap",
+          "kurbo 0.13.1",
+          "log",
+          "read-fonts 0.39.2"
+        ]
+      },
+      {
+        "version": "0.56.0",
+        "dependencies": [
+          "font-types 0.12.7",
+          "log",
+          "read-fonts 0.47.0"
+        ]
+      }
+    ],
+    "bindgen": [
+      {
+        "version": "0.73.2",
+        "dependencies": [
+          "bitflags 2.13.1",
+          "cexpr",
+          "clang-sys",
+          "log",
+          "prettyplease",
+          "proc-macro2",
+          "quote",
+          "regex",
+          "rustc-hash",
+          "shlex",
+          "syn 3.0.3"
+        ]
+      }
+    ],
+    "prettyplease": [
+      {
+        "version": "0.3.0",
+        "dependencies": [
+          "proc-macro2",
+          "syn 3.0.3"
+        ]
+      }
+    ]
+  }
+}

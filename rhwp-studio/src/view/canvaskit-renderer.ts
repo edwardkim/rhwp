@@ -5872,7 +5872,9 @@ export class CanvasKitLayerRenderer {
       this.unsupportedOps.add(`strokeDash:${String(dash)}`);
       return;
     }
-    if (intervals === null) {
+    // 일반 선 패턴의 빈 배열은 Canvas/SVG와 같이 실선이다.
+    // 명시적 물리 패턴의 빈 배열은 위 검증에서 계속 거부한다.
+    if (intervals === null || intervals.length === 0) {
       draw();
       return;
     }

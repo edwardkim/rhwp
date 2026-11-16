@@ -1,0 +1,33 @@
+{
+  "key": "sample16-hwp2022",
+  "page": 1,
+  "raw_match_percent": "100.00",
+  "input_source": {
+    "page": 1,
+    "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/protected/candidate/sample16-hwp2022/rhwp_png/rhwp_001.png",
+    "rhwp_sha256": "61f95393232d20e072c4054c99f10a8a081aede6607b35c51624e02efdef1666",
+    "pdf_png": "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/protected/candidate/sample16-hwp2022/pdf_png/pdf-001.png",
+    "pdf_sha256": "3b89c85f5d040784116957be06ec420d4084cb93554edfe2363cec9e569fb270"
+  },
+  "files": {
+    "raw": {
+      "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2022/native/raw-p001.png",
+      "sha256": "61f95393232d20e072c4054c99f10a8a081aede6607b35c51624e02efdef1666"
+    },
+    "pdf": {
+      "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2022/native/pdf-p001.png",
+      "sha256": "3b89c85f5d040784116957be06ec420d4084cb93554edfe2363cec9e569fb270"
+    },
+    "overlay": {
+      "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2022/native/overlay-p001.png",
+      "sha256": "1963bda31f2d70d516eed5fd21986f21d3c5999043815498bea2855225fce4d1"
+    },
+    "review": {
+      "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2022/native/review-p001.png",
+      "sha256": "e1b45539cd1a1ce6357341defbb076fe27ffabc9e5a59f75e7cdf6ddaf75184a"
+    }
+  },
+  "canonical_functions": "make_overlay_compares/make_compares/make_review_panels",
+  "pixel_diff_threshold": 32,
+  "recaptured": false
+}

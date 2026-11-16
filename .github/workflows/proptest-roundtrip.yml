@@ -452,7 +452,7 @@ jobs:
           toolchain: 1.93.1
 
       - name: Rust build cache
-        uses: Swatinem/rust-cache@c8037a86dde8214a8310e9f54a8fc61ab362aa31 # v2.9.3 이후 workspace root key 보정
+        uses: Swatinem/rust-cache@eedcf2fb1c22f010a0eb66b92f378c110977f266 # v2.9.3 이후 workspace root key 보정
         with:
           shared-key: proptest-roundtrip
           save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}

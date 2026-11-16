@@ -1,0 +1,89 @@
+{
+  "status": "passed",
+  "product_source": "87c78424bc261f90e1167ecedc6a0f2106864d37",
+  "runner_source": "fab2d01ef0682cf3265daf43cd8c8e178b3bd048",
+  "current_head": "a88cfb6f8f250d0700c4dbb1022bc648a8bb6e59",
+  "environment": "Mac OS fonts only; explicit licensed repository test fixtures",
+  "results": [
+    {
+      "name": "native-skia-lib",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/minimal-font/profile-v3.sb",
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "-j",
+        "8"
+      ],
+      "exit": 0,
+      "seconds": 198.863,
+      "profile_sha256": "dab5a29efd05b091cf0308729b49d34c7922ea399dc823d70457cde0c1367e8c",
+      "test_summaries": [
+        "test result: ok. 3852 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 11.84s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ],
+      "log_sha256": "6c7e3e1168eef6d2deb67bf1d3bc223ed0df69c377525ba40c781ba37944605a"
+    },
+    {
+      "name": "native-placeholder",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/minimal-font/profile-v3.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0,
+      "seconds": 181.687,
+      "profile_sha256": "dab5a29efd05b091cf0308729b49d34c7922ea399dc823d70457cde0c1367e8c",
+      "test_summaries": [
+        "Summary [   3.946s] 2 tests run: 2 passed, 347 skipped"
+      ],
+      "log_sha256": "de349068c224f4ac5408c1c2e1e1ed1f3ea9bd2d1da5f80e8453a82a5a494f03"
+    },
+    {
+      "name": "native-pdf",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/minimal-font/profile-v3.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0,
+      "seconds": 17.347,
+      "profile_sha256": "dab5a29efd05b091cf0308729b49d34c7922ea399dc823d70457cde0c1367e8c",
+      "test_summaries": [
+        "Summary [   3.482s] 36 tests run: 36 passed, 301 skipped"
+      ],
+      "log_sha256": "210d832a110e016776495dccf2b9c3f6264285de7984c18ca5a33d7c47d6b0bc"
+    }
+  ]
+}
