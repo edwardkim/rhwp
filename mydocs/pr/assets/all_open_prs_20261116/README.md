@@ -59,7 +59,7 @@ Native 99.97%, WASM 99.96%이며 Native 행을 WASM 기준으로 대체하지 �
 ## 진행 중인 필수 항목
 
 Native/fresh WASM 정본 보호 36조건·3,542행의 [전쪽 대조](protected-final.json)는 완료했다.
-현재 sample10 WASM 757쪽만 99.57%→99.56%로 내려가 보호 판정은 **실패**다.
+초기 Mac 전용 수동 환경의 sample10 WASM 757쪽 99.57%→99.56%는 **실패 기록**으로 보존한다.
 [같은 쪽 진단](sample10-p757-diagnosis/metrics.json),
 [review](sample10-p757-diagnosis/wasm/review/review_757.png)·
 [overlay](sample10-p757-diagnosis/wasm/overlay/overlay_757.png)를 보존하고 원인을 확인한다.
@@ -81,8 +81,11 @@ Native↔CanvasKit 대조 16건은 통과했다. 별도의 report-only Canvas2D�
 Root pkg·Studio public·frozen JS/WASM과 실제 응답의 신원을 확인했다. Vite가 JS의 로컬 WASM URL과
 비실행 sourcemap을 바꾼 내역을 구분하며, WASM 응답은 원 바이트 해시가 일치했다.
 
-sample10 757쪽은 이전 수용 기록의 직접 원본 프로그램 공급 방식으로 base·후보 모두 99.57%를
-회복했고 474쪽도 100%였다. 정확히 확보한 원본 프로그램 66개와 미확보 14개를 구분했으며,
-이 집중 결과를 전체 수용으로 대신하지 않고 같은 조건으로 763쪽 전체 base/후보를 재산출한다.
-위의 이전 조건 실패 결과는 보존한다. 관계형 검사 변경 뒤 최소 글꼴 전체 회귀·lint 재검증도
+sample10은 이전 수용 기록의 직접 원본 프로그램 공급 방식으로 WASM base·후보의
+763쪽 전체가 각각 최저 99.57%·보호 하락 0쪽이었다. 정확히 확보한 원본 프로그램 66개와
+미확보 14개를 구분했으며, 전쪽의 실제 WASM paint 요청에는 미확보 계열이 없었다.
+Native 자동 공급 대조에서는 원 PUA 공급자를 명시하지 않아 목차 선 폭이 달라지는 것을 확인했다.
+[검증된 Native 공급자](sample10-native-provider-focus.json)를 같은 원본 프로그램에 명시하면
+base·후보의 2/474/757쪽 여섯 조건이 모두 보호 하한을 복원한다. 이 조건의 Native 전763쪽을
+추가 확인 중이며, 이전 자동 공급 실패·중단은 수용 결과로 사용하지 않는다. 관계형 검사 변경 뒤 최소 글꼴 전체 회귀·lint 재검증도
 완료했다. 남은 최종 결과를 확인하고 원 PR별 판정을 갱신한 뒤 통합 PR을 제출한다.
