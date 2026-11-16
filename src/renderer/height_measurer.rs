@@ -4821,27 +4821,27 @@ let body_height=match nested_body_heights
                                     || (declared_cell_h.is_finite()
                                         && cell_declared_row_covers_stored_content[cell_index]))
                         })
-                        .map(|(_, pp)| pp)
-                        .filter(|pp| {
+                        .filter(|(_, pp)| {
                             pp.text.trim().is_empty() && pp.controls.iter().any(|c| {
                                 matches!(c, Control::Picture(pic) if !pic.common.treat_as_char)
                                     || matches!(c, Control::Shape(sh) if !sh.common().treat_as_char)
                             })
                         })
-                        .map(|pp| {
+                        .map(|(pi, pp)| {
                             // 저장 줄이 없는 문단은 위 `text_height` 가 합성한 자리 줄을
                             // 실었다. 같은 줄이므로 그때 실은 값을 그대로 뺀다(#7685) — 저장
                             // 줄만 빼면 자리 줄이 개체 아래에 남는다(issue7182 그림 칸 +5.3px).
                             // 그 줄은 글자 모양이 있으면 400HU 가 아니라 글자 크기(em)로
                             // 합성되므로 고정 400HU 를 빼면 차이가 개체 아래에 남는다
                             // (#8971: 10pt 빈 문단의 그림 칸이 13.3 − 5.3 = 8.0px 늘어남).
-                            // 이 갈래는 문단이 하나뿐인 칸이라 `text_height` 가 곧 그 문단의
-                            // 몫이다. 문단 앞 간격은 종전처럼 남긴다.
+                            // 마지막 빈 문단의 몫만 뺀다. 칸 전체 `text_height`를 빼면
+                            // 앞 제목 줄까지 없어져 낮은 선언의 사진 행이 그림보다 짧아진다.
+                            // 문단 앞 간격은 종전처럼 남긴다.
                             if crate::renderer::para_has_no_stored_line_segs(pp) {
                                 let before =
                                     crate::renderer::cell_paragraph_spacing::paragraph_before(
                                         pp,
-                                        0,
+                                        pi,
                                         styles
                                             .para_styles
                                             .get(pp.para_shape_id as usize)
@@ -4849,7 +4849,7 @@ let body_height=match nested_body_heights
                                         self.dpi,
                                     )
                                     .occupied_before();
-                                return (text_height - before).max(0.0);
+                                return (para_flow_heights[pi] - before).max(0.0);
                             }
                             // [#8427] 개체가 이 문단 기준(vert=문단)이면 한/글은 개체를 문단
                             // 앞 간격 **전** 원점에 놓는다(30396 18쪽: 문단 앞 간격 500HU 인
