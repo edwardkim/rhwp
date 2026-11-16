@@ -63,12 +63,13 @@ final class NativeGpuCacheSample {
       NativePresentationStamp.fromJson(expected.toJson());
       if (status['closed'] == true || status['closing'] == true) return null;
       final raw = status['producerDiagnosticsSamples'];
-      final samples = raw == null ? [status['producerDiagnostics']] : raw;
+      final samples = raw ?? [status['producerDiagnostics']];
       if (samples is! List ||
           samples.isEmpty ||
           samples.length > 2 ||
-          (raw != null && samples.length != 2))
+          (raw != null && samples.length != 2)) {
         return null;
+      }
       String? backend;
       final values = <Map>[];
       for (final sample in samples) {
@@ -76,21 +77,24 @@ final class NativeGpuCacheSample {
             sample['schemaVersion'] != 1 ||
             sample['scope'] != scope ||
             !expected.matches(sample['stamp']) ||
-            sample['counters'] is! Map)
+            sample['counters'] is! Map) {
           return null;
+        }
         final source = sample['backend'];
         if (!const {
               'openGlGanesh',
               'metalGanesh',
               'd3d12Ganesh',
             }.contains(source) ||
-            (backend != null && source != backend))
+            (backend != null && source != backend)) {
           return null;
+        }
         final checked = NativePresentationStamp.fromJson(
           Map<String, Object?>.from(sample['stamp'] as Map),
         );
-        if (checked.toJson().values.any((v) => v is int && v > maximum))
+        if (checked.toJson().values.any((v) => v is int && v > maximum)) {
           return null;
+        }
         backend = source as String;
         values.add(sample['counters'] as Map);
       }

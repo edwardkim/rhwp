@@ -119,8 +119,9 @@ final class NativeGpuTrace {
           if (entry.value >= 0 && entry.value <= 9007199254740991)
             entry.key: entry.value,
       };
-      if (producerDiagnostics != null)
+      if (producerDiagnostics != null) {
         filtered.addAll(producerDiagnostics.traceCounters);
+      }
       final event = NativeGpuTraceEvent._(
         stage,
         generation,
