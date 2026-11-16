@@ -79,3 +79,17 @@
 개별 원 PR 16개의 검토 초안은 임시 output에서 준비하며 최종 증거·CI 확인 전 승인으로 기록하지
 않습니다. fresh WASM·전쪽 보호 비교·제품 소비 경로도 선행 게이트 통과 후 순차 실행하도록
 준비했으며 아직 완료로 집계하지 않습니다.
+
+## 공개 fixture 차단 보정과 체리픽 내용 확인
+
+전체 nextest의 첫 컴파일 시 `ttfs/redistributable/happiness-sans/HappinessSansVF.ttf`를
+격리 프로필이 차단했습니다. 이 파일은 기존 저장소가 공식 원본·라이선스와 함께 추적하는
+variable font fixture이며 테스트의 `include_bytes!` 입력입니다. 해당 디렉터리만 허용하고
+OS528face·비공개183개 파일 읽기 차단을 다시 확인했습니다. 제품·회귀 기대값은 변경하지
+않았습니다. 이 실행은 테스트 본문 전 컴파일 실패로 기록하고, 성공한 release build/lib는
+같은 제품 입력·원래 프로필 snapshot으로 보존한 채 전체 nextest부터 다시 실행합니다.
+
+[체리픽 payload 감사](cherry-pick-provenance-audit.json)에서 원 PR 16개 중 15개는 추가·삭제
+내용이 그대로입니다. 12개는 patch-id도 동일하며 나머지는 인접 갱신의 문맥 차이입니다.
+#9121은 #9116이 이미 추가한 동일 read-fonts0.47 package stanza를 중복 추가하지 않은 차이만
+있습니다. skera·skrifa·write-fonts의 갱신과 최종 read-fonts0.47 노드는 보존했습니다.
