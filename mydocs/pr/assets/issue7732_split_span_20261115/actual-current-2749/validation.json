@@ -1,0 +1,547 @@
+{
+  "source_product_commit": "2749e491e843ec851de12467751ec200ab551014",
+  "native_cli_only_followup": "8472674645",
+  "browser": "Chrome/157.0.8103.51",
+  "surface": "software",
+  "capture_exit": 0,
+  "sample_count": 8,
+  "screen_print_captures": 48,
+  "actual_svg_print_captures": 8,
+  "records": [
+    {
+      "requested_backend": "svg",
+      "actual_backend": "svg",
+      "input": "footnote",
+      "pages": [
+        36,
+        37,
+        38
+      ],
+      "minimum": 99.16,
+      "tsv": "svg/footnote/silhouette.tsv",
+      "tsv_sha256": "1e8c3f4a7554a4cb02b43d1e84381a0965c3489754ff5d3e8f88fb62d6965c78",
+      "direct_canvaskit": false
+    },
+    {
+      "requested_backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "input": "footnote",
+      "pages": [
+        36,
+        37,
+        38
+      ],
+      "minimum": 99.08,
+      "tsv": "canvas2d/footnote/silhouette.tsv",
+      "tsv_sha256": "2fc3575cf0680d91d5b0f67e2dc4448d916a2cb7e8c419a0de0345f131b19265",
+      "direct_canvaskit": false
+    },
+    {
+      "requested_backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "input": "footnote",
+      "pages": [
+        36,
+        37,
+        38
+      ],
+      "minimum": 99.17,
+      "tsv": "canvaskit-compat/footnote/silhouette.tsv",
+      "tsv_sha256": "c638ae24f3a894a27fefab856d1299950e9ecbd78f352eaec04c4b7ca368d701",
+      "direct_canvaskit": true
+    },
+    {
+      "requested_backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "input": "footnote",
+      "pages": [
+        36,
+        37,
+        38
+      ],
+      "minimum": 99.17,
+      "tsv": "canvaskit-default/footnote/silhouette.tsv",
+      "tsv_sha256": "c638ae24f3a894a27fefab856d1299950e9ecbd78f352eaec04c4b7ca368d701",
+      "direct_canvaskit": true
+    },
+    {
+      "requested_backend": "svg",
+      "actual_backend": "svg",
+      "input": "nested",
+      "pages": [
+        1,
+        10,
+        11,
+        14,
+        15
+      ],
+      "minimum": 99.64,
+      "tsv": "svg/nested/silhouette.tsv",
+      "tsv_sha256": "c333a7046ec2ff6b94e6d4c9db9ab7e337f8f3ac8d8fba222ba85c2fb2a515fa",
+      "direct_canvaskit": false
+    },
+    {
+      "requested_backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "input": "nested",
+      "pages": [
+        1,
+        10,
+        11,
+        14,
+        15
+      ],
+      "minimum": 99.64,
+      "tsv": "canvas2d/nested/silhouette.tsv",
+      "tsv_sha256": "bceb0aa1ec6fd66fa91965f91abb49f81c07ffbbd062109ab23db40f1faaedaa",
+      "direct_canvaskit": false
+    },
+    {
+      "requested_backend": "canvaskit-compat",
+      "actual_backend": "canvas2d",
+      "input": "nested",
+      "pages": [
+        1,
+        10,
+        11,
+        14,
+        15
+      ],
+      "minimum": 99.64,
+      "tsv": "canvaskit-compat/nested/silhouette.tsv",
+      "tsv_sha256": "bceb0aa1ec6fd66fa91965f91abb49f81c07ffbbd062109ab23db40f1faaedaa",
+      "direct_canvaskit": false
+    },
+    {
+      "requested_backend": "canvaskit-default",
+      "actual_backend": "canvas2d",
+      "input": "nested",
+      "pages": [
+        1,
+        10,
+        11,
+        14,
+        15
+      ],
+      "minimum": 99.64,
+      "tsv": "canvaskit-default/nested/silhouette.tsv",
+      "tsv_sha256": "bceb0aa1ec6fd66fa91965f91abb49f81c07ffbbd062109ab23db40f1faaedaa",
+      "direct_canvaskit": false
+    }
+  ],
+  "font_fallback_contract": {
+    "total": 20,
+    "passed": 20,
+    "failed": 0
+  },
+  "nested_preflight": {
+    "schemaVersion": 1,
+    "mode": "default",
+    "profile": "print",
+    "status": "ineligible",
+    "eligible": false,
+    "complete": true,
+    "pageCount": 17,
+    "scannedPages": 17,
+    "scannedWorkUnits": 31953,
+    "limits": {
+      "maxPages": 128,
+      "maxWorkUnits": 200000,
+      "maxBlockers": 32,
+      "maxRequiredFontFamilies": 256
+    },
+    "summary": {
+      "totalItems": 3549,
+      "directItems": 3470,
+      "directRequiredItems": 79,
+      "compatOverlayItems": 0,
+      "textFallbackItems": 0,
+      "unsupportedItems": 0,
+      "hiddenOverlayViolations": 79
+    },
+    "blockers": [
+      {
+        "pageIndex": 7,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 7,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 7,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 7,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 7,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 7,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 7,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 7,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 7,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 7,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 7,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 7,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 7,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 7,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 7,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 7,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 7,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 7,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 7,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 7,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 7,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 7,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 7,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 7,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 8,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 8,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 8,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 8,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 8,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 8,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 8,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      },
+      {
+        "pageIndex": 8,
+        "code": "hiddenCanvas2dOverlayRequired",
+        "opType": "textRun",
+        "detail": "scriptTextRequiresShaping"
+      }
+    ],
+    "requiredFontFamilies": [
+      "Gulim",
+      "HCI Hollyhock",
+      "HCI Poppy",
+      "HY Junggothic",
+      "HY Sinmyeongjo",
+      "HY헤드라인M",
+      "Human Gothic",
+      "Myeongjo",
+      "NotoSerifKRExtraLight-Regular",
+      "굴림",
+      "굴림체"
+    ],
+    "capabilityDigest": "blake3:0fe9c4e98bd94a16298f3c24e868725dc1ed68827bc25464c1888c4683584d54"
+  },
+  "replay_diagnostics": {
+    "mode": "contractGateAndReportInventory",
+    "hardGateViolationCount": 0,
+    "hardGateViolations": [],
+    "summaryByBackendProfile": [
+      {
+        "backend": "canvaskit-compat",
+        "profile": "print",
+        "captureCount": 3,
+        "totalItems": 1673,
+        "directItems": 1673,
+        "directRequiredItems": 0,
+        "compatOverlayItems": 0,
+        "textFallbackItems": 0,
+        "unsupportedItems": 0,
+        "hiddenOverlayViolations": 0,
+        "hardGateViolationCount": 0,
+        "runtimeRenderErrors": 0,
+        "runtimeUnexpectedUnsupportedOps": 0,
+        "runtimeImageReplayFailures": 0,
+        "planStatusCounts": {
+          "direct": 1673
+        },
+        "planReasonCounts": {
+          "directReplaySupported": 1673
+        },
+        "planFeatureCounts": {
+          "cacheHint": 6,
+          "clip": 278,
+          "pageBackground": 3,
+          "textRun": 798,
+          "textSpecialVisual": 39,
+          "vectorShape": 549
+        },
+        "expectedUnsupportedOpCounts": {},
+        "unexpectedUnsupportedOpCounts": {},
+        "imageFailureReasonCounts": {},
+        "imageFailureSourceCounts": {}
+      },
+      {
+        "backend": "canvaskit-default",
+        "profile": "print",
+        "captureCount": 3,
+        "totalItems": 1673,
+        "directItems": 1673,
+        "directRequiredItems": 0,
+        "compatOverlayItems": 0,
+        "textFallbackItems": 0,
+        "unsupportedItems": 0,
+        "hiddenOverlayViolations": 0,
+        "hardGateViolationCount": 0,
+        "runtimeRenderErrors": 0,
+        "runtimeUnexpectedUnsupportedOps": 0,
+        "runtimeImageReplayFailures": 0,
+        "planStatusCounts": {
+          "direct": 1673
+        },
+        "planReasonCounts": {
+          "directReplaySupported": 1673
+        },
+        "planFeatureCounts": {
+          "cacheHint": 6,
+          "clip": 278,
+          "pageBackground": 3,
+          "textRun": 798,
+          "textSpecialVisual": 39,
+          "vectorShape": 549
+        },
+        "expectedUnsupportedOpCounts": {},
+        "unexpectedUnsupportedOpCounts": {},
+        "imageFailureReasonCounts": {},
+        "imageFailureSourceCounts": {}
+      },
+      {
+        "backend": "canvaskit-compat",
+        "profile": "screen",
+        "captureCount": 3,
+        "totalItems": 1677,
+        "directItems": 1677,
+        "directRequiredItems": 0,
+        "compatOverlayItems": 0,
+        "textFallbackItems": 0,
+        "unsupportedItems": 0,
+        "hiddenOverlayViolations": 0,
+        "hardGateViolationCount": 0,
+        "runtimeRenderErrors": 0,
+        "runtimeUnexpectedUnsupportedOps": 0,
+        "runtimeImageReplayFailures": 0,
+        "planStatusCounts": {
+          "direct": 1677
+        },
+        "planReasonCounts": {
+          "directReplaySupported": 1677
+        },
+        "planFeatureCounts": {
+          "cacheHint": 6,
+          "clip": 278,
+          "pageBackground": 3,
+          "textRun": 798,
+          "textSpecialVisual": 39,
+          "vectorShape": 553
+        },
+        "expectedUnsupportedOpCounts": {},
+        "unexpectedUnsupportedOpCounts": {},
+        "imageFailureReasonCounts": {},
+        "imageFailureSourceCounts": {}
+      },
+      {
+        "backend": "canvaskit-default",
+        "profile": "screen",
+        "captureCount": 3,
+        "totalItems": 1677,
+        "directItems": 1677,
+        "directRequiredItems": 0,
+        "compatOverlayItems": 0,
+        "textFallbackItems": 0,
+        "unsupportedItems": 0,
+        "hiddenOverlayViolations": 0,
+        "hardGateViolationCount": 0,
+        "runtimeRenderErrors": 0,
+        "runtimeUnexpectedUnsupportedOps": 0,
+        "runtimeImageReplayFailures": 0,
+        "planStatusCounts": {
+          "direct": 1677
+        },
+        "planReasonCounts": {
+          "directReplaySupported": 1677
+        },
+        "planFeatureCounts": {
+          "cacheHint": 6,
+          "clip": 278,
+          "pageBackground": 3,
+          "textRun": 798,
+          "textSpecialVisual": 39,
+          "vectorShape": 553
+        },
+        "expectedUnsupportedOpCounts": {},
+        "unexpectedUnsupportedOpCounts": {},
+        "imageFailureReasonCounts": {},
+        "imageFailureSourceCounts": {}
+      }
+    ]
+  },
+  "backend_exact_pixel_report": {
+    "total": 12,
+    "compared": 12,
+    "passed": 0,
+    "failed": 12,
+    "missing": 0,
+    "errors": 0,
+    "identityMismatches": 0
+  },
+  "backend_exact_pixel_interpretation": "reportOnly의 엄격한 채널/픽셀 비교12건은 FAIL이며 숨기지 않는다. canonical 2px 독립 PDF 일치율과 다른 비교이고 AA·잉크 차이를 포함한다. CK fallback20건을 CK 직접 출력으로 보고하지 않는다.",
+  "initialization_identity": {
+    "status": "verified",
+    "source_product_commit": "2749e491e843ec851de12467751ec200ab551014",
+    "cli_only_followup_commit": "8472674645",
+    "js": {
+      "disk_sha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "actual_vite_response_sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+      "response_transformations": [
+        "WASM module URL의 Vite /@fs 절대 경로 재작성 1건",
+        "끝의 Vite inline sourceMappingURL와 추가 줄바꿈"
+      ],
+      "remaining_js_bytes_equal": true
+    },
+    "wasm": {
+      "sha256": "1cc3864ad1097224f125ceb5513ba55e110cd3517de5b84237dfada4b51bfe7e",
+      "response": "1cc3864ad1097224f125ceb5513ba55e110cd3517de5b84237dfada4b51bfe7e"
+    },
+    "source_read_path_diff": [
+      "src/cli/outputs/vector.rs"
+    ],
+    "capture_status": "실제 브라우저 캡처 진행 중. 초기화 응답 신원이 전체 캡처 수용을 대신하지 않음."
+  },
+  "original_report_sha256": "a70ed57fbb110d527ded3a02a3ec468ea506a7c258f4c7c00518e0580c27fce6"
+}

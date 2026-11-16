@@ -1,0 +1,42 @@
+{
+  "status": "focused_pass_whole_pending",
+  "scope": "같은 원본·독립 한컴2020 Print PDF·96DPI·compat2022·2px. 전체763쪽은 별도 진행 중. 원 기호 F0827을 U2550으로 치환해 원 프로그램과 다르게 그리던 공급 조건을 바로잡음.",
+  "results": [
+    {
+      "backend": "native",
+      "page": 474,
+      "source": "2749e491e843ec851de12467751ec200ab551014",
+      "rows": [
+        {
+          "page": "474",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "review": "native/review/review_474.png",
+      "overlay": "native/overlay/overlay_474.png",
+      "native_or_canvas_png_sha256": "ebeabd0aeae2745f9be981e5a51a209fd3795a9e8ed5716fa36002ae15865b4f",
+      "pdf_png_sha256": "f04465ea253960834560974819f4215029c5acb3937efa8813b6cf78e9a24d9e"
+    },
+    {
+      "backend": "wasm",
+      "page": 474,
+      "source": "2749e491e843ec851de12467751ec200ab551014",
+      "rows": [
+        {
+          "page": "474",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "review": "wasm/review/review_474.png",
+      "overlay": "wasm/overlay/overlay_474.png",
+      "native_or_canvas_png_sha256": "9c5575c4b60aa0df99c656534d1930d0f07cf534dcbd69335645ed6a12a7f64c",
+      "pdf_png_sha256": "f04465ea253960834560974819f4215029c5acb3937efa8813b6cf78e9a24d9e"
+    }
+  ]
+}

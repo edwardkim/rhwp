@@ -333,6 +333,7 @@ mod tests {
             page_height: 0.0,
             header_area: LayoutRect::default(),
             body_area: LayoutRect::default(),
+            unmirrored_body_x: 0.0,
             column_areas: Vec::new(),
             column_direction: crate::model::page::ColumnDirection::LeftToRight,
             footnote_area: LayoutRect::default(),

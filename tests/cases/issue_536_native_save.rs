@@ -5,7 +5,7 @@ use std::io::{Cursor, Read};
 use std::sync::Arc;
 
 use rhwp::document_core::native_interaction::{NativeTextPosition, NativeTextSelection};
-use rhwp::model::bin_data::{BinData, BinDataBytes, BinDataContent, BinDataResolver, BinDataType};
+use rhwp::model::bin_data::{BinDataBytes, BinDataResolver};
 use rhwp::native_host::editor::NativeEditor;
 use rhwp::native_host::save::{NativeSaveCaretPolicy, NativeSaveFormat, NativeSaveToken};
 use rhwp::native_host::{NativeDocumentSession, NativeHostError};
@@ -230,20 +230,14 @@ impl BinDataResolver for UnreadableResource {
 fn content_loss_describes_the_actual_empty_entry_in_the_same_prepared_bytes() {
     for format in [NativeSaveFormat::Hwp, NativeSaveFormat::Hwpx] {
         let mut source = core("text");
-        source.document_mut().doc_info.bin_data_list.push(BinData {
-            data_type: BinDataType::Embedding,
-            storage_id: 1,
-            extension: Some("png".into()),
-            ..Default::default()
-        });
-        source.document_mut().bin_data_content.push(BinDataContent {
-            id: 1,
-            extension: "png".into(),
-            data: BinDataBytes::Lazy {
-                resolver: Arc::new(UnreadableResource),
-                key: "missing".into(),
-            },
-        });
+        // 본문 그림이 참조하는 항목이어야 저장에 실린다(#8941). 그 바이트만 읽지 못하게 한다.
+        source
+            .insert_picture_native(0, 0, 0, &[], &[0], 7500, 7500, 1, 1, "png", "", None, None)
+            .unwrap();
+        source.document_mut().bin_data_content[0].data = BinDataBytes::Lazy {
+            resolver: Arc::new(UnreadableResource),
+            key: "missing".into(),
+        };
         let mut session = NativeDocumentSession::from_core(source);
         let prepared = session.prepare_save(format).unwrap();
         assert_eq!(prepared.content_loss().len(), 1);

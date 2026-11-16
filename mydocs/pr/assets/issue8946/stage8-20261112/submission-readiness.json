@@ -1,0 +1,13 @@
+{
+  "status": "ready_for_open_pr",
+  "code_head": "8af32b9d991ee6b6c7bf082aaf6cc6caac1b86ab",
+  "base": "a85d3265dd10b316d1a0ae029ca3f67245b38b77",
+  "protected_pages": 3542,
+  "protected_falls": 0,
+  "default_conditions": 9,
+  "incoming_visual_pages": 52,
+  "incoming_studio_cases": 12,
+  "remaining_required_local_checks": [],
+  "remote_ci": "not_started",
+  "remote_preflight": "remote-preflight.json"
+}

@@ -173,6 +173,23 @@ where
     let split_multi_sec_pr = doc.layout_profile().hwpx_stored_layout();
     let mut section_bytes_list = Vec::new();
     let mut viewtext_history = Vec::new();
+    // [#8939] rhwp 의미(bit 31 = 합성 줄)로 쓴 구역 레코드의 다이제스트. 원본 바이트를
+    // 그대로 다시 쓰는 구역은 읽을 때의 의미(원본 표지의 인증 여부)를 이어 받는다.
+    let previous_line_seg_sections = doc
+        .extra_streams
+        .iter()
+        .find(|(path, _)| path == crate::model::line_seg_tags::HWP_STREAM)
+        .map(|(_, bytes)| crate::model::line_seg_tags::decode(bytes))
+        .unwrap_or_default();
+    let mut rhwp_line_seg_sections = Vec::new();
+    let mut record_line_seg_semantics = |section: &crate::model::document::Section,
+                                         bytes: &[u8]| {
+        let digest = crate::model::line_seg_tags::section_digest(bytes);
+        let reused_source = section.raw_stream.as_deref() == Some(bytes);
+        if !reused_source || previous_line_seg_sections.contains(&digest) {
+            rhwp_line_seg_sections.push(digest);
+        }
+    };
     let mut form_id_allocator = None;
     let memos =
         crate::model::section_tail::collect(&doc.sections, storage).map_err(storage_error)?;
@@ -218,11 +235,14 @@ where
                     // An unedited review stream belongs in ViewText. Reusing it
                     // as BodyText alone loses the distinction between current
                     // content and review history in a Hancom round trip.
+                    // 읽기는 ViewText 의 원본 바이트를 구역 레코드로 쓴다.
+                    record_line_seg_semantics(section, &bytes);
                     viewtext_history.push((section_bytes_list.len(), bytes));
                     section_bytes_list.push(visible);
                     continue;
                 }
             }
+            record_line_seg_semantics(section, &bytes);
             section_bytes_list.push(bytes);
             continue;
         }
@@ -258,15 +278,15 @@ where
             let prepared =
                 super::form_identity::prepare_section(&sub, doc, &mut form_id_allocator)?;
             let prepared = super::hwpx_lineage_lines::prepare_section(prepared, doc);
-            section_bytes_list.push(
-                super::body_text::try_serialize_section_for_version(
-                    &prepared,
-                    output_version,
-                    if k + 1 == starts.len() { tail } else { &[] },
-                    storage,
-                )
-                .map_err(storage_error)?,
-            );
+            let bytes = super::body_text::try_serialize_section_for_version(
+                &prepared,
+                output_version,
+                if k + 1 == starts.len() { tail } else { &[] },
+                storage,
+            )
+            .map_err(storage_error)?;
+            record_line_seg_semantics(&sub, &bytes);
+            section_bytes_list.push(bytes);
         }
     }
 
@@ -326,6 +346,13 @@ where
                 *bytes = converted;
             }
         }
+    }
+    extra_streams.retain(|(path, _)| path != crate::model::line_seg_tags::HWP_STREAM);
+    if !rhwp_line_seg_sections.is_empty() {
+        extra_streams.push((
+            crate::model::line_seg_tags::HWP_STREAM.to_string(),
+            crate::model::line_seg_tags::encode(&rhwp_line_seg_sections),
+        ));
     }
     extra_streams.retain(|(path, _)| path != crate::model::border_paint::HWP_STREAM);
     if let Some(bytes) = crate::model::border_paint::encode_with_storage(doc, storage)

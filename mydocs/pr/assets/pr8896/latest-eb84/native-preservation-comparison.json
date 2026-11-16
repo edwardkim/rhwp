@@ -1,0 +1,363 @@
+{
+  "paired_document_counts": [
+    {
+      "key": "pr8691-ai_procurement_appendix",
+      "base": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "head": {
+        "rhwp": 4,
+        "pdf": 4
+      }
+    },
+    {
+      "key": "pr8691-artifact_loan_form",
+      "base": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head": {
+        "rhwp": 1,
+        "pdf": 1
+      }
+    },
+    {
+      "key": "pr8691-rental_approval_form",
+      "base": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head": {
+        "rhwp": 1,
+        "pdf": 1
+      }
+    },
+    {
+      "key": "pr8752-wide_paper_table_two_columns",
+      "base": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head": {
+        "rhwp": 2,
+        "pdf": 2
+      }
+    },
+    {
+      "key": "pr8774-4680000-202100038_research_review_request",
+      "base": {
+        "rhwp": 6,
+        "pdf": 6
+      },
+      "head": {
+        "rhwp": 6,
+        "pdf": 6
+      }
+    },
+    {
+      "key": "pr8892-36384898-unstored-next-float-bottom-margin",
+      "base": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head": {
+        "rhwp": 2,
+        "pdf": 2
+      }
+    },
+    {
+      "key": "pr8911-36376635-synthetic-tail-saved-reset",
+      "base": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "head": {
+        "rhwp": 3,
+        "pdf": 3
+      }
+    }
+  ],
+  "nonfont_receipt_entries": [
+    {
+      "key": "pr8892-36384898-unstored-next-float-bottom-margin",
+      "producer": "base",
+      "entry": {
+        "path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/output/pr-review/native-webfont-cache/programs/504d6af6abb882acd912d47bafa383c4512a6c8c33635e4e8fb37111d9310941/tmpu4ivg3xp.ttf",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "reason": "zero-byte temporary file during deterministic WOFF conversion; no parsable font program"
+    },
+    {
+      "key": "pr8892-36384898-unstored-next-float-bottom-margin",
+      "producer": "head",
+      "entry": {
+        "path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/output/pr-review/native-webfont-cache/programs/504d6af6abb882acd912d47bafa383c4512a6c8c33635e4e8fb37111d9310941/tmp6rq4h9rn.ttf",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "reason": "zero-byte temporary file during deterministic WOFF conversion; no parsable font program"
+    }
+  ],
+  "scope": "preservation",
+  "backend": "native",
+  "base_source": "eb84afc0364c51031bb07cbbb013476293367990",
+  "head_source": "1749b66d704b3ea0443ae9792ff8a1d65e26a9c1",
+  "datasets": 7,
+  "pages": 19,
+  "png_equal": 19,
+  "changed": [],
+  "minimum": 93.31072,
+  "minimum_delta_pp": "0.00000",
+  "drops_over_2pp": 0,
+  "head_below_90": 0,
+  "protected_declines": 0,
+  "rows": [
+    {
+      "key": "pr8691-ai_procurement_appendix",
+      "backend": "native",
+      "page": 1,
+      "input_path": "samples/issue8682/ai_procurement_appendix.hwp",
+      "base_raw": 99.93636,
+      "head_raw": 99.93636,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "2e46d2369b024585b2554f7edcd12300d8f9e0aa7bcbe3060089d5cd47dfc6a8",
+      "head_png_sha256": "2e46d2369b024585b2554f7edcd12300d8f9e0aa7bcbe3060089d5cd47dfc6a8",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8691-ai_procurement_appendix",
+      "backend": "native",
+      "page": 2,
+      "input_path": "samples/issue8682/ai_procurement_appendix.hwp",
+      "base_raw": 99.60627,
+      "head_raw": 99.60627,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "29d283f23bf6db01f6e27ca44a6cf7e480b9115a0fa8191d65f01349488962b8",
+      "head_png_sha256": "29d283f23bf6db01f6e27ca44a6cf7e480b9115a0fa8191d65f01349488962b8",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8691-ai_procurement_appendix",
+      "backend": "native",
+      "page": 3,
+      "input_path": "samples/issue8682/ai_procurement_appendix.hwp",
+      "base_raw": 97.28912,
+      "head_raw": 97.28912,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "29f302ad66ba65efcf0dafb3bffa912a0239f85f5a8dbd636f1c962836e47a7f",
+      "head_png_sha256": "29f302ad66ba65efcf0dafb3bffa912a0239f85f5a8dbd636f1c962836e47a7f",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8691-ai_procurement_appendix",
+      "backend": "native",
+      "page": 4,
+      "input_path": "samples/issue8682/ai_procurement_appendix.hwp",
+      "base_raw": 99.92048,
+      "head_raw": 99.92048,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "25d230e0c9fad4be84d4b244e44d3bd128db2fe1343516b587d364f7effc1af0",
+      "head_png_sha256": "25d230e0c9fad4be84d4b244e44d3bd128db2fe1343516b587d364f7effc1af0",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8691-artifact_loan_form",
+      "backend": "native",
+      "page": 1,
+      "input_path": "samples/issue8682/artifact_loan_form.hwp",
+      "base_raw": 97.43598,
+      "head_raw": 97.43598,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "4d0e7ccebfd1bcd150313614e8cc016f60995d02d36afdb9b7eadf63063cd039",
+      "head_png_sha256": "4d0e7ccebfd1bcd150313614e8cc016f60995d02d36afdb9b7eadf63063cd039",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8691-rental_approval_form",
+      "backend": "native",
+      "page": 1,
+      "input_path": "samples/issue8682/rental_approval_form.hwp",
+      "base_raw": 99.85151,
+      "head_raw": 99.85151,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "6a3344cbdf4ff80b758db6418cb4a1e0ea9b67c42158f3e3fc272ea575687d06",
+      "head_png_sha256": "6a3344cbdf4ff80b758db6418cb4a1e0ea9b67c42158f3e3fc272ea575687d06",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8752-wide_paper_table_two_columns",
+      "backend": "native",
+      "page": 1,
+      "input_path": "samples/issue7282/wide_paper_table_two_columns.hwp",
+      "base_raw": 93.31072,
+      "head_raw": 93.31072,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "77cebd530f28ec85cc1ecb0055c0c08c8b0c3abaf8ddd566fa087c1ad4abd1fa",
+      "head_png_sha256": "77cebd530f28ec85cc1ecb0055c0c08c8b0c3abaf8ddd566fa087c1ad4abd1fa",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8752-wide_paper_table_two_columns",
+      "backend": "native",
+      "page": 2,
+      "input_path": "samples/issue7282/wide_paper_table_two_columns.hwp",
+      "base_raw": 99.99805,
+      "head_raw": 99.99805,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "fd5df263d9c48bf4c896ea4aeb55e204969a18fc61dc11da9c6e2e855386724b",
+      "head_png_sha256": "fd5df263d9c48bf4c896ea4aeb55e204969a18fc61dc11da9c6e2e855386724b",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8774-4680000-202100038_research_review_request",
+      "backend": "native",
+      "page": 1,
+      "input_path": "samples/issue8770/4680000-202100038_research_review_request.hwp",
+      "base_raw": 99.19566,
+      "head_raw": 99.19566,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "d132ecb98e2700ff5642e52d29506c6dcb1bc7e266368fd29ead3edeb9bffb12",
+      "head_png_sha256": "d132ecb98e2700ff5642e52d29506c6dcb1bc7e266368fd29ead3edeb9bffb12",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8774-4680000-202100038_research_review_request",
+      "backend": "native",
+      "page": 2,
+      "input_path": "samples/issue8770/4680000-202100038_research_review_request.hwp",
+      "base_raw": 98.85926,
+      "head_raw": 98.85926,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "ee290e76d03e3914258255d1feb8218c3e8954299c8a5a0a4cc239bd82701ba9",
+      "head_png_sha256": "ee290e76d03e3914258255d1feb8218c3e8954299c8a5a0a4cc239bd82701ba9",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8774-4680000-202100038_research_review_request",
+      "backend": "native",
+      "page": 3,
+      "input_path": "samples/issue8770/4680000-202100038_research_review_request.hwp",
+      "base_raw": 99.28586,
+      "head_raw": 99.28586,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "23bdbae9e3e692576aac274fe22ec25bcc1e125c2532c29cbe8f3523a0485d32",
+      "head_png_sha256": "23bdbae9e3e692576aac274fe22ec25bcc1e125c2532c29cbe8f3523a0485d32",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8774-4680000-202100038_research_review_request",
+      "backend": "native",
+      "page": 4,
+      "input_path": "samples/issue8770/4680000-202100038_research_review_request.hwp",
+      "base_raw": 99.98252,
+      "head_raw": 99.98252,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "e7ad3e8f39a95be6dbe90b22f901cf7bc3a09bf77e15f62cf889fc89946c2ef6",
+      "head_png_sha256": "e7ad3e8f39a95be6dbe90b22f901cf7bc3a09bf77e15f62cf889fc89946c2ef6",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8774-4680000-202100038_research_review_request",
+      "backend": "native",
+      "page": 5,
+      "input_path": "samples/issue8770/4680000-202100038_research_review_request.hwp",
+      "base_raw": 99.91038,
+      "head_raw": 99.91038,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "5624a0aa75791ae0f614d011a1886c6d07b6cc5c28c358973aa2ee8b6a0e0d7f",
+      "head_png_sha256": "5624a0aa75791ae0f614d011a1886c6d07b6cc5c28c358973aa2ee8b6a0e0d7f",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8774-4680000-202100038_research_review_request",
+      "backend": "native",
+      "page": 6,
+      "input_path": "samples/issue8770/4680000-202100038_research_review_request.hwp",
+      "base_raw": 99.69729,
+      "head_raw": 99.69729,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "d61166762e28a1c0e8a77aa8cbf4e48f43a22f3e82e912ba4c009b96cc91a8a4",
+      "head_png_sha256": "d61166762e28a1c0e8a77aa8cbf4e48f43a22f3e82e912ba4c009b96cc91a8a4",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8892-36384898-unstored-next-float-bottom-margin",
+      "backend": "native",
+      "page": 1,
+      "input_path": "samples/issue8888/36384898-unstored-next-float-bottom-margin.hwpx",
+      "base_raw": 99.42675,
+      "head_raw": 99.42675,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "a44ea64c158f664e57a1ea6fa84b384b37b6515f91d5be44d69bb03d41ce879f",
+      "head_png_sha256": "a44ea64c158f664e57a1ea6fa84b384b37b6515f91d5be44d69bb03d41ce879f",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8892-36384898-unstored-next-float-bottom-margin",
+      "backend": "native",
+      "page": 2,
+      "input_path": "samples/issue8888/36384898-unstored-next-float-bottom-margin.hwpx",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": "0.0",
+      "base_png_sha256": "298cf9a631ef7c4c601bee6d4a21992c90a516fbf4e7696bbe646b9162d137a5",
+      "head_png_sha256": "298cf9a631ef7c4c601bee6d4a21992c90a516fbf4e7696bbe646b9162d137a5",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8911-36376635-synthetic-tail-saved-reset",
+      "backend": "native",
+      "page": 1,
+      "input_path": "samples/issue8904/36376635-synthetic-tail-saved-reset.hwpx",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": "0.0",
+      "base_png_sha256": "27c390454b457f7298a23cdc4f8306f99364d9801961e6d425109055142914de",
+      "head_png_sha256": "27c390454b457f7298a23cdc4f8306f99364d9801961e6d425109055142914de",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8911-36376635-synthetic-tail-saved-reset",
+      "backend": "native",
+      "page": 2,
+      "input_path": "samples/issue8904/36376635-synthetic-tail-saved-reset.hwpx",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": "0.0",
+      "base_png_sha256": "65db8000d88fc2828a2f95c5def3f7849eac200d2beea9ef00be1d1caf502f88",
+      "head_png_sha256": "65db8000d88fc2828a2f95c5def3f7849eac200d2beea9ef00be1d1caf502f88",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8911-36376635-synthetic-tail-saved-reset",
+      "backend": "native",
+      "page": 3,
+      "input_path": "samples/issue8904/36376635-synthetic-tail-saved-reset.hwpx",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": "0.0",
+      "base_png_sha256": "2a3f9b1c46a91698580ab9c7b32cc8cfcd158e6d12735c870e992b57ea8e1142",
+      "head_png_sha256": "2a3f9b1c46a91698580ab9c7b32cc8cfcd158e6d12735c870e992b57ea8e1142",
+      "png_equal": true,
+      "head_below_90": false
+    }
+  ]
+}

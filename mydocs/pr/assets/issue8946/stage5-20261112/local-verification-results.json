@@ -1,0 +1,62 @@
+{
+  "code_head": "6b7ceb9cd5f11e8c4c073aeadc032d84c0767b2e",
+  "full_regression": {
+    "selected": 13235,
+    "initial_passed": 13234,
+    "initial_failed": 1,
+    "skipped_by_suite": 45,
+    "initial_exit": 100,
+    "failure": "renderer::svg::tests::full_font_embed_uses_real_bold_face_when_document_uses_bold",
+    "cause": "sandbox denied test-created regular/bold font fixture",
+    "correction": "allow generated PID-specific regression-temp font reads only; no source/expectation change",
+    "focused_rerun_passed": 1,
+    "remaining_failed": 0
+  },
+  "skia_library": {
+    "passed": [
+      3852,
+      15,
+      165,
+      2
+    ],
+    "ignored": 12
+  },
+  "skia_placeholder": {
+    "passed": 2
+  },
+  "skia_direct_pdf": {
+    "passed": 35
+  },
+  "focused_before_after": {
+    "base_passed": 14,
+    "base_failed": 2,
+    "head_passed": 16,
+    "failed_only_new_expected_behaviors": true
+  },
+  "studio": {
+    "passed": 2789,
+    "skipped": 2,
+    "failed": 0
+  },
+  "e2e": {
+    "canvas2d": "passed",
+    "canvaskit": "passed",
+    "layout_contract_checks": 97
+  },
+  "log_sha256": {
+    "fmt-final": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "clippy-native-final": "1c638d865ec3bc40f3d92c3d0c8d782a3e1342a67f33762f7ac92573849fe640",
+    "clippy-wasm-final": "0388241bb776ae99677e5bbdea0a18211b808f0c240170361df4c003ecb11bdf",
+    "clippy-workspace-final": "d8ee8b996cb5b20dcffcebf8aabaac360f81f9acb918e43986bbefe5d7d5fda5",
+    "suite-check-final": "c47b9ddf367d683c35632500abbb7f33d83e1260539f983c764a89831cd4956a",
+    "unit-tiers-final": "b0d22c7e9e78b2de09250df5931d136093b5d2ad3c7474ab5c37aa9c3dc75ad0",
+    "typescript": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "studio-test-final": "9fc1d37372b3273f4dba4d77686fb86066d8a452523d3eb12c824b60ea1805d1",
+    "frontend-bindings": "777936d13aca1e1581c14b78e4060ff65524ec84299f9e3a3015098ae7e60053",
+    "e2e-manifest": "c3e275485acad4da8352010d38fe688cf840f706bd4e31846e934c2b352f97e7",
+    "e2e-final": "0d092da0568239d74cbab091bd0f2fe7b635142f315c67f1e9c012d63984775e",
+    "skia-lib": "9c1fdfe281ef3827ee157229e3ddfeca46f1126aa59e1578fb8be1721d87f8cc",
+    "skia-placeholder": "cb931aa3993dd75b19fa8582b7539a716b49179778b758df09e985f981cd1739",
+    "skia-pdf": "b92b6dbf7a45b1f33e90bcaf2c3c36d0854904f63eede6657d7874ddf2cf1dbb"
+  }
+}

@@ -247,6 +247,9 @@ impl LayerBuilder {
             tree.frame.horizontal_shaping_sidecars(),
             &mut layer_tree.resources,
         ));
+        if !self.hangul2024_print {
+            context.publish_text_ink_em(&mut layer_tree.root, &claimed_glyph_run_sources);
+        }
         lower_font_native_glyph_sidecars_excluding(
             &mut layer_tree.root,
             &mut layer_tree.resources,
@@ -338,8 +341,8 @@ impl LayerBuilder {
                     placeholder.kind
                         == crate::renderer::render_tree::PlaceholderKind::MissingPicture
                 }
-                // [#8858] 같은 「그림 미지정」이 이미지 노드로 온 경우도 인쇄 등가 출력에서 생략한다.
-                RenderNodeType::Image(image) => image.is_missing_picture(),
+                // #8858 그림 미지정과 #8957 미해결 연결 그림의 편집용 표시를 제외한다.
+                RenderNodeType::Image(image) => image.is_nonprinting_picture_placeholder(),
                 _ => false,
             }
         {
@@ -463,7 +466,13 @@ impl LayerBuilder {
                     .metafile_device_pixel_width
                     .filter(|_| self.hancom2024_print_bitmap);
                 if let Some(context) = self.page_context {
-                    context.picture_border_pen(&mut rect, pixel);
+                    // 그림의 물리 띠·외곽 pen은 비트맵 색상 세대와 별개의
+                    // Print 계약이다. 독립 2022·2024 Print가 같은 600dpi
+                    // pen을 사용하며 일반 사각형의 세대별 좌표는 유지한다.
+                    context.picture_border_pen(
+                        &mut rect,
+                        Some(self.layout_dpi / crate::renderer::print_picture_pen::DEVICE_DPI),
+                    );
                 }
                 let image_frame = rect
                     .image_frame_owner
@@ -665,7 +674,13 @@ impl LayerBuilder {
                                 crate::renderer::print_raster::PrintRasterFrame::new(
                                     self.image_page_size,
                                     self.image_reference_origin,
-                                    node.bbox,
+                                    // 원본 꼭짓점이 정한 내부 그림 창에 맞춘 장치 표본이다.
+                                    // 개체의 흐름 프레임을 쓰면 작은 그림의 가운데 내용이 clip 밖으로 밀린다.
+                                    if image.source_rect.is_some() {
+                                        image.transformed_paint_bbox(&frame)
+                                    } else {
+                                        node.bbox
+                                    },
                                     self.layout_dpi,
                                 )
                             {
@@ -928,11 +943,15 @@ impl LayerBuilder {
     }
 }
 
-fn line_decoration_trim_target(
+fn line_decoration_trim_targets(
     children: &[LayerNode],
-) -> Option<(crate::paint::TextSourceSpan, usize)> {
-    fn scan(node: &LayerNode, found: &mut Option<Option<(crate::paint::TextSourceSpan, usize)>>) {
-        if found.is_some() {
+) -> Vec<(crate::paint::TextSourceSpan, usize)> {
+    fn scan(
+        node: &LayerNode,
+        targets: &mut Vec<(crate::paint::TextSourceSpan, usize)>,
+        finished: &mut bool,
+    ) {
+        if *finished {
             return;
         }
         match &node.kind {
@@ -944,14 +963,19 @@ fn line_decoration_trim_target(
                         ..
                     } = op
                     {
+                        // 문단 끝·명시적 줄바꿈의 공백은 서명란 등 저자 콘텐츠다.
+                        // 공백이 별도 run으로 나뉘어도 앞 run까지 함께 보존한다.
+                        if run.is_para_end || run.is_line_break_end {
+                            targets.clear();
+                            *finished = true;
+                            return;
+                        }
+                        let trailing = run.text.chars().rev().take_while(|ch| *ch == ' ').count();
+                        if trailing > 0 {
+                            targets.push((source.clone(), trailing));
+                        }
                         if run.text.chars().any(|ch| ch != ' ') {
-                            if run.is_para_end || run.is_line_break_end {
-                                *found = Some(None);
-                                return;
-                            }
-                            let trailing =
-                                run.text.chars().rev().take_while(|ch| *ch == ' ').count();
-                            *found = Some((trailing > 0).then_some((source.clone(), trailing)));
+                            *finished = true;
                             return;
                         }
                     }
@@ -959,25 +983,30 @@ fn line_decoration_trim_target(
             }
             LayerNodeKind::Group { children, .. } => {
                 for child in children.iter().rev() {
-                    scan(child, found);
-                    if found.is_some() {
+                    scan(child, targets, finished);
+                    if *finished {
                         return;
                     }
                 }
             }
             LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
-                scan(child, found)
+                scan(child, targets, finished)
             }
         }
     }
-    let mut found = None;
+    let mut targets = Vec::new();
+    let mut finished = false;
     for child in children.iter().rev() {
-        scan(child, &mut found);
-        if found.is_some() {
+        scan(child, &mut targets, &mut finished);
+        if finished {
             break;
         }
     }
-    found.flatten()
+    // 가시 본문이 없는 공백 전용 줄은 밑줄 입력란일 수 있으므로 유지한다.
+    if !finished {
+        targets.clear();
+    }
+    targets
 }
 
 fn publish_line_decoration_trims(node: &mut LayerNode) {
@@ -987,7 +1016,7 @@ fn publish_line_decoration_trims(node: &mut LayerNode) {
         ..
     } = &mut node.kind
     {
-        if let Some((source, trim)) = line_decoration_trim_target(children) {
+        for (source, trim) in line_decoration_trim_targets(children) {
             set_decoration_trim_for_source(children, &source, trim);
         }
     }

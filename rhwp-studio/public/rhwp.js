@@ -1022,6 +1022,15 @@ export class HwpDocument {
         wasm.hwpdocument_clearNativePuaFonts(this.__wbg_ptr);
     }
     /**
+     * 페이지별 host FontFace 공급의 수명이 끝나면 그 주 프로그램 증거를 폐기한다.
+     * @param {string} family
+     */
+    clearPrintFontPrimary(family) {
+        const ptr0 = passStringToWasm0(family, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.hwpdocument_clearPrintFontPrimary(this.__wbg_ptr, ptr0, len0);
+    }
+    /**
      * 셀 블록이 덮은 칸들의 글을 비운다 — `Run("TableDeleteCell")`. 규약은 merge 와 같다.
      * @param {number} list_id
      * @param {number} end_row
@@ -1054,6 +1063,15 @@ export class HwpDocument {
         const ptr0 = passStringToWasm0(family, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len0 = WASM_VECTOR_LEN;
         wasm.hwpdocument_clearTextFontFamily(this.__wbg_ptr, ptr0, len0);
+    }
+    /**
+     * 쪽별 host paint 자원만 해제한다. 측정·coverage·문서 상태는 유지한다.
+     * @param {string} family
+     */
+    clearTextFontOutline(family) {
+        const ptr0 = passStringToWasm0(family, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.hwpdocument_clearTextFontOutline(this.__wbg_ptr, ptr0, len0);
     }
     /**
      * 내부 클립보드에 컨트롤(표/그림/도형)이 포함되어 있는지 확인한다.
@@ -3477,6 +3495,10 @@ export class HwpDocument {
     /**
      * 경로 기반 셀 정보 조회 (중첩 표용).
      *
+     * `path_json`: `[{"controlIndex":N,"cellIndex":N,"cellParaIndex":N}, ...]`. 마지막 단계의
+     * `controlIndex`가 표, `cellIndex`가 조회할 칸이며 세 필드가 모두 필요하다. 형식과 중첩
+     * 예시는 `getTableDimensionsByPath` 설명을 본다.
+     *
      * 반환: JSON `{"row":N,"col":N,"rowSpan":N,"colSpan":N}`
      * @param {number} section_idx
      * @param {number} parent_para_idx
@@ -3601,6 +3623,9 @@ export class HwpDocument {
     }
     /**
      * 경로 기반: 셀/글상자 내 문단 수를 반환한다 (중첩 표/글상자 지원).
+     *
+     * `path_json`: `[{"controlIndex":N,"cellIndex":N,"cellParaIndex":N}, ...]`. 마지막 단계의
+     * `cellIndex`가 셀을 고른다. 형식과 중첩 예시는 `getTableDimensionsByPath` 설명을 본다.
      * @param {number} section_idx
      * @param {number} parent_para_idx
      * @param {string} path_json
@@ -3633,6 +3658,9 @@ export class HwpDocument {
     }
     /**
      * 경로 기반: 셀 내 문단의 글자 수를 반환한다 (중첩 표 지원).
+     *
+     * `path_json`: `[{"controlIndex":N,"cellIndex":N,"cellParaIndex":N}, ...]`. 마지막 단계가
+     * 셀과 그 셀의 문단을 고른다. 형식과 중첩 예시는 `getTableDimensionsByPath` 설명을 본다.
      * @param {number} section_idx
      * @param {number} parent_para_idx
      * @param {string} path_json
@@ -5098,6 +5126,32 @@ export class HwpDocument {
         let deferred2_1;
         try {
             const ret = wasm.hwpdocument_getHeaderFooter(this.__wbg_ptr, section_idx, is_header, apply_to);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * 같은 preview의 paint 자원 준비에 필요한 트리. 일반 쪽 캐시는 변경하지 않는다.
+     * @param {number} page_num
+     * @param {number} section_idx
+     * @param {boolean} is_header
+     * @param {number} apply_to
+     * @returns {string}
+     */
+    getHeaderFooterEditPreviewLayerTree(page_num, section_idx, is_header, apply_to) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.hwpdocument_getHeaderFooterEditPreviewLayerTree(this.__wbg_ptr, page_num, section_idx, is_header, apply_to);
             var ptr1 = ret[0];
             var len1 = ret[1];
             if (ret[3]) {
@@ -7344,6 +7398,9 @@ export class HwpDocument {
     /**
      * 경로 기반 표 셀 바운딩박스 조회 (중첩 표용).
      *
+     * `path_json` 형식은 `getTableDimensionsByPath`와 같다. 표 자체를 가리키므로 마지막 단계에는
+     * `controlIndex`만 필요하고 `cellIndex`·`cellParaIndex`는 생략할 수 있다(주어져도 쓰지 않음).
+     *
      * 반환: JSON 배열 `[{"cellIdx":N,"row":N,"col":N,...,"x":F,"y":F,"w":F,"h":F}, ...]`
      * @param {number} section_idx
      * @param {number} parent_para_idx
@@ -7399,6 +7456,19 @@ export class HwpDocument {
     }
     /**
      * 경로 기반 표 차원 조회 (중첩 표용).
+     *
+     * `path_json`은 본문 문단 `parent_para_idx`에서 시작해 표까지 내려가는 단계의 배열이다.
+     * `[{"controlIndex":N,"cellIndex":N,"cellParaIndex":N}, ...]`
+     * - `controlIndex`: 현재 문단의 컨트롤 번호(표·글상자 등).
+     * - `cellIndex`: 그 표의 칸 번호(행 우선, 0부터). 글상자는 글상자 번호(독립 글상자는 0).
+     * - `cellParaIndex`: 그 칸(글상자) 안 문단 번호.
+     *
+     * 이 API는 표 자체를 가리키므로 **마지막 단계에는 `controlIndex`만 필요**하다. 마지막 단계의
+     * `cellIndex`·`cellParaIndex`는 생략할 수 있고, 주어져도 쓰지 않는다. 앞 단계(바깥 표의 칸을
+     * 지나는 단계)는 세 필드가 모두 필요하다.
+     *
+     * 예: 본문 문단 3의 컨트롤 1(바깥 표) → 그 표 칸 2의 문단 0에 든 컨트롤 0(안쪽 표)
+     * `getTableDimensionsByPath(0, 3, '[{"controlIndex":1,"cellIndex":2,"cellParaIndex":0},{"controlIndex":0}]')`
      *
      * 반환: JSON `{"rowCount":N,"colCount":N,"cellCount":N}`
      * @param {number} section_idx
@@ -7526,6 +7596,11 @@ export class HwpDocument {
         }
     }
     /**
+     * 경로 기반: 셀/글상자 문단의 글자를 반환한다 (중첩 표/글상자 지원).
+     *
+     * `path_json`: `[{"controlIndex":N,"cellIndex":N,"cellParaIndex":N}, ...]` — 본문 문단
+     * `parent_para_idx`에서 시작해 바깥부터 한 단계씩 적는다. 마지막 단계가 읽을 칸과 칸 문단이다.
+     * 형식과 중첩 예시는 `getTableDimensionsByPath` 설명을 본다.
      * @param {number} section_idx
      * @param {number} parent_para_idx
      * @param {string} path_json
@@ -10324,6 +10399,18 @@ export class HwpDocument {
         }
     }
     /**
+     * 원본 SFNT/TTC 바이트와 선택 face를 함께 받는 공급 계약의 기능 탐지 경계.
+     * @param {Function} provider
+     * @returns {boolean}
+     */
+    prepareNativeOtfFontFaces(provider) {
+        const ret = wasm.hwpdocument_prepareNativeOtfFontFaces(this.__wbg_ptr, provider);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return ret[0] !== 0;
+    }
+    /**
      * 미리 준비한 실제 face만 동기 공급하고 모든 선택을 한 번에 조판한다.
      * @param {Function} provider
      * @returns {boolean}
@@ -10481,6 +10568,21 @@ export class HwpDocument {
         return ret[0] !== 0;
     }
     /**
+     * TTC 원본 신원을 보존한 paint 후보. FontFace용 정규화 사본과 구분한다.
+     * @param {string} family
+     * @param {Array<any>} programs
+     * @returns {boolean}
+     */
+    registerHftOutlineFontFaces(family, programs) {
+        const ptr0 = passStringToWasm0(family, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.hwpdocument_registerHftOutlineFontFaces(this.__wbg_ptr, ptr0, len0, programs);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return ret[0] !== 0;
+    }
+    /**
      * @param {string} family
      * @param {boolean} bold
      * @param {boolean} italic
@@ -10575,6 +10677,21 @@ export class HwpDocument {
             throw takeFromExternrefTable0(ret[1]);
         }
         return ret[0] !== 0;
+    }
+    /**
+     * 실제 로드한 보통 FontFace의 주 프로그램을 Print paint에만 연결한다.
+     * complete가 false이면 결측 glyph를 뒤 family의 glyph로 추정하지 않는다.
+     * @param {string} family
+     * @param {Uint8Array} bytes
+     * @param {number} index
+     * @param {boolean} complete
+     */
+    registerPrintFontPrimary(family, bytes, index, complete) {
+        const ptr0 = passStringToWasm0(family, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+        const len1 = WASM_VECTOR_LEN;
+        wasm.hwpdocument_registerPrintFontPrimary(this.__wbg_ptr, ptr0, len0, ptr1, len1, index, complete);
     }
     /**
      * @param {string} family
@@ -14586,6 +14703,9 @@ function __wbg_get_imports() {
         __wbg_clip_19f3482515ce11e2: function(arg0, arg1) {
             arg0.clip(__wbindgen_enum_CanvasWindingRule[arg1]);
         },
+        __wbg_clip_791397882a8aa222: function(arg0, arg1) {
+            arg0.clip(arg1);
+        },
         __wbg_closePath_4580feb19a1218cc: function(arg0) {
             arg0.closePath();
         },
@@ -14924,6 +15044,9 @@ function __wbg_get_imports() {
             arg0.quadraticCurveTo(arg1, arg2, arg3, arg4);
         },
         __wbg_rect_b3341a8d819476e1: function(arg0, arg1, arg2, arg3, arg4) {
+            arg0.rect(arg1, arg2, arg3, arg4);
+        },
+        __wbg_rect_db1056f1138dff21: function(arg0, arg1, arg2, arg3, arg4) {
             arg0.rect(arg1, arg2, arg3, arg4);
         },
         __wbg_restore_43a0248041b088b5: function(arg0) {

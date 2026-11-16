@@ -1,0 +1,26 @@
+{
+  "id": "issue8946-independent-pua-source-families-sample16-hwp2022",
+  "substitutions": {
+    "한양신명조": "한양신명조",
+    "휴먼명조": "Gulim",
+    "HCI Poppy": "HCI Poppy"
+  },
+  "trueTypeFaces": [
+    "Gulim"
+  ],
+  "glyphFallbacks": {
+    "Gulim": [
+      "Haansoft Batang",
+      "RHWP Hancom Independent PUA"
+    ],
+    "한양신명조": [
+      "Myeongjo"
+    ],
+    "HY Sinmyeongjo": [
+      "Myeongjo"
+    ],
+    "HCI Poppy": [
+      "RHWP Hancom Legacy Equation"
+    ]
+  }
+}

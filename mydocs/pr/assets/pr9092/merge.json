@@ -1,0 +1,13 @@
+{
+  "number": 9092,
+  "state": "closed",
+  "merged": true,
+  "merged_at": "2026-11-15T16:17:17Z",
+  "merge_commit_sha": "4c4bd16a7a9bc8b00738e6c3cd74bca04ab3345c",
+  "html_url": "https://github.com/edwardkim/rhwp/pull/9092",
+  "head": {
+    "sha": "c3b0b7191b91e7df57a80da81a43cf632059a609",
+    "ref": "task/8905-about-dialog-overflow",
+    "repo": "JinHeeWond/rhwp"
+  }
+}

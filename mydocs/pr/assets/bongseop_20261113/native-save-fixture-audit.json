@@ -1,0 +1,13 @@
+{
+  "source_pr": 9043,
+  "test": "issue_536_native_save::content_loss_describes_the_actual_empty_entry_in_the_same_prepared_bytes",
+  "reason": "A newly inserted, unreferenced unreadable resource is correctly omitted by HWPX pruning. The fixture now creates a referenced picture and makes only its bytes unreadable, preserving the content-loss-report contract.",
+  "expectations_changed": false,
+  "formats": [
+    "HWP",
+    "HWPX"
+  ],
+  "focused": "PASS in 28-case focused run",
+  "full": "PASS within 13455-case minimal-font run",
+  "patch": "diff --git a/tests/cases/issue_536_native_save.rs b/tests/cases/issue_536_native_save.rs\nindex a0fcbb2a2f..2d4dd4f150 100644\n--- a/tests/cases/issue_536_native_save.rs\n+++ b/tests/cases/issue_536_native_save.rs\n@@ -5,7 +5,7 @@ use std::io::{Cursor, Read};\n use std::sync::Arc;\n \n use rhwp::document_core::native_interaction::{NativeTextPosition, NativeTextSelection};\n-use rhwp::model::bin_data::{BinData, BinDataBytes, BinDataContent, BinDataResolver, BinDataType};\n+use rhwp::model::bin_data::{BinDataBytes, BinDataResolver};\n use rhwp::native_host::editor::NativeEditor;\n use rhwp::native_host::save::{NativeSaveCaretPolicy, NativeSaveFormat, NativeSaveToken};\n use rhwp::native_host::{NativeDocumentSession, NativeHostError};\n@@ -230,20 +230,14 @@ impl BinDataResolver for UnreadableResource {\n fn content_loss_describes_the_actual_empty_entry_in_the_same_prepared_bytes() {\n     for format in [NativeSaveFormat::Hwp, NativeSaveFormat::Hwpx] {\n         let mut source = core(\"text\");\n-        source.document_mut().doc_info.bin_data_list.push(BinData {\n-            data_type: BinDataType::Embedding,\n-            storage_id: 1,\n-            extension: Some(\"png\".into()),\n-            ..Default::default()\n-        });\n-        source.document_mut().bin_data_content.push(BinDataContent {\n-            id: 1,\n-            extension: \"png\".into(),\n-            data: BinDataBytes::Lazy {\n-                resolver: Arc::new(UnreadableResource),\n-                key: \"missing\".into(),\n-            },\n-        });\n+        // 본문 그림이 참조하는 항목이어야 저장에 실린다(#8941). 그 바이트만 읽지 못하게 한다.\n+        source\n+            .insert_picture_native(0, 0, 0, &[], &[0], 7500, 7500, 1, 1, \"png\", \"\", None, None)\n+            .unwrap();\n+        source.document_mut().bin_data_content[0].data = BinDataBytes::Lazy {\n+            resolver: Arc::new(UnreadableResource),\n+            key: \"missing\".into(),\n+        };\n         let mut session = NativeDocumentSession::from_core(source);\n         let prepared = session.prepare_save(format).unwrap();\n         assert_eq!(prepared.content_loss().len(), 1);\n"
+}

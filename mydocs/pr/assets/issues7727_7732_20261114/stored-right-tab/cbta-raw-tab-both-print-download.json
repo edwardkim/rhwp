@@ -1,0 +1,41 @@
+{
+  "status": "success",
+  "job_id": "c8e37f0f-e545-4880-b774-decf06def96e",
+  "output_path": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/cbta-both-tab-print/cbta-raw-tab-both-plus1500-2020.pdf",
+  "output_filename": "cbta-raw-tab-both-plus1500-2020.pdf",
+  "size": 4970769,
+  "sha256": "918c6e68e81d610153bfe3a508504e777898a06bc8f4cbfee54743123705f794",
+  "server": {
+    "job_id": "c8e37f0f-e545-4880-b774-decf06def96e",
+    "status": "success",
+    "target": "pdf",
+    "input_filename": "cbta-raw-tab-both-plus1500.hwp",
+    "output_filename": "cbta-raw-tab-both-plus1500-2020.pdf",
+    "size": 4970769,
+    "sha256": "918c6e68e81d610153bfe3a508504e777898a06bc8f4cbfee54743123705f794",
+    "mime_type": "application/pdf",
+    "engine": "2020",
+    "engine_profile": "2020",
+    "hancom_version": "11.0.0.9136",
+    "backend": "hwp-managed-direct-dll-host",
+    "pdf_page_count": 204,
+    "logical_page_count": null,
+    "pdf_print_method": 0,
+    "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+    "font_scope": {
+      "mode": "session0",
+      "status": "verified",
+      "profile_source": "protected_config",
+      "session_id": 0,
+      "mapped_font_count": 2,
+      "registered_font_count": 2,
+      "failed_font_count": 0,
+      "parent_visibility": "verified",
+      "child_visibility": "verified"
+    },
+    "elapsed_ms": 64315,
+    "worker_elapsed_ms": 61690,
+    "worker_bits": 32,
+    "input_preprocess": "scripts_disabled"
+  }
+}

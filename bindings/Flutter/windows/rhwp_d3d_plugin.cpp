@@ -195,9 +195,11 @@ std::shared_ptr<Job> parse_job(const Map& args, PublicationMode mode) {
 class RhwpD3dPlugin final : public flutter::Plugin {
  public:
   RhwpD3dPlugin(flutter::PluginRegistrarWindows* registrar,
-      FlutterDesktopTextureRegistrarRef texture_registrar) : registrar_(registrar),
-      texture_registrar_(texture_registrar) {
-    ready_events_ = std::make_shared<ProducerReadyEvents>(registrar->messenger());
+      FlutterDesktopTextureRegistrarRef texture_registrar,
+      FlutterDesktopMessengerRef messenger) : registrar_(registrar),
+      texture_registrar_(texture_registrar),
+      messenger_(messenger) {
+    ready_events_ = std::make_shared<ProducerReadyEvents>(registrar->messenger(), messenger);
     channel_ = std::make_unique<flutter::MethodChannel<Value>>(registrar->messenger(), "rhwp_native/texture_windows",
         &flutter::StandardMethodCodec::GetInstance());
     channel_->SetMethodCallHandler([this](const auto& call, auto result) {
@@ -209,7 +211,7 @@ class RhwpD3dPlugin final : public flutter::Plugin {
   }
   ~RhwpD3dPlugin() override {
     ready_events_->stop();
-    channel_->SetMethodCallHandler(nullptr);
+    messenger_.if_available([&] { channel_->SetMethodCallHandler(nullptr); });
     for (auto& item : textures_.records()) close(item.second);
   }
  private:
@@ -217,6 +219,7 @@ class RhwpD3dPlugin final : public flutter::Plugin {
   struct ClosedReceipt { Value value; PublicationMode mode; bool close_ack; uint64_t generation; };
   flutter::PluginRegistrarWindows* registrar_;
   FlutterDesktopTextureRegistrarRef texture_registrar_;
+  MessengerLifetime messenger_;
   std::unique_ptr<flutter::MethodChannel<Value>> channel_;
   std::shared_ptr<ProducerReadyEvents> ready_events_;
   CloseRecordRegistry<Record, ClosedReceipt> textures_;
@@ -481,5 +484,5 @@ void RhwpD3dPluginRegisterWithRegistrar(FlutterDesktopPluginRegistrarRef registr
   // The C registration entry owns the public raw registrar. The C++ wrapper's
   // registrar() accessor is protected and is not a plugin-facing API.
   auto* texture_registrar = FlutterDesktopRegistrarGetTextureRegistrar(registrar);
-  wrapper->AddPlugin(std::make_unique<rhwp::d3d::RhwpD3dPlugin>(wrapper, texture_registrar));
+  wrapper->AddPlugin(std::make_unique<rhwp::d3d::RhwpD3dPlugin>(wrapper, texture_registrar, FlutterDesktopPluginRegistrarGetMessenger(registrar)));
 }

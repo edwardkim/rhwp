@@ -1,0 +1,10 @@
+{
+  "before": "2140c579544e72b2986366ebbd4a8232ef155138",
+  "old_base": "a210861488468868b5992231c55b78798e622e98",
+  "new_base": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
+  "after": "afb3f17c38b2bafec62c1dad16398720552ab958",
+  "conflicts": 0,
+  "range_diff_equal_commits": 32,
+  "policy_followup_commit": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+  "source_read_path_audit": "rebase-base-read-path-audit.json"
+}

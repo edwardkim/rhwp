@@ -1,0 +1,346 @@
+{
+  "recorded_at": "2026-11-12T10:58:38.530103+00:00",
+  "code_head": "8fe7d1fb8bc5024d0377ff7aa37d98c78e8f071a",
+  "base": "80b1c354c29b7a02fb2b3c14a274da7f5b653ada",
+  "phase": "complete",
+  "full_nextest": {
+    "tests_run": 13356,
+    "passed": 13356,
+    "failed": 0,
+    "skipped": 45,
+    "execution_seconds": 774.34
+  },
+  "minimum_font_contract": "sandbox-exec macOS CoreText OS fonts only; see minimal-font-verification.json",
+  "records": [
+    {
+      "name": "native-positive-controls",
+      "exit": 0,
+      "elapsed_seconds": 467.948,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v8/minimal-font/profile.sb",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "--build-jobs",
+        "8",
+        "--test",
+        "regression_suite_002",
+        "--test",
+        "regression_suite_008",
+        "--test",
+        "regression_suite_010",
+        "--test",
+        "regression_suite_011",
+        "--test",
+        "regression_suite_012",
+        "--test",
+        "regression_suite_013",
+        "--test",
+        "regression_suite_015",
+        "--test",
+        "regression_suite_016",
+        "--test",
+        "regression_suite_017",
+        "--test",
+        "regression_suite_022",
+        "--test",
+        "regression_suite_023",
+        "--test",
+        "regression_suite_024",
+        "--test",
+        "regression_suite_025",
+        "--test",
+        "regression_suite_026",
+        "--test",
+        "regression_suite_028",
+        "-E",
+        "test(/(^|::)(canvas_explicit_glyph_fallback_order|hft_outline_font_contract|issue_5593_cell_center_front_object|issue_5879_declared_height_content_floor|issue_8080_no_lineseg_overlay_table_flow|issue_8573_empty_host_band_min_width|issue_8573_empty_host_square_beside_line|issue_8573_picture_cell_row_frame|issue_8573_split_table_host_kinds|issue_8573_square_then_topbottom_push|issue_8573_stacked_zones_topbottom|issue_8573_whitespace_host_negative_offset|issue_8573_whitespace_host_topbottom_line_below|issue_8579_partial_table_control_only_para|issue_8664_zero_size_paragraph_line_height|issue_8665_overlay_title_host_pagebreak|issue_8678_chart_value_axis_floor|issue_8680_pua_wingdings_circled_digits|issue_8690_partial_table_float_line_cell|issue_8693_table_end_row_clamp_no_blank_page|issue_8896_legacy_font_family_contract|native_pua_host_font_protocol|off_canvas_baseline|security_corpus_regression)::/)",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "log_sha256": "8de2a78468011694fe2f5c8d4c13945abf4e04a41d8403ed5328eefaf0155f31",
+      "log_bytes": 19430,
+      "summary": [
+        "Summary [  12.832s] 126 tests run: 126 passed, 4903 skipped"
+      ]
+    },
+    {
+      "name": "candidate-fresh-wasm",
+      "exit": 0,
+      "elapsed_seconds": 293.516,
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "log_sha256": "1e2877855b5ec0e098e885f9b13e0ade0de2985bf01f584bed3e7d0bba832fe6",
+      "log_bytes": 295,
+      "summary": []
+    },
+    {
+      "name": "full-nextest",
+      "exit": 0,
+      "elapsed_seconds": 1821.44,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v8/minimal-font/profile.sb",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--tests",
+        "--build-jobs",
+        "8",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "log_sha256": "cd3868ac4e2ca663fa1dfe592216f41e1497745a94d0b554e8d1d6b4480c7f8f",
+      "log_bytes": 1861822,
+      "summary": [
+        "Summary [ 774.340s] 13356 tests run: 13356 passed (3 slow), 45 skipped"
+      ]
+    },
+    {
+      "name": "fmt",
+      "exit": 0,
+      "elapsed_seconds": 46.896,
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log_bytes": 0,
+      "summary": []
+    },
+    {
+      "name": "native-clippy",
+      "exit": 0,
+      "elapsed_seconds": 87.478,
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "log_sha256": "419deff15299d88ff29b733b285c8de35e5b5f88edacdb4c37039872ea84ba14",
+      "log_bytes": 119,
+      "summary": []
+    },
+    {
+      "name": "wasm-clippy",
+      "exit": 0,
+      "elapsed_seconds": 84.587,
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "log_sha256": "85fc9588c2548d3d1791b3bb5b6a75448e5d3207ce3fe999beb5ef42119d6873",
+      "log_bytes": 119,
+      "summary": []
+    },
+    {
+      "name": "workspace-build",
+      "exit": 0,
+      "elapsed_seconds": 98.15,
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "target/pr-review",
+        "-j",
+        "8"
+      ],
+      "log_sha256": "fde1bba197c78547175c4df6ca68c9e9de1d77fe6fae76513bebe4b7b2ff82c7",
+      "log_bytes": 269,
+      "summary": []
+    },
+    {
+      "name": "all-target-clippy",
+      "exit": 0,
+      "elapsed_seconds": 120.772,
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "log_sha256": "9ed0ba4f9086004e292ef84030ecf8d9f679360a520826f8bddfc0cdeb51f27e",
+      "log_bytes": 269,
+      "summary": []
+    },
+    {
+      "name": "native-skia-lib",
+      "exit": 0,
+      "elapsed_seconds": 248.391,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v8/minimal-font/profile.sb",
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "-j",
+        "8",
+        "--lib",
+        "--",
+        "--test-threads",
+        "8"
+      ],
+      "log_sha256": "7b9bf5f5e882c19928572fa19fb79c6a54d6c0405ac516220c84d7b7de5e9a58",
+      "log_bytes": 343615,
+      "summary": [
+        "test result: ok. 3852 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 14.24s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ]
+    },
+    {
+      "name": "native-skia-placeholder",
+      "exit": 0,
+      "elapsed_seconds": 197.552,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v8/minimal-font/profile.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "--build-jobs",
+        "8",
+        "--test-threads",
+        "8"
+      ],
+      "log_sha256": "35070f3e57ae2460d30d694d6e3d03ed29fc70aeeeb0de6ff9b1d8d6d406a4cf",
+      "log_bytes": 1045,
+      "summary": [
+        "Summary [   2.398s] 2 tests run: 2 passed, 385 skipped"
+      ]
+    },
+    {
+      "name": "native-skia-pdf",
+      "exit": 0,
+      "elapsed_seconds": 13.342,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v8/minimal-font/profile.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "--build-jobs",
+        "8",
+        "--test-threads",
+        "8"
+      ],
+      "log_sha256": "2f0e080f968d695d453b81695cb6e71b544a297509aaa62dd45e2d9de67939b7",
+      "log_bytes": 7416,
+      "summary": [
+        "Summary [   2.233s] 36 tests run: 36 passed, 294 skipped"
+      ]
+    },
+    {
+      "name": "suite-manifest",
+      "exit": 0,
+      "elapsed_seconds": 0.919,
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "80b1c354c29b7a02fb2b3c14a274da7f5b653ada"
+      ],
+      "log_sha256": "8fd5e90f7104de912f134a4d5973fd1f6b765e7a9d7e301429d1555f2b6021e4",
+      "log_bytes": 179,
+      "summary": []
+    },
+    {
+      "name": "unit-tiers",
+      "exit": 0,
+      "elapsed_seconds": 18.867,
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "80b1c354c29b7a02fb2b3c14a274da7f5b653ada"
+      ],
+      "log_sha256": "b0d22c7e9e78b2de09250df5931d136093b5d2ad3c7474ab5c37aa9c3dc75ad0",
+      "log_bytes": 118,
+      "summary": []
+    }
+  ],
+  "logs_policy": "logs remain ignored output; SHA and actual summaries preserved here",
+  "actual_studio_and_protected_wasm": "separate validation records, not implied by Rust gates"
+}

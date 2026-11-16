@@ -1,0 +1,21 @@
+{
+  "head": "17301f013376b079da40ece94e06c44bdc6c96e1",
+  "base": "53da4d2da28ae0cacf8feac3a989cc6a69fb2622",
+  "executed": 13560,
+  "passed": 13558,
+  "failed": 2,
+  "skipped": 45,
+  "test_seconds": 370.316,
+  "full_nextest": {
+    "name": "full-nextest",
+    "exit_code": 100,
+    "seconds": 894.101,
+    "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/physical-slots-rust-gates/full-nextest.log",
+    "log_sha256": "ccce9323f88aa9bf2c1619145b859f7a6147e2bcca83631d552a9a9c1fa14c68"
+  },
+  "failures": [
+    "footnote_shape_api::new_footnotes_follow_the_section_shape",
+    "issue_1937_rowbreak_footnote_overpagination::rowbreak_footnote_table_does_not_over_paginate"
+  ],
+  "scope": "정식 최소 글꼴 전체 실행; 후속 lint/build는 실패로 실행하지 않음"
+}

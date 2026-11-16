@@ -3581,11 +3581,10 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
         area: &LayoutRect,
     ) -> Option<f64> {
-        if para.stored_text_partition_is_dirty()
-            || para.cell_format_vpos_dirty
-            || (super::super::para_has_no_stored_line_segs(para)
-                && !composed.frame_owns_inline_table(control_index))
-        {
+        // [#8995] 저장 줄이 없는 재조판 문단도 composed 줄이 개체의 줄 소속과 앞 글자 폭을
+        // 담으므로 같은 펜 계산을 쓴다. 그 문단을 빼면 표 앞 공백 폭이 사라져 TAC 표가 줄
+        // 맨 앞에서 시작한다(공개 결재 문서 본문 칸: 공백 2칸 15px 왼쪽).
+        if para.stored_text_partition_is_dirty() || para.cell_format_vpos_dirty {
             return None;
         }
         // Preserve the original PARA_TEXT axis. Projecting controls onto
@@ -8323,6 +8322,31 @@ impl LayoutEngine {
             current_line_reserved_tac_picture_height =
                 emit_state.current_line_reserved_tac_picture_height;
 
+            if comp_line.runs.is_empty() {
+                // 번호만 소유한 저장 줄을 텍스트 없는 빈 줄로 버리지 않는다.
+                // 폭 계산과 같은 주석·스타일·선두 제외를 써서 이 줄에 한 번 방출한다.
+                let references = super::note_reference::empty_line(
+                    para,
+                    styles,
+                    fn_positions,
+                    (line_idx == 0 && start_line == 0).then_some(comp_line.char_start),
+                );
+                super::note_reference::append(
+                    tree,
+                    &mut line_node,
+                    &references,
+                    (x, text_y),
+                    (line_height, baseline),
+                    (section_index, para_index),
+                );
+                x += references
+                    .iter()
+                    .map(|reference| reference.width)
+                    .sum::<f64>();
+                char_offset += references.len();
+                emitted_inline_slots += references.len();
+            }
+
             if let Some(para) = para {
                 for child in &mut line_node.children {
                     if let RenderNodeType::TextRun(run) = &mut child.node_type {
@@ -11599,6 +11623,17 @@ impl LayoutEngine {
             run_char_pos_est = run_char_end_est;
             inline_tab_cursor_est += run.text.chars().filter(|c| *c == '\t').count();
         }
+        if comp_line.runs.is_empty() {
+            est_x += super::note_reference::empty_line(
+                para,
+                styles,
+                fn_positions,
+                (line_idx == 0 && start_line == 0).then_some(comp_line.char_start),
+            )
+            .iter()
+            .map(|reference| reference.width)
+            .sum::<f64>();
+        }
         LineWidthEst {
             est_x,
             included_tac_width: included_tac_width_in_est,
@@ -13176,13 +13211,21 @@ pub fn map_pua_bullet_char(ch: char) -> char {
         0x75 => '\u{25C6}',  // ◆ Black diamond
         0x76 => '\u{2756}',  // ❖ Black diamond minus white X
         0x77 => '\u{2B25}',  // ⬥ Black medium diamond
+        // 원문자 (0x80~0x95). MS 워드에서 온 ①②③ 이 이 대역으로 저장된다.
+        // 웹한글기안기 인쇄는 Haan Wings 의 같은 코드로 ⓪ ①..⑩ ⓿ ❶..❿ 를 그린다.
+        0x80 => '\u{24EA}', // ⓪ Circled digit zero
+        0x81..=0x8A => char::from_u32(0x2460 + (w as u32 - 0x81)).unwrap_or(ch), // ①..⑩
+        0x8B => '\u{24FF}', // ⓿ Negative circled digit zero
+        0x8C..=0x95 => char::from_u32(0x2776 + (w as u32 - 0x8C)).unwrap_or(ch), // ❶..❿
         // 체크/별/점 (0x9E~0xAF)
         0x9E => '\u{00B7}', // · Middle dot
         0x9F => '\u{2022}', // • Bullet
         // [Task #509] 0xA0 → · U+00B7 (Middle dot) — 한컴 PDF 정답지 시각 정합.
         // ▪ U+25AA (Black small square) 영역 아님 (synam-001 사용 영역).
         0xA0 => '\u{00B7}', // · Middle dot
-        0xA1 => '\u{26AA}', // ⚪ Medium white circle
+        // 웹한글기안기 인쇄의 Haan Wings 0xA1 은 ○ 와 같은 크기의 흰 원이다.
+        // ⚪(U+26AA)는 대체 글꼴에서 작은 점처럼 보여 점검표 표시가 달라진다.
+        0xA1 => '\u{25CB}', // ○ White circle
         0xA2 => '\u{25CB}', // ○ (Heavy large circle → 근사값)
         0xA3 => '\u{25CB}', // ○ (Very heavy white circle → 근사값)
         0xA4 => '\u{25C9}', // ◉ Fisheye
@@ -13199,6 +13242,8 @@ pub fn map_pua_bullet_char(ch: char) -> char {
         0x46 => '\u{261E}', // ☞ White right pointing index
         0x47 => '\u{261D}', // ☝ White up pointing index
         0x48 => '\u{261F}', // ☟ White down pointing index
+        // 독립 한컴 Print의 Wingdings bdash2. 일반 전각 빈 상자와 구별한다.
+        0xFA => '\u{1F8AD}', // 폭 2/3의 흰 화살표 몸통
         // 체크마크 (0xFB~0xFE)
         0xFB => '\u{2717}', // ✗ Ballot X (근사값)
         0xFC => '\u{2714}', // ✔ Heavy check mark

@@ -1,0 +1,133 @@
+[
+  {
+    "source": "PDF diagnostic only; not rendering input",
+    "font_resource": [
+      51,
+      "ttf",
+      "Type0",
+      "INPILL+Haansoft Batang",
+      "F3",
+      "Identity-H"
+    ],
+    "revision": 1.0,
+    "upem": 1024,
+    "has_cmap": false,
+    "glyphs": [
+      {
+        "glyph": ".notdef",
+        "advance": 1024,
+        "outline_sha256": "54c6d0b324ff2b2b122b2866465adac2bd2873b7e4007f61206a22c0abbc5b90"
+      },
+      {
+        "glyph": "glyph00001",
+        "advance": 1024,
+        "outline_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "glyph": "glyph00002",
+        "advance": 1024,
+        "outline_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "glyph": "glyph00003",
+        "advance": 341,
+        "outline_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "glyph": "glyph00004",
+        "advance": 853,
+        "outline_sha256": "a28e34576b5e64c5ed2b2f63d780079a1cf91d875f85fcda9b1714d746acbfcb"
+      },
+      {
+        "glyph": "glyph00005",
+        "advance": 298,
+        "outline_sha256": "d314f1c4c7f6ecbfca591f37d48b9c7dc176d8e64578aa34f66c6c6f6105e9b0"
+      },
+      {
+        "glyph": "glyph00006",
+        "advance": 554,
+        "outline_sha256": "a41eb61166639f25303bd89243f6deb45ff31c3746661800cdd2b4dac120fb00"
+      },
+      {
+        "glyph": "glyph00007",
+        "advance": 597,
+        "outline_sha256": "706f8de91053522c6402a3e9c4957010aa6c7b3bc78fa1d9b35d5eec96cf8675"
+      },
+      {
+        "glyph": "glyph00008",
+        "advance": 597,
+        "outline_sha256": "262d738b2fa3c27a1b7f9d3f0698d3f5c829b55c49f637b7aeb679b1a6644bd9"
+      },
+      {
+        "glyph": "glyph00009",
+        "advance": 597,
+        "outline_sha256": "6fda6415d3ed5c8de3e4c5a759585fab21d7eb190d8f9ca1b032afdc9209a8bc"
+      },
+      {
+        "glyph": "glyph00010",
+        "advance": 597,
+        "outline_sha256": "9bb42147d9c430a2891d343a245aa77efc330d1d259925721b15029676c74c99"
+      },
+      {
+        "glyph": "glyph00011",
+        "advance": 597,
+        "outline_sha256": "29a02fbdca7b4364381c5a82cf6ce657bc6403c36f67b843ae961fc197337c2e"
+      },
+      {
+        "glyph": "glyph00012",
+        "advance": 597,
+        "outline_sha256": "c5bb4abaead162347ffa95ce1731a292bd6b9a03fbe96c4166eb50f9e01497a2"
+      },
+      {
+        "glyph": "glyph00013",
+        "advance": 597,
+        "outline_sha256": "39e82fae33d6da503ae1835f85fcea10d6d5313c1d17682e50bd293412ec9a99"
+      },
+      {
+        "glyph": "glyph00014",
+        "advance": 597,
+        "outline_sha256": "99ce18f0386c6db950ddf596aeee81fde5db32e51906a585fb56652ba1458888"
+      },
+      {
+        "glyph": "glyph00015",
+        "advance": 597,
+        "outline_sha256": "634c882dfa7121bf03afff48b37c3f6ec46d793606802fe4a9333affe6938b2d"
+      },
+      {
+        "glyph": "glyph00016",
+        "advance": 597,
+        "outline_sha256": "17e9bcea59d16ae57fc6be007f04b7762955eca8c9f1659c7b45a831d62327ef"
+      },
+      {
+        "glyph": "glyph00017",
+        "advance": 512,
+        "outline_sha256": "15ae0b145d886deeb967772fbf628145c6240cd1f43cadaec9b386d919c916a1"
+      },
+      {
+        "glyph": "glyph00018",
+        "advance": 512,
+        "outline_sha256": "9f6e40793d7c6354eaaffa018f04466c29d13cb842633f186b9346613f08297e"
+      }
+    ]
+  },
+  {
+    "source_file_sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+    "revision": 1.0,
+    "upem": 1024,
+    "glyph_2550": {
+      "glyph": "SF430000",
+      "advance": 1024,
+      "outline_sha256": "ffb96dc21c5de56563eeb79923fd1df21297b9c7faa64544fae8c430a80e3fee"
+    }
+  },
+  {
+    "source_file_sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+    "revision": 1.0,
+    "upem": 1024,
+    "glyph_2550": {
+      "glyph": "SF430000",
+      "advance": 1024,
+      "outline_sha256": "466bf2adb79d622cfb58062e6658aa7c8be99f4bbfa49557619653eaba8b4249"
+    }
+  }
+]

@@ -1,0 +1,85 @@
+{
+  "run": {
+    "id": 43720966141,
+    "name": "Refresh nextest target duration data",
+    "head_sha": "e4f8ff2d637d5b0a313211455ae3ccc53444d969",
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43720966141"
+  },
+  "jobs": [
+    {
+      "id": 132832644794,
+      "name": "Refresh nextest target duration data",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43720966141/job/132832644794",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-15T13:49:03Z",
+          "completed_at": "2026-11-15T13:49:03Z"
+        },
+        {
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-15T13:49:03Z",
+          "completed_at": "2026-11-15T13:53:10Z"
+        },
+        {
+          "name": "Collect verified PR duration measurements",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-15T13:53:10Z",
+          "completed_at": "2026-11-15T13:53:15Z"
+        },
+        {
+          "name": "Prepare duration policy data",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-15T13:53:15Z",
+          "completed_at": "2026-11-15T13:53:16Z"
+        },
+        {
+          "name": "Publish duration policy with guarded Git Data API",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-15T13:53:16Z",
+          "completed_at": "2026-11-15T13:53:19Z"
+        },
+        {
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-11-15T13:53:19Z",
+          "completed_at": "2026-11-15T13:53:19Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-11-15T13:53:19Z",
+          "completed_at": "2026-11-15T13:53:19Z"
+        }
+      ]
+    }
+  ],
+  "publication": {
+    "published": true,
+    "reason": "published",
+    "previousSha": "7c9c29dec11b62669e3dfc3a5f48dca140954809",
+    "commitSha": "f48e944927735eace6230c9b699764f0e243a64b",
+    "blobSha": "8d810c07be6b8c5d9dd3f1d49313675d04e33dc4",
+    "sourceMergeSha": "e4f8ff2d637d5b0a313211455ae3ccc53444d969"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 9009,
+  "title": "앞 쪽에서 이어진 표 조각만 있는 단의 [단 나누기] 문단을 새 쪽으로 보내 빈 쪽이 생긴다",
+  "entries": [
+    {
+      "path": "samples/issue9009/1430000-column-break-after-table-continuation.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/9009",
+      "originalFilename": "1430000-202100017_D0150014-1-001_진도보고서(특허청)_산업재산권_한국법제연구원.hwp",
+      "bytes": 70144,
+      "sha256": "88482013fb80aa95d994489b44559f2bb53ef3e292a1ea3c3273567a00f83a6a",
+      "lastSavedWith": {
+        "product": null,
+        "version": "9.1.1.5499"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/issue9009/1430000-column-break-after-table-continuation-2020.pdf",
+      "referencePdfSha256": "66c18d4b85e52aafe7b63e6885eea8a1b26e62dcee78577ece62f0ec007781f3",
+      "referencePdfPageCount": 8,
+      "contract": "6쪽부터 이어진 116행 표의 끝 조각만 있는 7쪽에서, 뒤따르는 빈 [단 나누기] 문단은 표 조각 아래에 남는다. 다음 쪽 나누기 문단 「나. 연구의 진척도」가 8쪽을 시작하고 전체 8쪽으로 한/글 engine 2020 Print 와 같다."
+    }
+  ]
+}

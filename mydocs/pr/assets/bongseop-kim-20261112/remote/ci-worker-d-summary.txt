@@ -1,0 +1,9 @@
+2026-11-12T13:15:42.5619472Z      Summary [ 181.574s] 2236 tests run: 2236 passed, 14 skipped
+2026-11-12T13:14:07.6579585Z         PASS [   0.009s] (1009/2236) rhwp::regression_suite_020 issue_7516_html_paste_loose_inline_format::google_docs_normal_weight_wrapper_stays_normal
+2026-11-12T13:14:07.6669490Z         PASS [   0.010s] (1010/2236) rhwp::regression_suite_020 issue_7516_html_paste_loose_inline_format::line_break_inside_a_format_keeps_lines_and_format
+2026-11-12T13:14:07.7959970Z         PASS [   0.129s] (1012/2236) rhwp::regression_suite_020 issue_7516_html_paste_loose_inline_format::long_loose_inline_keeps_images_on_the_correct_side_of_the_cut
+2026-11-12T13:14:07.8079749Z         PASS [   0.011s] (1013/2236) rhwp::regression_suite_020 issue_7516_html_paste_loose_inline_format::loose_inline_formats_stay_in_one_paragraph
+2026-11-12T13:14:07.8169446Z         PASS [   0.009s] (1014/2236) rhwp::regression_suite_020 issue_7516_html_paste_loose_inline_format::numeric_bold_weights_stay_bold
+2026-11-12T13:14:07.8259478Z         PASS [   0.008s] (1015/2236) rhwp::regression_suite_020 issue_7516_html_paste_loose_inline_format::span_inside_a_paragraph_keeps_inner_formats_and_images
+2026-11-12T13:14:07.8349689Z         PASS [   0.008s] (1016/2236) rhwp::regression_suite_020 issue_7516_html_paste_loose_inline_format::text_after_a_format_does_not_inherit_it
+2026-11-12T13:14:08.2250115Z         PASS [   0.445s] (1020/2236) rhwp::regression_suite_020 issue_7516_html_paste_loose_inline_format::long_loose_inline_preserves_content_and_styles_at_the_existing_limit

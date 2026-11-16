@@ -1,0 +1,104 @@
+{
+  "before_source": "a1975f149e (includes upstream/devel 53da4d2da2)",
+  "after_source": "5e61789786",
+  "results": [
+    {
+      "backend": "native",
+      "key": "incoming8969",
+      "pages": 11,
+      "same_png": 11,
+      "different_pages": []
+    },
+    {
+      "backend": "native",
+      "key": "incoming9016",
+      "pages": 10,
+      "same_png": 10,
+      "different_pages": []
+    },
+    {
+      "backend": "native",
+      "key": "incoming9021",
+      "pages": 1,
+      "same_png": 1,
+      "different_pages": []
+    },
+    {
+      "backend": "native",
+      "key": "incoming9026-orphan",
+      "pages": 8,
+      "same_png": 8,
+      "different_pages": []
+    },
+    {
+      "backend": "native",
+      "key": "incoming9026-repeated",
+      "pages": 5,
+      "same_png": 5,
+      "different_pages": []
+    },
+    {
+      "backend": "native",
+      "key": "incoming9055",
+      "pages": 4,
+      "same_png": 4,
+      "different_pages": []
+    },
+    {
+      "backend": "native",
+      "key": "incoming9062",
+      "pages": 2,
+      "same_png": 2,
+      "different_pages": []
+    },
+    {
+      "backend": "wasm",
+      "key": "incoming8969",
+      "pages": 11,
+      "same_png": 11,
+      "different_pages": []
+    },
+    {
+      "backend": "wasm",
+      "key": "incoming9016",
+      "pages": 10,
+      "same_png": 10,
+      "different_pages": []
+    },
+    {
+      "backend": "wasm",
+      "key": "incoming9021",
+      "pages": 1,
+      "same_png": 1,
+      "different_pages": []
+    },
+    {
+      "backend": "wasm",
+      "key": "incoming9026-orphan",
+      "pages": 8,
+      "same_png": 8,
+      "different_pages": []
+    },
+    {
+      "backend": "wasm",
+      "key": "incoming9026-repeated",
+      "pages": 5,
+      "same_png": 5,
+      "different_pages": []
+    },
+    {
+      "backend": "wasm",
+      "key": "incoming9055",
+      "pages": 4,
+      "same_png": 4,
+      "different_pages": []
+    },
+    {
+      "backend": "wasm",
+      "key": "incoming9062",
+      "pages": 2,
+      "same_png": 2,
+      "different_pages": []
+    }
+  ]
+}

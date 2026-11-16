@@ -1,0 +1,10 @@
+{
+  "parent": "11a47ad0fc48f53a80925f4e38abfd1b0264c414",
+  "patch_sha256": "e4a42c079e313fdeea79479beb5f21ce83a4b0db2f79d51d0299dc898dcdeade",
+  "binary_sha256": "708db56df8e4cc4259c162303b02fe4c6f87cd6c2a3105cb320823216fc1d7fa",
+  "build_log_sha256": "f60e1738102d5f1152ab799331dd5f7e50c52e2cd2385189dd045e9a04da2ee7",
+  "source_files": {
+    "src/renderer/layout/note_reference.rs": "5bd4b82ce4cdeae9d63e680c6e6a08a9903a34d6e7bff6245e07d27a396826cb",
+    "src/renderer/layout/paragraph_layout.rs": "2dab5102a4e3fe9a89748fa2393bc4ebc7c83c088ab934416cbc250fa9685379"
+  }
+}

@@ -1,0 +1,144 @@
+{
+  "binary_sha256": "6a4fc598bfd5ee293a193c7f99e5a077bc359e87305d03803f5c60cd52fde585",
+  "commands": [
+    {
+      "argv": [
+        "output/issue8946/stage10/rebuilt-head-rhwp",
+        "edit",
+        "insert-picture",
+        "samples/paper-square-table-tac-host.hwpx",
+        "--image",
+        "samples/images/moogung.jpg",
+        "--para",
+        "1",
+        "--width",
+        "8000",
+        "--json",
+        "-o",
+        "output/issue8946/stage10/pr9052-cli-rebuilt/inserted.hwpx"
+      ],
+      "exit": 0,
+      "expected_exit": 0,
+      "stdout": "{\"binDataId\":1,\"cellCtrl\":null,\"cellPara\":null,\"changedPages\":[0],\"col\":null,\"ctrl\":0,\"dryRun\":false,\"height\":4184,\"image\":\"samples/images/moogung.jpg\",\"offset\":0,\"output\":\"output/issue8946/stage10/pr9052-cli-rebuilt/inserted.hwpx\",\"outputFormat\":\"hwpx\",\"paragraph\":1,\"row\":null,\"schemaVersion\":\"1.0\",\"section\":0,\"source\":\"samples/paper-square-table-tac-host.hwpx\",\"table\":null,\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null,\"width\":8000,\"x\":0,\"y\":0}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "output/issue8946/stage10/rebuilt-head-rhwp",
+        "edit",
+        "set-picture",
+        "output/issue8946/stage10/pr9052-cli-rebuilt/inserted.hwpx",
+        "--section",
+        "0",
+        "--para",
+        "1",
+        "--ctrl",
+        "0",
+        "--props",
+        "{\"textWrap\":\"TopAndBottom\"}",
+        "--json",
+        "-o",
+        "output/issue8946/stage10/pr9052-cli-rebuilt/plain.hwpx"
+      ],
+      "exit": 0,
+      "expected_exit": 0,
+      "stdout": "{\"changedPages\":[0],\"ctrl\":0,\"dryRun\":false,\"output\":\"output/issue8946/stage10/pr9052-cli-rebuilt/plain.hwpx\",\"outputFormat\":\"hwpx\",\"paragraph\":1,\"schemaVersion\":\"1.0\",\"section\":0,\"source\":\"output/issue8946/stage10/pr9052-cli-rebuilt/inserted.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "output/issue8946/stage10/rebuilt-head-rhwp",
+        "edit",
+        "set-picture",
+        "output/issue8946/stage10/pr9052-cli-rebuilt/inserted.hwpx",
+        "--section",
+        "0",
+        "--para",
+        "1",
+        "--ctrl",
+        "0",
+        "--props",
+        "{\"\\u0074extWrap\":\"TopAndBottom\"}",
+        "--json",
+        "-o",
+        "output/issue8946/stage10/pr9052-cli-rebuilt/escaped-key.hwpx"
+      ],
+      "exit": 0,
+      "expected_exit": 0,
+      "stdout": "{\"changedPages\":[0],\"ctrl\":0,\"dryRun\":false,\"output\":\"output/issue8946/stage10/pr9052-cli-rebuilt/escaped-key.hwpx\",\"outputFormat\":\"hwpx\",\"paragraph\":1,\"schemaVersion\":\"1.0\",\"section\":0,\"source\":\"output/issue8946/stage10/pr9052-cli-rebuilt/inserted.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "output/issue8946/stage10/rebuilt-head-rhwp",
+        "edit",
+        "set-picture",
+        "output/issue8946/stage10/pr9052-cli-rebuilt/inserted.hwpx",
+        "--section",
+        "0",
+        "--para",
+        "1",
+        "--ctrl",
+        "0",
+        "--props",
+        "{\"textWrap\":\"TopAnd\\u0042ottom\"}",
+        "--json",
+        "-o",
+        "output/issue8946/stage10/pr9052-cli-rebuilt/escaped-value.hwpx"
+      ],
+      "exit": 0,
+      "expected_exit": 0,
+      "stdout": "{\"changedPages\":[0],\"ctrl\":0,\"dryRun\":false,\"output\":\"output/issue8946/stage10/pr9052-cli-rebuilt/escaped-value.hwpx\",\"outputFormat\":\"hwpx\",\"paragraph\":1,\"schemaVersion\":\"1.0\",\"section\":0,\"source\":\"output/issue8946/stage10/pr9052-cli-rebuilt/inserted.hwpx\",\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":null}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "output/issue8946/stage10/rebuilt-head-rhwp",
+        "edit",
+        "set-picture",
+        "output/issue8946/stage10/pr9052-cli-rebuilt/inserted.hwpx",
+        "--section",
+        "0",
+        "--para",
+        "1",
+        "--ctrl",
+        "0",
+        "--props",
+        "{\"textWrap\":\"topAndBottom\",\"textWrap\":\"TopAndBottom\"}",
+        "--json",
+        "-o",
+        "output/issue8946/stage10/pr9052-cli-rebuilt/duplicate-first-invalid.hwpx"
+      ],
+      "exit": 2,
+      "expected_exit": 2,
+      "stdout": "",
+      "stderr": "오류: --props 가 올바른 JSON 이 아닙니다 (속성 키가 중복되었습니다: textWrap at line 1 column 53)\n"
+    },
+    {
+      "argv": [
+        "output/issue8946/stage10/rebuilt-head-rhwp",
+        "edit",
+        "set-picture",
+        "output/issue8946/stage10/pr9052-cli-rebuilt/inserted.hwpx",
+        "--section",
+        "0",
+        "--para",
+        "1",
+        "--ctrl",
+        "0",
+        "--props",
+        "{\"textWrap\":\"TopAndBottom\",\"textWrap\":\"topAndBottom\"}",
+        "--json",
+        "-o",
+        "output/issue8946/stage10/pr9052-cli-rebuilt/duplicate-last-invalid.hwpx"
+      ],
+      "exit": 2,
+      "expected_exit": 2,
+      "stdout": "",
+      "stderr": "오류: --props 가 올바른 JSON 이 아닙니다 (속성 키가 중복되었습니다: textWrap at line 1 column 53)\n"
+    }
+  ],
+  "decoded_properties_and_duplicate_rejection": true,
+  "original_jpeg_preserved": true,
+  "zip_member_bytes_identical_to_first_qualified_run": true
+}

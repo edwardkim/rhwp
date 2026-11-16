@@ -1,0 +1,198 @@
+[
+  {
+    "phase": "open",
+    "docGen": 2,
+    "docDigest": "blake3:dfb3716567e489e436bb1f52990c0b78aaa9c2d28f3bfaa813a59c43483f8658",
+    "pages": 763,
+    "state": {
+      "active": true,
+      "generation": 1,
+      "count": 1,
+      "lastError": null
+    },
+    "loaded": {
+      "loaded": 1,
+      "pending": 0,
+      "failed": 0
+    },
+    "document": {
+      "languageSlot": 0,
+      "inheritedLanguageSlot": null,
+      "face": "딸기",
+      "altType": 0,
+      "embedded": false,
+      "substFont": null
+    },
+    "layoutName": {
+      "requestedFace": "딸기",
+      "normalizedFace": "딸기",
+      "cssFamilyChain": [
+        "딸기"
+      ],
+      "steps": [
+        {
+          "kind": "fontEnvironment",
+          "input": "딸기",
+          "output": "딸기",
+          "reason": "declared-program-599e06ca52a6d5efabe3bddf20a1dc5d8d055af7c189699158fab05e7d32dfde"
+        }
+      ]
+    },
+    "widthSource": "nativeOtf",
+    "pngSHA256": "ba929f8bf6e6a3b150bb175daf061f1b3c304c5992172a103794239b180c6789"
+  },
+  {
+    "phase": "refresh",
+    "docGen": 2,
+    "docDigest": "blake3:dfb3716567e489e436bb1f52990c0b78aaa9c2d28f3bfaa813a59c43483f8658",
+    "pages": 763,
+    "state": {
+      "active": true,
+      "generation": 2,
+      "count": 1,
+      "lastError": null
+    },
+    "loaded": {
+      "loaded": 1,
+      "pending": 0,
+      "failed": 0
+    },
+    "document": {
+      "languageSlot": 0,
+      "inheritedLanguageSlot": null,
+      "face": "딸기",
+      "altType": 0,
+      "embedded": false,
+      "substFont": null
+    },
+    "layoutName": {
+      "requestedFace": "딸기",
+      "normalizedFace": "딸기",
+      "cssFamilyChain": [
+        "딸기"
+      ],
+      "steps": [
+        {
+          "kind": "fontEnvironment",
+          "input": "딸기",
+          "output": "딸기",
+          "reason": "declared-program-599e06ca52a6d5efabe3bddf20a1dc5d8d055af7c189699158fab05e7d32dfde"
+        }
+      ]
+    },
+    "widthSource": "nativeOtf",
+    "pngSHA256": "ba929f8bf6e6a3b150bb175daf061f1b3c304c5992172a103794239b180c6789"
+  },
+  {
+    "phase": "remove",
+    "docGen": 2,
+    "docDigest": "blake3:dfb3716567e489e436bb1f52990c0b78aaa9c2d28f3bfaa813a59c43483f8658",
+    "pages": 763,
+    "state": {
+      "active": true,
+      "generation": 3,
+      "count": 0,
+      "lastError": null
+    },
+    "loaded": {
+      "loaded": 0,
+      "pending": 0,
+      "failed": 0
+    },
+    "document": {
+      "languageSlot": 0,
+      "inheritedLanguageSlot": null,
+      "face": "딸기",
+      "altType": 0,
+      "embedded": false,
+      "substFont": null
+    },
+    "layoutName": {
+      "requestedFace": "딸기",
+      "normalizedFace": "딸기",
+      "cssFamilyChain": [
+        "딸기"
+      ],
+      "steps": []
+    },
+    "widthSource": "heuristicFullwidth",
+    "pngSHA256": "053f6beedee1fde844c8782715770da64c15a39cb3d86705d3a788e0a5fb6307"
+  },
+  {
+    "phase": "restore",
+    "docGen": 2,
+    "docDigest": "blake3:dfb3716567e489e436bb1f52990c0b78aaa9c2d28f3bfaa813a59c43483f8658",
+    "pages": 763,
+    "state": {
+      "active": true,
+      "generation": 4,
+      "count": 1,
+      "lastError": null
+    },
+    "loaded": {
+      "loaded": 1,
+      "pending": 0,
+      "failed": 0
+    },
+    "document": {
+      "languageSlot": 0,
+      "inheritedLanguageSlot": null,
+      "face": "딸기",
+      "altType": 0,
+      "embedded": false,
+      "substFont": null
+    },
+    "layoutName": {
+      "requestedFace": "딸기",
+      "normalizedFace": "딸기",
+      "cssFamilyChain": [
+        "딸기"
+      ],
+      "steps": [
+        {
+          "kind": "fontEnvironment",
+          "input": "딸기",
+          "output": "딸기",
+          "reason": "declared-program-599e06ca52a6d5efabe3bddf20a1dc5d8d055af7c189699158fab05e7d32dfde"
+        }
+      ]
+    },
+    "widthSource": "nativeOtf",
+    "pngSHA256": "ba929f8bf6e6a3b150bb175daf061f1b3c304c5992172a103794239b180c6789"
+  },
+  {
+    "phase": "detach",
+    "docGen": 2,
+    "docDigest": "blake3:dfb3716567e489e436bb1f52990c0b78aaa9c2d28f3bfaa813a59c43483f8658",
+    "pages": 763,
+    "state": {
+      "active": false,
+      "generation": 5,
+      "count": 0,
+      "lastError": null
+    },
+    "loaded": {
+      "loaded": 0,
+      "pending": 0,
+      "failed": 0
+    },
+    "document": {
+      "languageSlot": 0,
+      "inheritedLanguageSlot": null,
+      "face": "딸기",
+      "altType": 0,
+      "embedded": false,
+      "substFont": null
+    },
+    "layoutName": {
+      "requestedFace": "딸기",
+      "normalizedFace": "딸기",
+      "cssFamilyChain": [
+        "딸기"
+      ],
+      "steps": []
+    },
+    "widthSource": "heuristicFullwidth",
+    "pngSHA256": "053f6beedee1fde844c8782715770da64c15a39cb3d86705d3a788e0a5fb6307"
+  }
+]

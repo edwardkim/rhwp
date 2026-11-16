@@ -1,0 +1,40 @@
+{
+  "base": "1a3ed4a7cd76701085a24ac81d30bc5fb31942c1",
+  "candidate": "30fa7739f0340f2a248b22542c7dd36d9354f056",
+  "base_native_passed": 4,
+  "candidate_native_passed": 4,
+  "browser": {
+    "checks": [
+      "outer dimensions [{\"controlIndex\":2}]",
+      "outer dimensions [{\"controlIndex\":2,\"cellIndex\":0}]",
+      "outer dimensions [{\"controlIndex\":2,\"cellIndex\":0,\"cellParaIndex\":0}]",
+      "outer dimensions [{\"controlIndex\":2,\"cellIndex\":99,\"cellParaIndex\":99}]",
+      "six bboxes short/full equal",
+      "missing control rejected",
+      "malformed optional rejected",
+      "cell API still needs cell index",
+      "nested 3x4 short/full equal",
+      "nested missing outer para rejected",
+      "nested missing outer cell rejected"
+    ],
+    "passed": 11,
+    "failed": 0,
+    "consumer": "actual browser WASM HwpDocument"
+  },
+  "base_log_sha256": "b1c4ab03189e2ac2db85bf3d80564621674b697262b3807fa1a0a8bdad2a661d",
+  "commands": [
+    {
+      "name": "incoming-base-prepare",
+      "exit": 0
+    },
+    {
+      "name": "incoming-base-native",
+      "exit": 0
+    },
+    {
+      "name": "restore-candidate-native",
+      "exit": 0
+    }
+  ],
+  "source_effect": "Read-only table path query contract; renderer/input/font/exporter trees unchanged."
+}

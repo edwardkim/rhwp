@@ -1,0 +1,29 @@
+{
+  "scope": "Actual exported page/paragraph/cell/text bboxes, content and order; paint antialias/phase remains backend specific. Independent Print and both base/current Native/WASM crops were directly inspected.",
+  "records": [
+    {
+      "group": "incoming9083",
+      "key": "cbta",
+      "page": 45,
+      "entireExportedRenderTreeEqual": true,
+      "baseTreeSha256": "9a975486a0f527d212ca5e21624467131183632a38397657e3956cf829214098",
+      "candidateTreeSha256": "9a975486a0f527d212ca5e21624467131183632a38397657e3956cf829214098"
+    },
+    {
+      "group": "incoming9083",
+      "key": "exam",
+      "page": 3,
+      "entireExportedRenderTreeEqual": true,
+      "baseTreeSha256": "68ef3f500894206728516588911dacadffd8756931192dd1cb78d507d7ee6322",
+      "candidateTreeSha256": "68ef3f500894206728516588911dacadffd8756931192dd1cb78d507d7ee6322"
+    },
+    {
+      "group": "incoming9088",
+      "key": "rowbreak-first-fragment",
+      "page": 1,
+      "entireExportedRenderTreeEqual": true,
+      "baseTreeSha256": "77bd51e0c34f7ddbbc59a36c1006b0fa3f4311cd21ac0669ea51883b7081e00d",
+      "candidateTreeSha256": "77bd51e0c34f7ddbbc59a36c1006b0fa3f4311cd21ac0669ea51883b7081e00d"
+    }
+  ]
+}

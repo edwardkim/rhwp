@@ -1,0 +1,226 @@
+{
+  "revision": "base",
+  "binary_sha256": "024014a491ef8d0d7ffda2a60541dccc08a6a6488a3e95919d2104abc2cb8a09",
+  "commands": [
+    {
+      "label": "receipt-save",
+      "command": [
+        "$T7/DeveloperArtifacts/rhwp/workspaces/rhwp-task8946-c6f1b14c/output/issue8946/stage10/base-rhwp",
+        "export-hwpx",
+        "samples/issue-986-receipt.hwp",
+        "$T7/DeveloperArtifacts/rhwp/workspaces/rhwp-task8946-c6f1b14c/output/issue8946/stage10/api-base/receipt-saved.hwpx",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0
+    },
+    {
+      "label": "receipt-resave",
+      "command": [
+        "$T7/DeveloperArtifacts/rhwp/workspaces/rhwp-task8946-c6f1b14c/output/issue8946/stage10/base-rhwp",
+        "export-hwpx",
+        "$T7/DeveloperArtifacts/rhwp/workspaces/rhwp-task8946-c6f1b14c/output/issue8946/stage10/api-base/receipt-saved.hwpx",
+        "$T7/DeveloperArtifacts/rhwp/workspaces/rhwp-task8946-c6f1b14c/output/issue8946/stage10/api-base/receipt-resaved.hwpx",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0
+    },
+    {
+      "label": "pr9003-save",
+      "command": [
+        "$T7/DeveloperArtifacts/rhwp/workspaces/rhwp-task8946-c6f1b14c/output/issue8946/stage10/base-rhwp",
+        "export-hwpx",
+        "samples/80168_regulatory_analysis.hwp",
+        "$T7/DeveloperArtifacts/rhwp/workspaces/rhwp-task8946-c6f1b14c/output/issue8946/stage10/api-base/pr9003-saved.hwpx",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0
+    },
+    {
+      "label": "pr9003-resave",
+      "command": [
+        "$T7/DeveloperArtifacts/rhwp/workspaces/rhwp-task8946-c6f1b14c/output/issue8946/stage10/base-rhwp",
+        "export-hwpx",
+        "$T7/DeveloperArtifacts/rhwp/workspaces/rhwp-task8946-c6f1b14c/output/issue8946/stage10/api-base/pr9003-saved.hwpx",
+        "$T7/DeveloperArtifacts/rhwp/workspaces/rhwp-task8946-c6f1b14c/output/issue8946/stage10/api-base/pr9003-resaved.hwpx",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0
+    },
+    {
+      "label": "pr8959-edit",
+      "command": [
+        "$T7/DeveloperArtifacts/rhwp/workspaces/rhwp-task8946-c6f1b14c/output/issue8946/stage10/base-rhwp",
+        "edit",
+        "insert-table",
+        "samples/issue8939/attach_form_reset.hwp",
+        "--rows",
+        "2",
+        "--cols",
+        "2",
+        "--section",
+        "0",
+        "--para",
+        "7",
+        "--offset",
+        "0",
+        "-o",
+        "$T7/DeveloperArtifacts/rhwp/workspaces/rhwp-task8946-c6f1b14c/output/issue8946/stage10/api-base/pr8959/edited.hwp",
+        "--json"
+      ],
+      "exit": 0
+    },
+    {
+      "label": "pr8959-save",
+      "command": [
+        "$T7/DeveloperArtifacts/rhwp/workspaces/rhwp-task8946-c6f1b14c/output/issue8946/stage10/base-rhwp",
+        "convert",
+        "$T7/DeveloperArtifacts/rhwp/workspaces/rhwp-task8946-c6f1b14c/output/issue8946/stage10/api-base/pr8959/edited.hwp",
+        "$T7/DeveloperArtifacts/rhwp/workspaces/rhwp-task8946-c6f1b14c/output/issue8946/stage10/api-base/pr8959/saved.hwp",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0
+    },
+    {
+      "label": "pr8959-resave",
+      "command": [
+        "$T7/DeveloperArtifacts/rhwp/workspaces/rhwp-task8946-c6f1b14c/output/issue8946/stage10/base-rhwp",
+        "convert",
+        "$T7/DeveloperArtifacts/rhwp/workspaces/rhwp-task8946-c6f1b14c/output/issue8946/stage10/api-base/pr8959/saved.hwp",
+        "$T7/DeveloperArtifacts/rhwp/workspaces/rhwp-task8946-c6f1b14c/output/issue8946/stage10/api-base/pr8959/resaved.hwp",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0
+    },
+    {
+      "label": "pr8991-search",
+      "command": [
+        "$T7/DeveloperArtifacts/rhwp/workspaces/rhwp-task8946-c6f1b14c/output/issue8946/stage10/base-rhwp",
+        "search",
+        "tests/fixtures/issue8989/nested-values.hml",
+        "42,360명",
+        "--json"
+      ],
+      "exit": 0
+    },
+    {
+      "label": "pr8991-extract",
+      "command": [
+        "$T7/DeveloperArtifacts/rhwp/workspaces/rhwp-task8946-c6f1b14c/output/issue8946/stage10/base-rhwp",
+        "extract-data",
+        "tests/fixtures/issue8989/nested-values.hml",
+        "--json"
+      ],
+      "exit": 0
+    },
+    {
+      "label": "export-svg",
+      "command": [
+        "$T7/DeveloperArtifacts/rhwp/workspaces/rhwp-task8946-c6f1b14c/output/issue8946/stage10/base-rhwp",
+        "export-svg",
+        "$T7/DeveloperArtifacts/rhwp/workspaces/rhwp-task8946-c6f1b14c/output/issue8946/stage10/api-base/long-name/18058585_[별표 6] 국방부 한시조직에 두는 공무원(군인제외) 정원표(제2조제1항·제5조제1항 관련)(국방부와 그 소속기관 직제 시행규칙)가가가가가가가가가가가가가가가가가가가가가가가가가.hwp",
+        "-o",
+        "$T7/DeveloperArtifacts/rhwp/workspaces/rhwp-task8946-c6f1b14c/output/issue8946/stage10/api-base/pr9013-export-svg"
+      ],
+      "exit": 0
+    },
+    {
+      "label": "export-text",
+      "command": [
+        "$T7/DeveloperArtifacts/rhwp/workspaces/rhwp-task8946-c6f1b14c/output/issue8946/stage10/base-rhwp",
+        "export-text",
+        "$T7/DeveloperArtifacts/rhwp/workspaces/rhwp-task8946-c6f1b14c/output/issue8946/stage10/api-base/long-name/18058585_[별표 6] 국방부 한시조직에 두는 공무원(군인제외) 정원표(제2조제1항·제5조제1항 관련)(국방부와 그 소속기관 직제 시행규칙)가가가가가가가가가가가가가가가가가가가가가가가가가.hwp",
+        "-o",
+        "$T7/DeveloperArtifacts/rhwp/workspaces/rhwp-task8946-c6f1b14c/output/issue8946/stage10/api-base/pr9013-export-text"
+      ],
+      "exit": 0
+    }
+  ],
+  "checks": [
+    {
+      "key": "receipt",
+      "same_reference": true,
+      "repeat": true
+    },
+    {
+      "key": "pr9003",
+      "same_reference": true,
+      "repeat": true
+    },
+    {
+      "key": "pr8959/edited",
+      "same_reference": true
+    },
+    {
+      "key": "pr8959/saved",
+      "same_reference": true
+    },
+    {
+      "key": "pr8959/resaved",
+      "same_reference": true
+    },
+    {
+      "key": "pr8991-search",
+      "same_semantics_as_reference": true
+    },
+    {
+      "key": "pr8991-extract",
+      "same_semantics_as_reference": true
+    },
+    {
+      "key": "pr9013/export-svg",
+      "files": [
+        {
+          "name": "18058585_[별표 6] 국방부 한시조직에 두는 공무원(군인제외) 정원표(제2조제1항·제5조제1항 관련)(국방부와 그 소속기관 직제 시행규칙)가가가가가가가가가가가가가가가가가가가가가가가_002.svg",
+          "bytes_utf8": 253,
+          "sha256": "c0569dfe67d4373e4266b8554b61263fc2a50cd7520f77c4327daed501a844ff"
+        },
+        {
+          "name": "18058585_[별표 6] 국방부 한시조직에 두는 공무원(군인제외) 정원표(제2조제1항·제5조제1항 관련)(국방부와 그 소속기관 직제 시행규칙)가가가가가가가가가가가가가가가가가가가가가가가_003.svg",
+          "bytes_utf8": 253,
+          "sha256": "ac32b25734cd4ff8ce770e8747609071a47f7e87e6d8aeeb2ad57658f5f79b17"
+        },
+        {
+          "name": "18058585_[별표 6] 국방부 한시조직에 두는 공무원(군인제외) 정원표(제2조제1항·제5조제1항 관련)(국방부와 그 소속기관 직제 시행규칙)가가가가가가가가가가가가가가가가가가가가가가가_001.svg",
+          "bytes_utf8": 253,
+          "sha256": "655d83b9aadd6a62d53aa61baaa952d04a6c555b4f4fb4fe4f2fe85f4e055c31"
+        },
+        {
+          "name": "18058585_[별표 6] 국방부 한시조직에 두는 공무원(군인제외) 정원표(제2조제1항·제5조제1항 관련)(국방부와 그 소속기관 직제 시행규칙)가가가가가가가가가가가가가가가가가가가가가가가_004.svg",
+          "bytes_utf8": 253,
+          "sha256": "8385a70289b7da3a5a62cf36089657d00f65c5c750a0bc76776c77cc2e788125"
+        }
+      ]
+    },
+    {
+      "key": "pr9013/export-text",
+      "files": [
+        {
+          "name": "18058585_[별표 6] 국방부 한시조직에 두는 공무원(군인제외) 정원표(제2조제1항·제5조제1항 관련)(국방부와 그 소속기관 직제 시행규칙)가가가가가가가가가가가가가가가가가가가가가가가_004.txt",
+          "bytes_utf8": 253,
+          "sha256": "bf44c2a9e70f4e012d7efcf9154ce4b33ef44161ff7bb3e3cc852b93bfaddb6d"
+        },
+        {
+          "name": "18058585_[별표 6] 국방부 한시조직에 두는 공무원(군인제외) 정원표(제2조제1항·제5조제1항 관련)(국방부와 그 소속기관 직제 시행규칙)가가가가가가가가가가가가가가가가가가가가가가가_001.txt",
+          "bytes_utf8": 253,
+          "sha256": "43205e06494053e9cd430ae6f298d7040678f233fb1fb8308db21afbfb8a054a"
+        },
+        {
+          "name": "18058585_[별표 6] 국방부 한시조직에 두는 공무원(군인제외) 정원표(제2조제1항·제5조제1항 관련)(국방부와 그 소속기관 직제 시행규칙)가가가가가가가가가가가가가가가가가가가가가가가_002.txt",
+          "bytes_utf8": 253,
+          "sha256": "571b408bdc4f2e92e3adfa48592f3163bf34594d9a27defacc50e879c68e91c7"
+        },
+        {
+          "name": "18058585_[별표 6] 국방부 한시조직에 두는 공무원(군인제외) 정원표(제2조제1항·제5조제1항 관련)(국방부와 그 소속기관 직제 시행규칙)가가가가가가가가가가가가가가가가가가가가가가가_003.txt",
+          "bytes_utf8": 253,
+          "sha256": "70ebc2a37fe1d16dd1859cbd0a414da578fef7fcaae2588025d3dd41a1e89e4a"
+        }
+      ]
+    }
+  ]
+}

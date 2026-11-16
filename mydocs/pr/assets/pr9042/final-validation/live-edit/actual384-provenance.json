@@ -1,0 +1,48 @@
+{
+  "source": "d66d5f05f9efa4d182228494cd970614d479fb7a",
+  "dpi": 384,
+  "order": [
+    "independent Hancom Print",
+    "actual Native live edit",
+    "fresh WASM actual live edit"
+  ],
+  "same_absolute_crop": [
+    280,
+    3438,
+    1120,
+    3618
+  ],
+  "rule_bands_from_pdf": [
+    [
+      528
+    ],
+    [
+      686,
+      687
+    ],
+    [
+      750
+    ],
+    [
+      3528
+    ],
+    [
+      4011
+    ]
+  ],
+  "images": [
+    {
+      "path": "output/pr-review/pr9042/submission-svg384/edited/pdf_png/pdf-001.png",
+      "sha256": "03552d48324a96ce307b47f316352b7e9c9b6c187fef782e5032c24c1638ea4d"
+    },
+    {
+      "path": "output/pr-review/pr9042/submission-live-native384-1.png",
+      "sha256": "291d733a6d70313985a316bc46f6ed8738a2d619a7bb66974a31054d6bbbc8cd"
+    },
+    {
+      "path": "output/pr-review/pr9042/submission-live-wasm384/rhwp_png/rhwp_001.png",
+      "sha256": "74c2d81cb3c10d4cd0839774c30f1e77154425be852e444268d9c38cd1623718"
+    }
+  ],
+  "image_processing": "Unchanged actual 384 DPI raster crops at one shared coordinate, placed side by side; no scaling, glyph edits, alignment correction, or resynthesis."
+}

@@ -12,6 +12,8 @@ interface CanvasHostFace {
   intrinsicAlias: string;
   intrinsicFont: FontFace | null;
   ownership: Map<string, boolean>;
+  source: { bytes: Uint8Array; faceIndex: number };
+  unicodeRange: string;
 }
 type CanvasFontContext = Pick<CanvasRenderingContext2D, 'font' | 'measureText'>;
 interface CanvasFontSourceOwner extends OrdinaryTextFontSource {
@@ -19,6 +21,24 @@ interface CanvasFontSourceOwner extends OrdinaryTextFontSource {
   registerTextFontGlyphCoverage?: (family: string, bytes: Uint8Array, faceIndex: number) => unknown;
   registerHftOutlineFont?: (family: string, bytes: Uint8Array, faceIndex: number) => unknown;
   registerHftOutlineFontCandidates?: (family: string, programs: Uint8Array[]) => unknown;
+  registerHftOutlineFontFaces?: (family: string, programs: Array<{ bytes: Uint8Array; faceIndex: number }>) => unknown;
+  clearTextFontOutline?: (family: string) => unknown;
+  registerPrintFontPrimary?: (family: string, bytes: Uint8Array, faceIndex: number, complete: boolean) => unknown;
+  clearPrintFontPrimary?: (family: string) => unknown;
+  getFontSymbolUnicodeRange?: (bytes: Uint8Array, faceIndex: number) => string;
+}
+
+function isCff(face: CanvasHostFace | null | undefined): boolean {
+  return Boolean(face && face.bytes.byteLength >= 4
+    && new DataView(face.bytes).getUint32(0) === 0x4f54544f);
+}
+
+/** 실제 descriptor 해소와 Print 프로그램 공급이 같은 후보 순서를 사용한다. */
+function canvasHostOrder(faces: Array<CanvasHostFace | null | undefined>, sourceTtf: boolean) {
+  if (faces.length > 1 && faces.some(face => !face)) return null;
+  if (!sourceTtf && faces.length > 1 && !faces.some(isCff)) return null;
+  return [...faces].sort((a, b) => sourceTtf
+    ? Number(isCff(a)) - Number(isCff(b)) : Number(isCff(b)) - Number(isCff(a)));
 }
 let nextSession = 0;
 let currentSession: HostCanvasFontSession | null = null;
@@ -52,6 +72,7 @@ export class HostCanvasFontSession {
   private readonly pending = new Map<string, Promise<void>>();
   private readonly failures = new Set<string>();
   private fontSet: FontFaceSet | null = null;
+  private scopedOutlines = false;
 
   reset(): void {
     this.epoch += 1;
@@ -63,6 +84,7 @@ export class HostCanvasFontSession {
     this.fontSet = null;
     this.faces.clear(); this.aliases.clear(); this.pending.clear(); this.failures.clear();
     this.generation = -1;
+    this.scopedOutlines = false;
   }
 
   diagnostics(): { loaded: number; pending: number; failed: number } {
@@ -74,12 +96,14 @@ export class HostCanvasFontSession {
   }
 
   async prepare(records: readonly LocalFontRecord[], sourceOwner: CanvasFontSourceOwner | null = null,
-    isCurrent: () => boolean = () => true): Promise<void> {
+    isCurrent: () => boolean = () => true, pageOutlines = false): Promise<void> {
     const generation = getHostFontState().generation;
     if (this.generation !== generation) {
       this.reset(); this.generation = generation;
       this.off = onHostFontsChanged(() => this.reset());
     }
+    this.scopedOutlines = pageOutlines && Boolean(sourceOwner?.clearTextFontOutline
+      && sourceOwner?.registerHftOutlineFontFaces);
     if (typeof FontFace === 'undefined' || typeof document === 'undefined') return;
     this.fontSet = document.fonts;
     const epoch = this.epoch;
@@ -112,7 +136,7 @@ export class HostCanvasFontSession {
           if (candidates.length < 2) {
             sourceOwner?.registerTextFontGlyphCoverage?.(family, new Uint8Array(loaded.bytes), 0);
           }
-          if (candidates.length < 2 && Number(record.hostReference!.face.weight ?? 400) === 400
+          if (!this.scopedOutlines && candidates.length < 2 && Number(record.hostReference!.face.weight ?? 400) === 400
             && (record.hostReference!.face.slant ?? 'normal') === 'normal') {
             sourceOwner?.registerHftOutlineFont?.(family, new Uint8Array(loaded.bytes), 0);
           }
@@ -148,7 +172,9 @@ export class HostCanvasFontSession {
               this.fontSet!.add(intrinsicFont);
             }
             this.fontSet!.add(font);
-            this.faces.set(key, { alias, font, bytes, intrinsicAlias, intrinsicFont, ownership: new Map() });
+            this.faces.set(key, { alias, font, bytes, intrinsicAlias, intrinsicFont, ownership: new Map(),
+              unicodeRange: descriptors.unicodeRange ?? '',
+              source: { bytes: new Uint8Array(data!.bytes), faceIndex: data!.faceIndex ?? 0 } });
             this.aliases.add(intrinsicAlias);
             this.aliases.add(alias);
           } catch {
@@ -162,6 +188,7 @@ export class HostCanvasFontSession {
       if (prepared && epoch === this.epoch) register(prepared);
     }
     // 실제 Canvas와 같은 후보 순서를 공급한다. 혼합 형식은 기존 painter에 맡긴다.
+    if (this.scopedOutlines) return;
     for (const family of clearedSplitFamilies) {
       const candidates = resolveRendererLocalFontCandidates(family, {weight: 400, slant: 'normal'});
       if (candidates.length < 2) continue;
@@ -172,6 +199,51 @@ export class HostCanvasFontSession {
         sourceOwner?.registerHftOutlineFontCandidates?.(family,
           loaded.map(face => new Uint8Array(face!.bytes)));
       }
+    }
+  }
+
+  /** 현재 paint에 필요한 윤곽만 빌린다. 예외·다른 쪽·portable 출력에 남기지 않는다. */
+  withPageOutlines<T>(records: readonly LocalFontRecord[], owner: CanvasFontSourceOwner,
+    operation: () => T): T {
+    if (!this.scopedOutlines || this.generation !== getHostFontState().generation) return operation();
+    const families = new Set(records.filter(record => record.hostReference
+      && Number(record.hostReference.face.weight ?? 400) === 400
+      && (record.hostReference.face.slant ?? 'normal') === 'normal')
+      .flatMap(record => [record.family, ...record.aliases]));
+    const installed: string[] = [];
+    const primaries: string[] = [];
+    const hasPrimaryScope = Boolean(owner.registerPrintFontPrimary && owner.clearPrintFontPrimary);
+    try {
+      for (const family of families) {
+        const candidates = resolveRendererLocalFontCandidates(family, { weight: 400, slant: 'normal' });
+        const loaded = candidates.map(record => this.faces.get(localFontFaceKey(record)));
+        if (!loaded.length || loaded.some(face => !face)) continue;
+        const allCff = loaded.every(isCff);
+        if (allCff) {
+          installed.push(family);
+          owner.registerHftOutlineFontFaces!(family, loaded.map(face => face!.source));
+        }
+        if (!hasPrimaryScope) continue;
+        const primary = canvasHostOrder(loaded, false)?.[0];
+        const knownRange = (face: CanvasHostFace) => !face.unicodeRange
+          || face.unicodeRange === owner.getFontSymbolUnicodeRange?.(new Uint8Array(face.bytes), 0);
+        if (primary && (knownRange(primary) || allCff)) {
+          primaries.push(family);
+          const source = isCff(primary) ? primary.source : { bytes: new Uint8Array(primary.bytes), faceIndex: 0 };
+          owner.registerPrintFontPrimary!(family, source.bytes, source.faceIndex, allCff || loaded.length === 1);
+        }
+        // 실제 descriptor가 원본 TTF용 별칭을 해소할 때와 같은 순서다.
+        const ttf = canvasHostOrder(loaded, true)?.[0];
+        if (ttf && !isCff(ttf) && knownRange(ttf)) {
+          const alias = `__rhwp_ttf__${family}`;
+          primaries.push(alias);
+          owner.registerPrintFontPrimary!(alias, new Uint8Array(ttf.bytes), 0, loaded.length === 1);
+        }
+      }
+      return operation();
+    } finally {
+      for (const family of primaries) owner.clearPrintFontPrimary!(family);
+      for (const family of installed) owner.clearTextFontOutline!(family);
     }
   }
 
@@ -198,19 +270,11 @@ export class HostCanvasFontSession {
       if (!records.length && weight >= 600) {
         records = resolveRendererLocalFontCandidates(requested, { weight: 400, slant });
       }
-      const loadedFaces = records.map(record => record.hostReference ? this.faces.get(localFontFaceKey(record)) : null);
+      const loaded = records.map(record => record.hostReference ? this.faces.get(localFontFaceKey(record)) : null);
       // 부분 준비 시 표시와 측정의 후보가 달라진다. 다 준비되면 CFF를
       // TTF보다 먼저 조회하고 각 형식 안에서는 호스트 순서를 보존한다.
-      if (records.length > 1 && loadedFaces.some(face => !face)) continue;
-      if (!sourceTtf && records.length > 1 && !loadedFaces.some(face => face && face.bytes.byteLength >= 4
-        && new DataView(face.bytes).getUint32(0) === 0x4f54544f)) continue;
-      loadedFaces.sort((a, b) => {
-        const cff = (face: CanvasHostFace | null | undefined) => face && face.bytes.byteLength >= 4
-          && new DataView(face.bytes).getUint32(0) === 0x4f54544f;
-        return sourceTtf
-          ? Number(Boolean(cff(a))) - Number(Boolean(cff(b)))
-          : Number(Boolean(cff(b))) - Number(Boolean(cff(a)));
-      });
+      const loadedFaces = canvasHostOrder(loaded, sourceTtf);
+      if (!loadedFaces) continue;
       for (const loaded of loadedFaces) {
         if (!loaded) continue;
         // 실제 프로그램 소유 검증은 원 face에 적용하고 뒤 후보도 세션 별칭으로 공급한다.

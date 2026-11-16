@@ -1,0 +1,52 @@
+{
+  "recorded_at": "2026-11-12T12:54:21.550936+00:00",
+  "head": "30fa7739f0340f2a248b22542c7dd36d9354f056",
+  "base": "1a3ed4a7cd76701085a24ac81d30bc5fb31942c1",
+  "frozen_wasm_producer": "d66568ef247859a9c184546cad3ba42b06e806e1",
+  "direct_canvas2d_exporter_dependencies": [
+    {
+      "path": "scripts/export-wasm-png-for-sweep.mjs",
+      "identical_through_all_replayed_commits": true,
+      "blob": "350ce738fe6784e5ba4d89d9fbfff4934a4f02be",
+      "replayed_commits_checked": 46
+    },
+    {
+      "path": "scripts/visual-sweep-font-registration.mjs",
+      "identical_through_all_replayed_commits": true,
+      "blob": "ac9f42e86f67570349b0e222af9d011c96cbd094",
+      "replayed_commits_checked": 46
+    },
+    {
+      "path": "scripts/visual-sweep-font-environment.mjs",
+      "identical_through_all_replayed_commits": true,
+      "blob": "1a8575b7b142c3bd49272d4407373fa512779926",
+      "replayed_commits_checked": 46
+    },
+    {
+      "path": "scripts/rasterize-svg-webfonts.mjs",
+      "identical_through_all_replayed_commits": true,
+      "blob": "592a8694582092386f8de8633c5748ed42e3aa6d",
+      "replayed_commits_checked": 46
+    },
+    {
+      "path": "rhwp-studio/src/core/canvas-metric-session.ts",
+      "identical_through_all_replayed_commits": true,
+      "blob": "e8d87f456e8b58a807467a411261c6d6968fa059",
+      "replayed_commits_checked": 46
+    },
+    {
+      "path": "rhwp-studio/src/core/supplemental-text-metrics.ts",
+      "identical_through_all_replayed_commits": true,
+      "blob": "7eb566160cc7ebdf6260b651e0b4f9700fa32e49",
+      "replayed_commits_checked": 46
+    },
+    {
+      "path": "rhwp-studio/src/core/canvas-intrinsic-font.mjs",
+      "identical_through_all_replayed_commits": true,
+      "blob": "01e677c2194b7ad734b1c33c50c42bac7cb0bf45",
+      "replayed_commits_checked": 46
+    }
+  ],
+  "canvaskit_ts_not_loaded": "export-wasm-png-for-sweep.mjs builds an explicit HTTP module map; CanvasKit renderer modules are not loaded by this direct Canvas2D exporter.",
+  "sample10_overlap_status": "dependency trees identical throughout rebase; frozen JS/WASM and source inputs retained. This remains a pre-rebase producer measurement, not a new-head capture."
+}

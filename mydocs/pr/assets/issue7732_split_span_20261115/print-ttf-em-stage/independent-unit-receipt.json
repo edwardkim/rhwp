@@ -1,0 +1,34 @@
+{
+  "pdf_sha256": "3ae956936009a20d24f12d3b708ff6dc7eeeafba2078327a7527a83d90376635",
+  "pages": 1,
+  "metadata": {
+    "/Author": "SYSTEM",
+    "/Creator": "Hwp 2020 0.0.0.0",
+    "/Producer": "Hancom PDF 1.3.0.550",
+    "/CreationDate": "D:20261116003755+09'00'",
+    "/ModDate": "D:20261116003755+09'00'",
+    "/PDFVersion": "1.4"
+  },
+  "scope": "대상 원본/PDF와 무관한 독립 표본의 표시 em 단위 검사. 글꼴·윤곽·복원 표본 PDF는 로컬 전용이다.",
+  "engine": "2020",
+  "mcp_job_id": "d9acf756-9f64-4183-be79-2e54c6c03954",
+  "input_sha256": "b06a7ea71caa9c491ef68c85bd9a9761d07f9427ddfbf1b76d31fdd8fd113a33",
+  "observations": [
+    {
+      "source_size_pt": 8,
+      "device_em_600dpi": 67
+    },
+    {
+      "source_size_pt": 10,
+      "device_em_600dpi": 83
+    },
+    {
+      "source_size_pt": 11,
+      "device_em_600dpi": 92
+    },
+    {
+      "source_size_pt": 13,
+      "device_em_600dpi": 108
+    }
+  ]
+}

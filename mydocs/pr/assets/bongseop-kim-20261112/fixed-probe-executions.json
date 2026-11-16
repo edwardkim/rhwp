@@ -1,0 +1,43 @@
+[
+  {
+    "name": "fixed-focused",
+    "source": "0aa25a66345edbf36aee45bf953611fe041350e0",
+    "code": 0,
+    "seconds": 235.691,
+    "command": [
+      "cargo",
+      "--offline",
+      "test",
+      "--manifest-path",
+      "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/diagnostic-probe/Cargo.toml",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--lib",
+      "--",
+      "--nocapture"
+    ]
+  },
+  {
+    "name": "fixed-roundtrip",
+    "source": "0aa25a66345edbf36aee45bf953611fe041350e0",
+    "code": 0,
+    "seconds": 2.292,
+    "command": [
+      "cargo",
+      "--offline",
+      "run",
+      "--manifest-path",
+      "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/diagnostic-probe/Cargo.toml",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--bin",
+      "roundtrip-probe",
+      "--",
+      "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/roundtrip-fixed"
+    ]
+  }
+]

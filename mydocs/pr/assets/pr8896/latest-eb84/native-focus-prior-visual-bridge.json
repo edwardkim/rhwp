@@ -1,0 +1,104 @@
+{
+  "source": "1749b66d704b3ea0443ae9792ff8a1d65e26a9c1",
+  "all_equal": true,
+  "rows": [
+    {
+      "key": "issue8693-table-end-row-clamp",
+      "page": 1,
+      "old_png_sha256": "93c95537185ff83d1bac720cc836539af2fccf1572258735ed4018a9bfd2d448",
+      "new_png_sha256": "93c95537185ff83d1bac720cc836539af2fccf1572258735ed4018a9bfd2d448",
+      "equal": true
+    },
+    {
+      "key": "issue8693-two-tables-host-line-fits",
+      "page": 1,
+      "old_png_sha256": "b2842614dea7b89d1ccd036d76365e31edbad8f63543f0199f205e6636b8e850",
+      "new_png_sha256": "b2842614dea7b89d1ccd036d76365e31edbad8f63543f0199f205e6636b8e850",
+      "equal": true
+    },
+    {
+      "key": "issue8693-two-tables-host-line-fits",
+      "page": 2,
+      "old_png_sha256": "cd7472a433c43be460715ac377323172067534ae71e67b74bf2a0c2fa4e6e237",
+      "new_png_sha256": "cd7472a433c43be460715ac377323172067534ae71e67b74bf2a0c2fa4e6e237",
+      "equal": true
+    },
+    {
+      "key": "issue8693-two-tables-host-line-no-room",
+      "page": 1,
+      "old_png_sha256": "cf16865585dfea76d789ec3f93fcbd925803a1c3674d1af602e141f19776c403",
+      "new_png_sha256": "cf16865585dfea76d789ec3f93fcbd925803a1c3674d1af602e141f19776c403",
+      "equal": true
+    },
+    {
+      "key": "issue8693-two-tables-host-line-no-room",
+      "page": 2,
+      "old_png_sha256": "cd7472a433c43be460715ac377323172067534ae71e67b74bf2a0c2fa4e6e237",
+      "new_png_sha256": "cd7472a433c43be460715ac377323172067534ae71e67b74bf2a0c2fa4e6e237",
+      "equal": true
+    },
+    {
+      "key": "issue8693-two-tables-host-line-no-room",
+      "page": 3,
+      "old_png_sha256": "b0e152794b097b46e03a2db76356bb9c14ac2e3fe864380d480ff0cfa743a0b1",
+      "new_png_sha256": "b0e152794b097b46e03a2db76356bb9c14ac2e3fe864380d480ff0cfa743a0b1",
+      "equal": true
+    },
+    {
+      "key": "issue7620-a-rowbreak-float",
+      "page": 1,
+      "old_png_sha256": "09bb4a37abab89e37cbca4cd251340501f552828ad212660e4be9ac40785c51e",
+      "new_png_sha256": "09bb4a37abab89e37cbca4cd251340501f552828ad212660e4be9ac40785c51e",
+      "equal": true
+    },
+    {
+      "key": "issue7620-b-rowbreak-bottom-margin-overflow",
+      "page": 1,
+      "old_png_sha256": "ab156e9d7a2a53df73d6b4cf23a82a232223c665e9a899039e2dfb469dea7d05",
+      "new_png_sha256": "ab156e9d7a2a53df73d6b4cf23a82a232223c665e9a899039e2dfb469dea7d05",
+      "equal": true
+    },
+    {
+      "key": "issue7620-b-rowbreak-bottom-margin-overflow",
+      "page": 2,
+      "old_png_sha256": "22fab1d50522663274f4f0bec6042b691fec9418f4bea27ee6c7573ec0527ef7",
+      "new_png_sha256": "22fab1d50522663274f4f0bec6042b691fec9418f4bea27ee6c7573ec0527ef7",
+      "equal": true
+    },
+    {
+      "key": "issue7620-c-rowbreak-table-moves-next-page",
+      "page": 1,
+      "old_png_sha256": "792f3ee0532d185396aa9ad427e59f9bbb45d08f36e349abd2f97067b9a0bf8f",
+      "new_png_sha256": "792f3ee0532d185396aa9ad427e59f9bbb45d08f36e349abd2f97067b9a0bf8f",
+      "equal": true
+    },
+    {
+      "key": "issue7620-c-rowbreak-table-moves-next-page",
+      "page": 2,
+      "old_png_sha256": "fdf62d7bb64ebd660cb0212f384ee11737569135c6577a3c1e66a7a6306901a6",
+      "new_png_sha256": "fdf62d7bb64ebd660cb0212f384ee11737569135c6577a3c1e66a7a6306901a6",
+      "equal": true
+    },
+    {
+      "key": "issue7620-d-rowbreak-splits-at-row-boundary",
+      "page": 1,
+      "old_png_sha256": "8e98d2e3483f96060e19f06c694a1af452851d9bb44de0a01310e36a5682cc63",
+      "new_png_sha256": "8e98d2e3483f96060e19f06c694a1af452851d9bb44de0a01310e36a5682cc63",
+      "equal": true
+    },
+    {
+      "key": "issue7620-d-rowbreak-splits-at-row-boundary",
+      "page": 2,
+      "old_png_sha256": "9254520254a9cf6e5679cd04dad8393fea1c719310d4eaf0ad32e44142178f04",
+      "new_png_sha256": "9254520254a9cf6e5679cd04dad8393fea1c719310d4eaf0ad32e44142178f04",
+      "equal": true
+    },
+    {
+      "key": "issue7621-control-float",
+      "page": 1,
+      "old_png_sha256": "09bb4a37abab89e37cbca4cd251340501f552828ad212660e4be9ac40785c51e",
+      "new_png_sha256": "09bb4a37abab89e37cbca4cd251340501f552828ad212660e4be9ac40785c51e",
+      "equal": true
+    }
+  ]
+}

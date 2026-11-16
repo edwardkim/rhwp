@@ -1,0 +1,16 @@
+{
+  "stream_differences": [
+    {
+      "stream": "RhwpLineSegTags",
+      "before_bytes": 0,
+      "after_bytes": 40,
+      "before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_sha256": "8030813c2584ccff5bd2457004499056bdee2e1c5d0214363b92f6f05800bd40"
+    }
+  ],
+  "candidate_first_para_raw_line_starts": [
+    0,
+    40
+  ],
+  "runtime_text_and_pages": "actual-edit-save-results.json"
+}

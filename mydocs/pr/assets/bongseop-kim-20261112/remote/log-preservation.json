@@ -1,0 +1,23 @@
+[
+  {
+    "raw_name": "new-base-api.log",
+    "raw_sha256": "74127c1fc01bae5724d3e7dabadfc17691e3d94296516e62bb7afa5f2dfccd86",
+    "saved_path": "mydocs/pr/assets/bongseop-kim-20261112/remote/new-base-api.txt",
+    "saved_sha256": "74127c1fc01bae5724d3e7dabadfc17691e3d94296516e62bb7afa5f2dfccd86",
+    "normalization": "Terminal whitespace normalized to one LF; commands/results unchanged."
+  },
+  {
+    "raw_name": "merge-result-focused.log",
+    "raw_sha256": "db657405725754a77f6fb21b99b49c37ae9e3824bbb4ee771f66d07753269344",
+    "saved_path": "mydocs/pr/assets/bongseop-kim-20261112/remote/merge-result-focused.txt",
+    "saved_sha256": "db657405725754a77f6fb21b99b49c37ae9e3824bbb4ee771f66d07753269344",
+    "normalization": "Terminal whitespace normalized to one LF; commands/results unchanged."
+  },
+  {
+    "raw_name": "merge-result-focused-recompiled.log",
+    "raw_sha256": "57501a60436fab37e2a781c4502ded90cef1bb4902866af96ddde46cddac6f60",
+    "saved_path": "mydocs/pr/assets/bongseop-kim-20261112/remote/merge-result-focused-recompiled.txt",
+    "saved_sha256": "57501a60436fab37e2a781c4502ded90cef1bb4902866af96ddde46cddac6f60",
+    "normalization": "Terminal whitespace normalized to one LF; commands/results unchanged."
+  }
+]

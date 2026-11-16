@@ -103,7 +103,7 @@ section_count + ParaShape: 페이지와 배치 동시 회복
 ### 규칙 5. HWP 무늬없음은 0이 아니라 -1이다
 
 HWPX `winBrush`에 `faceColor`가 있고 `hatchStyle`이 없으면, HWP `pattern_type`은
-`-1`이어야 한다. 이를 0 또는 1 기반 index처럼 다루면 한컴에서 배경 무늬가 잘못 표시된다.
+`-1`이어야 한다. 0은 가로줄 무늬라서 0을 쓰면 한컴에서 배경 무늬가 생긴다.
 
 ```text
 HWPX hatchStyle 없음 -> HWP pattern_type = -1
@@ -240,13 +240,16 @@ HWP의 `pattern_type`에서 무늬없음은 `-1`이다. HWPX `winBrush`에 `face
 
 ```text
 HWPX hatchStyle 없음 -> HWP pattern_type = -1
-HORIZONTAL -> 1
-VERTICAL -> 2
+HORIZONTAL -> 0
+VERTICAL -> 1
+SLASH -> 2
 BACK_SLASH -> 3
-SLASH -> 4
-CROSS -> 5
-CROSS_DIAGONAL -> 6
+CROSS -> 4
+CROSS_DIAGONAL -> 5
 ```
+
+이 대응은 한글 2024가 HWP를 HWPX로 저장한 결과다. `SLASH`는 ＼, `BACK_SLASH`는 ／로
+그려진다([정오표 40](hwp_spec_errata.md#40-채우기-무늬-종류-표-29--0부터-시작), #8978).
 
 문단/글자 모양이 참조하는 투명 흰색 solid fill은 한컴에서 배경 무늬로 오해될 수 있다.
 다만 표, 셀, page border가 참조하는 BorderFill까지 무작정 바꾸면 안 된다.

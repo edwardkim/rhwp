@@ -1,0 +1,92 @@
+[
+  {
+    "case": "cbta",
+    "backend": "native",
+    "page": 3,
+    "source": "base",
+    "raw_match": 99.4162,
+    "review": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-tab-owned-final/native-decline-review/base/review/review_003.png",
+    "overlay": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-tab-owned-final/native-decline-review/base/overlay/overlay_003.png",
+    "direct_reading": {
+      "status": "completed",
+      "method": "동일 PDF에 대한 base와현재Native의 review/overlay 각각 직접 판독",
+      "observation": "장 제목·소항목·참고문헌·부록과 각 쪽번호의 순서·줄 소유를 base/head/PDF로 대조했다. 목차 리더와 숫자의 미세 가로 차이가 남으며 누락·중복·새 줄 전환 차이는 보이지 않았다.",
+      "read_at": "2026-11-14T19:26:05.322842+00:00"
+    }
+  },
+  {
+    "case": "cbta",
+    "backend": "native",
+    "page": 4,
+    "source": "base",
+    "raw_match": 98.31372,
+    "review": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-tab-owned-final/native-decline-review/base/review/review_004.png",
+    "overlay": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-tab-owned-final/native-decline-review/base/overlay/overlay_004.png",
+    "direct_reading": {
+      "status": "completed",
+      "method": "동일 PDF에 대한 base와현재Native의 review/overlay 각각 직접 판독",
+      "observation": "표1~12의 제목·두 줄 제목·쪽번호를 대조했다. 같은 내용과 줄 구성이 유지되며 리더·숫자 끝의 미세한 가로 차이가 남는다.",
+      "read_at": "2026-11-14T19:26:05.323517+00:00"
+    }
+  },
+  {
+    "case": "cbta",
+    "backend": "native",
+    "page": 5,
+    "source": "base",
+    "raw_match": 99.34441,
+    "review": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-tab-owned-final/native-decline-review/base/review/review_005.png",
+    "overlay": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-tab-owned-final/native-decline-review/base/overlay/overlay_005.png",
+    "direct_reading": {
+      "status": "completed",
+      "method": "동일 PDF에 대한 base와현재Native의 review/overlay 각각 직접 판독",
+      "observation": "그림1~23의 순서와22·23번의 두 줄 소유·끝 쪽번호를 대조했다. 추가 누락·중복·넘침은 보이지 않았고 리더·쪽번호의 미세 가로 차이는 기록한다.",
+      "read_at": "2026-11-14T19:26:05.323522+00:00"
+    }
+  },
+  {
+    "case": "cbta",
+    "backend": "native",
+    "page": 3,
+    "source": "candidate",
+    "raw_match": 99.41411,
+    "review": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-tab-owned-final/native-decline-review/candidate/review/review_003.png",
+    "overlay": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-tab-owned-final/native-decline-review/candidate/overlay/overlay_003.png",
+    "direct_reading": {
+      "status": "completed",
+      "method": "동일 PDF에 대한 base와현재Native의 review/overlay 각각 직접 판독",
+      "observation": "장 제목·소항목·참고문헌·부록과 각 쪽번호의 순서·줄 소유를 base/head/PDF로 대조했다. 목차 리더와 숫자의 미세 가로 차이가 남으며 누락·중복·새 줄 전환 차이는 보이지 않았다.",
+      "read_at": "2026-11-14T19:26:05.323524+00:00"
+    }
+  },
+  {
+    "case": "cbta",
+    "backend": "native",
+    "page": 4,
+    "source": "candidate",
+    "raw_match": 98.25871,
+    "review": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-tab-owned-final/native-decline-review/candidate/review/review_004.png",
+    "overlay": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-tab-owned-final/native-decline-review/candidate/overlay/overlay_004.png",
+    "direct_reading": {
+      "status": "completed",
+      "method": "동일 PDF에 대한 base와현재Native의 review/overlay 각각 직접 판독",
+      "observation": "표1~12의 제목·두 줄 제목·쪽번호를 대조했다. 같은 내용과 줄 구성이 유지되며 리더·숫자 끝의 미세한 가로 차이가 남는다.",
+      "read_at": "2026-11-14T19:26:05.323527+00:00"
+    }
+  },
+  {
+    "case": "cbta",
+    "backend": "native",
+    "page": 5,
+    "source": "candidate",
+    "raw_match": 99.278,
+    "review": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-tab-owned-final/native-decline-review/candidate/review/review_005.png",
+    "overlay": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-tab-owned-final/native-decline-review/candidate/overlay/overlay_005.png",
+    "direct_reading": {
+      "status": "completed",
+      "method": "동일 PDF에 대한 base와현재Native의 review/overlay 각각 직접 판독",
+      "observation": "그림1~23의 순서와22·23번의 두 줄 소유·끝 쪽번호를 대조했다. 추가 누락·중복·넘침은 보이지 않았고 리더·쪽번호의 미세 가로 차이는 기록한다.",
+      "read_at": "2026-11-14T19:26:05.323528+00:00"
+    }
+  }
+]

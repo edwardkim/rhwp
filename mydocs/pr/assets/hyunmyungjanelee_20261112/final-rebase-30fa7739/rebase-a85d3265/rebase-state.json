@@ -1,0 +1,14 @@
+{
+  "before_head": "30fa7739f0340f2a248b22542c7dd36d9354f056",
+  "before_base": "1a3ed4a7cd76701085a24ac81d30bc5fb31942c1",
+  "new_base": "a85d3265dd10b316d1a0ae029ca3f67245b38b77",
+  "backup_ref": "refs/backup/hyunmyungjanelee-rebase-request-20261112-230527",
+  "preserved_stash": "a8389a0e1d7b306ca76d5c154455885d5c194fdc",
+  "path": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/rebase-request-20261112-230527",
+  "rebase_exit": 0,
+  "after_head": "73d06ed0b18df7c222a850bb5d9340c9b7de2bcc",
+  "conflicts": [],
+  "restore_exit": 0,
+  "restored_files": 283,
+  "preservation_errors": []
+}

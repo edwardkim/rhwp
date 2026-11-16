@@ -1,0 +1,9 @@
+{
+  "observed_at": "2026-11-12T08:41:34.439847+09:00",
+  "exit_code": 143,
+  "signal": "SIGTERM",
+  "cause": "not established; no assertion or compiler error was recorded",
+  "completed_receipts_preserved": true,
+  "incomplete_head_wasm_optimized_result": "not accepted",
+  "canonical_resume": "same producer/input/PDF/script identity and completed shard hashes; no scope or threshold change"
+}

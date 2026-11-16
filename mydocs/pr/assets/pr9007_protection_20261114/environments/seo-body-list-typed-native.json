@@ -1,0 +1,23 @@
+{
+  "documentSubstitutions": [],
+  "id": "native-webfont-b20043463d6f531ca5eb9cba",
+  "preserveSourceMetrics": true,
+  "selectedPrograms": {
+    "Helvetica": {
+      "collectionFace": true,
+      "family": "Helvetica",
+      "openTypeCff": false,
+      "programId": "84a0d4e2995bc2e0bb67218a51ed8bce7a00aa93fffe7c017338ff6beaf57388",
+      "query": "Helvetica",
+      "trueType": true
+    }
+  },
+  "substitutions": {
+    "Helvetica": "Helvetica",
+    "함초롬바탕": "HCRBatang"
+  },
+  "trueTypeFaces": [
+    "HCR Batang",
+    "Helvetica"
+  ]
+}

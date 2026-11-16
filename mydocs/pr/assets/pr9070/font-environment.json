@@ -1,0 +1,10 @@
+{
+  "id": "pr9070-observed-hancom2020-haansoft-batang-natural",
+  "preserveSourceMetrics": false,
+  "trueTypeFaces": [
+    "Haansoft Batang"
+  ],
+  "substitutions": {
+    "HCR Batang": "Haansoft Batang"
+  }
+}

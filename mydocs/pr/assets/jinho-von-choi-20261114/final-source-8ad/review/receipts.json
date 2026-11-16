@@ -1,0 +1,262 @@
+{
+  "source": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+  "note": "Same crop and scale in every column. Original whole-page metric calculation has no crop or changed mask. Nested and picture WASM uses the completed whole-document boundary probe of the same immutable package.",
+  "items": [
+    {
+      "key": "linechar-specimen",
+      "page": 1,
+      "crop": [
+        65,
+        100,
+        510,
+        360
+      ],
+      "displayScale": 2,
+      "measurementDpi": 96,
+      "metricMasksChanged": false,
+      "displayOnlyCrop": true,
+      "target": "review/linechar-specimen.png",
+      "artifacts": [
+        {
+          "role": "Independent Print",
+          "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-feature-native/specimen/hwp3-specimen/pdf_png/pdf-001.png",
+          "sha256": "dc50bacf791cc951c45a0d6dd69042ee7b469a7692df9194619fd113327f2cca"
+        },
+        {
+          "role": "Native 8ad1c5c08a",
+          "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-feature-native/specimen/hwp3-specimen/rhwp_png/rhwp_001.png",
+          "sha256": "c978aad201423154ad7d91dd2baefa4fcfb3b9f6f4bac25db842a8e3a45b9554"
+        },
+        {
+          "role": "Fresh WASM 8ad1c5c08a",
+          "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-feature-wasm/specimen/hwp3-specimen/rhwp_png/rhwp_001.png",
+          "sha256": "e76edd31d034851d9f93e68961af8303ba0f8ce68819455f42303b3bfd13614c"
+        }
+      ]
+    },
+    {
+      "key": "master-both-even-odd-page2",
+      "page": 2,
+      "crop": [
+        0,
+        0,
+        794,
+        1122
+      ],
+      "displayScale": 1,
+      "measurementDpi": 96,
+      "metricMasksChanged": false,
+      "displayOnlyCrop": true,
+      "target": "review/master-both-even-odd-page2.png",
+      "artifacts": [
+        {
+          "role": "Independent Print",
+          "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-feature-native/masters/10-both-even-odd-source/pdf_png/pdf-002.png",
+          "sha256": "c7343db13423bd5fd57caa657fd99a999e5f4ea6e084aca930fb0c5ee5ccbb5e"
+        },
+        {
+          "role": "Native 8ad1c5c08a",
+          "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-feature-native/masters/10-both-even-odd-source/rhwp_png/rhwp_002.png",
+          "sha256": "6a4b78ff486081048ce887c9efb58a6a6c06def2d2012248bfa58b18344263b5"
+        },
+        {
+          "role": "Fresh WASM 8ad1c5c08a",
+          "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-feature-wasm/masters/10-both-even-odd-source/rhwp_png/rhwp_002.png",
+          "sha256": "452c3c4c835059ab77029d99cc64aa67ee7d5ef3fa6e8572fd1db4ec465ec230"
+        }
+      ]
+    },
+    {
+      "key": "color-page3",
+      "page": 3,
+      "crop": [
+        0,
+        0,
+        794,
+        1122
+      ],
+      "displayScale": 1,
+      "measurementDpi": 96,
+      "metricMasksChanged": false,
+      "displayOnlyCrop": true,
+      "target": "review/color-page3.png",
+      "artifacts": [
+        {
+          "role": "Independent Print",
+          "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-feature-native/color/color-source/pdf_png/pdf-003.png",
+          "sha256": "72dfa94a7459afac7168275dd34847751cef24f6602a35afcd9ca09d03a64ea9"
+        },
+        {
+          "role": "Native 8ad1c5c08a",
+          "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-feature-native/color/color-source/rhwp_png/rhwp_003.png",
+          "sha256": "4384a8bb6af7e1b07d73ca41243c0f914fe4b86f0615930659f46283e4ce2a49"
+        },
+        {
+          "role": "Fresh WASM 8ad1c5c08a",
+          "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-feature-wasm/color/color-source/rhwp_png/rhwp_003.png",
+          "sha256": "f262b1dae820ddb714b0c65d50a3027d68964ca4a21ecc02385e00d987acb552"
+        }
+      ]
+    },
+    {
+      "key": "helvetica-styles",
+      "page": 1,
+      "crop": [
+        0,
+        0,
+        400,
+        320
+      ],
+      "displayScale": 2,
+      "measurementDpi": 96,
+      "metricMasksChanged": false,
+      "displayOnlyCrop": true,
+      "target": "review/helvetica-styles.png",
+      "artifacts": [
+        {
+          "role": "Independent Print",
+          "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-protection-native/seo-helvetica-styles/seo-helvetica-styles/pdf_png/pdf-001.png",
+          "sha256": "e80aa14102f23e4bdd84f1b2c01d3d4a599d991fe5bf9f8d8cca2026f2039d18"
+        },
+        {
+          "role": "Native 8ad1c5c08a",
+          "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-protection-native/seo-helvetica-styles/seo-helvetica-styles/rhwp_png/rhwp_001.png",
+          "sha256": "c1f2b6cd26b5b878242d2fe8d8019d62c84036714d60b1590fb305b041acb0a4"
+        },
+        {
+          "role": "Fresh WASM 8ad1c5c08a",
+          "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-protection-wasm/seo-helvetica-styles/seo-helvetica-styles/rhwp_png/rhwp_001.png",
+          "sha256": "0baf2c11566a9957440ac00757b843efca2f0e19eae64fb2a94ec8721ec4e467"
+        }
+      ]
+    },
+    {
+      "key": "picture-frames",
+      "page": 1,
+      "crop": [
+        0,
+        0,
+        794,
+        1122
+      ],
+      "displayScale": 1,
+      "measurementDpi": 96,
+      "metricMasksChanged": false,
+      "displayOnlyCrop": true,
+      "target": "review/picture-frames.png",
+      "artifacts": [
+        {
+          "role": "Independent Print",
+          "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-protection-native/seo-pic-crop-01/seo-pic-crop-01/pdf_png/pdf-001.png",
+          "sha256": "6a05b0e20217106f67f0e9b4b2cf6c8d349b716169eb5ab11e5e35c1ee4fb2e0"
+        },
+        {
+          "role": "Native 8ad1c5c08a",
+          "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-protection-native/seo-pic-crop-01/seo-pic-crop-01/rhwp_png/rhwp_001.png",
+          "sha256": "0e5e7ecc09087a446f43687eeb4a353ca24316725b0ec1036beddc1a4746e55b"
+        },
+        {
+          "role": "Fresh WASM 8ad1c5c08a",
+          "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-wasm-probe/seo-pic-crop-01/seo-pic-crop-01/rhwp_png/rhwp_001.png",
+          "sha256": "cb53476747bd2a4ad1a4d9f12254a2361316cb2e05a61888271e5d3da25a4d16"
+        }
+      ]
+    },
+    {
+      "key": "nested-natural-page10",
+      "page": 10,
+      "crop": [
+        80,
+        200,
+        390,
+        430
+      ],
+      "displayScale": 2,
+      "measurementDpi": 96,
+      "metricMasksChanged": false,
+      "displayOnlyCrop": true,
+      "target": "review/nested-natural-page10.png",
+      "artifacts": [
+        {
+          "role": "Independent Print",
+          "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-protection-native/nested/nested/pdf_png/pdf-010.png",
+          "sha256": "4be34e37ef6f754b365fbadbeddf7b45150f53bb43df7fe7abd5bedf2d78b909"
+        },
+        {
+          "role": "Native 8ad1c5c08a",
+          "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-protection-native/nested/nested/rhwp_png/rhwp_010.png",
+          "sha256": "c97063ad5da9d9634559615b71d987528b2ec400826dc05647be89c13e918d90"
+        },
+        {
+          "role": "Fresh WASM 8ad1c5c08a",
+          "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-wasm-probe/nested/nested/rhwp_png/rhwp_010.png",
+          "sha256": "a084c27c118ca680f15a00216cb67b89beb2e29996b2219a651f19516ea6d757"
+        }
+      ]
+    },
+    {
+      "key": "nested-symbol-page8",
+      "page": 8,
+      "crop": [
+        0,
+        0,
+        794,
+        1122
+      ],
+      "displayScale": 1,
+      "measurementDpi": 96,
+      "metricMasksChanged": false,
+      "displayOnlyCrop": true,
+      "target": "review/nested-symbol-page8.png",
+      "artifacts": [
+        {
+          "role": "Independent Print",
+          "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-protection-native/nested/nested/pdf_png/pdf-008.png",
+          "sha256": "4b712668cb0d0a39facb94e1d691ffb8db9befd502ec3f3cb998453717902b84"
+        },
+        {
+          "role": "Native 8ad1c5c08a",
+          "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-protection-native/nested/nested/rhwp_png/rhwp_008.png",
+          "sha256": "0b8f70d70ec6c109ec85aae496e0bb0a5bb2a7f03264c0aadaaa18ac0a228f99"
+        },
+        {
+          "role": "Fresh WASM 8ad1c5c08a",
+          "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-wasm-probe/nested/nested/rhwp_png/rhwp_008.png",
+          "sha256": "7d6bb5a5781137c8411acd0ffe4f927854fddebf60c0892ab6cecfa9b359bce0"
+        }
+      ]
+    },
+    {
+      "key": "nested-overlap-page12",
+      "page": 12,
+      "crop": [
+        0,
+        0,
+        794,
+        1122
+      ],
+      "displayScale": 1,
+      "measurementDpi": 96,
+      "metricMasksChanged": false,
+      "displayOnlyCrop": true,
+      "target": "review/nested-overlap-page12.png",
+      "artifacts": [
+        {
+          "role": "Independent Print",
+          "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-protection-native/nested/nested/pdf_png/pdf-012.png",
+          "sha256": "b591cee184468fbe4d1a66b63f0c18613d5e9999c6f4eecf2ca77a28cb3cb593"
+        },
+        {
+          "role": "Native 8ad1c5c08a",
+          "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-protection-native/nested/nested/rhwp_png/rhwp_012.png",
+          "sha256": "7e33cc20acb7585da8b4aeb0c2a3599bb89ba334e7f73639a91d25f52bc0cfc1"
+        },
+        {
+          "role": "Fresh WASM 8ad1c5c08a",
+          "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-wasm-probe/nested/nested/rhwp_png/rhwp_012.png",
+          "sha256": "2e5f6761776f0ffa86d583213d3cbd67994e15c89148c5daad988a5dab27707c"
+        }
+      ]
+    }
+  ]
+}

@@ -1345,10 +1345,10 @@ impl HeightCursor {
                     .is_some_and(|s| {
                         s.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
                     })
-                // 줄간격 소비는 원점 확정의 증거가 아니다. 분할 표로 시작한 단처럼
-                // 원점이 아직 없으면 기존 bridge를 유지한다. 이미 수용한 저장 원점의
-                // 다음 줄 위치와 실제 순차 위치가 일치할 때만 재가산을 제거한다.
-                && self.stored_column_origin.is_some_and(|(base, anchor)| {
+                // 이미 확정한 단 원점이 있으면 그 축과도 소비가 일치해야 한다.
+                // 원점이 없는 표 뒤에서는 아래의 실제 줄 하단·순차 끝과 연속 저장
+                // 줄이 상대 원점을 증명한다. 소비된 trailing을 다시 더해 역산하지 않는다.
+                && self.stored_column_origin.is_none_or(|(base, anchor)| {
                     let expected = anchor + hwpunit_to_px(prev_vpos_end - base, self.dpi);
                     (y_offset - expected).abs() < 0.1
                 })
@@ -3248,10 +3248,13 @@ mod tests {
                 3 => Some(800),
                 // 현재 줄도 재조판이면 저장 기준을 만들지 않고 실제 흐름을 유지한다.
                 4 => None,
+                // 단 원점이 없어도 실제 줄 하단과 연속 줄이 이미 소비한 600HU를
+                // 증명한다. 2600 - (124 - 100) * 75 = 800HU의 상대 기준이다.
+                6 => Some(800),
                 _ => Some(200),
             };
             assert_eq!(c.vpos_lazy_base, expected, "저장/재조판 경로{case}");
-            if matches!(case, 3 | 4) {
+            if matches!(case, 3 | 4 | 6) {
                 assert!((got - 124.0).abs() < 1e-6, "순차 흐름 경로{case}: {got}");
             }
         }

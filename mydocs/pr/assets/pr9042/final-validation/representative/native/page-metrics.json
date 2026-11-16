@@ -1,0 +1,85 @@
+{
+  "source": "d66d5f05f9efa4d182228494cd970614d479fb7a",
+  "pages": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-original-review-native/original/rhwp_png/rhwp_001.png",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-original-review-native/original/pdf_png/pdf-001.png",
+      "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-original-review-native/original/overlay/overlay_001.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "overlay_color_legend": {
+        "rhwp_only": "blue",
+        "pdf_only": "red",
+        "both_different": "orange",
+        "matching": "gray"
+      },
+      "total_pixels": 891662,
+      "diff_pixels": 8471,
+      "diff_ratio": 0.00950024,
+      "pixel_match_percent": 99.04998,
+      "ink_union_pixels": 11615,
+      "ink_diff_pixels": 8471,
+      "ink_diff_ratio": 0.72931554,
+      "ink_match_percent": 27.06845,
+      "visual_accuracy_proxy_percent": 27.06845,
+      "tolerant_content_match_radius_px": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 11615,
+      "tolerant_content_match_percent": 100.0,
+      "mean_abs_channel_delta": 1.373,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        75,
+        131,
+        717,
+        1062
+      ]
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-original-review-native/original/rhwp_png/rhwp_002.png",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-original-review-native/original/pdf_png/pdf-002.png",
+      "overlay_png": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-original-review-native/original/overlay/overlay_002.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "overlay_color_legend": {
+        "rhwp_only": "blue",
+        "pdf_only": "red",
+        "both_different": "orange",
+        "matching": "gray"
+      },
+      "total_pixels": 891662,
+      "diff_pixels": 2125,
+      "diff_ratio": 0.00238319,
+      "pixel_match_percent": 99.76168,
+      "ink_union_pixels": 2912,
+      "ink_diff_pixels": 2125,
+      "ink_diff_ratio": 0.72973901,
+      "ink_match_percent": 27.0261,
+      "visual_accuracy_proxy_percent": 27.0261,
+      "tolerant_content_match_radius_px": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 2912,
+      "tolerant_content_match_percent": 100.0,
+      "mean_abs_channel_delta": 0.274,
+      "max_channel_delta": 214,
+      "diff_bbox": [
+        75,
+        131,
+        713,
+        1062
+      ]
+    }
+  ]
+}

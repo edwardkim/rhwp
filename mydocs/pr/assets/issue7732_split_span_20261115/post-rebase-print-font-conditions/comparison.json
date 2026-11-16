@@ -1,0 +1,77 @@
+{
+  "status": "completed",
+  "passed": false,
+  "results": [
+    {
+      "variant": "base",
+      "backend": "native",
+      "exit": 0,
+      "pages": 17,
+      "minimum": 98.6,
+      "declines": [],
+      "p4": "100.00",
+      "seconds": 16.354
+    },
+    {
+      "variant": "candidate",
+      "backend": "native",
+      "exit": 0,
+      "pages": 17,
+      "minimum": 98.6,
+      "declines": [],
+      "p4": "100.00",
+      "seconds": 14.436
+    },
+    {
+      "variant": "base",
+      "backend": "wasm",
+      "exit": 0,
+      "pages": 17,
+      "minimum": 98.59,
+      "declines": [
+        {
+          "page": "11",
+          "floor": 99.1,
+          "actual": "99.09"
+        }
+      ],
+      "p4": "100.00",
+      "seconds": 70.174
+    },
+    {
+      "variant": "candidate",
+      "backend": "wasm",
+      "exit": 0,
+      "pages": 17,
+      "minimum": 98.59,
+      "declines": [
+        {
+          "page": "11",
+          "floor": 99.1,
+          "actual": "99.09"
+        }
+      ],
+      "p4": "100.00",
+      "seconds": 66.094
+    }
+  ],
+  "time": "2026-11-15T17:44:21.322265+09:00",
+  "scope": "독립 Print에서 확인한 실제 문자 대체의 명시적 비교 조건 정합. 제품 코드·원본·기준 PDF·보호값·판정 기준 변경 없음.",
+  "cause": {
+    "code_point": "U+21E9",
+    "character": "⇩",
+    "original_requested": "굴림체 / GulimChe",
+    "previous_native_fallback": "D2Coding",
+    "independent_print_font": "Haansoft Batang",
+    "pdf_page": 4,
+    "pdf_arrow_baselines_pt": [
+      671.3862915039062,
+      708.305908203125
+    ],
+    "before_raw_unmatched_pixels": 50,
+    "before_raw": 99.94485,
+    "after_native_raw": 100.0,
+    "after_wasm_raw": 100.0
+  },
+  "current_acceptance": "Native 전17쪽 보호 하락0. WASM11쪽99.09/보호99.10 잔여로 전체 보호 검증 통과 아님."
+}

@@ -1,0 +1,11 @@
+{
+  "id": "pr9075-independent-print-programs",
+  "preserveSourceMetrics": true,
+  "substitutions": {
+    "HCI Poppy": "Palatino Linotype",
+    "한양신명조": "HYSinMyeongJo-Medium",
+    "한양중고딕": "HYGothic-Medium",
+    "바탕체": "BatangChe"
+  },
+  "trueTypeFaces": ["Palatino Linotype", "HYSinMyeongJo-Medium", "HYGothic-Medium", "BatangChe"]
+}

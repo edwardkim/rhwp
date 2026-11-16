@@ -1,0 +1,58 @@
+{
+  "code_head": "3532e09de2b8d505e54b98e03e0eb6b08a37f25f",
+  "producer": {
+    "results": [
+      {
+        "kind": "candidate",
+        "head": "bdd8b495e096dc6f20b7d9205058a0f85ab828ef",
+        "working_tree_diff_sha256": "f757982ae4c88068f4428ade1ef4c5d4cbe0bc1c5f5ed3f46754f987b594cfe8",
+        "source_files_sha256": {
+          "src/renderer/height_measurer.rs": "a7c0b74c599ca417e70d7c2a3cfd92231b38ff138dd70dfb01587f5338195a29",
+          "src/renderer/typeset/table/block/whole_fit.rs": "05a6680e4541535c3672e4ed3d16e95e445202f976979ddd9510546440d6fd0b",
+          "src/renderer/typeset/table/continuation/fragment/budget.rs": "bef3cb3c3a97828064c9aacf9a1d41ec9410335d1602b82d5108a5c73f6267c6",
+          "src/renderer/mod.rs": "a698fba307d98e214f24e9d9fe77644a8fa0b9cd1f146ec5f8ea718ad91b6bdf",
+          "src/renderer/canvas_text_font.rs": "2c50c0196f6d1f505296440e4e86d7bae77f32aba2a015843dc6d603fc452ce1",
+          "src/renderer/cell_paragraph_spacing.rs": "57bec0c9e24ea7610334d4d8f5cf0b2f2ba0bde037d699ddae3bfc6712592347",
+          "src/renderer/layout/table_layout.rs": "1693b2ebb747201769b85f39125dbb5ecbf4dba84e5c5114f0d4da3abd44c8aa"
+        },
+        "sha256": "7902feaa82262f855beff9cbcc6d06c3bcef7d7a0474eba6b5c80b8797e50937",
+        "exit": 0
+      },
+      {
+        "kind": "base",
+        "head": "80b1c354c29b7a02fb2b3c14a274da7f5b653ada",
+        "exit": 0,
+        "binary": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/base-native",
+        "bytes": 73351424,
+        "sha256": "e83621d5efef99d66ba91e29f53e1db73da40986a6689185e8a6699efb7d0251"
+      }
+    ]
+  },
+  "input": "samples/issue8573/whitespace-host-topbottom-stacked-zones.hwp",
+  "reference_pdf": "pdf/issue8573/whitespace-host-topbottom-stacked-zones-hwp-2020.pdf",
+  "native_raw": 99.06,
+  "fresh_wasm_raw": 99.06,
+  "direct_reading": "next zone Z/Y retains the previous zone last-line spacing of 8px",
+  "artifacts": [
+    {
+      "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/stacked-zone-spacing-repair/before-native/raw-001.png",
+      "sha256": "08c494c3a32ffbde954292ea558ebab43b23592d895ec43b8ee7a9a74b421982"
+    },
+    {
+      "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/stacked-zone-spacing-repair/before-native/pdf-001.png",
+      "sha256": "1321b28b98fc7ea6b2afc5d2114c9af7fbdcd21cbdd17aa7f03564ba1deef0e0"
+    },
+    {
+      "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/stacked-zone-spacing-repair/before-native/review-001.png",
+      "sha256": "2c7ad866856c1527714ac9c6bb9a2111351df076abdb494c7b8135b0aaf8eb35"
+    },
+    {
+      "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/stacked-zone-spacing-repair/before-native/overlay-001.png",
+      "sha256": "c57556d33b67ec0fbee3a06703e1de443387505a650441c3fbccb62d79c9561e"
+    },
+    {
+      "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/stacked-zone-spacing-repair/before-native/candidate-silhouette.tsv",
+      "sha256": "b15743790b4f70ce014f980d01a55d1d4d6beea19dfcf3580bf63bf8df4989bb"
+    }
+  ]
+}

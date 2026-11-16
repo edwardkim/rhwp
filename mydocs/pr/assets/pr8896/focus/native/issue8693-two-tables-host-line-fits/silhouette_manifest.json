@@ -1,0 +1,71 @@
+{
+  "key": "issue8693-two-tables-host-line-fits",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2
+  ],
+  "completed_pages": [
+    1,
+    2
+  ],
+  "missing_pages": [],
+  "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/visual/native/focus/issue8693-two-tables-host-line-fits-run/issue8693-two-tables-host-line-fits/silhouette/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/visual/native/focus/issue8693-two-tables-host-line-fits-run/issue8693-two-tables-host-line-fits/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "b2842614dea7b89d1ccd036d76365e31edbad8f63543f0199f205e6636b8e850",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/visual/native/focus/issue8693-two-tables-host-line-fits-run/issue8693-two-tables-host-line-fits/pdf_png/pdf-001.png",
+      "pdf_sha256": "7cc88dffc6d91c043675d809db5c3a9f69bd1a7350c6385665c41daf0e78ebf3"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/visual/native/focus/issue8693-two-tables-host-line-fits-run/issue8693-two-tables-host-line-fits/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "cd7472a433c43be460715ac377323172067534ae71e67b74bf2a0c2fa4e6e237",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/visual/native/focus/issue8693-two-tables-host-line-fits-run/issue8693-two-tables-host-line-fits/pdf_png/pdf-002.png",
+      "pdf_sha256": "ae6c9ec5eb4486ece219a43c33fc130e11f4ce7cffa08cae213741db2813f94e"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 42600,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 47104,
+      "tolerant_content_match_percent": 100.0
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": null,
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  }
+}

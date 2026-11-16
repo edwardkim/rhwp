@@ -1,0 +1,473 @@
+{
+  "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+  "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+  "capture_reexecuted": false,
+  "method": "현재 head fresh WASM389쪽 PNG에서 canonical review/overlay 생성; 실제 판독은 별도 기록",
+  "cases": [
+    {
+      "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+      "key": "cbta",
+      "backend": "wasm",
+      "page": 2,
+      "raw_percent": "98.49",
+      "files": {
+        "raw": {
+          "path": "cases/cbta/wasm/raw-002.png",
+          "sha256": "d85afaa7205160f1aa7484db08a3caf6b505fe30ce4c1467d16d9eae5a33be33"
+        },
+        "pdf": {
+          "path": "cases/cbta/wasm/pdf-002.png",
+          "sha256": "53d913e93899aea33f11c8e3edf99c5c208e7352bc84911ef7584f0bde95b50e"
+        },
+        "review": {
+          "path": "cases/cbta/wasm/review-002.png",
+          "sha256": "cd4ef2a5518de4ef2b84c8e6a2b0e3e93fc17010b406a8d0e6c0e9ef03568d87"
+        },
+        "overlay": {
+          "path": "cases/cbta/wasm/overlay-002.png",
+          "sha256": "535144d779a23c5a327e007bf4cc0ab67a63ae902dc3f7a03adf8b7d36b472c0"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "현재 source fresh WASM의 같은 페이지 canonical review·overlay 두 이미지를 실제 열어 대조",
+        "read_at": "2026-11-14T19:51:26.841202+00:00",
+        "observation": "목차의 저장 RIGHT 탭 뒤 번호와 점선의 소속·순서·줄바꿈을 대조했다. 제목의 굵은 영문 혼합 자간·쪽번호에 미세 차이가 남으며 100%로 판정하지 않는다."
+      }
+    },
+    {
+      "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+      "key": "cbta",
+      "backend": "wasm",
+      "page": 96,
+      "raw_percent": "99.74",
+      "files": {
+        "raw": {
+          "path": "cases/cbta/wasm/raw-096.png",
+          "sha256": "a765f472bb3ed627c545228c134fcdf98cf456ebddcf39e76f37cc14237b1bce"
+        },
+        "pdf": {
+          "path": "cases/cbta/wasm/pdf-096.png",
+          "sha256": "cfd450f04689bd811bcde7559f5198280a6e40d8366c812975bbe393e2e91714"
+        },
+        "review": {
+          "path": "cases/cbta/wasm/review-096.png",
+          "sha256": "155a11b7528bd3f23113e4ff1f3fd71fe75e8a05984eabcb1fa8e5f01e08f7ba"
+        },
+        "overlay": {
+          "path": "cases/cbta/wasm/overlay-096.png",
+          "sha256": "4fc40086b6c5912ad0217878d1ee78f8d746367a4a56e9115ac59af63b592d72"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "현재 source fresh WASM의 같은 페이지 canonical review·overlay 두 이미지를 실제 열어 대조",
+        "read_at": "2026-11-14T19:51:26.841788+00:00",
+        "observation": "번호 제목의 두 줄과 뒤 본문 시작, 항목별 줄바꿈·간격이 독립 Print와 대응한다. 뒤 항목의 잘림·중복은 관측하지 않았다."
+      }
+    },
+    {
+      "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+      "key": "cbta",
+      "backend": "wasm",
+      "page": 118,
+      "raw_percent": "98.44",
+      "files": {
+        "raw": {
+          "path": "cases/cbta/wasm/raw-118.png",
+          "sha256": "e6342adf045c7864645a658f1c137e41796adc631e94c38be79d22909832bf8f"
+        },
+        "pdf": {
+          "path": "cases/cbta/wasm/pdf-118.png",
+          "sha256": "62a5528364364a3adca493010772232d83acf717e443ff345dd6a9a89d84ee15"
+        },
+        "review": {
+          "path": "cases/cbta/wasm/review-118.png",
+          "sha256": "b82a6ec03e5ac95f357492674cd84b1f650f9da4e8f2200cfe954f49c5755ae1"
+        },
+        "overlay": {
+          "path": "cases/cbta/wasm/overlay-118.png",
+          "sha256": "1c877c83c2f66498bbdaceb83d6e94dba7a1a6fddfec07b0ed8ce130af066ce3"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "현재 source fresh WASM의 같은 페이지 canonical review·overlay 두 이미지를 실제 열어 대조",
+        "read_at": "2026-11-14T19:51:26.841792+00:00",
+        "observation": "그림26 캡션·그림 내부 문구와 외곽·뒤 다. 본문 소속을 확인했다. 그림의 외곽선 농도와 미세 글리프 가장자리 차이는 남는다."
+      }
+    },
+    {
+      "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+      "key": "cbta",
+      "backend": "wasm",
+      "page": 162,
+      "raw_percent": "99.94",
+      "files": {
+        "raw": {
+          "path": "cases/cbta/wasm/raw-162.png",
+          "sha256": "185e5782b7b4c74c2d3e729262cf37a05c859836e615cb7a203d2c0edf93f109"
+        },
+        "pdf": {
+          "path": "cases/cbta/wasm/pdf-162.png",
+          "sha256": "97f254a1969dd26949af475ef0149957897352114b20d5bb2194b0bfea91b7b9"
+        },
+        "review": {
+          "path": "cases/cbta/wasm/review-162.png",
+          "sha256": "7d2d2f5bb79786f1ba5e550ec1a1c3621ec55b05191290939f8bb3a295e6e2db"
+        },
+        "overlay": {
+          "path": "cases/cbta/wasm/overlay-162.png",
+          "sha256": "4f734919d27aa7811ba0d5634b417f34c7fb4178bb027a65f50079db706573f4"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "현재 source fresh WASM의 같은 페이지 canonical review·overlay 두 이미지를 실제 열어 대조",
+        "read_at": "2026-11-14T19:51:26.841793+00:00",
+        "observation": "완료 행의 각 가로 경계와 병합 칸 3./4.의 세로 소유, 마지막 행 끝과 바닥 쪽번호를 확인했다. 99.94%이며 획 가장자리 차이를 전쪽 완전 동일로 표현하지 않는다."
+      }
+    },
+    {
+      "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+      "key": "cbta",
+      "backend": "wasm",
+      "page": 166,
+      "raw_percent": "99.95",
+      "files": {
+        "raw": {
+          "path": "cases/cbta/wasm/raw-166.png",
+          "sha256": "af4ab98915fb4d66835f1c85c46fb6f18d43229538cd8625e37c32435ee46359"
+        },
+        "pdf": {
+          "path": "cases/cbta/wasm/pdf-166.png",
+          "sha256": "daf25aec13a5ad71356458bbb6a93ad74895ca9a3981c255a482636cf26e6fe1"
+        },
+        "review": {
+          "path": "cases/cbta/wasm/review-166.png",
+          "sha256": "fd302b67bf9e648bde5e632e136e4a0742d51e3ac682af083f319a0fe3aabe73"
+        },
+        "overlay": {
+          "path": "cases/cbta/wasm/overlay-166.png",
+          "sha256": "82f912c66a5062423ab5a40c21fd24866416d70de761d743bd9138b0ea776974"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "현재 source fresh WASM의 같은 페이지 canonical review·overlay 두 이미지를 실제 열어 대조",
+        "read_at": "2026-11-14T19:51:26.841795+00:00",
+        "observation": "환경/비정상 상황 병합 칸과 중간 빈 분리 행, 마지막 실제 행 끝이 대응한다. 남은 획 차이와 99.95%를 구분했다."
+      }
+    },
+    {
+      "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+      "key": "recommendation",
+      "backend": "wasm",
+      "page": 4,
+      "raw_percent": "99.96",
+      "files": {
+        "raw": {
+          "path": "cases/recommendation/wasm/raw-004.png",
+          "sha256": "99a2b8573f02cd2047fecca1e5b9991f752e3bc90577143c5183ae90575ad84a"
+        },
+        "pdf": {
+          "path": "cases/recommendation/wasm/pdf-004.png",
+          "sha256": "d035ef4d927d917cd206e13fafc4c4b956f37df5791996d8440d79f2fad1abad"
+        },
+        "review": {
+          "path": "cases/recommendation/wasm/review-004.png",
+          "sha256": "1ce1b57017465ff7b5dff0e51c5f7bbd99f7afa6b47f88cd0b07ec3b9113201b"
+        },
+        "overlay": {
+          "path": "cases/recommendation/wasm/overlay-004.png",
+          "sha256": "2534b319f5a8f6d851d038ba7a1de3332245ee7835840bf8c082b0789700d8f0"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "현재 source fresh WASM의 같은 페이지 canonical review·overlay 두 이미지를 실제 열어 대조",
+        "read_at": "2026-11-14T19:51:26.841796+00:00",
+        "observation": "목차 배경의 밝기 변화, 점선과 1/2/8/12/15/18 번호 및 상하 외곽을 대조했다. 배경 보간 보정 후 99.96%이며 미세 획 차이는 남는다."
+      }
+    },
+    {
+      "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+      "key": "recommendation",
+      "backend": "wasm",
+      "page": 6,
+      "raw_percent": "99.95",
+      "files": {
+        "raw": {
+          "path": "cases/recommendation/wasm/raw-006.png",
+          "sha256": "3d0bd5accbf0a5a7cda94f4bf22126533e9d578c78fa4719a44dd6abe2bf8c83"
+        },
+        "pdf": {
+          "path": "cases/recommendation/wasm/pdf-006.png",
+          "sha256": "429926bf039cbe34115243891b53069f016e3ae9b8d583abb05eec60fb18096f"
+        },
+        "review": {
+          "path": "cases/recommendation/wasm/review-006.png",
+          "sha256": "209ee04f3f71d71e7c1e9dbda2d731e17423024efde51be6b014e8e05d190214"
+        },
+        "overlay": {
+          "path": "cases/recommendation/wasm/overlay-006.png",
+          "sha256": "c2e99fe5b7c8f69edcc24536e78450eba2898a26e2a693db2c1ac52edef058be"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "현재 source fresh WASM의 같은 페이지 canonical review·overlay 두 이미지를 실제 열어 대조",
+        "read_at": "2026-11-14T19:51:26.841797+00:00",
+        "observation": "단 시작 제목·두 표·뒤 관련 법령의 소속과 줄바꿈이 대응한다. 원형 목록 기호의 윤곽 차이는 보이고 100%로 주장하지 않는다."
+      }
+    },
+    {
+      "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+      "key": "exam",
+      "backend": "wasm",
+      "page": 2,
+      "raw_percent": "99.96",
+      "files": {
+        "raw": {
+          "path": "cases/exam/wasm/raw-002.png",
+          "sha256": "cb7851d69e4fd95a84def427468c7ae3d043f21426cfc8faedfffa11996ae5cb"
+        },
+        "pdf": {
+          "path": "cases/exam/wasm/pdf-002.png",
+          "sha256": "22a8ec5ccfd077b0c262beb647e548fa96778c14a3d2a2361be8ec3e1ea69d80"
+        },
+        "review": {
+          "path": "cases/exam/wasm/review-002.png",
+          "sha256": "ff65515387d5b017c93a0996e0ad4b8bf990535cf842b95270c9b9d9daa7c85c"
+        },
+        "overlay": {
+          "path": "cases/exam/wasm/overlay-002.png",
+          "sha256": "8aeb1a5e4eb2adff4bf5bbd6fb8fb44246ce5066db15ddfd773a270ebf436350"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "현재 source fresh WASM의 같은 페이지 canonical review·overlay 두 이미지를 실제 열어 대조",
+        "read_at": "2026-11-14T19:51:26.841799+00:00",
+        "observation": "13~20번 문항·보기·영문 편지와 본문 공백·밑줄을 대조했다. 낱말 간격/줄바꿈은 대응하며 밑줄·둘레와 번호 획의 미세 차이는 남는다."
+      }
+    },
+    {
+      "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+      "key": "api",
+      "backend": "wasm",
+      "page": 13,
+      "raw_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "cases/api/wasm/raw-013.png",
+          "sha256": "7757fb17c4fe74af91034b9249ee9aa749b1d9ac1f9eac1b08b2b6f38d375c08"
+        },
+        "pdf": {
+          "path": "cases/api/wasm/pdf-013.png",
+          "sha256": "9bfdda86c939577d5d3986f03cd99a684b06cae318fe71de8ecd745b45eff905"
+        },
+        "review": {
+          "path": "cases/api/wasm/review-013.png",
+          "sha256": "29ce44aadaaf87dc56dc755359dfe82e0ed25682b464c9a7c65e6b52439a48e7"
+        },
+        "overlay": {
+          "path": "cases/api/wasm/overlay-013.png",
+          "sha256": "901c944d30dce7fbd8a8b1e9a2948542776161ea33ee4fbdffb8b2fc652a1d56"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "현재 source fresh WASM의 같은 페이지 canonical review·overlay 두 이미지를 실제 열어 대조",
+        "read_at": "2026-11-14T19:51:26.841800+00:00",
+        "observation": "코드 상자·Remarks/See Also·다음 GetDefault 제목과 본문 순서·간격이 대응한다. raw 100.00%는 2px 실루엣 지표이며 RGB 전체 동일을 뜻하지 않는다."
+      }
+    },
+    {
+      "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+      "key": "api",
+      "backend": "wasm",
+      "page": 35,
+      "raw_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "cases/api/wasm/raw-035.png",
+          "sha256": "f06b1a894dfd439495e80fc1270151221afed9ef4e7d9c0a9984204176de722f"
+        },
+        "pdf": {
+          "path": "cases/api/wasm/pdf-035.png",
+          "sha256": "947930055143f2df3d49cfb2f4c8d378d57b734df9ed12888a18142915f50c44"
+        },
+        "review": {
+          "path": "cases/api/wasm/review-035.png",
+          "sha256": "f00ec50038589741ff73f1ae581364484e2b56044268d2ac7b0505f19710c859"
+        },
+        "overlay": {
+          "path": "cases/api/wasm/overlay-035.png",
+          "sha256": "ff28c74bb38b8dae159ba21d65ea33aa9fd2290829df9356b7383c72a80194f3"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "현재 source fresh WASM의 같은 페이지 canonical review·overlay 두 이미지를 실제 열어 대조",
+        "read_at": "2026-11-14T19:51:26.841801+00:00",
+        "observation": "CharShape 예제 상자와 CurFieldState 제목·하단 빈 예제 상자 소속/순서를 확인했다. raw 100.00%, 미세 글자 획 차이는 별개다."
+      }
+    },
+    {
+      "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+      "key": "api",
+      "backend": "wasm",
+      "page": 36,
+      "raw_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "cases/api/wasm/raw-036.png",
+          "sha256": "f355b80c58f3a3087d84745265aaac26f95c15bdaabae03a03f5da782d06d3d4"
+        },
+        "pdf": {
+          "path": "cases/api/wasm/pdf-036.png",
+          "sha256": "e2f43c432ad1d4ff620869575b8ebf5a9a05ddbf9e0ce8e1180e40a0d8b9e32d"
+        },
+        "review": {
+          "path": "cases/api/wasm/review-036.png",
+          "sha256": "ee0d4886d6c67caca8fe9c50d102327024b5514848b652943cb890c9bdd83eaf"
+        },
+        "overlay": {
+          "path": "cases/api/wasm/overlay-036.png",
+          "sha256": "695707cc0b831a3c94560cc887b65c7c4ed82fd73fe8d5a7e5ccc4b6c82b29ed"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "현재 source fresh WASM의 같은 페이지 canonical review·overlay 두 이미지를 실제 열어 대조",
+        "read_at": "2026-11-14T19:51:26.841802+00:00",
+        "observation": "코드 상자 전체와 EditMode 제목·후속 문단·하단 Example의 간격과 소속이 대응한다. raw 100.00%이며 출력 바이트 동일로 표현하지 않는다."
+      }
+    },
+    {
+      "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+      "key": "api",
+      "backend": "wasm",
+      "page": 65,
+      "raw_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "cases/api/wasm/raw-065.png",
+          "sha256": "a8330724839cc51d222754be22669442cbeff67996b4784f1176ad9933832566"
+        },
+        "pdf": {
+          "path": "cases/api/wasm/pdf-065.png",
+          "sha256": "ecee7489cb021b178e847b7d298ed094940a9c22531c44c2f97e8648d14534a7"
+        },
+        "review": {
+          "path": "cases/api/wasm/review-065.png",
+          "sha256": "9673db79f6164817d1cde0c9e101d301c6f7c22ffc8ce16e3ab3422b12e5dbb9"
+        },
+        "overlay": {
+          "path": "cases/api/wasm/overlay-065.png",
+          "sha256": "d85fc9520cef2e3f00c2a986b50e4a5581f450d92da2790a90d1c86f2dcd63ac"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "현재 source fresh WASM의 같은 페이지 canonical review·overlay 두 이미지를 실제 열어 대조",
+        "read_at": "2026-11-14T19:51:26.841803+00:00",
+        "observation": "위 구문 상자·두 표·뒷 설명이 같은 순서와 물리 프레임 안에 있다. 마지막 표 행과 뒤 effect 사이의 겹침·누락은 관측하지 않았다."
+      }
+    },
+    {
+      "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+      "key": "api",
+      "backend": "wasm",
+      "page": 69,
+      "raw_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "cases/api/wasm/raw-069.png",
+          "sha256": "703b2029a7a7330067a7b98292b8dd0e0c088fdda7f694adcc73d2df2ef508a1"
+        },
+        "pdf": {
+          "path": "cases/api/wasm/pdf-069.png",
+          "sha256": "224169cf9ba09e39b1235f43d005bde7ab376bc5f268b7ffb7b7297649ce4090"
+        },
+        "review": {
+          "path": "cases/api/wasm/review-069.png",
+          "sha256": "47411a1538fa29b1774c016694887e52710d748fff7c6cbd3636bf83d676175a"
+        },
+        "overlay": {
+          "path": "cases/api/wasm/overlay-069.png",
+          "sha256": "2b4e33b1a21ecd94eb68838c39ef02842a5f652cbc87aff682774c54a5c2681f"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "현재 source fresh WASM의 같은 페이지 canonical review·overlay 두 이미지를 실제 열어 대조",
+        "read_at": "2026-11-14T19:51:26.841804+00:00",
+        "observation": "sizeoption/effect 표와 뒤 코드 상자, IsCommandLock 제목 순서·간격을 확인했다. 문구·표 각 행의 누락은 관측하지 않았다."
+      }
+    },
+    {
+      "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+      "key": "footnote",
+      "backend": "wasm",
+      "page": 37,
+      "raw_percent": "98.75",
+      "files": {
+        "raw": {
+          "path": "cases/footnote/wasm/raw-037.png",
+          "sha256": "203e09942ac75e067dc2c1f3a790d137ffa26c236f2c1c24dadef66023673d6a"
+        },
+        "pdf": {
+          "path": "cases/footnote/wasm/pdf-037.png",
+          "sha256": "88253c9179cb22eba2948df03ef02c2daf3bec1cd238cee8fc6ea5ec7ca7a0a8"
+        },
+        "review": {
+          "path": "cases/footnote/wasm/review-037.png",
+          "sha256": "e4f635adb2a8fc5e9bcf2d45d6b7a3b40b9bb7d496014b37e84332ea3799d7bc"
+        },
+        "overlay": {
+          "path": "cases/footnote/wasm/overlay-037.png",
+          "sha256": "f829102939112f22aff415d7d2cd89dd2cdf89fbfb0f1ffc020e7cb9fa82a699"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "현재 source fresh WASM의 같은 페이지 canonical review·overlay 두 이미지를 실제 열어 대조",
+        "read_at": "2026-11-14T19:51:26.841805+00:00",
+        "observation": "22~31행과 21~25 참조 번호를 대조했다. 24)/25)는 서로 다른 줄에 보존됐다. 마지막 행/본문 및 작은 참조 표식의 미세 위치·획 차이는 남으며 100%로 주장하지 않는다."
+      }
+    },
+    {
+      "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+      "key": "footnote",
+      "backend": "wasm",
+      "page": 38,
+      "raw_percent": "99.84",
+      "files": {
+        "raw": {
+          "path": "cases/footnote/wasm/raw-038.png",
+          "sha256": "d5d621a4ec00532b74689c587d6d8dcd0d7cca94400a687c6489f76805707bd9"
+        },
+        "pdf": {
+          "path": "cases/footnote/wasm/pdf-038.png",
+          "sha256": "03602e510f33cf49a0bb96beb216eda95daf0d4c95e8c49b3c1c269f38bfb25d"
+        },
+        "review": {
+          "path": "cases/footnote/wasm/review-038.png",
+          "sha256": "e57e7ae5c6816570e41d267993e04fee30532ae02f46c4f5f1488e41ff49c7f4"
+        },
+        "overlay": {
+          "path": "cases/footnote/wasm/overlay-038.png",
+          "sha256": "06bed00b280d7cffc969cef5e3ff8e6f2ce930ce068b1c0e5493da591f71c634"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "현재 source fresh WASM의 같은 페이지 canonical review·overlay 두 이미지를 실제 열어 대조",
+        "read_at": "2026-11-14T19:51:26.841807+00:00",
+        "observation": "32~43행의 계속 표와 26 참조 번호·끝 행을 대조했다. 원본의 내용 소속·줄바꿈이 대응하며 작은 행 경계·문자 획 차이는 남는다."
+      }
+    }
+  ]
+}

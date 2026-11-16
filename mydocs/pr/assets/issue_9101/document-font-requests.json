@@ -1,0 +1,5648 @@
+{
+  "checked_at": "2026-11-16",
+  "sources": {
+    "macOS": "https://developer.apple.com/fonts/system-fonts/",
+    "Windows 11": "https://learn.microsoft.com/en-us/typography/fonts/windows_11_font_list",
+    "Windows supplemental": "https://learn.microsoft.com/en-us/windows/deployment/windows-missing-fonts",
+    "Ubuntu 24.04 Desktop": "https://packages.ubuntu.com/noble/ubuntu-desktop"
+  },
+  "scope": "Declared font-plan faces; official availability is not an actual rendering result. Ubuntu public packages and registered webfonts are a separate supply path.",
+  "documents": [
+    {
+      "document_id": "0b7e7d0538284271",
+      "input": "samples/issue5699/20099369_yeongwol_forms.hwp",
+      "requests": [
+        {
+          "source": "AmeriGarmnd BT",
+          "primary": [
+            "AmeriGarmnd BT",
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Arial",
+          "primary": [
+            "Arial"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Arial",
+              "official_categories": [
+                "Windows 11 Desktop",
+                "system font macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "Arial Black",
+          "primary": [
+            "Arial Black"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Arial Black",
+              "official_categories": [
+                "Windows 11 Desktop",
+                "system font macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "Arial Narrow",
+          "primary": [
+            "Arial Narrow"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Arial Narrow",
+              "official_categories": [
+                "system font macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "Baskerville BT",
+          "primary": [
+            "Baskerville BT",
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "BernhardFashion BT",
+          "primary": [
+            "BernhardFashion BT",
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Blippo Blk BT",
+          "primary": [
+            "Blippo Blk BT",
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Bodoni Bd BT",
+          "primary": [
+            "Bodoni Bd BT",
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Bodoni Bk BT",
+          "primary": [
+            "Bodoni Bk BT",
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Book Antiqua",
+          "primary": [
+            "Book Antiqua"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Book Antiqua",
+              "official_categories": [
+                "document support macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "Bookman Old Style",
+          "primary": [
+            "Bookman Old Style"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Bookman Old Style",
+              "official_categories": [
+                "document support macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "BroadwayEngraved BT",
+          "primary": [
+            "BroadwayEngraved BT",
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "BrushScript BT",
+          "primary": [
+            "BrushScript BT",
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "CentSchbook BT",
+          "primary": [
+            "CentSchbook BT",
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Century Gothic",
+          "primary": [
+            "Century Gothic"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Century Gothic",
+              "official_categories": [
+                "document support macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "Comic Sans MS",
+          "primary": [
+            "Comic Sans MS"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Comic Sans MS",
+              "official_categories": [
+                "Windows 11 Desktop",
+                "system font macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "CommercialScript BT",
+          "primary": [
+            "CommercialScript BT",
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Cooper Blk BT",
+          "primary": [
+            "Cooper Blk BT",
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Courier New",
+          "primary": [
+            "Courier New"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Courier New",
+              "official_categories": [
+                "Windows 11 Desktop",
+                "system font macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "Courier10 BT",
+          "primary": [
+            "Courier10 BT"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "DomCasual BT",
+          "primary": [
+            "DomCasual BT",
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Estrangelo Edessa",
+          "primary": [
+            "Estrangelo Edessa"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Euro Batang",
+          "primary": [
+            "Euro Batang"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Euro Dotum",
+          "primary": [
+            "Euro Dotum"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Euro Gulim",
+          "primary": [
+            "Euro Gulim"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Euro Gungso",
+          "primary": [
+            "Euro Gungso"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Franklin Gothic Medium",
+          "primary": [
+            "Franklin Gothic Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Franklin Gothic Medium",
+              "official_categories": [
+                "Windows 11 Desktop"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "Freehand591 BT",
+          "primary": [
+            "Freehand591 BT",
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "FuturaBlack BT",
+          "primary": [
+            "FuturaBlack BT",
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Garamond",
+          "primary": [
+            "Garamond"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Garamond",
+              "official_categories": [
+                "document support macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "Gautami",
+          "primary": [
+            "Gautami"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Georgia",
+          "primary": [
+            "Georgia"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Georgia",
+              "official_categories": [
+                "Windows 11 Desktop",
+                "system font macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "GoudyOlSt BT",
+          "primary": [
+            "GoudyOlSt BT",
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HCI Acacia",
+          "primary": [
+            "HCI Acacia",
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HCI Bellflower",
+          "primary": [
+            "HCI Bellflower",
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HCI Centaurea",
+          "primary": [
+            "HCI Centaurea",
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HCI Columbine",
+          "primary": [
+            "HCI Columbine"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HCI Hollyhock",
+          "primary": [
+            "HCI Hollyhock",
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HCI Hollyhock Narrow",
+          "primary": [
+            "HCI Hollyhock Narrow",
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HCI Morning Glory",
+          "primary": [
+            "HCI Morning Glory",
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HCI Poppy",
+          "primary": [
+            "HCI Poppy",
+            "Palatino Linotype"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Palatino Linotype",
+              "official_categories": [
+                "Windows 11 Desktop"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "HCI Tulip",
+          "primary": [
+            "HCI Tulip",
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HY견고딕",
+          "primary": [
+            "HY견고딕",
+            "HYGothic-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HY견명조",
+          "primary": [
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HY궁서",
+          "primary": [
+            "HY궁서"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HY궁서B",
+          "primary": [
+            "HY궁서B"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HY그래픽",
+          "primary": [
+            "HY그래픽"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HY그래픽M",
+          "primary": [
+            "HY그래픽M",
+            "HYGraphic",
+            "HYGraphic-Medium",
+            "HY그래픽"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HY둥근고딕",
+          "primary": [
+            "HY둥근고딕"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HY목판L",
+          "primary": [
+            "HY목판L"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HY백송B",
+          "primary": [
+            "HY백송B"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HY부활L",
+          "primary": [
+            "HY부활L"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HY센스L",
+          "primary": [
+            "HY센스L"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HY신명조",
+          "primary": [
+            "HY신명조",
+            "HYSinMyeongJo",
+            "HYSinMyeongJo-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HY얕은샘물M",
+          "primary": [
+            "HY얕은샘물M"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HY엽서L",
+          "primary": [
+            "HY엽서L"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HY엽서M",
+          "primary": [
+            "HY엽서M"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HY울릉도L",
+          "primary": [
+            "HY울릉도L"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HY중고딕",
+          "primary": [
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HY크리스탈M",
+          "primary": [
+            "HY크리스탈M"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HY해서M",
+          "primary": [
+            "HY해서M"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HY해서M확장1",
+          "primary": [
+            "HY해서M확장1"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HY해서M확장2",
+          "primary": [
+            "HY해서M확장2"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HY해서M확장3",
+          "primary": [
+            "HY해서M확장3"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HY헤드라인M",
+          "primary": [
+            "HY헤드라인M",
+            "HYHeadLine",
+            "HYHeadLine-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "H_CIRNUM",
+          "primary": [
+            "H_CIRNUM"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "H_EQSYM1",
+          "primary": [
+            "H_EQSYM1"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "H_EQSYM2",
+          "primary": [
+            "H_EQSYM2"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "H_ESPERANTO",
+          "primary": [
+            "H_ESPERANTO"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "H_HEBREW",
+          "primary": [
+            "H_HEBREW"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "H_KEYBD",
+          "primary": [
+            "H_KEYBD"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "H_MULTI1",
+          "primary": [
+            "H_MULTI1"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "H_MULTI2",
+          "primary": [
+            "H_MULTI2"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "H_PROSYM",
+          "primary": [
+            "H_PROSYM"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Haettenschweiler",
+          "primary": [
+            "Haettenschweiler"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Hobo BT",
+          "primary": [
+            "Hobo BT",
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HyhwpEQ",
+          "primary": [
+            "HyhwpEQ"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Impact",
+          "primary": [
+            "Impact"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Impact",
+              "official_categories": [
+                "Windows 11 Desktop",
+                "system font macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "JungGothic Old Hangul",
+          "primary": [
+            "JungGothic Old Hangul"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Kartika",
+          "primary": [
+            "Kartika"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Latha",
+          "primary": [
+            "Latha"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Liberty BT",
+          "primary": [
+            "Liberty BT",
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Lucida Console",
+          "primary": [
+            "Lucida Console"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Lucida Console",
+              "official_categories": [
+                "Windows 11 Desktop"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "Lucida Sans Unicode",
+          "primary": [
+            "Lucida Sans Unicode"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Lucida Sans Unicode",
+              "official_categories": [
+                "Windows 11 Desktop"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "MD개성체",
+          "primary": [
+            "MD개성체"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "MD솔체",
+          "primary": [
+            "MD솔체"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "MD아롱체",
+          "primary": [
+            "MD아롱체"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "MD아트체",
+          "primary": [
+            "MD아트체"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "MD이솝체",
+          "primary": [
+            "MD이솝체"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "MS Gothic",
+          "primary": [
+            "MS Gothic"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "MS Gothic",
+              "official_categories": [
+                "Windows 11 Desktop"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "MS Outlook",
+          "primary": [
+            "MS Outlook"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "MS PGothic",
+          "primary": [
+            "MS PGothic"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "MS PGothic",
+              "official_categories": [
+                "Windows 11 Desktop"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "MS UI Gothic",
+          "primary": [
+            "MS UI Gothic"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "MS UI Gothic",
+              "official_categories": [
+                "Windows 11 Desktop"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "MT Extra",
+          "primary": [
+            "MT Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "MV Boli",
+          "primary": [
+            "MV Boli"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "MV Boli",
+              "official_categories": [
+                "Windows 11 Desktop"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "Mangal",
+          "primary": [
+            "Mangal"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Marlett",
+          "primary": [
+            "Marlett"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Marlett",
+              "official_categories": [
+                "Windows 11 Desktop"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "Microsoft Sans Serif",
+          "primary": [
+            "Microsoft Sans Serif"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Microsoft Sans Serif",
+              "official_categories": [
+                "Windows 11 Desktop",
+                "system font macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "MingLiU",
+          "primary": [
+            "MingLiU"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Monotype Corsiva",
+          "primary": [
+            "Monotype Corsiva"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "MurrayHill Bd BT",
+          "primary": [
+            "MurrayHill Bd BT",
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "NSimSun",
+          "primary": [
+            "NSimSun"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "NSimSun",
+              "official_categories": [
+                "Windows 11 Desktop"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "Newtext Bk BT",
+          "primary": [
+            "Newtext Bk BT",
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "OCR-A BT",
+          "primary": [
+            "OCR-A BT"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "OCR-B-10 BT",
+          "primary": [
+            "OCR-B-10 BT"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Orator10 BT",
+          "primary": [
+            "Orator10 BT"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Orbit-B BT",
+          "primary": [
+            "Orbit-B BT",
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "PMingLiU",
+          "primary": [
+            "PMingLiU"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Palatino Linotype",
+          "primary": [
+            "Palatino Linotype"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Palatino Linotype",
+              "official_categories": [
+                "Windows 11 Desktop"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "ParkAvenue BT",
+          "primary": [
+            "ParkAvenue BT",
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Raavi",
+          "primary": [
+            "Raavi"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Shruti",
+          "primary": [
+            "Shruti"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "SimHei",
+          "primary": [
+            "SimHei"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "SimSun",
+          "primary": [
+            "SimSun"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "SimSun",
+              "official_categories": [
+                "Windows 11 Desktop"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "SinMyungJo Old Hangul",
+          "primary": [
+            "SinMyungJo Old Hangul"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "SinMyungJo Symbol",
+          "primary": [
+            "SinMyungJo Symbol"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Stencil BT",
+          "primary": [
+            "Stencil BT",
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Swis721 Lt BT",
+          "primary": [
+            "Swis721 Lt BT"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Sylfaen",
+          "primary": [
+            "Sylfaen"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Sylfaen",
+              "official_categories": [
+                "Windows 11 Desktop"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "Symbol",
+          "primary": [
+            "Symbol"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Symbol",
+              "official_categories": [
+                "Windows 11 Desktop",
+                "system font macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "Tahoma",
+          "primary": [
+            "Tahoma",
+            "함초롬돋움",
+            "HCR Dotum"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Tahoma",
+              "official_categories": [
+                "Windows 11 Desktop",
+                "system font macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "Times New Roman",
+          "primary": [
+            "Times New Roman"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Times New Roman",
+              "official_categories": [
+                "Windows 11 Desktop",
+                "system font macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "Trebuchet MS",
+          "primary": [
+            "Trebuchet MS"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Trebuchet MS",
+              "official_categories": [
+                "Windows 11 Desktop",
+                "system font macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "Tunga",
+          "primary": [
+            "Tunga"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Verdana",
+          "primary": [
+            "Verdana"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Verdana",
+              "official_categories": [
+                "Windows 11 Desktop",
+                "system font macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "Vrinda",
+          "primary": [
+            "Vrinda"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Webdings",
+          "primary": [
+            "Webdings"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Webdings",
+              "official_categories": [
+                "Windows 11 Desktop",
+                "system font macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "Wingdings",
+          "primary": [
+            "Wingdings"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Wingdings",
+              "official_categories": [
+                "Windows 11 Desktop",
+                "system font macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "Wingdings 2",
+          "primary": [
+            "Wingdings 2"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Wingdings 2",
+              "official_categories": [
+                "system font macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "Wingdings 3",
+          "primary": [
+            "Wingdings 3"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Wingdings 3",
+              "official_categories": [
+                "system font macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "가는공한",
+          "primary": [
+            "가는공한"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "가는안상수체",
+          "primary": [
+            "가는안상수체",
+            "돋움",
+            "Dotum"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Dotum",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "돋움",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "가는안상수체영문",
+          "primary": [
+            "가는안상수체영문",
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "가는한",
+          "primary": [
+            "가는한"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "가지",
+          "primary": [
+            "가지"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "강낭콩",
+          "primary": [
+            "강낭콩"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "고딕",
+          "primary": [
+            "고딕",
+            "돋움",
+            "Dotum"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Dotum",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "돋움",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "굴림",
+          "primary": [
+            "굴림",
+            "Gulim"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Gulim",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "굴림",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "굴림체",
+          "primary": [
+            "굴림체",
+            "GulimChe"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "GulimChe",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "굴림체",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "굵은공한",
+          "primary": [
+            "굵은공한"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "굵은안상수체",
+          "primary": [
+            "굵은안상수체",
+            "돋움",
+            "Dotum"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Dotum",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "돋움",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "굵은안상수체영문",
+          "primary": [
+            "굵은안상수체영문",
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "굵은한",
+          "primary": [
+            "굵은한"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "궁서체",
+          "primary": [
+            "궁서체",
+            "GungsuhChe"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "GungsuhChe",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "궁서체",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "돋움",
+          "primary": [
+            "돋움",
+            "Dotum"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Dotum",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "돋움",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "돋움체",
+          "primary": [
+            "돋움체",
+            "DotumChe"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "DotumChe",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "돋움체",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "딸기",
+          "primary": [
+            "딸기"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "명조",
+          "primary": [
+            "명조",
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "문화돋움",
+          "primary": [
+            "문화돋움"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "문화돋움제목",
+          "primary": [
+            "문화돋움제목"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "문화바탕",
+          "primary": [
+            "문화바탕"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "문화바탕제목",
+          "primary": [
+            "문화바탕제목"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "문화쓰기",
+          "primary": [
+            "문화쓰기"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "문화쓰기흘림",
+          "primary": [
+            "문화쓰기흘림"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "바탕",
+          "primary": [
+            "바탕",
+            "Batang"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Batang",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "바탕",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "바탕체",
+          "primary": [
+            "바탕체",
+            "BatangChe"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "BatangChe",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "바탕체",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "복숭아",
+          "primary": [
+            "복숭아"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "산세리프",
+          "primary": [
+            "산세리프",
+            "Calibri"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Calibri",
+              "official_categories": [
+                "Windows 11 Desktop"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "새굴림",
+          "primary": [
+            "새굴림",
+            "New Gulim"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "샘물",
+          "primary": [
+            "샘물"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "샘물체",
+          "primary": [
+            "샘물체"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "수식",
+          "primary": [
+            "수식"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "순명조",
+          "primary": [
+            "순명조"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "시스템",
+          "primary": [
+            "시스템"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "시스템 간자",
+          "primary": [
+            "시스템 간자"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "시스템 약자",
+          "primary": [
+            "시스템 약자"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신그래픽",
+          "primary": [
+            "신그래픽"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명조 간자",
+          "primary": [
+            "신명조 간자"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명조 약자",
+          "primary": [
+            "신명조 약자"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명조체",
+          "primary": [
+            "신명조체"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명조확장둘",
+          "primary": [
+            "신명조확장둘"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명조확장셋",
+          "primary": [
+            "신명조확장셋"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명조확장하나",
+          "primary": [
+            "신명조확장하나"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "약물",
+          "primary": [
+            "약물"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "양재 다운명조M",
+          "primary": [
+            "양재 다운명조M"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "양재 둘기",
+          "primary": [
+            "양재 둘기"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "양재 매화",
+          "primary": [
+            "양재 매화"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "양재 본목각M",
+          "primary": [
+            "양재 본목각M"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "양재 샤넬",
+          "primary": [
+            "양재 샤넬"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "양재 소슬",
+          "primary": [
+            "양재 소슬"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "양재 와당",
+          "primary": [
+            "양재 와당"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "양재 이니셜",
+          "primary": [
+            "양재 이니셜"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "양재 참숯B",
+          "primary": [
+            "양재 참숯B"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "양재 튼튼B",
+          "primary": [
+            "양재 튼튼B"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "엽서체",
+          "primary": [
+            "엽서체"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "영문꾸미기(가)",
+          "primary": [
+            "영문꾸미기(가)"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "영문꾸미기(나)",
+          "primary": [
+            "영문꾸미기(나)"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "영문꾸미기(다)",
+          "primary": [
+            "영문꾸미기(다)"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "옛체",
+          "primary": [
+            "옛체"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "옛한글",
+          "primary": [
+            "옛한글",
+            "HY신명조",
+            "HYSinMyeongJo",
+            "HYSinMyeongJo-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "오이",
+          "primary": [
+            "오이"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "옥수수",
+          "primary": [
+            "옥수수"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "중간공한",
+          "primary": [
+            "중간공한"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "중간안상수체",
+          "primary": [
+            "중간안상수체",
+            "돋움",
+            "Dotum"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Dotum",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "돋움",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "중간안상수체영문",
+          "primary": [
+            "중간안상수체영문",
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "중간한",
+          "primary": [
+            "중간한"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "중고딕 간자",
+          "primary": [
+            "중고딕 간자"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "중고딕 약자",
+          "primary": [
+            "중고딕 약자"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "쪽자",
+          "primary": [
+            "쪽자"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "타이프",
+          "primary": [
+            "타이프"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "태 가는 헤드라인D",
+          "primary": [
+            "태 가는 헤드라인D"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "태 가는 헤드라인T",
+          "primary": [
+            "태 가는 헤드라인T"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "태 나무",
+          "primary": [
+            "태 나무"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "태 헤드라인D",
+          "primary": [
+            "태 헤드라인D"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "태 헤드라인T",
+          "primary": [
+            "태 헤드라인T"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "펜흘림",
+          "primary": [
+            "펜흘림"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "펜흘림",
+          "primary": [
+            "펜흘림",
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "필기",
+          "primary": [
+            "필기"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한글 풀어쓰기",
+          "primary": [
+            "한글 풀어쓰기"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양견고딕",
+          "primary": [
+            "한양견고딕"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양견명조",
+          "primary": [
+            "한양견명조"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양궁서",
+          "primary": [
+            "한양궁서"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양궁서",
+          "primary": [
+            "한양궁서",
+            "궁서",
+            "Gungsuh"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Gungsuh",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "궁서",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "한양그래픽",
+          "primary": [
+            "한양그래픽"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양신명조",
+          "primary": [
+            "한양신명조"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양신명조V",
+          "primary": [
+            "한양신명조V"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양중고딕",
+          "primary": [
+            "한양중고딕"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양중고딕V",
+          "primary": [
+            "한양중고딕V"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양해서",
+          "primary": [
+            "한양해서"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한컴돋움",
+          "primary": [
+            "한컴돋움"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한컴바탕",
+          "primary": [
+            "한컴바탕",
+            "Haansoft Batang"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "해서 간자",
+          "primary": [
+            "해서 간자"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "해서 약자",
+          "primary": [
+            "해서 약자"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "헤드라인",
+          "primary": [
+            "헤드라인"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "화살표",
+          "primary": [
+            "화살표"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "휴먼가는샘체",
+          "primary": [
+            "휴먼가는샘체"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "휴먼가는팸체",
+          "primary": [
+            "휴먼가는팸체"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "휴먼고딕",
+          "primary": [
+            "휴먼고딕"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "휴먼굵은샘체",
+          "primary": [
+            "휴먼굵은샘체"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "휴먼굵은팸체",
+          "primary": [
+            "휴먼굵은팸체"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "휴먼매직체",
+          "primary": [
+            "휴먼매직체"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "휴먼명조",
+          "primary": [
+            "휴먼명조",
+            "HumanMyeongJo"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "휴먼옛체",
+          "primary": [
+            "휴먼옛체"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "휴먼중간샘체",
+          "primary": [
+            "휴먼중간샘체"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "휴먼중간팸체",
+          "primary": [
+            "휴먼중간팸체"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        }
+      ]
+    },
+    {
+      "document_id": "2b43ec3782a748e1",
+      "input": "tests/fixtures/issue_8109_saved_fonts/body-list-typed-hwp.hwp",
+      "requests": [
+        {
+          "source": "Helvetica",
+          "primary": [
+            "Helvetica"
+          ],
+          "substitute": [
+            "Arial"
+          ],
+          "official_os_availability": [
+            {
+              "requested_face": "Arial",
+              "official_categories": [
+                "Windows 11 Desktop",
+                "system font macOS"
+              ]
+            },
+            {
+              "requested_face": "Helvetica",
+              "official_categories": [
+                "system font macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "함초롬바탕",
+          "primary": [
+            "함초롬바탕",
+            "HCR Batang"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        }
+      ]
+    },
+    {
+      "document_id": "2fb2575d58042dcf",
+      "input": "samples/2025 행정업무운영 편람(최종).hwp",
+      "requests": [
+        {
+          "source": "#태고딕",
+          "primary": [
+            "#태고딕",
+            "태고딕"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "-윤고딕120",
+          "primary": [
+            "-윤고딕120"
+          ],
+          "substitute": [
+            "Haansoft Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "-윤명조120",
+          "primary": [
+            "-윤명조120"
+          ],
+          "substitute": [
+            "Haansoft Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "-윤명조140",
+          "primary": [
+            "-윤명조140"
+          ],
+          "substitute": [
+            "Haansoft Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "Dinbol",
+          "primary": [
+            "Dinbol"
+          ],
+          "substitute": [
+            "Haansoft Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "GulimChe",
+          "primary": [
+            "GulimChe"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "GulimChe",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "HCI Poppy",
+          "primary": [
+            "HCI Poppy",
+            "Palatino Linotype"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Palatino Linotype",
+              "official_categories": [
+                "Windows 11 Desktop"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "HYGraphic-Medium",
+          "primary": [
+            "HYGraphic-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HYgprM",
+          "primary": [
+            "HYgprM"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "KoPub돋움체 Bold",
+          "primary": [
+            "KoPub돋움체 Bold",
+            "KoPubDotumBold"
+          ],
+          "substitute": [
+            "Haansoft Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "KoPub돋움체 Light",
+          "primary": [
+            "KoPub돋움체 Light",
+            "KoPubDotumLight"
+          ],
+          "substitute": [
+            "Haansoft Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "KoPub돋움체 Medium",
+          "primary": [
+            "KoPub돋움체 Medium",
+            "KoPubDotumMedium"
+          ],
+          "substitute": [
+            "Haansoft Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "KoPub바탕체 Bold",
+          "primary": [
+            "KoPub바탕체 Bold",
+            "KoPubBatangBold"
+          ],
+          "substitute": [
+            "Haansoft Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "KoPub바탕체 Light",
+          "primary": [
+            "KoPub바탕체 Light",
+            "KoPubBatangLight"
+          ],
+          "substitute": [
+            "Haansoft Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "KoPub바탕체 Medium",
+          "primary": [
+            "KoPub바탕체 Medium",
+            "KoPubBatangMedium"
+          ],
+          "substitute": [
+            "Haansoft Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "Malgun Gothic",
+          "primary": [
+            "Malgun Gothic",
+            "맑은 고딕"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Malgun Gothic",
+              "official_categories": [
+                "Windows 11 Desktop"
+              ]
+            },
+            {
+              "requested_face": "맑은 고딕",
+              "official_categories": [
+                "Windows 11 Desktop"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "Times New Roman",
+          "primary": [
+            "Times New Roman"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Times New Roman",
+              "official_categories": [
+                "Windows 11 Desktop",
+                "system font macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "Yoon가변 윤명조 120_TT",
+          "primary": [
+            "Yoon가변 윤명조 120_TT"
+          ],
+          "substitute": [
+            "Haansoft Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "명조",
+          "primary": [
+            "명조",
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명 세명조",
+          "primary": [
+            "신명 세명조",
+            "HY신명조",
+            "HYSinMyeongJo",
+            "HYSinMyeongJo-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명 신명조",
+          "primary": [
+            "신명 신명조",
+            "HY신명조",
+            "HYSinMyeongJo",
+            "HYSinMyeongJo-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "정부상징 부처명_16040911",
+          "primary": [
+            "정부상징 부처명_16040911"
+          ],
+          "substitute": [
+            "Haansoft Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양견고딕",
+          "primary": [
+            "한양견고딕"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양신명조",
+          "primary": [
+            "한양신명조"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양중고딕",
+          "primary": [
+            "한양중고딕"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "휴먼명조",
+          "primary": [
+            "휴먼명조",
+            "HumanMyeongJo"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        }
+      ]
+    },
+    {
+      "document_id": "4314830495cfde87",
+      "input": "tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp",
+      "requests": [
+        {
+          "source": "Helvetica",
+          "primary": [
+            "Helvetica"
+          ],
+          "substitute": [
+            "Arial"
+          ],
+          "official_os_availability": [
+            {
+              "requested_face": "Arial",
+              "official_categories": [
+                "Windows 11 Desktop",
+                "system font macOS"
+              ]
+            },
+            {
+              "requested_face": "Helvetica",
+              "official_categories": [
+                "system font macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "Helvetica-Bold",
+          "primary": [
+            "Helvetica-Bold"
+          ],
+          "substitute": [
+            "Arial"
+          ],
+          "official_os_availability": [
+            {
+              "requested_face": "Arial",
+              "official_categories": [
+                "Windows 11 Desktop",
+                "system font macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "Helvetica-BoldOblique",
+          "primary": [
+            "Helvetica-BoldOblique"
+          ],
+          "substitute": [
+            "Arial"
+          ],
+          "official_os_availability": [
+            {
+              "requested_face": "Arial",
+              "official_categories": [
+                "Windows 11 Desktop",
+                "system font macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "Helvetica-Oblique",
+          "primary": [
+            "Helvetica-Oblique"
+          ],
+          "substitute": [
+            "Arial"
+          ],
+          "official_os_availability": [
+            {
+              "requested_face": "Arial",
+              "official_categories": [
+                "Windows 11 Desktop",
+                "system font macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "함초롬바탕",
+          "primary": [
+            "함초롬바탕",
+            "HCR Batang"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        }
+      ]
+    },
+    {
+      "document_id": "43c0a207f6daa0bb",
+      "input": "samples/hwp3-sample16-hwp5.hwpx",
+      "requests": [
+        {
+          "source": "#그래픽",
+          "primary": [
+            "#그래픽",
+            "그래픽",
+            "굴림",
+            "Gulim"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Gulim",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "굴림",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "#태고딕",
+          "primary": [
+            "#태고딕",
+            "태고딕",
+            "돋움",
+            "Dotum"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Dotum",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "돋움",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "HCI Hollyhock",
+          "primary": [
+            "HCI Hollyhock",
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HCI Poppy",
+          "primary": [
+            "HCI Poppy",
+            "Palatino Linotype"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Palatino Linotype",
+              "official_categories": [
+                "Windows 11 Desktop"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "굴림체",
+          "primary": [
+            "굴림체",
+            "GulimChe"
+          ],
+          "substitute": [
+            "Haansoft Batang"
+          ],
+          "official_os_availability": [
+            {
+              "requested_face": "GulimChe",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "굴림체",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "명조",
+          "primary": [
+            "명조",
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "바탕",
+          "primary": [
+            "바탕",
+            "Batang"
+          ],
+          "substitute": [
+            "Haansoft Batang"
+          ],
+          "official_os_availability": [
+            {
+              "requested_face": "Batang",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "바탕",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "산세리프",
+          "primary": [
+            "산세리프",
+            "Calibri"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Calibri",
+              "official_categories": [
+                "Windows 11 Desktop"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "신명 세명조",
+          "primary": [
+            "신명 세명조",
+            "HY신명조",
+            "HYSinMyeongJo",
+            "HYSinMyeongJo-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명 신명조",
+          "primary": [
+            "신명 신명조",
+            "HY신명조",
+            "HYSinMyeongJo",
+            "HYSinMyeongJo-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명 신신명조",
+          "primary": [
+            "신명 신신명조",
+            "HY신명조",
+            "HYSinMyeongJo",
+            "HYSinMyeongJo-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명 태고딕",
+          "primary": [
+            "신명 태고딕",
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "태 나무",
+          "primary": [
+            "태 나무",
+            "돋움",
+            "Dotum"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Dotum",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "돋움",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "한양견고딕",
+          "primary": [
+            "한양견고딕"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양궁서",
+          "primary": [
+            "한양궁서",
+            "궁서",
+            "Gungsuh"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Gungsuh",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "궁서",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "한양그래픽",
+          "primary": [
+            "한양그래픽",
+            "굴림",
+            "Gulim"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Gulim",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "굴림",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "한양신명조",
+          "primary": [
+            "한양신명조"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양중고딕",
+          "primary": [
+            "한양중고딕"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "휴먼고딕",
+          "primary": [
+            "휴먼고딕",
+            "돋움",
+            "Dotum"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Dotum",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "돋움",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "휴먼명조",
+          "primary": [
+            "휴먼명조",
+            "HumanMyeongJo"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "휴먼옛체",
+          "primary": [
+            "휴먼옛체",
+            "돋움",
+            "Dotum"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Dotum",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "돋움",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "document_id": "4bac5a5d1702df5f",
+      "input": "samples/hwp3-sample16-hwp5-2022.hwp",
+      "requests": [
+        {
+          "source": "#그래픽",
+          "primary": [
+            "#그래픽",
+            "그래픽"
+          ],
+          "substitute": [
+            "Batang"
+          ],
+          "official_os_availability": [
+            {
+              "requested_face": "Batang",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "#태고딕",
+          "primary": [
+            "#태고딕",
+            "태고딕"
+          ],
+          "substitute": [
+            "Batang"
+          ],
+          "official_os_availability": [
+            {
+              "requested_face": "Batang",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "HCI Hollyhock",
+          "primary": [
+            "HCI Hollyhock",
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium"
+          ],
+          "substitute": [
+            "Dotum"
+          ],
+          "official_os_availability": [
+            {
+              "requested_face": "Dotum",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "HCI Poppy",
+          "primary": [
+            "HCI Poppy",
+            "Palatino Linotype"
+          ],
+          "substitute": [
+            "Batang"
+          ],
+          "official_os_availability": [
+            {
+              "requested_face": "Batang",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "Palatino Linotype",
+              "official_categories": [
+                "Windows 11 Desktop"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "굴림체",
+          "primary": [
+            "굴림체",
+            "GulimChe"
+          ],
+          "substitute": [
+            "Haansoft Batang"
+          ],
+          "official_os_availability": [
+            {
+              "requested_face": "GulimChe",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "굴림체",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "명조",
+          "primary": [
+            "명조"
+          ],
+          "substitute": [
+            "Batang"
+          ],
+          "official_os_availability": [
+            {
+              "requested_face": "Batang",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "바탕",
+          "primary": [
+            "바탕",
+            "Batang"
+          ],
+          "substitute": [
+            "Haansoft Batang"
+          ],
+          "official_os_availability": [
+            {
+              "requested_face": "Batang",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "바탕",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "산세리프",
+          "primary": [
+            "산세리프"
+          ],
+          "substitute": [
+            "Dotum"
+          ],
+          "official_os_availability": [
+            {
+              "requested_face": "Dotum",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "신명 세명조",
+          "primary": [
+            "신명 세명조"
+          ],
+          "substitute": [
+            "Batang"
+          ],
+          "official_os_availability": [
+            {
+              "requested_face": "Batang",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "신명 신명조",
+          "primary": [
+            "신명 신명조"
+          ],
+          "substitute": [
+            "Batang"
+          ],
+          "official_os_availability": [
+            {
+              "requested_face": "Batang",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "신명 신신명조",
+          "primary": [
+            "신명 신신명조"
+          ],
+          "substitute": [
+            "Batang"
+          ],
+          "official_os_availability": [
+            {
+              "requested_face": "Batang",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "신명 신신명조",
+          "primary": [
+            "신명 신신명조",
+            "HY신명조",
+            "HYSinMyeongJo",
+            "HYSinMyeongJo-Medium"
+          ],
+          "substitute": [
+            "명조"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명 태고딕",
+          "primary": [
+            "신명 태고딕"
+          ],
+          "substitute": [
+            "Dotum"
+          ],
+          "official_os_availability": [
+            {
+              "requested_face": "Dotum",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "태 나무",
+          "primary": [
+            "태 나무"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양견고딕",
+          "primary": [
+            "한양견고딕"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양견고딕",
+          "primary": [
+            "한양견고딕"
+          ],
+          "substitute": [
+            "Dotum"
+          ],
+          "official_os_availability": [
+            {
+              "requested_face": "Dotum",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "한양궁서",
+          "primary": [
+            "한양궁서"
+          ],
+          "substitute": [
+            "Gungsuh"
+          ],
+          "official_os_availability": [
+            {
+              "requested_face": "Gungsuh",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "한양그래픽",
+          "primary": [
+            "한양그래픽"
+          ],
+          "substitute": [
+            "Gulim"
+          ],
+          "official_os_availability": [
+            {
+              "requested_face": "Gulim",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "한양신명조",
+          "primary": [
+            "한양신명조"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양신명조",
+          "primary": [
+            "한양신명조"
+          ],
+          "substitute": [
+            "Batang"
+          ],
+          "official_os_availability": [
+            {
+              "requested_face": "Batang",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "한양중고딕",
+          "primary": [
+            "한양중고딕"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양중고딕",
+          "primary": [
+            "한양중고딕"
+          ],
+          "substitute": [
+            "Batang"
+          ],
+          "official_os_availability": [
+            {
+              "requested_face": "Batang",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "한양중고딕",
+          "primary": [
+            "한양중고딕"
+          ],
+          "substitute": [
+            "Dotum"
+          ],
+          "official_os_availability": [
+            {
+              "requested_face": "Dotum",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "휴먼고딕",
+          "primary": [
+            "휴먼고딕"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "휴먼명조",
+          "primary": [
+            "휴먼명조",
+            "HumanMyeongJo"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "휴먼옛체",
+          "primary": [
+            "휴먼옛체"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        }
+      ]
+    },
+    {
+      "document_id": "52ee61fe7201e36b",
+      "input": "samples/re-03-latin-only-hancom.hwp",
+      "requests": [
+        {
+          "source": "함초롬돋움",
+          "primary": [
+            "함초롬돋움",
+            "HCR Dotum"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "함초롬바탕",
+          "primary": [
+            "함초롬바탕",
+            "HCR Batang"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        }
+      ]
+    },
+    {
+      "document_id": "59f6ab1155623bda",
+      "input": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "requests": [
+        {
+          "source": "함초롬돋움",
+          "primary": [
+            "함초롬돋움",
+            "HCR Dotum"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "함초롬바탕",
+          "primary": [
+            "함초롬바탕",
+            "HCR Batang"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        }
+      ]
+    },
+    {
+      "document_id": "69bcf084e2ae31a5",
+      "input": "samples/task3307/issue3307_outline_number.hwpx",
+      "requests": [
+        {
+          "source": "#신명조",
+          "primary": [
+            "#신명조"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "KoPubWorld바탕체 Light",
+          "primary": [
+            "KoPubWorld바탕체 Light",
+            "KoPubWorldBatangLight"
+          ],
+          "substitute": [
+            "한컴바탕",
+            "Haansoft Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "KoPubWorld바탕체 Light",
+          "primary": [
+            "KoPubWorld바탕체 Light",
+            "KoPubWorldBatangLight"
+          ],
+          "substitute": [
+            "함초롬바탕",
+            "HCR Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "Times New Roman",
+          "primary": [
+            "Times New Roman"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Times New Roman",
+              "official_categories": [
+                "Windows 11 Desktop",
+                "system font macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "돋움",
+          "primary": [
+            "돋움",
+            "Dotum"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Dotum",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "돋움",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "돋움체",
+          "primary": [
+            "돋움체",
+            "DotumChe"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "DotumChe",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "돋움체",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "명조",
+          "primary": [
+            "명조",
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양견고딕",
+          "primary": [
+            "한양견고딕"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양신명조",
+          "primary": [
+            "한양신명조"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양중고딕",
+          "primary": [
+            "한양중고딕"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "함초롬바탕",
+          "primary": [
+            "함초롬바탕",
+            "HCR Batang"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "휴먼명조",
+          "primary": [
+            "휴먼명조",
+            "HumanMyeongJo"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        }
+      ]
+    },
+    {
+      "document_id": "71f98206e45c354a",
+      "input": "samples/pr8040/exam-social-insert.hwp",
+      "requests": [
+        {
+          "source": "굴림",
+          "primary": [
+            "굴림",
+            "Gulim"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Gulim",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "굴림",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "명조",
+          "primary": [
+            "명조",
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명 견명조",
+          "primary": [
+            "신명 견명조",
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명 디나루",
+          "primary": [
+            "신명 디나루",
+            "돋움",
+            "Dotum"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Dotum",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "돋움",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "신명 신그래픽",
+          "primary": [
+            "신명 신그래픽",
+            "굴림",
+            "Gulim"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Gulim",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "굴림",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "신명 신명조",
+          "primary": [
+            "신명 신명조",
+            "HY신명조",
+            "HYSinMyeongJo",
+            "HYSinMyeongJo-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명 중고딕",
+          "primary": [
+            "신명 중고딕",
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명 중명조",
+          "primary": [
+            "신명 중명조",
+            "HY신명조",
+            "HYSinMyeongJo",
+            "HYSinMyeongJo-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명 태고딕",
+          "primary": [
+            "신명 태고딕",
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명 태그래픽",
+          "primary": [
+            "신명 태그래픽",
+            "HY그래픽"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양견명조",
+          "primary": [
+            "한양견명조"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양신명조",
+          "primary": [
+            "한양신명조"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양중고딕",
+          "primary": [
+            "한양중고딕"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한컴바탕",
+          "primary": [
+            "한컴바탕",
+            "Haansoft Batang"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "함초롬바탕",
+          "primary": [
+            "함초롬바탕",
+            "HCR Batang"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        }
+      ]
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "requests": [
+        {
+          "source": "HCI Hollyhock",
+          "primary": [
+            "HCI Hollyhock",
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HCI Poppy",
+          "primary": [
+            "HCI Poppy",
+            "Palatino Linotype"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Palatino Linotype",
+              "official_categories": [
+                "Windows 11 Desktop"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "HY헤드라인M",
+          "primary": [
+            "HY헤드라인M",
+            "HYHeadLine",
+            "HYHeadLine-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "굴림",
+          "primary": [
+            "굴림",
+            "Gulim"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Gulim",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "굴림",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "굴림체",
+          "primary": [
+            "굴림체",
+            "GulimChe"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "GulimChe",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "굴림체",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "돋움",
+          "primary": [
+            "돋움",
+            "Dotum"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Dotum",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "돋움",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "맑은 고딕",
+          "primary": [
+            "맑은 고딕",
+            "Malgun Gothic"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Malgun Gothic",
+              "official_categories": [
+                "Windows 11 Desktop"
+              ]
+            },
+            {
+              "requested_face": "맑은 고딕",
+              "official_categories": [
+                "Windows 11 Desktop"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "명조",
+          "primary": [
+            "명조",
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "바탕",
+          "primary": [
+            "바탕",
+            "Batang"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Batang",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "바탕",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "바탕체",
+          "primary": [
+            "바탕체",
+            "BatangChe"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "BatangChe",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "바탕체",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "신명 태고딕",
+          "primary": [
+            "신명 태고딕",
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium"
+          ],
+          "substitute": [
+            "한양중고딕"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명 태고딕",
+          "primary": [
+            "신명 태고딕",
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium"
+          ],
+          "substitute": [
+            "휴먼고딕"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명 태그래픽",
+          "primary": [
+            "신명 태그래픽",
+            "HY그래픽"
+          ],
+          "substitute": [
+            "한양중고딕"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양신명조",
+          "primary": [
+            "한양신명조"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양중고딕",
+          "primary": [
+            "한양중고딕"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한컴바탕",
+          "primary": [
+            "한컴바탕",
+            "Haansoft Batang"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "휴먼고딕",
+          "primary": [
+            "휴먼고딕"
+          ],
+          "substitute": [
+            "한컴바탕",
+            "Haansoft Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "휴먼고딕",
+          "primary": [
+            "휴먼고딕",
+            "돋움",
+            "Dotum"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Dotum",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "돋움",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "휴먼명조",
+          "primary": [
+            "휴먼명조",
+            "HumanMyeongJo"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "휴먼명조",
+          "primary": [
+            "휴먼명조",
+            "HumanMyeongJo"
+          ],
+          "substitute": [
+            "한컴바탕",
+            "Haansoft Batang"
+          ],
+          "official_os_availability": []
+        }
+      ]
+    },
+    {
+      "document_id": "7df4af8174abd82a",
+      "input": "samples/hwp3-sample16-hwp5-2024.hwp",
+      "requests": [
+        {
+          "source": "#그래픽",
+          "primary": [
+            "#그래픽",
+            "그래픽",
+            "굴림",
+            "Gulim"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Gulim",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "굴림",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "#태고딕",
+          "primary": [
+            "#태고딕",
+            "태고딕",
+            "돋움",
+            "Dotum"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Dotum",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "돋움",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "HCI Hollyhock",
+          "primary": [
+            "HCI Hollyhock",
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HCI Poppy",
+          "primary": [
+            "HCI Poppy",
+            "Palatino Linotype"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Palatino Linotype",
+              "official_categories": [
+                "Windows 11 Desktop"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "굴림체",
+          "primary": [
+            "굴림체",
+            "GulimChe"
+          ],
+          "substitute": [
+            "Haansoft Batang"
+          ],
+          "official_os_availability": [
+            {
+              "requested_face": "GulimChe",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "굴림체",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "명조",
+          "primary": [
+            "명조",
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "바탕",
+          "primary": [
+            "바탕",
+            "Batang"
+          ],
+          "substitute": [
+            "Haansoft Batang"
+          ],
+          "official_os_availability": [
+            {
+              "requested_face": "Batang",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "바탕",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "산세리프",
+          "primary": [
+            "산세리프",
+            "Calibri"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Calibri",
+              "official_categories": [
+                "Windows 11 Desktop"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "신명 세명조",
+          "primary": [
+            "신명 세명조",
+            "HY신명조",
+            "HYSinMyeongJo",
+            "HYSinMyeongJo-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명 신명조",
+          "primary": [
+            "신명 신명조",
+            "HY신명조",
+            "HYSinMyeongJo",
+            "HYSinMyeongJo-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명 신신명조",
+          "primary": [
+            "신명 신신명조",
+            "HY신명조",
+            "HYSinMyeongJo",
+            "HYSinMyeongJo-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명 태고딕",
+          "primary": [
+            "신명 태고딕",
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "태 나무",
+          "primary": [
+            "태 나무",
+            "돋움",
+            "Dotum"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Dotum",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "돋움",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "한양견고딕",
+          "primary": [
+            "한양견고딕"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양궁서",
+          "primary": [
+            "한양궁서",
+            "궁서",
+            "Gungsuh"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Gungsuh",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "궁서",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "한양그래픽",
+          "primary": [
+            "한양그래픽",
+            "굴림",
+            "Gulim"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Gulim",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "굴림",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "한양신명조",
+          "primary": [
+            "한양신명조"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양중고딕",
+          "primary": [
+            "한양중고딕"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "휴먼고딕",
+          "primary": [
+            "휴먼고딕",
+            "돋움",
+            "Dotum"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Dotum",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "돋움",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "휴먼명조",
+          "primary": [
+            "휴먼명조",
+            "HumanMyeongJo"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "휴먼옛체",
+          "primary": [
+            "휴먼옛체",
+            "돋움",
+            "Dotum"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Dotum",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "돋움",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "document_id": "941fe0c3549c0017",
+      "input": "samples/2025 행정업무운영 편람(최종).hwpx",
+      "requests": [
+        {
+          "source": "#태고딕",
+          "primary": [
+            "#태고딕",
+            "태고딕"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "-윤고딕120",
+          "primary": [
+            "-윤고딕120"
+          ],
+          "substitute": [
+            "한컴바탕",
+            "Haansoft Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "-윤명조120",
+          "primary": [
+            "-윤명조120"
+          ],
+          "substitute": [
+            "한컴바탕",
+            "Haansoft Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "-윤명조120",
+          "primary": [
+            "-윤명조120"
+          ],
+          "substitute": [
+            "함초롬바탕",
+            "HCR Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "-윤명조140",
+          "primary": [
+            "-윤명조140"
+          ],
+          "substitute": [
+            "한컴바탕",
+            "Haansoft Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "-윤명조140",
+          "primary": [
+            "-윤명조140"
+          ],
+          "substitute": [
+            "함초롬바탕",
+            "HCR Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "Dinbol",
+          "primary": [
+            "Dinbol"
+          ],
+          "substitute": [
+            "한컴바탕",
+            "Haansoft Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "HCI Poppy",
+          "primary": [
+            "HCI Poppy",
+            "Palatino Linotype"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Palatino Linotype",
+              "official_categories": [
+                "Windows 11 Desktop"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "HY그래픽",
+          "primary": [
+            "HY그래픽"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "HY그래픽M",
+          "primary": [
+            "HY그래픽M",
+            "HYGraphic",
+            "HYGraphic-Medium",
+            "HY그래픽"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "KoPub돋움체 Bold",
+          "primary": [
+            "KoPub돋움체 Bold",
+            "KoPubDotumBold"
+          ],
+          "substitute": [
+            "한컴바탕",
+            "Haansoft Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "KoPub돋움체 Bold",
+          "primary": [
+            "KoPub돋움체 Bold",
+            "KoPubDotumBold"
+          ],
+          "substitute": [
+            "함초롬바탕",
+            "HCR Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "KoPub돋움체 Light",
+          "primary": [
+            "KoPub돋움체 Light",
+            "KoPubDotumLight"
+          ],
+          "substitute": [
+            "한컴바탕",
+            "Haansoft Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "KoPub돋움체 Light",
+          "primary": [
+            "KoPub돋움체 Light",
+            "KoPubDotumLight"
+          ],
+          "substitute": [
+            "함초롬바탕",
+            "HCR Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "KoPub돋움체 Medium",
+          "primary": [
+            "KoPub돋움체 Medium",
+            "KoPubDotumMedium"
+          ],
+          "substitute": [
+            "한컴바탕",
+            "Haansoft Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "KoPub돋움체 Medium",
+          "primary": [
+            "KoPub돋움체 Medium",
+            "KoPubDotumMedium"
+          ],
+          "substitute": [
+            "함초롬바탕",
+            "HCR Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "KoPub바탕체 Bold",
+          "primary": [
+            "KoPub바탕체 Bold",
+            "KoPubBatangBold"
+          ],
+          "substitute": [
+            "한컴바탕",
+            "Haansoft Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "KoPub바탕체 Bold",
+          "primary": [
+            "KoPub바탕체 Bold",
+            "KoPubBatangBold"
+          ],
+          "substitute": [
+            "함초롬바탕",
+            "HCR Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "KoPub바탕체 Light",
+          "primary": [
+            "KoPub바탕체 Light",
+            "KoPubBatangLight"
+          ],
+          "substitute": [
+            "한컴바탕",
+            "Haansoft Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "KoPub바탕체 Light",
+          "primary": [
+            "KoPub바탕체 Light",
+            "KoPubBatangLight"
+          ],
+          "substitute": [
+            "함초롬바탕",
+            "HCR Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "KoPub바탕체 Medium",
+          "primary": [
+            "KoPub바탕체 Medium",
+            "KoPubBatangMedium"
+          ],
+          "substitute": [
+            "한컴바탕",
+            "Haansoft Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "KoPub바탕체 Medium",
+          "primary": [
+            "KoPub바탕체 Medium",
+            "KoPubBatangMedium"
+          ],
+          "substitute": [
+            "함초롬바탕",
+            "HCR Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "Times New Roman",
+          "primary": [
+            "Times New Roman"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Times New Roman",
+              "official_categories": [
+                "Windows 11 Desktop",
+                "system font macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "Yoon가변 윤명조 120_TT",
+          "primary": [
+            "Yoon가변 윤명조 120_TT"
+          ],
+          "substitute": [
+            "한컴바탕",
+            "Haansoft Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "Yoon가변 윤명조 120_TT",
+          "primary": [
+            "Yoon가변 윤명조 120_TT"
+          ],
+          "substitute": [
+            "함초롬바탕",
+            "HCR Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "굴림체",
+          "primary": [
+            "굴림체",
+            "GulimChe"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "GulimChe",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "굴림체",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "맑은 고딕",
+          "primary": [
+            "맑은 고딕",
+            "Malgun Gothic"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Malgun Gothic",
+              "official_categories": [
+                "Windows 11 Desktop"
+              ]
+            },
+            {
+              "requested_face": "맑은 고딕",
+              "official_categories": [
+                "Windows 11 Desktop"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "명조",
+          "primary": [
+            "명조",
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명 세명조",
+          "primary": [
+            "신명 세명조",
+            "HY신명조",
+            "HYSinMyeongJo",
+            "HYSinMyeongJo-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명 신명조",
+          "primary": [
+            "신명 신명조",
+            "HY신명조",
+            "HYSinMyeongJo",
+            "HYSinMyeongJo-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "정부상징 부처명_16040911",
+          "primary": [
+            "정부상징 부처명_16040911"
+          ],
+          "substitute": [
+            "한컴바탕",
+            "Haansoft Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "정부상징 부처명_16040911",
+          "primary": [
+            "정부상징 부처명_16040911"
+          ],
+          "substitute": [
+            "함초롬바탕",
+            "HCR Batang"
+          ],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양견고딕",
+          "primary": [
+            "한양견고딕"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양신명조",
+          "primary": [
+            "한양신명조"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양중고딕",
+          "primary": [
+            "한양중고딕"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "휴먼명조",
+          "primary": [
+            "휴먼명조",
+            "HumanMyeongJo"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        }
+      ]
+    },
+    {
+      "document_id": "a8e95b4accc79fa8",
+      "input": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx",
+      "requests": [
+        {
+          "source": "굴림",
+          "primary": [
+            "굴림",
+            "Gulim"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Gulim",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "굴림",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "바탕",
+          "primary": [
+            "바탕",
+            "Batang"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Batang",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "바탕",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "한양견고딕",
+          "primary": [
+            "한양견고딕"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양신명조",
+          "primary": [
+            "한양신명조"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양중고딕",
+          "primary": [
+            "한양중고딕"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한컴바탕",
+          "primary": [
+            "한컴바탕",
+            "Haansoft Batang"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        }
+      ]
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "input": "samples/hwp3-sample10.hwp",
+      "requests": [
+        {
+          "source": "#디나루",
+          "primary": [
+            "#디나루",
+            "디나루"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "#세나루",
+          "primary": [
+            "#세나루",
+            "세나루"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "#신디나루",
+          "primary": [
+            "#신디나루",
+            "신디나루"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "#신세나루",
+          "primary": [
+            "#신세나루",
+            "신세나루"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "#중고딕",
+          "primary": [
+            "#중고딕",
+            "중고딕"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "#태고딕",
+          "primary": [
+            "#태고딕",
+            "태고딕"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "Courier New",
+          "primary": [
+            "Courier New"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Courier New",
+              "official_categories": [
+                "Windows 11 Desktop",
+                "system font macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "Times New Roman",
+          "primary": [
+            "Times New Roman"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Times New Roman",
+              "official_categories": [
+                "Windows 11 Desktop",
+                "system font macOS"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "가지",
+          "primary": [
+            "가지"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "강낭콩",
+          "primary": [
+            "강낭콩"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "딸기",
+          "primary": [
+            "딸기"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "명조",
+          "primary": [
+            "명조",
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "바탕체",
+          "primary": [
+            "바탕체",
+            "BatangChe"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "BatangChe",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "바탕체",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "복숭아",
+          "primary": [
+            "복숭아"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "시스템",
+          "primary": [
+            "시스템"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명 디나루",
+          "primary": [
+            "신명 디나루"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명 태고딕",
+          "primary": [
+            "신명 태고딕"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "오이",
+          "primary": [
+            "오이"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "옥수수",
+          "primary": [
+            "옥수수"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양견고딕",
+          "primary": [
+            "한양견고딕"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양궁서",
+          "primary": [
+            "한양궁서",
+            "궁서",
+            "Gungsuh"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Gungsuh",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "궁서",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "한양신명조",
+          "primary": [
+            "한양신명조"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양중고딕",
+          "primary": [
+            "한양중고딕"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "휴먼옛체",
+          "primary": [
+            "휴먼옛체"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        }
+      ]
+    },
+    {
+      "document_id": "ccd0cd0b7e76fe2f",
+      "input": "samples/pr8040/exam-social-insert-delete.hwp",
+      "requests": [
+        {
+          "source": "굴림",
+          "primary": [
+            "굴림",
+            "Gulim"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Gulim",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "굴림",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "명조",
+          "primary": [
+            "명조",
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명 견명조",
+          "primary": [
+            "신명 견명조",
+            "HY견명조",
+            "HYMyeongJo-Extra"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명 디나루",
+          "primary": [
+            "신명 디나루",
+            "돋움",
+            "Dotum"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Dotum",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "돋움",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "신명 신그래픽",
+          "primary": [
+            "신명 신그래픽",
+            "굴림",
+            "Gulim"
+          ],
+          "substitute": [],
+          "official_os_availability": [
+            {
+              "requested_face": "Gulim",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            },
+            {
+              "requested_face": "굴림",
+              "official_categories": [
+                "Windows Korean Supplemental Fonts"
+              ]
+            }
+          ]
+        },
+        {
+          "source": "신명 신명조",
+          "primary": [
+            "신명 신명조",
+            "HY신명조",
+            "HYSinMyeongJo",
+            "HYSinMyeongJo-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명 중고딕",
+          "primary": [
+            "신명 중고딕",
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명 중명조",
+          "primary": [
+            "신명 중명조",
+            "HY신명조",
+            "HYSinMyeongJo",
+            "HYSinMyeongJo-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명 태고딕",
+          "primary": [
+            "신명 태고딕",
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "신명 태그래픽",
+          "primary": [
+            "신명 태그래픽",
+            "HY그래픽"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양견명조",
+          "primary": [
+            "한양견명조"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양신명조",
+          "primary": [
+            "한양신명조"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한양중고딕",
+          "primary": [
+            "한양중고딕"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "한컴바탕",
+          "primary": [
+            "한컴바탕",
+            "Haansoft Batang"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "함초롬바탕",
+          "primary": [
+            "함초롬바탕",
+            "HCR Batang"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        }
+      ]
+    },
+    {
+      "document_id": "cdacd874b6e6ac66",
+      "input": "samples/pic-crop-01.hwp",
+      "requests": [
+        {
+          "source": "함초롬돋움",
+          "primary": [
+            "함초롬돋움",
+            "HCR Dotum"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "함초롬바탕",
+          "primary": [
+            "함초롬바탕",
+            "HCR Batang"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        }
+      ]
+    },
+    {
+      "document_id": "d03a9dde3d5dc7ac",
+      "input": "samples/shape-group-02.hwp",
+      "requests": [
+        {
+          "source": "함초롬돋움",
+          "primary": [
+            "함초롬돋움",
+            "HCR Dotum"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        },
+        {
+          "source": "함초롬바탕",
+          "primary": [
+            "함초롬바탕",
+            "HCR Batang"
+          ],
+          "substitute": [],
+          "official_os_availability": []
+        }
+      ]
+    }
+  ]
+}

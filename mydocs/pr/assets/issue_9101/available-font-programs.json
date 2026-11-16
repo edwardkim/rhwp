@@ -1,0 +1,5750 @@
+{
+  "public_files": 497,
+  "windows_stock_files": 19,
+  "programs": [
+    {
+      "visible_path": "/home/tsjang/rhwp/ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+      "sha256": "67b4003e2be99ea44a7c957e4b35acde1b5e6e82a54fe195c5598c3c617bc2e3",
+      "faces": [
+        {
+          "family": "Noto Sans KR ExtraLight",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/home/tsjang/rhwp/ttfs/opensource/NotoSansKR-Regular.ttf",
+      "sha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74",
+      "faces": [
+        {
+          "family": "Noto Sans KR",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/home/tsjang/rhwp/ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+      "sha256": "876598db5f1e3bef2bc77c4d94c5b0d5d2c1620be4878a06f18fb5434e331688",
+      "faces": [
+        {
+          "family": "Noto Sans Symbols2",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/home/tsjang/rhwp/ttfs/opensource/RHWPOldHangul-Regular.otf",
+      "sha256": "0a32ff354d11c955f819d84d91e695927d41aca0fd74b4a286b6235345101af4",
+      "faces": [
+        {
+          "family": "RHWP Old Hangul",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/home/tsjang/rhwp/ttfs/opensource/RHWPPublicBatang-Regular.ttf",
+      "sha256": "7e3aee5ee1d8f44cc37d35dbd07e5f66414fee5ce552ebda6b4347643d9d0b78",
+      "faces": [
+        {
+          "family": "RHWP Public Batang",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/C059-BdIta.pfb",
+      "sha256": "84e46c470c20e491d0524c492e9475644c22c7fbd8d4051d2d0edd7378427f84",
+      "faces": [
+        {
+          "family": "C059",
+          "style": "Bold Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/C059-Bold.pfb",
+      "sha256": "9d894dcd30c106a9a6479f7661be5c65e5393ab58f83c00f807e607f769371e3",
+      "faces": [
+        {
+          "family": "C059",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/C059-Italic.pfb",
+      "sha256": "0e41d03403505156c3b493f5e26b20e69710deab9c0666ff720fbb8856357224",
+      "faces": [
+        {
+          "family": "C059",
+          "style": "Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/C059-Roman.pfb",
+      "sha256": "ba0422d833959fdc8487359619ce51b13e489e2bed7161d7ea35c17a49b1c0ac",
+      "faces": [
+        {
+          "family": "C059",
+          "style": "Roman"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/D050000L.pfb",
+      "sha256": "ccdfebc4e67fa4345578124674cce4dc5a5360dfafcea10c33586b3cc608bbb1",
+      "faces": [
+        {
+          "family": "D050000L",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/NimbusMonoPS-Bold.pfb",
+      "sha256": "a58ba41467c2cfa7109f8044e4ccfc94f5a91b1e88cc28860339dbcdcb69be2b",
+      "faces": [
+        {
+          "family": "Nimbus Mono PS",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/NimbusMonoPS-BoldItalic.pfb",
+      "sha256": "586a30dddc478481a562cf78f323fc88b310fed15648be8f3b50ad55af02d05f",
+      "faces": [
+        {
+          "family": "Nimbus Mono PS",
+          "style": "Bold Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/NimbusMonoPS-Italic.pfb",
+      "sha256": "684c1bae77b242edc911a073bcbbbfe7431af445a55b966bfead43e974bbf132",
+      "faces": [
+        {
+          "family": "Nimbus Mono PS",
+          "style": "Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/NimbusMonoPS-Regular.pfb",
+      "sha256": "49d0a528458cab48c8c4df850d182b3cf312d2b8a056a0dfae5202fc1f005dc1",
+      "faces": [
+        {
+          "family": "Nimbus Mono PS",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/NimbusRoman-Bold.pfb",
+      "sha256": "f9b971dad9e71ed5fe00171fc3edc759131e9528083f69daf36a7d324b89b177",
+      "faces": [
+        {
+          "family": "Nimbus Roman",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/NimbusRoman-BoldItalic.pfb",
+      "sha256": "514e0a862504e4accfebf076b506eee56f0ce1d37f9e9c9cde98ffa6fa4ada2d",
+      "faces": [
+        {
+          "family": "Nimbus Roman",
+          "style": "Bold Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/NimbusRoman-Italic.pfb",
+      "sha256": "89302adb5f31f89ca743142f2142471c6a53cb358838806a48cc4399638e999c",
+      "faces": [
+        {
+          "family": "Nimbus Roman",
+          "style": "Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/NimbusRoman-Regular.pfb",
+      "sha256": "9b494780baf0161d3fc8fba4953f504199d63153d320d61c2375ea73c5a881e3",
+      "faces": [
+        {
+          "family": "Nimbus Roman",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/NimbusSans-Bold.pfb",
+      "sha256": "803fd379b7d84dff114e3cf6b5916cab366ef840554f2b45abb23ab4c0abd482",
+      "faces": [
+        {
+          "family": "Nimbus Sans",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/NimbusSans-BoldItalic.pfb",
+      "sha256": "f4b93fdba7fcf980e2a8cfd7840f06cd46ffd16b64edb6586551e722a6d5522b",
+      "faces": [
+        {
+          "family": "Nimbus Sans",
+          "style": "Bold Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/NimbusSans-Italic.pfb",
+      "sha256": "f90ca2e7970ceb090139040597d8dced2bac63aebd61643b8ae0e8e1ddeef90d",
+      "faces": [
+        {
+          "family": "Nimbus Sans",
+          "style": "Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/NimbusSans-Regular.pfb",
+      "sha256": "5b8d9ada4eba53c6034aca723e4317d1d2f46ff9b7ff15afbfabb23797c55915",
+      "faces": [
+        {
+          "family": "Nimbus Sans",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/NimbusSansNarrow-Bold.pfb",
+      "sha256": "4975c4cc3177b228abc4af44625ae5087b166f90e27aa902f48a0516381e043c",
+      "faces": [
+        {
+          "family": "Nimbus Sans Narrow",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/NimbusSansNarrow-BoldOblique.pfb",
+      "sha256": "8a776d1dfba3a3abf515139bf5fb77e2d9f3be24d7982aeaa55aa5cefc0bc952",
+      "faces": [
+        {
+          "family": "Nimbus Sans Narrow",
+          "style": "Bold Oblique"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/NimbusSansNarrow-Oblique.pfb",
+      "sha256": "758e2608b60bada9e0eb01707fccb9975d7d773e4c9ec825b07b14a3b06a37ba",
+      "faces": [
+        {
+          "family": "Nimbus Sans Narrow",
+          "style": "Oblique"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/NimbusSansNarrow-Regular.pfb",
+      "sha256": "16c9e663fd33375edc6c7ef8141646f38bea5826a0b8e5e7292628f5dd3d8bdb",
+      "faces": [
+        {
+          "family": "Nimbus Sans Narrow",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/P052-Bold.pfb",
+      "sha256": "dcd50f92602409cf6da8fe93c5a86728f8b5717bed2df85b2e4c451c59c60708",
+      "faces": [
+        {
+          "family": "P052",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/P052-BoldItalic.pfb",
+      "sha256": "56282b038237b2657328d86b0fecc3c57f3f7cec9bca73aca86a5eadffcbe113",
+      "faces": [
+        {
+          "family": "P052",
+          "style": "Bold Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/P052-Italic.pfb",
+      "sha256": "ce1443da1bd80360215a45eca7bcb193540586f6b20e15a6bb789dfeee9c42e1",
+      "faces": [
+        {
+          "family": "P052",
+          "style": "Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/P052-Roman.pfb",
+      "sha256": "92bce52505c204e4f34fbc569948371cf06c2e1183927fe9e9483ad93e7748d7",
+      "faces": [
+        {
+          "family": "P052",
+          "style": "Roman"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/StandardSymbolsPS.pfb",
+      "sha256": "113fc4aed6eb0dc1e3812de5dc5f18de1276d3a885467d9f312b66d4c732eb40",
+      "faces": [
+        {
+          "family": "Standard Symbols PS",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/URWBookman-Demi.pfb",
+      "sha256": "a00eaa50a57b194381f141fb290b7ea6ac6a4438c5fe3d010caf555cad6b30cd",
+      "faces": [
+        {
+          "family": "URW Bookman",
+          "style": "Demi"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/URWBookman-DemiItalic.pfb",
+      "sha256": "7844e30491a9db65da5c0f4853eefaab20ac7eb45c8be47988d978945884b039",
+      "faces": [
+        {
+          "family": "URW Bookman",
+          "style": "Demi Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/URWBookman-Light.pfb",
+      "sha256": "d771b6b9dc8659781dccf3bf0888b37df8a29ecfb830d21a29058584ae35375e",
+      "faces": [
+        {
+          "family": "URW Bookman",
+          "style": "Light"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/URWBookman-LightItalic.pfb",
+      "sha256": "6f5927e0692ff5d733a0b543af60f73193d4ccccf70baa3c8db9fd317b9a6d75",
+      "faces": [
+        {
+          "family": "URW Bookman",
+          "style": "Light Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/URWGothic-Book.pfb",
+      "sha256": "1819f2a949a4cd015365d23fe4efb515cf983d4f922233511bf3c978743413d8",
+      "faces": [
+        {
+          "family": "URW Gothic",
+          "style": "Book"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/URWGothic-BookOblique.pfb",
+      "sha256": "6046ec5eb15e16171caf53c1d6382794fcda96c56b3ea37b6f80005f76780c3b",
+      "faces": [
+        {
+          "family": "URW Gothic",
+          "style": "Book Oblique"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/URWGothic-Demi.pfb",
+      "sha256": "3af87fd39cf8efedd4b497e8640bad98da932902e93a83b70c55e949a25eb594",
+      "faces": [
+        {
+          "family": "URW Gothic",
+          "style": "Demi"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/URWGothic-DemiOblique.pfb",
+      "sha256": "75659b3f8cbe1407f97ced044b52002a5c3e5d7034db5b3934394de619aae75a",
+      "faces": [
+        {
+          "family": "URW Gothic",
+          "style": "Demi Oblique"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/Z003-MediumItalic.pfb",
+      "sha256": "994f2d1a4a46fc5e1ca4f1e6b1427fedddaf1ceaeba3dbc89113eab2572ea408",
+      "faces": [
+        {
+          "family": "Z003",
+          "style": "Medium Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/c0419bt_.pfb",
+      "sha256": "0e15626ca60d95e49ac15352f5c7f1837eb6dc9b6a353357012ce54a5b37015c",
+      "faces": [
+        {
+          "family": "Courier 10 Pitch",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/c0582bt_.pfb",
+      "sha256": "9ecc1d370c5ee96c8b58d144d92a9fbeb416e2a33746f4ef86ed4e7490389dc6",
+      "faces": [
+        {
+          "family": "Courier 10 Pitch",
+          "style": "Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/c0583bt_.pfb",
+      "sha256": "708bbc1a259fbdf4f8c0fde683dd604f1e0677a72078567d70328f9a428248b7",
+      "faces": [
+        {
+          "family": "Courier 10 Pitch",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/c0611bt_.pfb",
+      "sha256": "69dd50c4078f8b7c3d50dedc85dec8e4316c0b4f86df1737c3af9b9b8aa51eef",
+      "faces": [
+        {
+          "family": "Courier 10 Pitch",
+          "style": "Bold Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/c0632bt_.pfb",
+      "sha256": "c50fd6e717599f306b8b3261d309c56849f4366771c1983c875eabf46bc2b956",
+      "faces": [
+        {
+          "family": "Bitstream Charter",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/c0633bt_.pfb",
+      "sha256": "3e0c9ed37732c1ebcbed4e582fd70f5673ca415161396276097eca1cda87104b",
+      "faces": [
+        {
+          "family": "Bitstream Charter",
+          "style": "Bold Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/c0648bt_.pfb",
+      "sha256": "8ac5bad34cad9b59b087eebfaf9087c16901b0761f7f9cc538f2f65567fc3959",
+      "faces": [
+        {
+          "family": "Bitstream Charter",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/X11/Type1/c0649bt_.pfb",
+      "sha256": "0c3e189c6a52401c62c9fcde32f453a4dc95836d8c6e03fe8908100d854f3a83",
+      "faces": [
+        {
+          "family": "Bitstream Charter",
+          "style": "Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/noto/NotoSansCJK-Black.ttc",
+      "sha256": "3cffb10242b4b7e6edd439ebf3bd7e392345525e093ea08149e0a0158a1b5151",
+      "faces": [
+        {
+          "family": "Noto Sans CJK JP,Noto Sans CJK JP Black",
+          "style": "Black,Regular"
+        },
+        {
+          "family": "Noto Sans CJK KR,Noto Sans CJK KR Black",
+          "style": "Black,Regular"
+        },
+        {
+          "family": "Noto Sans CJK HK,Noto Sans CJK HK Black",
+          "style": "Black,Regular"
+        },
+        {
+          "family": "Noto Sans CJK TC,Noto Sans CJK TC Black",
+          "style": "Black,Regular"
+        },
+        {
+          "family": "Noto Sans CJK SC,Noto Sans CJK SC Black",
+          "style": "Black,Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc",
+      "sha256": "faa5f3656a78b2e2d450d27fe8382c778bc2b6bb5ea29c986664a6a435056ceb",
+      "faces": [
+        {
+          "family": "Noto Sans Mono CJK KR",
+          "style": "Bold"
+        },
+        {
+          "family": "Noto Sans Mono CJK JP",
+          "style": "Bold"
+        },
+        {
+          "family": "Noto Sans Mono CJK HK",
+          "style": "Bold"
+        },
+        {
+          "family": "Noto Sans Mono CJK SC",
+          "style": "Bold"
+        },
+        {
+          "family": "Noto Sans Mono CJK TC",
+          "style": "Bold"
+        },
+        {
+          "family": "Noto Sans CJK SC",
+          "style": "Bold"
+        },
+        {
+          "family": "Noto Sans CJK TC",
+          "style": "Bold"
+        },
+        {
+          "family": "Noto Sans CJK JP",
+          "style": "Bold"
+        },
+        {
+          "family": "Noto Sans CJK HK",
+          "style": "Bold"
+        },
+        {
+          "family": "Noto Sans CJK KR",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/noto/NotoSansCJK-DemiLight.ttc",
+      "sha256": "73c01c7f28072016d44ca57893a7c3b2c4ca31d9662032c5b315164625f0dfe4",
+      "faces": [
+        {
+          "family": "Noto Sans CJK HK,Noto Sans CJK HK DemiLight",
+          "style": "DemiLight,Regular"
+        },
+        {
+          "family": "Noto Sans CJK JP,Noto Sans CJK JP DemiLight",
+          "style": "DemiLight,Regular"
+        },
+        {
+          "family": "Noto Sans CJK KR,Noto Sans CJK KR DemiLight",
+          "style": "DemiLight,Regular"
+        },
+        {
+          "family": "Noto Sans CJK TC,Noto Sans CJK TC DemiLight",
+          "style": "DemiLight,Regular"
+        },
+        {
+          "family": "Noto Sans CJK SC,Noto Sans CJK SC DemiLight",
+          "style": "DemiLight,Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/noto/NotoSansCJK-Light.ttc",
+      "sha256": "872def437cf8b9c41bf1736da891e34a8c25b764c0c4a51418d3745570660f42",
+      "faces": [
+        {
+          "family": "Noto Sans CJK SC,Noto Sans CJK SC Light",
+          "style": "Light,Regular"
+        },
+        {
+          "family": "Noto Sans CJK JP,Noto Sans CJK JP Light",
+          "style": "Light,Regular"
+        },
+        {
+          "family": "Noto Sans CJK HK,Noto Sans CJK HK Light",
+          "style": "Light,Regular"
+        },
+        {
+          "family": "Noto Sans CJK KR,Noto Sans CJK KR Light",
+          "style": "Light,Regular"
+        },
+        {
+          "family": "Noto Sans CJK TC,Noto Sans CJK TC Light",
+          "style": "Light,Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/noto/NotoSansCJK-Medium.ttc",
+      "sha256": "197d5e1e019faca33a4d55931c7d68b8056f3b97cb862049f5cb8de9efdfb8ce",
+      "faces": [
+        {
+          "family": "Noto Sans CJK KR,Noto Sans CJK KR Medium",
+          "style": "Medium,Regular"
+        },
+        {
+          "family": "Noto Sans CJK JP,Noto Sans CJK JP Medium",
+          "style": "Medium,Regular"
+        },
+        {
+          "family": "Noto Sans CJK TC,Noto Sans CJK TC Medium",
+          "style": "Medium,Regular"
+        },
+        {
+          "family": "Noto Sans CJK SC,Noto Sans CJK SC Medium",
+          "style": "Medium,Regular"
+        },
+        {
+          "family": "Noto Sans CJK HK,Noto Sans CJK HK Medium",
+          "style": "Medium,Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+      "sha256": "b76b0433203017ca80401b2ee0dd69350349871c4b19d504c34dbdd80541690a",
+      "faces": [
+        {
+          "family": "Noto Sans CJK JP",
+          "style": "Regular"
+        },
+        {
+          "family": "Noto Sans CJK HK",
+          "style": "Regular"
+        },
+        {
+          "family": "Noto Sans CJK KR",
+          "style": "Regular"
+        },
+        {
+          "family": "Noto Sans CJK TC",
+          "style": "Regular"
+        },
+        {
+          "family": "Noto Sans CJK SC",
+          "style": "Regular"
+        },
+        {
+          "family": "Noto Sans Mono CJK KR",
+          "style": "Regular"
+        },
+        {
+          "family": "Noto Sans Mono CJK HK",
+          "style": "Regular"
+        },
+        {
+          "family": "Noto Sans Mono CJK JP",
+          "style": "Regular"
+        },
+        {
+          "family": "Noto Sans Mono CJK TC",
+          "style": "Regular"
+        },
+        {
+          "family": "Noto Sans Mono CJK SC",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/noto/NotoSansCJK-Thin.ttc",
+      "sha256": "6efb3dfee32c261d6be3c2b1f89928afc1d18328499cddda4b1833338e7054b7",
+      "faces": [
+        {
+          "family": "Noto Sans CJK TC,Noto Sans CJK TC Thin",
+          "style": "Thin,Regular"
+        },
+        {
+          "family": "Noto Sans CJK KR,Noto Sans CJK KR Thin",
+          "style": "Thin,Regular"
+        },
+        {
+          "family": "Noto Sans CJK HK,Noto Sans CJK HK Thin",
+          "style": "Thin,Regular"
+        },
+        {
+          "family": "Noto Sans CJK JP,Noto Sans CJK JP Thin",
+          "style": "Thin,Regular"
+        },
+        {
+          "family": "Noto Sans CJK SC,Noto Sans CJK SC Thin",
+          "style": "Thin,Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/noto/NotoSerifCJK-Black.ttc",
+      "sha256": "f9ea56d72ca0f7fb6cbb550eb40b1002686f10fb9173bbca80210caa12e7b861",
+      "faces": [
+        {
+          "family": "Noto Serif CJK JP,Noto Serif CJK JP Black",
+          "style": "Black,Regular"
+        },
+        {
+          "family": "Noto Serif CJK SC,Noto Serif CJK SC Black",
+          "style": "Black,Regular"
+        },
+        {
+          "family": "Noto Serif CJK TC,Noto Serif CJK TC Black",
+          "style": "Black,Regular"
+        },
+        {
+          "family": "Noto Serif CJK KR,Noto Serif CJK KR Black",
+          "style": "Black,Regular"
+        },
+        {
+          "family": "Noto Serif CJK HK,Noto Serif CJK HK Black",
+          "style": "Black,Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/noto/NotoSerifCJK-Bold.ttc",
+      "sha256": "9d3c0d769c703cfe41c49cbe2b14d4718e26545593dc247485486335b783fe94",
+      "faces": [
+        {
+          "family": "Noto Serif CJK JP",
+          "style": "Bold"
+        },
+        {
+          "family": "Noto Serif CJK HK",
+          "style": "Bold"
+        },
+        {
+          "family": "Noto Serif CJK KR",
+          "style": "Bold"
+        },
+        {
+          "family": "Noto Serif CJK TC",
+          "style": "Bold"
+        },
+        {
+          "family": "Noto Serif CJK SC",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/noto/NotoSerifCJK-ExtraLight.ttc",
+      "sha256": "f40f667457544a3e9621234080c0ba40e9626d51d00f84441ca6b05b65f921ee",
+      "faces": [
+        {
+          "family": "Noto Serif CJK KR,Noto Serif CJK KR ExtraLight",
+          "style": "ExtraLight,Regular"
+        },
+        {
+          "family": "Noto Serif CJK HK,Noto Serif CJK HK ExtraLight",
+          "style": "ExtraLight,Regular"
+        },
+        {
+          "family": "Noto Serif CJK SC,Noto Serif CJK SC ExtraLight",
+          "style": "ExtraLight,Regular"
+        },
+        {
+          "family": "Noto Serif CJK TC,Noto Serif CJK TC ExtraLight",
+          "style": "ExtraLight,Regular"
+        },
+        {
+          "family": "Noto Serif CJK JP,Noto Serif CJK JP ExtraLight",
+          "style": "ExtraLight,Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/noto/NotoSerifCJK-Light.ttc",
+      "sha256": "bba932b49cca42f41eb90ed699ec03832767cc1b743781ca070e2ac81263b0fb",
+      "faces": [
+        {
+          "family": "Noto Serif CJK JP,Noto Serif CJK JP Light",
+          "style": "Light,Regular"
+        },
+        {
+          "family": "Noto Serif CJK SC,Noto Serif CJK SC Light",
+          "style": "Light,Regular"
+        },
+        {
+          "family": "Noto Serif CJK HK,Noto Serif CJK HK Light",
+          "style": "Light,Regular"
+        },
+        {
+          "family": "Noto Serif CJK KR,Noto Serif CJK KR Light",
+          "style": "Light,Regular"
+        },
+        {
+          "family": "Noto Serif CJK TC,Noto Serif CJK TC Light",
+          "style": "Light,Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/noto/NotoSerifCJK-Medium.ttc",
+      "sha256": "9a9bec9cdcbb187384748656fa8e63f3c29b30c84e20fb91ec0af944e2bc2a29",
+      "faces": [
+        {
+          "family": "Noto Serif CJK SC,Noto Serif CJK SC Medium",
+          "style": "Medium,Regular"
+        },
+        {
+          "family": "Noto Serif CJK HK,Noto Serif CJK HK Medium",
+          "style": "Medium,Regular"
+        },
+        {
+          "family": "Noto Serif CJK TC,Noto Serif CJK TC Medium",
+          "style": "Medium,Regular"
+        },
+        {
+          "family": "Noto Serif CJK JP,Noto Serif CJK JP Medium",
+          "style": "Medium,Regular"
+        },
+        {
+          "family": "Noto Serif CJK KR,Noto Serif CJK KR Medium",
+          "style": "Medium,Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/noto/NotoSerifCJK-Regular.ttc",
+      "sha256": "93069d8e9e45d515cc421c971a79e6a5777704b348e36a9ef86578bf58adef77",
+      "faces": [
+        {
+          "family": "Noto Serif CJK SC",
+          "style": "Regular"
+        },
+        {
+          "family": "Noto Serif CJK TC",
+          "style": "Regular"
+        },
+        {
+          "family": "Noto Serif CJK JP",
+          "style": "Regular"
+        },
+        {
+          "family": "Noto Serif CJK HK",
+          "style": "Regular"
+        },
+        {
+          "family": "Noto Serif CJK KR",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/noto/NotoSerifCJK-SemiBold.ttc",
+      "sha256": "b313b12c4ca6bffd67fced7ace2050bc70c9d6768327157636f8cef7d5aa2c8d",
+      "faces": [
+        {
+          "family": "Noto Serif CJK SC,Noto Serif CJK SC SemiBold",
+          "style": "SemiBold,Regular"
+        },
+        {
+          "family": "Noto Serif CJK TC,Noto Serif CJK TC SemiBold",
+          "style": "SemiBold,Regular"
+        },
+        {
+          "family": "Noto Serif CJK JP,Noto Serif CJK JP SemiBold",
+          "style": "SemiBold,Regular"
+        },
+        {
+          "family": "Noto Serif CJK KR,Noto Serif CJK KR SemiBold",
+          "style": "SemiBold,Regular"
+        },
+        {
+          "family": "Noto Serif CJK HK,Noto Serif CJK HK SemiBold",
+          "style": "SemiBold,Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/C059-BdIta.otf",
+      "sha256": "60d0ab6a22e4018b1232806d98f4015e04f9a0a569db7a169c40d55e2a9f6252",
+      "faces": [
+        {
+          "family": "C059",
+          "style": "Bold Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/C059-Bold.otf",
+      "sha256": "75dea10068264324522e7b96612083582eee0158eb728fa9c219279890f33e26",
+      "faces": [
+        {
+          "family": "C059",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/C059-Italic.otf",
+      "sha256": "77852deabd3a84f7d0213932239de522410309374c2255ccbd510f01dc7c6e80",
+      "faces": [
+        {
+          "family": "C059",
+          "style": "Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/C059-Roman.otf",
+      "sha256": "e00cc7b88f0cf25ae43f0e48de39d0043fe042b55719a3ac32669ab3369542ec",
+      "faces": [
+        {
+          "family": "C059",
+          "style": "Roman"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/D050000L.otf",
+      "sha256": "a7bd946b69ae526328f26b5339fb31057dd40950d7b60598f36b2bd06542f105",
+      "faces": [
+        {
+          "family": "D050000L",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/NimbusMonoPS-Bold.otf",
+      "sha256": "f036d05d2168c7f71cb11d31e81d11133f3d09711e24ebde19d08a24842384d5",
+      "faces": [
+        {
+          "family": "Nimbus Mono PS",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/NimbusMonoPS-BoldItalic.otf",
+      "sha256": "a67ed9e364c933c79fc3ce88e17a0265334697c184b065407e754d43cbbf6d0a",
+      "faces": [
+        {
+          "family": "Nimbus Mono PS",
+          "style": "Bold Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/NimbusMonoPS-Italic.otf",
+      "sha256": "7f1f85498027e07befadd3c7592518909b9e8c7f96ee5615e0b21be0c399c4b4",
+      "faces": [
+        {
+          "family": "Nimbus Mono PS",
+          "style": "Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/NimbusMonoPS-Regular.otf",
+      "sha256": "4f225ca8e13acb16f733ce741693105e527d5f7a5443901b9ecc190fca4e149b",
+      "faces": [
+        {
+          "family": "Nimbus Mono PS",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/NimbusRoman-Bold.otf",
+      "sha256": "e0ad81923bc6d85d5426f796217c87963ca1ae3c65e22c87a25b6c6353de299e",
+      "faces": [
+        {
+          "family": "Nimbus Roman",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/NimbusRoman-BoldItalic.otf",
+      "sha256": "c84bcb17ab4ee54f16dadad6a3b0b2df37a24f9fc812897c4a59eeca785a5dec",
+      "faces": [
+        {
+          "family": "Nimbus Roman",
+          "style": "Bold Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/NimbusRoman-Italic.otf",
+      "sha256": "b7c424e6cb79baddfcdcd9a9d87f9fc4fdd06f0e5160066e2b2e47bcd647c7b9",
+      "faces": [
+        {
+          "family": "Nimbus Roman",
+          "style": "Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/NimbusRoman-Regular.otf",
+      "sha256": "fd41669443616a7ae890c42e53a58f47fa24a940fd1e367acaff665cf5b6e9d8",
+      "faces": [
+        {
+          "family": "Nimbus Roman",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/NimbusSans-Bold.otf",
+      "sha256": "7f33328e6b4d4cd21b45fa625791928c9407dc702db6780e56b09ca9a3ecaa67",
+      "faces": [
+        {
+          "family": "Nimbus Sans",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/NimbusSans-BoldItalic.otf",
+      "sha256": "3f47fb34fcb7de09f8cbc9f305191340ddebf7a068419f4bb5f49287dea59b87",
+      "faces": [
+        {
+          "family": "Nimbus Sans",
+          "style": "Bold Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/NimbusSans-Italic.otf",
+      "sha256": "7b0bef5686aa58c0fd0f0d01beeae56664208490e30ca6a25431281c9a0c6402",
+      "faces": [
+        {
+          "family": "Nimbus Sans",
+          "style": "Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/NimbusSans-Regular.otf",
+      "sha256": "7c25be4d78155523080ab85b10277150657ff7dabbcad7037bdd536c9b6d0d08",
+      "faces": [
+        {
+          "family": "Nimbus Sans",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/NimbusSansNarrow-Bold.otf",
+      "sha256": "6d7cec07f5a9035e208532dab35a51312aef4a7f26eb524dd614c9fcd97c3264",
+      "faces": [
+        {
+          "family": "Nimbus Sans Narrow",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/NimbusSansNarrow-BoldOblique.otf",
+      "sha256": "3cefbe4a602a08a0400798fc4aba2d48f7b7e05fa6ed54c2009d68adc6eccef9",
+      "faces": [
+        {
+          "family": "Nimbus Sans Narrow",
+          "style": "Bold Oblique"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/NimbusSansNarrow-Oblique.otf",
+      "sha256": "6fd8dd67ab951f36f66563ef8443bafdf10836e73ebe856f85f4a9c282293585",
+      "faces": [
+        {
+          "family": "Nimbus Sans Narrow",
+          "style": "Oblique"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/NimbusSansNarrow-Regular.otf",
+      "sha256": "0111cf7c05377c4f1685d37bfa8b3edd2033278122f69e0a9803a8514e352b99",
+      "faces": [
+        {
+          "family": "Nimbus Sans Narrow",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/P052-Bold.otf",
+      "sha256": "ba6503baaf0f9e4e40a69cc4c0e57049fbde313fe183aba8fe823208337a94af",
+      "faces": [
+        {
+          "family": "P052",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/P052-BoldItalic.otf",
+      "sha256": "63e15828175e55559ae09c9bdcd09fc0354537657d43109edb6e2a5509f8299f",
+      "faces": [
+        {
+          "family": "P052",
+          "style": "Bold Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/P052-Italic.otf",
+      "sha256": "1feac6055211cf5c6c812c026e398195070f174064cc4d390f0db01647443b0e",
+      "faces": [
+        {
+          "family": "P052",
+          "style": "Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/P052-Roman.otf",
+      "sha256": "f054a7389d8d0e9f4c5f7b4c21feb7e2b14bec8004a1e92778a78d149524eea9",
+      "faces": [
+        {
+          "family": "P052",
+          "style": "Roman"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/StandardSymbolsPS.otf",
+      "sha256": "df570efda2df425dbfc004e4e5f77c55ca1b47f8ff28ad60dfad0fccf422b0bd",
+      "faces": [
+        {
+          "family": "Standard Symbols PS",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/URWBookman-Demi.otf",
+      "sha256": "ab8b2fe57cbea9783c6179188dc013c76cfc5717c22cf59bbf3016ef2d7d93ee",
+      "faces": [
+        {
+          "family": "URW Bookman",
+          "style": "Demi"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/URWBookman-DemiItalic.otf",
+      "sha256": "4d9dbaae8178ffa2f5d557245d09dc968eeac9eed7e453cc2db4cc6a9aacb44d",
+      "faces": [
+        {
+          "family": "URW Bookman",
+          "style": "Demi Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/URWBookman-Light.otf",
+      "sha256": "7b1bc8e6a16cef53785ce03d4848f8971f3ba38cd9e266e4786a50e08bd9235b",
+      "faces": [
+        {
+          "family": "URW Bookman",
+          "style": "Light"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/URWBookman-LightItalic.otf",
+      "sha256": "ed722e6c2996b08e8516d27a7c017972cfabf5d1736b496b6526da78fd17691a",
+      "faces": [
+        {
+          "family": "URW Bookman",
+          "style": "Light Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/URWGothic-Book.otf",
+      "sha256": "04318316cee29950805110c9c8949eea189ef5575132881f4d4d7e03e5299903",
+      "faces": [
+        {
+          "family": "URW Gothic",
+          "style": "Book"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/URWGothic-BookOblique.otf",
+      "sha256": "ec4e947734950fd344918e560bc8ad0c5d8b17d0ab4853988824f13b9f77e53f",
+      "faces": [
+        {
+          "family": "URW Gothic",
+          "style": "Book Oblique"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/URWGothic-Demi.otf",
+      "sha256": "5b009410cf5231dcb1e45b155c1afedcfc63d82042fd8c414d0dd7705c9fbbae",
+      "faces": [
+        {
+          "family": "URW Gothic",
+          "style": "Demi"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/URWGothic-DemiOblique.otf",
+      "sha256": "d57abaa6d40718cfbf735ad50080d0b095e7194e451992e02786a7c0113db35c",
+      "faces": [
+        {
+          "family": "URW Gothic",
+          "style": "Demi Oblique"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/opentype/urw-base35/Z003-MediumItalic.otf",
+      "sha256": "a04947e59fc9339ea3c4b34c31fd46764f22af7512afc2c074ce190e79ed7a09",
+      "faces": [
+        {
+          "family": "Z003",
+          "style": "Medium Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/rhwp-os-basic/arial.ttf",
+      "sha256": "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1",
+      "faces": [
+        {
+          "family": "Arial",
+          "style": "Regular,Normal,obyčejné,Standard,Κανονικά,Normaali,Normál,Normale,Standaard,Normalny,Обычный,Normálne,Navadno,thường,Arrunta"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/rhwp-os-basic/arialbd.ttf",
+      "sha256": "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69",
+      "faces": [
+        {
+          "family": "Arial",
+          "style": "Bold,Negreta,tučné,fed,Fett,Έντονα,Negrita,Lihavoitu,Gras,Félkövér,Grassetto,Vet,Halvfet,Pogrubiony,Negrito,Полужирный,Fet,Kalın,Krepko,đậm,Lodia"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/rhwp-os-basic/arialbi.ttf",
+      "sha256": "e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994",
+      "faces": [
+        {
+          "family": "Arial",
+          "style": "Bold Italic,Negreta cursiva,tučné kurzíva,fed kursiv,Fett Kursiv,Έντονα Πλάγια,Negrita Cursiva,Lihavoitu Kursivoi,Gras Italique,Félkövér dőlt,Grassetto Corsivo,Vet Cursief,Halvfet Kursiv,Pogrubiona kursywa,Negrito Itálico,Полужирный Курсив,Tučná kurzíva,Fet Kursiv,Kalın İtalik,Krepko poševno,nghiêng đậm,Lodi etzana"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/rhwp-os-basic/ariali.ttf",
+      "sha256": "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62",
+      "faces": [
+        {
+          "family": "Arial",
+          "style": "Italic,Cursiva,kurzíva,kursiv,Πλάγια,Kursivoitu,Italique,Dőlt,Corsivo,Cursief,Kursywa,Itálico,Курсив,İtalik,Poševno,nghiêng,Etzana"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/rhwp-os-basic/batang.ttc",
+      "sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+      "faces": [
+        {
+          "family": "Gungsuh,궁서",
+          "style": "Regular"
+        },
+        {
+          "family": "GungsuhChe,궁서체",
+          "style": "Regular"
+        },
+        {
+          "family": "Batang,바탕",
+          "style": "Regular"
+        },
+        {
+          "family": "BatangChe,바탕체",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/rhwp-os-basic/cour.ttf",
+      "sha256": "93c3ff526c19d03496c01c6a1bfd1031f97af021a13e859a89dfc717a0b6b6ec",
+      "faces": [
+        {
+          "family": "Courier New",
+          "style": "Regular,Normal,obyčejné,Standard,Κανονικά,Normaali,Normál,Normale,Standaard,Normalny,Обычный,Normálne,Navadno,thường,Arrunta"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/rhwp-os-basic/courbd.ttf",
+      "sha256": "716c08d704f154870bd9fb78b185d0b644912301dfa9c9e6daf45bdb4832a299",
+      "faces": [
+        {
+          "family": "Courier New",
+          "style": "Bold,Negreta,tučné,fed,Fett,Έντονα,Negrita,Lihavoitu,Gras,Félkövér,Grassetto,Vet,Halvfet,Pogrubiony,Negrito,Полужирный,Fet,Kalın,Krepko,đậm,Lodia"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/rhwp-os-basic/courbi.ttf",
+      "sha256": "8fdb188252a2db0f020c89831bddb61cadfe290c3616fe534479b4d3b10d09c1",
+      "faces": [
+        {
+          "family": "Courier New",
+          "style": "Bold Italic,Negreta cursiva,tučné kurzíva,fed kursiv,Fett Kursiv,Έντονα Πλάγια,Negrita Cursiva,Lihavoitu Kursivoi,Gras Italique,Félkövér dőlt,Grassetto Corsivo,Vet Cursief,Halvfet Kursiv,Pogrubiona kursywa,Negrito Itálico,Полужирный Курсив,Tučná kurzíva,Fet Kursiv,Kalın İtalik,Krepko poševno,đậm nghiêng,Lodi etzana"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/rhwp-os-basic/couri.ttf",
+      "sha256": "5861588608d3a3775d921a7e4acb8362b21630c6b63718bc68adb7137ce53beb",
+      "faces": [
+        {
+          "family": "Courier New",
+          "style": "Italic,Cursiva,kurzíva,kursiv,Πλάγια,Kursivoitu,Italique,Dőlt,Corsivo,Cursief,Kursywa,Itálico,Курсив,İtalik,Poševno,nghiêng,Etzana"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/rhwp-os-basic/gulim.ttc",
+      "sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+      "faces": [
+        {
+          "family": "DotumChe,돋움체",
+          "style": "Regular"
+        },
+        {
+          "family": "GulimChe,굴림체",
+          "style": "Regular"
+        },
+        {
+          "family": "Gulim,굴림",
+          "style": "Regular"
+        },
+        {
+          "family": "Dotum,돋움",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/rhwp-os-basic/malgun.ttf",
+      "sha256": "0086c19e81d293a542e7d75564c645fb58070cc850aefebf8fa1c397858e510c",
+      "faces": [
+        {
+          "family": "Malgun Gothic,맑은 고딕",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/rhwp-os-basic/malgunbd.ttf",
+      "sha256": "a541834fb9cdde9bd6d2c3ff1565cb0bb5ccf7a15e4e9daf2cb58d9b1cf282aa",
+      "faces": [
+        {
+          "family": "Malgun Gothic,맑은 고딕",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/rhwp-os-basic/malgunsl.ttf",
+      "sha256": "a7217a2e590c86141bddadc74a2bcdff2efe210db48469a77a749e0446d91ea9",
+      "faces": [
+        {
+          "family": "Malgun Gothic,맑은 고딕,Malgun Gothic Semilight,맑은 고딕 Semilight",
+          "style": "Semilight,Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/rhwp-os-basic/symbol.ttf",
+      "sha256": "bbf1192965e5266fbf23370416337d2861fc1e8bd349def93f2994ba67382fc3",
+      "faces": [
+        {
+          "family": "Symbol",
+          "style": "Regular,Normal,obyčejné,Standard,Κανονικά,Normaali,Normál,Normale,Standaard,Normalny,Обычный,Normálne,Navadno,Arrunta"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/rhwp-os-basic/times.ttf",
+      "sha256": "2cff2a03d8034801979dd6d16f09b9a825c3d710fcf068f2ebfbf0e1425c87cf",
+      "faces": [
+        {
+          "family": "Times New Roman",
+          "style": "Regular,Normal,obyčejné,Standard,Κανονικά,Normaali,Normál,Normale,Standaard,Normalny,Обычный,Normálne,Navadno,thường,Arrunta"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/rhwp-os-basic/timesbd.ttf",
+      "sha256": "621b4a765fef5d255d19530f4bf936104c6519f2e232a0eef1923474e5b9cf22",
+      "faces": [
+        {
+          "family": "Times New Roman",
+          "style": "Bold,Negreta,tučné,fed,Fett,Έντονα,Negrita,Lihavoitu,Gras,Félkövér,Grassetto,Vet,Halvfet,Pogrubiona,Negrito,Полужирный,Fet,Kalın,Krepko,đậm,Lodia"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/rhwp-os-basic/timesbi.ttf",
+      "sha256": "2852329a38acf9252504669d9c23d5e88366cf77e8209d508f5e7198639648ea",
+      "faces": [
+        {
+          "family": "Times New Roman",
+          "style": "Bold Italic,Negreta cursiva,tučné kurzíva,fed kursiv,Fett Kursiv,Έντονα Πλάγια,Negrita Cursiva,Lihavoitu Kursivoi,Gras Italique,Félkövér dőlt,Grassetto Corsivo,Vet Cursief,Halvfet Kursiv,Pogrubiona kursywa,Negrito Itálico,Полужирный Курсив,Tučná kurzíva,Fet Kursiv,Kalın İtalik,Krepko poševno,nghiêng đậm,Lodi etzana"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/rhwp-os-basic/timesi.ttf",
+      "sha256": "3a1c2bc8528bfa432e0414d4ec69bf5813563c474e16a9ad0f57ca262f8d24a2",
+      "faces": [
+        {
+          "family": "Times New Roman",
+          "style": "Italic,cursiva,kurzíva,kursiv,Πλάγια,Kursivoitu,Italique,Dőlt,Corsivo,Cursief,kursywa,Itálico,Курсив,İtalik,Poševno,nghiêng,Etzana"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/rhwp-os-basic/wingding.ttf",
+      "sha256": "9bcd6064e3b52fa30a347edd6e82506e2ec8b1602930b423c629a82c10468a5b",
+      "faces": [
+        {
+          "family": "Wingdings",
+          "style": "Regular,normal,Standard,Normaali,Normale,Standaard,Normálne,Navadno"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/dejavu/DejaVuMathTeXGyre.ttf",
+      "sha256": "75a6cb527b0175f9d13af29c33a6915ae38645016c6fe9881653155cd1f62485",
+      "faces": [
+        {
+          "family": "DejaVu Math TeX Gyre",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+      "sha256": "5c1247acef7f2b8522a31742c76d6adcb5569bacc0be7ceaa4dc39dd252ce895",
+      "faces": [
+        {
+          "family": "DejaVu Sans",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/dejavu/DejaVuSans-BoldOblique.ttf",
+      "sha256": "58d78a24ddff9ab30427550d68f0b9b7dd28d6690f9f4b3e4ebac7105252e9b2",
+      "faces": [
+        {
+          "family": "DejaVu Sans",
+          "style": "Bold Oblique"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/dejavu/DejaVuSans-ExtraLight.ttf",
+      "sha256": "fab10cd1c5680872c4d8db8059af93e3ff2b5e2ebc6120574d3c0d414334e979",
+      "faces": [
+        {
+          "family": "DejaVu Sans,DejaVu Sans Light",
+          "style": "ExtraLight"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/dejavu/DejaVuSans-Oblique.ttf",
+      "sha256": "2d7b524ce7d51db78591b4e19c8185b89f3af0aa6534c5e524cf0c6f4ea673de",
+      "faces": [
+        {
+          "family": "DejaVu Sans",
+          "style": "Oblique"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+      "sha256": "ae7b7855e115a5966d8b1b3f80f254ccc117ec86f9965e202ee2940453837280",
+      "faces": [
+        {
+          "family": "DejaVu Sans",
+          "style": "Book"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/dejavu/DejaVuSansCondensed-Bold.ttf",
+      "sha256": "8d9984f4eaae48bb3677966491b55538738283c1de177d60df1681a1b7844ffc",
+      "faces": [
+        {
+          "family": "DejaVu Sans,DejaVu Sans Condensed",
+          "style": "Condensed Bold,Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/dejavu/DejaVuSansCondensed-BoldOblique.ttf",
+      "sha256": "817ffe1976a879cad74e0299fc76c66884f5247c6c50a77dd71fffe4fa009712",
+      "faces": [
+        {
+          "family": "DejaVu Sans,DejaVu Sans Condensed",
+          "style": "Condensed Bold Oblique,Bold Oblique"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/dejavu/DejaVuSansCondensed-Oblique.ttf",
+      "sha256": "e31968dabb045c534579e667b181f1fa965ab3a59b8278f09bbe88e5895fd08b",
+      "faces": [
+        {
+          "family": "DejaVu Sans,DejaVu Sans Condensed",
+          "style": "Condensed Oblique,Oblique"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/dejavu/DejaVuSansCondensed.ttf",
+      "sha256": "8b4d7f13947aa922594024f078cc9e89e8aa1ae6172150cbfe83f234be4f8985",
+      "faces": [
+        {
+          "family": "DejaVu Sans,DejaVu Sans Condensed",
+          "style": "Condensed,Book"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf",
+      "sha256": "3a3c502eeff669a231549e80df9f7c49de109bafe303170409e905d0b31a38fe",
+      "faces": [
+        {
+          "family": "DejaVu Sans Mono",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-BoldOblique.ttf",
+      "sha256": "a5251173370e30760e6919711dcd33e149d216ca4814eb74332bda03fcc7e834",
+      "faces": [
+        {
+          "family": "DejaVu Sans Mono",
+          "style": "Bold Oblique"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Oblique.ttf",
+      "sha256": "3d7955616e69721f7edb8e1b7a580f8fbd7d737111c6b54266ddc1d9ef13202f",
+      "faces": [
+        {
+          "family": "DejaVu Sans Mono",
+          "style": "Oblique"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
+      "sha256": "c805f9436dbc268644c1d9584f01a601a653e028e08fd74b9b949f6cf8304d88",
+      "faces": [
+        {
+          "family": "DejaVu Sans Mono",
+          "style": "Book"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf",
+      "sha256": "847b33e13925f19ff87e4d934d6b3cf7cac35ce16424f6f670e40c2f377cf2df",
+      "faces": [
+        {
+          "family": "DejaVu Serif",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/dejavu/DejaVuSerif-BoldItalic.ttf",
+      "sha256": "e4662d0bcf9039a5d1fb7b52f964aebdde4563be9e5a8521299936f4818c0ab2",
+      "faces": [
+        {
+          "family": "DejaVu Serif",
+          "style": "Bold Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Italic.ttf",
+      "sha256": "1d7476da447f9455a47c41adfd6ac2b1fc1b65e660f3ea4bf36128506c7e094c",
+      "faces": [
+        {
+          "family": "DejaVu Serif",
+          "style": "Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf",
+      "sha256": "8f2c103bfa3fd5de71f1b92b18f21906b5a26871fb7e19a9a4c9af539c3cc7ab",
+      "faces": [
+        {
+          "family": "DejaVu Serif",
+          "style": "Book"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/dejavu/DejaVuSerifCondensed-Bold.ttf",
+      "sha256": "3a48e198db686dcea39b3116c582b66427c2bc41c44409f19e5af7e0da446190",
+      "faces": [
+        {
+          "family": "DejaVu Serif,DejaVu Serif Condensed",
+          "style": "Condensed Bold,Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/dejavu/DejaVuSerifCondensed-BoldItalic.ttf",
+      "sha256": "14f03c4313f276e7e5604413c18e87c7ce76e578b1baff8112523802378ef156",
+      "faces": [
+        {
+          "family": "DejaVu Serif,DejaVu Serif Condensed",
+          "style": "Condensed Bold Italic,Bold Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/dejavu/DejaVuSerifCondensed-Italic.ttf",
+      "sha256": "d938442b1c5ca73fef154c73bee02a8cd276a1a98dad837c038947d84eb31d99",
+      "faces": [
+        {
+          "family": "DejaVu Serif,DejaVu Serif Condensed",
+          "style": "Condensed Italic,Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/dejavu/DejaVuSerifCondensed.ttf",
+      "sha256": "1eae1e560d251f6bd759c70dcc2285e1a34e1951b2427feeab56a0d2e3b136ad",
+      "faces": [
+        {
+          "family": "DejaVu Serif,DejaVu Serif Condensed",
+          "style": "Condensed,Book"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf",
+      "sha256": "acb6440a713d880a13a21b468ba7cd43f5a2b2934972e51be791c880730777b8",
+      "faces": [
+        {
+          "family": "Droid Sans Fallback",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/liberation/LiberationMono-Bold.ttf",
+      "sha256": "626655e94dd82f3f42549daf995c921b0915fa8ab1f4b839559e8892ea41d240",
+      "faces": [
+        {
+          "family": "Liberation Mono",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/liberation/LiberationMono-BoldItalic.ttf",
+      "sha256": "15eb161953e3ecc7fc05a3fec8a59e0f4e0a54a4e375736adf8e98d65981f813",
+      "faces": [
+        {
+          "family": "Liberation Mono",
+          "style": "Bold Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/liberation/LiberationMono-Italic.ttf",
+      "sha256": "a71b2c25c89da05cf0e7c4dbba8d473fdead0b181ae56165217747d2c1f39215",
+      "faces": [
+        {
+          "family": "Liberation Mono",
+          "style": "Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf",
+      "sha256": "395fa5ab8d40c8eba390ced528744ea75a7f69aabf3e68b6f925ca0e39a27370",
+      "faces": [
+        {
+          "family": "Liberation Mono",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+      "sha256": "3973aa5054fb467dd5627245d3dc82e37bf16fe075756156a570455871351582",
+      "faces": [
+        {
+          "family": "Liberation Sans",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/liberation/LiberationSans-BoldItalic.ttf",
+      "sha256": "c80fa7f2ffa0e01d4d8dcd6a6d1e43eda665222d1b4db597dde1174c456006cf",
+      "faces": [
+        {
+          "family": "Liberation Sans",
+          "style": "Bold Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/liberation/LiberationSans-Italic.ttf",
+      "sha256": "830c5fa600505fb4c1a271b4271c53c44bae43f492b2a240d0e98a3a7a380121",
+      "faces": [
+        {
+          "family": "Liberation Sans",
+          "style": "Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+      "sha256": "4659bc0c58c5028dd488ec928d41d9265db43d9b669fc14ca8b0832daca7b144",
+      "faces": [
+        {
+          "family": "Liberation Sans",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/liberation/LiberationSansNarrow-Bold.ttf",
+      "sha256": "4cd16b98cea43a9ce4471df068634fce71ab279dfc9b303b6b188bd96b35226a",
+      "faces": [
+        {
+          "family": "Liberation Sans Narrow",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/liberation/LiberationSansNarrow-BoldItalic.ttf",
+      "sha256": "4f98c92c0a8565131aa41c8c50eeb3611f529647026b0e151614a57cce969f14",
+      "faces": [
+        {
+          "family": "Liberation Sans Narrow",
+          "style": "Bold Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/liberation/LiberationSansNarrow-Italic.ttf",
+      "sha256": "ea0f8a0d2cdba7d9d36a7622caa6f2f72dad28c2ad091610e3828a5563fe22b2",
+      "faces": [
+        {
+          "family": "Liberation Sans Narrow",
+          "style": "Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/liberation/LiberationSansNarrow-Regular.ttf",
+      "sha256": "ab74085ab53ca88945d1ef57493c955c1dca3f2e7d7b4b7ab90cd107a7262bc7",
+      "faces": [
+        {
+          "family": "Liberation Sans Narrow",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/liberation/LiberationSerif-Bold.ttf",
+      "sha256": "9e66c25e20868756bf12eb24a520a4552727c9cd108f577f7ae33e3c0110e39c",
+      "faces": [
+        {
+          "family": "Liberation Serif",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/liberation/LiberationSerif-BoldItalic.ttf",
+      "sha256": "379010e87421a883f7bbfa7936d23dfe0257a54ce850819b74556e9f2c615a8a",
+      "faces": [
+        {
+          "family": "Liberation Serif",
+          "style": "Bold Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/liberation/LiberationSerif-Italic.ttf",
+      "sha256": "eaeaf7f2b12544ecde64290c1fa7ec403ff70fd58b313637b265400b20249242",
+      "faces": [
+        {
+          "family": "Liberation Serif",
+          "style": "Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/liberation/LiberationSerif-Regular.ttf",
+      "sha256": "705903ae1382f0150f115d6f10a30f5b2f3d6ade649c474afe6366c39174fb65",
+      "faces": [
+        {
+          "family": "Liberation Serif",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/libreoffice/opens___.ttf",
+      "sha256": "dcfa7a7fea8f6f7fdb541935a6a92a7501259d84e6486b20b98da0f371f64eee",
+      "faces": [
+        {
+          "family": "OpenSymbol",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/lyx/cmex10.ttf",
+      "sha256": "33bade33269163c77124a3375d3b4655bd0e767c313d2b919b7c87fbfcda8de4",
+      "faces": [
+        {
+          "family": "cmex10",
+          "style": "LyX"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/lyx/cmmi10.ttf",
+      "sha256": "74d28f7093a6bcddf20b2347318975a70b802d74374c9d6d9b9152c8726a6151",
+      "faces": [
+        {
+          "family": "cmmi10",
+          "style": "LyX"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/lyx/cmr10.ttf",
+      "sha256": "ca1b90832e84c28e5754a0c7f769868f4d9411053ba96967d6256eabe826f710",
+      "faces": [
+        {
+          "family": "cmr10",
+          "style": "LyX"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/lyx/cmsy10.ttf",
+      "sha256": "17c36f560cf8079ff1f860594cd35699d3015711e437324644ffeb6fb88c7683",
+      "faces": [
+        {
+          "family": "cmsy10",
+          "style": "LyX"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/lyx/dsrom10.ttf",
+      "sha256": "ddbd0356a84e95751099f6759ece600bff1ba1d78a2f2eca6ddbf142202baab4",
+      "faces": [
+        {
+          "family": "dsrom10",
+          "style": "LyX"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/lyx/esint10.ttf",
+      "sha256": "7e668188de14d973b7e8934e72b3d857efe48eecf52bce3a97d091854386a920",
+      "faces": [
+        {
+          "family": "esint10",
+          "style": "LyX"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/lyx/eufm10.ttf",
+      "sha256": "12b89677f7a7e2aa24e42379e24dac6f3506b591f3a267896dac1097c670fdfb",
+      "faces": [
+        {
+          "family": "eufm10",
+          "style": "LyX"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/lyx/msam10.ttf",
+      "sha256": "e0a12d98ea4bef343c683593bfa0b11f18ca3f637d602c9445025b88112276c3",
+      "faces": [
+        {
+          "family": "msam10",
+          "style": "LyX"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/lyx/msbm10.ttf",
+      "sha256": "ade8a121a6bccffe0d897b906bbff97691395e07761ab012663942c16efc8767",
+      "faces": [
+        {
+          "family": "msbm10",
+          "style": "LyX"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/lyx/rsfs10.ttf",
+      "sha256": "cfb634d9f3272ab29af98d1be99056b88d5666ef770bef4301927679938a6121",
+      "faces": [
+        {
+          "family": "rsfs10",
+          "style": "LyX"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/lyx/stmary10.ttf",
+      "sha256": "2aceae7a5f39728c72c06ae6e75038f3f6b0a1ae4f00785af4e48e36d41ea827",
+      "faces": [
+        {
+          "family": "stmary10",
+          "style": "LyX"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/lyx/wasy10.ttf",
+      "sha256": "d708c830612408ccb87eb7876555f621aa91750c0347ddafefe09a8f477476e9",
+      "faces": [
+        {
+          "family": "wasy10",
+          "style": "LyX"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumBarunGothic-YetHangul.ttf",
+      "sha256": "558ad653b02a76e4b4d3107a5371e8e40e2b6916ef620b303013b8a7e2473970",
+      "faces": [
+        {
+          "family": "NanumBarunGothic YetHangul,나눔바른고딕 옛한글",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumBarunGothic.ttf",
+      "sha256": "9b872773134e2e4d8c0b17021266786576db06c843ede0d0b523b214a450756c",
+      "faces": [
+        {
+          "family": "NanumBarunGothic,나눔바른고딕",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumBarunGothicBold.ttf",
+      "sha256": "39bba4cd9bd2986143825c8654abbb62443914ab33b346c0c929a916f5d98bf2",
+      "faces": [
+        {
+          "family": "NanumBarunGothic,나눔바른고딕",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumBarunGothicLight.ttf",
+      "sha256": "741c050acf9673158b6e5c9c863d05c9ee0f56cc77cf7e3d7a2ae0ee6502c3a4",
+      "faces": [
+        {
+          "family": "NanumBarunGothic,나눔바른고딕,NanumBarunGothic Light,나눔바른고딕 Light",
+          "style": "Light"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumBarunGothicUltraLight.ttf",
+      "sha256": "4de8633eb3b4af98c919755847e03a114b44bf729e3fa4c76826ffc55b1a67f0",
+      "faces": [
+        {
+          "family": "NanumBarunGothic,나눔바른고딕,NanumBarunGothic UltraLight,나눔바른고딕 UltraLight",
+          "style": "UltraLight"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumBarunpenB.ttf",
+      "sha256": "a4cb68691683ed926714d5003cf14828ea98d8453f4c843d81b89b0c008c5a5b",
+      "faces": [
+        {
+          "family": "NanumBarunpen,나눔바른펜,NanumBarunpen Bold",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumBarunpenR.ttf",
+      "sha256": "f5bd6993e8376e7f0796837ba0e50e006eb1f568f5dbb571e18d66847ff4f9c0",
+      "faces": [
+        {
+          "family": "NanumBarunpen,나눔바른펜",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumBrush.ttf",
+      "sha256": "5fe0e02f74c58aa25ba49908fb6775bcb7d00d19ddd68b480b51a926f5ca12ec",
+      "faces": [
+        {
+          "family": "Nanum Brush Script,나눔손글씨 붓",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",
+      "sha256": "48a28e97b34fc8e5b157657633670cd1b7de126cfc414da65ce9c3d5bc8be733",
+      "faces": [
+        {
+          "family": "NanumGothic,나눔고딕",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf",
+      "sha256": "454eb3f503f377782a99eb84fc4bb7dde22a0f075d41b47427737f2985053bc9",
+      "faces": [
+        {
+          "family": "NanumGothic,나눔고딕",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumGothicCoding.ttf",
+      "sha256": "787effd7efed2abca88ade231faa8191f4e9fcf85b1805a13ee1dc3724b72089",
+      "faces": [
+        {
+          "family": "NanumGothicCoding,나눔고딕코딩",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumGothicCodingBold.ttf",
+      "sha256": "77a6de97c176b76ef9a683b565a1e6f4ce40b499c72a2972c4b5bdf7c6b8e7a0",
+      "faces": [
+        {
+          "family": "NanumGothicCoding,나눔고딕코딩",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumGothicEcoR.ttf",
+      "sha256": "ab00307e954bbe0833cbaf6dacd143f9f053f84eac1d12060ced33d8250521e9",
+      "faces": [
+        {
+          "family": "NanumGothic Eco,나눔고딕 에코",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumGothicExtraBold.ttf",
+      "sha256": "e0288775c8f021f327fd77f9eb251eea80e4601bbbb068478c7878caa23e8f92",
+      "faces": [
+        {
+          "family": "NanumGothic,나눔고딕,NanumGothicExtraBold,나눔고딕 ExtraBold",
+          "style": "ExtraBold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumGothicLight.ttf",
+      "sha256": "da39544c39be58124a4fcb296eafc2bf73530b3dbd1b19aa802c5c3fd227e31c",
+      "faces": [
+        {
+          "family": "NanumGothic,나눔고딕,NanumGothic Light,나눔고딕 Light",
+          "style": "Light,Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumMyeongjo-YetHangul.ttf",
+      "sha256": "2da006402121ca2efb5ddbd213bd05adb2917733346705f13a09d260a739b569",
+      "faces": [
+        {
+          "family": "NanumMyeongjo YetHangul,나눔명조 옛한글",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumMyeongjo.ttf",
+      "sha256": "a21faae83d2d16d11c639f04f25fbe410eda905969ad75eff50d63ca31569f25",
+      "faces": [
+        {
+          "family": "NanumMyeongjo,나눔명조",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumMyeongjoBold.ttf",
+      "sha256": "cb47c5d029dd5ee5b8f6fe142c468d670edbe4e9caaad33b91e6ac399e99194a",
+      "faces": [
+        {
+          "family": "NanumMyeongjo,나눔명조",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumMyeongjoEcoR.ttf",
+      "sha256": "26544a2e23afdc2c6805400c044d507785977596487024f69081267d7e6b96da",
+      "faces": [
+        {
+          "family": "NanumMyeongjo Eco,나눔명조 에코",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumMyeongjoExtraBold.ttf",
+      "sha256": "a03d520bccc43ae1dc0bd5f64d143195a0ffce8318aacb0f3efb6117827eee14",
+      "faces": [
+        {
+          "family": "NanumMyeongjo,나눔명조,NanumMyeongjoExtraBold,나눔명조 ExtraBold",
+          "style": "ExtraBold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumPen.ttf",
+      "sha256": "0e1e2cc07fd5c5d181936ecaf97363263a8d4ae6b6151039ea83cb9002b63152",
+      "faces": [
+        {
+          "family": "Nanum Pen Script,나눔손글씨 펜",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumSquareB.ttf",
+      "sha256": "f737d58294faec9c632189af3a2a3e48e49c03c0256de09db61e879e2857bfbf",
+      "faces": [
+        {
+          "family": "NanumSquare,나눔스퀘어,NanumSquare Bold,나눔스퀘어 Bold",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumSquareEB.ttf",
+      "sha256": "6608adc320ff8514630d04a53e16cc7a5d54f5cbdbe3769109f311dcb3b48f80",
+      "faces": [
+        {
+          "family": "NanumSquare,나눔스퀘어,NanumSquare ExtraBold,나눔스퀘어 ExtraBold",
+          "style": "ExtraBold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumSquareL.ttf",
+      "sha256": "b2f68affc8b5d450fd0cb1b6f1523888a70e236fff942889c30f832727152da4",
+      "faces": [
+        {
+          "family": "NanumSquare,나눔스퀘어,NanumSquare Light,나눔스퀘어 Light",
+          "style": "Light"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumSquareR.ttf",
+      "sha256": "5a51deae5237435d9a0bc0cc6cc30619a914b29801f895698cfdacadcad06e94",
+      "faces": [
+        {
+          "family": "NanumSquare,나눔스퀘어",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumSquareRoundB.ttf",
+      "sha256": "61fd37816a1ee1a9336876742392d80bdafd340e5124a088aeda20446e2e15de",
+      "faces": [
+        {
+          "family": "NanumSquareRound,나눔스퀘어라운드,NanumSquareRound Bold,나눔스퀘어라운드 Bold",
+          "style": "Bold,Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumSquareRoundEB.ttf",
+      "sha256": "9e845fc35c5bc4a5b7ed59d85a1760059de5ce55b5e5a4d7535f7efa87695e39",
+      "faces": [
+        {
+          "family": "NanumSquareRound,나눔스퀘어라운드,NanumSquareRound ExtraBold,나눔스퀘어라운드 ExtraBold",
+          "style": "ExtraBold,Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumSquareRoundL.ttf",
+      "sha256": "b0bd9e7e067840d55520ce7e45a3e57327144da136b4ab558fb98b200701d071",
+      "faces": [
+        {
+          "family": "NanumSquareRound,나눔스퀘어라운드,NanumSquareRound Light,나눔스퀘어라운드 Light",
+          "style": "Light,Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumSquareRoundR.ttf",
+      "sha256": "52862fdf05b55ba886ca21998222d9598ef84c975e68046b9a8d8f1af09228a0",
+      "faces": [
+        {
+          "family": "NanumSquareRound,나눔스퀘어라운드,NanumSquareRound Regular,나눔스퀘어라운드 Regular",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumSquare_acB.ttf",
+      "sha256": "1a266ecb0450fcdd0c7659090b8be784a2029a2f78a4a9501de3394ee284864d",
+      "faces": [
+        {
+          "family": "NanumSquare_ac,나눔스퀘어_ac,NanumSquare_ac Bold,나눔스퀘어_ac Bold",
+          "style": "ExtraBold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumSquare_acEB.ttf",
+      "sha256": "5348d0f43d0b1d01e6ac888aafba2048178adc2304dbc5c8f4b3418438f02554",
+      "faces": [
+        {
+          "family": "NanumSquare_ac,나눔스퀘어_ac,NanumSquare_ac ExtraBold,나눔스퀘어_ac ExtraBold",
+          "style": "ExtraBold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumSquare_acL.ttf",
+      "sha256": "046cb1b1a4666e9a01ec09bc6109d32194351df18668709a3469967e50587372",
+      "faces": [
+        {
+          "family": "NanumSquare_ac,나눔스퀘어_ac,NanumSquare_ac Light,나눔스퀘어_ac Light",
+          "style": "Light"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/nanum/NanumSquare_acR.ttf",
+      "sha256": "a8c3aa53d5dbab550e7784281801f71f7af54619ca8d33a6e5e7d34d4f06d7e2",
+      "faces": [
+        {
+          "family": "NanumSquare_ac,나눔스퀘어_ac",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf",
+      "sha256": "93cdc4ee9aa40e2afceecc63da0ca05ec7aab4bec991ece51a6b52389f48a477",
+      "faces": [
+        {
+          "family": "Noto Color Emoji",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoKufiArabic-Bold.ttf",
+      "sha256": "11c1608fb7c70135ab4cfd126f2300c81c7ca08c9bcffaff61b947edba234e65",
+      "faces": [
+        {
+          "family": "Noto Kufi Arabic",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoKufiArabic-Regular.ttf",
+      "sha256": "befb9d07506942ba2a7e0e85c65a24a76792c937d812bc80f1095d0f660cf330",
+      "faces": [
+        {
+          "family": "Noto Kufi Arabic",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoLoopedLao-Bold.ttf",
+      "sha256": "a7daccd8bea541f092ef055fdaa0876a2ae42b0f1848fd5ef7186bf471dd1f64",
+      "faces": [
+        {
+          "family": "Noto Looped Lao,Noto Looped Lao Bold",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoLoopedLao-Regular.ttf",
+      "sha256": "9efadfd2fcc973c1266c975507ea5b832c995d4a2126f2235bdde29756509aa4",
+      "faces": [
+        {
+          "family": "Noto Looped Lao,Noto Looped Lao Regular",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoLoopedThai-Bold.ttf",
+      "sha256": "63112a2b7bb342442993c71c0e8d52e3dacd9606eabfa344a436c9578cb74f35",
+      "faces": [
+        {
+          "family": "Noto Looped Thai,Noto Looped Thai Bold",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoLoopedThai-Regular.ttf",
+      "sha256": "a13ebdee881ce1dcc84067c266345c86d2ace50cb599d2df02a1aa835552c1aa",
+      "faces": [
+        {
+          "family": "Noto Looped Thai,Noto Looped Thai Regular",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoMono-Regular.ttf",
+      "sha256": "41fd7ccc82375e2a1e47f0cc2c941c14d7c99ba2f57cf69c9f738d07fb257686",
+      "faces": [
+        {
+          "family": "Noto Mono",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoMusic-Regular.ttf",
+      "sha256": "fdf04893f04fabd36261bc5fb4fb2b0ae4da268286318ab8919f34b3e3458397",
+      "faces": [
+        {
+          "family": "Noto Music",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoNaskhArabic-Bold.ttf",
+      "sha256": "b5cbcb561b4b540ff11d7b6934577dbbbbb9e1d152d47f6f31f19176d58ff39c",
+      "faces": [
+        {
+          "family": "Noto Naskh Arabic",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoNaskhArabic-Regular.ttf",
+      "sha256": "8c67eaa2f0086872628fc3f7f760386f83c8be5c5e9a1ba3a38891237b2ac7cb",
+      "faces": [
+        {
+          "family": "Noto Naskh Arabic",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoNastaliqUrdu-Bold.ttf",
+      "sha256": "6b81290dc928bac40fa4b71370f4ef260ad8c33d17be38eab05376490077ebc4",
+      "faces": [
+        {
+          "family": "Noto Nastaliq Urdu",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoNastaliqUrdu-Regular.ttf",
+      "sha256": "fe24c4a05b19482beac11e4b90a0f6754214f1cb5e925cf9e86b48283ac37522",
+      "faces": [
+        {
+          "family": "Noto Nastaliq Urdu",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoRashiHebrew-Bold.ttf",
+      "sha256": "5e694fe897f81b0045ec840d22940aa6bd1818b0cb28a4b25cfac051a7a7295d",
+      "faces": [
+        {
+          "family": "Noto Rashi Hebrew",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoRashiHebrew-Regular.ttf",
+      "sha256": "ba8ca5f273ae72cdbb52eb3a7e699b5500a063b5141cf6e9f1efb80758d0a826",
+      "faces": [
+        {
+          "family": "Noto Rashi Hebrew",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSans-Bold.ttf",
+      "sha256": "e83493c945848ecd4a9ad0f6d19164541a0d3e23a9c952304a00a46e00272ac5",
+      "faces": [
+        {
+          "family": "Noto Sans",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSans-BoldItalic.ttf",
+      "sha256": "4315b26e5afb62f70f5ffe0edaa3363e57765ff2af2beda12b6fef197e3e5f5a",
+      "faces": [
+        {
+          "family": "Noto Sans",
+          "style": "Bold Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSans-Italic.ttf",
+      "sha256": "5d7618dda819443fd07301c84adcee9fe8960c873ea5e5e1f0f59db384b78082",
+      "faces": [
+        {
+          "family": "Noto Sans",
+          "style": "Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
+      "sha256": "89c3c497f618fdaa0b2d1e98fef93582f28c71debd2c4a8cdf41f190ced2909d",
+      "faces": [
+        {
+          "family": "Noto Sans",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansAdlam-Bold.ttf",
+      "sha256": "0111556561e7ddf39c4df3f87c2c2cc3c6df79a764d5ff8bac652576ed051ed8",
+      "faces": [
+        {
+          "family": "Noto Sans Adlam",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansAdlam-Regular.ttf",
+      "sha256": "7360a8023487bff116bfde73a070da0f734f837f3056c81b20791b1f2839b7d3",
+      "faces": [
+        {
+          "family": "Noto Sans Adlam",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansAdlamUnjoined-Bold.ttf",
+      "sha256": "7e9335fcb64373e95aa9ca348f7ceb3561aca039e469d084c46538251c63d904",
+      "faces": [
+        {
+          "family": "Noto Sans Adlam Unjoined",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansAdlamUnjoined-Regular.ttf",
+      "sha256": "9bea8524ccb964f82658e97831615a5ac9ed48869cb4008a7eedb55fbe863289",
+      "faces": [
+        {
+          "family": "Noto Sans Adlam Unjoined",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansAnatolianHieroglyphs-Regular.ttf",
+      "sha256": "bdaafffb532df2c2000166dcb4250b1c48635c41d9502e223d9d51922a692728",
+      "faces": [
+        {
+          "family": "Noto Sans Anatolian Hieroglyphs,Noto Sans AnatoHiero",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansArabic-Bold.ttf",
+      "sha256": "ded6fc7359ca36d15d7aab9ef0c066e21ce48b26a069994d6602fa2cb9a1b952",
+      "faces": [
+        {
+          "family": "Noto Sans Arabic",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansArabic-Regular.ttf",
+      "sha256": "504d7407d86875acf7d04dfaa0fd7524d0b8797723bc4aa18022f29db25b0b6e",
+      "faces": [
+        {
+          "family": "Noto Sans Arabic",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansArmenian-Bold.ttf",
+      "sha256": "a0f398d0205f0b96d6637ac66d92e6e42b230f8ed3853a050d0aa5792eb9b7f7",
+      "faces": [
+        {
+          "family": "Noto Sans Armenian",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansArmenian-Regular.ttf",
+      "sha256": "9636c32c121f4fc1fc6963dfad60ea32c41889507118a46f83a818eacf40348e",
+      "faces": [
+        {
+          "family": "Noto Sans Armenian",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansAvestan-Regular.ttf",
+      "sha256": "7b12c0e594f8b13b9148763318238742a74dfe57032752238a0df3bd1a566331",
+      "faces": [
+        {
+          "family": "Noto Sans Avestan",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansBalinese-Bold.ttf",
+      "sha256": "655f5e8fe488bd1dd532148d9225ce7cb34d8de1acd8f84c25d86c43f023ca94",
+      "faces": [
+        {
+          "family": "Noto Sans Balinese",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansBalinese-Regular.ttf",
+      "sha256": "97d94b44707d68adde5d0e766536c016e635b64006a4b2dcf4ed79959480f095",
+      "faces": [
+        {
+          "family": "Noto Sans Balinese",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansBamum-Bold.ttf",
+      "sha256": "33ad7daa344320fd5d106a1124f7279d530db1106647052aafcf50cea1c87fe6",
+      "faces": [
+        {
+          "family": "Noto Sans Bamum",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansBamum-Regular.ttf",
+      "sha256": "5de881d26f4913c63f81db283bcffaafe1f0775d1be8072f39a4f8c0c09b90aa",
+      "faces": [
+        {
+          "family": "Noto Sans Bamum",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansBassaVah-Regular.ttf",
+      "sha256": "f00a72b0a05a8bc3da85a07b9a88a77b062737410e319726a0a7b217d8ca8169",
+      "faces": [
+        {
+          "family": "Noto Sans Bassa Vah",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansBatak-Regular.ttf",
+      "sha256": "d7913a9681f6bf3f63a3c87f34c87d20bcf8515aceee9c081dc2851292f4efa4",
+      "faces": [
+        {
+          "family": "Noto Sans Batak",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansBengali-Bold.ttf",
+      "sha256": "22c9ff99baca4d31c531ce450a1369beed889467e1ad964f4b8a6f810aa46955",
+      "faces": [
+        {
+          "family": "Noto Sans Bengali",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansBengali-Regular.ttf",
+      "sha256": "9bb35b3547829ecc42041b6017e87fd4c5f1da1edcd00f59171777050f346018",
+      "faces": [
+        {
+          "family": "Noto Sans Bengali",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansBhaiksuki-Regular.ttf",
+      "sha256": "c2b72982fc4c28287a5df6dccfbec65d2a74e3f7526e4a083195160d6211f80d",
+      "faces": [
+        {
+          "family": "Noto Sans Bhaiksuki",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansBrahmi-Regular.ttf",
+      "sha256": "0c9e9d7ebc20b81fff7cf5bcfc4ed5552ad97b3a583c6e33baa2d38952182d05",
+      "faces": [
+        {
+          "family": "Noto Sans Brahmi",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansBuginese-Regular.ttf",
+      "sha256": "9572118c512044497fa06cf5ae5209a245295a21746dac2f34ec5fad094f66c0",
+      "faces": [
+        {
+          "family": "Noto Sans Buginese",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansBuhid-Regular.ttf",
+      "sha256": "435cfa275e7ccdff7326430ac498158d0377ac357570efd224f8c2888c8f6b94",
+      "faces": [
+        {
+          "family": "Noto Sans Buhid",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansCanadianAboriginal-Bold.ttf",
+      "sha256": "7e6bf0f2b0795a238f090380a180d545a4d911b5a404dc1f478436b7c4c1b067",
+      "faces": [
+        {
+          "family": "Noto Sans Canadian Aboriginal,Noto Sans CanAborig",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansCanadianAboriginal-Regular.ttf",
+      "sha256": "66b4f453f27d176045bab8e168397ec46322d74306931c807f500eb41c984157",
+      "faces": [
+        {
+          "family": "Noto Sans Canadian Aboriginal,Noto Sans CanAborig",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansCarian-Regular.ttf",
+      "sha256": "962bac788f4ab38c61f6de86d5b8c1bca2b105d88a511c10b9a9058c6b1291aa",
+      "faces": [
+        {
+          "family": "Noto Sans Carian",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansCaucasianAlbanian-Regular.ttf",
+      "sha256": "0faeefe156c6952e432ead92629ea3b835b060f45a01311ac27f3038c01888d9",
+      "faces": [
+        {
+          "family": "Noto Sans Caucasian Albanian,Noto Sans CaucAlban",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansChakma-Regular.ttf",
+      "sha256": "281bbdb5c31aae460c3a58acd0ba9ed5f92e58ebb03f7614be7c4441520c5525",
+      "faces": [
+        {
+          "family": "Noto Sans Chakma",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansCham-Bold.ttf",
+      "sha256": "e5c6d0db5ddbc295820eaa5f18d30413fdea6be914d7556b4e736686d948a516",
+      "faces": [
+        {
+          "family": "Noto Sans Cham",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansCham-Regular.ttf",
+      "sha256": "b87ef0181fb1f11da6a36846724a299143d73d8afffd238018fd91291beb87bb",
+      "faces": [
+        {
+          "family": "Noto Sans Cham",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansCherokee-Bold.ttf",
+      "sha256": "2b09b627a4cf27aa1c4ddd72377509de07f0445f3f1a480dec14ca5211a07eef",
+      "faces": [
+        {
+          "family": "Noto Sans Cherokee",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansCherokee-Regular.ttf",
+      "sha256": "bda37783ba22f62d71a647f5ddce6f8e4b4d6959eba3afd5a7eccbcaaa85f72c",
+      "faces": [
+        {
+          "family": "Noto Sans Cherokee",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansCoptic-Regular.ttf",
+      "sha256": "9681bb92c70f4ff74a6a004a139719b6778dfabfcad17cec978a9601d9c69d29",
+      "faces": [
+        {
+          "family": "Noto Sans Coptic",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansCuneiform-Regular.ttf",
+      "sha256": "1138815fabc470753e09876c6deeb4a006219b756e6b2d9bfe0e91aa4bcc21e1",
+      "faces": [
+        {
+          "family": "Noto Sans Cuneiform",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansCypriot-Regular.ttf",
+      "sha256": "4d2a47dfc00ccf8971a3f2273d2c7682128bab03de721f0ee9239a5777e978df",
+      "faces": [
+        {
+          "family": "Noto Sans Cypriot",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansDeseret-Regular.ttf",
+      "sha256": "35a4d331a76073eeff539442b2c3b49efb58baa0d34d1da0f685f6a4b98d1e2f",
+      "faces": [
+        {
+          "family": "Noto Sans Deseret",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansDevanagari-Bold.ttf",
+      "sha256": "77ad688cfe1dc55185bf4edb4db3c614202c65dd23a1463ad0e23fc52bcc9a5c",
+      "faces": [
+        {
+          "family": "Noto Sans Devanagari",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansDevanagari-Regular.ttf",
+      "sha256": "79a470365ccb210fa3c7d8d8ff2e005ef9d983cfd067f735a0caf7e15070ca9f",
+      "faces": [
+        {
+          "family": "Noto Sans Devanagari",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansDisplay-Bold.ttf",
+      "sha256": "1640ba8acb852d9e00406e166d1fc0cedd62a4c20342fd92f1f6dbc7baa61de2",
+      "faces": [
+        {
+          "family": "Noto Sans Display",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansDisplay-BoldItalic.ttf",
+      "sha256": "8f0fd329ff81a2469b95b95ee3b3c2b069e7cdec633f41b77174bf23a144ac81",
+      "faces": [
+        {
+          "family": "Noto Sans Display",
+          "style": "Bold Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansDisplay-Italic.ttf",
+      "sha256": "4562c3241e077cd612b2d5f0bf1717767545cfeff79dcb704e78114a083aecb0",
+      "faces": [
+        {
+          "family": "Noto Sans Display",
+          "style": "Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansDisplay-Regular.ttf",
+      "sha256": "3dd456595e9226472ab8adaf9408400c671b97dbba241d883d05e2ab70ceadac",
+      "faces": [
+        {
+          "family": "Noto Sans Display",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansDuployan-Regular.ttf",
+      "sha256": "e18ee5ffd6a456541bb6f1c4db4a6d39f89ec1d2bacb2198f653da0d79b0dc8b",
+      "faces": [
+        {
+          "family": "Noto Sans Duployan",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansEgyptianHieroglyphs-Regular.ttf",
+      "sha256": "ad50e535500acc88b9582c648cc84ca9a4679c1810a426aa85b7ba8bada8af15",
+      "faces": [
+        {
+          "family": "Noto Sans Egyptian Hieroglyphs,Noto Sans EgyptHiero",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansElbasan-Regular.ttf",
+      "sha256": "6b4e554827154cbead6b00c8b261cdde9453845e33871ff081ad68f58c65166d",
+      "faces": [
+        {
+          "family": "Noto Sans Elbasan",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansElymaic-Regular.ttf",
+      "sha256": "47760a41aa36d69b442a3988e12b904290c24e7b54ff11762d826e84aa0c1e7a",
+      "faces": [
+        {
+          "family": "Noto Sans Elymaic",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansEthiopic-Bold.ttf",
+      "sha256": "cc16f0c43be76a2ecb5f6d08de4fe6705886b9be90251bfb5959a90955be7f1d",
+      "faces": [
+        {
+          "family": "Noto Sans Ethiopic",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansEthiopic-Regular.ttf",
+      "sha256": "58bc43b062961b38ee45757d2e74e6a991a12011aa0399fb03004ac432e5c852",
+      "faces": [
+        {
+          "family": "Noto Sans Ethiopic",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansGeorgian-Bold.ttf",
+      "sha256": "2cee22513f5c94b5577fe1a91df94836dc9825ac78e5b3a9f3c49d1f038a5f11",
+      "faces": [
+        {
+          "family": "Noto Sans Georgian",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansGeorgian-Regular.ttf",
+      "sha256": "ba75f2154fef9beac8439f94c631dc37ef9c708d32f9254bb019afdfa9aa3138",
+      "faces": [
+        {
+          "family": "Noto Sans Georgian",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansGlagolitic-Regular.ttf",
+      "sha256": "5526e640b205befa2f59b3c46513fc94be896a13c4428f84000eb22f8a8f3a32",
+      "faces": [
+        {
+          "family": "Noto Sans Glagolitic",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansGothic-Regular.ttf",
+      "sha256": "c85e7780c3adda90f56591914d89c3ed4dc9ea1b23d7e3a462fcd39e888ec70f",
+      "faces": [
+        {
+          "family": "Noto Sans Gothic",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansGrantha-Regular.ttf",
+      "sha256": "493f987e5e8c86d3f4464fab2fb5b4f435e1d4e847a46b1922c311a3a7c441bc",
+      "faces": [
+        {
+          "family": "Noto Sans Grantha",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansGujarati-Bold.ttf",
+      "sha256": "db2b642c28b021da8cb0f3463bf41376549c850aa718ca863ec3ff5d5df0f2f7",
+      "faces": [
+        {
+          "family": "Noto Sans Gujarati",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansGujarati-Regular.ttf",
+      "sha256": "4468a3a24516831874fb4a867b760a22257944584e478d32a97e3c4d4bfc6400",
+      "faces": [
+        {
+          "family": "Noto Sans Gujarati",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansGunjalaGondi-Regular.ttf",
+      "sha256": "10b7744bfd151e4ad844155cefd0f60032b005269cf34738fea02b0ff5dacf9c",
+      "faces": [
+        {
+          "family": "Noto Sans Gunjala Gondi",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansGurmukhi-Bold.ttf",
+      "sha256": "ded9c1f56a7ed0b835cfef5dd642f26cfc0f41a16fbc08008d376ddcc91d606e",
+      "faces": [
+        {
+          "family": "Noto Sans Gurmukhi",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansGurmukhi-Regular.ttf",
+      "sha256": "1db960ff6f506a98f5b3ece78f54618388c6187e7edf8ceee5ab63389c0db3ab",
+      "faces": [
+        {
+          "family": "Noto Sans Gurmukhi",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansHanifiRohingya-Bold.ttf",
+      "sha256": "1b7510e112fb7567e614fe55151be9b6273758d2444dd81071bdb887faca00f5",
+      "faces": [
+        {
+          "family": "Noto Sans Hanifi Rohingya",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansHanifiRohingya-Regular.ttf",
+      "sha256": "abcfae7a163727e1d4507bc2603b2122cc3fbb9d5e14a8f5c11c89222de281f2",
+      "faces": [
+        {
+          "family": "Noto Sans Hanifi Rohingya",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansHanunoo-Regular.ttf",
+      "sha256": "63e65378a4f2bbbdeb5f3bf1641baa4d4908a1808390450ec40abff3c94800d9",
+      "faces": [
+        {
+          "family": "Noto Sans Hanunoo",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansHatran-Regular.ttf",
+      "sha256": "b4c2cee352c218a47f64c186636bd28ef7646156a5171ca348f2fbf8773e83fa",
+      "faces": [
+        {
+          "family": "Noto Sans Hatran",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansHebrew-Bold.ttf",
+      "sha256": "d3b01343f71e8a93fffb84c345a1aecbaf4694b98d0eaace916cb9eac9e6dcd3",
+      "faces": [
+        {
+          "family": "Noto Sans Hebrew",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansHebrew-Regular.ttf",
+      "sha256": "436900d5ad77d33e4234247f3076eaecd25b92b9bea0519514f684140e3566a7",
+      "faces": [
+        {
+          "family": "Noto Sans Hebrew",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansImperialAramaic-Regular.ttf",
+      "sha256": "a1eaa5484ea50bace57ed59ea64e630abf196d7eaf55e26b0ed299223a5100c3",
+      "faces": [
+        {
+          "family": "Noto Sans Imperial Aramaic,Noto Sans ImpAramaic",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansIndicSiyaqNumbers-Regular.ttf",
+      "sha256": "1d5fd023870ac85d0b16a7ac8b7f679db2c475e2719849670cac029d6d2ec43b",
+      "faces": [
+        {
+          "family": "Noto Sans Indic Siyaq Numbers",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansInscriptionalPahlavi-Regular.ttf",
+      "sha256": "f5cf7e0d349edb45a9573ae9d1dd683977f0eef1794066fa9a29bdbb65abcf74",
+      "faces": [
+        {
+          "family": "Noto Sans Inscriptional Pahlavi,Noto Sans InsPahlavi",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansInscriptionalParthian-Regular.ttf",
+      "sha256": "6389b35ade6db9c469309d84034057c6738a032abe13f4eb2435cfd86ed10cc4",
+      "faces": [
+        {
+          "family": "Noto Sans Inscriptional Parthian,Noto Sans InsParthi",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansJavanese-Bold.ttf",
+      "sha256": "5f22e4a45700f7ec3f1eb36d36fbc9669f7c2fe418fa32088857b9f7c214d764",
+      "faces": [
+        {
+          "family": "Noto Sans Javanese",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansJavanese-Regular.ttf",
+      "sha256": "faff63a3ea4c5a882508d85935f02e4f80e923551d4716e27706dd3c6cb07d67",
+      "faces": [
+        {
+          "family": "Noto Sans Javanese",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansKaithi-Regular.ttf",
+      "sha256": "d217c8bc858594b12e13d0d4accce754284c8f80b5531313ddd1dc2359e03f0f",
+      "faces": [
+        {
+          "family": "Noto Sans Kaithi",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansKannada-Bold.ttf",
+      "sha256": "fcb9918669a24e33b1464b33eeac24e9a0f54a50393dfdaeb1e596cfcf2dac47",
+      "faces": [
+        {
+          "family": "Noto Sans Kannada",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansKannada-Regular.ttf",
+      "sha256": "892b841b0b87ca3c2702bdc78d3031c8220f53e8f5f496ec5e37ccf0ca03ddf7",
+      "faces": [
+        {
+          "family": "Noto Sans Kannada",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansKayahLi-Bold.ttf",
+      "sha256": "5898d8592d842887e459a4d25905169a0a44de5f1eae5ed87c6a9e1935bd7e1a",
+      "faces": [
+        {
+          "family": "Noto Sans Kayah Li",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansKayahLi-Regular.ttf",
+      "sha256": "24fce18dd43d89de37f1be211ae935d30b2c87e19eece8d52cfc0d9c2ce44806",
+      "faces": [
+        {
+          "family": "Noto Sans Kayah Li",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansKharoshthi-Regular.ttf",
+      "sha256": "debbf499348e5a8ac8e292fef6cb4a9e24438ef8abfc4f50a3d32287e4a466d3",
+      "faces": [
+        {
+          "family": "Noto Sans Kharoshthi",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansKhmer-Bold.ttf",
+      "sha256": "cc74e7ac685da9a84e18b773ec8d80d06765aa1754bb14acc390c3620023c4dc",
+      "faces": [
+        {
+          "family": "Noto Sans Khmer",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansKhmer-Regular.ttf",
+      "sha256": "bc9a5e2afcee249849e409aabe6e22330c479b878ea3e59bf5e7c84482d7ee53",
+      "faces": [
+        {
+          "family": "Noto Sans Khmer",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansKhojki-Regular.ttf",
+      "sha256": "535cb9a795b8bd6e2c5f899574cd6bd26c267d0431aa7b03d6d8ac25ef0c9183",
+      "faces": [
+        {
+          "family": "Noto Sans Khojki",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansKhudawadi-Regular.ttf",
+      "sha256": "6f53c75ea5477f4ad68d32eff8d2cc0d0ec21600744c0804f3c6ad4f29006541",
+      "faces": [
+        {
+          "family": "Noto Sans Khudawadi",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansLao-Bold.ttf",
+      "sha256": "b87a8592f1cdd8b15e1e827967afd45a8c5ffc1123773bc4bd023fe1ccecd321",
+      "faces": [
+        {
+          "family": "Noto Sans Lao",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansLao-Regular.ttf",
+      "sha256": "6c3de7db369e85cba20255d161eeeb3d934ea3c4c51e2574c2ddcce79a25025c",
+      "faces": [
+        {
+          "family": "Noto Sans Lao",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansLepcha-Regular.ttf",
+      "sha256": "168771a2b64da0214bc92d0b93c20f910685b6b4107405fb57ce7ede438fe9d9",
+      "faces": [
+        {
+          "family": "Noto Sans Lepcha",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansLimbu-Regular.ttf",
+      "sha256": "2a7e9f84c1dedb1016a841a81363b2e609090c78799afe01247ccb0f25efd9b0",
+      "faces": [
+        {
+          "family": "Noto Sans Limbu",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansLinearA-Regular.ttf",
+      "sha256": "230daa2578f04ad8a38441f1cf128d70d64dc90fca891fd3e93c15693701564e",
+      "faces": [
+        {
+          "family": "Noto Sans Linear A",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansLinearB-Regular.ttf",
+      "sha256": "15faf3ff9b5d0343edb7ed4e55b2c9f5ba907473197d65f0739dc3a34d9bf334",
+      "faces": [
+        {
+          "family": "Noto Sans Linear B",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansLisu-Bold.ttf",
+      "sha256": "5823bd48592d03ab8b52c1fc5fcbcacb49fbb69a2686a176fd2d1fb28dd39dce",
+      "faces": [
+        {
+          "family": "Noto Sans Lisu",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansLisu-Regular.ttf",
+      "sha256": "243c09079c08619a4b11621f07027c10e5eb067b7e2e217537ae5e01be79e21b",
+      "faces": [
+        {
+          "family": "Noto Sans Lisu",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansLycian-Regular.ttf",
+      "sha256": "e75284df85c8ea4b55023d39d5452b8a8855f5fa02a497087eeeb30a32008a62",
+      "faces": [
+        {
+          "family": "Noto Sans Lycian",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansLydian-Regular.ttf",
+      "sha256": "a01cc8ef4ce62c34d126a0c68b42944da3f5e45cde8e130056872f293dcab9e1",
+      "faces": [
+        {
+          "family": "Noto Sans Lydian",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansMahajani-Regular.ttf",
+      "sha256": "14602358186a2361d57707105b9ea35ac90ff235598f2a890cfa65bef1634958",
+      "faces": [
+        {
+          "family": "Noto Sans Mahajani",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansMalayalam-Bold.ttf",
+      "sha256": "abe54dff7c6539899f1208672ae4235207b3e6b8d49594e9ff02d972d5975a81",
+      "faces": [
+        {
+          "family": "Noto Sans Malayalam",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansMalayalam-Regular.ttf",
+      "sha256": "5433f4a642b4325aa169a55c4c6b8d1c4a45c4e08bcd9cbe72888229709a8f2d",
+      "faces": [
+        {
+          "family": "Noto Sans Malayalam",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansMandaic-Regular.ttf",
+      "sha256": "a50d69dc52998618f39e490423ab5943d6456f50ade486b54c339e06d53a2c3a",
+      "faces": [
+        {
+          "family": "Noto Sans Mandaic",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansManichaean-Regular.ttf",
+      "sha256": "50fd97d20306431271e23523a8d3e57210d105add3c340efd2ee5f77b63ac756",
+      "faces": [
+        {
+          "family": "Noto Sans Manichaean",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansMarchen-Regular.ttf",
+      "sha256": "95bc61fd3fa20fb43aa07047372334dff8db5f6cda9a5ee756784b99da7ec056",
+      "faces": [
+        {
+          "family": "Noto Sans Marchen",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansMasaramGondi-Regular.ttf",
+      "sha256": "58fea17ae8fb1d51f647e20d0246ede2b0abca1917f9121a1451488a2295765c",
+      "faces": [
+        {
+          "family": "Noto Sans Masaram Gondi",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansMath-Regular.ttf",
+      "sha256": "8242bd1e55368b27e32455260754cf9aa58f3ad7ea80664b66c21f1b09910d6c",
+      "faces": [
+        {
+          "family": "Noto Sans Math",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansMayanNumerals-Regular.ttf",
+      "sha256": "5832050be8933ebbbe32e0ec2500ad27cace47a2cbe0a43e250cdef0a454bada",
+      "faces": [
+        {
+          "family": "Noto Sans Mayan Numerals",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansMedefaidrin-Bold.ttf",
+      "sha256": "59b9d3f299179c5364d2961e5d08b221d66830a846e9628acee60f25f32d08af",
+      "faces": [
+        {
+          "family": "Noto Sans Medefaidrin",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansMedefaidrin-Regular.ttf",
+      "sha256": "508f0e59b886f1ff174ede2d1674bbb09624b37ffb0270b70ba18ef9f89c8dd4",
+      "faces": [
+        {
+          "family": "Noto Sans Medefaidrin",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansMeeteiMayek-Bold.ttf",
+      "sha256": "ded09075316fab4182cd923ac464fbe25ad31ca26515a597f2e6473af86f3efc",
+      "faces": [
+        {
+          "family": "Noto Sans Meetei Mayek",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansMeeteiMayek-Regular.ttf",
+      "sha256": "1e6633879d76284a1fb2e361205341a788313afdd6b1dfb8b7bbe77e27164393",
+      "faces": [
+        {
+          "family": "Noto Sans Meetei Mayek",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansMendeKikakui-Regular.ttf",
+      "sha256": "732aa89620f926e431f01764362166042cfc309f24272db33fde8aac30911183",
+      "faces": [
+        {
+          "family": "Noto Sans Mende Kikakui",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansMeroitic-Regular.ttf",
+      "sha256": "49c76f5da44b932249c6150f41d20e8f4a405e28d8823a6fd724b05bc1029375",
+      "faces": [
+        {
+          "family": "Noto Sans Meroitic",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansMiao-Regular.ttf",
+      "sha256": "0568835387144b9d03b5b5b3694859766fedd59f7c17b3e1036fa944fc9a9298",
+      "faces": [
+        {
+          "family": "Noto Sans Miao",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansModi-Regular.ttf",
+      "sha256": "54f8107cc084a48aec305329e25487b80887ed873faad3a1eff5e6c1927cbf66",
+      "faces": [
+        {
+          "family": "Noto Sans Modi",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansMongolian-Regular.ttf",
+      "sha256": "601afb9f08fbbc39f0cf72cb7e11079ada6fa3feed1fadca8e6e5095e7957687",
+      "faces": [
+        {
+          "family": "Noto Sans Mongolian",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansMono-Bold.ttf",
+      "sha256": "b22563d5f03b345a62115e78d8789c9ed99c2cfa8059fad6e7a5c4ced288e21e",
+      "faces": [
+        {
+          "family": "Noto Sans Mono",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansMono-Regular.ttf",
+      "sha256": "6b692c4b6d15ccf59f1c1fe8d11cb8a92f51960f3e9f1f523781755a3af7e29f",
+      "faces": [
+        {
+          "family": "Noto Sans Mono",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansMro-Regular.ttf",
+      "sha256": "6e054fa6b6a160e4ddd41fc9be84d6d62851b75e1e2872dcdfe5fd003958b33f",
+      "faces": [
+        {
+          "family": "Noto Sans Mro",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansMultani-Regular.ttf",
+      "sha256": "feb45da05d09031ab31c9e34492c2672f6134c911eb73b66dab5ee1efd860973",
+      "faces": [
+        {
+          "family": "Noto Sans Multani",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansMyanmar-Bold.ttf",
+      "sha256": "e37e2ef189431020b1eaf4fb8d43252666dc24265d628145fff119613afea174",
+      "faces": [
+        {
+          "family": "Noto Sans Myanmar",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansMyanmar-Regular.ttf",
+      "sha256": "3fe9a4babc12081adc979e0313433e6ec85bb3ad069681c23ee8d8ea8b91332b",
+      "faces": [
+        {
+          "family": "Noto Sans Myanmar",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansNKo-Regular.ttf",
+      "sha256": "389f4082894bf1833dc5f140a282496114366b410779fbb16b3486f4660e9313",
+      "faces": [
+        {
+          "family": "Noto Sans NKo",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansNabataean-Regular.ttf",
+      "sha256": "ac17e166ff5d68098dc766be70472fe4d730d56e00066a920ac4944d8c39b8b9",
+      "faces": [
+        {
+          "family": "Noto Sans Nabataean",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansNewTaiLue-Regular.ttf",
+      "sha256": "53005c3e1b61c5d3002510479144867a5a1370a32a78c5cf374f9a6dd576cf9b",
+      "faces": [
+        {
+          "family": "Noto Sans New Tai Lue",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansNewa-Regular.ttf",
+      "sha256": "dc8aea050ac05dea01c6a81e6a70d4a7506998a11c6e1ecaaa854b7ff18f9fc6",
+      "faces": [
+        {
+          "family": "Noto Sans Newa",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansNushu-Regular.ttf",
+      "sha256": "9a59c6a764740a008aad18ea495c27185176e4840cfa13c848f3a86c707af88f",
+      "faces": [
+        {
+          "family": "Noto Sans Nushu",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansOgham-Regular.ttf",
+      "sha256": "0656e8c6a1adeedba26a04cd3537072924c5e114b5743e211e1e5e52fbddcedb",
+      "faces": [
+        {
+          "family": "Noto Sans Ogham",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansOlChiki-Bold.ttf",
+      "sha256": "8c92ae4977a5745e30b14c447b999f5c286a0f0a0f137160831c94bfda10dffa",
+      "faces": [
+        {
+          "family": "Noto Sans Ol Chiki",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansOlChiki-Regular.ttf",
+      "sha256": "3dc960a2d687b0e4fe03e5c2eb88be2a3d244c4509029277ca2be248787d33b3",
+      "faces": [
+        {
+          "family": "Noto Sans Ol Chiki",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansOldHungarian-Regular.ttf",
+      "sha256": "fd726b1df5a03c790c93b2be4e397f50319b1e04e6ae8a671386446e3c8e9888",
+      "faces": [
+        {
+          "family": "Noto Sans Old Hungarian,Noto Sans OldHung",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansOldItalic-Regular.ttf",
+      "sha256": "732462966b4e78346875e63b78c66094d64bf2a3a9a56d4084f623a542f74904",
+      "faces": [
+        {
+          "family": "Noto Sans Old Italic",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansOldNorthArabian-Regular.ttf",
+      "sha256": "9068680d32d6bc14909bd1917d0270ce83e655f5e4d76c94ac55fc9a0a16d17f",
+      "faces": [
+        {
+          "family": "Noto Sans Old North Arabian,Noto Sans OldNorArab",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansOldPermic-Regular.ttf",
+      "sha256": "752d2519d4bbc1f961f2f79f2896267e18f5775531fa01718d67c1d2ecbb7f12",
+      "faces": [
+        {
+          "family": "Noto Sans Old Permic",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansOldPersian-Regular.ttf",
+      "sha256": "cda81a3d030784988209f9fb7cdf9b8a8ced66f3bd59239184d53e2158229893",
+      "faces": [
+        {
+          "family": "Noto Sans Old Persian",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansOldSogdian-Regular.ttf",
+      "sha256": "0337534324975907588adbc8655e4ca622a0cbffc49384eb7410aa443a87afaa",
+      "faces": [
+        {
+          "family": "Noto Sans Old Sogdian",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansOldSouthArabian-Regular.ttf",
+      "sha256": "e6cc76f093f7ae30373701f18f061bd7941841fb3775041c9c343b47e96c5d05",
+      "faces": [
+        {
+          "family": "Noto Sans Old South Arabian,Noto Sans OldSouArab",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansOldTurkic-Regular.ttf",
+      "sha256": "7da596306eb88cdab43bb44d45d0b5bb12614488be6e4eec31cc8413c3e18773",
+      "faces": [
+        {
+          "family": "Noto Sans Old Turkic",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansOriya-Bold.ttf",
+      "sha256": "d563e031a325aa1d5fa7975a7fed3f34409b3ef10036f75d275653e7e4bad5c2",
+      "faces": [
+        {
+          "family": "Noto Sans Oriya",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansOriya-Regular.ttf",
+      "sha256": "20751837a8cac9d0e610ffdf91c43d3391e2b267ca2cad07f6e3866798436369",
+      "faces": [
+        {
+          "family": "Noto Sans Oriya",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansOsage-Regular.ttf",
+      "sha256": "27d3b1ea74cc799025ed5e8b58d1a33185530c43fbb4119fffbcd161269477d3",
+      "faces": [
+        {
+          "family": "Noto Sans Osage",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansOsmanya-Regular.ttf",
+      "sha256": "4263abe435e70af98ea372b94d181520bcf6a85f12c2432d2f16448256ceb198",
+      "faces": [
+        {
+          "family": "Noto Sans Osmanya",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansPahawhHmong-Regular.ttf",
+      "sha256": "303dbcc71425c331cc5d293254acfdf15aed04cf5e0075ecba0ed0d8a5d5862b",
+      "faces": [
+        {
+          "family": "Noto Sans Pahawh Hmong",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansPalmyrene-Regular.ttf",
+      "sha256": "f8d17a44b0a90e742d4213fbba95ca61f5cc1c0b7e14127e93a8e7e86d975718",
+      "faces": [
+        {
+          "family": "Noto Sans Palmyrene",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansPauCinHau-Regular.ttf",
+      "sha256": "50fd145467b5d971b526643c73784e8530f5571f8192876b8d6654f94bf6d47b",
+      "faces": [
+        {
+          "family": "Noto Sans Pau Cin Hau",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansPhagsPa-Regular.ttf",
+      "sha256": "26e1100003585ae36f3e88569626e4e0d99af3f835cb118fe27919d76351047b",
+      "faces": [
+        {
+          "family": "Noto Sans PhagsPa",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansPhoenician-Regular.ttf",
+      "sha256": "a79d2c4f0b4c04cfb8dc97c91145d29dc89965f3afc3985f7c4006ccbde58def",
+      "faces": [
+        {
+          "family": "Noto Sans Phoenician",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansPsalterPahlavi-Regular.ttf",
+      "sha256": "90878c31ab37edb5f75c487e1a61ef5082acfecc2a74798f38499cbab3746dbb",
+      "faces": [
+        {
+          "family": "Noto Sans Psalter Pahlavi,Noto Sans PsaPahlavi",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansRejang-Regular.ttf",
+      "sha256": "929034bf94778de56bcfda14d4099eaf094e472eb4db2b173b6e838ab35d4427",
+      "faces": [
+        {
+          "family": "Noto Sans Rejang",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansRunic-Regular.ttf",
+      "sha256": "49e540798dedccf24301437fb5ea5c8a3f42143b1b6c108c1d48c78a41c4ce0f",
+      "faces": [
+        {
+          "family": "Noto Sans Runic",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansSamaritan-Regular.ttf",
+      "sha256": "4878dd9a29f8d24ba1869c85ae5c3b7056e677a14b355135f3359b90b14e1ecc",
+      "faces": [
+        {
+          "family": "Noto Sans Samaritan",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansSaurashtra-Regular.ttf",
+      "sha256": "6b5944253e7a33a9336317de9b73bb8a137e7f7795e9f9f2ef82fc13cc665f5c",
+      "faces": [
+        {
+          "family": "Noto Sans Saurashtra",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansSharada-Regular.ttf",
+      "sha256": "d70fdd4d55beb32020d1fecf38ec9dea8304cec2a3098bdf3da70040cc0b2db7",
+      "faces": [
+        {
+          "family": "Noto Sans Sharada",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansShavian-Regular.ttf",
+      "sha256": "c0135179225f1cd0d25089f5cab2e34d71b43cc1c4c413e153764e8d3ade1a20",
+      "faces": [
+        {
+          "family": "Noto Sans Shavian",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansSiddham-Regular.ttf",
+      "sha256": "24eb19cc185685d185eb595766c79380160f76992d2023ae9b973e2f1ca4b763",
+      "faces": [
+        {
+          "family": "Noto Sans Siddham",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansSignWriting-Regular.ttf",
+      "sha256": "8a1bc26667a9f7c5a3555c5305bd875360df5d44900fe0ed1a78b05ab8f0e824",
+      "faces": [
+        {
+          "family": "Noto Sans SignWriting,Noto Sans SignWrit",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansSinhala-Bold.ttf",
+      "sha256": "9ac3c2da2562fd3ce449e600a9954a3c5dad982145c85159449fe1c31f648a6e",
+      "faces": [
+        {
+          "family": "Noto Sans Sinhala",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansSinhala-Regular.ttf",
+      "sha256": "31f83eec724a27779d1434afc84beabee239c0ff77dc8d04bee9f49c60b23fdd",
+      "faces": [
+        {
+          "family": "Noto Sans Sinhala",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansSogdian-Regular.ttf",
+      "sha256": "4a24b96ed2905d7257818e3db02a300a283e909448ccf967efa434e5e45bade8",
+      "faces": [
+        {
+          "family": "Noto Sans Sogdian",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansSoraSompeng-Bold.ttf",
+      "sha256": "f55a4045733afd6451f96cf1f962cc828d5ae5f5b2cc0b874c5de697e1bd5970",
+      "faces": [
+        {
+          "family": "Noto Sans Sora Sompeng",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansSoraSompeng-Regular.ttf",
+      "sha256": "3e2bd4f583735c646675e05b4b3a2827015b20ebdfdad73f02c828321255fa23",
+      "faces": [
+        {
+          "family": "Noto Sans Sora Sompeng",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansSoyombo-Regular.ttf",
+      "sha256": "d6cbab7aa7ad154796b62eb3bb125170846e9c8c6eb5560806425377ff36223c",
+      "faces": [
+        {
+          "family": "Noto Sans Soyombo",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansSundanese-Bold.ttf",
+      "sha256": "b202131dee605b4bfee1dfe4e435ac8a4b2ec92e0febf6999c4bb6c3238f4770",
+      "faces": [
+        {
+          "family": "Noto Sans Sundanese",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansSundanese-Regular.ttf",
+      "sha256": "eff2b13deacba332b2ddbfebee7dce77cb999d99fb2e342d6027fce71902669b",
+      "faces": [
+        {
+          "family": "Noto Sans Sundanese",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansSylotiNagri-Regular.ttf",
+      "sha256": "4ff931e443e1356a1207c12c4e18fff62442bd1d3a653430ac56a4aa0a70021b",
+      "faces": [
+        {
+          "family": "Noto Sans Syloti Nagri",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansSymbols-Bold.ttf",
+      "sha256": "c46ee5f6447f99edf6a69e24969bcfee891e3699cff9fc45bfb98ec1b7d684fa",
+      "faces": [
+        {
+          "family": "Noto Sans Symbols",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansSymbols-Regular.ttf",
+      "sha256": "24b615ceb7d50a2c09060664ca9e24a160c9beb6bfca0563e8359369a4bc0993",
+      "faces": [
+        {
+          "family": "Noto Sans Symbols",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansSymbols2-Regular.ttf",
+      "sha256": "876598db5f1e3bef2bc77c4d94c5b0d5d2c1620be4878a06f18fb5434e331688",
+      "faces": [
+        {
+          "family": "Noto Sans Symbols2",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansSyriac-Regular.ttf",
+      "sha256": "49917b4472e91dfb37291ef4f4821957f4225edaddb6100b1d8736df3910b237",
+      "faces": [
+        {
+          "family": "Noto Sans Syriac",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansTagalog-Regular.ttf",
+      "sha256": "5fe89f89eef4e285575fe1bc5f4340e49cc63a8d43f925bb9af2e78baec6cc96",
+      "faces": [
+        {
+          "family": "Noto Sans Tagalog",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansTagbanwa-Regular.ttf",
+      "sha256": "108c5df5e6913a3b68280963b9ed9c43cadee644b3757e2edd6a969374f95c7c",
+      "faces": [
+        {
+          "family": "Noto Sans Tagbanwa",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansTaiLe-Regular.ttf",
+      "sha256": "a2cde56384066013cf1efafc5d3cfc142b9a0d10c77c7e1f8ee2880cbe121d4c",
+      "faces": [
+        {
+          "family": "Noto Sans Tai Le",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansTaiTham-Bold.ttf",
+      "sha256": "2a4b050db8000a7a6688e8b9f873c55665cf4fb5a88d58844e3f73f2ca66fe9c",
+      "faces": [
+        {
+          "family": "Noto Sans Tai Tham",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansTaiTham-Regular.ttf",
+      "sha256": "d3065a143eb21f13406307602940b9f7cd20e935a1e20a829f9867b152056714",
+      "faces": [
+        {
+          "family": "Noto Sans Tai Tham",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansTaiViet-Regular.ttf",
+      "sha256": "b7e6d86488e34d9bbc3c6ba55097d8b1a16325650af50a7242df2c2a4a663ced",
+      "faces": [
+        {
+          "family": "Noto Sans Tai Viet",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansTakri-Regular.ttf",
+      "sha256": "08f770fcc0bc890a7738ebc03f8f5e51d207e27a87ded0c567cba76343c51f5c",
+      "faces": [
+        {
+          "family": "Noto Sans Takri",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansTamil-Bold.ttf",
+      "sha256": "7ef7071ba2fad67dcae397dc7f5bfd4dbce69d86cdc453c2cc4abe640df0b442",
+      "faces": [
+        {
+          "family": "Noto Sans Tamil",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansTamil-Regular.ttf",
+      "sha256": "a7bb7f92f165479af2f0556c4fd669b74c5959f464f603e18389b532f4d07a71",
+      "faces": [
+        {
+          "family": "Noto Sans Tamil",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansTamilSupplement-Regular.ttf",
+      "sha256": "0fadc30c3c3fd7846e607a3c0eaadcafc7c76579943bc8e7e2856c22d533b680",
+      "faces": [
+        {
+          "family": "Noto Sans Tamil Supplement",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansTelugu-Bold.ttf",
+      "sha256": "34e3a81c02ea8474f00b1046cbb183461648fd253a56475140d6b025db828b5b",
+      "faces": [
+        {
+          "family": "Noto Sans Telugu",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansTelugu-Regular.ttf",
+      "sha256": "cb3165071121b1e80c55a041d0c1f79b3bbc68e4b0eab37b0d881958dfc3ed7a",
+      "faces": [
+        {
+          "family": "Noto Sans Telugu",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansThaana-Bold.ttf",
+      "sha256": "ea6d654f9bf355cde351a0ec89a3520b26f02b7f360edb161551efe0ccac5fc0",
+      "faces": [
+        {
+          "family": "Noto Sans Thaana",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansThaana-Regular.ttf",
+      "sha256": "241b4be4717d495a72cf7eb8e69891e63a6eb1cc18d98fa357f5af7f58c02446",
+      "faces": [
+        {
+          "family": "Noto Sans Thaana",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansThai-Bold.ttf",
+      "sha256": "97bbc8ea98328325285f2f552228c7aac1db39d8f38f0096a61ba7df1f1f780e",
+      "faces": [
+        {
+          "family": "Noto Sans Thai",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansThai-Regular.ttf",
+      "sha256": "dfbd5ed0f1e68c3cbc51aa08f646d1ab0e68e7c4ceab70a69e465225ff701f93",
+      "faces": [
+        {
+          "family": "Noto Sans Thai",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansTifinagh-Regular.ttf",
+      "sha256": "176233c9dd5649184f3206680debc1a50b411a9229049e0b5d212776af1e2034",
+      "faces": [
+        {
+          "family": "Noto Sans Tifinagh",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansTifinaghAPT-Regular.ttf",
+      "sha256": "b9d61693c9166a56865d77df9ad353a67e8d0e169f88b5800743108d9d97a39e",
+      "faces": [
+        {
+          "family": "Noto Sans Tifinagh APT",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansTifinaghAdrar-Regular.ttf",
+      "sha256": "cd1ba1bff933b9215881080d4e5f58f5c5d2e9b48eb1a0c0393c8560e316cfe4",
+      "faces": [
+        {
+          "family": "Noto Sans Tifinagh Adrar",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansTifinaghAgrawImazighen-Regular.ttf",
+      "sha256": "1bf667c6101c751e370d6882db3362aeaed1c1e43113a1da1c5d4d8c6b15eeb9",
+      "faces": [
+        {
+          "family": "Noto Sans Tifinagh Agraw Imazighen",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansTifinaghAhaggar-Regular.ttf",
+      "sha256": "89b0f1eee9455686e2f55679c2cd05fc8cbacea34a47095a7dd779f986644c28",
+      "faces": [
+        {
+          "family": "Noto Sans Tifinagh Ahaggar",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansTifinaghAir-Regular.ttf",
+      "sha256": "a9144f1c496af5c83759120dce99f904595333af50df41d86471917d65146a6d",
+      "faces": [
+        {
+          "family": "Noto Sans Tifinagh Air",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansTifinaghAzawagh-Regular.ttf",
+      "sha256": "f322e4b74b9b9d63d82f369ff89ff0d5daea2a5760a502aaac200696ab4612e3",
+      "faces": [
+        {
+          "family": "Noto Sans Tifinagh Azawagh",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansTifinaghGhat-Regular.ttf",
+      "sha256": "0dd14b4d52d76e3018b0349e26f37f30f3a205a8a8407806258c5e2a9d624d65",
+      "faces": [
+        {
+          "family": "Noto Sans Tifinagh Ghat",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansTifinaghHawad-Regular.ttf",
+      "sha256": "9af823b2187ee3d91d27d6ace7419e41cd09bf6d9986282ff00af2187615352c",
+      "faces": [
+        {
+          "family": "Noto Sans Tifinagh Hawad",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansTifinaghRhissaIxa-Regular.ttf",
+      "sha256": "dc07364dbf1be6b105ea12ed3af1cb2620c912fe55299d38afb075b556718f2c",
+      "faces": [
+        {
+          "family": "Noto Sans Tifinagh Rhissa Ixa",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansTifinaghSIL-Regular.ttf",
+      "sha256": "a9b0ce0d727578c4db1dca5acc5f6fcbd283b54c60b312fdadf5db1357e672ae",
+      "faces": [
+        {
+          "family": "Noto Sans Tifinagh SIL",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansTifinaghTawellemmet-Regular.ttf",
+      "sha256": "1a432e330242b70d8b9fbdb2bbbf13c5c9132fa758f575404a6c5a8a166fe62a",
+      "faces": [
+        {
+          "family": "Noto Sans Tifinagh Tawellemmet",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansTirhuta-Regular.ttf",
+      "sha256": "6c2b525937ea47a0898a2a69675d84673f154f06d36aef5573f767ebdbdfefa0",
+      "faces": [
+        {
+          "family": "Noto Sans Tirhuta",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansUgaritic-Regular.ttf",
+      "sha256": "4fe28546a484fbb78df76aa349b99fd73df93bc8e2c486c9906ad0b5e89cb0c8",
+      "faces": [
+        {
+          "family": "Noto Sans Ugaritic",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansVai-Regular.ttf",
+      "sha256": "5f58a9c96639c56ea31f85282084dde6d658ede746e3eec64869212fc25a393a",
+      "faces": [
+        {
+          "family": "Noto Sans Vai",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansWancho-Regular.ttf",
+      "sha256": "e9840bd886a6133e000474eed786f0985a3cf68d45fa240d38a2a306c6a9965c",
+      "faces": [
+        {
+          "family": "Noto Sans Wancho",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansWarangCiti-Regular.ttf",
+      "sha256": "4d6dff50fd1e5f45eb643ccfc5f67e69bf9425a5e3cd375ddfd64e96ca8a48fb",
+      "faces": [
+        {
+          "family": "Noto Sans Warang Citi",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansYi-Regular.ttf",
+      "sha256": "f621f514dce105a414ef7373a36b54ccc8d760a6319ad7133695fb42a1f02552",
+      "faces": [
+        {
+          "family": "Noto Sans Yi",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSansZanabazarSquare-Regular.ttf",
+      "sha256": "7fa099bf15f01ab7ac6fa001658d08696bf3321f6bed3e3b569fdc266e334745",
+      "faces": [
+        {
+          "family": "Noto Sans Zanabazar Square,Noto Sans Zanabazar",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerif-Bold.ttf",
+      "sha256": "0af0ff2be8f84910fb21ec5fe1b6b7395e3073250502a334baf6ca2f860c88fe",
+      "faces": [
+        {
+          "family": "Noto Serif",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerif-BoldItalic.ttf",
+      "sha256": "78a6d685e5690b7dcda0f336b689193afc03b6bab5cf18fc1a9ecc3aa0600059",
+      "faces": [
+        {
+          "family": "Noto Serif",
+          "style": "Bold Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerif-Italic.ttf",
+      "sha256": "bc25600aa27cd409e1e5b3d86340df3a329bb860fcfbe57a03a95070b229e1b0",
+      "faces": [
+        {
+          "family": "Noto Serif",
+          "style": "Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerif-Regular.ttf",
+      "sha256": "9d7583b7dc9e812afd32a14280c5cac3160012efe50c8d08938f4fea266ff67f",
+      "faces": [
+        {
+          "family": "Noto Serif",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifAhom-Regular.ttf",
+      "sha256": "d6a2a355b4ef6f2228d58b61e2f650255d36488efe272a36e67aa16b663ffa03",
+      "faces": [
+        {
+          "family": "Noto Serif Ahom",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifArmenian-Bold.ttf",
+      "sha256": "fea8914af4f165301e619655e1e5fa447c65c08077010c8153bfe2d599d85bc1",
+      "faces": [
+        {
+          "family": "Noto Serif Armenian",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifArmenian-Regular.ttf",
+      "sha256": "9b6f1837a89ede5f9404bb5975539dbac8eff23e262fc3e459cba029f30292f4",
+      "faces": [
+        {
+          "family": "Noto Serif Armenian",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifBalinese-Regular.ttf",
+      "sha256": "1bf8d4f3e8615b0cacb92ffcf5b694256ba1f3813fa05b0871ad8f1e9a0e4377",
+      "faces": [
+        {
+          "family": "Noto Serif Balinese",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifBengali-Bold.ttf",
+      "sha256": "96cc17640329810e2ac1b53d61ec4f429ba9bf729d4f37623a296581d79a5133",
+      "faces": [
+        {
+          "family": "Noto Serif Bengali",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifBengali-Regular.ttf",
+      "sha256": "32b4aeb731e3819d7a31216c885208a96e402ceeebb30fc39723b99220708fef",
+      "faces": [
+        {
+          "family": "Noto Serif Bengali",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifDevanagari-Bold.ttf",
+      "sha256": "42a0d0664b51212894c8bb226ad8947c194f1ab1903555a41979877d3b9267be",
+      "faces": [
+        {
+          "family": "Noto Serif Devanagari",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifDevanagari-Regular.ttf",
+      "sha256": "662c3cd6e17dd0561f53fe28ce6c32d7d64e650119f4bb0428fc50206bbc46fe",
+      "faces": [
+        {
+          "family": "Noto Serif Devanagari",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifDisplay-Bold.ttf",
+      "sha256": "8666c2488e681a31670f9fc0b5d59fa4f21f2a0664a76876fe49ebd832f673c7",
+      "faces": [
+        {
+          "family": "Noto Serif Display",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifDisplay-BoldItalic.ttf",
+      "sha256": "d3c055380d05e41732096c337226afe96640e7eaeaf7d1294556545b95ccc123",
+      "faces": [
+        {
+          "family": "Noto Serif Display",
+          "style": "Bold Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifDisplay-Italic.ttf",
+      "sha256": "96ad3a5588b1d6e564589d236b8fa1839e8169a6b87a055340c36b87904e93e0",
+      "faces": [
+        {
+          "family": "Noto Serif Display",
+          "style": "Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifDisplay-Regular.ttf",
+      "sha256": "bcdc596729c24044e28c54815ecbe6004f83b10169a49a51160b22f59116249f",
+      "faces": [
+        {
+          "family": "Noto Serif Display",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifDogra-Regular.ttf",
+      "sha256": "eb4ca8fe9e5d5a489fcf0915a646918e6622bce1556bba23e5f8e9ec8040b288",
+      "faces": [
+        {
+          "family": "Noto Serif Dogra",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifEthiopic-Bold.ttf",
+      "sha256": "57ae343eee78a8cb40532dc21edf7740001a39f557c61d85c06f66894cc15474",
+      "faces": [
+        {
+          "family": "Noto Serif Ethiopic",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifEthiopic-Regular.ttf",
+      "sha256": "30bd9e21c81cd95a3004bbf75aba9b2ab5f861408a3fbb4f82b10fe82072952b",
+      "faces": [
+        {
+          "family": "Noto Serif Ethiopic",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifGeorgian-Bold.ttf",
+      "sha256": "635bc1529b2ca28dfc694aa7cd1e9960c04fdfcde99ee5b7f7b34761d37259fe",
+      "faces": [
+        {
+          "family": "Noto Serif Georgian",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifGeorgian-Regular.ttf",
+      "sha256": "4489ca2f28b4a79b16bc8ba6a857a8cd14857e04a14b8fa1031b7b84a00fe537",
+      "faces": [
+        {
+          "family": "Noto Serif Georgian",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifGrantha-Regular.ttf",
+      "sha256": "469306809e14c3ab636ae07d5c2552252352a9e924ce53c90da84dc2f0c8cfb4",
+      "faces": [
+        {
+          "family": "Noto Serif Grantha",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifGujarati-Bold.ttf",
+      "sha256": "3ffd3aca4b23f250f3d1370375ae8c70884370bb7c5078a3733769045ae31472",
+      "faces": [
+        {
+          "family": "Noto Serif Gujarati",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifGujarati-Regular.ttf",
+      "sha256": "fcd8029bb13fb27a410977bd10472bfa3cd195c9a35e5145916ab59bac5ed9da",
+      "faces": [
+        {
+          "family": "Noto Serif Gujarati",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifGurmukhi-Bold.ttf",
+      "sha256": "a1550839d8dda8e422cc05b94ba13af13595f677255f106ad52b7fe020a7899a",
+      "faces": [
+        {
+          "family": "Noto Serif Gurmukhi",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifGurmukhi-Regular.ttf",
+      "sha256": "7f7310c46abbe834227000c7bf854fbe1b31d470fb43c26aac22ec90a924c181",
+      "faces": [
+        {
+          "family": "Noto Serif Gurmukhi",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifHebrew-Bold.ttf",
+      "sha256": "95150a28d438cba6c79393ef18ad06f39a8b53a7d457e61d8c9d585176ef36da",
+      "faces": [
+        {
+          "family": "Noto Serif Hebrew",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifHebrew-Regular.ttf",
+      "sha256": "789b7e7e3ff4d95a5e105872a385db12c50c08b60ad5b773d25a3bec86621abf",
+      "faces": [
+        {
+          "family": "Noto Serif Hebrew",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifKannada-Bold.ttf",
+      "sha256": "201c469f27e419ad5676f9a293dbcc76d2fc9cf4b0ad831efbf2723da3631236",
+      "faces": [
+        {
+          "family": "Noto Serif Kannada",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifKannada-Regular.ttf",
+      "sha256": "ced7b7899a1c20cc17ec4e6bc9209c911ccf4f469ee5fd6bc4cb4bf0335bd88e",
+      "faces": [
+        {
+          "family": "Noto Serif Kannada",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifKhmer-Bold.ttf",
+      "sha256": "642cc0a8da68b6a2cb53017144eff68057c6731c42f5829601d15a25f28a9221",
+      "faces": [
+        {
+          "family": "Noto Serif Khmer",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifKhmer-Regular.ttf",
+      "sha256": "98a2e27f6bc1d6ed58e6c9d32d84b84aa9dae4cdf727f3b3f36d03f3c06ff123",
+      "faces": [
+        {
+          "family": "Noto Serif Khmer",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifKhojki-Bold.ttf",
+      "sha256": "aa978be32c5357001a5724a838a3e3bffa2f54073646bab89f87ed8d0c0b009e",
+      "faces": [
+        {
+          "family": "Noto Serif Khojki",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifKhojki-Regular.ttf",
+      "sha256": "5f0055e1961b9cb53366106ed0c5eea9c9deb46d28e3dda3f0ccca0fb6057271",
+      "faces": [
+        {
+          "family": "Noto Serif Khojki",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifLao-Bold.ttf",
+      "sha256": "0613b9803cc45e1794a0f87e79f5a70ff3119676509b6de8807540120107f4a0",
+      "faces": [
+        {
+          "family": "Noto Serif Lao",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifLao-Regular.ttf",
+      "sha256": "18cecc9fc9ef0fe10f12cff8ddba88317d8b45fb1dfa2aa935d225184ad3893c",
+      "faces": [
+        {
+          "family": "Noto Serif Lao",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifMalayalam-Bold.ttf",
+      "sha256": "f76f82ffac39f7490b3608761b14e8c416aa4554b1591725de86d36ab51745b4",
+      "faces": [
+        {
+          "family": "Noto Serif Malayalam",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifMalayalam-Regular.ttf",
+      "sha256": "644e763e02252bc8674865aa78defdfdecbdbde71c9b408ff643f76337201dde",
+      "faces": [
+        {
+          "family": "Noto Serif Malayalam",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifMyanmar-Bold.ttf",
+      "sha256": "37ce93b711966fbade660e2f9173c04aa80d1232c16cb5458e22cb8f6d0560fd",
+      "faces": [
+        {
+          "family": "Noto Serif Myanmar",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifMyanmar-Regular.ttf",
+      "sha256": "f88d1da5a75a8e09ff0b073fe3c861d095a72e94fea3235f09f80e6c5b2c9933",
+      "faces": [
+        {
+          "family": "Noto Serif Myanmar",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifNyiakengPuachueHmong-Bold.ttf",
+      "sha256": "79b8495e99a4723e71a65248d0571e9447351874aced903a486f97569201b271",
+      "faces": [
+        {
+          "family": "Noto Serif Hmong Nyiakeng",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifNyiakengPuachueHmong-Regular.ttf",
+      "sha256": "437324d654ad5d8c0ed9cca7038dbdd62f2f2a3d3584c2dc24611fa36bfbf4fb",
+      "faces": [
+        {
+          "family": "Noto Serif Hmong Nyiakeng",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifSinhala-Bold.ttf",
+      "sha256": "a7b73afecc64acc2cf1aaf7a8eb2ab9eb2cc75bce6497240be29563fa450c87a",
+      "faces": [
+        {
+          "family": "Noto Serif Sinhala",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifSinhala-Regular.ttf",
+      "sha256": "c124f62c75ab6829e49ff46fb56ceda7ee18f99b8f90740fab5e27b605eeb193",
+      "faces": [
+        {
+          "family": "Noto Serif Sinhala",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifTamil-Bold.ttf",
+      "sha256": "1cb01b8096603e16917c67769f0f6b3faad390cab02b35fa81662dd5611dcc22",
+      "faces": [
+        {
+          "family": "Noto Serif Tamil",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifTamil-Regular.ttf",
+      "sha256": "f9c887e6c0b61f474b1916fdadd64d495321208efc0ecd1335e6526ca3d05488",
+      "faces": [
+        {
+          "family": "Noto Serif Tamil",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifTamilSlanted-Bold.ttf",
+      "sha256": "e845281bb21eaa9e281a120616981913735c1774cca5fa16aaf5591e7c4d2321",
+      "faces": [
+        {
+          "family": "Noto Serif Tamil Slanted",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifTamilSlanted-Regular.ttf",
+      "sha256": "a45fa44cbb140060dd2409d2072b1a5afa438b3208ac6e7ec22b7f711da049f9",
+      "faces": [
+        {
+          "family": "Noto Serif Tamil Slanted",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifTangut-Regular.ttf",
+      "sha256": "0db5db0492d049c5bcaa3910ece7db3917475a6e91b6c74b5125760b01b3ef5d",
+      "faces": [
+        {
+          "family": "Noto Serif Tangut",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifTelugu-Bold.ttf",
+      "sha256": "3ccec8830f3a55b4395ae24ab73aae25b92ca05e293a352726b89cf5b06a16ad",
+      "faces": [
+        {
+          "family": "Noto Serif Telugu",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifTelugu-Regular.ttf",
+      "sha256": "c5ac5a077a35eb18288fad9be81f55dec392d0ddb134a366a0d3a9b615c3df3a",
+      "faces": [
+        {
+          "family": "Noto Serif Telugu",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifThai-Bold.ttf",
+      "sha256": "befef873c46740e20a49e8762c151d5fe1dddd0ecdddaf48766c709eae51f086",
+      "faces": [
+        {
+          "family": "Noto Serif Thai",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifThai-Regular.ttf",
+      "sha256": "8e1bcaa4fef346b247092cf4327c4744eda2fa72afed96e2145dc30a3b04fdd1",
+      "faces": [
+        {
+          "family": "Noto Serif Thai",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifTibetan-Bold.ttf",
+      "sha256": "829c6fb19fed2dedfa5ba651009bbdea1eb71a84a237239345bc5b03c0cfb7b2",
+      "faces": [
+        {
+          "family": "Noto Serif Tibetan",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifTibetan-Regular.ttf",
+      "sha256": "5893c1e0aefb250bcbeff5c0f8ee4bb27cd3dc19b47d14954b154b094e10ee63",
+      "faces": [
+        {
+          "family": "Noto Serif Tibetan",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifYezidi-Bold.ttf",
+      "sha256": "fbf1ea1bd1fcf6418c150ba962151ab39831477fdcabe15543d70b75142c9144",
+      "faces": [
+        {
+          "family": "Noto Serif Yezidi",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoSerifYezidi-Regular.ttf",
+      "sha256": "48e870c0755fea41ff44970fe6c428e8a5a69937835b2016379c8e2d1c229716",
+      "faces": [
+        {
+          "family": "Noto Serif Yezidi",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/noto/NotoTraditionalNushu-Regular.ttf",
+      "sha256": "04b2fe18447e8794ea5226b1479074bccb86cf8e44639fff41e9d5a5f3457999",
+      "faces": [
+        {
+          "family": "Noto Traditional Nushu",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/ubuntu/Ubuntu-Italic[wdth,wght].ttf",
+      "sha256": "f5689f6ae7f16f7ede2012702abd605ac1afa03c950713523b9953d600937975",
+      "faces": [
+        {
+          "family": "Ubuntu",
+          "style": "Bold Italic"
+        },
+        {
+          "family": "Ubuntu",
+          "style": "Condensed Bold Italic"
+        },
+        {
+          "family": "Ubuntu",
+          "style": "Condensed Medium Italic"
+        },
+        {
+          "family": "Ubuntu",
+          "style": "Italic"
+        },
+        {
+          "family": "Ubuntu",
+          "style": "Condensed Italic"
+        },
+        {
+          "family": "Ubuntu",
+          "style": "Extra Bold Italic"
+        },
+        {
+          "family": "Ubuntu",
+          "style": "Condensed Thin Italic"
+        },
+        {
+          "family": "Ubuntu",
+          "style": ""
+        },
+        {
+          "family": "Ubuntu",
+          "style": "Light Italic"
+        },
+        {
+          "family": "Ubuntu",
+          "style": "Medium Italic"
+        },
+        {
+          "family": "Ubuntu",
+          "style": "Italic"
+        },
+        {
+          "family": "Ubuntu",
+          "style": "Condensed Light Italic"
+        },
+        {
+          "family": "Ubuntu",
+          "style": "Thin Italic"
+        },
+        {
+          "family": "Ubuntu",
+          "style": "Condensed Extra Bold Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/ubuntu/UbuntuMono-Italic[wght].ttf",
+      "sha256": "4148a3a8e6a702da461992047bcc07179f1eed12a3020384be754d015240678a",
+      "faces": [
+        {
+          "family": "Ubuntu Mono",
+          "style": "Medium Italic"
+        },
+        {
+          "family": "Ubuntu Mono",
+          "style": ""
+        },
+        {
+          "family": "Ubuntu Mono",
+          "style": "Bold Italic"
+        },
+        {
+          "family": "Ubuntu Mono",
+          "style": "Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/ubuntu/UbuntuMono[wght].ttf",
+      "sha256": "fbf1e748836994f730e602f7dcf2525564d6d78aa336080cbb73af909d0e08ee",
+      "faces": [
+        {
+          "family": "Ubuntu Mono",
+          "style": "Bold"
+        },
+        {
+          "family": "Ubuntu Mono",
+          "style": "Regular"
+        },
+        {
+          "family": "Ubuntu Mono",
+          "style": "Medium"
+        },
+        {
+          "family": "Ubuntu Mono",
+          "style": ""
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/ubuntu/UbuntuSans-Italic[wdth,wght].ttf",
+      "sha256": "603f7a4b837143b742a8df3ad3ad80164a50e4529f02e3f6aa533b78e209d3df",
+      "faces": [
+        {
+          "family": "Ubuntu Sans",
+          "style": "Light Italic"
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": "Condensed Italic"
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": "Condensed Light Italic"
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": "Condensed SemiBold Italic"
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": "Bold Italic"
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": ""
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": "Thin Italic"
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": "ExtraBold Italic"
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": "Italic"
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": "Condensed Medium Italic"
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": "ExtraLight Italic"
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": "Condensed Thin Italic"
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": "Condensed ExtraLight Italic"
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": "Condensed Bold Italic"
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": "Medium Italic"
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": "SemiBold Italic"
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": "Condensed ExtraBold Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/ubuntu/UbuntuSansMono-Italic[wght].ttf",
+      "sha256": "55c3678f40cafe4ac39f0071151626693ea7fa70f421408015cc5fcd858afd71",
+      "faces": [
+        {
+          "family": "Ubuntu Sans Mono",
+          "style": "Medium Italic"
+        },
+        {
+          "family": "Ubuntu Sans Mono",
+          "style": "SemiBold Italic"
+        },
+        {
+          "family": "Ubuntu Sans Mono",
+          "style": "Bold Italic"
+        },
+        {
+          "family": "Ubuntu Sans Mono",
+          "style": "Italic"
+        },
+        {
+          "family": "Ubuntu Sans Mono",
+          "style": ""
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/ubuntu/UbuntuSansMono[wght].ttf",
+      "sha256": "507870a3fe5737eb5b02f366587d30607c02a5ad45d8fe94b3ee20a80ccad32a",
+      "faces": [
+        {
+          "family": "Ubuntu Sans Mono",
+          "style": "Medium"
+        },
+        {
+          "family": "Ubuntu Sans Mono",
+          "style": "Bold"
+        },
+        {
+          "family": "Ubuntu Sans Mono",
+          "style": "Regular"
+        },
+        {
+          "family": "Ubuntu Sans Mono",
+          "style": "Thin"
+        },
+        {
+          "family": "Ubuntu Sans Mono",
+          "style": "Light"
+        },
+        {
+          "family": "Ubuntu Sans Mono",
+          "style": ""
+        },
+        {
+          "family": "Ubuntu Sans Mono",
+          "style": "ExtraLight"
+        },
+        {
+          "family": "Ubuntu Sans Mono",
+          "style": "SemiBold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/ubuntu/UbuntuSans[wdth,wght].ttf",
+      "sha256": "37e90bba45a2a1172d9f6078e45daebaa1b4e537943205cc1309f142a254fe40",
+      "faces": [
+        {
+          "family": "Ubuntu Sans",
+          "style": "Regular"
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": "Condensed Thin"
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": "Condensed Regular"
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": "Thin"
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": "Condensed Light"
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": "Condensed Medium"
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": "Condensed Bold"
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": "ExtraLight"
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": "SemiBold"
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": "Medium"
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": "Condensed ExtraBold"
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": "ExtraBold"
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": "Light"
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": "Bold"
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": "Condensed SemiBold"
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": ""
+        },
+        {
+          "family": "Ubuntu Sans",
+          "style": "Condensed ExtraLight"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/truetype/ubuntu/Ubuntu[wdth,wght].ttf",
+      "sha256": "28c4c189a44803b1986fd16074187034dc6d94ad35f5e87de13dd0e786b70b73",
+      "faces": [
+        {
+          "family": "Ubuntu",
+          "style": ""
+        },
+        {
+          "family": "Ubuntu",
+          "style": "Condensed"
+        },
+        {
+          "family": "Ubuntu",
+          "style": "Bold"
+        },
+        {
+          "family": "Ubuntu",
+          "style": "Condensed Medium"
+        },
+        {
+          "family": "Ubuntu",
+          "style": "Condensed Extra Bold"
+        },
+        {
+          "family": "Ubuntu",
+          "style": "Light"
+        },
+        {
+          "family": "Ubuntu",
+          "style": "Regular"
+        },
+        {
+          "family": "Ubuntu",
+          "style": "Condensed Light"
+        },
+        {
+          "family": "Ubuntu",
+          "style": "Extra Bold"
+        },
+        {
+          "family": "Ubuntu",
+          "style": "Medium"
+        },
+        {
+          "family": "Ubuntu",
+          "style": "Thin"
+        },
+        {
+          "family": "Ubuntu",
+          "style": "Condensed Thin"
+        },
+        {
+          "family": "Ubuntu",
+          "style": "Condensed Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/C059-BdIta.t1",
+      "sha256": "f7aafd96bbb8ef07792d33302fb4905bfe7a47888b08782d95f6f1b8a388f5ee",
+      "faces": [
+        {
+          "family": "C059",
+          "style": "Bold Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/C059-Bold.t1",
+      "sha256": "78110e7b34a1e89c86f010ae1fb87d3cffba73bbd557374bd16dfd41bdc3c60f",
+      "faces": [
+        {
+          "family": "C059",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/C059-Italic.t1",
+      "sha256": "304c523c14d49e90733a73c301055377a0176d4b5b087b6fd2ef74d723348fe2",
+      "faces": [
+        {
+          "family": "C059",
+          "style": "Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/C059-Roman.t1",
+      "sha256": "be8224624a91fc315b66bbf640e18ebddc79076937bdb3bbb5b96aaf90ec84c5",
+      "faces": [
+        {
+          "family": "C059",
+          "style": "Roman"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/D050000L.t1",
+      "sha256": "51cc2fe0953718f9fc93e0de7853a700557cc8d0cd58089c9a2d531d06c8fa4b",
+      "faces": [
+        {
+          "family": "D050000L",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/NimbusMonoPS-Bold.t1",
+      "sha256": "63e2c80d0e6983c68dd986f7044944e9f58463f8bb118c21fb4372c298906b18",
+      "faces": [
+        {
+          "family": "Nimbus Mono PS",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/NimbusMonoPS-BoldItalic.t1",
+      "sha256": "f9006fd0749c906fe51a570bb246883e0af127eff2ca13cdbd250db3e5a1cec9",
+      "faces": [
+        {
+          "family": "Nimbus Mono PS",
+          "style": "Bold Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/NimbusMonoPS-Italic.t1",
+      "sha256": "0db4cd31b146794a931de48ca15f8bad3252ad744deb651a582f75af4c7ae8df",
+      "faces": [
+        {
+          "family": "Nimbus Mono PS",
+          "style": "Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/NimbusMonoPS-Regular.t1",
+      "sha256": "b1c0f23ba9732ee495ea52658684dc36064d3c439ac81b7dfcf922e790e5160f",
+      "faces": [
+        {
+          "family": "Nimbus Mono PS",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/NimbusRoman-Bold.t1",
+      "sha256": "4d31149fe14fb8fb9f84f8c6171eb90a654b6f7c4db8213a6e501b32e712e290",
+      "faces": [
+        {
+          "family": "Nimbus Roman",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/NimbusRoman-BoldItalic.t1",
+      "sha256": "4a305bcf1950e2db6bb03ed68715a74930d00d630661d6e0c03375b3cc983888",
+      "faces": [
+        {
+          "family": "Nimbus Roman",
+          "style": "Bold Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/NimbusRoman-Italic.t1",
+      "sha256": "0c5cc5161c325440ed7a9de00869535e8f10f0eeccf1e65dbcd2c387ffbc1eb4",
+      "faces": [
+        {
+          "family": "Nimbus Roman",
+          "style": "Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/NimbusRoman-Regular.t1",
+      "sha256": "cd63681b669f41d2b1cc828a6e26eeeee668ae3f9144f6ae2c1bad971fc146f2",
+      "faces": [
+        {
+          "family": "Nimbus Roman",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/NimbusSans-Bold.t1",
+      "sha256": "ebf5ba685a44a194cc61ba3e34a1bf4718980871e5b72304ba9633411c7d6391",
+      "faces": [
+        {
+          "family": "Nimbus Sans",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/NimbusSans-BoldItalic.t1",
+      "sha256": "73871c05c5c4670d39b690b802aacd5369b9209256ff3abe7db755c276e2deda",
+      "faces": [
+        {
+          "family": "Nimbus Sans",
+          "style": "Bold Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/NimbusSans-Italic.t1",
+      "sha256": "b0527ec015601b5d29eecdb75a982b39fe316d5d53caf45108d712f99debe98e",
+      "faces": [
+        {
+          "family": "Nimbus Sans",
+          "style": "Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/NimbusSans-Regular.t1",
+      "sha256": "779a9c820bbe8b470d36e77bcf949eef7bf1b889184274ba0f51da4c8c883cfa",
+      "faces": [
+        {
+          "family": "Nimbus Sans",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/NimbusSansNarrow-Bold.t1",
+      "sha256": "a383bbf4d6f8887a8ccda9e5ad2d6b2b6353c0620f4a29f49b27d68177d84ee2",
+      "faces": [
+        {
+          "family": "Nimbus Sans Narrow",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/NimbusSansNarrow-BoldOblique.t1",
+      "sha256": "df4df8204bc5ac63dc13162e9a604adadebb779fd524d6f457fec118d530af31",
+      "faces": [
+        {
+          "family": "Nimbus Sans Narrow",
+          "style": "Bold Oblique"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/NimbusSansNarrow-Oblique.t1",
+      "sha256": "eb92b8ab971fe2b53882b05948127940f23c3003b6f6f3f7bb25d6ed226a652e",
+      "faces": [
+        {
+          "family": "Nimbus Sans Narrow",
+          "style": "Oblique"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/NimbusSansNarrow-Regular.t1",
+      "sha256": "77561ac22852f0c289012e3e8578ff56afe016d3bcae05a33562369cb675127f",
+      "faces": [
+        {
+          "family": "Nimbus Sans Narrow",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/P052-Bold.t1",
+      "sha256": "8e56ad1e6b08c6c931d4ff93fa4388abc6ea5be8c6a0ab23d0fdf9a504c1cdba",
+      "faces": [
+        {
+          "family": "P052",
+          "style": "Bold"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/P052-BoldItalic.t1",
+      "sha256": "557c1aad252d91a3ae4a19acf18277657cb34cd02caead1ea1d686961678cfd8",
+      "faces": [
+        {
+          "family": "P052",
+          "style": "Bold Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/P052-Italic.t1",
+      "sha256": "d384c8219f35cee51693c0ee09247fbf395910f7e6259e0956a90ab5173a8dbf",
+      "faces": [
+        {
+          "family": "P052",
+          "style": "Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/P052-Roman.t1",
+      "sha256": "99a8259f8eaec4604ad8794dc63e67b0d4fe189bdf6acbd1a7047dbe1ef9c86f",
+      "faces": [
+        {
+          "family": "P052",
+          "style": "Roman"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/StandardSymbolsPS.t1",
+      "sha256": "b2f78d6ad103708a4483f75087c6ecb71753e9210170c14462b37ef05a3f957a",
+      "faces": [
+        {
+          "family": "Standard Symbols PS",
+          "style": "Regular"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/URWBookman-Demi.t1",
+      "sha256": "baee9214653525ad01de0bc326e3c11b7826c51567336619517d50eab313e37b",
+      "faces": [
+        {
+          "family": "URW Bookman",
+          "style": "Demi"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/URWBookman-DemiItalic.t1",
+      "sha256": "c2877b3b139dec0544fa9b924517ccaa30600a206e89a9b9f89707ee003cbdfe",
+      "faces": [
+        {
+          "family": "URW Bookman",
+          "style": "Demi Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/URWBookman-Light.t1",
+      "sha256": "17c7e83cf66537d631a9e0920af9bfa37c8db1a40e29d951869c3562100174ca",
+      "faces": [
+        {
+          "family": "URW Bookman",
+          "style": "Light"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/URWBookman-LightItalic.t1",
+      "sha256": "ab7166058aefa485d11109195a0736633c17e5ad2164083492d94418ee0a657e",
+      "faces": [
+        {
+          "family": "URW Bookman",
+          "style": "Light Italic"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/URWGothic-Book.t1",
+      "sha256": "aebc5a18ff50235f0850b3812d86a29d18932c4bb8a097b004b8abafc433a395",
+      "faces": [
+        {
+          "family": "URW Gothic",
+          "style": "Book"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/URWGothic-BookOblique.t1",
+      "sha256": "03dd97fc09205d48cfb02cb00e1bb181cb10b1aeadef814ac107de21eb91c0b4",
+      "faces": [
+        {
+          "family": "URW Gothic",
+          "style": "Book Oblique"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/URWGothic-Demi.t1",
+      "sha256": "83cb6f17a042dea63345e222593be1a1ccb13ded278482d13f6511cad0768c54",
+      "faces": [
+        {
+          "family": "URW Gothic",
+          "style": "Demi"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/URWGothic-DemiOblique.t1",
+      "sha256": "bcd4c23341a2324459079f8757f6761cfc0c95781d61a4baf4132453ba80a832",
+      "faces": [
+        {
+          "family": "URW Gothic",
+          "style": "Demi Oblique"
+        }
+      ]
+    },
+    {
+      "visible_path": "/usr/share/fonts/type1/urw-base35/Z003-MediumItalic.t1",
+      "sha256": "84ff513d45b7255ddc1ac0bad4b03b1a0fd055f9093617034b59d333ec77b1b6",
+      "faces": [
+        {
+          "family": "Z003",
+          "style": "Medium Italic"
+        }
+      ]
+    }
+  ]
+}

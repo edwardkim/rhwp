@@ -1,0 +1,744 @@
+{
+  "source_code": "836615963eedfac9170d45c15cbba32d23e1b4d0",
+  "build_manifest": {
+    "success": true,
+    "source_sha": "12e57f26a86e3b64749991e70f6d0e4d4321cc44",
+    "profile": "Mac locked wrapper web --no-opt; source hashes in producer.json",
+    "artifacts": {
+      "rhwp.js": {
+        "bytes": 586144,
+        "sha256": "2d48f8a6c3ff7f848f08725bb54d04094b296af1a40ae61203081a7cf8061a1a"
+      },
+      "rhwp_bg.wasm": {
+        "bytes": 31904598,
+        "sha256": "5e5847d6aec86158f53a2626af196396c674a963e47b67e3ee7c4411c0480e13"
+      }
+    }
+  },
+  "strict_driver_exit": 1,
+  "strict_driver_reason": "4 CanvasKit requests fell back to Canvas2D at existing 50000 work-unit limit; 8 strict replay violations preserved in full report. Not CanvasKit PASS.",
+  "supported_direct_captures": 26,
+  "supported_canvaskit_captures": 16,
+  "canvas2d_direct_captures": 10,
+  "unsupported_canvas2d_fallbacks": [
+    {
+      "sample": "repeated-p4",
+      "requested_backend": "canvaskit-compat",
+      "actual_backend": "canvas2d",
+      "profile": "screen",
+      "reason": "bounded document preflight workLimitExceeded 50000; CanvasKit unsupported in this unchanged policy",
+      "same_bytes_as_canvas2d": true
+    },
+    {
+      "sample": "repeated-p4",
+      "requested_backend": "canvaskit-default",
+      "actual_backend": "canvas2d",
+      "profile": "screen",
+      "reason": "bounded document preflight workLimitExceeded 50000; CanvasKit unsupported in this unchanged policy",
+      "same_bytes_as_canvas2d": true
+    },
+    {
+      "sample": "repeated-p4",
+      "requested_backend": "canvaskit-compat",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "reason": "bounded document preflight workLimitExceeded 50000; CanvasKit unsupported in this unchanged policy",
+      "same_bytes_as_canvas2d": true
+    },
+    {
+      "sample": "repeated-p4",
+      "requested_backend": "canvaskit-default",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "reason": "bounded document preflight workLimitExceeded 50000; CanvasKit unsupported in this unchanged policy",
+      "same_bytes_as_canvas2d": true
+    }
+  ],
+  "direct": [
+    {
+      "sample": "ws-host-p1",
+      "backend": "canvas2d",
+      "profile": "screen"
+    },
+    {
+      "sample": "ws-host-p1",
+      "backend": "canvaskit-compat",
+      "profile": "screen"
+    },
+    {
+      "sample": "ws-host-p1",
+      "backend": "canvaskit-default",
+      "profile": "screen"
+    },
+    {
+      "sample": "ws-host-p1",
+      "backend": "canvas2d",
+      "profile": "print"
+    },
+    {
+      "sample": "ws-host-p1",
+      "backend": "canvaskit-compat",
+      "profile": "print"
+    },
+    {
+      "sample": "ws-host-p1",
+      "backend": "canvaskit-default",
+      "profile": "print"
+    },
+    {
+      "sample": "ws-host-p2",
+      "backend": "canvas2d",
+      "profile": "screen"
+    },
+    {
+      "sample": "ws-host-p2",
+      "backend": "canvaskit-compat",
+      "profile": "screen"
+    },
+    {
+      "sample": "ws-host-p2",
+      "backend": "canvaskit-default",
+      "profile": "screen"
+    },
+    {
+      "sample": "ws-host-p2",
+      "backend": "canvas2d",
+      "profile": "print"
+    },
+    {
+      "sample": "ws-host-p2",
+      "backend": "canvaskit-compat",
+      "profile": "print"
+    },
+    {
+      "sample": "ws-host-p2",
+      "backend": "canvaskit-default",
+      "profile": "print"
+    },
+    {
+      "sample": "repeated-p4",
+      "backend": "canvas2d",
+      "profile": "screen"
+    },
+    {
+      "sample": "repeated-p4",
+      "backend": "canvas2d",
+      "profile": "print"
+    },
+    {
+      "sample": "orphan-p3",
+      "backend": "canvas2d",
+      "profile": "screen"
+    },
+    {
+      "sample": "orphan-p3",
+      "backend": "canvaskit-compat",
+      "profile": "screen"
+    },
+    {
+      "sample": "orphan-p3",
+      "backend": "canvaskit-default",
+      "profile": "screen"
+    },
+    {
+      "sample": "orphan-p3",
+      "backend": "canvas2d",
+      "profile": "print"
+    },
+    {
+      "sample": "orphan-p3",
+      "backend": "canvaskit-compat",
+      "profile": "print"
+    },
+    {
+      "sample": "orphan-p3",
+      "backend": "canvaskit-default",
+      "profile": "print"
+    },
+    {
+      "sample": "orphan-p4",
+      "backend": "canvas2d",
+      "profile": "screen"
+    },
+    {
+      "sample": "orphan-p4",
+      "backend": "canvaskit-compat",
+      "profile": "screen"
+    },
+    {
+      "sample": "orphan-p4",
+      "backend": "canvaskit-default",
+      "profile": "screen"
+    },
+    {
+      "sample": "orphan-p4",
+      "backend": "canvas2d",
+      "profile": "print"
+    },
+    {
+      "sample": "orphan-p4",
+      "backend": "canvaskit-compat",
+      "profile": "print"
+    },
+    {
+      "sample": "orphan-p4",
+      "backend": "canvaskit-default",
+      "profile": "print"
+    }
+  ],
+  "svg": [
+    {
+      "sample": "ws-host-p1",
+      "profile": "screen",
+      "page": 1,
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/rhwp-native",
+        "export-svg",
+        "/Users/tsjang/rhwp/samples/issue9062/ws-host-tac-above-offset-float.hwpx",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/actual/svg/ws-host-p1/screen",
+        "-p",
+        "0",
+        "--profile",
+        "screen",
+        "--compat",
+        "2022",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--json"
+      ],
+      "raster_command": [
+        "node",
+        "/Users/tsjang/rhwp/scripts/rasterize-svg-webfonts.mjs",
+        "--input",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/actual/svg/ws-host-p1/screen/ws-host-tac-above-offset-float_001.svg",
+        "--output",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/actual/svg/ws-host-p1/screen/actual.png",
+        "--zoom",
+        "1.00000000"
+      ],
+      "svg_sha256": "36dc7f87cbab619e07008f94fb19792cfc2d3c55d60aa617ce66258c498d269f",
+      "png": "mydocs/pr/assets/planet6897_integration_20261114/actual-final/svg/ws-host-p1/screen/actual.png",
+      "png_sha256": "75d4b894c1b18660d28b3faf409039111dce4b69b5a183e757e3a418d1beb3c1"
+    },
+    {
+      "sample": "ws-host-p1",
+      "profile": "print",
+      "page": 1,
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/rhwp-native",
+        "export-svg",
+        "/Users/tsjang/rhwp/samples/issue9062/ws-host-tac-above-offset-float.hwpx",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/actual/svg/ws-host-p1/print",
+        "-p",
+        "0",
+        "--profile",
+        "print",
+        "--compat",
+        "2022",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--json"
+      ],
+      "raster_command": [
+        "node",
+        "/Users/tsjang/rhwp/scripts/rasterize-svg-webfonts.mjs",
+        "--input",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/actual/svg/ws-host-p1/print/ws-host-tac-above-offset-float_001.svg",
+        "--output",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/actual/svg/ws-host-p1/print/actual.png",
+        "--zoom",
+        "1.00000000"
+      ],
+      "svg_sha256": "16f70a7665e9b02aa50f9012327782984ae2928f7110a9682e6de5ee235cf4d4",
+      "png": "mydocs/pr/assets/planet6897_integration_20261114/actual-final/svg/ws-host-p1/print/actual.png",
+      "png_sha256": "3955bb78400284d61d92c38ef2daa837392420c5516a7306257aecb4b29d4439"
+    },
+    {
+      "sample": "ws-host-p2",
+      "profile": "screen",
+      "page": 2,
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/rhwp-native",
+        "export-svg",
+        "/Users/tsjang/rhwp/samples/issue9062/ws-host-tac-above-offset-float.hwpx",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/actual/svg/ws-host-p2/screen",
+        "-p",
+        "1",
+        "--profile",
+        "screen",
+        "--compat",
+        "2022",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--json"
+      ],
+      "raster_command": [
+        "node",
+        "/Users/tsjang/rhwp/scripts/rasterize-svg-webfonts.mjs",
+        "--input",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/actual/svg/ws-host-p2/screen/ws-host-tac-above-offset-float_002.svg",
+        "--output",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/actual/svg/ws-host-p2/screen/actual.png",
+        "--zoom",
+        "1.00000000"
+      ],
+      "svg_sha256": "98fd21687c4a9aa4b2e546c482e4c49c6f9fddbeea75615b78b4e661691555d6",
+      "png": "mydocs/pr/assets/planet6897_integration_20261114/actual-final/svg/ws-host-p2/screen/actual.png",
+      "png_sha256": "b577e250aa5b7e3d1851babdebc55d1727bc227a6d0705f0628024e8a5703835"
+    },
+    {
+      "sample": "ws-host-p2",
+      "profile": "print",
+      "page": 2,
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/rhwp-native",
+        "export-svg",
+        "/Users/tsjang/rhwp/samples/issue9062/ws-host-tac-above-offset-float.hwpx",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/actual/svg/ws-host-p2/print",
+        "-p",
+        "1",
+        "--profile",
+        "print",
+        "--compat",
+        "2022",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--json"
+      ],
+      "raster_command": [
+        "node",
+        "/Users/tsjang/rhwp/scripts/rasterize-svg-webfonts.mjs",
+        "--input",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/actual/svg/ws-host-p2/print/ws-host-tac-above-offset-float_002.svg",
+        "--output",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/actual/svg/ws-host-p2/print/actual.png",
+        "--zoom",
+        "1.00000000"
+      ],
+      "svg_sha256": "90f2dced11b7f7b3a6f4d9070abc14f054af5b1a2405bb42ea9b4be28e0ad775",
+      "png": "mydocs/pr/assets/planet6897_integration_20261114/actual-final/svg/ws-host-p2/print/actual.png",
+      "png_sha256": "5e52565b5be949b3d42806de7241288997f1b95907887d78a0e6f9875dd00e4e"
+    },
+    {
+      "sample": "repeated-p4",
+      "profile": "screen",
+      "page": 4,
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/rhwp-native",
+        "export-svg",
+        "/Users/tsjang/rhwp/samples/issue9026/press_release_repeated_hidden_end.hwpx",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/actual/svg/repeated-p4/screen",
+        "-p",
+        "3",
+        "--profile",
+        "screen",
+        "--compat",
+        "2022",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--json"
+      ],
+      "raster_command": [
+        "node",
+        "/Users/tsjang/rhwp/scripts/rasterize-svg-webfonts.mjs",
+        "--input",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/actual/svg/repeated-p4/screen/press_release_repeated_hidden_end_004.svg",
+        "--output",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/actual/svg/repeated-p4/screen/actual.png",
+        "--zoom",
+        "1.00000000"
+      ],
+      "svg_sha256": "5c1b8d7c4b87372c6a9a617dc631cea2b4937b6930578762c3655ec224cf902d",
+      "png": "mydocs/pr/assets/planet6897_integration_20261114/actual-final/svg/repeated-p4/screen/actual.png",
+      "png_sha256": "741d0742b921f3661e12f7241ddb63d4a2c5638be663e7fe5b1a9a3a3899d545"
+    },
+    {
+      "sample": "repeated-p4",
+      "profile": "print",
+      "page": 4,
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/rhwp-native",
+        "export-svg",
+        "/Users/tsjang/rhwp/samples/issue9026/press_release_repeated_hidden_end.hwpx",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/actual/svg/repeated-p4/print",
+        "-p",
+        "3",
+        "--profile",
+        "print",
+        "--compat",
+        "2022",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--json"
+      ],
+      "raster_command": [
+        "node",
+        "/Users/tsjang/rhwp/scripts/rasterize-svg-webfonts.mjs",
+        "--input",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/actual/svg/repeated-p4/print/press_release_repeated_hidden_end_004.svg",
+        "--output",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/actual/svg/repeated-p4/print/actual.png",
+        "--zoom",
+        "1.00000000"
+      ],
+      "svg_sha256": "47e51bbffd44fc33736556b80096c05c1b9a5c1b706d2a3a8f0cc1e5e815a422",
+      "png": "mydocs/pr/assets/planet6897_integration_20261114/actual-final/svg/repeated-p4/print/actual.png",
+      "png_sha256": "44bdf2fb14e4fca6bedc0010268120e4947ede56d372c409b543ddb5bf54b982"
+    },
+    {
+      "sample": "orphan-p3",
+      "profile": "screen",
+      "page": 3,
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/rhwp-native",
+        "export-svg",
+        "/Users/tsjang/rhwp/samples/issue9026/press_release_orphan_hidden_end.hwpx",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/actual/svg/orphan-p3/screen",
+        "-p",
+        "2",
+        "--profile",
+        "screen",
+        "--compat",
+        "2022",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--json"
+      ],
+      "raster_command": [
+        "node",
+        "/Users/tsjang/rhwp/scripts/rasterize-svg-webfonts.mjs",
+        "--input",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/actual/svg/orphan-p3/screen/press_release_orphan_hidden_end_003.svg",
+        "--output",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/actual/svg/orphan-p3/screen/actual.png",
+        "--zoom",
+        "1.00000000"
+      ],
+      "svg_sha256": "b3c17296fccbffb13db975e3d36e36730614dd78fee3e2236536b5e7c5959a0d",
+      "png": "mydocs/pr/assets/planet6897_integration_20261114/actual-final/svg/orphan-p3/screen/actual.png",
+      "png_sha256": "d4448f2d1a88894da674accfe43b9006da8c17f9434abaafbca5c6a286358bda"
+    },
+    {
+      "sample": "orphan-p3",
+      "profile": "print",
+      "page": 3,
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/rhwp-native",
+        "export-svg",
+        "/Users/tsjang/rhwp/samples/issue9026/press_release_orphan_hidden_end.hwpx",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/actual/svg/orphan-p3/print",
+        "-p",
+        "2",
+        "--profile",
+        "print",
+        "--compat",
+        "2022",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--json"
+      ],
+      "raster_command": [
+        "node",
+        "/Users/tsjang/rhwp/scripts/rasterize-svg-webfonts.mjs",
+        "--input",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/actual/svg/orphan-p3/print/press_release_orphan_hidden_end_003.svg",
+        "--output",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/actual/svg/orphan-p3/print/actual.png",
+        "--zoom",
+        "1.00000000"
+      ],
+      "svg_sha256": "58d7af71cdbff5e5442f1424950a4338ac87988aac506b0395a49ce82a27386c",
+      "png": "mydocs/pr/assets/planet6897_integration_20261114/actual-final/svg/orphan-p3/print/actual.png",
+      "png_sha256": "9e7cf85c18fe92d1dc62d0884ddb8e71223cd0bfc04e686187311798cb3ab72c"
+    },
+    {
+      "sample": "orphan-p4",
+      "profile": "screen",
+      "page": 4,
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/rhwp-native",
+        "export-svg",
+        "/Users/tsjang/rhwp/samples/issue9026/press_release_orphan_hidden_end.hwpx",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/actual/svg/orphan-p4/screen",
+        "-p",
+        "3",
+        "--profile",
+        "screen",
+        "--compat",
+        "2022",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--json"
+      ],
+      "raster_command": [
+        "node",
+        "/Users/tsjang/rhwp/scripts/rasterize-svg-webfonts.mjs",
+        "--input",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/actual/svg/orphan-p4/screen/press_release_orphan_hidden_end_004.svg",
+        "--output",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/actual/svg/orphan-p4/screen/actual.png",
+        "--zoom",
+        "1.00000000"
+      ],
+      "svg_sha256": "560d75f5092b7cd3078e9aee4b39ba84e456d07e46d7542aa2f2f10c9e0dfc93",
+      "png": "mydocs/pr/assets/planet6897_integration_20261114/actual-final/svg/orphan-p4/screen/actual.png",
+      "png_sha256": "b302c676b3d53558de94f372b52627385c87ed89085b6efec776ae3d81238595"
+    },
+    {
+      "sample": "orphan-p4",
+      "profile": "print",
+      "page": 4,
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/rhwp-native",
+        "export-svg",
+        "/Users/tsjang/rhwp/samples/issue9026/press_release_orphan_hidden_end.hwpx",
+        "-o",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/actual/svg/orphan-p4/print",
+        "-p",
+        "3",
+        "--profile",
+        "print",
+        "--compat",
+        "2022",
+        "--embed-fonts=full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--json"
+      ],
+      "raster_command": [
+        "node",
+        "/Users/tsjang/rhwp/scripts/rasterize-svg-webfonts.mjs",
+        "--input",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/actual/svg/orphan-p4/print/press_release_orphan_hidden_end_004.svg",
+        "--output",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/terminal-line-final/actual/svg/orphan-p4/print/actual.png",
+        "--zoom",
+        "1.00000000"
+      ],
+      "svg_sha256": "721f20c66d937e286a26833f7ac74a66953cf693bde1cb483114611de9114fd9",
+      "png": "mydocs/pr/assets/planet6897_integration_20261114/actual-final/svg/orphan-p4/print/actual.png",
+      "png_sha256": "5c963236470d34adcfb17926d9f43a92b11a4f83a2bfb708c643e16b6058127d"
+    }
+  ],
+  "print_metrics": [
+    {
+      "sample": "ws-host-p1",
+      "requested": "canvas2d",
+      "actual": "canvas2d",
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.96037,
+      "silhouette_raw_unmatched_pixels": 50,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 126155,
+      "tolerant_content_match_percent": 99.96037
+    },
+    {
+      "sample": "ws-host-p1",
+      "requested": "canvaskit-compat",
+      "actual": "canvaskit-compat",
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 123052,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "sample": "ws-host-p1",
+      "requested": "canvaskit-default",
+      "actual": "canvaskit-default",
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 123052,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "sample": "ws-host-p2",
+      "requested": "canvas2d",
+      "actual": "canvas2d",
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 121088,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "sample": "ws-host-p2",
+      "requested": "canvaskit-compat",
+      "actual": "canvaskit-compat",
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 118697,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "sample": "ws-host-p2",
+      "requested": "canvaskit-default",
+      "actual": "canvaskit-default",
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 118697,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "sample": "repeated-p4",
+      "requested": "canvas2d",
+      "actual": "canvas2d",
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99792,
+      "silhouette_raw_unmatched_pixels": 1,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 48128,
+      "tolerant_content_match_percent": 99.99792
+    },
+    {
+      "sample": "repeated-p4",
+      "requested": "canvaskit-compat",
+      "actual": "canvas2d",
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99792,
+      "silhouette_raw_unmatched_pixels": 1,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 48128,
+      "tolerant_content_match_percent": 99.99792
+    },
+    {
+      "sample": "repeated-p4",
+      "requested": "canvaskit-default",
+      "actual": "canvas2d",
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99792,
+      "silhouette_raw_unmatched_pixels": 1,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 48128,
+      "tolerant_content_match_percent": 99.99792
+    },
+    {
+      "sample": "orphan-p3",
+      "requested": "canvas2d",
+      "actual": "canvas2d",
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99631,
+      "silhouette_raw_unmatched_pixels": 1,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 27086,
+      "tolerant_content_match_percent": 99.99631
+    },
+    {
+      "sample": "orphan-p3",
+      "requested": "canvaskit-compat",
+      "actual": "canvaskit-compat",
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.96987,
+      "silhouette_raw_unmatched_pixels": 8,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 26551,
+      "tolerant_content_match_percent": 99.96987
+    },
+    {
+      "sample": "orphan-p3",
+      "requested": "canvaskit-default",
+      "actual": "canvaskit-default",
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.96987,
+      "silhouette_raw_unmatched_pixels": 8,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 26551,
+      "tolerant_content_match_percent": 99.96987
+    },
+    {
+      "sample": "orphan-p4",
+      "requested": "canvas2d",
+      "actual": "canvas2d",
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.91589,
+      "silhouette_raw_unmatched_pixels": 47,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 55882,
+      "tolerant_content_match_percent": 99.91589
+    },
+    {
+      "sample": "orphan-p4",
+      "requested": "canvaskit-compat",
+      "actual": "canvaskit-compat",
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99646,
+      "silhouette_raw_unmatched_pixels": 2,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 56443,
+      "tolerant_content_match_percent": 99.99646
+    },
+    {
+      "sample": "orphan-p4",
+      "requested": "canvaskit-default",
+      "actual": "canvaskit-default",
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99646,
+      "silhouette_raw_unmatched_pixels": 2,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 56443,
+      "tolerant_content_match_percent": 99.99646
+    }
+  ],
+  "supported_scope_passed": true,
+  "policy_unchanged": true,
+  "direct_reading": {
+    "completed": true,
+    "reviewed": "Five page boundaries, screen/print Canvas2D, default/compat supported CanvasKit and SVG. Title/table ordering, three first-page rules, last closing line, repeated chart/text and orphan appendix/contact/heading preserved. CanvasKit repeated is explicitly Canvas2D fallback, not supported replay."
+  }
+}

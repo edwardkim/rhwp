@@ -1,0 +1,41 @@
+{
+  "metrics": [
+    {
+      "page": 350,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 28524,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 608,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 12491,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 686,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 15384,
+      "tolerant_content_match_percent": 100.0
+    }
+  ],
+  "pages": [
+    350,
+    608,
+    686
+  ],
+  "dpi": 96,
+  "source_manifest_sha256": "d6a4d9ff939a8f72c04e37cdaf017093d4807c1f58eb6c1a34fae8a61a8cfb4e"
+}

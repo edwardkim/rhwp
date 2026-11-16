@@ -1,0 +1,54 @@
+{
+  "checked_at": "2026-11-12T10:36:18.486Z",
+  "issues": [
+    {
+      "number": 8665,
+      "state": "open",
+      "title": "[쪽 나눔] 저장 줄 없는 제목 문단(글앞 표 + 용지 기준 그림)이 쪽 끝에 걸리면 다음 쪽 제목이 현재 쪽 아래에 끼어 그려짐",
+      "post_merge_action": "close_after_exact_merge_and_evidence_comment",
+      "scope": "본문이 명시한 결함을 판정하며 별도·범위 밖이라고 명시한 항목은 전체 해결로 확대하지 않는다.",
+      "body_sha256": "809f3ad4656cd4070b4bac4164a65ee3a5a3d6e8a72d425f3a40459a3e487b8f"
+    },
+    {
+      "number": 8573,
+      "state": "open",
+      "title": "[배치] 저장 줄 없는 공백 host 문단에서 어울림 표 아래 자리차지 표가 위로 올라가 겹치고 쪽이 넘친다",
+      "post_merge_action": "close_after_exact_merge_and_evidence_comment",
+      "scope": "본문이 명시한 결함을 판정하며 별도·범위 밖이라고 명시한 항목은 전체 해결로 확대하지 않는다.",
+      "body_sha256": "eb6d62fe8661bf9c26e229416ecc074f20e335d3d970d1f4df70a7fbb7599ee3"
+    },
+    {
+      "number": 8678,
+      "state": "open",
+      "title": "[차트] 차트 값축: 값이 몰린 양수 데이터도 항상 0부터 시작해 막대 차이가 사라짐",
+      "post_merge_action": "keep_open_partial_improvement",
+      "scope": "공개 4종 값축 개선만 확인. plot 높이·다른 데이터의 눈금 단위/시작값 등 잔여를 유지한다.",
+      "body_sha256": "c1489361f50f49800b6b54edbed09de7e892d382db3870b1c22eebe64c21651d"
+    },
+    {
+      "number": 8664,
+      "state": "open",
+      "title": "[줄 높이] 글자 크기 0 문단이 12px 줄을 만들어 뒤 개체가 아래로 밀림",
+      "post_merge_action": "close_after_exact_merge_and_evidence_comment",
+      "scope": "본문이 명시한 결함을 판정하며 별도·범위 밖이라고 명시한 항목은 전체 해결로 확대하지 않는다.",
+      "body_sha256": "986a1bdb9d7f849fc68e2ff064c64705320957ac09c281af4b0b30bdc9687e6a"
+    },
+    {
+      "number": 8680,
+      "state": "open",
+      "title": "[글자] Wingdings PUA 원문자(U+F080~F095)가 빈칸으로 그려지고, Wingdings 기호의 전진폭이 한컴과 다름",
+      "post_merge_action": "close_after_exact_merge_and_evidence_comment",
+      "scope": "본문이 명시한 결함을 판정하며 별도·범위 밖이라고 명시한 항목은 전체 해결로 확대하지 않는다.",
+      "body_sha256": "847a48d95617710b9ad51780c6a5dd2faa1770bf1a390e5b22cbef166d846892"
+    },
+    {
+      "number": 8690,
+      "state": "open",
+      "title": "[표] 쪽에 걸친 표에서 저장 줄 없는 칸의 글자처럼 취급이 아닌 직선(화살표)이 빠짐 (#8579 후속)",
+      "post_merge_action": "close_after_exact_merge_and_evidence_comment",
+      "scope": "본문이 명시한 결함을 판정하며 별도·범위 밖이라고 명시한 항목은 전체 해결로 확대하지 않는다.",
+      "body_sha256": "9955f728c4385738cb9c7f5d98f008fd3c07faa1501e14e25bf4d544b5ed0f39"
+    }
+  ],
+  "merge_message_policy": "Use custom squash commit body with Refs only; do not import original Closes #8678 into merge message. Close fully resolved issues explicitly after confirmed merge."
+}

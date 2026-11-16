@@ -1,0 +1,25 @@
+{
+  "pr": 9057,
+  "source_head": "f42f34dc45e58c5a4602af0c8df4976d918a9d58",
+  "base": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
+  "producer": "b6da239caeaf551947a9a6300d25a42f0cd86ab6",
+  "working_diff": "test header documentation only",
+  "baseline_sha256": "ee41455cf7f05585487d92961ccb9fd8160d5d1e15c3567019ea89e2b7bf2aeb",
+  "pages": 3542,
+  "datasets": 36,
+  "minimum": 98.09,
+  "protected_declines": 0,
+  "base_declines_over_two_points": 0,
+  "base_score_differences": 0,
+  "png_byte_differences": 3,
+  "builds": {
+    "candidate-rhwp": "3428cd7788c5032b1573d806ff3ad82e5b9d94f3bea674a1103f460a7e2bc9da",
+    "base-rhwp": "461dc1e98e1d70b98200d410fbedc1b2c67a8d79ba24c5cdcdf7c3d4fd7c7b22",
+    "candidate-pkg/rhwp_bg.wasm": "639aa2c39918611066aed75beb626fb1e3eef754fdc4412912d5ba7be12f4b1e",
+    "candidate-pkg/rhwp.js": "2d48f8a6c3ff7f848f08725bb54d04094b296af1a40ae61203081a7cf8061a1a",
+    "base-pkg/rhwp_bg.wasm": "3f3b3d8f94466119660245f9336b4071832ba4e8ffa63c8d5bf58961b30b3175",
+    "base-pkg/rhwp.js": "2d48f8a6c3ff7f848f08725bb54d04094b296af1a40ae61203081a7cf8061a1a"
+  },
+  "code_head": "3d3bd2b41d28bb0d9f86f45351f74cafd680e0d8",
+  "verification_tree": "1675188eb5478913195895a17d3b07c997c401f6"
+}

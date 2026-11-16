@@ -352,7 +352,8 @@ fn parse_replace_text_args(args: &[String]) -> Result<ReplaceTextArgs<'_>, i32> 
 
     let (Some(file_path), Some(find), Some(replace)) = (file_path, find_arg, replace_arg) else {
         eprintln!(
-            "사용법: rhwp edit replace-text <파일.hwp|파일.hwpx> --find <문자열> --replace <문자열> [-o <출력>] [--ignore-case] [--dry-run] [--json]"
+            "사용법: {}",
+            crate::cli::metadata::capabilities::REPLACE_TEXT_USAGE
         );
         return Err(EXIT_USAGE);
     };

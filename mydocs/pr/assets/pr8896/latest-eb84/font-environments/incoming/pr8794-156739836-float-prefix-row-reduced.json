@@ -1,0 +1,157 @@
+{
+  "documentGlyphFallbacks": [
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 15,
+      "languageSlot": 0,
+      "source": "나눔바른고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 16,
+      "languageSlot": 0,
+      "source": "Arial-BoldMT"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 18,
+      "languageSlot": 1,
+      "source": "나눔바른고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 14,
+      "languageSlot": 2,
+      "source": "나눔바른고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 15,
+      "languageSlot": 2,
+      "source": "Arial TUR"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 14,
+      "languageSlot": 3,
+      "source": "나눔바른고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 15,
+      "languageSlot": 3,
+      "source": "Arial TUR"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 14,
+      "languageSlot": 4,
+      "source": "나눔바른고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 15,
+      "languageSlot": 4,
+      "source": "한양중고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 15,
+      "languageSlot": 5,
+      "source": "나눔바른고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 14,
+      "languageSlot": 6,
+      "source": "나눔바른고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 15,
+      "languageSlot": 6,
+      "source": "한양중고딕"
+    }
+  ],
+  "documentSubstitutions": [],
+  "id": "native-webfont-aee92ae70d23bf4aca3dc519",
+  "preserveSourceMetrics": true,
+  "selectedPrograms": {
+    "Arial": {
+      "family": "Arial",
+      "openTypeCff": false,
+      "programId": "d7fed63b4b0d03be72501f238ccf6d5e580b1989cee25ddc273c2e6bcf06505d",
+      "query": "Arial",
+      "trueType": true
+    },
+    "Arial-BoldMT": {
+      "family": "Arial",
+      "openTypeCff": false,
+      "programId": "3c1a43f04c015cffd86a47b9b3ce8df52ec4d9451f11fcfb793025fa404f6cf1",
+      "query": "Arial-BoldMT",
+      "trueType": true
+    },
+    "Times New Roman": {
+      "family": "Times New Roman",
+      "openTypeCff": false,
+      "programId": "05431e66ef394384694c35739bcff3bd67242cc74aca1f13b54c7a92822f0fde",
+      "query": "Times New Roman",
+      "trueType": true
+    }
+  },
+  "substitutions": {
+    "Arial": "Arial",
+    "Arial TUR": "NotoSansKR-Regular",
+    "Arial-BoldMT": "Arial",
+    "HCI Poppy": "NotoSerifKRExtraLight-Regular",
+    "HY중고딕": "NotoSansKR-Regular",
+    "HY헤드라인M": "NotoSansKRThin-Bold",
+    "Times New Roman": "Times New Roman",
+    "굴림": "NotoSansKRExtraLight",
+    "나눔바른고딕": "NotoSansKR-Regular",
+    "돋움": "NotoSansKRExtraLight",
+    "돋움체": "NotoSansKRExtraLight",
+    "맑은 고딕": "Pretendard-Regular",
+    "명조": "NotoSerifKRExtraLight-Bold",
+    "바탕": "NotoSerifKRExtraLight-Regular",
+    "바탕체": "NotoSerifKRExtraLight-Regular",
+    "산세리프": "NotoSansKR-Regular",
+    "한양신명조": "NotoSansKR-Regular",
+    "한양중고딕": "NotoSansKR-Regular",
+    "한컴바탕": "HCRBatang",
+    "함초롬돋움": "HCRDotum",
+    "함초롬바탕": "HCRBatang",
+    "휴먼고딕": "NotoSansKR-Regular",
+    "휴먼명조": "NotoSansKR-Regular"
+  },
+  "trueTypeFaces": [
+    "Arial",
+    "HCR Batang",
+    "HCR Dotum",
+    "Times New Roman"
+  ]
+}

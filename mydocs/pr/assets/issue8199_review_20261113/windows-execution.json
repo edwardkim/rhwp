@@ -1,0 +1,18 @@
+{
+  "build": "19045",
+  "version": "10.0.19045",
+  "tests_sha256": "25ee7e084b9d79fe31c95ca1db9956e84542ce39c64cea5fdae24cc11434ab7b",
+  "visual_sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+  "head": "4aa8f5fc2b550145a724155cdb7cdd0b0a2576f3",
+  "dirty": [],
+  "os": "Microsoft Windows 10 Pro",
+  "python_tests": {
+    "total": 89,
+    "passed": 89,
+    "failed": 0
+  },
+  "label_test_subset": {
+    "total": 9,
+    "passed": 9
+  }
+}

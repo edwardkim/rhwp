@@ -1,0 +1,91 @@
+{
+  "status": "passed",
+  "head": "35d238871faefa7f2157971b7913f2b905cbb344",
+  "base": "67b4ff8d3a55e5bb50c46a44315de749a4ef07a7",
+  "results": [
+    {
+      "name": "prepare",
+      "exit": 0,
+      "seconds": 3.408,
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ]
+    },
+    {
+      "name": "manifest",
+      "exit": 0,
+      "seconds": 0.647,
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "67b4ff8d3a55e5bb50c46a44315de749a4ef07a7"
+      ]
+    },
+    {
+      "name": "unit-tiers",
+      "exit": 0,
+      "seconds": 15.746,
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "67b4ff8d3a55e5bb50c46a44315de749a4ef07a7"
+      ]
+    },
+    {
+      "name": "ci-impact",
+      "exit": 0,
+      "seconds": 0.45,
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=8",
+        "scripts/tests/ci-impact-classifier.test.cjs",
+        "scripts/tests/ci-impact-policy.test.cjs"
+      ]
+    },
+    {
+      "name": "python-contracts",
+      "exit": 1,
+      "seconds": 11.052,
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "-m",
+        "unittest",
+        "scripts.tests.test_ci_impact_workflow",
+        "scripts.tests.test_visual_sweep_contributor",
+        "scripts.tests.test_visual_sweep_handbook"
+      ],
+      "status": "invalid_invocation",
+      "reason": "실행 PYTHONPATH에 scripts/tests가 없어 모듈 import 실패. 제품 실패가 아니다."
+    },
+    {
+      "name": "python-contracts-corrected",
+      "exit": 0,
+      "log_sha256": "f56fa7a0f4be153c7dfb7f5ee5cd65d81cd88a657974dfc64bd0c147443a710c",
+      "log": "output/pr-review/issue7732-p037-residual-20261115/rebase-9088/svg-print-final/post-rebase-4e0b20d2/margin-controls/post-rebase-checks/python-contracts-corrected.log",
+      "command": "PYTHONPATH=scripts/tests venv/bin/python -m unittest scripts.tests.test_ci_impact_workflow scripts.tests.test_visual_sweep_contributor scripts.tests.test_visual_sweep_handbook"
+    },
+    {
+      "name": "about-dialog",
+      "exit": 0,
+      "log_sha256": "2438d642f646089bf15211c8f1070e41cd23be473aab3a62c666c816680468ba",
+      "log": "output/pr-review/issue7732-p037-residual-20261115/rebase-9088/svg-print-final/post-rebase-4e0b20d2/margin-controls/post-rebase-checks/about-dialog.log",
+      "command": "VITE_PORT=7787 node e2e/run-with-vite.mjs -- node e2e/about-dialog-issue8905.test.mjs --mode=headless"
+    },
+    {
+      "name": "docs",
+      "exit": 0,
+      "log_sha256": "25f513b146fd6288291a329caf80b696a3e8b7bfc10cd0fc95a549aa2adbe966",
+      "log": "output/pr-review/issue7732-p037-residual-20261115/rebase-9088/svg-print-final/post-rebase-4e0b20d2/margin-controls/post-rebase-checks/docs.log",
+      "command": "venv/bin/python scripts/check_markdown_links.py --changed-from 67b4ff8d3a55e5bb50c46a44315de749a4ef07a7"
+    }
+  ],
+  "public_four": "public-four-validation.json",
+  "about_scope": "800×360·360×640·1280×900 화면, 제목/하단 닫기·스크롤·Escape·overlay 종료 실제 브라우저 검사"
+}

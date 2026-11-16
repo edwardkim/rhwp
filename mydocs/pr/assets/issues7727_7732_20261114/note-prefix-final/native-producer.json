@@ -1,0 +1,11 @@
+{
+  "parent": "17301f013376b079da40ece94e06c44bdc6c96e1",
+  "patch_sha256": "ff80d3521ac173439a8055b8ea4eaaa6ccebad8bef4c704d0e4e718fe0078d30",
+  "source_files": {
+    "src/renderer/layout/note_reference.rs": "d4ab085013c024e6c0cc4a66c611b9097108f8607eff80473589881cb68eaff9",
+    "src/renderer/render_normalization.rs": "7d86f4a6a6d24ec19c28e2a6c1c505c9660f5f1d48b20acad7a986d9ed9b8075"
+  },
+  "binary_sha256": "f0585a0bf77d3af75aa7ab6727b9038e5049ef094b7f906e2a85f49b434fb31b",
+  "build_log_sha256": "5f0b9559b9b3d97cb92ab3d74b81a15256078b98bd38a8497e4a35e655d17b59",
+  "code_sha256": "ab074a6d4612c14773e37865afe97c6e929fbe5c374697838347f6b9f724761d"
+}

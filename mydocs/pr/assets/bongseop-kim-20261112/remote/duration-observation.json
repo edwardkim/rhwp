@@ -1,0 +1,13 @@
+{
+  "observed_complete": true,
+  "workflow_run": 43227236387,
+  "workflow_url": "https://github.com/edwardkim/rhwp/actions/runs/43227236387",
+  "workflow_status": "completed",
+  "workflow_conclusion": "success",
+  "updated": false,
+  "ready": false,
+  "reason": "no-verified-pr-duration-measurements",
+  "existing_metrics_ref": "31cc018ef314a3c09a065755eef4f76d89e0d98c",
+  "log_sha256": "2d71d676f8da26666f77bdf32efd639c96ebf43947fc26dfc21648e6f5c763d6",
+  "description": "[duration workflow](https://github.com/edwardkim/rhwp/actions/runs/43227236387)는 success로 끝났지만 `ready:false, reason:no-verified-pr-duration-measurements`로 갱신을 보류했다. 제품 검증 CI를 재실행하지 않았다."
+}

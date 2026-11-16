@@ -1,0 +1,17 @@
+{
+  "head": {
+    "sha256": "bb12ff4d0067f7ce5f2eb9151667ed0525c52920e8d9688d1ea419319131f731",
+    "bytes": 29342233,
+    "candidateOnlyExports": [
+      {
+        "name": "hwpdocument_prepareNativeOtfFontFaces",
+        "kind": "function"
+      }
+    ]
+  },
+  "base": {
+    "sha256": "fabb6224b3953e00d60f5de29771cf26e781f7d039da03920a6cdb9e1b75a0ed",
+    "bytes": 29326133,
+    "candidateOnlyExports": []
+  }
+}

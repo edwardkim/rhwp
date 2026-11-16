@@ -385,6 +385,18 @@ pub(crate) fn export_svg(args: &[String]) -> i32 {
         hangul2024_compat,
     );
 
+    #[cfg(feature = "native-skia")]
+    if backend == SvgExportBackend::Layer {
+        // 같은 Native 공급의 PNG와 SVG는 실제 원본 프로그램의 전진을 함께 쓴다.
+        // 환경 JSON의 선택 신원만 적용하고 이 준비를 생략하면, HFT 표시 프로그램과
+        // 표가 없는 원본 TTF의 전진이 SVG에서만 내장 호환 폭으로 돌아간다.
+        let renderer = rhwp::renderer::skia::SkiaLayerRenderer::new().with_font_paths(&font_paths);
+        if let Err(error) = renderer.prepare_native_otf_fonts(&mut doc) {
+            eprintln!("오류: SVG 원본 글꼴 프로그램을 준비할 수 없습니다: {error}");
+            return EXIT_RUNTIME;
+        }
+    }
+
     let page_count = doc.page_count();
     if !json_mode {
         // stdout 순수성: --json 모드에서는 데이터(JSON)만 나간다.
@@ -481,9 +493,9 @@ pub(crate) fn export_svg(args: &[String]) -> i32 {
                     svg = insert_grid_overlay(&svg, mm, origin_mm);
                 }
                 let svg_filename = if page_count == 1 {
-                    format!("{}.svg", file_stem)
+                    super::output_file_name(&file_stem, ".svg")
                 } else {
-                    format!("{}_{:03}.svg", file_stem, page_num + 1)
+                    super::output_file_name(&file_stem, &format!("_{:03}.svg", page_num + 1))
                 };
                 let svg_path = output_path.join(&svg_filename);
 

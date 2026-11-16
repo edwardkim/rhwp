@@ -1,0 +1,25 @@
+{
+  "omitted": {
+    "initial_different_pages": [
+      51,
+      53,
+      54,
+      56,
+      58,
+      59
+    ],
+    "exported_pngs_identical": true,
+    "pages": 763
+  },
+  "host": {
+    "initial_different_pages": [
+      53,
+      54,
+      56,
+      58,
+      59
+    ],
+    "exported_pngs_identical": true,
+    "pages": 763
+  }
+}

@@ -599,7 +599,7 @@ impl DocumentCore {
                         "\"borderRight\":{{\"type\":0,\"width\":0,\"color\":\"#000000\"}},",
                         "\"borderTop\":{{\"type\":0,\"width\":0,\"color\":\"#000000\"}},",
                         "\"borderBottom\":{{\"type\":0,\"width\":0,\"color\":\"#000000\"}},",
-                        "\"fillType\":\"none\",\"fillColor\":\"#ffffff\",\"patternColor\":\"#000000\",\"patternType\":0",
+                        "\"fillType\":\"none\",\"fillColor\":\"#ffffff\",\"patternColor\":\"#000000\",\"patternType\":-1",
                         "}}"
                     ),
                     char_shape_id
@@ -773,7 +773,7 @@ impl DocumentCore {
                         "\"borderRight\":{{\"type\":0,\"width\":0,\"color\":\"#000000\"}},",
                         "\"borderTop\":{{\"type\":0,\"width\":0,\"color\":\"#000000\"}},",
                         "\"borderBottom\":{{\"type\":0,\"width\":0,\"color\":\"#000000\"}},",
-                        "\"fillType\":\"none\",\"fillColor\":\"#ffffff\",\"patternColor\":\"#000000\",\"patternType\":0",
+                        "\"fillType\":\"none\",\"fillColor\":\"#ffffff\",\"patternColor\":\"#000000\",\"patternType\":-1",
                         "}}"
                     ),
                     char_shape_id
@@ -795,7 +795,7 @@ impl DocumentCore {
                 "\"borderRight\":{\"type\":0,\"width\":0,\"color\":\"#000000\"},",
                 "\"borderTop\":{\"type\":0,\"width\":0,\"color\":\"#000000\"},",
                 "\"borderBottom\":{\"type\":0,\"width\":0,\"color\":\"#000000\"},",
-                "\"fillType\":\"none\",\"fillColor\":\"#ffffff\",\"patternColor\":\"#000000\",\"patternType\":0"
+                "\"fillType\":\"none\",\"fillColor\":\"#ffffff\",\"patternColor\":\"#000000\",\"patternType\":-1"
             ).to_string();
         }
         let bf = self
@@ -830,7 +830,7 @@ impl DocumentCore {
                     "\"borderRight\":{\"type\":0,\"width\":0,\"color\":\"#000000\"},",
                     "\"borderTop\":{\"type\":0,\"width\":0,\"color\":\"#000000\"},",
                     "\"borderBottom\":{\"type\":0,\"width\":0,\"color\":\"#000000\"},",
-                    "\"fillType\":\"none\",\"fillColor\":\"#ffffff\",\"patternColor\":\"#000000\",\"patternType\":0"
+                    "\"fillType\":\"none\",\"fillColor\":\"#ffffff\",\"patternColor\":\"#000000\",\"patternType\":-1"
                 ).to_string()
             }
         }
@@ -910,7 +910,7 @@ impl DocumentCore {
                         "\"borderRight\":{{\"type\":0,\"width\":0,\"color\":\"#000000\"}},",
                         "\"borderTop\":{{\"type\":0,\"width\":0,\"color\":\"#000000\"}},",
                         "\"borderBottom\":{{\"type\":0,\"width\":0,\"color\":\"#000000\"}},",
-                        "\"fillType\":\"none\",\"fillColor\":\"#ffffff\",\"patternColor\":\"#000000\",\"patternType\":0"
+                        "\"fillType\":\"none\",\"fillColor\":\"#ffffff\",\"patternColor\":\"#000000\",\"patternType\":-1"
                     )
                 )
             }
@@ -922,7 +922,7 @@ impl DocumentCore {
                     "\"borderRight\":{{\"type\":0,\"width\":0,\"color\":\"#000000\"}},",
                     "\"borderTop\":{{\"type\":0,\"width\":0,\"color\":\"#000000\"}},",
                     "\"borderBottom\":{{\"type\":0,\"width\":0,\"color\":\"#000000\"}},",
-                    "\"fillType\":\"none\",\"fillColor\":\"#ffffff\",\"patternColor\":\"#000000\",\"patternType\":0"
+                    "\"fillType\":\"none\",\"fillColor\":\"#ffffff\",\"patternColor\":\"#000000\",\"patternType\":-1"
                 )
             )
         };
@@ -1037,7 +1037,7 @@ impl DocumentCore {
                         "\"borderRight\":{{\"type\":0,\"width\":0,\"color\":\"#000000\"}},",
                         "\"borderTop\":{{\"type\":0,\"width\":0,\"color\":\"#000000\"}},",
                         "\"borderBottom\":{{\"type\":0,\"width\":0,\"color\":\"#000000\"}},",
-                        "\"fillType\":\"none\",\"fillColor\":\"#ffffff\",\"patternColor\":\"#000000\",\"patternType\":0,",
+                        "\"fillType\":\"none\",\"fillColor\":\"#ffffff\",\"patternColor\":\"#000000\",\"patternType\":-1,",
                         "\"borderSpacing\":[0,0,0,0],",
                         "\"borderConnect\":false,\"borderIgnoreMargin\":false}}"
                     ),

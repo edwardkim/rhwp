@@ -1,0 +1,14 @@
+{
+  "source": "2c90fa288bb4d48764eb82dbb025df4a12637ea9",
+  "reviewed": [
+    "claims/footnote/wasm/review/review_037.png",
+    "claims/footnote/wasm/overlay/overlay_037.png"
+  ],
+  "observations": [
+    "37쪽의 행·셀·본문 소속과 다음 쪽 경계가 독립 Print와 유지된다.",
+    "병합 셀의 가운데 정렬을 현재 조각의 source-frame 소유로 대조했다.",
+    "기존 미세한 표 선·글리프 차이는 99.29%의 전체 쪽 판정에 포함되며 픽셀 동일이라고 주장하지 않는다."
+  ],
+  "native_wasm_whole_50_minimum": 99.23,
+  "incoming_14_both_minimum": 100.0
+}

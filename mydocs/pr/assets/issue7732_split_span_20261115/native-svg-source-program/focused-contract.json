@@ -1,0 +1,22 @@
+{
+  "source_parent": "a2dd43ad2966298d1142ff946ced0d67a6a198c2",
+  "source_diff_sha256": "00e31afafde14416980cda8240c8f37d36147601289b7a61df77b55768384be3",
+  "binary_sha256": "fccca6a5d7abc8f803ec3522501be1a79b2d36eedbd5e70ee49dcc977420c98e",
+  "focused_before": {
+    "tests": 1,
+    "failed": 1,
+    "seconds": 2.596,
+    "log": "../svg-residual-diagnosis/contract-before-collected.log"
+  },
+  "focused_after": {
+    "tests": 1,
+    "passed": 1,
+    "seconds": 2.439,
+    "log": "../svg-residual-diagnosis/contract-after.log"
+  },
+  "invalid_invocations": [
+    "contract-before.log: 단일 쪽 SVG 파일명 가정 오류. 제품 실패 증거로 사용하지 않음.",
+    "contract-before-corrected.log: 테스트 편집 뒤 suite 재생성 누락으로0건 실행. 통과로 사용하지 않음."
+  ],
+  "scope": "Native native-skia CLI의 layer SVG가 PNG와 같은 실제 공급 전진 준비를 호출한다. 공통 조판·paint·WASM·PNG 함수는 변경하지 않음."
+}

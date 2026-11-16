@@ -1,0 +1,30 @@
+{
+  "before": "606fd6fa56f884d886c438ae659e9f132b228580",
+  "after": "728b368e35ccde71d21d5c98d3c2ba791af3ce30",
+  "new_base": "dd7f453898776c262c00e862e10f47d22a4d6ceb",
+  "conflicts": [],
+  "changed_paths": [
+    "tests/cases/issue_8919_pdf_cmap_range_entries.rs",
+    "vendor/rhwp-pdf-import-backend/RHWP_PATCHES.md",
+    "vendor/rhwp-pdf-import-backend/src/fonts/cmap.rs"
+  ],
+  "hwp_producer_source_hashes_unchanged": {
+    "src/model/image.rs": true,
+    "src/paint/builder.rs": true,
+    "src/renderer/composer/line_breaking.rs": true,
+    "src/renderer/float_placement.rs": true,
+    "src/renderer/height_measurer.rs": true,
+    "src/renderer/image_resolver/print_jpeg_encode.rs": true,
+    "src/renderer/layout/picture_footnote.rs": true,
+    "src/renderer/layout/table_layout.rs": true,
+    "src/renderer/typeset/section/controls.rs": true,
+    "src/renderer/float_placement/stored_picture_stack.rs": true
+  },
+  "visual_reuse": "기존 측정은 6f8d22ac95의 producer 근거로 보존하고 새 head 재출력으로 표시하지 않는다. HWP/HWPX 읽기·조판·paint·Print 기준은 변경되지 않았다.",
+  "incoming_feature": "#8922 PDF CMap: current head direct tests 10 PASS; same source native-skia library and lint/build PASS",
+  "current_base_policy_checks": {
+    "manifest": 0,
+    "unit_tiers": 0,
+    "base": "dd7f453898776c262c00e862e10f47d22a4d6ceb"
+  }
+}

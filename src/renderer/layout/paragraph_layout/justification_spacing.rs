@@ -114,10 +114,18 @@ pub(super) fn compress_with_space_limit(
             let eligible = distributed
                 && !glyph
                     .chars()
-                    .any(|ch| ch.is_whitespace() || ch == '\u{fffc}')
+                    .any(|ch| ch == ' ' || ch.is_control() || ch == '\u{fffc}')
                 && estimate_text_width_exact(glyph, &style) > 0.0;
+            // 낱말 공백(' ')은 word 보정이 character 보정을 상쇄하지만,
+            // 묶음 빈칸 등은 character 전진만 소비한다. 이를 슬롯에서 빼면
+            // 측정 반복이 실제보다 작은 분모로 보정해 줄 끝을 과하게 압축한다.
             glyphs += usize::from(eligible);
-            last = Some((glyph.to_owned(), style.clone(), eligible));
+            // 빈칸의 전진은 압축 대상이어도 마지막 잉크의 돌출 복원은 아니다.
+            last = Some((
+                glyph.to_owned(),
+                style.clone(),
+                eligible && !glyph.chars().any(char::is_whitespace),
+            ));
         }
         runs.push((text, style, distributed));
     }

@@ -1,0 +1,167 @@
+{
+  "validated_source": "d255fc603f5fca7c5e8cefa7bff0cecd264a3b6e",
+  "code_head_frontend_tree_identical": "f68c4d9bd7d3f037f43e1820e49783af6b979479",
+  "wasm_sha256": "16e3f571c57b82d666ec87967e2d0144db5c41d7f5bef04cbd8a30986da38f54",
+  "wasm_bytes": 27649950,
+  "browser_runtime_response_hash_matched": true,
+  "result": {
+    "checks": [
+      {
+        "family": "함초롬바탕",
+        "aliases": [],
+        "font": "64px 함초롬바탕, Batang, AppleMyungjo, \"Noto Serif KR\", \"Noto Sans Symbols2\", D2Coding, \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", serif",
+        "width": 115.19998168945312,
+        "expectedWidth": 115.19998168945312,
+        "samePixels": true,
+        "distinctFallback": true,
+        "leading": [
+          "함초롬바탕"
+        ]
+      },
+      {
+        "family": "함초롬바탕",
+        "aliases": [
+          "__rhwp_ttf__함초롬바탕"
+        ],
+        "font": "64px __rhwp_ttf__함초롬바탕, 함초롬바탕, Batang, AppleMyungjo, \"Noto Serif KR\", \"Noto Sans Symbols2\", D2Coding, \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", serif",
+        "width": 115.19998168945312,
+        "expectedWidth": 115.19998168945312,
+        "samePixels": true,
+        "distinctFallback": true,
+        "leading": [
+          "__rhwp_ttf__함초롬바탕",
+          "함초롬바탕"
+        ]
+      },
+      {
+        "family": "함초롬바탕",
+        "aliases": [
+          "__rhwp_intrinsic__함초롬바탕"
+        ],
+        "font": "64px __rhwp_intrinsic__함초롬바탕, 함초롬바탕, Batang, AppleMyungjo, \"Noto Serif KR\", \"Noto Sans Symbols2\", D2Coding, \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", serif",
+        "width": 115.19998168945312,
+        "expectedWidth": 115.19998168945312,
+        "samePixels": true,
+        "distinctFallback": true,
+        "leading": [
+          "__rhwp_intrinsic__함초롬바탕",
+          "함초롬바탕"
+        ]
+      },
+      {
+        "family": "함초롬바탕",
+        "aliases": [
+          "__rhwp_intrinsic__함초롬바탕",
+          "__rhwp_ttf__함초롬바탕"
+        ],
+        "font": "64px __rhwp_intrinsic__함초롬바탕, __rhwp_ttf__함초롬바탕, 함초롬바탕, Batang, AppleMyungjo, \"Noto Serif KR\", \"Noto Sans Symbols2\", D2Coding, \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", serif",
+        "width": 115.19998168945312,
+        "expectedWidth": 115.19998168945312,
+        "samePixels": true,
+        "distinctFallback": true,
+        "leading": [
+          "__rhwp_intrinsic__함초롬바탕",
+          "__rhwp_ttf__함초롬바탕",
+          "함초롬바탕"
+        ]
+      },
+      {
+        "family": "함초롬바탕",
+        "alias": "__rhwp_ttf__함초롬바탕",
+        "prepared": true,
+        "samePixels": true,
+        "distinctOriginal": true,
+        "width": 138.239990234375,
+        "expectedWidth": 138.239990234375
+      },
+      {
+        "family": "함초롬바탕",
+        "alias": "__rhwp_intrinsic__함초롬바탕",
+        "prepared": true,
+        "samePixels": true,
+        "distinctOriginal": true,
+        "width": 138.239990234375,
+        "expectedWidth": 138.239990234375
+      },
+      {
+        "family": "RHWP 9077 Exact Face",
+        "aliases": [],
+        "font": "64px \"RHWP 9077 Exact Face\", \"Malgun Gothic\", \"Apple SD Gothic Neo\", \"Noto Sans KR\", Pretendard, \"Noto Sans Symbols2\", 함초롬바탕, D2Coding, \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", sans-serif",
+        "width": 115.19998168945312,
+        "expectedWidth": 115.19998168945312,
+        "samePixels": true,
+        "distinctFallback": true,
+        "leading": [
+          "RHWP 9077 Exact Face"
+        ]
+      },
+      {
+        "family": "RHWP 9077 Exact Face",
+        "aliases": [
+          "__rhwp_ttf__RHWP 9077 Exact Face"
+        ],
+        "font": "64px \"__rhwp_ttf__RHWP 9077 Exact Face\", \"RHWP 9077 Exact Face\", \"Malgun Gothic\", \"Apple SD Gothic Neo\", \"Noto Sans KR\", Pretendard, \"Noto Sans Symbols2\", 함초롬바탕, D2Coding, \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", sans-serif",
+        "width": 115.19998168945312,
+        "expectedWidth": 115.19998168945312,
+        "samePixels": true,
+        "distinctFallback": true,
+        "leading": [
+          "__rhwp_ttf__RHWP 9077 Exact Face",
+          "RHWP 9077 Exact Face"
+        ]
+      },
+      {
+        "family": "RHWP 9077 Exact Face",
+        "aliases": [
+          "__rhwp_intrinsic__RHWP 9077 Exact Face"
+        ],
+        "font": "64px \"__rhwp_intrinsic__RHWP 9077 Exact Face\", \"RHWP 9077 Exact Face\", \"Malgun Gothic\", \"Apple SD Gothic Neo\", \"Noto Sans KR\", Pretendard, \"Noto Sans Symbols2\", 함초롬바탕, D2Coding, \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", sans-serif",
+        "width": 115.19998168945312,
+        "expectedWidth": 115.19998168945312,
+        "samePixels": true,
+        "distinctFallback": true,
+        "leading": [
+          "__rhwp_intrinsic__RHWP 9077 Exact Face",
+          "RHWP 9077 Exact Face"
+        ]
+      },
+      {
+        "family": "RHWP 9077 Exact Face",
+        "aliases": [
+          "__rhwp_intrinsic__RHWP 9077 Exact Face",
+          "__rhwp_ttf__RHWP 9077 Exact Face"
+        ],
+        "font": "64px \"__rhwp_intrinsic__RHWP 9077 Exact Face\", \"__rhwp_ttf__RHWP 9077 Exact Face\", \"RHWP 9077 Exact Face\", \"Malgun Gothic\", \"Apple SD Gothic Neo\", \"Noto Sans KR\", Pretendard, \"Noto Sans Symbols2\", 함초롬바탕, D2Coding, \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", sans-serif",
+        "width": 115.19998168945312,
+        "expectedWidth": 115.19998168945312,
+        "samePixels": true,
+        "distinctFallback": true,
+        "leading": [
+          "__rhwp_intrinsic__RHWP 9077 Exact Face",
+          "__rhwp_ttf__RHWP 9077 Exact Face",
+          "RHWP 9077 Exact Face"
+        ]
+      },
+      {
+        "family": "RHWP 9077 Exact Face",
+        "alias": "__rhwp_ttf__RHWP 9077 Exact Face",
+        "prepared": true,
+        "samePixels": true,
+        "distinctOriginal": true,
+        "width": 138.239990234375,
+        "expectedWidth": 138.239990234375
+      },
+      {
+        "family": "RHWP 9077 Exact Face",
+        "alias": "__rhwp_intrinsic__RHWP 9077 Exact Face",
+        "prepared": true,
+        "samePixels": true,
+        "distinctOriginal": true,
+        "width": 138.239990234375,
+        "expectedWidth": 138.239990234375
+      }
+    ],
+    "backend": "canvas2d",
+    "browser": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36"
+  }
+}

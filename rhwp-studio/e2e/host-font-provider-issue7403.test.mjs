@@ -208,6 +208,274 @@ async function verifyCanvas2DCharOverlap(page) {
   console.log('Canvas2D real charOverlap:', JSON.stringify(result));
 }
 
+
+// API/environment contract: fixture byte identity and policy, without layout goldens.
+async function verifyLayoutEnvironment(page) {
+  const fixtures = Object.fromEntries(['ttc', 'Regular', 'Italic', 'CFF'].map(name => [name,
+    readFileSync(new URL(`../../tests/fixtures/fonts/${name === 'CFF' ? 'RHWPHftOutline.otf' : `RHWPHostFixture${name === 'ttc' ? '.ttc' : `-${name}.ttf`}`}`, import.meta.url)).toString('base64')]));
+  const result = await page.evaluate(async fixtures => {
+    const { WasmBridge } = await import('/src/core/wasm-bridge.ts');
+    const { getLocalFontState } = await import('/src/core/local-fonts.ts');
+    const w = new WasmBridge();
+    const decode = key => Uint8Array.from(atob(fixtures[key]), c => c.charCodeAt(0)).buffer;
+    const digest = async (bytes, faceIndex = 0) => {
+      const indexed = new Uint8Array(bytes.byteLength + 4); indexed.set(new Uint8Array(bytes));
+      new DataView(indexed.buffer).setUint32(bytes.byteLength, faceIndex, false);
+      return [...new Uint8Array(await crypto.subtle.digest('SHA-256', indexed))]
+        .map(b => b.toString(16).padStart(2, '0')).join('');
+    };
+    const family = 'Host Layout Contract';
+    let source = 'Regular', index = 0, revision = 0, enabled = true, fail = false, split = false;
+    let notify = () => {};
+    const reads = [];
+    const provider = {
+      async getSnapshot() { return { revision: String(revision), faces: enabled ? [{ id: 'face',
+        family, fullName: family, postscriptName: 'HostLayout-Selected', style: 'Regular', weight: 400, slant: 'normal' }, ...(split ? [{
+          id: 'second', family, fullName: 'HostLayout-Second', postscriptName: 'HostLayout-Second',
+          style: 'Regular', weight: 400, slant: 'normal' }] : [])] : [] }; },
+      async readFace(id, rev) { reads.push({ id, rev, source, index }); if (fail) throw new Error('denied');
+        return { bytes: decode(id === 'second' ? 'Italic' : source), faceIndex: index }; },
+      subscribe(callback) { notify = callback; return () => {}; },
+    };
+    const originalLocal = JSON.stringify(getLocalFontState());
+    const storage = localStorage.getItem('rhwp-local-fonts');
+    const checks = [];
+    function setup(bridge = w) {
+      bridge.createNewDocument(); bridge.insertText(0, 0, 0, 'A가');
+      const fontId = bridge.findOrCreateFontId(family);
+      bridge.applyCharFormat(0, 0, 0, 2, JSON.stringify({ fontId }));
+    }
+    setup();
+    const doc = w.borrowDocumentHandle();
+    const environments = [];
+    const originalSet = doc.setFontEnvironment.bind(doc);
+    doc.setFontEnvironment = value => { environments.push(value ? JSON.parse(value) : null); return originalSet(value); };
+    const originalBytes = [...w.exportHwp()];
+    const plan = () => JSON.parse(doc.getDocumentFontSelectionPlan());
+    async function prepare() { await w.prepareDeclaredFontEnvironment('canvas2d'); return environments.at(-1); }
+    async function compareFresh(label) {
+      const fresh = new WasmBridge();
+      try {
+        setup(fresh);
+        await fresh.prepareDeclaredFontEnvironment('canvas2d');
+        async function output(bridge) {
+          await bridge.prepareCanvasMetrics('canvas2d');
+          const canvas = document.createElement('canvas');
+          bridge.renderPageToCanvas(0, canvas, 1);
+          return { tree: JSON.stringify(bridge.getPageLayerTreeObject(0)), pixels: canvas.toDataURL() };
+        }
+        const actual = await output(w), expected = await output(fresh);
+        checks.push([label + '-fresh-tree', actual.tree === expected.tree]);
+        checks.push([label + '-fresh-paint', actual.pixels === expected.pixels]);
+        for (const format of ['hwp', 'hwpx']) {
+          const reopened = new WasmBridge();
+          let bytes = format === 'hwp' ? w.exportHwp() : w.exportHwpx();
+          try {
+            // 저장 → 재열기 → 재저장 → 재열기에서도 선언과 내용에 내부 별칭이 유출되지 않는다.
+            for (let pass = 0; pass < 2; pass++) {
+              const info = reopened.loadDocument(bytes, `layout-contract.${format}`);
+              checks.push([`${label}-${format}-roundtrip-${pass}`, info.fontsUsed.includes(family)
+                && !info.fontsUsed.some(name => name.includes('__rhwp_host_face_'))
+                && reopened.getTextRange(0, 0, 0, 2) === 'A가']);
+              bytes = format === 'hwp' ? reopened.exportHwp() : reopened.exportHwpx();
+            }
+          } finally { reopened.releaseDocument(); }
+        }
+      } finally { fresh.releaseDocument(); }
+    }
+    try {
+      await rhwpStudio.fonts.setProvider(provider);
+      await prepare(); checks.push(['omitted', environments.length === 0]);
+      await rhwpStudio.fonts.setProvider(provider, { layout: false });
+      await prepare(); checks.push(['false', environments.length === 0]);
+      await rhwpStudio.fonts.setProvider(provider, { layout: true });
+      const a = await prepare();
+      const selected = env => JSON.stringify(env?.selectedPrograms ?? {});
+      checks.push(['program-A', selected(a).includes(await digest(decode('Regular')))]);
+      checks.push(['source-metrics', a.preserveSourceMetrics === true && !(a.replaceSourceMetricsFor?.length)]);
+      await compareFresh('enable');
+      split = true; revision++; notify(); const beforeSplit = environments.length; await prepare();
+      checks.push(['split-query-identity', environments.length === beforeSplit + 1
+        && selected(environments.at(-1)).includes(await digest(decode('Regular')))]);
+      split = false;
+      source = 'Italic'; revision++; notify(); const b = await prepare();
+      checks.push(['same-id-new-bytes', selected(b).includes(await digest(decode('Italic'))) && selected(a) !== selected(b)]);
+      await compareFresh('replace-bytes');
+      source = 'CFF'; revision++; notify(); const cff = await prepare();
+      const opaque = JSON.parse(JSON.stringify(cff));
+      for (const program of Object.values(opaque.selectedPrograms ?? {})) program.programId = 'opaque-host-id';
+      originalSet(JSON.stringify(opaque));
+      doc.clearTextFontFamily(family);
+      checks.push(['opaque-identity-not-certified', doc.registerHftOutlineFont(family, new Uint8Array(decode('CFF')), 0) === false]);
+      originalSet(JSON.stringify(cff));
+      checks.push(['indexed-identity-consumed', doc.registerHftOutlineFont(family, new Uint8Array(decode('CFF')), 0) === true]);
+      await compareFresh('replace-cff');
+      const preview = new WasmBridge();
+      try {
+        setup(preview); preview.createHeaderFooter(0, true, 0);
+        await preview.prepareDeclaredFontEnvironment('canvas2d');
+        await preview.prepareCanvasMetrics('canvas2d');
+        const beforePreview = JSON.stringify(preview.getPageLayerTreeObject(0));
+        preview.renderHeaderFooterEditPreviewToCanvas(0, 0, true, 0, document.createElement('canvas'), 1);
+        checks.push(['preview-page-tree-preserved', beforePreview === JSON.stringify(preview.getPageLayerTreeObject(0))]);
+      } finally { preview.releaseDocument(); }
+      const outlineCalls = [], outstanding = new Set();
+      const registerFaces = doc.registerHftOutlineFontFaces.bind(doc);
+      const clearOutline = doc.clearTextFontOutline.bind(doc);
+      doc.registerHftOutlineFontFaces = (name, programs) => {
+        const accepted = registerFaces(name, programs);
+        outlineCalls.push({ name, accepted }); outstanding.add(name); return accepted;
+      };
+      doc.clearTextFontOutline = name => { clearOutline(name); outstanding.delete(name); };
+      try {
+        const canvas = document.createElement('canvas');
+        w.renderPageToCanvas(0, canvas, 1);
+        checks.push(['page-outline-released', outstanding.size === 0]);
+        w.renderPageToCanvasFiltered(0, canvas, 1, 'all', 'screen');
+        checks.push(['filtered-outline-released', outstanding.size === 0]);
+        w.renderPagePatchToCanvasFiltered(0, canvas, 1, 'flow',
+          { x: 0, y: 0, width: canvas.width, height: canvas.height }, 'screen');
+        checks.push(['patch-outline-released', outstanding.size === 0]);
+        checks.push(['page-outline-program-consumed', outlineCalls.filter(call => call.accepted).length >= 3]);
+      } finally {
+        doc.registerHftOutlineFontFaces = registerFaces; doc.clearTextFontOutline = clearOutline;
+      }
+      source = 'ttc'; index = 0; revision++; notify(); const t0 = await prepare();
+      index = 1; revision++; notify(); const t1 = await prepare();
+      checks.push(['ttc-face', selected(t0).includes(await digest(decode('ttc'), 0)) && selected(t1).includes(await digest(decode('ttc'), 1)) && selected(t0) !== selected(t1)]);
+      checks.push(['ttc-sha', selected(t1).includes(await digest(decode('ttc'), 1))]);
+      await compareFresh('replace-ttc-face');
+      enabled = false; revision++; notify(); await prepare();
+      checks.push(['remove', !Object.values(environments.at(-1)?.selectedPrograms ?? {}).some(program => program.query === family)]);
+      await compareFresh('remove');
+      enabled = true; revision++; notify(); await prepare();
+      checks.push(['restore', selected(environments.at(-1)) === selected(t1)]);
+      await compareFresh('restore');
+      await rhwpStudio.fonts.setProvider(provider, { layout: false }); await prepare();
+      checks.push(['disable', !Object.values(environments.at(-1)?.selectedPrograms ?? {}).some(program => program.query === family)]);
+      await compareFresh('disable');
+      await rhwpStudio.fonts.setProvider(provider, { layout: true }); await prepare();
+      fail = true; revision++; notify(); await prepare();
+      checks.push(['read-failure', !Object.values(environments.at(-1)?.selectedPrograms ?? {}).some(program => program.query === family)]);
+      await compareFresh('read-failure');
+      fail = false; revision++; notify(); await prepare();
+      await compareFresh('read-recovery');
+      await rhwpStudio.fonts.setProvider(null); await prepare();
+      await compareFresh('detach');
+      await rhwpStudio.fonts.setProvider(provider, { layout: true }); await prepare();
+      await compareFresh('reattach');
+      await w.prepareDeclaredFontEnvironment('canvaskit');
+      checks.push(['backend', !w.hasHostFontLayoutEnvironment && !Object.values(environments.at(-1)?.selectedPrograms ?? {}).some(program => program.query === family)]);
+      await prepare();
+      const preferenceKey = 'rhwp-document-font-preferences';
+      const oldPreference = localStorage.getItem(preferenceKey);
+      try {
+        localStorage.setItem(preferenceKey, JSON.stringify({ [w.documentDigest]: {
+          documentDigest: w.documentDigest, substitutions: { [family]: family } } }));
+        const chosen = await prepare();
+        checks.push(['explicit-metric-override', chosen.preserveSourceMetrics === true
+          && JSON.stringify(chosen.replaceSourceMetricsFor) === JSON.stringify([family])]);
+      } finally {
+        if (oldPreference === null) localStorage.removeItem(preferenceKey); else localStorage.setItem(preferenceKey, oldPreference);
+      }
+      checks.push(['saved-bytes', JSON.stringify([...w.exportHwp()]) === JSON.stringify(originalBytes)]);
+      checks.push(['portable-names', !w.renderPageSvg(0).includes('__rhwp_host_face_')]);
+      originalSet(JSON.stringify({ id: 'explicit-owner', substitutions: { [family]: family }, preserveSourceMetrics: true }));
+      await rhwpStudio.fonts.setProvider(null); await prepare();
+      checks.push(['explicit-owner', plan().environmentId === 'explicit-owner']);
+      originalSet(undefined);
+      for (const transition of ['disable', 'replace', 'document']) {
+        setup();
+        const pending = [];
+        const slow = { ...provider, readFace: (_id, _rev, signal) => new Promise(resolve => pending.push({ resolve, signal })) };
+        await rhwpStudio.fonts.setProvider(slow, { layout: true });
+        const oldPreparation = w.prepareDeclaredFontEnvironment('canvas2d');
+        const deadline = Date.now() + 5000;
+        while (!pending.length && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 0));
+        if (!pending.length) throw new Error('layout read did not start');
+        if (transition === 'document') setup();
+        else await rhwpStudio.fonts.setProvider(provider, { layout: transition === 'replace' });
+        if (transition === 'replace') await w.prepareDeclaredFontEnvironment('canvas2d');
+        const expected = JSON.parse(w.borrowDocumentHandle().getDocumentFontSelectionPlan()).environmentId;
+        pending.forEach(item => item.resolve({ bytes: decode('Regular'), faceIndex: 0 }));
+        const staleResult = await oldPreparation;
+        checks.push(['late-' + transition, staleResult === false
+          && JSON.parse(w.borrowDocumentHandle().getDocumentFontSelectionPlan()).environmentId === expected]);
+        w.borrowDocumentHandle().setFontEnvironment(undefined);
+      }
+      checks.push(['local-state', originalLocal === JSON.stringify(getLocalFontState())
+        && storage === localStorage.getItem('rhwp-local-fonts')]);
+      const exact = new WasmBridge();
+      try {
+        exact.createNewDocument(); exact.insertText(0, 0, 0, '😀');
+        exact.applyCharFormat(0, 0, 0, 2, JSON.stringify({ fontId: exact.findOrCreateFontId('RHWP Host Fixture') }));
+        const advances = [];
+        for (const faceIndex of [0, 1]) {
+          await rhwpStudio.fonts.setProvider({
+            async getSnapshot() { return { revision: String(faceIndex), faces: [{ id: 'ttc',
+              family: 'RHWP Host Fixture', fullName: 'RHWP Host Fixture', postscriptName: 'RHWPHostFixture',
+              style: 'Regular', weight: 400, slant: 'normal' }] }; },
+            async readFace() { return { bytes: decode('ttc'), faceIndex }; }, subscribe() { return () => {}; },
+          }, { layout: true });
+          await exact.prepareDeclaredFontEnvironment('canvas2d');
+          await exact.prepareCanvasMetrics('canvas2d');
+          const trace = JSON.parse(exact.getFontDecisionTrace(0, 8)).records.find(record => record.source.character === '😀');
+          checks.push(['ttc-native-measure-' + faceIndex, trace?.layoutMetric.widthSource === 'nativeTrueType']);
+          advances.push(trace?.layoutMetric.finalAdvanceHwpunit);
+        }
+        // Fixture source defines 900 / 1080 units in the two independently generated faces.
+        checks.push(['ttc-native-advance-ratio', Math.abs(advances[1] / advances[0] - 1.2) < 0.002]);
+      } finally { exact.releaseDocument(); }
+      return { checks, reads };
+    } finally { w.releaseDocument(); await rhwpStudio.fonts.setProvider(null); }
+  }, fixtures);
+  console.log('#8946 layout environment:', JSON.stringify(result));
+  for (const [name, passed] of result.checks) assert.equal(passed, true, name);
+  await createNewDocument(page);
+  await clickEditArea(page);
+  await typeText(page, 'A');
+  await page.evaluate(async () => {
+    const w = window.__wasm;
+    w.applyCharFormat(0, 0, 0, 1, JSON.stringify({ fontId: w.findOrCreateFontId('Host Layout Contract') }));
+    await window.__canvasView.loadDocument();
+  });
+  await typeText(page, 'A');
+  await page.evaluate(() => {
+    window.__inputHandler.performUndo();
+    window.__documentState.markClean('layout-contract');
+    const h = window.__inputHandler.history;
+    window.__layout8946 = { bytes: window.__wasm.exportHwp(), undo: [...h.undoStack], redo: [...h.redoStack],
+      length: window.__wasm.getParagraphLength(0, 0) };
+  });
+  await page.evaluate(async bytes => {
+    const data = Uint8Array.from(atob(bytes), c => c.charCodeAt(0)).buffer;
+    const face = { id: 'face', family: 'Host Layout Contract', fullName: 'Host Layout Contract',
+      postscriptName: 'HostLayout-Selected', style: 'Regular', weight: 400, slant: 'normal' };
+    window.__layout8946.provider = { async getSnapshot() { return { revision: 'stable', faces: [face] }; },
+      async readFace() { return { bytes: data.slice(0), faceIndex: 0 }; }, subscribe() { return () => {}; } };
+    await rhwpStudio.fonts.setProvider(window.__layout8946.provider, { layout: true });
+  }, fixtures.Regular);
+  await page.waitForFunction(() => window.__wasm.hasHostFontLayoutEnvironment
+    && window.__wasm.getHostCanvasFontDiagnostics().loaded === 1);
+  const history = await page.evaluate(async () => {
+    const w = window.__wasm, saved = window.__layout8946, h = window.__inputHandler.history;
+    const same = (a, b) => a.length === b.length && a.every((v, i) => v === b[i]);
+    const result = { clean: !window.__documentState.isDirty(), bytes: same(saved.bytes, w.exportHwp()),
+      undo: same(saved.undo, h.undoStack), redo: same(saved.redo, h.redoStack), redoCount: h.redoStack.length,
+      environment: JSON.parse(w.borrowDocumentHandle().getDocumentFontSelectionPlan()).environmentId };
+    window.__inputHandler.performRedo(); result.redone = w.getParagraphLength(0, 0) === saved.length + 1;
+    window.__inputHandler.performUndo(); result.undone = w.getParagraphLength(0, 0) === saved.length;
+    await rhwpStudio.fonts.setProvider(saved.provider, { layout: false });
+    return result;
+  });
+  for (const key of ['clean', 'bytes', 'undo', 'redo', 'redone', 'undone']) assert.equal(history[key], true, key);
+  assert(history.redoCount > 0);
+  assert.match(history.environment, /^declared-program-/);
+  await page.waitForFunction(() => !window.__wasm.hasHostFontLayoutEnvironment);
+  console.log('#8946 enabled UI history:', JSON.stringify(history));
+  await page.evaluate(async () => { await rhwpStudio.fonts.setProvider(null); delete window.__layout8946; });
+}
+
 const backend = process.argv.find(arg => arg.startsWith('--renderer='))?.split('=')[1] || process.env.RHWP_TEST_RENDERER || 'canvaskit';
 assert(['canvaskit', 'canvas2d'].includes(backend));
 runTest(`Issue #7403 ${backend}: host font identity, replacement and document preservation`, async ({ page }) => {
@@ -222,6 +490,7 @@ runTest(`Issue #7403 ${backend}: host font identity, replacement and document pr
   if (backend === 'canvas2d') {
     await verifyCanvas2DFaces(page);
     await verifyCanvas2DCharOverlap(page);
+    await verifyLayoutEnvironment(page);
     await createNewDocument(page);
   }
   else await verifyFacePaint(page);

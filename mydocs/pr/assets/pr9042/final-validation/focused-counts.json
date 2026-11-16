@@ -1,0 +1,34 @@
+[
+  {
+    "module": "coanchored_title_float_pagination",
+    "passed": 9
+  },
+  {
+    "module": "issue_536_native_save",
+    "passed": 11
+  },
+  {
+    "module": "issue_8199_control_only_para_line_seg",
+    "passed": 13
+  },
+  {
+    "module": "issue_8682_declared_excess_tail_row",
+    "passed": 3
+  },
+  {
+    "module": "issue_8941_hwpx_drop_deleted_picture_bindata",
+    "passed": 7
+  },
+  {
+    "module": "issue_8944_empty_paragraph_caret_alignment",
+    "passed": 2
+  },
+  {
+    "module": "issue_8957_unresolved_linked_picture_print",
+    "passed": 1
+  },
+  {
+    "module": "verified_hft_bold_tracking",
+    "passed": 2
+  }
+]

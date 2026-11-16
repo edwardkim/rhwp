@@ -1,0 +1,41 @@
+{
+  "recorded_at": "2026-11-12T10:42:33.369532+00:00",
+  "code_head": "8fe7d1fb8bc5024d0377ff7aa37d98c78e8f071a",
+  "base": "80b1c354c29b7a02fb2b3c14a274da7f5b653ada",
+  "execution": {
+    "name": "full-nextest",
+    "exit": 0,
+    "elapsed_seconds": 1821.44,
+    "command": [
+      "sandbox-exec",
+      "-f",
+      "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v8/minimal-font/profile.sb",
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--tests",
+      "--build-jobs",
+      "8",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ]
+  },
+  "tests_run": 13356,
+  "passed": 13356,
+  "failed": 0,
+  "skipped": 45,
+  "slow": 3,
+  "test_execution_seconds": 774.34,
+  "compile_note": "16m 20s release-test build precedes test execution",
+  "minimum_font_evidence": "minimal-font-verification.json",
+  "log_sha256": "cd3868ac4e2ca663fa1dfe592216f41e1497745a94d0b554e8d1d6b4480c7f8f",
+  "log_bytes": 1861822,
+  "log_storage": "ignored output only",
+  "not_implied": "Native Skia extra, lint/build, protected fresh WASM and actual Studio backend completion are recorded separately"
+}

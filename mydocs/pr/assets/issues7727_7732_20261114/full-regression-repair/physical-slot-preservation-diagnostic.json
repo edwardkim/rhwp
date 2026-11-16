@@ -1,0 +1,76 @@
+{
+  "edu": {
+    "diagnostic_log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/logs/marker-slot-edu.log",
+    "diagnostic_log_sha256": "629f915bc55e50773607d69d77ebd1743c572a5c03d4fa872726e89e62a82734",
+    "changed_paragraphs": 271,
+    "all_other_line_fields_identical": false,
+    "examples": [
+      {
+        "text": "\"원주시 민주화운동 기념에 관한 조례 제3조(기념사업) 원주시장은 민주화운동을 기념하기 위하여 필요한 경우 다음 각 호의 사업을 추진할 수 있다. 3. 민주·평화의식 향상을 위한 민주시민 교육사업 (이하 생략)\"",
+        "old_starts": [
+          0,
+          11,
+          22,
+          33,
+          44,
+          56,
+          68,
+          81,
+          93,
+          104
+        ],
+        "new_starts": [
+          0,
+          11,
+          23,
+          36,
+          46,
+          57,
+          69,
+          84,
+          94,
+          105
+        ],
+        "all_other_line_fields_identical": true
+      }
+    ],
+    "same_physical_slots_after_previous_origin_tag_copy": 267,
+    "baseline_only_difference_after_previous_copy": 4
+  },
+  "regulatory": {
+    "diagnostic_log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/logs/marker-slot-regulatory.log",
+    "diagnostic_log_sha256": "57207147d003ed8b4b2b3a68495465dd049b411c650a46ad4cc25b995fb3c713",
+    "changed_paragraphs": 1,
+    "all_other_line_fields_identical": true,
+    "examples": [
+      {
+        "text": "\"제1호 관련, 전자담배 기기만의 할인판매만을 금지할 경우 평등의 원칙 위반이고, 담배 관련 모든 제품의 판촉행위를 금지하는 것은 영업의 자유를 침해하는 과도한 제재이므로 반대\"",
+        "old_starts": [
+          0,
+          20,
+          40,
+          60,
+          80
+        ],
+        "new_starts": [
+          0,
+          20,
+          40,
+          61,
+          81
+        ],
+        "all_other_line_fields_identical": true
+      }
+    ],
+    "same_physical_slots_after_previous_origin_tag_copy": 1,
+    "baseline_only_difference_after_previous_copy": 0
+  },
+  "cbta": {
+    "diagnostic_log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/logs/marker-slot-cbta.log",
+    "diagnostic_log_sha256": "cf564dec48f65642cad3c25dbc1a44141fd9055342f7f9578a2bb400e7e12d8f",
+    "changed_paragraphs": 0,
+    "all_other_line_fields_identical": true,
+    "examples": []
+  },
+  "interpretation": "진단은 세로 원점·물리 태그를 복사하기 전의 채움 결과다. 실제 슬롯 발행 후의 전체 속성을 별도로 비교해야 한다. cbta info 경로는 설치 프로그램 준비를 거친 Print 캡처와 다르므로 0건을 시각 판정으로 쓰지 않는다."
+}

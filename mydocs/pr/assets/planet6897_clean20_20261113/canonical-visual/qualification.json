@@ -1,0 +1,2184 @@
+{
+  "candidate_code_head": "676e3900c6490657229f9781e34f89c65c7126da",
+  "base": "31a422575722f634cfc2d9eb97e708da58aea188",
+  "completed_at": "2026-11-12T18:42:33.342602+00:00",
+  "pdf_rasterizer": {
+    "program": "pypdfium2",
+    "backend": "pdfium",
+    "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+    "antialias": {
+      "text": true,
+      "image": true,
+      "path": true
+    },
+    "coordinate_transform": {
+      "scale": "dpi/72 on both axes",
+      "buffer_extent": "ceil(page_points*dpi/72)",
+      "annotations": true
+    },
+    "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+    "available": true,
+    "executable": "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+    "executable_sha256": "87d4df53fd91304be5bac391fb204643c36b7df2023c04a0953bcbc7d4fdf634",
+    "library": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261113/visual-venv/lib/python3.14/site-packages/pypdfium2_raw/libpdfium.dylib",
+    "library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+    "version": "153.0.7999.0",
+    "wrapper_version": "5.13.0",
+    "version_exit_code": 0
+  },
+  "conditions": [
+    {
+      "backend": "native",
+      "key": "pr8932",
+      "role": "candidate",
+      "protected": false,
+      "pages": 8,
+      "minimum_raw": 94.95491,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 8,
+        "pdf": 8
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/candidate/pr8932.tsv",
+      "tsv_sha256": "31c780cf0daeab0fd1416e82dd746577d87343b582d6635c42dfa1ec63050c80",
+      "producer_manifest_sha256": "5c2a0bc49179209976f5115d5ac4f8c7fcc49bc360d54fd374c526464b46e55f"
+    },
+    {
+      "backend": "native",
+      "key": "pr8932",
+      "role": "base",
+      "protected": false,
+      "pages": 8,
+      "minimum_raw": 62.92803,
+      "below90": [
+        1
+      ],
+      "document_counts": {
+        "rhwp": 8,
+        "pdf": 8
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/base/pr8932.tsv",
+      "tsv_sha256": "d751080981e541045093dee2d7717d604f6a13cdfc40b86b41f7ffe29bbb33e9",
+      "producer_manifest_sha256": "109f604f7e3547b3ceb35fdb1a2ed1640ac7f86141ff5076a402c8dbc9d252ae"
+    },
+    {
+      "backend": "native",
+      "key": "pr8936",
+      "role": "candidate",
+      "protected": false,
+      "pages": 2,
+      "minimum_raw": 100.0,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/candidate/pr8936.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "producer_manifest_sha256": "1e37bc6714a5fd951d05c86a17c4a600044e8f02bd880beb715b713e9293d438"
+    },
+    {
+      "backend": "native",
+      "key": "pr8936",
+      "role": "base",
+      "protected": false,
+      "pages": 2,
+      "minimum_raw": 64.02606,
+      "below90": [
+        1
+      ],
+      "document_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/base/pr8936.tsv",
+      "tsv_sha256": "d4bab1b91416f3e26e5d6a949b1008ba3ba28da7e179e388c0da0ea9fd399235",
+      "producer_manifest_sha256": "afb180021a1a3e15e6e7aa1044ed3a0853293b05c38b5bf335781c2917be89f8"
+    },
+    {
+      "backend": "native",
+      "key": "pr8938",
+      "role": "candidate",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 98.52324,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/candidate/pr8938.tsv",
+      "tsv_sha256": "1f7271fad538ecefde00f31a13ff718c3575c21d0d032b3dbcbfaa7be0a10439",
+      "producer_manifest_sha256": "9306e988aa52afed0de121863da012272396bf4b65f01d248e79e7ce03fe1c83"
+    },
+    {
+      "backend": "native",
+      "key": "pr8938",
+      "role": "base",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 56.07601,
+      "below90": [
+        1
+      ],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/base/pr8938.tsv",
+      "tsv_sha256": "3b9ad05154fe2d251a97fdfd01d427b230a4bdc4c44ee1cfd1d963e91daffeb0",
+      "producer_manifest_sha256": "095c96e02c0c88485f358171ba117ea6faa797ebed50d3f1f42ee1bb7b86025e"
+    },
+    {
+      "backend": "native",
+      "key": "pr8949",
+      "role": "candidate",
+      "protected": false,
+      "pages": 2,
+      "minimum_raw": 97.71981,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/candidate/pr8949.tsv",
+      "tsv_sha256": "2853d3422fea075299f67cb61cae9b5613d793a88c2f0de5bbfd679a551636a9",
+      "producer_manifest_sha256": "8f1e3ec062906e2ad5db03d51eb84bae11e05b77a7530cd48f12afe23576f764"
+    },
+    {
+      "backend": "native",
+      "key": "pr8949",
+      "role": "base",
+      "protected": false,
+      "pages": 2,
+      "minimum_raw": 17.61204,
+      "below90": [
+        1,
+        2
+      ],
+      "document_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/base/pr8949.tsv",
+      "tsv_sha256": "dfe8115446a875113973fa3f59425124abab7d52f0d2a9f2b5694910e22ab9f0",
+      "producer_manifest_sha256": "601226e0dde53f0a966f75899b867fea5cc905941134b9fe29b5f0b692aee526"
+    },
+    {
+      "backend": "native",
+      "key": "pr8955-original",
+      "role": "candidate",
+      "protected": false,
+      "pages": 2,
+      "minimum_raw": 100.0,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/candidate/pr8955-original.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "producer_manifest_sha256": "ce7892db421d282fca99ab15d0bdefe9e99a9958317c11a2cddb73cc00254ad6"
+    },
+    {
+      "backend": "native",
+      "key": "pr8955-original",
+      "role": "base",
+      "protected": false,
+      "pages": 2,
+      "minimum_raw": 75.3074,
+      "below90": [
+        1
+      ],
+      "document_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/base/pr8955-original.tsv",
+      "tsv_sha256": "f6b74ab5df241d26124b14a7cb111bff90d053d78f1bd892234a32de62e221a9",
+      "producer_manifest_sha256": "1ff4316f9d4c014a58b0e615663578ab238e9e630e636acc1b1f26f0268c1506"
+    },
+    {
+      "backend": "native",
+      "key": "pr8955-v1",
+      "role": "candidate",
+      "protected": false,
+      "pages": 3,
+      "minimum_raw": 100.0,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/candidate/pr8955-v1.tsv",
+      "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "producer_manifest_sha256": "74139e9310a764c5ec5f072348ea4675cad64a9f528297885243a352f94e1bc9"
+    },
+    {
+      "backend": "native",
+      "key": "pr8955-v1",
+      "role": "base",
+      "protected": false,
+      "pages": 3,
+      "minimum_raw": 37.89263,
+      "below90": [
+        1,
+        2
+      ],
+      "document_counts": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/base/pr8955-v1.tsv",
+      "tsv_sha256": "49e14eb25097ea12a31f45c91f6c7dbc6c5258cc3242e7a384506138fe909b45",
+      "producer_manifest_sha256": "4b9235f7d036476993f93775745d5f9bb0247fe3336d92b3228c22dc6bfba4c4"
+    },
+    {
+      "backend": "native",
+      "key": "pr8955-v2",
+      "role": "candidate",
+      "protected": false,
+      "pages": 2,
+      "minimum_raw": 100.0,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/candidate/pr8955-v2.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "producer_manifest_sha256": "249aecbd67a788519d3f2e71dc3dca27c5f5f877a4b248934f0dae2f9426ac14"
+    },
+    {
+      "backend": "native",
+      "key": "pr8955-v2",
+      "role": "base",
+      "protected": false,
+      "pages": 2,
+      "minimum_raw": 47.56988,
+      "below90": [
+        1,
+        2
+      ],
+      "document_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/base/pr8955-v2.tsv",
+      "tsv_sha256": "8f52a23b7e9b53a422f1e2225135d990fd2591295257b1d285e679ed98fbaa87",
+      "producer_manifest_sha256": "a703e2b0bba32a3151518795689515a2b1e953f7c09b841ccda4cd2a1c550e69"
+    },
+    {
+      "backend": "native",
+      "key": "pr8959",
+      "role": "candidate",
+      "protected": false,
+      "pages": 2,
+      "minimum_raw": 98.39975,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/candidate/pr8959.tsv",
+      "tsv_sha256": "782321c56ccbf90a7725e9a5ca5cad3024ec80c75b55b0c0364fd690b7adc3ca",
+      "producer_manifest_sha256": "19ba4dd4a3ce8508bb5e2349b029a5e75224974df7db8c74c2807bdbc16074bd"
+    },
+    {
+      "backend": "native",
+      "key": "pr8959",
+      "role": "base",
+      "protected": false,
+      "pages": 2,
+      "minimum_raw": 31.48592,
+      "below90": [
+        1,
+        2
+      ],
+      "document_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/base/pr8959.tsv",
+      "tsv_sha256": "2e32c92018ca07fce1dce14d14a1b9ddaef3c1284e422c94c7fe822ff332922a",
+      "producer_manifest_sha256": "de3d8d5997e160c3c564705aacd0c0017c81b7ae5f02e21bdb0a7ec6e80e9ee2"
+    },
+    {
+      "backend": "native",
+      "key": "pr8974",
+      "role": "candidate",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 100.0,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/candidate/pr8974.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "producer_manifest_sha256": "2fc03158077b291b50d04c7b3b1824bd8658a301c4c85219c10c09696fe72d3a"
+    },
+    {
+      "backend": "native",
+      "key": "pr8974",
+      "role": "base",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 81.09531,
+      "below90": [
+        1
+      ],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/base/pr8974.tsv",
+      "tsv_sha256": "6e4a7cb0a60586523e3d98c11766ff0f80a2d27ea67510f317adb98b670539e7",
+      "producer_manifest_sha256": "86337f0d2b40d1b7f9963d637c6ddcb63dfa68ecde54b7c93496f1190d3d3edb"
+    },
+    {
+      "backend": "native",
+      "key": "pr8987",
+      "role": "candidate",
+      "protected": false,
+      "pages": 6,
+      "minimum_raw": 91.17003,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 6,
+        "pdf": 6
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/candidate/pr8987.tsv",
+      "tsv_sha256": "6f0223ec9284e0cc2853adfc7f744ce1a7f046926187bf0c1f2ce12ee853a4a6",
+      "producer_manifest_sha256": "5b92c90aef9fe20ff37f9757a07f66375ee367ffaec405133fb48569312ae1a8"
+    },
+    {
+      "backend": "native",
+      "key": "pr8987",
+      "role": "base",
+      "protected": false,
+      "pages": 6,
+      "minimum_raw": 79.76033,
+      "below90": [
+        6
+      ],
+      "document_counts": {
+        "rhwp": 6,
+        "pdf": 6
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/base/pr8987.tsv",
+      "tsv_sha256": "8eb750bb47634599fffd3c44d54c98ced343e548200ce05325507c31e5f727dc",
+      "producer_manifest_sha256": "8e69f301434dcb3d6e3b274abb51ca4d8b19737e5ec1d31ebb65cb8d9fe58ab8"
+    },
+    {
+      "backend": "native",
+      "key": "pr8990-3066825",
+      "role": "candidate",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 99.97568,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/candidate/pr8990-3066825.tsv",
+      "tsv_sha256": "327242518ff447fe082cf12cdb70a8e590ca8d1e18d7570fb3d1f19742f7d1aa",
+      "producer_manifest_sha256": "33acb68f576b04c5eba15ec9fe4e6a5aeced0d54638747c9ff43ba2b6bdb6873"
+    },
+    {
+      "backend": "native",
+      "key": "pr8990-3066825",
+      "role": "base",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 97.95773,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/base/pr8990-3066825.tsv",
+      "tsv_sha256": "f4100e21b021df382ec21060e512699a42873c825464dc9128e6060ec5a7a656",
+      "producer_manifest_sha256": "714e06fc027f3c5bb41f5d77d04a05033ca20448111f0525d2cc721e57ac7b17"
+    },
+    {
+      "backend": "native",
+      "key": "pr8990-36385713",
+      "role": "candidate",
+      "protected": false,
+      "pages": 2,
+      "minimum_raw": 99.91658,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/candidate/pr8990-36385713.tsv",
+      "tsv_sha256": "35a75fcdaff4881a2248b1996fb51f1626ee66e7f1b4dd9f3d19e6b40a5129e0",
+      "producer_manifest_sha256": "afba1969c0cd889283d7427a62cc68365a11c061c5b1b423c62b60657e0ca803"
+    },
+    {
+      "backend": "native",
+      "key": "pr8990-36385713",
+      "role": "base",
+      "protected": false,
+      "pages": 2,
+      "minimum_raw": 48.86927,
+      "below90": [
+        2
+      ],
+      "document_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/base/pr8990-36385713.tsv",
+      "tsv_sha256": "8828e374e80d8ccd38a90be12a93744a5abeb236510c0a829cd8d59592895062",
+      "producer_manifest_sha256": "4addb04f132676068ded91af12e25ce8f3af566aed2f1f0a70ca55fe74b7d0ce"
+    },
+    {
+      "backend": "native",
+      "key": "pr8994",
+      "role": "candidate",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 100.0,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/candidate/pr8994.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "producer_manifest_sha256": "6a0a7f1298840a8694db1a77ad4baa73a4079cc5056793e97aeec01fbbe99d47"
+    },
+    {
+      "backend": "native",
+      "key": "pr8994",
+      "role": "base",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 81.53754,
+      "below90": [
+        1
+      ],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/base/pr8994.tsv",
+      "tsv_sha256": "5d766abc9afa2835723e3169c513d1af3d872cb04a36174cd6b18aaccbaf777f",
+      "producer_manifest_sha256": "1889c081dc9f1304ae2c52fb7e6084f8548e4054f9de45ca13a34fdc9fcb8f2d"
+    },
+    {
+      "backend": "native",
+      "key": "pr8999",
+      "role": "candidate",
+      "protected": false,
+      "pages": 2,
+      "minimum_raw": 99.95833,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/candidate/pr8999.tsv",
+      "tsv_sha256": "434bf8759385b1fc91dac6b0b24e3ebe43889a133193ba2bd7658dcfa786bbc1",
+      "producer_manifest_sha256": "a0e71cb338100bf03ebcafbb8f80af57e8a17235d98ab49c6dde1edd75b08706"
+    },
+    {
+      "backend": "native",
+      "key": "pr8999",
+      "role": "base",
+      "protected": false,
+      "pages": 2,
+      "minimum_raw": 64.43785,
+      "below90": [
+        2
+      ],
+      "document_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/base/pr8999.tsv",
+      "tsv_sha256": "9d8c73e144248b1759bedf488a5e476595fefca6fe89ac31defa3b1d479b25d1",
+      "producer_manifest_sha256": "89538223b17bfcd81e06209dca23faa155f07badc3fe27c51afdc762c1dd92bf"
+    },
+    {
+      "backend": "native",
+      "key": "pr9001",
+      "role": "candidate",
+      "protected": false,
+      "pages": 19,
+      "minimum_raw": 99.99673,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 19,
+        "pdf": 19
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/candidate/pr9001.tsv",
+      "tsv_sha256": "02fce13dcdccc318dbb570387166ef6ff5c0389e5a723a3d8fc14ce3726681cb",
+      "producer_manifest_sha256": "6161bd75e24ff97a98a2c18a2a008c87c7d35c6c17b9c62335439fe8ab0a3e33"
+    },
+    {
+      "backend": "native",
+      "key": "pr9001",
+      "role": "base",
+      "protected": false,
+      "pages": 19,
+      "minimum_raw": 0.0,
+      "below90": [
+        14,
+        15
+      ],
+      "document_counts": {
+        "rhwp": 19,
+        "pdf": 19
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/base/pr9001.tsv",
+      "tsv_sha256": "6f993d7d22841dc930e4f877502875a59df90a9072deb045bd2fe8d21a1be5bd",
+      "producer_manifest_sha256": "f95c0c01047aea49fbe295f794091e482b4bde74568688d0cefe8214b5b2c99d"
+    },
+    {
+      "backend": "native",
+      "key": "pr9003-hwp",
+      "role": "candidate",
+      "protected": false,
+      "pages": 157,
+      "minimum_raw": 99.3984,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 157,
+        "pdf": 157
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/candidate/pr9003-hwp.tsv",
+      "tsv_sha256": "7411eefd464588683fdfaebede1ae0b096e9e97a5686c4286846706604ad68f0",
+      "producer_manifest_sha256": "946fc3914edc50669742de0fcc75a8fda087455b3b200b6e8848ceba9d139c07"
+    },
+    {
+      "backend": "native",
+      "key": "pr9003-hwp",
+      "role": "base",
+      "protected": false,
+      "pages": 157,
+      "minimum_raw": 99.39917,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 157,
+        "pdf": 157
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/base/pr9003-hwp.tsv",
+      "tsv_sha256": "644505c1fbecae2331d18bf1ae5778c3393af943bee6fc414329362f881bc19f",
+      "producer_manifest_sha256": "691d5ed63c4f6d5ff87f1e36e06553e2143712d57dee0e0df7183da6237c85c1"
+    },
+    {
+      "backend": "native",
+      "key": "pr9004",
+      "role": "candidate",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 99.99437,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/candidate/pr9004.tsv",
+      "tsv_sha256": "986a0b62cd22d43909fa3bca1257b95a11d7985707fa83f124d2703da8f149fb",
+      "producer_manifest_sha256": "d4138c83ae457cbb9039d5f281da9f16a78526f32fd71a94213997244dccaa75"
+    },
+    {
+      "backend": "native",
+      "key": "pr9004",
+      "role": "base",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 78.19218,
+      "below90": [
+        1
+      ],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/base/pr9004.tsv",
+      "tsv_sha256": "5774fe1212a190730e46fe08aec093ba5ab161bc2d65887756820376ae7a3089",
+      "producer_manifest_sha256": "da3b5363f06e8aadac471c8ec1e676c91653e95584f7b22b66d28a3e35356c97"
+    },
+    {
+      "backend": "native",
+      "key": "pr9004-control",
+      "role": "candidate",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 99.99736,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/candidate/pr9004-control.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "producer_manifest_sha256": "50fdbb0039c4b41827585e06a2d581973b28472c7dc661ea72bcfd596e4d816d"
+    },
+    {
+      "backend": "native",
+      "key": "pr9004-control",
+      "role": "base",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 99.99734,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/base/pr9004-control.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "producer_manifest_sha256": "df127aea7b3ce84d8a02c14bc85bc3244eac1daeb782e15144d3d9ed91e4e64d"
+    },
+    {
+      "backend": "native",
+      "key": "receipt",
+      "role": "candidate",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 98.62011,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/candidate/receipt.tsv",
+      "tsv_sha256": "f3b0904b25b0f0b75229fa10dd39320ef6be56fad69d405698fff2d753661c05",
+      "producer_manifest_sha256": "60dac129aca536d6569c8df4e9ba479bdec3075216a0fa427546f2d888467b46"
+    },
+    {
+      "backend": "native",
+      "key": "receipt",
+      "role": "base",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 56.83886,
+      "below90": [
+        1
+      ],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/base/receipt.tsv",
+      "tsv_sha256": "9cc16062f0bcc6b085b33123e5bf7ecced2fb6689708b07b88a22a1270693f18",
+      "producer_manifest_sha256": "00fa500b3a0bc924ebaefc5546ce2af5f68d59dacdd8b84b685817ba42668102"
+    },
+    {
+      "backend": "native",
+      "key": "pr9015",
+      "role": "candidate",
+      "protected": false,
+      "pages": 8,
+      "minimum_raw": 94.0932,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 8,
+        "pdf": 8
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/candidate/pr9015.tsv",
+      "tsv_sha256": "4eeb5838fd7a41d591d30ac61eaef78a3b750ba960a1c7431a0f679ec1202872",
+      "producer_manifest_sha256": "46f0118e967c004e7e85cd18923a8834b0e625a21facfae6bbe939d935c90850"
+    },
+    {
+      "backend": "native",
+      "key": "pr9015",
+      "role": "base",
+      "protected": false,
+      "pages": 8,
+      "minimum_raw": 0.0,
+      "below90": [
+        8
+      ],
+      "document_counts": {
+        "rhwp": 9,
+        "pdf": 8
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/base/pr9015.tsv",
+      "tsv_sha256": "eb50c99a7c34ad73645645586b82449715de06d5d4f14d6fbfca2c24ede32694",
+      "producer_manifest_sha256": "c35cc978406f1fee19a18dd9727b17944c8fe173864c354fffdde7bc4c184971",
+      "scope": "base 실제 9쪽/PDF 8쪽 중 공통 물리 1~8쪽 진단. 후보는 8쪽/PDF 8쪽 전쪽."
+    },
+    {
+      "backend": "native",
+      "key": "receipt-saved",
+      "role": "candidate",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 98.62011,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/candidate/receipt-saved.tsv",
+      "tsv_sha256": "f3b0904b25b0f0b75229fa10dd39320ef6be56fad69d405698fff2d753661c05",
+      "producer_manifest_sha256": "b7df8a9430d7a2142d4cc5bcb599eba4a5fd2cf54965e29fa08c420b73810f11"
+    },
+    {
+      "backend": "native",
+      "key": "receipt-saved",
+      "role": "base",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 56.83886,
+      "below90": [
+        1
+      ],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/base/receipt-saved.tsv",
+      "tsv_sha256": "9cc16062f0bcc6b085b33123e5bf7ecced2fb6689708b07b88a22a1270693f18",
+      "producer_manifest_sha256": "2965d7ec368796ed5f71fdf4ce33c51e8371ec64d272c55a2c30c5eee81442d1"
+    },
+    {
+      "backend": "native",
+      "key": "pr9003-saved",
+      "role": "candidate",
+      "protected": false,
+      "pages": 157,
+      "minimum_raw": 99.3984,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 157,
+        "pdf": 157
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/candidate/pr9003-saved.tsv",
+      "tsv_sha256": "f121612780201b03f6850aafe13f37aa1fd81d9c3c5232722fd93ee540bd346a",
+      "producer_manifest_sha256": "4a9a9b2cfb50806837519c11ca98fd1ead1611d010ac0c3e685c264a3b5897b3"
+    },
+    {
+      "backend": "native",
+      "key": "pr9003-saved",
+      "role": "base",
+      "protected": false,
+      "pages": 157,
+      "minimum_raw": 99.39917,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 157,
+        "pdf": 157
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/base/pr9003-saved.tsv",
+      "tsv_sha256": "b9cadd23a32d7e849fb2dd765d008b1811a188f2f39b793b269c22da86435e58",
+      "producer_manifest_sha256": "92976207066d0a09bd9ab052d70e18f37d3058b50f1643909463c6fef441011f"
+    },
+    {
+      "backend": "native",
+      "key": "yeongwol",
+      "role": "candidate",
+      "protected": true,
+      "pages": 4,
+      "minimum_raw": 99.98536,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/protected/yeongwol.tsv",
+      "tsv_sha256": "b6b1ffe9fea23444d7678ec5e5cb78474d71569b3fee154d962ad95b9adf5f60",
+      "producer_manifest_sha256": "48bf1de72525c1a08329114f2072398a1e520afce8cd6d1215c2ccb417b0d5e2",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "native",
+      "key": "seo-body-list-typed",
+      "role": "candidate",
+      "protected": true,
+      "pages": 1,
+      "minimum_raw": 100.0,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/protected/seo-body-list-typed.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "producer_manifest_sha256": "0105bc6598e14626cd89924d0a6acbd55417bcb19be42428d72caa6bddcd5b6b",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "native",
+      "key": "handbook-hwp",
+      "role": "candidate",
+      "protected": true,
+      "pages": 383,
+      "minimum_raw": 99.96463,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 383,
+        "pdf": 383
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/protected/handbook-hwp.tsv",
+      "tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+      "producer_manifest_sha256": "43e74d3c4867b8e2cfe4510b5bda7990db3a58d046bb596a3ef4eebdacde85d8",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "native",
+      "key": "seo-helvetica-styles",
+      "role": "candidate",
+      "protected": true,
+      "pages": 1,
+      "minimum_raw": 99.24979,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/protected/seo-helvetica-styles.tsv",
+      "tsv_sha256": "46ccdd2e0e2dfdec7bc1366e2418de12c83faf6bf5b872b9be8ee71fe24a7f46",
+      "producer_manifest_sha256": "5d7aac85d5b85517d87603cf92201e8eb2e8dfdd0c75949541f50bfbb174f29d",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "native",
+      "key": "sample16-hwpx",
+      "role": "candidate",
+      "protected": true,
+      "pages": 64,
+      "minimum_raw": 99.99065,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 64,
+        "pdf": 64
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/protected/sample16-hwpx.tsv",
+      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "producer_manifest_sha256": "ac8fc08f730a1cce0fdcf232c19977a1bdb05cf2b736d7386f20542ba17830f7",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "native",
+      "key": "sample16-hwp2022",
+      "role": "candidate",
+      "protected": true,
+      "pages": 64,
+      "minimum_raw": 100.0,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 64,
+        "pdf": 64
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/protected/sample16-hwp2022.tsv",
+      "tsv_sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+      "producer_manifest_sha256": "e89f1b54c2264769590622367d35b95de740370e311d28568d17a7fe7da62aa7",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "native",
+      "key": "seo-re-03-latin",
+      "role": "candidate",
+      "protected": true,
+      "pages": 1,
+      "minimum_raw": 100.0,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/protected/seo-re-03-latin.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "producer_manifest_sha256": "29702e695c876f5e3d6e485260485f8517223ed8ce090a2fe451446e26b2cd01",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "native",
+      "key": "angle-narrow",
+      "role": "candidate",
+      "protected": true,
+      "pages": 1,
+      "minimum_raw": 100.0,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/protected/angle-narrow.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "producer_manifest_sha256": "17df7d46d3fbc5bf4d9d0e541c0f41128c547cdbb97f13b786bdf6a630f77a8c",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "native",
+      "key": "outline",
+      "role": "candidate",
+      "protected": true,
+      "pages": 9,
+      "minimum_raw": 99.99617,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 9,
+        "pdf": 9
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/protected/outline.tsv",
+      "tsv_sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+      "producer_manifest_sha256": "73c65183781fa143149397760a9ec0e56d19837bbc923b3f18af01630984d6fe",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "native",
+      "key": "issue8040-insert",
+      "role": "candidate",
+      "protected": true,
+      "pages": 4,
+      "minimum_raw": 99.9892,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/protected/issue8040-insert.tsv",
+      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "producer_manifest_sha256": "182319102491853c50fba09de5eefb11d325f55d3ab288dd84797c72e5294b44",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "native",
+      "key": "nested",
+      "role": "candidate",
+      "protected": true,
+      "pages": 17,
+      "minimum_raw": 98.36252,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 17,
+        "pdf": 17
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/protected/nested.tsv",
+      "tsv_sha256": "65bc696e219a9a4923f43b12d018b036ec3e8e05258d30fa9719524815e97d2d",
+      "producer_manifest_sha256": "0f55fd3a4981dbdc148af51df0bdae27c39553d7336d6e1c3b1df27ec49772a1",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "native",
+      "key": "sample16-hwp2024",
+      "role": "candidate",
+      "protected": true,
+      "pages": 64,
+      "minimum_raw": 99.99065,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 64,
+        "pdf": 64
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/protected/sample16-hwp2024.tsv",
+      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "producer_manifest_sha256": "c775aafc42d89f4e61d6186202a78ccad640f1150138eb3d261de4007325ced4",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "native",
+      "key": "handbook-hwpx",
+      "role": "candidate",
+      "protected": true,
+      "pages": 383,
+      "minimum_raw": 99.96463,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 383,
+        "pdf": 383
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/protected/handbook-hwpx.tsv",
+      "tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+      "producer_manifest_sha256": "f1021e672ad96c0a4d9f93748971d49852950c50232d89d92b1cce17f677e67f",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "native",
+      "key": "issue7905",
+      "role": "candidate",
+      "protected": true,
+      "pages": 6,
+      "minimum_raw": 98.86043,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 6,
+        "pdf": 6
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/protected/issue7905.tsv",
+      "tsv_sha256": "b828c10e23bcef9c5e7078451d3c8d92e1cb9811a7ac3a952c084a741f6ac6fe",
+      "producer_manifest_sha256": "20edfb45bfcc9cfb46d19d17603fe97bbcd57dc41b1a171751f0fb099c85d27c",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "native",
+      "key": "sample10",
+      "role": "candidate",
+      "protected": true,
+      "pages": 763,
+      "minimum_raw": 99.56112,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 763,
+        "pdf": 763
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/protected/sample10.tsv",
+      "tsv_sha256": "712a287536ded13276b98665341c1ca0e5420a81a82310f5d9cdf7de30f94363",
+      "producer_manifest_sha256": "264c5f237f98742643f93064d05ec6f2b7a40be4b4026145e1070d95c961cee7",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "native",
+      "key": "issue8040-insert-delete",
+      "role": "candidate",
+      "protected": true,
+      "pages": 4,
+      "minimum_raw": 99.9892,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/protected/issue8040-insert-delete.tsv",
+      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "producer_manifest_sha256": "6abdd04f1edcbc8c67eb59aee4abe57d46dbc9e72fb3b2e4060b7a85a1d47246",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "native",
+      "key": "seo-pic-crop-01",
+      "role": "candidate",
+      "protected": true,
+      "pages": 1,
+      "minimum_raw": 99.99756,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/protected/seo-pic-crop-01.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "producer_manifest_sha256": "27e7b3d0472b351fc53c6f9a15ea2787c1f6733e8a383e15f3ac4e779cb2e35b",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "native",
+      "key": "seo-shape-group-02",
+      "role": "candidate",
+      "protected": true,
+      "pages": 1,
+      "minimum_raw": 100.0,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/native/protected/seo-shape-group-02.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "producer_manifest_sha256": "c4374178ed31a97ec82c9a55a1a8906d9612296a2dad9b97122ad00c1a239050",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8932",
+      "role": "candidate",
+      "protected": false,
+      "pages": 8,
+      "minimum_raw": 94.43354,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 8,
+        "pdf": 8
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/candidate/pr8932.tsv",
+      "tsv_sha256": "26b4d1546c1d9a1edd273df66bbf4aefca3aab5ecabe743701ef7e9863d1b397",
+      "producer_manifest_sha256": "9b1fdbe6c1b9bfd02c44b39ac2baacfcaa1771113b275fa0453a18b8dba81198"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8936",
+      "role": "candidate",
+      "protected": false,
+      "pages": 2,
+      "minimum_raw": 100.0,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/candidate/pr8936.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "producer_manifest_sha256": "793a836b5175aecefe5c0d8d2e9e8d56bc17b90c35f3c21e4c8d5a7d08663bdd"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8938",
+      "role": "candidate",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 98.52183,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/candidate/pr8938.tsv",
+      "tsv_sha256": "1f7271fad538ecefde00f31a13ff718c3575c21d0d032b3dbcbfaa7be0a10439",
+      "producer_manifest_sha256": "51ff6fc238b4ecefc46ff847324f5cd7872c64ce45ac0f96e4ba167c1cd8e88a"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8949",
+      "role": "candidate",
+      "protected": false,
+      "pages": 2,
+      "minimum_raw": 97.73458,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/candidate/pr8949.tsv",
+      "tsv_sha256": "811fb271bddb4f306a7fe0abac64afe0074df8670622df9e687d6fd684f5d394",
+      "producer_manifest_sha256": "745f644c5d2a152ee874cd7b978edf404877dc6af23c2070530c894174ed6d76"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8955-original",
+      "role": "candidate",
+      "protected": false,
+      "pages": 2,
+      "minimum_raw": 100.0,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/candidate/pr8955-original.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "producer_manifest_sha256": "07fd89b3dade0a1d8c128d839604802170178004121926968231fa40673c0dbf"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8955-v1",
+      "role": "candidate",
+      "protected": false,
+      "pages": 3,
+      "minimum_raw": 100.0,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/candidate/pr8955-v1.tsv",
+      "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "producer_manifest_sha256": "c0387ab4a629dd4015df4d65e5d2b1f69193435c0285e44685807a45212d31cb"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8955-v2",
+      "role": "candidate",
+      "protected": false,
+      "pages": 2,
+      "minimum_raw": 100.0,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/candidate/pr8955-v2.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "producer_manifest_sha256": "385cd50caea9416f1e6c7be8eeb987ba22e454ff4450c03a9582a02252b5e070"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8959",
+      "role": "candidate",
+      "protected": false,
+      "pages": 2,
+      "minimum_raw": 98.39998,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/candidate/pr8959.tsv",
+      "tsv_sha256": "e4db3d93fe7823108be5b610a3ddb85f31dff580a27db30b81dce547d6316f1b",
+      "producer_manifest_sha256": "925092d572de9378fd3812976930b9908acfeb57cac1b4f6bbefd972367265ea"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8974",
+      "role": "candidate",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 100.0,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/candidate/pr8974.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "producer_manifest_sha256": "3b43c068a5b657815f82d0c98337946887275eef97625bb047fad6cef612c1ff"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8987",
+      "role": "candidate",
+      "protected": false,
+      "pages": 6,
+      "minimum_raw": 91.05707,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 6,
+        "pdf": 6
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/candidate/pr8987.tsv",
+      "tsv_sha256": "77c1805c76abfc3dda7471cb1370b6aa33973ced517df7b2b8726b6680154c64",
+      "producer_manifest_sha256": "4bf371117b71d11de0b40066f59637f14e64fa425463b86dd95b633ef28532be"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8990-3066825",
+      "role": "candidate",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 99.97567,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/candidate/pr8990-3066825.tsv",
+      "tsv_sha256": "327242518ff447fe082cf12cdb70a8e590ca8d1e18d7570fb3d1f19742f7d1aa",
+      "producer_manifest_sha256": "454c0ed4497fd73c448a3bd70c489fe6f75ecda06889a733c4c0ff483d3d6ac6"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8990-36385713",
+      "role": "candidate",
+      "protected": false,
+      "pages": 2,
+      "minimum_raw": 99.91721,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/candidate/pr8990-36385713.tsv",
+      "tsv_sha256": "35a75fcdaff4881a2248b1996fb51f1626ee66e7f1b4dd9f3d19e6b40a5129e0",
+      "producer_manifest_sha256": "10e9abc872fd524dd3e1eb337ea66e62df74d909c8ca65321d6d52ab4669c9dc"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8994",
+      "role": "candidate",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 100.0,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/candidate/pr8994.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "producer_manifest_sha256": "363e31349350cf29af8bf31cd18641552a87981501a7e789b27cd9f9b07a783b"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8999",
+      "role": "candidate",
+      "protected": false,
+      "pages": 2,
+      "minimum_raw": 99.9583,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/candidate/pr8999.tsv",
+      "tsv_sha256": "434bf8759385b1fc91dac6b0b24e3ebe43889a133193ba2bd7658dcfa786bbc1",
+      "producer_manifest_sha256": "9648a688d48762fc733a7ed76e15c6528f9f838aced7d76667ebb4a0f9bf0dca"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr9001",
+      "role": "candidate",
+      "protected": false,
+      "pages": 19,
+      "minimum_raw": 99.99675,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 19,
+        "pdf": 19
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/candidate/pr9001.tsv",
+      "tsv_sha256": "02fce13dcdccc318dbb570387166ef6ff5c0389e5a723a3d8fc14ce3726681cb",
+      "producer_manifest_sha256": "ea4a14c3ce4ab2664a26dec387b12db472b944c4881014c972eae7e3613c8676"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr9003-hwp",
+      "role": "candidate",
+      "protected": false,
+      "pages": 157,
+      "minimum_raw": 99.39037,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 157,
+        "pdf": 157
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/candidate/pr9003-hwp.tsv",
+      "tsv_sha256": "ded40124df0733464b2b37fd96a6fb2b07b939097bed4ce9454aa6145d40795b",
+      "producer_manifest_sha256": "124249d872e18a058225372e7639214d8b30b7f83c61b351ed4981b4633ec570"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr9004",
+      "role": "candidate",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 100.0,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/candidate/pr9004.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "producer_manifest_sha256": "b294cebda70ec7698d1ae4e9afcb339847df20e6ac9fde1b28c1a7225be981b6"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr9004-control",
+      "role": "candidate",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 99.99737,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/candidate/pr9004-control.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "producer_manifest_sha256": "4eb9fedf891580f361f8ac980f413cf31a88215b6e38e0596908092d6ad33ba9"
+    },
+    {
+      "backend": "wasm",
+      "key": "receipt",
+      "role": "candidate",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 99.99646,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/candidate/receipt.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "producer_manifest_sha256": "ee0b1e7a3611762dbd2b8ad14e7bc685f04a48e255a461e313e6fbaf46b206fd"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr9015",
+      "role": "candidate",
+      "protected": false,
+      "pages": 8,
+      "minimum_raw": 94.086,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 8,
+        "pdf": 8
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/candidate/pr9015.tsv",
+      "tsv_sha256": "56114de87f87d7a894072bb3702c9b1a5c0aea2d30396e3335d920851e5aa3d3",
+      "producer_manifest_sha256": "38a3cdab6c334cc4dba5c3932e79173f7328de75b1acd696adfee8f757061905"
+    },
+    {
+      "backend": "wasm",
+      "key": "receipt-saved",
+      "role": "candidate",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 99.99646,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/candidate/receipt-saved.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "producer_manifest_sha256": "8a05605c1e24b3db1e7c7a466efa75de0f96b1ce97efcae3a3a39706c3187195"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr9003-saved",
+      "role": "candidate",
+      "protected": false,
+      "pages": 157,
+      "minimum_raw": 99.39037,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 157,
+        "pdf": 157
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/candidate/pr9003-saved.tsv",
+      "tsv_sha256": "acf1f5557f73d811b2d6c9e8e5349ca82af8abad10c95bbff0e96f0b2f1583fd",
+      "producer_manifest_sha256": "a596a1da541bd0af27e41fd785ab674e3609ab1555bc7d189580276932d0c41c"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8932",
+      "role": "base",
+      "protected": false,
+      "pages": 8,
+      "minimum_raw": 62.79203,
+      "below90": [
+        1
+      ],
+      "document_counts": {
+        "rhwp": 8,
+        "pdf": 8
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/base/pr8932.tsv",
+      "tsv_sha256": "8913920088787c00552b1d95b5cdba13c84617564d987e4d4b95b5972d6836a5",
+      "producer_manifest_sha256": "ec30072d32642e39a3e51782a5a72507841631ac77093f60344be82ce3a444ba"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8936",
+      "role": "base",
+      "protected": false,
+      "pages": 2,
+      "minimum_raw": 64.09269,
+      "below90": [
+        1
+      ],
+      "document_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/base/pr8936.tsv",
+      "tsv_sha256": "e195577f07f4e23cf03e02b25837d51afb5c1d20188b5978fbc520352601e22a",
+      "producer_manifest_sha256": "0bf7085a0577373bc53c3ad54d2994f80ca156aabf0584631143e329b1060cde"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8938",
+      "role": "base",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 55.79774,
+      "below90": [
+        1
+      ],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/base/pr8938.tsv",
+      "tsv_sha256": "14a40868805ffebb4f0314e6af0ebc9e172e8483d9a4ef90e6f22cb969360355",
+      "producer_manifest_sha256": "d52a16f04ac44256630d64a338719836d25bdd2c4f90d4fdc61ac983e75f3430"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8949",
+      "role": "base",
+      "protected": false,
+      "pages": 2,
+      "minimum_raw": 17.61204,
+      "below90": [
+        1,
+        2
+      ],
+      "document_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/base/pr8949.tsv",
+      "tsv_sha256": "4a272aae250a5f28f336bc9c6b2cf0f5eaf6b7196a82fefbd6155f1f7182b35e",
+      "producer_manifest_sha256": "c5f1ab45fd38593e605ae4b8516b4ebd1010aaad38e688bc86f09ab3bb656127"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8955-original",
+      "role": "base",
+      "protected": false,
+      "pages": 2,
+      "minimum_raw": 75.33365,
+      "below90": [
+        1
+      ],
+      "document_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/base/pr8955-original.tsv",
+      "tsv_sha256": "4ecb3805b39d4f55520e100780437aa47088ca77ae848284d524b678b53a7b20",
+      "producer_manifest_sha256": "9134421f30ef69f258ef677f56ed85023667d4450be1be2f1de54e0fd03a6caf"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8955-v1",
+      "role": "base",
+      "protected": false,
+      "pages": 3,
+      "minimum_raw": 37.89263,
+      "below90": [
+        1,
+        2
+      ],
+      "document_counts": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/base/pr8955-v1.tsv",
+      "tsv_sha256": "98c04d4a1105dae851d9570d10df28818bb4618406655be9c4b0ca988b18038a",
+      "producer_manifest_sha256": "dfe24ceefa7aa7bfe3cb8a1df695777ea8695e173ab1529830044b5751f315f2"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8955-v2",
+      "role": "base",
+      "protected": false,
+      "pages": 2,
+      "minimum_raw": 47.57521,
+      "below90": [
+        1,
+        2
+      ],
+      "document_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/base/pr8955-v2.tsv",
+      "tsv_sha256": "04bf6cc538a44da08187f6638ae75da5a3e12d16104d0677353798ce7774cf47",
+      "producer_manifest_sha256": "7b8d59fc2da5f1b41f5b88c02d3931d010f070ae4fb36dc4d235b9b3430401b5"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8959",
+      "role": "base",
+      "protected": false,
+      "pages": 2,
+      "minimum_raw": 31.48256,
+      "below90": [
+        1,
+        2
+      ],
+      "document_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/base/pr8959.tsv",
+      "tsv_sha256": "06d2a8ffaf0db25c15a7562e32b36b60f1ef1c686bbb954646b4855ef6d2c5f1",
+      "producer_manifest_sha256": "e657ff1e01d0b2ca2555e3279af5a89d1aac83000fc55e8f400e958ad20c7f5b"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8974",
+      "role": "base",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 81.12913,
+      "below90": [
+        1
+      ],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/base/pr8974.tsv",
+      "tsv_sha256": "25c9525cd39cc3c51ba5f977ee389441ea3574ca664d05a7bea7071fbaa4ef3b",
+      "producer_manifest_sha256": "ec31ee396be22593a3b60941950b9b0ae355355cc867162d8d55d8e679c16bbc"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8987",
+      "role": "base",
+      "protected": false,
+      "pages": 6,
+      "minimum_raw": 79.55602,
+      "below90": [
+        6
+      ],
+      "document_counts": {
+        "rhwp": 6,
+        "pdf": 6
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/base/pr8987.tsv",
+      "tsv_sha256": "14af19e8a8c5588672c7aa5e7b8d433b20979b07612584129b91d0b39d6d48c8",
+      "producer_manifest_sha256": "f198ef21f82401d4d31eb91b23094057db3031ab79b170dbea3cd57ae0f5dbd9"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8990-3066825",
+      "role": "base",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 97.95481,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/base/pr8990-3066825.tsv",
+      "tsv_sha256": "dff78b11c3ac2386beaf215f7688482cbb41007cad8e6bf5cd54177f214f8c7c",
+      "producer_manifest_sha256": "1e3f476a22a29e1db8878c6392010596dbf5d8959d17994239309e9ea911bf34"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8990-36385713",
+      "role": "base",
+      "protected": false,
+      "pages": 2,
+      "minimum_raw": 48.91328,
+      "below90": [
+        2
+      ],
+      "document_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/base/pr8990-36385713.tsv",
+      "tsv_sha256": "e97edc445769a9d27adce51341bb56acba3df25b899f17e2a5076ca63e0d704d",
+      "producer_manifest_sha256": "730fe20c0a9e56fba51de210a252492548ac29847ff5b9bdcd038fb34b41e727"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8994",
+      "role": "base",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 81.52658,
+      "below90": [
+        1
+      ],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/base/pr8994.tsv",
+      "tsv_sha256": "f9cb1e6f4fc016b9cec627fcad2b9b41df400d492db531051c5e60efb3efb6a8",
+      "producer_manifest_sha256": "945a389033e24398aa0d125508d03f7c530a663af05e56b6c087b51d95e2ea41"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr8999",
+      "role": "base",
+      "protected": false,
+      "pages": 2,
+      "minimum_raw": 64.47616,
+      "below90": [
+        2
+      ],
+      "document_counts": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/base/pr8999.tsv",
+      "tsv_sha256": "70744b749406501a8a3ca18f5fc1e253e3acb5b9acb2ff579c4afe864ae53d05",
+      "producer_manifest_sha256": "f6bd799812ce0838b77a1059a6d169e1f40a8fd601c796e0335fcfdb8ec00e7e"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr9001",
+      "role": "base",
+      "protected": false,
+      "pages": 19,
+      "minimum_raw": 0.0,
+      "below90": [
+        14,
+        15
+      ],
+      "document_counts": {
+        "rhwp": 19,
+        "pdf": 19
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/base/pr9001.tsv",
+      "tsv_sha256": "6f993d7d22841dc930e4f877502875a59df90a9072deb045bd2fe8d21a1be5bd",
+      "producer_manifest_sha256": "9d7038868ced013f96849efe8bc00da075d55d00a3dc02487cf74612643451d4"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr9003-hwp",
+      "role": "base",
+      "protected": false,
+      "pages": 157,
+      "minimum_raw": 99.39037,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 157,
+        "pdf": 157
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/base/pr9003-hwp.tsv",
+      "tsv_sha256": "3eefb72e5e54d568ca24232f5492b44c17dd761b1d615918a6e81682ebea6369",
+      "producer_manifest_sha256": "4c372eae8eb2ee30addea108bda3bda2583ce7180dd43ed7b9f6b98662a7a258"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr9004",
+      "role": "base",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 78.18433,
+      "below90": [
+        1
+      ],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/base/pr9004.tsv",
+      "tsv_sha256": "eb71e5784cf7343769d6d5e62b8f148df008c84141b7aab88d95fa82b20e8956",
+      "producer_manifest_sha256": "0636ffceccae51613bc437bda2f2e4002a2036361f0edfca695c64a1d10e663f"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr9004-control",
+      "role": "base",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 99.99734,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/base/pr9004-control.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "producer_manifest_sha256": "abd1eefcd0fbb08008c6a1270f5a900c09477715f150e82127d23112b569040a"
+    },
+    {
+      "backend": "wasm",
+      "key": "receipt",
+      "role": "base",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 57.76672,
+      "below90": [
+        1
+      ],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/base/receipt.tsv",
+      "tsv_sha256": "5ff0807c2d56bf802985d2fdd7fdea16947164a6940499f89e03913e36c83339",
+      "producer_manifest_sha256": "507bf082658da51bf486b5b77e0a81865cd9905bd3c7c54f12c0489fb16198ee"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr9015",
+      "role": "base",
+      "protected": false,
+      "pages": 8,
+      "minimum_raw": 0.0,
+      "below90": [
+        8
+      ],
+      "document_counts": {
+        "rhwp": 9,
+        "pdf": 8
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/base/pr9015.tsv",
+      "tsv_sha256": "44416313db1004166ad1756dc753f69507b96b7f1da8c82a509e75a9717d80d7",
+      "producer_manifest_sha256": "03e24f80076277a7cba12c1e9690563efe0beeb6990dc240d8151f8a65146a08",
+      "scope": "base 실제 9쪽/PDF 8쪽 중 공통 물리 1~8쪽 진단. 후보는 8쪽/PDF 8쪽 전쪽."
+    },
+    {
+      "backend": "wasm",
+      "key": "receipt-saved",
+      "role": "base",
+      "protected": false,
+      "pages": 1,
+      "minimum_raw": 57.76672,
+      "below90": [
+        1
+      ],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/base/receipt-saved.tsv",
+      "tsv_sha256": "5ff0807c2d56bf802985d2fdd7fdea16947164a6940499f89e03913e36c83339",
+      "producer_manifest_sha256": "2756adaa1d42dd3596b0c2701206e6d7bae25081cab2b3540e1ddc9f464f05d9"
+    },
+    {
+      "backend": "wasm",
+      "key": "pr9003-saved",
+      "role": "base",
+      "protected": false,
+      "pages": 157,
+      "minimum_raw": 99.39037,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 157,
+        "pdf": 157
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/base/pr9003-saved.tsv",
+      "tsv_sha256": "478001bec56f6f70059efc3a9171c89c9c4add5705ede1025171e17dcb433c9a",
+      "producer_manifest_sha256": "0cba555d98195d2667917ca04c81ac32ca36b893124508acc0dd0fd94bb0ab45"
+    },
+    {
+      "backend": "wasm",
+      "key": "yeongwol",
+      "role": "candidate",
+      "protected": true,
+      "pages": 4,
+      "minimum_raw": 99.98824,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/protected/yeongwol.tsv",
+      "tsv_sha256": "b6b1ffe9fea23444d7678ec5e5cb78474d71569b3fee154d962ad95b9adf5f60",
+      "producer_manifest_sha256": "4995bd816ed4bb56cc708feb260d687af96bf1d748b794457619f7707f4e3d9d",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "wasm",
+      "key": "seo-body-list-typed",
+      "role": "candidate",
+      "protected": true,
+      "pages": 1,
+      "minimum_raw": 100.0,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/protected/seo-body-list-typed.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "producer_manifest_sha256": "d797ac2c072383b4901931c519eed2bea5701eb5ccd4dc91df455ddfe82034b4",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "wasm",
+      "key": "handbook-hwp",
+      "role": "candidate",
+      "protected": true,
+      "pages": 383,
+      "minimum_raw": 99.96401,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 383,
+        "pdf": 383
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/protected/handbook-hwp.tsv",
+      "tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+      "producer_manifest_sha256": "7d4e2af46ef53abb4e164f23c51d5ec50b0c1d9f946b1e588cd8c989d7092d43",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "wasm",
+      "key": "seo-helvetica-styles",
+      "role": "candidate",
+      "protected": true,
+      "pages": 1,
+      "minimum_raw": 100.0,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/protected/seo-helvetica-styles.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "producer_manifest_sha256": "3e212180f7fd96d711d2963ff50559e39088b93bb295360ae68db98d9dddbda5",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "wasm",
+      "key": "sample16-hwpx",
+      "role": "candidate",
+      "protected": true,
+      "pages": 64,
+      "minimum_raw": 99.99065,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 64,
+        "pdf": 64
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/protected/sample16-hwpx.tsv",
+      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "producer_manifest_sha256": "cfd54687f046290d2e8667bf67c2e6824a654774a0616964ce3b0dc5227c6f94",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "wasm",
+      "key": "sample16-hwp2022",
+      "role": "candidate",
+      "protected": true,
+      "pages": 64,
+      "minimum_raw": 100.0,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 64,
+        "pdf": 64
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/protected/sample16-hwp2022.tsv",
+      "tsv_sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+      "producer_manifest_sha256": "18dacab3d8dd4e4ec6f06073f31c4911640ee4816b7514f384265f6308679e2a",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "wasm",
+      "key": "seo-re-03-latin",
+      "role": "candidate",
+      "protected": true,
+      "pages": 1,
+      "minimum_raw": 100.0,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/protected/seo-re-03-latin.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "producer_manifest_sha256": "42389cb8eeb84b814b411751aecd99b459d18094460a953f0e547ee8100a0465",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "wasm",
+      "key": "angle-narrow",
+      "role": "candidate",
+      "protected": true,
+      "pages": 1,
+      "minimum_raw": 100.0,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/protected/angle-narrow.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "producer_manifest_sha256": "0580a9b1d9ee43c268f1969560587ab17ca560f137262548150eb3a57df9da44",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "wasm",
+      "key": "outline",
+      "role": "candidate",
+      "protected": true,
+      "pages": 9,
+      "minimum_raw": 100.0,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 9,
+        "pdf": 9
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/protected/outline.tsv",
+      "tsv_sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+      "producer_manifest_sha256": "f6a01cdfd15c07636be6df26d2d591ae1ef15d839ec9f6f30e60a0f5395a6d5f",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "wasm",
+      "key": "issue8040-insert",
+      "role": "candidate",
+      "protected": true,
+      "pages": 4,
+      "minimum_raw": 99.9887,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/protected/issue8040-insert.tsv",
+      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "producer_manifest_sha256": "ce027a442354e43101a35c875a787773f1355cbd9e9b4ba1acbaad25369e38ce",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "wasm",
+      "key": "nested",
+      "role": "candidate",
+      "protected": true,
+      "pages": 17,
+      "minimum_raw": 98.36252,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 17,
+        "pdf": 17
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/protected/nested.tsv",
+      "tsv_sha256": "c397a8ba244f6a50931b5c49410229cbfdace28dce96ab7b3f45b97ae155c059",
+      "producer_manifest_sha256": "d91a00e4e017461a3ca10c3e94a1167cf4c024d81e0751598c56903cdf07f7e2",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "wasm",
+      "key": "sample16-hwp2024",
+      "role": "candidate",
+      "protected": true,
+      "pages": 64,
+      "minimum_raw": 99.99065,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 64,
+        "pdf": 64
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/protected/sample16-hwp2024.tsv",
+      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "producer_manifest_sha256": "71abad5e2e691d9dd96732fdde098ffe974e55e795f76f4be98412684118293c",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "wasm",
+      "key": "handbook-hwpx",
+      "role": "candidate",
+      "protected": true,
+      "pages": 383,
+      "minimum_raw": 99.96401,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 383,
+        "pdf": 383
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/protected/handbook-hwpx.tsv",
+      "tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+      "producer_manifest_sha256": "e7bad3f38ca28e3eefce22b79619d2cde5b81b0184ac9f0351d4315e600650cc",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "wasm",
+      "key": "issue7905",
+      "role": "candidate",
+      "protected": true,
+      "pages": 6,
+      "minimum_raw": 98.86448,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 6,
+        "pdf": 6
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/protected/issue7905.tsv",
+      "tsv_sha256": "086c2d6d0017f63a3d77a9232166de5591ebcf46884461b77c4bf2c153bbeee6",
+      "producer_manifest_sha256": "2bf6acb1d56b0fc28020eaa7fbea5ead4f2749ab3040a753e4497c21645b0b54",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "wasm",
+      "key": "sample10",
+      "role": "candidate",
+      "protected": true,
+      "pages": 763,
+      "minimum_raw": 99.56114,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 763,
+        "pdf": 763
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/protected/sample10.tsv",
+      "tsv_sha256": "e5623efdcc4d4dcb4e1d0504ea383c867c5e40973a3bfcb0b93335f5bd38d912",
+      "producer_manifest_sha256": "5e27bb825703b28b24a6c9cb1cadc92fd263d68fb820585a2a96585a970e9df5",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "wasm",
+      "key": "issue8040-insert-delete",
+      "role": "candidate",
+      "protected": true,
+      "pages": 4,
+      "minimum_raw": 99.9887,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/protected/issue8040-insert-delete.tsv",
+      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "producer_manifest_sha256": "0a6bd080f83259cf7190c2c0a304efd4969a27cd8947062bf0d230aecf70439f",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "wasm",
+      "key": "seo-pic-crop-01",
+      "role": "candidate",
+      "protected": true,
+      "pages": 1,
+      "minimum_raw": 99.99756,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/protected/seo-pic-crop-01.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "producer_manifest_sha256": "d1bc7f573f59ffcd1d67f36d1be32d5bd0e968a632eb17df37f962303c6d0c56",
+      "protected_pass": true,
+      "declines": []
+    },
+    {
+      "backend": "wasm",
+      "key": "seo-shape-group-02",
+      "role": "candidate",
+      "protected": true,
+      "pages": 1,
+      "minimum_raw": 100.0,
+      "below90": [],
+      "document_counts": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "tsv": "mydocs/pr/assets/planet6897_clean20_20261113/canonical-visual/wasm/protected/seo-shape-group-02.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "producer_manifest_sha256": "38e836d17699acdbf37f075e21ac25f582565e8cb73bb927f7ee6546cc44f1cb",
+      "protected_pass": true,
+      "declines": []
+    }
+  ],
+  "protected_summary": {
+    "native": {
+      "conditions": 18,
+      "pages": 1771,
+      "declines": 0
+    },
+    "wasm": {
+      "conditions": 18,
+      "pages": 1771,
+      "declines": 0
+    }
+  },
+  "acceptance": "수치 검증 기록. 알려진 반례 두 건과 실제 backend·직접 판독은 별도 검토하며 이 기록만으로 통합 승인을 뜻하지 않는다. 이후 보정 후보의 결과로 재인용하지 않는다."
+}

@@ -1,0 +1,30 @@
+{
+  "input": {
+    "path": "tests/fixtures/issue7727/cbta-stored-right-tab-plus1500.hwp",
+    "sha256": "d06ad516f6a6417b36143fa05c8f4325d9f759799b8bfa0bcf4963416411fac6",
+    "bytes": 12851712
+  },
+  "pdf": {
+    "path": "pdf/issue7727/cbta-stored-right-tab-plus1500-2020.pdf",
+    "sha256": "918c6e68e81d610153bfe3a508504e777898a06bc8f4cbfee54743123705f794",
+    "bytes": 4970769
+  },
+  "kind": "독립 한컴 Print 저장 탭 폭 대조군",
+  "engine": "2020",
+  "hancom_version": "11.0.0.9136",
+  "job_id": "c8e37f0f-e545-4880-b774-decf06def96e",
+  "change": "원본 BodyText/Section0 및 ViewText/Section0의 문단23 TAB 폭만 각각1868→3368HU 변경. 문서 텍스트·스타일·저장 줄 불변.",
+  "source": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+  "proof": "독립 Print 첫 숫자 원점674.88000488→694.87996419CSSpx, 폭+1500HU의20CSSpx와 일치.",
+  "regression_before": "1 PASS / 1 FAIL (캐시 소유 반례 실패, 저장 줄 없는 재조판 대조군 통과)",
+  "status": "후보 보정 검증 중; 최종 시각·전체 회귀 통과 아님",
+  "native_focus": {
+    "cbta_p2": 98.5212,
+    "recommendation_p4": 99.95629
+  },
+  "regression_after": "최신 deps/librhwp.rlib을 연결한 독립 rustc 검사2 PASS. 정식 최소 글꼴 suite는 미실행.",
+  "existing_6844": "bbox 포괄 검사1 PASS. 모든 목차 숫자 우단 동일 검사1 FAIL(692.4~693.7CSSpx). 보정·검증 없이 기대값 완화하지 않음.",
+  "temporary_tool_correction": "root librhwp.rlib은 이전 산출물. --bin 빌드의 실제 deps/librhwp.rlib로 교정한 결과만 수용. 단일 PNG의 원본 파일명은 쪽 번호를 포함하지 않아 캡처 바이트를 바꾸지 않고 선택한2·4쪽으로 비교 라벨 정규화.",
+  "source_verified_before": "정확한57a38 Native 실행 파일에서 원본과 TAB+1500HU 사본의2쪽 PNG SHA가 동일(0 이동). 독립 한컴 Print는19.99996CSSpx 이동하므로 수용된 저장 폭을 무시하는 결함을 소스 고정 실행으로 교차 확인했다.",
+  "before_diagnostic_scope": "1 PASS/1 FAIL의 첫 rustc 실행은 이전 root rlib 진단이다. 정확한57a38의 근거는 before-frozen-control-comparison.json의 실제 출력이며, 두 근거를 구분한다."
+}

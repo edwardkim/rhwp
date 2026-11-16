@@ -573,6 +573,21 @@ impl Cell {
 }
 
 impl Table {
+    /// [#9005] 저장 표 크기(`common.height`)가 숨긴 안내문을 담은 칸 내용으로 잰 값인가.
+    ///
+    /// 한/글은 표를 저장할 때 미기입 누름틀 안내문이 든 칸 글줄로 행 높이를 재고 그 합을
+    /// 개체 높이로 남긴다. 그 칸의 저장 줄을 안내문 없이 다시 나누면
+    /// (`Paragraph::stored_rows_include_hidden_guide`) 같은 근거로 저장 표 높이도 지금
+    /// 내용의 높이가 아니다. 측정 행을 이 값에 맞춰 늘리면 줄어든 행의 몫이 다른 행에 고루
+    /// 퍼진다 — `issue-986-receipt` 큰 표는 행마다 0.3px, 끝에서 15px 아래로 밀렸다.
+    pub fn stored_size_includes_hidden_guide(&self) -> bool {
+        self.cells.iter().any(|cell| {
+            cell.paragraphs
+                .iter()
+                .any(crate::model::paragraph::Paragraph::stored_rows_include_hidden_guide)
+        })
+    }
+
     /// 조판이 따르는 쪽 경계 나눔 방식.
     ///
     /// 셀 하나라도 세로쓰기(`text_direction != 0`)이면 한/글은 저장된 나눔 값(셀 단위로

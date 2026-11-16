@@ -575,3 +575,75 @@ export function fontFamilyCandidatesForDisplayWithRules(
     ruleIds: [...new Set(ruleIds.filter(Boolean))],
   };
 }
+
+/**
+ * CSS font 문자열에서 font-family를 추출하여 폰트 치환을 적용한다.
+ *
+ * 입력: 'bold 14.5px "안상수2006가는", sans-serif'
+ * 출력: 'bold 14.5px "돋움", sans-serif'
+ *
+ * [#6600] **들어온 체인을 버리지 않는다.** 엔진(`renderer::canvas_font_family_chain`)이
+ * 이미 설치 face 별칭을 담은 체인을 준다 — `"한양중고딕", "HY중고딕", "HYGothic",
+ * "HYGothic-Medium", "HCR Dotum", "함초롬돋움", 'Malgun Gothic', …` 처럼. 종전에는 첫
+ * 이름만 떼어내 studio 체인으로 **통째로 대체**해서, 그 별칭들이 사라지고 곧바로
+ * `Malgun Gothic` 으로 떨어졌다. Windows DirectWrite 는 `-Medium` 을 스타일 토큰으로
+ * 떼어내 `HY중고딕`·`HYGothic-Medium` 둘 다 해석하지 못하고 `HYGothic` 만 해석하므로
+ * (`src/renderer/mod.rs:1674` 실측 주석), 별칭이 빠지면 `【`·`『` 가 Malgun 의 반각
+ * (0.518em) 글리프로 폴백해 1em 상자 왼쪽에 붙는다.
+ *
+ * 그래서 순서를 이렇게 합친다:
+ *   1. 엔진의 예약 별칭 (공급된 프로그램을 선택하며 문서 글꼴명으로 해석하지 않는다)
+ *   2. studio 문서 치환이 고른 face (`휴먼명조` → `HY신명조` 같은 판정을 보존)
+ *   3. 엔진이 준 체인 그대로 (설치 별칭 → generic 순서가 이미 옳다)
+ *   4. studio 체인의 나머지 (엔진 체인이 없거나 짧을 때의 backstop)
+ */
+export function substituteCssFontFamily(cssFont: string): string {
+  const pxIdx = cssFont.indexOf('px ');
+  if (pxIdx < 0) return cssFont;
+
+  const prefix = cssFont.substring(0, pxIdx + 3);
+  const familyPart = cssFont.substring(pxIdx + 3);
+
+  // #9077: 예약 별칭이 미공급이어도 뒤의 실제 face에 동일한 표시 정책을 적용한다.
+  // 별칭을 원본 이름으로 판정하면 Batang/Malgun Gothic이 실제 face를 선점한다.
+  const reserved: string[] = [];
+  const incoming: string[] = [];
+  for (const name of parseCssFontFamilyList(familyPart)) {
+    if (name.startsWith('__rhwp_ttf__') || name.startsWith('__rhwp_intrinsic__')) {
+      reserved.push(name);
+    } else {
+      incoming.push(name);
+    }
+  }
+  const primary = incoming[0];
+  if (!primary) return cssFont;
+
+  // 같은 원 이름의 언어 슬롯에 다른 대체가 있으면 엔진이 지정한 체인을 따른다.
+  const declaredTargets = documentSubstituteFamilies(primary).filter(target => incoming.includes(target));
+  const studioChain = fontFamilyCandidatesForDisplay(primary, 0, 0,
+    declaredTargets.length ? { documentFallbackFamilies: declaredTargets } : {});
+  const merged: string[] = [];
+  const seen = new Set<string>();
+  const push = (name: string) => {
+    const key = name.toLocaleLowerCase('en-US');
+    if (!name || seen.has(key)) return;
+    seen.add(key);
+    merged.push(name);
+  };
+  for (const alias of reserved) push(alias);
+  if (studioChain[0]) push(studioChain[0]);
+  // 표시 정책이 제외한 원 face를 엔진 체인에서 다시 넣지 않는다. 예를 들어
+  // 휴먼명조 → HY신명조 치환 후 원 face가 남으면, HY신명조가 없는 macOS에서
+  // legacy 휴먼명조를 선택해 한글이 .notdef로 그려지고 뒤의 fallback에 도달하지 않는다.
+  const primaryAllowed = studioChain.some(name =>
+    name.toLocaleLowerCase('en-US') === primary.toLocaleLowerCase('en-US'));
+  const localFontsEnabled = getLocalFontState().stored;
+  for (const name of incoming) {
+    if (name === primary && !primaryAllowed) continue;
+    // 감지 승인이 없으면 엔진의 설치 face 별칭으로 원본 로컬 글꼴이 우회되지 않게 한다.
+    if (!localFontsEnabled && !studioChain.some(candidate =>
+      candidate.toLocaleLowerCase('en-US') === name.toLocaleLowerCase('en-US'))) continue;
+    push(name);
+  }
+  return prefix + formatCssFontFamilyList(completeFontFamilyList(merged, studioChain.slice(1)));
+}

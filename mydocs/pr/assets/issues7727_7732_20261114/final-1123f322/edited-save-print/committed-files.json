@@ -1,0 +1,33 @@
+[
+  {
+    "source_local": "output/pr-review/issues-7727-7732-20261114/stored-right-tab-repair/edited-small-current/edited-2.hwp",
+    "committed_path": "tests/fixtures/issue7727/edited-right-tab-two-saves.hwp",
+    "bytes": 84992,
+    "sha256": "8abdadd1d48cc8438ccee66be86d9942639153e5f5112ec5869cd6377bd2f1ec"
+  },
+  {
+    "source_local": "output/pr-review/issues-7727-7732-20261114/stored-right-tab-repair/edited-small-canonical/edited-2.hwpx",
+    "committed_path": "tests/fixtures/issue7727/edited-right-tab-two-saves.hwpx",
+    "bytes": 84479,
+    "sha256": "3e7975439ac3177e35349a372241d061f568d5ad8745624f40c03beba8196727"
+  },
+  {
+    "source_local": "output/pr-review/issues-7727-7732-20261114/stored-right-tab-repair/edited-small-current/issue7727-edited-small-hwp-2020.pdf",
+    "committed_path": "pdf/issue7727/edited-right-tab-two-saves-hwp-2020.pdf",
+    "bytes": 13357,
+    "sha256": "2094532dafe0076645ae9e19f40396fb27133abee5e6f4815914ad5877aca88c"
+  },
+  {
+    "source_local": "output/pr-review/issues-7727-7732-20261114/stored-right-tab-repair/edited-small-canonical/issue7727-edited-small-canonical-hwpx-2020.pdf",
+    "committed_path": "pdf/issue7727/edited-right-tab-two-saves-hwpx-2020.pdf",
+    "bytes": 13357,
+    "sha256": "efeb872c274313e501b11073f979f0cf960b5adf836e18faff64af769770047e"
+  },
+  {
+    "source_local": "output/pr-review/issues-7727-7732-20261114/stored-right-tab-repair/edited-small-current/canonical-prefix-control.hwpx",
+    "committed_path": "tests/fixtures/issue7727/stored-right-tab-canonical-prefix-control.hwpx",
+    "bytes": 83136,
+    "sha256": "f90c57b4b41d6e89a5fe64d6d8c5ebfe8997677b12faeb7b80dd089be19dfaaf",
+    "role": "XML 확장 이름·속성·본문이 같은 canonical prefix 편집 원본. 기존 직렬화의 미선언 alias 문제와 RIGHT 탭 편집 계약을 분리한다."
+  }
+]

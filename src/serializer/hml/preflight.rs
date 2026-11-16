@@ -590,7 +590,7 @@ fn validate_shape_fill(fill: &Fill, path: &str, blockers: &mut Vec<HmlSaveBlocke
         is_default_fill(fill)
     } else {
         fill.fill_type == FillType::Solid
-            && fill.solid.is_some_and(|solid| solid.pattern_type == -1)
+            && fill.solid.is_some_and(|solid| solid.hatch().is_none())
             && fill.gradient.is_none()
             && fill.image.is_none()
     };

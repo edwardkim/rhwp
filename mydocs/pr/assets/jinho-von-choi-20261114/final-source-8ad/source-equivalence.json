@@ -1,0 +1,27 @@
+{
+  "runtimeSource": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+  "gateHead": "56a470cd15412f732016ba24b9b96a57b166dfe5",
+  "recordHead": "5665619709ec27409eb982a25e8004552bb9f8d1",
+  "latestBase": "2d83fa4c8a5ed3513afcde26367fb5ffebeb294c",
+  "compiledBaselineSource": "e7ee272cfa33a960b0d0d924983d29e6509903e0",
+  "unchangedProductPaths": [
+    "src",
+    "crates",
+    "vendor",
+    "bindings",
+    "npm",
+    "rhwp-studio/src",
+    "rhwp-shared",
+    "Cargo.toml",
+    "Cargo.lock",
+    "build.rs"
+  ],
+  "candidateProductDiffExitCode": 0,
+  "latestBaseProductAndVisualHarnessDiffExitCode": 0,
+  "latestBaseChanges": "#9090 CI controller contracts and #9091 records; actual product and visual harness unchanged",
+  "latestCiContractTests": 50,
+  "latestCiContractExitCode": 0,
+  "latestSuiteManifestCheckExitCode": 0,
+  "handbookContractTests": 21,
+  "handbookContractExitCode": 0
+}

@@ -1,0 +1,27 @@
+{
+  "head": "73d06ed0b18df7c222a850bb5d9340c9b7de2bcc",
+  "build": "macOS locked wrapper --no-opt 로컬 대체 빌드",
+  "optimized": false,
+  "artifacts": [
+    {
+      "file": "rhwp.js",
+      "sha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+      "bytes": 583724
+    },
+    {
+      "file": "rhwp_bg.wasm",
+      "sha256": "6c877b07b5534da8557fe605a77a205062f77ae8e8a9660031f6dfddec7305da",
+      "bytes": 31818224
+    },
+    {
+      "file": "rhwp.d.ts",
+      "sha256": "0c02b535ff3d0458c0c12b25b5f46d68e49be482d32aec9e5d8db03d1f33c2f0",
+      "bytes": 235148
+    },
+    {
+      "file": "rhwp_bg.wasm.d.ts",
+      "sha256": "9d21217c454fa8f1757e7f08e26b27d00c564bcc0be2a228b75bb0dae08aa738",
+      "bytes": 80530
+    }
+  ]
+}

@@ -37,7 +37,7 @@ LINE_TYPES = [
     "thinThickThinTriple",
 ]
 DASHES = ["solid", "dash", "dot", "dashDot", "dashDotDot"]
-PATTERN_TYPES = list(range(1, 7))
+PATTERN_TYPES = list(range(0, 6))
 SHADOW_TYPES = list(range(1, 9))
 DECORATION_KINDS = ["underline", "strikethrough", "emphasisDot"]
 DECORATION_SHAPES = list(range(0, 16))
@@ -46,13 +46,14 @@ TAB_FILLS = list(range(0, 16))
 ARROW_SIZES = list(range(0, 9))
 OP_TYPES = ["line", "rectangle", "ellipse", "path"]
 
+# HWP 무늬 종류 0~5 (#8978). 2는 ＼, 3은 ／로 그린다.
 PATTERN_MEANING = {
-    1: "horizontal-hatch",
-    2: "vertical-hatch",
-    3: "backslash-hatch",
-    4: "slash-hatch",
-    5: "cross-hatch",
-    6: "lattice-hatch",
+    0: "horizontal-hatch",
+    1: "vertical-hatch",
+    2: "backslash-hatch",
+    3: "slash-hatch",
+    4: "cross-hatch",
+    5: "lattice-hatch",
 }
 ARROW_MEANING = {
     "none": "no-head",
@@ -434,7 +435,7 @@ def write_working_doc(rows: list[dict[str, object]]) -> None:
         "| lineArrow | Direct | `drawArrowHead` 9종 | 아니오 |",
         "| compoundLine | Direct | SVG와 동일 오프셋 비율 | 아니오 |",
         "| shapeShadow / lineShadow | Direct | offset + `1-alpha/255` | 아니오 |",
-        "| patternFill | Direct | 배경 + 6px 해치 1..6 | 아니오 |",
+        "| patternFill | Direct | 배경 + 6px 해치 0..5 | 아니오 |",
         "| unsupportedTextDecoration | Direct (형태 코드) | 0-12 명시, 그 외 실선 | 아니오 |",
         "| invalidTabLeader | 기하만 fail-closed | 0-11 명시, 그 외 skip | 역전/비유한만 예 |",
         "| footnoteMarker | Direct (`detail=footnoteMarker`) | `renderTextRun` baseline `fontSize??7` | 아니오 |",

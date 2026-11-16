@@ -1,0 +1,1313 @@
+{
+  "auditHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+  "sourceScope": "Actual document inputs and independent target references; licensed private font source material is recorded separately",
+  "files": 118,
+  "pendingInputCommits": 0,
+  "inputs": [
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/pr9071/issue9046/hancom/01-none.hwpx",
+      "repositoryPath": "samples/pr9071/issue9046/hancom/01-none.hwpx",
+      "sha256": "2c732c01cd47c0b912a0113be657be317eac5d17adea9b62211141ce111333fc",
+      "bytes": 12203,
+      "roles": [
+        "original masters input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/pr9071/master-pages/01-none-2020.pdf",
+      "repositoryPath": "pdf/pr9071/master-pages/01-none-2020.pdf",
+      "sha256": "0969970c428041eddc1655c139c68e6182438506ba1ed7a29edc6ac8c10aabe4",
+      "bytes": 11397,
+      "roles": [
+        "original masters reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/slots-roundtrip/01-none.hwp",
+      "repositoryPath": "mydocs/pr/assets/jinho-von-choi-20261114/inputs/corrected-roundtrip/01-none.hwp",
+      "sha256": "b6a0436a6083916813c92251caf6bd78c2a30dd9867da0fa8ecea6a27a2fc7b5",
+      "bytes": 11776,
+      "roles": [
+        "original masters input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/pr9071/issue9046/hancom/02-both.hwpx",
+      "repositoryPath": "samples/pr9071/issue9046/hancom/02-both.hwpx",
+      "sha256": "2f4fdab29a9b4edae67d22d26a84f79ec78ef0cc4fddd5e71af716bdd52fe2d9",
+      "bytes": 14339,
+      "roles": [
+        "original masters input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/pr9071/master-pages/02-both-2020.pdf",
+      "repositoryPath": "pdf/pr9071/master-pages/02-both-2020.pdf",
+      "sha256": "9cf12d0ea34d85309aa5ea704bc183c3ee384e55bbc94004bc09a3430d5a6375",
+      "bytes": 13331,
+      "roles": [
+        "original masters reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/slots-roundtrip/02-both.hwp",
+      "repositoryPath": "mydocs/pr/assets/jinho-von-choi-20261114/inputs/corrected-roundtrip/02-both.hwp",
+      "sha256": "a90a4b7f93101108371ae1701b600d8a6c9302144363da56dbe763eaba7e28d0",
+      "bytes": 12800,
+      "roles": [
+        "original masters input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/pr9071/issue9046/hancom/03-even.hwpx",
+      "repositoryPath": "samples/pr9071/issue9046/hancom/03-even.hwpx",
+      "sha256": "2e8e637995dbe034ace32732c4dbd386dbf107499e6712e28f9b5a91c0108210",
+      "bytes": 13892,
+      "roles": [
+        "original masters input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/pr9071/master-pages/03-even-2020.pdf",
+      "repositoryPath": "pdf/pr9071/master-pages/03-even-2020.pdf",
+      "sha256": "bd7fd19b52f8b92524c090088697289bd732e7c8affbb66623bd2b4cde539beb",
+      "bytes": 12668,
+      "roles": [
+        "original master-direct reference",
+        "original masters reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/slots-roundtrip/03-even.hwp",
+      "repositoryPath": "mydocs/pr/assets/jinho-von-choi-20261114/inputs/corrected-roundtrip/03-even.hwp",
+      "sha256": "5aa2921e7170b1633255e695d4916b8f84c7facf8ce950638f0aa03fe97352b2",
+      "bytes": 12800,
+      "roles": [
+        "original master-direct input",
+        "original masters input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/pr9071/issue9046/hancom/04-odd.hwpx",
+      "repositoryPath": "samples/pr9071/issue9046/hancom/04-odd.hwpx",
+      "sha256": "1ad23aaeb3acd3d756ed5d99068e72c2a1382b8e4b19d9c751a1c8b06e7f4267",
+      "bytes": 14315,
+      "roles": [
+        "original masters input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/pr9071/master-pages/04-odd-2020.pdf",
+      "repositoryPath": "pdf/pr9071/master-pages/04-odd-2020.pdf",
+      "sha256": "964cf2d027a8ea6a33db88e7dfc86dd0da0622a77fa2c8560da6c2be2ac7e19d",
+      "bytes": 12533,
+      "roles": [
+        "original masters reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/slots-roundtrip/04-odd.hwp",
+      "repositoryPath": "mydocs/pr/assets/jinho-von-choi-20261114/inputs/corrected-roundtrip/04-odd.hwp",
+      "sha256": "fdc6e6c3590da39e9d11b40a7ea66beb75cd1afb8bb48e6ff15f4df2e6e67dfc",
+      "bytes": 12800,
+      "roles": [
+        "original masters input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/pr9071/issue9046/hancom/05-even-odd.hwpx",
+      "repositoryPath": "samples/pr9071/issue9046/hancom/05-even-odd.hwpx",
+      "sha256": "1dd19b2deafe07e3b031a41af41170b843f937060ef7792d513b4aef9f4d15e8",
+      "bytes": 15661,
+      "roles": [
+        "original masters input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/pr9071/master-pages/05-even-odd-2020.pdf",
+      "repositoryPath": "pdf/pr9071/master-pages/05-even-odd-2020.pdf",
+      "sha256": "ca8490fb692daf20bd83e58a4b271485ebb254e9bd3cbc96f7994009996c5118",
+      "bytes": 13174,
+      "roles": [
+        "original masters reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/slots-roundtrip/05-even-odd.hwp",
+      "repositoryPath": "mydocs/pr/assets/jinho-von-choi-20261114/inputs/corrected-roundtrip/05-even-odd.hwp",
+      "sha256": "9e4f65d3b9efb83709289f9c09491b7bbff434e27e0f4c7cb74d96add09afb5c",
+      "bytes": 12800,
+      "roles": [
+        "original masters input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/pr9071/issue9046/hancom/06-odd-even.hwpx",
+      "repositoryPath": "samples/pr9071/issue9046/hancom/06-odd-even.hwpx",
+      "sha256": "57a4bff0064e6be2b83266b23d1685d02cde66e5b85f3d34dcd38c113a20c877",
+      "bytes": 15730,
+      "roles": [
+        "original masters input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/pr9071/master-pages/06-odd-even-2020.pdf",
+      "repositoryPath": "pdf/pr9071/master-pages/06-odd-even-2020.pdf",
+      "sha256": "1032f9deff23ab196cdbc06747e44feec72d713cabdbabba5841bd6adfe236ce",
+      "bytes": 13174,
+      "roles": [
+        "original masters reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/slots-roundtrip/06-odd-even.hwp",
+      "repositoryPath": "mydocs/pr/assets/jinho-von-choi-20261114/inputs/corrected-roundtrip/06-odd-even.hwp",
+      "sha256": "5401470b7874beb15988ee942a63b27df21267b093619f3c6b9b89cad2511939",
+      "bytes": 12800,
+      "roles": [
+        "original masters input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/pr9071/issue9046/hancom/07-both-even.hwpx",
+      "repositoryPath": "samples/pr9071/issue9046/hancom/07-both-even.hwpx",
+      "sha256": "c8b44bf143262567f82c21f8071319fe0758a29dd8f60345d84dd68ab6b6aaa4",
+      "bytes": 15685,
+      "roles": [
+        "original masters input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/pr9071/master-pages/07-both-even-2020.pdf",
+      "repositoryPath": "pdf/pr9071/master-pages/07-both-even-2020.pdf",
+      "sha256": "8c4cddd65605d1cfbd17cf372c73fd653d6137d0f98844589938559ac69b9583",
+      "bytes": 13544,
+      "roles": [
+        "original masters reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/slots-roundtrip/07-both-even.hwp",
+      "repositoryPath": "mydocs/pr/assets/jinho-von-choi-20261114/inputs/corrected-roundtrip/07-both-even.hwp",
+      "sha256": "321f4d0b5de790af91172fa7f05a4e84ab869a032332ef19e67c045dfd28d937",
+      "bytes": 12800,
+      "roles": [
+        "original masters input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/pr9071/issue9046/hancom/08-even-both.hwpx",
+      "repositoryPath": "samples/pr9071/issue9046/hancom/08-even-both.hwpx",
+      "sha256": "19c7dcd18f5ce773db7693aef67e179099b644a7783b402bf78adc37d1ff8c4b",
+      "bytes": 15687,
+      "roles": [
+        "original masters input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/pr9071/master-pages/08-even-both-2020.pdf",
+      "repositoryPath": "pdf/pr9071/master-pages/08-even-both-2020.pdf",
+      "sha256": "da8e8f25eeb0fcd2fb54ed047abf19f72bc7271127af3b92d8eb823a4dc71027",
+      "bytes": 13544,
+      "roles": [
+        "original masters reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/slots-roundtrip/08-even-both.hwp",
+      "repositoryPath": "mydocs/pr/assets/jinho-von-choi-20261114/inputs/corrected-roundtrip/08-even-both.hwp",
+      "sha256": "85bcab70c05c27a6ae81f89499ef076a2b6522ab89a131307946f7ae70c542cb",
+      "bytes": 12800,
+      "roles": [
+        "original masters input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/pr9071/issue9046/hancom/09-both-odd.hwpx",
+      "repositoryPath": "samples/pr9071/issue9046/hancom/09-both-odd.hwpx",
+      "sha256": "6be7f517c7cf4673b92544f82b800fa83f16aefdf3336f8f9a4385a9950e07e0",
+      "bytes": 15650,
+      "roles": [
+        "original masters input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/pr9071/master-pages/09-both-odd-2020.pdf",
+      "repositoryPath": "pdf/pr9071/master-pages/09-both-odd-2020.pdf",
+      "sha256": "a942e53632caee511fd4e97f56e68f14413e7ae694439a4aa3113f1f4077c52b",
+      "bytes": 13437,
+      "roles": [
+        "original masters reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/slots-roundtrip/09-both-odd.hwp",
+      "repositoryPath": "mydocs/pr/assets/jinho-von-choi-20261114/inputs/corrected-roundtrip/09-both-odd.hwp",
+      "sha256": "202e104e7d8a021524add75c779e50137a7a717b77cfa01ce422a82956692436",
+      "bytes": 12800,
+      "roles": [
+        "original masters input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/pr9071/issue9046/hancom/10-both-even-odd.hwpx",
+      "repositoryPath": "samples/pr9071/issue9046/hancom/10-both-even-odd.hwpx",
+      "sha256": "ffc21e8dfd36063a4de5ce9c469d8858e7c290129f348337cb60ea7585d693d5",
+      "bytes": 16992,
+      "roles": [
+        "original masters input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/pr9071/master-pages/10-both-even-odd-2020.pdf",
+      "repositoryPath": "pdf/pr9071/master-pages/10-both-even-odd-2020.pdf",
+      "sha256": "89823466d1d5c36cd68cf6c13fed9b912be1bacff9a2ba60f2147786772483f9",
+      "bytes": 13174,
+      "roles": [
+        "original master-direct reference",
+        "original masters reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/slots-roundtrip/10-both-even-odd.hwp",
+      "repositoryPath": "mydocs/pr/assets/jinho-von-choi-20261114/inputs/corrected-roundtrip/10-both-even-odd.hwp",
+      "sha256": "7e47c91046424db3a8551d5ba8f5c169a82695bbcf35834e44c09fd3838aff88",
+      "bytes": 12800,
+      "roles": [
+        "original master-direct input",
+        "original masters input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/pr9071/issue9046/hancom/11-odd-even-both.hwpx",
+      "repositoryPath": "samples/pr9071/issue9046/hancom/11-odd-even-both.hwpx",
+      "sha256": "cd7ffc8d212a1abe9ecd8bd6ef952bca6f2218433f911950395ffc816966813e",
+      "bytes": 16985,
+      "roles": [
+        "original masters input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/pr9071/master-pages/11-odd-even-both-2020.pdf",
+      "repositoryPath": "pdf/pr9071/master-pages/11-odd-even-both-2020.pdf",
+      "sha256": "5a22535cf1a7b6d2230787a2ca040657895a5d40f3da879b7e620339c89fa6ca",
+      "bytes": 13174,
+      "roles": [
+        "original masters reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/slots-roundtrip/11-odd-even-both.hwp",
+      "repositoryPath": "mydocs/pr/assets/jinho-von-choi-20261114/inputs/corrected-roundtrip/11-odd-even-both.hwp",
+      "sha256": "13e1785d413887bb444df0cbc9d5f8369dfb65267f430203ee1ef37c7928c9d3",
+      "bytes": 12800,
+      "roles": [
+        "original masters input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/pr9071/issue8318/서식2-간단.hwp",
+      "repositoryPath": "samples/pr9071/issue8318/서식2-간단.hwp",
+      "sha256": "6dfdacdd60f16bfa042c790aad6be537cd3fc7ffdbf82c68ff549f56724c0ba5",
+      "bytes": 17920,
+      "roles": [
+        "additional control input",
+        "original color input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/pr9071/서식2-간단-2020.pdf",
+      "repositoryPath": "pdf/pr9071/서식2-간단-2020.pdf",
+      "sha256": "ab05896eba19c391c6cb7b2ebee600cc56c49ae828cb80bd8e74e77ad43ccfd9",
+      "bytes": 14305,
+      "roles": [
+        "original color reference",
+        "original color-direct reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/slots-roundtrip/color.hwpx",
+      "repositoryPath": "mydocs/pr/assets/jinho-von-choi-20261114/inputs/corrected-roundtrip/color.hwpx",
+      "sha256": "dafdd5bec972a6fd60c04fc16a9a9c2660fdee7eaeb83f0c73885721f52e6e51",
+      "bytes": 8247,
+      "roles": [
+        "original color input",
+        "original color-direct input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/issue8969/36400485-owned-tac-lines.hwpx",
+      "repositoryPath": "samples/issue8969/36400485-owned-tac-lines.hwpx",
+      "sha256": "6c74234bd60208a64d04e4b00cb6b6f09aac0fe323734c05e00f6d0b1526d399",
+      "bytes": 56783,
+      "roles": [
+        "original incoming input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/issue8969/36400485-2020.pdf",
+      "repositoryPath": "pdf/issue8969/36400485-2020.pdf",
+      "sha256": "d52da3db4784ea987ee61ea42df8ecd414befbece3a8bdcb9c86e54ecd05ad32",
+      "bytes": 278788,
+      "roles": [
+        "original incoming reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/issue9016/1730000-title-mark-empty-stream.hwp",
+      "repositoryPath": "samples/issue9016/1730000-title-mark-empty-stream.hwp",
+      "sha256": "4982322f105f602ea89eccfbcc934068ad0cf71ddb3b9294ab79316b2a4f8036",
+      "bytes": 33280,
+      "roles": [
+        "original incoming input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/issue9016/1730000-title-mark-empty-stream-2020.pdf",
+      "repositoryPath": "pdf/issue9016/1730000-title-mark-empty-stream-2020.pdf",
+      "sha256": "591d5713a0b8e945c6f5e5ef330ce886a4fa0972e5e19c6429a2250712e9ec05",
+      "bytes": 115206,
+      "roles": [
+        "original incoming reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/issue9021/textbox_tac_tables_two_lines.hwp",
+      "repositoryPath": "samples/issue9021/textbox_tac_tables_two_lines.hwp",
+      "sha256": "e0cd85dad3edbd8d00a4c37c2d3c78bc3912524f9527baac1cab6d23943df959",
+      "bytes": 17920,
+      "roles": [
+        "original incoming input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/issue9021/textbox_tac_tables_two_lines-hwp-2020.pdf",
+      "repositoryPath": "pdf/issue9021/textbox_tac_tables_two_lines-hwp-2020.pdf",
+      "sha256": "93b58ab9db87459cb699b1c3da773db0b013fcb4c6122c979881d5a21b07a018",
+      "bytes": 1198,
+      "roles": [
+        "original incoming reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/issue9026/press_release_repeated_hidden_end.hwpx",
+      "repositoryPath": "samples/issue9026/press_release_repeated_hidden_end.hwpx",
+      "sha256": "fd3775bbbd4f8da5e8b78608a8ee4f084c822fd04941e8762b21a4d02b013310",
+      "bytes": 1206024,
+      "roles": [
+        "original incoming input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/issue9026/press_release_repeated_hidden_end-print-2022.pdf",
+      "repositoryPath": "pdf/issue9026/press_release_repeated_hidden_end-print-2022.pdf",
+      "sha256": "0e3d4d72f4eaa8a82a03b5e7d4a1d8c91862ca5959139ee698e99538373b1b14",
+      "bytes": 931029,
+      "roles": [
+        "original incoming reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/issue9026/press_release_orphan_hidden_end.hwpx",
+      "repositoryPath": "samples/issue9026/press_release_orphan_hidden_end.hwpx",
+      "sha256": "8e255a1553285f012815d773d229ee8ffdda4cb3d054cb478694f1fe292c5475",
+      "bytes": 19982711,
+      "roles": [
+        "original incoming input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/issue9026/press_release_orphan_hidden_end-hwpx-2020.pdf",
+      "repositoryPath": "pdf/issue9026/press_release_orphan_hidden_end-hwpx-2020.pdf",
+      "sha256": "28b12eac8681b3da4583aaea015b1655b7336b9734a233baba1028541f925214",
+      "bytes": 2015679,
+      "roles": [
+        "original incoming reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/issue9055/36400525-page-band-empty-host-line.hwpx",
+      "repositoryPath": "samples/issue9055/36400525-page-band-empty-host-line.hwpx",
+      "sha256": "75aa3918f793c889be96a24e9dff4766fe85eaa0ed3413c7c7895ce24e84e3ee",
+      "bytes": 36674,
+      "roles": [
+        "original incoming input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/issue9055/36400525-page-band-empty-host-line-2020.pdf",
+      "repositoryPath": "pdf/issue9055/36400525-page-band-empty-host-line-2020.pdf",
+      "sha256": "9e4458071a21c7bd9e9d100672d6a5633fb2727402a5af523386bc3cd14b9495",
+      "bytes": 142429,
+      "roles": [
+        "original incoming reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/issue9062/ws-host-tac-above-offset-float.hwpx",
+      "repositoryPath": "samples/issue9062/ws-host-tac-above-offset-float.hwpx",
+      "sha256": "0fe99b8df395f7787332ea557ed96b7421f27d687363625878b38cfed35e0a24",
+      "bytes": 29976,
+      "roles": [
+        "original incoming input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/issue9062/ws-host-tac-above-offset-float-2020.pdf",
+      "repositoryPath": "pdf/issue9062/ws-host-tac-above-offset-float-2020.pdf",
+      "sha256": "7b4ea851f1b7cdf3b5f537ddab32547d3fb6a0a0e551b2e8290e2b4a9ad2c813",
+      "bytes": 38254,
+      "roles": [
+        "original incoming reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/pr9070/hwp3-linechar-specimen.hwp",
+      "repositoryPath": "samples/pr9070/hwp3-linechar-specimen.hwp",
+      "sha256": "a20917ea3e4b0d27f3b041078dfae3a2050d0606058bada6fe48fc6a876061a2",
+      "bytes": 4781,
+      "roles": [
+        "original specimen input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/pr9070/hwp3-linechar-specimen-2020.pdf",
+      "repositoryPath": "pdf/pr9070/hwp3-linechar-specimen-2020.pdf",
+      "sha256": "6aaac8dd100a1267060056cee39533f7da1f6d629a6afd7992a81d776b873d0f",
+      "bytes": 18695,
+      "roles": [
+        "original specimen reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/slots-roundtrip/specimen.hwp",
+      "repositoryPath": "mydocs/pr/assets/jinho-von-choi-20261114/inputs/corrected-roundtrip/specimen.hwp",
+      "sha256": "acf36aa310dbc6e2a6dc1cfb7c8c4bb57f1c4ecffbae3b7c8d997676f8bf36fd",
+      "bytes": 4608,
+      "roles": [
+        "original specimen input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/slots-roundtrip/specimen.hwpx",
+      "repositoryPath": "mydocs/pr/assets/jinho-von-choi-20261114/inputs/corrected-roundtrip/specimen.hwpx",
+      "sha256": "399cbe7e543fddd070f331973ffd67a502d6441e55140bda0cb2ba625b220d27",
+      "bytes": 6823,
+      "roles": [
+        "original specimen input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/issue5699/20099369_yeongwol_forms.hwp",
+      "repositoryPath": "samples/issue5699/20099369_yeongwol_forms.hwp",
+      "sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09",
+      "bytes": 20800,
+      "roles": [
+        "protected yeongwol input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/issue7642-failed-inputs-followup-20261011/20099369_yeongwol_forms-2020.pdf",
+      "repositoryPath": "pdf/issue7642-failed-inputs-followup-20261011/20099369_yeongwol_forms-2020.pdf",
+      "sha256": "a04da624238d77da4832dd302017c7d2f559a01da02e4c1b4ae12cfd3f77b123",
+      "bytes": 91696,
+      "roles": [
+        "protected yeongwol reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/tests/fixtures/issue_8109_saved_fonts/body-list-typed-hwp.hwp",
+      "repositoryPath": "mydocs/pr/assets/jinho-von-choi-20261114/final-without-exceptions/inputs/body-list-typed-hwp-ebe04aa214.hwp",
+      "sha256": "ebe04aa214d85ca3f472083ae749f534de446ecf6f58eec532a6c2149839e687",
+      "bytes": 4096,
+      "roles": [
+        "protected seo-body-list-typed input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/issue8109/print/body-list-typed-hwp-2020.pdf",
+      "repositoryPath": "pdf/issue8109/print/body-list-typed-hwp-2020.pdf",
+      "sha256": "d4c80383b977a0f61e057adadb9f302d591bbb26e0917c61128ee36d37aed5b3",
+      "bytes": 19110,
+      "roles": [
+        "protected seo-body-list-typed reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/2025 행정업무운영 편람(최종).hwp",
+      "repositoryPath": "samples/2025 행정업무운영 편람(최종).hwp",
+      "sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+      "bytes": 10687488,
+      "roles": [
+        "protected handbook-hwp input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf",
+      "repositoryPath": "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf",
+      "sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+      "bytes": 4692840,
+      "roles": [
+        "protected handbook-hwp reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp",
+      "repositoryPath": "mydocs/pr/assets/jinho-von-choi-20261114/final-without-exceptions/inputs/control-styles-hwp-2095908091.hwp",
+      "sha256": "2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da",
+      "bytes": 4096,
+      "roles": [
+        "protected seo-helvetica-styles input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/issue8109/print/control-styles-hwp-2020.pdf",
+      "repositoryPath": "pdf/issue8109/print/control-styles-hwp-2020.pdf",
+      "sha256": "fd8672dcb24dd7bb1d50983b0545033e7c2513bbb2ecfc48edde1cb4e77058ba",
+      "bytes": 43664,
+      "roles": [
+        "protected seo-helvetica-styles reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/hwp3-sample16-hwp5.hwpx",
+      "repositoryPath": "samples/hwp3-sample16-hwp5.hwpx",
+      "sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+      "bytes": 3061900,
+      "roles": [
+        "protected sample16-hwpx input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+      "repositoryPath": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+      "sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+      "bytes": 2234018,
+      "roles": [
+        "protected sample16-hwpx reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/hwp3-sample16-hwp5-2022.hwp",
+      "repositoryPath": "samples/hwp3-sample16-hwp5-2022.hwp",
+      "sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+      "bytes": 3048448,
+      "roles": [
+        "protected sample16-hwp2022 input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+      "repositoryPath": "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+      "sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+      "bytes": 1830277,
+      "roles": [
+        "protected sample16-hwp2022 reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/re-03-latin-only-hancom.hwp",
+      "repositoryPath": "samples/re-03-latin-only-hancom.hwp",
+      "sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+      "bytes": 9216,
+      "roles": [
+        "protected seo-re-03-latin input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+      "repositoryPath": "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+      "sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+      "bytes": 11752,
+      "roles": [
+        "protected seo-re-03-latin reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "repositoryPath": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+      "bytes": 6848,
+      "roles": [
+        "protected angle-narrow input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+      "repositoryPath": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+      "sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+      "bytes": 10328,
+      "roles": [
+        "protected angle-narrow reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/task3307/issue3307_outline_number.hwpx",
+      "repositoryPath": "samples/task3307/issue3307_outline_number.hwpx",
+      "sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d",
+      "bytes": 57890,
+      "roles": [
+        "protected outline input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/task3307/issue3307_outline_number-2020.pdf",
+      "repositoryPath": "pdf/task3307/issue3307_outline_number-2020.pdf",
+      "sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb",
+      "bytes": 237518,
+      "roles": [
+        "protected outline reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/pr8040/exam-social-insert.hwp",
+      "repositoryPath": "samples/pr8040/exam-social-insert.hwp",
+      "sha256": "3c3ff50b430c3129a4ce06575b1a398d01fbd4ec17d9dd895f467a945f656e82",
+      "bytes": 514560,
+      "roles": [
+        "protected issue8040-insert input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/pr8040/exam-social-insert-2020.pdf",
+      "repositoryPath": "pdf/pr8040/exam-social-insert-2020.pdf",
+      "sha256": "d368c0ded6f0d9309784e9165aad7360b326a86c01d9938beb95c768ae0d4e74",
+      "bytes": 641866,
+      "roles": [
+        "protected issue8040-insert reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "repositoryPath": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "bytes": 51712,
+      "roles": [
+        "protected nested input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+      "repositoryPath": "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+      "sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+      "bytes": 625577,
+      "roles": [
+        "protected nested reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/hwp3-sample16-hwp5-2024.hwp",
+      "repositoryPath": "samples/hwp3-sample16-hwp5-2024.hwp",
+      "sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+      "bytes": 3044864,
+      "roles": [
+        "protected sample16-hwp2024 input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/hwp3-sample16-hwp5-2024-hwp-2024.pdf",
+      "repositoryPath": "pdf/hwp3-sample16-hwp5-2024-hwp-2024.pdf",
+      "sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b",
+      "bytes": 2234015,
+      "roles": [
+        "protected sample16-hwp2024 reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/2025 행정업무운영 편람(최종).hwpx",
+      "repositoryPath": "samples/2025 행정업무운영 편람(최종).hwpx",
+      "sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+      "bytes": 13639865,
+      "roles": [
+        "protected handbook-hwpx input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+      "repositoryPath": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+      "sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+      "bytes": 4692840,
+      "roles": [
+        "protected handbook-hwpx reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx",
+      "repositoryPath": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx",
+      "sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1",
+      "bytes": 140149,
+      "roles": [
+        "protected issue7905 input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law_hancom2018_print.pdf",
+      "repositoryPath": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law_hancom2018_print.pdf",
+      "sha256": "1ce35eb7e2d6f93e41834215d6cf7653e3a09ea2fc544856b3df3a89e6d24511",
+      "bytes": 287952,
+      "roles": [
+        "protected issue7905 reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/hwp3-sample10.hwp",
+      "repositoryPath": "samples/hwp3-sample10.hwp",
+      "sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+      "bytes": 945360,
+      "roles": [
+        "protected sample10 input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/issue8371/hwp3-sample10-2020.pdf",
+      "repositoryPath": "pdf/issue8371/hwp3-sample10-2020.pdf",
+      "sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+      "bytes": 96185197,
+      "roles": [
+        "protected sample10 reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": true
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/pr8040/exam-social-insert-delete.hwp",
+      "repositoryPath": "samples/pr8040/exam-social-insert-delete.hwp",
+      "sha256": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee",
+      "bytes": 514560,
+      "roles": [
+        "protected issue8040-insert-delete input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/pr8040/exam-social-insert-delete-2020.pdf",
+      "repositoryPath": "pdf/pr8040/exam-social-insert-delete-2020.pdf",
+      "sha256": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d",
+      "bytes": 641867,
+      "roles": [
+        "protected issue8040-insert-delete reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/pic-crop-01.hwp",
+      "repositoryPath": "samples/pic-crop-01.hwp",
+      "sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+      "bytes": 131072,
+      "roles": [
+        "protected seo-pic-crop-01 input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/pic-crop-01-2022.pdf",
+      "repositoryPath": "pdf/pic-crop-01-2022.pdf",
+      "sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+      "bytes": 19211,
+      "roles": [
+        "protected seo-pic-crop-01 reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/shape-group-02.hwp",
+      "repositoryPath": "samples/shape-group-02.hwp",
+      "sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+      "bytes": 16384,
+      "roles": [
+        "protected seo-shape-group-02 input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/shape-group-02-hwp-2020.pdf",
+      "repositoryPath": "pdf/shape-group-02-hwp-2020.pdf",
+      "sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+      "bytes": 89651,
+      "roles": [
+        "protected seo-shape-group-02 reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+      "repositoryPath": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+      "sha256": "8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7",
+      "bytes": 12851712,
+      "roles": [
+        "incoming9083 cbta"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/issue7727/cbta-original-hancom2020-print-20261106.pdf",
+      "repositoryPath": "pdf/issue7727/cbta-original-hancom2020-print-20261106.pdf",
+      "sha256": "0db1eb55eda0f1a4985eeaf187656c23499616b7dccddcbb7c874c0937e1b2e0",
+      "bytes": 4970756,
+      "roles": [
+        "incoming9083 cbta reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/issue6844/30269-anticorruption-recommendation-toc.hwp",
+      "repositoryPath": "samples/issue6844/30269-anticorruption-recommendation-toc.hwp",
+      "sha256": "9e7cc9a3ea8c9d67a9df33fe49921ec87e6f5c38d5cc53b9885a37ef5b285ef7",
+      "bytes": 470016,
+      "roles": [
+        "incoming9083 recommendation"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/30269-anticorruption-recommendation-toc-2020.pdf",
+      "repositoryPath": "pdf/30269-anticorruption-recommendation-toc-2020.pdf",
+      "sha256": "d01f9ff59664a9c5b4e1a67e38f0d1c295aac8e22e3fbc07017f938f197822c3",
+      "bytes": 572193,
+      "roles": [
+        "incoming9083 recommendation reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/exam_eng.hwp",
+      "repositoryPath": "samples/exam_eng.hwp",
+      "sha256": "7a5755a2f773fce4d295cbfeb1c5d722edb02c7f920bb067fa56940e8cd6a05b",
+      "bytes": 3486208,
+      "roles": [
+        "incoming9083 exam"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/exam_eng-hwp-2020.pdf",
+      "repositoryPath": "pdf/exam_eng-hwp-2020.pdf",
+      "sha256": "4f5b9e0b7be65fcb915b2fecc41e9b397b1d85d369b64545209a172bc7b36c98",
+      "bytes": 1047484,
+      "roles": [
+        "incoming9083 exam reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/mydocs/pr/assets/issue7445/hwpctl_API_v2.4.hwp",
+      "repositoryPath": "mydocs/pr/assets/issue7445/hwpctl_API_v2.4.hwp",
+      "sha256": "d11dd1331083be4e8c989dfbd587777626b3d77686d3436c35a2c20da9494603",
+      "bytes": 262144,
+      "roles": [
+        "incoming9083 api"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/mydocs/pr/assets/issue7731/api-reference/hwpctl_API_v2.4-hwp-2020.pdf",
+      "repositoryPath": "mydocs/pr/assets/issue7731/api-reference/hwpctl_API_v2.4-hwp-2020.pdf",
+      "sha256": "1d289727dd40ed35e48135bf16df06fe4cd080d967441ff464fb0e0b205fae74",
+      "bytes": 828101,
+      "roles": [
+        "incoming9083 api reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/mydocs/pr/assets/issue7445/issue1937_rowbreak_footnote_overpagination.hwp",
+      "repositoryPath": "mydocs/pr/assets/issue7445/issue1937_rowbreak_footnote_overpagination.hwp",
+      "sha256": "a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+      "bytes": 147456,
+      "roles": [
+        "incoming9083 footnote"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf",
+      "repositoryPath": "pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf",
+      "sha256": "7f14bc85eb389a68cc88bd40fcafeb7a638d8454293a30bb2c8fe884a16978eb",
+      "bytes": 766874,
+      "roles": [
+        "incoming9083 footnote reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/pr9071/master-frame-controls/symmetric.hwpx",
+      "repositoryPath": "samples/pr9071/master-frame-controls/symmetric.hwpx",
+      "sha256": "5633e14ac5deee323da77ceae325385b4a9ec27ebfe0afcd1eeecd2a079a2d13",
+      "bytes": 63807,
+      "roles": [
+        "additional control input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/pr9071/master-frame-controls/symmetric-2020.pdf",
+      "repositoryPath": "pdf/pr9071/master-frame-controls/symmetric-2020.pdf",
+      "sha256": "be1176b7787b2a406ff6ec94e1696e3ef46d12e0423679bc2d997aa238805240",
+      "bytes": 13058,
+      "roles": [
+        "additional control reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/pr9071/master-frame-controls/reverse.hwpx",
+      "repositoryPath": "samples/pr9071/master-frame-controls/reverse.hwpx",
+      "sha256": "3dc0b304cd93bf3cdf047a86fb285e7c61a343bb51278de779b6817bacbad47d",
+      "bytes": 63806,
+      "roles": [
+        "additional control input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/pr9071/master-frame-controls/reverse-2020.pdf",
+      "repositoryPath": "pdf/pr9071/master-frame-controls/reverse-2020.pdf",
+      "sha256": "ec9b2b0d7da4015bc3f1e69ea3132832cc84e2ab69ac5480572db29ba0fa9e30",
+      "bytes": 13076,
+      "roles": [
+        "additional control reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/pr9071/master-frame-controls/rectangle-normalized.hwpx",
+      "repositoryPath": "samples/pr9071/master-frame-controls/rectangle-normalized.hwpx",
+      "sha256": "83791f86650e1a50a3c652c1dad5401969b1c83d9e008f4f807e50f6729edab1",
+      "bytes": 14699,
+      "roles": [
+        "additional control input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/pr9071/master-frame-controls/rectangle-2020.pdf",
+      "repositoryPath": "pdf/pr9071/master-frame-controls/rectangle-2020.pdf",
+      "sha256": "ff9a3b2733ec607a20de6ceef85ce7a3545ab282d10b5c718c23ef1916e1a328",
+      "bytes": 12670,
+      "roles": [
+        "additional control reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/pr9071/master-frame-controls/table-normalized.hwpx",
+      "repositoryPath": "samples/pr9071/master-frame-controls/table-normalized.hwpx",
+      "sha256": "22006178fc7a0ee63573a7ab3882bb773a00cd597faecad8b1a166f2f6ba39ca",
+      "bytes": 14773,
+      "roles": [
+        "additional control input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/pr9071/master-frame-controls/table-2020.pdf",
+      "repositoryPath": "pdf/pr9071/master-frame-controls/table-2020.pdf",
+      "sha256": "7ebc103179663ce328482ef77186af90590ae65b006c897af19fafdf17cedd85",
+      "bytes": 13423,
+      "roles": [
+        "additional control reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/pr9071/서식2-간단-2018.pdf",
+      "repositoryPath": "pdf/pr9071/서식2-간단-2018.pdf",
+      "sha256": "209a2fe4c140c5de456eac5f2b3cbac6b7779ca9f95c3bb2e28408671cfce2c8",
+      "bytes": 14332,
+      "roles": [
+        "additional control reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/pr9071/issue8307/서식2-간단.hwpx",
+      "repositoryPath": "samples/pr9071/issue8307/서식2-간단.hwpx",
+      "sha256": "fbb3700da52ae283dfa2f931f96974b4916d3e2426ddcd17ea98a6a3c81eb586",
+      "bytes": 17712,
+      "roles": [
+        "additional control input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/field-01.hwp",
+      "repositoryPath": "samples/field-01.hwp",
+      "sha256": "518cb939079e6e0640a5f813597f744e2528a17ca52ee418929f1c8f4b5380c0",
+      "bytes": 514560,
+      "roles": [
+        "actual functional API"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/tac-case-001.hwp",
+      "repositoryPath": "samples/tac-case-001.hwp",
+      "sha256": "c003385b7b3495dd93a2688ea74b8a07848543a6c0128cb693635d8ba6fe43da",
+      "bytes": 81920,
+      "roles": [
+        "actual functional API"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/tac-case-002.hwp",
+      "repositoryPath": "samples/tac-case-002.hwp",
+      "sha256": "97594356ab7d72eef3d88507957b9c78091a19a2da23ab4cffce343c087d549f",
+      "bytes": 16384,
+      "roles": [
+        "actual functional API"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/tac-case-003.hwp",
+      "repositoryPath": "samples/tac-case-003.hwp",
+      "sha256": "53d37e0b1d2a18b957d68cf40bbf7523642fac1846ab824e9473edfcf31d3518",
+      "bytes": 16384,
+      "roles": [
+        "actual functional API"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/tac-case-004.hwp",
+      "repositoryPath": "samples/tac-case-004.hwp",
+      "sha256": "77bddf1439ea6c1e77a2b8bb7f60cae77249f9192b202342de9198e61bae57c6",
+      "bytes": 16384,
+      "roles": [
+        "actual functional API"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/tac-case-005.hwp",
+      "repositoryPath": "samples/tac-case-005.hwp",
+      "sha256": "c48e039c62bb570e0fa4047c38f48c36f329d35c2b7112dd4dae3bd3cd397274",
+      "bytes": 16384,
+      "roles": [
+        "actual functional API"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/samples/issue9060/86036-rowbreak-first-line-fragment.hwpx",
+      "repositoryPath": "samples/issue9060/86036-rowbreak-first-line-fragment.hwpx",
+      "sha256": "f224d490226b3673554b484d6ce1e2b1c3bbaf0aac02340706edf5fc9d0a4025",
+      "bytes": 66410,
+      "roles": [
+        "incoming9088 original input"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    },
+    {
+      "executedPath": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pdf/issue9060/86036-rowbreak-first-line-fragment-2020.pdf",
+      "repositoryPath": "pdf/issue9060/86036-rowbreak-first-line-fragment-2020.pdf",
+      "sha256": "c9ba8e9d4b4e2cb32277d030161dedb59d9067eba0a4665b40f9c0b46cc47317",
+      "bytes": 227646,
+      "roles": [
+        "incoming9088 independent reference"
+      ],
+      "blobVerifiedAtHead": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+      "existingLargePdf": false
+    }
+  ]
+}

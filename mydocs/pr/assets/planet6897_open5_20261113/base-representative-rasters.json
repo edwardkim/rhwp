@@ -1,0 +1,194 @@
+[
+  {
+    "pr": 8972,
+    "backend": "native",
+    "source_page": 1,
+    "producer": "1003349996897c6ff097271e7296ae4d1a3d807f",
+    "files": [
+      {
+        "path": "claims/pr8972/native/base-raw-p001.png",
+        "sha256": "ea0e0baf410b952ceab8b1bfd372203480ee1e09afb5bce74c16f6c62e7524ad"
+      },
+      {
+        "path": "claims/pr8972/native/base-pdf-p001.png",
+        "sha256": "1a92d6c4eb78a4cd46d9107d1e8da5f430852c5abbd742b08624111fe345cdb7"
+      },
+      {
+        "path": "claims/pr8972/native/base-review-p001.png",
+        "sha256": "fac6a01284ac6a0928fdd5837e05490d674dfd0026dba13d474461dde0a4d53f"
+      },
+      {
+        "path": "claims/pr8972/native/base-overlay-p001.png",
+        "sha256": "714d75e393b66dd507a52ffbcfd9c9cf2ae1631731f15b5b8960806b14d91a05"
+      }
+    ]
+  },
+  {
+    "pr": 8972,
+    "backend": "native",
+    "source_page": 2,
+    "producer": "1003349996897c6ff097271e7296ae4d1a3d807f",
+    "files": [
+      {
+        "path": "claims/pr8972/native/base-raw-p002.png",
+        "sha256": "649cd34b0e553948bfd4f6ac48eb5f40770ead23d22c3c21b0e7bf117bd10d16"
+      },
+      {
+        "path": "claims/pr8972/native/base-pdf-p002.png",
+        "sha256": "09222a992651b98cd6b9504949b7a25e40827d024aaca92bafed642fe26966ad"
+      },
+      {
+        "path": "claims/pr8972/native/base-review-p002.png",
+        "sha256": "3a509875714b663cbea3da995228b37927d12e4b3e5aec90263f998fdb073750"
+      },
+      {
+        "path": "claims/pr8972/native/base-overlay-p002.png",
+        "sha256": "b23b2b3caaf095972f0c82be2238a4c710db61de46762616d5ad44ee6ced3462"
+      }
+    ]
+  },
+  {
+    "pr": 9036,
+    "backend": "native",
+    "source_page": 1,
+    "producer": "1003349996897c6ff097271e7296ae4d1a3d807f",
+    "files": [
+      {
+        "path": "claims/pr9036/native/base-raw-p001.png",
+        "sha256": "e1f586dfe7ff328e1d5fd1f3b1893c34070203d2e08a6cf55c00caceee676825"
+      },
+      {
+        "path": "claims/pr9036/native/base-pdf-p001.png",
+        "sha256": "16c5d280ce2238fc78f03d85682378dd7dcece963ae0812eac4a0376d42450df"
+      },
+      {
+        "path": "claims/pr9036/native/base-review-p001.png",
+        "sha256": "66fd5cced582496787996bb9cd2cc188a0f26e96625146cfa1595bd2d0646cfc"
+      },
+      {
+        "path": "claims/pr9036/native/base-overlay-p001.png",
+        "sha256": "420b734915dc9789dec7852c487c210250e09ac35247308c7974d8f6e1248664"
+      }
+    ]
+  },
+  {
+    "pr": 9041,
+    "backend": "native",
+    "source_page": 2,
+    "producer": "1003349996897c6ff097271e7296ae4d1a3d807f",
+    "files": [
+      {
+        "path": "claims/pr9041/native/base-raw-p002.png",
+        "sha256": "0da7c932a771d9f36f2422dc1c77600e98a980a3629efe4c7a4fb002e9dd7577"
+      },
+      {
+        "path": "claims/pr9041/native/base-pdf-p002.png",
+        "sha256": "fbdd4bf066266fd94e41321ad925943834224fa2d01f03df8f7e747a18336284"
+      },
+      {
+        "path": "claims/pr9041/native/base-review-p002.png",
+        "sha256": "cb8542bcb7fffd99b89ef53486eb5cf039b8208eb94165c721dc295d073e466a"
+      },
+      {
+        "path": "claims/pr9041/native/base-overlay-p002.png",
+        "sha256": "22c8f823746ea403d44247e566d7292eb50c1c020c12dec98837282b4f6acc0c"
+      }
+    ]
+  },
+  {
+    "pr": 8972,
+    "backend": "wasm",
+    "source_page": 1,
+    "producer": "1003349996897c6ff097271e7296ae4d1a3d807f",
+    "files": [
+      {
+        "path": "claims/pr8972/wasm/base-raw-p001.png",
+        "sha256": "f46cf6e3a6a3d6e6e4efcc59f52c1c822bb3cf9db3c0852e0401e8834a606248"
+      },
+      {
+        "path": "claims/pr8972/wasm/base-pdf-p001.png",
+        "sha256": "1a92d6c4eb78a4cd46d9107d1e8da5f430852c5abbd742b08624111fe345cdb7"
+      },
+      {
+        "path": "claims/pr8972/wasm/base-review-p001.png",
+        "sha256": "92b5694bfbe074d9cc97fcff348584af8ee9f6595a87d67c3ed8eb04c0a3a07e"
+      },
+      {
+        "path": "claims/pr8972/wasm/base-overlay-p001.png",
+        "sha256": "34e3f2b9e311ea6069f4cf57f45095e714f773c439a19ac3de5c3d2598086068"
+      }
+    ]
+  },
+  {
+    "pr": 8972,
+    "backend": "wasm",
+    "source_page": 2,
+    "producer": "1003349996897c6ff097271e7296ae4d1a3d807f",
+    "files": [
+      {
+        "path": "claims/pr8972/wasm/base-raw-p002.png",
+        "sha256": "5bd3a2fdcaf891399ac2f9f1ed9e613c20c10c1959f408f53ac578aeb45efab5"
+      },
+      {
+        "path": "claims/pr8972/wasm/base-pdf-p002.png",
+        "sha256": "09222a992651b98cd6b9504949b7a25e40827d024aaca92bafed642fe26966ad"
+      },
+      {
+        "path": "claims/pr8972/wasm/base-review-p002.png",
+        "sha256": "ef25e2c80b89fccce8518b4159b4ba9b7e34464015aeb47c9e9d0b28a93a52f6"
+      },
+      {
+        "path": "claims/pr8972/wasm/base-overlay-p002.png",
+        "sha256": "228df33b0099c95b4531df705ff38d1a3e72d5a0368f84a4f6292073014aadb7"
+      }
+    ]
+  },
+  {
+    "pr": 9036,
+    "backend": "wasm",
+    "source_page": 1,
+    "producer": "1003349996897c6ff097271e7296ae4d1a3d807f",
+    "files": [
+      {
+        "path": "claims/pr9036/wasm/base-raw-p001.png",
+        "sha256": "3c3f7ac3bf5649f5b8b5edd5e41a3ddd668d56163e408431a6b746f1ea6ca284"
+      },
+      {
+        "path": "claims/pr9036/wasm/base-pdf-p001.png",
+        "sha256": "16c5d280ce2238fc78f03d85682378dd7dcece963ae0812eac4a0376d42450df"
+      },
+      {
+        "path": "claims/pr9036/wasm/base-review-p001.png",
+        "sha256": "93a3d2f72acb0faa7f61b5b542af105fba14fbf57371db7db942035c3c3f3dc8"
+      },
+      {
+        "path": "claims/pr9036/wasm/base-overlay-p001.png",
+        "sha256": "2c2234f32e93f98a9798aaa98352dd1d4331c395d18f4636a77e46f7e9aa047d"
+      }
+    ]
+  },
+  {
+    "pr": 9041,
+    "backend": "wasm",
+    "source_page": 2,
+    "producer": "1003349996897c6ff097271e7296ae4d1a3d807f",
+    "files": [
+      {
+        "path": "claims/pr9041/wasm/base-raw-p002.png",
+        "sha256": "a598e1af08932854c5124bd46b67a9a90a655529e816816996e55516e4664713"
+      },
+      {
+        "path": "claims/pr9041/wasm/base-pdf-p002.png",
+        "sha256": "fbdd4bf066266fd94e41321ad925943834224fa2d01f03df8f7e747a18336284"
+      },
+      {
+        "path": "claims/pr9041/wasm/base-review-p002.png",
+        "sha256": "91b4f1bd13c12a3e001e8ef5e6567966ce1c02b4c64c31e32bb38b825597bf6a"
+      },
+      {
+        "path": "claims/pr9041/wasm/base-overlay-p002.png",
+        "sha256": "2e8bdaee02f5745151c9fb435b25283ddc3e59adea86ce6d2821f86f8210fdc4"
+      }
+    ]
+  }
+]

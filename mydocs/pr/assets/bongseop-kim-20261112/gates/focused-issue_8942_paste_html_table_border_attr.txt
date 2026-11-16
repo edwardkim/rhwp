@@ -1,0 +1,26 @@
+[RustTestSuite] issue_8942_paste_html_table_border_attr -> regression_suite_023::issue_8942_paste_html_table_border_attr
+[RustTestSuite] cargo nextest run --locked --test regression_suite_023 -E test(/(^|::)issue_8942_paste_html_table_border_attr::/) --cargo-profile release-test
+warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137
+warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped
+   Compiling rhwp v0.9.0 (/home/edward/mygithub/rhwp-worktrees/review-integration-8942-bongseop-html-clipboard)
+   Compiling rhwp-password-crypto v0.1.0 (/home/edward/mygithub/rhwp-worktrees/review-integration-8942-bongseop-html-clipboard/crates/rhwp-password-crypto)
+   Compiling rhwp-pdf-import-backend v0.3.78-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/review-integration-8942-bongseop-html-clipboard/vendor/rhwp-pdf-import-backend)
+   Compiling rhwp-svg2pdf v0.13.0-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/review-integration-8942-bongseop-html-clipboard/vendor/svg2pdf)
+   Compiling rhwp-contracts v0.1.0 (/home/edward/mygithub/rhwp-worktrees/review-integration-8942-bongseop-html-clipboard/crates/rhwp-contracts)
+    Finished `release-test` profile [optimized] target(s) in 6m 44s
+────────────
+ Nextest run ID 0b53ea45-bae0-48a5-802f-d16ddb2129f2 with nextest profile: default
+    Starting 9 tests across 1 binary (340 tests skipped)
+        PASS [   0.010s] (1/9) rhwp::regression_suite_023 issue_8942_paste_html_table_border_attr::shared_attribute_parser_preserves_real_merged_cell_spans
+        PASS [   0.011s] (2/9) rhwp::regression_suite_023 issue_8942_paste_html_table_border_attr::cell_css_overrides_the_border_attribute
+        PASS [   0.011s] (3/9) rhwp::regression_suite_023 issue_8942_paste_html_table_border_attr::standalone_picture_style_uses_the_real_attribute
+        PASS [   0.011s] (4/9) rhwp::regression_suite_023 issue_8942_paste_html_table_border_attr::zero_or_missing_border_attribute_keeps_cells_borderless
+        PASS [   0.012s] (5/9) rhwp::regression_suite_023 issue_8942_paste_html_table_border_attr::border_attribute_draws_solid_cell_borders
+        PASS [   0.012s] (6/9) rhwp::regression_suite_023 issue_8942_paste_html_table_border_attr::shared_attribute_parser_preserves_image_units_and_quoted_boundaries
+        PASS [   0.013s] (7/9) rhwp::regression_suite_023 issue_8942_paste_html_table_border_attr::border_attribute_survives_hwpx_save_and_reopen
+        PASS [   0.014s] (8/9) rhwp::regression_suite_023 issue_8942_paste_html_table_border_attr::attribute_names_and_quoted_values_do_not_alias_a_real_border
+        PASS [   0.017s] (9/9) rhwp::regression_suite_023 issue_8942_paste_html_table_border_attr::table_border_and_contents_survive_both_formats_twice
+────────────
+     Summary [   0.019s] 9 tests run: 9 passed, 340 skipped
+warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137
+info: update nextest with cargo nextest self update, or bypass check with --override-version-check

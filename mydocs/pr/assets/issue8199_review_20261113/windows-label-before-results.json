@@ -1,0 +1,57 @@
+[
+  {
+    "mode": "normal",
+    "font_path": "C:\\Windows\\Fonts\\malgun.ttf",
+    "font_name": [
+      "Malgun Gothic",
+      "Regular"
+    ],
+    "missing_korean": [],
+    "raw": 99.9984,
+    "font_sha256": "0086c19e81d293a542e7d75564c645fb58070cc850aefebf8fa1c397858e510c",
+    "overlay": "C:\\Users\\admin\\rhwp\\output\\pr9018-label-review\\before-normal\\overlay_001.png"
+  },
+  {
+    "mode": "latin-candidate",
+    "font_path": "C:\\Windows\\Fonts\\arial.ttf",
+    "font_name": [
+      "Arial",
+      "Regular"
+    ],
+    "missing_korean": [
+      "가",
+      "값",
+      "강",
+      "랑",
+      "루",
+      "만",
+      "멘",
+      "불",
+      "빨",
+      "상",
+      "색",
+      "실",
+      "양",
+      "엣",
+      "웃",
+      "이",
+      "인",
+      "일",
+      "정",
+      "주",
+      "쪽",
+      "차",
+      "치",
+      "코",
+      "트",
+      "파",
+      "판",
+      "확",
+      "황",
+      "회"
+    ],
+    "raw": 99.9984,
+    "font_sha256": "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1",
+    "overlay": "C:\\Users\\admin\\rhwp\\output\\pr9018-label-review\\before-latin-candidate\\overlay_001.png"
+  }
+]

@@ -1,0 +1,335 @@
+{
+  "head": "d480c42be1dcc3fa83c3b73d635162aa90fc8049",
+  "count": 41,
+  "passed": true,
+  "files": [
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/base-candidate-pages.tsv",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/base-candidate-pages.tsv",
+      "status": 200,
+      "bytes": 133676,
+      "sha256": "eacb8e731fbebab37e401aa07e41446519218d84cb117d2e7971029645f83c03",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/claims/pr8972/native/overlay-p001.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/claims/pr8972/native/overlay-p001.png",
+      "status": 200,
+      "bytes": 109352,
+      "sha256": "5308411a4a6c53dd3a1cc05493f49b0339f860ffd1046ebc5181935b0c092141",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/claims/pr8972/native/review-p001.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/claims/pr8972/native/review-p001.png",
+      "status": 200,
+      "bytes": 302286,
+      "sha256": "76aa1d34ef9caed62ae60e1e2c49297f074ef0b0eddec0e5b587d130012cdce6",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/claims/pr8972/native/silhouette.tsv",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/claims/pr8972/native/silhouette.tsv",
+      "status": 200,
+      "bytes": 148,
+      "sha256": "dc96f085b2a0a0b38e48ad7b713cf9a4edadb1916d9f47950dfd0e294c109257",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/claims/pr8972/wasm/overlay-p001.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/claims/pr8972/wasm/overlay-p001.png",
+      "status": 200,
+      "bytes": 109356,
+      "sha256": "22b84748f4d238b31c601582fbf56b8a2a61bc0d53d32868b59a95b8a9e8ca71",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/claims/pr8972/wasm/review-p001.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/claims/pr8972/wasm/review-p001.png",
+      "status": 200,
+      "bytes": 302844,
+      "sha256": "4e6e559c15e67e8beb1b78aef329bc266d245ef9f5fc9d349cdc30b27a40bad1",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/claims/pr8972/wasm/silhouette.tsv",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/claims/pr8972/wasm/silhouette.tsv",
+      "status": 200,
+      "bytes": 148,
+      "sha256": "3742790daf861141309af5222972faca0b78b0171e817dc405b998188d09c4cd",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/claims/pr9030/native/overlay-p001.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/claims/pr9030/native/overlay-p001.png",
+      "status": 200,
+      "bytes": 227365,
+      "sha256": "7b927bbc5004d0c495f278a4b154abbf6805a1b8083083e15c0e2b2b370f0e74",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/claims/pr9030/native/review-p001.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/claims/pr9030/native/review-p001.png",
+      "status": 200,
+      "bytes": 728935,
+      "sha256": "4e8f8d3588fdbb66764d4adfb19a15d70e87a253b31655ea6baa8c5136eb683d",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/claims/pr9030/native/silhouette.tsv",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/claims/pr9030/native/silhouette.tsv",
+      "status": 200,
+      "bytes": 131,
+      "sha256": "eff00dbec51365fbe017439b3863e53633531527b041f11c15532ff2d9d93202",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/claims/pr9030/wasm/overlay-p001.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/claims/pr9030/wasm/overlay-p001.png",
+      "status": 200,
+      "bytes": 227365,
+      "sha256": "7b927bbc5004d0c495f278a4b154abbf6805a1b8083083e15c0e2b2b370f0e74",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/claims/pr9030/wasm/review-p001.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/claims/pr9030/wasm/review-p001.png",
+      "status": 200,
+      "bytes": 728935,
+      "sha256": "4e8f8d3588fdbb66764d4adfb19a15d70e87a253b31655ea6baa8c5136eb683d",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/claims/pr9030/wasm/silhouette.tsv",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/claims/pr9030/wasm/silhouette.tsv",
+      "status": 200,
+      "bytes": 131,
+      "sha256": "eff00dbec51365fbe017439b3863e53633531527b041f11c15532ff2d9d93202",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/claims/pr9034/native/overlay-p001.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/claims/pr9034/native/overlay-p001.png",
+      "status": 200,
+      "bytes": 55229,
+      "sha256": "1f0f468f70f13ab5ce30b9ad8cc7938ce2dbfb4500d37df6d7df520d4ca04399",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/claims/pr9034/native/review-p001.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/claims/pr9034/native/review-p001.png",
+      "status": 200,
+      "bytes": 138598,
+      "sha256": "a42a802e06ce77f60801789d1adc505879823275446dfd7cafdd9caa2128b114",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/claims/pr9034/native/silhouette.tsv",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/claims/pr9034/native/silhouette.tsv",
+      "status": 200,
+      "bytes": 184,
+      "sha256": "ce305873b274bad6cebf3f162f141ce1db118eb5d9a5c93755de6cea3df047a1",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/claims/pr9034/wasm/overlay-p001.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/claims/pr9034/wasm/overlay-p001.png",
+      "status": 200,
+      "bytes": 55231,
+      "sha256": "0d2b6762faadc254b7c42290c8f84d09d293c6c45d50d211d70846d13edfb3db",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/claims/pr9034/wasm/review-p001.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/claims/pr9034/wasm/review-p001.png",
+      "status": 200,
+      "bytes": 138597,
+      "sha256": "0b7e5662cfd251834d799106192a859621fc2f81aa0b2f0b1a9427e4dd08092b",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/claims/pr9034/wasm/silhouette.tsv",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/claims/pr9034/wasm/silhouette.tsv",
+      "status": 200,
+      "bytes": 184,
+      "sha256": "ce305873b274bad6cebf3f162f141ce1db118eb5d9a5c93755de6cea3df047a1",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/claims/pr9036/native/overlay-p001.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/claims/pr9036/native/overlay-p001.png",
+      "status": 200,
+      "bytes": 86585,
+      "sha256": "981fb564c8a7317915c390f6db814b85b7fc44375c44c3235cef68c463658e9a",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/claims/pr9036/native/review-p001.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/claims/pr9036/native/review-p001.png",
+      "status": 200,
+      "bytes": 246988,
+      "sha256": "3e3d332eee603a021fa0f8778e1f5182f7ea8167e8b13e660054371194687485",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/claims/pr9036/native/silhouette.tsv",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/claims/pr9036/native/silhouette.tsv",
+      "status": 200,
+      "bytes": 132,
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/claims/pr9036/wasm/overlay-p001.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/claims/pr9036/wasm/overlay-p001.png",
+      "status": 200,
+      "bytes": 86894,
+      "sha256": "71052352246bf11e86e5acf7a22f138ef8e3597df7224ada940460f8740dd33e",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/claims/pr9036/wasm/review-p001.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/claims/pr9036/wasm/review-p001.png",
+      "status": 200,
+      "bytes": 246973,
+      "sha256": "b1b5bf3a71b445b54fb41eec39c892d445d3fb303a87ae94ba95aff71aeb42e1",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/claims/pr9036/wasm/silhouette.tsv",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/claims/pr9036/wasm/silhouette.tsv",
+      "status": 200,
+      "bytes": 132,
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/claims/pr9041/native/overlay-p002.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/claims/pr9041/native/overlay-p002.png",
+      "status": 200,
+      "bytes": 154270,
+      "sha256": "384fa9986aea4c893cbe18b860d52ee190eaaaafb11d4367117040097221d44e",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/claims/pr9041/native/review-p002.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/claims/pr9041/native/review-p002.png",
+      "status": 200,
+      "bytes": 450765,
+      "sha256": "18b6191d30523e43d8b9af09c9453685995218900fa7323ccf8db912723e4f9d",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/claims/pr9041/native/silhouette.tsv",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/claims/pr9041/native/silhouette.tsv",
+      "status": 200,
+      "bytes": 150,
+      "sha256": "2d96a69585f096e23614ca2a655493c63d9587b4bc0daa604409a6609f8ddfa7",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/claims/pr9041/wasm/overlay-p002.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/claims/pr9041/wasm/overlay-p002.png",
+      "status": 200,
+      "bytes": 154378,
+      "sha256": "dd027bdd512b2e0d68f2db4068f3ec1519e0cdaab18ea339f07329715f8d224b",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/claims/pr9041/wasm/review-p002.png",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/claims/pr9041/wasm/review-p002.png",
+      "status": 200,
+      "bytes": 450067,
+      "sha256": "e9a9e07c8cdefa7583ec26873ac22c65a81e7dfa411083b5fbb4a243ac2f5466",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_open5_20261113/claims/pr9041/wasm/silhouette.tsv",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/mydocs/pr/assets/planet6897_open5_20261113/claims/pr9041/wasm/silhouette.tsv",
+      "status": 200,
+      "bytes": 152,
+      "sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "pdf/issue8960/36439173-empty-tac-line-baseline-2020.pdf",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/pdf/issue8960/36439173-empty-tac-line-baseline-2020.pdf",
+      "status": 200,
+      "bytes": 105116,
+      "sha256": "ebbb58a6454508fc9bb4bc55b305bdaf1aa0fdd9d8783cf590275e7ccaa7fa94",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "pdf/issue9027/1312000-201400081_2015_senior_policy_course-hwp-2020.pdf",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/pdf/issue9027/1312000-201400081_2015_senior_policy_course-hwp-2020.pdf",
+      "status": 200,
+      "bytes": 187701,
+      "sha256": "29c3e37689d5f2769f6db9824afe97c680197b53355c74160f12fa3d315ceafc",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "pdf/issue9029/seal_registration_docinfo_tail-print-2022.pdf",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/pdf/issue9029/seal_registration_docinfo_tail-print-2022.pdf",
+      "status": 200,
+      "bytes": 138883,
+      "sha256": "59dc43ac37507bff738b16d775ce7f8bc9c3bf32c2f83c92a2923bb129735244",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "pdf/issue9032/tax_relief_form_date_code-print-2022.pdf",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/pdf/issue9032/tax_relief_form_date_code-print-2022.pdf",
+      "status": 200,
+      "bytes": 162409,
+      "sha256": "b338f7e5a0b0df65b65d509ee743fe9ded3a2ae2ade681302c65e2f7f03241ff",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "pdf/issue9035/field_practice_confirmation_signature-print-2022.pdf",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/pdf/issue9035/field_practice_confirmation_signature-print-2022.pdf",
+      "status": 200,
+      "bytes": 36726,
+      "sha256": "09bd4b14ec6ff032d7c6cd8c5ba310349c07b24e40823e9f4fc7a0c43eb89e63",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "samples/issue8960/36439173-empty-tac-line-baseline.hwpx",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/samples/issue8960/36439173-empty-tac-line-baseline.hwpx",
+      "status": 200,
+      "bytes": 13565,
+      "sha256": "23c994d726238de000fc06cfec794142cbe1710472b837bc25034b282f6676e8",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "samples/issue9027/1312000-201400081_2015_senior_policy_course.hwp",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/samples/issue9027/1312000-201400081_2015_senior_policy_course.hwp",
+      "status": 200,
+      "bytes": 69632,
+      "sha256": "93d3c39fec006a1a27deff66c5ce7c71bbc361b040c12583c83395dcf7ad120f",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "samples/issue9029/seal_registration_docinfo_tail.hwp",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/samples/issue9029/seal_registration_docinfo_tail.hwp",
+      "status": 200,
+      "bytes": 254976,
+      "sha256": "36fb81b86cc8240b2f4f332934b53ee9b560940ad8fcba201336f6a4e5f29a71",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "samples/issue9032/tax_relief_form_date_code.hwp",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/samples/issue9032/tax_relief_form_date_code.hwp",
+      "status": 200,
+      "bytes": 31716,
+      "sha256": "7c24931d2889c35b23531fe15e465d9181321d68ce84e110417ef187a505bdb2",
+      "local_bytes_equal": true
+    },
+    {
+      "path": "samples/issue9035/field_practice_confirmation_signature.hwp",
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/d480c42be1dcc3fa83c3b73d635162aa90fc8049/samples/issue9035/field_practice_confirmation_signature.hwp",
+      "status": 200,
+      "bytes": 15360,
+      "sha256": "fd66b8b7f4976f6633cdb4cec3d7b3876271a74882951d02dc7cbebd41f060d8",
+      "local_bytes_equal": true
+    }
+  ]
+}
