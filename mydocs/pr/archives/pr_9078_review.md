@@ -63,3 +63,9 @@ canonical Visual Sweep·96DPI·compat2022·Print·2px의 색상 경계 보정 �
 ## Merge 후 contributor PR comment 계획
 
 [Visual Sweep 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)에 따라 통합 PR의 exact head CI·정상 merge와 asset의 devel 반영 뒤 게시합니다. 위 **해당 PR 주장 쪽** raw/review/overlay를 `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/planet6897_20261116/claims/<input>/<backend>/<image>.png`로 고정해 Markdown 이미지로 표시합니다. 실제 입력·Print2022 제품/빌드·검증 수치·원 기여와 추가 보완 범위를 존댓말로 설명합니다. 게시 뒤 API와 이미지 해시를 재확인하며, 실제 해결한 원 이슈와 원 PR을 닫습니다. 통합 PR owner를 자동 reviewer로 지정하지 않습니다.
+
+## 통합 PR의 code CI와 추가 필수 증적
+
+[통합 PR #9140](https://github.com/edwardkim/rhwp/pull/9140)의 정확한 code head `c6996300203fec553a57b0c16b2e48329ebc083a`에서 [CI](https://github.com/edwardkim/rhwp/actions/runs/43877624194)·CodeQL·Render Diff·Adapter·Proptest·정책 검사가 모두 성공했습니다. 원격 기본 회귀는 **13,465 PASS·0 FAIL·45 skip**이며 위 macOS 로컬 실행과 구분합니다. [실제 job·SHA·결론](../assets/planet6897_20261116/final/code-ci.json).
+
+필수 항목 재대조에서 최초 제출 기록에 빠졌던 공개 공통 4문서 검사를 보완해 Native/fresh WASM 8건 모두 공식 raw 100.00%·하락 0을 확인했습니다. [추가 원장](../assets/planet6897_20261116/final/supplemental/validation.json)에 제출 후 실행 사실과 직접 판독·입력 해시를 명시했습니다. 대표 SVG 2쪽×2경로도 보완했으며 전쪽 SVG 검증으로 확대 표현하지 않습니다. 제품·test·baseline 변경 없이 증적과 self-review·오늘할일만 문서 전용 trailing에 추가합니다. 최신 trailing head의 CI·merge 확인은 별도 원격 조건입니다.

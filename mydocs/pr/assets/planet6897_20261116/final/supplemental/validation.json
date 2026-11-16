@@ -1,0 +1,560 @@
+{
+  "status": "passed_direct_reading_and_code_ci",
+  "observed_head": "c6996300203fec553a57b0c16b2e48329ebc083a",
+  "producer_source": "0d587554b804183b5cc6d090f396acc47525c089",
+  "producer_equivalence": "../rebase-validation.json",
+  "native_sha256": "a8f9b5c0f8f0ee7c14926a743aab2e4784ebfe57ac2e2506f3c08e5237cbce19",
+  "wasm_sha256": "d1702a3b077f849804f63bace85f6e8c5547ca8e6c26b3bef3382beab96e166f",
+  "normal_font_environment": true,
+  "canonical_policy": "96 DPI / compat2022 / pdftoppm / 2px / raw >=90 / baseline display 2 decimals no decrease",
+  "baseline_sha256": "2280e97844b2cb262ea73e9c49f09f56c434097fed49af75fd9a7f6198d43da7",
+  "timing": "PR 제출 뒤 필수 항목 재대조에서 공통4문서 기록 누락을 발견하여 같은 코드 head에서 추가 실행. 초기 제출 전에 완료한 것으로 소급하지 않음. 병합 전 증적 반영 필수.",
+  "common": [
+    {
+      "document_id": "52ee61fe7201e36b",
+      "backend": "native",
+      "input": {
+        "path": "samples/re-03-latin-only-hancom.hwp",
+        "sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+        "committed_at": "c6996300203fec553a57b0c16b2e48329ebc083a"
+      },
+      "exit_code": 0,
+      "minimum_display": "100.00",
+      "regressions": [],
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/52ee61fe7201e36b/native/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "bytes": 132
+      },
+      "canonical_manifest_sha256": "eecbbba152fc49307a8b5cd4867534f1c78c7c966f24cff3c73cc6fa95050c2a",
+      "images": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/52ee61fe7201e36b/native/review-001.png",
+          "sha256": "5881cf19f9f338bc640a799341c47ea472c65c5c8ffb1d5b684c76c13e3e1fdc",
+          "bytes": 96383
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/52ee61fe7201e36b/native/overlay-001.png",
+          "sha256": "5d71693b65adc4f8da4603be47b5779fc75f956f33a3110661dfda481342528e",
+          "bytes": 44954
+        },
+        "raw": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/52ee61fe7201e36b/native/raw-001.png",
+          "sha256": "dda627d1e61fec54b31abeab531d6040a5803083deccadca097745ef6397a939",
+          "bytes": 40445
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/52ee61fe7201e36b/native/pdf-001.png",
+          "sha256": "0484984565f05f6fec9931a654f0c4d03162494b79357e669ab11d1e83c29b18",
+          "bytes": 26542
+        }
+      },
+      "pdf": {
+        "path": "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+        "sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+        "committed_at": "c6996300203fec553a57b0c16b2e48329ebc083a"
+      },
+      "direct_reading": "review/overlay 직접 판독: 영문 줄·기호 순서, 좁은 문단 개행, 그림 crop 2개와 그룹 도형 경계·소유 보존. 글리프 소실·내용 누락·중복 없음. 100.00은 2px 실루엣 표시값이며 전체 RGBA 동일성 주장이 아님."
+    },
+    {
+      "document_id": "52ee61fe7201e36b",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/re-03-latin-only-hancom.hwp",
+        "sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+        "committed_at": "c6996300203fec553a57b0c16b2e48329ebc083a"
+      },
+      "exit_code": 0,
+      "minimum_display": "100.00",
+      "regressions": [],
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/52ee61fe7201e36b/wasm/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "bytes": 132
+      },
+      "canonical_manifest_sha256": "7f076778d2de2a8bf339e37fc7a22e3f086fcec8687e4a12bae4e5829c24c1ec",
+      "images": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/52ee61fe7201e36b/wasm/review-001.png",
+          "sha256": "10fd1852de090f9deed07f3d00f07cfc573581dcac90ee05adcceb8386686aad",
+          "bytes": 93977
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/52ee61fe7201e36b/wasm/overlay-001.png",
+          "sha256": "6112c22b8007f586ff5f6a853989c2e354c2987e740f9d07d330978dcb901c08",
+          "bytes": 43391
+        },
+        "raw": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/52ee61fe7201e36b/wasm/raw-001.png",
+          "sha256": "26500f988818109a14f3b57fa37df36487f2f3975504d94bceab5ff87c3d0b84",
+          "bytes": 44945
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/52ee61fe7201e36b/wasm/pdf-001.png",
+          "sha256": "0484984565f05f6fec9931a654f0c4d03162494b79357e669ab11d1e83c29b18",
+          "bytes": 26542
+        }
+      },
+      "pdf": {
+        "path": "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+        "sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+        "committed_at": "c6996300203fec553a57b0c16b2e48329ebc083a"
+      },
+      "direct_reading": "review/overlay 직접 판독: 영문 줄·기호 순서, 좁은 문단 개행, 그림 crop 2개와 그룹 도형 경계·소유 보존. 글리프 소실·내용 누락·중복 없음. 100.00은 2px 실루엣 표시값이며 전체 RGBA 동일성 주장이 아님."
+    },
+    {
+      "document_id": "59f6ab1155623bda",
+      "backend": "native",
+      "input": {
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+        "sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+        "committed_at": "c6996300203fec553a57b0c16b2e48329ebc083a"
+      },
+      "exit_code": 0,
+      "minimum_display": "100.00",
+      "regressions": [],
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/59f6ab1155623bda/native/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "bytes": 132
+      },
+      "canonical_manifest_sha256": "915479423cee83fa03183afe5bc36ebf6df6e672b09f6c94a32f60be48b203db",
+      "images": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/59f6ab1155623bda/native/review-001.png",
+          "sha256": "fc569a1f551b40e749c536a9fa8167b2d8ba43e3f497c541a7933af7630f1127",
+          "bytes": 35625
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/59f6ab1155623bda/native/overlay-001.png",
+          "sha256": "bad2076ac3b2cd803de4a804441f38e2a5f3639ea4c11bcd4d2580476ab314c7",
+          "bytes": 24058
+        },
+        "raw": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/59f6ab1155623bda/native/raw-001.png",
+          "sha256": "193a8956459ba0111dfe5e0b05791c6b8d85e5d5f1f2e04df42772d287904366",
+          "bytes": 21976
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/59f6ab1155623bda/native/pdf-001.png",
+          "sha256": "0ae88b7f24731245932eb3a7688a494ae25b0fb0f9b5c652ce2509ba247fc2c3",
+          "bytes": 7687
+        }
+      },
+      "pdf": {
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+        "sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+        "committed_at": "c6996300203fec553a57b0c16b2e48329ebc083a"
+      },
+      "direct_reading": "review/overlay 직접 판독: 영문 줄·기호 순서, 좁은 문단 개행, 그림 crop 2개와 그룹 도형 경계·소유 보존. 글리프 소실·내용 누락·중복 없음. 100.00은 2px 실루엣 표시값이며 전체 RGBA 동일성 주장이 아님."
+    },
+    {
+      "document_id": "59f6ab1155623bda",
+      "backend": "wasm",
+      "input": {
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+        "sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+        "committed_at": "c6996300203fec553a57b0c16b2e48329ebc083a"
+      },
+      "exit_code": 0,
+      "minimum_display": "100.00",
+      "regressions": [],
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/59f6ab1155623bda/wasm/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "bytes": 132
+      },
+      "canonical_manifest_sha256": "4f71ef1297e3f216f02d08a1b5064e8f0437e2114b32f288f8f95677c04a15b0",
+      "images": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/59f6ab1155623bda/wasm/review-001.png",
+          "sha256": "66b0f584991aff6c49f676b95febb56c527238b4fdd2c557f3202837c0bfb022",
+          "bytes": 35697
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/59f6ab1155623bda/wasm/overlay-001.png",
+          "sha256": "f005a352a1010f14d075fa08c798890b23a3d773b92422dc4ed0414656fc0b45",
+          "bytes": 24127
+        },
+        "raw": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/59f6ab1155623bda/wasm/raw-001.png",
+          "sha256": "8b29fa5c09118ac9571cd7da9af44fb5f1847f3144863506a71c4a77876e96f7",
+          "bytes": 24962
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/59f6ab1155623bda/wasm/pdf-001.png",
+          "sha256": "0ae88b7f24731245932eb3a7688a494ae25b0fb0f9b5c652ce2509ba247fc2c3",
+          "bytes": 7687
+        }
+      },
+      "pdf": {
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+        "sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+        "committed_at": "c6996300203fec553a57b0c16b2e48329ebc083a"
+      },
+      "direct_reading": "review/overlay 직접 판독: 영문 줄·기호 순서, 좁은 문단 개행, 그림 crop 2개와 그룹 도형 경계·소유 보존. 글리프 소실·내용 누락·중복 없음. 100.00은 2px 실루엣 표시값이며 전체 RGBA 동일성 주장이 아님."
+    },
+    {
+      "document_id": "cdacd874b6e6ac66",
+      "backend": "native",
+      "input": {
+        "path": "samples/pic-crop-01.hwp",
+        "sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+        "committed_at": "c6996300203fec553a57b0c16b2e48329ebc083a"
+      },
+      "exit_code": 0,
+      "minimum_display": "100.00",
+      "regressions": [],
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/cdacd874b6e6ac66/native/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "bytes": 132
+      },
+      "canonical_manifest_sha256": "40a6d459e2117d4b818609d06d69a582410357bc6a932d06720638281fff6134",
+      "images": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/cdacd874b6e6ac66/native/review-001.png",
+          "sha256": "df5248c3837863609c3385b59f23898d97bbd36b96f40df59d1cfde882cf273c",
+          "bytes": 206989
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/cdacd874b6e6ac66/native/overlay-001.png",
+          "sha256": "66403aaaffe871648bd66be9607c3b2fac5a884adfc8d55e4232de50bb841c62",
+          "bytes": 64579
+        },
+        "raw": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/cdacd874b6e6ac66/native/raw-001.png",
+          "sha256": "e5e6a4200d8ed21af5afe56acf00db910f1c20c1906847c14242ee0acec1ab53",
+          "bytes": 86622
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/cdacd874b6e6ac66/native/pdf-001.png",
+          "sha256": "2772ea412033a38c80fde729906374a90de94c0d7c5f33c2ede1e5071ac25ac8",
+          "bytes": 80460
+        }
+      },
+      "pdf": {
+        "path": "pdf/pic-crop-01-2022.pdf",
+        "sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+        "committed_at": "c6996300203fec553a57b0c16b2e48329ebc083a"
+      },
+      "direct_reading": "review/overlay 직접 판독: 영문 줄·기호 순서, 좁은 문단 개행, 그림 crop 2개와 그룹 도형 경계·소유 보존. 글리프 소실·내용 누락·중복 없음. 100.00은 2px 실루엣 표시값이며 전체 RGBA 동일성 주장이 아님."
+    },
+    {
+      "document_id": "cdacd874b6e6ac66",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/pic-crop-01.hwp",
+        "sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+        "committed_at": "c6996300203fec553a57b0c16b2e48329ebc083a"
+      },
+      "exit_code": 0,
+      "minimum_display": "100.00",
+      "regressions": [],
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/cdacd874b6e6ac66/wasm/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "bytes": 132
+      },
+      "canonical_manifest_sha256": "fe41c6c1415b24e00bbd65dfb49d82d6fff31286719ad7a344a2a9cf9e928151",
+      "images": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/cdacd874b6e6ac66/wasm/review-001.png",
+          "sha256": "37764373d56f44033d9442d1a9a63acd9a06a5b39c3b69e3e27ced8e05f5dd2b",
+          "bytes": 206744
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/cdacd874b6e6ac66/wasm/overlay-001.png",
+          "sha256": "a9a1430d6fbe87d8eaf3d6f9db75c7d1e442c0071d9ce4ce7261df386be967de",
+          "bytes": 64328
+        },
+        "raw": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/cdacd874b6e6ac66/wasm/raw-001.png",
+          "sha256": "f45977a678f0865026633270593afbb13c193ed68c50d681d0a4708dc59da690",
+          "bytes": 98107
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/cdacd874b6e6ac66/wasm/pdf-001.png",
+          "sha256": "2772ea412033a38c80fde729906374a90de94c0d7c5f33c2ede1e5071ac25ac8",
+          "bytes": 80460
+        }
+      },
+      "pdf": {
+        "path": "pdf/pic-crop-01-2022.pdf",
+        "sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+        "committed_at": "c6996300203fec553a57b0c16b2e48329ebc083a"
+      },
+      "direct_reading": "review/overlay 직접 판독: 영문 줄·기호 순서, 좁은 문단 개행, 그림 crop 2개와 그룹 도형 경계·소유 보존. 글리프 소실·내용 누락·중복 없음. 100.00은 2px 실루엣 표시값이며 전체 RGBA 동일성 주장이 아님."
+    },
+    {
+      "document_id": "d03a9dde3d5dc7ac",
+      "backend": "native",
+      "input": {
+        "path": "samples/shape-group-02.hwp",
+        "sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+        "committed_at": "c6996300203fec553a57b0c16b2e48329ebc083a"
+      },
+      "exit_code": 0,
+      "minimum_display": "100.00",
+      "regressions": [],
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/d03a9dde3d5dc7ac/native/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "bytes": 132
+      },
+      "canonical_manifest_sha256": "d470fde1cc7c34a2bbd06eccfdfbe01dd551a6ee87d04cee2658de21af893752",
+      "images": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/d03a9dde3d5dc7ac/native/review-001.png",
+          "sha256": "b81b21b068d8c1817f14108e9aa84ea1ece53136458f1877ba401bd553a28be9",
+          "bytes": 108937
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/d03a9dde3d5dc7ac/native/overlay-001.png",
+          "sha256": "e36839b6320e613821d513bbf2fbe9384010671e926b07a2f7f8d3c49676f6f3",
+          "bytes": 46647
+        },
+        "raw": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/d03a9dde3d5dc7ac/native/raw-001.png",
+          "sha256": "7f4061326e61afc0d52cecf46af2f6af98ed61d978217e164f78316d7e43c00f",
+          "bytes": 50920
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/d03a9dde3d5dc7ac/native/pdf-001.png",
+          "sha256": "b62d8f17bc72a37824dbbf37f9aa81a8b872bbd19f6b1d170a940edb951a6f85",
+          "bytes": 33254
+        }
+      },
+      "pdf": {
+        "path": "pdf/shape-group-02-hwp-2020.pdf",
+        "sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+        "committed_at": "c6996300203fec553a57b0c16b2e48329ebc083a"
+      },
+      "direct_reading": "review/overlay 직접 판독: 영문 줄·기호 순서, 좁은 문단 개행, 그림 crop 2개와 그룹 도형 경계·소유 보존. 글리프 소실·내용 누락·중복 없음. 100.00은 2px 실루엣 표시값이며 전체 RGBA 동일성 주장이 아님."
+    },
+    {
+      "document_id": "d03a9dde3d5dc7ac",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/shape-group-02.hwp",
+        "sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+        "committed_at": "c6996300203fec553a57b0c16b2e48329ebc083a"
+      },
+      "exit_code": 0,
+      "minimum_display": "100.00",
+      "regressions": [],
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/d03a9dde3d5dc7ac/wasm/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "bytes": 132
+      },
+      "canonical_manifest_sha256": "dcf59006a2c1df843c9460049caa80ee1d2ac30c25b903c71be7a87342844ea9",
+      "images": {
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/d03a9dde3d5dc7ac/wasm/review-001.png",
+          "sha256": "9f18890b2567cb7e19db0f23ef926a54201303a987fa70d62ef626af844febe2",
+          "bytes": 109016
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/d03a9dde3d5dc7ac/wasm/overlay-001.png",
+          "sha256": "7690fc866c0466d82a2e0f9e5c04e1b17afbfe1107c8b3556c7585137d37ab97",
+          "bytes": 46506
+        },
+        "raw": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/d03a9dde3d5dc7ac/wasm/raw-001.png",
+          "sha256": "deeef7d29ac39d0d6c8dc37e83d0447552cc5d29fd0313bb93810d817cdee24f",
+          "bytes": 55152
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/common/d03a9dde3d5dc7ac/wasm/pdf-001.png",
+          "sha256": "b62d8f17bc72a37824dbbf37f9aa81a8b872bbd19f6b1d170a940edb951a6f85",
+          "bytes": 33254
+        }
+      },
+      "pdf": {
+        "path": "pdf/shape-group-02-hwp-2020.pdf",
+        "sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+        "committed_at": "c6996300203fec553a57b0c16b2e48329ebc083a"
+      },
+      "direct_reading": "review/overlay 직접 판독: 영문 줄·기호 순서, 좁은 문단 개행, 그림 crop 2개와 그룹 도형 경계·소유 보존. 글리프 소실·내용 누락·중복 없음. 100.00은 2px 실루엣 표시값이며 전체 RGBA 동일성 주장이 아님."
+    }
+  ],
+  "svg": [
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-probe",
+      "page": 3,
+      "backend": "native",
+      "exit": 0,
+      "metrics": [
+        {
+          "page": "3",
+          "tolerant_content_match_percent": "99.68",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.68",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/svg/hft-sinmyeong_sunmyeongjo-probe/native/silhouette.tsv",
+        "sha256": "b2daa5d73a3e94a68a1b866536d71f679b30e99a99f184e5cde35dd6f73892cc",
+        "bytes": 130
+      },
+      "images": {
+        "raw": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/svg/hft-sinmyeong_sunmyeongjo-probe/native/raw-003.png",
+          "sha256": "d8109d76ffefd5de2ef2e3c2d298b95daa84c8754e1219cc0f3bbaa806f53664",
+          "bytes": 55858
+        },
+        "pdf_png": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/svg/hft-sinmyeong_sunmyeongjo-probe/native/pdf_png-003.png",
+          "sha256": "12193356e6fec935f16dd09bcfa24435d9bcfff054b3a92810aab1019b5b2ba3",
+          "bytes": 63469
+        },
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/svg/hft-sinmyeong_sunmyeongjo-probe/native/review-003.png",
+          "sha256": "e577d33057d18d6aa94a0887bbf9fe7608e673b132fbcb4a5857a5a7cd902e09",
+          "bytes": 190961
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/svg/hft-sinmyeong_sunmyeongjo-probe/native/overlay-003.png",
+          "sha256": "420b671c55bd228c535787578460fb4247497e63c569fbe76b4e4ecd79b85c23",
+          "bytes": 73304
+        }
+      },
+      "direct_reading": "HFT: 구두점과 뒤따르는 가의 간격·동일 줄 소유 보존; WASM SVG 미세 잔차 존재, 완전 일치로 주장하지 않음."
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-probe",
+      "page": 3,
+      "backend": "wasm",
+      "exit": 0,
+      "metrics": [
+        {
+          "page": "3",
+          "tolerant_content_match_percent": "98.44",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "98.44",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/svg/hft-sinmyeong_sunmyeongjo-probe/wasm/silhouette.tsv",
+        "sha256": "3a54f0de70d81316e3121b938f68c8e1af0c8b4ed992fd0448b22dcf9aa3abe3",
+        "bytes": 130
+      },
+      "images": {
+        "raw": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/svg/hft-sinmyeong_sunmyeongjo-probe/wasm/raw-003.png",
+          "sha256": "8e42ba4395a0def9e15f0bfce31a0b480e37fdccbc29234b0ef499913ad8462a",
+          "bytes": 59872
+        },
+        "pdf_png": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/svg/hft-sinmyeong_sunmyeongjo-probe/wasm/pdf_png-003.png",
+          "sha256": "12193356e6fec935f16dd09bcfa24435d9bcfff054b3a92810aab1019b5b2ba3",
+          "bytes": 63469
+        },
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/svg/hft-sinmyeong_sunmyeongjo-probe/wasm/review-003.png",
+          "sha256": "7a16c81f790d63d06f0da45b8cf63615355cf3308ec86c5e6775d96d9dd60455",
+          "bytes": 196776
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/svg/hft-sinmyeong_sunmyeongjo-probe/wasm/overlay-003.png",
+          "sha256": "0a7ef5f44ce2eeea2491dd90ef3f4145222dfdc83f8ef7ac09d1ecddfd8a54c2",
+          "bytes": 73406
+        }
+      },
+      "direct_reading": "HFT: 구두점과 뒤따르는 가의 간격·동일 줄 소유 보존; WASM SVG 미세 잔차 존재, 완전 일치로 주장하지 않음."
+    },
+    {
+      "key": "nested",
+      "page": 5,
+      "backend": "native",
+      "exit": 0,
+      "metrics": [
+        {
+          "page": "5",
+          "tolerant_content_match_percent": "99.99",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.99",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/svg/nested/native/silhouette.tsv",
+        "sha256": "2c871b50bb796fb5448f05890900c4cf7f191429841b5f4bbf72f0f0e0f0ffa9",
+        "bytes": 130
+      },
+      "images": {
+        "raw": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/svg/nested/native/raw-005.png",
+          "sha256": "eb1bad63b5da2a0a2297d36de56c2608f4881361b7ae1a18686704dd9ef2759d",
+          "bytes": 117021
+        },
+        "pdf_png": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/svg/nested/native/pdf_png-005.png",
+          "sha256": "9458c85e28a72c1c7b4a667c025d161d2fbd3b8298548aa0fa978e5f8383f605",
+          "bytes": 144008
+        },
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/svg/nested/native/review-005.png",
+          "sha256": "fac3d8d916d20084bb6a22642bbb46940d138daf652aee2fc2570603742402b5",
+          "bytes": 423207
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/svg/nested/native/overlay-005.png",
+          "sha256": "fd0a82dd2761c1d559c6078f92732c99d53117b6f695dd8624088769beb64c6d",
+          "bytes": 145441
+        }
+      },
+      "direct_reading": "nested: 제목·표 행/숫자·주석 ※·다음 본문 순서와 소유 보존; 원본 한양중고딕 TTF 사용."
+    },
+    {
+      "key": "nested",
+      "page": 5,
+      "backend": "wasm",
+      "exit": 0,
+      "metrics": [
+        {
+          "page": "5",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/svg/nested/wasm/silhouette.tsv",
+        "sha256": "b482555c0d3a538ced3b43d34cabb5348cf5800320cfb9d1a780c1ca1a6c1fa5",
+        "bytes": 132
+      },
+      "images": {
+        "raw": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/svg/nested/wasm/raw-005.png",
+          "sha256": "beaf55b5d5c11d63b32ac9354794d841108fc19cc55cd98c6c4ee1c065490023",
+          "bytes": 115263
+        },
+        "pdf_png": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/svg/nested/wasm/pdf_png-005.png",
+          "sha256": "9458c85e28a72c1c7b4a667c025d161d2fbd3b8298548aa0fa978e5f8383f605",
+          "bytes": 144008
+        },
+        "review": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/svg/nested/wasm/review-005.png",
+          "sha256": "1b446fac705d1bd92bfd16a9468eabf0118eedd8a17628a8f884e60b7dc3c593",
+          "bytes": 415129
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/planet6897_20261116/final/supplemental/svg/nested/wasm/overlay-005.png",
+          "sha256": "77be1e0e18fbded05010cea65e0ad180f0274ab0ac0b88c2120a50515921e660",
+          "bytes": 135869
+        }
+      },
+      "direct_reading": "nested: 제목·표 행/숫자·주석 ※·다음 본문 순서와 소유 보존; 원본 한양중고딕 TTF 사용."
+    }
+  ],
+  "svg_scope": "대표2쪽 × Native/fresh WASM SVG 4건. 전쪽 SVG 검증이 아니며, 전체 문서 수용은 별도 canonical PNG 전쪽 TSV를 사용.",
+  "retired_font": "RHWPIndependentHFTSymbols.otf 삭제·사용 참조 없음. H2GTRM.TTF 보존.",
+  "at": "2026-11-16T14:01:46.379457+00:00",
+  "code_ci": "../code-ci.json"
+}

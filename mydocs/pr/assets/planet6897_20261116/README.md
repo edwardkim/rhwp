@@ -24,4 +24,10 @@ Rust 회귀는 검증된 최소 글꼴 macOS sandbox에서, 시각 출력은 원
 - [#9086](../../archives/pr_9086_review.md): 시설 사용료 별표1쪽 SQUEEZE 문단.
 - [#9098](../../archives/pr_9098_review.md): 신명 순명조 일반·굵게 탐침 각4쪽의 Type3 전진.
 
-통합 PR 번호와 원격 CI는 제출 후 실제 결과로 기록한다. 로컬 검증 완료를 원격 CI·merge 완료로 표현하지 않는다.
+## 원격 CI와 후행 기록
+
+[통합 PR #9140](https://github.com/edwardkim/rhwp/pull/9140)의 code head `c6996300203fec553a57b0c16b2e48329ebc083a`에서 CI·CodeQL·Render Diff·Adapter·Proptest와 trusted 정책 검사가 모두 성공했다. [exact-head CI 원장](final/code-ci.json)에 실제 실행한 job·skip·정책을 구분했다. 원격 Archive A–E는 합계 **13,465 PASS·0 FAIL·45 skip**이며 별도 macOS 전체 회귀 수와 혼동하지 않는다.
+
+[추가 공통 보호·SVG 소비 검증](final/supplemental/README.md): 공통 4문서 Native/fresh WASM 8건은 공식 raw 100.00%, SVG 대표 4건은 98.44–100.00%다. 공통 검사 기록의 최초 제출 누락을 재대조에서 발견해 같은 코드에서 보완했으며, 최초 제출 전에 완료한 것으로 소급하지 않는다. 모든 review·overlay를 직접 판독했다.
+
+[PR 본문 원격 asset 응답](final/published-assets-preflight.json)과 [실제 이미지 27개 표시](final/published-image-audit-code-head.json)를 code head에서 확인했다. [통합 self-review](../../archives/pr_9140_review.md)와 오늘할일은 이 녹색 code CI 뒤에 문서 전용 trailing으로 반영한다. trailing head의 실제 required check·fast-pass와 정상 merge, source PR/issue 후속 처리·정리는 별도 완료 조건이다.
