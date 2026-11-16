@@ -1,0 +1,42 @@
+{
+  "pr": 9136,
+  "head": "15837c689f1a84eaba4661794dd7d8d70bc3f94a",
+  "bodyMatches": true,
+  "titleMatches": true,
+  "utf8NoBom": true,
+  "images": [
+    {
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/15837c689f1a84eaba4661794dd7d8d70bc3f94a/mydocs/working/assets/issue9133/rebase/before-page-800x360.png",
+      "status": 200,
+      "contentType": "image/png",
+      "sha256": "2a55f1669444fdcc75686f1187e96b1b57cc84a85fecafe7e34164a47d9f170c",
+      "matches": true
+    },
+    {
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/15837c689f1a84eaba4661794dd7d8d70bc3f94a/mydocs/working/assets/issue9133/rebase/after-page-800x360.png",
+      "status": 200,
+      "contentType": "image/png",
+      "sha256": "d5461c4a35cdc106d5ba12df1c7a36e5ad02c730b6e2d80844d5a098114f66c9",
+      "matches": true
+    }
+  ],
+  "browserPage": {
+    "url": "https://github.com/edwardkim/rhwp/pull/9136",
+    "title": "fix(studio): 공통 대화상자의 제목·조작을 화면 안에 유지 (#9133) by edwardkim · Pull Request #9136 · edwardkim/rhwp · GitHub",
+    "images": [
+      {
+        "alt": "제목과 버튼이 잘린 창",
+        "complete": true,
+        "naturalWidth": 800,
+        "naturalHeight": 360
+      },
+      {
+        "alt": "제목과 조작이 화면 안에 있는 창",
+        "complete": true,
+        "naturalWidth": 800,
+        "naturalHeight": 360
+      }
+    ],
+    "status": 200
+  }
+}

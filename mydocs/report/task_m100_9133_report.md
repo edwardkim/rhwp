@@ -70,3 +70,5 @@
 - 실제 사용한 기존 HWP/HWPX/PDF 3개의 저장소 blob·파일 바이트·SHA-256과 commit 포함을 확인했다. 합성 UI 입력과 문서 조판의 독립 Print 증거를 구분했다.
 
 [새 기반 검증 원장](../working/assets/issue9133/rebase/README.md)에 프로그램·의존성·이력 대응·검사별 종료 코드·화면을 보존했다. 본인 미병합 PR과 최신 base/head 병합 시뮬레이션을 제출 직전에 다시 조회한다. 사용자 승인은 upstream push·devel Open PR·해당 head CI 성공·self-review·merge·#9133 완료와 #8905 답변·운영 기록·동기화·종료 정리까지 포함한다.
+
+[PR #9136](https://github.com/edwardkim/rhwp/pull/9136)의 code head `15837c689f`는 GitHub 필수 CI·정책 감사를 모두 통과했다. 이후의 exact-head 검토·문서 trailing·병합과 원격 후속 상태는 [셀프 리뷰](../pr/archives/pr_9136_review.md)와 [오늘할일](../orders/20261116.md)에 연결한다.
