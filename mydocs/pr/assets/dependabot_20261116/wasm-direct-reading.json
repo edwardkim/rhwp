@@ -1,0 +1,520 @@
+{
+  "source": "87c78424bc261f90e1167ecedc6a0f2106864d37",
+  "recaptured": false,
+  "scope": "18개 입력의 최저 쪽과 nested8쪽·sample16 세 형식38쪽, 총22쪽",
+  "method": "동일 raw/PDF에서 canonical review+overlay 생성 후 6개 contact의 쌍을 직접 판독",
+  "pages": [
+    {
+      "key": "angle-narrow",
+      "page": 1,
+      "raw_match_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/angle-narrow/wasm/raw-p001.png",
+          "sha256": "8b29fa5c09118ac9571cd7da9af44fb5f1847f3144863506a71c4a77876e96f7"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/angle-narrow/wasm/pdf-p001.png",
+          "sha256": "0ae88b7f24731245932eb3a7688a494ae25b0fb0f9b5c652ce2509ba247fc2c3"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/angle-narrow/wasm/overlay-p001.png",
+          "sha256": "2f16971bd681cc219806432ec865885ff758dafeac8974fca05ed9c2092dd9f1"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/angle-narrow/wasm/review-p001.png",
+          "sha256": "d0f04c5b4f2ae002e29cf0a846e289eb4e144e3f06c1b2a5315c0be6d82785c2"
+        }
+      }
+    },
+    {
+      "key": "handbook-hwp",
+      "page": 130,
+      "raw_match_percent": "99.96",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/handbook-hwp/wasm/raw-p130.png",
+          "sha256": "ab6731071950820ecaee350f99ad212f22bad033e638035c61a29d2b1dde90eb"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/handbook-hwp/wasm/pdf-p130.png",
+          "sha256": "554b6a770060086a59af0a08f5b9f377fc058bfda47e2e62e05f9a63f49c3abd"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/handbook-hwp/wasm/overlay-p130.png",
+          "sha256": "95635d2ddb311e7c1457e7486439a014986f11fcadb3557892cc3d22559b1b3a"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/handbook-hwp/wasm/review-p130.png",
+          "sha256": "99196f362b2624eab3ce4a6332eb5f4d6ecb1034854ffe774548480484ae1304"
+        }
+      }
+    },
+    {
+      "key": "handbook-hwpx",
+      "page": 130,
+      "raw_match_percent": "99.96",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/handbook-hwpx/wasm/raw-p130.png",
+          "sha256": "ab6731071950820ecaee350f99ad212f22bad033e638035c61a29d2b1dde90eb"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/handbook-hwpx/wasm/pdf-p130.png",
+          "sha256": "554b6a770060086a59af0a08f5b9f377fc058bfda47e2e62e05f9a63f49c3abd"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/handbook-hwpx/wasm/overlay-p130.png",
+          "sha256": "46c587c440ce4f2bc82d099e6ae8a356c09d7b6975119ae46c9e944bc1b6f4d1"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/handbook-hwpx/wasm/review-p130.png",
+          "sha256": "58d5159aa53717c62c8d60751784a849ce255ec022ace017052d297a319e7a3f"
+        }
+      }
+    },
+    {
+      "key": "issue7905",
+      "page": 2,
+      "raw_match_percent": "98.86",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/issue7905/wasm/raw-p002.png",
+          "sha256": "aca749c41f3b721f545079da5767b7fbe1a838e090a9076775cc6001704ac5ad"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/issue7905/wasm/pdf-p002.png",
+          "sha256": "c3410229c04a7b0ee181e42587d3f34e87dcbad789f38060f4aa9f137bc175ed"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/issue7905/wasm/overlay-p002.png",
+          "sha256": "60a9985133ccaee5be74e4455e6ba0173e20c53ce1d5183088b25e883080f813"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/issue7905/wasm/review-p002.png",
+          "sha256": "a7997227253fdbdf78823fd252818748487a31c11f060051696deb68df7868a8"
+        }
+      }
+    },
+    {
+      "key": "issue8040-insert",
+      "page": 4,
+      "raw_match_percent": "99.99",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/issue8040-insert/wasm/raw-p004.png",
+          "sha256": "bbf25d3fd5c93abba977c0e8333fce6c237b14d29bd9ed7cff96f5cc8bd94785"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/issue8040-insert/wasm/pdf-p004.png",
+          "sha256": "f7dd05bdb8fbf609f38a9fc051badac7aa6ccacce31f2000e8aac9b17ce28018"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/issue8040-insert/wasm/overlay-p004.png",
+          "sha256": "e5e9a9d1923ed471b82ae0f3076d59c37380c6a9c4f663f0c4b148559355ab25"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/issue8040-insert/wasm/review-p004.png",
+          "sha256": "fa5ddafd9ef9bae9e8037c460d76be4c7697bc4b0f566db495aa691cc3801573"
+        }
+      }
+    },
+    {
+      "key": "issue8040-insert-delete",
+      "page": 4,
+      "raw_match_percent": "99.99",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/issue8040-insert-delete/wasm/raw-p004.png",
+          "sha256": "bbf25d3fd5c93abba977c0e8333fce6c237b14d29bd9ed7cff96f5cc8bd94785"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/issue8040-insert-delete/wasm/pdf-p004.png",
+          "sha256": "f7dd05bdb8fbf609f38a9fc051badac7aa6ccacce31f2000e8aac9b17ce28018"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/issue8040-insert-delete/wasm/overlay-p004.png",
+          "sha256": "fc3dbf3a3ab6553c635e249a79982bb3a591a7c0170dbe0efe5cffaa1970a500"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/issue8040-insert-delete/wasm/review-p004.png",
+          "sha256": "6af5d98c626e7cad9980b1db3758060b1774651c29e323913f884e356d50c978"
+        }
+      }
+    },
+    {
+      "key": "nested",
+      "page": 8,
+      "raw_match_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/nested/wasm/raw-p008.png",
+          "sha256": "de79c4d0f6789ed011e546ea988fe1d6ae2f6abe4f0a4f6c625f74a9d9a55d81"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/nested/wasm/pdf-p008.png",
+          "sha256": "6b3863f866f88b34abd3044c31e7e4e0571423e99047f02b917fad84c4bb7cda"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/nested/wasm/overlay-p008.png",
+          "sha256": "db4a170cfa4a68fdc478d32f55a4ba3bee43cb73a2c38a44482cbc3d270ed080"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/nested/wasm/review-p008.png",
+          "sha256": "7f4d4c1ae6a61e273634844f4dda3f16d015d3ee50308e0636a357023900111b"
+        }
+      }
+    },
+    {
+      "key": "nested",
+      "page": 10,
+      "raw_match_percent": "99.86",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/nested/wasm/raw-p010.png",
+          "sha256": "3495a7afc32ceefe616f333a2b19c985b734cc206fb79652dde1b6b9bc6fb6d8"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/nested/wasm/pdf-p010.png",
+          "sha256": "549692cbfd5f56f866579e6ea21e1207d2005df4df4ee345451227214af25cc6"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/nested/wasm/overlay-p010.png",
+          "sha256": "77e129e8de6accd554738d1208695ea172b8cb40354d1c5569c3bde933d12103"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/nested/wasm/review-p010.png",
+          "sha256": "610a0f1818ba66c62733711b7cadfa0cd8f6c81478b4359f3a7ff81b8a0169ab"
+        }
+      }
+    },
+    {
+      "key": "outline",
+      "page": 1,
+      "raw_match_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/outline/wasm/raw-p001.png",
+          "sha256": "2af97ac3e9277d3dca0549286835ffcc8fa907a095db1daf63c47dc533acfff6"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/outline/wasm/pdf-p001.png",
+          "sha256": "634982a267b61d09b2959a069d58551609b372cd856e0bb4aeae93ebe75cc900"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/outline/wasm/overlay-p001.png",
+          "sha256": "aec683dafd70e36e17c21ff86df93adeaadc60cdd27537924b4d5501cf3e5ad1"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/outline/wasm/review-p001.png",
+          "sha256": "1ab2a2cf9e6c8a139e34fa730f8b3b31e6066c6b8a3865c32f51ff0c14b8d40b"
+        }
+      }
+    },
+    {
+      "key": "sample10",
+      "page": 757,
+      "raw_match_percent": "99.57",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample10/wasm/raw-p757.png",
+          "sha256": "e2c4a3f98fe2ef6ac05b92240772b9a965bd41339bcc8fcfe55ec96720709081"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample10/wasm/pdf-p757.png",
+          "sha256": "5cc81bef8fe49d264fc3273a166a03a0bfef2fd2709020eb2307ac12b52c41d5"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample10/wasm/overlay-p757.png",
+          "sha256": "2fe366142604e7e9de7fbde3a47ad6b2695327dbad5ffb648bdee23448c4ca7b"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample10/wasm/review-p757.png",
+          "sha256": "6179b509d5ef6a0fbc31ae4c72c47f9e968a3828efcf47fa197be426800219d1"
+        }
+      }
+    },
+    {
+      "key": "sample16-hwp2022",
+      "page": 1,
+      "raw_match_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2022/wasm/raw-p001.png",
+          "sha256": "4b26955f7cabf02f39b23a349b294890dc4c1d7ff6213651d6277b972457ec61"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2022/wasm/pdf-p001.png",
+          "sha256": "3b89c85f5d040784116957be06ec420d4084cb93554edfe2363cec9e569fb270"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2022/wasm/overlay-p001.png",
+          "sha256": "87f2fee11134ce5369582e4b95055610cfdea18c29eb90c4c3edb09c2ba640ea"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2022/wasm/review-p001.png",
+          "sha256": "a3003ce1ff428203f3e06a00ae7e290204fcb1de53a7c8ef1b69fd40bbaceb16"
+        }
+      }
+    },
+    {
+      "key": "sample16-hwp2022",
+      "page": 38,
+      "raw_match_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2022/wasm/raw-p038.png",
+          "sha256": "3d242b41d73601b3a55c967e22f042f33dfc0983761f2610405ffa7f0d0df2f7"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2022/wasm/pdf-p038.png",
+          "sha256": "e7c2fc4f391fb1bef6005fed2854feb5f9b5cb493aba6a5bcef5646737c988a1"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2022/wasm/overlay-p038.png",
+          "sha256": "a39ce79f3e95878243b034539ae05a426d78580d813439a19da6f18ddc2c8cbd"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2022/wasm/review-p038.png",
+          "sha256": "5bb6f283987a8fe11c4f06fc4d712a5ee73fc273a14ad69b9438f1c0aed78dd8"
+        }
+      }
+    },
+    {
+      "key": "sample16-hwp2024",
+      "page": 18,
+      "raw_match_percent": "99.99",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2024/wasm/raw-p018.png",
+          "sha256": "ded2b14aeb94a99939089fa033baa94096076b40bc969a8e3c1f35971a87b5d8"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2024/wasm/pdf-p018.png",
+          "sha256": "2caac70f82807ddb96858b5030fe3574b04489dc11349529f7d9c34914f3d61e"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2024/wasm/overlay-p018.png",
+          "sha256": "09444fe2a6fc51a08f3fb91dd92821764f012c4d067ab07c158f41e37cdb04ca"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2024/wasm/review-p018.png",
+          "sha256": "421c5ae6c7efc890c42679b3882f8806838152cbca368dbbfa3fa7a26dab9f67"
+        }
+      }
+    },
+    {
+      "key": "sample16-hwp2024",
+      "page": 38,
+      "raw_match_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2024/wasm/raw-p038.png",
+          "sha256": "22667f71473b7d217fd6e8d3be667928621a31d78559c684ce1573e8db5a342e"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2024/wasm/pdf-p038.png",
+          "sha256": "eb625e35cb1579afd02cb0f924a35e384de2b69f23eb5e2afe79f05dc53e8b2b"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2024/wasm/overlay-p038.png",
+          "sha256": "186618810e59681dba8d5c57a5e92a3a89e16a1e666edcac0b17ce6c4d12006d"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwp2024/wasm/review-p038.png",
+          "sha256": "410df2d22f9a62b0f76e671b329d41e9f90f72dfcc6cf3d6f45f10d73b5c5075"
+        }
+      }
+    },
+    {
+      "key": "sample16-hwpx",
+      "page": 18,
+      "raw_match_percent": "99.99",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwpx/wasm/raw-p018.png",
+          "sha256": "ded2b14aeb94a99939089fa033baa94096076b40bc969a8e3c1f35971a87b5d8"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwpx/wasm/pdf-p018.png",
+          "sha256": "2caac70f82807ddb96858b5030fe3574b04489dc11349529f7d9c34914f3d61e"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwpx/wasm/overlay-p018.png",
+          "sha256": "8f44cc47130ddbd7d9dcafc7535758dc0bc6e306e6b597635646baffbff81ab7"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwpx/wasm/review-p018.png",
+          "sha256": "09d1f79c7a975b6cb293da34184c01bdbb7f899046c09dbbca928213fa7552b2"
+        }
+      }
+    },
+    {
+      "key": "sample16-hwpx",
+      "page": 38,
+      "raw_match_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwpx/wasm/raw-p038.png",
+          "sha256": "22667f71473b7d217fd6e8d3be667928621a31d78559c684ce1573e8db5a342e"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwpx/wasm/pdf-p038.png",
+          "sha256": "eb625e35cb1579afd02cb0f924a35e384de2b69f23eb5e2afe79f05dc53e8b2b"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwpx/wasm/overlay-p038.png",
+          "sha256": "0a1215df535ecc59a56e782704274c6c6a5a445b4f7d7cd7b62089bdc16e0e89"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/sample16-hwpx/wasm/review-p038.png",
+          "sha256": "5c51f4c68b395771014a880b796a6523036002f7b5c6668c4d626d57b9f5378d"
+        }
+      }
+    },
+    {
+      "key": "seo-body-list-typed",
+      "page": 1,
+      "raw_match_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-body-list-typed/wasm/raw-p001.png",
+          "sha256": "9d5aeac55dd3b9b69abcb61e466ec34d8723f18a18ec09ad5ffdaad5199af2ed"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-body-list-typed/wasm/pdf-p001.png",
+          "sha256": "31eda666566c0a8975d7225e7109b1c9f063b0eb82cae6b860014ef40660546a"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-body-list-typed/wasm/overlay-p001.png",
+          "sha256": "f85fcaa348dd5ab00f2558ba11481d56a9904beaa367b044130057ece0312754"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-body-list-typed/wasm/review-p001.png",
+          "sha256": "5c96fc88aedef6d3644e2703cff1f284ec77b11236fad43f0787867a29f72ace"
+        }
+      }
+    },
+    {
+      "key": "seo-helvetica-styles",
+      "page": 1,
+      "raw_match_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-helvetica-styles/wasm/raw-p001.png",
+          "sha256": "3350506dcf79192bb29fb32942c37835b32ff6df3844d66dc02c733d67ce47d6"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-helvetica-styles/wasm/pdf-p001.png",
+          "sha256": "a446d324676f30a04c23b2b2a4d5f0972b676b4a952a46d86ab041373252b266"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-helvetica-styles/wasm/overlay-p001.png",
+          "sha256": "09e94c5a7873f03a6c4d764900bcf1e0252c1c589fb6e1b9fa6aab240e556c55"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-helvetica-styles/wasm/review-p001.png",
+          "sha256": "10fef127db11c39565daffdb9a028bf60314fa302e9e9a8e7abf490fb0266c48"
+        }
+      }
+    },
+    {
+      "key": "seo-pic-crop-01",
+      "page": 1,
+      "raw_match_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-pic-crop-01/wasm/raw-p001.png",
+          "sha256": "cb53476747bd2a4ad1a4d9f12254a2361316cb2e05a61888271e5d3da25a4d16"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-pic-crop-01/wasm/pdf-p001.png",
+          "sha256": "2772ea412033a38c80fde729906374a90de94c0d7c5f33c2ede1e5071ac25ac8"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-pic-crop-01/wasm/overlay-p001.png",
+          "sha256": "5b55d4dfcb2b595a42ca242b4d61479958a5598aff8de72ce27a156c104de7a4"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-pic-crop-01/wasm/review-p001.png",
+          "sha256": "188cce5ac56f0b3dc31dce583c9d9c8181a2c9daa7008b510a4db4d3b6599822"
+        }
+      }
+    },
+    {
+      "key": "seo-re-03-latin",
+      "page": 1,
+      "raw_match_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-re-03-latin/wasm/raw-p001.png",
+          "sha256": "26500f988818109a14f3b57fa37df36487f2f3975504d94bceab5ff87c3d0b84"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-re-03-latin/wasm/pdf-p001.png",
+          "sha256": "0484984565f05f6fec9931a654f0c4d03162494b79357e669ab11d1e83c29b18"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-re-03-latin/wasm/overlay-p001.png",
+          "sha256": "69a0142fb483ed9ffe847303a28af9e9ffed089b2f8f670efd03be8facdff1b2"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-re-03-latin/wasm/review-p001.png",
+          "sha256": "8784110b1f5c6d933d44e263e199862704a308ea0280d7076104772050e9c843"
+        }
+      }
+    },
+    {
+      "key": "seo-shape-group-02",
+      "page": 1,
+      "raw_match_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-shape-group-02/wasm/raw-p001.png",
+          "sha256": "deeef7d29ac39d0d6c8dc37e83d0447552cc5d29fd0313bb93810d817cdee24f"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-shape-group-02/wasm/pdf-p001.png",
+          "sha256": "b62d8f17bc72a37824dbbf37f9aa81a8b872bbd19f6b1d170a940edb951a6f85"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-shape-group-02/wasm/overlay-p001.png",
+          "sha256": "13eebceab57c921ea2303adda1771f2be569751bcfa30b27005e07a49a6a720f"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/seo-shape-group-02/wasm/review-p001.png",
+          "sha256": "5818b151ea9d956cb2b74a8ce6cfea832577f7f9ac97b578118f9bc5dd80df8e"
+        }
+      }
+    },
+    {
+      "key": "yeongwol",
+      "page": 1,
+      "raw_match_percent": "100.00",
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/yeongwol/wasm/raw-p001.png",
+          "sha256": "63f051f3c9299244a7248b562aa465ad240b940e6a4d2b7b21553de1e5047cb4"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/yeongwol/wasm/pdf-p001.png",
+          "sha256": "1c663ee4b56f8560de850d46c02f9e398f49fd5afea94c1157d99b28688536ad"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/yeongwol/wasm/overlay-p001.png",
+          "sha256": "d7184f7da10daa10f8d0fcd8256b3168215c6ccb2a3b174cac7a051b40d440e9"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/dependabot_20261116/cases/yeongwol/wasm/review-p001.png",
+          "sha256": "14b7c0ca0963afffb14e2c91cdaff0952c0dfc9a4fa19456a7e3c4ff98a4d391"
+        }
+      }
+    }
+  ],
+  "observations": [
+    "표·문단·그림의 내용 소속과 쪽 경계 보존을 확인했습니다.",
+    "잔여 RGB·미세 raster 차이는 남으며 PDF와 픽셀 완전 동일이라는 뜻이 아닙니다.",
+    "전체 base/head PNG 일치는 별도 whole-png-identity-audit.json에서 실제 해시로 확인했습니다."
+  ],
+  "recorded_at": "2026-11-16T16:02:04.496375+09:00"
+}

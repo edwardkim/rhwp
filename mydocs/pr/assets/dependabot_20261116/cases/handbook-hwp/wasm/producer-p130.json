@@ -1,0 +1,33 @@
+{
+  "key": "handbook-hwp",
+  "page": 130,
+  "raw_match_percent": "99.96",
+  "input_source": {
+    "page": 130,
+    "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/protected-wasm-software/candidate/handbook-hwp/rhwp_png/rhwp_130.png",
+    "rhwp_sha256": "ab6731071950820ecaee350f99ad212f22bad033e638035c61a29d2b1dde90eb",
+    "pdf_png": "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/protected-wasm-software/candidate/handbook-hwp/pdf_png/pdf-130.png",
+    "pdf_sha256": "554b6a770060086a59af0a08f5b9f377fc058bfda47e2e62e05f9a63f49c3abd"
+  },
+  "files": {
+    "raw": {
+      "path": "mydocs/pr/assets/dependabot_20261116/cases/handbook-hwp/wasm/raw-p130.png",
+      "sha256": "ab6731071950820ecaee350f99ad212f22bad033e638035c61a29d2b1dde90eb"
+    },
+    "pdf": {
+      "path": "mydocs/pr/assets/dependabot_20261116/cases/handbook-hwp/wasm/pdf-p130.png",
+      "sha256": "554b6a770060086a59af0a08f5b9f377fc058bfda47e2e62e05f9a63f49c3abd"
+    },
+    "overlay": {
+      "path": "mydocs/pr/assets/dependabot_20261116/cases/handbook-hwp/wasm/overlay-p130.png",
+      "sha256": "95635d2ddb311e7c1457e7486439a014986f11fcadb3557892cc3d22559b1b3a"
+    },
+    "review": {
+      "path": "mydocs/pr/assets/dependabot_20261116/cases/handbook-hwp/wasm/review-p130.png",
+      "sha256": "99196f362b2624eab3ce4a6332eb5f4d6ecb1034854ffe774548480484ae1304"
+    }
+  },
+  "canonical_functions": "make_overlay_compares/make_compares/make_review_panels",
+  "pixel_diff_threshold": 32,
+  "recaptured": false
+}
