@@ -1,5 +1,14 @@
 //! 관계형·고정형 회귀: 누름틀 끝 표식 뒤에 오는 글자처럼 취급 표는 한/글이 저장한 줄에 놓인다.
-//! 주석 갱신: 2026-11-16T21:06:32+09:00 (Asia/Seoul), 새 파일.
+//! 주석 갱신: 2026-11-16T22:20:14+09:00 (Asia/Seoul). 직전 파일 변경: 2026-11-16T21:07:36+09:00,
+//! commit 8348b7ce20.
+//!
+//! 2026-11-16 측정 raw(96dpi, `scripts/visual_sweep.py --silhouette-only --compat 2022`, 판정값
+//! `silhouette_raw_match_percent`). 세 문서 모두 전체 1쪽 = PDF 1쪽이라 1쪽 값이 전쪽 최저다.
+//! - 빈 누름틀: Native 100.00% / fresh WASM 100.00% (수정 전 devel `443dafb081`: 64.87 / 64.87)
+//! - 값 4자: Native 100.00% / fresh WASM 100.00% (수정 전 58.36 / 58.42)
+//! - 값 1자: Native 100.00% / fresh WASM 100.00% (수정 전 57.23 / 57.24)
+//!
+//! 근거: `mydocs/pr/assets/issue_9058_field_end_slot_object_rows/README.md`(전 쪽 TSV, review·overlay PNG).
 //!
 //! [#9058] 누름틀 끝 표식(FIELD_END)은 `controls[]` 에 들지 않지만 문단 스트림에서 8유닛을
 //! 차지한다. 한/글이 저장한 줄 시작(LINE_SEG `text_start`)은 그 8유닛을 센 값이다.
