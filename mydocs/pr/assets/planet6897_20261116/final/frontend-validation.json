@@ -1,0 +1,41 @@
+{
+  "status": "completed",
+  "pid": 77425,
+  "results": [
+    {
+      "name": "typescript",
+      "command": [
+        "npx",
+        "tsc",
+        "--noEmit"
+      ],
+      "exit": 0,
+      "seconds": 2.307
+    },
+    {
+      "name": "incoming-dialog-viewport",
+      "command": [
+        "npm",
+        "run",
+        "e2e:dialog-viewport"
+      ],
+      "exit": 0,
+      "seconds": 17.586
+    },
+    {
+      "name": "incoming-autosave-recovery",
+      "command": [
+        "node",
+        "e2e/run-with-vite.mjs",
+        "--",
+        "node",
+        "e2e/autosave-recovery.test.mjs",
+        "--mode=headless"
+      ],
+      "exit": 0,
+      "seconds": 14.254
+    }
+  ],
+  "current": "incoming-autosave-recovery",
+  "updated_at": "2026-11-16T13:26:48.097329+00:00"
+}

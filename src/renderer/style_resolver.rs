@@ -1940,6 +1940,7 @@ fn try_resolve_single_para_style<A: storage::Storage>(
         keep_with_next: (ps.attr1 >> 17) & 1 != 0,
         keep_lines: (ps.attr1 >> 18) & 1 != 0,
         page_break_before: (ps.attr1 >> 19) & 1 != 0,
+        line_wrap_squeeze: ps.attr2 & crate::model::style::PARA_ATTR2_LINE_WRAP_MASK == 1,
     })
 }
 

@@ -1,0 +1,324 @@
+{
+  "status": "passed",
+  "head": "c6996300203fec553a57b0c16b2e48329ebc083a",
+  "files": [
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/black_stork_restoration_press_release/native/overlay-003.png",
+      "bytes": 437248,
+      "sha256": "10700cf960ca4c37de874be5285b65b57d3f140f9f7ad89f8cfa0436d14a8b9c",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/black_stork_restoration_press_release/native/raw-003.png",
+      "bytes": 452388,
+      "sha256": "9e05f8a414da47565733f1186d3ba9c4b835b9fb26cd482c7a37ca11aa81f6f6",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/black_stork_restoration_press_release/native/review-003.png",
+      "bytes": 1286044,
+      "sha256": "40bbf030a28d07d0a51ae4a31cef8fae9dbb51912214153de17cb75a74a6a6c6",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/black_stork_restoration_press_release/wasm/overlay-003.png",
+      "bytes": 438641,
+      "sha256": "e8a3e53fc6dd6c4c30b26b2a5577a693336ca96b662fed336f56d2507518951d",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/black_stork_restoration_press_release/wasm/review-003.png",
+      "bytes": 1289052,
+      "sha256": "70dd7383f6f8d62991db2bb75a55ccee54ab5dca3acfe5bdf2f9752bc30f2973",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/facility_fee_reduction_criteria/native/overlay-001.png",
+      "bytes": 213388,
+      "sha256": "b90a7c84550ac056ad3c599cc0c2f4ebbeff135ca5d474259efd697dd3156e03",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/facility_fee_reduction_criteria/native/review-001.png",
+      "bytes": 644183,
+      "sha256": "3c29ac17940c2dbccdb95386eaf2030ba2d32d99b56bd86c5aaa1d65568f6f59",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/facility_fee_reduction_criteria/wasm/overlay-001.png",
+      "bytes": 228028,
+      "sha256": "9905a9eba8305d650e8f44c73cf951cc2052297838dc14022b3eac98a9e23ea6",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/facility_fee_reduction_criteria/wasm/review-001.png",
+      "bytes": 662103,
+      "sha256": "4697f9798b7f0e7a6b36059b5eaa8fa48bb05145748bbb0e6b6a80c30cd218d8",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/hft-sinmyeong_sunmyeongjo-bold-probe/native/overlay-001.png",
+      "bytes": 95962,
+      "sha256": "042d99d31186f115b7577d7e75a289cf4acb4563cc08edead2367f5f95e38cfd",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/hft-sinmyeong_sunmyeongjo-bold-probe/native/review-001.png",
+      "bytes": 255562,
+      "sha256": "607b1f6d320462ab34cd79a5b1c941928500b59e31ab741ca24fe1dd2f1e279a",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/hft-sinmyeong_sunmyeongjo-bold-probe/wasm/overlay-001.png",
+      "bytes": 97434,
+      "sha256": "4cebc06d5a34e58ec080a214b8f0b03b2d3b85f55656970a0e83d9c5d46b3c33",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/hft-sinmyeong_sunmyeongjo-bold-probe/wasm/review-001.png",
+      "bytes": 256983,
+      "sha256": "4bc8adc6982cc8169a9478c48df96ee6b3e651f20f8a02c850b4a2cd5aa07784",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/hft-sinmyeong_sunmyeongjo-probe/native/overlay-003.png",
+      "bytes": 77561,
+      "sha256": "e8bebcb44a545b07d2608b7f5c393c3337420a000c5fb2e9c16ab1997707adb7",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/hft-sinmyeong_sunmyeongjo-probe/native/review-003.png",
+      "bytes": 195641,
+      "sha256": "739c2a3e61d65114d972dc8b67f2c709ee06fcfb5db78c6f5e020c886daf9bc2",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/hft-sinmyeong_sunmyeongjo-probe/wasm/overlay-003.png",
+      "bytes": 78920,
+      "sha256": "57db8116b0dd9eb18beb2de88f82c1516edbd8fb1209603f3d2aae17ac469cd0",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/hft-sinmyeong_sunmyeongjo-probe/wasm/review-003.png",
+      "bytes": 197220,
+      "sha256": "ddb77c5c51bc04fac19a00d5d7e6385f69be242ea82061082bc63035d3994cf6",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/proficiency_test_result_form/native/overlay-001.png",
+      "bytes": 72863,
+      "sha256": "c07b33c5890fa8d9a5f6b00a7d16b5ebc46c196ddf4c78fa6803c2389c38b20c",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/proficiency_test_result_form/native/review-001.png",
+      "bytes": 193892,
+      "sha256": "d0e05e0d96a23cd169af6966731afa0a7b93817fc01815ffadda22c0ef5ded12",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/proficiency_test_result_form/wasm/overlay-001.png",
+      "bytes": 73741,
+      "sha256": "8dd44102736bb8b9e11aa7fc03ae02a4bc382b00e80181a167bf7ece55ec0583",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/proficiency_test_result_form/wasm/review-001.png",
+      "bytes": 196993,
+      "sha256": "a44a233d15219104791e784980f411bb3756e9493cbffd69c7ff835f80253f0b",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/veterans_summer_support_press_release/native/overlay-001.png",
+      "bytes": 231955,
+      "sha256": "47bcd468531b7b09c361ae0dcf7ff29b710cc390e27e70d1b45077a7a3a00733",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/veterans_summer_support_press_release/native/review-001.png",
+      "bytes": 765007,
+      "sha256": "aa151ff58fb8dca4971b053919713bc8fc0693a0ca29a88b91ad9ad595d865be",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/veterans_summer_support_press_release/wasm/overlay-001.png",
+      "bytes": 224371,
+      "sha256": "37c5ad42006ca2b8c8b030d00b1c6eafb31a03f26a49d1fa4d9afa83c4f9fe02",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/veterans_summer_support_press_release/wasm/review-001.png",
+      "bytes": 686125,
+      "sha256": "1247c6b8464f077988286010369800233c89d6c8e4bf4527cf319d7e8469ed4e",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/caption/canvas2d-screen.png",
+      "bytes": 349198,
+      "sha256": "397813656bba868c19c36245525f8b2379da7743e7323c7f580ca87da6ea2b50",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/caption/canvaskit-default-print-software.png",
+      "bytes": 397673,
+      "sha256": "1aba4217e40ac2035989ccf220648ec9efb56f2d2d640e290cd113b5cc29e920",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/final/base-head-comparison.json",
+      "bytes": 7344,
+      "sha256": "87b2c7d9b1953523ae261dedc353945a71bc77ff4d8fd92edf76410dd6c31a09",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/final/protected-validation.json",
+      "bytes": 26732,
+      "sha256": "707996addc0b892c115e7435749252bc7a6c147de42184a5b41ca5e80e049219",
+      "identical": true
+    },
+    {
+      "path": "pdf/issue9073/proficiency_test_result_form-print-2022.pdf",
+      "bytes": 41221,
+      "sha256": "2a701f188ee646c4485550b6172905e87a3c9e6cc277315f06cd60c0934b0ffc",
+      "identical": true
+    },
+    {
+      "path": "pdf/issue9073/veterans_summer_support_press_release-print-2022.pdf",
+      "bytes": 152064,
+      "sha256": "19554002f6266f0137dd4287631e017a04c74d57262be09b32a420b375132a7f",
+      "identical": true
+    },
+    {
+      "path": "pdf/issue9079/black_stork_restoration_press_release-print-2022.pdf",
+      "bytes": 1272731,
+      "sha256": "09f9f1272fa9088bc64e6adcbf4261a61f5aeffbea28736528a2789f82e17289",
+      "identical": true
+    },
+    {
+      "path": "pdf/issue9085/facility_fee_reduction_criteria-print-2022.pdf",
+      "bytes": 48105,
+      "sha256": "42c2a8d94466516aad6af8c10e58400772c7863648e4fe63ed1673d7e3ef516d",
+      "identical": true
+    },
+    {
+      "path": "pdf/issue9087/hft-sinmyeong_sunmyeongjo-bold-probe-2022.pdf",
+      "bytes": 61111,
+      "sha256": "cc5f80351a7ebdaf66bb3c25074cb72c8cc1be39dec577e598f7fe7049d090ff",
+      "identical": true
+    },
+    {
+      "path": "pdf/issue9087/hft-sinmyeong_sunmyeongjo-probe-2022.pdf",
+      "bytes": 60726,
+      "sha256": "452361f51b1a62832f9cf7175dcfcfd773b9799117ea015e6ddb113566083fd0",
+      "identical": true
+    },
+    {
+      "path": "samples/issue9073/proficiency_test_result_form.hwpx",
+      "bytes": 13243,
+      "sha256": "90fddbce3698f3abe64b3be97a3d3e87d69322675149af45b4a09f50301acd7d",
+      "identical": true
+    },
+    {
+      "path": "samples/issue9073/veterans_summer_support_press_release.hwpx",
+      "bytes": 107706,
+      "sha256": "8a09e6f5fdf88bc54e801738b205e013fb23cd30765b16f8b1ceb9ba66aa356f",
+      "identical": true
+    },
+    {
+      "path": "samples/issue9079/black_stork_restoration_press_release.hwpx",
+      "bytes": 7276488,
+      "sha256": "d3d881a47428936b5700f5efa2b5419aeff93d31cd6e02121aa5202cef537c7b",
+      "identical": true
+    },
+    {
+      "path": "samples/issue9085/facility_fee_reduction_criteria.hwpx",
+      "bytes": 61419,
+      "sha256": "a30ce89ad8659e14ade23ff8aea09d9e369b80058ace0ac44b9a4d14455578ff",
+      "identical": true
+    },
+    {
+      "path": "samples/issue9087/hft-sinmyeong_sunmyeongjo-bold-probe.hwpx",
+      "bytes": 5283,
+      "sha256": "fa1aa40d06b8617f628a18b6e2263e072725586f90252d939b8ce89f8584a245",
+      "identical": true
+    },
+    {
+      "path": "samples/issue9087/hft-sinmyeong_sunmyeongjo-probe.hwpx",
+      "bytes": 5280,
+      "sha256": "94c4832df0fcf621b47d25cbafa49820d066fea94070fa8525063f2809934cf2",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/proficiency_test_result_form/native/silhouette.tsv",
+      "bytes": 132,
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/proficiency_test_result_form/wasm/silhouette.tsv",
+      "bytes": 132,
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/facility_fee_reduction_criteria/native/silhouette.tsv",
+      "bytes": 130,
+      "sha256": "83a671d6ec8c8e9192240f90287351296d56fdb9353205dca4cb9eb1367c4cb3",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/facility_fee_reduction_criteria/wasm/silhouette.tsv",
+      "bytes": 130,
+      "sha256": "d799bec3fc14cc7d66c8797e62acf84f2b3bb3748b5fa22cfbfbd81a59a847dc",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/black_stork_restoration_press_release/native/silhouette.tsv",
+      "bytes": 227,
+      "sha256": "9e33e3288f2bc9dbd9e20e0410150a217df3f9a1c17cbcfd38ae433f2ce1e275",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/black_stork_restoration_press_release/wasm/silhouette.tsv",
+      "bytes": 227,
+      "sha256": "18a38965c06deb26eae026dc6cea37a813d4c7a0fc00dfef9d9dbf6d1b1c95de",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/veterans_summer_support_press_release/native/silhouette.tsv",
+      "bytes": 151,
+      "sha256": "3cc204d96eed3779a9bd07be48f45a90e50ea87b7345234e27a46c62fa31c17c",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/veterans_summer_support_press_release/wasm/silhouette.tsv",
+      "bytes": 151,
+      "sha256": "77ace59d51a8436fb0734d1191e76c8238d406648242485877c0b907d1fc968c",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/hft-sinmyeong_sunmyeongjo-bold-probe/native/silhouette.tsv",
+      "bytes": 188,
+      "sha256": "b0c04ebed06c90552aa53a6623a8368201dae9cc692174fb8270263af5dc4438",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/hft-sinmyeong_sunmyeongjo-bold-probe/wasm/silhouette.tsv",
+      "bytes": 188,
+      "sha256": "ef993973c96e812ee46d5e0bb1d7dcbf70202e4bee6e72d0320b4d6601a7fab9",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/hft-sinmyeong_sunmyeongjo-probe/native/silhouette.tsv",
+      "bytes": 188,
+      "sha256": "8db1e70531f00dd60f9e5d5e7119f949cfb4d81fde1cf53f278844f69c315d0a",
+      "identical": true
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261116/claims/hft-sinmyeong_sunmyeongjo-probe/wasm/silhouette.tsv",
+      "bytes": 188,
+      "sha256": "bd43ef9fb6643ed416699f62dc6d88d3b247a56cf9e674a4209c8a5d8bba4a26",
+      "identical": true
+    }
+  ]
+}

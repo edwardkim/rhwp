@@ -3615,7 +3615,7 @@ pub fn base_family_without_weight_suffix(font_family: &str) -> Option<String> {
 ///
 /// 다만 이름을 그대로 넣는 것만으로는 Windows(DirectWrite/Chrome)에서 안 잡히는
 /// face 가 있다. 아래 중고딕 arm 의 주석을 볼 것.
-/// 같은 설치 프로그램의 이름만 제공한다. HFT→TTF 호환 대체·generic·successor는 제외한다.
+/// 확인한 원본 글꼴의 설치 이름을 제공한다. 별도 글꼴의 호환 대체·generic·successor는 제외한다.
 fn installed_font_program_aliases(name: &str) -> &'static [&'static str] {
     match name {
         // 같은 SFNT의 name 1/4에는 굵기가 붙지만 fontdb는 name 16의
@@ -3669,6 +3669,10 @@ fn installed_font_program_aliases(name: &str) -> &'static [&'static str] {
         "궁서" => &["Gungsuh"],
         "궁서체" => &["GungsuhChe"],
         "HY신명조" => &["HYSinMyeongJo", "HYSinMyeongJo-Medium"],
+        // 한양중고딕의 TTF 설치본 H2GTRM은 HY중고딕/HYGothic-Medium으로 등록된다.
+        // 원본 이름에서 이 후보를 누락하면 TTF가 있어도 HFT 변환 CFF만 선택한다.
+        // 형식 우선순위는 호출자의 공통 TTF → TTC → OpenType 선택에 맡긴다.
+        "한양중고딕" => &["HY중고딕", "HYGothic", "HYGothic-Medium", "HY Junggothic"],
         "HY중고딕" => &["HYGothic", "HYGothic-Medium"],
         "HY견고딕" => &["HYGothic-Extra"],
         "HY견명조" => &["HYMyeongJo-Extra"],

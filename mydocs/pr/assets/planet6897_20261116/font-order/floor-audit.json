@@ -1,0 +1,26 @@
+[
+  {
+    "phase": "base",
+    "backend": "native",
+    "pages": 17,
+    "p5": "100.00",
+    "minimum": 99.86,
+    "declines": []
+  },
+  {
+    "phase": "candidate",
+    "backend": "native",
+    "pages": 17,
+    "p5": "100.00",
+    "minimum": 99.86,
+    "declines": []
+  },
+  {
+    "phase": "candidate",
+    "backend": "wasm",
+    "pages": 17,
+    "p5": "100.00",
+    "minimum": 99.86,
+    "declines": []
+  }
+]

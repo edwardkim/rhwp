@@ -658,6 +658,7 @@ impl DocumentCore {
         depth: usize,
     ) {
         use crate::model::control::Control;
+        use crate::model::shape::ShapeObject;
         if depth >= 32 {
             return;
         }
@@ -672,6 +673,36 @@ impl DocumentCore {
                         let (width, _) =
                             crate::renderer::layout::picture_flow_frame_size_hu(picture);
                         (&mut picture.caption, width)
+                    }
+                    Control::Shape(shape) => {
+                        let width =
+                            crate::renderer::float_placement::signed_hwpunit(shape.common().width);
+                        // 차트·OLE 는 자기 캡션이 없으면 그리기 개체의 캡션을 쓴다(배치와 같은 선택).
+                        let caption = match shape.as_mut() {
+                            ShapeObject::Line(s) => &mut s.drawing.caption,
+                            ShapeObject::Rectangle(s) => &mut s.drawing.caption,
+                            ShapeObject::Ellipse(s) => &mut s.drawing.caption,
+                            ShapeObject::Arc(s) => &mut s.drawing.caption,
+                            ShapeObject::Polygon(s) => &mut s.drawing.caption,
+                            ShapeObject::Curve(s) => &mut s.drawing.caption,
+                            ShapeObject::Group(s) => &mut s.caption,
+                            ShapeObject::Picture(s) => &mut s.caption,
+                            ShapeObject::Chart(s) => {
+                                if s.caption.is_some() {
+                                    &mut s.caption
+                                } else {
+                                    &mut s.drawing.caption
+                                }
+                            }
+                            ShapeObject::Ole(s) => {
+                                if s.caption.is_some() {
+                                    &mut s.caption
+                                } else {
+                                    &mut s.drawing.caption
+                                }
+                            }
+                        };
+                        (caption, width)
                     }
                     _ => continue,
                 };

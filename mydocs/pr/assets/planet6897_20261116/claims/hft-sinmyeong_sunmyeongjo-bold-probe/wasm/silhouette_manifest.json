@@ -1,0 +1,115 @@
+{
+  "key": "hft-sinmyeong_sunmyeongjo-bold-probe",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "completed_pages": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "missing_pages": [],
+  "tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/wasm/hft-sinmyeong_sunmyeongjo-bold-probe/hft-sinmyeong_sunmyeongjo-bold-probe/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/wasm/hft-sinmyeong_sunmyeongjo-bold-probe/hft-sinmyeong_sunmyeongjo-bold-probe/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "611bdef6c1c6a01f770e79bcd74b49fc1bbe7af6332ecb5fbbca641213460e10",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/wasm/hft-sinmyeong_sunmyeongjo-bold-probe/hft-sinmyeong_sunmyeongjo-bold-probe/pdf_png/pdf-001.png",
+      "pdf_sha256": "c8a7aecb3cd35b655d7469b1680e61e43517c3fdf535d80d5f67efc865c08fd4"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/wasm/hft-sinmyeong_sunmyeongjo-bold-probe/hft-sinmyeong_sunmyeongjo-bold-probe/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "2050160e00e395a3267cb1ea1dda202b97791e3561d3680435647e6d5233f3ed",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/wasm/hft-sinmyeong_sunmyeongjo-bold-probe/hft-sinmyeong_sunmyeongjo-bold-probe/pdf_png/pdf-002.png",
+      "pdf_sha256": "0ade088602dc0e55fa65310d6e7e99e64a22c9462ccadcc3c85194586625e394"
+    },
+    {
+      "page": 3,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/wasm/hft-sinmyeong_sunmyeongjo-bold-probe/hft-sinmyeong_sunmyeongjo-bold-probe/rhwp_png/rhwp_003.png",
+      "rhwp_sha256": "571a10ce37479b96f525b43ead4c58aafc1d27111bc853a71a7fed63bfe782ab",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/wasm/hft-sinmyeong_sunmyeongjo-bold-probe/hft-sinmyeong_sunmyeongjo-bold-probe/pdf_png/pdf-003.png",
+      "pdf_sha256": "e2e3f6b2a6fb1cf511edbf337be65b71a7b0af4dc5f582eca6f28af60c1da7b3"
+    },
+    {
+      "page": 4,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/wasm/hft-sinmyeong_sunmyeongjo-bold-probe/hft-sinmyeong_sunmyeongjo-bold-probe/rhwp_png/rhwp_004.png",
+      "rhwp_sha256": "a42cf4925e489c7f60bb32e6e3c6629b5dea85cbb5c16b55919c701cd9f78936",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/wasm/hft-sinmyeong_sunmyeongjo-bold-probe/hft-sinmyeong_sunmyeongjo-bold-probe/pdf_png/pdf-004.png",
+      "pdf_sha256": "5b05b9976b7481d349d4e5e1570df4682d1cfacd036c70c505b335bf0eb8e088"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99536,
+      "silhouette_raw_unmatched_pixels": 1,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 21541,
+      "tolerant_content_match_percent": 99.99536
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99537,
+      "silhouette_raw_unmatched_pixels": 1,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 21617,
+      "tolerant_content_match_percent": 99.99537
+    },
+    {
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.66001,
+      "silhouette_raw_unmatched_pixels": 72,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 21177,
+      "tolerant_content_match_percent": 99.66001
+    },
+    {
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 97.50866,
+      "silhouette_raw_unmatched_pixels": 532,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 21354,
+      "tolerant_content_match_percent": 97.50866
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 4,
+      "pdf": 4
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "canonical_full_manifest_sha256": "344011244e3b472edf0f78b2fdfd663e2d1f5f0480add78a796466bb1819450d",
+  "record_scope": "Compact canonical manifest: all page metrics and PNG hashes retained; full environment catalog retained locally and referenced by hash.",
+  "full_environment_provenance_sha256": "9904bf41b8f2f60d458d0ee27b4744bef461da6215488a4047bb4f20c219359e"
+}

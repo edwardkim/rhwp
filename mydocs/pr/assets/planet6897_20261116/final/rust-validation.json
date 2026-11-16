@@ -1,0 +1,275 @@
+{
+  "status": "passed",
+  "code_head": "2e3e6698d198cf09189105746a2ed8e988ac4b0d",
+  "base": "443dafb08107152e066689544e88d90988339567",
+  "full_nextest": {
+    "code_head": "2e3e6698d198cf09189105746a2ed8e988ac4b0d",
+    "base": "443dafb08107152e066689544e88d90988339567",
+    "status": "passed",
+    "tests_run": 13634,
+    "passed": 13634,
+    "skipped": 45,
+    "failed": 0,
+    "test_seconds": 821.026,
+    "log_sha256": "a68a5c59b470fbe13081692ddee7cf64a47ebea1bcb9b9dadb2f13059f8486a6",
+    "minimal_font_profile_sha256": "dab5a29efd05b091cf0308729b49d34c7922ea399dc823d70457cde0c1367e8c",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/Users/tsjang/rhwp/target/pr-review",
+      "--test-threads",
+      "8",
+      "--no-fail-fast",
+      "--tests"
+    ],
+    "scope": "full integration nextest; Native-feature and remaining Rust gates recorded separately"
+  },
+  "native_lib": {
+    "passed": 4034,
+    "ignored": 12,
+    "components": [
+      [
+        "3852",
+        "0",
+        "12"
+      ],
+      [
+        "15",
+        "0",
+        "0"
+      ],
+      [
+        "165",
+        "0",
+        "0"
+      ],
+      [
+        "2",
+        "0",
+        "0"
+      ]
+    ]
+  },
+  "native_focus": {
+    "native-skia-placeholder": {
+      "passed": 2,
+      "seconds": 11.968,
+      "log_sha256": "d374a0ea97eeee1ea3444689dd2ac39d5c32dc8f738679e421b7a570b70d3f55"
+    },
+    "native-skia-direct-pdf": {
+      "passed": 36,
+      "seconds": 4.001,
+      "log_sha256": "5986848ab2e683d96189880b744e05b56ec16137dff991f4f2afb79ab7ec308f"
+    }
+  },
+  "gates": [
+    {
+      "name": "focused-nextest",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "--test",
+        "regression_suite_004",
+        "--test",
+        "regression_suite_008",
+        "--test",
+        "regression_suite_010",
+        "--test",
+        "regression_suite_021",
+        "--test",
+        "regression_suite_025",
+        "-E",
+        "test(/issue_9073|issue_9079|issue_9085|issue_9087|installed_font_program_order/)"
+      ],
+      "exit_code": 0,
+      "seconds": 411.919
+    },
+    {
+      "name": "full-nextest",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "--tests"
+      ],
+      "exit_code": 0,
+      "seconds": 1456.577
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 68.685
+    },
+    {
+      "name": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 40.172
+    },
+    {
+      "name": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 32.614
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8"
+      ],
+      "exit_code": 0,
+      "seconds": 57.826
+    },
+    {
+      "name": "workspace-all-targets-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 88.14
+    },
+    {
+      "name": "suite-policy",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "443dafb08107152e066689544e88d90988339567"
+      ],
+      "exit_code": 0,
+      "seconds": 3.839
+    },
+    {
+      "name": "native-skia-lib",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "-j",
+        "8",
+        "--",
+        "--test-threads",
+        "8"
+      ],
+      "exit_code": 0,
+      "seconds": 648.742
+    },
+    {
+      "name": "native-skia-placeholder",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exit_code": 0,
+      "seconds": 734.611
+    },
+    {
+      "name": "native-skia-direct-pdf",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exit_code": 0,
+      "seconds": 48.833
+    }
+  ],
+  "minimum_font_profile_sha256": "dab5a29efd05b091cf0308729b49d34c7922ea399dc823d70457cde0c1367e8c"
+}

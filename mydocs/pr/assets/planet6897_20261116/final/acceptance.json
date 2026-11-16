@@ -1,0 +1,77 @@
+{
+  "status": "local_and_exact_code_ci_passed_pending_document_trailing_checks_and_merge",
+  "base": "27ba0333b358758ac71e976849a663e8a86fe6ff",
+  "at": "2026-11-16T13:29:44.481984+00:00",
+  "claims": {
+    "inputs": 6,
+    "pages_each_backend": 18,
+    "candidate_below90": 0,
+    "base_head_reference_pairs": 36,
+    "decreases_over2pp": 0
+  },
+  "protected": {
+    "documents_each_backend": 18,
+    "pages_each_backend": 1771,
+    "rows": 3542,
+    "decreases": 0,
+    "rises": 0
+  },
+  "full_nextest": {
+    "passed": 13634,
+    "failed": 0,
+    "skipped": 45,
+    "actual_head": "2e3e6698d198cf09189105746a2ed8e988ac4b0d"
+  },
+  "post_rebase_focused_passed": 30,
+  "post_rebase_native_gpu_passed": 5,
+  "native_skia_passed": 4072,
+  "studio_unit": {
+    "passed": 2805,
+    "failed": 0,
+    "skipped": 2
+  },
+  "frontend": [
+    {
+      "name": "typescript",
+      "command": [
+        "npx",
+        "tsc",
+        "--noEmit"
+      ],
+      "exit": 0,
+      "seconds": 2.307
+    },
+    {
+      "name": "incoming-dialog-viewport",
+      "command": [
+        "npm",
+        "run",
+        "e2e:dialog-viewport"
+      ],
+      "exit": 0,
+      "seconds": 17.586
+    },
+    {
+      "name": "incoming-autosave-recovery",
+      "command": [
+        "node",
+        "e2e/run-with-vite.mjs",
+        "--",
+        "node",
+        "e2e/autosave-recovery.test.mjs",
+        "--mode=headless"
+      ],
+      "exit": 0,
+      "seconds": 14.254
+    }
+  ],
+  "actual_scoped_states": 42,
+  "private_font_binaries_committed": false,
+  "wasm_build": "macOS locked wrapper --target web --out-dir pkg --no-opt; local alternative, not Docker optimized",
+  "source_equivalence": "final/rebase-validation.json; renderer/Cargo/ordinary Native/WASM paths unchanged; incoming optional GPU modules validated separately",
+  "remote_ci": "code-ci.json",
+  "local_evidence_head": "9bed2ea288a9db3b4a7e03c4a3e4abd8129b5b85",
+  "code_ci_head": "c6996300203fec553a57b0c16b2e48329ebc083a",
+  "supplemental": "supplemental/validation.json",
+  "submission_audit_correction": "Common four-document gate was missing from initial submission evidence. It was executed and directly reviewed after submission on unchanged code; all 8 cases passed before merge. No retroactive pre-submission completion claim."
+}

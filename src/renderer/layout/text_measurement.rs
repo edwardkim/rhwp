@@ -2562,6 +2562,12 @@ fn char_width_decision_with_hft_tracking<'a>(
             // Explicit metric hits above, ASCII/NBSP and HWP figure-space
             // contracts remain unchanged.
             || c == '\u{3000}'
+            // CJK 기호·문장부호의 전각 문자는 폭 표가 없더라도 반각으로 줄이지 않는다.
+            // 독립 Print의 Haansoft Batang U+3001·3004·3008 등은 1em이며,
+            // Unicode 폭 2인 문자만 받으므로 결합 부호와 중립 폭 U+303F는 제외한다.
+            // 위에서 찾은 실제 글꼴 메트릭과 반각 형식의 전진은 그대로 우선한다.
+            || (('\u{3001}'..='\u{303F}').contains(&c)
+                && unicode_width::UnicodeWidthChar::width(c) == Some(2))
             || is_cjk_char(c)
             || is_fullwidth_symbol(c)
             // 한컴 Print의 HFT 기호 슬롯에서 원본 폭을 찾지 못한 ∼와 ※는
