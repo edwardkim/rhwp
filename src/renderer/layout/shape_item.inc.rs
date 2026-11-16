@@ -780,7 +780,11 @@ impl LayoutEngine {
                         // 객체 영역과 겹치지 않게 한다. (typeset.rs Stage 2 의 current_height
                         // 가산과 layout 정합 — 단 이동 후 단 시작 y_offset 기준.)
                         let shape_h = super::composer::captioned_shape_height_px(
-                            hwpunit_to_px(common.height as i32, self.dpi),
+                            hwpunit_to_px(
+                                shape.restricted_textbox_table_height_hu()
+                                    .map_or(common.height as i32, |h| h.max(common.height as i32)),
+                                self.dpi,
+                            ),
                             &super::composer::shape_caption_for_layout(shape),
                             self.dpi,
                         );
