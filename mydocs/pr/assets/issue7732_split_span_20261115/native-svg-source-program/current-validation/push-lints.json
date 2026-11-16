@@ -1,0 +1,83 @@
+{
+  "status": "passed",
+  "source_commit": "8472674645",
+  "results": [
+    {
+      "name": "native-clippy",
+      "exit": 0,
+      "seconds": 40.47280979156494,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/minimal-font.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    },
+    {
+      "name": "wasm-clippy",
+      "exit": 0,
+      "seconds": 32.72801685333252,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/minimal-font.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    },
+    {
+      "name": "workspace-build",
+      "exit": 0,
+      "seconds": 38.519932985305786,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/minimal-font.sb",
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review"
+      ]
+    },
+    {
+      "name": "workspace-all-target-clippy",
+      "exit": 0,
+      "seconds": 66.88089799880981,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/minimal-font.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    }
+  ]
+}

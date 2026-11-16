@@ -109,6 +109,11 @@ Native·fresh WASM TSV 원본, 비교 명령·전쪽 수·최대 하락폭 및 �
 해당 등록 문서에 한해서 동일 입력·PDF·backend의 정본 표시값 하락을 검사한다.
 공통 검사 통과를 정본 전체 통과로 간주하거나 비공개 글꼴을 요구하는 근거로 사용하지 않는다.
 
+다른 호스트의 보호 검증을 Mac에서 재현할 때는
+[기준 글꼴의 확보·이관·실제 선택 확인](visual_sweep_guide.md#macos에서-정본-보호-문서의-글꼴-공급-재현)을
+먼저 수행한다. 누락된 기준 글꼴을 확보해 같은 조건으로 다시 비교하며, 환경 차이를
+이 절의 하락 금지에 대한 예외로 취급하지 않는다.
+
 1. 정본 보호 TSV와 manifest의 commit SHA·경로·SHA-256을 고정한다. manifest의
    `table_sha256`을 확인하고, 입력 SHA·기준 PDF SHA·compat·DPI가 일치하는 `document_id`의
    backend·page로 대응한다. HWP와 HWPX는 별도 입력이며 파일명만 같다고 합치지 않는다.

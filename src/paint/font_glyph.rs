@@ -839,7 +839,7 @@ impl FontGlyphLowerer<'_, '_> {
             shape_key: ShapeKey {
                 font_instance: FontInstanceKey {
                     face_key,
-                    size_px: run.style.font_size,
+                    size_px: run.style.effective_font_size(),
                     variations: Vec::new(),
                     synthetic_bold: false,
                     synthetic_italic: false,
@@ -1091,8 +1091,8 @@ impl FontGlyphLowerer<'_, '_> {
         payload.font_em_box = Some(BoundingBox::new(
             bbox.x,
             bbox.y + run.baseline,
-            run.style.font_size,
-            run.style.font_size,
+            run.style.effective_font_size(),
+            run.style.effective_font_size(),
         ));
         if !payload.has_static_sanitized_contract() {
             return None;

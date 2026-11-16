@@ -832,7 +832,10 @@ export class CanvasKitLayerRenderer {
 
     let registered = 0;
     try {
-      const bytesByFace = await loadLocalFontBytesFor([...pendingRecords.values()].map(record => record.fullName));
+      // 표시 이름이 같은 분할 프로그램도 선택한 고유 face 그대로 읽는다.
+      const bytesByFace = await loadLocalFontBytesFor(
+        [...pendingRecords.values()].map(record => record.postscriptName || record.fullName),
+      );
       for (const [faceKey, record] of pendingRecords) {
         const bytes = bytesByFace.get(faceKey);
         if (this.disposed || generation !== this.documentGeneration || epoch !== this.localFontPreparationEpoch) return registered;

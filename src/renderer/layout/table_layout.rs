@@ -7021,9 +7021,13 @@ impl LayoutEngine {
                     (col_area.x + om_l, col_area.width)
                 }
             };
+            let om_right =
+                crate::renderer::float_placement::topbottom_float_outer_margin_right_hu(table)
+                    .filter(|_| !topbottom_outer_margin_already_applied)
+                    .map_or(0.0, |hu| hwpunit_to_px(hu, self.dpi));
             crate::renderer::object_alignment::aligned_horizontal_origin(
                 ref_x,
-                ref_w,
+                ref_w - om_right,
                 table_width,
                 horz_align,
                 h_offset,
@@ -7032,7 +7036,13 @@ impl LayoutEngine {
             // 중첩 표: outer_margin_left 적용 + host_alignment에 따라 셀 내에서 정렬
             let om_left = hwpunit_to_px(table.outer_margin_left as i32, self.dpi);
             let area_x = col_area.x + om_left;
-            let area_w = (col_area.width - om_left).max(0.0);
+            // 오른쪽 정렬은 셀 오른끝에서 바깥여백 상자를 닫는다. 왼쪽
+            // 여백만 뺀 폭으로 계산하면 표 본체가 오른쪽 여백을 덮는다.
+            // 글자처럼 취급한 표는 글줄 펜이 이 상자를 소유하므로 별도다.
+            let om_right =
+                crate::renderer::float_placement::topbottom_float_outer_margin_right_hu(table)
+                    .map_or(0.0, |hu| hwpunit_to_px(hu, self.dpi));
+            let area_w = (col_area.width - om_left - om_right).max(0.0);
             // 글 앞/뒤 표는 셀의 텍스트 흐름과 별개인 부동 개체다. 자리차지
             // 표의 가운데 배치 호환 규칙을 적용하면 명시한 LEFT/RIGHT 앵커가
             // 사라진다. 한컴 PDF에서도 문단 기준 LEFT/offset=0은 셀 왼끝이다.

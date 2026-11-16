@@ -1,0 +1,13 @@
+{
+  "id": "hancom2020-print-helvetica-observed-arial",
+  "substitutions": {
+    "Helvetica": "Arial",
+    "Helvetica-Bold": "Arial",
+    "Helvetica-Oblique": "Arial",
+    "Helvetica-BoldOblique": "Arial"
+  },
+  "trueTypeFaces": [
+    "Arial"
+  ],
+  "preserveSourceMetrics": true
+}

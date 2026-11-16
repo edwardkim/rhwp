@@ -1,0 +1,15 @@
+{
+  "source": "393175a0c0f428b3c9b9bbf9b0e0153edc5ba1c7",
+  "product_source": "393175a0c0",
+  "native_sha256": "7eb3f86f50a55fdb8ca62d577a9303424c4da051ea1da075904ed75d32217124",
+  "wasm_sha256": "26024e75895627209e151eab133f14a564b88187130107b300c7866cc847c7a1",
+  "javascript_sha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+  "root_public_equal": true,
+  "wasm_build": "Mac locked wrapper --target web --out-dir pkg --no-opt; local substitute",
+  "source_files": {
+    "src/renderer/canvaskit_policy.rs": "812518264df79a578617bf3c153a72b01f4d0f5c992ded08c093d8f9dfabcac9",
+    "src/paint/builder.rs": "b8e405e656be4f180e52c268487bccb9ceb3d75e045f627b7ad19967f45c4846",
+    "src/renderer/layout/table_partial.rs": "4feeef254506617c4549f3791b321592b65183cc79aa02ea0239cfe8ba917ba4",
+    "tests/cases/canvaskit_document_preflight_work_budget.rs": "b85615c3c85d72fcce9b447365d6ac9d602a9920bfd23337979d8ca42f68ad4d"
+  }
+}

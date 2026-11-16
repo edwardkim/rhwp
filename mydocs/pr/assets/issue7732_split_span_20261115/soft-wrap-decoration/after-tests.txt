@@ -1,0 +1,16 @@
+[RustTestSuite] issue_6117_layer_decoration_trim -> regression_suite_014::issue_6117_layer_decoration_trim
+[RustTestSuite] cargo nextest run --locked --test regression_suite_014 -E test(/(^|::)issue_6117_layer_decoration_trim::/) --cargo-profile release-test --target-dir target/pr-review --features native-skia -j 8
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 3m 53s
+────────────
+ Nextest run ID a0e9e2a6-dc2c-41bc-a6f5-c6f1e7a7b9bb with nextest profile: default
+    Starting 7 tests across 1 binary (349 tests skipped)
+        PASS [   0.013s] (1/7) rhwp::regression_suite_014 issue_6117_layer_decoration_trim::issue_6117_trims_trailing_spaces_of_the_last_visible_run
+        PASS [   0.013s] (2/7) rhwp::regression_suite_014 issue_6117_layer_decoration_trim::issue_6117_keeps_author_spaces_on_a_paragraph_end_run
+        PASS [   0.014s] (3/7) rhwp::regression_suite_014 issue_6117_layer_decoration_trim::issue_6117_keeps_split_author_spaces_before_explicit_break
+        PASS [   0.014s] (4/7) rhwp::regression_suite_014 issue_6117_layer_decoration_trim::issue_6117_trims_space_only_runs_after_soft_wrapped_text
+        PASS [   0.015s] (5/7) rhwp::regression_suite_014 issue_6117_layer_decoration_trim::issue_6117_trims_every_split_tail_run_of_the_same_soft_wrap
+        PASS [   0.015s] (6/7) rhwp::regression_suite_014 issue_6117_layer_decoration_trim::issue_6117_keeps_space_only_form_lines
+        PASS [   0.016s] (7/7) rhwp::regression_suite_014 issue_6117_layer_decoration_trim::issue_6117_keeps_split_author_spaces_at_paragraph_end
+────────────
+     Summary [   0.018s] 7 tests run: 7 passed, 349 skipped

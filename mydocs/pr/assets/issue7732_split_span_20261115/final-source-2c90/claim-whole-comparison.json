@@ -1,0 +1,50 @@
+{
+  "product_source": "2c90fa288bb4d48764eb82dbb025df4a12637ea9",
+  "base": "e7ee272cfa33a960b0d0d924983d29e6509903e0",
+  "cases": [
+    {
+      "key": "footnote",
+      "backend": "native",
+      "pages": 50,
+      "minimum": 99.23,
+      "declines": [],
+      "increases": [
+        {
+          "page": 37,
+          "base": 98.75,
+          "head": 99.29
+        }
+      ]
+    },
+    {
+      "key": "incoming9060",
+      "backend": "native",
+      "pages": 14,
+      "minimum": 100.0,
+      "declines": [],
+      "increases": []
+    },
+    {
+      "key": "footnote",
+      "backend": "wasm",
+      "pages": 50,
+      "minimum": 99.23,
+      "declines": [],
+      "increases": [
+        {
+          "page": 37,
+          "base": 98.75,
+          "head": 99.29
+        }
+      ]
+    },
+    {
+      "key": "incoming9060",
+      "backend": "wasm",
+      "pages": 14,
+      "minimum": 100.0,
+      "declines": [],
+      "increases": []
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "status": "passed_full_nextest_only",
+  "code_commit": "2749e491e843ec851de12467751ec200ab551014",
+  "base_commit": "4e0b20d2922953ee7ab9a1716ac819b921fe484b",
+  "later_document_only_commits": "7be5ef0ab5 and 5f64cef5a1; Rust source unchanged",
+  "platform": "macOS arm64",
+  "minimal_font": {
+    "method": "sandbox-exec",
+    "policy_sha256": "7bdb53a205648fa3fc5ed149ac2c6a1a45b27493fbbb2e60c0c4ced7b202e76c",
+    "RHWP_FONT_PATH": "unset",
+    "note": "사용자·공유 설치 글꼴 파일 접근을 차단한 기존 최소 글꼴 정책. 정상 공급 글꼴 Visual Sweep과 구분한다."
+  },
+  "command": [
+    "sandbox-exec",
+    "-f",
+    "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/minimal-font.sb",
+    "cargo",
+    "nextest",
+    "run",
+    "--locked",
+    "--cargo-profile",
+    "release-test",
+    "--target-dir",
+    "/Users/tsjang/rhwp/target/pr-review",
+    "--tests",
+    "--test-threads",
+    "8",
+    "--no-fail-fast"
+  ],
+  "exit_code": 0,
+  "test_seconds": "844.891",
+  "command_seconds_including_compilation": 1729.565,
+  "tests_run": 13617,
+  "passed": 13617,
+  "failed": 0,
+  "skipped": 45,
+  "log_sha256": "c9d3a6a2406170352e5a6caf1650062686b6c0b76567f1b23b42f82b50dae891",
+  "log_bytes": 1903410,
+  "scope_limit": "이 JSON은 최소 글꼴 전체 nextest의 완료 증거다. 후속 Native Skia 검사·보호 전쪽·실제 Studio 소비·리베이스·PR·CI 완료를 의미하지 않는다."
+}

@@ -1,0 +1,45 @@
+{
+  "status": "passed",
+  "sample_count": 8,
+  "direct_read_svg_pages": {
+    "footnote": [
+      36,
+      37,
+      38
+    ],
+    "nested": [
+      1,
+      10,
+      11,
+      14,
+      15
+    ]
+  },
+  "direct_read_additional_representatives": {
+    "canvas2d": {
+      "footnote": [
+        37
+      ],
+      "nested": [
+        10,
+        11
+      ]
+    },
+    "canvaskit-compat": {
+      "footnote": [
+        37
+      ]
+    },
+    "canvaskit-default": {
+      "footnote": [
+        37
+      ]
+    }
+  },
+  "observations": [
+    "각주 36·37·38쪽 표 행·이어받기 내용·정책실현과 숫자31의 셀 소유 및 기준선을 대조했다. 기존 전면 이동은 재현되지 않는다.",
+    "중첩 1쪽 표 시작과 오른쪽 끝, 10·11·14·15쪽 점선 테두리·문단 순서·다음 기관 시작과 밑줄을 대조했다.",
+    "글꼴 잉크 굵기·AA와 1px 프린지, 일부 한자 세부 윤곽 차이는 원시 픽셀 동일성을 뜻하지 않는다. 본문 누락·중복·잘못된 쪽 소유는 보이지 않는다."
+  ],
+  "canvaskit_scope": "각주3쪽 screen/print의 실제 CK 두 모드만 직접 출력으로 판정. 중첩5쪽은 기존 문서 전체 preflight 미지원 및 지정 자원 미준비로 Canvas2D fallback이며 CK 통과로 세지 않는다. guard 우회 없음."
+}

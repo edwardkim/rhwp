@@ -969,6 +969,7 @@ fn try_char_style_to_text_style<S: crate::renderer::style_resolver::storage::Sto
 ) -> Result<TextStyle, S::Error> {
     if let Some(cs) = char_style {
         Ok(TextStyle {
+            print_ink_font_size: None,
             script_metrics: styles.script_metrics,
             native_pua_metrics: (!styles.has_exact_font_source(char_style_id, lang_index))
                 .then(|| {
