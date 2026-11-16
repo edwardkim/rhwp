@@ -1,0 +1,10 @@
+[
+  {
+    "source_host": "win10-ted",
+    "source": "C:\\Windows\\Fonts\\HBATANG.TTF",
+    "output": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/private-fonts/windows-probe/HBATANG.TTF",
+    "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+    "installed_mac_sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+    "same_as_installed_mac": false
+  }
+]
