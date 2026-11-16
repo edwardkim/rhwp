@@ -4,7 +4,7 @@
 
 작업지시자의 2026-11-16 신규 이슈 등록·메인테이너 구현 지시에 따라 [#9133](https://github.com/edwardkim/rhwp/issues/9133)을 등록하고 `edwardkim`에게 할당했다. [수행 계획](../plans/task_m100_9133.md)을 `5e9f208486`에, 공통 CSS·회귀·가이드를 `4b72435a0765fdc1d38698ac46f0556339986c05`에 기록했다.
 
-로컬 구현·필수 검증을 완료했다. 복구 E2E의 실제 글꼴 선택 보완까지 포함한 최종 code head는 `80bf4c9e1b01ca6b621a7bc5d49d7fd64a1f7ad7`이다. 원격 push·PR·공개 댓글·merge·issue close는 수행하지 않았다. 기존 #8905의 제품 정보 수정은 유지하고 공통 창의 후속 범위를 별도 이슈로 처리한다.
+로컬 구현·필수 검증을 완료했다. 초기 code head는 `80bf4c9e1b01ca6b621a7bc5d49d7fd64a1f7ad7`이며, 원격 처리 승인 후 최신 devel을 반영한 제출 전 재검증은 아래 별도 절에 기록했다. 기존 #8905의 제품 정보 수정은 유지하고 공통 창의 후속 범위를 별도 이슈로 처리한다.
 
 ## 원인과 보완
 
@@ -35,7 +35,7 @@
 
 스크린샷을 직접 판독해 제목·확인/취소와 마지막 복구 후보가 읽히는 것을 확인했다. 브라우저 에뮬레이션이며 Android Firefox 실기기 검증으로 주장하지 않는다.
 
-## 최종 검증
+## 초기 검증 — 리베이스 전
 
 | 최종 검사 | 실제 결과 |
 | --- | --- |
@@ -56,4 +56,17 @@
 
 자동 복구 E2E의 최초 정체는 기준 CSS에서도 동일하게 재현했다. `11c6fbaa85`의 복구 검사는 선행 [PR #8397](../pr/archives/pr_8397_review.md)·통합 `99a176b7cb`의 실제 글꼴 선택에 응답하지 않았다. `local-font-prompt-issue8371.test.mjs`의 지원된 선택 계약과 대조한 뒤, 글꼴 미공급 환경에서 실제 ‘대체 글꼴로 보기’ 버튼을 누르는 셋업만 추가했다. 문서 복구·dirty·원본 draft 삭제 assertion은 모두 유지했다. 제품 글꼴 선택·복구 로직을 우회하거나 수정하지 않았다.
 
-증거는 [원장](../working/assets/issue9133/README.md)에 보존한다. 현재 로컬 작업 branch는 `task/9133-dialog-viewport-containment`이며 원격 제출 대기로 작업 worktree를 유지한다. 최종 devel과 본인 열린 PR·제출 후보 병합 시뮬레이션을 재확인한 뒤, 별도 승인된 원격 절차를 진행한다.
+초기 증거는 [원장](../working/assets/issue9133/README.md)에 보존한다. 작업 branch는 `task/9133-dialog-viewport-containment`다.
+
+## 원격 승인 후 최신 devel 반영·제출 전 검증
+
+작업지시자는 “CI 성공·self-review 후 머지와 후속 처리까지 승인”했다. push 직전 조회에서 새 devel `ae9277dda0ca17be279cba89c4deea74fb75dcae`의 40개 커밋을 발견했다. 실제 추가 범위는 [Dependabot 통합 #9134](https://github.com/edwardkim/rhwp/pull/9134)와 [후속 기록 #9135](https://github.com/edwardkim/rhwp/pull/9135)다. 기존 제출 후보 `e27e724802`를 충돌 없이 rebase했으며 `git range-diff`에서 네 커밋 모두 `=`다. CSS 3개·해당 E2E 2개도 바이트가 같다.
+
+리베이스 후 실제 검증 source는 `b57fb3d5ef8ea924e5cd37fed3798ed1b18e54e7`이다. Vite 8.3.8·Puppeteer 25.17.0·Anthropic SDK 1.8.0을 별도 worktree의 locked 설치로 공급해 기본 작업공간의 의존성을 덮어쓰지 않았다. 새 Cargo 입력으로 공용 target을 사용해 release WASM·wasm-opt를 완료했다. 새 최적화 WASM은 `44eaf435692537c84b1e13d7fc34017953318961171533d6a970e07badd33ef6`이며 `pkg/`와 Studio public의 실제 JS/WASM 해시가 각각 같다.
+
+- TypeScript 두 경로·Studio 2,805 PASS/기존 2 SKIP·production/PWA build가 성공했다.
+- 공통 창 66개 조합, 기존 제품 정보 19개, 실제 PDF Worker·취소/재시도, 새 문서/HWP/HWPX 복구, 반응형 2,666개가 모두 통과했다.
+- #9134의 실제 CanvasKit 빈 일반 선 패턴(line/rectangle)·명시적 패턴 거부·브라우저 종료/파이프 소유 검사가 전체 단위 검사에서 통과했다. 해당 두 제품 파일은 새 devel과 동일하며 승인된 대화창 변경이 이를 덮어쓰지 않는다.
+- 실제 사용한 기존 HWP/HWPX/PDF 3개의 저장소 blob·파일 바이트·SHA-256과 commit 포함을 확인했다. 합성 UI 입력과 문서 조판의 독립 Print 증거를 구분했다.
+
+[새 기반 검증 원장](../working/assets/issue9133/rebase/README.md)에 프로그램·의존성·이력 대응·검사별 종료 코드·화면을 보존했다. 본인 미병합 PR과 최신 base/head 병합 시뮬레이션을 제출 직전에 다시 조회한다. 사용자 승인은 upstream push·devel Open PR·해당 head CI 성공·self-review·merge·#9133 완료와 #8905 답변·운영 기록·동기화·종료 정리까지 포함한다.
