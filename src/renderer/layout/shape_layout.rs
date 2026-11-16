@@ -255,6 +255,77 @@ fn textbox_topbottom_table_band_extent_px(para: &Paragraph, dpi: f64) -> Option<
         .reduce(|(t0, b0), (t1, b1)| (t0.min(t1), b0.max(b1)))
 }
 
+/// [PK-40987] 저장 줄 있는 글상자의 세로 정렬 높이에 드는 비글자처럼 표의 바닥(문단 저장 vpos 기준 HU).
+/// 문단 기준 위 정렬의 글 앞으로·글 뒤로·자리차지 표만 다룬다: 세로 오프셋 + 바깥 위 + 높이 + 바깥 아래.
+fn textbox_stored_table_bottom_hu(table: &crate::model::table::Table) -> Option<i32> {
+    let common = &table.common;
+    (!common.treat_as_char
+        && matches!(
+            common.text_wrap,
+            TextWrap::InFrontOfText | TextWrap::BehindText | TextWrap::TopAndBottom
+        )
+        && common.vert_rel_to == VertRelTo::Para
+        && common.vert_align == VertAlign::Top)
+        .then(|| {
+            (common.vertical_offset as i32)
+                .saturating_add(i32::from(table.outer_margin_top))
+                .saturating_add(common.height as i32)
+                .saturating_add(i32::from(table.outer_margin_bottom))
+        })
+}
+
+/// [PK-40987] 저장 줄 있는 글상자 문단의 앵커 위끝이 첫 저장 줄보다 위에 있는 양(HU, 0 이상).
+///
+/// 한컴은 자리차지 표 띠가 앵커 문단의 줄을 밀면 그 줄을 띠 아래에 저장한다(실문서: 앞 문단 끝
+/// 44967 + 오프셋 164 + 바깥 위 283 + 높이 11650 + 바깥 아래 283 = 앵커 줄 57347). 표 자리와 내용
+/// 높이는 줄이 아니라 앞 문단 끝(앞 문단 마지막 줄 vpos + 줄 높이 + 줄 간격)을 문단 위끝으로 쓴다.
+/// 앞 문단이 없거나 줄이 밀리지 않았으면 0 이다.
+fn textbox_stored_anchor_lift_hu(paragraphs: &[Paragraph], index: usize) -> i32 {
+    let Some(own) = paragraphs
+        .get(index)
+        .and_then(|para| para.line_segs.first())
+        .map(|line| line.vertical_pos)
+    else {
+        return 0;
+    };
+    let Some(previous_end) = index
+        .checked_sub(1)
+        .and_then(|prev| paragraphs.get(prev))
+        .and_then(|para| para.line_segs.last())
+        .map(|line| {
+            line.vertical_pos
+                .saturating_add(line.line_height)
+                .saturating_add(line.line_spacing)
+        })
+    else {
+        return 0;
+    };
+    own.saturating_sub(previous_end).max(0)
+}
+
+/// [PK-40987] 저장 줄 있는 글상자 문단의 자리차지 표 자리(가로·세로 오프셋 + 바깥 여백, px).
+/// 저장 줄이 뒤 흐름을 이미 담으므로 표 자리만 글 앞으로 표와 같은 오프셋에 놓는다. 띠가 앵커 줄을
+/// 민 문단은 앞 문단 끝을 문단 위끝으로 쓴다(`anchor_lift_hu`).
+fn textbox_stored_topbottom_table_offset_px(
+    para: &Paragraph,
+    table: &crate::model::table::Table,
+    anchor_lift_hu: i32,
+    dpi: f64,
+) -> Option<(f64, f64)> {
+    let common = &table.common;
+    (textbox_topbottom_table_shape(table) && !crate::renderer::para_has_no_stored_line_segs(para))
+        .then(|| {
+            (
+                (common.horizontal_offset as i32 as f64 + f64::from(table.outer_margin_left)) * dpi
+                    / HWPUNIT_PER_INCH,
+                (common.vertical_offset as i32 as f64 + f64::from(table.outer_margin_top)
+                    - f64::from(anchor_lift_hu))
+                    * dpi
+                    / HWPUNIT_PER_INCH,
+            )
+        })
+}
+
 fn push_placeholder_render_node(
     tree: &mut PageLayoutContext,
     parent: &mut RenderNode,
@@ -3859,7 +3930,7 @@ impl LayoutEngine {
                         .last()
                         .unwrap_or(0.0);
 
-                    for para in &textbox_paragraphs[..para_count] {
+                    for (para_idx, para) in textbox_paragraphs[..para_count].iter().enumerate() {
                         let para_vpos = para
                             .line_segs
                             .first()
@@ -3883,6 +3954,26 @@ impl LayoutEngine {
                                 let bottom = top.saturating_add(common.height as i32);
                                 total_content_height =
                                     total_content_height.max(hwpunit_to_px(bottom, self.dpi));
+                            }
+                            // [PK-40987] 비글자처럼 표(글 앞으로·글 뒤로·자리차지, 문단 기준 위)도 바깥
+                            // 여백까지 내용 높이에 든다(웹한글기안기 인쇄 실측: 끝 문단 표 바닥 + 바깥
+                            // 아래 여백까지 가운데 정렬 높이). 종전에는 그림·도형만 넣어 내용을 낮게 잡았다.
+                            if let Control::Table(table) = ctrl {
+                                if let Some(bottom) = textbox_stored_table_bottom_hu(table) {
+                                    // 띠가 앵커 줄을 민 자리차지 표는 앞 문단 끝이 문단 위끝이다.
+                                    let lift = if table.common.text_wrap == TextWrap::TopAndBottom {
+                                        textbox_stored_anchor_lift_hu(
+                                            &textbox_paragraphs[..para_count],
+                                            para_idx,
+                                        )
+                                    } else {
+                                        0
+                                    };
+                                    total_content_height = total_content_height.max(hwpunit_to_px(
+                                        para_vpos.saturating_sub(lift).saturating_add(bottom),
+                                        self.dpi,
+                                    ));
+                                }
                             }
                         }
                         // [#5820 축2] 저장 lineseg 가 없는 문단(기계생성 로고 줄)은
@@ -4762,6 +4853,17 @@ impl LayoutEngine {
                         .or_else(|| {
                             textbox_topbottom_table_band_px(para, table, self.dpi)
                                 .map(|(dx, dy, _)| (dx, dy))
+                        })
+                        .or_else(|| {
+                            textbox_stored_topbottom_table_offset_px(
+                                para,
+                                table,
+                                textbox_stored_anchor_lift_hu(
+                                    &textbox_paragraphs[..para_count],
+                                    pi,
+                                ),
+                                self.dpi,
+                            )
                         });
                         let table_ctx = CellContext {
                             in_textbox: true,
