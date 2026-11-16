@@ -1,0 +1,2721 @@
+{
+  "platform": "windows",
+  "qualification": "failed",
+  "nonce": "11e1574738054624bc4936263d51bdf8",
+  "build": {
+    "platform": "windows",
+    "probeKind": "twoTileGroup",
+    "sourceHead": "4f6fdb689c2fe45964080074c7a230d2023b4e53",
+    "nativeSourceHead": "4f6fdb689c2fe45964080074c7a230d2023b4e53",
+    "sourceFiles": {
+      "bindings/Flutter/.gitignore": "95196a246afc573c7ef17bb60f24ba48f2f7886c1f5e2da6d8e4972fd574c8ea",
+      "bindings/Flutter/DOCUMENT_LIFECYCLE.md": "0f252a9eb1578d6e1ddfc8597e86c139a4a3e3c9b2e1858ebe7431f42463d12c",
+      "bindings/Flutter/GPU_CACHE_METRICS.md": "541c8f6f3496b299b60f8b32449706448d0fa49474651f6f93d0dfc11fb2500c",
+      "bindings/Flutter/GPU_MULTIPAGE_VIEWPORT.md": "eddd0afcef75c27ae5e691e319064c013f97a91c6a1170c96d89178b81c0761e",
+      "bindings/Flutter/GPU_PERFORMANCE.md": "33ff880945dd522a71b1cade400cf905ad93bb55292c5b6541d08bf368ac97fe",
+      "bindings/Flutter/GPU_PRESENTATION.md": "710f5aa56679b20c1bfed10969af5d608eabfb596f6d57bdfa66bac0886670bf",
+      "bindings/Flutter/GPU_QUALIFICATION.md": "9b005967045320ec2f7f37bb537d62781143f53fff2ce14ad639338c0a609bc4",
+      "bindings/Flutter/GPU_RECOVERY.md": "5d9bc99c8c3fe58ea15489b9a0a24691543d06f35a3e63b7b635a79b17a003ec",
+      "bindings/Flutter/GPU_WINDOW_LIFECYCLE.md": "4a8c02209daa3b80e6f070aa0dbf7e500c5ad04797c7ebd594a4e84d36021fd2",
+      "bindings/Flutter/LINUX_QUALIFICATION.md": "2074099ac92ebe0dedd427a1eb8c3f44112e362ba55a82035c348deceb6708e3",
+      "bindings/Flutter/NATIVE_ARTIFACT_REUSE.md": "d3ea9566388b872b4e596320c7d6f1dd72c79e2a16b0c150523725eac84df024",
+      "bindings/Flutter/README.md": "769453fa8fab90b4d25778b0d8c65a8451263f72112df936671ab5f4ec46a411",
+      "bindings/Flutter/RUNTIME_BUNDLE.md": "a3d5c9b942a98a0d7f9bb9f3d45274fdbfb105802a06fa83f4fdfbaaa8b95911",
+      "bindings/Flutter/WINDOWS_CONTINUOUS_QUALIFICATION.md": "8a29073b66419aad2481da738a90c8485b4bce19fefb4b2f404cdd508f8214ef",
+      "bindings/Flutter/WINDOWS_TILE_QUALIFICATION.md": "de7ae38fa90b14338a3e5b1914d1062087022aa244a661915c8de9964311b365",
+      "bindings/Flutter/analysis_options.yaml": "4e5f7579f6c38f28a3852603d721c6743165156230a2ab3d20c307e5a566ece6",
+      "bindings/Flutter/common/bounded_tile_group.h": "e42afaed89af234bbaaa9c7b2c9d8640d1aa5586c91e2b1b0ea44322ed580aa9",
+      "bindings/Flutter/common/bounded_tile_group_test.cc": "d198394807946b10dad9b1d23ce9ea0b4cad95a58d3f2e62ef9aaadf7c775e7f",
+      "bindings/Flutter/common/cache_trim.h": "857e08b9178bc04cd460e450ec8fd7727af700ccb98ccd30f5087c599a5757e4",
+      "bindings/Flutter/common/cache_trim_test.cc": "6076c675bd94aa084326784185e35788e008ecedcc1a027160aa99438164509a",
+      "bindings/Flutter/common/gpu_cache_metrics.h": "2f6a36a5333c080a16fe8db15df97e5a1b8b9de4ac8b6d4b6aa0aa0566e75ee8",
+      "bindings/Flutter/common/gpu_cache_metrics_test.cc": "ad97969af71d01b719b73c754230b4cb3393fdf359fedf44fea1c61e619bd9cc",
+      "bindings/Flutter/common/producer_ready.h": "4fc3c305a532df803f4003db0341cf645d64769754498a6b630b34c3ce3395f1",
+      "bindings/Flutter/common/producer_ready_test.cc": "8765a1e30c308371bb719e33c5640a5aeb7cb0c546e057a771b5eaa93e7592ac",
+      "bindings/Flutter/example/lib/main.dart": "1d2cf2b241e935360bfb115a78b34d2a862b341f6cca0c10eb244202cc31d8e6",
+      "bindings/Flutter/example/pubspec.yaml": "1f735fcc6e66f6c25150e2bbdd558f068db5abb6d65dfde45db61547f1c9f819",
+      "bindings/Flutter/lib/rhwp_native.dart": "b3cda058981b42a51097c2fa611c7d766d9de15ba3d4815d9199c4b030f5ad68",
+      "bindings/Flutter/lib/rhwp_native_flutter.dart": "b477af51c160621988808ccf1f08d72cfb6f8da3808307dc10e9cafa58d6dd29",
+      "bindings/Flutter/lib/src/native_document.dart": "c264064152db703473e19096e677b48822529044e4513a822145127049eec6f6",
+      "bindings/Flutter/lib/src/native_document_lifecycle.dart": "725ad8ca0181f8ff4841ca1d86029932148f99e0b7a168f89944eb41b7417af9",
+      "bindings/Flutter/lib/src/native_document_view.dart": "0a9cdd585d99ad5a7ed2881592ed65ef7b7e239b6d96474682b48d2b91c9de02",
+      "bindings/Flutter/lib/src/native_editor_controller.dart": "86ee2bdcb4c1e5ad9de45557f8be72c86bd2a5c2ca65f7ff9c3347918ca617d7",
+      "bindings/Flutter/lib/src/native_editor_view.dart": "659ffa2863c4f4e4d166caa26d6bfb280bb64aa0f28a3ada9432759bf3ee3e3b",
+      "bindings/Flutter/lib/src/native_ffi.dart": "e2f0699ae0336ad2d9e39a4d8fbd5531a14114e0859366542cba2c7be2ac3e1c",
+      "bindings/Flutter/lib/src/native_file_store.dart": "1041d2bcf0fdd413e742f794f810aaba7f432cc341d5b75f284455ae0fbf4a63",
+      "bindings/Flutter/lib/src/native_gpu_cache_metrics.dart": "37f1b8b9d596be356b2e98abd93689b1296b13027bad71c73a561e0c04fcecf9",
+      "bindings/Flutter/lib/src/native_gpu_cache_trim.dart": "88725627d6b095d31ea7937fd54f69497498da5a38257efea0d333cb2ecfaf15",
+      "bindings/Flutter/lib/src/native_gpu_lifecycle.dart": "41939ab19d78f44519b09949ae37cd553d4f657ec0f6e792f8578d924e72f8b5",
+      "bindings/Flutter/lib/src/native_gpu_session.dart": "d90bc901f4e898f383f43c6b76c4d1775d8024b5332c43cccc873cab3456f75e",
+      "bindings/Flutter/lib/src/native_gpu_tiles.dart": "f91089b79fdd97ca35cdf2749e564296eebf271a8d79e65fc794446e8648fd5b",
+      "bindings/Flutter/lib/src/native_gpu_trace.dart": "7a59411c676ff837c6055b89a0731559a7036bfafb23f23322877b6781772d76",
+      "bindings/Flutter/lib/src/native_ime.dart": "6b82b022bf02501080111ea91f6bc60f761c13642fb51a893eea47c125d35f44",
+      "bindings/Flutter/lib/src/native_multipage_view.dart": "522278d1d6413518c4ec85f7880bee985cdd07ab004f1af134af1cf2abb6f042",
+      "bindings/Flutter/lib/src/native_presentation.dart": "d4615e56e91a174c7b7a381a5619e8452826056687e3d6deb2a68602063ced04",
+      "bindings/Flutter/lib/src/native_producer_ready.dart": "f71f950c99f1cbdc6fa6aca4d2fe80dff3907e64041d299d4d60a0e00b80fcb1",
+      "bindings/Flutter/lib/src/native_runtime_bundle.dart": "8bca970d2618a36269603540004ca5ac66b0566a4101b6f06cbd8533765d4753",
+      "bindings/Flutter/lib/src/native_texture_view.dart": "8c2534a3d03832aed82174c3ae9ce9f4cd972eae97e0eee7649dcfcf467a257d",
+      "bindings/Flutter/lib/src/native_viewport.dart": "67fd8c006eaf9430ec1134e714f287c133e2976b462847828283ba0ea0aaba64",
+      "bindings/Flutter/lib/src/native_window_close.dart": "6c6ea64ffee94985a2739f44543bfaa7a14b002fe0e1eae3c5270f027f555614",
+      "bindings/Flutter/linux/CMakeLists.txt": "52d234f535255ea4f808816f40a2c8afb0a18b5d59ef23f3b1fe7f49bb70737e",
+      "bindings/Flutter/linux/gl_state_guard.cc": "cc6414e88d616851da0aed9425f5dfc639cee4fabe32a0166fb6f1cfbb38018e",
+      "bindings/Flutter/linux/gl_state_guard.h": "a50b68328c3f06bb1dbb8489c729003da1aafa29e9c9b208eb38beb1288fee2e",
+      "bindings/Flutter/linux/include/rhwp_native_reference/rhwp_texture_plugin.h": "78813198e436393a778450c5086ceaa31f3c1f95d65ff615ecadda542fbe7918",
+      "bindings/Flutter/linux/rhwp_texture_plugin.cc": "69ab95f95375e8f505d4cd8ab59332faac0ad7b9545358d028a91ac673625b66",
+      "bindings/Flutter/linux/tests/check_linux_plugin.py": "6eb4b75c6ee6c6d330c396a7a6797ef3dcae2beba58732bbd4bfe5768bfc0038",
+      "bindings/Flutter/linux/tests/gl_state_guard_test.cc": "213764ad01b343c2ae4db556933dd259698369d8fa82edec3025598fe7902858",
+      "bindings/Flutter/linux/tests/texture_state_test.cc": "c17658aedf2966f649179859445acc97218f6c8cca95f79d3b729b48f53e88fc",
+      "bindings/Flutter/linux/texture_state.cc": "0457ebef179817964c762000fa2cf0d37ece7343944a59fa8bed1cb935b4946a",
+      "bindings/Flutter/linux/texture_state.h": "9e581a3a8099cb8b46ec981f3b80c819a30414c04e29218f5f5675434ea52fab",
+      "bindings/Flutter/macos/Classes/MetalFrameLifetime.hpp": "9a9fd878ee195d9056bb5aa5e864a892484a82c690c6eac64d108d093115cea5",
+      "bindings/Flutter/macos/Classes/MetalNativeView.hpp": "43098475c3f6ae6f78d0dda01435053950b4c0a968546bef7f6e5d7576b76e1a",
+      "bindings/Flutter/macos/Classes/MetalTileGroup.hpp": "8ecc4ba9102618ad68e9c08daafd146e84409d1cb8c40abbee688d8975c2cc2d",
+      "bindings/Flutter/macos/Classes/MetalTileGroupMethods.inc": "512336c08c05583332d3c316112e929782f28e0636cba224f6c7e59ac8a44bb1",
+      "bindings/Flutter/macos/Classes/MetalViewLifecycle.hpp": "2df06982b7dfb834a3b688f263dbf26943bd2ebf55604d617e79cfba317692fd",
+      "bindings/Flutter/macos/Classes/RhwpMetalPlugin.h": "dfb9c9266530d506a3da850e01088683a564eb0597255f129334a9175115f264",
+      "bindings/Flutter/macos/Classes/RhwpMetalPlugin.mm": "9ced77c4de440fc26efab8f5cec12b57a572fd79551c484b42a983905de6e86e",
+      "bindings/Flutter/macos/Classes/RhwpProducerReadyEvents.hpp": "eaef10cae7b74ea3ed70018b907bf27d2b27eaccea02eaba3aa35b22144aec36",
+      "bindings/Flutter/macos/Classes/TextureCloseRouting.hpp": "fe23218e9644bd0e0100f81728b45145b6aa8d11de8b00dc4dbb4cfbcf2c8c65",
+      "bindings/Flutter/macos/NATIVE_VIEW_PRESENTATION.md": "4da4938c46516bae32248b503504e460839ee20e019a781a72296ad73c5d7b28",
+      "bindings/Flutter/macos/README.md": "9a815d85bc46e6629706021c633640034f5c1db36e17e88505a84da4c3420f58",
+      "bindings/Flutter/macos/SDK_QUALIFICATION.md": "4de91fa0ba81a267353c94fedf237d8281da4b5941d30f3c1bd77baec2b30dd2",
+      "bindings/Flutter/macos/TILE_GROUPS.md": "dad1e2f88a841c4480cd10190cd508e5f3caa7b584cc203ffd9c21699b57c303",
+      "bindings/Flutter/macos/rhwp_native_reference.podspec": "7fff01fdd5b5f52f0d15571a872dbd5265774591efe909bac49c5732675108b0",
+      "bindings/Flutter/macos/tests/capture_metal_window.swift": "28c5a51a5434bbe82d68fa175d3bf409d192e30cd833b9fbb10685e66797ad22",
+      "bindings/Flutter/macos/tests/cv_closed_status_sdk_test.mm": "b04c9ba63fe4f2d06f172132d8b4a8fa05d86e70797d1c294264345ae3368291",
+      "bindings/Flutter/macos/tests/frame_lifetime_test.cc": "e33a03a4620799cd650e3dd87d6c643a395f599b40e337d59e2e9e3a524ea256",
+      "bindings/Flutter/macos/tests/metal_tile_cache_contract.py": "42f3ab7a77ceb377271660d1f92623379cdfc206192062539b63b5cdd202238a",
+      "bindings/Flutter/macos/tests/metal_tile_group_sdk_test.mm": "9ee10d47910107e6e0548d66df3be8b6cad7684f1a216b5a83085181f282d08a",
+      "bindings/Flutter/macos/tests/metal_tile_group_test.cc": "81b0eb9052151445ba0626862b00002534ffb1af32060297e22a1181b3a2e435",
+      "bindings/Flutter/macos/tests/metal_view_animation_sdk_test.mm": "912b9926a2c33d6ba85cb705f9555c00a783f4e0676ca391ffd638d98897fbd0",
+      "bindings/Flutter/macos/tests/metal_view_lifecycle_test.cc": "5d5aa130b9133ac665ef458e692b7bd3c29ded4554c5d9acb7df0d34e993d46c",
+      "bindings/Flutter/macos/tests/native_metal_disabled.py": "f27a8267562ea7c2111970a1e7fd50b1ac407c44e22486112f52bfdb24ef52a6",
+      "bindings/Flutter/macos/tests/native_metal_sdk_contract.py": "2c3596eb436c3667fb2027d260ce4410fba2817ae244169b813fa032f8189635",
+      "bindings/Flutter/macos/tests/native_metal_sdk_probe.mm": "b977418420d6cd5da3f0e999b14cca643ca9acbf207d98fb165af9c744192260",
+      "bindings/Flutter/macos/tests/native_view_qualification_test.py": "0af0151c8b961b12ffb57787566699287b282584cc2804e3926865845c41ede1",
+      "bindings/Flutter/macos/tests/qualify_native_view.py": "53aed5ad959887ac5cafc94fc7be637bd1ef86677a50688389e54ec62c6e2124",
+      "bindings/Flutter/macos/tests/sdk_qualification_contract.py": "eac7c40679931e976dd852db3e24ef546434f66e7dad797f6d3822f92648e4e0",
+      "bindings/Flutter/macos/tests/texture_close_routing_test.cc": "0572d4859cd99e5636385c67c39d5247ec1a45a7e4d50879308dfce2e1de7737",
+      "bindings/Flutter/macos/tests/tile_group_qualification_test.py": "c451a7a18b0a45d60fff29cc89154f58ce7698ce8bcb4b86fda74e61e8f68f9a",
+      "bindings/Flutter/pubspec.yaml": "b7d3cc8bdc1af2bc8ef4572ec6b4e3702d4e6ac3d420af5d3242d50d6510cfdd",
+      "bindings/Flutter/src/owner_dispatcher.c": "f8bdd76591d18eb639776cc19e9d13b47236a3e943d1c85059ebec1f174015c8",
+      "bindings/Flutter/src/owner_dispatcher.h": "4f8fe66e02c816ab1243f780c145f53a638f053b9e5fc725b8e521e9e331f50f",
+      "bindings/Flutter/test/cpu_presenter_test.dart": "f446194e74e81a450bbafd155b50934160b779c711c77b60b6c8fcdb302e7941",
+      "bindings/Flutter/test/desktop_oracle_test.dart": "9edb38d3f64cd5f87efad558bc9c735a4a493d4dd2b92963eb907ce11bd2157f",
+      "bindings/Flutter/test/desktop_qualification_contract.py": "168e664acc46271c291a6170f3a31f8811cb969d91d39e9c5ac41926a8aaf1ed",
+      "bindings/Flutter/test/fixtures/desktop-consumer.hwpx": "648dade82585fa2845b80ec510b5f55c67e8b6127688dd3748b9a2068d87a3d9",
+      "bindings/Flutter/test/gpu_cache_benchmark_contract.py": "3d8c2557591dedf77caec69f70aa4dae145e1d53243bff2749ffc8df8f606059",
+      "bindings/Flutter/test/hosted_platform_runner_contract.py": "207feb9b02008e819df3bc09b7a723fc1d6ce22e8496fa504c44177aab619490",
+      "bindings/Flutter/test/linux_qualification_contract.py": "d664ff8de07158c9d901dda5091edb3d5160e0ba0addd2ff4eb4dfc87fedbcab",
+      "bindings/Flutter/test/native_artifact_provenance_contract.py": "783e242f56a7f2ded8e34ec074f4fb3331f0467b0e1e50e09d7afed6a61b8912",
+      "bindings/Flutter/test/native_document_lifecycle_integration_test.dart": "8b07b20767258e45386ea7e9e07aeb5ca11d7fa1bb8f71d853936f5c1773511f",
+      "bindings/Flutter/test/native_document_lifecycle_test.dart": "b88e622d224b07610d543a9e94e77191dd20efe5d4c6a04f72353cbc4030b220",
+      "bindings/Flutter/test/native_document_test.dart": "42eb175a92701542508a9adffb244bff1250670c077d36bb2c207364073ad6da",
+      "bindings/Flutter/test/native_document_view_test.dart": "409fd96b5a0a6455d7d15f48bce32a53c4a8d1a94ee2780b962769410ef7b203",
+      "bindings/Flutter/test/native_editor_fifo_test.dart": "b5373c6406913d8c0186ed66a12dfe4a94a1c08ac07b790d7e5ca170f7541025",
+      "bindings/Flutter/test/native_editor_view_test.dart": "6f56428f212d1d260e41f4f2bb4d888cb3bfccf05a108d1ff104d59788eef118",
+      "bindings/Flutter/test/native_file_store_integration_test.dart": "73ad1196a7a5bafd5b63d8d1f48397e2d5f232f6c6c4e33fc272cc4dc37a9242",
+      "bindings/Flutter/test/native_file_store_test.dart": "d192b10a1a971d31f22c38d7079c30e74be43cba4860f3a4a7344f13da82326d",
+      "bindings/Flutter/test/native_gpu_cache_metrics_test.dart": "6701a48ac031e40dba546a99493c3b6814d94e9405b30a6e1579bf2763afea5a",
+      "bindings/Flutter/test/native_gpu_cache_trim_test.dart": "9f447820dc6449b1fa336693bee2a292dcae508564bc1f7b6c1de598f2e9c520",
+      "bindings/Flutter/test/native_gpu_lifecycle_test.dart": "584739da286f5c252a29b01b140896096327e74d770f758639a65234e42a8af9",
+      "bindings/Flutter/test/native_gpu_session_test.dart": "2488545d674ca0c61ec8e21a89b3151c352169ec03327a3f97c5a28674b747dd",
+      "bindings/Flutter/test/native_gpu_tile_qualification_contract.py": "64e58db096cbedc3099beeac46b146f1a7e2475cadc89cba066f45904cc1aaca",
+      "bindings/Flutter/test/native_gpu_tiles_test.dart": "2647ee8b4ab6dfc4a134166ea9760790d8e5931f1fef5791a3b2780828b2e799",
+      "bindings/Flutter/test/native_gpu_trace_test.dart": "258483e39be1a56b38cb87155422a97b52f04ea9da38d8c3aadbd61501178a21",
+      "bindings/Flutter/test/native_ime_integration_test.dart": "64e85086d767d407980c7fdda2caa5e67c7ce9b0f6ca8259dae192de5a7f8545",
+      "bindings/Flutter/test/native_ime_test.dart": "271b8e50c2960f1173463d75e2cbe9d02ed4ef9ccb571bf4a37cad30ff78ae34",
+      "bindings/Flutter/test/native_metal_view_test.dart": "123f667850d8c2e30b1551944d14d7111e00936ce92c45bc488d8ffcb07cb2a7",
+      "bindings/Flutter/test/native_multipage_integration_test.dart": "959b7032ed91c913b206cc58aa1d371a425b5999c483d3e5c8ffeb3bfb93ecda",
+      "bindings/Flutter/test/native_multipage_view_test.dart": "dfe9b5641a8d3fce160d9842d72012bbda787ab02b29ae52698f19736bab0e86",
+      "bindings/Flutter/test/native_owner_contract.py": "fa47f71445f2a1ef8c5d7423917a60486a14503eabcbd1689585a8551a56512d",
+      "bindings/Flutter/test/native_presentation_capture_test.dart": "d321c9b8bf5e8a1ea4a5c8e54020e239aef608c5614a9b22ed611cc130367d6e",
+      "bindings/Flutter/test/native_presentation_test.dart": "c3115b0906bcea626012dd87c994f1ed6586f8adda6a4eaaf8b68b0f2a6c1c54",
+      "bindings/Flutter/test/native_producer_ready_test.dart": "6d50c1312efadf99bf678cf2773188c34c0fbe91e2e6a142028e5dcd65cce123",
+      "bindings/Flutter/test/native_runtime_bundle_test.dart": "880bc1794f46f38c876310631bdc8469b6292278a46e710fdfee414550582cf7",
+      "bindings/Flutter/test/native_texture_continuous_test.dart": "68f0ac765d7920fcb9e81189e014a7a0ca0c7269b0d0915651b6e48c05d73b3d",
+      "bindings/Flutter/test/native_texture_idle_polling_test.dart": "7229b429237bec51d28caf348e4bb2ca3d0a5fc16d100e7f4daaa700edc36762",
+      "bindings/Flutter/test/native_texture_multipage_test.dart": "558ef78c80d1b4bb9449331fa9ccd93fbcaf4d24a498640b75124acdbadf811a",
+      "bindings/Flutter/test/native_texture_performance_test.dart": "117863c00d52f76b5bd8b50c5981dbe6a0469adf36e30a82895bda8dcc67d3e3",
+      "bindings/Flutter/test/native_texture_tiles_test.dart": "d770d09604a43d86e8deca924b10db6ad23eb7642abc1b828cee8793cc493339",
+      "bindings/Flutter/test/native_texture_view_test.dart": "e57ac216ad6ea3b285f6698b7d63148836b9e60dafa72341db91ae7f7f95c17b",
+      "bindings/Flutter/test/native_viewport_test.dart": "3aa2cefbb04d308a4c11f0e1e74830ee3d413659c024e8d9844c6cac4355f89e",
+      "bindings/Flutter/test/native_window_close_test.dart": "9d5b159717c73af2cc07513daa3029a569ea10667f0fa4518dc5c9f82548c17d",
+      "bindings/Flutter/test/reference_app_contract.py": "443492aa373c7000135a3a42b4ccf2fabb93a3914619c258f7f07fdbc7e243bd",
+      "bindings/Flutter/test/runtime_bundle_contract.py": "3330eca36acba5b0957806e20f8de828b858dfc41fab4be8da20f69489b52029",
+      "bindings/Flutter/test/runtime_bundle_ffi_contract.py": "2292a81cd9b1fc166151c2709e92943428a005b44d9a9aa8e5ce61c4457d5ca1",
+      "bindings/Flutter/test/support/desktop_consumer_probe.dart": "8344ab80e98e0c801c38020fec09b4b72023a57e494564abf167a385d0cb1b35",
+      "bindings/Flutter/test/support/fake_gpu_presentation.dart": "e00b14aad2e3532b5203d88b70126d037c6c007d930c549582f3e026c130ceb3",
+      "bindings/Flutter/test/support/fake_transport.dart": "d9d08e0d8ec475575d088c0f160df7b396c5d349ee34dffb8ca4fe7ac8a85eec",
+      "bindings/Flutter/test/support/linux_controller_view_probe.dart": "87a0527edf4a0cfb484aee9051781835e7eae506dba90312fe12d82eb4f95537",
+      "bindings/Flutter/test/support/linux_texture_probe.dart": "03411efaf6946894837eac2b7576ca57898e62c0f366de7666a16d14e3542547",
+      "bindings/Flutter/test/support/linux_tile_group_probe.dart": "6df0c8f4caf1cd40dbc1db7b37346b68ac2262bdf3d7ab204f96803ac333cd52",
+      "bindings/Flutter/test/support/mock_native.c": "43f7c2bb27efd3ab726daced36fe782bfdae70078ea42f8e0593fb016e49fd7e",
+      "bindings/Flutter/test/support/windows_tile_group_probe.dart": "cd9f20fc6d91c84014d303ac3406477e1f59fb1041765c73c696657f57c12942",
+      "bindings/Flutter/test/tile_probe_channel_test.dart": "6b7b5fe4731de7c53ee6dee3d570c9e9389525de630c31f1cbc8590f096da681",
+      "bindings/Flutter/test/windows_continuous_qualification_contract.py": "390ffc505aa1d09c8bdfa0e785bcbe3fdac9bac535dac02d029ae9e85ce17b5f",
+      "bindings/Flutter/test/windows_tile_group_qualification_contract.py": "2f370ada76ba8b7b643d1b3d22b0f04bead542bc0d1a3b294b4e8d6e6466ec14",
+      "bindings/Flutter/tool/build_desktop_probe.py": "13bb7da404124e5f3306af53cbcd5fbfbacfa542f80672fb18d566a47a044e7d",
+      "bindings/Flutter/tool/build_dispatcher.py": "2306613d902a9e1b4e898ee7ad438d7bdc2cf4af8137ad72c2d8279e7456417f",
+      "bindings/Flutter/tool/build_linux_probe.py": "f840e15ca58c1fafe07c4de49456215bcf55f5098a80e7879077cd4d31ac16b0",
+      "bindings/Flutter/tool/check_macos_metal_sdk.py": "a7148a8393afdf50b28a3dc18a130b818857a8c4aa655dca67dec0dd57de81f5",
+      "bindings/Flutter/tool/check_windows_desktop_sdk.py": "bccb49737272cdcd09e6034bbefb8fe19422b32c3fee6a4787880792f50ea5bb",
+      "bindings/Flutter/tool/find_macos_framework.py": "8adecec804c9d749f05dbacc5b0e2abb946ac6f0dc3014e9e312d6a610052a76",
+      "bindings/Flutter/tool/gpu_cache_benchmark.py": "147e0e6f6c09a6fb0173491d65c66687f1b1ea6e949f60b3e9207fcdd2605430",
+      "bindings/Flutter/tool/native_artifact_provenance.py": "bae91b4bdbdf10f80806cdb1fd267c6f218bd4a3c575e947ef990cd5e92cd5c9",
+      "bindings/Flutter/tool/native_ffi_smoke.dart": "db2b212624ccc30a406988d8f9fa38344d3c1ab0ebd8c05c58dc1af325cad28f",
+      "bindings/Flutter/tool/qualify_desktop_texture.py": "1f12d1632de6e3cc8f0a72c0d05d7a73b18d9a4c532d5380f218fe5fb0eafb4f",
+      "bindings/Flutter/tool/qualify_linux_texture.py": "9fcc0f46ca46baafacafa9db215a2b9afb3abd998956ea491c3cf629b79a9f6a",
+      "bindings/Flutter/tool/qualify_linux_tile_group.py": "6db5803faf100d18a10ca58a6dc6a4ef5aa5db5baac14abc748e22d6f1c1a453",
+      "bindings/Flutter/tool/qualify_windows_continuous.py": "a9833f0676f60acad94f59b4d887acb623661b8ea8eb088e0e655c8ad177fea2",
+      "bindings/Flutter/tool/qualify_windows_tile_group.py": "6c298ad556ae036479db5e53cf04d7655ef4f11c2aeae11b076522ab9b7873c8",
+      "bindings/Flutter/tool/reference_app.py": "1c6ba2c76f1af08b76ef2d96c141deb0202db7d27e6999727f984aa3d61fcb85",
+      "bindings/Flutter/tool/runtime_bundle.py": "468b31e3992b0dde34c51db5b3b1817695c59228d5256fb69c3f226a98babe19",
+      "bindings/Flutter/tool/runtime_bundle_smoke.dart": "35513453c406a0f20b44c4e05e022da7b5f973e2878a9b2e1f41313bf41a04ba",
+      "bindings/Flutter/windows/CMakeLists.txt": "9b2a74b6dafbe61963bcba38f83843e55d9937f665160bd80bb5a8a0b0e5127a",
+      "bindings/Flutter/windows/CloseRecordRegistry.h": "39a1bbbff1b71814487253d8af20114ca989ef3d1f4eacdb41c53265599cbc6c",
+      "bindings/Flutter/windows/FrameLifetime.h": "bd9b164ccf72511ab75d91c2aaf05f515d74dbade0085928f613e3e792a99423",
+      "bindings/Flutter/windows/INTERNAL_GPU_TILE_CACHE.md": "fa0eb360a23a16761dac3b1dac5f30faa34102c02c23c6b23839eeb28688a24b",
+      "bindings/Flutter/windows/MessengerLifetime.h": "581d04de23f45b0be014cda62c735d193fad3e33c36c7ee7e19476b23cfc86c6",
+      "bindings/Flutter/windows/NativeApi.cpp": "30e26b2c7930eb29a2eb8d9bcd0c6c8024d15127cbd5bbe17cc5c8922280e396",
+      "bindings/Flutter/windows/NativeApi.h": "709211120f1d01564c34f2e79b5786ce655e62de0558772fd96f1e257a58d594",
+      "bindings/Flutter/windows/NativeReply.h": "113d516be88add35ed404fde44cb988c2e84f0d83b2e1ccb43e237e57732426a",
+      "bindings/Flutter/windows/PRIVATE_TARGET_POOL.md": "dd8c9ccf983cc43078859edd9bca92e7b22b19b616a089bc0e09fb8c30cb346e",
+      "bindings/Flutter/windows/PrivateTargetPool.h": "ad293ea7babc7208d967db0010511da5221073ec8480c99832248ebe64fce5d0",
+      "bindings/Flutter/windows/Producer.cpp": "25a9fd9d3c2e25b5da27dee60535c561af601ee4e84068ed41d88717c37c8c6d",
+      "bindings/Flutter/windows/Producer.h": "493d7a81ab902678e43ad0e51776b53b6aa633f901f263980376f4bccabd0ed0",
+      "bindings/Flutter/windows/ProducerReadyEvents.h": "7e4fce853b2f19aa13b927d491684cf003908ba8fb1a2383f96a34bcac8064bf",
+      "bindings/Flutter/windows/SurfaceImportTickets.h": "2cbac0a9b2575074ae4b634dcbaaf8e01c44ae50ed3db0dc62c0db0d03ec7288",
+      "bindings/Flutter/windows/include/rhwp_native_reference/rhwp_d3d_plugin.h": "bd4152d386444c08b1dff66aa2a3d7a427775694196efedd739409420fb90ddd",
+      "bindings/Flutter/windows/include/rhwp_native_reference/rhwp_d3d_plugin_c_api.h": "a23ec32e49ff2323be2a83b242c04a4d7bb0a11666518f8be5b8cca53b8e2576",
+      "bindings/Flutter/windows/rhwp_d3d_plugin.cpp": "8d64d7b58c68e6e7d8f623c45f9ae9bc4aaf030bf181d6601e172fd2587f49cd",
+      "bindings/Flutter/windows/tests/check_windows_bridge.py": "d2a962970d2e56b5485b07ef73758255b5499697b1f076a48cc06a5ea5b052c5",
+      "bindings/Flutter/windows/tests/close_registry_test.cpp": "c7966b9fbbcc59a7220f2f25163c9dcf9f27b85ac62532a81f469335ee2c7400",
+      "bindings/Flutter/windows/tests/frame_lifetime_test.cpp": "261de79c1045a43522c6457b6b170847bad62ffa54a4c9da1c461d35afee6668",
+      "bindings/Flutter/windows/tests/group_error_limits_contract.py": "0553c8ed4dd408abcfa3e1f6a6bca8bccd2dd4fb6af8ab66ce107259806907c0",
+      "bindings/Flutter/windows/tests/import_lifetime_test.cpp": "f87b354d675c52d0ec299b7ce861a1229b67ddcadfad231ff5dd6bbd450e892e",
+      "bindings/Flutter/windows/tests/messenger_lifetime_test.cpp": "fac27e6563d79e5b059727d8098bfc3ecfec92ca05871171858d7dbe9ad71634",
+      "bindings/Flutter/windows/tests/native_d3d_disabled.py": "587ba4002bf1a85ca4d04852362b433a416d152981fe97d56baf9f92cd9f08eb",
+      "bindings/Flutter/windows/tests/public_texture_contract.cpp": "25c8a96cfa6748da736ed4872b694cf0241e2547ffc73b21d8c46c308d14a0ce",
+      "bindings/Flutter/windows/tests/support/flutter_windows.h": "3b19cf339ef543a4181475048937b53e430b2647189c733f2fc69cd11e88661c",
+      "bindings/swift/Sources/CRhwpNative/module.modulemap": "72e590fe700e11a5ea1951411e75e48bd291bb861385d5c39b5012197d1edf96",
+      "bindings/swift/Sources/CRhwpNative/rhwp_native_ffi.h": "eebc11592056ac76d4528b1c7f13508ca453a8f104d2bd1b56292b329c0ec811"
+    },
+    "steps": [
+      {
+        "command": [
+          "C:\\Users\\edward\\AppData\\Local\\rhwp-tools\\flutter-c197ca5199e9\\bin\\cache\\dart-sdk\\bin\\dart.exe",
+          "--disable-dart-dev",
+          "C:\\Users\\edward\\AppData\\Local\\rhwp-tools\\flutter-c197ca5199e9\\bin\\cache\\flutter_tools.snapshot",
+          "--version",
+          "--machine"
+        ],
+        "cwd": "C:\\Users\\edward\\AppData\\Local\\rhwp-tools\\review-workspace\\seo-rii-20261116-output\\trim-build-r4",
+        "started": 1794830073.6508079,
+        "exitCode": 0,
+        "log": "C:\\Users\\edward\\AppData\\Local\\rhwp-tools\\review-workspace\\seo-rii-20261116-output\\trim-build-r4\\build-0.log",
+        "pid": 48952,
+        "finished": 1794830074.4676268
+      },
+      {
+        "command": [
+          "C:\\Users\\edward\\AppData\\Local\\rhwp-tools\\flutter-c197ca5199e9\\bin\\cache\\dart-sdk\\bin\\dart.exe",
+          "--disable-dart-dev",
+          "C:\\Users\\edward\\AppData\\Local\\rhwp-tools\\flutter-c197ca5199e9\\bin\\cache\\flutter_tools.snapshot",
+          "create",
+          "--platforms=windows",
+          "--project-name=rhwp_texture_qualification",
+          "runner"
+        ],
+        "cwd": "C:\\Users\\edward\\AppData\\Local\\rhwp-tools\\review-workspace\\seo-rii-20261116-output\\trim-build-r4",
+        "started": 1794830074.4699788,
+        "exitCode": 0,
+        "log": "C:\\Users\\edward\\AppData\\Local\\rhwp-tools\\review-workspace\\seo-rii-20261116-output\\trim-build-r4\\build-1.log",
+        "pid": 48436,
+        "finished": 1794830076.0297406
+      },
+      {
+        "command": [
+          "C:\\Users\\edward\\AppData\\Local\\rhwp-tools\\flutter-c197ca5199e9\\bin\\cache\\dart-sdk\\bin\\dart.exe",
+          "--disable-dart-dev",
+          "C:\\Users\\edward\\AppData\\Local\\rhwp-tools\\flutter-c197ca5199e9\\bin\\cache\\flutter_tools.snapshot",
+          "pub",
+          "get"
+        ],
+        "cwd": "C:\\Users\\edward\\AppData\\Local\\rhwp-tools\\review-workspace\\seo-rii-20261116-output\\trim-build-r4\\runner",
+        "started": 1794830076.0542848,
+        "exitCode": 0,
+        "log": "C:\\Users\\edward\\AppData\\Local\\rhwp-tools\\review-workspace\\seo-rii-20261116-output\\trim-build-r4\\build-2.log",
+        "pid": 48792,
+        "finished": 1794830077.3303747
+      },
+      {
+        "command": [
+          "C:\\Users\\edward\\AppData\\Local\\rhwp-tools\\flutter-c197ca5199e9\\bin\\cache\\dart-sdk\\bin\\dart.exe",
+          "--disable-dart-dev",
+          "C:\\Users\\edward\\AppData\\Local\\rhwp-tools\\flutter-c197ca5199e9\\bin\\cache\\flutter_tools.snapshot",
+          "build",
+          "windows",
+          "--debug"
+        ],
+        "cwd": "C:\\Users\\edward\\AppData\\Local\\rhwp-tools\\review-workspace\\seo-rii-20261116-output\\trim-build-r4\\runner",
+        "started": 1794830077.3329458,
+        "exitCode": 0,
+        "log": "C:\\Users\\edward\\AppData\\Local\\rhwp-tools\\review-workspace\\seo-rii-20261116-output\\trim-build-r4\\build-3.log",
+        "pid": 40880,
+        "finished": 1794830113.8537529
+      },
+      {
+        "command": [
+          "C:\\Users\\edward\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+          "C:\\Users\\edward\\AppData\\Local\\rhwp-tools\\review-workspace\\seo-rii-20261116-output\\trim-build-r4\\source\\bindings\\Flutter\\tool\\build_dispatcher.py",
+          "--output",
+          "C:\\Users\\edward\\AppData\\Local\\rhwp-tools\\review-workspace\\seo-rii-20261116-output\\trim-build-r4\\rhwp_flutter_owner.dll"
+        ],
+        "cwd": "C:\\Users\\edward\\AppData\\Local\\rhwp-tools\\review-workspace\\seo-rii-20261116-output\\trim-build-r4",
+        "started": 1794830113.8600397,
+        "exitCode": 0,
+        "log": "C:\\Users\\edward\\AppData\\Local\\rhwp-tools\\review-workspace\\seo-rii-20261116-output\\trim-build-r4\\build-4.log",
+        "pid": 48120,
+        "finished": 1794830114.37802
+      }
+    ],
+    "buildExitCode": 0,
+    "started": 1794830073.6508079,
+    "pid": 49036,
+    "flutterRevision": "c197ca5199e9ee5661e865596c9c07294dfab51c",
+    "engineRevision": "89c39edfdfae2949f6806e4a315c0c08522238b7",
+    "flutterVersion": "3.47.9",
+    "runnerInputs": {
+      "lib/main.dart": "cd9f20fc6d91c84014d303ac3406477e1f59fb1041765c73c696657f57c12942",
+      "lib/desktop_consumer_probe.dart": "8344ab80e98e0c801c38020fec09b4b72023a57e494564abf167a385d0cb1b35",
+      "lib/linux_tile_group_probe.dart": "8c842e7aa66182959fb3bee4c491fb588ec8866a250c76bbe721a7a4ecc8486d"
+    },
+    "artifacts": {
+      "runner": {
+        "path": "C:\\Users\\edward\\AppData\\Local\\rhwp-tools\\review-workspace\\seo-rii-20261116-output\\trim-build-r4\\runner\\build\\windows\\x64\\runner\\Debug\\rhwp_texture_qualification.exe",
+        "sha256": "59e1d22eb2c4f99fe332f3a780c00d7e06c2c853c0de26792b2e1a5195d58eae",
+        "bytes": 1030144
+      },
+      "plugin": {
+        "path": "C:\\Users\\edward\\AppData\\Local\\rhwp-tools\\review-workspace\\seo-rii-20261116-output\\trim-build-r4\\runner\\build\\windows\\x64\\runner\\Debug\\rhwp_native_reference_plugin.dll",
+        "sha256": "0bd22b30dda52ba985fe7871299122b7fd9f5916f97a21106e8d400fb10bad01",
+        "bytes": 1844224
+      },
+      "engineRuntime": {
+        "path": "C:\\Users\\edward\\AppData\\Local\\rhwp-tools\\review-workspace\\seo-rii-20261116-output\\trim-build-r4\\runner\\build\\windows\\x64\\runner\\Debug\\flutter_windows.dll",
+        "sha256": "93aa235aeacabaf33dce6e73fb0a221826c56aa9478b3fff781acb4c061a6962",
+        "bytes": 46636544
+      },
+      "dispatcher": {
+        "path": "C:\\Users\\edward\\AppData\\Local\\rhwp-tools\\review-workspace\\seo-rii-20261116-output\\trim-build-r4\\rhwp_flutter_owner.dll",
+        "sha256": "1ab8bf9aa98e833f391f262ffacec856fecbeb8a9d0323afae3f8d2fd3b280ee",
+        "bytes": 146432
+      },
+      "native": {
+        "path": "C:\\Users\\edward\\AppData\\Local\\rhwp-tools\\review-workspace\\seo-rii-20261116-output\\native\\rhwp_native_ffi.dll",
+        "sha256": "c77d5383d39d67e2b05860c718498618b48a6087d9cfa119486450401e82df50",
+        "bytes": 72465408
+      },
+      "fixture": {
+        "path": "C:\\Users\\edward\\AppData\\Local\\rhwp-tools\\review-workspace\\seo-rii-20261116-output\\trim-build-r4\\source\\bindings\\Flutter\\test\\fixtures\\desktop-consumer.hwpx",
+        "sha256": "648dade82585fa2845b80ec510b5f55c67e8b6127688dd3748b9a2068d87a3d9",
+        "bytes": 8082
+      }
+    },
+    "runtimeBundle": {
+      "files": {
+        "data/flutter_assets/AssetManifest.bin": {
+          "sha256": "f566cc6fccc657365c0197accf3a7d6f80f85209ff666ff774f4dcbc524aa842",
+          "bytes": 2
+        },
+        "data/flutter_assets/FontManifest.json": {
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "bytes": 2
+        },
+        "data/flutter_assets/NOTICES.Z": {
+          "sha256": "d61613264025f11e9a946ac3ba2f9d2adb90832a2c2d5691c59247fa9f50ff11",
+          "bytes": 98151
+        },
+        "data/flutter_assets/NativeAssetsManifest.json": {
+          "sha256": "9548a31e4a048135c1d94f919328bfb62ae2c7bb3cab96557c7941daa97776cb",
+          "bytes": 45
+        },
+        "data/flutter_assets/kernel_blob.bin": {
+          "sha256": "4f9bb51245e6f4b32267b9903de2302c6dc8103ec26ef384260e9afb25048a57",
+          "bytes": 44540832
+        },
+        "data/flutter_assets/shaders/ink_sparkle.frag": {
+          "sha256": "1fe8436a743884cb65078fe8c7b38e18f5365f2a2961270916f426fd13c604af",
+          "bytes": 21856
+        },
+        "data/flutter_assets/shaders/stretch_effect.frag": {
+          "sha256": "bc7599dbbbaab310efe41520574138d21fb18a88c8fe4495ed79315309336f6f",
+          "bytes": 17616
+        },
+        "data/icudtl.dat": {
+          "sha256": "325a86063d26334c2eabe1743cea073b612540fbf3d8fc2ef0b5708e3763a8c7",
+          "bytes": 864880
+        },
+        "flutter_windows.dll": {
+          "sha256": "93aa235aeacabaf33dce6e73fb0a221826c56aa9478b3fff781acb4c061a6962",
+          "bytes": 46636544
+        },
+        "rhwp_native_reference_plugin.dll": {
+          "sha256": "0bd22b30dda52ba985fe7871299122b7fd9f5916f97a21106e8d400fb10bad01",
+          "bytes": 1844224
+        },
+        "rhwp_texture_qualification.exe": {
+          "sha256": "59e1d22eb2c4f99fe332f3a780c00d7e06c2c853c0de26792b2e1a5195d58eae",
+          "bytes": 1030144
+        },
+        "rhwp_texture_qualification.pdb": {
+          "sha256": "777ab708a1550b61986cba8160681e543878369cb0dc779e898dbbe06e35a3c6",
+          "bytes": 7794688
+        }
+      },
+      "bytes": 102848984
+    },
+    "copiedRuntimeSources": {
+      "bindings/Flutter/.gitignore": "95196a246afc573c7ef17bb60f24ba48f2f7886c1f5e2da6d8e4972fd574c8ea",
+      "bindings/Flutter/DOCUMENT_LIFECYCLE.md": "0f252a9eb1578d6e1ddfc8597e86c139a4a3e3c9b2e1858ebe7431f42463d12c",
+      "bindings/Flutter/GPU_CACHE_METRICS.md": "541c8f6f3496b299b60f8b32449706448d0fa49474651f6f93d0dfc11fb2500c",
+      "bindings/Flutter/GPU_MULTIPAGE_VIEWPORT.md": "eddd0afcef75c27ae5e691e319064c013f97a91c6a1170c96d89178b81c0761e",
+      "bindings/Flutter/GPU_PERFORMANCE.md": "33ff880945dd522a71b1cade400cf905ad93bb55292c5b6541d08bf368ac97fe",
+      "bindings/Flutter/GPU_PRESENTATION.md": "710f5aa56679b20c1bfed10969af5d608eabfb596f6d57bdfa66bac0886670bf",
+      "bindings/Flutter/GPU_QUALIFICATION.md": "9b005967045320ec2f7f37bb537d62781143f53fff2ce14ad639338c0a609bc4",
+      "bindings/Flutter/GPU_RECOVERY.md": "5d9bc99c8c3fe58ea15489b9a0a24691543d06f35a3e63b7b635a79b17a003ec",
+      "bindings/Flutter/GPU_WINDOW_LIFECYCLE.md": "4a8c02209daa3b80e6f070aa0dbf7e500c5ad04797c7ebd594a4e84d36021fd2",
+      "bindings/Flutter/LINUX_QUALIFICATION.md": "2074099ac92ebe0dedd427a1eb8c3f44112e362ba55a82035c348deceb6708e3",
+      "bindings/Flutter/NATIVE_ARTIFACT_REUSE.md": "d3ea9566388b872b4e596320c7d6f1dd72c79e2a16b0c150523725eac84df024",
+      "bindings/Flutter/README.md": "769453fa8fab90b4d25778b0d8c65a8451263f72112df936671ab5f4ec46a411",
+      "bindings/Flutter/RUNTIME_BUNDLE.md": "a3d5c9b942a98a0d7f9bb9f3d45274fdbfb105802a06fa83f4fdfbaaa8b95911",
+      "bindings/Flutter/WINDOWS_CONTINUOUS_QUALIFICATION.md": "8a29073b66419aad2481da738a90c8485b4bce19fefb4b2f404cdd508f8214ef",
+      "bindings/Flutter/WINDOWS_TILE_QUALIFICATION.md": "de7ae38fa90b14338a3e5b1914d1062087022aa244a661915c8de9964311b365",
+      "bindings/Flutter/analysis_options.yaml": "4e5f7579f6c38f28a3852603d721c6743165156230a2ab3d20c307e5a566ece6",
+      "bindings/Flutter/common/bounded_tile_group.h": "e42afaed89af234bbaaa9c7b2c9d8640d1aa5586c91e2b1b0ea44322ed580aa9",
+      "bindings/Flutter/common/bounded_tile_group_test.cc": "d198394807946b10dad9b1d23ce9ea0b4cad95a58d3f2e62ef9aaadf7c775e7f",
+      "bindings/Flutter/common/cache_trim.h": "857e08b9178bc04cd460e450ec8fd7727af700ccb98ccd30f5087c599a5757e4",
+      "bindings/Flutter/common/cache_trim_test.cc": "6076c675bd94aa084326784185e35788e008ecedcc1a027160aa99438164509a",
+      "bindings/Flutter/common/gpu_cache_metrics.h": "2f6a36a5333c080a16fe8db15df97e5a1b8b9de4ac8b6d4b6aa0aa0566e75ee8",
+      "bindings/Flutter/common/gpu_cache_metrics_test.cc": "ad97969af71d01b719b73c754230b4cb3393fdf359fedf44fea1c61e619bd9cc",
+      "bindings/Flutter/common/producer_ready.h": "4fc3c305a532df803f4003db0341cf645d64769754498a6b630b34c3ce3395f1",
+      "bindings/Flutter/common/producer_ready_test.cc": "8765a1e30c308371bb719e33c5640a5aeb7cb0c546e057a771b5eaa93e7592ac",
+      "bindings/Flutter/example/lib/main.dart": "1d2cf2b241e935360bfb115a78b34d2a862b341f6cca0c10eb244202cc31d8e6",
+      "bindings/Flutter/example/pubspec.yaml": "1f735fcc6e66f6c25150e2bbdd558f068db5abb6d65dfde45db61547f1c9f819",
+      "bindings/Flutter/lib/rhwp_native.dart": "b3cda058981b42a51097c2fa611c7d766d9de15ba3d4815d9199c4b030f5ad68",
+      "bindings/Flutter/lib/rhwp_native_flutter.dart": "b477af51c160621988808ccf1f08d72cfb6f8da3808307dc10e9cafa58d6dd29",
+      "bindings/Flutter/lib/src/native_document.dart": "c264064152db703473e19096e677b48822529044e4513a822145127049eec6f6",
+      "bindings/Flutter/lib/src/native_document_lifecycle.dart": "725ad8ca0181f8ff4841ca1d86029932148f99e0b7a168f89944eb41b7417af9",
+      "bindings/Flutter/lib/src/native_document_view.dart": "0a9cdd585d99ad5a7ed2881592ed65ef7b7e239b6d96474682b48d2b91c9de02",
+      "bindings/Flutter/lib/src/native_editor_controller.dart": "86ee2bdcb4c1e5ad9de45557f8be72c86bd2a5c2ca65f7ff9c3347918ca617d7",
+      "bindings/Flutter/lib/src/native_editor_view.dart": "659ffa2863c4f4e4d166caa26d6bfb280bb64aa0f28a3ada9432759bf3ee3e3b",
+      "bindings/Flutter/lib/src/native_ffi.dart": "e2f0699ae0336ad2d9e39a4d8fbd5531a14114e0859366542cba2c7be2ac3e1c",
+      "bindings/Flutter/lib/src/native_file_store.dart": "1041d2bcf0fdd413e742f794f810aaba7f432cc341d5b75f284455ae0fbf4a63",
+      "bindings/Flutter/lib/src/native_gpu_cache_metrics.dart": "37f1b8b9d596be356b2e98abd93689b1296b13027bad71c73a561e0c04fcecf9",
+      "bindings/Flutter/lib/src/native_gpu_cache_trim.dart": "88725627d6b095d31ea7937fd54f69497498da5a38257efea0d333cb2ecfaf15",
+      "bindings/Flutter/lib/src/native_gpu_lifecycle.dart": "41939ab19d78f44519b09949ae37cd553d4f657ec0f6e792f8578d924e72f8b5",
+      "bindings/Flutter/lib/src/native_gpu_session.dart": "d90bc901f4e898f383f43c6b76c4d1775d8024b5332c43cccc873cab3456f75e",
+      "bindings/Flutter/lib/src/native_gpu_tiles.dart": "f91089b79fdd97ca35cdf2749e564296eebf271a8d79e65fc794446e8648fd5b",
+      "bindings/Flutter/lib/src/native_gpu_trace.dart": "7a59411c676ff837c6055b89a0731559a7036bfafb23f23322877b6781772d76",
+      "bindings/Flutter/lib/src/native_ime.dart": "6b82b022bf02501080111ea91f6bc60f761c13642fb51a893eea47c125d35f44",
+      "bindings/Flutter/lib/src/native_multipage_view.dart": "522278d1d6413518c4ec85f7880bee985cdd07ab004f1af134af1cf2abb6f042",
+      "bindings/Flutter/lib/src/native_presentation.dart": "d4615e56e91a174c7b7a381a5619e8452826056687e3d6deb2a68602063ced04",
+      "bindings/Flutter/lib/src/native_producer_ready.dart": "f71f950c99f1cbdc6fa6aca4d2fe80dff3907e64041d299d4d60a0e00b80fcb1",
+      "bindings/Flutter/lib/src/native_runtime_bundle.dart": "8bca970d2618a36269603540004ca5ac66b0566a4101b6f06cbd8533765d4753",
+      "bindings/Flutter/lib/src/native_texture_view.dart": "8c2534a3d03832aed82174c3ae9ce9f4cd972eae97e0eee7649dcfcf467a257d",
+      "bindings/Flutter/lib/src/native_viewport.dart": "67fd8c006eaf9430ec1134e714f287c133e2976b462847828283ba0ea0aaba64",
+      "bindings/Flutter/lib/src/native_window_close.dart": "6c6ea64ffee94985a2739f44543bfaa7a14b002fe0e1eae3c5270f027f555614",
+      "bindings/Flutter/linux/CMakeLists.txt": "52d234f535255ea4f808816f40a2c8afb0a18b5d59ef23f3b1fe7f49bb70737e",
+      "bindings/Flutter/linux/gl_state_guard.cc": "cc6414e88d616851da0aed9425f5dfc639cee4fabe32a0166fb6f1cfbb38018e",
+      "bindings/Flutter/linux/gl_state_guard.h": "a50b68328c3f06bb1dbb8489c729003da1aafa29e9c9b208eb38beb1288fee2e",
+      "bindings/Flutter/linux/include/rhwp_native_reference/rhwp_texture_plugin.h": "78813198e436393a778450c5086ceaa31f3c1f95d65ff615ecadda542fbe7918",
+      "bindings/Flutter/linux/rhwp_texture_plugin.cc": "69ab95f95375e8f505d4cd8ab59332faac0ad7b9545358d028a91ac673625b66",
+      "bindings/Flutter/linux/tests/check_linux_plugin.py": "6eb4b75c6ee6c6d330c396a7a6797ef3dcae2beba58732bbd4bfe5768bfc0038",
+      "bindings/Flutter/linux/tests/gl_state_guard_test.cc": "213764ad01b343c2ae4db556933dd259698369d8fa82edec3025598fe7902858",
+      "bindings/Flutter/linux/tests/texture_state_test.cc": "c17658aedf2966f649179859445acc97218f6c8cca95f79d3b729b48f53e88fc",
+      "bindings/Flutter/linux/texture_state.cc": "0457ebef179817964c762000fa2cf0d37ece7343944a59fa8bed1cb935b4946a",
+      "bindings/Flutter/linux/texture_state.h": "9e581a3a8099cb8b46ec981f3b80c819a30414c04e29218f5f5675434ea52fab",
+      "bindings/Flutter/macos/Classes/MetalFrameLifetime.hpp": "9a9fd878ee195d9056bb5aa5e864a892484a82c690c6eac64d108d093115cea5",
+      "bindings/Flutter/macos/Classes/MetalNativeView.hpp": "43098475c3f6ae6f78d0dda01435053950b4c0a968546bef7f6e5d7576b76e1a",
+      "bindings/Flutter/macos/Classes/MetalTileGroup.hpp": "8ecc4ba9102618ad68e9c08daafd146e84409d1cb8c40abbee688d8975c2cc2d",
+      "bindings/Flutter/macos/Classes/MetalTileGroupMethods.inc": "512336c08c05583332d3c316112e929782f28e0636cba224f6c7e59ac8a44bb1",
+      "bindings/Flutter/macos/Classes/MetalViewLifecycle.hpp": "2df06982b7dfb834a3b688f263dbf26943bd2ebf55604d617e79cfba317692fd",
+      "bindings/Flutter/macos/Classes/RhwpMetalPlugin.h": "dfb9c9266530d506a3da850e01088683a564eb0597255f129334a9175115f264",
+      "bindings/Flutter/macos/Classes/RhwpMetalPlugin.mm": "9ced77c4de440fc26efab8f5cec12b57a572fd79551c484b42a983905de6e86e",
+      "bindings/Flutter/macos/Classes/RhwpProducerReadyEvents.hpp": "eaef10cae7b74ea3ed70018b907bf27d2b27eaccea02eaba3aa35b22144aec36",
+      "bindings/Flutter/macos/Classes/TextureCloseRouting.hpp": "fe23218e9644bd0e0100f81728b45145b6aa8d11de8b00dc4dbb4cfbcf2c8c65",
+      "bindings/Flutter/macos/NATIVE_VIEW_PRESENTATION.md": "4da4938c46516bae32248b503504e460839ee20e019a781a72296ad73c5d7b28",
+      "bindings/Flutter/macos/README.md": "9a815d85bc46e6629706021c633640034f5c1db36e17e88505a84da4c3420f58",
+      "bindings/Flutter/macos/SDK_QUALIFICATION.md": "4de91fa0ba81a267353c94fedf237d8281da4b5941d30f3c1bd77baec2b30dd2",
+      "bindings/Flutter/macos/TILE_GROUPS.md": "dad1e2f88a841c4480cd10190cd508e5f3caa7b584cc203ffd9c21699b57c303",
+      "bindings/Flutter/macos/rhwp_native_reference.podspec": "7fff01fdd5b5f52f0d15571a872dbd5265774591efe909bac49c5732675108b0",
+      "bindings/Flutter/macos/tests/capture_metal_window.swift": "28c5a51a5434bbe82d68fa175d3bf409d192e30cd833b9fbb10685e66797ad22",
+      "bindings/Flutter/macos/tests/cv_closed_status_sdk_test.mm": "b04c9ba63fe4f2d06f172132d8b4a8fa05d86e70797d1c294264345ae3368291",
+      "bindings/Flutter/macos/tests/frame_lifetime_test.cc": "e33a03a4620799cd650e3dd87d6c643a395f599b40e337d59e2e9e3a524ea256",
+      "bindings/Flutter/macos/tests/metal_tile_cache_contract.py": "42f3ab7a77ceb377271660d1f92623379cdfc206192062539b63b5cdd202238a",
+      "bindings/Flutter/macos/tests/metal_tile_group_sdk_test.mm": "9ee10d47910107e6e0548d66df3be8b6cad7684f1a216b5a83085181f282d08a",
+      "bindings/Flutter/macos/tests/metal_tile_group_test.cc": "81b0eb9052151445ba0626862b00002534ffb1af32060297e22a1181b3a2e435",
+      "bindings/Flutter/macos/tests/metal_view_animation_sdk_test.mm": "912b9926a2c33d6ba85cb705f9555c00a783f4e0676ca391ffd638d98897fbd0",
+      "bindings/Flutter/macos/tests/metal_view_lifecycle_test.cc": "5d5aa130b9133ac665ef458e692b7bd3c29ded4554c5d9acb7df0d34e993d46c",
+      "bindings/Flutter/macos/tests/native_metal_disabled.py": "f27a8267562ea7c2111970a1e7fd50b1ac407c44e22486112f52bfdb24ef52a6",
+      "bindings/Flutter/macos/tests/native_metal_sdk_contract.py": "2c3596eb436c3667fb2027d260ce4410fba2817ae244169b813fa032f8189635",
+      "bindings/Flutter/macos/tests/native_metal_sdk_probe.mm": "b977418420d6cd5da3f0e999b14cca643ca9acbf207d98fb165af9c744192260",
+      "bindings/Flutter/macos/tests/native_view_qualification_test.py": "0af0151c8b961b12ffb57787566699287b282584cc2804e3926865845c41ede1",
+      "bindings/Flutter/macos/tests/qualify_native_view.py": "53aed5ad959887ac5cafc94fc7be637bd1ef86677a50688389e54ec62c6e2124",
+      "bindings/Flutter/macos/tests/sdk_qualification_contract.py": "eac7c40679931e976dd852db3e24ef546434f66e7dad797f6d3822f92648e4e0",
+      "bindings/Flutter/macos/tests/texture_close_routing_test.cc": "0572d4859cd99e5636385c67c39d5247ec1a45a7e4d50879308dfce2e1de7737",
+      "bindings/Flutter/macos/tests/tile_group_qualification_test.py": "c451a7a18b0a45d60fff29cc89154f58ce7698ce8bcb4b86fda74e61e8f68f9a",
+      "bindings/Flutter/pubspec.yaml": "b7d3cc8bdc1af2bc8ef4572ec6b4e3702d4e6ac3d420af5d3242d50d6510cfdd",
+      "bindings/Flutter/src/owner_dispatcher.c": "f8bdd76591d18eb639776cc19e9d13b47236a3e943d1c85059ebec1f174015c8",
+      "bindings/Flutter/src/owner_dispatcher.h": "4f8fe66e02c816ab1243f780c145f53a638f053b9e5fc725b8e521e9e331f50f",
+      "bindings/Flutter/test/cpu_presenter_test.dart": "f446194e74e81a450bbafd155b50934160b779c711c77b60b6c8fcdb302e7941",
+      "bindings/Flutter/test/desktop_oracle_test.dart": "9edb38d3f64cd5f87efad558bc9c735a4a493d4dd2b92963eb907ce11bd2157f",
+      "bindings/Flutter/test/desktop_qualification_contract.py": "168e664acc46271c291a6170f3a31f8811cb969d91d39e9c5ac41926a8aaf1ed",
+      "bindings/Flutter/test/fixtures/desktop-consumer.hwpx": "648dade82585fa2845b80ec510b5f55c67e8b6127688dd3748b9a2068d87a3d9",
+      "bindings/Flutter/test/gpu_cache_benchmark_contract.py": "3d8c2557591dedf77caec69f70aa4dae145e1d53243bff2749ffc8df8f606059",
+      "bindings/Flutter/test/hosted_platform_runner_contract.py": "207feb9b02008e819df3bc09b7a723fc1d6ce22e8496fa504c44177aab619490",
+      "bindings/Flutter/test/linux_qualification_contract.py": "d664ff8de07158c9d901dda5091edb3d5160e0ba0addd2ff4eb4dfc87fedbcab",
+      "bindings/Flutter/test/native_artifact_provenance_contract.py": "783e242f56a7f2ded8e34ec074f4fb3331f0467b0e1e50e09d7afed6a61b8912",
+      "bindings/Flutter/test/native_document_lifecycle_integration_test.dart": "8b07b20767258e45386ea7e9e07aeb5ca11d7fa1bb8f71d853936f5c1773511f",
+      "bindings/Flutter/test/native_document_lifecycle_test.dart": "b88e622d224b07610d543a9e94e77191dd20efe5d4c6a04f72353cbc4030b220",
+      "bindings/Flutter/test/native_document_test.dart": "42eb175a92701542508a9adffb244bff1250670c077d36bb2c207364073ad6da",
+      "bindings/Flutter/test/native_document_view_test.dart": "409fd96b5a0a6455d7d15f48bce32a53c4a8d1a94ee2780b962769410ef7b203",
+      "bindings/Flutter/test/native_editor_fifo_test.dart": "b5373c6406913d8c0186ed66a12dfe4a94a1c08ac07b790d7e5ca170f7541025",
+      "bindings/Flutter/test/native_editor_view_test.dart": "6f56428f212d1d260e41f4f2bb4d888cb3bfccf05a108d1ff104d59788eef118",
+      "bindings/Flutter/test/native_file_store_integration_test.dart": "73ad1196a7a5bafd5b63d8d1f48397e2d5f232f6c6c4e33fc272cc4dc37a9242",
+      "bindings/Flutter/test/native_file_store_test.dart": "d192b10a1a971d31f22c38d7079c30e74be43cba4860f3a4a7344f13da82326d",
+      "bindings/Flutter/test/native_gpu_cache_metrics_test.dart": "6701a48ac031e40dba546a99493c3b6814d94e9405b30a6e1579bf2763afea5a",
+      "bindings/Flutter/test/native_gpu_cache_trim_test.dart": "9f447820dc6449b1fa336693bee2a292dcae508564bc1f7b6c1de598f2e9c520",
+      "bindings/Flutter/test/native_gpu_lifecycle_test.dart": "584739da286f5c252a29b01b140896096327e74d770f758639a65234e42a8af9",
+      "bindings/Flutter/test/native_gpu_session_test.dart": "2488545d674ca0c61ec8e21a89b3151c352169ec03327a3f97c5a28674b747dd",
+      "bindings/Flutter/test/native_gpu_tile_qualification_contract.py": "64e58db096cbedc3099beeac46b146f1a7e2475cadc89cba066f45904cc1aaca",
+      "bindings/Flutter/test/native_gpu_tiles_test.dart": "2647ee8b4ab6dfc4a134166ea9760790d8e5931f1fef5791a3b2780828b2e799",
+      "bindings/Flutter/test/native_gpu_trace_test.dart": "258483e39be1a56b38cb87155422a97b52f04ea9da38d8c3aadbd61501178a21",
+      "bindings/Flutter/test/native_ime_integration_test.dart": "64e85086d767d407980c7fdda2caa5e67c7ce9b0f6ca8259dae192de5a7f8545",
+      "bindings/Flutter/test/native_ime_test.dart": "271b8e50c2960f1173463d75e2cbe9d02ed4ef9ccb571bf4a37cad30ff78ae34",
+      "bindings/Flutter/test/native_metal_view_test.dart": "123f667850d8c2e30b1551944d14d7111e00936ce92c45bc488d8ffcb07cb2a7",
+      "bindings/Flutter/test/native_multipage_integration_test.dart": "959b7032ed91c913b206cc58aa1d371a425b5999c483d3e5c8ffeb3bfb93ecda",
+      "bindings/Flutter/test/native_multipage_view_test.dart": "dfe9b5641a8d3fce160d9842d72012bbda787ab02b29ae52698f19736bab0e86",
+      "bindings/Flutter/test/native_owner_contract.py": "fa47f71445f2a1ef8c5d7423917a60486a14503eabcbd1689585a8551a56512d",
+      "bindings/Flutter/test/native_presentation_capture_test.dart": "d321c9b8bf5e8a1ea4a5c8e54020e239aef608c5614a9b22ed611cc130367d6e",
+      "bindings/Flutter/test/native_presentation_test.dart": "c3115b0906bcea626012dd87c994f1ed6586f8adda6a4eaaf8b68b0f2a6c1c54",
+      "bindings/Flutter/test/native_producer_ready_test.dart": "6d50c1312efadf99bf678cf2773188c34c0fbe91e2e6a142028e5dcd65cce123",
+      "bindings/Flutter/test/native_runtime_bundle_test.dart": "880bc1794f46f38c876310631bdc8469b6292278a46e710fdfee414550582cf7",
+      "bindings/Flutter/test/native_texture_continuous_test.dart": "68f0ac765d7920fcb9e81189e014a7a0ca0c7269b0d0915651b6e48c05d73b3d",
+      "bindings/Flutter/test/native_texture_idle_polling_test.dart": "7229b429237bec51d28caf348e4bb2ca3d0a5fc16d100e7f4daaa700edc36762",
+      "bindings/Flutter/test/native_texture_multipage_test.dart": "558ef78c80d1b4bb9449331fa9ccd93fbcaf4d24a498640b75124acdbadf811a",
+      "bindings/Flutter/test/native_texture_performance_test.dart": "117863c00d52f76b5bd8b50c5981dbe6a0469adf36e30a82895bda8dcc67d3e3",
+      "bindings/Flutter/test/native_texture_tiles_test.dart": "d770d09604a43d86e8deca924b10db6ad23eb7642abc1b828cee8793cc493339",
+      "bindings/Flutter/test/native_texture_view_test.dart": "e57ac216ad6ea3b285f6698b7d63148836b9e60dafa72341db91ae7f7f95c17b",
+      "bindings/Flutter/test/native_viewport_test.dart": "3aa2cefbb04d308a4c11f0e1e74830ee3d413659c024e8d9844c6cac4355f89e",
+      "bindings/Flutter/test/native_window_close_test.dart": "9d5b159717c73af2cc07513daa3029a569ea10667f0fa4518dc5c9f82548c17d",
+      "bindings/Flutter/test/reference_app_contract.py": "443492aa373c7000135a3a42b4ccf2fabb93a3914619c258f7f07fdbc7e243bd",
+      "bindings/Flutter/test/runtime_bundle_contract.py": "3330eca36acba5b0957806e20f8de828b858dfc41fab4be8da20f69489b52029",
+      "bindings/Flutter/test/runtime_bundle_ffi_contract.py": "2292a81cd9b1fc166151c2709e92943428a005b44d9a9aa8e5ce61c4457d5ca1",
+      "bindings/Flutter/test/support/desktop_consumer_probe.dart": "8344ab80e98e0c801c38020fec09b4b72023a57e494564abf167a385d0cb1b35",
+      "bindings/Flutter/test/support/fake_gpu_presentation.dart": "e00b14aad2e3532b5203d88b70126d037c6c007d930c549582f3e026c130ceb3",
+      "bindings/Flutter/test/support/fake_transport.dart": "d9d08e0d8ec475575d088c0f160df7b396c5d349ee34dffb8ca4fe7ac8a85eec",
+      "bindings/Flutter/test/support/linux_controller_view_probe.dart": "87a0527edf4a0cfb484aee9051781835e7eae506dba90312fe12d82eb4f95537",
+      "bindings/Flutter/test/support/linux_texture_probe.dart": "03411efaf6946894837eac2b7576ca57898e62c0f366de7666a16d14e3542547",
+      "bindings/Flutter/test/support/linux_tile_group_probe.dart": "6df0c8f4caf1cd40dbc1db7b37346b68ac2262bdf3d7ab204f96803ac333cd52",
+      "bindings/Flutter/test/support/mock_native.c": "43f7c2bb27efd3ab726daced36fe782bfdae70078ea42f8e0593fb016e49fd7e",
+      "bindings/Flutter/test/support/windows_tile_group_probe.dart": "cd9f20fc6d91c84014d303ac3406477e1f59fb1041765c73c696657f57c12942",
+      "bindings/Flutter/test/tile_probe_channel_test.dart": "6b7b5fe4731de7c53ee6dee3d570c9e9389525de630c31f1cbc8590f096da681",
+      "bindings/Flutter/test/windows_continuous_qualification_contract.py": "390ffc505aa1d09c8bdfa0e785bcbe3fdac9bac535dac02d029ae9e85ce17b5f",
+      "bindings/Flutter/test/windows_tile_group_qualification_contract.py": "2f370ada76ba8b7b643d1b3d22b0f04bead542bc0d1a3b294b4e8d6e6466ec14",
+      "bindings/Flutter/tool/build_desktop_probe.py": "13bb7da404124e5f3306af53cbcd5fbfbacfa542f80672fb18d566a47a044e7d",
+      "bindings/Flutter/tool/build_dispatcher.py": "2306613d902a9e1b4e898ee7ad438d7bdc2cf4af8137ad72c2d8279e7456417f",
+      "bindings/Flutter/tool/build_linux_probe.py": "f840e15ca58c1fafe07c4de49456215bcf55f5098a80e7879077cd4d31ac16b0",
+      "bindings/Flutter/tool/check_macos_metal_sdk.py": "a7148a8393afdf50b28a3dc18a130b818857a8c4aa655dca67dec0dd57de81f5",
+      "bindings/Flutter/tool/check_windows_desktop_sdk.py": "bccb49737272cdcd09e6034bbefb8fe19422b32c3fee6a4787880792f50ea5bb",
+      "bindings/Flutter/tool/find_macos_framework.py": "8adecec804c9d749f05dbacc5b0e2abb946ac6f0dc3014e9e312d6a610052a76",
+      "bindings/Flutter/tool/gpu_cache_benchmark.py": "147e0e6f6c09a6fb0173491d65c66687f1b1ea6e949f60b3e9207fcdd2605430",
+      "bindings/Flutter/tool/native_artifact_provenance.py": "bae91b4bdbdf10f80806cdb1fd267c6f218bd4a3c575e947ef990cd5e92cd5c9",
+      "bindings/Flutter/tool/native_ffi_smoke.dart": "db2b212624ccc30a406988d8f9fa38344d3c1ab0ebd8c05c58dc1af325cad28f",
+      "bindings/Flutter/tool/qualify_desktop_texture.py": "1f12d1632de6e3cc8f0a72c0d05d7a73b18d9a4c532d5380f218fe5fb0eafb4f",
+      "bindings/Flutter/tool/qualify_linux_texture.py": "9fcc0f46ca46baafacafa9db215a2b9afb3abd998956ea491c3cf629b79a9f6a",
+      "bindings/Flutter/tool/qualify_linux_tile_group.py": "6db5803faf100d18a10ca58a6dc6a4ef5aa5db5baac14abc748e22d6f1c1a453",
+      "bindings/Flutter/tool/qualify_windows_continuous.py": "a9833f0676f60acad94f59b4d887acb623661b8ea8eb088e0e655c8ad177fea2",
+      "bindings/Flutter/tool/qualify_windows_tile_group.py": "6c298ad556ae036479db5e53cf04d7655ef4f11c2aeae11b076522ab9b7873c8",
+      "bindings/Flutter/tool/reference_app.py": "1c6ba2c76f1af08b76ef2d96c141deb0202db7d27e6999727f984aa3d61fcb85",
+      "bindings/Flutter/tool/runtime_bundle.py": "468b31e3992b0dde34c51db5b3b1817695c59228d5256fb69c3f226a98babe19",
+      "bindings/Flutter/tool/runtime_bundle_smoke.dart": "35513453c406a0f20b44c4e05e022da7b5f973e2878a9b2e1f41313bf41a04ba",
+      "bindings/Flutter/windows/CMakeLists.txt": "9b2a74b6dafbe61963bcba38f83843e55d9937f665160bd80bb5a8a0b0e5127a",
+      "bindings/Flutter/windows/CloseRecordRegistry.h": "39a1bbbff1b71814487253d8af20114ca989ef3d1f4eacdb41c53265599cbc6c",
+      "bindings/Flutter/windows/FrameLifetime.h": "bd9b164ccf72511ab75d91c2aaf05f515d74dbade0085928f613e3e792a99423",
+      "bindings/Flutter/windows/INTERNAL_GPU_TILE_CACHE.md": "fa0eb360a23a16761dac3b1dac5f30faa34102c02c23c6b23839eeb28688a24b",
+      "bindings/Flutter/windows/MessengerLifetime.h": "581d04de23f45b0be014cda62c735d193fad3e33c36c7ee7e19476b23cfc86c6",
+      "bindings/Flutter/windows/NativeApi.cpp": "30e26b2c7930eb29a2eb8d9bcd0c6c8024d15127cbd5bbe17cc5c8922280e396",
+      "bindings/Flutter/windows/NativeApi.h": "709211120f1d01564c34f2e79b5786ce655e62de0558772fd96f1e257a58d594",
+      "bindings/Flutter/windows/NativeReply.h": "113d516be88add35ed404fde44cb988c2e84f0d83b2e1ccb43e237e57732426a",
+      "bindings/Flutter/windows/PRIVATE_TARGET_POOL.md": "dd8c9ccf983cc43078859edd9bca92e7b22b19b616a089bc0e09fb8c30cb346e",
+      "bindings/Flutter/windows/PrivateTargetPool.h": "ad293ea7babc7208d967db0010511da5221073ec8480c99832248ebe64fce5d0",
+      "bindings/Flutter/windows/Producer.cpp": "25a9fd9d3c2e25b5da27dee60535c561af601ee4e84068ed41d88717c37c8c6d",
+      "bindings/Flutter/windows/Producer.h": "493d7a81ab902678e43ad0e51776b53b6aa633f901f263980376f4bccabd0ed0",
+      "bindings/Flutter/windows/ProducerReadyEvents.h": "7e4fce853b2f19aa13b927d491684cf003908ba8fb1a2383f96a34bcac8064bf",
+      "bindings/Flutter/windows/SurfaceImportTickets.h": "2cbac0a9b2575074ae4b634dcbaaf8e01c44ae50ed3db0dc62c0db0d03ec7288",
+      "bindings/Flutter/windows/include/rhwp_native_reference/rhwp_d3d_plugin.h": "bd4152d386444c08b1dff66aa2a3d7a427775694196efedd739409420fb90ddd",
+      "bindings/Flutter/windows/include/rhwp_native_reference/rhwp_d3d_plugin_c_api.h": "a23ec32e49ff2323be2a83b242c04a4d7bb0a11666518f8be5b8cca53b8e2576",
+      "bindings/Flutter/windows/rhwp_d3d_plugin.cpp": "8d64d7b58c68e6e7d8f623c45f9ae9bc4aaf030bf181d6601e172fd2587f49cd",
+      "bindings/Flutter/windows/tests/check_windows_bridge.py": "d2a962970d2e56b5485b07ef73758255b5499697b1f076a48cc06a5ea5b052c5",
+      "bindings/Flutter/windows/tests/close_registry_test.cpp": "c7966b9fbbcc59a7220f2f25163c9dcf9f27b85ac62532a81f469335ee2c7400",
+      "bindings/Flutter/windows/tests/frame_lifetime_test.cpp": "261de79c1045a43522c6457b6b170847bad62ffa54a4c9da1c461d35afee6668",
+      "bindings/Flutter/windows/tests/group_error_limits_contract.py": "0553c8ed4dd408abcfa3e1f6a6bca8bccd2dd4fb6af8ab66ce107259806907c0",
+      "bindings/Flutter/windows/tests/import_lifetime_test.cpp": "f87b354d675c52d0ec299b7ce861a1229b67ddcadfad231ff5dd6bbd450e892e",
+      "bindings/Flutter/windows/tests/messenger_lifetime_test.cpp": "fac27e6563d79e5b059727d8098bfc3ecfec92ca05871171858d7dbe9ad71634",
+      "bindings/Flutter/windows/tests/native_d3d_disabled.py": "587ba4002bf1a85ca4d04852362b433a416d152981fe97d56baf9f92cd9f08eb",
+      "bindings/Flutter/windows/tests/public_texture_contract.cpp": "25c8a96cfa6748da736ed4872b694cf0241e2547ffc73b21d8c46c308d14a0ce",
+      "bindings/Flutter/windows/tests/support/flutter_windows.h": "3b19cf339ef543a4181475048937b53e430b2647189c733f2fc69cd11e88661c",
+      "bindings/swift/Sources/CRhwpNative/module.modulemap": "72e590fe700e11a5ea1951411e75e48bd291bb861385d5c39b5012197d1edf96",
+      "bindings/swift/Sources/CRhwpNative/rhwp_native_ffi.h": "eebc11592056ac76d4528b1c7f13508ca453a8f104d2bd1b56292b329c0ec811"
+    },
+    "finished": 1794830116.5724666,
+    "generatedDartHarness": {
+      "purpose": "actual private trim and binding pressure / metrics with preserved public front",
+      "productSourcesChanged": false,
+      "sha256": "8c842e7aa66182959fb3bee4c491fb588ec8866a250c76bbe721a7a4ecc8486d"
+    }
+  },
+  "collectorSha256": "6c298ad556ae036479db5e53cf04d7655ef4f11c2aeae11b076522ab9b7873c8",
+  "collectorSourceFiles": {
+    "bindings/Flutter/tool/qualify_windows_tile_group.py": "6c298ad556ae036479db5e53cf04d7655ef4f11c2aeae11b076522ab9b7873c8",
+    "bindings/Flutter/tool/qualify_windows_continuous.py": "a9833f0676f60acad94f59b4d887acb623661b8ea8eb088e0e655c8ad177fea2",
+    "bindings/Flutter/tool/qualify_desktop_texture.py": "1f12d1632de6e3cc8f0a72c0d05d7a73b18d9a4c532d5380f218fe5fb0eafb4f"
+  },
+  "capture": "visible-win32-desktop",
+  "stages": [
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "11e1574738054624bc4936263d51bdf8",
+        "pid": 42696,
+        "index": 1,
+        "platform": "windows",
+        "stage": "initial",
+        "flutterView": {
+          "width": 1264,
+          "height": 681,
+          "deviceScale": 1.0
+        },
+        "acceptance": {
+          "accepted": true,
+          "acceptedSnapshots": [
+            2
+          ],
+          "acceptedStamp": {
+            "deviceGeneration": 1,
+            "deviceScale": 1.0,
+            "documentId": 1,
+            "fontGeneration": 0,
+            "revision": 0,
+            "viewGeneration": 1
+          },
+          "limits": {
+            "backpressureRetryable": true,
+            "closeAcknowledgementRequired": true,
+            "consumerAndDriverMemoryIncluded": false,
+            "consumerGpuCompletionVerified": false,
+            "consumerRetirement": false,
+            "continuousPresentationSupported": true,
+            "cpuFallbackRequiredWhenSaturated": true,
+            "descriptorAwaitingOpenedTickets": 0,
+            "descriptorCpuPendingTickets": 0,
+            "descriptorDuplicateOrLateNotifications": 0,
+            "descriptorOpenedNotifications": 0,
+            "descriptorReleaseIsGpuComplete": false,
+            "descriptorTickets": 0,
+            "discardedUnexposedFrames": 0,
+            "frameAccountingScope": "legacyRetainedAndPluginOwnedReferences",
+            "frameReservedBytes": 8388608,
+            "handedOffFrames": 0,
+            "idlePrivateTargetBytes": 0,
+            "idlePrivateTargets": 0,
+            "immutableFrames": 0,
+            "importPendingBytes": 0,
+            "importPendingFrames": 0,
+            "legacyRetainedFrames": 0,
+            "maxClosedReceipts": 2,
+            "maxDescriptorTickets": 8,
+            "maxFrames": 4,
+            "maxIdlePrivateTargets": 2,
+            "maxPrivateTargets": 4,
+            "maxRetainedCloseRecords": 2,
+            "maxSingleFrameBytes": 16777216,
+            "maxTargetBytes": 67108864,
+            "outstandingFrames": 2,
+            "pendingRetireFrames": 2,
+            "privateTargetBytes": 0,
+            "privateTargetReuse": true,
+            "privateTargetReuses": 0,
+            "privateTargets": 0,
+            "producerOwnedBytes": 8388608,
+            "producerOwnedFrames": 2,
+            "publicationMode": "immutableOwnershipTransfer",
+            "quarantinedFrames": 0,
+            "reservedTargetBytes": 8388608,
+            "targetReuse": false,
+            "wholeFrameReadbacks": 0
+          }
+        },
+        "width": 1026,
+        "height": 480,
+        "physicalOffset": [
+          0,
+          0
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 0,
+          "fontGeneration": 0,
+          "viewGeneration": 1,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "snapshotIds": [
+          2
+        ],
+        "group": {
+          "deviceGeneration": 1,
+          "groupId": 2774095188944,
+          "members": [
+            {
+              "acceptedSerial": 1,
+              "acceptedSnapshots": [
+                2
+              ],
+              "acceptedStamp": {
+                "deviceGeneration": 1,
+                "deviceScale": 1.0,
+                "documentId": 1,
+                "fontGeneration": 0,
+                "revision": 0,
+                "viewGeneration": 1
+              },
+              "closeAcknowledgementRequired": true,
+              "closed": false,
+              "descriptorOpenedSerial": 1,
+              "deviceFailure": false,
+              "deviceGeneration": 1,
+              "error": "",
+              "errorCode": "",
+              "hasFrame": true,
+              "inFlight": false,
+              "limits": {
+                "backpressureRetryable": true,
+                "closeAcknowledgementRequired": true,
+                "consumerAndDriverMemoryIncluded": false,
+                "consumerGpuCompletionVerified": false,
+                "consumerRetirement": false,
+                "continuousPresentationSupported": true,
+                "cpuFallbackRequiredWhenSaturated": true,
+                "descriptorAwaitingOpenedTickets": 0,
+                "descriptorCpuPendingTickets": 2,
+                "descriptorDuplicateOrLateNotifications": 0,
+                "descriptorOpenedNotifications": 2,
+                "descriptorReleaseIsGpuComplete": false,
+                "descriptorTickets": 2,
+                "discardedUnexposedFrames": 0,
+                "frameAccountingScope": "legacyRetainedAndPluginOwnedReferences",
+                "frameReservedBytes": 4194304,
+                "handedOffFrames": 0,
+                "idlePrivateTargetBytes": 4194304,
+                "idlePrivateTargets": 2,
+                "immutableFrames": 0,
+                "importPendingBytes": 0,
+                "importPendingFrames": 0,
+                "legacyRetainedFrames": 0,
+                "maxClosedReceipts": 2,
+                "maxDescriptorTickets": 8,
+                "maxFrames": 4,
+                "maxIdlePrivateTargets": 2,
+                "maxPrivateTargets": 4,
+                "maxRetainedCloseRecords": 2,
+                "maxSingleFrameBytes": 16777216,
+                "maxTargetBytes": 67108864,
+                "outstandingFrames": 2,
+                "pendingRetireFrames": 2,
+                "privateTargetBytes": 4194304,
+                "privateTargetReuse": true,
+                "privateTargetReuses": 0,
+                "privateTargets": 2,
+                "producerOwnedBytes": 4194304,
+                "producerOwnedFrames": 2,
+                "publicationMode": "immutableOwnershipTransfer",
+                "quarantinedFrames": 0,
+                "reservedTargetBytes": 8388608,
+                "targetReuse": false,
+                "wholeFrameReadbacks": 0
+              },
+              "ownerFinished": false,
+              "producerDiagnostics": {
+                "backend": "d3d12Ganesh",
+                "counters": {
+                  "cacheEvictions": 0,
+                  "cacheHits": 0,
+                  "cacheMisses": 1,
+                  "cachedBytes": 897024,
+                  "cachedTiles": 1,
+                  "canonicalReplays": 1,
+                  "managedBytes": 1881984,
+                  "managedTargets": 2,
+                  "targetAdmissionFallbacks": 0,
+                  "viewportFallbacks": 0
+                },
+                "schemaVersion": 1,
+                "scope": "publishedFramePostRenderSnapshot",
+                "stamp": {
+                  "deviceGeneration": 1,
+                  "deviceScale": 1.0,
+                  "documentId": 1,
+                  "fontGeneration": 0,
+                  "revision": 0,
+                  "viewGeneration": 1
+                }
+              },
+              "producerReadyEvents": true,
+              "publicationMode": "immutableOwnershipTransfer",
+              "ready": true,
+              "registered": true,
+              "renderedSerial": 1,
+              "renderedStamp": {
+                "deviceGeneration": 1,
+                "deviceScale": 1.0,
+                "documentId": 1,
+                "fontGeneration": 0,
+                "revision": 0,
+                "viewGeneration": 1
+              },
+              "staleDrops": 0,
+              "textureId": 2774095188944,
+              "unregistered": false
+            },
+            {
+              "acceptedSerial": 1,
+              "acceptedSnapshots": [
+                2
+              ],
+              "acceptedStamp": {
+                "deviceGeneration": 1,
+                "deviceScale": 1.0,
+                "documentId": 1,
+                "fontGeneration": 0,
+                "revision": 0,
+                "viewGeneration": 1
+              },
+              "closeAcknowledgementRequired": true,
+              "closed": false,
+              "descriptorOpenedSerial": 1,
+              "deviceFailure": false,
+              "deviceGeneration": 1,
+              "error": "",
+              "errorCode": "",
+              "hasFrame": true,
+              "inFlight": false,
+              "limits": {
+                "backpressureRetryable": true,
+                "closeAcknowledgementRequired": true,
+                "consumerAndDriverMemoryIncluded": false,
+                "consumerGpuCompletionVerified": false,
+                "consumerRetirement": false,
+                "continuousPresentationSupported": true,
+                "cpuFallbackRequiredWhenSaturated": true,
+                "descriptorAwaitingOpenedTickets": 0,
+                "descriptorCpuPendingTickets": 2,
+                "descriptorDuplicateOrLateNotifications": 0,
+                "descriptorOpenedNotifications": 2,
+                "descriptorReleaseIsGpuComplete": false,
+                "descriptorTickets": 2,
+                "discardedUnexposedFrames": 0,
+                "frameAccountingScope": "legacyRetainedAndPluginOwnedReferences",
+                "frameReservedBytes": 4194304,
+                "handedOffFrames": 0,
+                "idlePrivateTargetBytes": 4194304,
+                "idlePrivateTargets": 2,
+                "immutableFrames": 0,
+                "importPendingBytes": 0,
+                "importPendingFrames": 0,
+                "legacyRetainedFrames": 0,
+                "maxClosedReceipts": 2,
+                "maxDescriptorTickets": 8,
+                "maxFrames": 4,
+                "maxIdlePrivateTargets": 2,
+                "maxPrivateTargets": 4,
+                "maxRetainedCloseRecords": 2,
+                "maxSingleFrameBytes": 16777216,
+                "maxTargetBytes": 67108864,
+                "outstandingFrames": 2,
+                "pendingRetireFrames": 2,
+                "privateTargetBytes": 4194304,
+                "privateTargetReuse": true,
+                "privateTargetReuses": 0,
+                "privateTargets": 2,
+                "producerOwnedBytes": 4194304,
+                "producerOwnedFrames": 2,
+                "publicationMode": "immutableOwnershipTransfer",
+                "quarantinedFrames": 0,
+                "reservedTargetBytes": 8388608,
+                "targetReuse": false,
+                "wholeFrameReadbacks": 0
+              },
+              "ownerFinished": false,
+              "producerDiagnostics": {
+                "backend": "d3d12Ganesh",
+                "counters": {
+                  "cacheEvictions": 0,
+                  "cacheHits": 0,
+                  "cacheMisses": 1,
+                  "cachedBytes": 897024,
+                  "cachedTiles": 1,
+                  "canonicalReplays": 1,
+                  "managedBytes": 1881984,
+                  "managedTargets": 2,
+                  "targetAdmissionFallbacks": 0,
+                  "viewportFallbacks": 0
+                },
+                "schemaVersion": 1,
+                "scope": "publishedFramePostRenderSnapshot",
+                "stamp": {
+                  "deviceGeneration": 1,
+                  "deviceScale": 1.0,
+                  "documentId": 1,
+                  "fontGeneration": 0,
+                  "revision": 0,
+                  "viewGeneration": 1
+                }
+              },
+              "producerReadyEvents": true,
+              "publicationMode": "immutableOwnershipTransfer",
+              "ready": true,
+              "registered": true,
+              "renderedSerial": 1,
+              "renderedStamp": {
+                "deviceGeneration": 1,
+                "deviceScale": 1.0,
+                "documentId": 1,
+                "fontGeneration": 0,
+                "revision": 0,
+                "viewGeneration": 1
+              },
+              "staleDrops": 0,
+              "textureId": 2774092819376,
+              "unregistered": false
+            }
+          ]
+        },
+        "submission": {
+          "groupId": 2774095188944,
+          "deviceGeneration": 1,
+          "stamp": {
+            "documentId": 1,
+            "revision": 0,
+            "fontGeneration": 0,
+            "viewGeneration": 1,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "clearColor": 4283783002,
+          "tiles": [
+            {
+              "textureId": 2774095188944,
+              "width": 513,
+              "height": 480,
+              "placements": [
+                {
+                  "snapshot": 2,
+                  "scale": 0.55,
+                  "originX": 294.98066666666665,
+                  "originY": 0.5,
+                  "backgroundColor": 4294967295
+                }
+              ]
+            },
+            {
+              "textureId": 2774092819376,
+              "width": 513,
+              "height": 480,
+              "placements": [
+                {
+                  "snapshot": 2,
+                  "scale": 0.55,
+                  "originX": -218.01933333333335,
+                  "originY": 0.5,
+                  "backgroundColor": 4294967295
+                }
+              ]
+            }
+          ]
+        },
+        "tileRects": [
+          {
+            "left": 0,
+            "top": 0,
+            "width": 513,
+            "height": 480
+          },
+          {
+            "left": 513,
+            "top": 0,
+            "width": 513,
+            "height": 480
+          }
+        ],
+        "strips": [
+          {
+            "left": 0,
+            "width": 1026,
+            "cpu": {
+              "snapshot": 2,
+              "stamp": {
+                "documentId": 1,
+                "revision": 0,
+                "fontGeneration": 0,
+                "viewGeneration": 1,
+                "deviceGeneration": 1,
+                "deviceScale": 1.0
+              },
+              "viewport": {
+                "width": 1026,
+                "height": 480
+              },
+              "placement": {
+                "scale": 0.55,
+                "originX": 294.98066666666665,
+                "originY": 0.5
+              },
+              "coordinateSpace": "viewportPixels",
+              "descriptor": {
+                "alpha": "premultiplied",
+                "backend": "cpu",
+                "byteLength": 1969920,
+                "colorSpace": "srgb",
+                "deviceScale": 1.0,
+                "height": 480,
+                "origin": "topLeft",
+                "originX": 0,
+                "originY": 0,
+                "pixelFormat": "rgba8Premultiplied",
+                "rasterScale": 1.0,
+                "stride": 4104,
+                "width": 1026
+              }
+            },
+            "reference": {
+              "snapshot": 2,
+              "stamp": {
+                "documentId": 1,
+                "revision": 0,
+                "fontGeneration": 0,
+                "viewGeneration": 1,
+                "deviceGeneration": 1,
+                "deviceScale": 1.0
+              },
+              "viewport": {
+                "width": 2052,
+                "height": 960
+              },
+              "placement": {
+                "scale": 1.1,
+                "originX": 589.9613333333333,
+                "originY": 1.0
+              },
+              "coordinateSpace": "viewportPixels",
+              "descriptor": {
+                "alpha": "premultiplied",
+                "backend": "cpu",
+                "byteLength": 7879680,
+                "colorSpace": "srgb",
+                "deviceScale": 1.0,
+                "height": 960,
+                "origin": "topLeft",
+                "originX": 0,
+                "originY": 0,
+                "pixelFormat": "rgba8Premultiplied",
+                "rasterScale": 1.0,
+                "stride": 8208,
+                "width": 2052
+              }
+            }
+          }
+        ]
+      },
+      "window": {
+        "width": 1264,
+        "height": 681,
+        "deviceScale": 1.0
+      },
+      "comparison": {
+        "comparison": {
+          "uniformInteriorPixels": 488719,
+          "aaEdgeDifferentPixels": 921,
+          "maxChannelDifference": 170,
+          "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+          "sourceReferenceScale": 2,
+          "sourceReferenceBytes": 7879680,
+          "integerAlignmentErrors": {
+            "-1,-1": 669465,
+            "0,-1": 103357,
+            "1,-1": 674177,
+            "-1,0": 582405,
+            "0,0": 4569,
+            "1,0": 586981,
+            "-1,1": 669603,
+            "0,1": 103355,
+            "1,1": 674039
+          }
+        },
+        "seam": 513,
+        "cpuSha256": "0f6a08c72d0365d8ce16dbd4334c6ad4fc75fe7127f781e22ccebf5cc1767d65",
+        "referenceSha256": "2e6379df883aa644b04be90011a58f60f50edc557a482a0eb2e6b424c69736a0"
+      },
+      "compositorSha256": "2cd7c8f7cdd0892d3df002fabc3aed9cd17082044db6e122ba2d0dfbc30cebab"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "11e1574738054624bc4936263d51bdf8",
+        "pid": 42696,
+        "index": 2,
+        "platform": "windows",
+        "stage": "revision",
+        "flutterView": {
+          "width": 1264,
+          "height": 681,
+          "deviceScale": 1.0
+        },
+        "acceptance": {
+          "accepted": true,
+          "acceptedSnapshots": [
+            7
+          ],
+          "acceptedStamp": {
+            "deviceGeneration": 1,
+            "deviceScale": 1.0,
+            "documentId": 1,
+            "fontGeneration": 0,
+            "revision": 1,
+            "viewGeneration": 3
+          },
+          "limits": {
+            "backpressureRetryable": true,
+            "closeAcknowledgementRequired": true,
+            "consumerAndDriverMemoryIncluded": false,
+            "consumerGpuCompletionVerified": false,
+            "consumerRetirement": false,
+            "continuousPresentationSupported": true,
+            "cpuFallbackRequiredWhenSaturated": true,
+            "descriptorAwaitingOpenedTickets": 0,
+            "descriptorCpuPendingTickets": 2,
+            "descriptorDuplicateOrLateNotifications": 0,
+            "descriptorOpenedNotifications": 2,
+            "descriptorReleaseIsGpuComplete": false,
+            "descriptorTickets": 2,
+            "discardedUnexposedFrames": 0,
+            "frameAccountingScope": "legacyRetainedAndPluginOwnedReferences",
+            "frameReservedBytes": 12582912,
+            "handedOffFrames": 0,
+            "idlePrivateTargetBytes": 4194304,
+            "idlePrivateTargets": 2,
+            "immutableFrames": 0,
+            "importPendingBytes": 0,
+            "importPendingFrames": 0,
+            "legacyRetainedFrames": 0,
+            "maxClosedReceipts": 2,
+            "maxDescriptorTickets": 8,
+            "maxFrames": 4,
+            "maxIdlePrivateTargets": 2,
+            "maxPrivateTargets": 4,
+            "maxRetainedCloseRecords": 2,
+            "maxSingleFrameBytes": 16777216,
+            "maxTargetBytes": 67108864,
+            "outstandingFrames": 4,
+            "pendingRetireFrames": 4,
+            "privateTargetBytes": 4194304,
+            "privateTargetReuse": true,
+            "privateTargetReuses": 0,
+            "privateTargets": 2,
+            "producerOwnedBytes": 12582912,
+            "producerOwnedFrames": 4,
+            "publicationMode": "immutableOwnershipTransfer",
+            "quarantinedFrames": 0,
+            "reservedTargetBytes": 16777216,
+            "targetReuse": false,
+            "wholeFrameReadbacks": 0
+          }
+        },
+        "width": 1026,
+        "height": 480,
+        "physicalOffset": [
+          0,
+          0
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 3,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "snapshotIds": [
+          7
+        ],
+        "group": {
+          "deviceGeneration": 1,
+          "groupId": 2774095188944,
+          "members": [
+            {
+              "acceptedSerial": 2,
+              "acceptedSnapshots": [
+                7
+              ],
+              "acceptedStamp": {
+                "deviceGeneration": 1,
+                "deviceScale": 1.0,
+                "documentId": 1,
+                "fontGeneration": 0,
+                "revision": 1,
+                "viewGeneration": 3
+              },
+              "closeAcknowledgementRequired": true,
+              "closed": false,
+              "descriptorOpenedSerial": 2,
+              "deviceFailure": false,
+              "deviceGeneration": 1,
+              "error": "",
+              "errorCode": "",
+              "hasFrame": true,
+              "inFlight": false,
+              "limits": {
+                "backpressureRetryable": true,
+                "closeAcknowledgementRequired": true,
+                "consumerAndDriverMemoryIncluded": false,
+                "consumerGpuCompletionVerified": false,
+                "consumerRetirement": false,
+                "continuousPresentationSupported": true,
+                "cpuFallbackRequiredWhenSaturated": true,
+                "descriptorAwaitingOpenedTickets": 0,
+                "descriptorCpuPendingTickets": 2,
+                "descriptorDuplicateOrLateNotifications": 0,
+                "descriptorOpenedNotifications": 4,
+                "descriptorReleaseIsGpuComplete": false,
+                "descriptorTickets": 2,
+                "discardedUnexposedFrames": 0,
+                "frameAccountingScope": "legacyRetainedAndPluginOwnedReferences",
+                "frameReservedBytes": 4194304,
+                "handedOffFrames": 2,
+                "idlePrivateTargetBytes": 4194304,
+                "idlePrivateTargets": 2,
+                "immutableFrames": 0,
+                "importPendingBytes": 0,
+                "importPendingFrames": 0,
+                "legacyRetainedFrames": 0,
+                "maxClosedReceipts": 2,
+                "maxDescriptorTickets": 8,
+                "maxFrames": 4,
+                "maxIdlePrivateTargets": 2,
+                "maxPrivateTargets": 4,
+                "maxRetainedCloseRecords": 2,
+                "maxSingleFrameBytes": 16777216,
+                "maxTargetBytes": 67108864,
+                "outstandingFrames": 2,
+                "pendingRetireFrames": 2,
+                "privateTargetBytes": 4194304,
+                "privateTargetReuse": true,
+                "privateTargetReuses": 2,
+                "privateTargets": 2,
+                "producerOwnedBytes": 4194304,
+                "producerOwnedFrames": 2,
+                "publicationMode": "immutableOwnershipTransfer",
+                "quarantinedFrames": 0,
+                "reservedTargetBytes": 8388608,
+                "targetReuse": false,
+                "wholeFrameReadbacks": 0
+              },
+              "ownerFinished": false,
+              "producerDiagnostics": {
+                "backend": "d3d12Ganesh",
+                "counters": {
+                  "cacheEvictions": 1,
+                  "cacheHits": 0,
+                  "cacheMisses": 2,
+                  "cachedBytes": 897024,
+                  "cachedTiles": 1,
+                  "canonicalReplays": 2,
+                  "managedBytes": 1881984,
+                  "managedTargets": 2,
+                  "targetAdmissionFallbacks": 0,
+                  "viewportFallbacks": 0
+                },
+                "schemaVersion": 1,
+                "scope": "publishedFramePostRenderSnapshot",
+                "stamp": {
+                  "deviceGeneration": 1,
+                  "deviceScale": 1.0,
+                  "documentId": 1,
+                  "fontGeneration": 0,
+                  "revision": 1,
+                  "viewGeneration": 3
+                }
+              },
+              "producerReadyEvents": true,
+              "publicationMode": "immutableOwnershipTransfer",
+              "ready": true,
+              "registered": true,
+              "renderedSerial": 2,
+              "renderedStamp": {
+                "deviceGeneration": 1,
+                "deviceScale": 1.0,
+                "documentId": 1,
+                "fontGeneration": 0,
+                "revision": 1,
+                "viewGeneration": 3
+              },
+              "staleDrops": 0,
+              "textureId": 2774095188944,
+              "unregistered": false
+            },
+            {
+              "acceptedSerial": 2,
+              "acceptedSnapshots": [
+                7
+              ],
+              "acceptedStamp": {
+                "deviceGeneration": 1,
+                "deviceScale": 1.0,
+                "documentId": 1,
+                "fontGeneration": 0,
+                "revision": 1,
+                "viewGeneration": 3
+              },
+              "closeAcknowledgementRequired": true,
+              "closed": false,
+              "descriptorOpenedSerial": 2,
+              "deviceFailure": false,
+              "deviceGeneration": 1,
+              "error": "",
+              "errorCode": "",
+              "hasFrame": true,
+              "inFlight": false,
+              "limits": {
+                "backpressureRetryable": true,
+                "closeAcknowledgementRequired": true,
+                "consumerAndDriverMemoryIncluded": false,
+                "consumerGpuCompletionVerified": false,
+                "consumerRetirement": false,
+                "continuousPresentationSupported": true,
+                "cpuFallbackRequiredWhenSaturated": true,
+                "descriptorAwaitingOpenedTickets": 0,
+                "descriptorCpuPendingTickets": 2,
+                "descriptorDuplicateOrLateNotifications": 0,
+                "descriptorOpenedNotifications": 4,
+                "descriptorReleaseIsGpuComplete": false,
+                "descriptorTickets": 2,
+                "discardedUnexposedFrames": 0,
+                "frameAccountingScope": "legacyRetainedAndPluginOwnedReferences",
+                "frameReservedBytes": 4194304,
+                "handedOffFrames": 2,
+                "idlePrivateTargetBytes": 4194304,
+                "idlePrivateTargets": 2,
+                "immutableFrames": 0,
+                "importPendingBytes": 0,
+                "importPendingFrames": 0,
+                "legacyRetainedFrames": 0,
+                "maxClosedReceipts": 2,
+                "maxDescriptorTickets": 8,
+                "maxFrames": 4,
+                "maxIdlePrivateTargets": 2,
+                "maxPrivateTargets": 4,
+                "maxRetainedCloseRecords": 2,
+                "maxSingleFrameBytes": 16777216,
+                "maxTargetBytes": 67108864,
+                "outstandingFrames": 2,
+                "pendingRetireFrames": 2,
+                "privateTargetBytes": 4194304,
+                "privateTargetReuse": true,
+                "privateTargetReuses": 2,
+                "privateTargets": 2,
+                "producerOwnedBytes": 4194304,
+                "producerOwnedFrames": 2,
+                "publicationMode": "immutableOwnershipTransfer",
+                "quarantinedFrames": 0,
+                "reservedTargetBytes": 8388608,
+                "targetReuse": false,
+                "wholeFrameReadbacks": 0
+              },
+              "ownerFinished": false,
+              "producerDiagnostics": {
+                "backend": "d3d12Ganesh",
+                "counters": {
+                  "cacheEvictions": 1,
+                  "cacheHits": 0,
+                  "cacheMisses": 2,
+                  "cachedBytes": 897024,
+                  "cachedTiles": 1,
+                  "canonicalReplays": 2,
+                  "managedBytes": 1881984,
+                  "managedTargets": 2,
+                  "targetAdmissionFallbacks": 0,
+                  "viewportFallbacks": 0
+                },
+                "schemaVersion": 1,
+                "scope": "publishedFramePostRenderSnapshot",
+                "stamp": {
+                  "deviceGeneration": 1,
+                  "deviceScale": 1.0,
+                  "documentId": 1,
+                  "fontGeneration": 0,
+                  "revision": 1,
+                  "viewGeneration": 3
+                }
+              },
+              "producerReadyEvents": true,
+              "publicationMode": "immutableOwnershipTransfer",
+              "ready": true,
+              "registered": true,
+              "renderedSerial": 2,
+              "renderedStamp": {
+                "deviceGeneration": 1,
+                "deviceScale": 1.0,
+                "documentId": 1,
+                "fontGeneration": 0,
+                "revision": 1,
+                "viewGeneration": 3
+              },
+              "staleDrops": 0,
+              "textureId": 2774092819376,
+              "unregistered": false
+            }
+          ]
+        },
+        "submission": {
+          "groupId": 2774095188944,
+          "deviceGeneration": 1,
+          "stamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 3,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "clearColor": 4283783002,
+          "tiles": [
+            {
+              "textureId": 2774095188944,
+              "width": 513,
+              "height": 480,
+              "placements": [
+                {
+                  "snapshot": 7,
+                  "scale": 0.55,
+                  "originX": 294.98066666666665,
+                  "originY": 0.5,
+                  "backgroundColor": 4294967295
+                }
+              ]
+            },
+            {
+              "textureId": 2774092819376,
+              "width": 513,
+              "height": 480,
+              "placements": [
+                {
+                  "snapshot": 7,
+                  "scale": 0.55,
+                  "originX": -218.01933333333335,
+                  "originY": 0.5,
+                  "backgroundColor": 4294967295
+                }
+              ]
+            }
+          ]
+        },
+        "tileRects": [
+          {
+            "left": 0,
+            "top": 0,
+            "width": 513,
+            "height": 480
+          },
+          {
+            "left": 513,
+            "top": 0,
+            "width": 513,
+            "height": 480
+          }
+        ],
+        "strips": [
+          {
+            "left": 0,
+            "width": 1026,
+            "cpu": {
+              "snapshot": 7,
+              "stamp": {
+                "documentId": 1,
+                "revision": 1,
+                "fontGeneration": 0,
+                "viewGeneration": 3,
+                "deviceGeneration": 1,
+                "deviceScale": 1.0
+              },
+              "viewport": {
+                "width": 1026,
+                "height": 480
+              },
+              "placement": {
+                "scale": 0.55,
+                "originX": 294.98066666666665,
+                "originY": 0.5
+              },
+              "coordinateSpace": "viewportPixels",
+              "descriptor": {
+                "alpha": "premultiplied",
+                "backend": "cpu",
+                "byteLength": 1969920,
+                "colorSpace": "srgb",
+                "deviceScale": 1.0,
+                "height": 480,
+                "origin": "topLeft",
+                "originX": 0,
+                "originY": 0,
+                "pixelFormat": "rgba8Premultiplied",
+                "rasterScale": 1.0,
+                "stride": 4104,
+                "width": 1026
+              }
+            },
+            "reference": {
+              "snapshot": 7,
+              "stamp": {
+                "documentId": 1,
+                "revision": 1,
+                "fontGeneration": 0,
+                "viewGeneration": 3,
+                "deviceGeneration": 1,
+                "deviceScale": 1.0
+              },
+              "viewport": {
+                "width": 2052,
+                "height": 960
+              },
+              "placement": {
+                "scale": 1.1,
+                "originX": 589.9613333333333,
+                "originY": 1.0
+              },
+              "coordinateSpace": "viewportPixels",
+              "descriptor": {
+                "alpha": "premultiplied",
+                "backend": "cpu",
+                "byteLength": 7879680,
+                "colorSpace": "srgb",
+                "deviceScale": 1.0,
+                "height": 960,
+                "origin": "topLeft",
+                "originX": 0,
+                "originY": 0,
+                "pixelFormat": "rgba8Premultiplied",
+                "rasterScale": 1.0,
+                "stride": 8208,
+                "width": 2052
+              }
+            }
+          }
+        ]
+      },
+      "window": {
+        "width": 1264,
+        "height": 681,
+        "deviceScale": 1.0
+      },
+      "comparison": {
+        "comparison": {
+          "uniformInteriorPixels": 488694,
+          "aaEdgeDifferentPixels": 922,
+          "maxChannelDifference": 170,
+          "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+          "sourceReferenceScale": 2,
+          "sourceReferenceBytes": 7879680,
+          "integerAlignmentErrors": {
+            "-1,-1": 687345,
+            "0,-1": 120657,
+            "1,-1": 691581,
+            "-1,0": 582759,
+            "0,0": 4551,
+            "1,0": 587307,
+            "-1,1": 687107,
+            "0,1": 120721,
+            "1,1": 691973
+          }
+        },
+        "seam": 513,
+        "cpuSha256": "16a601314607361191384a9037ab7f3cc727f24614fdc62b784a8d7ce2410a70",
+        "referenceSha256": "fa9be45db8bd2345b7c5ee6d52362b84e4ab1ed8502bd42e5ef5fe19f30bbdca"
+      },
+      "compositorSha256": "cdf52c2726ce4a131b58933be26e578295030d8494b4e350922b75cd71e8c813"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "11e1574738054624bc4936263d51bdf8",
+        "pid": 42696,
+        "index": 3,
+        "platform": "windows",
+        "stage": "resize",
+        "flutterView": {
+          "width": 1296,
+          "height": 713,
+          "deviceScale": 1.0
+        },
+        "acceptance": {
+          "accepted": true,
+          "acceptedSnapshots": [
+            13
+          ],
+          "acceptedStamp": {
+            "deviceGeneration": 1,
+            "deviceScale": 1.0,
+            "documentId": 1,
+            "fontGeneration": 0,
+            "revision": 1,
+            "viewGeneration": 6
+          },
+          "limits": {
+            "backpressureRetryable": true,
+            "closeAcknowledgementRequired": true,
+            "consumerAndDriverMemoryIncluded": false,
+            "consumerGpuCompletionVerified": false,
+            "consumerRetirement": false,
+            "continuousPresentationSupported": true,
+            "cpuFallbackRequiredWhenSaturated": true,
+            "descriptorAwaitingOpenedTickets": 0,
+            "descriptorCpuPendingTickets": 2,
+            "descriptorDuplicateOrLateNotifications": 0,
+            "descriptorOpenedNotifications": 6,
+            "descriptorReleaseIsGpuComplete": false,
+            "descriptorTickets": 2,
+            "discardedUnexposedFrames": 0,
+            "frameAccountingScope": "legacyRetainedAndPluginOwnedReferences",
+            "frameReservedBytes": 10485760,
+            "handedOffFrames": 4,
+            "idlePrivateTargetBytes": 4194304,
+            "idlePrivateTargets": 2,
+            "immutableFrames": 0,
+            "importPendingBytes": 0,
+            "importPendingFrames": 0,
+            "legacyRetainedFrames": 0,
+            "maxClosedReceipts": 2,
+            "maxDescriptorTickets": 8,
+            "maxFrames": 4,
+            "maxIdlePrivateTargets": 2,
+            "maxPrivateTargets": 4,
+            "maxRetainedCloseRecords": 2,
+            "maxSingleFrameBytes": 16777216,
+            "maxTargetBytes": 67108864,
+            "outstandingFrames": 4,
+            "pendingRetireFrames": 4,
+            "privateTargetBytes": 4194304,
+            "privateTargetReuse": true,
+            "privateTargetReuses": 4,
+            "privateTargets": 2,
+            "producerOwnedBytes": 10485760,
+            "producerOwnedFrames": 4,
+            "publicationMode": "immutableOwnershipTransfer",
+            "quarantinedFrames": 0,
+            "reservedTargetBytes": 14680064,
+            "targetReuse": false,
+            "wholeFrameReadbacks": 0
+          }
+        },
+        "width": 1025,
+        "height": 496,
+        "physicalOffset": [
+          0,
+          0
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 6,
+          "deviceGeneration": 1,
+          "deviceScale": 1.0
+        },
+        "snapshotIds": [
+          13
+        ],
+        "group": {
+          "deviceGeneration": 1,
+          "groupId": 2774095188944,
+          "members": [
+            {
+              "acceptedSerial": 4,
+              "acceptedSnapshots": [
+                13
+              ],
+              "acceptedStamp": {
+                "deviceGeneration": 1,
+                "deviceScale": 1.0,
+                "documentId": 1,
+                "fontGeneration": 0,
+                "revision": 1,
+                "viewGeneration": 6
+              },
+              "closeAcknowledgementRequired": true,
+              "closed": false,
+              "descriptorOpenedSerial": 4,
+              "deviceFailure": false,
+              "deviceGeneration": 1,
+              "error": "",
+              "errorCode": "",
+              "hasFrame": true,
+              "inFlight": false,
+              "limits": {
+                "backpressureRetryable": true,
+                "closeAcknowledgementRequired": true,
+                "consumerAndDriverMemoryIncluded": false,
+                "consumerGpuCompletionVerified": false,
+                "consumerRetirement": false,
+                "continuousPresentationSupported": true,
+                "cpuFallbackRequiredWhenSaturated": true,
+                "descriptorAwaitingOpenedTickets": 0,
+                "descriptorCpuPendingTickets": 2,
+                "descriptorDuplicateOrLateNotifications": 0,
+                "descriptorOpenedNotifications": 8,
+                "descriptorReleaseIsGpuComplete": false,
+                "descriptorTickets": 2,
+                "discardedUnexposedFrames": 0,
+                "frameAccountingScope": "legacyRetainedAndPluginOwnedReferences",
+                "frameReservedBytes": 3145728,
+                "handedOffFrames": 6,
+                "idlePrivateTargetBytes": 3145728,
+                "idlePrivateTargets": 2,
+                "immutableFrames": 0,
+                "importPendingBytes": 0,
+                "importPendingFrames": 0,
+                "legacyRetainedFrames": 0,
+                "maxClosedReceipts": 2,
+                "maxDescriptorTickets": 8,
+                "maxFrames": 4,
+                "maxIdlePrivateTargets": 2,
+                "maxPrivateTargets": 4,
+                "maxRetainedCloseRecords": 2,
+                "maxSingleFrameBytes": 16777216,
+                "maxTargetBytes": 67108864,
+                "outstandingFrames": 2,
+                "pendingRetireFrames": 2,
+                "privateTargetBytes": 3145728,
+                "privateTargetReuse": true,
+                "privateTargetReuses": 4,
+                "privateTargets": 2,
+                "producerOwnedBytes": 3145728,
+                "producerOwnedFrames": 2,
+                "publicationMode": "immutableOwnershipTransfer",
+                "quarantinedFrames": 0,
+                "reservedTargetBytes": 6291456,
+                "targetReuse": false,
+                "wholeFrameReadbacks": 0
+              },
+              "ownerFinished": false,
+              "producerDiagnostics": {
+                "backend": "d3d12Ganesh",
+                "counters": {
+                  "cacheEvictions": 1,
+                  "cacheHits": 1,
+                  "cacheMisses": 3,
+                  "cachedBytes": 1794048,
+                  "cachedTiles": 2,
+                  "canonicalReplays": 3,
+                  "managedBytes": 2811840,
+                  "managedTargets": 3,
+                  "targetAdmissionFallbacks": 0,
+                  "viewportFallbacks": 0
+                },
+                "schemaVersion": 1,
+                "scope": "publishedFramePostRenderSnapshot",
+                "stamp": {
+                  "deviceGeneration": 1,
+                  "deviceScale": 1.0,
+                  "documentId": 1,
+                  "fontGeneration": 0,
+                  "revision": 1,
+                  "viewGeneration": 6
+                }
+              },
+              "producerReadyEvents": true,
+              "publicationMode": "immutableOwnershipTransfer",
+              "ready": true,
+              "registered": true,
+              "renderedSerial": 4,
+              "renderedStamp": {
+                "deviceGeneration": 1,
+                "deviceScale": 1.0,
+                "documentId": 1,
+                "fontGeneration": 0,
+                "revision": 1,
+                "viewGeneration": 6
+              },
+              "staleDrops": 0,
+              "textureId": 2774095188944,
+              "unregistered": false
+            },
+            {
+              "acceptedSerial": 4,
+              "acceptedSnapshots": [
+                13
+              ],
+              "acceptedStamp": {
+                "deviceGeneration": 1,
+                "deviceScale": 1.0,
+                "documentId": 1,
+                "fontGeneration": 0,
+                "revision": 1,
+                "viewGeneration": 6
+              },
+              "closeAcknowledgementRequired": true,
+              "closed": false,
+              "descriptorOpenedSerial": 4,
+              "deviceFailure": false,
+              "deviceGeneration": 1,
+              "error": "",
+              "errorCode": "",
+              "hasFrame": true,
+              "inFlight": false,
+              "limits": {
+                "backpressureRetryable": true,
+                "closeAcknowledgementRequired": true,
+                "consumerAndDriverMemoryIncluded": false,
+                "consumerGpuCompletionVerified": false,
+                "consumerRetirement": false,
+                "continuousPresentationSupported": true,
+                "cpuFallbackRequiredWhenSaturated": true,
+                "descriptorAwaitingOpenedTickets": 0,
+                "descriptorCpuPendingTickets": 2,
+                "descriptorDuplicateOrLateNotifications": 0,
+                "descriptorOpenedNotifications": 8,
+                "descriptorReleaseIsGpuComplete": false,
+                "descriptorTickets": 2,
+                "discardedUnexposedFrames": 0,
+                "frameAccountingScope": "legacyRetainedAndPluginOwnedReferences",
+                "frameReservedBytes": 3145728,
+                "handedOffFrames": 6,
+                "idlePrivateTargetBytes": 3145728,
+                "idlePrivateTargets": 2,
+                "immutableFrames": 0,
+                "importPendingBytes": 0,
+                "importPendingFrames": 0,
+                "legacyRetainedFrames": 0,
+                "maxClosedReceipts": 2,
+                "maxDescriptorTickets": 8,
+                "maxFrames": 4,
+                "maxIdlePrivateTargets": 2,
+                "maxPrivateTargets": 4,
+                "maxRetainedCloseRecords": 2,
+                "maxSingleFrameBytes": 16777216,
+                "maxTargetBytes": 67108864,
+                "outstandingFrames": 2,
+                "pendingRetireFrames": 2,
+                "privateTargetBytes": 3145728,
+                "privateTargetReuse": true,
+                "privateTargetReuses": 4,
+                "privateTargets": 2,
+                "producerOwnedBytes": 3145728,
+                "producerOwnedFrames": 2,
+                "publicationMode": "immutableOwnershipTransfer",
+                "quarantinedFrames": 0,
+                "reservedTargetBytes": 6291456,
+                "targetReuse": false,
+                "wholeFrameReadbacks": 0
+              },
+              "ownerFinished": false,
+              "producerDiagnostics": {
+                "backend": "d3d12Ganesh",
+                "counters": {
+                  "cacheEvictions": 1,
+                  "cacheHits": 1,
+                  "cacheMisses": 3,
+                  "cachedBytes": 1794048,
+                  "cachedTiles": 2,
+                  "canonicalReplays": 3,
+                  "managedBytes": 2809856,
+                  "managedTargets": 3,
+                  "targetAdmissionFallbacks": 0,
+                  "viewportFallbacks": 0
+                },
+                "schemaVersion": 1,
+                "scope": "publishedFramePostRenderSnapshot",
+                "stamp": {
+                  "deviceGeneration": 1,
+                  "deviceScale": 1.0,
+                  "documentId": 1,
+                  "fontGeneration": 0,
+                  "revision": 1,
+                  "viewGeneration": 6
+                }
+              },
+              "producerReadyEvents": true,
+              "publicationMode": "immutableOwnershipTransfer",
+              "ready": true,
+              "registered": true,
+              "renderedSerial": 4,
+              "renderedStamp": {
+                "deviceGeneration": 1,
+                "deviceScale": 1.0,
+                "documentId": 1,
+                "fontGeneration": 0,
+                "revision": 1,
+                "viewGeneration": 6
+              },
+              "staleDrops": 0,
+              "textureId": 2774092819376,
+              "unregistered": false
+            }
+          ]
+        },
+        "submission": {
+          "groupId": 2774095188944,
+          "deviceGeneration": 1,
+          "stamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 6,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "clearColor": 4283783002,
+          "tiles": [
+            {
+              "textureId": 2774095188944,
+              "width": 513,
+              "height": 496,
+              "placements": [
+                {
+                  "snapshot": 13,
+                  "scale": 0.55,
+                  "originX": 294.48066666666665,
+                  "originY": 0.5,
+                  "backgroundColor": 4294967295
+                }
+              ]
+            },
+            {
+              "textureId": 2774092819376,
+              "width": 512,
+              "height": 496,
+              "placements": [
+                {
+                  "snapshot": 13,
+                  "scale": 0.55,
+                  "originX": -218.51933333333335,
+                  "originY": 0.5,
+                  "backgroundColor": 4294967295
+                }
+              ]
+            }
+          ]
+        },
+        "tileRects": [
+          {
+            "left": 0,
+            "top": 0,
+            "width": 513,
+            "height": 496
+          },
+          {
+            "left": 513,
+            "top": 0,
+            "width": 512,
+            "height": 496
+          }
+        ],
+        "strips": [
+          {
+            "left": 0,
+            "width": 1025,
+            "cpu": {
+              "snapshot": 13,
+              "stamp": {
+                "documentId": 1,
+                "revision": 1,
+                "fontGeneration": 0,
+                "viewGeneration": 6,
+                "deviceGeneration": 1,
+                "deviceScale": 1.0
+              },
+              "viewport": {
+                "width": 1025,
+                "height": 496
+              },
+              "placement": {
+                "scale": 0.55,
+                "originX": 294.48066666666665,
+                "originY": 0.5
+              },
+              "coordinateSpace": "viewportPixels",
+              "descriptor": {
+                "alpha": "premultiplied",
+                "backend": "cpu",
+                "byteLength": 2033600,
+                "colorSpace": "srgb",
+                "deviceScale": 1.0,
+                "height": 496,
+                "origin": "topLeft",
+                "originX": 0,
+                "originY": 0,
+                "pixelFormat": "rgba8Premultiplied",
+                "rasterScale": 1.0,
+                "stride": 4100,
+                "width": 1025
+              }
+            },
+            "reference": {
+              "snapshot": 13,
+              "stamp": {
+                "documentId": 1,
+                "revision": 1,
+                "fontGeneration": 0,
+                "viewGeneration": 6,
+                "deviceGeneration": 1,
+                "deviceScale": 1.0
+              },
+              "viewport": {
+                "width": 2050,
+                "height": 992
+              },
+              "placement": {
+                "scale": 1.1,
+                "originX": 588.9613333333333,
+                "originY": 1.0
+              },
+              "coordinateSpace": "viewportPixels",
+              "descriptor": {
+                "alpha": "premultiplied",
+                "backend": "cpu",
+                "byteLength": 8134400,
+                "colorSpace": "srgb",
+                "deviceScale": 1.0,
+                "height": 992,
+                "origin": "topLeft",
+                "originX": 0,
+                "originY": 0,
+                "pixelFormat": "rgba8Premultiplied",
+                "rasterScale": 1.0,
+                "stride": 8200,
+                "width": 2050
+              }
+            }
+          }
+        ]
+      },
+      "window": {
+        "width": 1296,
+        "height": 713,
+        "deviceScale": 1.0
+      },
+      "comparison": {
+        "comparison": {
+          "uniformInteriorPixels": 504556,
+          "aaEdgeDifferentPixels": 936,
+          "maxChannelDifference": 170,
+          "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+          "sourceReferenceScale": 2,
+          "sourceReferenceBytes": 8134400,
+          "integerAlignmentErrors": {
+            "-1,-1": 708799,
+            "0,-1": 121207,
+            "1,-1": 704623,
+            "-1,0": 604487,
+            "0,0": 4649,
+            "1,0": 600289,
+            "-1,1": 708903,
+            "0,1": 121267,
+            "1,1": 704665
+          }
+        },
+        "seam": 513,
+        "cpuSha256": "79e0ed3e6c16ebe469f83cf909d560e118d97ef4642cb510e6382d32d5dfb3a6",
+        "referenceSha256": "39e97eb037dd7e2caf8c80719bda4065833b9c8e6d4c1dbb7e70209eb2dde303"
+      },
+      "compositorSha256": "37729039da5b8b1c5080efc58c5784cc3cc2c2186fe5f335591c6ce90d5f820b"
+    },
+    {
+      "stage": {
+        "protocol": 1,
+        "nonce": "11e1574738054624bc4936263d51bdf8",
+        "pid": 42696,
+        "index": 4,
+        "platform": "windows",
+        "stage": "recovered",
+        "flutterView": {
+          "width": 1296,
+          "height": 713,
+          "deviceScale": 1.0
+        },
+        "acceptance": {
+          "accepted": true,
+          "acceptedSnapshots": [
+            18
+          ],
+          "acceptedStamp": {
+            "deviceGeneration": 4,
+            "deviceScale": 1.0,
+            "documentId": 1,
+            "fontGeneration": 0,
+            "revision": 1,
+            "viewGeneration": 7
+          },
+          "limits": {
+            "backpressureRetryable": true,
+            "closeAcknowledgementRequired": true,
+            "consumerAndDriverMemoryIncluded": false,
+            "consumerGpuCompletionVerified": false,
+            "consumerRetirement": false,
+            "continuousPresentationSupported": true,
+            "cpuFallbackRequiredWhenSaturated": true,
+            "descriptorAwaitingOpenedTickets": 0,
+            "descriptorCpuPendingTickets": 0,
+            "descriptorDuplicateOrLateNotifications": 0,
+            "descriptorOpenedNotifications": 8,
+            "descriptorReleaseIsGpuComplete": false,
+            "descriptorTickets": 0,
+            "discardedUnexposedFrames": 0,
+            "frameAccountingScope": "legacyRetainedAndPluginOwnedReferences",
+            "frameReservedBytes": 6291456,
+            "handedOffFrames": 8,
+            "idlePrivateTargetBytes": 0,
+            "idlePrivateTargets": 0,
+            "immutableFrames": 0,
+            "importPendingBytes": 0,
+            "importPendingFrames": 0,
+            "legacyRetainedFrames": 0,
+            "maxClosedReceipts": 2,
+            "maxDescriptorTickets": 8,
+            "maxFrames": 4,
+            "maxIdlePrivateTargets": 2,
+            "maxPrivateTargets": 4,
+            "maxRetainedCloseRecords": 2,
+            "maxSingleFrameBytes": 16777216,
+            "maxTargetBytes": 67108864,
+            "outstandingFrames": 2,
+            "pendingRetireFrames": 2,
+            "privateTargetBytes": 0,
+            "privateTargetReuse": true,
+            "privateTargetReuses": 4,
+            "privateTargets": 0,
+            "producerOwnedBytes": 6291456,
+            "producerOwnedFrames": 2,
+            "publicationMode": "immutableOwnershipTransfer",
+            "quarantinedFrames": 0,
+            "reservedTargetBytes": 6291456,
+            "targetReuse": false,
+            "wholeFrameReadbacks": 0
+          }
+        },
+        "recoveryRetirement": {
+          "deviceGeneration": 1,
+          "groupId": 2774095188944,
+          "members": [
+            {
+              "acceptedSerial": 4,
+              "acceptedSnapshots": [
+                13
+              ],
+              "acceptedStamp": {
+                "deviceGeneration": 1,
+                "deviceScale": 1.0,
+                "documentId": 1,
+                "fontGeneration": 0,
+                "revision": 1,
+                "viewGeneration": 6
+              },
+              "acknowledged": true,
+              "closeAcknowledgementRequired": true,
+              "closed": true,
+              "descriptorOpenedSerial": 0,
+              "deviceFailure": false,
+              "deviceGeneration": 1,
+              "error": "",
+              "errorCode": "",
+              "hasFrame": false,
+              "inFlight": false,
+              "limits": {
+                "backpressureRetryable": true,
+                "closeAcknowledgementRequired": true,
+                "consumerAndDriverMemoryIncluded": false,
+                "consumerGpuCompletionVerified": false,
+                "consumerRetirement": false,
+                "continuousPresentationSupported": true,
+                "cpuFallbackRequiredWhenSaturated": true,
+                "descriptorAwaitingOpenedTickets": 0,
+                "descriptorCpuPendingTickets": 0,
+                "descriptorDuplicateOrLateNotifications": 0,
+                "descriptorOpenedNotifications": 8,
+                "descriptorReleaseIsGpuComplete": false,
+                "descriptorTickets": 0,
+                "discardedUnexposedFrames": 0,
+                "frameAccountingScope": "legacyRetainedAndPluginOwnedReferences",
+                "frameReservedBytes": 0,
+                "handedOffFrames": 8,
+                "idlePrivateTargetBytes": 0,
+                "idlePrivateTargets": 0,
+                "immutableFrames": 0,
+                "importPendingBytes": 0,
+                "importPendingFrames": 0,
+                "legacyRetainedFrames": 0,
+                "maxClosedReceipts": 2,
+                "maxDescriptorTickets": 8,
+                "maxFrames": 4,
+                "maxIdlePrivateTargets": 2,
+                "maxPrivateTargets": 4,
+                "maxRetainedCloseRecords": 2,
+                "maxSingleFrameBytes": 16777216,
+                "maxTargetBytes": 67108864,
+                "outstandingFrames": 0,
+                "pendingRetireFrames": 0,
+                "privateTargetBytes": 0,
+                "privateTargetReuse": true,
+                "privateTargetReuses": 4,
+                "privateTargets": 0,
+                "producerOwnedBytes": 0,
+                "producerOwnedFrames": 0,
+                "publicationMode": "immutableOwnershipTransfer",
+                "quarantinedFrames": 0,
+                "reservedTargetBytes": 0,
+                "targetReuse": false,
+                "wholeFrameReadbacks": 0
+              },
+              "ownerFinished": true,
+              "producerReadyEvents": true,
+              "publicationMode": "immutableOwnershipTransfer",
+              "ready": false,
+              "registered": false,
+              "renderedSerial": 0,
+              "renderedStamp": null,
+              "staleDrops": 0,
+              "textureId": 2774095188944,
+              "unregistered": true
+            },
+            {
+              "acceptedSerial": 4,
+              "acceptedSnapshots": [
+                13
+              ],
+              "acceptedStamp": {
+                "deviceGeneration": 1,
+                "deviceScale": 1.0,
+                "documentId": 1,
+                "fontGeneration": 0,
+                "revision": 1,
+                "viewGeneration": 6
+              },
+              "acknowledged": true,
+              "closeAcknowledgementRequired": true,
+              "closed": true,
+              "descriptorOpenedSerial": 0,
+              "deviceFailure": false,
+              "deviceGeneration": 1,
+              "error": "",
+              "errorCode": "",
+              "hasFrame": false,
+              "inFlight": false,
+              "limits": {
+                "backpressureRetryable": true,
+                "closeAcknowledgementRequired": true,
+                "consumerAndDriverMemoryIncluded": false,
+                "consumerGpuCompletionVerified": false,
+                "consumerRetirement": false,
+                "continuousPresentationSupported": true,
+                "cpuFallbackRequiredWhenSaturated": true,
+                "descriptorAwaitingOpenedTickets": 0,
+                "descriptorCpuPendingTickets": 0,
+                "descriptorDuplicateOrLateNotifications": 0,
+                "descriptorOpenedNotifications": 8,
+                "descriptorReleaseIsGpuComplete": false,
+                "descriptorTickets": 0,
+                "discardedUnexposedFrames": 0,
+                "frameAccountingScope": "legacyRetainedAndPluginOwnedReferences",
+                "frameReservedBytes": 0,
+                "handedOffFrames": 8,
+                "idlePrivateTargetBytes": 0,
+                "idlePrivateTargets": 0,
+                "immutableFrames": 0,
+                "importPendingBytes": 0,
+                "importPendingFrames": 0,
+                "legacyRetainedFrames": 0,
+                "maxClosedReceipts": 2,
+                "maxDescriptorTickets": 8,
+                "maxFrames": 4,
+                "maxIdlePrivateTargets": 2,
+                "maxPrivateTargets": 4,
+                "maxRetainedCloseRecords": 2,
+                "maxSingleFrameBytes": 16777216,
+                "maxTargetBytes": 67108864,
+                "outstandingFrames": 0,
+                "pendingRetireFrames": 0,
+                "privateTargetBytes": 0,
+                "privateTargetReuse": true,
+                "privateTargetReuses": 4,
+                "privateTargets": 0,
+                "producerOwnedBytes": 0,
+                "producerOwnedFrames": 0,
+                "publicationMode": "immutableOwnershipTransfer",
+                "quarantinedFrames": 0,
+                "reservedTargetBytes": 0,
+                "targetReuse": false,
+                "wholeFrameReadbacks": 0
+              },
+              "ownerFinished": true,
+              "producerReadyEvents": true,
+              "publicationMode": "immutableOwnershipTransfer",
+              "ready": false,
+              "registered": false,
+              "renderedSerial": 0,
+              "renderedStamp": null,
+              "staleDrops": 0,
+              "textureId": 2774092819376,
+              "unregistered": true
+            }
+          ]
+        },
+        "width": 1025,
+        "height": 496,
+        "physicalOffset": [
+          0,
+          0
+        ],
+        "deviceScale": 1.0,
+        "stamp": {
+          "documentId": 1,
+          "revision": 1,
+          "fontGeneration": 0,
+          "viewGeneration": 7,
+          "deviceGeneration": 4,
+          "deviceScale": 1.0
+        },
+        "snapshotIds": [
+          18
+        ],
+        "group": {
+          "deviceGeneration": 4,
+          "groupId": 2774095836416,
+          "members": [
+            {
+              "acceptedSerial": 1,
+              "acceptedSnapshots": [
+                18
+              ],
+              "acceptedStamp": {
+                "deviceGeneration": 4,
+                "deviceScale": 1.0,
+                "documentId": 1,
+                "fontGeneration": 0,
+                "revision": 1,
+                "viewGeneration": 7
+              },
+              "closeAcknowledgementRequired": true,
+              "closed": false,
+              "descriptorOpenedSerial": 1,
+              "deviceFailure": false,
+              "deviceGeneration": 4,
+              "error": "",
+              "errorCode": "",
+              "hasFrame": true,
+              "inFlight": false,
+              "limits": {
+                "backpressureRetryable": true,
+                "closeAcknowledgementRequired": true,
+                "consumerAndDriverMemoryIncluded": false,
+                "consumerGpuCompletionVerified": false,
+                "consumerRetirement": false,
+                "continuousPresentationSupported": true,
+                "cpuFallbackRequiredWhenSaturated": true,
+                "descriptorAwaitingOpenedTickets": 0,
+                "descriptorCpuPendingTickets": 2,
+                "descriptorDuplicateOrLateNotifications": 0,
+                "descriptorOpenedNotifications": 10,
+                "descriptorReleaseIsGpuComplete": false,
+                "descriptorTickets": 2,
+                "discardedUnexposedFrames": 0,
+                "frameAccountingScope": "legacyRetainedAndPluginOwnedReferences",
+                "frameReservedBytes": 3145728,
+                "handedOffFrames": 8,
+                "idlePrivateTargetBytes": 3145728,
+                "idlePrivateTargets": 2,
+                "immutableFrames": 0,
+                "importPendingBytes": 0,
+                "importPendingFrames": 0,
+                "legacyRetainedFrames": 0,
+                "maxClosedReceipts": 2,
+                "maxDescriptorTickets": 8,
+                "maxFrames": 4,
+                "maxIdlePrivateTargets": 2,
+                "maxPrivateTargets": 4,
+                "maxRetainedCloseRecords": 2,
+                "maxSingleFrameBytes": 16777216,
+                "maxTargetBytes": 67108864,
+                "outstandingFrames": 2,
+                "pendingRetireFrames": 2,
+                "privateTargetBytes": 3145728,
+                "privateTargetReuse": true,
+                "privateTargetReuses": 4,
+                "privateTargets": 2,
+                "producerOwnedBytes": 3145728,
+                "producerOwnedFrames": 2,
+                "publicationMode": "immutableOwnershipTransfer",
+                "quarantinedFrames": 0,
+                "reservedTargetBytes": 6291456,
+                "targetReuse": false,
+                "wholeFrameReadbacks": 0
+              },
+              "ownerFinished": false,
+              "producerDiagnostics": {
+                "backend": "d3d12Ganesh",
+                "counters": {
+                  "cacheEvictions": 0,
+                  "cacheHits": 0,
+                  "cacheMisses": 1,
+                  "cachedBytes": 897024,
+                  "cachedTiles": 1,
+                  "canonicalReplays": 1,
+                  "managedBytes": 1914816,
+                  "managedTargets": 2,
+                  "targetAdmissionFallbacks": 0,
+                  "viewportFallbacks": 0
+                },
+                "schemaVersion": 1,
+                "scope": "publishedFramePostRenderSnapshot",
+                "stamp": {
+                  "deviceGeneration": 4,
+                  "deviceScale": 1.0,
+                  "documentId": 1,
+                  "fontGeneration": 0,
+                  "revision": 1,
+                  "viewGeneration": 7
+                }
+              },
+              "producerReadyEvents": true,
+              "publicationMode": "immutableOwnershipTransfer",
+              "ready": true,
+              "registered": true,
+              "renderedSerial": 1,
+              "renderedStamp": {
+                "deviceGeneration": 4,
+                "deviceScale": 1.0,
+                "documentId": 1,
+                "fontGeneration": 0,
+                "revision": 1,
+                "viewGeneration": 7
+              },
+              "staleDrops": 0,
+              "textureId": 2774095836416,
+              "unregistered": false
+            },
+            {
+              "acceptedSerial": 1,
+              "acceptedSnapshots": [
+                18
+              ],
+              "acceptedStamp": {
+                "deviceGeneration": 4,
+                "deviceScale": 1.0,
+                "documentId": 1,
+                "fontGeneration": 0,
+                "revision": 1,
+                "viewGeneration": 7
+              },
+              "closeAcknowledgementRequired": true,
+              "closed": false,
+              "descriptorOpenedSerial": 1,
+              "deviceFailure": false,
+              "deviceGeneration": 4,
+              "error": "",
+              "errorCode": "",
+              "hasFrame": true,
+              "inFlight": false,
+              "limits": {
+                "backpressureRetryable": true,
+                "closeAcknowledgementRequired": true,
+                "consumerAndDriverMemoryIncluded": false,
+                "consumerGpuCompletionVerified": false,
+                "consumerRetirement": false,
+                "continuousPresentationSupported": true,
+                "cpuFallbackRequiredWhenSaturated": true,
+                "descriptorAwaitingOpenedTickets": 0,
+                "descriptorCpuPendingTickets": 2,
+                "descriptorDuplicateOrLateNotifications": 0,
+                "descriptorOpenedNotifications": 10,
+                "descriptorReleaseIsGpuComplete": false,
+                "descriptorTickets": 2,
+                "discardedUnexposedFrames": 0,
+                "frameAccountingScope": "legacyRetainedAndPluginOwnedReferences",
+                "frameReservedBytes": 3145728,
+                "handedOffFrames": 8,
+                "idlePrivateTargetBytes": 3145728,
+                "idlePrivateTargets": 2,
+                "immutableFrames": 0,
+                "importPendingBytes": 0,
+                "importPendingFrames": 0,
+                "legacyRetainedFrames": 0,
+                "maxClosedReceipts": 2,
+                "maxDescriptorTickets": 8,
+                "maxFrames": 4,
+                "maxIdlePrivateTargets": 2,
+                "maxPrivateTargets": 4,
+                "maxRetainedCloseRecords": 2,
+                "maxSingleFrameBytes": 16777216,
+                "maxTargetBytes": 67108864,
+                "outstandingFrames": 2,
+                "pendingRetireFrames": 2,
+                "privateTargetBytes": 3145728,
+                "privateTargetReuse": true,
+                "privateTargetReuses": 4,
+                "privateTargets": 2,
+                "producerOwnedBytes": 3145728,
+                "producerOwnedFrames": 2,
+                "publicationMode": "immutableOwnershipTransfer",
+                "quarantinedFrames": 0,
+                "reservedTargetBytes": 6291456,
+                "targetReuse": false,
+                "wholeFrameReadbacks": 0
+              },
+              "ownerFinished": false,
+              "producerDiagnostics": {
+                "backend": "d3d12Ganesh",
+                "counters": {
+                  "cacheEvictions": 0,
+                  "cacheHits": 0,
+                  "cacheMisses": 1,
+                  "cachedBytes": 897024,
+                  "cachedTiles": 1,
+                  "canonicalReplays": 1,
+                  "managedBytes": 1912832,
+                  "managedTargets": 2,
+                  "targetAdmissionFallbacks": 0,
+                  "viewportFallbacks": 0
+                },
+                "schemaVersion": 1,
+                "scope": "publishedFramePostRenderSnapshot",
+                "stamp": {
+                  "deviceGeneration": 4,
+                  "deviceScale": 1.0,
+                  "documentId": 1,
+                  "fontGeneration": 0,
+                  "revision": 1,
+                  "viewGeneration": 7
+                }
+              },
+              "producerReadyEvents": true,
+              "publicationMode": "immutableOwnershipTransfer",
+              "ready": true,
+              "registered": true,
+              "renderedSerial": 1,
+              "renderedStamp": {
+                "deviceGeneration": 4,
+                "deviceScale": 1.0,
+                "documentId": 1,
+                "fontGeneration": 0,
+                "revision": 1,
+                "viewGeneration": 7
+              },
+              "staleDrops": 0,
+              "textureId": 2772579107168,
+              "unregistered": false
+            }
+          ]
+        },
+        "submission": {
+          "groupId": 2774095836416,
+          "deviceGeneration": 4,
+          "stamp": {
+            "documentId": 1,
+            "revision": 1,
+            "fontGeneration": 0,
+            "viewGeneration": 7,
+            "deviceGeneration": 4,
+            "deviceScale": 1.0
+          },
+          "clearColor": 4283783002,
+          "tiles": [
+            {
+              "textureId": 2774095836416,
+              "width": 513,
+              "height": 496,
+              "placements": [
+                {
+                  "snapshot": 18,
+                  "scale": 0.55,
+                  "originX": 294.48066666666665,
+                  "originY": 0.5,
+                  "backgroundColor": 4294967295
+                }
+              ]
+            },
+            {
+              "textureId": 2772579107168,
+              "width": 512,
+              "height": 496,
+              "placements": [
+                {
+                  "snapshot": 18,
+                  "scale": 0.55,
+                  "originX": -218.51933333333335,
+                  "originY": 0.5,
+                  "backgroundColor": 4294967295
+                }
+              ]
+            }
+          ]
+        },
+        "tileRects": [
+          {
+            "left": 0,
+            "top": 0,
+            "width": 513,
+            "height": 496
+          },
+          {
+            "left": 513,
+            "top": 0,
+            "width": 512,
+            "height": 496
+          }
+        ],
+        "strips": [
+          {
+            "left": 0,
+            "width": 1025,
+            "cpu": {
+              "snapshot": 18,
+              "stamp": {
+                "documentId": 1,
+                "revision": 1,
+                "fontGeneration": 0,
+                "viewGeneration": 7,
+                "deviceGeneration": 4,
+                "deviceScale": 1.0
+              },
+              "viewport": {
+                "width": 1025,
+                "height": 496
+              },
+              "placement": {
+                "scale": 0.55,
+                "originX": 294.48066666666665,
+                "originY": 0.5
+              },
+              "coordinateSpace": "viewportPixels",
+              "descriptor": {
+                "alpha": "premultiplied",
+                "backend": "cpu",
+                "byteLength": 2033600,
+                "colorSpace": "srgb",
+                "deviceScale": 1.0,
+                "height": 496,
+                "origin": "topLeft",
+                "originX": 0,
+                "originY": 0,
+                "pixelFormat": "rgba8Premultiplied",
+                "rasterScale": 1.0,
+                "stride": 4100,
+                "width": 1025
+              }
+            },
+            "reference": {
+              "snapshot": 18,
+              "stamp": {
+                "documentId": 1,
+                "revision": 1,
+                "fontGeneration": 0,
+                "viewGeneration": 7,
+                "deviceGeneration": 4,
+                "deviceScale": 1.0
+              },
+              "viewport": {
+                "width": 2050,
+                "height": 992
+              },
+              "placement": {
+                "scale": 1.1,
+                "originX": 588.9613333333333,
+                "originY": 1.0
+              },
+              "coordinateSpace": "viewportPixels",
+              "descriptor": {
+                "alpha": "premultiplied",
+                "backend": "cpu",
+                "byteLength": 8134400,
+                "colorSpace": "srgb",
+                "deviceScale": 1.0,
+                "height": 992,
+                "origin": "topLeft",
+                "originX": 0,
+                "originY": 0,
+                "pixelFormat": "rgba8Premultiplied",
+                "rasterScale": 1.0,
+                "stride": 8200,
+                "width": 2050
+              }
+            }
+          }
+        ]
+      },
+      "window": {
+        "width": 1296,
+        "height": 713,
+        "deviceScale": 1.0
+      },
+      "comparison": {
+        "comparison": {
+          "uniformInteriorPixels": 504556,
+          "aaEdgeDifferentPixels": 936,
+          "maxChannelDifference": 170,
+          "comparison": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+          "sourceReferenceScale": 2,
+          "sourceReferenceBytes": 8134400,
+          "integerAlignmentErrors": {
+            "-1,-1": 708799,
+            "0,-1": 121207,
+            "1,-1": 704623,
+            "-1,0": 604487,
+            "0,0": 4649,
+            "1,0": 600289,
+            "-1,1": 708903,
+            "0,1": 121267,
+            "1,1": 704665
+          }
+        },
+        "seam": 513,
+        "cpuSha256": "79e0ed3e6c16ebe469f83cf909d560e118d97ef4642cb510e6382d32d5dfb3a6",
+        "referenceSha256": "39e97eb037dd7e2caf8c80719bda4065833b9c8e6d4c1dbb7e70209eb2dde303"
+      },
+      "compositorSha256": "37729039da5b8b1c5080efc58c5784cc3cc2c2186fe5f335591c6ce90d5f820b"
+    }
+  ],
+  "started": 1794830117.2877076,
+  "exitCode": 0,
+  "actualDprComparison": false,
+  "consumerGpuCompletionVerified": false,
+  "hardwareAccelerationVerified": false,
+  "targetReuse": false,
+  "consumerAndDriverMemoryIncluded": false,
+  "pid": 42696,
+  "windowResize": {
+    "before": {
+      "width": 1264,
+      "height": 681,
+      "deviceScale": 1.0
+    },
+    "after": {
+      "width": 1296,
+      "height": 713,
+      "deviceScale": 1.0
+    }
+  },
+  "error": "ValueError: incomplete or overstated Windows tile completion",
+  "finished": 1794830138.4432817
+}

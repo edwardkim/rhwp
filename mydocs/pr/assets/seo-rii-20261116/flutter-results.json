@@ -1,0 +1,49 @@
+[
+  {
+    "name": "pub-get",
+    "command": [
+      "/home/edward/.local/share/rhwp-tools/flutter-c197ca5199e9/bin/flutter",
+      "pub",
+      "get",
+      "--offline"
+    ],
+    "cwd": "/home/edward/mygithub/rhwp-worktrees/review-integration-8701-seo-rii-gpu-cache-lifecycle/bindings/Flutter",
+    "source": "4f6fdb689c2fe45964080074c7a230d2023b4e53",
+    "startedAt": "2026-11-16T10:49:33.054965+00:00",
+    "elapsedSeconds": 0.64,
+    "exitCode": 0,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261116/flutter-pub-get.log"
+  },
+  {
+    "name": "analyze",
+    "command": [
+      "/home/edward/.local/share/rhwp-tools/flutter-c197ca5199e9/bin/flutter",
+      "analyze",
+      "--no-pub",
+      "--fatal-infos",
+      "--fatal-warnings"
+    ],
+    "cwd": "/home/edward/mygithub/rhwp-worktrees/review-integration-8701-seo-rii-gpu-cache-lifecycle/bindings/Flutter",
+    "source": "4f6fdb689c2fe45964080074c7a230d2023b4e53",
+    "startedAt": "2026-11-16T10:49:33.696668+00:00",
+    "elapsedSeconds": 7.91,
+    "exitCode": 0,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261116/flutter-analyze.log"
+  },
+  {
+    "name": "test",
+    "command": [
+      "/home/edward/.local/share/rhwp-tools/flutter-c197ca5199e9/bin/flutter",
+      "test",
+      "--no-pub",
+      "--concurrency=1",
+      "--reporter=expanded"
+    ],
+    "cwd": "/home/edward/mygithub/rhwp-worktrees/review-integration-8701-seo-rii-gpu-cache-lifecycle/bindings/Flutter",
+    "source": "4f6fdb689c2fe45964080074c7a230d2023b4e53",
+    "startedAt": "2026-11-16T10:49:41.607000+00:00",
+    "elapsedSeconds": 75.3,
+    "exitCode": 0,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261116/flutter-test.log"
+  }
+]

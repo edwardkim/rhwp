@@ -1,0 +1,56 @@
+[
+  {
+    "name": "macos-sdk-tool-model",
+    "command": [
+      "python3",
+      "-B",
+      "bindings/Flutter/macos/tests/sdk_qualification_contract.py"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 1.22
+  },
+  {
+    "name": "mock-native-compile",
+    "command": [
+      "cc",
+      "-std=c11",
+      "-O2",
+      "-fPIC",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-shared",
+      "bindings/Flutter/test/support/mock_native.c",
+      "-o",
+      "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261116/native/librhwp_mock_native.so"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 0.215
+  },
+  {
+    "name": "native-owner",
+    "command": [
+      "python3",
+      "-B",
+      "bindings/Flutter/test/native_owner_contract.py",
+      "--dispatcher",
+      "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261116/native/librhwp_flutter_owner.so",
+      "--mock",
+      "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261116/native/librhwp_mock_native.so"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 0.165
+  },
+  {
+    "name": "runtime-bundle-ffi",
+    "command": [
+      "python3",
+      "-B",
+      "bindings/Flutter/test/runtime_bundle_ffi_contract.py",
+      "--dart",
+      "/home/edward/.local/share/rhwp-tools/flutter-c197ca5199e9/bin/cache/dart-sdk/bin/dart"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 2.873
+  }
+]

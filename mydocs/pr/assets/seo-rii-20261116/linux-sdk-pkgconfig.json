@@ -1,0 +1,16 @@
+{
+  "command": [
+    "python3",
+    "-B",
+    "bindings/Flutter/linux/tests/check_linux_plugin.py",
+    "--output",
+    "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261116/linux-sdk-pkgconfig",
+    "--flutter-engine",
+    "/home/edward/.local/share/rhwp-tools/flutter-c197ca5199e9/bin/cache/artifacts/engine/linux-x64",
+    "--dev-root",
+    "/home/edward/.local/share/rhwp-tools/linux-desktop-dev/sysroot"
+  ],
+  "CPLUS_INCLUDE_PATH": "/home/edward/.local/share/rhwp-tools/linux-desktop-dev/sysroot/usr/include/gtk-3.0:/usr/include/pango-1.0:/usr/include/glib-2.0:/usr/lib/x86_64-linux-gnu/glib-2.0/include:/usr/include/harfbuzz:/usr/include/freetype2:/usr/include/libpng16:/usr/include/libmount:/usr/include/blkid:/usr/include/fribidi:/usr/include/cairo:/usr/include/pixman-1:/usr/include/gdk-pixbuf-2.0:/usr/include/x86_64-linux-gnu:/usr/include/webp:/usr/include/gio-unix-2.0:/home/edward/.local/share/rhwp-tools/linux-desktop-dev/sysroot/usr/include:/home/edward/.local/share/rhwp-tools/linux-desktop-dev/sysroot/usr/include/atk-1.0:/home/edward/.local/share/rhwp-tools/linux-desktop-dev/sysroot/usr/include/at-spi2-atk/2.0:/home/edward/.local/share/rhwp-tools/linux-desktop-dev/sysroot/usr/include/at-spi-2.0:/usr/include/dbus-1.0:/usr/lib/x86_64-linux-gnu/dbus-1.0/include",
+  "elapsedSeconds": 10.112909623014275,
+  "exitCode": 0
+}

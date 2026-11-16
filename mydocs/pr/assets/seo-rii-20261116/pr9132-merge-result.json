@@ -1,0 +1,11 @@
+{
+  "number": 9132,
+  "merged": true,
+  "state": "closed",
+  "mergeSha": "97575816999577744f0e2e7f2e16a41d5961bebf",
+  "mergedAt": "2026-11-16T12:25:55Z",
+  "head": "4379aa080b01a5da26f03f154287057ff6fb8269",
+  "base": "devel",
+  "mergedBy": "edwardkim",
+  "url": "https://github.com/edwardkim/rhwp/pull/9132"
+}

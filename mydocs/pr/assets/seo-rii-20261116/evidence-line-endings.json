@@ -1,0 +1,14 @@
+[
+  {
+    "path": "windows-tile-receipt.json",
+    "originalRawSha256": "b2c138abb25b293ac6a62212f3bb3c4c7814a6ce097ca5c13c118b2695e465c0",
+    "storedLfSha256": "9e649cc35319b69aea09bded26c420bd3ea9bb80f211ccd648e50abda72a0bc7",
+    "transform": "CRLF to LF only"
+  },
+  {
+    "path": "windows-lifecycle-original-collector-receipt.json",
+    "originalRawSha256": "2b5b1f4313190e45b6038b1a3f22b2167a8abef8ca941aa1ad7d93907499ef65",
+    "storedLfSha256": "456a9788be58b8e5199c90e1d7cfc3704fda9e16f9751745cc8bc3c7e63c10ca",
+    "transform": "CRLF to LF only"
+  }
+]

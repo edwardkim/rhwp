@@ -1,0 +1,13 @@
+{
+  "source": "4f6fdb689c2fe45964080074c7a230d2023b4e53",
+  "build": "passed",
+  "features": [
+    "native-skia-gl"
+  ],
+  "profile": "release",
+  "artifact": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261116/native/librhwp_native_ffi.so",
+  "bytes": 68634520,
+  "sha256": "a520bcc39dc899c1fc50a95452ac511de6233b7fbf2c723d9b85ccdec161d7f3",
+  "sourceArtifact": "/home/edward/mygithub/rhwp/target/pr-review/release/librhwp_native_ffi.so",
+  "sourceMatches": true
+}

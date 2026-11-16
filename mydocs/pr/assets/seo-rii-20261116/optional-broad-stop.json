@@ -1,0 +1,7 @@
+[
+  {
+    "cargoPid": 36951,
+    "ownedBwrapGroup": 36950,
+    "reason": "Optional duplicate broad build stopped under canonical 3.2.2: unchanged original #9132 exact head is remote merge candidate with green Full CI and clean latest-base simulation. Not PASS."
+  }
+]

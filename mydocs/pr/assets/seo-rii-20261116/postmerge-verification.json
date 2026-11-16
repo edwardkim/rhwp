@@ -1,0 +1,148 @@
+{
+  "at": "2026-11-16T12:26:20.756940+00:00",
+  "mergeSha": "97575816999577744f0e2e7f2e16a41d5961bebf",
+  "tree": "cb9c303399b1769d137751da9fe5c1ccdd8c1842",
+  "allHeadsIncluded": true,
+  "PRs": [
+    {
+      "pr": 8962,
+      "head": "469ca8c04f5fab5a9a87bec1c8a09873032d4720",
+      "state": "closed",
+      "merged": true,
+      "mergedAt": "2026-11-16T12:25:58Z",
+      "mergeSha": "05d303178b0c8f14be8e3f6d1edf78892a66cd98",
+      "url": "https://github.com/edwardkim/rhwp/pull/8962",
+      "originalHeadIncluded": true
+    },
+    {
+      "pr": 8963,
+      "head": "05d303178b0c8f14be8e3f6d1edf78892a66cd98",
+      "state": "closed",
+      "merged": true,
+      "mergedAt": "2026-11-16T12:25:58Z",
+      "mergeSha": "d8251257d53c365de873fcab61b03f52ecdb67ff",
+      "url": "https://github.com/edwardkim/rhwp/pull/8963",
+      "originalHeadIncluded": true
+    },
+    {
+      "pr": 8964,
+      "head": "d8251257d53c365de873fcab61b03f52ecdb67ff",
+      "state": "closed",
+      "merged": true,
+      "mergedAt": "2026-11-16T12:25:58Z",
+      "mergeSha": "2023cd3d2715a5eda2cadf30801ffcacefb4aab8",
+      "url": "https://github.com/edwardkim/rhwp/pull/8964",
+      "originalHeadIncluded": true
+    },
+    {
+      "pr": 8965,
+      "head": "2023cd3d2715a5eda2cadf30801ffcacefb4aab8",
+      "state": "closed",
+      "merged": true,
+      "mergedAt": "2026-11-16T12:25:58Z",
+      "mergeSha": "80062f4d0d11b69bfc1849d116150b96e7d7e899",
+      "url": "https://github.com/edwardkim/rhwp/pull/8965",
+      "originalHeadIncluded": true
+    },
+    {
+      "pr": 8966,
+      "head": "80062f4d0d11b69bfc1849d116150b96e7d7e899",
+      "state": "closed",
+      "merged": true,
+      "mergedAt": "2026-11-16T12:25:58Z",
+      "mergeSha": "41e8618fdff2a55a16ab60fc8c667f9255692179",
+      "url": "https://github.com/edwardkim/rhwp/pull/8966",
+      "originalHeadIncluded": true
+    },
+    {
+      "pr": 8967,
+      "head": "41e8618fdff2a55a16ab60fc8c667f9255692179",
+      "state": "closed",
+      "merged": true,
+      "mergedAt": "2026-11-16T12:25:58Z",
+      "mergeSha": "41e8618fdff2a55a16ab60fc8c667f9255692179",
+      "url": "https://github.com/edwardkim/rhwp/pull/8967",
+      "originalHeadIncluded": true
+    },
+    {
+      "pr": 9128,
+      "head": "207476213889668e17b2ea6f64eb80c735632f46",
+      "state": "closed",
+      "merged": true,
+      "mergedAt": "2026-11-16T12:25:58Z",
+      "mergeSha": "92268674482f78cdb0e0b91bb0bd23c7fd548ea4",
+      "url": "https://github.com/edwardkim/rhwp/pull/9128",
+      "originalHeadIncluded": true
+    },
+    {
+      "pr": 9129,
+      "head": "720c161b9b961b862f6834ab045f6ff599279de3",
+      "state": "closed",
+      "merged": true,
+      "mergedAt": "2026-11-16T12:25:58Z",
+      "mergeSha": "eeadd9d89040c86f35643fbd433776eef6db77d7",
+      "url": "https://github.com/edwardkim/rhwp/pull/9129",
+      "originalHeadIncluded": true
+    },
+    {
+      "pr": 9130,
+      "head": "c1d53287a6991c6195840c71927502dbc22f8907",
+      "state": "closed",
+      "merged": true,
+      "mergedAt": "2026-11-16T12:25:58Z",
+      "mergeSha": "3798dd236733ed41cf547e15c73b622ff44a5b04",
+      "url": "https://github.com/edwardkim/rhwp/pull/9130",
+      "originalHeadIncluded": true
+    },
+    {
+      "pr": 9131,
+      "head": "3798dd236733ed41cf547e15c73b622ff44a5b04",
+      "state": "closed",
+      "merged": true,
+      "mergedAt": "2026-11-16T12:25:58Z",
+      "mergeSha": "1092089adad73e74cbd869546573e2398f9dc565",
+      "url": "https://github.com/edwardkim/rhwp/pull/9131",
+      "originalHeadIncluded": true
+    },
+    {
+      "pr": 9132,
+      "head": "4379aa080b01a5da26f03f154287057ff6fb8269",
+      "state": "closed",
+      "merged": true,
+      "mergedAt": "2026-11-16T12:25:55Z",
+      "mergeSha": "97575816999577744f0e2e7f2e16a41d5961bebf",
+      "url": "https://github.com/edwardkim/rhwp/pull/9132",
+      "originalHeadIncluded": true
+    }
+  ],
+  "parents": [
+    {
+      "number": 536,
+      "state": "open",
+      "url": "https://github.com/edwardkim/rhwp/issues/536"
+    },
+    {
+      "number": 8701,
+      "state": "open",
+      "url": "https://github.com/edwardkim/rhwp/issues/8701"
+    }
+  ],
+  "postmergeRuns": [
+    {
+      "id": 43866524813,
+      "name": "Close Issues on devel Push",
+      "path": ".github/workflows/close-issues-on-devel-push.yml",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/43866524813"
+    },
+    {
+      "id": 43866524638,
+      "name": "Refresh nextest target duration data",
+      "path": ".github/workflows/refresh-nextest-duration.yml",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/43866524638"
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "observedAt": "2026-11-16T12:31:56.844551+00:00",
+  "runId": 43866524638,
+  "status": "completed",
+  "conclusion": "success",
+  "head": "97575816999577744f0e2e7f2e16a41d5961bebf",
+  "url": "https://github.com/edwardkim/rhwp/actions/runs/43866524638",
+  "jobs": [
+    {
+      "id": 133296374391,
+      "name": "Refresh nextest target duration data",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Collect verified PR duration measurements",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Prepare duration policy data",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Publish duration policy with guarded Git Data API",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ],
+  "verifiedResultLogLines": [
+    "2026-11-16T12:31:09.3241126Z {\"ready\":true,\"reason\":\"successful-pr-worker-measurements\",\"pullNumber\":9132,\"finalHeadRunId\":43829950196,\"finalHeadRunAttempt\":1,\"finalHeadSha\":\"4379aa080b01a5da26f03f154287057ff6fb8269\",\"reviewOnlyTail\":false,\"sourceRunId\":43829950196,\"latestRunAttempt\":1,\"measurementAttempts\":{\"b\":1,\"c\":1,\"d\":1,\"e\":1},\"testedMergeSha\":\"57cd37a5db36a593d04c76f9698e1f990f802237\",\"sourceHeadSha\":\"4379aa080b01a5da26f03f154287057ff6fb8269\",\"artifactIds\":[14209551100,14210515916,14209387380,14210360964]}",
+    "2026-11-16T12:31:20.0037320Z {\"published\":true,\"reason\":\"published\",\"previousSha\":\"8416650a1200ec74a8df17fc7627e6612fb9fc54\",\"commitSha\":\"cc448e56be1efe55ad50332172c505e361207b89\",\"blobSha\":\"c01451b3fc41f40bf981afa1662cb3853aec6ebe\",\"sourceMergeSha\":\"97575816999577744f0e2e7f2e16a41d5961bebf\"}"
+  ]
+}

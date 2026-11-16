@@ -1,0 +1,5 @@
+/home/edward/mygithub/rhwp-worktrees/review-integration-8701-seo-rii-gpu-cache-lifecycle/ttfs/opensource/RHWPOldHangul-Regular.otf
+/home/edward/mygithub/rhwp-worktrees/review-integration-8701-seo-rii-gpu-cache-lifecycle/ttfs/opensource/RHWPPublicBatang-Regular.ttf
+/home/edward/mygithub/rhwp-worktrees/review-integration-8701-seo-rii-gpu-cache-lifecycle/ttfs/opensource/NotoSansSymbols2-Regular.ttf
+/home/edward/mygithub/rhwp-worktrees/review-integration-8701-seo-rii-gpu-cache-lifecycle/ttfs/opensource/NotoSansKR-ExtraLight.ttf
+/home/edward/mygithub/rhwp-worktrees/review-integration-8701-seo-rii-gpu-cache-lifecycle/ttfs/opensource/NotoSansKR-Regular.ttf
