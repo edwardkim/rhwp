@@ -1,7 +1,7 @@
 //! 공식 대조 자료: `pdf/pr-review-all-open-20261116/`의 동일 입력별 한컴 2020 Hancom PDF Print.
 //! 아래 원 PR의 웹한글기안기 설명은 이력이며 이번 검토의 공식 PDF가 아니다.
 //! 새 저장 줄 없는 검사 3건은 함수별로 관계형/고정형을 구분하고 Native/fresh WASM 100.00%를 확인했다.
-//! 주석 갱신: 2026-11-17T01:21:02+09:00
+//! 주석 갱신: 2026-11-17T03:47:12+09:00
 //!
 //! 저장 줄이 있는 세로 가운데 정렬 글상자는 끝 문단의 비글자처럼 표(글 앞으로·자리차지)까지
 //! 바깥 여백을 넣어 내용 높이를 잡고, 자리차지 표도 자기 세로 오프셋 자리에 놓는다.
@@ -94,14 +94,78 @@ fn stored_textbox_topbottom_table_follows_vertical_offset() {
     }
 }
 
+/// 관계형: 98% 미만인 밀린 앵커 문서는 측정한 77.8/104.3px 거리를 고정하지 않는다.
+/// Native/fresh WASM: 오프셋 0은 97.48/97.37%, 2000HU는 97.40/97.30%다.
+/// 원본의 이전 줄 끝·표 오프셋·바깥 여백과 실제 표/글의 소속을 비교한다.
 #[test]
 fn pushed_anchor_line_places_topbottom_table_at_previous_paragraph_end() {
+    fn find_box(node: &RenderNode, predicate: fn(&RenderNode) -> bool) -> Option<BoundingBox> {
+        if predicate(node) {
+            return Some(node.bbox);
+        }
+        node.children
+            .iter()
+            .find_map(|child| find_box(child, predicate))
+    }
     for ext in EXTS {
-        for (voff, below) in [(0, 77.8), (2000, 104.3)] {
+        for voff in [0, 2000] {
             let name = format!("textbox_stored_top_tb_v{voff}_pushed.{ext}");
-            let (t1, cell) = ys(&name);
-            let cell = cell.expect("표 칸 글자");
-            assert_near(&format!("{name} T1→칸 글자"), cell - t1, below);
+            let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("samples/textbox_stored_table")
+                .join(&name);
+            let core = DocumentCore::from_bytes(&std::fs::read(path).unwrap()).unwrap();
+            let textbox = core.document().sections[0]
+                .paragraphs
+                .iter()
+                .flat_map(|para| &para.controls)
+                .find_map(|control| match control {
+                    Control::Shape(shape) => shape.drawing()?.text_box.as_ref(),
+                    _ => None,
+                })
+                .expect("원본 글상자");
+            let (anchor, table) = textbox
+                .paragraphs
+                .iter()
+                .enumerate()
+                .find_map(|(index, para)| {
+                    para.controls.iter().find_map(|control| match control {
+                        Control::Table(table) => Some((index, table)),
+                        _ => None,
+                    })
+                })
+                .expect("원본의 자리차지 표");
+            assert!(anchor > 0);
+            let previous_line = textbox.paragraphs[anchor - 1]
+                .line_segs
+                .last()
+                .expect("앵커 앞 문단의 저장 줄");
+            let previous_end =
+                previous_line.vertical_pos + previous_line.line_height + previous_line.line_spacing;
+            assert_eq!(table.common.vertical_offset as i32, voff);
+            let expected_offset = rhwp::renderer::hwpunit_to_px(
+                previous_end + voff + i32::from(table.outer_margin_top),
+                96.0,
+            );
+            let tree = core.build_page_render_tree(0).unwrap();
+            let content = find_box(&tree.root, |node| {
+                matches!(node.node_type, RenderNodeType::TextBox)
+            })
+            .unwrap();
+            let painted = find_box(&tree.root, |node| {
+                matches!(node.node_type, RenderNodeType::Table(_))
+            })
+            .unwrap();
+            assert!(
+                (painted.y - content.y - expected_offset).abs() < 1e-6,
+                "{name}: 표는 밀린 빈 앵커 줄이 아닌 이전 줄 끝과 원본 오프셋·여백을 소비한다"
+            );
+            let text_y = |text| first_y(&tree.root, text).expect("원본 내용 보존");
+            assert!(text_y("T1") < text_y("T2"));
+            assert!(text_y("T2") < painted.y);
+            assert!(painted.y <= text_y("BOX"));
+            assert!(text_y("BOX") < painted.y + painted.height);
+            assert!(painted.y + painted.height <= text_y("A1"));
+            assert!(text_y("A1") < text_y("A2"));
         }
     }
 }
