@@ -1,0 +1,221 @@
+{
+  "status": "rust_gates_pass",
+  "test_head": "7c1261bda0c213186487a261252faf86fcf61938",
+  "source_product_commit": "10d0d6ae43273430f74f7055c39b3d74948c1d7f",
+  "full_nextest": {
+    "run": 13633,
+    "passed": 13633,
+    "skipped": 45,
+    "test_seconds": 795.216
+  },
+  "checks": [
+    {
+      "name": "focused-nextest",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "--test",
+        "regression_suite_003",
+        "--test",
+        "regression_suite_007",
+        "--test",
+        "regression_suite_018",
+        "-E",
+        "test(/issue_9073|issue_9079|issue_9085|issue_9087/)"
+      ],
+      "exit_code": 0,
+      "seconds": 253.452
+    },
+    {
+      "name": "full-nextest",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "--tests"
+      ],
+      "exit_code": 0,
+      "seconds": 1359.402
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 30.562
+    },
+    {
+      "name": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 226.581
+    },
+    {
+      "name": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 101.498
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8"
+      ],
+      "exit_code": 0,
+      "seconds": 246.056
+    },
+    {
+      "name": "workspace-all-targets-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 104.567
+    },
+    {
+      "name": "suite-policy",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "ae9277dda0ca17be279cba89c4deea74fb75dcae"
+      ],
+      "exit_code": 0,
+      "seconds": 24.626
+    },
+    {
+      "name": "native-skia-lib",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "-j",
+        "8",
+        "--",
+        "--test-threads",
+        "8"
+      ],
+      "exit_code": 0,
+      "seconds": 353.499
+    },
+    {
+      "name": "native-skia-placeholder",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exit_code": 0,
+      "seconds": 471.685
+    },
+    {
+      "name": "native-skia-direct-pdf",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exit_code": 0,
+      "seconds": 90.418
+    }
+  ],
+  "minimum_font_profile_sha256": "dab5a29efd05b091cf0308729b49d34c7922ea399dc823d70457cde0c1367e8c",
+  "suite_source_coverage_audit": {
+    "before_source_count": 2367,
+    "after_source_count": 2367,
+    "identical_source_multiset": true,
+    "removed": [],
+    "added": [],
+    "explanation": "Suite allocation changed; retain completed all-suites results only after source multiset equality, do not describe as formatting-only."
+  },
+  "scope": "Rust gates only. Visual/actual consumer validation is tracked independently."
+}
