@@ -225,7 +225,7 @@ dependencies = [
  "regex",
  "rustc-hash",
  "shlex",
- "syn 3.0.3",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -2082,20 +2082,6 @@ checksum = "c4ed38b89c2c77ff968c524145ad65fb010f38af5c7a224b53b81d47ac2daa81"
 dependencies = [
  "bytemuck",
  "font-types 0.11.3",
-]
-
-[[package]]
-name = "read-fonts"
-version = "0.46.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bdaa4fffe9ff3ca2c353fa9729792805b9b3e324695ff5a081f860612e81b330"
-dependencies = [
- "bytemuck",
- "foldhash",
- "font-types 0.12.7",
- "once_cell",
- "smallvec",
- "yoke",
 ]
 
 [[package]]
