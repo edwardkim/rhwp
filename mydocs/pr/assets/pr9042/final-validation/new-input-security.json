@@ -1,0 +1,610 @@
+{
+  "source": "d66d5f05f9efa4d182228494cd970614d479fb7a",
+  "method": "same public CLI detector entrypoints as tests/security_corpus_regression.rs; explicit asset paths, because suite sample filter accepts samples/ only",
+  "minimal_font_prefix": [
+    "bwrap",
+    "--ro-bind",
+    "/usr",
+    "/usr",
+    "--symlink",
+    "usr/bin",
+    "/bin",
+    "--symlink",
+    "usr/lib",
+    "/lib",
+    "--symlink",
+    "usr/lib64",
+    "/lib64",
+    "--ro-bind",
+    "/etc",
+    "/etc",
+    "--proc",
+    "/proc",
+    "--dev",
+    "/dev",
+    "--ro-bind",
+    "/sys",
+    "/sys",
+    "--bind",
+    "/tmp",
+    "/tmp",
+    "--dir",
+    "/home/edward",
+    "--bind",
+    "/home/edward/mygithub/rhwp",
+    "/home/edward/mygithub/rhwp",
+    "--bind",
+    "/home/edward/.cargo",
+    "/home/edward/.cargo",
+    "--ro-bind",
+    "/home/edward/.rustup",
+    "/home/edward/.rustup",
+    "--tmpfs",
+    "/usr/share/fonts",
+    "--tmpfs",
+    "/usr/local/share/fonts",
+    "--setenv",
+    "HOME",
+    "/home/edward",
+    "--setenv",
+    "FONTCONFIG_FILE",
+    "/home/edward/mygithub/rhwp/output/pr-review/pr9042/minimal-font/fonts.conf",
+    "--unsetenv",
+    "RHWP_FONT_PATH",
+    "--setenv",
+    "RHWP_WEBFONT_OFFLINE",
+    "1",
+    "--unshare-net",
+    "--chdir",
+    "/home/edward/mygithub/rhwp"
+  ],
+  "documents": 30,
+  "checks": 90,
+  "results": [
+    {
+      "input": "mydocs/pr/assets/coanchored-table-pagination/float-pagination.hwp",
+      "sha256": "a6c335583559f7e3057cf883c75f5c66942bb7a213da0e46796116a77cfc3ec8",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr9042/final-validation/live-edit/inputs/5d554c7bfa7f.hwp",
+      "sha256": "5d554c7bfa7f80307648651b5d1b264f7e65d0a1972dcbfad81e2590b16d1439",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr9042/final-validation/live-edit/inputs/ec88ca41d2c3.hwpx",
+      "sha256": "ec88ca41d2c3fcc69fc6b6c63efed4cea786b59e744497c8a3667a86bc52ce1d",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-empty-footer-hwp-1.hwp",
+      "sha256": "8ec2617dff0bd7981f4d5dd36ab9dbe0f652c076916611e5aa5c75e8cd00d11c",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-empty-footer-hwpx-1.hwpx",
+      "sha256": "3595b5bd837ffd873cb3f9c9cdfcdeb4c252786cbac6188fe27f8b9ccc4d5a95",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-empty-header-hwp-1.hwp",
+      "sha256": "8d5780ee16abcb3ca3cc8a02b705002feb1a16f2a0e7760673d70dbd88c94133",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-empty-header-hwpx-1.hwpx",
+      "sha256": "7d2341f4140e354fb3e6ddeadd72517b7e3bb76a765dceb05f53c5602accc209",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-hancom-saved-hwp-1.hwp",
+      "sha256": "63b350d66f8f7c5cda0e63684b89807c3eb25558321b9e368279c70276667d57",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-hancom-saved-hwpx-1.hwpx",
+      "sha256": "103f8f573d727b0191d723980a5c0927e0fa509731487f1214419a5c1fc053c0",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-nested-margins-hwp-1.hwp",
+      "sha256": "60420db77cda8708172c172f6018b3870c837c94b396913b20fda08a23f680e5",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-nested-margins-hwpx-1.hwpx",
+      "sha256": "b120ca4898214879165ecf501bc613af232c191566c41f3f0299f455e744ee7c",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-nested-single-line-hwp-1.hwp",
+      "sha256": "d3f399d82099715230d528fc03948938f05e669f5fe61c6af2a4eb0dcef399ed",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-nested-single-line-hwpx-1.hwpx",
+      "sha256": "5717f4d8970d477a19a26eca8dcc3c449af6c1207caaba8e3d289efc8185f368",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-nested-two-paragraphs-hwp-1.hwp",
+      "sha256": "0b69321bb8d9f71ab5780af32976753c0d77759ea3a0b00d185c6483a8fbf9f4",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-nested-two-paragraphs-hwpx-1.hwpx",
+      "sha256": "8daa49d065e6589cd6a8efaf6b48c59fbb858ef17dc708fba2504967a34d7868",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-original-hwp-1.hwp",
+      "sha256": "709be36ef7a99c16e5e0343277c8d4136441932808045ce5f20708ff91accbb0",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-original-hwpx-1.hwpx",
+      "sha256": "fc8e05a92487f4c88d01fcb4795c36e9623750e009485c8b33148abfe1704968",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-unchanged-hwp-1.hwp",
+      "sha256": "709be36ef7a99c16e5e0343277c8d4136441932808045ce5f20708ff91accbb0",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr9042/final-validation/roundtrip/inputs/native-unchanged-hwpx-1.hwpx",
+      "sha256": "fc8e05a92487f4c88d01fcb4795c36e9623750e009485c8b33148abfe1704968",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr9042/input-generation/edited-body-small-model.hwp",
+      "sha256": "5d554c7bfa7f80307648651b5d1b264f7e65d0a1972dcbfad81e2590b16d1439",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr9042/input-generation/nested-tail-margins-precursor.hwp",
+      "sha256": "1a7dca30c36018ad283a61a58bcf3d61915cc370f66c8dc56550f9b2c1c4102b",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr9042/input-generation/nested-tail-single-line-precursor.hwp",
+      "sha256": "f47e37fbd5501abf2370a4c76400e90ecbc083a3b6d8a2b774cfa93a42d7d71f",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/pr9042/input-generation/nested-tail-two-paragraphs-precursor.hwp",
+      "sha256": "034bdf775fe111b4a64176ba716653f7d2e59aaf10340de1c33fc8a9ad849272",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "samples/pr9042/metadata-empty-footer.hwp",
+      "sha256": "b0e28245015a888ff9a2861a44178e4025c599ada1cc312c936ca842690a2580",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "samples/pr9042/metadata-empty-header.hwp",
+      "sha256": "8b93ad8e2b926fd3359105596bff803a81cfb79ba065776e8ef801428330f70b",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "samples/pr9042/metadata-unchanged.hwp",
+      "sha256": "fdd0a3e956378a945021a3cd0b6232d5fd1da9ce85d4da07f4152a8cc9b033b8",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "samples/pr9042/nested-tail-margins-hancom.hwp",
+      "sha256": "922dbfb0297e15088bec80a5ff1d3c3afc44831271e8062089d0f62c0c2d217b",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "samples/pr9042/nested-tail-single-line-hancom.hwp",
+      "sha256": "a5ff18b9ea3f0ca6992563c8049fffd9031a82307f636768e17016f5366c80fa",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "samples/pr9042/nested-tail-two-paragraphs-hancom.hwp",
+      "sha256": "1c301e6f90c22a6b833c3e6ff61ffd49f32706859530b177543dc1d3624e9a89",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    },
+    {
+      "input": "samples/pr9042/pr9042-hancom-saved.hwp",
+      "sha256": "0e003794aab9c3d49f47a3cb5f08a6c093172a3617b9648185e2b761c66198e6",
+      "detectors": {
+        "hidden-text": {
+          "clean": true,
+          "exit": 0
+        },
+        "injection": {
+          "clean": true,
+          "exit": 0
+        },
+        "unicode": {
+          "clean": true,
+          "exit": 0
+        }
+      }
+    }
+  ],
+  "public_runtime_aliases": {
+    "files": 52,
+    "byte_groups": 16,
+    "all_scanned_bytes": true
+  }
+}

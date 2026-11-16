@@ -1,0 +1,24 @@
+[
+  {
+    "name": "full-regression-part2",
+    "source": "759212053e4b289db93034c7b2b32f5b50bdcd4e",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--tests",
+      "--partition",
+      "hash:2/3",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "returncode": 0,
+    "seconds": 171.25,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/logs/final-gate-full-regression-part2.log",
+    "minimal_fonts": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/minimal-font/exposed.txt"
+  }
+]

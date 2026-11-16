@@ -1,0 +1,76 @@
+{
+  "classification": "invalid_verifier_rebase_checkout_race_not_product_result",
+  "description": "Rebase checkout temporarily removed five newly added claim inputs. Those five Native calls were invalidated and rerun serially after restoring and verifying original input hashes. Candidate/protected results were unaffected.",
+  "attempts": [
+    {
+      "revision": "base",
+      "backend": "native",
+      "key": "pr8972",
+      "protected": false,
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/logs/visual-base-native-pr8972-INVALID-rebase-path-transition.log",
+      "phase": "requires_review",
+      "pid": 5381,
+      "exit": 1,
+      "elapsed_seconds": 10.171,
+      "log_sha256": "501c5e658e0d6a91f5431b4217a4f892530b741250cafef496e2094dbde37876",
+      "original_log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/logs/visual-base-native-pr8972.log",
+      "classification": "invalid_verifier_rebase_checkout_race_not_product_result"
+    },
+    {
+      "revision": "base",
+      "backend": "native",
+      "key": "pr9030",
+      "protected": false,
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/logs/visual-base-native-pr9030-INVALID-rebase-path-transition.log",
+      "phase": "requires_review",
+      "pid": 5892,
+      "exit": 1,
+      "elapsed_seconds": 0.172,
+      "log_sha256": "1aef9135bd931dbd41de8d88ca28dfd39764b2c674149c6cdb290d61412ab6d3",
+      "original_log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/logs/visual-base-native-pr9030.log",
+      "classification": "invalid_verifier_rebase_checkout_race_not_product_result"
+    },
+    {
+      "revision": "base",
+      "backend": "native",
+      "key": "pr9034",
+      "protected": false,
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/logs/visual-base-native-pr9034-INVALID-rebase-path-transition.log",
+      "phase": "requires_review",
+      "pid": 6004,
+      "exit": 1,
+      "elapsed_seconds": 0.135,
+      "log_sha256": "5027bbb9204dbb256ab9abe1fea2fc111d8e348cb389003cf0512f802e3d22ee",
+      "original_log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/logs/visual-base-native-pr9034.log",
+      "classification": "invalid_verifier_rebase_checkout_race_not_product_result"
+    },
+    {
+      "revision": "base",
+      "backend": "native",
+      "key": "pr9036",
+      "protected": false,
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/logs/visual-base-native-pr9036-INVALID-rebase-path-transition.log",
+      "phase": "requires_review",
+      "pid": 6074,
+      "exit": 1,
+      "elapsed_seconds": 0.13,
+      "log_sha256": "ebef8ccac97b9c36999b81e266b06d227b7ca178dbc4f5df3c95ca12f1b06dd0",
+      "original_log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/logs/visual-base-native-pr9036.log",
+      "classification": "invalid_verifier_rebase_checkout_race_not_product_result"
+    },
+    {
+      "revision": "base",
+      "backend": "native",
+      "key": "pr9041",
+      "protected": false,
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/logs/visual-base-native-pr9041-INVALID-rebase-path-transition.log",
+      "phase": "requires_review",
+      "pid": 6090,
+      "exit": 1,
+      "elapsed_seconds": 0.124,
+      "log_sha256": "496c14829481fedd713852d10bfbd59069907e99372fa0d1f6df93b0d69faf5f",
+      "original_log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/logs/visual-base-native-pr9041.log",
+      "classification": "invalid_verifier_rebase_checkout_race_not_product_result"
+    }
+  ]
+}

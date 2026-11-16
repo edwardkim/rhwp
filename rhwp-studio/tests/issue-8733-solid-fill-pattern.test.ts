@@ -80,12 +80,16 @@ for (const [file, name] of [['cell-border-bg-dialog', 'CellBorderBgDialog'], ['t
       assert.equal(d.bgPreviewBox.style.background, '#aabbcc');
     }
   });
-  test(name + ': 원본 0 및 양수 무늬는 테두리만 확인해도 보존된다', () => {
-    for (const pattern of [0, 1, 3, 6]) {
+  test(name + ': 무늬 0~5는 테두리만 확인해도 보존된다', () => {
+    // HWP 무늬 종류는 0~5다 (#8978). 0(가로줄)도 보이는 선택지다.
+    assert.deepEqual(
+      setup(file, name, -1).d.bgPatternTypeSelect.children.map((o: Element) => o.value),
+      ['-1', '0', '1', '2', '3', '4', '5'],
+    );
+    for (const pattern of [0, 1, 3, 5]) {
       const { d, confirm } = setup(file, name, pattern);
       assert.equal(d.bgPatternTypeSelect.value, String(pattern));
       assert.equal(d.bgPatternTypeSelect.children[0].value, '-1');
-      assert.equal(d.bgPatternTypeSelect.children.find((o: Element) => o.value === '0').hidden, true);
       const submitted = confirm();
       assert.equal(submitted.patternType, pattern);
       assert.equal(submitted.patternColor, '#112233');

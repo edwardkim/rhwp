@@ -1,4 +1,6 @@
 //! 관계형 및 고정형 회귀: 겹침·주석 슬롯의 소유·연속성·왕복 보존과 독립 Print 첫 쪽 좌표 ±2 CSSpx.
+//! 주석 갱신: 2026-11-15T11:40:50+09:00; 직전 파일 커밋: 2026-11-06T08:49:01+09:00 (dab38dd4b786a71377f93d6baf90335fdc14b8b1).
+//! 추가 검사는 MIT 합성 프로그램 또는 내부 글자모양 소유 관계이며 설치 글꼴·절대 배치를 가정하지 않는다.
 //! 주석 갱신: 2026-11-06T08:25:01+09:00 (Asia/Seoul).
 //! 직전 파일 변경: 5172f2d55c73b2ed33d4d3657d81e769bc9004c2, 작성 2026-11-06T08:13:58+09:00, 커밋 2026-11-06T08:13:58+09:00.
 //! 측정일: 2026-11-06 KST. 제품 source 86709ac16711820e61baa3b87e2c4ddaac23573e.
@@ -767,5 +769,48 @@ fn issue_7819_print_qualified_overlap_note_caret_boundaries_stay_within_two_pixe
                 );
             }
         }
+    }
+}
+
+#[test]
+fn legacy_pua_overlap_without_inner_styles_inherits_its_control_host_style() {
+    let mut doc = source("뒤", 0);
+    let mut document = doc.document().clone();
+    let mut host = document.doc_info.char_shapes[0].clone();
+    host.base_size = 1300;
+    let host_id = document.doc_info.char_shapes.len() as u32;
+    document.doc_info.char_shapes.push(host);
+    document.sections[0].paragraphs[1].char_shapes[0].char_shape_id = host_id;
+    if let Control::CharOverlap(overlap) = &mut document.sections[0].paragraphs[1].controls[0] {
+        overlap.chars = vec!['\u{F02B3}'];
+        overlap.border_type = 0;
+        overlap.char_shape_ids.clear();
+    }
+    for (explicit_inner, expected) in [(None, host_id), (Some(0), 0)] {
+        let mut input = document.clone();
+        if let Control::CharOverlap(overlap) = &mut input.sections[0].paragraphs[1].controls[0] {
+            overlap.char_shape_ids = explicit_inner.into_iter().collect();
+        }
+        doc.set_document(input);
+        fn visit(node: &RenderNode, found: &mut Vec<u32>) {
+            if let RenderNodeType::TextRun(run) = &node.node_type {
+                if run.char_overlap.is_some() {
+                    found.push(run.char_shape_id.unwrap());
+                }
+            }
+            for child in &node.children {
+                visit(child, found);
+            }
+        }
+        let mut styles = Vec::new();
+        for page in 0..doc.page_count() {
+            visit(&doc.build_page_render_tree(page).unwrap().root, &mut styles);
+        }
+        assert_eq!(
+            styles,
+            vec![expected],
+            "누락한 내부 모양과 명시 ID 0을 구분한다"
+        );
+        assert_eq!(doc.document().sections[0].paragraphs[1].text, "뒤");
     }
 }

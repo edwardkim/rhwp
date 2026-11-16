@@ -1,0 +1,55 @@
+{
+  "status": "completed",
+  "case": "issue_8973_negative_offset_nested_host",
+  "test_source_sha256": "8124df26ce93d3deecd6c27bce44d4d89fd5f4641e57e8ca8a251241ee269df4",
+  "results": [
+    {
+      "phase": "before",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8973_negative_offset_nested_host",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "binary": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/rhwp-candidate-native",
+      "binary_sha256": "bc70e213d5f5806e9efd1172c6b54794a9a52ef4da6440bcda836b6acee505a0",
+      "exit": 100
+    },
+    {
+      "phase": "after",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_8973_negative_offset_nested_host",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "binary": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/rhwp-native",
+      "binary_sha256": "e3d439c6412b2633583feb441abc71c7959f86258b6df4b4cfc6d160109cf4ef",
+      "exit": 0
+    }
+  ],
+  "active": null,
+  "before_summary": "1 test run: 0 passed, 1 failed; row height 544.0 vs 530.6",
+  "after_summary": "1 test run: 1 passed; content order, containment and following row preserved",
+  "invalid_attempt": "Initial ZIP name API compile error was corrected and excluded from the FAIL-to-PASS evidence."
+}

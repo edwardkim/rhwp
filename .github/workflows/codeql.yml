@@ -182,6 +182,7 @@ jobs:
               return filename.startsWith('.github/workflows/')
                 || filename.startsWith('.github/actions/')
                 || filename === 'scripts/ci-impact-classifier.cjs'
+                || filename === 'scripts/frontend-canvas-gates.mjs'
                 || filename === 'scripts/ci-impact-policy.cjs'
                 || filename === 'scripts/verify_review_only_merge_resolution.py';
             }
@@ -219,7 +220,7 @@ jobs:
                   const fields = new Map(entries);
                   if (entries.length !== fields.size || entries.some(([key, value]) => !key || !value)) return false;
                   const expectedFields = [
-                    'v', 'cv', 'mode', 'rfp', 'wf', 'rust', 'fe', 'render', 'skia', 'ql', 'b',
+                    'v', 'cv', 'mode', 'rfp', 'wf', 'rust', 'fe', 'fc', 'render', 'skia', 'ql', 'b',
                   ];
                   const target = String(latest.target_url || '').match(/\/actions\/runs\/(\d+)$/);
                   if (
@@ -227,7 +228,7 @@ jobs:
                     && latest.creator?.login === 'github-actions[bot]'
                     && fields.size === expectedFields.length
                     && expectedFields.every((field) => fields.has(field))
-                    && fields.get('v') === '8'
+                    && fields.get('v') === '9'
                     && fields.get('rfp') === '1'
                     && fields.get('b') === pr.base.sha
                     && target

@@ -1,0 +1,71 @@
+{
+  "verified_at": "2026-11-13T00:16:37.590755+09:00",
+  "built_code_head": "22a994602442159ed6b146098733eec255231d9c",
+  "tested_head": "8af32b9d991ee6b6c7bf082aaf6cc6caac1b86ab",
+  "base": "a85d3265dd10b316d1a0ae029ca3f67245b38b77",
+  "source_equivalence": {
+    "before": "22a994602442159ed6b146098733eec255231d9c",
+    "after": "8af32b9d991ee6b6c7bf082aaf6cc6caac1b86ab",
+    "shared_commit": "4e66e76981dca50fe866d6bc3e591ccfcd9bc169",
+    "other_pr": 9012,
+    "other_head": "71c002495603a34af43f238dd2c98354d942a589",
+    "source_objects_before": {
+      "src": "a83e7bfbcefd771d539fa6928da53b89a9b8cd8a",
+      "rhwp-studio": "4cabffff7f69f1607576eb98268535772fca8fe0",
+      "Cargo.toml": "67ffbf80f174ba3465e4454d140f758395833b2e",
+      "Cargo.lock": "34d08aa8d5150817968568e1ab6f68af228eeeac",
+      "scripts": "fa0a728014c9114687aa5ba58607b3e272be0fc1"
+    },
+    "source_objects_after": {
+      "src": "a83e7bfbcefd771d539fa6928da53b89a9b8cd8a",
+      "rhwp-studio": "4cabffff7f69f1607576eb98268535772fca8fe0",
+      "Cargo.toml": "67ffbf80f174ba3465e4454d140f758395833b2e",
+      "Cargo.lock": "34d08aa8d5150817968568e1ab6f68af228eeeac",
+      "scripts": "fa0a728014c9114687aa5ba58607b3e272be0fc1"
+    },
+    "product_source_identical": true,
+    "shared_visual_native_raw": 100,
+    "shared_visual_wasm_raw": 100,
+    "direct_review": "12/18/24pt regular/bold glyphs, spacing and centered row origins checked against independent Print at equal 3x scale",
+    "historical_shared_evidence": "Original tracked evidence of 4e66e76981 preserved. Its later removal remains owned by #9012. Pre-removal caused an unrelated Git rename/delete heuristic conflict with #9017 logs. No new private logs were added.",
+    "merge_simulation_exit": 0,
+    "merge_simulation_output": "131dd8b4ef1b3e8e579fc25ebac822abed16afa0\n"
+  },
+  "artifacts": {
+    "candidate-native": {
+      "sha256": "2111974e85d5e035786c325f604dbf04bf94883f671b180662632845c8248d71",
+      "bytes": 73288560
+    },
+    "base-native": {
+      "sha256": "15410c16dacc2ffbff32fce696240aae24ee3c96328fd14df3b7f613e1132a55",
+      "bytes": 73306560
+    },
+    "candidate-wasm": {
+      "sha256": "a1596ff11c174bdc52da36f7951d7b3e3abfee5449ee612fd9c85b1e0756dbad",
+      "bytes": 29268059
+    },
+    "base-wasm": {
+      "sha256": "d5c348428dca32f12a402a55e5e03c60e0cfa9694257d93034c599b07a96e08b",
+      "bytes": 29204364
+    },
+    "candidate-site-wasm": {
+      "sha256": "a1596ff11c174bdc52da36f7951d7b3e3abfee5449ee612fd9c85b1e0756dbad",
+      "bytes": 29268059
+    },
+    "base-site-wasm": {
+      "sha256": "d5c348428dca32f12a402a55e5e03c60e0cfa9694257d93034c599b07a96e08b",
+      "bytes": 29204364
+    }
+  },
+  "build_logs": {
+    "base-site-build.log": "6c9f32af9c54b600fba6512aab31f4208f7915d71753847497f383dc0e63bcba",
+    "base-wasm-corrected-build.log": "604f1263ae41effa54e03a51c6729ebde31766d182bcf1b4989e40153bb684cc",
+    "wasm-build.log": "d180009263df4b57485748abd1b9327f60036985f02e4be04a88deb84569620b",
+    "base-native-build.log": "09151ed990e48cf387fd48d411626650a7c72c5c2f34701341d8b369e2617721",
+    "site-build.log": "ebb263402fa687e8340dd0515e896b491fad70ce019bf8cddf91b6b712761179",
+    "workspace-build.log": "2478daca2bb95bb8829f6f24e87ac67e6976a4c813b007d63f300141dc8baa9d",
+    "base-fixed-site-build.log": "6c9f32af9c54b600fba6512aab31f4208f7915d71753847497f383dc0e63bcba",
+    "base-wasm-build.log": "604f1263ae41effa54e03a51c6729ebde31766d182bcf1b4989e40153bb684cc",
+    "native-build.log": "7d588d0c17f7323f5ca594cb4cec9a6f23366cd5ab7d82ccce76cfbf92c320ef"
+  }
+}

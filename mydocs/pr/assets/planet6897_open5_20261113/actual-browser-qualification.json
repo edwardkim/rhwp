@@ -1,0 +1,4186 @@
+{
+  "producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+  "reviewed_on_head": "c6e852a92b3661136552a432d649e168e27f88d4",
+  "browser_version": "Chrome/157.0.8103.51",
+  "chromium_build_id": null,
+  "capture_count": 36,
+  "actual_backend_counts": {
+    "canvas2d": 32,
+    "canvaskit-compat": 2,
+    "canvaskit-default": 2
+  },
+  "font_resource_fallback_count": 20,
+  "font_environment": "Normal browser environment, not minimal-font sandbox. Existing font-resource readiness guards remain enabled.",
+  "qualification": "32 actual Canvas2D captures include 20 requested CK captures that correctly fell back because original font programs were not prepared in Studio. Only four captures are actual supported CK software output; they are not reported as 24 CK passes.",
+  "canonical_capture_exit": 0,
+  "source_report_sha256": "272d6e95faf8f64c0df6170c9fea86629d2c7415c06d3e50beafbd6b572f7a6c",
+  "hard_gate_violations": [],
+  "browser_backend_parity": {
+    "mode": "reportOnly",
+    "backendPairs": [
+      [
+        "canvas2d",
+        "canvaskit-compat"
+      ],
+      [
+        "canvas2d",
+        "canvaskit-default"
+      ]
+    ],
+    "thresholds": {
+      "ignoreChannelDelta": 8,
+      "maxDiffRatio": 0.005
+    },
+    "summary": {
+      "total": 4,
+      "compared": 4,
+      "passed": 3,
+      "failed": 1,
+      "missing": 0,
+      "errors": 0,
+      "identityMismatches": 0
+    },
+    "summaryByTargetBackend": [
+      {
+        "targetBackend": "canvaskit-compat",
+        "total": 2,
+        "compared": 2,
+        "passed": 2,
+        "failed": 0,
+        "missing": 0,
+        "errors": 0,
+        "identityMismatches": 0,
+        "worstSelectedDiffRatio": 0.0002601882776208922,
+        "worstTolerantDiffRatio": 0.0002601882776208922,
+        "worstMaxChannelDelta": 107
+      },
+      {
+        "targetBackend": "canvaskit-default",
+        "total": 2,
+        "compared": 2,
+        "passed": 1,
+        "failed": 1,
+        "missing": 0,
+        "errors": 0,
+        "identityMismatches": 0,
+        "worstSelectedDiffRatio": 0.05023428159997847,
+        "worstTolerantDiffRatio": 0.05023428159997847,
+        "worstMaxChannelDelta": 111
+      }
+    ],
+    "summaryByProfile": [
+      {
+        "profile": "print",
+        "total": 2,
+        "compared": 2,
+        "passed": 2,
+        "failed": 0,
+        "missing": 0,
+        "errors": 0,
+        "identityMismatches": 0,
+        "worstSelectedDiffRatio": 6.959504662868124e-05,
+        "worstTolerantDiffRatio": 0,
+        "worstMaxChannelDelta": 2
+      },
+      {
+        "profile": "screen",
+        "total": 2,
+        "compared": 2,
+        "passed": 1,
+        "failed": 1,
+        "missing": 0,
+        "errors": 0,
+        "identityMismatches": 0,
+        "worstSelectedDiffRatio": 0.05023428159997847,
+        "worstTolerantDiffRatio": 0.05023428159997847,
+        "worstMaxChannelDelta": 111
+      }
+    ],
+    "summaryByCategory": [
+      {
+        "category": "original-pr-claim",
+        "total": 4,
+        "compared": 4,
+        "passed": 3,
+        "failed": 1,
+        "missing": 0,
+        "errors": 0,
+        "identityMismatches": 0,
+        "worstSelectedDiffRatio": 0.05023428159997847,
+        "worstTolerantDiffRatio": 0.05023428159997847,
+        "worstMaxChannelDelta": 111
+      }
+    ],
+    "summaryByDiagnosticAxis": [
+      {
+        "diagnosticAxis": "layout",
+        "total": 4,
+        "compared": 4,
+        "passed": 3,
+        "failed": 1,
+        "missing": 0,
+        "errors": 0,
+        "identityMismatches": 0,
+        "worstSelectedDiffRatio": 0.05023428159997847,
+        "worstTolerantDiffRatio": 0.05023428159997847,
+        "worstMaxChannelDelta": 111
+      },
+      {
+        "diagnosticAxis": "ownership",
+        "total": 4,
+        "compared": 4,
+        "passed": 3,
+        "failed": 1,
+        "missing": 0,
+        "errors": 0,
+        "identityMismatches": 0,
+        "worstSelectedDiffRatio": 0.05023428159997847,
+        "worstTolerantDiffRatio": 0.05023428159997847,
+        "worstMaxChannelDelta": 111
+      }
+    ],
+    "worstComparisons": [
+      {
+        "sampleId": "pr9030-p001",
+        "category": "original-pr-claim",
+        "diagnosticAxes": [
+          "layout",
+          "ownership"
+        ],
+        "page": 0,
+        "profile": "screen",
+        "targetBackend": "canvaskit-default",
+        "canvaskitSurface": "software",
+        "passed": false,
+        "selectedDiffPixels": 44792,
+        "selectedDiffRatio": 0.05023428159997847,
+        "tolerantDiffRatio": 0.05023428159997847,
+        "maxChannelDelta": 111,
+        "meanAbsChannelDelta": 0.8774350594732084
+      },
+      {
+        "sampleId": "pr9030-p001",
+        "category": "original-pr-claim",
+        "diagnosticAxes": [
+          "layout",
+          "ownership"
+        ],
+        "page": 0,
+        "profile": "screen",
+        "targetBackend": "canvaskit-compat",
+        "canvaskitSurface": "software",
+        "passed": true,
+        "selectedDiffPixels": 232,
+        "selectedDiffRatio": 0.0002601882776208922,
+        "tolerantDiffRatio": 0.0002601882776208922,
+        "maxChannelDelta": 107,
+        "meanAbsChannelDelta": 0.015993448190009217
+      },
+      {
+        "sampleId": "pr9030-p001",
+        "category": "original-pr-claim",
+        "diagnosticAxes": [
+          "layout",
+          "ownership"
+        ],
+        "page": 0,
+        "profile": "print",
+        "targetBackend": "canvaskit-compat",
+        "canvaskitSurface": "software",
+        "passed": true,
+        "selectedDiffPixels": 62,
+        "selectedDiffRatio": 6.959504662868124e-05,
+        "tolerantDiffRatio": 0,
+        "maxChannelDelta": 2,
+        "meanAbsChannelDelta": 0.008499014444339677
+      },
+      {
+        "sampleId": "pr9030-p001",
+        "category": "original-pr-claim",
+        "diagnosticAxes": [
+          "layout",
+          "ownership"
+        ],
+        "page": 0,
+        "profile": "print",
+        "targetBackend": "canvaskit-default",
+        "canvaskitSurface": "software",
+        "passed": true,
+        "selectedDiffPixels": 62,
+        "selectedDiffRatio": 6.959504662868124e-05,
+        "tolerantDiffRatio": 0,
+        "maxChannelDelta": 2,
+        "meanAbsChannelDelta": 0.008499014444339677
+      }
+    ],
+    "comparisons": [
+      {
+        "sampleId": "pr9030-p001",
+        "category": "original-pr-claim",
+        "diagnosticAxes": [
+          "layout",
+          "ownership"
+        ],
+        "documentDigest": "sha256:36fb81b86cc8240b2f4f332934b53ee9b560940ad8fcba201336f6a4e5f29a71",
+        "page": 0,
+        "profile": "screen",
+        "baselineBackend": "canvas2d",
+        "targetBackend": "canvaskit-compat",
+        "canvaskitSurface": "software",
+        "status": "compared",
+        "baselinePath": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-browser/browser/pr9030-p001/canvas2d-screen.png",
+        "targetPath": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-browser/browser/pr9030-p001/canvaskit-compat-screen-software.png",
+        "thresholds": {
+          "ignoreChannelDelta": 8,
+          "maxDiffRatio": 0.005
+        },
+        "diff": {
+          "passed": true,
+          "hasVisualBudget": true,
+          "passMetric": "tolerant",
+          "width": 794,
+          "height": 1123,
+          "exactDiffPixels": 22722,
+          "exactDiffRatio": 0.025482750190094453,
+          "tolerantDiffPixels": 232,
+          "tolerantDiffRatio": 0.0002601882776208922,
+          "inkMaskDiffPixels": 226,
+          "inkMaskDiffRatio": 0.00025345927044104156,
+          "nonInkDiffPixels": 0,
+          "nonInkDiffRatio": 0,
+          "solidInkDiffPixels": 2,
+          "solidInkDiffRatio": 2.2430023932835537e-06,
+          "tolerantBudgetPassed": true,
+          "inkMaskBudgetPassed": false,
+          "nonInkBudgetPassed": true,
+          "solidInkBudgetPassed": false,
+          "expectedInkPixels": 46983,
+          "actualInkPixels": 46797,
+          "minimumInkPixels": null,
+          "minimumInkBudgetPassed": true,
+          "selectedDiffPixels": 232,
+          "selectedDiffRatio": 0.0002601882776208922,
+          "maxChannelDelta": 107,
+          "meanAbsChannelDelta": 0.015993448190009217
+        }
+      },
+      {
+        "sampleId": "pr9030-p001",
+        "category": "original-pr-claim",
+        "diagnosticAxes": [
+          "layout",
+          "ownership"
+        ],
+        "documentDigest": "sha256:36fb81b86cc8240b2f4f332934b53ee9b560940ad8fcba201336f6a4e5f29a71",
+        "page": 0,
+        "profile": "screen",
+        "baselineBackend": "canvas2d",
+        "targetBackend": "canvaskit-default",
+        "canvaskitSurface": "software",
+        "status": "compared",
+        "baselinePath": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-browser/browser/pr9030-p001/canvas2d-screen.png",
+        "targetPath": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-browser/browser/pr9030-p001/canvaskit-default-screen-software.png",
+        "thresholds": {
+          "ignoreChannelDelta": 8,
+          "maxDiffRatio": 0.005
+        },
+        "diff": {
+          "passed": false,
+          "hasVisualBudget": true,
+          "passMetric": "tolerant",
+          "width": 794,
+          "height": 1123,
+          "exactDiffPixels": 117812,
+          "exactDiffRatio": 0.13212629897876102,
+          "tolerantDiffPixels": 44792,
+          "tolerantDiffRatio": 0.05023428159997847,
+          "inkMaskDiffPixels": 7559,
+          "inkMaskDiffRatio": 0.008477427545415191,
+          "nonInkDiffPixels": 108,
+          "nonInkDiffRatio": 0.0001211221292373119,
+          "solidInkDiffPixels": 1152,
+          "solidInkDiffRatio": 0.001291969378531327,
+          "tolerantBudgetPassed": false,
+          "inkMaskBudgetPassed": false,
+          "nonInkBudgetPassed": false,
+          "solidInkBudgetPassed": false,
+          "expectedInkPixels": 46983,
+          "actualInkPixels": 39674,
+          "minimumInkPixels": null,
+          "minimumInkBudgetPassed": true,
+          "selectedDiffPixels": 44792,
+          "selectedDiffRatio": 0.05023428159997847,
+          "maxChannelDelta": 111,
+          "meanAbsChannelDelta": 0.8774350594732084
+        }
+      },
+      {
+        "sampleId": "pr9030-p001",
+        "category": "original-pr-claim",
+        "diagnosticAxes": [
+          "layout",
+          "ownership"
+        ],
+        "documentDigest": "sha256:36fb81b86cc8240b2f4f332934b53ee9b560940ad8fcba201336f6a4e5f29a71",
+        "page": 0,
+        "profile": "print",
+        "baselineBackend": "canvas2d",
+        "targetBackend": "canvaskit-compat",
+        "canvaskitSurface": "software",
+        "status": "compared",
+        "baselinePath": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-browser/browser/pr9030-p001/canvas2d-print.png",
+        "targetPath": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-browser/browser/pr9030-p001/canvaskit-compat-print-software.png",
+        "thresholds": {
+          "ignoreChannelDelta": 8,
+          "maxDiffRatio": 0.005
+        },
+        "diff": {
+          "passed": true,
+          "hasVisualBudget": true,
+          "passMetric": "tolerant",
+          "width": 794,
+          "height": 1122,
+          "exactDiffPixels": 21481,
+          "exactDiffRatio": 0.024112438655333898,
+          "tolerantDiffPixels": 0,
+          "tolerantDiffRatio": 0,
+          "inkMaskDiffPixels": 62,
+          "inkMaskDiffRatio": 6.959504662868124e-05,
+          "nonInkDiffPixels": 0,
+          "nonInkDiffRatio": 0,
+          "solidInkDiffPixels": 0,
+          "solidInkDiffRatio": 0,
+          "tolerantBudgetPassed": true,
+          "inkMaskBudgetPassed": false,
+          "nonInkBudgetPassed": true,
+          "solidInkBudgetPassed": true,
+          "expectedInkPixels": 46117,
+          "actualInkPixels": 46105,
+          "minimumInkPixels": null,
+          "minimumInkBudgetPassed": true,
+          "selectedDiffPixels": 62,
+          "selectedDiffRatio": 6.959504662868124e-05,
+          "maxChannelDelta": 2,
+          "meanAbsChannelDelta": 0.008499014444339677
+        }
+      },
+      {
+        "sampleId": "pr9030-p001",
+        "category": "original-pr-claim",
+        "diagnosticAxes": [
+          "layout",
+          "ownership"
+        ],
+        "documentDigest": "sha256:36fb81b86cc8240b2f4f332934b53ee9b560940ad8fcba201336f6a4e5f29a71",
+        "page": 0,
+        "profile": "print",
+        "baselineBackend": "canvas2d",
+        "targetBackend": "canvaskit-default",
+        "canvaskitSurface": "software",
+        "status": "compared",
+        "baselinePath": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-browser/browser/pr9030-p001/canvas2d-print.png",
+        "targetPath": "<repo>/output/pr-review/planet6897-open7-integration-20261113/actual-browser/browser/pr9030-p001/canvaskit-default-print-software.png",
+        "thresholds": {
+          "ignoreChannelDelta": 8,
+          "maxDiffRatio": 0.005
+        },
+        "diff": {
+          "passed": true,
+          "hasVisualBudget": true,
+          "passMetric": "tolerant",
+          "width": 794,
+          "height": 1122,
+          "exactDiffPixels": 21481,
+          "exactDiffRatio": 0.024112438655333898,
+          "tolerantDiffPixels": 0,
+          "tolerantDiffRatio": 0,
+          "inkMaskDiffPixels": 62,
+          "inkMaskDiffRatio": 6.959504662868124e-05,
+          "nonInkDiffPixels": 0,
+          "nonInkDiffRatio": 0,
+          "solidInkDiffPixels": 0,
+          "solidInkDiffRatio": 0,
+          "tolerantBudgetPassed": true,
+          "inkMaskBudgetPassed": false,
+          "nonInkBudgetPassed": true,
+          "solidInkBudgetPassed": true,
+          "expectedInkPixels": 46117,
+          "actualInkPixels": 46105,
+          "minimumInkPixels": null,
+          "minimumInkBudgetPassed": true,
+          "selectedDiffPixels": 62,
+          "selectedDiffRatio": 6.959504662868124e-05,
+          "maxChannelDelta": 2,
+          "meanAbsChannelDelta": 0.008499014444339677
+        }
+      }
+    ]
+  },
+  "direct_reading": "Six claim page groups were inspected in actual Studio print captures. The source sheet, signatures and table/paragraph ownership were preserved. The seal-sheet scan also renders on actual CK software. Its default screen bitmap sampling differs in the report-only RGB comparison (5.0234% changed pixels, mean channel error 0.8774); all three seals and the form remain present. Print comparisons pass, maximum channel delta 2. No renderer or threshold correction was made for this out-of-scope sampling difference.",
+  "results": [
+    {
+      "sampleId": "pr8972-p001",
+      "file": "issue8960/36439173-empty-tac-line-baseline.hwpx",
+      "documentDigest": "sha256:23c994d726238de000fc06cfec794142cbe1710472b837bc25034b282f6676e8",
+      "page": 0,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "fontFallback": null,
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": null,
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr8972-p001",
+        "documentDigest": "sha256:23c994d726238de000fc06cfec794142cbe1710472b837bc25034b282f6676e8",
+        "page": 0,
+        "profile": "screen",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "3ecfe8a08dcf14f37319c5b2218135e12876560578bfd310025527425b89ed4c",
+        "sizeBytes": 80413,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1541.1454169999997,
+        "documentLoadAndInitialRenderMs": 84.5,
+        "selectedPageRenderMs": 43.00645900000018,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 64.24170800000002,
+        "totalMs": 3262.724792
+      },
+      "path": "actual-browser/pr8972-p001/canvas2d-screen.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "auto",
+              "requested": "auto"
+            },
+            "renderProfile": "screen"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "requestedBackend": "canvas2d",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "explicitCanvas2d",
+            "fallbackReason": null,
+            "documentRevision": 2,
+            "resourceGeneration": 2,
+            "renderProfile": "screen",
+            "documentDigest": "blake3:baa5eee7e6875566b8822aff72eb7f62353c336d8dcea07169afb3303f806286",
+            "decisionKey": "blake3:baa5eee7e6875566b8822aff72eb7f62353c336d8dcea07169afb3303f806286|revision:2|profile:screen|resources:2|request:canvas2d|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1123,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr8972-p001",
+      "file": "issue8960/36439173-empty-tac-line-baseline.hwpx",
+      "documentDigest": "sha256:23c994d726238de000fc06cfec794142cbe1710472b837bc25034b282f6676e8",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "#신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr8972-p001",
+        "documentDigest": "sha256:23c994d726238de000fc06cfec794142cbe1710472b837bc25034b282f6676e8",
+        "page": 0,
+        "profile": "screen",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "3ecfe8a08dcf14f37319c5b2218135e12876560578bfd310025527425b89ed4c",
+        "sizeBytes": 80413,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1090.5947500000002,
+        "documentLoadAndInitialRenderMs": 40.10000014305115,
+        "selectedPageRenderMs": 44.285124999999425,
+        "warmReplayMs": 10.599999904632568,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 58.39087500000005,
+        "totalMs": 2962.6389999999997
+      },
+      "path": "actual-browser/pr8972-p001/canvaskit-compat-screen-software.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "compat",
+              "source": "url",
+              "requested": "compat"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "screen"
+          },
+          "backendFallbackReason": "canvaskitResourcePreparationFailed",
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "canvaskitResourcePreparationFailed",
+            "fallbackReason": "canvaskitResourcePreparationFailed",
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "screen",
+            "documentDigest": "blake3:baa5eee7e6875566b8822aff72eb7f62353c336d8dcea07169afb3303f806286",
+            "decisionKey": "blake3:baa5eee7e6875566b8822aff72eb7f62353c336d8dcea07169afb3303f806286|revision:3|profile:screen|resources:3|request:canvaskit|mode:compat",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": "CanvasKit font family가 준비되지 않았습니다: #신명조"
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1123,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr8972-p001",
+      "file": "issue8960/36439173-empty-tac-line-baseline.hwpx",
+      "documentDigest": "sha256:23c994d726238de000fc06cfec794142cbe1710472b837bc25034b282f6676e8",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "#신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr8972-p001",
+        "documentDigest": "sha256:23c994d726238de000fc06cfec794142cbe1710472b837bc25034b282f6676e8",
+        "page": 0,
+        "profile": "screen",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "3ecfe8a08dcf14f37319c5b2218135e12876560578bfd310025527425b89ed4c",
+        "sizeBytes": 80413,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1131.7664999999997,
+        "documentLoadAndInitialRenderMs": 34.799999952316284,
+        "selectedPageRenderMs": 53.91908400000102,
+        "warmReplayMs": 14.199999809265137,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 60.031584000000294,
+        "totalMs": 2837.0467089999993
+      },
+      "path": "actual-browser/pr8972-p001/canvaskit-default-screen-software.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "url",
+              "requested": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "screen"
+          },
+          "backendFallbackReason": "canvaskitResourcePreparationFailed",
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "canvaskitResourcePreparationFailed",
+            "fallbackReason": "canvaskitResourcePreparationFailed",
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "screen",
+            "documentDigest": "blake3:baa5eee7e6875566b8822aff72eb7f62353c336d8dcea07169afb3303f806286",
+            "decisionKey": "blake3:baa5eee7e6875566b8822aff72eb7f62353c336d8dcea07169afb3303f806286|revision:3|profile:screen|resources:3|request:canvaskit|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": "CanvasKit font family가 준비되지 않았습니다: #신명조"
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1123,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr8972-p001",
+      "file": "issue8960/36439173-empty-tac-line-baseline.hwpx",
+      "documentDigest": "sha256:23c994d726238de000fc06cfec794142cbe1710472b837bc25034b282f6676e8",
+      "page": 0,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "fontFallback": null,
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": null,
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr8972-p001",
+        "documentDigest": "sha256:23c994d726238de000fc06cfec794142cbe1710472b837bc25034b282f6676e8",
+        "page": 0,
+        "profile": "print",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "8568cb2a4c2ba94ff033bcc699aa8cddc6ed73d33cd35d77c533849f154b5ceb",
+        "sizeBytes": 82353,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1087.9749169999996,
+        "documentLoadAndInitialRenderMs": 36.5,
+        "selectedPageRenderMs": 80.86000000000058,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 69.26891699999942,
+        "totalMs": 2804.8310410000013
+      },
+      "path": "actual-browser/pr8972-p001/canvas2d-print.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "auto",
+              "requested": "auto"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "requestedBackend": "canvas2d",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "explicitCanvas2d",
+            "fallbackReason": null,
+            "documentRevision": 2,
+            "resourceGeneration": 2,
+            "renderProfile": "print",
+            "documentDigest": "blake3:baa5eee7e6875566b8822aff72eb7f62353c336d8dcea07169afb3303f806286",
+            "decisionKey": "blake3:baa5eee7e6875566b8822aff72eb7f62353c336d8dcea07169afb3303f806286|revision:2|profile:print|resources:2|request:canvas2d|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr8972-p001",
+      "file": "issue8960/36439173-empty-tac-line-baseline.hwpx",
+      "documentDigest": "sha256:23c994d726238de000fc06cfec794142cbe1710472b837bc25034b282f6676e8",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "#신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr8972-p001",
+        "documentDigest": "sha256:23c994d726238de000fc06cfec794142cbe1710472b837bc25034b282f6676e8",
+        "page": 0,
+        "profile": "print",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "8568cb2a4c2ba94ff033bcc699aa8cddc6ed73d33cd35d77c533849f154b5ceb",
+        "sizeBytes": 82353,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1133.6962500000009,
+        "documentLoadAndInitialRenderMs": 37.799999952316284,
+        "selectedPageRenderMs": 81.07633299999907,
+        "warmReplayMs": 14.800000190734863,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 56.745750000000044,
+        "totalMs": 2875.2827909999996
+      },
+      "path": "actual-browser/pr8972-p001/canvaskit-compat-print-software.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "compat",
+              "source": "url",
+              "requested": "compat"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": "canvaskitResourcePreparationFailed",
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "canvaskitResourcePreparationFailed",
+            "fallbackReason": "canvaskitResourcePreparationFailed",
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "print",
+            "documentDigest": "blake3:baa5eee7e6875566b8822aff72eb7f62353c336d8dcea07169afb3303f806286",
+            "decisionKey": "blake3:baa5eee7e6875566b8822aff72eb7f62353c336d8dcea07169afb3303f806286|revision:3|profile:print|resources:3|request:canvaskit|mode:compat",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": "CanvasKit font family가 준비되지 않았습니다: #신명조"
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr8972-p001",
+      "file": "issue8960/36439173-empty-tac-line-baseline.hwpx",
+      "documentDigest": "sha256:23c994d726238de000fc06cfec794142cbe1710472b837bc25034b282f6676e8",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "#신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr8972-p001",
+        "documentDigest": "sha256:23c994d726238de000fc06cfec794142cbe1710472b837bc25034b282f6676e8",
+        "page": 0,
+        "profile": "print",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "8568cb2a4c2ba94ff033bcc699aa8cddc6ed73d33cd35d77c533849f154b5ceb",
+        "sizeBytes": 82353,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1157.2225419999995,
+        "documentLoadAndInitialRenderMs": 36.700000047683716,
+        "selectedPageRenderMs": 85.74466699999903,
+        "warmReplayMs": 14.700000047683716,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 58.31295900000259,
+        "totalMs": 2898.8108749999974
+      },
+      "path": "actual-browser/pr8972-p001/canvaskit-default-print-software.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "url",
+              "requested": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": "canvaskitResourcePreparationFailed",
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "canvaskitResourcePreparationFailed",
+            "fallbackReason": "canvaskitResourcePreparationFailed",
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "print",
+            "documentDigest": "blake3:baa5eee7e6875566b8822aff72eb7f62353c336d8dcea07169afb3303f806286",
+            "decisionKey": "blake3:baa5eee7e6875566b8822aff72eb7f62353c336d8dcea07169afb3303f806286|revision:3|profile:print|resources:3|request:canvaskit|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": "CanvasKit font family가 준비되지 않았습니다: #신명조"
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr9030-p001",
+      "file": "issue9029/seal_registration_docinfo_tail.hwp",
+      "documentDigest": "sha256:36fb81b86cc8240b2f4f332934b53ee9b560940ad8fcba201336f6a4e5f29a71",
+      "page": 0,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "fontFallback": null,
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": null,
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr9030-p001",
+        "documentDigest": "sha256:36fb81b86cc8240b2f4f332934b53ee9b560940ad8fcba201336f6a4e5f29a71",
+        "page": 0,
+        "profile": "screen",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "7994cdd00b69acf655f7fe10d7afb3fa96d8826b62366c90f246a358a4ab0427",
+        "sizeBytes": 236620,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1026.9722909999982,
+        "documentLoadAndInitialRenderMs": 85.60000014305115,
+        "selectedPageRenderMs": 67.15350000000035,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 88.65370800000164,
+        "totalMs": 2813.8046250000007
+      },
+      "path": "actual-browser/pr9030-p001/canvas2d-screen.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "auto",
+              "requested": "auto"
+            },
+            "renderProfile": "screen"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "requestedBackend": "canvas2d",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "explicitCanvas2d",
+            "fallbackReason": null,
+            "documentRevision": 2,
+            "resourceGeneration": 2,
+            "renderProfile": "screen",
+            "documentDigest": "blake3:4bb478102fc6aa3075ac82550db4fcf6215949467ec4d1060eb2df81bcdeed9e",
+            "decisionKey": "blake3:4bb478102fc6aa3075ac82550db4fcf6215949467ec4d1060eb2df81bcdeed9e|revision:2|profile:screen|resources:2|request:canvas2d|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1123,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr9030-p001",
+      "file": "issue9029/seal_registration_docinfo_tail.hwp",
+      "documentDigest": "sha256:36fb81b86cc8240b2f4f332934b53ee9b560940ad8fcba201336f6a4e5f29a71",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "fontFallback": null,
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr9030-p001",
+        "documentDigest": "sha256:36fb81b86cc8240b2f4f332934b53ee9b560940ad8fcba201336f6a4e5f29a71",
+        "page": 0,
+        "profile": "screen",
+        "backend": "canvaskit-compat",
+        "surface": "software"
+      },
+      "artifact": {
+        "sha256": "9e05cd965f39a163ffdedb588110ae9b5fe09b504d28d90895f518ab75e88137",
+        "sizeBytes": 236789,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1148.7103339999994,
+        "documentLoadAndInitialRenderMs": 554.7999999523163,
+        "selectedPageRenderMs": 279.9968750000007,
+        "warmReplayMs": 129.29999995231628,
+        "warmRendererDurationMs": 118.30000019073486,
+        "screenshotMs": 61.00329200000124,
+        "totalMs": 3684.4486249999973
+      },
+      "path": "actual-browser/pr9030-p001/canvaskit-compat-screen-software.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvaskit",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "compat",
+              "source": "url",
+              "requested": "compat"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "screen"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvaskit",
+            "selectionReason": "explicitCanvasKit",
+            "fallbackReason": null,
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "screen",
+            "documentDigest": "blake3:4bb478102fc6aa3075ac82550db4fcf6215949467ec4d1060eb2df81bcdeed9e",
+            "decisionKey": "blake3:4bb478102fc6aa3075ac82550db4fcf6215949467ec4d1060eb2df81bcdeed9e|revision:3|profile:screen|resources:3|request:canvaskit|mode:compat",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1123,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": {
+          "surfaceCreated": 4,
+          "surfaceReused": 2,
+          "staticPictureCacheEntries": 1,
+          "staticPictureCacheBytes": 36071224,
+          "staticPictureCacheHits": 0,
+          "staticPictureCacheMisses": 32,
+          "staticPictureCacheEvictions": 31,
+          "textBlobCacheEntries": 0,
+          "textBlobCacheBytes": 0,
+          "textBlobCacheHits": 0,
+          "textBlobCacheMisses": 0,
+          "fallbackFamilyCacheEntries": 0,
+          "paragraphFontEntries": 4,
+          "paragraphFontBytes": 13900744,
+          "paragraphProviderBuilds": 0,
+          "paragraphFontRejections": 0,
+          "pendingImageLoads": 0,
+          "mode": "compat",
+          "surfacePreference": "software",
+          "surfaceBackend": "software",
+          "surfaceFallbackReason": null,
+          "lastRenderCompleted": true,
+          "lastUnsupportedOps": [],
+          "lastExpectedUnsupportedOps": [],
+          "lastUnexpectedUnsupportedOps": [],
+          "lastRenderError": null,
+          "passesRuntimeReadinessGate": true,
+          "readinessBlockers": [],
+          "hiddenCanvas2dOverlayUsed": false,
+          "lastRenderDurationMs": 118.30000019073486,
+          "renderCount": 4,
+          "imageCacheEntries": 1,
+          "imageCacheLimit": 128,
+          "imageCachePixels": 3864714,
+          "imageCachePixelLimit": 67108864,
+          "imageCacheHits": 5,
+          "imageCacheMisses": 1,
+          "imageCacheEvictions": 0,
+          "mipmapCacheEntries": 1,
+          "mipmapCacheBytes": 20611808,
+          "mipmapCacheHits": 3,
+          "mipmapCacheMisses": 1,
+          "imageFailureCacheHits": 0,
+          "imageFailures": [],
+          "localTypefaceCount": 0,
+          "localTypefaceLoadFailureCount": 0,
+          "localTypefacePendingCount": 0,
+          "bundledTypefaceCount": 1,
+          "bundledTypefaceLoadFailureCount": 0,
+          "glyphRunFontBlobCount": 0,
+          "glyphRunFontBlobBytes": 0,
+          "glyphRunTypefaceCount": 0,
+          "glyphRunFontCount": 0,
+          "fontSubstitutionLimit": 4096,
+          "unregisteredFontFallbacks": 0,
+          "fontSubstitutions": [],
+          "replayFeatureCounts": {
+            "dashedStrokes": 0,
+            "glyphRuns": 0,
+            "tabLeaders": 0,
+            "charOverlaps": 0,
+            "verticalPresentationPunctuation": 0,
+            "verticalTextRuns": 0
+          },
+          "textVariantDiagnosticGroups": 0,
+          "textVariantDiagnosticParts": 0,
+          "replayDiagnosticsDropped": 0
+        }
+      }
+    },
+    {
+      "sampleId": "pr9030-p001",
+      "file": "issue9029/seal_registration_docinfo_tail.hwp",
+      "documentDigest": "sha256:36fb81b86cc8240b2f4f332934b53ee9b560940ad8fcba201336f6a4e5f29a71",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "fontFallback": null,
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr9030-p001",
+        "documentDigest": "sha256:36fb81b86cc8240b2f4f332934b53ee9b560940ad8fcba201336f6a4e5f29a71",
+        "page": 0,
+        "profile": "screen",
+        "backend": "canvaskit-default",
+        "surface": "software"
+      },
+      "artifact": {
+        "sha256": "be21f53c7dd21757d4a55922576b4834336e21aaf00115d9e1557f45bbd4875a",
+        "sizeBytes": 241542,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1233.4228750000002,
+        "documentLoadAndInitialRenderMs": 471.7999999523163,
+        "selectedPageRenderMs": 142.18954200000007,
+        "warmReplayMs": 54.5,
+        "warmRendererDurationMs": 44.700000047683716,
+        "screenshotMs": 69.46924999999828,
+        "totalMs": 3483.305790999999
+      },
+      "path": "actual-browser/pr9030-p001/canvaskit-default-screen-software.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvaskit",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "url",
+              "requested": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "screen"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvaskit",
+            "selectionReason": "explicitCanvasKit",
+            "fallbackReason": null,
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "screen",
+            "documentDigest": "blake3:4bb478102fc6aa3075ac82550db4fcf6215949467ec4d1060eb2df81bcdeed9e",
+            "decisionKey": "blake3:4bb478102fc6aa3075ac82550db4fcf6215949467ec4d1060eb2df81bcdeed9e|revision:3|profile:screen|resources:3|request:canvaskit|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1123,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": {
+          "surfaceCreated": 4,
+          "surfaceReused": 2,
+          "staticPictureCacheEntries": 4,
+          "staticPictureCacheBytes": 61837664,
+          "staticPictureCacheHits": 0,
+          "staticPictureCacheMisses": 32,
+          "staticPictureCacheEvictions": 28,
+          "textBlobCacheEntries": 0,
+          "textBlobCacheBytes": 0,
+          "textBlobCacheHits": 0,
+          "textBlobCacheMisses": 0,
+          "fallbackFamilyCacheEntries": 0,
+          "paragraphFontEntries": 4,
+          "paragraphFontBytes": 13900744,
+          "paragraphProviderBuilds": 0,
+          "paragraphFontRejections": 0,
+          "pendingImageLoads": 0,
+          "mode": "default",
+          "surfacePreference": "software",
+          "surfaceBackend": "software",
+          "surfaceFallbackReason": null,
+          "lastRenderCompleted": true,
+          "lastUnsupportedOps": [],
+          "lastExpectedUnsupportedOps": [],
+          "lastUnexpectedUnsupportedOps": [],
+          "lastRenderError": null,
+          "passesRuntimeReadinessGate": true,
+          "readinessBlockers": [],
+          "hiddenCanvas2dOverlayUsed": false,
+          "lastRenderDurationMs": 44.700000047683716,
+          "renderCount": 4,
+          "imageCacheEntries": 1,
+          "imageCacheLimit": 128,
+          "imageCachePixels": 3864714,
+          "imageCachePixelLimit": 67108864,
+          "imageCacheHits": 5,
+          "imageCacheMisses": 1,
+          "imageCacheEvictions": 0,
+          "mipmapCacheEntries": 0,
+          "mipmapCacheBytes": 0,
+          "mipmapCacheHits": 0,
+          "mipmapCacheMisses": 0,
+          "imageFailureCacheHits": 0,
+          "imageFailures": [],
+          "localTypefaceCount": 0,
+          "localTypefaceLoadFailureCount": 0,
+          "localTypefacePendingCount": 0,
+          "bundledTypefaceCount": 1,
+          "bundledTypefaceLoadFailureCount": 0,
+          "glyphRunFontBlobCount": 0,
+          "glyphRunFontBlobBytes": 0,
+          "glyphRunTypefaceCount": 0,
+          "glyphRunFontCount": 0,
+          "fontSubstitutionLimit": 4096,
+          "unregisteredFontFallbacks": 0,
+          "fontSubstitutions": [],
+          "replayFeatureCounts": {
+            "dashedStrokes": 0,
+            "glyphRuns": 0,
+            "tabLeaders": 0,
+            "charOverlaps": 0,
+            "verticalPresentationPunctuation": 0,
+            "verticalTextRuns": 0
+          },
+          "textVariantDiagnosticGroups": 0,
+          "textVariantDiagnosticParts": 0,
+          "replayDiagnosticsDropped": 0
+        }
+      }
+    },
+    {
+      "sampleId": "pr9030-p001",
+      "file": "issue9029/seal_registration_docinfo_tail.hwp",
+      "documentDigest": "sha256:36fb81b86cc8240b2f4f332934b53ee9b560940ad8fcba201336f6a4e5f29a71",
+      "page": 0,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "fontFallback": null,
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": null,
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr9030-p001",
+        "documentDigest": "sha256:36fb81b86cc8240b2f4f332934b53ee9b560940ad8fcba201336f6a4e5f29a71",
+        "page": 0,
+        "profile": "print",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "240f5574457d04ff846cbb7fd805a3d509fcc2bb2b6e9122b70dd4e4dd0fa9b4",
+        "sizeBytes": 241757,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1056.9072090000009,
+        "documentLoadAndInitialRenderMs": 109.79999995231628,
+        "selectedPageRenderMs": 42.355540999997174,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 78.75933300000179,
+        "totalMs": 2803.5317499999983
+      },
+      "path": "actual-browser/pr9030-p001/canvas2d-print.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "auto",
+              "requested": "auto"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "requestedBackend": "canvas2d",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "explicitCanvas2d",
+            "fallbackReason": null,
+            "documentRevision": 2,
+            "resourceGeneration": 2,
+            "renderProfile": "print",
+            "documentDigest": "blake3:4bb478102fc6aa3075ac82550db4fcf6215949467ec4d1060eb2df81bcdeed9e",
+            "decisionKey": "blake3:4bb478102fc6aa3075ac82550db4fcf6215949467ec4d1060eb2df81bcdeed9e|revision:2|profile:print|resources:2|request:canvas2d|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr9030-p001",
+      "file": "issue9029/seal_registration_docinfo_tail.hwp",
+      "documentDigest": "sha256:36fb81b86cc8240b2f4f332934b53ee9b560940ad8fcba201336f6a4e5f29a71",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "fontFallback": null,
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr9030-p001",
+        "documentDigest": "sha256:36fb81b86cc8240b2f4f332934b53ee9b560940ad8fcba201336f6a4e5f29a71",
+        "page": 0,
+        "profile": "print",
+        "backend": "canvaskit-compat",
+        "surface": "software"
+      },
+      "artifact": {
+        "sha256": "ff6a720c66ba5d5120eb2af462f73951bee266514868ac1e83c66d7f8a2266b7",
+        "sizeBytes": 241860,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1105.9087919999984,
+        "documentLoadAndInitialRenderMs": 607.1000001430511,
+        "selectedPageRenderMs": 332.92904100000305,
+        "warmReplayMs": 166.70000004768372,
+        "warmRendererDurationMs": 156.10000014305115,
+        "screenshotMs": 77.98500000000058,
+        "totalMs": 3801.5409160000017
+      },
+      "path": "actual-browser/pr9030-p001/canvaskit-compat-print-software.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvaskit",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "compat",
+              "source": "url",
+              "requested": "compat"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvaskit",
+            "selectionReason": "explicitCanvasKit",
+            "fallbackReason": null,
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "print",
+            "documentDigest": "blake3:4bb478102fc6aa3075ac82550db4fcf6215949467ec4d1060eb2df81bcdeed9e",
+            "decisionKey": "blake3:4bb478102fc6aa3075ac82550db4fcf6215949467ec4d1060eb2df81bcdeed9e|revision:3|profile:print|resources:3|request:canvaskit|mode:compat",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": {
+          "surfaceCreated": 4,
+          "surfaceReused": 2,
+          "staticPictureCacheEntries": 4,
+          "staticPictureCacheBytes": 61838224,
+          "staticPictureCacheHits": 0,
+          "staticPictureCacheMisses": 32,
+          "staticPictureCacheEvictions": 28,
+          "textBlobCacheEntries": 0,
+          "textBlobCacheBytes": 0,
+          "textBlobCacheHits": 0,
+          "textBlobCacheMisses": 0,
+          "fallbackFamilyCacheEntries": 0,
+          "paragraphFontEntries": 4,
+          "paragraphFontBytes": 13900744,
+          "paragraphProviderBuilds": 0,
+          "paragraphFontRejections": 0,
+          "pendingImageLoads": 0,
+          "mode": "compat",
+          "surfacePreference": "software",
+          "surfaceBackend": "software",
+          "surfaceFallbackReason": null,
+          "lastRenderCompleted": true,
+          "lastUnsupportedOps": [],
+          "lastExpectedUnsupportedOps": [],
+          "lastUnexpectedUnsupportedOps": [],
+          "lastRenderError": null,
+          "passesRuntimeReadinessGate": true,
+          "readinessBlockers": [],
+          "hiddenCanvas2dOverlayUsed": false,
+          "lastRenderDurationMs": 156.10000014305115,
+          "renderCount": 4,
+          "imageCacheEntries": 1,
+          "imageCacheLimit": 128,
+          "imageCachePixels": 3864714,
+          "imageCachePixelLimit": 67108864,
+          "imageCacheHits": 5,
+          "imageCacheMisses": 1,
+          "imageCacheEvictions": 0,
+          "mipmapCacheEntries": 0,
+          "mipmapCacheBytes": 0,
+          "mipmapCacheHits": 0,
+          "mipmapCacheMisses": 0,
+          "imageFailureCacheHits": 0,
+          "imageFailures": [],
+          "localTypefaceCount": 0,
+          "localTypefaceLoadFailureCount": 0,
+          "localTypefacePendingCount": 0,
+          "bundledTypefaceCount": 1,
+          "bundledTypefaceLoadFailureCount": 0,
+          "glyphRunFontBlobCount": 0,
+          "glyphRunFontBlobBytes": 0,
+          "glyphRunTypefaceCount": 0,
+          "glyphRunFontCount": 0,
+          "fontSubstitutionLimit": 4096,
+          "unregisteredFontFallbacks": 0,
+          "fontSubstitutions": [],
+          "replayFeatureCounts": {
+            "dashedStrokes": 0,
+            "glyphRuns": 0,
+            "tabLeaders": 0,
+            "charOverlaps": 0,
+            "verticalPresentationPunctuation": 0,
+            "verticalTextRuns": 0
+          },
+          "textVariantDiagnosticGroups": 0,
+          "textVariantDiagnosticParts": 0,
+          "replayDiagnosticsDropped": 0
+        }
+      }
+    },
+    {
+      "sampleId": "pr9030-p001",
+      "file": "issue9029/seal_registration_docinfo_tail.hwp",
+      "documentDigest": "sha256:36fb81b86cc8240b2f4f332934b53ee9b560940ad8fcba201336f6a4e5f29a71",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "fontFallback": null,
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr9030-p001",
+        "documentDigest": "sha256:36fb81b86cc8240b2f4f332934b53ee9b560940ad8fcba201336f6a4e5f29a71",
+        "page": 0,
+        "profile": "print",
+        "backend": "canvaskit-default",
+        "surface": "software"
+      },
+      "artifact": {
+        "sha256": "ff6a720c66ba5d5120eb2af462f73951bee266514868ac1e83c66d7f8a2266b7",
+        "sizeBytes": 241860,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1179.4911250000005,
+        "documentLoadAndInitialRenderMs": 599.0999999046326,
+        "selectedPageRenderMs": 329.73204099999566,
+        "warmReplayMs": 163.80000019073486,
+        "warmRendererDurationMs": 153.09999990463257,
+        "screenshotMs": 77.81841699999495,
+        "totalMs": 3866.0753329999934
+      },
+      "path": "actual-browser/pr9030-p001/canvaskit-default-print-software.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvaskit",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "url",
+              "requested": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvaskit",
+            "selectionReason": "explicitCanvasKit",
+            "fallbackReason": null,
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "print",
+            "documentDigest": "blake3:4bb478102fc6aa3075ac82550db4fcf6215949467ec4d1060eb2df81bcdeed9e",
+            "decisionKey": "blake3:4bb478102fc6aa3075ac82550db4fcf6215949467ec4d1060eb2df81bcdeed9e|revision:3|profile:print|resources:3|request:canvaskit|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": {
+          "surfaceCreated": 4,
+          "surfaceReused": 2,
+          "staticPictureCacheEntries": 4,
+          "staticPictureCacheBytes": 61838224,
+          "staticPictureCacheHits": 0,
+          "staticPictureCacheMisses": 32,
+          "staticPictureCacheEvictions": 28,
+          "textBlobCacheEntries": 0,
+          "textBlobCacheBytes": 0,
+          "textBlobCacheHits": 0,
+          "textBlobCacheMisses": 0,
+          "fallbackFamilyCacheEntries": 0,
+          "paragraphFontEntries": 4,
+          "paragraphFontBytes": 13900744,
+          "paragraphProviderBuilds": 0,
+          "paragraphFontRejections": 0,
+          "pendingImageLoads": 0,
+          "mode": "default",
+          "surfacePreference": "software",
+          "surfaceBackend": "software",
+          "surfaceFallbackReason": null,
+          "lastRenderCompleted": true,
+          "lastUnsupportedOps": [],
+          "lastExpectedUnsupportedOps": [],
+          "lastUnexpectedUnsupportedOps": [],
+          "lastRenderError": null,
+          "passesRuntimeReadinessGate": true,
+          "readinessBlockers": [],
+          "hiddenCanvas2dOverlayUsed": false,
+          "lastRenderDurationMs": 153.09999990463257,
+          "renderCount": 4,
+          "imageCacheEntries": 1,
+          "imageCacheLimit": 128,
+          "imageCachePixels": 3864714,
+          "imageCachePixelLimit": 67108864,
+          "imageCacheHits": 5,
+          "imageCacheMisses": 1,
+          "imageCacheEvictions": 0,
+          "mipmapCacheEntries": 0,
+          "mipmapCacheBytes": 0,
+          "mipmapCacheHits": 0,
+          "mipmapCacheMisses": 0,
+          "imageFailureCacheHits": 0,
+          "imageFailures": [],
+          "localTypefaceCount": 0,
+          "localTypefaceLoadFailureCount": 0,
+          "localTypefacePendingCount": 0,
+          "bundledTypefaceCount": 1,
+          "bundledTypefaceLoadFailureCount": 0,
+          "glyphRunFontBlobCount": 0,
+          "glyphRunFontBlobBytes": 0,
+          "glyphRunTypefaceCount": 0,
+          "glyphRunFontCount": 0,
+          "fontSubstitutionLimit": 4096,
+          "unregisteredFontFallbacks": 0,
+          "fontSubstitutions": [],
+          "replayFeatureCounts": {
+            "dashedStrokes": 0,
+            "glyphRuns": 0,
+            "tabLeaders": 0,
+            "charOverlaps": 0,
+            "verticalPresentationPunctuation": 0,
+            "verticalTextRuns": 0
+          },
+          "textVariantDiagnosticGroups": 0,
+          "textVariantDiagnosticParts": 0,
+          "replayDiagnosticsDropped": 0
+        }
+      }
+    },
+    {
+      "sampleId": "pr9034-p001",
+      "file": "issue9032/tax_relief_form_date_code.hwp",
+      "documentDigest": "sha256:7c24931d2889c35b23531fe15e465d9181321d68ce84e110417ef187a505bdb2",
+      "page": 0,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "fontFallback": null,
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": null,
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr9034-p001",
+        "documentDigest": "sha256:7c24931d2889c35b23531fe15e465d9181321d68ce84e110417ef187a505bdb2",
+        "page": 0,
+        "profile": "screen",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "478a94eba70cc9fc603237042d61cc12188a53963679cebc84dfa63a309bce05",
+        "sizeBytes": 40884,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1170.4830829999992,
+        "documentLoadAndInitialRenderMs": 64.5,
+        "selectedPageRenderMs": 47.015417000002344,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 63.18779099999665,
+        "totalMs": 2865.9500419999968
+      },
+      "path": "actual-browser/pr9034-p001/canvas2d-screen.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "auto",
+              "requested": "auto"
+            },
+            "renderProfile": "screen"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "requestedBackend": "canvas2d",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "explicitCanvas2d",
+            "fallbackReason": null,
+            "documentRevision": 2,
+            "resourceGeneration": 2,
+            "renderProfile": "screen",
+            "documentDigest": "blake3:8e6cb55fcd6184b2d9a9b81ab090679b96ae772646c7b63de906c65d1e59879c",
+            "decisionKey": "blake3:8e6cb55fcd6184b2d9a9b81ab090679b96ae772646c7b63de906c65d1e59879c|revision:2|profile:screen|resources:2|request:canvas2d|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1123,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr9034-p001",
+      "file": "issue9032/tax_relief_form_date_code.hwp",
+      "documentDigest": "sha256:7c24931d2889c35b23531fe15e465d9181321d68ce84e110417ef187a505bdb2",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "신명 중명조",
+          "신명 태명조",
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr9034-p001",
+        "documentDigest": "sha256:7c24931d2889c35b23531fe15e465d9181321d68ce84e110417ef187a505bdb2",
+        "page": 0,
+        "profile": "screen",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "478a94eba70cc9fc603237042d61cc12188a53963679cebc84dfa63a309bce05",
+        "sizeBytes": 40884,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1116.127250000005,
+        "documentLoadAndInitialRenderMs": 55.200000047683716,
+        "selectedPageRenderMs": 48.480499999997846,
+        "warmReplayMs": 8.900000095367432,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 58.715917000001355,
+        "totalMs": 2833.594541999999
+      },
+      "path": "actual-browser/pr9034-p001/canvaskit-compat-screen-software.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "compat",
+              "source": "url",
+              "requested": "compat"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "screen"
+          },
+          "backendFallbackReason": "canvaskitResourcePreparationFailed",
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "canvaskitResourcePreparationFailed",
+            "fallbackReason": "canvaskitResourcePreparationFailed",
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "screen",
+            "documentDigest": "blake3:8e6cb55fcd6184b2d9a9b81ab090679b96ae772646c7b63de906c65d1e59879c",
+            "decisionKey": "blake3:8e6cb55fcd6184b2d9a9b81ab090679b96ae772646c7b63de906c65d1e59879c|revision:3|profile:screen|resources:3|request:canvaskit|mode:compat",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": "CanvasKit font family가 준비되지 않았습니다: 신명 중명조, 신명 태명조, 한양신명조"
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1123,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr9034-p001",
+      "file": "issue9032/tax_relief_form_date_code.hwp",
+      "documentDigest": "sha256:7c24931d2889c35b23531fe15e465d9181321d68ce84e110417ef187a505bdb2",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "신명 중명조",
+          "신명 태명조",
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr9034-p001",
+        "documentDigest": "sha256:7c24931d2889c35b23531fe15e465d9181321d68ce84e110417ef187a505bdb2",
+        "page": 0,
+        "profile": "screen",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "478a94eba70cc9fc603237042d61cc12188a53963679cebc84dfa63a309bce05",
+        "sizeBytes": 40884,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1129.4254159999982,
+        "documentLoadAndInitialRenderMs": 52.200000047683716,
+        "selectedPageRenderMs": 53.25029199999699,
+        "warmReplayMs": 10.599999904632568,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 52.261083000004874,
+        "totalMs": 2845.8317499999976
+      },
+      "path": "actual-browser/pr9034-p001/canvaskit-default-screen-software.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "url",
+              "requested": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "screen"
+          },
+          "backendFallbackReason": "canvaskitResourcePreparationFailed",
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "canvaskitResourcePreparationFailed",
+            "fallbackReason": "canvaskitResourcePreparationFailed",
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "screen",
+            "documentDigest": "blake3:8e6cb55fcd6184b2d9a9b81ab090679b96ae772646c7b63de906c65d1e59879c",
+            "decisionKey": "blake3:8e6cb55fcd6184b2d9a9b81ab090679b96ae772646c7b63de906c65d1e59879c|revision:3|profile:screen|resources:3|request:canvaskit|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": "CanvasKit font family가 준비되지 않았습니다: 신명 중명조, 신명 태명조, 한양신명조"
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1123,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr9034-p001",
+      "file": "issue9032/tax_relief_form_date_code.hwp",
+      "documentDigest": "sha256:7c24931d2889c35b23531fe15e465d9181321d68ce84e110417ef187a505bdb2",
+      "page": 0,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "fontFallback": null,
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": null,
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr9034-p001",
+        "documentDigest": "sha256:7c24931d2889c35b23531fe15e465d9181321d68ce84e110417ef187a505bdb2",
+        "page": 0,
+        "profile": "print",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "681fa8f45ca2ad5ef038ea89f08b50a6c659f8a20b110b4c4d99d63efdd07c59",
+        "sizeBytes": 40397,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1021.3107499999969,
+        "documentLoadAndInitialRenderMs": 51.60000014305115,
+        "selectedPageRenderMs": 72.03387500000099,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 62.09649999999965,
+        "totalMs": 2736.3500829999975
+      },
+      "path": "actual-browser/pr9034-p001/canvas2d-print.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "auto",
+              "requested": "auto"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "requestedBackend": "canvas2d",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "explicitCanvas2d",
+            "fallbackReason": null,
+            "documentRevision": 2,
+            "resourceGeneration": 2,
+            "renderProfile": "print",
+            "documentDigest": "blake3:8e6cb55fcd6184b2d9a9b81ab090679b96ae772646c7b63de906c65d1e59879c",
+            "decisionKey": "blake3:8e6cb55fcd6184b2d9a9b81ab090679b96ae772646c7b63de906c65d1e59879c|revision:2|profile:print|resources:2|request:canvas2d|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr9034-p001",
+      "file": "issue9032/tax_relief_form_date_code.hwp",
+      "documentDigest": "sha256:7c24931d2889c35b23531fe15e465d9181321d68ce84e110417ef187a505bdb2",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "신명 중명조",
+          "신명 태명조",
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr9034-p001",
+        "documentDigest": "sha256:7c24931d2889c35b23531fe15e465d9181321d68ce84e110417ef187a505bdb2",
+        "page": 0,
+        "profile": "print",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "681fa8f45ca2ad5ef038ea89f08b50a6c659f8a20b110b4c4d99d63efdd07c59",
+        "sizeBytes": 40397,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1104.0742089999985,
+        "documentLoadAndInitialRenderMs": 58.90000009536743,
+        "selectedPageRenderMs": 78.53612499999872,
+        "warmReplayMs": 14.599999904632568,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 52.1895829999994,
+        "totalMs": 2867.0772080000024
+      },
+      "path": "actual-browser/pr9034-p001/canvaskit-compat-print-software.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "compat",
+              "source": "url",
+              "requested": "compat"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": "canvaskitResourcePreparationFailed",
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "canvaskitResourcePreparationFailed",
+            "fallbackReason": "canvaskitResourcePreparationFailed",
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "print",
+            "documentDigest": "blake3:8e6cb55fcd6184b2d9a9b81ab090679b96ae772646c7b63de906c65d1e59879c",
+            "decisionKey": "blake3:8e6cb55fcd6184b2d9a9b81ab090679b96ae772646c7b63de906c65d1e59879c|revision:3|profile:print|resources:3|request:canvaskit|mode:compat",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": "CanvasKit font family가 준비되지 않았습니다: 신명 중명조, 신명 태명조, 한양신명조"
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr9034-p001",
+      "file": "issue9032/tax_relief_form_date_code.hwp",
+      "documentDigest": "sha256:7c24931d2889c35b23531fe15e465d9181321d68ce84e110417ef187a505bdb2",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "신명 중명조",
+          "신명 태명조",
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr9034-p001",
+        "documentDigest": "sha256:7c24931d2889c35b23531fe15e465d9181321d68ce84e110417ef187a505bdb2",
+        "page": 0,
+        "profile": "print",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "681fa8f45ca2ad5ef038ea89f08b50a6c659f8a20b110b4c4d99d63efdd07c59",
+        "sizeBytes": 40397,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1133.2628329999934,
+        "documentLoadAndInitialRenderMs": 58.60000014305115,
+        "selectedPageRenderMs": 67.36308400000416,
+        "warmReplayMs": 16,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 50.17216699999699,
+        "totalMs": 2879.0648750000037
+      },
+      "path": "actual-browser/pr9034-p001/canvaskit-default-print-software.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "url",
+              "requested": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": "canvaskitResourcePreparationFailed",
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "canvaskitResourcePreparationFailed",
+            "fallbackReason": "canvaskitResourcePreparationFailed",
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "print",
+            "documentDigest": "blake3:8e6cb55fcd6184b2d9a9b81ab090679b96ae772646c7b63de906c65d1e59879c",
+            "decisionKey": "blake3:8e6cb55fcd6184b2d9a9b81ab090679b96ae772646c7b63de906c65d1e59879c|revision:3|profile:print|resources:3|request:canvaskit|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": "CanvasKit font family가 준비되지 않았습니다: 신명 중명조, 신명 태명조, 한양신명조"
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr9036-p001",
+      "file": "issue9035/field_practice_confirmation_signature.hwp",
+      "documentDigest": "sha256:fd66b8b7f4976f6633cdb4cec3d7b3876271a74882951d02dc7cbebd41f060d8",
+      "page": 0,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "fontFallback": null,
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": null,
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr9036-p001",
+        "documentDigest": "sha256:fd66b8b7f4976f6633cdb4cec3d7b3876271a74882951d02dc7cbebd41f060d8",
+        "page": 0,
+        "profile": "screen",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "105d7320f21f3f643c332283ba074fe8aea5b81f3f77ea6a20a49ac006c8bacf",
+        "sizeBytes": 70247,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1049.9515000000029,
+        "documentLoadAndInitialRenderMs": 45.90000009536743,
+        "selectedPageRenderMs": 63.58587499999703,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 68.80383400000574,
+        "totalMs": 2743.469416999993
+      },
+      "path": "actual-browser/pr9036-p001/canvas2d-screen.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "auto",
+              "requested": "auto"
+            },
+            "renderProfile": "screen"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "requestedBackend": "canvas2d",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "explicitCanvas2d",
+            "fallbackReason": null,
+            "documentRevision": 2,
+            "resourceGeneration": 2,
+            "renderProfile": "screen",
+            "documentDigest": "blake3:77260aa10bcd4d9df5a687994d46e3dc4b8f04c70f0cba5ed0fff5ecd2748837",
+            "decisionKey": "blake3:77260aa10bcd4d9df5a687994d46e3dc4b8f04c70f0cba5ed0fff5ecd2748837|revision:2|profile:screen|resources:2|request:canvas2d|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1123,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr9036-p001",
+      "file": "issue9035/field_practice_confirmation_signature.hwp",
+      "documentDigest": "sha256:fd66b8b7f4976f6633cdb4cec3d7b3876271a74882951d02dc7cbebd41f060d8",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양견고딕",
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr9036-p001",
+        "documentDigest": "sha256:fd66b8b7f4976f6633cdb4cec3d7b3876271a74882951d02dc7cbebd41f060d8",
+        "page": 0,
+        "profile": "screen",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "105d7320f21f3f643c332283ba074fe8aea5b81f3f77ea6a20a49ac006c8bacf",
+        "sizeBytes": 70247,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1081.586749999995,
+        "documentLoadAndInitialRenderMs": 41.799999952316284,
+        "selectedPageRenderMs": 61.46729200000118,
+        "warmReplayMs": 10,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 53.31941700000607,
+        "totalMs": 2765.5704170000026
+      },
+      "path": "actual-browser/pr9036-p001/canvaskit-compat-screen-software.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "compat",
+              "source": "url",
+              "requested": "compat"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "screen"
+          },
+          "backendFallbackReason": "canvaskitResourcePreparationFailed",
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "canvaskitResourcePreparationFailed",
+            "fallbackReason": "canvaskitResourcePreparationFailed",
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "screen",
+            "documentDigest": "blake3:77260aa10bcd4d9df5a687994d46e3dc4b8f04c70f0cba5ed0fff5ecd2748837",
+            "decisionKey": "blake3:77260aa10bcd4d9df5a687994d46e3dc4b8f04c70f0cba5ed0fff5ecd2748837|revision:3|profile:screen|resources:3|request:canvaskit|mode:compat",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": "CanvasKit font family가 준비되지 않았습니다: 한양견고딕, 한양신명조"
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1123,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr9036-p001",
+      "file": "issue9035/field_practice_confirmation_signature.hwp",
+      "documentDigest": "sha256:fd66b8b7f4976f6633cdb4cec3d7b3876271a74882951d02dc7cbebd41f060d8",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양견고딕",
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr9036-p001",
+        "documentDigest": "sha256:fd66b8b7f4976f6633cdb4cec3d7b3876271a74882951d02dc7cbebd41f060d8",
+        "page": 0,
+        "profile": "screen",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "105d7320f21f3f643c332283ba074fe8aea5b81f3f77ea6a20a49ac006c8bacf",
+        "sizeBytes": 70247,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1150.7407079999975,
+        "documentLoadAndInitialRenderMs": 42.700000047683716,
+        "selectedPageRenderMs": 77.11245900000358,
+        "warmReplayMs": 12.900000095367432,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 66.8737919999985,
+        "totalMs": 2867.9967500000057
+      },
+      "path": "actual-browser/pr9036-p001/canvaskit-default-screen-software.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "url",
+              "requested": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "screen"
+          },
+          "backendFallbackReason": "canvaskitResourcePreparationFailed",
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "canvaskitResourcePreparationFailed",
+            "fallbackReason": "canvaskitResourcePreparationFailed",
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "screen",
+            "documentDigest": "blake3:77260aa10bcd4d9df5a687994d46e3dc4b8f04c70f0cba5ed0fff5ecd2748837",
+            "decisionKey": "blake3:77260aa10bcd4d9df5a687994d46e3dc4b8f04c70f0cba5ed0fff5ecd2748837|revision:3|profile:screen|resources:3|request:canvaskit|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": "CanvasKit font family가 준비되지 않았습니다: 한양견고딕, 한양신명조"
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1123,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr9036-p001",
+      "file": "issue9035/field_practice_confirmation_signature.hwp",
+      "documentDigest": "sha256:fd66b8b7f4976f6633cdb4cec3d7b3876271a74882951d02dc7cbebd41f060d8",
+      "page": 0,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "fontFallback": null,
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": null,
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr9036-p001",
+        "documentDigest": "sha256:fd66b8b7f4976f6633cdb4cec3d7b3876271a74882951d02dc7cbebd41f060d8",
+        "page": 0,
+        "profile": "print",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "b9c19da8021985245cf4ece7bf1aa9c7b0f71f13ed0a40cea577e172c50b027c",
+        "sizeBytes": 68978,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1067.7219590000022,
+        "documentLoadAndInitialRenderMs": 37.89999985694885,
+        "selectedPageRenderMs": 78.50179200001003,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 67.79245799999626,
+        "totalMs": 2764.9766249999957
+      },
+      "path": "actual-browser/pr9036-p001/canvas2d-print.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "auto",
+              "requested": "auto"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "requestedBackend": "canvas2d",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "explicitCanvas2d",
+            "fallbackReason": null,
+            "documentRevision": 2,
+            "resourceGeneration": 2,
+            "renderProfile": "print",
+            "documentDigest": "blake3:77260aa10bcd4d9df5a687994d46e3dc4b8f04c70f0cba5ed0fff5ecd2748837",
+            "decisionKey": "blake3:77260aa10bcd4d9df5a687994d46e3dc4b8f04c70f0cba5ed0fff5ecd2748837|revision:2|profile:print|resources:2|request:canvas2d|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr9036-p001",
+      "file": "issue9035/field_practice_confirmation_signature.hwp",
+      "documentDigest": "sha256:fd66b8b7f4976f6633cdb4cec3d7b3876271a74882951d02dc7cbebd41f060d8",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양견고딕",
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr9036-p001",
+        "documentDigest": "sha256:fd66b8b7f4976f6633cdb4cec3d7b3876271a74882951d02dc7cbebd41f060d8",
+        "page": 0,
+        "profile": "print",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "b9c19da8021985245cf4ece7bf1aa9c7b0f71f13ed0a40cea577e172c50b027c",
+        "sizeBytes": 68978,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1144.8347910000011,
+        "documentLoadAndInitialRenderMs": 41.59999990463257,
+        "selectedPageRenderMs": 66.4184580000001,
+        "warmReplayMs": 12,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 64.07333400000061,
+        "totalMs": 2845.288916999998
+      },
+      "path": "actual-browser/pr9036-p001/canvaskit-compat-print-software.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "compat",
+              "source": "url",
+              "requested": "compat"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": "canvaskitResourcePreparationFailed",
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "canvaskitResourcePreparationFailed",
+            "fallbackReason": "canvaskitResourcePreparationFailed",
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "print",
+            "documentDigest": "blake3:77260aa10bcd4d9df5a687994d46e3dc4b8f04c70f0cba5ed0fff5ecd2748837",
+            "decisionKey": "blake3:77260aa10bcd4d9df5a687994d46e3dc4b8f04c70f0cba5ed0fff5ecd2748837|revision:3|profile:print|resources:3|request:canvaskit|mode:compat",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": "CanvasKit font family가 준비되지 않았습니다: 한양견고딕, 한양신명조"
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr9036-p001",
+      "file": "issue9035/field_practice_confirmation_signature.hwp",
+      "documentDigest": "sha256:fd66b8b7f4976f6633cdb4cec3d7b3876271a74882951d02dc7cbebd41f060d8",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양견고딕",
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr9036-p001",
+        "documentDigest": "sha256:fd66b8b7f4976f6633cdb4cec3d7b3876271a74882951d02dc7cbebd41f060d8",
+        "page": 0,
+        "profile": "print",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "b9c19da8021985245cf4ece7bf1aa9c7b0f71f13ed0a40cea577e172c50b027c",
+        "sizeBytes": 68978,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1098.9811670000054,
+        "documentLoadAndInitialRenderMs": 41.5,
+        "selectedPageRenderMs": 53.005208999995375,
+        "warmReplayMs": 10.100000143051147,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 52.328125,
+        "totalMs": 2770.8322079999925
+      },
+      "path": "actual-browser/pr9036-p001/canvaskit-default-print-software.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "url",
+              "requested": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": "canvaskitResourcePreparationFailed",
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "canvaskitResourcePreparationFailed",
+            "fallbackReason": "canvaskitResourcePreparationFailed",
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "print",
+            "documentDigest": "blake3:77260aa10bcd4d9df5a687994d46e3dc4b8f04c70f0cba5ed0fff5ecd2748837",
+            "decisionKey": "blake3:77260aa10bcd4d9df5a687994d46e3dc4b8f04c70f0cba5ed0fff5ecd2748837|revision:3|profile:print|resources:3|request:canvaskit|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": "CanvasKit font family가 준비되지 않았습니다: 한양견고딕, 한양신명조"
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr9041-p001",
+      "file": "issue9027/1312000-201400081_2015_senior_policy_course.hwp",
+      "documentDigest": "sha256:93d3c39fec006a1a27deff66c5ce7c71bbc361b040c12583c83395dcf7ad120f",
+      "page": 0,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "fontFallback": null,
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": null,
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr9041-p001",
+        "documentDigest": "sha256:93d3c39fec006a1a27deff66c5ce7c71bbc361b040c12583c83395dcf7ad120f",
+        "page": 0,
+        "profile": "screen",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "282aa407eb571d37f8059f50ca054fe0fd8d293c5432981f3008e5e1675cac84",
+        "sizeBytes": 171358,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1078.322542000009,
+        "documentLoadAndInitialRenderMs": 155.60000014305115,
+        "selectedPageRenderMs": 93.98374999999942,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 74.23412500000268,
+        "totalMs": 2956.634333000009
+      },
+      "path": "actual-browser/pr9041-p001/canvas2d-screen.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "auto",
+              "requested": "auto"
+            },
+            "renderProfile": "screen"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "requestedBackend": "canvas2d",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "explicitCanvas2d",
+            "fallbackReason": null,
+            "documentRevision": 2,
+            "resourceGeneration": 2,
+            "renderProfile": "screen",
+            "documentDigest": "blake3:d653ca961c6219da8c8e9daa5be37b1f7a29cf606431a9cc34baff796c620dbc",
+            "decisionKey": "blake3:d653ca961c6219da8c8e9daa5be37b1f7a29cf606431a9cc34baff796c620dbc|revision:2|profile:screen|resources:2|request:canvas2d|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1123,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 1,
+            "loaded": 1,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr9041-p001",
+      "file": "issue9027/1312000-201400081_2015_senior_policy_course.hwp",
+      "documentDigest": "sha256:93d3c39fec006a1a27deff66c5ce7c71bbc361b040c12583c83395dcf7ad120f",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "-윤고딕320",
+          "#신명조",
+          "한양신명조",
+          "HY울릉도M"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr9041-p001",
+        "documentDigest": "sha256:93d3c39fec006a1a27deff66c5ce7c71bbc361b040c12583c83395dcf7ad120f",
+        "page": 0,
+        "profile": "screen",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "282aa407eb571d37f8059f50ca054fe0fd8d293c5432981f3008e5e1675cac84",
+        "sizeBytes": 171358,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1133.731415999995,
+        "documentLoadAndInitialRenderMs": 156.80000019073486,
+        "selectedPageRenderMs": 95.65495799999917,
+        "warmReplayMs": 24.799999952316284,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 61.261333000002196,
+        "totalMs": 3033.621333999996
+      },
+      "path": "actual-browser/pr9041-p001/canvaskit-compat-screen-software.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "compat",
+              "source": "url",
+              "requested": "compat"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "screen"
+          },
+          "backendFallbackReason": "canvaskitResourcePreparationFailed",
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "canvaskitResourcePreparationFailed",
+            "fallbackReason": "canvaskitResourcePreparationFailed",
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "screen",
+            "documentDigest": "blake3:d653ca961c6219da8c8e9daa5be37b1f7a29cf606431a9cc34baff796c620dbc",
+            "decisionKey": "blake3:d653ca961c6219da8c8e9daa5be37b1f7a29cf606431a9cc34baff796c620dbc|revision:3|profile:screen|resources:3|request:canvaskit|mode:compat",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": "CanvasKit font family가 준비되지 않았습니다: -윤고딕320, #신명조, 한양신명조, HY울릉도M"
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1123,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 1,
+            "loaded": 1,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr9041-p001",
+      "file": "issue9027/1312000-201400081_2015_senior_policy_course.hwp",
+      "documentDigest": "sha256:93d3c39fec006a1a27deff66c5ce7c71bbc361b040c12583c83395dcf7ad120f",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "-윤고딕320",
+          "#신명조",
+          "한양신명조",
+          "HY울릉도M"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr9041-p001",
+        "documentDigest": "sha256:93d3c39fec006a1a27deff66c5ce7c71bbc361b040c12583c83395dcf7ad120f",
+        "page": 0,
+        "profile": "screen",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "282aa407eb571d37f8059f50ca054fe0fd8d293c5432981f3008e5e1675cac84",
+        "sizeBytes": 171358,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1185.7187919999997,
+        "documentLoadAndInitialRenderMs": 158.09999990463257,
+        "selectedPageRenderMs": 91.64766600000439,
+        "warmReplayMs": 26.09999990463257,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 59.16083300000173,
+        "totalMs": 3082.3117920000077
+      },
+      "path": "actual-browser/pr9041-p001/canvaskit-default-screen-software.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "url",
+              "requested": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "screen"
+          },
+          "backendFallbackReason": "canvaskitResourcePreparationFailed",
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "canvaskitResourcePreparationFailed",
+            "fallbackReason": "canvaskitResourcePreparationFailed",
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "screen",
+            "documentDigest": "blake3:d653ca961c6219da8c8e9daa5be37b1f7a29cf606431a9cc34baff796c620dbc",
+            "decisionKey": "blake3:d653ca961c6219da8c8e9daa5be37b1f7a29cf606431a9cc34baff796c620dbc|revision:3|profile:screen|resources:3|request:canvaskit|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": "CanvasKit font family가 준비되지 않았습니다: -윤고딕320, #신명조, 한양신명조, HY울릉도M"
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1123,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 1,
+            "loaded": 1,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr9041-p001",
+      "file": "issue9027/1312000-201400081_2015_senior_policy_course.hwp",
+      "documentDigest": "sha256:93d3c39fec006a1a27deff66c5ce7c71bbc361b040c12583c83395dcf7ad120f",
+      "page": 0,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "fontFallback": null,
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": null,
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr9041-p001",
+        "documentDigest": "sha256:93d3c39fec006a1a27deff66c5ce7c71bbc361b040c12583c83395dcf7ad120f",
+        "page": 0,
+        "profile": "print",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "1b03e1f2c736ff8d24d3d914f545c49839b9eba62f66eb8fada609668719391d",
+        "sizeBytes": 171618,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1117.7910830000037,
+        "documentLoadAndInitialRenderMs": 221,
+        "selectedPageRenderMs": 132.68608299999323,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 71.04070800000045,
+        "totalMs": 3113.7215419999993
+      },
+      "path": "actual-browser/pr9041-p001/canvas2d-print.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "auto",
+              "requested": "auto"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "requestedBackend": "canvas2d",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "explicitCanvas2d",
+            "fallbackReason": null,
+            "documentRevision": 2,
+            "resourceGeneration": 2,
+            "renderProfile": "print",
+            "documentDigest": "blake3:d653ca961c6219da8c8e9daa5be37b1f7a29cf606431a9cc34baff796c620dbc",
+            "decisionKey": "blake3:d653ca961c6219da8c8e9daa5be37b1f7a29cf606431a9cc34baff796c620dbc|revision:2|profile:print|resources:2|request:canvas2d|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr9041-p001",
+      "file": "issue9027/1312000-201400081_2015_senior_policy_course.hwp",
+      "documentDigest": "sha256:93d3c39fec006a1a27deff66c5ce7c71bbc361b040c12583c83395dcf7ad120f",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "-윤고딕320",
+          "#신명조",
+          "한양신명조",
+          "HY울릉도M"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr9041-p001",
+        "documentDigest": "sha256:93d3c39fec006a1a27deff66c5ce7c71bbc361b040c12583c83395dcf7ad120f",
+        "page": 0,
+        "profile": "print",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "1b03e1f2c736ff8d24d3d914f545c49839b9eba62f66eb8fada609668719391d",
+        "sizeBytes": 171618,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1125.4300829999993,
+        "documentLoadAndInitialRenderMs": 223.59999990463257,
+        "selectedPageRenderMs": 111.88579200000095,
+        "warmReplayMs": 40.700000047683716,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 64.7175830000051,
+        "totalMs": 3153.5627499999973
+      },
+      "path": "actual-browser/pr9041-p001/canvaskit-compat-print-software.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "compat",
+              "source": "url",
+              "requested": "compat"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": "canvaskitResourcePreparationFailed",
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "canvaskitResourcePreparationFailed",
+            "fallbackReason": "canvaskitResourcePreparationFailed",
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "print",
+            "documentDigest": "blake3:d653ca961c6219da8c8e9daa5be37b1f7a29cf606431a9cc34baff796c620dbc",
+            "decisionKey": "blake3:d653ca961c6219da8c8e9daa5be37b1f7a29cf606431a9cc34baff796c620dbc|revision:3|profile:print|resources:3|request:canvaskit|mode:compat",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": "CanvasKit font family가 준비되지 않았습니다: -윤고딕320, #신명조, 한양신명조, HY울릉도M"
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr9041-p001",
+      "file": "issue9027/1312000-201400081_2015_senior_policy_course.hwp",
+      "documentDigest": "sha256:93d3c39fec006a1a27deff66c5ce7c71bbc361b040c12583c83395dcf7ad120f",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "-윤고딕320",
+          "#신명조",
+          "한양신명조",
+          "HY울릉도M"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr9041-p001",
+        "documentDigest": "sha256:93d3c39fec006a1a27deff66c5ce7c71bbc361b040c12583c83395dcf7ad120f",
+        "page": 0,
+        "profile": "print",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "1b03e1f2c736ff8d24d3d914f545c49839b9eba62f66eb8fada609668719391d",
+        "sizeBytes": 171618,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1268.5363329999964,
+        "documentLoadAndInitialRenderMs": 242.30000019073486,
+        "selectedPageRenderMs": 127.61120899999514,
+        "warmReplayMs": 39.299999952316284,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 70.07591699999466,
+        "totalMs": 3335.0287910000043
+      },
+      "path": "actual-browser/pr9041-p001/canvaskit-default-print-software.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "url",
+              "requested": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": "canvaskitResourcePreparationFailed",
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "canvaskitResourcePreparationFailed",
+            "fallbackReason": "canvaskitResourcePreparationFailed",
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "print",
+            "documentDigest": "blake3:d653ca961c6219da8c8e9daa5be37b1f7a29cf606431a9cc34baff796c620dbc",
+            "decisionKey": "blake3:d653ca961c6219da8c8e9daa5be37b1f7a29cf606431a9cc34baff796c620dbc|revision:3|profile:print|resources:3|request:canvaskit|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": "CanvasKit font family가 준비되지 않았습니다: -윤고딕320, #신명조, 한양신명조, HY울릉도M"
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr9041-p002",
+      "file": "issue9027/1312000-201400081_2015_senior_policy_course.hwp",
+      "documentDigest": "sha256:93d3c39fec006a1a27deff66c5ce7c71bbc361b040c12583c83395dcf7ad120f",
+      "page": 1,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "fontFallback": null,
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": null,
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr9041-p002",
+        "documentDigest": "sha256:93d3c39fec006a1a27deff66c5ce7c71bbc361b040c12583c83395dcf7ad120f",
+        "page": 1,
+        "profile": "screen",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "88ae2fddfe167f823f8f14ccc672e3076e71ba79b224bec21ac3dbc5aa1b7b32",
+        "sizeBytes": 117311,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1089.5522920000076,
+        "documentLoadAndInitialRenderMs": 143.59999990463257,
+        "selectedPageRenderMs": 66.08433300000615,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 69.40124999999534,
+        "totalMs": 2893.4191250000003
+      },
+      "path": "actual-browser/pr9041-p002/canvas2d-screen.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "auto",
+              "requested": "auto"
+            },
+            "renderProfile": "screen"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "requestedBackend": "canvas2d",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "explicitCanvas2d",
+            "fallbackReason": null,
+            "documentRevision": 2,
+            "resourceGeneration": 2,
+            "renderProfile": "screen",
+            "documentDigest": "blake3:d653ca961c6219da8c8e9daa5be37b1f7a29cf606431a9cc34baff796c620dbc",
+            "decisionKey": "blake3:d653ca961c6219da8c8e9daa5be37b1f7a29cf606431a9cc34baff796c620dbc|revision:2|profile:screen|resources:2|request:canvas2d|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1123,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr9041-p002",
+      "file": "issue9027/1312000-201400081_2015_senior_policy_course.hwp",
+      "documentDigest": "sha256:93d3c39fec006a1a27deff66c5ce7c71bbc361b040c12583c83395dcf7ad120f",
+      "page": 1,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "-윤고딕320",
+          "#신명조",
+          "한양신명조",
+          "HY울릉도M"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr9041-p002",
+        "documentDigest": "sha256:93d3c39fec006a1a27deff66c5ce7c71bbc361b040c12583c83395dcf7ad120f",
+        "page": 1,
+        "profile": "screen",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "88ae2fddfe167f823f8f14ccc672e3076e71ba79b224bec21ac3dbc5aa1b7b32",
+        "sizeBytes": 117311,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1149.4439580000035,
+        "documentLoadAndInitialRenderMs": 156.40000009536743,
+        "selectedPageRenderMs": 65.50754200000665,
+        "warmReplayMs": 16.40000009536743,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 62.48783299999195,
+        "totalMs": 3018.152166999993
+      },
+      "path": "actual-browser/pr9041-p002/canvaskit-compat-screen-software.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "compat",
+              "source": "url",
+              "requested": "compat"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "screen"
+          },
+          "backendFallbackReason": "canvaskitResourcePreparationFailed",
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "canvaskitResourcePreparationFailed",
+            "fallbackReason": "canvaskitResourcePreparationFailed",
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "screen",
+            "documentDigest": "blake3:d653ca961c6219da8c8e9daa5be37b1f7a29cf606431a9cc34baff796c620dbc",
+            "decisionKey": "blake3:d653ca961c6219da8c8e9daa5be37b1f7a29cf606431a9cc34baff796c620dbc|revision:3|profile:screen|resources:3|request:canvaskit|mode:compat",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": "CanvasKit font family가 준비되지 않았습니다: -윤고딕320, #신명조, 한양신명조, HY울릉도M"
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1123,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr9041-p002",
+      "file": "issue9027/1312000-201400081_2015_senior_policy_course.hwp",
+      "documentDigest": "sha256:93d3c39fec006a1a27deff66c5ce7c71bbc361b040c12583c83395dcf7ad120f",
+      "page": 1,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "-윤고딕320",
+          "#신명조",
+          "한양신명조",
+          "HY울릉도M"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr9041-p002",
+        "documentDigest": "sha256:93d3c39fec006a1a27deff66c5ce7c71bbc361b040c12583c83395dcf7ad120f",
+        "page": 1,
+        "profile": "screen",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "88ae2fddfe167f823f8f14ccc672e3076e71ba79b224bec21ac3dbc5aa1b7b32",
+        "sizeBytes": 117311,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1136.9644580000022,
+        "documentLoadAndInitialRenderMs": 158.70000004768372,
+        "selectedPageRenderMs": 72.65175000000454,
+        "warmReplayMs": 14.700000047683716,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 69.26754100000835,
+        "totalMs": 3016.4686660000007
+      },
+      "path": "actual-browser/pr9041-p002/canvaskit-default-screen-software.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "url",
+              "requested": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "screen"
+          },
+          "backendFallbackReason": "canvaskitResourcePreparationFailed",
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "canvaskitResourcePreparationFailed",
+            "fallbackReason": "canvaskitResourcePreparationFailed",
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "screen",
+            "documentDigest": "blake3:d653ca961c6219da8c8e9daa5be37b1f7a29cf606431a9cc34baff796c620dbc",
+            "decisionKey": "blake3:d653ca961c6219da8c8e9daa5be37b1f7a29cf606431a9cc34baff796c620dbc|revision:3|profile:screen|resources:3|request:canvaskit|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": "CanvasKit font family가 준비되지 않았습니다: -윤고딕320, #신명조, 한양신명조, HY울릉도M"
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1123,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr9041-p002",
+      "file": "issue9027/1312000-201400081_2015_senior_policy_course.hwp",
+      "documentDigest": "sha256:93d3c39fec006a1a27deff66c5ce7c71bbc361b040c12583c83395dcf7ad120f",
+      "page": 1,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "fontFallback": null,
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": null,
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr9041-p002",
+        "documentDigest": "sha256:93d3c39fec006a1a27deff66c5ce7c71bbc361b040c12583c83395dcf7ad120f",
+        "page": 1,
+        "profile": "print",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "3cdd21ade0fc69c40249251686d3f1dab7a7d310260925289d677392318448d4",
+        "sizeBytes": 117290,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1115.6767910000053,
+        "documentLoadAndInitialRenderMs": 217.29999995231628,
+        "selectedPageRenderMs": 91.2875839999906,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 69.02687499999593,
+        "totalMs": 3047.0952499999985
+      },
+      "path": "actual-browser/pr9041-p002/canvas2d-print.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "auto",
+              "requested": "auto"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "requestedBackend": "canvas2d",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "explicitCanvas2d",
+            "fallbackReason": null,
+            "documentRevision": 2,
+            "resourceGeneration": 2,
+            "renderProfile": "print",
+            "documentDigest": "blake3:d653ca961c6219da8c8e9daa5be37b1f7a29cf606431a9cc34baff796c620dbc",
+            "decisionKey": "blake3:d653ca961c6219da8c8e9daa5be37b1f7a29cf606431a9cc34baff796c620dbc|revision:2|profile:print|resources:2|request:canvas2d|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr9041-p002",
+      "file": "issue9027/1312000-201400081_2015_senior_policy_course.hwp",
+      "documentDigest": "sha256:93d3c39fec006a1a27deff66c5ce7c71bbc361b040c12583c83395dcf7ad120f",
+      "page": 1,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "-윤고딕320",
+          "#신명조",
+          "한양신명조",
+          "HY울릉도M"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr9041-p002",
+        "documentDigest": "sha256:93d3c39fec006a1a27deff66c5ce7c71bbc361b040c12583c83395dcf7ad120f",
+        "page": 1,
+        "profile": "print",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "3cdd21ade0fc69c40249251686d3f1dab7a7d310260925289d677392318448d4",
+        "sizeBytes": 117290,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1112.9865829999908,
+        "documentLoadAndInitialRenderMs": 223.09999990463257,
+        "selectedPageRenderMs": 93.14908299999661,
+        "warmReplayMs": 22.799999952316284,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 58.07116700000188,
+        "totalMs": 3100.898708000008
+      },
+      "path": "actual-browser/pr9041-p002/canvaskit-compat-print-software.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "compat",
+              "source": "url",
+              "requested": "compat"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": "canvaskitResourcePreparationFailed",
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "canvaskitResourcePreparationFailed",
+            "fallbackReason": "canvaskitResourcePreparationFailed",
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "print",
+            "documentDigest": "blake3:d653ca961c6219da8c8e9daa5be37b1f7a29cf606431a9cc34baff796c620dbc",
+            "decisionKey": "blake3:d653ca961c6219da8c8e9daa5be37b1f7a29cf606431a9cc34baff796c620dbc|revision:3|profile:print|resources:3|request:canvaskit|mode:compat",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": "CanvasKit font family가 준비되지 않았습니다: -윤고딕320, #신명조, 한양신명조, HY울릉도M"
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    },
+    {
+      "sampleId": "pr9041-p002",
+      "file": "issue9027/1312000-201400081_2015_senior_policy_course.hwp",
+      "documentDigest": "sha256:93d3c39fec006a1a27deff66c5ce7c71bbc361b040c12583c83395dcf7ad120f",
+      "page": 1,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "-윤고딕320",
+          "#신명조",
+          "한양신명조",
+          "HY울릉도M"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr9041-p002",
+        "documentDigest": "sha256:93d3c39fec006a1a27deff66c5ce7c71bbc361b040c12583c83395dcf7ad120f",
+        "page": 1,
+        "profile": "print",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "3cdd21ade0fc69c40249251686d3f1dab7a7d310260925289d677392318448d4",
+        "sizeBytes": 117290,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1129.0272499999992,
+        "documentLoadAndInitialRenderMs": 220.39999985694885,
+        "selectedPageRenderMs": 79.4016249999986,
+        "warmReplayMs": 23.09999990463257,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 59.320332999996026,
+        "totalMs": 3099.0464169999905
+      },
+      "path": "actual-browser/pr9041-p002/canvaskit-default-print-software.png",
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "url",
+              "requested": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": "canvaskitResourcePreparationFailed",
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "canvaskitResourcePreparationFailed",
+            "fallbackReason": "canvaskitResourcePreparationFailed",
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "print",
+            "documentDigest": "blake3:d653ca961c6219da8c8e9daa5be37b1f7a29cf606431a9cc34baff796c620dbc",
+            "decisionKey": "blake3:d653ca961c6219da8c8e9daa5be37b1f7a29cf606431a9cc34baff796c620dbc|revision:3|profile:print|resources:3|request:canvaskit|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": "CanvasKit font family가 준비되지 않았습니다: -윤고딕320, #신명조, 한양신명조, HY울릉도M"
+          },
+          "canvasOwnershipTracked": true
+        },
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        },
+        "canvaskitRender": null
+      }
+    }
+  ]
+}

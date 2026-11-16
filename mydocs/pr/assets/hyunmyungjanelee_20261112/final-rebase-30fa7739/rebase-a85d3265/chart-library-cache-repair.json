@@ -1,0 +1,40 @@
+{
+  "recorded_at": "2026-11-12T14:33:52.349861+00:00",
+  "previous_focused": {
+    "run": 164,
+    "passed": 160,
+    "failed": 4,
+    "failed_scope": "issue_8678_chart_value_axis_floor 4건만 남음"
+  },
+  "library": [
+    {
+      "file": "/Users/tsjang/rhwp/target/pr-review/release-test/deps/librhwp_ooxml_chart-b0f3c09fa2ff3273.rlib",
+      "sha256": "a6df0cb046f7599623f6b973150645eb5fc85d38cd004f5714e2110f06024c63",
+      "bytes": 984312,
+      "mtime": "2026-11-12T14:10:46.658200+00:00",
+      "contains_base_source_path": true
+    }
+  ],
+  "unchanged_source_bytes": [
+    {
+      "path": "src/lib.rs",
+      "sha256_before_and_after": "02049d37656973486cfee45609728847ef415c9836bac1afdf29d6e4c222d737",
+      "old_mtime_ns": 1794493215468055000,
+      "new_mtime_ns": 1794494032328900000
+    },
+    {
+      "path": "crates/rhwp-ooxml-chart/src/renderer.rs",
+      "sha256_before_and_after": "8639e36115168a85771ae87ca0b3c8d70261761cdff303f1efe6e05c84090316",
+      "old_mtime_ns": 1794492340975293080,
+      "new_mtime_ns": 1794494032339971000
+    },
+    {
+      "path": "crates/rhwp-ooxml-chart/src/renderer/cartesian_layout.rs",
+      "sha256_before_and_after": "d88c4fbb9b84a49f6fd1ad5be167becc0de3417c00bedb9c6ecbde59616c8cff",
+      "old_mtime_ns": 1794492340975599954,
+      "new_mtime_ns": 1794494032348315000
+    }
+  ],
+  "action": "root library 보정 후 다른 30개 실패는 사라졌고, 기존 base가 덮어쓴 rhwp-ooxml-chart library의 4개 차트 검사만 남았다. 현재 chart source 두 파일과 root lib의 내용은 바꾸지 않고 mtime을 갱신해 정확한 후보의 전체 의존성을 다시 컴파일한다.",
+  "not_done": "target 삭제, 제품 수정, 기대값 변경, base23 재실행, 전쪽 재캡처 없음"
+}

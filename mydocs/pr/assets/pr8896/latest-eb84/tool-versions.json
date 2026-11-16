@@ -1,0 +1,20 @@
+{
+  "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)",
+  "cargo": "cargo 1.93.1 (083ac5135 2025-12-15)",
+  "nextest": "cargo-nextest 0.9.137 (75ddba7e9 2026-05-26)\nrelease: 0.9.137\ncommit-hash: 75ddba7e911b44c5c0700dac0415d824403de9bd\ncommit-date: 2026-05-26\nhost: x86_64-unknown-linux-gnu",
+  "wasm-pack": "wasm-pack 0.15.0",
+  "wasm-opt": "wasm-opt version 117 (version_117)",
+  "node": "v24.15.0",
+  "python": "Python 3.12.3",
+  "python_packages": {
+    "pypdfium2": "5.13.0",
+    "Pillow": "10.2.0",
+    "fonttools": "4.62.1",
+    "brotli": "1.2.0"
+  },
+  "recorded_at": "2026-11-12T08:57:40.292795+09:00",
+  "chromium_revision": "1660786",
+  "wasm_opt_cache_paths": [
+    "/home/edward/.cache/.wasm-pack/wasm-opt-1ceaaea8b7b5f7e0/bin/wasm-opt"
+  ]
+}

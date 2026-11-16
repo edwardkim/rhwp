@@ -1,0 +1,13 @@
+{
+  "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+  "code_sha256": "e81787687c016bcbbf6e8a6cc36e4d117a9ac97c1de7c5e0e9fd8b01775e3b3d",
+  "binary_sha256": "5d91816e705756a0c7d98cc7ab6d536eac1e3aba7a91a22e7b0921014b93b30e",
+  "native_build": {
+    "name": "native-build",
+    "exit_code": 0,
+    "seconds": 170.093,
+    "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/logs/note-oracle-final-native-build.log",
+    "log_sha256": "debfbad56c973fea4ff33169baa62021a4c16ad173667ab7f47f1419a0426a44"
+  },
+  "normal_installed_fonts": true
+}

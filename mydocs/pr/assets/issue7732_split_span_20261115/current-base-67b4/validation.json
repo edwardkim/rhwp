@@ -1,0 +1,1029 @@
+{
+  "status": "passed",
+  "records": [
+    {
+      "backend": "native",
+      "key": "footnote",
+      "pages": 50,
+      "base": "67b4ff8d3a55e5bb50c46a44315de749a4ef07a7",
+      "base_execution_exit": 0,
+      "base_minimum": 98.75,
+      "candidate_minimum": 99.29,
+      "base_tsv": "mydocs/pr/assets/issue7732_split_span_20261115/current-base-67b4/native/footnote.tsv",
+      "base_tsv_sha256": "70f6405ea40054ad3c445a5983794311be59733ff48485a946761d6b5959839f",
+      "candidate_tsv": "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/svg-print-final/post-rebase-4e0b20d2/margin-controls/target-footnote/native-png/footnote/silhouette.tsv",
+      "candidate_tsv_sha256": "b0f4569fc81ed7cf7c4d8bf85328442400e24050d6c8cc534befe054bba66411",
+      "over2pp_declines": [],
+      "changes": [
+        {
+          "page": 1,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 2,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 3,
+          "base": "99.98",
+          "candidate": "100.00",
+          "delta_pp": "0.02"
+        },
+        {
+          "page": 4,
+          "base": "99.99",
+          "candidate": "99.99",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 5,
+          "base": "99.99",
+          "candidate": "99.99",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 6,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 7,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 8,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 9,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 10,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 11,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 12,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 13,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 14,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 15,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 16,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 17,
+          "base": "99.99",
+          "candidate": "99.99",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 18,
+          "base": "99.96",
+          "candidate": "99.96",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 19,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 20,
+          "base": "99.89",
+          "candidate": "99.97",
+          "delta_pp": "0.08"
+        },
+        {
+          "page": 21,
+          "base": "99.60",
+          "candidate": "99.95",
+          "delta_pp": "0.35"
+        },
+        {
+          "page": 22,
+          "base": "99.90",
+          "candidate": "99.99",
+          "delta_pp": "0.09"
+        },
+        {
+          "page": 23,
+          "base": "99.95",
+          "candidate": "100.00",
+          "delta_pp": "0.05"
+        },
+        {
+          "page": 24,
+          "base": "99.93",
+          "candidate": "99.99",
+          "delta_pp": "0.06"
+        },
+        {
+          "page": 25,
+          "base": "99.99",
+          "candidate": "99.99",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 26,
+          "base": "99.97",
+          "candidate": "99.97",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 27,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 28,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 29,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 30,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 31,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 32,
+          "base": "99.99",
+          "candidate": "99.99",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 33,
+          "base": "99.96",
+          "candidate": "99.96",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 34,
+          "base": "99.96",
+          "candidate": "99.96",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 35,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 36,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 37,
+          "base": "98.75",
+          "candidate": "99.29",
+          "delta_pp": "0.54"
+        },
+        {
+          "page": 38,
+          "base": "99.84",
+          "candidate": "99.84",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 39,
+          "base": "99.92",
+          "candidate": "99.92",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 40,
+          "base": "99.98",
+          "candidate": "99.98",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 41,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 42,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 43,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 44,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 45,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 46,
+          "base": "99.72",
+          "candidate": "100.00",
+          "delta_pp": "0.28"
+        },
+        {
+          "page": 47,
+          "base": "99.23",
+          "candidate": "100.00",
+          "delta_pp": "0.77"
+        },
+        {
+          "page": 48,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 49,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 50,
+          "base": "99.99",
+          "candidate": "99.99",
+          "delta_pp": "0.00"
+        }
+      ],
+      "seconds": 37.15497374534607,
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--rasterizer",
+        "png",
+        "--silhouette-only",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/svg-print-final/post-rebase-4e0b20d2/rhwp-base",
+        "--hwp",
+        "/Users/tsjang/rhwp/mydocs/pr/assets/issue7445/issue1937_rowbreak_footnote_overpagination.hwp",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf",
+        "--key",
+        "footnote",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--embed-fonts",
+        "full",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/wasm-protected-fonts",
+        "--page-workers",
+        "8",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/svg-print-final/post-rebase-4e0b20d2/margin-controls/current-base-whole/native/footnote"
+      ]
+    },
+    {
+      "backend": "native",
+      "key": "nested",
+      "pages": 17,
+      "base": "67b4ff8d3a55e5bb50c46a44315de749a4ef07a7",
+      "base_execution_exit": 0,
+      "base_minimum": 98.67,
+      "candidate_minimum": 99.86,
+      "base_tsv": "mydocs/pr/assets/issue7732_split_span_20261115/current-base-67b4/native/nested.tsv",
+      "base_tsv_sha256": "0308b62c1bd4c550a0c6c03448edc377577c5534c0400a4162241172301e0409",
+      "candidate_tsv": "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/svg-print-final/post-rebase-4e0b20d2/margin-controls/protected/native/nested/silhouette.tsv",
+      "candidate_tsv_sha256": "4144f4d00c98c54b8c35b26309c00c86caedeee413aa78059bef0bc231ae1fcc",
+      "over2pp_declines": [],
+      "changes": [
+        {
+          "page": 1,
+          "base": "98.67",
+          "candidate": "100.00",
+          "delta_pp": "1.33"
+        },
+        {
+          "page": 2,
+          "base": "99.99",
+          "candidate": "99.99",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 3,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 4,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 5,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 6,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 7,
+          "base": "99.99",
+          "candidate": "99.99",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 8,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 9,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 10,
+          "base": "99.43",
+          "candidate": "99.86",
+          "delta_pp": "0.43"
+        },
+        {
+          "page": 11,
+          "base": "99.62",
+          "candidate": "100.00",
+          "delta_pp": "0.38"
+        },
+        {
+          "page": 12,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 13,
+          "base": "99.95",
+          "candidate": "100.00",
+          "delta_pp": "0.05"
+        },
+        {
+          "page": 14,
+          "base": "99.36",
+          "candidate": "100.00",
+          "delta_pp": "0.64"
+        },
+        {
+          "page": 15,
+          "base": "99.62",
+          "candidate": "100.00",
+          "delta_pp": "0.38"
+        },
+        {
+          "page": 16,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 17,
+          "base": "99.98",
+          "candidate": "99.98",
+          "delta_pp": "0.00"
+        }
+      ],
+      "seconds": 24.195596933364868,
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--rasterizer",
+        "png",
+        "--embed-fonts",
+        "full",
+        "--silhouette-only",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/svg-print-final/post-rebase-4e0b20d2/rhwp-base",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+        "--key",
+        "nested",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--page-workers",
+        "8",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/svg-print-final/post-rebase-4e0b20d2/margin-controls/current-base-whole/native/nested",
+        "--font-environment",
+        "/Users/tsjang/rhwp/mydocs/pr/assets/jinho-von-choi-20261114/font-supply/nested-symbol-slot-environment.json",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/svg-print-final/post-rebase-4e0b20d2/independent-symbols-v2/RHWPIndependentHFTSymbols.otf",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/wasm-protected-fonts"
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "footnote",
+      "pages": 50,
+      "base": "67b4ff8d3a55e5bb50c46a44315de749a4ef07a7",
+      "base_execution_exit": 0,
+      "base_minimum": 98.75,
+      "candidate_minimum": 99.29,
+      "base_tsv": "mydocs/pr/assets/issue7732_split_span_20261115/current-base-67b4/wasm/footnote.tsv",
+      "base_tsv_sha256": "28a01ce47f7cfcdacc58cb2add8528f178350db09c444f47570119f9c68c3997",
+      "candidate_tsv": "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/svg-print-final/post-rebase-4e0b20d2/margin-controls/target-footnote/wasm-png/footnote/silhouette.tsv",
+      "candidate_tsv_sha256": "fc354d107646cf192b0c9faea41a2a6b5a13f9cc07d0c8b5561a905d85ed8866",
+      "over2pp_declines": [],
+      "changes": [
+        {
+          "page": 1,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 2,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 3,
+          "base": "99.98",
+          "candidate": "99.99",
+          "delta_pp": "0.01"
+        },
+        {
+          "page": 4,
+          "base": "99.98",
+          "candidate": "99.99",
+          "delta_pp": "0.01"
+        },
+        {
+          "page": 5,
+          "base": "99.99",
+          "candidate": "99.99",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 6,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 7,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 8,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 9,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 10,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 11,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 12,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 13,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 14,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 15,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 16,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 17,
+          "base": "99.99",
+          "candidate": "99.99",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 18,
+          "base": "99.97",
+          "candidate": "99.97",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 19,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 20,
+          "base": "99.88",
+          "candidate": "99.97",
+          "delta_pp": "0.09"
+        },
+        {
+          "page": 21,
+          "base": "99.55",
+          "candidate": "99.91",
+          "delta_pp": "0.36"
+        },
+        {
+          "page": 22,
+          "base": "99.90",
+          "candidate": "99.98",
+          "delta_pp": "0.08"
+        },
+        {
+          "page": 23,
+          "base": "99.94",
+          "candidate": "99.99",
+          "delta_pp": "0.05"
+        },
+        {
+          "page": 24,
+          "base": "99.93",
+          "candidate": "99.98",
+          "delta_pp": "0.05"
+        },
+        {
+          "page": 25,
+          "base": "99.99",
+          "candidate": "99.99",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 26,
+          "base": "99.97",
+          "candidate": "99.97",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 27,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 28,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 29,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 30,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 31,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 32,
+          "base": "99.99",
+          "candidate": "99.99",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 33,
+          "base": "99.95",
+          "candidate": "99.95",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 34,
+          "base": "99.96",
+          "candidate": "99.96",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 35,
+          "base": "99.99",
+          "candidate": "99.99",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 36,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 37,
+          "base": "98.75",
+          "candidate": "99.29",
+          "delta_pp": "0.54"
+        },
+        {
+          "page": 38,
+          "base": "99.84",
+          "candidate": "99.84",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 39,
+          "base": "99.92",
+          "candidate": "99.92",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 40,
+          "base": "99.98",
+          "candidate": "99.98",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 41,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 42,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 43,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 44,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 45,
+          "base": "99.99",
+          "candidate": "99.99",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 46,
+          "base": "99.73",
+          "candidate": "100.00",
+          "delta_pp": "0.27"
+        },
+        {
+          "page": 47,
+          "base": "99.23",
+          "candidate": "100.00",
+          "delta_pp": "0.77"
+        },
+        {
+          "page": 48,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 49,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 50,
+          "base": "99.99",
+          "candidate": "99.99",
+          "delta_pp": "0.00"
+        }
+      ],
+      "seconds": 67.34461784362793,
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--rasterizer",
+        "png",
+        "--silhouette-only",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/svg-print-final/post-rebase-4e0b20d2/rhwp-base",
+        "--hwp",
+        "/Users/tsjang/rhwp/mydocs/pr/assets/issue7445/issue1937_rowbreak_footnote_overpagination.hwp",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf",
+        "--key",
+        "footnote",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--embed-fonts",
+        "full",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/wasm-protected-fonts",
+        "--page-workers",
+        "8",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/svg-print-final/post-rebase-4e0b20d2/margin-controls/current-base-whole/wasm/footnote",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/svg-print-final/post-rebase-4e0b20d2/margin-controls/current-base-whole/pkg"
+      ]
+    },
+    {
+      "backend": "wasm",
+      "key": "nested",
+      "pages": 17,
+      "base": "67b4ff8d3a55e5bb50c46a44315de749a4ef07a7",
+      "base_execution_exit": 0,
+      "base_minimum": 98.65,
+      "candidate_minimum": 99.86,
+      "base_tsv": "mydocs/pr/assets/issue7732_split_span_20261115/current-base-67b4/wasm/nested.tsv",
+      "base_tsv_sha256": "4a8f523359f5c25e455b10121c48eb5de3d1222644cb2308d4ccaf6c179f21d4",
+      "candidate_tsv": "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/svg-print-final/post-rebase-4e0b20d2/margin-controls/protected/wasm/nested/silhouette.tsv",
+      "candidate_tsv_sha256": "4144f4d00c98c54b8c35b26309c00c86caedeee413aa78059bef0bc231ae1fcc",
+      "over2pp_declines": [],
+      "changes": [
+        {
+          "page": 1,
+          "base": "98.65",
+          "candidate": "100.00",
+          "delta_pp": "1.35"
+        },
+        {
+          "page": 2,
+          "base": "99.99",
+          "candidate": "99.99",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 3,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 4,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 5,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 6,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 7,
+          "base": "99.99",
+          "candidate": "99.99",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 8,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 9,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 10,
+          "base": "99.44",
+          "candidate": "99.86",
+          "delta_pp": "0.42"
+        },
+        {
+          "page": 11,
+          "base": "99.63",
+          "candidate": "100.00",
+          "delta_pp": "0.37"
+        },
+        {
+          "page": 12,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 13,
+          "base": "99.96",
+          "candidate": "100.00",
+          "delta_pp": "0.04"
+        },
+        {
+          "page": 14,
+          "base": "99.37",
+          "candidate": "100.00",
+          "delta_pp": "0.63"
+        },
+        {
+          "page": 15,
+          "base": "99.62",
+          "candidate": "100.00",
+          "delta_pp": "0.38"
+        },
+        {
+          "page": 16,
+          "base": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 17,
+          "base": "99.98",
+          "candidate": "99.98",
+          "delta_pp": "0.00"
+        }
+      ],
+      "seconds": 79.61248779296875,
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--rasterizer",
+        "png",
+        "--embed-fonts",
+        "full",
+        "--silhouette-only",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/svg-print-final/post-rebase-4e0b20d2/rhwp-base",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+        "--key",
+        "nested",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--page-workers",
+        "8",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/svg-print-final/post-rebase-4e0b20d2/margin-controls/current-base-whole/wasm/nested",
+        "--font-environment",
+        "/Users/tsjang/rhwp/mydocs/pr/assets/jinho-von-choi-20261114/font-supply/nested-symbol-slot-environment.json",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/svg-print-final/post-rebase-4e0b20d2/independent-symbols-v2/RHWPIndependentHFTSymbols.otf",
+        "--font-path",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/wasm-protected-fonts",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/svg-print-final/post-rebase-4e0b20d2/margin-controls/current-base-whole/pkg"
+      ]
+    }
+  ],
+  "producer": {
+    "status": "passed",
+    "exit": 0,
+    "source": "67b4ff8d3a55e5bb50c46a44315de749a4ef07a7",
+    "seconds": 356.0209038257599,
+    "command": [
+      "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/svg-print-final/post-rebase-4e0b20d2/base-source/scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/svg-print-final/post-rebase-4e0b20d2/margin-controls/current-base-whole/pkg",
+      "--no-opt"
+    ],
+    "hashes": {
+      "rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "rhwp_bg.wasm": "976ff2e73f46c4dff9bb2cfd0a5b7c748158cdcf3f07075e321f76f2f8b1cb6f"
+    },
+    "native": {
+      "source": "4e0b20d2922953ee7ab9a1716ac819b921fe484b",
+      "sha256": "476de2e99babe0ab9e62fab9d51cd0ed73c30a012e697ddabe4d8bddca047cb4",
+      "platform": "macOS native-skia",
+      "source_snapshot_audit": "base-source-audit.json",
+      "build_log": "base-native-build-fresh.log",
+      "cache_guard": "snapshot entrypoints refreshed before explicit --manifest-path build; candidate hash differs"
+    },
+    "reuse_equivalence": {
+      "snapshot_base": "4e0b20d2922953ee7ab9a1716ac819b921fe484b",
+      "review_base": "67b4ff8d3a55e5bb50c46a44315de749a4ef07a7",
+      "rust_build_inputs_identical": true
+    }
+  },
+  "rule": "최신 고정 devel 대비 같은 입력/PDF·글꼴·조건으로 Native/fresh WASM 원본 전50+17쪽 대조. 2%p 초과 하락0. 후보의 별도 정본3542행 하락 금지도 유지한다."
+}

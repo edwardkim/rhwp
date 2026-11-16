@@ -1,0 +1,32 @@
+[
+  {
+    "url": "http://127.0.0.1:8911/theme-init.js",
+    "relative_path": "theme-init.js",
+    "sha256": "5a3afcc0139187bfe509414cd60fde2a0dfea72fd72751c4e6e696cdc0f6c587"
+  },
+  {
+    "url": "http://127.0.0.1:8911/locale-init.js",
+    "relative_path": "locale-init.js",
+    "sha256": "633d47a6a53b2211cf816769f8c084b097c1b60b6ab263803d8610c0531539fa"
+  },
+  {
+    "url": "http://127.0.0.1:8911/assets/index-Cu-V2T0h.js",
+    "relative_path": "assets/index-Cu-V2T0h.js",
+    "sha256": "6ade5dfedaeeb99204910626255eba8088d890bd86c774e61c3822537ffe9fb5"
+  },
+  {
+    "url": "http://127.0.0.1:8911/registerSW.js",
+    "relative_path": "registerSW.js",
+    "sha256": "9742073ef7fc795e7673d98f272992843298426a0ffd8cb3507784df5143608b"
+  },
+  {
+    "url": "http://127.0.0.1:8911/assets/rhwp_bg-CcW3PAGB.wasm",
+    "relative_path": "assets/rhwp_bg-CcW3PAGB.wasm",
+    "sha256": "3e68c4f112705fe03ddab642a658db8ecb943a837971203fea0813e7d66c08df"
+  },
+  {
+    "url": "http://127.0.0.1:8911/assets/plugin-DG9vP6q2.js",
+    "relative_path": "assets/plugin-DG9vP6q2.js",
+    "sha256": "56aa3615e4c2889684b6e248e81bcccf9e52530bce2f94a8e033b62cceb9aad3"
+  }
+]

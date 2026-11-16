@@ -348,6 +348,74 @@ class LabelFontTests(unittest.TestCase):
             ):
                 self.assertEqual(SWEEP.configured_label_font_paths(), [font_path])
 
+    @staticmethod
+    def write_label_fixture(path: Path, text: str) -> None:
+        """시스템 글꼴 설치 없이 실제 cmap과 FreeType 로딩을 검사하는 합성 글꼴."""
+        from fontTools.fontBuilder import FontBuilder
+        from fontTools.pens.ttGlyphPen import TTGlyphPen
+
+        cmap = {ord(char): f"u{ord(char):04X}" for char in text}
+        order = [".notdef", *dict.fromkeys(cmap.values())]
+        builder = FontBuilder(1000, isTTF=True)
+        builder.setupGlyphOrder(order)
+        builder.setupCharacterMap(cmap)
+        glyphs = {}
+        for name in order:
+            pen = TTGlyphPen(None)
+            pen.moveTo((100, 0))
+            pen.lineTo((500, 0))
+            pen.lineTo((500, 700))
+            pen.lineTo((100, 700))
+            pen.closePath()
+            glyphs[name] = pen.glyph()
+        builder.setupGlyf(glyphs)
+        builder.setupHorizontalMetrics({name: (600, 0) for name in order})
+        builder.setupHorizontalHeader(ascent=800, descent=-200)
+        builder.setupNameTable({"familyName": "SweepLabelContract", "styleName": "Regular"})
+        builder.setupOS2(sTypoAscender=800, sTypoDescender=-200, usWinAscent=800, usWinDescent=200)
+        builder.setupPost()
+        builder.setupMaxp()
+        builder.save(path)
+
+    def test_label_font_skips_loadable_font_without_korean_legend_glyphs(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            latin = Path(temp_dir) / "latin.ttf"
+            korean = Path(temp_dir) / "korean.ttf"
+            ascii_text = "".join(chr(code) for code in range(32, 127))
+            self.write_label_fixture(latin, ascii_text)
+            self.write_label_fixture(
+                korean,
+                ascii_text + "색상파랑만빨강주황양쪽차이회색일치코멘트판정값실루엣이웃확인불가·",
+            )
+            with patch.object(SWEEP, "configured_label_font_paths", return_value=[latin, korean]):
+                font = SWEEP.label_font()
+            self.assertEqual(Path(font.path), korean, "로드 성공만으로 한글 라벨을 표시할 수는 없다")
+            # Windows FreeType은 로드한 파일을 잡고 있으므로 임시 디렉터리 삭제 전에 놓는다.
+            SWEEP.label_font.cache_clear()
+            del font
+
+    def test_label_font_falls_back_to_bundled_korean_after_latin_only_candidates(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            latin = Path(temp_dir) / "latin.ttf"
+            self.write_label_fixture(latin, "".join(chr(code) for code in range(32, 127)))
+            with patch.object(SWEEP, "configured_label_font_paths", return_value=[latin]):
+                font = SWEEP.label_font()
+            self.assertEqual(
+                Path(font.path),
+                MODULE_PATH.parents[1] / "ttfs/opensource/NotoSansKR-Regular.ttf",
+                "기본 라벨 글꼴에 한글이 없으면 저장소의 공개 글꼴을 사용한다",
+            )
+
+    def test_label_font_reports_missing_korean_instead_of_silent_default(self) -> None:
+        with (
+            patch.object(SWEEP, "configured_label_font_paths", return_value=[]),
+            patch.object(SWEEP, "label_font_has_required_glyphs", return_value=False),
+            patch.object(SWEEP.ImageFont, "load_default") as load_default,
+        ):
+            with self.assertRaisesRegex(RuntimeError, "한글 라벨"):
+                SWEEP.label_font()
+            load_default.assert_not_called()
+
     def test_label_font_loads_truetype_before_default_font(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             font_path = Path(temp_dir) / "NanumGothic.ttf"
@@ -355,6 +423,7 @@ class LabelFontTests(unittest.TestCase):
             sentinel = object()
             with (
                 patch.object(SWEEP, "configured_label_font_paths", return_value=[font_path]),
+                patch.object(SWEEP, "label_font_has_required_glyphs", return_value=True),
                 patch.object(SWEEP.ImageFont, "truetype", return_value=sentinel) as truetype,
                 patch.object(SWEEP.ImageFont, "load_default") as load_default,
             ):

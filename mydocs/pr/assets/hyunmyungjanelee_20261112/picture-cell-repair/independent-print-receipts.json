@@ -1,0 +1,136 @@
+{
+  "created_at": "2026-11-12T05:03:08.870254+00:00",
+  "public_template": "samples/issue8576/cell-square-six-pictures-35x25.hwpx",
+  "public_template_sha256": "f84ca77970e603bf0c2ca3ae412ccf8a89073ded9fbf698c0fb4f92bb1d389be",
+  "private_original_documents_available": false,
+  "synthetic_reproductions_are_not_the_three_private_originals": true,
+  "generator_sha256": "51eec0c09184f99d15fcdc4395f36c9cac64c277aafc789e306c1d929ce3d310",
+  "cases": [
+    {
+      "key": "short-empty",
+      "input": "samples/issue8573/picture-cell-short-empty.hwpx",
+      "input_sha256": "21aeec31c8548de437bd2a1bbcd743c9b859fd1ed21ad6c1c25d7e2f8e014ea2",
+      "reference_pdf": "pdf/issue8573/picture-cell-short-empty-2020.pdf",
+      "reference_pdf_sha256": "bf14ce006933ee6bb2e87330644a956d3445a37d5fee4c1f23b8b314a917ea25",
+      "mcp_job_id": "95713a58-8c12-479c-a142-f09e0f5a78a4",
+      "print": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "pdf_page_count": 1,
+        "preprocess": null
+      },
+      "host": "",
+      "rows": 4,
+      "picture_height_hu": 3000,
+      "stored_line_segments": 0,
+      "independently_counted_pdf_pages": 1
+    },
+    {
+      "key": "short-spaces",
+      "input": "samples/issue8573/picture-cell-short-spaces.hwpx",
+      "input_sha256": "3a87ba2d6204b94bfab9eed8cd603b1f2bf90b7ee523bcae6f08e2d38afda416",
+      "reference_pdf": "pdf/issue8573/picture-cell-short-spaces-2020.pdf",
+      "reference_pdf_sha256": "d04ad1cc28703809f5a27b86ebab6207c75a928291ea5ece72ce847fd65dee5f",
+      "mcp_job_id": "7f415cba-55ca-4640-ad6a-c10c9c803f61",
+      "print": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "pdf_page_count": 1,
+        "preprocess": null
+      },
+      "host": "       ",
+      "rows": 4,
+      "picture_height_hu": 3000,
+      "stored_line_segments": 0,
+      "independently_counted_pdf_pages": 1
+    },
+    {
+      "key": "short-text",
+      "input": "samples/issue8573/picture-cell-short-text.hwpx",
+      "input_sha256": "7a4512007260e4e9deba07ebc4b7a11f7ff68e9f83abc3a988be53c6771bdcb7",
+      "reference_pdf": "pdf/issue8573/picture-cell-short-text-2020.pdf",
+      "reference_pdf_sha256": "0ef515fd01ff10410e0051cd2e9209d6d72224840213fb25b0a4ed07dba22db1",
+      "mcp_job_id": "6ac7e2be-f4e9-4cd3-80b3-bea12f59c253",
+      "print": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "pdf_page_count": 1,
+        "preprocess": null
+      },
+      "host": "X",
+      "rows": 4,
+      "picture_height_hu": 3000,
+      "stored_line_segments": 0,
+      "independently_counted_pdf_pages": 1
+    },
+    {
+      "key": "page-boundary-empty",
+      "input": "samples/issue8573/picture-cell-page-boundary-empty.hwpx",
+      "input_sha256": "f4358c4534c1a37798a77b1fd9ac0b0610481d545e89fdc6d4db5448f63af39d",
+      "reference_pdf": "pdf/issue8573/picture-cell-page-boundary-empty-2020.pdf",
+      "reference_pdf_sha256": "888c7a664fbbb82965f02cc1ae08e3967f5a46580d50b336e9150e6b2f1874f1",
+      "mcp_job_id": "bb311811-28c9-40a8-a72e-f1f00a206022",
+      "print": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "pdf_page_count": 2,
+        "preprocess": null
+      },
+      "host": "",
+      "rows": 20,
+      "picture_height_hu": 3000,
+      "stored_line_segments": 0,
+      "independently_counted_pdf_pages": 2
+    },
+    {
+      "key": "page-boundary-spaces",
+      "input": "samples/issue8573/picture-cell-page-boundary-spaces.hwpx",
+      "input_sha256": "8c40182058ba97216dcb2678c39eee96ef48cf140362447f9e465b5b11df1850",
+      "reference_pdf": "pdf/issue8573/picture-cell-page-boundary-spaces-2020.pdf",
+      "reference_pdf_sha256": "fd0a7d623c0708a567806109da697dc2e51800e732215f074376a53154086d9c",
+      "mcp_job_id": "7b823d6d-8c63-4a83-8531-c97d85dcf000",
+      "print": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "pdf_page_count": 2,
+        "preprocess": null
+      },
+      "host": "       ",
+      "rows": 20,
+      "picture_height_hu": 3000,
+      "stored_line_segments": 0,
+      "independently_counted_pdf_pages": 2
+    },
+    {
+      "key": "page-boundary-text",
+      "input": "samples/issue8573/picture-cell-page-boundary-text.hwpx",
+      "input_sha256": "cafac0e88d702a1107e85c4dc35e171cdf06be8e40edf25315df94ace6ddb0cb",
+      "reference_pdf": "pdf/issue8573/picture-cell-page-boundary-text-2020.pdf",
+      "reference_pdf_sha256": "e00b64ee06e38da4858be8b101784e3422c40ba26e91ee928e82eff42fe02adc",
+      "mcp_job_id": "f8eed52d-537c-40bf-bc31-c6c28d49baa0",
+      "print": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "pdf_page_count": 2,
+        "preprocess": null
+      },
+      "host": "X",
+      "rows": 20,
+      "picture_height_hu": 3000,
+      "stored_line_segments": 0,
+      "independently_counted_pdf_pages": 2
+    }
+  ]
+}

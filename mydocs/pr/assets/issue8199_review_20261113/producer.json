@@ -1,0 +1,40 @@
+{
+  "source_pr": 9018,
+  "source_head": "be67439b02f42779b50361ace7b8a47dd0d1439a",
+  "base": "fa32a1633b0677f3dc48ea5cc99a4cab309361b6",
+  "review_head": "cc6c60381dfeff9b7892e836b8bf01803d0a5c1a",
+  "rust_producer_head": "cc6c60381dfeff9b7892e836b8bf01803d0a5c1a",
+  "native_sha256": "7913c88c21b9948bd849f2943cd21c1e7e2fb34aa277eb4d14f9776fe31da804",
+  "base_native_sha256": "86e3bca885a698a8d1be33b4b0eface1830f0d7b2be9e33da4a5ca4b08a76b16",
+  "wasm_sha256": "f0153ed0410ba4acb2fb50a3cf030214457d500c66d722db6648381168c7d57d",
+  "base_wasm_sha256": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56",
+  "wasm_build": "Mac locked wrapper --target web --out-dir pkg --no-opt; local substitute, not Docker optimized",
+  "visual_tool_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+  "python_tests_mac": {
+    "passed": 89,
+    "failed": 0
+  },
+  "label_tests_windows": {
+    "passed": 9,
+    "failed": 0,
+    "shell": "SSH -> Windows PowerShell 5.1 -> venv Python 3.12",
+    "root_source_head": "4aa8f5fc2b550145a724155cdb7cdd0b0a2576f3",
+    "validation_copy": "isolated ignored output; remote source checkout unchanged"
+  },
+  "label_negative_control": {
+    "before_tests_failed": 2,
+    "latin_font_missing_korean_before": 30,
+    "missing_after": 0,
+    "raw_metric_changed": false
+  },
+  "python_tests_windows": {
+    "passed": 89,
+    "failed": 0
+  },
+  "base_capture_head": "6217d3cbedc9aba707812e5d4e5ea2a1ed53845a",
+  "base_reuse_qualification": "rebase-scope.json and protected-reuse-audit.json; incoming paths inactive for passport inputs, own changes affect edit commands only",
+  "page_captures": "Fresh at code head cc6c60381d, normal font environment",
+  "prior_generated_file_identical": true,
+  "prior_capture_at_kst": "2026-11-13T19:10:40.290823+09:00",
+  "collected_at_kst": "2026-11-13T20:22:07.182874+09:00"
+}

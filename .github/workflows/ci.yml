@@ -95,6 +95,7 @@ jobs:
       # codeql.yml이 같은 trusted-base 판정으로 소비한다. 모든 기본값은 full lane이다.
       rust_required: ${{ steps.impact.outputs.rust_required || 'true' }}
       frontend_mode: ${{ steps.impact.outputs.frontend_mode || 'package' }}
+      frontend_canvas_required: ${{ steps.impact.outputs.frontend_canvas_required || 'true' }}
       render_required: ${{ steps.impact.outputs.render_required || 'true' }}
       native_skia_required: ${{ steps.impact.outputs.native_skia_required || 'true' }}
       codeql_languages: ${{ steps.impact.outputs.codeql_languages || 'javascript-typescript,python,rust,actions' }}
@@ -265,6 +266,7 @@ jobs:
               return filename.startsWith('.github/workflows/')
                 || filename.startsWith('.github/actions/')
                 || filename === 'scripts/ci-impact-classifier.cjs'
+                || filename === 'scripts/frontend-canvas-gates.mjs'
                 || filename === 'scripts/ci-impact-policy.cjs'
                 || filename === 'scripts/verify_review_only_merge_resolution.py';
             }
@@ -302,7 +304,7 @@ jobs:
                   const fields = new Map(entries);
                   if (entries.length !== fields.size || entries.some(([key, value]) => !key || !value)) return false;
                   const expectedFields = [
-                    'v', 'cv', 'mode', 'rfp', 'wf', 'rust', 'fe', 'render', 'skia', 'ql', 'b',
+                    'v', 'cv', 'mode', 'rfp', 'wf', 'rust', 'fe', 'fc', 'render', 'skia', 'ql', 'b',
                   ];
                   const target = String(latest.target_url || '').match(/\/actions\/runs\/(\d+)$/);
                   if (
@@ -310,7 +312,7 @@ jobs:
                     && latest.creator?.login === 'github-actions[bot]'
                     && fields.size === expectedFields.length
                     && expectedFields.every((field) => fields.has(field))
-                    && fields.get('v') === '8'
+                    && fields.get('v') === '9'
                     && fields.get('rfp') === '1'
                     && fields.get('b') === pr.base.sha
                     && target
@@ -821,6 +823,7 @@ jobs:
           IMPACT_AUTHORITY: ${{ steps.collect-impact.outputs.authority || 'unavailable' }}
           RUST_REQUIRED: ${{ steps.impact.outputs.rust_required || 'true' }}
           FRONTEND_MODE: ${{ steps.impact.outputs.frontend_mode || 'package' }}
+          FRONTEND_CANVAS_REQUIRED: ${{ steps.impact.outputs.frontend_canvas_required || 'true' }}
           RENDER_REQUIRED: ${{ steps.impact.outputs.render_required || 'true' }}
           NATIVE_SKIA_REQUIRED: ${{ steps.impact.outputs.native_skia_required || 'true' }}
           CODEQL_LANGUAGES: ${{ steps.impact.outputs.codeql_languages || 'javascript-typescript,python,rust,actions' }}
@@ -840,6 +843,7 @@ jobs:
             printf '| authority | %s |\n' "${IMPACT_AUTHORITY}"
             printf '| rust_required | %s |\n' "${RUST_REQUIRED}"
             printf '| frontend_mode | %s |\n' "${FRONTEND_MODE}"
+            printf '| frontend_canvas_required | %s |\n' "${FRONTEND_CANVAS_REQUIRED}"
             printf '| render_required | %s |\n' "${RENDER_REQUIRED}"
             printf '| native_skia_required | %s |\n' "${NATIVE_SKIA_REQUIRED}"
             printf '| codeql_languages | %s |\n' "${CODEQL_LANGUAGES}"
@@ -1590,7 +1594,14 @@ jobs:
             ${{ runner.os }}-frontend-wasm-cargo-
 
       - name: Build fresh WASM package for frontend gates
+        if: ${{ needs.preflight.outputs.frontend_canvas_required != 'true' }}
         run: wasm-pack build --target web --dev
+
+      # #9097: Canvas 검증과 나머지 frontend gate가 같은 최적화 WASM을 소비한다.
+      # Native PDF가 필요한 입력은 별도의 기존 Render Diff도 계속 실행한다.
+      - name: Build optimized WASM for frontend Canvas gates
+        if: ${{ needs.preflight.outputs.frontend_canvas_required == 'true' }}
+        run: python3 scripts/measure_render_diff_wasm.py --profile release --build-mode standard --output output/frontend-canvas-build
 
       - name: Set up Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -1616,6 +1627,7 @@ jobs:
         # 같은 fresh WASM을 재사용하며 별도 빌드나 job을 만들지 않는다.
         run: |
           node --test scripts/frontend-wasm-bindings.test.mjs scripts/frontend-editor-embed.test.mjs
+          node --test scripts/tests/frontend-canvas-gates.test.mjs
           node --test scripts/tests/font_decision_trace_contract.test.mjs scripts/tests/font_decision_trace_e2e.test.mjs
 
       - name: Verify build dependency compatibility
@@ -1659,6 +1671,35 @@ jobs:
 
       - name: Validate Visual Sweep Canvas font binding
         run: VISUAL_SWEEP_CHROME="$CHROME_PATH" node --test scripts/tests/visual-sweep-canvas-fonts.browser.mjs
+
+      - name: Install frontend Canvas Chromium
+        id: frontend-canvas-chromium
+        if: ${{ needs.preflight.outputs.frontend_canvas_required == 'true' }}
+        working-directory: rhwp-studio
+        run: |
+          browser_path=$(npx @puppeteer/browsers install chromium@1660786 --path .cache/puppeteer --format '{{path}}' | tail -n 1)
+          echo "path=$(realpath "$browser_path")" >> "$GITHUB_OUTPUT"
+
+      - name: Run frontend Canvas gates
+        if: ${{ needs.preflight.outputs.frontend_canvas_required == 'true' }}
+        env:
+          CHROME_PATH: ${{ steps.frontend-canvas-chromium.outputs.path }}
+          RHWP_WASM_BUILD_MANIFEST: ${{ github.workspace }}/output/frontend-canvas-build/build.json
+        run: node scripts/frontend-canvas-gates.mjs
+
+      - name: Upload frontend Canvas evidence
+        if: ${{ always() && needs.preflight.outputs.frontend_canvas_required == 'true' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: frontend-canvas-evidence
+          path: |
+            output/frontend-canvas-build/
+            output/frontend-canvas-gates/
+            output/e2e/
+            rhwp-studio/e2e/screenshots/render-diff/
+            rhwp-studio/e2e/screenshots/issue9077-canvas-font-alias.png
+          if-no-files-found: error
+          retention-days: 14
 
       # [#5959] 스냅샷 예산 축출 회귀 게이트(#5769) — 실 wasm 과 실 브라우저를
       # 구동해야 하므로 스텁 wasm 을 쓰는 unit 모드가 아닌 package 모드에서만 단다.

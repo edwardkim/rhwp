@@ -1,0 +1,40 @@
+{
+  "pid": 48562,
+  "phase": "complete",
+  "results": [
+    {
+      "name": "studio-tests",
+      "exit": 0
+    },
+    {
+      "name": "studio-build",
+      "exit": 0
+    },
+    {
+      "name": "studio-renderer-contract",
+      "exit": 0
+    }
+  ],
+  "updated_at": "2026-11-12T13:10:29.610810+00:00",
+  "command": [
+    "node",
+    "e2e/renderer-contract.test.mjs"
+  ],
+  "child_pid": 51849,
+  "source_head": "30fa7739f0340f2a248b22542c7dd36d9354f056",
+  "dist_wasm": [
+    {
+      "file": "/Users/tsjang/rhwp/rhwp-studio/dist/rhwp_bg.wasm",
+      "sha256": "5902ebe7d11b08e381aefe3c4fae7e60f11af92c30b4a942a87d5b889367f5f0"
+    },
+    {
+      "file": "/Users/tsjang/rhwp/rhwp-studio/dist/assets/rhwp_bg-BdeEqhq1.wasm",
+      "sha256": "5902ebe7d11b08e381aefe3c4fae7e60f11af92c30b4a942a87d5b889367f5f0"
+    }
+  ],
+  "log_summary": {
+    "studio-tests": [],
+    "studio-build": [],
+    "studio-renderer-contract": []
+  }
+}

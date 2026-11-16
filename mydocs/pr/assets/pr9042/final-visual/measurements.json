@@ -1,0 +1,90 @@
+[
+  {
+    "key": "original",
+    "native_minimum": 94.2,
+    "wasm_minimum": 94.38,
+    "pages": 2,
+    "native_manifest": "output/pr-review/pr9042/final-v2-controls-native/original/float-pagination/silhouette_manifest.json",
+    "wasm_manifest": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/final-target-wasm/original/float-pagination/silhouette_manifest.json"
+  },
+  {
+    "key": "unchanged",
+    "native_minimum": 96.04,
+    "wasm_minimum": 96.72,
+    "pages": 2,
+    "native_manifest": "output/pr-review/pr9042/final-v2-controls-native/unchanged/metadata-unchanged/silhouette_manifest.json",
+    "wasm_manifest": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/final-target-wasm/unchanged/metadata-unchanged/silhouette_manifest.json"
+  },
+  {
+    "key": "empty-header",
+    "native_minimum": 96.04,
+    "wasm_minimum": 96.72,
+    "pages": 2,
+    "native_manifest": "output/pr-review/pr9042/final-v2-controls-native/empty-header/metadata-empty-header/silhouette_manifest.json",
+    "wasm_manifest": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/final-target-wasm/empty-header/metadata-empty-header/silhouette_manifest.json"
+  },
+  {
+    "key": "empty-footer",
+    "native_minimum": 96.04,
+    "wasm_minimum": 96.72,
+    "pages": 2,
+    "native_manifest": "output/pr-review/pr9042/final-v2-controls-native/empty-footer/metadata-empty-footer/silhouette_manifest.json",
+    "wasm_manifest": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/final-target-wasm/empty-footer/metadata-empty-footer/silhouette_manifest.json"
+  },
+  {
+    "key": "hancom-saved",
+    "native_minimum": 100.0,
+    "wasm_minimum": 99.59,
+    "pages": 2,
+    "native_manifest": "output/pr-review/pr9042/final-v2-controls-native/hancom-saved/pr9042-hancom-saved/silhouette_manifest.json",
+    "wasm_manifest": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/final-target-wasm/hancom-saved/pr9042-hancom-saved/silhouette_manifest.json"
+  },
+  {
+    "key": "nested-single-line",
+    "native_minimum": 100.0,
+    "wasm_minimum": 99.59,
+    "pages": 2,
+    "native_manifest": "output/pr-review/pr9042/final-v2-nested-native/nested-tail-single-line/nested-tail-hancom-saved/silhouette_manifest.json",
+    "wasm_manifest": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/final-target-wasm/nested-single-line/nested-tail-single-line-hancom/silhouette_manifest.json"
+  },
+  {
+    "key": "nested-margins",
+    "native_minimum": 100.0,
+    "wasm_minimum": 99.59,
+    "pages": 2,
+    "native_manifest": "output/pr-review/pr9042/final-v2-nested-native/nested-tail-margins/nested-tail-margins-hancom-saved/silhouette_manifest.json",
+    "wasm_manifest": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/final-target-wasm/nested-margins/nested-tail-margins-hancom/silhouette_manifest.json"
+  },
+  {
+    "key": "nested-two-paragraphs",
+    "native_minimum": 100.0,
+    "wasm_minimum": 99.59,
+    "pages": 2,
+    "native_manifest": "output/pr-review/pr9042/final-v2-nested-native/nested-tail-two-paragraphs/nested-tail-two-paragraphs-hancom-saved/silhouette_manifest.json",
+    "wasm_manifest": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/final-target-wasm/nested-two-paragraphs/nested-tail-two-paragraphs-hancom/silhouette_manifest.json"
+  },
+  {
+    "key": "rental_approval_form",
+    "native_minimum": 100.0,
+    "wasm_minimum": 99.87,
+    "pages": 1,
+    "native_manifest": "output/pr-review/pr9042/final-v2-controls-native/rental_approval_form/rental_approval_form/silhouette_manifest.json",
+    "wasm_manifest": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/final-target-wasm/rental_approval_form/rental_approval_form/silhouette_manifest.json"
+  },
+  {
+    "key": "artifact_loan_form",
+    "native_minimum": 97.15,
+    "wasm_minimum": 99.96,
+    "pages": 1,
+    "native_manifest": "output/pr-review/pr9042/final-v2-controls-native/artifact_loan_form/artifact_loan_form/silhouette_manifest.json",
+    "wasm_manifest": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/final-target-wasm/artifact_loan_form/artifact_loan_form/silhouette_manifest.json"
+  },
+  {
+    "key": "ai_procurement_appendix",
+    "native_minimum": 97.52,
+    "wasm_minimum": 97.63,
+    "pages": 4,
+    "native_manifest": "output/pr-review/pr9042/final-v2-controls-native/ai_procurement_appendix/ai_procurement_appendix/silhouette_manifest.json",
+    "wasm_manifest": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/final-target-wasm/ai_procurement_appendix/ai_procurement_appendix/silhouette_manifest.json"
+  }
+]

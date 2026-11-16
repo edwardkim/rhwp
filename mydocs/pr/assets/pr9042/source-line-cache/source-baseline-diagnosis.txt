@@ -1,0 +1,36 @@
+INPUT mydocs/pr/assets/coanchored-table-pagination/float-pagination.hwp
+CS 0 base_size=650
+CS 1 base_size=1000
+CS 2 base_size=900
+CS 3 base_size=900
+CS 4 base_size=900
+CS 5 base_size=1600
+CS 6 base_size=1100
+CELL0 PARA0 "Body" chars=[CharShapeRef { start_pos: 0, char_shape_id: 0 }] lines=[LineSeg { text_start: 0, vertical_pos: 0, line_height: 800, text_height: 800, baseline_distance: 680, line_spacing: 740, column_start: 0, segment_width: 47518, tag: 393216 }]
+CELL0 PARA33 "End of body" chars=[CharShapeRef { start_pos: 0, char_shape_id: 0 }] lines=[LineSeg { text_start: 0, vertical_pos: 51050, line_height: 1100, text_height: 1100, baseline_distance: 935, line_spacing: 190, column_start: 0, segment_width: 47518, tag: 393216 }]
+CELL1 PARA0 "Body end" chars=[CharShapeRef { start_pos: 0, char_shape_id: 0 }] lines=[LineSeg { text_start: 0, vertical_pos: 0, line_height: 800, text_height: 800, baseline_distance: 680, line_spacing: 0, column_start: 0, segment_width: 47518, tag: 393216 }]
+CELL0 PARA0 "Title" chars=[CharShapeRef { start_pos: 0, char_shape_id: 0 }] lines=[LineSeg { text_start: 0, vertical_pos: 0, line_height: 1900, text_height: 1900, baseline_distance: 1615, line_spacing: 0, column_start: 0, segment_width: 47518, tag: 393216 }]
+CELL0 PARA0 "Next page" chars=[CharShapeRef { start_pos: 0, char_shape_id: 0 }] lines=[LineSeg { text_start: 0, vertical_pos: 0, line_height: 1400, text_height: 1400, baseline_distance: 1190, line_spacing: 0, column_start: 0, segment_width: 47518, tag: 393216 }]
+RUN "Title" y=139.46666666666667 baseline=21.533333333333335 fs=8.666666666666666 shape=Some(0)
+RUN "Body" y=188.45333333333335 baseline=9.066666666666666 fs=8.666666666666666 shape=Some(0)
+RUN "End of body" y=869.12 baseline=12.466666666666667 fs=8.666666666666666 shape=Some(0)
+RUN "Body end" y=882.2133333333327 baseline=9.066666666666666 fs=8.666666666666666 shape=Some(0)
+RUN "- 1 -" y=1049.386666666667 baseline=13.333333333333334 fs=13.333333333333334 shape=None
+INPUT samples/pr9042/pr9042-hancom-saved.hwp
+CS 0 base_size=650
+CS 1 base_size=1000
+CS 2 base_size=900
+CS 3 base_size=900
+CS 4 base_size=900
+CS 5 base_size=1600
+CS 6 base_size=1100
+CELL0 PARA0 "Body" chars=[CharShapeRef { start_pos: 0, char_shape_id: 0 }] lines=[LineSeg { text_start: 0, vertical_pos: 0, line_height: 650, text_height: 650, baseline_distance: 553, line_spacing: 907, column_start: 0, segment_width: 47516, tag: 393216 }]
+CELL0 PARA33 "End of body" chars=[CharShapeRef { start_pos: 0, char_shape_id: 0 }] lines=[LineSeg { text_start: 0, vertical_pos: 51381, line_height: 650, text_height: 650, baseline_distance: 553, line_spacing: 907, column_start: 0, segment_width: 47516, tag: 393216 }]
+CELL1 PARA0 "Body end" chars=[CharShapeRef { start_pos: 0, char_shape_id: 0 }] lines=[LineSeg { text_start: 0, vertical_pos: 0, line_height: 650, text_height: 650, baseline_distance: 553, line_spacing: 388, column_start: 0, segment_width: 47516, tag: 393216 }]
+CELL0 PARA0 "Title" chars=[CharShapeRef { start_pos: 0, char_shape_id: 0 }] lines=[LineSeg { text_start: 0, vertical_pos: 0, line_height: 650, text_height: 650, baseline_distance: 553, line_spacing: 388, column_start: 0, segment_width: 47516, tag: 393216 }]
+CELL0 PARA0 "Next page" chars=[CharShapeRef { start_pos: 0, char_shape_id: 0 }] lines=[LineSeg { text_start: 0, vertical_pos: 0, line_height: 650, text_height: 650, baseline_distance: 553, line_spacing: 388, column_start: 0, segment_width: 47516, tag: 393216 }]
+RUN "Title" y=147.8 baseline=7.373333333333333 fs=8.666666666666666 shape=Some(0)
+RUN "Body" y=188.45333333333335 baseline=7.373333333333333 fs=8.666666666666666 shape=Some(0)
+RUN "End of body" y=873.5333333333334 baseline=7.373333333333333 fs=8.666666666666666 shape=Some(0)
+RUN "Body end" y=883.6933333333332 baseline=7.373333333333333 fs=8.666666666666666 shape=Some(0)
+RUN "- 1 -" y=1049.386666666667 baseline=13.333333333333334 fs=13.333333333333334 shape=None

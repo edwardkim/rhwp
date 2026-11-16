@@ -1,0 +1,29 @@
+{
+  "code_head": "73d06ed0b18df7c222a850bb5d9340c9b7de2bcc",
+  "native_focus_passed": 164,
+  "current_chart_and_root_recompiled": true,
+  "source_content_and_expectations_unchanged": true,
+  "compile_log_sha256": "6f1b6c25bb10815f5fb791f7ed777c24cde698dd3beefc5a26d921353d2d67bf",
+  "native_build_log_sha256": "70ecb16b7e7ae98759577c3e4314ebf4f010bdca36bbd3d38b00bc56e7b22649",
+  "records": [
+    {
+      "file": "/Users/tsjang/rhwp/target/pr-review/release-test/deps/librhwp.rlib",
+      "bytes": 137036648,
+      "sha256": "5f6d341e31661cfa330f76edd54d4fbea4ac37d9c725f0bbb19aba0afc87e18e",
+      "mtime": "2026-11-12T14:44:56.886889+00:00"
+    },
+    {
+      "file": "/Users/tsjang/rhwp/target/pr-review/release-test/deps/librhwp.dylib",
+      "bytes": 31369648,
+      "sha256": "75ee2747932a620be32377b55b0a419d0c4c477e42b4aaa026d86a454feddf53",
+      "mtime": "2026-11-12T14:44:57.278128+00:00"
+    },
+    {
+      "file": "/Users/tsjang/rhwp/target/pr-review/release-test/rhwp",
+      "bytes": 73319424,
+      "sha256": "af213c214ddece4ccf1b124864bbd67c4621f0d180ab62abe02648da9978e739",
+      "mtime": "2026-11-12T14:45:14.137381+00:00"
+    }
+  ],
+  "provenance_limit": "의존성 메타데이터에 이전 worktree 경로가 남을 수 있으므로 경로 문자열 부재만으로 판정하지 않았다. 명시적 현재 source의 root/chart 재컴파일과 같은 164건 통과를 함께 확인했다."
+}

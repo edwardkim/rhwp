@@ -1,0 +1,42 @@
+{
+  "status": "success",
+  "job_id": "dedd5eb1-dbad-4c02-b4bc-9b2a7255631f",
+  "output_path": "pdf/issue8946/hwp3-sample10-hwpx-2024.pdf",
+  "output_filename": "hwp3-sample10-hwpx-2024.pdf",
+  "size": 90781157,
+  "sha256": "d1f5b5e4047e6650277075e6cd8591e2b3f97d501028d4a15d5a18b280deea4a",
+  "server": {
+    "job_id": "dedd5eb1-dbad-4c02-b4bc-9b2a7255631f",
+    "status": "success",
+    "target": "pdf",
+    "input_filename": "hwp3-sample10-hwpx.hwpx",
+    "output_filename": "hwp3-sample10-hwpx-2024.pdf",
+    "size": 90781157,
+    "sha256": "d1f5b5e4047e6650277075e6cd8591e2b3f97d501028d4a15d5a18b280deea4a",
+    "mime_type": "application/pdf",
+    "engine": "2024",
+    "engine_profile": "2024",
+    "hancom_version": "13.0.0.3901",
+    "backend": "hwp-managed-direct-dll-host",
+    "pdf_page_count": 763,
+    "logical_page_count": null,
+    "pdf_print_method": 0,
+    "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+    "font_scope": {
+      "mode": "session0",
+      "status": "verified",
+      "profile_source": "protected_config",
+      "session_id": 0,
+      "mapped_font_count": 2,
+      "registered_font_count": 2,
+      "failed_font_count": 0,
+      "parent_visibility": "verified",
+      "child_visibility": "verified"
+    },
+    "elapsed_ms": 1007375,
+    "worker_elapsed_ms": 957734,
+    "worker_bits": 32,
+    "input_preprocess": "none"
+  },
+  "retention": "Local only: 90,781,157 bytes exceeds 50 MiB policy; not committed."
+}

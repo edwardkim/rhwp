@@ -1,0 +1,25 @@
+{
+  "source": "411cb7a7e807abbea90c6ab6b6ca0c66b6c3ad71",
+  "command": [
+    "cargo",
+    "nextest",
+    "run",
+    "--locked",
+    "--cargo-profile",
+    "release-test",
+    "--target-dir",
+    "/home/edward/mygithub/rhwp/target/pr-review",
+    "--test",
+    "regression_suite_022",
+    "--test",
+    "regression_suite_026",
+    "-E",
+    "test(source_hft_original_program_print_frame::) | test(issue_7445_original_font_program_ownership::) | test(issue_7445_hft_glyph_paint_frame::)",
+    "--test-threads",
+    "4",
+    "--no-fail-fast"
+  ],
+  "started": "2026-11-15T04:50:29.616605+00:00",
+  "completed": "2026-11-15T04:50:47.842055+00:00",
+  "exitCode": 0
+}

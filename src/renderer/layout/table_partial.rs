@@ -357,6 +357,7 @@ impl CellComposedStore {
                 engine.compose_cell_unit_paragraph(
                     &cell.paragraphs[cpi],
                     cell.text_direction,
+                    cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
                     inner_width,
                     styles,
                 )
@@ -1415,6 +1416,65 @@ impl LayoutEngine {
                     resolved_row_heights,
                 )
             });
+            // 분할 행: [Task #993/#1025] start_cut/end_cut(유닛 컷)으로 표시할 줄 범위 계산.
+            // 블록 분할이면 블록-셀 (row,col) 인덱스, 그 외는 행내 row_span==1 col 인덱스.
+            let cut_units: Option<(usize, usize)> = if let Some(cut) = straddle_page_bands
+                .iter()
+                .find(|carry| carry.cell_index == cell_idx)
+                .and_then(|carry| carry.fragment_cut)
+            {
+                Some(cut)
+            } else if is_in_split_row {
+                let (mut su, mut eu) = cell_cut_window(
+                    table,
+                    cell,
+                    start_cut_is_block,
+                    is_block_split,
+                    is_split_start_row,
+                    split_start_block,
+                    is_split_end_row,
+                    split_end_block,
+                    start_cut,
+                    end_cut,
+                    None,
+                    start_row,
+                    end_row.saturating_sub(1),
+                );
+                // 조각의 종료 BlockCut이 이 병합 셀을 소유하더라도 시작 RowCut은 소유하지 않는다.
+                // 종료 슬롯을 보존하고, 예약과 동일한 물리 시작 앞부분을 소비한다.
+                if straddle_start_uncovered && !start_cut_is_block {
+                    if let Some((physical_start, _)) = straddle_cut_units {
+                        su = su.max(physical_start);
+                    }
+                }
+                // 시작 행의 걸침 셀도 수용 단계와 같은 상자·원본 유닛 컷을 쓴다.
+                // 옆 셀의 RowCut 높이로 끝을 다시 추정하면 병합 내용이 누락·반복된다.
+                if eu == usize::MAX && cell.row_span > 1 && cell_end_row > render_range_end {
+                    let (_, accepted_end) = self.rowbreak_straddle_cut_units(
+                        table,
+                        cell,
+                        start_row,
+                        render_range_end,
+                        start_cut,
+                        start_cut_is_block,
+                        start_row_height_override,
+                        end_cut,
+                        is_block_split,
+                        end_row_height_override,
+                        cell_h,
+                        resolved_row_heights,
+                        straddle_page_bands,
+                        styles,
+                    );
+                    eu = accepted_end.max(su);
+                }
+                Some((su, eu))
+            } else if is_rowbreak_straddle {
+                straddle_cut_units
+            } else {
+                None
+            };
+
             // 저장 텍스트 병합 셀의 마지막 조각은 남은 소유 유닛을 최종 물리 셀 상자 안에서 정렬한다.
             // 연속된 원본 줄 위치도 포함하며, 선택한 컷을 아래 줄 구성과 실제 그리기에 재사용한다.
             let stored_restart_span_frame_owns_alignment = !is_in_split_row
@@ -1640,10 +1700,12 @@ impl LayoutEngine {
             let stored_span_frame_owns_alignment = accepted_block_frame_owns_alignment
                 || completed_block_frame_owns_alignment
                 || stored_restart_span_frame_owns_alignment
-                || is_rowbreak_straddle
+                // 실제 선택한 유닛 범위의 정렬 소유는 RowCut/BlockCut 표현과 무관하다.
+                // 같은 원본 프레임을 읽는 블록 컷도 줄 선택과 최종 원점에서 이 범위를 공유한다.
+                || (is_in_split_row || is_rowbreak_straddle)
                     && cell.row_span > 1
                     && cell.vertical_align != crate::model::table::VerticalAlign::Top
-                    && straddle_cut_units.is_some_and(|(start, end)| {
+                    && cut_units.is_some_and(|(start, end)| {
                         self.stored_span_cut_owns_alignment(cell, table, styles, start, end)
                             || (start < end
                                 && self.current_program_span_owns_alignment(table, cell))
@@ -1726,64 +1788,6 @@ impl LayoutEngine {
                     || cut_frame_owns_alignment
                     || stored_span_frame_owns_alignment
                     || original_restart_span_owns_alignment);
-            // 분할 행: [Task #993/#1025] start_cut/end_cut(유닛 컷)으로 표시할 줄 범위 계산.
-            // 블록 분할이면 블록-셀 (row,col) 인덱스, 그 외는 행내 row_span==1 col 인덱스.
-            let cut_units: Option<(usize, usize)> = if let Some(cut) = straddle_page_bands
-                .iter()
-                .find(|carry| carry.cell_index == cell_idx)
-                .and_then(|carry| carry.fragment_cut)
-            {
-                Some(cut)
-            } else if is_in_split_row {
-                let (mut su, mut eu) = cell_cut_window(
-                    table,
-                    cell,
-                    start_cut_is_block,
-                    is_block_split,
-                    is_split_start_row,
-                    split_start_block,
-                    is_split_end_row,
-                    split_end_block,
-                    start_cut,
-                    end_cut,
-                    None,
-                    start_row,
-                    end_row.saturating_sub(1),
-                );
-                // 조각의 종료 BlockCut이 이 병합 셀을 소유하더라도 시작 RowCut은 소유하지 않는다.
-                // 종료 슬롯을 보존하고, 예약과 동일한 물리 시작 앞부분을 소비한다.
-                if straddle_start_uncovered && !start_cut_is_block {
-                    if let Some((physical_start, _)) = straddle_cut_units {
-                        su = su.max(physical_start);
-                    }
-                }
-                // 시작 행의 걸침 셀도 수용 단계와 같은 상자·원본 유닛 컷을 쓴다.
-                // 옆 셀의 RowCut 높이로 끝을 다시 추정하면 병합 내용이 누락·반복된다.
-                if eu == usize::MAX && cell.row_span > 1 && cell_end_row > render_range_end {
-                    let (_, accepted_end) = self.rowbreak_straddle_cut_units(
-                        table,
-                        cell,
-                        start_row,
-                        render_range_end,
-                        start_cut,
-                        start_cut_is_block,
-                        start_row_height_override,
-                        end_cut,
-                        is_block_split,
-                        end_row_height_override,
-                        cell_h,
-                        resolved_row_heights,
-                        straddle_page_bands,
-                        styles,
-                    );
-                    eu = accepted_end.max(su);
-                }
-                Some((su, eu))
-            } else if is_rowbreak_straddle {
-                straddle_cut_units
-            } else {
-                None
-            };
             let saved_frame_needs_alignment =
                 (align_saved_opening_frame && cell_row + 1 == end_row || frame_owns_alignment)
                     && cell.vertical_align != crate::model::table::VerticalAlign::Top;
@@ -1914,6 +1918,7 @@ impl LayoutEngine {
                         *comp = self.compose_cell_unit_paragraph(
                             para,
                             cell.text_direction,
+                            cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
                             inner_width_for_recompose,
                             styles,
                         );
@@ -2006,15 +2011,35 @@ impl LayoutEngine {
                         )
                     })
             };
+            // 병합 칸은 쪽 경계에 걸리지 않아도 칸 전체를 덮는 컷을 받는다. 그 컷은 칸을
+            // 나누지 않으므로, 저장 줄 없이 도형만 든 문단도 이 조각이 소유한다. 글앞/글뒤
+            // 도형만 든 문단은 빈 줄로 분류되는데 컷의 빈 줄 소유는 개체 문단을 세지 않아,
+            // 그 문단이 건너뛰어져 도형이 어느 조각에도 나오지 않고 가운데 정렬 내용 높이에서도
+            // 빠졌다.
+            let unstored_shape_paragraph = |para: &crate::model::paragraph::Paragraph| {
+                para.line_segs.is_empty()
+                    && para.controls.iter().any(|c| matches!(c, Control::Shape(_)))
+            };
+            let whole_cell_cut = cut_units.is_some_and(|(su, eu)| {
+                su == 0 && eu >= self.cell_units(cell, table, styles).len()
+            });
+            let whole_cell_shape_paragraph = |pi: usize| {
+                empty_paragraphs[pi]
+                    && whole_cell_cut
+                    && unstored_shape_paragraph(&cell.paragraphs[pi])
+            };
             let owns_empty_paragraph = |pi: usize| {
                 empty_paragraphs[pi]
                     && (empty_owners.as_ref().is_none_or(|owners| owners[pi])
-                        || control_owned_empty_paragraph(pi))
+                        || control_owned_empty_paragraph(pi)
+                        || whole_cell_shape_paragraph(pi))
             };
             // 개체로 소유한 빈 문단의 정렬 높이는 빈 줄과 개체 띠 중 큰 쪽이다.
             // 개체는 문단 원점에 오프셋으로 놓이고 빈 줄과 같은 띠를 차지한다.
+            // 칸 전체 컷이 소유한 도형 문단도 같다 — 빈 줄만 세면 가운데 정렬 칸에서
+            // 도형이 칸 높이의 절반쯤 아래로 밀린다.
             let control_owned_empty_paragraph_height = |pi: usize, lines_h: f64| {
-                if control_owned_empty_paragraph(pi) {
+                if control_owned_empty_paragraph(pi) || whole_cell_shape_paragraph(pi) {
                     lines_h.max(self.calc_cell_wrap_objects_bottom_height(
                         std::slice::from_ref(&cell.paragraphs[pi]),
                         styles,
@@ -2519,6 +2544,31 @@ impl LayoutEngine {
             // 정본은 늘어난 상자 안에서 그 조각을 정렬한다(hwpx_sample2 19쪽: 상자
             // 89.91..1081.39 안에서 칸 내용이 95.06 — 상자 위에서 5.15px).
             let align_inner_height = (cell_h - pad_top - pad_bottom).max(0.0);
+            // 남은 내용 전체를 담은 꼬리 조각의 상자가 그 유닛 점유만으로 닫혔다면
+            // 상자에는 나눌 여분이 없다. 유닛 원장이 마지막 줄 뒤 간격까지 상자에
+            // 넣었으므로 정렬 내용도 같은 점유를 쓴다. 줄간격만큼 짧은 가시 높이로
+            // 다시 가운데 정렬하면 그 절반만큼 내용이 저장 줄 위치보다 내려간다.
+            let centered_content_height = if complete_suffix_frame
+                && atomic_suffix_content_height.is_none()
+                && stored_picture_cut_frame.is_none()
+            {
+                let units = self.cell_units(cell, table, styles);
+                cut_units
+                    .map(|(start, end)| {
+                        let (start, end) = (start.min(units.len()), end.min(units.len()));
+                        units[start..end]
+                            .iter()
+                            .map(|unit| unit.height)
+                            .sum::<f64>()
+                            + self.nested_continuation_header_height(cell, &units, start, styles)
+                    })
+                    .filter(|&occupied| occupied + 0.5 >= align_inner_height)
+                    .map_or(centered_content_height, |occupied| {
+                        centered_content_height.max(occupied.min(align_inner_height))
+                    })
+            } else {
+                centered_content_height
+            };
             let first_source_band_owns_position = first_source_lead > 0.0
                 && matches!(effective_align, VerticalAlign::Top)
                 && !matches!(cell.vertical_align, VerticalAlign::Top);
@@ -2891,6 +2941,9 @@ impl LayoutEngine {
                 // 개체로 소유한 빈 문단의 그림은 조각 흐름 커서 대신 문단 원점과 제
                 // 오프셋에 놓는다 — 흐름 커서는 가로 자리가 다른 그림도 차례로 아래에 쌓는다.
                 let control_owned_empty = control_owned_empty_paragraph(cp_idx);
+                // 저장 줄 없이 도형만 든 문단(직선 화살표 등). 줄 수가 0 이라 아래 판정들이
+                // "이 쪽 소속 아님"으로 읽는다.
+                let has_unstored_shape_ctrl = unstored_shape_paragraph(para);
                 if collapse_stored_wrap_spacers
                     && stored_nested_table_empty_wrap_spacer(cell, cp_idx)
                 {
@@ -2959,16 +3012,14 @@ impl LayoutEngine {
                 // 판정이 아니라 control-only 문단의 합성 결과다. normal-table path와
                 // 같이 control을 배치해야 한다. cut fragment에서는 단위 소유권을
                 // 유지해 다음 쪽 표를 앞쪽에 중복 방출하지 않는다.
-                // 글자처럼 취급 도형(직선 화살표 등)만 든 문단도 같다. 저장 줄이
-                // 없으면 줄 수 0 으로 건너뛰어 도형 노드가 아예 생기지 않았다 —
-                // 일반 표 경로는 같은 문단을 제 줄에 그린다.
-                let has_unstored_tac_shape_ctrl = para.line_segs.is_empty()
-                    && para.controls.iter().any(|c| match c {
-                        Control::Shape(shape) => shape.common().treat_as_char,
-                        _ => false,
-                    });
-                let uncut_control_only_nested_table = cut_units.is_none()
-                    && (has_table_ctrl || has_picture_ctrl || has_unstored_tac_shape_ctrl)
+                // 도형(직선 화살표 등)만 든 문단도 같다. 저장 줄이 없으면 줄 수 0 으로
+                // 건너뛰어 도형 노드가 아예 생기지 않았다 — 일반 표 경로는 같은 문단을
+                // 제 줄에 그린다. 글자처럼 취급이 아닌 도형(문단 기준 자리차지 화살표)도
+                // 이 문단이 앵커라 같은 구제가 필요하다. 컷 조각의 행은 위
+                // `visible_non_inline_controls` 가 이미 구제한다.
+                let uncut_control_only_nested_table = (cut_units.is_none()
+                    && (has_table_ctrl || has_picture_ctrl || has_unstored_shape_ctrl)
+                    || whole_cell_cut && has_unstored_shape_ctrl)
                     && para
                         .text
                         .chars()

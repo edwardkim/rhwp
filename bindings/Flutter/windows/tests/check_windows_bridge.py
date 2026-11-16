@@ -18,9 +18,10 @@ def main():
     command = ["g++", "-std=c++17", "-pthread", "-Wall", "-Wextra", "-Werror", "-I" + str(source)]
     if args.sanitize:
         command += ["-fsanitize=address,undefined", "-fno-omit-frame-pointer", "-g"]
-    for name in ["frame_lifetime_test", "import_lifetime_test", "close_registry_test"]:
+    for name in ["frame_lifetime_test", "import_lifetime_test", "close_registry_test", "messenger_lifetime_test"]:
         executable = output / name
-        subprocess.run(command + [str(source / "tests" / (name + ".cpp")), "-o", str(executable)], check=True, timeout=60)
+        modeled_sdk = ["-I" + str(source / "tests/support")] if name == "messenger_lifetime_test" else []
+        subprocess.run(command + modeled_sdk + [str(source / "tests" / (name + ".cpp")), "-o", str(executable)], check=True, timeout=60)
         subprocess.run([str(executable)], check=True, timeout=30)
     tiles = output / "bounded-tile-group-test"
     subprocess.run(command + [str(source.parent / "common/bounded_tile_group_test.cc"), "-o", str(tiles)], check=True, timeout=60)

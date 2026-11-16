@@ -1,0 +1,460 @@
+{
+  "verifiedAt": "2026-11-16T01:13:19.010676+09:00",
+  "originalHead": "c3b0b7191b91e7df57a80da81a43cf632059a609",
+  "base": "d954632aab5b80aadbea39cece4f5a783634856b",
+  "localMergeHead": "7fbed378bcf3fd2c20f85234610ec094867b2df7",
+  "workingTree": "/home/edward/mygithub/rhwp-worktrees/pr-9092-about-dialog-overflow",
+  "node": "v24.15.0",
+  "cpuCount": 16,
+  "validation": [
+    {
+      "name": "tsc",
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exitCode": 0,
+      "seconds": 0.7941896780102979
+    },
+    {
+      "name": "studio-unit",
+      "command": [
+        "npm",
+        "test"
+      ],
+      "exitCode": 0,
+      "seconds": 22.016771492999396
+    },
+    {
+      "name": "build",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "exitCode": 0,
+      "seconds": 5.6575593360030325
+    }
+  ],
+  "wasm": {
+    "source_sha": "7fbed378bcf3fd2c20f85234610ec094867b2df7",
+    "success": true,
+    "profile": "dev",
+    "optimized": false,
+    "build": {
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--dev"
+      ],
+      "exitCode": 0,
+      "seconds": 170.059951275005
+    },
+    "artifacts": {
+      "rhwp.js": {
+        "bytes": 719107,
+        "sha256": "9018fb550494846c5faf011e9dfa0f9eeed44d54e6a12ab78103b3a67bebcef3"
+      },
+      "rhwp_bg.wasm": {
+        "bytes": 90164731,
+        "sha256": "ceecc297f01a6e80dff2c6a86b434d2610e8ca8f8cbb97361dbc7f72a22043d3"
+      }
+    }
+  },
+  "consumption": [
+    {
+      "source_sha": "7fbed378bcf3fd2c20f85234610ec094867b2df7",
+      "profile": "dev",
+      "expected_sha256": "ceecc297f01a6e80dff2c6a86b434d2610e8ca8f8cbb97361dbc7f72a22043d3",
+      "page": "http://127.0.0.1:7794/",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7794/@fs/home/edward/mygithub/rhwp-worktrees/pr-9092-about-dialog-overflow/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "ceecc297f01a6e80dff2c6a86b434d2610e8ca8f8cbb97361dbc7f72a22043d3"
+        }
+      ]
+    },
+    {
+      "source_sha": "7fbed378bcf3fd2c20f85234610ec094867b2df7",
+      "profile": "dev",
+      "expected_sha256": "ceecc297f01a6e80dff2c6a86b434d2610e8ca8f8cbb97361dbc7f72a22043d3",
+      "page": "http://127.0.0.1:7795/",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7795/@fs/home/edward/mygithub/rhwp-worktrees/pr-9092-about-dialog-overflow/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "ceecc297f01a6e80dff2c6a86b434d2610e8ca8f8cbb97361dbc7f72a22043d3"
+        }
+      ]
+    },
+    {
+      "source_sha": "7fbed378bcf3fd2c20f85234610ec094867b2df7",
+      "profile": "dev",
+      "expected_sha256": "ceecc297f01a6e80dff2c6a86b434d2610e8ca8f8cbb97361dbc7f72a22043d3",
+      "page": "http://127.0.0.1:7795/",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7795/@fs/home/edward/mygithub/rhwp-worktrees/pr-9092-about-dialog-overflow/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "ceecc297f01a6e80dff2c6a86b434d2610e8ca8f8cbb97361dbc7f72a22043d3"
+        }
+      ]
+    },
+    {
+      "source_sha": "7fbed378bcf3fd2c20f85234610ec094867b2df7",
+      "profile": "dev",
+      "expected_sha256": "ceecc297f01a6e80dff2c6a86b434d2610e8ca8f8cbb97361dbc7f72a22043d3",
+      "page": "http://127.0.0.1:7794/",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7794/@fs/home/edward/mygithub/rhwp-worktrees/pr-9092-about-dialog-overflow/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "ceecc297f01a6e80dff2c6a86b434d2610e8ca8f8cbb97361dbc7f72a22043d3"
+        }
+      ]
+    },
+    {
+      "source_sha": "7fbed378bcf3fd2c20f85234610ec094867b2df7",
+      "profile": "dev",
+      "expected_sha256": "ceecc297f01a6e80dff2c6a86b434d2610e8ca8f8cbb97361dbc7f72a22043d3",
+      "page": "http://127.0.0.1:7795/",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7795/@fs/home/edward/mygithub/rhwp-worktrees/pr-9092-about-dialog-overflow/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "ceecc297f01a6e80dff2c6a86b434d2610e8ca8f8cbb97361dbc7f72a22043d3"
+        }
+      ]
+    }
+  ],
+  "regression": {
+    "candidateAssertions": 19,
+    "candidateExit": 0,
+    "baseExit": 1,
+    "baseClippingReproduced": true,
+    "candidateRestoredAndRetested": true
+  },
+  "additionalBrowser": {
+    "viewports": 6,
+    "checks": 8,
+    "actualMenu": true,
+    "genericModalDefault": true
+  },
+  "originalCI": {
+    "checks": [
+      {
+        "name": "Build & Test",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397797/job/132799621015"
+      },
+      {
+        "name": "CodeQL",
+        "status": "completed",
+        "conclusion": "neutral",
+        "html_url": "https://github.com/edwardkim/rhwp/runs/132797204849"
+      },
+      {
+        "name": "Analyze (actions)",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397799/job/132795831593"
+      },
+      {
+        "name": "Analyze (rust)",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397799/job/132795831579"
+      },
+      {
+        "name": "Analyze (python)",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397799/job/132795831557"
+      },
+      {
+        "name": "Analyze (javascript-typescript)",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397799/job/132795831541"
+      },
+      {
+        "name": "test-archive-d-shard-1",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397797/job/132795829790"
+      },
+      {
+        "name": "build-test-archive-e",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397797/job/132795829372"
+      },
+      {
+        "name": "test-archive-c-shard-1",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397797/job/132795829308"
+      },
+      {
+        "name": "build-test-archive-c",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397797/job/132795829282"
+      },
+      {
+        "name": "test-archive-e-shard-1",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397797/job/132795829109"
+      },
+      {
+        "name": "release-operations-contracts",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397797/job/132795829060"
+      },
+      {
+        "name": "Workflow promotion preflight",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397797/job/132795829055"
+      },
+      {
+        "name": "build-test-archive-a",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397797/job/132795829023"
+      },
+      {
+        "name": "Lint (fmt, clippy, WASM check)",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397797/job/132795829014"
+      },
+      {
+        "name": "build-test-archive-b",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397797/job/132795829010"
+      },
+      {
+        "name": "test-archive-b-shard-1",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397797/job/132795828945"
+      },
+      {
+        "name": "Resolve nextest target duration policy",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397797/job/132795828919"
+      },
+      {
+        "name": "Frontend unit gates",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397797/job/132795828829"
+      },
+      {
+        "name": "test-archive-a-shard-1",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397797/job/132795828823"
+      },
+      {
+        "name": "build-test-archive-d",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397797/job/132795828779"
+      },
+      {
+        "name": "native-host-package",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397797/job/132795828769"
+      },
+      {
+        "name": "Native Skia tests",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397797/job/132795828570"
+      },
+      {
+        "name": "Frontend package gates",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397797/job/132795827869"
+      },
+      {
+        "name": "prop roundtrip",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397891/job/132795813219"
+      },
+      {
+        "name": "adapter inter-diff",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397766/job/132795798750"
+      },
+      {
+        "name": "Proptest preflight",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397891/job/132795788789"
+      },
+      {
+        "name": "CI preflight",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397797/job/132795787090"
+      },
+      {
+        "name": "Canvas visual diff",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397769/job/132795786987"
+      },
+      {
+        "name": "CodeQL preflight",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397799/job/132795774687"
+      },
+      {
+        "name": "adapter inter-diff preflight",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397766/job/132795764997"
+      },
+      {
+        "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397891/job/132795752448"
+      },
+      {
+        "name": "WASM Build",
+        "status": "completed",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397797/job/132795749550"
+      },
+      {
+        "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397797/job/132795748314"
+      },
+      {
+        "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397799/job/132795747282"
+      },
+      {
+        "name": "Render Diff preflight",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397769/job/132795746743"
+      },
+      {
+        "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397766/job/132795736621"
+      },
+      {
+        "name": "Evaluate trusted CI impact policy",
+        "status": "completed",
+        "conclusion": "success",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397879/job/132757777431"
+      }
+    ],
+    "policy": "success",
+    "runs": [
+      {
+        "id": 43696397879,
+        "name": "CI Impact Policy Controller",
+        "head_sha": "c3b0b7191b91e7df57a80da81a43cf632059a609",
+        "conclusion": "success",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397879"
+      },
+      {
+        "id": 43696397799,
+        "name": "CodeQL",
+        "head_sha": "c3b0b7191b91e7df57a80da81a43cf632059a609",
+        "conclusion": "success",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397799"
+      },
+      {
+        "id": 43696397769,
+        "name": "Render Diff",
+        "head_sha": "c3b0b7191b91e7df57a80da81a43cf632059a609",
+        "conclusion": "success",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397769"
+      },
+      {
+        "id": 43696397766,
+        "name": "Adapter inter-diff",
+        "head_sha": "c3b0b7191b91e7df57a80da81a43cf632059a609",
+        "conclusion": "success",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397766"
+      },
+      {
+        "id": 43696397891,
+        "name": "Proptest roundtrip",
+        "head_sha": "c3b0b7191b91e7df57a80da81a43cf632059a609",
+        "conclusion": "success",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397891"
+      },
+      {
+        "id": 43696397797,
+        "name": "CI",
+        "head_sha": "c3b0b7191b91e7df57a80da81a43cf632059a609",
+        "conclusion": "success",
+        "html_url": "https://github.com/edwardkim/rhwp/actions/runs/43696397797"
+      }
+    ]
+  },
+  "preparationNotes": [
+    "TypeScript was initially invoked before fresh package generation and failed because @wasm/rhwp.js was absent. Reran after successful build: PASS.",
+    "The baseline runner restored all three UI source files correctly. Its final clean-tree assertion saw wrapper-generated public/rhwp.js; restored only that generated glue after final candidate browser checks. No product correction."
+  ],
+  "assets": {
+    "base-800x360.png": {
+      "bytes": 43310,
+      "sha256": "6beb75e80d68034d8506cb731bdf7318859d552f90187eabc54f486194bef2ad"
+    },
+    "candidate-browser-review.json": {
+      "bytes": 4774,
+      "sha256": "51f162ade70d0f6542a2d8ade411e2719d334b2f36ab7d42e9a1cc7a0c8a80f6"
+    },
+    "candidate-1280x900.png": {
+      "bytes": 108347,
+      "sha256": "58e2ef6cc979947d76857bc9a0b16d28961af94eb72b4aefdb689b3f5a3d8c3c"
+    },
+    "candidate-800x360.png": {
+      "bytes": 44188,
+      "sha256": "86f9549095aad69461d21ba1ca3d8266683e4244cc7640adf4ab83ec7ddd7d9a"
+    },
+    "candidate-360x640.png": {
+      "bytes": 33745,
+      "sha256": "6c77d0a43aca7d3819883ad9d99009e8e64a8956f7557597a9f89f082e32a813"
+    },
+    "base-browser-review.json": {
+      "bytes": 812,
+      "sha256": "3c9a1efc2c82c0ff819129290d461843ce45ed599ca94c3cef968d5e3973e5c8"
+    }
+  }
+}

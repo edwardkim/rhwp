@@ -1,0 +1,382 @@
+{
+  "full-nextest-result.json": {
+    "source_sha256": "5766bfd4f0ac9db9e3b7a6ea4f9b60a9e348d83637ac1dd0d0a069245263eec2",
+    "result": {
+      "head": "676e3900c6490657229f9781e34f89c65c7126da",
+      "base": "31a422575722f634cfc2d9eb97e708da58aea188",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "output/pr-review/planet6897-clean20-integration-20261113/minimal-font.sb",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--tests",
+        "--build-jobs",
+        "8",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "phase": "passed",
+      "started_at": "2026-11-12T16:39:23.135568+00:00",
+      "build_jobs": 8,
+      "test_threads": 8,
+      "font_environment": "verified isolated CoreText OS528/nonOS0 plus licensed repository fixtures",
+      "exit": 0,
+      "elapsed_seconds": 603.549,
+      "completed_at": "2026-11-12T16:49:26.684783+00:00",
+      "summary": "     Summary [ 373.791s] 13420 tests run: 13420 passed (1 slow), 45 skipped",
+      "failures": [],
+      "run": 13420,
+      "passed": 13420,
+      "failed": 0,
+      "skipped": 45
+    }
+  },
+  "rust-gates-state.json": {
+    "source_sha256": "9ca41b4146b5bf202627bf76260d883e40c7d7e205db2bdb23e87c90479167b4",
+    "result": {
+      "phase": "complete",
+      "pid": 96934,
+      "head": "676e3900c6490657229f9781e34f89c65c7126da",
+      "started_at": "2026-11-12T17:06:16.931263+00:00",
+      "results": [
+        {
+          "gate": "fresh-wasm",
+          "command": [
+            "bash",
+            "scripts/wasm-pack-locked.sh",
+            "--target",
+            "web",
+            "--out-dir",
+            "pkg",
+            "--no-opt"
+          ],
+          "exit": 0,
+          "elapsed_seconds": 411.884,
+          "log": "output/pr-review/planet6897-clean20-integration-20261113/logs/fresh-wasm.log",
+          "log_sha256": "aed978c1157bc16d4b5c7b68423c9c15268c437071b97272e1d1668ebe0eb99c"
+        },
+        {
+          "gate": "fmt",
+          "command": [
+            "cargo",
+            "fmt",
+            "--all",
+            "--",
+            "--check"
+          ],
+          "exit": 0,
+          "elapsed_seconds": 28.11,
+          "log": "output/pr-review/planet6897-clean20-integration-20261113/logs/fmt.log",
+          "log_sha256": "5fcb04dce61431e03194e48dc201c4f32c352e4a96d055e73ed0191c5364579a"
+        },
+        {
+          "gate": "clippy-native",
+          "command": [
+            "cargo",
+            "clippy",
+            "--locked",
+            "--target-dir",
+            "target/pr-review",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "exit": 0,
+          "elapsed_seconds": 164.982,
+          "log": "output/pr-review/planet6897-clean20-integration-20261113/logs/clippy-native.log",
+          "log_sha256": "c136e107d0076f793188bb9c6ede2b6baecfc0d828fe1f7a37c5d02b243a40d1"
+        },
+        {
+          "gate": "clippy-wasm",
+          "command": [
+            "cargo",
+            "clippy",
+            "--locked",
+            "-p",
+            "rhwp",
+            "--lib",
+            "--target",
+            "wasm32-unknown-unknown",
+            "--target-dir",
+            "target/pr-review",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "exit": 0,
+          "elapsed_seconds": 116.937,
+          "log": "output/pr-review/planet6897-clean20-integration-20261113/logs/clippy-wasm.log",
+          "log_sha256": "7239fbe50f5028454196430a9e1fb12affad0149507ed78b1ac9eeb749e65aa8"
+        },
+        {
+          "gate": "workspace-build",
+          "command": [
+            "cargo",
+            "build",
+            "--locked",
+            "--workspace",
+            "--target-dir",
+            "target/pr-review",
+            "--jobs",
+            "8"
+          ],
+          "exit": 0,
+          "elapsed_seconds": 226.886,
+          "log": "output/pr-review/planet6897-clean20-integration-20261113/logs/workspace-build.log",
+          "log_sha256": "b8ea68364634a47fc4293ed74b1ae4fe9be0b45fc2850d518de3052ad5f98b4d"
+        },
+        {
+          "gate": "clippy-all-targets",
+          "command": [
+            "cargo",
+            "clippy",
+            "--locked",
+            "--workspace",
+            "--all-targets",
+            "--target-dir",
+            "target/pr-review",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "exit": 0,
+          "elapsed_seconds": 161.986,
+          "log": "output/pr-review/planet6897-clean20-integration-20261113/logs/clippy-all-targets.log",
+          "log_sha256": "de0a69455ec4104172a08dc09cd8dc4a3f729bd90bfa82286adc9c8f632979a1"
+        },
+        {
+          "gate": "native-skia-lib",
+          "command": [
+            "sandbox-exec",
+            "-f",
+            "output/pr-review/planet6897-clean20-integration-20261113/minimal-font.sb",
+            "cargo",
+            "test",
+            "--locked",
+            "--profile",
+            "release-test",
+            "--target-dir",
+            "target/pr-review",
+            "--features",
+            "native-skia",
+            "--lib",
+            "--jobs",
+            "8",
+            "--",
+            "--test-threads",
+            "8"
+          ],
+          "exit": 0,
+          "elapsed_seconds": 482.946,
+          "log": "output/pr-review/planet6897-clean20-integration-20261113/logs/native-skia-lib.log",
+          "log_sha256": "92c8072bada14619ff852ce0d45398029dca0649f14130c0278a32995d8fd5f7"
+        },
+        {
+          "gate": "native-skia-png",
+          "command": [
+            "sandbox-exec",
+            "-f",
+            "output/pr-review/planet6897-clean20-integration-20261113/minimal-font.sb",
+            "node",
+            "scripts/run-rust-test.mjs",
+            "issue_2225_missing_picture_placeholder",
+            "--",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "target/pr-review",
+            "--features",
+            "native-skia",
+            "--build-jobs",
+            "8",
+            "--test-threads",
+            "8"
+          ],
+          "exit": 0,
+          "elapsed_seconds": 368.371,
+          "log": "output/pr-review/planet6897-clean20-integration-20261113/logs/native-skia-png.log",
+          "log_sha256": "05af8b56a1a3bf606273f4d1b1edb9ecabbe4f5256bc8bc49e59fe2a25ab01c7"
+        },
+        {
+          "gate": "native-skia-pdf",
+          "command": [
+            "sandbox-exec",
+            "-f",
+            "output/pr-review/planet6897-clean20-integration-20261113/minimal-font.sb",
+            "node",
+            "scripts/run-rust-test.mjs",
+            "render_p37_direct_pdf_export",
+            "--",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "target/pr-review",
+            "--features",
+            "native-skia",
+            "--build-jobs",
+            "8",
+            "--test-threads",
+            "8"
+          ],
+          "exit": 0,
+          "elapsed_seconds": 34.773,
+          "log": "output/pr-review/planet6897-clean20-integration-20261113/logs/native-skia-pdf.log",
+          "log_sha256": "8c74e99326f2ed0d2d4e339849b2604884ddbb0394a28458dd1b92be4e1f8964"
+        }
+      ],
+      "current": null,
+      "completed_at": "2026-11-12T17:39:34.904568+00:00"
+    }
+  },
+  "minimal-font-verification.json": {
+    "source_sha256": "e4627cce8633e7d4fe4014ae701c3d19ba22d266ce739a5eebfca3fdeaee126d",
+    "result": {
+      "observed_at": "2026-11-12T16:32:14.341082+00:00",
+      "normal_faces": 1701,
+      "isolated_faces": 528,
+      "non_os_isolated_faces": 0,
+      "korean_covered": true,
+      "profile_sha256": "77061429789480b520076af6ba6c633de6d55f4d67f654df5dfd56fc802da7f9",
+      "paths_scope": "CoreText process registry and font file isolation; OS fonts retained; user fonts unmodified",
+      "same_verified_os_face_inventory_as_previous": true,
+      "private_font_read_probe_exit": 0,
+      "private_font_read_denied": true,
+      "allowed_repository_fixture": {
+        "path": "ttfs/redistributable/happiness-sans/HappinessSansVF.ttf",
+        "sha256": "3bbd254dcc5780f7524f9d07af4aa981ba5e3e84cf32d7d4e04301b3943e8694",
+        "license": "ttfs/redistributable/happiness-sans/HapinessSans_License.pdf"
+      },
+      "profile_correction": "Exact licensed include_bytes fixture allowed after first compile-only failure; CoreText OS528/nonOS0 unchanged"
+    }
+  },
+  "candidate-build-state.json": {
+    "source_sha256": "c00a2aca164bec3e6263edd910be4d84fd49e1f2be24165e799ddd557d5c23c5",
+    "result": {
+      "phase": "complete",
+      "head": "676e3900c6490657229f9781e34f89c65c7126da",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp",
+        "--target-dir",
+        "target/pr-review",
+        "--jobs",
+        "8",
+        "--verbose"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "started_at": "2026-11-12T17:01:50.061594+00:00",
+      "rebuild": "Touched existing root lib/main mtimes only to invalidate other-worktree shared outputs; source bytes unchanged",
+      "exit": 0,
+      "elapsed_seconds": 173.824,
+      "completed_at": "2026-11-12T17:04:43.886239+00:00",
+      "binary": "output/pr-review/planet6897-clean20-integration-20261113/bin/candidate-native",
+      "sha256": "fb8402518e435467bdc4ee8b23ee57e2ee6f63804a6cbd87ecfadb54f7b80ccf",
+      "size": 73407920
+    }
+  },
+  "base-build-state.json": {
+    "source_sha256": "f2e8ec71b39376d907a0c870891f368286f8b094409c35898bec6d0eb6e680ea",
+    "result": {
+      "phase": "complete",
+      "base": "31a422575722f634cfc2d9eb97e708da58aea188",
+      "source": "output/pr-review/planet6897-clean20-integration-20261113/base-source",
+      "started_at": "2026-11-12T16:52:06.259969+00:00",
+      "exit": 0,
+      "elapsed_seconds": 244.771,
+      "completed_at": "2026-11-12T16:56:11.031344+00:00",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp",
+        "--target-dir",
+        "target/pr-review",
+        "--jobs",
+        "8",
+        "--verbose"
+      ],
+      "binary": "output/pr-review/planet6897-clean20-integration-20261113/bin/base-native",
+      "sha256": "9300b48af51c5ef56c3039141bfd6677b23371d033bff328ca6718b2a010b673",
+      "size": 73319424
+    }
+  },
+  "candidate-wasm-producer.json": {
+    "source_sha256": "7810a6764d67348af345d49cb7989f046eebb3bc2c86548b66168f8243aa74c1",
+    "result": {
+      "head": "676e3900c6490657229f9781e34f89c65c7126da",
+      "command": [
+        "bash",
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "build": "Mac locked wrapper --no-opt local substitute; not Docker optimized",
+      "files": {
+        "rhwp.js": {
+          "sha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+          "bytes": 583724,
+          "root_studio_equal": true
+        },
+        "rhwp_bg.wasm": {
+          "sha256": "f0ac2045425b9642a9f3ea46f4b97965c3649412c940cc5f0df6f96c5a8d9eac",
+          "bytes": 31835380,
+          "root_studio_equal": true
+        }
+      }
+    }
+  },
+  "scope": {
+    "source_prs": [
+      8932,
+      8936,
+      8938,
+      8949,
+      8955,
+      8959,
+      8974,
+      8980,
+      8987,
+      8990,
+      8991,
+      8994,
+      8999,
+      9001,
+      9003,
+      9004,
+      9006,
+      9013,
+      9015,
+      9023
+    ],
+    "excluded_conflicts": [
+      8937,
+      8972,
+      8976
+    ],
+    "state": "로컬 Rust 게이트 완료. 최종 시각 검증·개별 리뷰·PR·CI·병합은 아직 미완료."
+  }
+}

@@ -1,0 +1,195 @@
+{
+  "source": {
+    "status": "complete",
+    "sectionIndex": 0,
+    "paragraphIndex": 23,
+    "nestedPath": [],
+    "runIndex": 21,
+    "charOffset": 0,
+    "character": "창",
+    "codePoint": 52285,
+    "charShapeId": 49
+  },
+  "inserted": "{\"ok\":true,\"charOffset\":2}",
+  "deleted": "{\"ok\":true,\"charOffset\":0}",
+  "body": {
+    "x": 113.387,
+    "y": 132.267,
+    "width": 566.933,
+    "height": 876.853
+  },
+  "afterFlow": {
+    "targetContained": true,
+    "targetOrdered": true,
+    "emptyTailOwned": true,
+    "empty": [
+      {
+        "page": 1,
+        "text": "",
+        "source": "section:0/para:24/char:0",
+        "bbox": {
+          "x": 113.387,
+          "y": 1001.493,
+          "width": 0,
+          "height": 10.667
+        }
+      },
+      {
+        "page": 1,
+        "text": "",
+        "source": "section:0/para:25/char:0",
+        "bbox": {
+          "x": 113.387,
+          "y": 1001.493,
+          "width": 0,
+          "height": 10.667
+        }
+      }
+    ]
+  },
+  "restoredFlow": {
+    "targetContained": true,
+    "targetOrdered": true,
+    "emptyTailOwned": true,
+    "empty": [
+      {
+        "page": 1,
+        "text": "",
+        "source": "section:0/para:24/char:0",
+        "bbox": {
+          "x": 113.387,
+          "y": 963.093,
+          "width": 0,
+          "height": 10.667
+        }
+      },
+      {
+        "page": 1,
+        "text": "",
+        "source": "section:0/para:25/char:0",
+        "bbox": {
+          "x": 113.387,
+          "y": 963.093,
+          "width": 0,
+          "height": 10.667
+        }
+      }
+    ]
+  },
+  "unchangedContentGeometry": true,
+  "editedFlowValid": true,
+  "orderedContentPreserved": true,
+  "restoredContent": true,
+  "targetOwnsInsertedText": true,
+  "beforePages": 763,
+  "afterPages": 763,
+  "restoredPages": 763,
+  "targetBefore": [
+    {
+      "page": 1,
+      "text": "창원대학교 데이타베이스 연구실",
+      "source": "section:0/para:23/char:0",
+      "bbox": {
+        "x": 282.16,
+        "y": 924.693,
+        "width": 377.173,
+        "height": 24
+      }
+    }
+  ],
+  "targetAfter": [
+    {
+      "page": 1,
+      "text": "검증창원대학교 데이타베이스 ",
+      "source": "section:0/para:23/char:0",
+      "bbox": {
+        "x": 300.773,
+        "y": 924.693,
+        "width": 351.947,
+        "height": 24
+      }
+    },
+    {
+      "page": 1,
+      "text": "연구실",
+      "source": "section:0/para:23/char:15",
+      "bbox": {
+        "x": 113.387,
+        "y": 963.093,
+        "width": 37.84,
+        "height": 24
+      }
+    }
+  ],
+  "targetRestored": [
+    {
+      "page": 1,
+      "text": "창원대학교 데이타베이스 연구실",
+      "source": "section:0/para:23/char:0",
+      "bbox": {
+        "x": 282.16,
+        "y": 924.693,
+        "width": 377.173,
+        "height": 24
+      }
+    }
+  ],
+  "changedOtherRuns": [
+    {
+      "before": {
+        "page": 1,
+        "text": "",
+        "source": "section:0/para:24/char:0",
+        "bbox": {
+          "x": 113.387,
+          "y": 963.093,
+          "width": 0,
+          "height": 10.667
+        }
+      },
+      "after": {
+        "page": 1,
+        "text": "",
+        "source": "section:0/para:24/char:0",
+        "bbox": {
+          "x": 113.387,
+          "y": 1001.493,
+          "width": 0,
+          "height": 10.667
+        }
+      }
+    },
+    {
+      "before": {
+        "page": 1,
+        "text": "",
+        "source": "section:0/para:25/char:0",
+        "bbox": {
+          "x": 113.387,
+          "y": 963.093,
+          "width": 0,
+          "height": 10.667
+        }
+      },
+      "after": {
+        "page": 1,
+        "text": "",
+        "source": "section:0/para:25/char:0",
+        "bbox": {
+          "x": 113.387,
+          "y": 1001.493,
+          "width": 0,
+          "height": 10.667
+        }
+      }
+    }
+  ],
+  "changedRestoredRuns": [],
+  "beforeTextSHA256": "61fa31c643224347af3d78c5df81528a97719bd2e25f3351187b7af1289dc802",
+  "restoredTextSHA256": "61fa31c643224347af3d78c5df81528a97719bd2e25f3351187b7af1289dc802",
+  "initial_overstrict_probe": {
+    "all_other_geometry_identical": false,
+    "all_restored_geometry_identical": true,
+    "interpretation": "편집·삭제는 저장 캐시 복원 또는 undo가 아니다. 원본 줄·빈 문단 점유 관계와 후속 내용 보존을 별도로 검사했다."
+  }
+}

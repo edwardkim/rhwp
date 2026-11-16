@@ -1,0 +1,80 @@
+{
+  "candidate": "b6a91166761b212d8501faf70b4b13e19b26474e",
+  "method": "Read-only XML attribute comparison; no Hancom execution.",
+  "files": [
+    {
+      "path": "samples/pr9071/issue8318/서식2-간단-rhwp.hwpx",
+      "sha256": "4585535c279dcc9742e48b819893869874a767451f6b1691f9754e1d469c6063"
+    },
+    {
+      "path": "samples/pr9071/issue8318/서식2-간단-rhwp-색고침.hwpx",
+      "sha256": "ae53283ec3dd1cf184c2ad1800656c2a236be2f080b45425d2157bc30468b712"
+    },
+    {
+      "path": "mydocs/pr/assets/jinho-von-choi-20261114/inputs/corrected-roundtrip/color.hwpx",
+      "sha256": "dafdd5bec972a6fd60c04fc16a9a9c2660fdee7eaeb83f0c73885721f52e6e51"
+    }
+  ],
+  "changedAttributes": [
+    {
+      "attributePath": "{http://www.hancom.co.kr/hwpml/2011/head}head/{http://www.hancom.co.kr/hwpml/2011/head}refList[0]/{http://www.hancom.co.kr/hwpml/2011/head}borderFills[0]/{http://www.hancom.co.kr/hwpml/2011/head}borderFill[1]/{http://www.hancom.co.kr/hwpml/2011/core}fillBrush[0]/{http://www.hancom.co.kr/hwpml/2011/core}winBrush[0]/@faceColor",
+      "before": "none",
+      "supplied2018Correction": "#FFFFFFFF",
+      "currentSaved": "#FFFFFFFF"
+    },
+    {
+      "attributePath": "{http://www.hancom.co.kr/hwpml/2011/head}head/{http://www.hancom.co.kr/hwpml/2011/head}refList[0]/{http://www.hancom.co.kr/hwpml/2011/head}charProperties[0]/{http://www.hancom.co.kr/hwpml/2011/head}charPr[0]/@shadeColor",
+      "before": "none",
+      "supplied2018Correction": "#FFFFFFFF",
+      "currentSaved": "#FFFFFFFF"
+    },
+    {
+      "attributePath": "{http://www.hancom.co.kr/hwpml/2011/head}head/{http://www.hancom.co.kr/hwpml/2011/head}refList[0]/{http://www.hancom.co.kr/hwpml/2011/head}charProperties[0]/{http://www.hancom.co.kr/hwpml/2011/head}charPr[1]/@shadeColor",
+      "before": "none",
+      "supplied2018Correction": "#FFFFFFFF",
+      "currentSaved": "#FFFFFFFF"
+    },
+    {
+      "attributePath": "{http://www.hancom.co.kr/hwpml/2011/head}head/{http://www.hancom.co.kr/hwpml/2011/head}refList[0]/{http://www.hancom.co.kr/hwpml/2011/head}charProperties[0]/{http://www.hancom.co.kr/hwpml/2011/head}charPr[2]/@shadeColor",
+      "before": "none",
+      "supplied2018Correction": "#FFFFFFFF",
+      "currentSaved": "#FFFFFFFF"
+    },
+    {
+      "attributePath": "{http://www.hancom.co.kr/hwpml/2011/head}head/{http://www.hancom.co.kr/hwpml/2011/head}refList[0]/{http://www.hancom.co.kr/hwpml/2011/head}charProperties[0]/{http://www.hancom.co.kr/hwpml/2011/head}charPr[3]/@shadeColor",
+      "before": "none",
+      "supplied2018Correction": "#FFFFFFFF",
+      "currentSaved": "#FFFFFFFF"
+    },
+    {
+      "attributePath": "{http://www.hancom.co.kr/hwpml/2011/head}head/{http://www.hancom.co.kr/hwpml/2011/head}refList[0]/{http://www.hancom.co.kr/hwpml/2011/head}charProperties[0]/{http://www.hancom.co.kr/hwpml/2011/head}charPr[4]/@shadeColor",
+      "before": "none",
+      "supplied2018Correction": "#FFFFFFFF",
+      "currentSaved": "#FFFFFFFF"
+    },
+    {
+      "attributePath": "{http://www.hancom.co.kr/hwpml/2011/head}head/{http://www.hancom.co.kr/hwpml/2011/head}refList[0]/{http://www.hancom.co.kr/hwpml/2011/head}charProperties[0]/{http://www.hancom.co.kr/hwpml/2011/head}charPr[5]/@shadeColor",
+      "before": "none",
+      "supplied2018Correction": "#FFFFFFFF",
+      "currentSaved": "#FFFFFFFF"
+    },
+    {
+      "attributePath": "{http://www.hancom.co.kr/hwpml/2011/head}head/{http://www.hancom.co.kr/hwpml/2011/head}refList[0]/{http://www.hancom.co.kr/hwpml/2011/head}charProperties[0]/{http://www.hancom.co.kr/hwpml/2011/head}charPr[6]/@shadeColor",
+      "before": "none",
+      "supplied2018Correction": "#FFFFFFFF",
+      "currentSaved": "#FFFFFFFF"
+    },
+    {
+      "attributePath": "{http://www.hancom.co.kr/hwpml/2011/head}head/{http://www.hancom.co.kr/hwpml/2011/head}refList[0]/{http://www.hancom.co.kr/hwpml/2011/head}charProperties[0]/{http://www.hancom.co.kr/hwpml/2011/head}charPr[7]/@shadeColor",
+      "before": "none",
+      "supplied2018Correction": "#FFFFFFFF",
+      "currentSaved": "#FFFFFFFF"
+    },
+    {
+      "attributePath": "{http://www.hancom.co.kr/hwpml/2011/head}head/{http://www.hancom.co.kr/hwpml/2011/head}refList[0]/{http://www.hancom.co.kr/hwpml/2011/head}charProperties[0]/{http://www.hancom.co.kr/hwpml/2011/head}charPr[8]/@shadeColor",
+      "before": "none",
+      "supplied2018Correction": "#FFFFFFFF",
+      "currentSaved": "#FFFFFFFF"
+    }
+  ]
+}

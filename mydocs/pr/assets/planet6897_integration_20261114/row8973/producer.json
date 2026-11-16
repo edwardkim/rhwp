@@ -1,0 +1,111 @@
+{
+  "status": "completed",
+  "results": [
+    {
+      "name": "format-check",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 15.047
+    },
+    {
+      "name": "native-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp",
+        "-j",
+        "8",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review"
+      ],
+      "exit": 0,
+      "seconds": 165.158
+    },
+    {
+      "name": "native-whole",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--hwp",
+        "samples/issue8969/36400485-owned-tac-lines.hwpx",
+        "--pdf",
+        "pdf/issue8969/36400485-2020.pdf",
+        "--key",
+        "owned-tac",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/rhwp-native",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "8",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/native"
+      ],
+      "exit": 0,
+      "seconds": 68.22
+    },
+    {
+      "name": "fresh-wasm",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "exit": 0,
+      "seconds": 301.54
+    },
+    {
+      "name": "wasm-whole",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--hwp",
+        "samples/issue8969/36400485-owned-tac-lines.hwpx",
+        "--pdf",
+        "pdf/issue8969/36400485-2020.pdf",
+        "--key",
+        "owned-tac",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/rhwp-native",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "8",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/pkg",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/wasm"
+      ],
+      "exit": 0,
+      "seconds": 136.803
+    }
+  ],
+  "parent": "613d992a61cd1e0da317b3875a686cc73d50c010",
+  "source_sha256": "1c2fec4b97a0ed065714c5416e863dc94f3c6aa1a219ec89ea593bd20b4fc8bc",
+  "patch_sha256": "200b2d55cff59046244e9a496a95d36d006c6c8bbef808443c2ed2f70d7f9b25",
+  "active": null,
+  "native_sha256": "e3d439c6412b2633583feb441abc71c7959f86258b6df4b4cfc6d160109cf4ef",
+  "wasm_sha256": "6e9b6ca665848ba49b87f9c2488bd4a9c4d70f62311ee17e3a8df6a6b2124174",
+  "js_sha256": "2d48f8a6c3ff7f848f08725bb54d04094b296af1a40ae61203081a7cf8061a1a"
+}

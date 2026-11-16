@@ -1,0 +1,37 @@
+{
+  "product_source": "eeaecff59e834f28437c98b509089bbb36a7682d",
+  "nativeSha256": "095de7a5bd69cd627cf62017f513bb82760d3c4d145d13a6719700ba74297f11",
+  "samples": [
+    {
+      "input": "samples/tac-case-001.hwp",
+      "text": "TC #20\ntacglkj 표 3 배치 시작  \n1\n2\n3 tacglkj\n4 tacglkj\n  4 tacglkj 표 다음\ntacglkj 가나 옮\n\n",
+      "sha256": "116309c68485133125781be0e6cd5b3770bac403bb4704d5cc20747ae2031f1f",
+      "same_as_before_layout_correction": true
+    },
+    {
+      "input": "samples/tac-case-002.hwp",
+      "text": "TC #20\ntacglkj 표 3 배치 시작  \n1\n2\n3 tacglkj\n4 tacglkj\n  4 \ntacglkj 표 다음\ntacglkj 가나 옮\n\n",
+      "sha256": "a619372af63216bed3d722f38534244cb156335796506f5d2b933afaa073f776",
+      "same_as_before_layout_correction": true
+    },
+    {
+      "input": "samples/tac-case-003.hwp",
+      "text": "TC #20\ntacglkj 표 3 배치 시작  \n1\n2\n3 tacglkj\n4 tacglkj\n  4 tacglkj \n표 다음\ntacglkj 가나 옮\n\n",
+      "sha256": "0af178bac11cdbe9526d54ef6d2c583d85181ed60976c01260197fe83a0f51ed",
+      "same_as_before_layout_correction": true
+    },
+    {
+      "input": "samples/tac-case-004.hwp",
+      "text": "TC #20\ntacglkj 표 3 배치 시작  \n1\n2\n3 tacglkj\n4 tacglkj\n  4 \ntacglkj 표 다음\ntacglkj 가나 옮\n\n",
+      "sha256": "a619372af63216bed3d722f38534244cb156335796506f5d2b933afaa073f776",
+      "same_as_before_layout_correction": true
+    },
+    {
+      "input": "samples/tac-case-005.hwp",
+      "text": "TC #20\ntacglkj 표 3 배치 시작  \n1\n2\n3 tacglkj\n4 tacglkj\n  \n4 tacglkj 표 다음\ntacglkj 가나 옮\n\n",
+      "sha256": "4a5b0180f4992d7b542b9c8ac6df174bc0d68277c1a9f11e73f747e86b1a5ab4",
+      "same_as_before_layout_correction": true
+    }
+  ],
+  "replace_help": "명령: replace-text\n그룹: edit\n\n사용법:\n  rhwp edit replace-text <파일.hwp|파일.hwpx> --find <문자열> --replace <문자열> [-o <출력>] [--ignore-case] [--occurrence <k>] [--dry-run] [--json] [--verify] [--expect-sha256 <해시>]\n\n설명:\n  본문·표 셀 일괄 치환 — --find/--replace, --occurrence 로 문서 순서 k번째만 (0부터, 생략 시 전체)\n\n옵션:\n  -h, --help                   도움말 표시\n  --find <문자열>           찾을 문자열 (빈 문자열 불가)\n  --replace <문자열>        바꿀 문자열 (\"\" 이면 삭제)\n  --ignore-case             대소문자 무시\n  --occurrence <k>          문서 순서 k번째 매치만 치환 (0부터, 0=첫 매치, 생략 시 전체)\n  -o, --output <파일>       출력 파일 (기본: 입력명_replaced.<입력과 같은 확장자>)\n  --dry-run                 파일을 쓰지 않고 치환 예정 건수만 보고\n  --json                    계약 봉투 JSON을 stdout에 출력\n  --verify                  저장 후 다시 열어 변경 내용을 검증\n  --expect-sha256 <해시>    입력 파일의 SHA-256이 일치할 때만 진행\n\n예시:\n  rhwp edit replace-text --help\n  rhwp capabilities --search replace-text\n\n세부 설명:\n  edit replace-text <파일.hwp|파일.hwpx> --find <문자열> --replace <문자열> [-o <출력>] [--ignore-case] [--occurrence <k>] [--dry-run] [--json] [--verify] [--expect-sha256 <해시>]\n      문서 전체 일괄 치환 (기관명 변경·연도 갱신·용어 정비). 본문+표 셀\n\n      --find <문자열>           찾을 문자열 (빈 문자열 불가)\n      --replace <문자열>        바꿀 문자열 (\"\" 이면 삭제)\n      --ignore-case             대소문자 무시\n      --occurrence <k>          문서 순서 k번째 매치만 치환 (0부터, 0=첫 매치, 생략 시 전체)\n      -o, --output <파일>       출력 파일 (기본: 입력명_replaced.<입력과 같은 확장자>)\n      --dry-run                 파일을 쓰지 않고 치환 예정 건수만 보고\n      --json                    계약 봉투 JSON을 stdout에 출력\n      치환 0건이면 출력 파일을 만들지 않음\n      --verify                  저장 후 다시 열어 변경 내용을 검증\n      --expect-sha256 <해시>    입력 파일의 SHA-256이 일치할 때만 진행\n\n(전체 도움말: rhwp --help · JSON 자기서술: rhwp capabilities --search replace-text)\n"
+}

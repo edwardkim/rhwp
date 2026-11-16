@@ -1,0 +1,17 @@
+{
+  "reason": "Shared target reused candidate WASM for base without compiling; source-specific API and SHA mismatch",
+  "invalid_sha256": "a1596ff11c174bdc52da36f7951d7b3e3abfee5449ee612fd9c85b1e0756dbad",
+  "invalid_groups": [
+    "base-site",
+    "base incoming Studio",
+    "incoming-base-wasm",
+    "base-hwpx-wasm",
+    "base-hwp3-wasm",
+    "base default and initial-screen runs"
+  ],
+  "valid": [
+    "candidate verification",
+    "fresh base Native binary and outputs"
+  ],
+  "next": "Clean rhwp WASM release artifacts; build base to separate corrected package, assert absence of candidate-only API, then rerun invalid groups"
+}

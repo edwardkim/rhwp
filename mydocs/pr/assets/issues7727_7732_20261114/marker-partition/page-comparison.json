@@ -1,0 +1,68 @@
+{
+  "native": {
+    "cbta": {
+      "pages": 204,
+      "changes": [
+        {
+          "page": 96,
+          "before": "97.00",
+          "after": "99.72"
+        }
+      ],
+      "decreases": []
+    },
+    "recommendation": {
+      "pages": 22,
+      "changes": [],
+      "decreases": []
+    },
+    "exam": {
+      "pages": 8,
+      "changes": [],
+      "decreases": []
+    },
+    "api": {
+      "pages": 105,
+      "changes": [],
+      "decreases": []
+    },
+    "footnote": {
+      "pages": 50,
+      "changes": [],
+      "decreases": []
+    }
+  },
+  "wasm": {
+    "cbta": {
+      "pages": 204,
+      "changes": [
+        {
+          "page": 96,
+          "before": "96.99",
+          "after": "99.74"
+        }
+      ],
+      "decreases": []
+    },
+    "recommendation": {
+      "pages": 22,
+      "changes": [],
+      "decreases": []
+    },
+    "exam": {
+      "pages": 8,
+      "changes": [],
+      "decreases": []
+    },
+    "api": {
+      "pages": 105,
+      "changes": [],
+      "decreases": []
+    },
+    "footnote": {
+      "pages": 50,
+      "changes": [],
+      "decreases": []
+    }
+  }
+}

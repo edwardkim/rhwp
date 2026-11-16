@@ -1,0 +1,49 @@
+{
+  "input": "tests/fixtures/issue7730/underline-position-probe.hwpx",
+  "input_sha256": "802d7aa854f06022c4415688f8b554b8ac175cf335c57fbb99000dd3f92351fe",
+  "pdf": "pdf/issue7730/underline-position-probe-2020.pdf",
+  "pdf_sha256": "4d0a5825c0f82d89e3cccc9fc0544629215693e2be6e58c4940ba7f628f0981f",
+  "engine": "2020",
+  "hancom_version": "11.0.0.9136",
+  "print_method": 0,
+  "observations_points": [
+    {
+      "font_position": -12,
+      "glyph_baseline": 79.4731445,
+      "underline_y": 82.9489746
+    },
+    {
+      "font_position": 0,
+      "glyph_baseline": 100.0906143,
+      "underline_y": 102.1279907
+    },
+    {
+      "font_position": 12,
+      "glyph_baseline": 120.7080841,
+      "underline_y": 121.3070068
+    }
+  ],
+  "conclusion": "줄 간격은 약19.179pt다. 글자 위치 -12/0/+12의 본문 기준선은 추가1.4385pt씩 움직이지만 밑줄은 줄 간격만 따라간다. 아래 밑줄은 글자 위치 오프셋을 소비하지 않는다.",
+  "recorded_at": "2026-11-14T21:22:43.813317+09:00",
+  "validation": {
+    "native_exam_all_pages": 8,
+    "native_minimum": 97.79,
+    "fresh_wasm_exam_all_pages": 8,
+    "fresh_wasm_minimum": 97.78,
+    "goal_met": false,
+    "new_underline_tests": {
+      "before_pass": 1,
+      "before_fail": 1,
+      "after_pass": 2,
+      "after_fail": 0,
+      "additional_nbsp_relation_after_pass": 1,
+      "additional_nbsp_before_scope": "폐기한 언어 슬롯 후보를 포함한 진단 라이브러리; 정확한 base 결과로 재사용하지 않음"
+    },
+    "api_frame_tests": {
+      "before_pass": 0,
+      "before_fail": 3,
+      "after_pass": 3,
+      "after_fail": 0
+    }
+  }
+}

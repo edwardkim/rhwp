@@ -1,0 +1,308 @@
+{
+  "product_code_head": "d0cc46573c7505633721c19062e504faff017d59",
+  "full_log_sha256": "f2c4257038064aaf50af8a0b7a8afcc9d493af4f46545a7c8a3e2a6bc68ac0ab",
+  "prs": [
+    {
+      "pr": 8932,
+      "source_head": "c7b69ca0b8c466a89a4beae14628392e5fe2a2ff",
+      "test_sources": [
+        "tests/cases/issue_8931_cell_square_picture_tac_table_line.rs"
+      ],
+      "actual_test_count": 2,
+      "failed": [],
+      "test_results": [
+        "PASS [   0.065s] ( 5788/13420) rhwp::regression_suite_006 issue_8931_cell_square_picture_tac_table_line::tac_title_table_that_does_not_fit_beside_square_picture_starts_below_it",
+        "PASS [   0.072s] ( 5791/13420) rhwp::regression_suite_006 issue_8931_cell_square_picture_tac_table_line::tac_title_table_that_fits_beside_square_picture_stays_beside_it"
+      ]
+    },
+    {
+      "pr": 8936,
+      "source_head": "65f8d022396de34fcf36184e9b11765a93e6d5b4",
+      "test_sources": [
+        "tests/cases/issue_8931_cell_square_picture_tac_table_line.rs",
+        "tests/cases/issue_8935_reflowed_cell_row_growth.rs"
+      ],
+      "actual_test_count": 4,
+      "failed": [],
+      "test_results": [
+        "PASS [   0.031s] ( 5147/13420) rhwp::regression_suite_004 issue_8935_reflowed_cell_row_growth::reflowed_cell_rows_grow_without_shrinking_stored_rows",
+        "PASS [   0.032s] ( 5149/13420) rhwp::regression_suite_004 issue_8935_reflowed_cell_row_growth::table_without_reflowed_growth_keeps_declared_rows",
+        "PASS [   0.065s] ( 5788/13420) rhwp::regression_suite_006 issue_8931_cell_square_picture_tac_table_line::tac_title_table_that_does_not_fit_beside_square_picture_starts_below_it",
+        "PASS [   0.072s] ( 5791/13420) rhwp::regression_suite_006 issue_8931_cell_square_picture_tac_table_line::tac_title_table_that_fits_beside_square_picture_stays_beside_it"
+      ]
+    },
+    {
+      "pr": 8938,
+      "source_head": "aeac6ca0c6a9200e5a0a9da2f2c1236048a6f359",
+      "test_sources": [
+        "tests/cases/issue_8934_square_host_lane_tail.rs"
+      ],
+      "actual_test_count": 1,
+      "failed": [],
+      "test_results": [
+        "PASS [   0.026s] ( 4314/13420) rhwp::regression_suite_001 issue_8934_square_host_lane_tail::next_paragraph_starts_after_square_lane_that_runs_below_table"
+      ]
+    },
+    {
+      "pr": 8949,
+      "source_head": "32669ca0e531e001d16f5c9b7d9b9d6d3c464e8e",
+      "test_sources": [
+        "tests/cases/issue_8931_cell_square_picture_tac_table_line.rs",
+        "tests/cases/issue_8935_reflowed_cell_row_growth.rs",
+        "tests/cases/issue_8947_squeeze_cell_stored_line.rs",
+        "tests/cases/issue_8948_block_table_page_flow.rs"
+      ],
+      "actual_test_count": 7,
+      "failed": [],
+      "test_results": [
+        "PASS [   0.031s] ( 5147/13420) rhwp::regression_suite_004 issue_8935_reflowed_cell_row_growth::reflowed_cell_rows_grow_without_shrinking_stored_rows",
+        "PASS [   0.032s] ( 5149/13420) rhwp::regression_suite_004 issue_8935_reflowed_cell_row_growth::table_without_reflowed_growth_keeps_declared_rows",
+        "PASS [   0.065s] ( 5788/13420) rhwp::regression_suite_006 issue_8931_cell_square_picture_tac_table_line::tac_title_table_that_does_not_fit_beside_square_picture_starts_below_it",
+        "PASS [   0.072s] ( 5791/13420) rhwp::regression_suite_006 issue_8931_cell_square_picture_tac_table_line::tac_title_table_that_fits_beside_square_picture_stays_beside_it",
+        "PASS [   0.071s] ( 7839/13420) rhwp::regression_suite_012 issue_8948_block_table_page_flow::grown_block_table_pushes_the_closing_box_to_the_next_page",
+        "PASS [   0.036s] (12803/13420) rhwp::regression_suite_027 issue_8947_squeeze_cell_stored_line::break_title_cell_rewraps_the_overfull_stored_line",
+        "PASS [   0.049s] (12805/13420) rhwp::regression_suite_027 issue_8947_squeeze_cell_stored_line::squeeze_title_cell_keeps_its_single_stored_line"
+      ]
+    },
+    {
+      "pr": 8955,
+      "source_head": "efbe57a5d2dc5d22d59e65f44290ceb976448771",
+      "test_sources": [
+        "tests/cases/issue_8950_forbidden_head_before_long_run.rs"
+      ],
+      "actual_test_count": 4,
+      "failed": [],
+      "test_results": [
+        "PASS [   0.028s] ( 4570/13420) rhwp::regression_suite_002 issue_8950_forbidden_head_before_long_run::source_paragraph_leaves_each_head_char_alone",
+        "PASS [   0.066s] ( 4573/13420) rhwp::regression_suite_002 issue_8950_forbidden_head_before_long_run::char_unit_head_char_moves_with_forbidden_tail",
+        "PASS [   0.062s] ( 4574/13420) rhwp::regression_suite_002 issue_8950_forbidden_head_before_long_run::word_unit_head_char_stays_without_forbidden_tail_or_long_run",
+        "PASS [   0.073s] ( 4575/13420) rhwp::regression_suite_002 issue_8950_forbidden_head_before_long_run::word_unit_head_char_moves_with_forbidden_tail"
+      ]
+    },
+    {
+      "pr": 8959,
+      "source_head": "1f5878dfd4a19ceb3652bdeef46806f3e07fcc34",
+      "test_sources": [
+        "tests/cases/issue_8939_stored_bit31_cell_flow.rs"
+      ],
+      "actual_test_count": 3,
+      "failed": [],
+      "test_results": [
+        "PASS [   0.030s] ( 6801/13420) rhwp::regression_suite_009 issue_8939_stored_bit31_cell_flow::nested_tac_form_cell_uses_stored_ladder_that_fits_declared_height",
+        "PASS [   0.037s] ( 6802/13420) rhwp::regression_suite_009 issue_8939_stored_bit31_cell_flow::rhwp_saved_section_keeps_synthetic_line_tags_through_marker",
+        "PASS [   0.038s] ( 6803/13420) rhwp::regression_suite_009 issue_8939_stored_bit31_cell_flow::stored_bit31_line_keeps_saved_page_reset_and_round_trips"
+      ]
+    },
+    {
+      "pr": 8974,
+      "source_head": "4f9d4f55cf41a1ad34e9a0e604fc4e18582378bf",
+      "test_sources": [
+        "tests/cases/issue_8968_stored_rows_reflowed_cell.rs"
+      ],
+      "actual_test_count": 1,
+      "failed": [],
+      "test_results": [
+        "PASS [   0.027s] ( 4572/13420) rhwp::regression_suite_002 issue_8968_stored_rows_reflowed_cell::measured_rows_matching_declared_cells_keep_table_out_of_object_cache"
+      ]
+    },
+    {
+      "pr": 8980,
+      "source_head": "602feeae50c6978ae0723563bf4a9536850f3d6c",
+      "test_sources": [
+        "tests/cases/issue_8979_equation_unbalanced_paren_group.rs"
+      ],
+      "actual_test_count": 2,
+      "failed": [],
+      "test_results": [
+        "PASS [   0.112s] (12806/13420) rhwp::regression_suite_027 issue_8979_equation_unbalanced_paren_group::variance_formula_from_report_renders_like_balanced_form",
+        "PASS [   0.117s] (12807/13420) rhwp::regression_suite_027 issue_8979_equation_unbalanced_paren_group::bar_group_closes_at_outer_paren_boundary"
+      ]
+    },
+    {
+      "pr": 8987,
+      "source_head": "4fadcc92fc5b8a913a71ab370f23e914fbc84adf",
+      "test_sources": [
+        "tests/cases/issue_8971_picture_cell_empty_line.rs"
+      ],
+      "actual_test_count": 1,
+      "failed": [],
+      "test_results": [
+        "PASS [   0.048s] (11822/13420) rhwp::regression_suite_024 issue_8971_picture_cell_empty_line::empty_picture_cell_line_does_not_grow_picture_row"
+      ]
+    },
+    {
+      "pr": 8990,
+      "source_head": "20e8ebacbe0bacf4f69770677aeea153c794f186",
+      "test_sources": [
+        "tests/cases/issue_8985_plain_command_guide.rs",
+        "tests/edit_format_preserve_contract.rs"
+      ],
+      "actual_test_count": 10,
+      "failed": [],
+      "test_results": [
+        "PASS [   0.017s] ( 4316/13420) rhwp::regression_suite_001 issue_8985_plain_command_guide::plain_command_guide_boundaries",
+        "PASS [   0.030s] ( 4317/13420) rhwp::regression_suite_001 issue_8985_plain_command_guide::unfilled_plain_command_body_guide_is_not_printed",
+        "PASS [   0.040s] ( 4320/13420) rhwp::regression_suite_001 issue_8985_plain_command_guide::unfilled_plain_command_form_guides_are_not_printed_but_dirty_value_is",
+        "PASS [   0.035s] ( 5909/13420) rhwp::regression_suite_007 edit_format_preserve_contract::dry_run_reports_no_output_format_and_writes_nothing",
+        "PASS [   0.050s] ( 5911/13420) rhwp::regression_suite_007 edit_format_preserve_contract::explicit_hwpx_output_for_hwp_input_warns_and_keeps_hwp5",
+        "PASS [   0.057s] ( 5913/13420) rhwp::regression_suite_007 edit_format_preserve_contract::explicit_hwp_output_for_hwpx_input_is_honoured_with_warning",
+        "PASS [   0.048s] ( 5918/13420) rhwp::regression_suite_007 edit_format_preserve_contract::hwp_input_keeps_hwp5_output",
+        "PASS [   0.081s] ( 5921/13420) rhwp::regression_suite_007 edit_format_preserve_contract::fill_fields_hwpx_input_defaults_to_hwpx_output",
+        "PASS [   0.075s] ( 5924/13420) rhwp::regression_suite_007 edit_format_preserve_contract::replace_text_hwpx_input_defaults_to_hwpx_output",
+        "PASS [   0.094s] ( 5929/13420) rhwp::regression_suite_007 edit_format_preserve_contract::set_cell_hwpx_input_defaults_to_hwpx_output"
+      ]
+    },
+    {
+      "pr": 8991,
+      "source_head": "31adda0be0ef92df240fe4205fa09f26b6705fbd",
+      "test_sources": [
+        "tests/cases/issue_2792_search_nested_tables.rs"
+      ],
+      "actual_test_count": 15,
+      "failed": [],
+      "test_results": [
+        "PASS [   0.023s] ( 9007/13420) rhwp::regression_suite_016 issue_2792_search_nested_tables::body_and_outer_cell_matches_keep_their_order",
+        "PASS [   0.020s] ( 9009/13420) rhwp::regression_suite_016 issue_2792_search_nested_tables::flat_document_envelope_is_unchanged",
+        "PASS [   0.018s] ( 9012/13420) rhwp::regression_suite_016 issue_2792_search_nested_tables::grep_finds_table_text_inside_textbox",
+        "PASS [   0.021s] ( 9013/13420) rhwp::regression_suite_016 issue_2792_search_nested_tables::issue_8989_extract_data_finds_values_in_nested_cells",
+        "PASS [   0.017s] ( 9014/13420) rhwp::regression_suite_016 issue_2792_search_nested_tables::issue_8989_extract_data_reads_tables_inside_textbox",
+        "PASS [   0.020s] ( 9015/13420) rhwp::regression_suite_016 issue_2792_search_nested_tables::issue_8989_one_level_and_flat_matches_have_no_cell_path",
+        "PASS [   0.019s] ( 9016/13420) rhwp::regression_suite_016 issue_2792_search_nested_tables::issue_8989_textbox_table_match_carries_textbox_step",
+        "PASS [   0.021s] ( 9017/13420) rhwp::regression_suite_016 issue_2792_search_nested_tables::issue_8989_search_cell_path_names_the_inner_cell",
+        "PASS [   0.017s] ( 9018/13420) rhwp::regression_suite_016 issue_2792_search_nested_tables::limit_still_stops_early_with_nesting",
+        "PASS [   0.018s] ( 9019/13420) rhwp::regression_suite_016 issue_2792_search_nested_tables::nested_depth_reports_actual_depth",
+        "PASS [   0.019s] ( 9020/13420) rhwp::regression_suite_016 issue_2792_search_nested_tables::nested_match_omits_page_rather_than_reporting_a_wrong_one",
+        "PASS [   0.021s] ( 9021/13420) rhwp::regression_suite_016 issue_2792_search_nested_tables::nested_match_addresses_the_containing_outer_cell",
+        "PASS [   0.019s] ( 9022/13420) rhwp::regression_suite_016 issue_2792_search_nested_tables::nested_match_serializes_depth_and_no_page",
+        "PASS [   0.019s] ( 9024/13420) rhwp::regression_suite_016 issue_2792_search_nested_tables::nested_table_text_is_found",
+        "PASS [   0.016s] ( 9025/13420) rhwp::regression_suite_016 issue_2792_search_nested_tables::replace_all_native_replaces_nested_only_token"
+      ]
+    },
+    {
+      "pr": 8994,
+      "source_head": "5b0e9969dd8b0cdd183696dcf2b0c9a784dda4e9",
+      "test_sources": [
+        "tests/cases/issue_8981_overlap_spacer_paragraph_bands.rs"
+      ],
+      "actual_test_count": 1,
+      "failed": [],
+      "test_results": [
+        "PASS [   0.023s] ( 7485/13420) rhwp::regression_suite_011 issue_8981_overlap_spacer_paragraph_bands::overlap_ladder_empty_line_advance_keeps_one_spacing_band"
+      ]
+    },
+    {
+      "pr": 8999,
+      "source_head": "bb5bda615db0715a5bede34b6f57149d7b880df2",
+      "test_sources": [
+        "tests/cases/issue_8153_print_glyph_geometry.rs",
+        "tests/cases/issue_8985_plain_command_guide.rs",
+        "tests/cases/issue_8986_cell_clip_table_border.rs",
+        "tests/edit_format_preserve_contract.rs"
+      ],
+      "actual_test_count": 13,
+      "failed": [],
+      "test_results": [
+        "PASS [   0.017s] ( 4316/13420) rhwp::regression_suite_001 issue_8985_plain_command_guide::plain_command_guide_boundaries",
+        "PASS [   0.030s] ( 4317/13420) rhwp::regression_suite_001 issue_8985_plain_command_guide::unfilled_plain_command_body_guide_is_not_printed",
+        "PASS [   0.040s] ( 4320/13420) rhwp::regression_suite_001 issue_8985_plain_command_guide::unfilled_plain_command_form_guides_are_not_printed_but_dirty_value_is",
+        "PASS [   0.035s] ( 5909/13420) rhwp::regression_suite_007 edit_format_preserve_contract::dry_run_reports_no_output_format_and_writes_nothing",
+        "PASS [   0.050s] ( 5911/13420) rhwp::regression_suite_007 edit_format_preserve_contract::explicit_hwpx_output_for_hwp_input_warns_and_keeps_hwp5",
+        "PASS [   0.057s] ( 5913/13420) rhwp::regression_suite_007 edit_format_preserve_contract::explicit_hwp_output_for_hwpx_input_is_honoured_with_warning",
+        "PASS [   0.048s] ( 5918/13420) rhwp::regression_suite_007 edit_format_preserve_contract::hwp_input_keeps_hwp5_output",
+        "PASS [   0.081s] ( 5921/13420) rhwp::regression_suite_007 edit_format_preserve_contract::fill_fields_hwpx_input_defaults_to_hwpx_output",
+        "PASS [   0.075s] ( 5924/13420) rhwp::regression_suite_007 edit_format_preserve_contract::replace_text_hwpx_input_defaults_to_hwpx_output",
+        "PASS [   0.094s] ( 5929/13420) rhwp::regression_suite_007 edit_format_preserve_contract::set_cell_hwpx_input_defaults_to_hwpx_output",
+        "PASS [   0.036s] ( 6173/13420) rhwp::regression_suite_007 issue_8986_cell_clip_table_border::nested_table_border_centers_stay_inside_enclosing_cell_clips",
+        "PASS [   0.032s] ( 6174/13420) rhwp::regression_suite_007 issue_8986_cell_clip_table_border::page_count_matches_hancom_print",
+        "PASS [   0.050s] ( 6177/13420) rhwp::regression_suite_007 issue_8986_cell_clip_table_border::print_device_clip_is_generation_independent"
+      ]
+    },
+    {
+      "pr": 9001,
+      "source_head": "f2447f15a87e71852366d72bad43191a000f42e4",
+      "test_sources": [
+        "tests/cases/issue_8993_rowbreak_overflowing_frame_split.rs"
+      ],
+      "actual_test_count": 1,
+      "failed": [],
+      "test_results": [
+        "PASS [   0.092s] ( 4578/13420) rhwp::regression_suite_002 issue_8993_rowbreak_overflowing_frame_split::overflowing_saved_rowbreak_frame_splits_on_the_current_page"
+      ]
+    },
+    {
+      "pr": 9003,
+      "source_head": "9b76f50f541a9bc38a64763304410a12398b3441",
+      "test_sources": [
+        "tests/cases/issue_8996_unedited_hwpx_export_table_heights.rs"
+      ],
+      "actual_test_count": 2,
+      "failed": [],
+      "test_results": [
+        "PASS [   0.963s] ( 7131/13420) rhwp::regression_suite_010 issue_8996_unedited_hwpx_export_table_heights::unedited_export_keeps_every_stored_table_height",
+        "PASS [   5.912s] ( 7180/13420) rhwp::regression_suite_010 issue_8996_unedited_hwpx_export_table_heights::reopened_hwpx_keeps_page_count_and_page_texts"
+      ]
+    },
+    {
+      "pr": 9004,
+      "source_head": "f536efeac1123c931af086597155ffa78a30a8af",
+      "test_sources": [
+        "tests/cases/issue_8995_reflowed_cell_tac_after_spaces.rs"
+      ],
+      "actual_test_count": 2,
+      "failed": [],
+      "test_results": [
+        "PASS [   0.030s] (10858/13420) rhwp::regression_suite_021 issue_8995_reflowed_cell_tac_after_spaces::reflowed_body_tac_table_on_second_line_keeps_line_start_pen",
+        "PASS [   0.030s] (10859/13420) rhwp::regression_suite_021 issue_8995_reflowed_cell_tac_after_spaces::reflowed_cell_tac_table_starts_after_leading_spaces_on_laid_line"
+      ]
+    },
+    {
+      "pr": 9006,
+      "source_head": "5b66f0df1a16c7ae50e1cf46698db95bfdcfcfef",
+      "test_sources": [
+        "tests/cases/issue_8998_guide_residue_run_axis.rs"
+      ],
+      "actual_test_count": 1,
+      "failed": [],
+      "test_results": [
+        "PASS [   0.070s] (11532/13420) rhwp::regression_suite_023 issue_8998_guide_residue_run_axis::hwpx_export_keeps_char_shape_boundaries_after_restored_guide_residue"
+      ]
+    },
+    {
+      "pr": 9013,
+      "source_head": "ae83180d8a4fda861e6307f2727e7916929b4490",
+      "test_sources": [
+        "tests/cases/issue_9010_long_output_file_names.rs"
+      ],
+      "actual_test_count": 1,
+      "failed": [],
+      "test_results": [
+        "PASS [   1.615s] (10888/13420) rhwp::regression_suite_021 issue_9010_long_output_file_names::long_source_names_still_write_every_page_within_the_name_limit"
+      ]
+    },
+    {
+      "pr": 9015,
+      "source_head": "79e9ac90ce8da3d0265b3f17b7f2e25d16fbe329",
+      "test_sources": [
+        "tests/cases/issue_9009_column_break_after_table_continuation.rs"
+      ],
+      "actual_test_count": 1,
+      "failed": [],
+      "test_results": [
+        "PASS [   0.127s] ( 8117/13420) rhwp::regression_suite_013 issue_9009_column_break_after_table_continuation::column_break_after_table_continuation_stays_below_the_fragment"
+      ]
+    },
+    {
+      "pr": 9023,
+      "source_head": "08fa291d82f3d28a1a826f044b15e18b439146a3",
+      "test_sources": [
+        "tests/cases/issue_9005_hidden_guide_cell_rows.rs"
+      ],
+      "actual_test_count": 1,
+      "failed": [],
+      "test_results": [
+        "PASS [   0.062s] ( 7836/13420) rhwp::regression_suite_012 issue_9005_hidden_guide_cell_rows::hidden_guide_cell_lays_out_one_line_and_table_ends_at_content"
+      ]
+    }
+  ],
+  "added_regression_note": "새 검사1건은 이 전체13420에 포함되지 않으며 별도모듈19건 실행으로 입증한다."
+}

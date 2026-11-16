@@ -1,0 +1,20 @@
+{
+  "source": "eb84afc0364c51031bb07cbbb013476293367990",
+  "command": [
+    "cargo",
+    "build",
+    "--locked",
+    "--profile",
+    "release-test",
+    "--features",
+    "native-skia",
+    "--lib",
+    "--bin",
+    "rhwp",
+    "-vv"
+  ],
+  "returncode": 0,
+  "seconds": 354.9,
+  "source_directory": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/base-eb84",
+  "sha256": "3c0ea3e3d0619331f0a9d5c5585510ed523270be59c5daf9957c20434cd11850"
+}

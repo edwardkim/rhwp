@@ -1,0 +1,11 @@
+{
+  "normal_faces": 1875,
+  "isolated_faces": 528,
+  "non_os_faces": [],
+  "os_roots": [
+    "/System/Library/Fonts/",
+    "/System/Library/PrivateFrameworks/FontServices.framework/Resources/Reserved/"
+  ],
+  "private_read_blocked": true,
+  "profile_sha256": "d6303bc13d7fdf3cad52056338eae3164b1a2b6049f09bccc70b6b097b093875"
+}

@@ -1,0 +1,41 @@
+{
+  "status": "success",
+  "job_id": "e2f7be42-a029-49db-920e-ac993c38cd66",
+  "output_path": "$REPO/output/pr-review/issues-7727-7732-20261114/relative-size-half-space-probe-2020.pdf",
+  "output_filename": "relative-size-half-space-probe-2020.pdf",
+  "size": 18883,
+  "sha256": "3666e08834b42cc453287ecc9a5c7f1daac74270c1786ea3070fc1ff3760c390",
+  "server": {
+    "job_id": "e2f7be42-a029-49db-920e-ac993c38cd66",
+    "status": "success",
+    "target": "pdf",
+    "input_filename": "relative-size-half-space-probe.hwpx",
+    "output_filename": "relative-size-half-space-probe-2020.pdf",
+    "size": 18883,
+    "sha256": "3666e08834b42cc453287ecc9a5c7f1daac74270c1786ea3070fc1ff3760c390",
+    "mime_type": "application/pdf",
+    "engine": "2020",
+    "engine_profile": "2020",
+    "hancom_version": "11.0.0.9136",
+    "backend": "hwp-managed-direct-dll-host",
+    "pdf_page_count": 1,
+    "logical_page_count": null,
+    "pdf_print_method": 0,
+    "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+    "font_scope": {
+      "mode": "session0",
+      "status": "verified",
+      "profile_source": "protected_config",
+      "session_id": 0,
+      "mapped_font_count": 2,
+      "registered_font_count": 2,
+      "failed_font_count": 0,
+      "parent_visibility": "verified",
+      "child_visibility": "verified"
+    },
+    "elapsed_ms": 11944,
+    "worker_elapsed_ms": 11071,
+    "worker_bits": 32,
+    "input_preprocess": "scripts_disabled"
+  }
+}

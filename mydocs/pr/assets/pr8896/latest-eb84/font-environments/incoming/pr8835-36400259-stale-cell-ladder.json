@@ -1,0 +1,131 @@
+{
+  "documentGlyphFallbacks": [
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 2,
+      "languageSlot": 0,
+      "source": "한양신명조"
+    },
+    {
+      "faces": [
+        "NotoSansKRThin-Bold"
+      ],
+      "fontId": 3,
+      "languageSlot": 0,
+      "source": "한양견고딕"
+    },
+    {
+      "faces": [
+        "HCRDotum"
+      ],
+      "fontId": 4,
+      "languageSlot": 0,
+      "source": "한양중고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 3,
+      "languageSlot": 1,
+      "source": "한양신명조"
+    },
+    {
+      "faces": [
+        "NotoSansKRThin-Bold"
+      ],
+      "fontId": 4,
+      "languageSlot": 1,
+      "source": "한양견고딕"
+    },
+    {
+      "faces": [
+        "HCRDotum"
+      ],
+      "fontId": 5,
+      "languageSlot": 1,
+      "source": "한양중고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 2,
+      "languageSlot": 2,
+      "source": "한양신명조"
+    },
+    {
+      "faces": [
+        "HCRDotum"
+      ],
+      "fontId": 3,
+      "languageSlot": 2,
+      "source": "한양중고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 2,
+      "languageSlot": 3,
+      "source": "한양신명조"
+    },
+    {
+      "faces": [
+        "HCRDotum"
+      ],
+      "fontId": 3,
+      "languageSlot": 3,
+      "source": "한양중고딕"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 2,
+      "languageSlot": 4,
+      "source": "한양신명조"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 2,
+      "languageSlot": 5,
+      "source": "한양신명조"
+    },
+    {
+      "faces": [
+        "HCRDotum"
+      ],
+      "fontId": 3,
+      "languageSlot": 5,
+      "source": "한양중고딕"
+    },
+    {
+      "faces": [
+        "NotoSerifKRExtraLight-Bold"
+      ],
+      "fontId": 2,
+      "languageSlot": 6,
+      "source": "명조"
+    }
+  ],
+  "documentSubstitutions": [],
+  "id": "native-webfont-f3e2b6c074a95b80776aeeb7",
+  "preserveSourceMetrics": true,
+  "substitutions": {
+    "굴림체": "D2Coding",
+    "맑은 고딕": "Pretendard-Regular",
+    "명조": "NotoSansKR-Regular",
+    "한양견고딕": "NotoSansKR-Regular",
+    "한양신명조": "NotoSansKR-Regular",
+    "한양중고딕": "NotoSansKR-Regular",
+    "한컴바탕": "HCRBatang"
+  },
+  "trueTypeFaces": [
+    "HCR Batang"
+  ]
+}

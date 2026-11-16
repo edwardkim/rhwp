@@ -1,0 +1,79 @@
+[
+  {
+    "number": 8912,
+    "state": "closed",
+    "state_reason": "completed",
+    "closed_at": "2026-11-15T13:49:37Z",
+    "html_url": "https://github.com/edwardkim/rhwp/issues/8912"
+  },
+  {
+    "number": 7631,
+    "state": "closed",
+    "state_reason": "completed",
+    "closed_at": "2026-11-15T13:49:29Z",
+    "html_url": "https://github.com/edwardkim/rhwp/issues/7631"
+  },
+  {
+    "number": 8318,
+    "state": "closed",
+    "state_reason": "completed",
+    "closed_at": "2026-11-15T13:49:36Z",
+    "html_url": "https://github.com/edwardkim/rhwp/issues/8318"
+  },
+  {
+    "number": 8307,
+    "state": "closed",
+    "state_reason": "completed",
+    "closed_at": "2026-11-15T13:49:34Z",
+    "html_url": "https://github.com/edwardkim/rhwp/issues/8307"
+  },
+  {
+    "number": 9046,
+    "state": "closed",
+    "state_reason": "completed",
+    "closed_at": "2026-11-15T13:49:39Z",
+    "html_url": "https://github.com/edwardkim/rhwp/issues/9046"
+  },
+  {
+    "number": 9049,
+    "state": "closed",
+    "state_reason": "completed",
+    "closed_at": "2026-11-15T13:49:41Z",
+    "html_url": "https://github.com/edwardkim/rhwp/issues/9049"
+  },
+  {
+    "number": 7381,
+    "state": "closed",
+    "state_reason": "completed",
+    "closed_at": "2026-11-15T13:49:28Z",
+    "html_url": "https://github.com/edwardkim/rhwp/issues/7381"
+  },
+  {
+    "number": 7711,
+    "state": "closed",
+    "state_reason": "completed",
+    "closed_at": "2026-11-15T13:49:30Z",
+    "html_url": "https://github.com/edwardkim/rhwp/issues/7711"
+  },
+  {
+    "number": 8083,
+    "state": "closed",
+    "state_reason": "completed",
+    "closed_at": "2026-11-15T13:49:32Z",
+    "html_url": "https://github.com/edwardkim/rhwp/issues/8083"
+  },
+  {
+    "number": 7445,
+    "state": "open",
+    "state_reason": null,
+    "closed_at": null,
+    "html_url": "https://github.com/edwardkim/rhwp/issues/7445"
+  },
+  {
+    "number": 7620,
+    "state": "open",
+    "state_reason": null,
+    "closed_at": null,
+    "html_url": "https://github.com/edwardkim/rhwp/issues/7620"
+  }
+]

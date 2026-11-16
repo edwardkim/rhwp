@@ -1,0 +1,149 @@
+[
+  {
+    "key": "yeongwol",
+    "page": "1",
+    "baseline": "100.00",
+    "candidate": "100.00",
+    "decline": false
+  },
+  {
+    "key": "yeongwol",
+    "page": "3",
+    "baseline": "100.00",
+    "candidate": "100.00",
+    "decline": false
+  },
+  {
+    "key": "seo-body-list-typed",
+    "page": "1",
+    "baseline": "100.00",
+    "candidate": "100.00",
+    "decline": false
+  },
+  {
+    "key": "nested",
+    "page": "1",
+    "baseline": "98.59",
+    "candidate": "98.66",
+    "decline": false
+  },
+  {
+    "key": "nested",
+    "page": "2",
+    "baseline": "99.98",
+    "candidate": "99.99",
+    "decline": false
+  },
+  {
+    "key": "nested",
+    "page": "3",
+    "baseline": "100.00",
+    "candidate": "100.00",
+    "decline": false
+  },
+  {
+    "key": "nested",
+    "page": "4",
+    "baseline": "99.96",
+    "candidate": "99.95",
+    "decline": true
+  },
+  {
+    "key": "nested",
+    "page": "5",
+    "baseline": "99.99",
+    "candidate": "99.99",
+    "decline": false
+  },
+  {
+    "key": "nested",
+    "page": "6",
+    "baseline": "100.00",
+    "candidate": "100.00",
+    "decline": false
+  },
+  {
+    "key": "nested",
+    "page": "7",
+    "baseline": "99.99",
+    "candidate": "99.99",
+    "decline": false
+  },
+  {
+    "key": "nested",
+    "page": "8",
+    "baseline": "100.00",
+    "candidate": "100.00",
+    "decline": false
+  },
+  {
+    "key": "nested",
+    "page": "9",
+    "baseline": "100.00",
+    "candidate": "100.00",
+    "decline": false
+  },
+  {
+    "key": "nested",
+    "page": "10",
+    "baseline": "98.83",
+    "candidate": "98.83",
+    "decline": false
+  },
+  {
+    "key": "nested",
+    "page": "11",
+    "baseline": "99.10",
+    "candidate": "99.09",
+    "decline": true
+  },
+  {
+    "key": "nested",
+    "page": "12",
+    "baseline": "100.00",
+    "candidate": "100.00",
+    "decline": false
+  },
+  {
+    "key": "nested",
+    "page": "13",
+    "baseline": "99.85",
+    "candidate": "99.85",
+    "decline": false
+  },
+  {
+    "key": "nested",
+    "page": "14",
+    "baseline": "98.70",
+    "candidate": "98.69",
+    "decline": true
+  },
+  {
+    "key": "nested",
+    "page": "15",
+    "baseline": "99.19",
+    "candidate": "99.19",
+    "decline": false
+  },
+  {
+    "key": "nested",
+    "page": "16",
+    "baseline": "99.99",
+    "candidate": "100.00",
+    "decline": false
+  },
+  {
+    "key": "nested",
+    "page": "17",
+    "baseline": "99.98",
+    "candidate": "99.98",
+    "decline": false
+  },
+  {
+    "key": "seo-pic-crop-01",
+    "page": "1",
+    "baseline": "100.00",
+    "candidate": "100.00",
+    "decline": false
+  }
+]

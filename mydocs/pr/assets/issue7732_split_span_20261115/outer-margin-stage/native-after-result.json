@@ -1,0 +1,27 @@
+{
+  "scope": "nested Native 전17쪽. fresh WASM/전체 보호/최종 PR 게이트 완료를 의미하지 않음.",
+  "code_commit": "2749e491e843ec851de12467751ec200ab551014",
+  "binary_sha256": "ba096e2b582cdb21be98d67724ec14b4489cb529bf6be350bb445d8aa5a4b76e",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+  "reference_pdf": "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+  "reference_pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+  "metric": "silhouette_raw_match_percent",
+  "radius_px": 2,
+  "dpi": 96,
+  "compat": "2022",
+  "profile": "print",
+  "baseline_sha256": "43c59cf77a4a86b3744d3df30eb71469de70b584ccc9cb165fa8f7b7884d2e1f",
+  "pages": 17,
+  "decreases": [],
+  "tsv": "native-after.tsv",
+  "tsv_sha256": "4144f4d00c98c54b8c35b26309c00c86caedeee413aa78059bef0bc231ae1fcc",
+  "direct_read_pages": [
+    1,
+    10,
+    11,
+    14,
+    15
+  ],
+  "direct_reading": "1·10·11·14·15쪽의 review와 overlay를 모두 직접 판독했다. 원본 글줄·표·밑줄의 소속이 유지되며 새 누락·중복은 관측되지 않았다. 100%는 픽셀 파일 SHA 동일성이 아닌 2px raw 표시값이다."
+}

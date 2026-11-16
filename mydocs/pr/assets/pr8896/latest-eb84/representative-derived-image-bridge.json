@@ -1,0 +1,26 @@
+[
+  {
+    "backend": "native",
+    "artifact": "mydocs/pr/assets/pr8896/latest-eb84/focus/native/issue8693-table-end-row-clamp/review/review_001.png",
+    "sha256": "f1e09b98b550be3bbecb237d766fc2117f79b454e5d89f06a408f9e98eae5282",
+    "derivation": "previous review/overlay reused only after exact actual candidate PNG and independent PDF PNG byte hashes matched"
+  },
+  {
+    "backend": "native",
+    "artifact": "mydocs/pr/assets/pr8896/latest-eb84/focus/native/issue8693-table-end-row-clamp/overlay/overlay_001.png",
+    "sha256": "2558231c2137aea7cd45f3a6fb02434a3b655c51b4a78b4ab8c7f6b0cd798a8d",
+    "derivation": "previous review/overlay reused only after exact actual candidate PNG and independent PDF PNG byte hashes matched"
+  },
+  {
+    "backend": "wasm",
+    "artifact": "mydocs/pr/assets/pr8896/latest-eb84/focus/wasm/issue8693-table-end-row-clamp/review/review_001.png",
+    "sha256": "d9b7e1910d31be5f8bb1f1ec5f91d0b79019ba389537b9d27201a06a57bad284",
+    "derivation": "previous review/overlay reused only after exact actual candidate PNG and independent PDF PNG byte hashes matched"
+  },
+  {
+    "backend": "wasm",
+    "artifact": "mydocs/pr/assets/pr8896/latest-eb84/focus/wasm/issue8693-table-end-row-clamp/overlay/overlay_001.png",
+    "sha256": "25bd89b9de9ac326c5bb357af477ff57d8b0a160339e1966c36f9dd9b1e9538e",
+    "derivation": "previous review/overlay reused only after exact actual candidate PNG and independent PDF PNG byte hashes matched"
+  }
+]

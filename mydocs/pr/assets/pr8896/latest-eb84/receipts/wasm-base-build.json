@@ -1,0 +1,28 @@
+{
+  "source": "eb84afc0364c51031bb07cbbb013476293367990",
+  "command": [
+    "scripts/wasm-pack-locked.sh",
+    "--target",
+    "web",
+    "--out-dir",
+    "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/producers/pkg-base"
+  ],
+  "returncode": 0,
+  "seconds": 838.61,
+  "optimized": true,
+  "codegen_units": 16,
+  "forced_source_stamp": [
+    "src/lib.rs",
+    "src/main.rs"
+  ],
+  "artifacts": {
+    "rhwp_bg.wasm.d.ts": "6e5fcf649d13ce70b91a0cacdaf2711f15ed87caf5cb11ce2f03c470b507a895",
+    ".gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+    "package.json": "5dd1526473c7d0b8e59067ca464a926ef651dd15d5e3258465af863400ec0a19",
+    "rhwp.js": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+    "rhwp_bg.wasm": "9d424ab872c7d82f652d6c20f4193a7c857ac0527e5c50bc70188b6a8afb3bcb",
+    "README.md": "b61d728c2adc15aa0583b4d5a4932d5cd91c799265b8db2af154a18279cbc280",
+    "LICENSE": "1c3a7d5643b163a3ead4965e1bea33b832caee5bfca265efe42afcd7bc696b5b",
+    "rhwp.d.ts": "7d2421b274b5e4b2c1bcea57bfa71963b678c3de8d4c4ce1f3f75b2c42ba04b7"
+  }
+}

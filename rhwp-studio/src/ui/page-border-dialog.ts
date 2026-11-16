@@ -209,12 +209,15 @@ export class PageBorderDialog extends ModalDialog {
     this.bgPatternColorInput.style.cssText = 'width:74px;height:24px;';
     this.bgPatternSelect = document.createElement('select');
     this.bgPatternSelect.className = 'dialog-select';
+    // HWP 무늬 종류: -1=없음, 0~5 = ─ │ ＼ ／ ＋ × (#8978)
     [
-      ['0', '무늬 없음'],
-      ['1', '가로선'],
-      ['2', '세로선'],
-      ['3', '대각선'],
-      ['4', '격자'],
+      ['-1', '무늬 없음'],
+      ['0', '가로선'],
+      ['1', '세로선'],
+      ['2', '역슬래시'],
+      ['3', '슬래시'],
+      ['4', '십자'],
+      ['5', 'X자'],
     ].forEach(([value, text]) => {
       const option = document.createElement('option');
       option.value = value;
@@ -323,7 +326,7 @@ export class PageBorderDialog extends ModalDialog {
     this.bgNoneRadio.checked = this.settings.fillType !== 'solid';
     this.bgColorInput.value = this.settings.fillColor || '#ffffff';
     this.bgPatternColorInput.value = this.settings.patternColor || '#000000';
-    this.bgPatternSelect.value = String(this.settings.patternType || 0);
+    this.bgPatternSelect.value = String(this.settings.patternType ?? -1);
     const fillArea = this.dialog.querySelector<HTMLInputElement>(
       `input[name="page-border-fill-area"][value="${this.settings.fillArea || 'paper'}"]`,
     );

@@ -1,0 +1,135 @@
+[
+  {
+    "name": "arial.ttf",
+    "path": "C:\\Windows\\Fonts\\arial.ttf",
+    "bytes": 1036584,
+    "sha256": "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1",
+    "category": "Windows Desktop"
+  },
+  {
+    "name": "arialbd.ttf",
+    "path": "C:\\Windows\\Fonts\\arialbd.ttf",
+    "bytes": 980756,
+    "sha256": "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69",
+    "category": "Windows Desktop"
+  },
+  {
+    "name": "arialbi.ttf",
+    "path": "C:\\Windows\\Fonts\\arialbi.ttf",
+    "bytes": 721144,
+    "sha256": "e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994",
+    "category": "Windows Desktop"
+  },
+  {
+    "name": "ariali.ttf",
+    "path": "C:\\Windows\\Fonts\\ariali.ttf",
+    "bytes": 717428,
+    "sha256": "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62",
+    "category": "Windows Desktop"
+  },
+  {
+    "name": "batang.ttc",
+    "path": "C:\\Windows\\Fonts\\batang.ttc",
+    "bytes": 16271112,
+    "sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+    "category": "Korean Supplemental Fonts"
+  },
+  {
+    "name": "gulim.ttc",
+    "path": "C:\\Windows\\Fonts\\gulim.ttc",
+    "bytes": 13531200,
+    "sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+    "category": "Korean Supplemental Fonts"
+  },
+  {
+    "name": "times.ttf",
+    "path": "C:\\Windows\\Fonts\\times.ttf",
+    "bytes": 1195688,
+    "sha256": "2cff2a03d8034801979dd6d16f09b9a825c3d710fcf068f2ebfbf0e1425c87cf",
+    "category": "Windows Desktop"
+  },
+  {
+    "name": "timesbd.ttf",
+    "path": "C:\\Windows\\Fonts\\timesbd.ttf",
+    "bytes": 1175904,
+    "sha256": "621b4a765fef5d255d19530f4bf936104c6519f2e232a0eef1923474e5b9cf22",
+    "category": "Windows Desktop"
+  },
+  {
+    "name": "timesbi.ttf",
+    "path": "C:\\Windows\\Fonts\\timesbi.ttf",
+    "bytes": 881860,
+    "sha256": "2852329a38acf9252504669d9c23d5e88366cf77e8209d508f5e7198639648ea",
+    "category": "Windows Desktop"
+  },
+  {
+    "name": "timesi.ttf",
+    "path": "C:\\Windows\\Fonts\\timesi.ttf",
+    "bytes": 940288,
+    "sha256": "3a1c2bc8528bfa432e0414d4ec69bf5813563c474e16a9ad0f57ca262f8d24a2",
+    "category": "Windows Desktop"
+  },
+  {
+    "name": "cour.ttf",
+    "path": "C:\\Windows\\Fonts\\cour.ttf",
+    "bytes": 806504,
+    "sha256": "93c3ff526c19d03496c01c6a1bfd1031f97af021a13e859a89dfc717a0b6b6ec",
+    "category": "Windows Desktop"
+  },
+  {
+    "name": "courbd.ttf",
+    "path": "C:\\Windows\\Fonts\\courbd.ttf",
+    "bytes": 805244,
+    "sha256": "716c08d704f154870bd9fb78b185d0b644912301dfa9c9e6daf45bdb4832a299",
+    "category": "Windows Desktop"
+  },
+  {
+    "name": "courbi.ttf",
+    "path": "C:\\Windows\\Fonts\\courbi.ttf",
+    "bytes": 577488,
+    "sha256": "8fdb188252a2db0f020c89831bddb61cadfe290c3616fe534479b4d3b10d09c1",
+    "category": "Windows Desktop"
+  },
+  {
+    "name": "couri.ttf",
+    "path": "C:\\Windows\\Fonts\\couri.ttf",
+    "bytes": 667440,
+    "sha256": "5861588608d3a3775d921a7e4acb8362b21630c6b63718bc68adb7137ce53beb",
+    "category": "Windows Desktop"
+  },
+  {
+    "name": "wingding.ttf",
+    "path": "C:\\Windows\\Fonts\\wingding.ttf",
+    "bytes": 82180,
+    "sha256": "9bcd6064e3b52fa30a347edd6e82506e2ec8b1602930b423c629a82c10468a5b",
+    "category": "Windows Desktop"
+  },
+  {
+    "name": "symbol.ttf",
+    "path": "C:\\Windows\\Fonts\\symbol.ttf",
+    "bytes": 69036,
+    "sha256": "bbf1192965e5266fbf23370416337d2861fc1e8bd349def93f2994ba67382fc3",
+    "category": "Windows Desktop"
+  },
+  {
+    "name": "malgun.ttf",
+    "path": "C:\\Windows\\Fonts\\malgun.ttf",
+    "bytes": 13457164,
+    "sha256": "0086c19e81d293a542e7d75564c645fb58070cc850aefebf8fa1c397858e510c",
+    "category": "Windows Desktop"
+  },
+  {
+    "name": "malgunbd.ttf",
+    "path": "C:\\Windows\\Fonts\\malgunbd.ttf",
+    "bytes": 12598360,
+    "sha256": "a541834fb9cdde9bd6d2c3ff1565cb0bb5ccf7a15e4e9daf2cb58d9b1cf282aa",
+    "category": "Windows Desktop"
+  },
+  {
+    "name": "malgunsl.ttf",
+    "path": "C:\\Windows\\Fonts\\malgunsl.ttf",
+    "bytes": 5083156,
+    "sha256": "a7217a2e590c86141bddadc74a2bcdff2efe210db48469a77a749e0446d91ea9",
+    "category": "Windows Desktop"
+  }
+]

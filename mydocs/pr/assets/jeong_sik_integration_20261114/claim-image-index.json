@@ -1,0 +1,450 @@
+[
+  {
+    "key": "pr7668-grid-soft-hancom",
+    "backend": "native",
+    "kind": "rhwp_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-grid-soft-hancom/native/raw-001.png",
+    "sha256": "b8447c60279d934f11126da0b79121ecce91b526dc5e940ec85423fca31ac34d"
+  },
+  {
+    "key": "pr7668-grid-soft-hancom",
+    "backend": "native",
+    "kind": "pdf_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-grid-soft-hancom/native/pdf-001.png",
+    "sha256": "2ce2840e59e16e967067f912a22ca93a08153567c1aedb43ebf9290d61c17717"
+  },
+  {
+    "key": "pr7668-grid-soft-hancom",
+    "backend": "native",
+    "kind": "review",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-grid-soft-hancom/native/review-001.png",
+    "sha256": "c1710402b171920b6a72db83891bbce6908f118eee5d0ed0dbef9e568305d70d"
+  },
+  {
+    "key": "pr7668-grid-soft-hancom",
+    "backend": "native",
+    "kind": "overlay",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-grid-soft-hancom/native/overlay-001.png",
+    "sha256": "54269b845b429cc278c841df1184c493f68560a8b202c51bde1fd1a6f12f22f2"
+  },
+  {
+    "key": "pr7668-mixed",
+    "backend": "native",
+    "kind": "rhwp_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-mixed/native/raw-001.png",
+    "sha256": "92de3e2c9e8b0db283947349f0ea5e299deb7a2d79b511374ae702413cf2e73c"
+  },
+  {
+    "key": "pr7668-mixed",
+    "backend": "native",
+    "kind": "pdf_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-mixed/native/pdf-001.png",
+    "sha256": "f2a83b6d8e840aeff21157701f436216383af644cb327ce3a63b08c508810264"
+  },
+  {
+    "key": "pr7668-mixed",
+    "backend": "native",
+    "kind": "review",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-mixed/native/review-001.png",
+    "sha256": "d5e7c71d3aa8280a3bdd006d4d6e5c9c7613946eb47af784be9fa89a6cee0e85"
+  },
+  {
+    "key": "pr7668-mixed",
+    "backend": "native",
+    "kind": "overlay",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-mixed/native/overlay-001.png",
+    "sha256": "e47103221ed988411ad0a22190db31fd9e01dc51d073cc2cf861b3cb4df7e5b0"
+  },
+  {
+    "key": "pr7675-all-inline",
+    "backend": "native",
+    "kind": "rhwp_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-all-inline/native/raw-001.png",
+    "sha256": "4aed167b18f8cbe3632968892de0d00a108716ded3623a57237cf08f72ee5cac"
+  },
+  {
+    "key": "pr7675-all-inline",
+    "backend": "native",
+    "kind": "pdf_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-all-inline/native/pdf-001.png",
+    "sha256": "9d6d3d707b426ab7e7e61d480ffeea86cc886a646f20a8d23a9391f45ff347d8"
+  },
+  {
+    "key": "pr7675-all-inline",
+    "backend": "native",
+    "kind": "review",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-all-inline/native/review-001.png",
+    "sha256": "c3dfa1b1754ad8192648b373d1cd402f9e715d8c989f8be1fac6825a3b4e0591"
+  },
+  {
+    "key": "pr7675-all-inline",
+    "backend": "native",
+    "kind": "overlay",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-all-inline/native/overlay-001.png",
+    "sha256": "ca3aa943301b8455419b18ba3ae7cfa7edd89b656d5be5fa957ab5a2ad6d1585"
+  },
+  {
+    "key": "pr7675-positive-indent",
+    "backend": "native",
+    "kind": "rhwp_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-positive-indent/native/raw-001.png",
+    "sha256": "21167548b12f6880a1bcce9c00d181af0348fb2c88954f691d02650b51c2470d"
+  },
+  {
+    "key": "pr7675-positive-indent",
+    "backend": "native",
+    "kind": "pdf_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-positive-indent/native/pdf-001.png",
+    "sha256": "975c8b0f291664eb9b760994341e6226ca089b4ef4d794a764952bd9268a3616"
+  },
+  {
+    "key": "pr7675-positive-indent",
+    "backend": "native",
+    "kind": "review",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-positive-indent/native/review-001.png",
+    "sha256": "b4072e88106503dfbcbdc090d7205897a91ed589139f789aa62a38ce121bcb97"
+  },
+  {
+    "key": "pr7675-positive-indent",
+    "backend": "native",
+    "kind": "overlay",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-positive-indent/native/overlay-001.png",
+    "sha256": "b9235e31e7d5452fcbe30422a090ea574b761a33bbf53d75fdff75ae017d2eab"
+  },
+  {
+    "key": "pr7682-two-paras",
+    "backend": "native",
+    "kind": "rhwp_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-two-paras/native/raw-001.png",
+    "sha256": "e16d032899f465c24ea24bc189bcfda56b354c6a5b7b41266ee0d202112ef9ea"
+  },
+  {
+    "key": "pr7682-two-paras",
+    "backend": "native",
+    "kind": "pdf_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-two-paras/native/pdf-001.png",
+    "sha256": "2710f9fc18cc05f7ed8f3e617c5657329e5e012706b530496d1475420d2f42b7"
+  },
+  {
+    "key": "pr7682-two-paras",
+    "backend": "native",
+    "kind": "review",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-two-paras/native/review-001.png",
+    "sha256": "c2e4fa5d0918972c0cff6cd0d899d0686af2c7c4c692327fc3ccdfb5cf39b0d5"
+  },
+  {
+    "key": "pr7682-two-paras",
+    "backend": "native",
+    "kind": "overlay",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-two-paras/native/overlay-001.png",
+    "sha256": "f170a05162996d1a3173d0e8ffeb3bf8909b403ba91e8c8b1689deda352c8310"
+  },
+  {
+    "key": "pr7682-wrapped",
+    "backend": "native",
+    "kind": "rhwp_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-wrapped/native/raw-001.png",
+    "sha256": "cffed9130b07d1bd18cc86c3ce4265cd679e75568c8be1918be1220d69872aed"
+  },
+  {
+    "key": "pr7682-wrapped",
+    "backend": "native",
+    "kind": "pdf_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-wrapped/native/pdf-001.png",
+    "sha256": "4e4ca55c5f61cb14c50f89391fbd2ebf8a1fb3dd13d4069c7ba482622ecaf408"
+  },
+  {
+    "key": "pr7682-wrapped",
+    "backend": "native",
+    "kind": "review",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-wrapped/native/review-001.png",
+    "sha256": "e1f36d0fd4f56b4f3341ea8fa5b4051702b7dc1a85726d6fee04166bcd13d6c2"
+  },
+  {
+    "key": "pr7682-wrapped",
+    "backend": "native",
+    "kind": "overlay",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-wrapped/native/overlay-001.png",
+    "sha256": "eb5da95adc4eabb2961e5c92c2fda1f25b2f061d929728e79656cef6b1ed3cd6"
+  },
+  {
+    "key": "owner-hwp",
+    "backend": "native",
+    "kind": "rhwp_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/owner-hwp/native/raw-001.png",
+    "sha256": "975e285964072b16ed0dce1db0cc6eff1b445dce6e2790fab681cc8f7a7833a7"
+  },
+  {
+    "key": "owner-hwp",
+    "backend": "native",
+    "kind": "pdf_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/owner-hwp/native/pdf-001.png",
+    "sha256": "dc3a39b35f53dfe5cfa176148be7a49c1d00346dfa5d015db02c698440fef2b3"
+  },
+  {
+    "key": "owner-hwp",
+    "backend": "native",
+    "kind": "review",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/owner-hwp/native/review-001.png",
+    "sha256": "ea28fd150fff8700b9ff59344871adb0d8d16a4b89bbfbb63141fb9219602f89"
+  },
+  {
+    "key": "owner-hwp",
+    "backend": "native",
+    "kind": "overlay",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/owner-hwp/native/overlay-001.png",
+    "sha256": "30a7442ca85639866085dfd2dee7048c3ffb37c1ce6393eb4aacfcc7875a8a9c"
+  },
+  {
+    "key": "owner-hwpx",
+    "backend": "native",
+    "kind": "rhwp_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/owner-hwpx/native/raw-001.png",
+    "sha256": "975e285964072b16ed0dce1db0cc6eff1b445dce6e2790fab681cc8f7a7833a7"
+  },
+  {
+    "key": "owner-hwpx",
+    "backend": "native",
+    "kind": "pdf_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/owner-hwpx/native/pdf-001.png",
+    "sha256": "dc3a39b35f53dfe5cfa176148be7a49c1d00346dfa5d015db02c698440fef2b3"
+  },
+  {
+    "key": "owner-hwpx",
+    "backend": "native",
+    "kind": "review",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/owner-hwpx/native/review-001.png",
+    "sha256": "1002531a805433e81f592d8457aaa452d3e84e56fc41015c6b58d425b09ffb21"
+  },
+  {
+    "key": "owner-hwpx",
+    "backend": "native",
+    "kind": "overlay",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/owner-hwpx/native/overlay-001.png",
+    "sha256": "1e757d0307bb3e1056e8608eaa69d640ae278641887b3341e962ea5c0d0e5c78"
+  },
+  {
+    "key": "pr7668-grid-soft-hancom",
+    "backend": "wasm",
+    "kind": "rhwp_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-grid-soft-hancom/wasm/raw-001.png",
+    "sha256": "3adb229b5ae4bd96cf9e0f509a1e6f395d2203826a536dac286afa6d3b64a302"
+  },
+  {
+    "key": "pr7668-grid-soft-hancom",
+    "backend": "wasm",
+    "kind": "pdf_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-grid-soft-hancom/wasm/pdf-001.png",
+    "sha256": "2ce2840e59e16e967067f912a22ca93a08153567c1aedb43ebf9290d61c17717"
+  },
+  {
+    "key": "pr7668-grid-soft-hancom",
+    "backend": "wasm",
+    "kind": "review",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-grid-soft-hancom/wasm/review-001.png",
+    "sha256": "74849c95f9f4d1566f928ecd31acdc0b4467990c7c6c9223de22f8507ca045e6"
+  },
+  {
+    "key": "pr7668-grid-soft-hancom",
+    "backend": "wasm",
+    "kind": "overlay",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-grid-soft-hancom/wasm/overlay-001.png",
+    "sha256": "282628252af09d7c3dca02b1c7846472a001f1fe82d3dff2f5d00d143e458d7e"
+  },
+  {
+    "key": "pr7668-mixed",
+    "backend": "wasm",
+    "kind": "rhwp_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-mixed/wasm/raw-001.png",
+    "sha256": "a613f7c0ee2a1b67762b177f1dbcc107926ada63667ee9298917992624b8b076"
+  },
+  {
+    "key": "pr7668-mixed",
+    "backend": "wasm",
+    "kind": "pdf_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-mixed/wasm/pdf-001.png",
+    "sha256": "f2a83b6d8e840aeff21157701f436216383af644cb327ce3a63b08c508810264"
+  },
+  {
+    "key": "pr7668-mixed",
+    "backend": "wasm",
+    "kind": "review",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-mixed/wasm/review-001.png",
+    "sha256": "9b09578ffdbbdf17a10b5f93353e969081e247ab0cbbe60f3c344c35648e08cd"
+  },
+  {
+    "key": "pr7668-mixed",
+    "backend": "wasm",
+    "kind": "overlay",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7668-mixed/wasm/overlay-001.png",
+    "sha256": "2d9143c9103f9df045f40f652b8baa221ca5858a2379f902a6bbd47d43732d4a"
+  },
+  {
+    "key": "pr7675-all-inline",
+    "backend": "wasm",
+    "kind": "rhwp_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-all-inline/wasm/raw-001.png",
+    "sha256": "0eb911cd289a54125d57414337ea33d9ebeedf4604a14348e48dfcb04c138d48"
+  },
+  {
+    "key": "pr7675-all-inline",
+    "backend": "wasm",
+    "kind": "pdf_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-all-inline/wasm/pdf-001.png",
+    "sha256": "9d6d3d707b426ab7e7e61d480ffeea86cc886a646f20a8d23a9391f45ff347d8"
+  },
+  {
+    "key": "pr7675-all-inline",
+    "backend": "wasm",
+    "kind": "review",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-all-inline/wasm/review-001.png",
+    "sha256": "803d5635e7f083924e404663274001b2257f48e925b8d058391285c2a8efda95"
+  },
+  {
+    "key": "pr7675-all-inline",
+    "backend": "wasm",
+    "kind": "overlay",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-all-inline/wasm/overlay-001.png",
+    "sha256": "6c63ae2fafc8456248d69959fe501138707a81b49ccb1816d416a60aa00a93d3"
+  },
+  {
+    "key": "pr7675-positive-indent",
+    "backend": "wasm",
+    "kind": "rhwp_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-positive-indent/wasm/raw-001.png",
+    "sha256": "b01aacdd6f0e520d7fb5341cf79bc67b0bafbebbe644763eb1eb9c4ab496e731"
+  },
+  {
+    "key": "pr7675-positive-indent",
+    "backend": "wasm",
+    "kind": "pdf_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-positive-indent/wasm/pdf-001.png",
+    "sha256": "975c8b0f291664eb9b760994341e6226ca089b4ef4d794a764952bd9268a3616"
+  },
+  {
+    "key": "pr7675-positive-indent",
+    "backend": "wasm",
+    "kind": "review",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-positive-indent/wasm/review-001.png",
+    "sha256": "d5cb7dfb681d40bb2f91cbdd05d58ded8987bcc4a2fd18ecac223ee9fc3c4094"
+  },
+  {
+    "key": "pr7675-positive-indent",
+    "backend": "wasm",
+    "kind": "overlay",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7675-positive-indent/wasm/overlay-001.png",
+    "sha256": "68d3c316f17d3f6abde34069b9666df2eebb049f5ee030c25c2e38e28c4695de"
+  },
+  {
+    "key": "pr7682-two-paras",
+    "backend": "wasm",
+    "kind": "rhwp_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-two-paras/wasm/raw-001.png",
+    "sha256": "5d0925d53d7947aa3e33cf9ecf6d9eee0ea62c10db2a911ef5d3ec70f42266b9"
+  },
+  {
+    "key": "pr7682-two-paras",
+    "backend": "wasm",
+    "kind": "pdf_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-two-paras/wasm/pdf-001.png",
+    "sha256": "2710f9fc18cc05f7ed8f3e617c5657329e5e012706b530496d1475420d2f42b7"
+  },
+  {
+    "key": "pr7682-two-paras",
+    "backend": "wasm",
+    "kind": "review",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-two-paras/wasm/review-001.png",
+    "sha256": "4ef656965abf7431f63ad1862b71de4bffead0bea282f83742eb3905aa66f124"
+  },
+  {
+    "key": "pr7682-two-paras",
+    "backend": "wasm",
+    "kind": "overlay",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-two-paras/wasm/overlay-001.png",
+    "sha256": "5458174f56e8fd2ca18f818da8f9bc61b29fe04c8962a9cb0a3b0cd7a8a5fb89"
+  },
+  {
+    "key": "pr7682-wrapped",
+    "backend": "wasm",
+    "kind": "rhwp_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-wrapped/wasm/raw-001.png",
+    "sha256": "e7497f810396ec67ab18452d0c51741de2302f935f51847413e5398915f2a5fa"
+  },
+  {
+    "key": "pr7682-wrapped",
+    "backend": "wasm",
+    "kind": "pdf_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-wrapped/wasm/pdf-001.png",
+    "sha256": "4e4ca55c5f61cb14c50f89391fbd2ebf8a1fb3dd13d4069c7ba482622ecaf408"
+  },
+  {
+    "key": "pr7682-wrapped",
+    "backend": "wasm",
+    "kind": "review",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-wrapped/wasm/review-001.png",
+    "sha256": "1dd2abe119a654da653fe498b31a952377e0cbb996be75aca55ccfee5b78e95a"
+  },
+  {
+    "key": "pr7682-wrapped",
+    "backend": "wasm",
+    "kind": "overlay",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/pr7682-wrapped/wasm/overlay-001.png",
+    "sha256": "0283b4f5a8718aa98b0c1f6b076dd91cdfcbf79df984b00d972d94a0ac701eab"
+  },
+  {
+    "key": "owner-hwp",
+    "backend": "wasm",
+    "kind": "rhwp_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/owner-hwp/wasm/raw-001.png",
+    "sha256": "9cfdd79f9b44a92d86fe2852b70126f5924d735bdf8ac4b00fe022ba81afdfad"
+  },
+  {
+    "key": "owner-hwp",
+    "backend": "wasm",
+    "kind": "pdf_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/owner-hwp/wasm/pdf-001.png",
+    "sha256": "dc3a39b35f53dfe5cfa176148be7a49c1d00346dfa5d015db02c698440fef2b3"
+  },
+  {
+    "key": "owner-hwp",
+    "backend": "wasm",
+    "kind": "review",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/owner-hwp/wasm/review-001.png",
+    "sha256": "57571283ac8500b59d8bf9dc4299b55397db003dce65713ee6dbf575bd9a0b3b"
+  },
+  {
+    "key": "owner-hwp",
+    "backend": "wasm",
+    "kind": "overlay",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/owner-hwp/wasm/overlay-001.png",
+    "sha256": "621ea109427f30b5bce0f5d0589c8c3403aac39706dcc48ca5aee7bc3abc3a2d"
+  },
+  {
+    "key": "owner-hwpx",
+    "backend": "wasm",
+    "kind": "rhwp_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/owner-hwpx/wasm/raw-001.png",
+    "sha256": "9cfdd79f9b44a92d86fe2852b70126f5924d735bdf8ac4b00fe022ba81afdfad"
+  },
+  {
+    "key": "owner-hwpx",
+    "backend": "wasm",
+    "kind": "pdf_png",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/owner-hwpx/wasm/pdf-001.png",
+    "sha256": "dc3a39b35f53dfe5cfa176148be7a49c1d00346dfa5d015db02c698440fef2b3"
+  },
+  {
+    "key": "owner-hwpx",
+    "backend": "wasm",
+    "kind": "review",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/owner-hwpx/wasm/review-001.png",
+    "sha256": "21fe488f166d49d456d37717c0bf0b06cd45f2e1081fbfac1150f5c7a0f5057d"
+  },
+  {
+    "key": "owner-hwpx",
+    "backend": "wasm",
+    "kind": "overlay",
+    "path": "mydocs/pr/assets/jeong_sik_integration_20261114/cases/owner-hwpx/wasm/overlay-001.png",
+    "sha256": "9f0cf359498291f176f982f7de4e1d0a0a72ece700c532ea9a35b2b4d2489428"
+  }
+]

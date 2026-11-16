@@ -1,0 +1,17 @@
+{
+  "state": "complete",
+  "created_at": "2026-11-15T05:08:44.411336+00:00",
+  "previous_table_sha256": "8f073dddd67cf8f44bea7c0315c3f9950ba73641e9393747cdbc52d24b33f9a1",
+  "table_sha256": "8f073dddd67cf8f44bea7c0315c3f9950ba73641e9393747cdbc52d24b33f9a1",
+  "evidence_commit": "135f04604cbddc8ce8aa3aae579ce92b2d74a7b4",
+  "code_commit": "c95f9ade4e8acf9d901c01136ef2b9bacd60c497",
+  "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+  "condition_evidence_sha256": "36e2693520d34d1f5cc487d9e1ced500e93945288134886aba1dee1c3c03a41e",
+  "dataset_count": 36,
+  "row_count": 3542,
+  "declines": [],
+  "missing": [],
+  "increased_row_count": 0,
+  "increases": [],
+  "selection": "문서/backend마다 같은 최종 실행의 전체 TSV. 페이지별 최댓값을 조합하지 않음."
+}

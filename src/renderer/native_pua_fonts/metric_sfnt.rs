@@ -1,10 +1,10 @@
-//! TrueType 글꼴의 문자 매핑·전진폭에 필요한 표만 세션 메모리에 보관한다.
+//! 정적 OpenType 글꼴의 문자 매핑·전진폭에 필요한 표만 세션 메모리에 보관한다.
 
 /// 윤곽을 복사하지 않는 독립 SFNT를 만든다. 원본 프로그램과 파일은 변경하지 않는다.
 /// 가변 글꼴은 변형 관련 표의 전체 계약을 보존하도록 원본 경로를 사용한다.
-pub(super) fn compact_truetype_metrics(bytes: &[u8], index: u32) -> Option<Vec<u8>> {
+pub(super) fn compact_metrics(bytes: &[u8], index: u32) -> Option<Vec<u8>> {
     let face = ttf_parser::Face::parse(bytes, index).ok()?;
-    if face.is_variable() || face.tables().cff.is_some() || face.tables().cff2.is_some() {
+    if face.is_variable() {
         return None;
     }
     let raw = face.raw_face();

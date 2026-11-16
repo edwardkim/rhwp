@@ -1,0 +1,237 @@
+{
+  "source": "eeaecff59e834f28437c98b509089bbb36a7682d",
+  "dpi": 96,
+  "compat": "2022",
+  "rasterizer": {
+    "native": "Skia PNG",
+    "wasm": "optimized WASM Canvas2D PNG",
+    "reference": "independent Hancom Print PDF"
+  },
+  "targets": [
+    {
+      "key": "both",
+      "input": {
+        "path": "samples/pr9071/issue9046/hancom/02-both.hwpx",
+        "sha256": "2f4fdab29a9b4edae67d22d26a84f79ec78ef0cc4fddd5e71af716bdd52fe2d9"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9071/master-pages/02-both-2020.pdf",
+        "sha256": "9cf12d0ea34d85309aa5ea704bc183c3ee384e55bbc94004bc09a3430d5a6375"
+      },
+      "backends": {
+        "native": {
+          "tsv": "native/both.tsv",
+          "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+          "pages": 3,
+          "minimum": 100.0
+        },
+        "wasm": {
+          "tsv": "wasm/both.tsv",
+          "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+          "pages": 3,
+          "minimum": 100.0
+        }
+      }
+    },
+    {
+      "key": "both-hwp",
+      "input": {
+        "path": "rhwp CLI roundtrip/02-both.hwp",
+        "sha256": "a90a4b7f93101108371ae1701b600d8a6c9302144363da56dbe763eaba7e28d0"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9071/master-pages/02-both-2020.pdf",
+        "sha256": "9cf12d0ea34d85309aa5ea704bc183c3ee384e55bbc94004bc09a3430d5a6375"
+      },
+      "backends": {
+        "native": {
+          "tsv": "native/both-hwp.tsv",
+          "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+          "pages": 3,
+          "minimum": 100.0
+        },
+        "wasm": {
+          "tsv": "wasm/both-hwp.tsv",
+          "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+          "pages": 3,
+          "minimum": 100.0
+        }
+      }
+    },
+    {
+      "key": "even",
+      "input": {
+        "path": "samples/pr9071/issue9046/hancom/03-even.hwpx",
+        "sha256": "2e8e637995dbe034ace32732c4dbd386dbf107499e6712e28f9b5a91c0108210"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9071/master-pages/03-even-2020.pdf",
+        "sha256": "bd7fd19b52f8b92524c090088697289bd732e7c8affbb66623bd2b4cde539beb"
+      },
+      "backends": {
+        "native": {
+          "tsv": "native/even.tsv",
+          "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+          "pages": 3,
+          "minimum": 100.0
+        },
+        "wasm": {
+          "tsv": "wasm/even.tsv",
+          "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+          "pages": 3,
+          "minimum": 100.0
+        }
+      }
+    },
+    {
+      "key": "symmetric",
+      "input": {
+        "path": "samples/pr9071/master-frame-controls/symmetric.hwpx",
+        "sha256": "5633e14ac5deee323da77ceae325385b4a9ec27ebfe0afcd1eeecd2a079a2d13"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9071/master-frame-controls/symmetric-2020.pdf",
+        "sha256": "be1176b7787b2a406ff6ec94e1696e3ef46d12e0423679bc2d997aa238805240"
+      },
+      "backends": {
+        "native": {
+          "tsv": "native/symmetric.tsv",
+          "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+          "pages": 3,
+          "minimum": 100.0
+        },
+        "wasm": {
+          "tsv": "wasm/symmetric.tsv",
+          "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+          "pages": 3,
+          "minimum": 100.0
+        }
+      }
+    },
+    {
+      "key": "reverse",
+      "input": {
+        "path": "samples/pr9071/master-frame-controls/reverse.hwpx",
+        "sha256": "3dc0b304cd93bf3cdf047a86fb285e7c61a343bb51278de779b6817bacbad47d"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9071/master-frame-controls/reverse-2020.pdf",
+        "sha256": "ec9b2b0d7da4015bc3f1e69ea3132832cc84e2ab69ac5480572db29ba0fa9e30"
+      },
+      "backends": {
+        "native": {
+          "tsv": "native/reverse.tsv",
+          "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+          "pages": 3,
+          "minimum": 100.0
+        },
+        "wasm": {
+          "tsv": "wasm/reverse.tsv",
+          "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+          "pages": 3,
+          "minimum": 100.0
+        }
+      }
+    },
+    {
+      "key": "rectangle",
+      "input": {
+        "path": "samples/pr9071/master-frame-controls/rectangle-normalized.hwpx",
+        "sha256": "83791f86650e1a50a3c652c1dad5401969b1c83d9e008f4f807e50f6729edab1"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9071/master-frame-controls/rectangle-2020.pdf",
+        "sha256": "ff9a3b2733ec607a20de6ceef85ce7a3545ab282d10b5c718c23ef1916e1a328"
+      },
+      "backends": {
+        "native": {
+          "tsv": "native/rectangle.tsv",
+          "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+          "pages": 3,
+          "minimum": 100.0
+        },
+        "wasm": {
+          "tsv": "wasm/rectangle.tsv",
+          "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+          "pages": 3,
+          "minimum": 100.0
+        }
+      }
+    },
+    {
+      "key": "table",
+      "input": {
+        "path": "samples/pr9071/master-frame-controls/table-normalized.hwpx",
+        "sha256": "22006178fc7a0ee63573a7ab3882bb773a00cd597faecad8b1a166f2f6ba39ca"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9071/master-frame-controls/table-2020.pdf",
+        "sha256": "7ebc103179663ce328482ef77186af90590ae65b006c897af19fafdf17cedd85"
+      },
+      "backends": {
+        "native": {
+          "tsv": "native/table.tsv",
+          "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+          "pages": 3,
+          "minimum": 100.0
+        },
+        "wasm": {
+          "tsv": "wasm/table.tsv",
+          "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+          "pages": 3,
+          "minimum": 100.0
+        }
+      }
+    },
+    {
+      "key": "color",
+      "input": {
+        "path": "samples/pr9071/issue8318/서식2-간단.hwp",
+        "sha256": "6dfdacdd60f16bfa042c790aad6be537cd3fc7ffdbf82c68ff549f56724c0ba5"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9071/서식2-간단-2020.pdf",
+        "sha256": "ab05896eba19c391c6cb7b2ebee600cc56c49ae828cb80bd8e74e77ad43ccfd9"
+      },
+      "backends": {
+        "native": {
+          "tsv": "native/color.tsv",
+          "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+          "pages": 3,
+          "minimum": 100.0
+        },
+        "wasm": {
+          "tsv": "wasm/color.tsv",
+          "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+          "pages": 3,
+          "minimum": 100.0
+        }
+      }
+    },
+    {
+      "key": "color-hwpx",
+      "input": {
+        "path": "rhwp CLI roundtrip/color.hwpx",
+        "sha256": "dafdd5bec972a6fd60c04fc16a9a9c2660fdee7eaeb83f0c73885721f52e6e51"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9071/서식2-간단-2020.pdf",
+        "sha256": "ab05896eba19c391c6cb7b2ebee600cc56c49ae828cb80bd8e74e77ad43ccfd9"
+      },
+      "backends": {
+        "native": {
+          "tsv": "native/color-hwpx.tsv",
+          "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+          "pages": 3,
+          "minimum": 100.0
+        },
+        "wasm": {
+          "tsv": "wasm/color-hwpx.tsv",
+          "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+          "pages": 3,
+          "minimum": 100.0
+        }
+      }
+    }
+  ]
+}

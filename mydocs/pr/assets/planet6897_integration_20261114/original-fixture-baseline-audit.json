@@ -1,0 +1,43 @@
+{
+  "text_overlap_baseline": [
+    {
+      "phase": "base",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/rhwp-base-native",
+        "layout-anomaly",
+        "samples/issue8969/36400485-owned-tac-lines.hwpx",
+        "-p",
+        "5",
+        "--json"
+      ],
+      "textOverlapCount": 7,
+      "page": 6,
+      "exit": 0
+    },
+    {
+      "phase": "candidate",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/row-repair-v2/rhwp-native",
+        "layout-anomaly",
+        "samples/issue8969/36400485-owned-tac-lines.hwpx",
+        "-p",
+        "5",
+        "--json"
+      ],
+      "textOverlapCount": 7,
+      "page": 6,
+      "exit": 0
+    }
+  ],
+  "meaning": "Existing masked-star line overlap count did not increase; the original PR baseline entry protects this pre-existing count and was not relaxed for the new host correction.",
+  "hidden_text_source": {
+    "charPr": 253,
+    "textColor": "#FFFFFF",
+    "text": "방침번호",
+    "character_count": 4,
+    "borderFill": 65,
+    "fillBrush": false,
+    "section_pictures": 0,
+    "meaning": "Original electronic-approval form contains a genuine white-on-white header label; negative-corpus whitelist documents the true positive without changing detector rules."
+  }
+}

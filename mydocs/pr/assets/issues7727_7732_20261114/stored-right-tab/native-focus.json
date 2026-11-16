@@ -1,0 +1,97 @@
+{
+  "producer": {
+    "parent": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+    "product_patch_sha256": "0cdf7c17642eaa7f944893d0a8163667b88ef87906319636f1963b42b6da600c",
+    "status": "focused_tests_completed",
+    "pid": 8749,
+    "steps": [
+      {
+        "name": "native-build-final",
+        "exit_code": 0,
+        "seconds": 415.977,
+        "log_sha256": "2ed38aa22c5bfb808f56f1d6a2c48887815cc00daea1fc24eb9bea4f713ce939"
+      },
+      {
+        "name": "source-contract-current-test",
+        "exit_code": 0,
+        "test_source_sha256": "13d34e202672f9d91069d3143baa38542c59ac0794741b43bbde6276888d8550",
+        "log_sha256": "40f52f8f48d749de777dac3d0103bee365c9446976fc916933222af652f15d25"
+      },
+      {
+        "name": "existing-6844-current-test",
+        "exit_code": 101,
+        "test_source_sha256": "aa0336777eed00347d5461b1a0e6cd9d201da2a857ef1f311a5814e0f02c500f",
+        "log_sha256": "fb5b9c3ccfc5bc30e906f08092bdeb7d506818bbf0e6c3601cfaf5883550f49e"
+      }
+    ],
+    "child_pid": 33019,
+    "binary_sha256": "ccbdeba8cec94bb39d1c2a7ec901ec100e6905d6dbc0ee161b804f6676ef814c",
+    "rlib_sha256": "1a745b40ee423646fd69f5bd6b0ce8a1ac131b243eec02e38b5c63facf7298c8",
+    "invalid_standalone_tests": {
+      "reason": "--bin 빌드에서 실제 갱신된 라이브러리는 release-test/deps/librhwp.rlib이다. root release-test/librhwp.rlib은01:01 이전본이어서 첫 임시 검사 결과를 후보 근거에서 제외한다.",
+      "tests": [
+        {
+          "name": "source-contract-compile",
+          "exit_code": 0,
+          "seconds": 0.742,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "name": "source-contract-test",
+          "exit_code": 101,
+          "seconds": 1.733,
+          "log_sha256": "1855d9f8b22c6d9fa3ffd0416a6ee41ab95674fa990fab683e6d6457cb4ff207"
+        },
+        {
+          "name": "existing-6844-compile",
+          "exit_code": 0,
+          "seconds": 0.437,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "name": "existing-6844-test",
+          "exit_code": 0,
+          "seconds": 0.621,
+          "log_sha256": "644be58307a69d0762de7c7701ed04430a9b150b037d465a104141e8c8112b58"
+        }
+      ],
+      "stale_rlib_sha256": "4ff690c43ac2627d39ee5ddc54683e59073041b28014507c4d3d91814f0a8ffc"
+    },
+    "rlib_path": "/Users/tsjang/rhwp/target/pr-review/release-test/deps/librhwp.rlib"
+  },
+  "cases": [
+    {
+      "key": "cbta",
+      "page": 2,
+      "silhouette_raw_match_percent": 98.5212,
+      "png_sha256": "27971e4c3c1ff6932b0fd40f6cd2efe7e837b3369e786cab564ec3225e3e1c8d",
+      "pdf_png_sha256": "53d913e93899aea33f11c8e3edf99c5c208e7352bc84911ef7584f0bde95b50e",
+      "direct_reading": "CBTA2 review/overlay 판독 완료",
+      "review": {
+        "path": "native-cbta-p002-review.png",
+        "sha256": "bc1ddb0e1bf1a36db9db046f5fae025e6eb58483ecfb4b521f4ced63d38e326a"
+      },
+      "overlay": {
+        "path": "native-cbta-p002-overlay.png",
+        "sha256": "a5804807891a187ada014f97c0677276129403bfabe474e920b4a3e2e59a92d7"
+      }
+    },
+    {
+      "key": "recommendation",
+      "page": 4,
+      "silhouette_raw_match_percent": 99.95629,
+      "png_sha256": "4e3b96ed50440ddb948db426644701c6aed839223902e0843a4202304eb4294f",
+      "pdf_png_sha256": "d035ef4d927d917cd206e13fafc4c4b956f37df5791996d8440d79f2fad1abad",
+      "direct_reading": "pending",
+      "review": {
+        "path": "native-recommendation-p004-review.png",
+        "sha256": "2e9d35b2ce0ed47428ef4a3191e41474ba3b82ac261e02b0369d6738bc28e690"
+      },
+      "overlay": {
+        "path": "native-recommendation-p004-overlay.png",
+        "sha256": "34018266bf99e976fd7ea5d5f21deb94e4dd5fc17e3dd38e2404ef293ce9d2aa"
+      }
+    }
+  ],
+  "scope": "Native 집중2쪽이며 fresh WASM·전쪽·전체 회귀 완료가 아님"
+}

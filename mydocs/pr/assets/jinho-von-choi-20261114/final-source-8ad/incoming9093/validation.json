@@ -1,0 +1,523 @@
+{
+  "checkedAt": "2026-11-15T13:09:44.131745+00:00",
+  "latestBase": "1805d8f08cb3a54bccda8dfa6647432b7799f074",
+  "mergedCandidate": "b037f305c5af86bc01523ef167384f5e93fa3626",
+  "incomingPR": 9093,
+  "originalSubmission": "250d9408add9c69ccb84322fae6e59e33f1e23da",
+  "rustCandidateSource": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+  "baselineRustSource": "e7ee272cfa33a960b0d0d924983d29e6509903e0",
+  "scope": "Studio global Canvas font family policy; exact base and merged Studio source byte-identical. Native, independent Visual Sweep exporter, Rust inputs and optimized WASM unchanged.",
+  "studio": {
+    "tests": 2800,
+    "passed": 2798,
+    "failed": 0,
+    "skipped": 2
+  },
+  "browserContracts": {
+    "tests": 26,
+    "passed": 26
+  },
+  "baseFocused": {
+    "tests": 15,
+    "passed": 15
+  },
+  "actualStudioE2E": {
+    "base": {
+      "checks": [
+        {
+          "family": "함초롬바탕",
+          "aliases": [],
+          "font": "64px 함초롬바탕, Batang, AppleMyungjo, \"Noto Serif KR\", \"Noto Sans Symbols2\", D2Coding, \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", serif",
+          "width": 115.19979858398438,
+          "expectedWidth": 115.19979858398438,
+          "samePixels": true,
+          "distinctFallback": true,
+          "leading": [
+            "함초롬바탕"
+          ]
+        },
+        {
+          "family": "함초롬바탕",
+          "aliases": [
+            "__rhwp_ttf__함초롬바탕"
+          ],
+          "font": "64px __rhwp_ttf__함초롬바탕, 함초롬바탕, Batang, AppleMyungjo, \"Noto Serif KR\", \"Noto Sans Symbols2\", D2Coding, \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", serif",
+          "width": 115.19979858398438,
+          "expectedWidth": 115.19979858398438,
+          "samePixels": true,
+          "distinctFallback": true,
+          "leading": [
+            "__rhwp_ttf__함초롬바탕",
+            "함초롬바탕"
+          ]
+        },
+        {
+          "family": "함초롬바탕",
+          "aliases": [
+            "__rhwp_intrinsic__함초롬바탕"
+          ],
+          "font": "64px __rhwp_intrinsic__함초롬바탕, 함초롬바탕, Batang, AppleMyungjo, \"Noto Serif KR\", \"Noto Sans Symbols2\", D2Coding, \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", serif",
+          "width": 115.19979858398438,
+          "expectedWidth": 115.19979858398438,
+          "samePixels": true,
+          "distinctFallback": true,
+          "leading": [
+            "__rhwp_intrinsic__함초롬바탕",
+            "함초롬바탕"
+          ]
+        },
+        {
+          "family": "함초롬바탕",
+          "aliases": [
+            "__rhwp_intrinsic__함초롬바탕",
+            "__rhwp_ttf__함초롬바탕"
+          ],
+          "font": "64px __rhwp_intrinsic__함초롬바탕, __rhwp_ttf__함초롬바탕, 함초롬바탕, Batang, AppleMyungjo, \"Noto Serif KR\", \"Noto Sans Symbols2\", D2Coding, \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", serif",
+          "width": 115.19979858398438,
+          "expectedWidth": 115.19979858398438,
+          "samePixels": true,
+          "distinctFallback": true,
+          "leading": [
+            "__rhwp_intrinsic__함초롬바탕",
+            "__rhwp_ttf__함초롬바탕",
+            "함초롬바탕"
+          ]
+        },
+        {
+          "family": "함초롬바탕",
+          "alias": "__rhwp_ttf__함초롬바탕",
+          "prepared": true,
+          "samePixels": true,
+          "distinctOriginal": true,
+          "width": 138.23977661132812,
+          "expectedWidth": 138.23977661132812
+        },
+        {
+          "family": "함초롬바탕",
+          "alias": "__rhwp_intrinsic__함초롬바탕",
+          "prepared": true,
+          "samePixels": true,
+          "distinctOriginal": true,
+          "width": 138.23977661132812,
+          "expectedWidth": 138.23977661132812
+        },
+        {
+          "family": "RHWP 9077 Exact Face",
+          "aliases": [],
+          "font": "64px \"RHWP 9077 Exact Face\", \"Malgun Gothic\", \"Apple SD Gothic Neo\", \"Noto Sans KR\", Pretendard, \"Noto Sans Symbols2\", 함초롬바탕, D2Coding, \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", sans-serif",
+          "width": 115.19979858398438,
+          "expectedWidth": 115.19979858398438,
+          "samePixels": true,
+          "distinctFallback": true,
+          "leading": [
+            "RHWP 9077 Exact Face"
+          ]
+        },
+        {
+          "family": "RHWP 9077 Exact Face",
+          "aliases": [
+            "__rhwp_ttf__RHWP 9077 Exact Face"
+          ],
+          "font": "64px \"__rhwp_ttf__RHWP 9077 Exact Face\", \"RHWP 9077 Exact Face\", \"Malgun Gothic\", \"Apple SD Gothic Neo\", \"Noto Sans KR\", Pretendard, \"Noto Sans Symbols2\", 함초롬바탕, D2Coding, \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", sans-serif",
+          "width": 115.19979858398438,
+          "expectedWidth": 115.19979858398438,
+          "samePixels": true,
+          "distinctFallback": true,
+          "leading": [
+            "__rhwp_ttf__RHWP 9077 Exact Face",
+            "RHWP 9077 Exact Face"
+          ]
+        },
+        {
+          "family": "RHWP 9077 Exact Face",
+          "aliases": [
+            "__rhwp_intrinsic__RHWP 9077 Exact Face"
+          ],
+          "font": "64px \"__rhwp_intrinsic__RHWP 9077 Exact Face\", \"RHWP 9077 Exact Face\", \"Malgun Gothic\", \"Apple SD Gothic Neo\", \"Noto Sans KR\", Pretendard, \"Noto Sans Symbols2\", 함초롬바탕, D2Coding, \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", sans-serif",
+          "width": 115.19979858398438,
+          "expectedWidth": 115.19979858398438,
+          "samePixels": true,
+          "distinctFallback": true,
+          "leading": [
+            "__rhwp_intrinsic__RHWP 9077 Exact Face",
+            "RHWP 9077 Exact Face"
+          ]
+        },
+        {
+          "family": "RHWP 9077 Exact Face",
+          "aliases": [
+            "__rhwp_intrinsic__RHWP 9077 Exact Face",
+            "__rhwp_ttf__RHWP 9077 Exact Face"
+          ],
+          "font": "64px \"__rhwp_intrinsic__RHWP 9077 Exact Face\", \"__rhwp_ttf__RHWP 9077 Exact Face\", \"RHWP 9077 Exact Face\", \"Malgun Gothic\", \"Apple SD Gothic Neo\", \"Noto Sans KR\", Pretendard, \"Noto Sans Symbols2\", 함초롬바탕, D2Coding, \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", sans-serif",
+          "width": 115.19979858398438,
+          "expectedWidth": 115.19979858398438,
+          "samePixels": true,
+          "distinctFallback": true,
+          "leading": [
+            "__rhwp_intrinsic__RHWP 9077 Exact Face",
+            "__rhwp_ttf__RHWP 9077 Exact Face",
+            "RHWP 9077 Exact Face"
+          ]
+        },
+        {
+          "family": "RHWP 9077 Exact Face",
+          "alias": "__rhwp_ttf__RHWP 9077 Exact Face",
+          "prepared": true,
+          "samePixels": true,
+          "distinctOriginal": true,
+          "width": 138.23977661132812,
+          "expectedWidth": 138.23977661132812
+        },
+        {
+          "family": "RHWP 9077 Exact Face",
+          "alias": "__rhwp_intrinsic__RHWP 9077 Exact Face",
+          "prepared": true,
+          "samePixels": true,
+          "distinctOriginal": true,
+          "width": 138.23977661132812,
+          "expectedWidth": 138.23977661132812
+        }
+      ],
+      "backend": "canvas2d",
+      "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+    },
+    "candidate": {
+      "checks": [
+        {
+          "family": "함초롬바탕",
+          "aliases": [],
+          "font": "64px 함초롬바탕, Batang, AppleMyungjo, \"Noto Serif KR\", \"Noto Sans Symbols2\", D2Coding, \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", serif",
+          "width": 115.19979858398438,
+          "expectedWidth": 115.19979858398438,
+          "samePixels": true,
+          "distinctFallback": true,
+          "leading": [
+            "함초롬바탕"
+          ]
+        },
+        {
+          "family": "함초롬바탕",
+          "aliases": [
+            "__rhwp_ttf__함초롬바탕"
+          ],
+          "font": "64px __rhwp_ttf__함초롬바탕, 함초롬바탕, Batang, AppleMyungjo, \"Noto Serif KR\", \"Noto Sans Symbols2\", D2Coding, \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", serif",
+          "width": 115.19979858398438,
+          "expectedWidth": 115.19979858398438,
+          "samePixels": true,
+          "distinctFallback": true,
+          "leading": [
+            "__rhwp_ttf__함초롬바탕",
+            "함초롬바탕"
+          ]
+        },
+        {
+          "family": "함초롬바탕",
+          "aliases": [
+            "__rhwp_intrinsic__함초롬바탕"
+          ],
+          "font": "64px __rhwp_intrinsic__함초롬바탕, 함초롬바탕, Batang, AppleMyungjo, \"Noto Serif KR\", \"Noto Sans Symbols2\", D2Coding, \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", serif",
+          "width": 115.19979858398438,
+          "expectedWidth": 115.19979858398438,
+          "samePixels": true,
+          "distinctFallback": true,
+          "leading": [
+            "__rhwp_intrinsic__함초롬바탕",
+            "함초롬바탕"
+          ]
+        },
+        {
+          "family": "함초롬바탕",
+          "aliases": [
+            "__rhwp_intrinsic__함초롬바탕",
+            "__rhwp_ttf__함초롬바탕"
+          ],
+          "font": "64px __rhwp_intrinsic__함초롬바탕, __rhwp_ttf__함초롬바탕, 함초롬바탕, Batang, AppleMyungjo, \"Noto Serif KR\", \"Noto Sans Symbols2\", D2Coding, \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", serif",
+          "width": 115.19979858398438,
+          "expectedWidth": 115.19979858398438,
+          "samePixels": true,
+          "distinctFallback": true,
+          "leading": [
+            "__rhwp_intrinsic__함초롬바탕",
+            "__rhwp_ttf__함초롬바탕",
+            "함초롬바탕"
+          ]
+        },
+        {
+          "family": "함초롬바탕",
+          "alias": "__rhwp_ttf__함초롬바탕",
+          "prepared": true,
+          "samePixels": true,
+          "distinctOriginal": true,
+          "width": 138.23977661132812,
+          "expectedWidth": 138.23977661132812
+        },
+        {
+          "family": "함초롬바탕",
+          "alias": "__rhwp_intrinsic__함초롬바탕",
+          "prepared": true,
+          "samePixels": true,
+          "distinctOriginal": true,
+          "width": 138.23977661132812,
+          "expectedWidth": 138.23977661132812
+        },
+        {
+          "family": "RHWP 9077 Exact Face",
+          "aliases": [],
+          "font": "64px \"RHWP 9077 Exact Face\", \"Malgun Gothic\", \"Apple SD Gothic Neo\", \"Noto Sans KR\", Pretendard, \"Noto Sans Symbols2\", 함초롬바탕, D2Coding, \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", sans-serif",
+          "width": 115.19979858398438,
+          "expectedWidth": 115.19979858398438,
+          "samePixels": true,
+          "distinctFallback": true,
+          "leading": [
+            "RHWP 9077 Exact Face"
+          ]
+        },
+        {
+          "family": "RHWP 9077 Exact Face",
+          "aliases": [
+            "__rhwp_ttf__RHWP 9077 Exact Face"
+          ],
+          "font": "64px \"__rhwp_ttf__RHWP 9077 Exact Face\", \"RHWP 9077 Exact Face\", \"Malgun Gothic\", \"Apple SD Gothic Neo\", \"Noto Sans KR\", Pretendard, \"Noto Sans Symbols2\", 함초롬바탕, D2Coding, \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", sans-serif",
+          "width": 115.19979858398438,
+          "expectedWidth": 115.19979858398438,
+          "samePixels": true,
+          "distinctFallback": true,
+          "leading": [
+            "__rhwp_ttf__RHWP 9077 Exact Face",
+            "RHWP 9077 Exact Face"
+          ]
+        },
+        {
+          "family": "RHWP 9077 Exact Face",
+          "aliases": [
+            "__rhwp_intrinsic__RHWP 9077 Exact Face"
+          ],
+          "font": "64px \"__rhwp_intrinsic__RHWP 9077 Exact Face\", \"RHWP 9077 Exact Face\", \"Malgun Gothic\", \"Apple SD Gothic Neo\", \"Noto Sans KR\", Pretendard, \"Noto Sans Symbols2\", 함초롬바탕, D2Coding, \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", sans-serif",
+          "width": 115.19979858398438,
+          "expectedWidth": 115.19979858398438,
+          "samePixels": true,
+          "distinctFallback": true,
+          "leading": [
+            "__rhwp_intrinsic__RHWP 9077 Exact Face",
+            "RHWP 9077 Exact Face"
+          ]
+        },
+        {
+          "family": "RHWP 9077 Exact Face",
+          "aliases": [
+            "__rhwp_intrinsic__RHWP 9077 Exact Face",
+            "__rhwp_ttf__RHWP 9077 Exact Face"
+          ],
+          "font": "64px \"__rhwp_intrinsic__RHWP 9077 Exact Face\", \"__rhwp_ttf__RHWP 9077 Exact Face\", \"RHWP 9077 Exact Face\", \"Malgun Gothic\", \"Apple SD Gothic Neo\", \"Noto Sans KR\", Pretendard, \"Noto Sans Symbols2\", 함초롬바탕, D2Coding, \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", sans-serif",
+          "width": 115.19979858398438,
+          "expectedWidth": 115.19979858398438,
+          "samePixels": true,
+          "distinctFallback": true,
+          "leading": [
+            "__rhwp_intrinsic__RHWP 9077 Exact Face",
+            "__rhwp_ttf__RHWP 9077 Exact Face",
+            "RHWP 9077 Exact Face"
+          ]
+        },
+        {
+          "family": "RHWP 9077 Exact Face",
+          "alias": "__rhwp_ttf__RHWP 9077 Exact Face",
+          "prepared": true,
+          "samePixels": true,
+          "distinctOriginal": true,
+          "width": 138.23977661132812,
+          "expectedWidth": 138.23977661132812
+        },
+        {
+          "family": "RHWP 9077 Exact Face",
+          "alias": "__rhwp_intrinsic__RHWP 9077 Exact Face",
+          "prepared": true,
+          "samePixels": true,
+          "distinctOriginal": true,
+          "width": 138.23977661132812,
+          "expectedWidth": 138.23977661132812
+        }
+      ],
+      "backend": "canvas2d",
+      "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+    },
+    "allPassed": true,
+    "samePerCaseResults": true,
+    "candidateConsumption": [
+      {
+        "source_sha": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+        "profile": "release/wasm-opt; previously validated byte-identical Rust source",
+        "expected_sha256": "7c8074771ec32fcc0503ba072fe8f3e077a7322c1a871eeff5dffc98e1dc0c07",
+        "page": "http://127.0.0.1:7793/?renderer=canvas2d",
+        "matched": true,
+        "received": [
+          {
+            "url": "http://127.0.0.1:7793/@fs/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/pkg/rhwp_bg.wasm",
+            "status": 200,
+            "sha256": "7c8074771ec32fcc0503ba072fe8f3e077a7322c1a871eeff5dffc98e1dc0c07"
+          }
+        ]
+      }
+    ]
+  },
+  "commands": [
+    {
+      "name": "studio-test",
+      "command": [
+        "npm",
+        "test"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/rhwp-studio",
+      "started": "2026-11-15T13:07:02.245180+00:00",
+      "completed": "2026-11-15T13:07:20.891074+00:00",
+      "exitCode": 0,
+      "logSha256": "82b0543a718632de765428b42326c36aa3ce60061a60e2c015ae0a0098d04eb5"
+    },
+    {
+      "name": "typescript",
+      "command": [
+        "npx",
+        "tsc",
+        "--noEmit"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/rhwp-studio",
+      "started": "2026-11-15T13:07:20.894622+00:00",
+      "completed": "2026-11-15T13:07:22.221974+00:00",
+      "exitCode": 0,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "build",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/rhwp-studio",
+      "started": "2026-11-15T13:07:22.225825+00:00",
+      "completed": "2026-11-15T13:07:27.441936+00:00",
+      "exitCode": 0,
+      "logSha256": "a3eea1b15d835f434b7d1d03751c3e2fd84b7a4905058312eb347300367a39c4"
+    },
+    {
+      "name": "e2e9077",
+      "command": [
+        "npm",
+        "run",
+        "e2e:issue-9077"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/rhwp-studio",
+      "started": "2026-11-15T13:07:27.444598+00:00",
+      "completed": "2026-11-15T13:07:32.365304+00:00",
+      "exitCode": 0,
+      "logSha256": "49cae18c6c05cb0ff368b89d7a9da2bd7968d14703cc909fe35d36b5d7b3cff0"
+    },
+    {
+      "name": "browser-contracts",
+      "command": [
+        "node",
+        "--test",
+        "scripts/tests/visual-sweep-canvas-fonts.browser.mjs"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity",
+      "started": "2026-11-15T13:07:32.367881+00:00",
+      "completed": "2026-11-15T13:08:10.980138+00:00",
+      "exitCode": 0,
+      "logSha256": "54b4ef02dedd19720512c66e67929d55488fb5738051901fe6142a732f0a5938"
+    },
+    {
+      "name": "e2e-manifest",
+      "command": [
+        "python3",
+        "scripts/check_e2e_manifest.py"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity",
+      "started": "2026-11-15T13:08:10.982661+00:00",
+      "completed": "2026-11-15T13:08:11.050548+00:00",
+      "exitCode": 0,
+      "logSha256": "b329c56928c62d0a54492fb9dfdb8c856c002e4ffb2516292c21426a7d441f3b"
+    }
+  ],
+  "baselineValidation": {
+    "checkedAt": "2026-11-15T13:08:11.807348+00:00",
+    "frontendSource": "1805d8f08cb3a54bccda8dfa6647432b7799f074",
+    "wasmSource": "e7ee272cfa33a960b0d0d924983d29e6509903e0",
+    "rustInputByteEquivalentToFrontendBase": true,
+    "focusedNode": {
+      "command": [
+        "node",
+        "--test",
+        "rhwp-studio/tests/font-chain-preserves-engine-aliases-issue6600.test.ts",
+        "rhwp-studio/tests/review-runtime-contracts.test.ts"
+      ],
+      "tests": 15,
+      "passed": 15,
+      "failed": 0,
+      "exitCode": 0
+    },
+    "e2e": {
+      "command": [
+        "npm",
+        "--prefix",
+        "rhwp-studio",
+        "run",
+        "e2e:issue-9077"
+      ],
+      "environment": {
+        "CHROME_PATH": "/home/edward/.cache/puppeteer/chromium/linux-1660786/chrome-linux/chrome",
+        "VITE_PORT": "7827",
+        "RHWP_WASM_BUILD_MANIFEST": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/incoming9093/base/wasm-build-manifest.json"
+      },
+      "combinations": 12,
+      "passed": 12,
+      "exitCode": 0,
+      "consumption": [
+        {
+          "source_sha": "e7ee272cfa33a960b0d0d924983d29e6509903e0",
+          "profile": "release/wasm-opt; previously built baseline with Rust byte-equivalence",
+          "expected_sha256": "2928b396512ddf0f904deed1c72b771099412d080bcb9d61bad304393d5f043a",
+          "page": "http://127.0.0.1:7827/?renderer=canvas2d",
+          "matched": true,
+          "received": [
+            {
+              "url": "http://127.0.0.1:7827/@fs/tmp/rhwp-jinho-20261115-devel-control/pkg/rhwp_bg.wasm",
+              "status": 200,
+              "sha256": "2928b396512ddf0f904deed1c72b771099412d080bcb9d61bad304393d5f043a"
+            }
+          ]
+        }
+      ],
+      "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+    },
+    "files": {
+      "e2e.log": {
+        "bytes": 6624,
+        "sha256": "bac8e525230e3484ca35e1ca0f55f006052596795147b2f392f94f4ead5a4805"
+      },
+      "wasm-build-manifest.json": {
+        "bytes": 392,
+        "sha256": "b01f77925eb3ac0fd098a4355a3e21b2581ba230ddd36e7094ae0863738da733"
+      },
+      "canvas-contract-12-cases.json": {
+        "bytes": 6040,
+        "sha256": "c60876429529f9b0ec5c001fe90332990242f794af9290dc6b933d5466ec6a3a"
+      },
+      "focused-node.log": {
+        "bytes": 1443,
+        "sha256": "06bbe6b0b7ddaa7ad0a7b22563131b17b38fefdd1ddde3cf3d4787a200b06bd5"
+      },
+      "issue9077-canvas-font-alias.png": {
+        "bytes": 55265,
+        "sha256": "26d9c6584f6c4ebb6b9b01fdd5d18b718fd9afa31f6fa168dda108b27a1f0a51"
+      },
+      "canvas-font-alias-issue9077-report.html": {
+        "bytes": 3223,
+        "sha256": "a482825231f975e110ddd213b5ada33606b7ce19c033f8a952a42e0ae2fb2170"
+      }
+    },
+    "sourceWorktreeStatus": ""
+  },
+  "additionalFullRustOrVisualSweeps": false,
+  "reuseReason": "Fresh git diff confirms unchanged Rust/product render code and standalone Visual Sweep harness; new Studio setter tested in actual base/candidate browsers rather than claiming old screenshots exercised it."
+}

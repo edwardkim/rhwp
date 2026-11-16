@@ -1,0 +1,26 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 8971,
+  "title": "저장 줄 없는 그림 칸의 빈 문단 자리 줄을 400HU 로 빼서 그림 행이 글자 크기만큼 늘어난다",
+  "entries": [
+    {
+      "path": "samples/issue8971/36400701-picture-cell-empty-line.hwpx",
+      "format": "hwpx",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/8971",
+      "originalFilename": "36400701_결재문서본문_2026 강동 환경 한마당 행사 결과보고.hwpx",
+      "derivation": "원본의 BinData 그림 25개만 같은 비율의 회색(#A0A0A0) 단색 PNG 로 교체. Contents/·META-INF/·header 등 XML 은 원본과 바이트가 같다.",
+      "bytes": 35900,
+      "sha256": "d3be7513fa996f26ef95166ffa9b4a679905bc117c59e39dde827238db23ea01",
+      "lastSavedWith": {
+        "product": "hancom-office-2020",
+        "version": "11.0.0.8227"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/issue8971/36400701-picture-cell-empty-line-2020.pdf",
+      "referencePdfSha256": "d7ca1129962060d3c90a8a4d7adfa31018da9ad0636409ab5d0a8b69f92d440e",
+      "referencePdfPageCount": 6,
+      "contract": "6쪽 「행사 사진」 표(4행 3열 TAC, 선언·저장 줄 높이 23393HU)의 그림 행은 칸 위 여백 + 그림 세로 오프셋 + 그림 높이 + 칸 아래 여백(0행 141+225+9637+141HU)이고, 빈 문단 자리 줄은 더해지지 않는다. 전체 6쪽으로 한/글 engine 2020 Print 와 같다."
+    }
+  ]
+}

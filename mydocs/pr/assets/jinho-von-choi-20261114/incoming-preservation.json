@@ -1,0 +1,106 @@
+{
+  "before_source": "a1975f149e including base53da4d2da2",
+  "after_product_source": "eeaecff59e834f28437c98b509089bbb36a7682d",
+  "rows": 82,
+  "different": 0,
+  "results": [
+    {
+      "backend": "native",
+      "key": "incoming8969",
+      "pages": 11,
+      "identical": 11,
+      "different_pages": []
+    },
+    {
+      "backend": "native",
+      "key": "incoming9016",
+      "pages": 10,
+      "identical": 10,
+      "different_pages": []
+    },
+    {
+      "backend": "native",
+      "key": "incoming9021",
+      "pages": 1,
+      "identical": 1,
+      "different_pages": []
+    },
+    {
+      "backend": "native",
+      "key": "incoming9026-orphan",
+      "pages": 8,
+      "identical": 8,
+      "different_pages": []
+    },
+    {
+      "backend": "native",
+      "key": "incoming9026-repeated",
+      "pages": 5,
+      "identical": 5,
+      "different_pages": []
+    },
+    {
+      "backend": "native",
+      "key": "incoming9055",
+      "pages": 4,
+      "identical": 4,
+      "different_pages": []
+    },
+    {
+      "backend": "native",
+      "key": "incoming9062",
+      "pages": 2,
+      "identical": 2,
+      "different_pages": []
+    },
+    {
+      "backend": "wasm",
+      "key": "incoming8969",
+      "pages": 11,
+      "identical": 11,
+      "different_pages": []
+    },
+    {
+      "backend": "wasm",
+      "key": "incoming9016",
+      "pages": 10,
+      "identical": 10,
+      "different_pages": []
+    },
+    {
+      "backend": "wasm",
+      "key": "incoming9021",
+      "pages": 1,
+      "identical": 1,
+      "different_pages": []
+    },
+    {
+      "backend": "wasm",
+      "key": "incoming9026-orphan",
+      "pages": 8,
+      "identical": 8,
+      "different_pages": []
+    },
+    {
+      "backend": "wasm",
+      "key": "incoming9026-repeated",
+      "pages": 5,
+      "identical": 5,
+      "different_pages": []
+    },
+    {
+      "backend": "wasm",
+      "key": "incoming9055",
+      "pages": 4,
+      "identical": 4,
+      "different_pages": []
+    },
+    {
+      "backend": "wasm",
+      "key": "incoming9062",
+      "pages": 2,
+      "identical": 2,
+      "different_pages": []
+    }
+  ]
+}

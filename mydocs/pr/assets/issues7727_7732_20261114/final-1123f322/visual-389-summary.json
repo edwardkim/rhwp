@@ -1,0 +1,132 @@
+{
+  "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+  "checked_at": "2026-11-14T19:53:50.300852+00:00",
+  "conditions": "96DPI/compat2022/print/png/normal installed fonts/full embedding/raw2px/channel32",
+  "cases": [
+    {
+      "issue": 7727,
+      "key": "cbta",
+      "pages": 204,
+      "minimum": 98.13,
+      "minimum_page": 58,
+      "tsv_sha256": "d5d1a294ee5de606a6e71039df9ec3fea7b41aa00379cc2b6ed63ce3fdf6d1ab",
+      "below_90": [],
+      "below_98": [],
+      "backend": "native"
+    },
+    {
+      "issue": 7729,
+      "key": "recommendation",
+      "pages": 22,
+      "minimum": 98.69,
+      "minimum_page": 7,
+      "tsv_sha256": "87565d8bedb64b4b8d99568e31a669f2c3c57bc9c5f81b0406c8abf265346b63",
+      "below_90": [],
+      "below_98": [],
+      "backend": "native"
+    },
+    {
+      "issue": 7730,
+      "key": "exam",
+      "pages": 8,
+      "minimum": 99.49,
+      "minimum_page": 3,
+      "tsv_sha256": "4ee763deecfca07a600b468b5ba6528e59492044afff2ec5891c1655d7cd1419",
+      "below_90": [],
+      "below_98": [],
+      "backend": "native"
+    },
+    {
+      "issue": 7731,
+      "key": "api",
+      "pages": 105,
+      "minimum": 99.55,
+      "minimum_page": 97,
+      "tsv_sha256": "0d300742ef260dadda962f4474e3fb347fd3b54879acc5179cdd609b9f3746bf",
+      "below_90": [],
+      "below_98": [],
+      "backend": "native"
+    },
+    {
+      "issue": 7732,
+      "key": "footnote",
+      "pages": 50,
+      "minimum": 98.75,
+      "minimum_page": 37,
+      "tsv_sha256": "1e7ec85986045afd1dd77a87d88a53c1fa3f61951494d428ba1c2714acdaca6f",
+      "below_90": [],
+      "below_98": [],
+      "backend": "native"
+    },
+    {
+      "issue": 7727,
+      "key": "cbta",
+      "pages": 204,
+      "minimum": 98.13,
+      "minimum_page": 58,
+      "tsv_sha256": "0b14f231561f52f20539bd54964a67b8811c5e616d24f68c21f9cf81ee5ca4cd",
+      "below_90": [],
+      "below_98": [],
+      "backend": "wasm"
+    },
+    {
+      "issue": 7729,
+      "key": "recommendation",
+      "pages": 22,
+      "minimum": 98.68,
+      "minimum_page": 7,
+      "tsv_sha256": "cc669817ace630a67f88bc4a571f82c5622172e095fc549242cbe6d26b41ed26",
+      "below_90": [],
+      "below_98": [],
+      "backend": "wasm"
+    },
+    {
+      "issue": 7730,
+      "key": "exam",
+      "pages": 8,
+      "minimum": 99.49,
+      "minimum_page": 3,
+      "tsv_sha256": "4ee763deecfca07a600b468b5ba6528e59492044afff2ec5891c1655d7cd1419",
+      "below_90": [],
+      "below_98": [],
+      "backend": "wasm"
+    },
+    {
+      "issue": 7731,
+      "key": "api",
+      "pages": 105,
+      "minimum": 99.55,
+      "minimum_page": 97,
+      "tsv_sha256": "76f12f9f4b677b340aa930d1894188256638a1e4c8d20a8356d5f7900863a2ac",
+      "below_90": [],
+      "below_98": [],
+      "backend": "wasm"
+    },
+    {
+      "issue": 7732,
+      "key": "footnote",
+      "pages": 50,
+      "minimum": 98.75,
+      "minimum_page": 37,
+      "tsv_sha256": "1e7ec85986045afd1dd77a87d88a53c1fa3f61951494d428ba1c2714acdaca6f",
+      "below_90": [],
+      "below_98": [],
+      "backend": "wasm"
+    }
+  ],
+  "pages_per_backend": 389,
+  "all_pages_at_least_98": true,
+  "all_pages_100": false,
+  "remaining": [
+    "protected36",
+    "actual90",
+    "fixed_base_wasm",
+    "edited-saved-small-Print-visual-comparison",
+    "PR_CI_merge_postmerge"
+  ],
+  "fresh_wasm_direct_review": {
+    "pages": 15,
+    "status": "completed",
+    "evidence": "wasm-direct-reviews.json"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "url": "https://github.com/edwardkim/rhwp/pull/9066",
+  "title": "fix(typeset): 제목·본문 표의 공동 앵커 배치와 저장 줄 프레임 보존 (#9042 수용) by edwardkim · Pull Request #9066 · edwardkim/rhwp · GitHub",
+  "httpStatus": 200,
+  "observedAt": "2026-11-13T22:57:24.872Z",
+  "images": [
+    {
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/4cf0b665488cb3570af964b23f6c09ab5e92138a/mydocs/pr/assets/pr9042/final-validation/representative/native/review_001.png",
+      "width": 2416,
+      "height": 1209,
+      "complete": true
+    },
+    {
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/4cf0b665488cb3570af964b23f6c09ab5e92138a/mydocs/pr/assets/pr9042/final-validation/representative/native/overlay_001.png",
+      "width": 794,
+      "height": 1209,
+      "complete": true
+    },
+    {
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/4cf0b665488cb3570af964b23f6c09ab5e92138a/mydocs/pr/assets/pr9042/final-validation/representative/wasm/review_001.png",
+      "width": 2416,
+      "height": 1209,
+      "complete": true
+    },
+    {
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/4cf0b665488cb3570af964b23f6c09ab5e92138a/mydocs/pr/assets/pr9042/final-validation/representative/wasm/overlay_001.png",
+      "width": 794,
+      "height": 1209,
+      "complete": true
+    }
+  ]
+}

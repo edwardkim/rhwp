@@ -1,0 +1,288 @@
+{
+  "head": "30fa7739f0340f2a248b22542c7dd36d9354f056",
+  "rows": [
+    {
+      "mode": "default",
+      "profile": "screen",
+      "path": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/chart-auto/default-screen.png",
+      "diagnostics": {
+        "backend": "canvas2d",
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "auto",
+            "source": "url",
+            "requested": "auto"
+          },
+          "requestedBackend": "auto",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "autoIneligible",
+          "fallbackReason": "canvaskitDocumentIneligible",
+          "documentRevision": 2,
+          "resourceGeneration": 2,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:bb77fc98d93e9608b1dfaf65e77a66d0f780cdd63977854f5425dbdf16c7e81f",
+          "decisionKey": "blake3:bb77fc98d93e9608b1dfaf65e77a66d0f780cdd63977854f5425dbdf16c7e81f|revision:2|profile:screen|resources:2|request:auto|mode:default",
+          "preflight": {
+            "schemaVersion": 1,
+            "mode": "default",
+            "profile": "screen",
+            "status": "ineligible",
+            "eligible": false,
+            "complete": true,
+            "pageCount": 1,
+            "scannedPages": 1,
+            "scannedWorkUnits": 26,
+            "limits": {
+              "maxPages": 128,
+              "maxWorkUnits": 50000,
+              "maxBlockers": 32,
+              "maxRequiredFontFamilies": 256
+            },
+            "summary": {
+              "totalItems": 6,
+              "directItems": 5,
+              "directRequiredItems": 1,
+              "compatOverlayItems": 0,
+              "textFallbackItems": 0,
+              "unsupportedItems": 0,
+              "hiddenOverlayViolations": 1
+            },
+            "blockers": [
+              {
+                "pageIndex": 0,
+                "code": "hiddenCanvas2dOverlayRequired",
+                "opType": "rawSvg",
+                "detail": "unsupportedDirectReplay"
+              }
+            ],
+            "requiredFontFamilies": [
+              "함초롬바탕"
+            ],
+            "capabilityDigest": "blake3:92dda887c24cfebb2c106bd06cc6de707f0c4942e18506d7b0363dacff18ff52"
+          },
+          "initializationError": null,
+          "selectionError": null
+        }
+      }
+    },
+    {
+      "mode": "default",
+      "profile": "print",
+      "path": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/chart-auto/default-print.png",
+      "diagnostics": {
+        "backend": "canvas2d",
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "auto",
+            "source": "url",
+            "requested": "auto"
+          },
+          "requestedBackend": "auto",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "autoIneligible",
+          "fallbackReason": "canvaskitDocumentIneligible",
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "print",
+          "documentDigest": "blake3:bb77fc98d93e9608b1dfaf65e77a66d0f780cdd63977854f5425dbdf16c7e81f",
+          "decisionKey": "blake3:bb77fc98d93e9608b1dfaf65e77a66d0f780cdd63977854f5425dbdf16c7e81f|revision:3|profile:print|resources:3|request:auto|mode:default",
+          "preflight": {
+            "schemaVersion": 1,
+            "mode": "default",
+            "profile": "print",
+            "status": "ineligible",
+            "eligible": false,
+            "complete": true,
+            "pageCount": 1,
+            "scannedPages": 1,
+            "scannedWorkUnits": 26,
+            "limits": {
+              "maxPages": 128,
+              "maxWorkUnits": 50000,
+              "maxBlockers": 32,
+              "maxRequiredFontFamilies": 256
+            },
+            "summary": {
+              "totalItems": 6,
+              "directItems": 5,
+              "directRequiredItems": 1,
+              "compatOverlayItems": 0,
+              "textFallbackItems": 0,
+              "unsupportedItems": 0,
+              "hiddenOverlayViolations": 1
+            },
+            "blockers": [
+              {
+                "pageIndex": 0,
+                "code": "hiddenCanvas2dOverlayRequired",
+                "opType": "rawSvg",
+                "detail": "unsupportedDirectReplay"
+              }
+            ],
+            "requiredFontFamilies": [
+              "함초롬바탕"
+            ],
+            "capabilityDigest": "blake3:0d7bf2a69f179ca2caf4148c6b605cf217ac7a849267eee46321b7772c651a68"
+          },
+          "initializationError": null,
+          "selectionError": null
+        }
+      },
+      "raw_match_percent": 95.07819,
+      "reference_pdf": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8900-bar_axis_floor/pdf_png/pdf-001.png",
+      "png_hashes": {
+        "page": 1,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/chart-auto/default-print.png",
+        "rhwp_sha256": "04c3c7f6ecea7656e2e86ac0955b82de669172b3dccb482d40b67dd8d89e1f97",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8900-bar_axis_floor/pdf_png/pdf-001.png",
+        "pdf_sha256": "8be51bb61bc95d89510a09ee91595cd8340804642261eacca52c57302756c38a"
+      },
+      "review": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/chart-auto-direct/default/review/review_001.png",
+      "overlay": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/chart-auto-direct/default/overlay/overlay_001.png"
+    },
+    {
+      "mode": "compat",
+      "profile": "screen",
+      "path": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/chart-auto/compat-screen.png",
+      "diagnostics": {
+        "backend": "canvas2d",
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "auto",
+            "source": "url",
+            "requested": "auto"
+          },
+          "requestedBackend": "auto",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "autoIneligible",
+          "fallbackReason": "canvaskitDocumentIneligible",
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:bb77fc98d93e9608b1dfaf65e77a66d0f780cdd63977854f5425dbdf16c7e81f",
+          "decisionKey": "blake3:bb77fc98d93e9608b1dfaf65e77a66d0f780cdd63977854f5425dbdf16c7e81f|revision:3|profile:screen|resources:3|request:auto|mode:compat",
+          "preflight": {
+            "schemaVersion": 1,
+            "mode": "compat",
+            "profile": "screen",
+            "status": "ineligible",
+            "eligible": false,
+            "complete": true,
+            "pageCount": 1,
+            "scannedPages": 1,
+            "scannedWorkUnits": 26,
+            "limits": {
+              "maxPages": 128,
+              "maxWorkUnits": 50000,
+              "maxBlockers": 32,
+              "maxRequiredFontFamilies": 256
+            },
+            "summary": {
+              "totalItems": 6,
+              "directItems": 5,
+              "directRequiredItems": 1,
+              "compatOverlayItems": 0,
+              "textFallbackItems": 0,
+              "unsupportedItems": 0,
+              "hiddenOverlayViolations": 1
+            },
+            "blockers": [
+              {
+                "pageIndex": 0,
+                "code": "hiddenCanvas2dOverlayRequired",
+                "opType": "rawSvg",
+                "detail": "unsupportedDirectReplay"
+              }
+            ],
+            "requiredFontFamilies": [
+              "함초롬바탕"
+            ],
+            "capabilityDigest": "blake3:c4ca680b951d138e64e8015a0963c80dddb0ac02ca65a573e0096ecc2fad6e8c"
+          },
+          "initializationError": null,
+          "selectionError": null
+        }
+      }
+    },
+    {
+      "mode": "compat",
+      "profile": "print",
+      "path": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/chart-auto/compat-print.png",
+      "diagnostics": {
+        "backend": "canvas2d",
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "auto",
+            "source": "url",
+            "requested": "auto"
+          },
+          "requestedBackend": "auto",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "autoIneligible",
+          "fallbackReason": "canvaskitDocumentIneligible",
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "print",
+          "documentDigest": "blake3:bb77fc98d93e9608b1dfaf65e77a66d0f780cdd63977854f5425dbdf16c7e81f",
+          "decisionKey": "blake3:bb77fc98d93e9608b1dfaf65e77a66d0f780cdd63977854f5425dbdf16c7e81f|revision:3|profile:print|resources:3|request:auto|mode:compat",
+          "preflight": {
+            "schemaVersion": 1,
+            "mode": "compat",
+            "profile": "print",
+            "status": "ineligible",
+            "eligible": false,
+            "complete": true,
+            "pageCount": 1,
+            "scannedPages": 1,
+            "scannedWorkUnits": 26,
+            "limits": {
+              "maxPages": 128,
+              "maxWorkUnits": 50000,
+              "maxBlockers": 32,
+              "maxRequiredFontFamilies": 256
+            },
+            "summary": {
+              "totalItems": 6,
+              "directItems": 5,
+              "directRequiredItems": 1,
+              "compatOverlayItems": 0,
+              "textFallbackItems": 0,
+              "unsupportedItems": 0,
+              "hiddenOverlayViolations": 1
+            },
+            "blockers": [
+              {
+                "pageIndex": 0,
+                "code": "hiddenCanvas2dOverlayRequired",
+                "opType": "rawSvg",
+                "detail": "unsupportedDirectReplay"
+              }
+            ],
+            "requiredFontFamilies": [
+              "함초롬바탕"
+            ],
+            "capabilityDigest": "blake3:03aed02a69081676a2dcd3e40c4e8516a8feb2451f1e05c91d7ac864ebea005d"
+          },
+          "initializationError": null,
+          "selectionError": null
+        }
+      },
+      "raw_match_percent": 95.07819,
+      "reference_pdf": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8900-bar_axis_floor/pdf_png/pdf-001.png",
+      "png_hashes": {
+        "page": 1,
+        "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/chart-auto/compat-print.png",
+        "rhwp_sha256": "04c3c7f6ecea7656e2e86ac0955b82de669172b3dccb482d40b67dd8d89e1f97",
+        "pdf_png": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/visual/candidate-native/pr8900-bar_axis_floor/pdf_png/pdf-001.png",
+        "pdf_sha256": "8be51bb61bc95d89510a09ee91595cd8340804642261eacca52c57302756c38a"
+      },
+      "review": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/chart-auto-direct/compat/review/review_001.png",
+      "overlay": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/post-rebase-30fa7739-20261112/chart-auto-direct/compat/overlay/overlay_001.png"
+    }
+  ],
+  "meaning": "Normal auto selection preserves chart via existing Canvas2D fallback; not a CanvasKit rawSvg support claim."
+}

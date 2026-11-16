@@ -1,0 +1,148 @@
+{
+  "documentGlyphFallbacks": [
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 5,
+      "languageSlot": 0,
+      "source": "나눔바른고딕OTF"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 6,
+      "languageSlot": 0,
+      "source": "*ﾇﾑｾ鄰ﾟｰ昉�Identity-H"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 7,
+      "languageSlot": 1,
+      "source": "나눔바른고딕OTF"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 8,
+      "languageSlot": 1,
+      "source": "*ﾇﾑｾ鄰ﾟｰ昉�Identity-H"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 7,
+      "languageSlot": 2,
+      "source": "나눔바른고딕OTF"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 8,
+      "languageSlot": 2,
+      "source": "*ﾇﾑｾ鄰ﾟｰ昉�Identity-H"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 7,
+      "languageSlot": 3,
+      "source": "나눔바른고딕OTF"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 8,
+      "languageSlot": 3,
+      "source": "*ﾇﾑｾ鄰ﾟｰ昉�Identity-H"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 7,
+      "languageSlot": 4,
+      "source": "나눔바른고딕OTF"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 8,
+      "languageSlot": 4,
+      "source": "*ﾇﾑｾ鄰ﾟｰ昉�Identity-H"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 7,
+      "languageSlot": 5,
+      "source": "나눔바른고딕OTF"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 8,
+      "languageSlot": 5,
+      "source": "*ﾇﾑｾ鄰ﾟｰ昉�Identity-H"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 7,
+      "languageSlot": 6,
+      "source": "나눔바른고딕OTF"
+    },
+    {
+      "faces": [
+        "HCRBatang"
+      ],
+      "fontId": 8,
+      "languageSlot": 6,
+      "source": "*ﾇﾑｾ鄰ﾟｰ昉�Identity-H"
+    }
+  ],
+  "documentSubstitutions": [],
+  "id": "native-webfont-e84274fa235f0734957a8102",
+  "preserveSourceMetrics": true,
+  "selectedPrograms": {
+    "Arial": {
+      "family": "Arial",
+      "openTypeCff": false,
+      "programId": "d7fed63b4b0d03be72501f238ccf6d5e580b1989cee25ddc273c2e6bcf06505d",
+      "query": "Arial",
+      "trueType": true
+    }
+  },
+  "substitutions": {
+    "*ﾇﾑｾ鄰ﾟｰ昉�Identity-H": "NotoSansKR-Regular",
+    "Arial": "Arial",
+    "HCI Poppy": "NotoSerifKRExtraLight-Regular",
+    "HCRBatang": "NotoSansKR-Regular",
+    "나눔바른고딕OTF": "NanumBarunGothicOTF-YetHangul",
+    "맑은 고딕": "Pretendard-Regular",
+    "명조": "NotoSerifKRExtraLight-Bold",
+    "바탕": "NotoSerifKRExtraLight-Regular",
+    "한양신명조": "NotoSansKR-Regular",
+    "한컴바탕": "HCRBatang",
+    "함초롬돋움": "HCRDotum",
+    "함초롬바탕": "HCRBatang",
+    "휴먼명조": "NotoSansKR-Regular"
+  },
+  "trueTypeFaces": [
+    "Arial",
+    "HCR Batang",
+    "HCR Dotum"
+  ]
+}

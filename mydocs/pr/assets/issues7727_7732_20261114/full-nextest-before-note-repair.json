@@ -1,0 +1,17 @@
+{
+  "head": "006f3ca043dc03d8b83482b02c5aab84dba2c7fa",
+  "base": "53da4d2da28ae0cacf8feac3a989cc6a69fb2622",
+  "tests_run": 13559,
+  "passed": 13555,
+  "failed": 4,
+  "skipped": 45,
+  "test_seconds": 372.282,
+  "exit_code": 100,
+  "log_sha256": "1dbaee94993cd3ea89e202ccb57405ac1f69e893aebb7148659b4a33e5aa44fa",
+  "failures": [
+    "issue_8797_first_margin_page_origin::table_after_unstored_first_margin_keeps_the_stored_ladder",
+    "issue_6844_intra_run_right_tab_bbox::issue_6844_toc_page_numbers_share_one_right_edge",
+    "issue_1921_59043_pagination_pin::regulatory_59043_page_count_pin",
+    "rowbreak_short_row_whole_carry::rows_inside_a_crossing_rowspan_still_split_after_one_line"
+  ]
+}

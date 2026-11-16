@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-11-04
+last_verified: 2026-11-15
 ---
 
 # Review-only fast-pass
@@ -34,6 +34,16 @@ Proptest roundtrip과 Adapter inter-diff도 같은 허용 경로 정책을 사�
 candidate의 결과를 재사용할 때는 PR 번호 배열 유무가 아니라 candidate SHA, 현재 PR head branch, source
 repository id와 PR 생성 이후 실행 여부를 함께 확인한다. 따라서 fork PR의 `listWorkflowRuns` 응답에
 `pull_requests` 배열이 비어 있어도, 다른 PR·다른 fork·PR 생성 전 실행 결과는 재사용하지 않는다.
+
+두 workflow에서 `scripts/rust-test-suite-manifest.mjs` 변경은 문서가 아닌 테스트 목록 입력으로
+취급한다. 목록을 변경한 코드 후보는 본 검증을 실행한다. 그 뒤 review-only tail만 추가되면
+같은 후보 run의 최신 attempt에서 실제 `prop roundtrip` 또는 `adapter inter-diff` worker가
+completed/success인지 확인해 재사용한다. job의 run ID·attempt·head SHA도 일치해야 한다.
+문서 후보의 worker가 skipped이면 앞선 실제 성공 후보를 계속 찾으며, skip 자체를 성공 증거로
+삼지 않는다. 실패·누락·중복·API 오류는 full fallback이다. 후보 이후 목록이 다시 바뀌면 새
+코드 후보의 검증이 필요하다. workflow·runner·harness 실행 정의 변경과 실행 경로를 문서로
+rename하는 변경의 PR 전체 차단은 유지한다. CI 정책을 수정하는 PR의 후속 기록은 계속
+[옵션 2](post_merge.md#711-ci-변경-pr은-옵션-2로-후속-기록)로 처리한다.
 
 ## A. code PR 뒤의 trailing review-only commit
 

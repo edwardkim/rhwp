@@ -1,0 +1,128 @@
+{
+  "documentSubstitutions": [],
+  "id": "native-webfont-c07fe8077b984a5b2b7deed5",
+  "preserveSourceMetrics": true,
+  "selectedPrograms": {
+    "굴림": {
+      "collectionFace": true,
+      "family": "Gulim",
+      "openTypeCff": false,
+      "programId": "4b29170743307f3145dd37b0dba180ec74ff6c7896aaf0a48f0890f81c7aea52",
+      "query": "굴림",
+      "trueType": true
+    },
+    "명조": {
+      "family": "Myeongjo",
+      "openTypeCff": true,
+      "programId": "c844e18302b686388e572f670a312c2f2c639500582e371bb150097d040af10c",
+      "query": "명조",
+      "trueType": false
+    },
+    "신명 견명조": {
+      "family": "Sinmyeong Gyeonmyeongjo",
+      "openTypeCff": true,
+      "programId": "9d39f314a5d32a7d63dc393d1527b14c19ea8a33d6efaaab5e0467da55480d77",
+      "query": "신명 견명조",
+      "trueType": false
+    },
+    "신명 디나루": {
+      "family": "Sinmyeong Dinaru",
+      "openTypeCff": true,
+      "programId": "7ce3af0a3b60c3ee42e08c205880cfd97064ef323116a65835ce785c50f5170a",
+      "query": "신명 디나루",
+      "trueType": false
+    },
+    "신명 신그래픽": {
+      "family": "Sinmyeong Singraphic",
+      "openTypeCff": true,
+      "programId": "23e15f34c3403b9d1747e73d49ed9eeee564785e0f7b5f3d55e181f41e252993",
+      "query": "신명 신그래픽",
+      "trueType": false
+    },
+    "신명 신명조": {
+      "family": "Sinmyeong Sinmyeongjo",
+      "openTypeCff": true,
+      "programId": "d84cbd7e4e34b7664238ecb33fdbc36962e5e6c2570421582b145efbdaf3f666",
+      "query": "신명 신명조",
+      "trueType": false
+    },
+    "신명 중고딕": {
+      "family": "Sinmyeong Junggothic",
+      "openTypeCff": true,
+      "programId": "6fa4da0c59ab99a58ffd6d0a0f985b41dc24b12afc531741591ea5c4b3de52ca",
+      "query": "신명 중고딕",
+      "trueType": false
+    },
+    "신명 중명조": {
+      "family": "Sinmyeong Jungmyeongjo",
+      "openTypeCff": true,
+      "programId": "39a0529e96543f680b318d30246a9bd52c553543a84ca1c840f06cc164dae1e0",
+      "query": "신명 중명조",
+      "trueType": false
+    },
+    "신명 태고딕": {
+      "family": "Sinmyeong Taegothic",
+      "openTypeCff": true,
+      "programId": "33618aa736531fdfc63f2aa76dda477afd2c8c4e1fea38574cf70e3704f7c94c",
+      "query": "신명 태고딕",
+      "trueType": false
+    },
+    "신명 태그래픽": {
+      "family": "Sinmyeong Taegraphic",
+      "openTypeCff": true,
+      "programId": "1c953b60164d2dd746fe0058ea79f8faa19bbba0eedb0a1ef7f6d1745dd9a906",
+      "query": "신명 태그래픽",
+      "trueType": false
+    },
+    "한양견명조": {
+      "family": "HY Gyeonmyeongjo",
+      "openTypeCff": true,
+      "programId": "9fd0073ddcdd93644d720c7517a7ccb421225cdb510b28bf059a6eab3dd39bb9",
+      "query": "한양견명조",
+      "trueType": false
+    },
+    "한양신명조": {
+      "family": "HY Sinmyeongjo",
+      "openTypeCff": true,
+      "programId": "c20485a292d437a1f4fd2ac1def811401b8e8bff598449416656fa9b97d8e4e8",
+      "query": "한양신명조",
+      "trueType": false
+    },
+    "한양중고딕": {
+      "family": "HY Junggothic",
+      "openTypeCff": true,
+      "programId": "61bd7778da3d3dc16654dc311a7850c885d59167deb754df0fec42c020c204ad",
+      "query": "한양중고딕",
+      "trueType": false
+    },
+    "한컴바탕": {
+      "family": "Haansoft Batang",
+      "openTypeCff": false,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "한컴바탕",
+      "trueType": true
+    }
+  },
+  "substitutions": {
+    "굴림": "Gulim",
+    "명조": "Myeongjo",
+    "신명 견명조": "Sinmyeong Gyeonmyeongjo",
+    "신명 디나루": "Sinmyeong Dinaru",
+    "신명 신그래픽": "Sinmyeong Singraphic",
+    "신명 신명조": "Sinmyeong Sinmyeongjo",
+    "신명 중고딕": "Sinmyeong Junggothic",
+    "신명 중명조": "Sinmyeong Jungmyeongjo",
+    "신명 태고딕": "Sinmyeong Taegothic",
+    "신명 태그래픽": "Sinmyeong Taegraphic",
+    "한양견명조": "HY Gyeonmyeongjo",
+    "한양신명조": "HY Sinmyeongjo",
+    "한양중고딕": "HY Junggothic",
+    "한컴바탕": "Haansoft Batang",
+    "함초롬바탕": "HCRBatang"
+  },
+  "trueTypeFaces": [
+    "Gulim",
+    "HCR Batang",
+    "Haansoft Batang"
+  ]
+}

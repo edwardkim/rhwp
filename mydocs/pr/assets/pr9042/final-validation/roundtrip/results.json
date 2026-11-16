@@ -1,0 +1,1771 @@
+{
+  "source": "d66d5f05f9efa4d182228494cd970614d479fb7a",
+  "native": [
+    {
+      "key": "original",
+      "format": "hwp",
+      "cycle": 1,
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "convert",
+        "mydocs/pr/assets/coanchored-table-pagination/float-pagination.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/original-1.hwp",
+        "--verify",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "envelope": {
+        "bytes": 7168,
+        "format": "hwp5",
+        "output": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/original-1.hwp",
+        "passwordProtected": false,
+        "schemaVersion": "1.0",
+        "source": "mydocs/pr/assets/coanchored-table-pagination/float-pagination.hwp",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "verify": {
+          "diffCount": 0,
+          "identical": true
+        },
+        "verifyPages": {
+          "after": 2,
+          "before": 2,
+          "identical": true
+        },
+        "wasDistribution": false
+      },
+      "sha256": "709be36ef7a99c16e5e0343277c8d4136441932808045ce5f20708ff91accbb0"
+    },
+    {
+      "key": "original",
+      "format": "hwp",
+      "cycle": 2,
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "convert",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/original-1.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/original-2.hwp",
+        "--verify",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "envelope": {
+        "bytes": 7168,
+        "format": "hwp5",
+        "output": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/original-2.hwp",
+        "passwordProtected": false,
+        "schemaVersion": "1.0",
+        "source": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/original-1.hwp",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "verify": {
+          "diffCount": 0,
+          "identical": true
+        },
+        "verifyPages": {
+          "after": 2,
+          "before": 2,
+          "identical": true
+        },
+        "wasDistribution": false
+      },
+      "sha256": "709be36ef7a99c16e5e0343277c8d4136441932808045ce5f20708ff91accbb0"
+    },
+    {
+      "key": "original",
+      "format": "hwpx",
+      "cycle": 1,
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "export-hwpx",
+        "mydocs/pr/assets/coanchored-table-pagination/float-pagination.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/original-1.hwpx",
+        "--verify",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "envelope": {
+        "bytes": 8470,
+        "format": "hwpx",
+        "output": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/original-1.hwpx",
+        "passwordProtected": false,
+        "schemaVersion": "1.0",
+        "source": "mydocs/pr/assets/coanchored-table-pagination/float-pagination.hwp",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "verify": {
+          "diffCount": 0,
+          "identical": true
+        },
+        "verifyPages": {
+          "after": 2,
+          "before": 2,
+          "identical": true
+        }
+      },
+      "sha256": "fc8e05a92487f4c88d01fcb4795c36e9623750e009485c8b33148abfe1704968"
+    },
+    {
+      "key": "original",
+      "format": "hwpx",
+      "cycle": 2,
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "export-hwpx",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/original-1.hwpx",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/original-2.hwpx",
+        "--verify",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "envelope": {
+        "bytes": 8470,
+        "format": "hwpx",
+        "output": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/original-2.hwpx",
+        "passwordProtected": false,
+        "schemaVersion": "1.0",
+        "source": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/original-1.hwpx",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "verify": {
+          "diffCount": 0,
+          "identical": true
+        },
+        "verifyPages": {
+          "after": 2,
+          "before": 2,
+          "identical": true
+        }
+      },
+      "sha256": "fc8e05a92487f4c88d01fcb4795c36e9623750e009485c8b33148abfe1704968"
+    },
+    {
+      "key": "unchanged",
+      "format": "hwp",
+      "cycle": 1,
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "convert",
+        "samples/pr9042/metadata-unchanged.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/unchanged-1.hwp",
+        "--verify",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "envelope": {
+        "bytes": 7168,
+        "format": "hwp5",
+        "output": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/unchanged-1.hwp",
+        "passwordProtected": false,
+        "schemaVersion": "1.0",
+        "source": "samples/pr9042/metadata-unchanged.hwp",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "verify": {
+          "diffCount": 0,
+          "identical": true
+        },
+        "verifyPages": {
+          "after": 2,
+          "before": 2,
+          "identical": true
+        },
+        "wasDistribution": false
+      },
+      "sha256": "709be36ef7a99c16e5e0343277c8d4136441932808045ce5f20708ff91accbb0"
+    },
+    {
+      "key": "unchanged",
+      "format": "hwpx",
+      "cycle": 1,
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "export-hwpx",
+        "samples/pr9042/metadata-unchanged.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/unchanged-1.hwpx",
+        "--verify",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "envelope": {
+        "bytes": 8470,
+        "format": "hwpx",
+        "output": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/unchanged-1.hwpx",
+        "passwordProtected": false,
+        "schemaVersion": "1.0",
+        "source": "samples/pr9042/metadata-unchanged.hwp",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "verify": {
+          "diffCount": 0,
+          "identical": true
+        },
+        "verifyPages": {
+          "after": 2,
+          "before": 2,
+          "identical": true
+        }
+      },
+      "sha256": "fc8e05a92487f4c88d01fcb4795c36e9623750e009485c8b33148abfe1704968"
+    },
+    {
+      "key": "empty-header",
+      "format": "hwp",
+      "cycle": 1,
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "convert",
+        "samples/pr9042/metadata-empty-header.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/empty-header-1.hwp",
+        "--verify",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "envelope": {
+        "bytes": 7168,
+        "format": "hwp5",
+        "output": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/empty-header-1.hwp",
+        "passwordProtected": false,
+        "schemaVersion": "1.0",
+        "source": "samples/pr9042/metadata-empty-header.hwp",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "verify": {
+          "diffCount": 0,
+          "identical": true
+        },
+        "verifyPages": {
+          "after": 2,
+          "before": 2,
+          "identical": true
+        },
+        "wasDistribution": false
+      },
+      "sha256": "8d5780ee16abcb3ca3cc8a02b705002feb1a16f2a0e7760673d70dbd88c94133"
+    },
+    {
+      "key": "empty-header",
+      "format": "hwpx",
+      "cycle": 1,
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "export-hwpx",
+        "samples/pr9042/metadata-empty-header.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/empty-header-1.hwpx",
+        "--verify",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "envelope": {
+        "bytes": 8509,
+        "format": "hwpx",
+        "output": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/empty-header-1.hwpx",
+        "passwordProtected": false,
+        "schemaVersion": "1.0",
+        "source": "samples/pr9042/metadata-empty-header.hwp",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "verify": {
+          "diffCount": 0,
+          "identical": true
+        },
+        "verifyPages": {
+          "after": 2,
+          "before": 2,
+          "identical": true
+        }
+      },
+      "sha256": "7d2341f4140e354fb3e6ddeadd72517b7e3bb76a765dceb05f53c5602accc209"
+    },
+    {
+      "key": "empty-footer",
+      "format": "hwp",
+      "cycle": 1,
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "convert",
+        "samples/pr9042/metadata-empty-footer.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/empty-footer-1.hwp",
+        "--verify",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "envelope": {
+        "bytes": 7168,
+        "format": "hwp5",
+        "output": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/empty-footer-1.hwp",
+        "passwordProtected": false,
+        "schemaVersion": "1.0",
+        "source": "samples/pr9042/metadata-empty-footer.hwp",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "verify": {
+          "diffCount": 0,
+          "identical": true
+        },
+        "verifyPages": {
+          "after": 2,
+          "before": 2,
+          "identical": true
+        },
+        "wasDistribution": false
+      },
+      "sha256": "8ec2617dff0bd7981f4d5dd36ab9dbe0f652c076916611e5aa5c75e8cd00d11c"
+    },
+    {
+      "key": "empty-footer",
+      "format": "hwpx",
+      "cycle": 1,
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "export-hwpx",
+        "samples/pr9042/metadata-empty-footer.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/empty-footer-1.hwpx",
+        "--verify",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "envelope": {
+        "bytes": 8509,
+        "format": "hwpx",
+        "output": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/empty-footer-1.hwpx",
+        "passwordProtected": false,
+        "schemaVersion": "1.0",
+        "source": "samples/pr9042/metadata-empty-footer.hwp",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "verify": {
+          "diffCount": 0,
+          "identical": true
+        },
+        "verifyPages": {
+          "after": 2,
+          "before": 2,
+          "identical": true
+        }
+      },
+      "sha256": "3595b5bd837ffd873cb3f9c9cdfcdeb4c252786cbac6188fe27f8b9ccc4d5a95"
+    },
+    {
+      "key": "hancom-saved",
+      "format": "hwp",
+      "cycle": 1,
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "convert",
+        "samples/pr9042/pr9042-hancom-saved.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/hancom-saved-1.hwp",
+        "--verify",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "envelope": {
+        "bytes": 14848,
+        "format": "hwp5",
+        "output": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/hancom-saved-1.hwp",
+        "passwordProtected": false,
+        "schemaVersion": "1.0",
+        "source": "samples/pr9042/pr9042-hancom-saved.hwp",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "verify": {
+          "diffCount": 0,
+          "identical": true
+        },
+        "verifyPages": {
+          "after": 2,
+          "before": 2,
+          "identical": true
+        },
+        "wasDistribution": false
+      },
+      "sha256": "63b350d66f8f7c5cda0e63684b89807c3eb25558321b9e368279c70276667d57"
+    },
+    {
+      "key": "hancom-saved",
+      "format": "hwpx",
+      "cycle": 1,
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "export-hwpx",
+        "samples/pr9042/pr9042-hancom-saved.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/hancom-saved-1.hwpx",
+        "--verify",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "envelope": {
+        "bytes": 8456,
+        "format": "hwpx",
+        "output": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/hancom-saved-1.hwpx",
+        "passwordProtected": false,
+        "schemaVersion": "1.0",
+        "source": "samples/pr9042/pr9042-hancom-saved.hwp",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "verify": {
+          "diffCount": 0,
+          "identical": true
+        },
+        "verifyPages": {
+          "after": 2,
+          "before": 2,
+          "identical": true
+        }
+      },
+      "sha256": "103f8f573d727b0191d723980a5c0927e0fa509731487f1214419a5c1fc053c0"
+    },
+    {
+      "key": "nested-single-line",
+      "format": "hwp",
+      "cycle": 1,
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "convert",
+        "samples/pr9042/nested-tail-single-line-hancom.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/nested-single-line-1.hwp",
+        "--verify",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "envelope": {
+        "bytes": 14336,
+        "format": "hwp5",
+        "output": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/nested-single-line-1.hwp",
+        "passwordProtected": false,
+        "schemaVersion": "1.0",
+        "source": "samples/pr9042/nested-tail-single-line-hancom.hwp",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "verify": {
+          "diffCount": 0,
+          "identical": true
+        },
+        "verifyPages": {
+          "after": 2,
+          "before": 2,
+          "identical": true
+        },
+        "wasDistribution": false
+      },
+      "sha256": "d3f399d82099715230d528fc03948938f05e669f5fe61c6af2a4eb0dcef399ed"
+    },
+    {
+      "key": "nested-single-line",
+      "format": "hwpx",
+      "cycle": 1,
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "export-hwpx",
+        "samples/pr9042/nested-tail-single-line-hancom.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/nested-single-line-1.hwpx",
+        "--verify",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "envelope": {
+        "bytes": 8492,
+        "format": "hwpx",
+        "output": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/nested-single-line-1.hwpx",
+        "passwordProtected": false,
+        "schemaVersion": "1.0",
+        "source": "samples/pr9042/nested-tail-single-line-hancom.hwp",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "verify": {
+          "diffCount": 0,
+          "identical": true
+        },
+        "verifyPages": {
+          "after": 2,
+          "before": 2,
+          "identical": true
+        }
+      },
+      "sha256": "5717f4d8970d477a19a26eca8dcc3c449af6c1207caaba8e3d289efc8185f368"
+    },
+    {
+      "key": "nested-margins",
+      "format": "hwp",
+      "cycle": 1,
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "convert",
+        "samples/pr9042/nested-tail-margins-hancom.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/nested-margins-1.hwp",
+        "--verify",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "envelope": {
+        "bytes": 14336,
+        "format": "hwp5",
+        "output": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/nested-margins-1.hwp",
+        "passwordProtected": false,
+        "schemaVersion": "1.0",
+        "source": "samples/pr9042/nested-tail-margins-hancom.hwp",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "verify": {
+          "diffCount": 0,
+          "identical": true
+        },
+        "verifyPages": {
+          "after": 2,
+          "before": 2,
+          "identical": true
+        },
+        "wasDistribution": false
+      },
+      "sha256": "60420db77cda8708172c172f6018b3870c837c94b396913b20fda08a23f680e5"
+    },
+    {
+      "key": "nested-margins",
+      "format": "hwpx",
+      "cycle": 1,
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "export-hwpx",
+        "samples/pr9042/nested-tail-margins-hancom.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/nested-margins-1.hwpx",
+        "--verify",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "envelope": {
+        "bytes": 8491,
+        "format": "hwpx",
+        "output": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/nested-margins-1.hwpx",
+        "passwordProtected": false,
+        "schemaVersion": "1.0",
+        "source": "samples/pr9042/nested-tail-margins-hancom.hwp",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "verify": {
+          "diffCount": 0,
+          "identical": true
+        },
+        "verifyPages": {
+          "after": 2,
+          "before": 2,
+          "identical": true
+        }
+      },
+      "sha256": "b120ca4898214879165ecf501bc613af232c191566c41f3f0299f455e744ee7c"
+    },
+    {
+      "key": "nested-two-paragraphs",
+      "format": "hwp",
+      "cycle": 1,
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "convert",
+        "samples/pr9042/nested-tail-two-paragraphs-hancom.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/nested-two-paragraphs-1.hwp",
+        "--verify",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "envelope": {
+        "bytes": 14848,
+        "format": "hwp5",
+        "output": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/nested-two-paragraphs-1.hwp",
+        "passwordProtected": false,
+        "schemaVersion": "1.0",
+        "source": "samples/pr9042/nested-tail-two-paragraphs-hancom.hwp",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "verify": {
+          "diffCount": 0,
+          "identical": true
+        },
+        "verifyPages": {
+          "after": 2,
+          "before": 2,
+          "identical": true
+        },
+        "wasDistribution": false
+      },
+      "sha256": "0b69321bb8d9f71ab5780af32976753c0d77759ea3a0b00d185c6483a8fbf9f4"
+    },
+    {
+      "key": "nested-two-paragraphs",
+      "format": "hwpx",
+      "cycle": 1,
+      "command": [
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "export-hwpx",
+        "samples/pr9042/nested-tail-two-paragraphs-hancom.hwp",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/nested-two-paragraphs-1.hwpx",
+        "--verify",
+        "--verify-pages",
+        "--json"
+      ],
+      "exit": 0,
+      "envelope": {
+        "bytes": 8502,
+        "format": "hwpx",
+        "output": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/nested-two-paragraphs-1.hwpx",
+        "passwordProtected": false,
+        "schemaVersion": "1.0",
+        "source": "samples/pr9042/nested-tail-two-paragraphs-hancom.hwp",
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "verify": {
+          "diffCount": 0,
+          "identical": true
+        },
+        "verifyPages": {
+          "after": 2,
+          "before": 2,
+          "identical": true
+        }
+      },
+      "sha256": "8daa49d065e6589cd6a8efaf6b48c59fbb858ef17dc708fba2504967a34d7868"
+    }
+  ],
+  "browser": {
+    "browser": "Chrome/156.0.8078.47",
+    "results": [
+      {
+        "key": "original",
+        "format": "hwp",
+        "cycle": 1,
+        "pages": 2,
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/original-1.hwp"
+      },
+      {
+        "key": "original",
+        "format": "hwp",
+        "cycle": 2,
+        "pages": 2,
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/original-2.hwp"
+      },
+      {
+        "key": "original",
+        "format": "hwpx",
+        "cycle": 1,
+        "pages": 2,
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/original-1.hwpx"
+      },
+      {
+        "key": "original",
+        "format": "hwpx",
+        "cycle": 2,
+        "pages": 2,
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/original-2.hwpx"
+      },
+      {
+        "key": "unchanged",
+        "format": "hwp",
+        "cycle": 1,
+        "pages": 2,
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/unchanged-1.hwp"
+      },
+      {
+        "key": "unchanged",
+        "format": "hwpx",
+        "cycle": 1,
+        "pages": 2,
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/unchanged-1.hwpx"
+      },
+      {
+        "key": "empty-header",
+        "format": "hwp",
+        "cycle": 1,
+        "pages": 2,
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/empty-header-1.hwp"
+      },
+      {
+        "key": "empty-header",
+        "format": "hwpx",
+        "cycle": 1,
+        "pages": 2,
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/empty-header-1.hwpx"
+      },
+      {
+        "key": "empty-footer",
+        "format": "hwp",
+        "cycle": 1,
+        "pages": 2,
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/empty-footer-1.hwp"
+      },
+      {
+        "key": "empty-footer",
+        "format": "hwpx",
+        "cycle": 1,
+        "pages": 2,
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/empty-footer-1.hwpx"
+      },
+      {
+        "key": "hancom-saved",
+        "format": "hwp",
+        "cycle": 1,
+        "pages": 2,
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/hancom-saved-1.hwp"
+      },
+      {
+        "key": "hancom-saved",
+        "format": "hwpx",
+        "cycle": 1,
+        "pages": 2,
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/hancom-saved-1.hwpx"
+      },
+      {
+        "key": "nested-single-line",
+        "format": "hwp",
+        "cycle": 1,
+        "pages": 2,
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/nested-single-line-1.hwp"
+      },
+      {
+        "key": "nested-single-line",
+        "format": "hwpx",
+        "cycle": 1,
+        "pages": 2,
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/nested-single-line-1.hwpx"
+      },
+      {
+        "key": "nested-margins",
+        "format": "hwp",
+        "cycle": 1,
+        "pages": 2,
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/nested-margins-1.hwp"
+      },
+      {
+        "key": "nested-margins",
+        "format": "hwpx",
+        "cycle": 1,
+        "pages": 2,
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/nested-margins-1.hwpx"
+      },
+      {
+        "key": "nested-two-paragraphs",
+        "format": "hwp",
+        "cycle": 1,
+        "pages": 2,
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/nested-two-paragraphs-1.hwp"
+      },
+      {
+        "key": "nested-two-paragraphs",
+        "format": "hwpx",
+        "cycle": 1,
+        "pages": 2,
+        "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/wasm/nested-two-paragraphs-1.hwpx"
+      }
+    ]
+  },
+  "visual": [
+    {
+      "key": "native-original-hwp-1",
+      "backend": "native",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-original-hwp-1/native-original-hwp-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-original-hwp-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/original-1.hwp",
+        "pdf/coanchored-table-pagination/float-pagination-hancom-mac-viewer-12.31.9-print.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-original-hwp-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/native/native-original-hwp-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-original-hwp-1",
+      "backend": "wasm",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-original-hwp-1/native-original-hwp-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-original-hwp-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/original-1.hwp",
+        "pdf/coanchored-table-pagination/float-pagination-hancom-mac-viewer-12.31.9-print.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-original-hwp-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only",
+        "--wasm-pkg",
+        "/home/edward/mygithub/rhwp/pkg",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+        "--font-environment",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/environments/5fbcf3e65349c804ee9da2ec15c402501c0418c2cd8632d35a4506224eba46c5.json"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/wasm/native-original-hwp-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-original-hwpx-1",
+      "backend": "native",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-original-hwpx-1/native-original-hwpx-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-original-hwpx-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/original-1.hwpx",
+        "pdf/coanchored-table-pagination/float-pagination-hancom-mac-viewer-12.31.9-print.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-original-hwpx-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/native/native-original-hwpx-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-original-hwpx-1",
+      "backend": "wasm",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-original-hwpx-1/native-original-hwpx-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-original-hwpx-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/original-1.hwpx",
+        "pdf/coanchored-table-pagination/float-pagination-hancom-mac-viewer-12.31.9-print.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-original-hwpx-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only",
+        "--wasm-pkg",
+        "/home/edward/mygithub/rhwp/pkg",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+        "--font-environment",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/environments/5fbcf3e65349c804ee9da2ec15c402501c0418c2cd8632d35a4506224eba46c5.json"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/wasm/native-original-hwpx-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-unchanged-hwp-1",
+      "backend": "native",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-unchanged-hwp-1/native-unchanged-hwp-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-unchanged-hwp-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/unchanged-1.hwp",
+        "pdf/pr9042/metadata-unchanged-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-unchanged-hwp-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/native/native-unchanged-hwp-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-unchanged-hwp-1",
+      "backend": "wasm",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-unchanged-hwp-1/native-unchanged-hwp-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-unchanged-hwp-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/unchanged-1.hwp",
+        "pdf/pr9042/metadata-unchanged-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-unchanged-hwp-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only",
+        "--wasm-pkg",
+        "/home/edward/mygithub/rhwp/pkg",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+        "--font-environment",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/environments/5fbcf3e65349c804ee9da2ec15c402501c0418c2cd8632d35a4506224eba46c5.json"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/wasm/native-unchanged-hwp-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-unchanged-hwpx-1",
+      "backend": "native",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-unchanged-hwpx-1/native-unchanged-hwpx-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-unchanged-hwpx-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/unchanged-1.hwpx",
+        "pdf/pr9042/metadata-unchanged-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-unchanged-hwpx-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/native/native-unchanged-hwpx-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-unchanged-hwpx-1",
+      "backend": "wasm",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-unchanged-hwpx-1/native-unchanged-hwpx-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-unchanged-hwpx-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/unchanged-1.hwpx",
+        "pdf/pr9042/metadata-unchanged-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-unchanged-hwpx-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only",
+        "--wasm-pkg",
+        "/home/edward/mygithub/rhwp/pkg",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+        "--font-environment",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/environments/5fbcf3e65349c804ee9da2ec15c402501c0418c2cd8632d35a4506224eba46c5.json"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/wasm/native-unchanged-hwpx-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-empty-header-hwp-1",
+      "backend": "native",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-empty-header-hwp-1/native-empty-header-hwp-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-empty-header-hwp-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/empty-header-1.hwp",
+        "pdf/pr9042/metadata-empty-header-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-empty-header-hwp-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/native/native-empty-header-hwp-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-empty-header-hwp-1",
+      "backend": "wasm",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-empty-header-hwp-1/native-empty-header-hwp-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-empty-header-hwp-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/empty-header-1.hwp",
+        "pdf/pr9042/metadata-empty-header-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-empty-header-hwp-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only",
+        "--wasm-pkg",
+        "/home/edward/mygithub/rhwp/pkg",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+        "--font-environment",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/environments/5fbcf3e65349c804ee9da2ec15c402501c0418c2cd8632d35a4506224eba46c5.json"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/wasm/native-empty-header-hwp-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-empty-header-hwpx-1",
+      "backend": "native",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-empty-header-hwpx-1/native-empty-header-hwpx-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-empty-header-hwpx-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/empty-header-1.hwpx",
+        "pdf/pr9042/metadata-empty-header-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-empty-header-hwpx-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/native/native-empty-header-hwpx-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-empty-header-hwpx-1",
+      "backend": "wasm",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-empty-header-hwpx-1/native-empty-header-hwpx-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-empty-header-hwpx-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/empty-header-1.hwpx",
+        "pdf/pr9042/metadata-empty-header-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-empty-header-hwpx-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only",
+        "--wasm-pkg",
+        "/home/edward/mygithub/rhwp/pkg",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+        "--font-environment",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/environments/5fbcf3e65349c804ee9da2ec15c402501c0418c2cd8632d35a4506224eba46c5.json"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/wasm/native-empty-header-hwpx-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-empty-footer-hwp-1",
+      "backend": "native",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-empty-footer-hwp-1/native-empty-footer-hwp-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-empty-footer-hwp-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/empty-footer-1.hwp",
+        "pdf/pr9042/metadata-empty-footer-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-empty-footer-hwp-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/native/native-empty-footer-hwp-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-empty-footer-hwp-1",
+      "backend": "wasm",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-empty-footer-hwp-1/native-empty-footer-hwp-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-empty-footer-hwp-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/empty-footer-1.hwp",
+        "pdf/pr9042/metadata-empty-footer-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-empty-footer-hwp-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only",
+        "--wasm-pkg",
+        "/home/edward/mygithub/rhwp/pkg",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+        "--font-environment",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/environments/5fbcf3e65349c804ee9da2ec15c402501c0418c2cd8632d35a4506224eba46c5.json"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/wasm/native-empty-footer-hwp-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-empty-footer-hwpx-1",
+      "backend": "native",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-empty-footer-hwpx-1/native-empty-footer-hwpx-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-empty-footer-hwpx-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/empty-footer-1.hwpx",
+        "pdf/pr9042/metadata-empty-footer-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-empty-footer-hwpx-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/native/native-empty-footer-hwpx-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-empty-footer-hwpx-1",
+      "backend": "wasm",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-empty-footer-hwpx-1/native-empty-footer-hwpx-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-empty-footer-hwpx-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/empty-footer-1.hwpx",
+        "pdf/pr9042/metadata-empty-footer-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-empty-footer-hwpx-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only",
+        "--wasm-pkg",
+        "/home/edward/mygithub/rhwp/pkg",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+        "--font-environment",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/environments/5fbcf3e65349c804ee9da2ec15c402501c0418c2cd8632d35a4506224eba46c5.json"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/wasm/native-empty-footer-hwpx-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-hancom-saved-hwp-1",
+      "backend": "native",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-hancom-saved-hwp-1/native-hancom-saved-hwp-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-hancom-saved-hwp-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/hancom-saved-1.hwp",
+        "pdf/pr9042/pr9042-hancom-saved-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-hancom-saved-hwp-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/native/native-hancom-saved-hwp-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-hancom-saved-hwp-1",
+      "backend": "wasm",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-hancom-saved-hwp-1/native-hancom-saved-hwp-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-hancom-saved-hwp-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/hancom-saved-1.hwp",
+        "pdf/pr9042/pr9042-hancom-saved-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-hancom-saved-hwp-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only",
+        "--wasm-pkg",
+        "/home/edward/mygithub/rhwp/pkg",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+        "--font-environment",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/environments/5fbcf3e65349c804ee9da2ec15c402501c0418c2cd8632d35a4506224eba46c5.json"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/wasm/native-hancom-saved-hwp-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-hancom-saved-hwpx-1",
+      "backend": "native",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-hancom-saved-hwpx-1/native-hancom-saved-hwpx-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-hancom-saved-hwpx-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/hancom-saved-1.hwpx",
+        "pdf/pr9042/pr9042-hancom-saved-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-hancom-saved-hwpx-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/native/native-hancom-saved-hwpx-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-hancom-saved-hwpx-1",
+      "backend": "wasm",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-hancom-saved-hwpx-1/native-hancom-saved-hwpx-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-hancom-saved-hwpx-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/hancom-saved-1.hwpx",
+        "pdf/pr9042/pr9042-hancom-saved-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-hancom-saved-hwpx-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only",
+        "--wasm-pkg",
+        "/home/edward/mygithub/rhwp/pkg",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+        "--font-environment",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/environments/5fbcf3e65349c804ee9da2ec15c402501c0418c2cd8632d35a4506224eba46c5.json"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/wasm/native-hancom-saved-hwpx-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-nested-single-line-hwp-1",
+      "backend": "native",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-nested-single-line-hwp-1/native-nested-single-line-hwp-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-nested-single-line-hwp-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/nested-single-line-1.hwp",
+        "pdf/pr9042/nested-tail-single-line-hancom-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-nested-single-line-hwp-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/native/native-nested-single-line-hwp-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-nested-single-line-hwp-1",
+      "backend": "wasm",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-nested-single-line-hwp-1/native-nested-single-line-hwp-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-nested-single-line-hwp-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/nested-single-line-1.hwp",
+        "pdf/pr9042/nested-tail-single-line-hancom-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-nested-single-line-hwp-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only",
+        "--wasm-pkg",
+        "/home/edward/mygithub/rhwp/pkg",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+        "--font-environment",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/environments/5fbcf3e65349c804ee9da2ec15c402501c0418c2cd8632d35a4506224eba46c5.json"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/wasm/native-nested-single-line-hwp-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-nested-single-line-hwpx-1",
+      "backend": "native",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-nested-single-line-hwpx-1/native-nested-single-line-hwpx-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-nested-single-line-hwpx-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/nested-single-line-1.hwpx",
+        "pdf/pr9042/nested-tail-single-line-hancom-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-nested-single-line-hwpx-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/native/native-nested-single-line-hwpx-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-nested-single-line-hwpx-1",
+      "backend": "wasm",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-nested-single-line-hwpx-1/native-nested-single-line-hwpx-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-nested-single-line-hwpx-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/nested-single-line-1.hwpx",
+        "pdf/pr9042/nested-tail-single-line-hancom-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-nested-single-line-hwpx-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only",
+        "--wasm-pkg",
+        "/home/edward/mygithub/rhwp/pkg",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+        "--font-environment",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/environments/5fbcf3e65349c804ee9da2ec15c402501c0418c2cd8632d35a4506224eba46c5.json"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/wasm/native-nested-single-line-hwpx-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-nested-margins-hwp-1",
+      "backend": "native",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-nested-margins-hwp-1/native-nested-margins-hwp-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-nested-margins-hwp-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/nested-margins-1.hwp",
+        "pdf/pr9042/nested-tail-margins-hancom-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-nested-margins-hwp-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/native/native-nested-margins-hwp-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-nested-margins-hwp-1",
+      "backend": "wasm",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-nested-margins-hwp-1/native-nested-margins-hwp-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-nested-margins-hwp-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/nested-margins-1.hwp",
+        "pdf/pr9042/nested-tail-margins-hancom-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-nested-margins-hwp-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only",
+        "--wasm-pkg",
+        "/home/edward/mygithub/rhwp/pkg",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+        "--font-environment",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/environments/5fbcf3e65349c804ee9da2ec15c402501c0418c2cd8632d35a4506224eba46c5.json"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/wasm/native-nested-margins-hwp-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-nested-margins-hwpx-1",
+      "backend": "native",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-nested-margins-hwpx-1/native-nested-margins-hwpx-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-nested-margins-hwpx-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/nested-margins-1.hwpx",
+        "pdf/pr9042/nested-tail-margins-hancom-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-nested-margins-hwpx-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/native/native-nested-margins-hwpx-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-nested-margins-hwpx-1",
+      "backend": "wasm",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-nested-margins-hwpx-1/native-nested-margins-hwpx-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-nested-margins-hwpx-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/nested-margins-1.hwpx",
+        "pdf/pr9042/nested-tail-margins-hancom-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-nested-margins-hwpx-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only",
+        "--wasm-pkg",
+        "/home/edward/mygithub/rhwp/pkg",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+        "--font-environment",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/environments/5fbcf3e65349c804ee9da2ec15c402501c0418c2cd8632d35a4506224eba46c5.json"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/wasm/native-nested-margins-hwpx-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-nested-two-paragraphs-hwp-1",
+      "backend": "native",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-nested-two-paragraphs-hwp-1/native-nested-two-paragraphs-hwp-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-nested-two-paragraphs-hwp-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/nested-two-paragraphs-1.hwp",
+        "pdf/pr9042/nested-tail-two-paragraphs-hancom-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-nested-two-paragraphs-hwp-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/native/native-nested-two-paragraphs-hwp-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-nested-two-paragraphs-hwp-1",
+      "backend": "wasm",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-nested-two-paragraphs-hwp-1/native-nested-two-paragraphs-hwp-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-nested-two-paragraphs-hwp-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/nested-two-paragraphs-1.hwp",
+        "pdf/pr9042/nested-tail-two-paragraphs-hancom-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-nested-two-paragraphs-hwp-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only",
+        "--wasm-pkg",
+        "/home/edward/mygithub/rhwp/pkg",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+        "--font-environment",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/environments/5fbcf3e65349c804ee9da2ec15c402501c0418c2cd8632d35a4506224eba46c5.json"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/wasm/native-nested-two-paragraphs-hwp-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-nested-two-paragraphs-hwpx-1",
+      "backend": "native",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-nested-two-paragraphs-hwpx-1/native-nested-two-paragraphs-hwpx-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-nested-two-paragraphs-hwpx-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/nested-two-paragraphs-1.hwpx",
+        "pdf/pr9042/nested-tail-two-paragraphs-hancom-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/native/native-nested-two-paragraphs-hwpx-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/native/native-nested-two-paragraphs-hwpx-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    },
+    {
+      "key": "native-nested-two-paragraphs-hwpx-1",
+      "backend": "wasm",
+      "exit": 0,
+      "pages": 2,
+      "minimum": 100.0,
+      "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-nested-two-paragraphs-hwpx-1/native-nested-two-paragraphs-hwpx-1/silhouette.tsv",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--file-target",
+        "native-nested-two-paragraphs-hwpx-1",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/native/nested-two-paragraphs-1.hwpx",
+        "pdf/pr9042/nested-tail-two-paragraphs-hancom-hwp-2020.pdf",
+        "--out",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/roundtrip-submission/visual/wasm/native-nested-two-paragraphs-hwpx-1",
+        "--rhwp-bin",
+        "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-rhwp",
+        "--dpi",
+        "96",
+        "--compat",
+        "2022",
+        "--silhouette-only",
+        "--wasm-pkg",
+        "/home/edward/mygithub/rhwp/pkg",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+        "--font-path",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+        "--font-environment",
+        "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/environments/5fbcf3e65349c804ee9da2ec15c402501c0418c2cd8632d35a4506224eba46c5.json"
+      ],
+      "committed_tsv": "mydocs/pr/assets/pr9042/final-validation/roundtrip/wasm/native-nested-two-paragraphs-hwpx-1.tsv",
+      "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+    }
+  ],
+  "capture_input_reference_pairs": 16,
+  "unique_saved_byte_groups": 14
+}

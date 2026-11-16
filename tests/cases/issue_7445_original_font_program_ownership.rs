@@ -1,6 +1,12 @@
 //! 관계형·고정형: 원본 글꼴 프로그램과 기호의 소유 계약.
+//! 추가 관계 검증 주석 갱신: 2026-11-15T17:38:44+09:00.
+//! 직전 파일 변경: 411cb7a7e807abbea90c6ab6b6ca0c66b6c3ad71, 2026-11-15T13:50:29+09:00.
+//! source 8ad1c5c08a의 독립 Print·PDFium·96dpi·2px raw: 중첩 표 전 17쪽
+//! Native 최저 98.63%, 최적화 fresh WASM 최저 98.65%; 11쪽 99.67/99.63%, 14쪽 99.42/99.35%.
+//! 실제 형식 공급·원문 유형·논리 전진·Print 프레임의 관계이며 페이지 좌표를 고정하지 않는다.
+//! 근거: mydocs/pr/assets/jinho-von-choi-20261114/supplied-ttf-frame/README.md.
 //! 이번 보정: 2026-11-04T16:04:21+09:00; Screen과 portable Print에서 기존 원점·소속 검사를 모두 유지한다.
-//! 주석 갱신: 2026-10-30T12:45:07+09:00; 직전 파일 커밋: 2026-10-29T17:36:06+09:00 (55d447871d).
+//! 주석 갱신: 2026-11-15T13:51:00+09:00; 직전 파일 커밋: 2026-11-04T18:33:15+09:00 (96827b3accd98ad0b80f76260b42fba24eded504)
 //! 2026-10-24 측정 raw(96dpi, PDFium, 2px): Native / fresh WASM(no-opt).
 //! 일·생활균형 HWPX 4쪽 99.69% / 99.69%, 5쪽 99.98% / 99.98%; 전 6쪽 최저 98.95% / 98.94%.
 //! 자산관리 HWPX 56쪽 99.98% / 99.98%; 전 60쪽 최저 96.08% / 96.08%.
@@ -11,7 +17,7 @@
 //! 근거: mydocs/pr/assets/issue7445/completed-20261009/regression-policy-20261015/sample11-current-20261019/README.md.
 //! 수치는 각 증거의 당시 측정이며 현재 head를 재측정한 결과가 아니다.
 //! 원본 글꼴 프로그램·기호 소유는 공개 글꼴 결정 API로 확인한다.
-//! 전쪽 Native/fresh WASM90%와 해당 쪽98%·직접 판독을 마친 실물 경계는
+//! 전쪽 Native/fresh WASM 90%와 해당 쪽 98%·직접 판독을 마친 실물 경계는
 //! 내용 관계와 독립±2CSSpx로 함께 보호한다. 근거: stage5 C75/C76 보고서.
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -58,6 +64,120 @@ fn record(core: &DocumentCore, character: &str) -> Value {
         .find(|r| r["source"]["character"] == character)
         .expect("원본 글자 기록")
         .clone()
+}
+
+#[test]
+fn verified_ttf_program_selects_its_text_frame_without_reclassifying_source() {
+    use rhwp::paint::{LayerNode, LayerNodeKind, PaintOp, RenderProfile};
+    fn visit(node: &LayerNode, frames: &mut Vec<bool>) {
+        match &node.kind {
+            LayerNodeKind::Group { children, .. } => {
+                for child in children {
+                    visit(child, frames);
+                }
+            }
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                visit(child, frames);
+            }
+            LayerNodeKind::Leaf { ops } => {
+                for op in ops {
+                    if let PaintOp::TextRun {
+                        run,
+                        paint_transform,
+                        ..
+                    } = op
+                    {
+                        if run.text.chars().any(|c| matches!(c, '검' | '증')) {
+                            frames.push(paint_transform.is_some());
+                        }
+                    }
+                }
+            }
+        }
+    }
+    fn frames(core: &DocumentCore, after_fill: bool) -> Vec<bool> {
+        let tree = if after_fill {
+            use rhwp::renderer::render_tree::{
+                BoundingBox, RectangleNode, RenderNode, RenderNodeType,
+            };
+            let mut render = core.build_page_render_tree(0).unwrap();
+            render.root.children.insert(
+                0,
+                RenderNode::new(
+                    u32::MAX,
+                    RenderNodeType::Rectangle(RectangleNode {
+                        control_index: Some(0),
+                        ..RectangleNode::new(
+                            0.0,
+                            rhwp::renderer::ShapeStyle {
+                                fill_color: Some(0),
+                                ..Default::default()
+                            },
+                            None,
+                        )
+                    }),
+                    BoundingBox::new(0.0, 0.0, 10.0, 10.0),
+                ),
+            );
+            rhwp::paint::LayerBuilder::new(RenderProfile::Print).build(&render)
+        } else {
+            core.build_page_layer_tree_with_profile(0, RenderProfile::Print)
+                .unwrap()
+        };
+        let mut frames = Vec::new();
+        visit(&tree.root, &mut frames);
+        assert!(!frames.is_empty(), "검증 본문을 실제 paint까지 발행한다");
+        frames
+    }
+    // 글꼴 이름·유형 비트만으로 실제 프로그램의 인쇄 좌표를 확정하지 않는다.
+    // 독립 Print에서 확인한 실제 원 primary의 명시 선택과 자연 프로그램 요청을 구분한다.
+    let mut direct = core("Times New Roman", "검증", None);
+    assert!(frames(&direct, false).iter().all(|frame| !frame));
+    direct.set_font_environment(Some(FontEnvironment::from_json(
+        r#"{"id":"verified-primary-ttf","substitutions":{"Times New Roman":"Times New Roman"},"trueTypeFaces":["Times New Roman"],"preserveSourceMetrics":true}"#
+    ).unwrap())).unwrap();
+    assert!(frames(&direct, false).iter().all(|frame| *frame));
+    assert!(
+        frames(&direct, true).iter().all(|frame| *frame),
+        "확인한 원 primary의 TTF text 좌표는 fill 뒤에도 정밀 프레임을 보존"
+    );
+    let mut unknown = core("Times New Roman", "검증", None);
+    let mut raw = unknown.document().clone();
+    for face in raw.doc_info.font_faces.iter_mut().flatten() {
+        face.alt_type = 0;
+    }
+    unknown.set_document(raw);
+    assert!(frames(&unknown, false).iter().all(|frame| !frame));
+    unknown.set_font_environment(Some(FontEnvironment::from_json(
+        r#"{"id":"verified-session-ttf","substitutions":{"Times New Roman":"Times New Roman"},"trueTypeFaces":["Times New Roman"],"preserveSourceMetrics":true}"#
+    ).unwrap())).unwrap();
+    assert!(frames(&unknown, true).iter().all(|frame| *frame));
+    assert!(
+        unknown
+            .document()
+            .doc_info
+            .font_faces
+            .iter()
+            .flatten()
+            .all(|face| face.alt_type == 0),
+        "세션 프로그램 선택은 원문 유형을 변경하지 않는다"
+    );
+    let mut original_hft = core("한양신명조", "검증", None);
+    let mut original = original_hft.document().clone();
+    for face in original.doc_info.font_faces.iter_mut().flatten() {
+        face.alt_type = 2;
+    }
+    original_hft.set_document(original);
+    assert!(frames(&original_hft, false).iter().all(|frame| *frame));
+    assert!(
+        frames(&original_hft, true).iter().all(|frame| !frame),
+        "HFT의 기존 Type3 fill 경계는 유지"
+    );
+
+    direct.set_font_environment(Some(FontEnvironment::from_json(
+        r#"{"id":"explicit-natural-control","substitutions":{"Times New Roman":"Times New Roman"},"trueTypeFaces":["Times New Roman"],"preserveSourceMetrics":false}"#
+    ).unwrap())).unwrap();
+    assert!(frames(&direct, false).iter().all(|frame| !frame));
 }
 
 fn advance(record: &Value) -> f64 {
@@ -1126,4 +1246,138 @@ fn exact_primary_program_certificate_preserves_native_program_boundaries() {
             .is_none(),
         "원 프로그램 출처가 있는 문서는 설치된 TTF로 승격하지 않는다"
     );
+}
+
+#[test]
+fn supplied_static_ttf_keeps_its_text_device_frame_after_metric_compaction() {
+    use rhwp::paint::{LayerNode, LayerNodeKind, PaintOp, RenderProfile};
+    use rhwp::renderer::render_tree::{BoundingBox, RectangleNode, RenderNode, RenderNodeType};
+    fn collect(node: &LayerNode, found: &mut Vec<bool>) {
+        match &node.kind {
+            LayerNodeKind::Group { children, .. } => {
+                for child in children {
+                    collect(child, found);
+                }
+            }
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                collect(child, found)
+            }
+            LayerNodeKind::Leaf { ops } => {
+                for op in ops {
+                    if let PaintOp::TextRun {
+                        run,
+                        paint_transform,
+                        ..
+                    } = op
+                    {
+                        if run.text.contains('가') {
+                            found.push(paint_transform.is_some());
+                        }
+                    }
+                }
+            }
+        }
+    }
+    let programs: [(&str, Option<&[u8]>); 4] = [
+        ("missing", None),
+        (
+            "static",
+            Some(include_bytes!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/tests/fixtures/fonts/RHWPEquationCJKRegular.ttf"
+            ))),
+        ),
+        (
+            "cff",
+            Some(include_bytes!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/tests/fixtures/fonts/RHWPHftOutline.otf"
+            ))),
+        ),
+        (
+            "variable",
+            Some(include_bytes!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/ttfs/redistributable/happiness-sans/HappinessSansVF.ttf"
+            ))),
+        ),
+    ];
+    for (name, bytes) in programs {
+        for preserve in [true, false] {
+            let mut document = core("휴먼명조", "가", None);
+            let mut raw = document.document().clone();
+            for font in raw.doc_info.font_faces.iter_mut().flatten() {
+                font.alt_type = 2;
+            }
+            document.set_document(raw);
+            let family = "RHWP Supplied Paint Program";
+            let environment = serde_json::json!({"id":"supplied-paint-kind", "substitutions":{"휴먼명조":family}, "trueTypeFaces":[family], "preserveSourceMetrics":preserve});
+            document
+                .set_font_environment(Some(
+                    FontEnvironment::from_json(&environment.to_string()).unwrap(),
+                ))
+                .unwrap();
+            let before = advance(&record(&document, "가"));
+            if let Some(bytes) = bytes {
+                document
+                    .prepare_native_otf_fonts_with(|request| {
+                        (request.family.split(',').any(|name| name.trim() == family))
+                            .then(|| (bytes.to_vec(), 0))
+                    })
+                    .unwrap();
+            }
+            if name == "static" && preserve {
+                assert_eq!(
+                    before,
+                    advance(&record(&document, "가")),
+                    "paint format evidence must not replace the original advance"
+                );
+            }
+            assert!(
+                document
+                    .document()
+                    .doc_info
+                    .font_faces
+                    .iter()
+                    .flatten()
+                    .all(|face| face.alt_type == 2),
+                "supplied program kind does not rewrite source font types"
+            );
+            for profile in [
+                RenderProfile::Print,
+                RenderProfile::Screen,
+                RenderProfile::HighQuality,
+            ] {
+                for after_fill in [false, true] {
+                    let mut render = document.build_page_render_tree(0).unwrap();
+                    if after_fill {
+                        render.root.children.insert(
+                            0,
+                            RenderNode::new(
+                                u32::MAX,
+                                RenderNodeType::Rectangle(RectangleNode {
+                                    control_index: Some(0),
+                                    ..RectangleNode::new(
+                                        0.0,
+                                        rhwp::renderer::ShapeStyle {
+                                            fill_color: Some(0),
+                                            ..Default::default()
+                                        },
+                                        None,
+                                    )
+                                }),
+                                BoundingBox::new(0.0, 0.0, 10.0, 10.0),
+                            ),
+                        );
+                    }
+                    let paint = rhwp::paint::LayerBuilder::new(profile).build(&render);
+                    let mut found = Vec::new();
+                    collect(&paint.root, &mut found);
+                    assert!(!found.is_empty(), "the actual source text must reach paint");
+                    let expected = name == "static" && preserve && profile == RenderProfile::Print;
+                    assert!(found.iter().all(|frame| *frame == expected), "{name}, preserve={preserve}, profile={profile:?}, after_fill={after_fill}, frames={found:?}");
+                }
+            }
+        }
+    }
 }

@@ -1,0 +1,543 @@
+{
+  "pr": 9096,
+  "head": "b6a91166761b212d8501faf70b4b13e19b26474e",
+  "merge": "e4f8ff2d637d5b0a313211455ae3ccc53444d969",
+  "record": "4e0b20d2922953ee7ab9a1716ac819b921fe484b",
+  "syncedAt": "2026-11-15T13:55:50.226953+00:00",
+  "selfReview": "https://github.com/edwardkim/rhwp/pull/9096#pullrequestreview-5911029158",
+  "duration": {
+    "run": 43720966141,
+    "conclusion": "success",
+    "metricsCommit": "f48e944927735eace6230c9b699764f0e243a64b"
+  },
+  "comments": [
+    {
+      "kind": "issue",
+      "number": 7381,
+      "commentId": 6895392803,
+      "url": "https://github.com/edwardkim/rhwp/issues/7381#issuecomment-6895392803",
+      "bodyVerified": true,
+      "state": "closed",
+      "stateReason": "completed"
+    },
+    {
+      "kind": "issue",
+      "number": 7631,
+      "commentId": 6895393599,
+      "url": "https://github.com/edwardkim/rhwp/issues/7631#issuecomment-6895393599",
+      "bodyVerified": true,
+      "state": "closed",
+      "stateReason": "completed"
+    },
+    {
+      "kind": "issue",
+      "number": 7711,
+      "commentId": 6895394324,
+      "url": "https://github.com/edwardkim/rhwp/issues/7711#issuecomment-6895394324",
+      "bodyVerified": true,
+      "state": "closed",
+      "stateReason": "completed"
+    },
+    {
+      "kind": "issue",
+      "number": 8083,
+      "commentId": 6895395183,
+      "url": "https://github.com/edwardkim/rhwp/issues/8083#issuecomment-6895395183",
+      "bodyVerified": true,
+      "state": "closed",
+      "stateReason": "completed"
+    },
+    {
+      "kind": "issue",
+      "number": 8307,
+      "commentId": 6895395919,
+      "url": "https://github.com/edwardkim/rhwp/issues/8307#issuecomment-6895395919",
+      "bodyVerified": true,
+      "state": "closed",
+      "stateReason": "completed"
+    },
+    {
+      "kind": "issue",
+      "number": 8318,
+      "commentId": 6895396669,
+      "url": "https://github.com/edwardkim/rhwp/issues/8318#issuecomment-6895396669",
+      "bodyVerified": true,
+      "state": "closed",
+      "stateReason": "completed"
+    },
+    {
+      "kind": "issue",
+      "number": 8912,
+      "commentId": 6895397431,
+      "url": "https://github.com/edwardkim/rhwp/issues/8912#issuecomment-6895397431",
+      "bodyVerified": true,
+      "state": "closed",
+      "stateReason": "completed"
+    },
+    {
+      "kind": "issue",
+      "number": 9046,
+      "commentId": 6895398251,
+      "url": "https://github.com/edwardkim/rhwp/issues/9046#issuecomment-6895398251",
+      "bodyVerified": true,
+      "state": "closed",
+      "stateReason": "completed"
+    },
+    {
+      "kind": "issue",
+      "number": 9049,
+      "commentId": 6895399109,
+      "url": "https://github.com/edwardkim/rhwp/issues/9049#issuecomment-6895399109",
+      "bodyVerified": true,
+      "state": "closed",
+      "stateReason": "completed"
+    },
+    {
+      "kind": "pr",
+      "number": 9070,
+      "commentId": 6895400152,
+      "url": "https://github.com/edwardkim/rhwp/pull/9070#issuecomment-6895400152",
+      "bodyVerified": true,
+      "state": "closed",
+      "stateReason": null
+    },
+    {
+      "kind": "pr",
+      "number": 9071,
+      "commentId": 6895401143,
+      "url": "https://github.com/edwardkim/rhwp/pull/9071#issuecomment-6895401143",
+      "bodyVerified": true,
+      "state": "closed",
+      "stateReason": null
+    },
+    {
+      "kind": "pr",
+      "number": 9072,
+      "commentId": 6895402243,
+      "url": "https://github.com/edwardkim/rhwp/pull/9072#issuecomment-6895402243",
+      "bodyVerified": true,
+      "state": "closed",
+      "stateReason": null
+    }
+  ],
+  "commentsUpdatedAt": "2026-11-15T13:57:28.967548+00:00",
+  "browserVerification": {
+    "checkedAt": "2026-11-15T14:03:32.656Z",
+    "browser": "Chrome/152.0.7946.0",
+    "comments": [
+      {
+        "number": 7381,
+        "kind": "issue",
+        "url": "https://github.com/edwardkim/rhwp/issues/7381#issuecomment-6895392803",
+        "httpStatus": 200,
+        "expectedImages": 0,
+        "loadedImages": 0,
+        "images": [],
+        "rendered": true
+      },
+      {
+        "number": 7631,
+        "kind": "issue",
+        "url": "https://github.com/edwardkim/rhwp/issues/7631#issuecomment-6895393599",
+        "httpStatus": 200,
+        "expectedImages": 0,
+        "loadedImages": 0,
+        "images": [],
+        "rendered": true
+      },
+      {
+        "number": 7711,
+        "kind": "issue",
+        "url": "https://github.com/edwardkim/rhwp/issues/7711#issuecomment-6895394324",
+        "httpStatus": 200,
+        "expectedImages": 0,
+        "loadedImages": 0,
+        "images": [],
+        "rendered": true
+      },
+      {
+        "number": 8083,
+        "kind": "issue",
+        "url": "https://github.com/edwardkim/rhwp/issues/8083#issuecomment-6895395183",
+        "httpStatus": 200,
+        "expectedImages": 0,
+        "loadedImages": 0,
+        "images": [],
+        "rendered": true
+      },
+      {
+        "number": 8307,
+        "kind": "issue",
+        "url": "https://github.com/edwardkim/rhwp/issues/8307#issuecomment-6895395919",
+        "httpStatus": 200,
+        "expectedImages": 0,
+        "loadedImages": 0,
+        "images": [],
+        "rendered": true
+      },
+      {
+        "number": 8318,
+        "kind": "issue",
+        "url": "https://github.com/edwardkim/rhwp/issues/8318#issuecomment-6895396669",
+        "httpStatus": 200,
+        "expectedImages": 8,
+        "loadedImages": 8,
+        "images": [
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue8318-color-p1-native-review.png",
+            "width": 2416,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue8318-color-p1-native-overlay.png",
+            "width": 794,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue8318-color-p1-wasm-review.png",
+            "width": 2416,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue8318-color-p1-wasm-overlay.png",
+            "width": 794,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue8318-color-p2-native-review.png",
+            "width": 2416,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue8318-color-p2-native-overlay.png",
+            "width": 794,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue8318-color-p2-wasm-review.png",
+            "width": 2416,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue8318-color-p2-wasm-overlay.png",
+            "width": 794,
+            "height": 1208
+          }
+        ],
+        "rendered": true
+      },
+      {
+        "number": 9046,
+        "kind": "issue",
+        "url": "https://github.com/edwardkim/rhwp/issues/9046#issuecomment-6895398251",
+        "httpStatus": 200,
+        "expectedImages": 8,
+        "loadedImages": 8,
+        "images": [
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue9046-even-odd-native-review.png",
+            "width": 2416,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue9046-even-odd-native-overlay.png",
+            "width": 794,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue9046-even-odd-wasm-review.png",
+            "width": 2416,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue9046-even-odd-wasm-overlay.png",
+            "width": 794,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue9046-both-even-odd-native-review.png",
+            "width": 2416,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue9046-both-even-odd-native-overlay.png",
+            "width": 794,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue9046-both-even-odd-wasm-review.png",
+            "width": 2416,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue9046-both-even-odd-wasm-overlay.png",
+            "width": 794,
+            "height": 1208
+          }
+        ],
+        "rendered": true
+      },
+      {
+        "number": 9049,
+        "kind": "issue",
+        "url": "https://github.com/edwardkim/rhwp/issues/9049#issuecomment-6895399109",
+        "httpStatus": 200,
+        "expectedImages": 0,
+        "loadedImages": 0,
+        "images": [],
+        "rendered": true
+      },
+      {
+        "number": 9070,
+        "kind": "pr",
+        "url": "https://github.com/edwardkim/rhwp/pull/9070#issuecomment-6895400152",
+        "httpStatus": 200,
+        "expectedImages": 4,
+        "loadedImages": 4,
+        "images": [
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/e4f8ff2d637d5b0a313211455ae3ccc53444d969/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/representatives/linechar-native-review.png",
+            "width": 2416,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/e4f8ff2d637d5b0a313211455ae3ccc53444d969/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/representatives/linechar-native-overlay.png",
+            "width": 794,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/e4f8ff2d637d5b0a313211455ae3ccc53444d969/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/representatives/linechar-wasm-review.png",
+            "width": 2416,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/e4f8ff2d637d5b0a313211455ae3ccc53444d969/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/representatives/linechar-wasm-overlay.png",
+            "width": 794,
+            "height": 1208
+          }
+        ],
+        "rendered": true
+      },
+      {
+        "number": 9071,
+        "kind": "pr",
+        "url": "https://github.com/edwardkim/rhwp/pull/9071#issuecomment-6895401143",
+        "httpStatus": 200,
+        "expectedImages": 24,
+        "loadedImages": 24,
+        "images": [
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue9046-even-odd-native-review.png",
+            "width": 2416,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue9046-even-odd-native-overlay.png",
+            "width": 794,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue9046-even-odd-wasm-review.png",
+            "width": 2416,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue9046-even-odd-wasm-overlay.png",
+            "width": 794,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue9046-both-even-odd-native-review.png",
+            "width": 2416,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue9046-both-even-odd-native-overlay.png",
+            "width": 794,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue9046-both-even-odd-wasm-review.png",
+            "width": 2416,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue9046-both-even-odd-wasm-overlay.png",
+            "width": 794,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue8318-color-p1-native-review.png",
+            "width": 2416,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue8318-color-p1-native-overlay.png",
+            "width": 794,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue8318-color-p1-wasm-review.png",
+            "width": 2416,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue8318-color-p1-wasm-overlay.png",
+            "width": 794,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue8318-color-p2-native-review.png",
+            "width": 2416,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue8318-color-p2-native-overlay.png",
+            "width": 794,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue8318-color-p2-wasm-review.png",
+            "width": 2416,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/4e0b20d2922953ee7ab9a1716ac819b921fe484b/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/issue-correspondence/issue8318-color-p2-wasm-overlay.png",
+            "width": 794,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/e4f8ff2d637d5b0a313211455ae3ccc53444d969/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/representatives/master-native-review.png",
+            "width": 2416,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/e4f8ff2d637d5b0a313211455ae3ccc53444d969/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/representatives/master-native-overlay.png",
+            "width": 794,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/e4f8ff2d637d5b0a313211455ae3ccc53444d969/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/representatives/master-wasm-review.png",
+            "width": 2416,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/e4f8ff2d637d5b0a313211455ae3ccc53444d969/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/representatives/master-wasm-overlay.png",
+            "width": 794,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/e4f8ff2d637d5b0a313211455ae3ccc53444d969/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/representatives/tac-native-review.png",
+            "width": 2416,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/e4f8ff2d637d5b0a313211455ae3ccc53444d969/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/representatives/tac-native-overlay.png",
+            "width": 794,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/e4f8ff2d637d5b0a313211455ae3ccc53444d969/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/representatives/tac-wasm-review.png",
+            "width": 2416,
+            "height": 1208
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/e4f8ff2d637d5b0a313211455ae3ccc53444d969/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/representatives/tac-wasm-overlay.png",
+            "width": 794,
+            "height": 1208
+          }
+        ],
+        "rendered": true
+      },
+      {
+        "number": 9072,
+        "kind": "pr",
+        "url": "https://github.com/edwardkim/rhwp/pull/9072#issuecomment-6895402243",
+        "httpStatus": 200,
+        "expectedImages": 0,
+        "loadedImages": 0,
+        "images": [],
+        "rendered": true
+      },
+      {
+        "number": 8912,
+        "kind": "issue",
+        "url": "https://github.com/edwardkim/rhwp/issues/8912#issuecomment-6895397431",
+        "httpStatus": 200,
+        "expectedImages": 4,
+        "loadedImages": 4,
+        "images": [
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/e4f8ff2d637d5b0a313211455ae3ccc53444d969/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/representatives/linechar-native-review.png",
+            "width": 2416,
+            "height": 1208,
+            "complete": true
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/e4f8ff2d637d5b0a313211455ae3ccc53444d969/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/representatives/linechar-native-overlay.png",
+            "width": 794,
+            "height": 1208,
+            "complete": true
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/e4f8ff2d637d5b0a313211455ae3ccc53444d969/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/representatives/linechar-wasm-review.png",
+            "width": 2416,
+            "height": 1208,
+            "complete": true
+          },
+          {
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/e4f8ff2d637d5b0a313211455ae3ccc53444d969/mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/representatives/linechar-wasm-overlay.png",
+            "width": 794,
+            "height": 1208,
+            "complete": true
+          }
+        ],
+        "rendered": true
+      }
+    ]
+  },
+  "cleanup": {
+    "state": "complete",
+    "startedAt": "2026-11-15T14:04:37.498070+00:00",
+    "activeUsersBefore": [],
+    "beforeBytes": {
+      "/home/edward/mygithub/rhwp/output": 16974856192,
+      "/home/edward/mygithub/rhwp/target/pr-review/debug": 16580849664,
+      "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity": 13036314624,
+      "/tmp/rhwp-jinho-20261114-devel-control": 12257509376,
+      "/tmp/rhwp-jinho-20261115-devel-control": 12393730048
+    },
+    "diskFreeBefore": 67593138176,
+    "worktrees": [
+      {
+        "path": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity",
+        "removed": true
+      },
+      {
+        "path": "/tmp/rhwp-jinho-20261114-devel-control",
+        "removed": true
+      },
+      {
+        "path": "/tmp/rhwp-jinho-20261115-devel-control",
+        "removed": true
+      }
+    ],
+    "preserved": "Other worktrees, contributor fork branches, source/PDF/fonts, and shared target release/release-test/wasm32 profiles.",
+    "temporaryLocalAndRemoteBranchRemoved": "review/integration-20261114-jinho-parser-cli-fidelity",
+    "removedDirectories": [
+      "/home/edward/mygithub/rhwp/output",
+      "/home/edward/mygithub/rhwp/target/pr-review/debug"
+    ],
+    "finishedAt": "2026-11-15T14:05:10.651446+00:00",
+    "diskFreeAfter": 138879676416,
+    "afterBytes": {
+      "/home/edward/mygithub/rhwp/output": 0,
+      "/home/edward/mygithub/rhwp/target/pr-review/debug": 0,
+      "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity": 0,
+      "/tmp/rhwp-jinho-20261114-devel-control": 0,
+      "/tmp/rhwp-jinho-20261115-devel-control": 0
+    },
+    "remainingWorktrees": "worktree /home/edward/mygithub/rhwp\nHEAD 4e0b20d2922953ee7ab9a1716ac819b921fe484b\nbranch refs/heads/devel\n\nworktree /home/edward/mygithub/rhwp-worktrees/pr-8296-seal-pua\nHEAD f3e2128edca7b188080b2a94f25e0988e26c9699\nbranch refs/heads/review/pr-8296-seal-pua\n\nworktree /home/edward/mygithub/rhwp-worktrees/review-integration-20261110-hyunmyungjanelee\nHEAD a5df5add8e64c1a44bc18c9069d41f7341885442\nbranch refs/heads/review/integration-20261110-hyunmyungjanelee\n\nworktree /home/edward/mygithub/rhwp-worktrees/task-8863-base-renderer\nHEAD 5f4e95c187f64116f48f710c3c048162786c1c14\ndetached\n\nworktree /home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes\nHEAD 6b7cbdbe098b8491c0a29656fbdad98a001f6ad1\nbranch refs/heads/task/8863-preserve-existing-char-shapes",
+    "syncedDevel": "4e0b20d2922953ee7ab9a1716ac819b921fe484b"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+  "binary_sha256": "5d91816e705756a0c7d98cc7ab6d536eac1e3aba7a91a22e7b0921014b93b30e",
+  "original_png_sha256": "2752871b215c51f3206c026e478ebaec0fd62b740477bc8df23dd4a1cd9d858e",
+  "control_png_sha256": "2752871b215c51f3206c026e478ebaec0fd62b740477bc8df23dd4a1cd9d858e",
+  "identical": true,
+  "control_input_sha256": "d06ad516f6a6417b36143fa05c8f4325d9f759799b8bfa0bcf4963416411fac6"
+}

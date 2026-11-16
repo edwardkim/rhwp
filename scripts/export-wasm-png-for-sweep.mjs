@@ -439,7 +439,10 @@ async function main() {
             if (ordered.length < 2 || ordered[0].weight !== 400 || ordered[0].style !== 'normal'
                 || !ordered.every(record => record.openTypeCff)) continue;
             const programs = ordered.map(record => preparedPrograms.get(`${key}|${record.sha256}`));
-            if (programs.every(Boolean)) doc.registerHftOutlineFontCandidates?.(family, programs);
+            if (programs.every(Boolean)) {
+              doc.registerHftOutlineFontCandidates?.(family, programs);
+              doc.registerPrintFontPrimary?.(family, programs[0], 0, true);
+            }
           }
           const ttfRegistered = new Set();
           for (const record of fonts) for (const family of record.families) {
@@ -455,7 +458,7 @@ async function main() {
             const alias = `__rhwp_ttf__${family}`;
             const font = await installCanvasFont(alias, bytes,
               {weight: String(record.weight), style: record.style}, doc,
-              false, false, null, false, false);
+              false, false, null, false, false, true);
             loaded.push({family, registeredFamily: font.family, sourceSha256: record.sourceSha256,
               sha256: record.sha256, faceIndex: record.faceIndex, weight: record.weight,
               style: record.style, repairs: record.repairs, sourceKind: record.sourceKind || 'external'});

@@ -1,0 +1,38 @@
+{
+  "head": "a6cdfdce4cc7d360df6ee1ef8d9ea978340d1b04",
+  "base": "dd7f453898776c262c00e862e10f47d22a4d6ceb",
+  "native": {
+    "head": {
+      "sha256": "6a4fc598bfd5ee293a193c7f99e5a077bc359e87305d03803f5c60cd52fde585",
+      "bytes": 73501360,
+      "source_recompile_audit": "rebuild-source-audit.json"
+    },
+    "base": {
+      "sha256": "024014a491ef8d0d7ffda2a60541dccc08a6a6488a3e95919d2104abc2cb8a09",
+      "bytes": 73503920
+    }
+  },
+  "wasm": {
+    "head": {
+      "sha256": "4737807f3978d90bc163bfb109c684c05f69c26c35d6a6e5f1bc33b65813c0bb",
+      "bytes": 29383126,
+      "role": "Fully executed optimized producer; identical dependency source reused from dd7f4538"
+    },
+    "base": {
+      "sha256": "33e4c4f6e16720b7079f3eba1e7ab43cf43a4600248661e495e0507ace5c9793",
+      "bytes": 29343135
+    },
+    "forced_recompile": {
+      "sha256": "06458edaa3965d61dc93b35f71747f0922310e6fc97ce7b5a76b26f8d39b1836",
+      "role": "Diagnostic recompile with current absolute dependency paths; 9 output comparisons passed, not the producer of full visual results"
+    }
+  },
+  "source_tree": "f27d5d673afef08a2c2e7ceddc5b65be01358c59",
+  "initial_native_rejected": {
+    "sha256": "8e9db6dd3e9dcfb7d5e4713f3d9fce31bd8b633967d0fd097ca19f2a5ef3afee",
+    "bytes": 73501744
+  },
+  "native_cache_diagnosis": "native-cache-diagnosis.json",
+  "wasm_rebuild_audit": "wasm-source-path-diagnosis.json",
+  "wasm_rebuild_execution": "wasm-rebuild-output-parity.json"
+}
