@@ -2,7 +2,7 @@
 
 use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
-use crate::model::shape::VertAlign;
+use crate::model::shape::{ShapeObject, VertAlign};
 use crate::model::table::Table;
 
 use super::composer::ComposedParagraph;
@@ -64,7 +64,7 @@ pub(crate) fn neutral_anchor_metrics(
 }
 
 /// 한/글 문서(호환 대상이 MS 워드가 아님)에서 저장 줄 없는 빈 문단이 문단 기준 자리차지
-/// 그림·도형만 가지면, 그 문단은 자기 글자 줄을 그대로 갖고 띠는 걸리는 줄만 민다.
+/// 직선만 가지면, 그 문단은 자기 글자 줄을 그대로 갖고 띠는 걸리는 줄만 민다.
 ///
 /// - 띠가 앵커 줄 상자 안에서 시작하면(세로 오프셋 < 줄 높이) 앵커 줄이 띠를 흡수한다. 다음
 ///   문단은 `max(앵커 줄 끝, 띠 아래끝)` 에서 시작한다(저장 줄 문서의
@@ -91,9 +91,12 @@ fn hwp_topbottom_band_host_metrics(
     let mut band: Option<(f64, f64)> = None;
     let mut object_flow = 0.0f64;
     for control in &para.controls {
+        // 직선만 본다. 그림·글상자·묶음 개체·표는 종전 경로(앵커 줄을 접고 개체 높이만 흐름에
+        // 더함)를 따른다.
         let common = match control {
-            Control::Shape(shape) => shape.common(),
-            Control::Picture(picture) => &picture.common,
+            Control::Shape(shape) if matches!(shape.as_ref(), ShapeObject::Line(_)) => {
+                shape.common()
+            }
             _ => return None,
         };
         if !is_para_topbottom_float(common) {
