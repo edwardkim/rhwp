@@ -27,3 +27,13 @@
 통합 PR·merge SHA·CI와 실제 대체 선택 결과를 한국어 존댓말로 알린다. 시각 증거를 판정 근거로
 사용하면 해당 입력의 raw·review·overlay를 본문에 표시한다. #9104의 실제 해결 범위를 확인한 뒤
 원 PR과 완전 해결된 이슈를 종료한다.
+
+
+## 실제 Native 소비 확인
+
+macOS 최소 글꼴 격리에서 Ubuntu 배포 Noto TTC의 KR face를 명시 공급했다.
+원본 없는 돋움·굴림 요청과 명시 Noto Sans CJK KR 요청의 한글 2자씩 총 6자는
+renderer 소유 관측에서 해당 custom 프로그램을 선택했고 실제 Native raster에 잉크가 있었다.
+Mac 일반 고딕에서 Apple SD Gothic Neo가 먼저인 기존 순서는 변경하지 않았다.
+Linux·Windows의 설치 목록 실행을 완료했다고 확대하지 않으며, 글꼴 바이너리는 Git에 넣지 않는다.
+[실제 소비 기록](../assets/all_open_prs_20261116/noto-cjk-native-consumer.json).
