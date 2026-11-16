@@ -203,5 +203,32 @@
   "fixed_page": 3,
   "pdf_following_hangul_x_pt": 105.54280090332031,
   "fixed_tolerance_px": 2,
-  "rust_regression_status": "pending"
+  "rust_regression_status": "before 2FAIL / after focused 10PASS (includes both new regressions)",
+  "causality": {
+    "before_product": "c72c16d88efc615c592b8640320899ed31e28c0e",
+    "after_product": "10d0d6ae43273430f74f7055c39b3d74948c1d7f",
+    "test_head": "21ff0a582d876c5abdab6c39ce329577997b9988",
+    "before_source_sha256": "7d74d0f71621089f59939e2b8f25f2ae53865607b38435091f0c3b1954afad72",
+    "after_source_sha256": "a89fa0f89cbb2e0afd810f1a5ecb04f0fb164b49ca0e9ce6e3b343093cd8ba68",
+    "status": "before_failed_as_expected_source_restored",
+    "before_exit": 100,
+    "source_restored": true,
+    "before_expected_failures": true
+  },
+  "minimum_font_evidence": {
+    "profile_sha256": "dab5a29efd05b091cf0308729b49d34c7922ea399dc823d70457cde0c1367e8c",
+    "normal_faces": 1890,
+    "isolated_faces": 528,
+    "private_file_access": {
+      "tested": 1218,
+      "readable": []
+    },
+    "os_font_aliases": [
+      {
+        "path": "/Library/Fonts/Arial Unicode.ttf",
+        "resolved": "/System/Library/Fonts/Supplemental/Arial Unicode.ttf"
+      }
+    ],
+    "personal_fonts_modified": false
+  }
 }

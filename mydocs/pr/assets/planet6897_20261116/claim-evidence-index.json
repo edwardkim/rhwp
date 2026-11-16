@@ -1,0 +1,361 @@
+{
+  "producer": {
+    "status": "native_ready",
+    "pid": 4779,
+    "base": "ae9277dda0ca17be279cba89c4deea74fb75dcae",
+    "branch": "review/integration-20261116-planet6897",
+    "applied": [
+      {
+        "pr": 9078,
+        "source": "d9458af38001922d665332212b0a7687a4fe4d5a",
+        "applied": "93de9b33aa5b021e35abb2f8cd8cafd0fd8ddc4c"
+      },
+      {
+        "pr": 9078,
+        "source": "4d2332018372c7d9eb5c76128c891e4c7d2386d2",
+        "applied": "b2dfb8709c393246c7a966fd32411058681420a5"
+      },
+      {
+        "pr": 9080,
+        "source": "b8fb8b898d92c40301207e674b1cd5bc74532b70",
+        "applied": "fa634c26790b5a68f20f20564e81afbb6079ef64"
+      },
+      {
+        "pr": 9080,
+        "source": "0e8d7669971ae89bbd2607ddee17f265bebc46af",
+        "applied": "73fc88711bdb25c393b24dd7d9b2c5a43a76cdcd"
+      },
+      {
+        "pr": 9086,
+        "source": "70266b902ecc5b8f279184a4c2a1a727d9662820",
+        "applied": "4b63a0f2dfacbfb534dae57c006572ffb753ed0a"
+      },
+      {
+        "pr": 9086,
+        "source": "df9e88aaed2a1ded5b6003988924033df4d9e7e9",
+        "applied": "7f8dc8105845404986bcaec3c4a1aab9be9a629e"
+      },
+      {
+        "pr": 9098,
+        "source": "fbec9d688d2d5f5dde917c6e200904c8f7659534",
+        "applied": "709bd6962c3b46f81de15b35560e023eb2246908"
+      },
+      {
+        "pr": 9098,
+        "source": "cb888d8497151b089c029d1b963ab2952d4e7c06",
+        "applied": "c72c16d88efc615c592b8640320899ed31e28c0e"
+      }
+    ],
+    "updated_at": "2026-11-16T08:43:04.929580+00:00",
+    "base_wasm_exit": 0,
+    "base_wasm_seconds": 355.858,
+    "base_wasm_hashes": {
+      "rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "rhwp_bg.wasm": "41f8b2e8242ef2006b0b02a4506f43b9947ff65889ce1d14673f4bda9d4136d6"
+    },
+    "head": "10d0d6ae43273430f74f7055c39b3d74948c1d7f",
+    "candidate_build_exit": 0,
+    "candidate_build_seconds": 216.832,
+    "candidate_binary": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v1/rhwp-native",
+    "candidate_binary_sha256": "93652d0eca39e840909284bfb05b33de7ff9f94ccc1cc9a966ee273fe4d1d78d",
+    "initial_head": "c72c16d88efc615c592b8640320899ed31e28c0e",
+    "candidate_wasm_hashes": {
+      "rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "rhwp_bg.wasm": "4cda423a86fadf62ca80c547d5e0824568cb5d7a49c0e5581e85e6d6ffa48f1f"
+    },
+    "repair_build_results": [
+      {
+        "kind": "native",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--profile",
+          "release-test",
+          "--features",
+          "native-skia",
+          "--bin",
+          "rhwp",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "-j",
+          "8"
+        ],
+        "exit": 0,
+        "seconds": 197.579
+      },
+      {
+        "kind": "fresh-wasm",
+        "command": [
+          "scripts/wasm-pack-locked.sh",
+          "--target",
+          "web",
+          "--out-dir",
+          "pkg",
+          "--no-opt"
+        ],
+        "exit": 0,
+        "seconds": 811.241
+      }
+    ]
+  },
+  "records": [
+    {
+      "key": "proficiency_test_result_form",
+      "backend": "native",
+      "pages": [
+        1
+      ],
+      "directory": "mydocs/pr/assets/planet6897_20261116/claims/proficiency_test_result_form/native",
+      "summary": {
+        "status": "passed",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false
+      }
+    },
+    {
+      "key": "veterans_summer_support_press_release",
+      "backend": "native",
+      "pages": [
+        1
+      ],
+      "directory": "mydocs/pr/assets/planet6897_20261116/claims/veterans_summer_support_press_release/native",
+      "summary": {
+        "status": "passed",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 2,
+          "pdf": 2
+        },
+        "page_count_mismatch": false
+      }
+    },
+    {
+      "key": "black_stork_restoration_press_release",
+      "backend": "native",
+      "pages": [
+        3
+      ],
+      "directory": "mydocs/pr/assets/planet6897_20261116/claims/black_stork_restoration_press_release/native",
+      "summary": {
+        "status": "passed",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 6,
+          "pdf": 6
+        },
+        "page_count_mismatch": false
+      }
+    },
+    {
+      "key": "facility_fee_reduction_criteria",
+      "backend": "native",
+      "pages": [
+        1
+      ],
+      "directory": "mydocs/pr/assets/planet6897_20261116/claims/facility_fee_reduction_criteria/native",
+      "summary": {
+        "status": "passed",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false
+      }
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-probe",
+      "backend": "native",
+      "pages": [
+        1,
+        3
+      ],
+      "directory": "mydocs/pr/assets/planet6897_20261116/claims/hft-sinmyeong_sunmyeongjo-probe/native",
+      "summary": {
+        "status": "passed",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 4,
+          "pdf": 4
+        },
+        "page_count_mismatch": false
+      }
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-bold-probe",
+      "backend": "native",
+      "pages": [
+        1,
+        3
+      ],
+      "directory": "mydocs/pr/assets/planet6897_20261116/claims/hft-sinmyeong_sunmyeongjo-bold-probe/native",
+      "summary": {
+        "status": "passed",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 4,
+          "pdf": 4
+        },
+        "page_count_mismatch": false
+      }
+    },
+    {
+      "key": "proficiency_test_result_form",
+      "backend": "wasm",
+      "pages": [
+        1
+      ],
+      "directory": "mydocs/pr/assets/planet6897_20261116/claims/proficiency_test_result_form/wasm",
+      "summary": {
+        "status": "passed",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false
+      }
+    },
+    {
+      "key": "veterans_summer_support_press_release",
+      "backend": "wasm",
+      "pages": [
+        1
+      ],
+      "directory": "mydocs/pr/assets/planet6897_20261116/claims/veterans_summer_support_press_release/wasm",
+      "summary": {
+        "status": "passed",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 2,
+          "pdf": 2
+        },
+        "page_count_mismatch": false
+      }
+    },
+    {
+      "key": "black_stork_restoration_press_release",
+      "backend": "wasm",
+      "pages": [
+        3
+      ],
+      "directory": "mydocs/pr/assets/planet6897_20261116/claims/black_stork_restoration_press_release/wasm",
+      "summary": {
+        "status": "passed",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 6,
+          "pdf": 6
+        },
+        "page_count_mismatch": false
+      }
+    },
+    {
+      "key": "facility_fee_reduction_criteria",
+      "backend": "wasm",
+      "pages": [
+        1
+      ],
+      "directory": "mydocs/pr/assets/planet6897_20261116/claims/facility_fee_reduction_criteria/wasm",
+      "summary": {
+        "status": "passed",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 1
+        },
+        "page_count_mismatch": false
+      }
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-probe",
+      "backend": "wasm",
+      "pages": [
+        1,
+        3
+      ],
+      "directory": "mydocs/pr/assets/planet6897_20261116/claims/hft-sinmyeong_sunmyeongjo-probe/wasm",
+      "summary": {
+        "status": "passed",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 4,
+          "pdf": 4
+        },
+        "page_count_mismatch": false
+      }
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-bold-probe",
+      "backend": "wasm",
+      "pages": [
+        1,
+        3
+      ],
+      "directory": "mydocs/pr/assets/planet6897_20261116/claims/hft-sinmyeong_sunmyeongjo-bold-probe/wasm",
+      "summary": {
+        "status": "passed",
+        "metric": "silhouette_raw_match_percent",
+        "minimum_silhouette_raw_match_percent": 90.0,
+        "below_threshold_pages": [],
+        "unavailable_metric_pages": [],
+        "font_mismatch_evidence": null,
+        "document_page_counts": {
+          "rhwp": 4,
+          "pdf": 4
+        },
+        "page_count_mismatch": false
+      }
+    }
+  ],
+  "full_tests": "running, not yet accepted"
+}
