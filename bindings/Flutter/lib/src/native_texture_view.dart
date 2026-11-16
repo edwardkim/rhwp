@@ -586,8 +586,9 @@ class NativeTextureController extends ChangeNotifier {
     final done = Completer<NativeGpuCacheTrimResult>();
     _trimFuture = done.future;
     _cancelTrim = () {
-      if (!done.isCompleted)
+      if (!done.isCompleted) {
         done.complete(unavailable('closed', requestId: request));
+      }
     };
     bool current() =>
         epoch == _trimEpoch &&
