@@ -1377,6 +1377,32 @@ fn try_serialize_para_text_with_slots<S: crate::storage::Storage>(
     // [#4402] 이 구간은 본디 위치 예산(offset/prev_end 갭 채우기)을 추적하지 않지만,
     // `char_shapes` 시프트 계산은 절대 위치가 필요하다 — `prev_end` 를 그대로 이어 써서
     // (메인 루프가 끝난 시점 값에서 시작) 8 code unit 씩 전진시킨다.
+
+    // [#9082] 글자 끝에서 닫히는 필드 가운데 닫는 자리(`control_idx + inner_slot_count`
+    // 번째 컨트롤 뒤)가 이미 본문 루프에서 지나간 것은 여기서 닫는다. 값이 든 누름틀이
+    // 이 경우다 — FIELD_BEGIN 이 값의 첫 글자 앞에서 나갔다. 파서는 `inner_slot_count` 를
+    // BEGIN 과 END 사이 컨트롤 수로 채우므로 아직 남은 컨트롤은 모두 그 필드 **밖**이다.
+    // 아래 루프는 `ctrl_idx` 부터만 보아 이 표식을 꺼내지 못하고, 그대로 두면 문단 맨
+    // 끝(남은 컨트롤들 뒤)에 붙어 필드가 뒤따르던 표·책갈피를 감싼다. 한글은 값을 채워도
+    // 끝 표식을 값 바로 뒤에 쓴다(`시작 · 값 · 끝 · 표1 · 표2`).
+    // 고아 종료 마커보다 먼저 닫는다 — 이 문단에서 연 필드가 앞 문단에서 연 필드보다 안쪽이다.
+    let mut passed_end_slots: Vec<usize> = storage.collect(
+        trailing_end_after_ctrl
+            .keys()
+            .copied()
+            .filter(|&end_after| end_after < ctrl_idx),
+    )?;
+    passed_end_slots.sort_unstable();
+    for end_after in passed_end_slots {
+        if let Some(end_markers) = trailing_end_after_ctrl.remove(&end_after) {
+            for marker in end_markers {
+                trace_field_end(marker, prev_end, &mut ends);
+                try_push_field_end_ctrl(&mut code_units, marker, storage)?;
+                prev_end += 8;
+            }
+        }
+    }
+
     // 마지막 문자 뒤(또는 텍스트가 없는 문단)의 고아 종료 마커.
     for ofe in para
         .orphan_field_ends
@@ -1449,8 +1475,8 @@ fn try_serialize_para_text_with_slots<S: crate::storage::Storage>(
         ctrl_idx += 1;
     }
 
-    // orphan trailing FIELD_END: FIELD_BEGIN이 본문 갭에서 이미 배치된 경우
-    // (trailing_end_after_ctrl에 남아있는 항목 = ctrl_idx가 이미 소진된 컨트롤)
+    // 남은 trailing FIELD_END: 닫는 자리가 `controls` 범위를 벗어난 경우.
+    // (닫는 자리가 본문 루프에서 이미 지나간 것은 위 [#9082] 에서 남은 컨트롤 앞에 닫았다)
     //
     // [#4402] 이 경로의 안내문 잔재는 의도적으로 되살리지 않는다 — 슬롯 위치 추정이
     // 이미 무너진 mismatch/퇴화 경로라 주입이 개선이라 단정할 수 없다는 #3545 의
