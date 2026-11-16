@@ -2090,6 +2090,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "read-fonts"
+version = "0.47.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a39d2f8f681030a7bcbbcf3e8568775ac2393afd51401a2e2133ee89e3953897"
+dependencies = [
+ "bytemuck",
+ "foldhash",
+ "font-types 0.12.7",
+ "once_cell",
+ "smallvec",
+ "yoke",
+]
+
+[[package]]
 name = "ref-cast"
 version = "1.0.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2220,7 +2234,7 @@ dependencies = [
  "proptest",
  "quick-xml 0.42.0",
  "rand_core",
- "read-fonts 0.46.0",
+ "read-fonts 0.47.0",
  "resvg 0.47.0",
  "rhwp-contracts",
  "rhwp-jpeg-encoder",
