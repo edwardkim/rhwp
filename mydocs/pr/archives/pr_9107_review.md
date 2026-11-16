@@ -58,3 +58,13 @@ suite 정책·unit tier·문서 테스트를 포함한 [Rust 13단계](../assets
 
 - Native 100.00%: [raw](../assets/all_open_prs_20261116/claim-page-evidence/9107/plain_between_v14-hwpx/native/raw-001.png) · [review](../assets/all_open_prs_20261116/claim-page-evidence/9107/plain_between_v14-hwpx/native/review/review_001.png) · [overlay](../assets/all_open_prs_20261116/claim-page-evidence/9107/plain_between_v14-hwpx/native/overlay/overlay_001.png).
 - fresh WASM 100.00%: [raw](../assets/all_open_prs_20261116/claim-page-evidence/9107/plain_between_v14-hwpx/wasm/raw-001.png) · [review](../assets/all_open_prs_20261116/claim-page-evidence/9107/plain_between_v14-hwpx/wasm/review/review_001.png) · [overlay](../assets/all_open_prs_20261116/claim-page-evidence/9107/plain_between_v14-hwpx/wasm/overlay/overlay_001.png).
+
+## 공개 API 편집·반복 저장 검증
+
+제품 소스 `167921b3c5`의 fresh WASM 공개 API로 xmlVersion 1.2/1.4 × FIXED/BETWEEN 4개
+원본의 TOP 문단에 `X`를 입력하고 HWP/HWPX 두 형식으로 저장→재열기→재저장→재열기를 실행했다.
+**8조건·16회 재열기** 모두 편집한 본문, AONE/ATWO의 줄간격 종류·물리값·줄 피치와 1쪽을 보존했다.
+[실행 기록](../assets/all_open_prs_20261116/public-api-save-validation/linespacing-repeat-save-result.json)에
+입력·WASM·저장 바이트 SHA와 각 단계의 속성·피치를 기록했다. Node의 공개 API 구조 검증이며
+브라우저 Canvas 또는 픽셀 일치율 검증으로 표현하지 않는다. 독립 데스크톱 Print와 실제 화면은
+별도 전쪽 TSV·주장 페이지 증적을 따른다.

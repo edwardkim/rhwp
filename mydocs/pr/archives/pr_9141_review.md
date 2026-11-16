@@ -24,8 +24,9 @@
 새 Print로 재측정한다.
 저장 제품·직접 Print 제품·MCP engine을 혼동하지 않는다. 웹한글기안기 PDF도 공식 기준이 아니다.
 
-필드 안 글 입력과 빈 상태, FIELD_END 앞뒤·후행 컨트롤·글자 없는 문단의 소속을 검증한다.
-HWP/HWPX 저장→재열기→재저장 결과와 인접 #9074·#9021·#8199 계약을 확인한다.
+한컴에서 저장한 빈 필드·4자 값·1자 값 원본에서 FIELD_END 앞뒤·후행 컨트롤·글자 없는 문단의
+소속을 확인했다. HWP/HWPX 저장→재열기→재저장→재열기의 12회에서도 두 표의 위아래 순서와
+글상자 안 포함, 필드 값과 1쪽을 보존했다. 인접 #9074·#9021·#8199 계약은 전체 회귀에 포함된다.
 소스 UTF-16 위치와 저장 스트림 슬롯을 혼용하지 않고 같은 보조 슬롯 계산을 실제 composer와
 fallback 배치가 소비하는지 대조한다. Native/fresh WASM 전쪽 TSV와 직접 판독은 별도로 완료한다.
 
@@ -68,3 +69,18 @@ suite 정책·unit tier·문서 테스트를 포함한 [Rust 13단계](../assets
 
 - Native 100.00%: [raw](../assets/all_open_prs_20261116/claim-page-evidence/9141/textbox_filled_field_tac_tables-hwp/native/raw-001.png) · [review](../assets/all_open_prs_20261116/claim-page-evidence/9141/textbox_filled_field_tac_tables-hwp/native/review/review_001.png) · [overlay](../assets/all_open_prs_20261116/claim-page-evidence/9141/textbox_filled_field_tac_tables-hwp/native/overlay/overlay_001.png).
 - fresh WASM 100.00%: [raw](../assets/all_open_prs_20261116/claim-page-evidence/9141/textbox_filled_field_tac_tables-hwp/wasm/raw-001.png) · [review](../assets/all_open_prs_20261116/claim-page-evidence/9141/textbox_filled_field_tac_tables-hwp/wasm/review/review_001.png) · [overlay](../assets/all_open_prs_20261116/claim-page-evidence/9141/textbox_filled_field_tac_tables-hwp/wasm/overlay/overlay_001.png).
+
+## 공개 저장 경로와 원 PR의 비범위 대조
+
+제품 소스 `167921b3c5`의 fresh WASM 공개 API를 Node에서 직접 호출했다. 세 원본 × HWP/HWPX ×
+재열기 2회 = **12회**의 변경 없는 저장은 필드 값·쪽수·두 표의 위치를 보존했다.
+[base/후보 기록](../assets/all_open_prs_20261116/public-api-save-validation/field-save-scope-candidate.json)을
+보존했다. 이는 Node의 구조 검사이며 Studio 화면·PDF 일치율 검증과 구분한다.
+
+추가로 `setFieldValue`로 값을 바꿨을 때는 세 원본 모두 두 표가 한 줄로 붙었다.
+[고정 base](../assets/all_open_prs_20261116/public-api-save-validation/field-save-scope-base.json)와
+[후보](../assets/all_open_prs_20261116/public-api-save-validation/field-save-scope-candidate.json)에서
+같이 재현했다. 원 PR의 「남은 범위」에도 값 설정 후 저장 줄 없는 글상자의 TAC 표 폭 줄바꿈은
+별개 미해결 범위로 명시돼 있다. 이 결과를 편집 통과로 기록하지 않는다. 현재 검토의 수용 범위는
+한컴이 저장한 줄에서 FIELD_END 보조 슬롯을 센 개체 소속 복구이며, 필드 편집 후 재조판까지
+해결했다고 주장하거나 #9058의 다른 미해결 범위를 자동 종료하지 않는다.
