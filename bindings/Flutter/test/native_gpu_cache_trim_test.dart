@@ -654,6 +654,9 @@ void main() {
       try {
         await tester.pumpWidget(lifecycle(controller));
         await until(tester, () => controller.canDisplay);
+        final observer = tester.state(
+          find.byType(NativeGpuLifecycle),
+        ) as WidgetsBindingObserver;
         tester.binding.handleMemoryPressure();
         await until(tester, () => plugin.trims.isNotEmpty);
         if (replacement == 'unmount') {
@@ -670,6 +673,12 @@ void main() {
         gate.completeError(PlatformException(code: 'oldTrimFailure'));
         await tester.pump(const Duration(milliseconds: 30));
         expect(errors, isEmpty);
+        if (replacement == 'unmount') {
+          final calls = plugin.trims.length;
+          observer.didHaveMemoryPressure(); // A previously captured observer.
+          await tester.pump();
+          expect(plugin.trims, hasLength(calls));
+        }
         if (next != null) expect(next.canDisplay, isTrue);
       } finally {
         if (!gate.isCompleted) gate.complete();

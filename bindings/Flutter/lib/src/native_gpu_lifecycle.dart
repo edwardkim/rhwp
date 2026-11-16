@@ -108,7 +108,7 @@ class _NativeGpuLifecycleState extends State<NativeGpuLifecycle>
 
   @override
   void didHaveMemoryPressure() {
-    if (_memoryPressure != null) return;
+    if (!mounted || _memoryPressure != null) return;
     final controller = widget.controller, epoch = _controllerEpoch;
     late final Future<void> observed;
     observed = controller
