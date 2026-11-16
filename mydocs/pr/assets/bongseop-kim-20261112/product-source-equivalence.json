@@ -1,0 +1,15 @@
+{
+  "compiled_source": "0aa25a66345edbf36aee45bf953611fe041350e0",
+  "regression_source": "39f0ac047778eb3ac382cc36143b92f3a5bf4d94",
+  "production_paths": [
+    "src",
+    "crates",
+    "vendor",
+    "assets",
+    "scripts",
+    "Cargo.toml",
+    "Cargo.lock",
+    "build.rs"
+  ],
+  "changed_production_paths": []
+}

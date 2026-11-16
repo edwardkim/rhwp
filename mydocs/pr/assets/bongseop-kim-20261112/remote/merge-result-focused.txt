@@ -1,0 +1,133 @@
+warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137
+warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped
+   Compiling rhwp v0.9.0 (/home/edward/mygithub/rhwp-worktrees/review-integration-8942-bongseop-html-clipboard)
+    Finished `release-test` profile [optimized] target(s) in 23.44s
+────────────
+ Nextest run ID 02081513-ddea-4df1-a2eb-4f5fbe703912 with nextest profile: default
+    Starting 27 tests across 3 binaries (963 tests skipped)
+        PASS [   0.008s] ( 1/27) rhwp::regression_suite_014 issue_7516_html_paste_loose_inline_format::span_inside_a_paragraph_keeps_inner_formats_and_images
+        PASS [   0.008s] ( 2/27) rhwp::regression_suite_014 issue_7516_html_paste_loose_inline_format::text_after_a_format_does_not_inherit_it
+        PASS [   0.008s] ( 3/27) rhwp::regression_suite_014 issue_7516_html_paste_loose_inline_format::google_docs_normal_weight_wrapper_stays_normal
+        PASS [   0.009s] ( 4/27) rhwp::regression_suite_014 issue_7516_html_paste_loose_inline_format::line_break_inside_a_format_keeps_lines_and_format
+        PASS [   0.010s] ( 5/27) rhwp::regression_suite_014 issue_7516_html_paste_loose_inline_format::numeric_bold_weights_stay_bold
+        PASS [   0.011s] ( 6/27) rhwp::regression_suite_014 issue_7516_html_paste_loose_inline_format::loose_inline_formats_stay_in_one_paragraph
+        FAIL [   0.008s] ( 7/27) rhwp::regression_suite_023 issue_8942_paste_html_table_border_attr::border_attribute_draws_solid_cell_borders
+  stdout ───
+
+    running 1 test
+    test issue_8942_paste_html_table_border_attr::border_attribute_draws_solid_cell_borders ... FAILED
+
+    failures:
+
+    failures:
+        issue_8942_paste_html_table_border_attr::border_attribute_draws_solid_cell_borders
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 343 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'issue_8942_paste_html_table_border_attr::border_attribute_draws_solid_cell_borders' (437352) panicked at tests/generated/../cases/issue_8942_paste_html_table_border_attr.rs:56:9:
+    assertion `left == right` failed: <table border="1"><tr><td>가</td><td>나</td></tr></table>
+      left: [[None, None, None, None], [None, None, None, None]]
+     right: [[Solid, Solid, Solid, Solid], [Solid, Solid, Solid, Solid]]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 7 tests still running
+        PASS [   0.008s] ( 8/27) rhwp::regression_suite_023 issue_8942_paste_html_table_border_attr::cell_css_overrides_the_border_attribute
+        FAIL [   0.007s] ( 9/27) rhwp::regression_suite_023 issue_8942_paste_html_table_border_attr::shared_attribute_parser_preserves_image_units_and_quoted_boundaries
+  stdout ───
+
+    running 1 test
+    test issue_8942_paste_html_table_border_attr::shared_attribute_parser_preserves_image_units_and_quoted_boundaries ... FAILED
+
+    failures:
+
+    failures:
+        issue_8942_paste_html_table_border_attr::shared_attribute_parser_preserves_image_units_and_quoted_boundaries
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 343 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'issue_8942_paste_html_table_border_attr::shared_attribute_parser_preserves_image_units_and_quoted_boundaries' (437356) panicked at tests/generated/../cases/issue_8942_paste_html_table_border_attr.rs:156:9:
+    assertion `left == right` failed: 48px
+      left: 74925
+     right: 3600
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.011s] (10/27) rhwp::regression_suite_023 issue_8942_paste_html_table_border_attr::border_attribute_survives_hwpx_save_and_reopen
+  stdout ───
+
+    running 1 test
+    test issue_8942_paste_html_table_border_attr::border_attribute_survives_hwpx_save_and_reopen ... FAILED
+
+    failures:
+
+    failures:
+        issue_8942_paste_html_table_border_attr::border_attribute_survives_hwpx_save_and_reopen
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 343 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'issue_8942_paste_html_table_border_attr::border_attribute_survives_hwpx_save_and_reopen' (437355) panicked at tests/generated/../cases/issue_8942_paste_html_table_border_attr.rs:84:5:
+    assertion `left == right` failed
+      left: [[None, None, None, None], [None, None, None, None]]
+     right: [[Solid, Solid, Solid, Solid], [Solid, Solid, Solid, Solid]]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.009s] (11/27) rhwp::regression_suite_023 issue_8942_paste_html_table_border_attr::shared_attribute_parser_preserves_real_merged_cell_spans
+  stdout ───
+
+    running 1 test
+    test issue_8942_paste_html_table_border_attr::shared_attribute_parser_preserves_real_merged_cell_spans ... FAILED
+
+    failures:
+
+    failures:
+        issue_8942_paste_html_table_border_attr::shared_attribute_parser_preserves_real_merged_cell_spans
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 343 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'issue_8942_paste_html_table_border_attr::shared_attribute_parser_preserves_real_merged_cell_spans' (437357) panicked at tests/generated/../cases/issue_8942_paste_html_table_border_attr.rs:124:5:
+    assertion `left == right` failed
+      left: (2, 4)
+     right: (2, 2)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.012s] (12/27) rhwp::regression_suite_023 issue_8942_paste_html_table_border_attr::attribute_names_and_quoted_values_do_not_alias_a_real_border
+  stdout ───
+
+    running 1 test
+    test issue_8942_paste_html_table_border_attr::attribute_names_and_quoted_values_do_not_alias_a_real_border ... FAILED
+
+    failures:
+
+    failures:
+        issue_8942_paste_html_table_border_attr::attribute_names_and_quoted_values_do_not_alias_a_real_border
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 343 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'issue_8942_paste_html_table_border_attr::attribute_names_and_quoted_values_do_not_alias_a_real_border' (437354) panicked at tests/generated/../cases/issue_8942_paste_html_table_border_attr.rs:103:9:
+    assertion `left == right` failed: <TABLE BORDER = '1'><TR><TD>A</TD></TR></TABLE>
+      left: [[None, None, None, None]]
+     right: [[Solid, Solid, Solid, Solid]]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        PASS [   0.103s] (13/27) rhwp::regression_suite_014 issue_7516_html_paste_loose_inline_format::long_loose_inline_keeps_images_on_the_correct_side_of_the_cut
+        PASS [   0.402s] (14/27) rhwp::regression_suite_014 issue_7516_html_paste_loose_inline_format::long_loose_inline_preserves_content_and_styles_at_the_existing_limit
+────────────
+     Summary [   0.404s] 14/27 tests run: 9 passed, 5 failed, 963 skipped
+        FAIL [   0.008s] ( 7/27) rhwp::regression_suite_023 issue_8942_paste_html_table_border_attr::border_attribute_draws_solid_cell_borders
+        FAIL [   0.007s] ( 9/27) rhwp::regression_suite_023 issue_8942_paste_html_table_border_attr::shared_attribute_parser_preserves_image_units_and_quoted_boundaries
+        FAIL [   0.011s] (10/27) rhwp::regression_suite_023 issue_8942_paste_html_table_border_attr::border_attribute_survives_hwpx_save_and_reopen
+        FAIL [   0.009s] (11/27) rhwp::regression_suite_023 issue_8942_paste_html_table_border_attr::shared_attribute_parser_preserves_real_merged_cell_spans
+        FAIL [   0.012s] (12/27) rhwp::regression_suite_023 issue_8942_paste_html_table_border_attr::attribute_names_and_quoted_values_do_not_alias_a_real_border
+warning: 13/27 tests were not run due to test failure (run with --no-fail-fast to run all tests, or run with --max-fail)
+warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137
+info: update nextest with cargo nextest self update, or bypass check with --override-version-check
+error: test run failed

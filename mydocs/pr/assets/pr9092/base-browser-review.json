@@ -1,0 +1,41 @@
+{
+  "variant": "base",
+  "browser": "Chrome/152.0.7946.0",
+  "rows": [
+    {
+      "viewport": {
+        "width": 800,
+        "height": 360
+      },
+      "dialog": {
+        "top": -196.1875,
+        "bottom": 556.1875,
+        "left": 170,
+        "right": 630
+      },
+      "titleClose": {
+        "top": -188.6875,
+        "bottom": -172.6875,
+        "left": 601,
+        "right": 617
+      },
+      "footerClose": {
+        "top": 517.1875,
+        "bottom": 543.1875,
+        "left": 553,
+        "right": 617
+      },
+      "body": {
+        "top": -166.1875,
+        "bottom": 517.1875,
+        "left": 171,
+        "right": 629,
+        "clientHeight": 683,
+        "scrollHeight": 683,
+        "overflow": "visible"
+      },
+      "sheet": false,
+      "expectedFailureReproduced": true
+    }
+  ]
+}

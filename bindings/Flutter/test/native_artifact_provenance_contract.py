@@ -311,7 +311,7 @@ class NativeArtifactContracts(unittest.TestCase):
         self.assertNotIn("\n", description)
         self.assertIn("type=reparse, nlink=1", description)
 
-    def read_windows_stat_model(self, *, fd_changes=None, after_fd_changes=None,
+    def read_windows_stat_model(self, *, path_changes=None, fd_changes=None, after_fd_changes=None,
                                 after_path_changes=None):
         # CPython 3.12.10 win32_xstat maps ctime to CreationTime. Its fstat
         # preserves FILE_BASIC_INFO.ChangeTime; both expose birthtime_ns.
@@ -319,7 +319,7 @@ class NativeArtifactContracts(unittest.TestCase):
         fields = {name: getattr(actual, name) for name in
                   ("st_mode", "st_dev", "st_ino", "st_size", "st_mtime_ns", "st_ctime_ns", "st_nlink")}
         fields.update(st_file_attributes=0, st_birthtime_ns=1700000000000000000)
-        path_fields = dict(fields, st_ctime_ns=fields["st_birthtime_ns"])
+        path_fields = dict(fields, st_ctime_ns=fields["st_birthtime_ns"], **(path_changes or {}))
         fd_fields = {**fields, "st_ctime_ns": fields["st_birthtime_ns"] + 5000000000,
                      **(fd_changes or {})}
         path_info = SimpleNamespace(**path_fields)
@@ -347,6 +347,14 @@ class NativeArtifactContracts(unittest.TestCase):
 
     def test_windows_path_creation_time_and_fd_change_time_identify_the_same_file(self):
         self.assertEqual(self.read_windows_stat_model(), self.fingerprint)
+
+    def test_windows_executable_extension_bits_do_not_change_file_identity(self):
+        mode = self.native.lstat().st_mode
+        self.assertEqual(self.read_windows_stat_model(
+            path_changes={"st_mode": mode | 0o111},
+            fd_changes={"st_mode": mode & ~0o111}), self.fingerprint)
+        with self.assertRaises(ValueError):
+            self.read_windows_stat_model(fd_changes={"st_mode": mode ^ 0o200})
 
     def test_windows_identity_keeps_device_file_id_mode_size_mtime_birth_and_link_checks(self):
         actual = self.native.lstat()
@@ -432,7 +440,11 @@ class NativeArtifactContracts(unittest.TestCase):
         self.load()  # A promisor marker alone must not reject complete metadata.
         tree = self.git("rev-parse", "HEAD:src").strip()
         object_path = self.repo / ".git/objects" / tree[:2] / tree[2:]
-        object_path.unlink()  # Only this disposable fixture's private loose tree.
+        # Git for Windows marks loose objects read-only. This is only the
+        # disposable fixture's private tree, never the review repository.
+        if os.name == "nt":
+            object_path.chmod(stat.S_IREAD | stat.S_IWRITE)
+        object_path.unlink()
         with self.assertRaisesRegex(ValueError, "metadata unavailable"):
             self.load()
         self.assertFalse(marker.exists(), "blocked Git metadata read executed a remote helper")

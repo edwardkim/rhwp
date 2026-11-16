@@ -1,0 +1,45 @@
+{
+  "checked_at": "2026-11-12T21:47:49.473051+09:00",
+  "before_source": "d66568ef247859a9c184546cad3ba42b06e806e1",
+  "before_record_commit": "a8e304d4734db765f34ab0227eeb9f3575d86840",
+  "after_head": "30fa7739f0340f2a248b22542c7dd36d9354f056",
+  "base": "1a3ed4a7cd76701085a24ac81d30bc5fb31942c1",
+  "source_conflicts": [],
+  "tree_identity": {
+    "src/renderer": true,
+    "src/parser": true,
+    "src/serializer": true,
+    "crates": true,
+    "scripts": true,
+    "assets": true,
+    "ttfs": true,
+    "samples": true,
+    "pdf": true,
+    "rhwp-studio/src": true
+  },
+  "before_trees": {
+    "src/renderer": "93e0e5b4aaf78dfdda2ad137889564e36f9b2ba1",
+    "src/parser": "14b4f6ecc539df8187ad5f3b42275897340136bb",
+    "src/serializer": "65bccaf99e6c9494457f11519e347a30e9bceaac",
+    "crates": "419c7064dfa4e626ad47734fd105ebc1dfa736a3",
+    "scripts": "fa0a728014c9114687aa5ba58607b3e272be0fc1",
+    "assets": "73414adcf00534f04ccc94e83eb743483c15cb21",
+    "ttfs": "790e77203ea8f9950c4a24c04c870c3c0234880b",
+    "samples": "14dedf7f53b0606982cd3d5cbfcf5fe5d3a3f1fa",
+    "pdf": "e6cd949d3a8c41cb269c805bca8da70996c20dd7",
+    "rhwp-studio/src": "e532beb6e5644e60169288ee626f0b7ee7c31df7"
+  },
+  "after_trees": {
+    "src/renderer": "93e0e5b4aaf78dfdda2ad137889564e36f9b2ba1",
+    "src/parser": "14b4f6ecc539df8187ad5f3b42275897340136bb",
+    "src/serializer": "65bccaf99e6c9494457f11519e347a30e9bceaac",
+    "crates": "419c7064dfa4e626ad47734fd105ebc1dfa736a3",
+    "scripts": "fa0a728014c9114687aa5ba58607b3e272be0fc1",
+    "assets": "73414adcf00534f04ccc94e83eb743483c15cb21",
+    "ttfs": "790e77203ea8f9950c4a24c04c870c3c0234880b",
+    "samples": "14dedf7f53b0606982cd3d5cbfcf5fe5d3a3f1fa",
+    "pdf": "e6cd949d3a8c41cb269c805bca8da70996c20dd7",
+    "rhwp-studio/src": "e532beb6e5644e60169288ee626f0b7ee7c31df7"
+  },
+  "reuse_status": "render/input/script trees identical; source-producer identity retained. Incoming API and post-rebase actual package require separate validation."
+}

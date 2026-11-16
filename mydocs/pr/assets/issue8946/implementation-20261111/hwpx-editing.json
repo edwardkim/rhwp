@@ -1,0 +1,69 @@
+{
+  "source": {
+    "status": "complete",
+    "sectionIndex": 0,
+    "paragraphIndex": 23,
+    "nestedPath": [],
+    "runIndex": 21,
+    "charOffset": 0,
+    "character": "창",
+    "codePoint": 52285,
+    "charShapeId": 23
+  },
+  "inserted": "{\"ok\":true,\"charOffset\":2}",
+  "deleted": "{\"ok\":true,\"charOffset\":0}",
+  "beforePages": 763,
+  "afterPages": 763,
+  "restoredPages": 763,
+  "markerCount": 4,
+  "owners": [
+    {
+      "page": 1,
+      "text": "검증창원대학교 데이타베이스 ",
+      "paragraph": null,
+      "bbox": {
+        "x": 300.773,
+        "y": 924.693,
+        "width": 351.947,
+        "height": 24
+      }
+    },
+    {
+      "page": 61,
+      "text": "검증된 기술",
+      "paragraph": null,
+      "bbox": {
+        "x": 113.387,
+        "y": 783.2,
+        "width": 65.973,
+        "height": 12
+      }
+    },
+    {
+      "page": 128,
+      "text": "   지를 검증하는 것이다. 특별한 방법이 없는 한 긴 시간 동안 수행시켜 끝난 후 확인 할",
+      "paragraph": null,
+      "bbox": {
+        "x": 113.387,
+        "y": 799.253,
+        "width": 503.573,
+        "height": 12
+      }
+    },
+    {
+      "page": 286,
+      "text": "는 그것이 변화되지 않을 것이라는 사실이 검증되고, 보장되어야 한",
+      "paragraph": null,
+      "bbox": {
+        "x": 296.96,
+        "y": 247.467,
+        "width": 383.36,
+        "height": 12
+      }
+    }
+  ],
+  "orderedContentPreserved": true,
+  "restoredContent": true,
+  "beforeTextSHA256": "a5a4a65b38fbfda44789ec58ff948558107d8fe40a201caa1f3a744beb0fa45a",
+  "restoredTextSHA256": "a5a4a65b38fbfda44789ec58ff948558107d8fe40a201caa1f3a744beb0fa45a"
+}

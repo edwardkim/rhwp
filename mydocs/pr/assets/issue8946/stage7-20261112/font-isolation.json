@@ -1,0 +1,1866 @@
+{
+  "private": [
+    {
+      "name": "0100-HCENSSNR.otf",
+      "readable": false
+    },
+    {
+      "name": "0131-HCHGSNR.otf",
+      "readable": false
+    },
+    {
+      "name": "0182-HCSPSNR.otf",
+      "readable": false
+    },
+    {
+      "name": "0136-HCHGTGT.otf",
+      "readable": false
+    },
+    {
+      "name": "0055-ENSMJ.otf",
+      "readable": false
+    },
+    {
+      "name": "0081-HCENJGT.otf",
+      "readable": false
+    },
+    {
+      "name": "0211-HGSTRBRY.otf",
+      "readable": false
+    },
+    {
+      "name": "0152-HCHJTGT.otf",
+      "readable": false
+    },
+    {
+      "name": "0076-HCENGS.otf",
+      "readable": false
+    },
+    {
+      "name": "0299-SPSMJ.otf",
+      "readable": false
+    },
+    {
+      "name": "0200-HGGS.otf",
+      "readable": false
+    },
+    {
+      "name": "0204-HGMJ.otf",
+      "readable": false
+    },
+    {
+      "name": "0042-ENJGT.otf",
+      "readable": false
+    },
+    {
+      "name": "0203-HGKDNYBN.otf",
+      "readable": false
+    },
+    {
+      "name": "0154-HCJPJGT.otf",
+      "readable": false
+    },
+    {
+      "name": "0031-ENGGT.otf",
+      "readable": false
+    },
+    {
+      "name": "0355-TETGTEN.otf",
+      "readable": false
+    },
+    {
+      "name": "0196-HGEGPLNT.otf",
+      "readable": false
+    },
+    {
+      "name": "0300-SPSYS.otf",
+      "readable": false
+    },
+    {
+      "name": "0221-HJSYS.otf",
+      "readable": false
+    },
+    {
+      "name": "0171-HCSPJGT.otf",
+      "readable": false
+    },
+    {
+      "name": "0142-HCHJJGT.otf",
+      "readable": false
+    },
+    {
+      "name": "0206-HGPEACH.otf",
+      "readable": false
+    },
+    {
+      "name": "0151-HCHJSSNR.otf",
+      "readable": false
+    },
+    {
+      "name": "0117-HCHGSDNR.otf",
+      "readable": false
+    },
+    {
+      "name": "0297-SPJGT.otf",
+      "readable": false
+    },
+    {
+      "name": "0192-HGCORN.otf",
+      "readable": false
+    },
+    {
+      "name": "0011-ENCORN.otf",
+      "readable": false
+    },
+    {
+      "name": "0218-HJJGT.otf",
+      "readable": false
+    },
+    {
+      "name": "0285-JPMJ.otf",
+      "readable": false
+    },
+    {
+      "name": "0107-HCHGDNR.otf",
+      "readable": false
+    },
+    {
+      "name": "0160-HCJPTGT.otf",
+      "readable": false
+    },
+    {
+      "name": "0184-HCSPSSNR.otf",
+      "readable": false
+    },
+    {
+      "name": "0144-HCHJSDNR.otf",
+      "readable": false
+    },
+    {
+      "name": "0197-HGGGT.otf",
+      "readable": false
+    },
+    {
+      "name": "0210-HGSMJ.otf",
+      "readable": false
+    },
+    {
+      "name": "0019-ENCUCMBR.otf",
+      "readable": false
+    },
+    {
+      "name": "0170-HCSPGS.otf",
+      "readable": false
+    },
+    {
+      "name": "0283-JPJGT.otf",
+      "readable": false
+    },
+    {
+      "name": "0133-HCHGSSNR.otf",
+      "readable": false
+    },
+    {
+      "name": "0045-ENMJ.otf",
+      "readable": false
+    },
+    {
+      "name": "0098-HCENSNR.otf",
+      "readable": false
+    },
+    {
+      "name": "0084-HCENSDNR.otf",
+      "readable": false
+    },
+    {
+      "name": "0063-FLSMJ.otf",
+      "readable": false
+    },
+    {
+      "name": "0357-TETGTHJ.otf",
+      "readable": false
+    },
+    {
+      "name": "0141-HCHJGS.otf",
+      "readable": false
+    },
+    {
+      "name": "0165-HCSPDNR.otf",
+      "readable": false
+    },
+    {
+      "name": "0060-ENSYS.otf",
+      "readable": false
+    },
+    {
+      "name": "0103-HCENTGT.otf",
+      "readable": false
+    },
+    {
+      "name": "0112-HCHGGS.otf",
+      "readable": false
+    },
+    {
+      "name": "0462-Pretendard-Bold.otf",
+      "readable": false
+    },
+    {
+      "name": "0193-HGCUCMBR.otf",
+      "readable": false
+    },
+    {
+      "name": "0187-HCSPTGT.otf",
+      "readable": false
+    },
+    {
+      "name": "0272-HMKOLD.otf",
+      "readable": false
+    },
+    {
+      "name": "0037-ENGS.otf",
+      "readable": false
+    },
+    {
+      "name": "0212-HGSYS.otf",
+      "readable": false
+    },
+    {
+      "name": "0298-SPMJ.otf",
+      "readable": false
+    },
+    {
+      "name": "0358-TETGTJP.otf",
+      "readable": false
+    },
+    {
+      "name": "0219-HJMJ.otf",
+      "readable": false
+    },
+    {
+      "name": "0288-JPSYS.otf",
+      "readable": false
+    },
+    {
+      "name": "0174-HCSPSDNR.otf",
+      "readable": false
+    },
+    {
+      "name": "0286-JPSMJ.otf",
+      "readable": false
+    },
+    {
+      "name": "0303-TEDNREN.otf",
+      "readable": false
+    },
+    {
+      "name": "0115-HCHGJGT.otf",
+      "readable": false
+    },
+    {
+      "name": "0467-Pretendard-Regular.otf",
+      "readable": false
+    },
+    {
+      "name": "0365-USER.otf",
+      "readable": false
+    },
+    {
+      "name": "0071-HCENDNR.otf",
+      "readable": false
+    },
+    {
+      "name": "0356-TETGTHG.otf",
+      "readable": false
+    },
+    {
+      "name": "0062-FLMJ.otf",
+      "readable": false
+    },
+    {
+      "name": "0304-TEDNRHG.otf",
+      "readable": false
+    },
+    {
+      "name": "0220-HJSMJ.otf",
+      "readable": false
+    }
+  ],
+  "public": [
+    {
+      "name": "AppleSDGothicNeo.ttc",
+      "readable": true
+    },
+    {
+      "name": "Menlo.ttc",
+      "readable": true
+    },
+    {
+      "name": "STHeiti Medium.ttc",
+      "readable": true
+    },
+    {
+      "name": "Symbol.ttf",
+      "readable": true
+    },
+    {
+      "name": "Geneva.ttf",
+      "readable": true
+    },
+    {
+      "name": "Hiragino Sans GB.ttc",
+      "readable": true
+    },
+    {
+      "name": "LastResort.otf",
+      "readable": true
+    },
+    {
+      "name": "NotoSerifMyanmar.ttc",
+      "readable": true
+    },
+    {
+      "name": "HelveticaNeue.ttc",
+      "readable": true
+    },
+    {
+      "name": "SFNSMono.ttf",
+      "readable": true
+    },
+    {
+      "name": "ヒラギノ角ゴシック W8.ttc",
+      "readable": true
+    },
+    {
+      "name": "Noteworthy.ttc",
+      "readable": true
+    },
+    {
+      "name": "NotoSansOriya.ttc",
+      "readable": true
+    },
+    {
+      "name": "ヒラギノ角ゴシック W9.ttc",
+      "readable": true
+    },
+    {
+      "name": "ThonburiUI.ttc",
+      "readable": true
+    },
+    {
+      "name": "SFGeorgian.ttf",
+      "readable": true
+    },
+    {
+      "name": "SFHebrew.ttf",
+      "readable": true
+    },
+    {
+      "name": "Optima.ttc",
+      "readable": true
+    },
+    {
+      "name": "ZapfDingbats.ttf",
+      "readable": true
+    },
+    {
+      "name": "SFArmenian.ttf",
+      "readable": true
+    },
+    {
+      "name": "Apple Braille.ttf",
+      "readable": true
+    },
+    {
+      "name": "Avenir Next Condensed.ttc",
+      "readable": true
+    },
+    {
+      "name": "LucidaGrande.ttc",
+      "readable": true
+    },
+    {
+      "name": "Courier.ttc",
+      "readable": true
+    },
+    {
+      "name": "SFCompact.ttf",
+      "readable": true
+    },
+    {
+      "name": "Apple Braille Outline 6 Dot.ttf",
+      "readable": true
+    },
+    {
+      "name": "KohinoorTelugu.ttc",
+      "readable": true
+    },
+    {
+      "name": "Apple Braille Pinpoint 6 Dot.ttf",
+      "readable": true
+    },
+    {
+      "name": "MuktaMahee.ttc",
+      "readable": true
+    },
+    {
+      "name": "NewYork.ttf",
+      "readable": true
+    },
+    {
+      "name": "SFNSMonoItalic.ttf",
+      "readable": true
+    },
+    {
+      "name": "SFNS.ttf",
+      "readable": true
+    },
+    {
+      "name": "SFCamera.ttf",
+      "readable": true
+    },
+    {
+      "name": "Avenir.ttc",
+      "readable": true
+    },
+    {
+      "name": "Kohinoor.ttc",
+      "readable": true
+    },
+    {
+      "name": "NotoSansMyanmar.ttc",
+      "readable": true
+    },
+    {
+      "name": "SFArmenianRounded.ttf",
+      "readable": true
+    },
+    {
+      "name": "ヒラギノ明朝 ProN.ttc",
+      "readable": true
+    },
+    {
+      "name": "Avenir Next.ttc",
+      "readable": true
+    },
+    {
+      "name": "KohinoorGujarati.ttc",
+      "readable": true
+    },
+    {
+      "name": "AquaKana.ttc",
+      "readable": true
+    },
+    {
+      "name": "Palatino.ttc",
+      "readable": true
+    },
+    {
+      "name": "Monaco.ttf",
+      "readable": true
+    },
+    {
+      "name": "Apple Symbols.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoNastaliq.ttc",
+      "readable": true
+    },
+    {
+      "name": "STHeiti Light.ttc",
+      "readable": true
+    },
+    {
+      "name": "NewYorkItalic.ttf",
+      "readable": true
+    },
+    {
+      "name": "GeezaPro.ttc",
+      "readable": true
+    },
+    {
+      "name": "SFCompactItalic.ttf",
+      "readable": true
+    },
+    {
+      "name": "ヒラギノ角ゴシック W7.ttc",
+      "readable": true
+    },
+    {
+      "name": "Times.ttc",
+      "readable": true
+    },
+    {
+      "name": "ADTNumeric.ttc",
+      "readable": true
+    },
+    {
+      "name": "ヒラギノ丸ゴ ProN W4.ttc",
+      "readable": true
+    },
+    {
+      "name": "ヒラギノ角ゴシック W6.ttc",
+      "readable": true
+    },
+    {
+      "name": "ヒラギノ角ゴシック W4.ttc",
+      "readable": true
+    },
+    {
+      "name": "NotoSansKannada.ttc",
+      "readable": true
+    },
+    {
+      "name": "SFArabic.ttf",
+      "readable": true
+    },
+    {
+      "name": "SFNSRounded.ttf",
+      "readable": true
+    },
+    {
+      "name": "ヒラギノ角ゴシック W5.ttc",
+      "readable": true
+    },
+    {
+      "name": "CJKSymbolsFallback.ttc",
+      "readable": true
+    },
+    {
+      "name": "DecoTypeNastaleeqUrdu.ttc",
+      "readable": true
+    },
+    {
+      "name": "MarkerFelt.ttc",
+      "readable": true
+    },
+    {
+      "name": "Apple Braille Pinpoint 8 Dot.ttf",
+      "readable": true
+    },
+    {
+      "name": "Keyboard.ttf",
+      "readable": true
+    },
+    {
+      "name": "ヒラギノ角ゴシック W1.ttc",
+      "readable": true
+    },
+    {
+      "name": "SFIndia.ttc",
+      "readable": true
+    },
+    {
+      "name": "SFGeorgianRounded.ttf",
+      "readable": true
+    },
+    {
+      "name": "SFCompactRounded.ttf",
+      "readable": true
+    },
+    {
+      "name": "ArialHB.ttc",
+      "readable": true
+    },
+    {
+      "name": "Apple Braille Outline 8 Dot.ttf",
+      "readable": true
+    },
+    {
+      "name": "ヒラギノ角ゴシック W0.ttc",
+      "readable": true
+    },
+    {
+      "name": "Apple Color Emoji.ttc",
+      "readable": true
+    },
+    {
+      "name": "ヒラギノ角ゴシック W2.ttc",
+      "readable": true
+    },
+    {
+      "name": "SFNSItalic.ttf",
+      "readable": true
+    },
+    {
+      "name": "Helvetica.ttc",
+      "readable": true
+    },
+    {
+      "name": "KohinoorBangla.ttc",
+      "readable": true
+    },
+    {
+      "name": "SFArabicRounded.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansArmenian.ttc",
+      "readable": true
+    },
+    {
+      "name": "ヒラギノ角ゴシック W3.ttc",
+      "readable": true
+    },
+    {
+      "name": "SFHebrewRounded.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansLepcha-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "AlBayan.ttc",
+      "readable": true
+    },
+    {
+      "name": "Webdings.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansMandaic-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Rockwell.ttc",
+      "readable": true
+    },
+    {
+      "name": "Zapfino.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansCaucasianAlbanian-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Trebuchet MS Italic.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansOldHungarian-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Georgia.ttf",
+      "readable": true
+    },
+    {
+      "name": "Savoye LET.ttc",
+      "readable": true
+    },
+    {
+      "name": "PTSans.ttc",
+      "readable": true
+    },
+    {
+      "name": "NotoSansSaurashtra-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansMultani-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansHatran-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Verdana Bold.ttf",
+      "readable": true
+    },
+    {
+      "name": "Bodoni 72 Smallcaps Book.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansInscriptionalPahlavi-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansHanunoo-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Times New Roman Bold Italic.ttf",
+      "readable": true
+    },
+    {
+      "name": "SukhumvitSet.ttc",
+      "readable": true
+    },
+    {
+      "name": "Silom.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansBhaiksuki-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansCham-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansManichaean-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansNKo-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Verdana Italic.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansKayahLi-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansOsage-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Nadeem.ttc",
+      "readable": true
+    },
+    {
+      "name": "NotoSansAdlam-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "KufiStandardGK.ttc",
+      "readable": true
+    },
+    {
+      "name": "NotoSansPahawhHmong-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Times New Roman Italic.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansMro-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansCanadianAboriginal-Regular.otf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansAvestan-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Bradley Hand Bold.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansMiao-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Arial Narrow Italic.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansBassaVah-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "STIXGeneralItalic.otf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansSyriac-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansMendeKikakui-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Kannada Sangam MN.ttc",
+      "readable": true
+    },
+    {
+      "name": "Papyrus.ttc",
+      "readable": true
+    },
+    {
+      "name": "Seravek.ttc",
+      "readable": true
+    },
+    {
+      "name": "AppleGothic.ttf",
+      "readable": true
+    },
+    {
+      "name": "Iowan Old Style.ttc",
+      "readable": true
+    },
+    {
+      "name": "STIXTwoText-Italic.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansLydian-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "DIN Condensed Bold.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansChakma-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansNabataean-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Kailasa.ttc",
+      "readable": true
+    },
+    {
+      "name": "Charter.ttc",
+      "readable": true
+    },
+    {
+      "name": "NotoSerifNyiakengPuachueHmong-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Farisi.ttf",
+      "readable": true
+    },
+    {
+      "name": "Arial Bold.ttf",
+      "readable": true
+    },
+    {
+      "name": "Trebuchet MS.ttf",
+      "readable": true
+    },
+    {
+      "name": "Mishafi.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansDuployan-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Academy Engraved LET Fonts.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansSoraSompeng-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Marion.ttc",
+      "readable": true
+    },
+    {
+      "name": "Trattatello.ttf",
+      "readable": true
+    },
+    {
+      "name": "Sinhala MN.ttc",
+      "readable": true
+    },
+    {
+      "name": "NotoSansRejang-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansUgaritic-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Corsiva.ttc",
+      "readable": true
+    },
+    {
+      "name": "NotoSansLycian-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "BigCaslon.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansWarangCiti-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Courier New Bold.ttf",
+      "readable": true
+    },
+    {
+      "name": "NISC18030.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansHanifiRohingya-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansTirhuta-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Al Nile.ttc",
+      "readable": true
+    },
+    {
+      "name": "STIXIntUpSmReg.otf",
+      "readable": true
+    },
+    {
+      "name": "SuperClarendon.ttc",
+      "readable": true
+    },
+    {
+      "name": "Baghdad.ttc",
+      "readable": true
+    },
+    {
+      "name": "STIXGeneral.otf",
+      "readable": true
+    },
+    {
+      "name": "Athelas.ttc",
+      "readable": true
+    },
+    {
+      "name": "STIXIntUpDBol.otf",
+      "readable": true
+    },
+    {
+      "name": "AmericanTypewriter.ttc",
+      "readable": true
+    },
+    {
+      "name": "Lao Sangam MN.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansTaiLe-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansThaana-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Luminari.ttf",
+      "readable": true
+    },
+    {
+      "name": "STIXVar.otf",
+      "readable": true
+    },
+    {
+      "name": "Malayalam MN.ttc",
+      "readable": true
+    },
+    {
+      "name": "STIXSizOneSymBol.otf",
+      "readable": true
+    },
+    {
+      "name": "Muna.ttc",
+      "readable": true
+    },
+    {
+      "name": "Times New Roman.ttf",
+      "readable": true
+    },
+    {
+      "name": "Brush Script.ttf",
+      "readable": true
+    },
+    {
+      "name": "Bodoni 72 OS.ttc",
+      "readable": true
+    },
+    {
+      "name": "Myanmar MN.ttc",
+      "readable": true
+    },
+    {
+      "name": "NotoSansJavanese-Regular.otf",
+      "readable": true
+    },
+    {
+      "name": "Georgia Italic.ttf",
+      "readable": true
+    },
+    {
+      "name": "Courier New Italic.ttf",
+      "readable": true
+    },
+    {
+      "name": "Arial Unicode.ttf",
+      "readable": true
+    },
+    {
+      "name": "Telugu MN.ttc",
+      "readable": true
+    },
+    {
+      "name": "Myanmar Sangam MN.ttc",
+      "readable": true
+    },
+    {
+      "name": "Chalkduster.ttf",
+      "readable": true
+    },
+    {
+      "name": "STIXIntUpSmBol.otf",
+      "readable": true
+    },
+    {
+      "name": "STIXIntUpDReg.otf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansSundanese-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Devanagari Sangam MN.ttc",
+      "readable": true
+    },
+    {
+      "name": "Phosphate.ttc",
+      "readable": true
+    },
+    {
+      "name": "Apple Chancery.ttf",
+      "readable": true
+    },
+    {
+      "name": "AppleMyungjo.ttf",
+      "readable": true
+    },
+    {
+      "name": "STIXSizOneSymReg.otf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansOlChiki-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansGunjalaGondi-Regular.otf",
+      "readable": true
+    },
+    {
+      "name": "Futura.ttc",
+      "readable": true
+    },
+    {
+      "name": "NotoSansCarian-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Copperplate.ttc",
+      "readable": true
+    },
+    {
+      "name": "PTMono.ttc",
+      "readable": true
+    },
+    {
+      "name": "Thonburi.ttc",
+      "readable": true
+    },
+    {
+      "name": "Farah.ttc",
+      "readable": true
+    },
+    {
+      "name": "NotoSansNagMundari-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Arial Narrow Bold Italic.ttf",
+      "readable": true
+    },
+    {
+      "name": "Malayalam Sangam MN.ttc",
+      "readable": true
+    },
+    {
+      "name": "NotoSansModi-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "ChalkboardSE.ttc",
+      "readable": true
+    },
+    {
+      "name": "ITFDevanagari.ttc",
+      "readable": true
+    },
+    {
+      "name": "NotoSansMeroitic-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Bangla MN.ttc",
+      "readable": true
+    },
+    {
+      "name": "STIXNonUniBol.otf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansPalmyrene-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansPhagsPa-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Arial Narrow.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansSiddham-Regular.otf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansYi-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Bangla Sangam MN.ttc",
+      "readable": true
+    },
+    {
+      "name": "NotoSansPsalterPahlavi-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Tamil MN.ttc",
+      "readable": true
+    },
+    {
+      "name": "NotoSansLimbu-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansCypriot-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Gurmukhi Sangam MN.ttc",
+      "readable": true
+    },
+    {
+      "name": "GujaratiMT.ttc",
+      "readable": true
+    },
+    {
+      "name": "Diwan Kufi.ttc",
+      "readable": true
+    },
+    {
+      "name": "NotoSansBamum-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansLisu-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Courier New.ttf",
+      "readable": true
+    },
+    {
+      "name": "Wingdings 3.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansMahajani-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Wingdings 2.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansGlagolitic-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Hoefler Text Ornaments.ttf",
+      "readable": true
+    },
+    {
+      "name": "Tamil Sangam MN.ttc",
+      "readable": true
+    },
+    {
+      "name": "NotoSerifAhom-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Bodoni Ornaments.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansVai-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansTagbanwa-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Cochin.ttc",
+      "readable": true
+    },
+    {
+      "name": "STIXTwoText.ttf",
+      "readable": true
+    },
+    {
+      "name": "Skia.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansPhoenician-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Trebuchet MS Bold Italic.ttf",
+      "readable": true
+    },
+    {
+      "name": "DevanagariMT.ttc",
+      "readable": true
+    },
+    {
+      "name": "Kannada MN.ttc",
+      "readable": true
+    },
+    {
+      "name": "STIXTwoMath.otf",
+      "readable": true
+    },
+    {
+      "name": "Beirut.ttc",
+      "readable": true
+    },
+    {
+      "name": "Impact.ttf",
+      "readable": true
+    },
+    {
+      "name": "Kokonor.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansKaithi-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "NewPeninimMT.ttc",
+      "readable": true
+    },
+    {
+      "name": "STIXIntUpBol.otf",
+      "readable": true
+    },
+    {
+      "name": "NotoSerifBalinese-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansTakri-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansMasaramGondi-Regular.otf",
+      "readable": true
+    },
+    {
+      "name": "Gurmukhi MN.ttc",
+      "readable": true
+    },
+    {
+      "name": "STIXSizThreeSymBol.otf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansEgyptianHieroglyphs-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansSamaritan-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansElbasan-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "PartyLET-plain.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansKharoshthi-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Tahoma Bold.ttf",
+      "readable": true
+    },
+    {
+      "name": "Arial.ttf",
+      "readable": true
+    },
+    {
+      "name": "Diwan Thuluth.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansTagalog-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Ayuthaya.ttf",
+      "readable": true
+    },
+    {
+      "name": "STIXIntUpReg.otf",
+      "readable": true
+    },
+    {
+      "name": "Sinhala Sangam MN.ttc",
+      "readable": true
+    },
+    {
+      "name": "Khmer Sangam MN.ttf",
+      "readable": true
+    },
+    {
+      "name": "PTSerif.ttc",
+      "readable": true
+    },
+    {
+      "name": "STIXSizThreeSymReg.otf",
+      "readable": true
+    },
+    {
+      "name": "SnellRoundhand.ttc",
+      "readable": true
+    },
+    {
+      "name": "NotoSansSharada-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Chalkboard.ttc",
+      "readable": true
+    },
+    {
+      "name": "KefaIII.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansKhojki-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Bodoni 72.ttc",
+      "readable": true
+    },
+    {
+      "name": "NotoSansNewTaiLue-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansInscriptionalParthian-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "STIXNonUni.otf",
+      "readable": true
+    },
+    {
+      "name": "Mshtakan.ttc",
+      "readable": true
+    },
+    {
+      "name": "Trebuchet MS Bold.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansBuhid-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Lao MN.ttc",
+      "readable": true
+    },
+    {
+      "name": "Sana.ttc",
+      "readable": true
+    },
+    {
+      "name": "Arial Black.ttf",
+      "readable": true
+    },
+    {
+      "name": "Baskerville.ttc",
+      "readable": true
+    },
+    {
+      "name": "Courier New Bold Italic.ttf",
+      "readable": true
+    },
+    {
+      "name": "Comic Sans MS.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansKhudawadi-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "InaiMathi-MN.ttc",
+      "readable": true
+    },
+    {
+      "name": "NotoSerifYezidi-Regular.otf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansBuginese-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Telugu Sangam MN.ttc",
+      "readable": true
+    },
+    {
+      "name": "Hoefler Text.ttc",
+      "readable": true
+    },
+    {
+      "name": "NotoSansLinearB-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "DIN Alternate Bold.ttf",
+      "readable": true
+    },
+    {
+      "name": "Wingdings.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansNewa-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Sathu.ttf",
+      "readable": true
+    },
+    {
+      "name": "Gujarati Sangam MN.ttc",
+      "readable": true
+    },
+    {
+      "name": "NotoSansSylotiNagri-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Arial Bold Italic.ttf",
+      "readable": true
+    },
+    {
+      "name": "STIXSizTwoSymBol.otf",
+      "readable": true
+    },
+    {
+      "name": "Galvji.ttc",
+      "readable": true
+    },
+    {
+      "name": "NotoSansOldPersian-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Tahoma.ttf",
+      "readable": true
+    },
+    {
+      "name": "EuphemiaCAS.ttc",
+      "readable": true
+    },
+    {
+      "name": "PlantagenetCherokee.ttf",
+      "readable": true
+    },
+    {
+      "name": "Didot.ttc",
+      "readable": true
+    },
+    {
+      "name": "Georgia Bold.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansLinearA-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "STIXIntSmReg.otf",
+      "readable": true
+    },
+    {
+      "name": "STIXNonUniIta.otf",
+      "readable": true
+    },
+    {
+      "name": "STIXSizFourSymReg.otf",
+      "readable": true
+    },
+    {
+      "name": "Verdana Bold Italic.ttf",
+      "readable": true
+    },
+    {
+      "name": "Microsoft Sans Serif.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansCuneiform-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Georgia Bold Italic.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansBatak-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Arial Rounded Bold.ttf",
+      "readable": true
+    },
+    {
+      "name": "Times New Roman Bold.ttf",
+      "readable": true
+    },
+    {
+      "name": "STIXSizTwoSymReg.otf",
+      "readable": true
+    },
+    {
+      "name": "Khmer MN.ttc",
+      "readable": true
+    },
+    {
+      "name": "NotoSansWancho-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "STIXGeneralBolIta.otf",
+      "readable": true
+    },
+    {
+      "name": "Krungthep.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansOldSouthArabian-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Oriya MN.ttc",
+      "readable": true
+    },
+    {
+      "name": "STIXSizFourSymBol.otf",
+      "readable": true
+    },
+    {
+      "name": "STIXIntSmBol.otf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansPauCinHau-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansMarchen-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansOldItalic-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansGothic-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Gurmukhi.ttf",
+      "readable": true
+    },
+    {
+      "name": "Al Tarikh.ttc",
+      "readable": true
+    },
+    {
+      "name": "STIXNonUniBolIta.otf",
+      "readable": true
+    },
+    {
+      "name": "Raanana.ttc",
+      "readable": true
+    },
+    {
+      "name": "Andale Mono.ttf",
+      "readable": true
+    },
+    {
+      "name": "GillSans.ttc",
+      "readable": true
+    },
+    {
+      "name": "Mishafi Gold.ttf",
+      "readable": true
+    },
+    {
+      "name": "Herculanum.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansTaiViet-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Damascus.ttc",
+      "readable": true
+    },
+    {
+      "name": "Waseem.ttc",
+      "readable": true
+    },
+    {
+      "name": "NotoSansImperialAramaic-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "STIXIntDReg.otf",
+      "readable": true
+    },
+    {
+      "name": "PTSerifCaption.ttc",
+      "readable": true
+    },
+    {
+      "name": "NotoSansBrahmi-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "STIXVarBol.otf",
+      "readable": true
+    },
+    {
+      "name": "Comic Sans MS Bold.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansCoptic-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "STIXSizFiveSymReg.otf",
+      "readable": true
+    },
+    {
+      "name": "Arial Italic.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansTifinagh-Regular.otf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansOldTurkic-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "SignPainter.ttc",
+      "readable": true
+    },
+    {
+      "name": "Oriya Sangam MN.ttc",
+      "readable": true
+    },
+    {
+      "name": "STIXGeneralBol.otf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansMongolian-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Verdana.ttf",
+      "readable": true
+    },
+    {
+      "name": "Shree714.ttc",
+      "readable": true
+    },
+    {
+      "name": "NotoSansOldPermic-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "STIXIntDBol.otf",
+      "readable": true
+    },
+    {
+      "name": "Songti.ttc",
+      "readable": true
+    },
+    {
+      "name": "NotoSansTaiTham-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansMeeteiMayek-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansOldNorthArabian-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "DecoTypeNaskh.ttc",
+      "readable": true
+    },
+    {
+      "name": "NotoSansOsmanya-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "Arial Narrow Bold.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansKR-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "RHWPOldHangul-Regular.otf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansSymbols2-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "RHWPPublicBatang-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "NotoSansKR-ExtraLight.ttf",
+      "readable": true
+    },
+    {
+      "name": "placeholder-contract.ttf",
+      "readable": true
+    },
+    {
+      "name": "family-contract.ttf",
+      "readable": true
+    },
+    {
+      "name": "RHWPPrintFallbackContext.ttf",
+      "readable": true
+    },
+    {
+      "name": "RHWPHftOutlineJamo.otf",
+      "readable": true
+    },
+    {
+      "name": "RHWPHostFixture-Oblique.ttf",
+      "readable": true
+    },
+    {
+      "name": "RHWPHostFixture-Preferred.ttf",
+      "readable": true
+    },
+    {
+      "name": "RHWPEquationLatinOnly.ttf",
+      "readable": true
+    },
+    {
+      "name": "RHWPHostFixture-CoverageSubset.ttf",
+      "readable": true
+    },
+    {
+      "name": "RHWPEquationCJKRegular.ttf",
+      "readable": true
+    },
+    {
+      "name": "RHWPEquationCJKLight.ttf",
+      "readable": true
+    },
+    {
+      "name": "RHWPExactKerningSmoke.ttf",
+      "readable": true
+    },
+    {
+      "name": "RHWPBitmapSvgGlyphSmoke.ttf",
+      "readable": true
+    },
+    {
+      "name": "RHWPExactFaceSmoke.ttc",
+      "readable": true
+    },
+    {
+      "name": "RHWPHostFixture-Regular.ttf",
+      "readable": true
+    },
+    {
+      "name": "RHWPHostFixture.ttc",
+      "readable": true
+    },
+    {
+      "name": "RHWPHostFixture-Italic.ttf",
+      "readable": true
+    },
+    {
+      "name": "RHWPHftOutline.otf",
+      "readable": true
+    },
+    {
+      "name": "RHWPSuppliedStyle-Bold.ttf",
+      "readable": true
+    },
+    {
+      "name": "RHWPSuppliedStyle-Regular.ttf",
+      "readable": true
+    }
+  ]
+}

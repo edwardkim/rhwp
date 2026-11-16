@@ -1,0 +1,1195 @@
+{
+  "recorded_at": "2026-11-12T08:04:04.991106+00:00",
+  "input_bytes_unchanged": true,
+  "mcp_print_count": 33,
+  "manual_print_count": 1,
+  "cases": [
+    {
+      "key": "pr8897-empty-host-split-table",
+      "input": "samples/issue8573/empty-host-split-table.hwp",
+      "input_sha256": "8d5066645589188ac67cb768b124ac9a0d3ad511de891d4283ae653f9027fbf7",
+      "previous_pdf": "pdf/issue8573/empty-host-split-table-webhwp-print.pdf",
+      "previous_pdf_sha256": "845ca291eadb179114a8df021aaea6437e108e7a959f0ec70740e4bf4c01e05e",
+      "previous_pdf_metadata": {
+        "Producer": "cairo 1.15.12 (http://cairographics.org)",
+        "Pages": "2",
+        "Page size": "595 x 842 pts (A4)"
+      },
+      "pdf": "pdf/issue8573/empty-host-split-table-hwp-2020.pdf",
+      "pdf_sha256": "c8fcd259e7b8909e477d7f143dbfea6141117c993c789b54aeb80c00ca64a11f",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2020",
+        "job_id": "2c94fc66-2156-4bf9-b580-a95c4a33d866",
+        "print_result": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9136",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "pdf_page_count": 2,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hwp 2020 0.0.0.0",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "2",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 15072
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/empty-host-split-table-2020.pdf"
+    },
+    {
+      "key": "pr8897-empty-host-square-band-1430-below",
+      "input": "samples/issue8573/empty-host-square-band-1430-below.hwp",
+      "input_sha256": "bea3b61b470d9f4d6fd704ee12786c765fde5e1c4fad20d219e2d7397e4f9409",
+      "previous_pdf": "pdf/issue8573/empty-host-square-band-1430-below-webhwp-print.pdf",
+      "previous_pdf_sha256": "3fcd25c784a968cb4dd787a2dfd3d8ba754f78218322822f813b6918b5db472a",
+      "previous_pdf_metadata": {
+        "Producer": "cairo 1.15.12 (http://cairographics.org)",
+        "Pages": "1",
+        "Page size": "595 x 842 pts (A4)"
+      },
+      "pdf": "pdf/issue8573/empty-host-square-band-1430-below-hwp-2020.pdf",
+      "pdf_sha256": "1d73e593be48c03af0d2fcc83070598e8bde0f6717b1a98bb4dfc0b9d335cc1a",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2020",
+        "job_id": "63fbb0ab-7507-4f41-9091-4b34d5afbb32",
+        "print_result": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9136",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "pdf_page_count": 1,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hwp 2020 579.0.0.4",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "1",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 10443
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/empty-host-square-band-1430-below-2020.pdf"
+    },
+    {
+      "key": "pr8897-empty-host-square-band-1450-beside",
+      "input": "samples/issue8573/empty-host-square-band-1450-beside.hwp",
+      "input_sha256": "2c8763ca2989ae9125e136740890d1a5ea725f0f87a4f41ff0a49770777d6947",
+      "previous_pdf": "pdf/issue8573/empty-host-square-band-1450-beside-webhwp-print.pdf",
+      "previous_pdf_sha256": "4c41e82016bcc5cad8af6ff372676521b286795983cadbb07de9180c2b046651",
+      "previous_pdf_metadata": {
+        "Producer": "cairo 1.15.12 (http://cairographics.org)",
+        "Pages": "1",
+        "Page size": "595 x 842 pts (A4)"
+      },
+      "pdf": "pdf/issue8573/empty-host-square-band-1450-beside-hwp-2020.pdf",
+      "pdf_sha256": "02c2be8a1129815143a247c6a941bd193aabb3775c2399608e227ba3e16e4218",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2020",
+        "job_id": "556a6b41-9639-414a-876b-5a901aa56d03",
+        "print_result": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9136",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "pdf_page_count": 1,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hwp 2020 0.0.0.0",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "1",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 10442
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/empty-host-square-band-1450-beside-2020.pdf"
+    },
+    {
+      "key": "pr8897-empty-host-square-band-600-no-extra-line",
+      "input": "samples/issue8573/empty-host-square-band-600-no-extra-line.hwp",
+      "input_sha256": "3186a02350c8af4471ffd7099a1af84a0335de94acdbbbeaa1aa1b7178488aa3",
+      "previous_pdf": "pdf/issue8573/empty-host-square-band-600-no-extra-line-webhwp-print.pdf",
+      "previous_pdf_sha256": "e874563d8d41e3a1cccdb0b4fbf88361e7c76c424380782a5ec11aa31571489c",
+      "previous_pdf_metadata": {
+        "Producer": "cairo 1.15.12 (http://cairographics.org)",
+        "Pages": "1",
+        "Page size": "595 x 842 pts (A4)"
+      },
+      "pdf": "pdf/issue8573/empty-host-square-band-600-no-extra-line-hwp-2020.pdf",
+      "pdf_sha256": "a54f77962a36c41acec936f4b52fda6061538b3bbdf7c67aed24a2c037f0d5f7",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2020",
+        "job_id": "6a13d12d-dda0-464b-b833-d46509babf67",
+        "print_result": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9136",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "pdf_page_count": 1,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hwp 2020 0.0.0.0",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "1",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 10440
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/empty-host-square-band-600-no-extra-line-2020.pdf"
+    },
+    {
+      "key": "pr8897-empty-host-square-beside-line",
+      "input": "samples/issue8573/empty-host-square-beside-line.hwp",
+      "input_sha256": "6b5f643237a5d98d3351d56dd73053becac129b1aa99511a910b298a42f7d4d3",
+      "previous_pdf": "pdf/issue8573/empty-host-square-beside-line-webhwp-print.pdf",
+      "previous_pdf_sha256": "76737949a56b4b74c270fcd1a67506f62263c9de90e56c60231bf0acc2cc1a21",
+      "previous_pdf_metadata": {
+        "Producer": "cairo 1.15.12 (http://cairographics.org)",
+        "Pages": "1",
+        "Page size": "595 x 842 pts (A4)"
+      },
+      "pdf": "pdf/issue8573/empty-host-square-beside-line-hwp-2020.pdf",
+      "pdf_sha256": "13945fbd0b2fc917edffb75de82a7d897e19f03bb7dde7102d7f094cdb26461c",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2020",
+        "job_id": "a1336dee-c3b2-45df-87f3-9de806865862",
+        "print_result": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9136",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "pdf_page_count": 1,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hwp 2020 0.0.0.0",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "1",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 13859
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/empty-host-square-beside-line-2020.pdf"
+    },
+    {
+      "key": "pr8897-empty-host-square-then-topbottom-push",
+      "input": "samples/issue8573/empty-host-square-then-topbottom-push.hwp",
+      "input_sha256": "e9e16c4f57d9d356b9b3a8dd3989edf0d4bd10f902f3ce3c45d6a9be4adab0cb",
+      "previous_pdf": "pdf/issue8573/empty-host-square-then-topbottom-push-webhwp-print.pdf",
+      "previous_pdf_sha256": "d3d3e4493635816e4bf21996690fb1be841ae85fa55dd5ea0b7d16739be929b0",
+      "previous_pdf_metadata": {
+        "Producer": "cairo 1.15.12 (http://cairographics.org)",
+        "Pages": "1",
+        "Page size": "595 x 842 pts (A4)"
+      },
+      "pdf": "pdf/issue8573/empty-host-square-then-topbottom-push-hwp-2020.pdf",
+      "pdf_sha256": "6e8264d8402a757cdb34de9727350773018fa218e002824f731da2cd583fc614",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2020",
+        "job_id": "0bf506b8-8a65-49aa-b8c5-5a85e4d7b6a1",
+        "print_result": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9136",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "pdf_page_count": 1,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hwp 2020 0.0.0.0",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "1",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 13860
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/empty-host-square-then-topbottom-push-2020.pdf"
+    },
+    {
+      "key": "pr8897-text-host-split-table",
+      "input": "samples/issue8573/text-host-split-table.hwp",
+      "input_sha256": "85d29b9ae1f6f1254503e744d1e71d37959608b9636f855e04fb11d4bf226738",
+      "previous_pdf": "pdf/issue8573/text-host-split-table-webhwp-print.pdf",
+      "previous_pdf_sha256": "08f052147e724387c65afed36b9c42077837e4de6b77f8d697d5d3a070f42493",
+      "previous_pdf_metadata": {
+        "Producer": "cairo 1.15.12 (http://cairographics.org)",
+        "Pages": "2",
+        "Page size": "595 x 842 pts (A4)"
+      },
+      "pdf": "pdf/issue8573/text-host-split-table-hwp-2020.pdf",
+      "pdf_sha256": "0683de7c2cb1b6504fb93216a19e914500d5592af59db0299d882c258fac39d3",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2020",
+        "job_id": "6b9d1603-c739-4716-958f-2fbfd02e84cc",
+        "print_result": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9136",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "pdf_page_count": 2,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hwp 2020 0.0.0.0",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "2",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 15318
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/text-host-split-table-2020.pdf"
+    },
+    {
+      "key": "pr8897-text-host-square-paper-companion-beside-line",
+      "input": "samples/issue8573/text-host-square-paper-companion-beside-line.hwp",
+      "input_sha256": "24f9f22eede659338a070672d828f0412e589132d432c610bb42a60b9518a516",
+      "previous_pdf": "pdf/issue8573/text-host-square-paper-companion-beside-line-webhwp-print.pdf",
+      "previous_pdf_sha256": "2dfa5d7493953c600d37785d97fab1922a25018c2189016164461e4fb930f3ed",
+      "previous_pdf_metadata": {
+        "Producer": "cairo 1.15.12 (http://cairographics.org)",
+        "Pages": "1",
+        "Page size": "595 x 842 pts (A4)"
+      },
+      "pdf": "pdf/issue8573/text-host-square-paper-companion-beside-line-hwp-2020.pdf",
+      "pdf_sha256": "ad616ac4f9851ef0702a9c21fb27ba93d36229a2b51e9c23bc5aeada64161a72",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2020",
+        "job_id": "48ca0b62-1251-4cce-a0ce-c93606ebf24d",
+        "print_result": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9136",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "pdf_page_count": 1,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hwp 2020 0.0.0.0",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "1",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 13872
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/text-host-square-paper-companion-beside-line-2020.pdf"
+    },
+    {
+      "key": "pr8897-text-host-square-then-topbottom-push",
+      "input": "samples/issue8573/text-host-square-then-topbottom-push.hwp",
+      "input_sha256": "07b4e5e54e24ce64340aeb275beb3e482199737c6d8ae283bceecbfe1c8b3eec",
+      "previous_pdf": "pdf/issue8573/text-host-square-then-topbottom-push-webhwp-print.pdf",
+      "previous_pdf_sha256": "0dc25027d3614a2d9508e74237eff524e7752835e5a10e6874cda2378f52e930",
+      "previous_pdf_metadata": {
+        "Producer": "cairo 1.15.12 (http://cairographics.org)",
+        "Pages": "1",
+        "Page size": "595 x 842 pts (A4)"
+      },
+      "pdf": "pdf/issue8573/text-host-square-then-topbottom-push-hwp-2020.pdf",
+      "pdf_sha256": "3418120390f6480dd0c9cbfb7f5368660b9c088a4114526b8563880868fd43fa",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2020",
+        "job_id": "6e031a34-1557-4fef-a22c-fe93671fc368",
+        "print_result": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9136",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "pdf_page_count": 1,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hwp 2020 0.0.0.0",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "1",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 11067
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/text-host-square-then-topbottom-push-2020.pdf"
+    },
+    {
+      "key": "pr8897-text-host-topbottom-line-below",
+      "input": "samples/issue8573/text-host-topbottom-line-below.hwp",
+      "input_sha256": "f36c04521e0ff7ec1be2a2152e4b628043935557737ce798bf7f0394505bbf84",
+      "previous_pdf": "pdf/issue8573/text-host-topbottom-line-below-webhwp-print.pdf",
+      "previous_pdf_sha256": "f9a830af16a1ce70dd1392560eac26cf19396d4f9ddc3bc2876b81e05e717f0f",
+      "previous_pdf_metadata": {
+        "Producer": "cairo 1.15.12 (http://cairographics.org)",
+        "Pages": "1",
+        "Page size": "595 x 842 pts (A4)"
+      },
+      "pdf": "pdf/issue8573/text-host-topbottom-line-below-hwp-2020.pdf",
+      "pdf_sha256": "483fdc57d7c4c93fde069a00a4f44d69fc9b4d1ee6a0b2e7e6c71a757874cb29",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2020",
+        "job_id": "23ce8ed8-bca6-4e71-87ab-faaa5f0d7815",
+        "print_result": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9136",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "pdf_page_count": 1,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hwp 2020 0.0.0.0",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "1",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 10098
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/text-host-topbottom-line-below-2020.pdf"
+    },
+    {
+      "key": "pr8897-whitespace-host-negative-offset-table",
+      "input": "samples/issue8573/whitespace-host-negative-offset-table.hwp",
+      "input_sha256": "dfac0c5af294357bad22ccf3132957847b820d4533cdd34d5335dc0781c37662",
+      "previous_pdf": "pdf/issue8573/whitespace-host-negative-offset-table-webhwp-print.pdf",
+      "previous_pdf_sha256": "dd3ac6e2aabd2109adb910c07ad89a73ca66b10b9f584598c0c3714c2ecbc329",
+      "previous_pdf_metadata": {
+        "Producer": "cairo 1.15.12 (http://cairographics.org)",
+        "Pages": "1",
+        "Page size": "595 x 842 pts (A4)"
+      },
+      "pdf": "pdf/issue8573/whitespace-host-negative-offset-table-hwp-2020.pdf",
+      "pdf_sha256": "1fe6711eb710dd8c2abe34c982c2fa84b866202874a4b719cfc9774d50949739",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2020",
+        "job_id": "66ae13bb-ed17-472c-a98d-474a0c182c85",
+        "print_result": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9136",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "pdf_page_count": 1,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hwp 2020 0.0.0.0",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "1",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 10201
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/whitespace-host-negative-offset-table-2020.pdf"
+    },
+    {
+      "key": "pr8897-whitespace-host-split-table",
+      "input": "samples/issue8573/whitespace-host-split-table.hwp",
+      "input_sha256": "dba90da10c6bcea9294656046a00ebcb08f17c4d7d0f8fd60729dd6f5e019fde",
+      "previous_pdf": "pdf/issue8573/whitespace-host-split-table-webhwp-print.pdf",
+      "previous_pdf_sha256": "ced3fdded61f38a3b3d6f8f83c907c56f2a26ac60d477564c48858b1b8759025",
+      "previous_pdf_metadata": {
+        "Producer": "cairo 1.15.12 (http://cairographics.org)",
+        "Pages": "2",
+        "Page size": "595 x 842 pts (A4)"
+      },
+      "pdf": "pdf/issue8573/whitespace-host-split-table-hwp-2020.pdf",
+      "pdf_sha256": "573adcc18805f1256b0258f894e3332bbe909389ba334e279b0219e9814c88cb",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2020",
+        "job_id": "5313d3c9-9075-460f-b786-00f3b536824d",
+        "print_result": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9136",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "pdf_page_count": 2,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hwp 2020 0.0.0.0",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "2",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 15092
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/whitespace-host-split-table-2020.pdf"
+    },
+    {
+      "key": "pr8897-whitespace-host-square-then-topbottom-push",
+      "input": "samples/issue8573/whitespace-host-square-then-topbottom-push.hwp",
+      "input_sha256": "4178f240dc0ecfa74fdc6833c82d0d19d64bd6093a8931c80981e247e2835aa5",
+      "previous_pdf": "pdf/issue8573/whitespace-host-square-then-topbottom-push-webhwp-print.pdf",
+      "previous_pdf_sha256": "5c492562d1b0be3b9e7cdef56d4c3e3419c6472ed5e3962f6aceb7e86e0ad0ea",
+      "previous_pdf_metadata": {
+        "Producer": "cairo 1.15.12 (http://cairographics.org)",
+        "Pages": "1",
+        "Page size": "595 x 842 pts (A4)"
+      },
+      "pdf": "pdf/issue8573/whitespace-host-square-then-topbottom-push-hwp-2020.pdf",
+      "pdf_sha256": "d1a1f924975f33a0b29810642d2f34f59027e9904d00a8f85370739658f4b3ca",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2020",
+        "job_id": "5d1a5947-6efd-4dbd-9ca1-cb2bfb731cd2",
+        "print_result": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9136",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "pdf_page_count": 1,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hwp 2020 0.0.0.0",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "1",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 11079
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/whitespace-host-square-then-topbottom-push-2020.pdf"
+    },
+    {
+      "key": "pr8897-whitespace-host-topbottom-line-below",
+      "input": "samples/issue8573/whitespace-host-topbottom-line-below.hwp",
+      "input_sha256": "4af3cf6fc98884fa2c872e621bf9d13958654500e337182024cb2f9051774d4b",
+      "previous_pdf": "pdf/issue8573/whitespace-host-topbottom-line-below-webhwp-print.pdf",
+      "previous_pdf_sha256": "b4124ac79e3f8b651e96c056c3c3a80a306528d92a5ef91623e47bf70a064f85",
+      "previous_pdf_metadata": {
+        "Producer": "cairo 1.15.12 (http://cairographics.org)",
+        "Pages": "1",
+        "Page size": "595 x 842 pts (A4)"
+      },
+      "pdf": "pdf/issue8573/whitespace-host-topbottom-line-below-hwp-2020.pdf",
+      "pdf_sha256": "7cc39698a47c8228e85a782c029efb389835b8eaf8047898fc42b6523bd34912",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2020",
+        "job_id": "7664063c-dd68-454e-83d3-7acd27ed5105",
+        "print_result": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9136",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "pdf_page_count": 1,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hwp 2020 0.0.0.0",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "1",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 9873
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/whitespace-host-topbottom-line-below-2020.pdf"
+    },
+    {
+      "key": "pr8897-whitespace-host-topbottom-stacked-zones",
+      "input": "samples/issue8573/whitespace-host-topbottom-stacked-zones.hwp",
+      "input_sha256": "97e347bc79600c7bd9e72d3705a35352f9e347d9c3c6e49f79928a51519723c8",
+      "previous_pdf": "pdf/issue8573/whitespace-host-topbottom-stacked-zones-webhwp-print.pdf",
+      "previous_pdf_sha256": "86f60e7358eb4071d438f28429584184ba93d82590d5ba369594199de598f64f",
+      "previous_pdf_metadata": {
+        "Producer": "cairo 1.15.12 (http://cairographics.org)",
+        "Pages": "1",
+        "Page size": "595 x 842 pts (A4)"
+      },
+      "pdf": "pdf/issue8573/whitespace-host-topbottom-stacked-zones-hwp-2020.pdf",
+      "pdf_sha256": "98c5bee22b4ff94013f5b0253b643a4650d8554298fd7a196fab35e882a44b6c",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2020",
+        "job_id": "469b97b2-ec0a-4582-b6c5-f9ad35c1827e",
+        "print_result": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9136",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "pdf_page_count": 1,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hwp 2020 0.0.0.0",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "1",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 11147
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/whitespace-host-topbottom-stacked-zones-2020.pdf"
+    },
+    {
+      "key": "pr8897-whitespace-host-two-tables-negative-offset",
+      "input": "samples/issue8573/whitespace-host-two-tables-negative-offset.hwp",
+      "input_sha256": "21d1211966e48852316e71847d80c96a056c4b0dd72e6d46594ddab1308d329f",
+      "previous_pdf": "pdf/issue8573/whitespace-host-two-tables-negative-offset-webhwp-print.pdf",
+      "previous_pdf_sha256": "6d81c0bc1e2d8d3d2c120e300d2d506eaf3122c59b61b1444036407ca6438da3",
+      "previous_pdf_metadata": {
+        "Producer": "cairo 1.15.12 (http://cairographics.org)",
+        "Pages": "1",
+        "Page size": "595 x 842 pts (A4)"
+      },
+      "pdf": "pdf/issue8573/whitespace-host-two-tables-negative-offset-hwp-2020.pdf",
+      "pdf_sha256": "c2fbeda6f372592d74b7664e77d0690a1cf6adf094a44f0f3a562df0cc205aea",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2020",
+        "job_id": "a3443de8-3288-4b4c-a614-a5b22a85ce15",
+        "print_result": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9136",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "pdf_page_count": 1,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hwp 2020 0.0.0.0",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "1",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 10099
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/whitespace-host-two-tables-negative-offset-2020.pdf"
+    },
+    {
+      "key": "pr8916-zero_size_para_before_table",
+      "input": "samples/issue8664/zero_size_para_before_table.hwp",
+      "input_sha256": "29dc4af9b4b746fbd089cff02029fc97bb8a8419d4818b2ddb7785f0fdbac9ce",
+      "previous_pdf": "pdf/issue8664/zero_size_para_before_table-webhwp-print.pdf",
+      "previous_pdf_sha256": "3f161afd7332fb11460e3a20cd7bc4107a29d59e0e00879dc49d3f24f16cf3be",
+      "previous_pdf_metadata": {
+        "Producer": "cairo 1.15.12 (http://cairographics.org)",
+        "Pages": "1",
+        "Page size": "595 x 842 pts (A4)"
+      },
+      "pdf": "pdf/issue8664/zero_size_para_before_table-hwp-2024.pdf",
+      "pdf_sha256": "b46b42542293a39defb63e80a15ca81e33b6f38f5b59cf34e884e53cd949ab95",
+      "origin": {
+        "kind": "user-provided manual Print",
+        "engine": "2024",
+        "hancom_version": "13.0.0.3901",
+        "print_attestation": "사용자 확인: 인쇄(Print)로 출력",
+        "bytes": 10824,
+        "mcp_2020_failure": {
+          "job_id": "038f5505-9a97-45a7-9040-4ef6d7021c77",
+          "error": "HANCOM_DOCUMENT_OPEN_REJECTED: Hancom 2020 warned that the document may be damaged or altered; unattended conversion was stopped."
+        }
+      },
+      "formal_path_before_canonical_name": "pdf/issue8664/zero_size_para_before_table-2024.pdf"
+    },
+    {
+      "key": "pr8895-title_line_fits",
+      "input": "samples/issue8665/title_line_fits.hwpx",
+      "input_sha256": "6a5f2edeb685ba47ea170eec3c241e1f3d102d6c306ea0b245aa6090ed9ab3c5",
+      "previous_pdf": "pdf/issue8665/title_line_fits-webhwp-print.pdf",
+      "previous_pdf_sha256": "e32252785f7cae3c04f2ec446a158408180f5226cd2d3c1a17e6e8549f74aa35",
+      "previous_pdf_metadata": {
+        "Producer": "cairo 1.15.12 (http://cairographics.org)",
+        "Pages": "2",
+        "Page size": "595 x 842 pts (A4)"
+      },
+      "pdf": "pdf/issue8665/title_line_fits-hwpx-2024.pdf",
+      "pdf_sha256": "c4d1ef4d2c1b0aa95abf762791af4358daae0ffb4ed8e14f726000975b16d437",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2024",
+        "job_id": "040a198c-fedd-4a00-bc91-db933162900c",
+        "print_result": {
+          "engine": "2024",
+          "hancom_version": "13.0.0.3901",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+          "pdf_page_count": 2,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hancom PDF 1.3.0.550",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "2",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 13446
+      },
+      "formal_path_before_canonical_name": "pdf/issue8665/title_line_fits-2024.pdf"
+    },
+    {
+      "key": "pr8895-title_line_overflows",
+      "input": "samples/issue8665/title_line_overflows.hwpx",
+      "input_sha256": "2b30e88a11c007b166560703ed40c917ca0f9fa244795804c108ed45ee770477",
+      "previous_pdf": "pdf/issue8665/title_line_overflows-webhwp-print.pdf",
+      "previous_pdf_sha256": "ca3973b978a2176c263255f5abf4644e7999717c57aa6c4a8e9883dd03c2ccc4",
+      "previous_pdf_metadata": {
+        "Producer": "cairo 1.15.12 (http://cairographics.org)",
+        "Pages": "2",
+        "Page size": "595 x 842 pts (A4)"
+      },
+      "pdf": "pdf/issue8665/title_line_overflows-hwpx-2024.pdf",
+      "pdf_sha256": "6a4d9c305218687056b77d97f40c2798ecc98661597578c87453a87df8a24b4b",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2024",
+        "job_id": "7b439d93-cd44-4d9a-911b-7b0145d88ff5",
+        "print_result": {
+          "engine": "2024",
+          "hancom_version": "13.0.0.3901",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+          "pdf_page_count": 2,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hancom PDF 1.3.0.550",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "2",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 13538
+      },
+      "formal_path_before_canonical_name": "pdf/issue8665/title_line_overflows-2024.pdf"
+    },
+    {
+      "key": "pr8900-bar_axis_floor",
+      "input": "samples/issue8678/bar_axis_floor.hwpx",
+      "input_sha256": "952db943b46d70849c3f82ba9fe3d4b611ab246ab61018ec4cd451f15989b4d3",
+      "previous_pdf": "pdf/issue8678/bar_axis_floor-webhwp-print.pdf",
+      "previous_pdf_sha256": "7c070d64d3f15aabb8b1955ad2009c7e45117e26d625b340ad79019282e95d93",
+      "previous_pdf_metadata": {
+        "Producer": "cairo 1.15.12 (http://cairographics.org)",
+        "Pages": "1",
+        "Page size": "595 x 842 pts (A4)"
+      },
+      "pdf": "pdf/issue8678/bar_axis_floor-hwpx-2020.pdf",
+      "pdf_sha256": "2fbb02306e0e8999686b712cc1c79f83bff50d39311a89fb367ab1d23a8b194e",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2020",
+        "job_id": "92214197-4e93-44ab-a409-798ce5d3dd17",
+        "print_result": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9136",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "pdf_page_count": 1,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hwp 2020 0.0.0.0",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "1",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 246905
+      },
+      "formal_path_before_canonical_name": "pdf/issue8678/bar_axis_floor-2020.pdf"
+    },
+    {
+      "key": "pr8900-column_axis_floor",
+      "input": "samples/issue8678/column_axis_floor.hwpx",
+      "input_sha256": "aad66c6c81a1c820c420f14b1043f1ac6593e66860fb325071fa8d83376df5d2",
+      "previous_pdf": "pdf/issue8678/column_axis_floor-webhwp-print.pdf",
+      "previous_pdf_sha256": "f86b1acaf11ad912a8d324b4101de60cbc6161d328ac9e6e0be31e837c5f11d5",
+      "previous_pdf_metadata": {
+        "Producer": "cairo 1.15.12 (http://cairographics.org)",
+        "Pages": "1",
+        "Page size": "595 x 842 pts (A4)"
+      },
+      "pdf": "pdf/issue8678/column_axis_floor-hwpx-2020.pdf",
+      "pdf_sha256": "ec2e8e61964d89a2415c1e0ed22c5b65ca193de58772789774938d07e5b24ce0",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2020",
+        "job_id": "617770cf-7da6-47ea-be29-27b30c746ecd",
+        "print_result": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9136",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "pdf_page_count": 1,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hwp 2020 0.0.0.0",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "1",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 235201
+      },
+      "formal_path_before_canonical_name": "pdf/issue8678/column_axis_floor-2020.pdf"
+    },
+    {
+      "key": "pr8900-column_axis_floor_large",
+      "input": "samples/issue8678/column_axis_floor_large.hwpx",
+      "input_sha256": "d3b1f0ef997fb60cffd1bd112a691f399026dda11c6dbe215c08a9ec987965aa",
+      "previous_pdf": "pdf/issue8678/column_axis_floor_large-webhwp-print.pdf",
+      "previous_pdf_sha256": "57e5b674c23fd919303b4c6d2ccab559c9b8ff947ce6e2d06ee9f1245d646ac9",
+      "previous_pdf_metadata": {
+        "Producer": "cairo 1.15.12 (http://cairographics.org)",
+        "Pages": "1",
+        "Page size": "595 x 842 pts (A4)"
+      },
+      "pdf": "pdf/issue8678/column_axis_floor_large-hwpx-2020.pdf",
+      "pdf_sha256": "3afb095dbab90fa6b6bba65e198324c741a7aca4d0ebd0425cf8ef1431477a36",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2020",
+        "job_id": "3ac7d6cc-74a7-4eee-9b85-52d05d35169e",
+        "print_result": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9136",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "pdf_page_count": 1,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hwp 2020 0.0.0.0",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "1",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 300888
+      },
+      "formal_path_before_canonical_name": "pdf/issue8678/column_axis_floor_large-2020.pdf"
+    },
+    {
+      "key": "pr8900-column_axis_step_tall",
+      "input": "samples/issue8678/column_axis_step_tall.hwpx",
+      "input_sha256": "825be7aec4ab07af28c80b9358bb69d272dcb8bef80a5770b3370f45b3d02df3",
+      "previous_pdf": "pdf/issue8678/column_axis_step_tall-webhwp-print.pdf",
+      "previous_pdf_sha256": "0a07bb49b957f4e96a661d24035ed7faf5a88af217922cf9443f3bb6b8ee446e",
+      "previous_pdf_metadata": {
+        "Producer": "cairo 1.15.12 (http://cairographics.org)",
+        "Pages": "1",
+        "Page size": "595 x 842 pts (A4)"
+      },
+      "pdf": "pdf/issue8678/column_axis_step_tall-hwpx-2020.pdf",
+      "pdf_sha256": "a942a5fbc65f78bba87796b8983485ef0890e3961cc106bedd83044c32b60a98",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2020",
+        "job_id": "c73e4024-9fa5-4bbf-b8e4-0a595bad933d",
+        "print_result": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9136",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "pdf_page_count": 1,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hwp 2020 0.0.0.0",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "1",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 351557
+      },
+      "formal_path_before_canonical_name": "pdf/issue8678/column_axis_step_tall-2020.pdf"
+    },
+    {
+      "key": "pr8918-wingdings_pua_symbols",
+      "input": "samples/issue8680/wingdings_pua_symbols.hwpx",
+      "input_sha256": "6173d83f23aed79f162e9c07f5efe19a0590bae650c800a4fcebd49abc73ad8b",
+      "previous_pdf": "pdf/issue8680/wingdings_pua_symbols-webhwp-print.pdf",
+      "previous_pdf_sha256": "1d4ba0d3823c7b31fc7cbcf18a675572e13f33cb73f11d806d28b6a85a6640eb",
+      "previous_pdf_metadata": {
+        "Producer": "cairo 1.15.12 (http://cairographics.org)",
+        "Pages": "1",
+        "Page size": "595 x 842 pts (A4)"
+      },
+      "pdf": "pdf/issue8680/wingdings_pua_symbols-hwpx-2020.pdf",
+      "pdf_sha256": "99d96e65b8ad607e662e4408b256fd9f64920e0ccd9caa6a20c24e1e41a3a876",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2020",
+        "job_id": "85411a2a-7efa-4a99-a267-8064cb279bd8",
+        "print_result": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9136",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "pdf_page_count": 1,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hwp 2020 0.0.0.0",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "1",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 25608
+      },
+      "formal_path_before_canonical_name": "pdf/issue8680/wingdings_pua_symbols-2020.pdf"
+    },
+    {
+      "key": "pr8920-float_line_rowspan_infront_center",
+      "input": "samples/issue8690/float_line_rowspan_infront_center.hwp",
+      "input_sha256": "4e5fce692945707fef8c39b6a980016fff4a2cd91b02f7abf35b01d19fabba4b",
+      "previous_pdf": "pdf/issue8690/float_line_rowspan_infront_center-webhwp-print.pdf",
+      "previous_pdf_sha256": "4948239ac70eaf10a7dda16abc752f3cdb7bd7ffefa6c3b3e5b9afc28e6b48a0",
+      "previous_pdf_metadata": {
+        "Producer": "cairo 1.15.12 (http://cairographics.org)",
+        "Pages": "2",
+        "Page size": "595 x 842 pts (A4)"
+      },
+      "pdf": "pdf/issue8690/float_line_rowspan_infront_center-hwp-2020.pdf",
+      "pdf_sha256": "6cd25f5e58614129f9904b00fbd48c2358ce9b4bf8b61ab18a3c5925b4070b8c",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2020",
+        "job_id": "b6967f9e-fdf5-4cd0-91e8-d07865109dbd",
+        "print_result": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9136",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "pdf_page_count": 2,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hwp 2020 0.0.0.0",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "2",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 29063
+      },
+      "formal_path_before_canonical_name": "pdf/issue8690/float_line_rowspan_infront_center-2020.pdf"
+    },
+    {
+      "key": "pr8920-float_line_rowspan_infront_top",
+      "input": "samples/issue8690/float_line_rowspan_infront_top.hwp",
+      "input_sha256": "6b75acfc0deab5f1c55408b8143c7f2b936cd716079225b9392af5610ad38de9",
+      "previous_pdf": "pdf/issue8690/float_line_rowspan_infront_top-webhwp-print.pdf",
+      "previous_pdf_sha256": "d82acf2ceb783e778737f9a86d39ace4e991321d5229f1a5a87e58a957963d9d",
+      "previous_pdf_metadata": {
+        "Producer": "cairo 1.15.12 (http://cairographics.org)",
+        "Pages": "2",
+        "Page size": "595 x 842 pts (A4)"
+      },
+      "pdf": "pdf/issue8690/float_line_rowspan_infront_top-hwp-2020.pdf",
+      "pdf_sha256": "b63473cdc359fb90d5b423cac252feec6fbb0c4df7d8e7c13e65e4d98857cbe1",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2020",
+        "job_id": "8ac4dc8b-3cdc-48b9-a22d-49b09593f5f9",
+        "print_result": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9136",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "pdf_page_count": 2,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hwp 2020 0.0.0.0",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "2",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 29106
+      },
+      "formal_path_before_canonical_name": "pdf/issue8690/float_line_rowspan_infront_top-2020.pdf"
+    },
+    {
+      "key": "pr8920-float_line_valign_center",
+      "input": "samples/issue8690/float_line_valign_center.hwp",
+      "input_sha256": "52fd73d131678d8ff020dbe46e0985f6fff616e26ed025b8a6f1d46af92b8d67",
+      "previous_pdf": "pdf/issue8690/float_line_valign_center-webhwp-print.pdf",
+      "previous_pdf_sha256": "2f31e0af6c043737a3e3b7270f88b2d3e1aaef4540346fb601b6c22eb0cfa593",
+      "previous_pdf_metadata": {
+        "Producer": "cairo 1.15.12 (http://cairographics.org)",
+        "Pages": "2",
+        "Page size": "595 x 842 pts (A4)"
+      },
+      "pdf": "pdf/issue8690/float_line_valign_center-hwp-2020.pdf",
+      "pdf_sha256": "5085071ec9c6c14f6f40b53cc62ac5169c75d9b0e39f5111f057649219239d0d",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2020",
+        "job_id": "3515b867-96c5-4d6c-a610-4792939f1522",
+        "print_result": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9136",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "pdf_page_count": 2,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hwp 2020 0.0.0.0",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "2",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 32640
+      },
+      "formal_path_before_canonical_name": "pdf/issue8690/float_line_valign_center-2020.pdf"
+    },
+    {
+      "key": "pr8920-float_line_valign_top",
+      "input": "samples/issue8690/float_line_valign_top.hwp",
+      "input_sha256": "76aab9b56afd2b0ccfeeab8184474219b84d34b4ac247acc4cca0afec0e359d4",
+      "previous_pdf": "pdf/issue8690/float_line_valign_top-webhwp-print.pdf",
+      "previous_pdf_sha256": "cd6db76a97ae8e4592ad5eb3ddc1fcc01237006e2c5952f0454f12314f6276f2",
+      "previous_pdf_metadata": {
+        "Producer": "cairo 1.15.12 (http://cairographics.org)",
+        "Pages": "2",
+        "Page size": "595 x 842 pts (A4)"
+      },
+      "pdf": "pdf/issue8690/float_line_valign_top-hwp-2020.pdf",
+      "pdf_sha256": "e18e2e917c8dff0fdd4703d461c11ce627eb48a752147a12fa0aaf91036fe556",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2020",
+        "job_id": "3612e8b5-c6d2-442b-b8a8-13dc02b756a7",
+        "print_result": {
+          "engine": "2020",
+          "hancom_version": "11.0.0.9136",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+          "pdf_page_count": 2,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hwp 2020 0.0.0.0",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "2",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 32743
+      },
+      "formal_path_before_canonical_name": "pdf/issue8690/float_line_valign_top-2020.pdf"
+    },
+    {
+      "key": "short-empty",
+      "input": "samples/issue8573/picture-cell-short-empty.hwpx",
+      "input_sha256": "21aeec31c8548de437bd2a1bbcd743c9b859fd1ed21ad6c1c25d7e2f8e014ea2",
+      "previous_pdf": "pdf/issue8573/picture-cell-short-empty-2020.pdf",
+      "previous_pdf_sha256": "bf14ce006933ee6bb2e87330644a956d3445a37d5fee4c1f23b8b314a917ea25",
+      "previous_pdf_metadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "595 x 841 pts (A4)"
+      },
+      "pdf": "pdf/issue8573/picture-cell-short-empty-hwpx-2024.pdf",
+      "pdf_sha256": "614596ac63e865caa84ef54cf7ceb029e555e46432c5fc1b42893e9a4c9e655c",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2024",
+        "job_id": "b83756d6-1352-49ff-bf22-ce3167054391",
+        "print_result": {
+          "engine": "2024",
+          "hancom_version": "13.0.0.3901",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+          "pdf_page_count": 1,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hancom PDF 1.3.0.550",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "1",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 15220
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/picture-cell-short-empty-2024.pdf"
+    },
+    {
+      "key": "short-spaces",
+      "input": "samples/issue8573/picture-cell-short-spaces.hwpx",
+      "input_sha256": "3a87ba2d6204b94bfab9eed8cd603b1f2bf90b7ee523bcae6f08e2d38afda416",
+      "previous_pdf": "pdf/issue8573/picture-cell-short-spaces-2020.pdf",
+      "previous_pdf_sha256": "d04ad1cc28703809f5a27b86ebab6207c75a928291ea5ece72ce847fd65dee5f",
+      "previous_pdf_metadata": {
+        "Creator": "Hwp 2020 34.34816.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "595 x 841 pts (A4)"
+      },
+      "pdf": "pdf/issue8573/picture-cell-short-spaces-hwpx-2024.pdf",
+      "pdf_sha256": "a9e8972b356ed052c2df0d00ff7f3ee6b7668db738759c157e9a24b30f35823d",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2024",
+        "job_id": "6c93462a-0b42-4fa3-b74d-5c1cc3118505",
+        "print_result": {
+          "engine": "2024",
+          "hancom_version": "13.0.0.3901",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+          "pdf_page_count": 1,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hancom PDF 1.3.0.550",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "1",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 15234
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/picture-cell-short-spaces-2024.pdf"
+    },
+    {
+      "key": "short-text",
+      "input": "samples/issue8573/picture-cell-short-text.hwpx",
+      "input_sha256": "7a4512007260e4e9deba07ebc4b7a11f7ff68e9f83abc3a988be53c6771bdcb7",
+      "previous_pdf": "pdf/issue8573/picture-cell-short-text-2020.pdf",
+      "previous_pdf_sha256": "0ef515fd01ff10410e0051cd2e9209d6d72224840213fb25b0a4ed07dba22db1",
+      "previous_pdf_metadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1",
+        "Page size": "595 x 841 pts (A4)"
+      },
+      "pdf": "pdf/issue8573/picture-cell-short-text-hwpx-2024.pdf",
+      "pdf_sha256": "e0a7b19ed5d28cc9e5687285fdd5c4836cfa5df5692e793b65eb20705c162b2d",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2024",
+        "job_id": "4b55c9bf-467d-4c79-9c3f-b4dffbe3e7af",
+        "print_result": {
+          "engine": "2024",
+          "hancom_version": "13.0.0.3901",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+          "pdf_page_count": 1,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hancom PDF 1.3.0.550",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "1",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 15449
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/picture-cell-short-text-2024.pdf"
+    },
+    {
+      "key": "page-boundary-empty",
+      "input": "samples/issue8573/picture-cell-page-boundary-empty.hwpx",
+      "input_sha256": "f4358c4534c1a37798a77b1fd9ac0b0610481d545e89fdc6d4db5448f63af39d",
+      "previous_pdf": "pdf/issue8573/picture-cell-page-boundary-empty-2020.pdf",
+      "previous_pdf_sha256": "888c7a664fbbb82965f02cc1ae08e3967f5a46580d50b336e9150e6b2f1874f1",
+      "previous_pdf_metadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "2",
+        "Page size": "595 x 841 pts (A4)"
+      },
+      "pdf": "pdf/issue8573/picture-cell-page-boundary-empty-hwpx-2024.pdf",
+      "pdf_sha256": "9ac8409b6935303944c5d36333af4d99049a7ed3936081dc4cc4a2e2ea519abd",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2024",
+        "job_id": "4efe28a5-44ac-4052-b355-b1a96ee9490d",
+        "print_result": {
+          "engine": "2024",
+          "hancom_version": "13.0.0.3901",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+          "pdf_page_count": 2,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hancom PDF 1.3.0.550",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "2",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 16339
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/picture-cell-page-boundary-empty-2024.pdf"
+    },
+    {
+      "key": "page-boundary-spaces",
+      "input": "samples/issue8573/picture-cell-page-boundary-spaces.hwpx",
+      "input_sha256": "8c40182058ba97216dcb2678c39eee96ef48cf140362447f9e465b5b11df1850",
+      "previous_pdf": "pdf/issue8573/picture-cell-page-boundary-spaces-2020.pdf",
+      "previous_pdf_sha256": "fd0a7d623c0708a567806109da697dc2e51800e732215f074376a53154086d9c",
+      "previous_pdf_metadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "2",
+        "Page size": "595 x 841 pts (A4)"
+      },
+      "pdf": "pdf/issue8573/picture-cell-page-boundary-spaces-hwpx-2024.pdf",
+      "pdf_sha256": "2bff84c3969c4cddd8e64873dcf6e8d69198ecb43c751b907b32675ca1730c0e",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2024",
+        "job_id": "6b35b6b7-9f78-4f90-b869-0bd0bcfdb2b1",
+        "print_result": {
+          "engine": "2024",
+          "hancom_version": "13.0.0.3901",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+          "pdf_page_count": 2,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hancom PDF 1.3.0.550",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "2",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 16357
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/picture-cell-page-boundary-spaces-2024.pdf"
+    },
+    {
+      "key": "page-boundary-text",
+      "input": "samples/issue8573/picture-cell-page-boundary-text.hwpx",
+      "input_sha256": "cafac0e88d702a1107e85c4dc35e171cdf06be8e40edf25315df94ace6ddb0cb",
+      "previous_pdf": "pdf/issue8573/picture-cell-page-boundary-text-2020.pdf",
+      "previous_pdf_sha256": "e00b64ee06e38da4858be8b101784e3422c40ba26e91ee928e82eff42fe02adc",
+      "previous_pdf_metadata": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "2",
+        "Page size": "595 x 841 pts (A4)"
+      },
+      "pdf": "pdf/issue8573/picture-cell-page-boundary-text-hwpx-2024.pdf",
+      "pdf_sha256": "baba21dff9905ffffc30a4f772cf81632907df0b7affcffb74bb746a0c78533d",
+      "origin": {
+        "kind": "MCP Print",
+        "engine": "2024",
+        "job_id": "89894552-7b15-4f44-87ba-3f5ccaaa0527",
+        "print_result": {
+          "engine": "2024",
+          "hancom_version": "13.0.0.3901",
+          "pdf_print_method": 0,
+          "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+          "pdf_page_count": 2,
+          "preprocess": null
+        },
+        "metadata": {
+          "Creator": "Hancom PDF 1.3.0.550",
+          "Producer": "Hancom PDF 1.3.0.550",
+          "Pages": "2",
+          "Page size": "595 x 841 pts (A4)"
+        },
+        "bytes": 16570
+      },
+      "formal_path_before_canonical_name": "pdf/issue8573/picture-cell-page-boundary-text-2024.pdf"
+    }
+  ]
+}

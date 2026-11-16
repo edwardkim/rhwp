@@ -1,0 +1,61 @@
+{
+  "status": "unresolved_native_svg_program_preparation",
+  "source_product_commit": "2749e491e843ec851de12467751ec200ab551014",
+  "results": [
+    {
+      "source": "2749e491e843ec851de12467751ec200ab551014",
+      "rasterizer": "png",
+      "backend": "native",
+      "exit": 0,
+      "seconds": 29.086,
+      "pages": 50,
+      "minimum": "99.29",
+      "below98": []
+    },
+    {
+      "source": "2749e491e843ec851de12467751ec200ab551014",
+      "rasterizer": "png",
+      "backend": "wasm",
+      "exit": 0,
+      "seconds": 61.494,
+      "pages": 50,
+      "minimum": "99.29",
+      "below98": []
+    },
+    {
+      "source": "2749e491e843ec851de12467751ec200ab551014",
+      "rasterizer": "svg",
+      "backend": "native",
+      "exit": 0,
+      "seconds": 187.235,
+      "pages": 50,
+      "minimum": "94.37",
+      "below98": [
+        {
+          "page": "7",
+          "tolerant_content_match_percent": "94.37",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "94.37",
+          "silhouette_boundary_reconciled_pixels": "0"
+        },
+        {
+          "page": "28",
+          "tolerant_content_match_percent": "97.19",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "97.19",
+          "silhouette_boundary_reconciled_pixels": "3"
+        }
+      ]
+    }
+  ],
+  "paragraph": 78,
+  "glyphs": [
+    "U+300C",
+    "U+300D"
+  ],
+  "native_png_advance_px": 16,
+  "native_svg_advance_px": 8,
+  "same_explicit_environment_focus_did_not_fix": true,
+  "basis": "동일 입력의 실제 출력 tree와 SVG를 직접 대조",
+  "expected_behavior": "글꼴 프로그램의 실제 전진을 준비한 PNG와 같은 공급의 SVG 조판이 일치해야 한다. 원본·PDF·문턱·검사값은 변경하지 않는다."
+}

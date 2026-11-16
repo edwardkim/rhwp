@@ -145,9 +145,9 @@ pub(crate) fn export_sixel(args: &[String]) -> i32 {
                 }
             };
             let name = if single_page {
-                format!("{stem}.six")
+                super::output_file_name(stem, ".six")
             } else {
-                format!("{stem}_{:03}.six", page + 1)
+                super::output_file_name(stem, &format!("_{:03}.six", page + 1))
             };
             let path = directory.join(name);
             if let Err(error) = std::fs::write(&path, bytes) {

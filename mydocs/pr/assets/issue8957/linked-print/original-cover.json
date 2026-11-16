@@ -1,0 +1,24 @@
+{
+  "input_sha256": "3395e19bebea8b6689f383df1f4ea1ddb253dee91c4320392cc40e90e2e4f191",
+  "source": "5cc77a0da8e1e24afc3a810a4967f7876f890bb4",
+  "results": [
+    {
+      "backend": "native",
+      "original_page_count": 763,
+      "compared_pages": [
+        1
+      ],
+      "same_as_cover_fixture": true,
+      "png_sha256": "e93b4f4638dae72f998beb263c12558a758133cba1be0d91ca592d4ef1c85eae"
+    },
+    {
+      "backend": "wasm",
+      "original_page_count": 763,
+      "compared_pages": [
+        1
+      ],
+      "same_as_cover_fixture": true,
+      "png_sha256": "45158538c3b5776ba792abb75e01b808d4d90b01a5660090d470f618be09384c"
+    }
+  ]
+}

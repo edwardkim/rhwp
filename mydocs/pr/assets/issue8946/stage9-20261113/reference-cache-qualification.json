@@ -1,0 +1,10 @@
+{
+  "status": "passed",
+  "pages": 2,
+  "same_source_native_binary": true,
+  "product_png_identical": true,
+  "independent_pdf_png_identical": true,
+  "tsv_byte_identical": true,
+  "initial_failures": "Private wrapper lacked multiprocessing main guard and saved receipts in removed chunk directories. Fixed before final baseline use; both pilot failure logs retained.",
+  "wrapper_sha256": "7b61a7c3d7bb07eb9550544996f22251555df0aff8ba601c9a92761691d23e6e"
+}

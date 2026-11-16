@@ -1,0 +1,35 @@
+{
+  "job_id": "c3b442f7-0bea-4d55-a7ea-93d6eec3c2bf",
+  "status": "succeeded",
+  "completed_at": "2026-11-11T14:48:52.655Z",
+  "result": {
+    "job_id": "c3b442f7-0bea-4d55-a7ea-93d6eec3c2bf",
+    "status": "success",
+    "engine": "2020",
+    "engine_profile": "2020",
+    "hancom_version": "11.0.0.9136",
+    "backend": "hwp-managed-direct-dll-host",
+    "input_format": "hwpx",
+    "format": "pdf",
+    "bytes": 42564,
+    "pdf_page_count": 4,
+    "logical_page_count": null,
+    "elapsed_ms": 17714,
+    "worker_elapsed_ms": 15624,
+    "worker_bits": 32,
+    "font_scope": {
+      "mode": "session0",
+      "status": "verified",
+      "profile_source": "protected_config",
+      "session_id": 0,
+      "mapped_font_count": 2,
+      "registered_font_count": 2,
+      "failed_font_count": 0,
+      "parent_visibility": "verified",
+      "child_visibility": "verified"
+    },
+    "input_preprocess": "none",
+    "pdf_print_method": 0,
+    "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+  }
+}

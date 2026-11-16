@@ -1,0 +1,218 @@
+[
+  {
+    "recordId": "page:349:run:4:char:2",
+    "source": {
+      "status": "complete",
+      "sectionIndex": 0,
+      "paragraphIndex": 12662,
+      "nestedPath": [],
+      "runIndex": 4,
+      "charOffset": 13,
+      "character": "/",
+      "codePoint": 47,
+      "charShapeId": 29
+    },
+    "document": {
+      "languageSlot": 0,
+      "inheritedLanguageSlot": 0,
+      "face": "강낭콩",
+      "altType": 2,
+      "embedded": false,
+      "substFont": null
+    },
+    "layoutName": {
+      "requestedFace": "강낭콩",
+      "normalizedFace": "강낭콩",
+      "cssFamilyChain": [
+        "강낭콩"
+      ],
+      "steps": [
+        {
+          "kind": "fontEnvironment",
+          "input": "강낭콩",
+          "output": "강낭콩",
+          "reason": "declared-program-f384a80f31a6454e988bc4a1ee3a0f96c799f674020d1cb9d6f6175b607304c6"
+        }
+      ]
+    },
+    "layoutMetric": {
+      "requestedFace": "강낭콩",
+      "aliasResolvedFace": "강낭콩",
+      "matchKind": "none",
+      "metricEntry": null,
+      "characterMatch": "notApplicable",
+      "widthSource": "supplementalBackendMeasured",
+      "baseAdvanceHwpunit": 742,
+      "transforms": [],
+      "finalAdvanceHwpunit": 742
+    },
+    "paint": {
+      "native": {
+        "status": "unsupported",
+        "certainty": "unsupported",
+        "requested": "강낭콩",
+        "candidates": [],
+        "resolved": null,
+        "source": null,
+        "capabilities": [],
+        "failures": [
+          "nativeSkiaFeatureUnavailable"
+        ]
+      },
+      "canvas2d": {
+        "status": "unsupported",
+        "certainty": "unsupported",
+        "requested": "강낭콩",
+        "candidates": [],
+        "resolved": null,
+        "source": null,
+        "capabilities": [],
+        "failures": [
+          "studioSnapshotRequired"
+        ]
+      },
+      "canvaskit": {
+        "status": "unsupported",
+        "certainty": "unsupported",
+        "requested": "강낭콩",
+        "candidates": [],
+        "resolved": null,
+        "source": null,
+        "capabilities": [],
+        "failures": [
+          "studioSnapshotRequired"
+        ]
+      }
+    },
+    "provenance": [
+      {
+        "candidateId": "candidate.28970f1984ed0e4ce06d",
+        "ruleId": "rule.rust-measurement.28970f1984ed0e4ce06d",
+        "evidenceAnchor": "mydocs/tech/investigations/issue-4939/font_rule_candidates.json#candidate.28970f1984ed0e4ce06d",
+        "sourceOwner": "rust-measurement",
+        "relationType": "unknown",
+        "evidenceStatus": "inferred",
+        "knownLimitations": [
+          "The predicate selects advances; it does not prove glyph identity.",
+          "W1 source digest predates the Stage 2 trace-only refactor; rerun the collector before promoting evidence status."
+        ],
+        "reason": "ledgerSourceDrift"
+      }
+    ],
+    "oracle": {
+      "status": "declared",
+      "profileId": "declared-program-f384a80f31a6454e988bc4a1ee3a0f96c799f674020d1cb9d6f6175b607304c6",
+      "knownLimitations": [
+        "Caller-declared environment; backend font availability and PDF equivalence are not verified."
+      ]
+    }
+  },
+  {
+    "recordId": "page:349:run:6:char:7",
+    "source": {
+      "status": "complete",
+      "sectionIndex": 0,
+      "paragraphIndex": 12662,
+      "nestedPath": [],
+      "runIndex": 6,
+      "charOffset": 28,
+      "character": "?",
+      "codePoint": 63,
+      "charShapeId": 29
+    },
+    "document": {
+      "languageSlot": 0,
+      "inheritedLanguageSlot": 0,
+      "face": "강낭콩",
+      "altType": 2,
+      "embedded": false,
+      "substFont": null
+    },
+    "layoutName": {
+      "requestedFace": "강낭콩",
+      "normalizedFace": "강낭콩",
+      "cssFamilyChain": [
+        "강낭콩"
+      ],
+      "steps": [
+        {
+          "kind": "fontEnvironment",
+          "input": "강낭콩",
+          "output": "강낭콩",
+          "reason": "declared-program-f384a80f31a6454e988bc4a1ee3a0f96c799f674020d1cb9d6f6175b607304c6"
+        }
+      ]
+    },
+    "layoutMetric": {
+      "requestedFace": "강낭콩",
+      "aliasResolvedFace": "강낭콩",
+      "matchKind": "none",
+      "metricEntry": null,
+      "characterMatch": "notApplicable",
+      "widthSource": "supplementalBackendMeasured",
+      "baseAdvanceHwpunit": 1075,
+      "transforms": [],
+      "finalAdvanceHwpunit": 1075
+    },
+    "paint": {
+      "native": {
+        "status": "unsupported",
+        "certainty": "unsupported",
+        "requested": "강낭콩",
+        "candidates": [],
+        "resolved": null,
+        "source": null,
+        "capabilities": [],
+        "failures": [
+          "nativeSkiaFeatureUnavailable"
+        ]
+      },
+      "canvas2d": {
+        "status": "unsupported",
+        "certainty": "unsupported",
+        "requested": "강낭콩",
+        "candidates": [],
+        "resolved": null,
+        "source": null,
+        "capabilities": [],
+        "failures": [
+          "studioSnapshotRequired"
+        ]
+      },
+      "canvaskit": {
+        "status": "unsupported",
+        "certainty": "unsupported",
+        "requested": "강낭콩",
+        "candidates": [],
+        "resolved": null,
+        "source": null,
+        "capabilities": [],
+        "failures": [
+          "studioSnapshotRequired"
+        ]
+      }
+    },
+    "provenance": [
+      {
+        "candidateId": "candidate.28970f1984ed0e4ce06d",
+        "ruleId": "rule.rust-measurement.28970f1984ed0e4ce06d",
+        "evidenceAnchor": "mydocs/tech/investigations/issue-4939/font_rule_candidates.json#candidate.28970f1984ed0e4ce06d",
+        "sourceOwner": "rust-measurement",
+        "relationType": "unknown",
+        "evidenceStatus": "inferred",
+        "knownLimitations": [
+          "The predicate selects advances; it does not prove glyph identity.",
+          "W1 source digest predates the Stage 2 trace-only refactor; rerun the collector before promoting evidence status."
+        ],
+        "reason": "ledgerSourceDrift"
+      }
+    ],
+    "oracle": {
+      "status": "declared",
+      "profileId": "declared-program-f384a80f31a6454e988bc4a1ee3a0f96c799f674020d1cb9d6f6175b607304c6",
+      "knownLimitations": [
+        "Caller-declared environment; backend font availability and PDF equivalence are not verified."
+      ]
+    }
+  }
+]

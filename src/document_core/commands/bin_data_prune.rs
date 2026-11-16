@@ -33,6 +33,7 @@
 //! | `Picture.image_attr.bin_data_id` | `Control::Picture` · `ShapeObject::Picture` |
 //! | `DrawingObjAttr.fill.image.bin_data_id` | 모든 도형의 채우기 |
 //! | `BorderFill.fill.image.bin_data_id` | **DocInfo** — 문단 밖이라 항상 참조로 센다 |
+//! | `Bullet::image_reference()` | **DocInfo** 그림 글머리표 — 같은 이유로 항상 참조로 센다 |
 //! | `OleShape.bin_data_id` | OLE 개체 (`u32`) |
 //!
 //! `BorderFill` 은 문단이 아니라 DocInfo 에 있고 `border_fill_id` 로 참조되므로, 어떤
@@ -188,16 +189,27 @@ fn visit_bin_data_refs(doc: &mut Document, f: &mut dyn FnMut(&mut u16)) {
             f(&mut image.bin_data_id);
         }
     }
+    // 그림 글머리표도 DocInfo 의 1 기준 순번 참조다. 읽는 자리(`image_reference`)와 같은
+    // 필드에 되돌려 쓴다 — 순번은 줄기만 하므로 `u8` 자리를 넘지 않는다.
+    for bullet in &mut doc.doc_info.bullets {
+        let Some(mut id) = bullet.image_reference() else {
+            continue;
+        };
+        f(&mut id);
+        if bullet.raw_para_head.is_none() {
+            bullet.image_data[3] = u8::try_from(id).unwrap_or(bullet.image_data[3]);
+        } else {
+            bullet.image_bullet = i32::from(id);
+        }
+    }
 }
 
-/// 산출 문서가 참조하지 않는 `BinData` 를 버리고 남은 참조를 옮긴다.
+/// 참조처에서 쓰이는 `bin_data_content` 위치(0 기준)를 모은다.
 ///
-/// 참조가 없거나 버릴 것이 없으면 문서를 건드리지 않는다.
-pub(crate) fn prune_unreferenced_bin_data(doc: &mut Document) -> BinDataPruneReport {
+/// 내장 글꼴이 storage id 로 쓰는 항목과 `keep_storage` 에 든 storage id 의 항목도
+/// 쓰이는 것으로 센다.
+fn live_positions(doc: &mut Document, keep_storage: &BTreeSet<u16>) -> BTreeSet<usize> {
     let before = doc.bin_data_content.len();
-    if before == 0 {
-        return BinDataPruneReport::default();
-    }
 
     // 1. 살아 있는 1 기준 순번을 모은다. 범위 밖 값(HWPX 차트 sparse id 등)은
     //    인덱스 의미가 아니므로 건드리지 않고 그대로 둔다.
@@ -210,7 +222,7 @@ pub(crate) fn prune_unreferenced_bin_data(doc: &mut Document) -> BinDataPruneRep
 
     // 1b. 내장 글꼴이 쓰는 storage id 를 가진 항목도 남긴다 — 순번 축이 아니므로
     //     참조값은 건드리지 않고 보존 대상에만 더한다.
-    let font_storage: BTreeSet<u16> = doc
+    let mut kept_storage: BTreeSet<u16> = doc
         .doc_info
         .font_faces
         .iter()
@@ -227,13 +239,49 @@ pub(crate) fn prune_unreferenced_bin_data(doc: &mut Document) -> BinDataPruneRep
         })
         .flatten()
         .collect();
-    if !font_storage.is_empty() {
+    kept_storage.extend(keep_storage);
+    if !kept_storage.is_empty() {
         for (index, content) in doc.bin_data_content.iter().enumerate() {
-            if font_storage.contains(&content.id) {
+            if kept_storage.contains(&content.id) {
                 referenced.insert(index);
             }
         }
     }
+    referenced
+}
+
+/// 어디서도 참조하지 않는 `BinData` 의 storage id 를 모은다.
+///
+/// [#8941] 불러온 원본이 처음부터 참조 없이 지니고 있던 항목을 가려 두려고 쓴다 —
+/// 편집으로 참조가 끊긴 항목과 달리 이것들은 저장할 때도 그대로 옮긴다.
+pub(crate) fn unreferenced_bin_data_storage_ids(doc: &mut Document) -> BTreeSet<u16> {
+    let live = live_positions(doc, &BTreeSet::new());
+    doc.bin_data_content
+        .iter()
+        .enumerate()
+        .filter(|(index, _)| !live.contains(index))
+        .map(|(_, content)| content.id)
+        .collect()
+}
+
+/// 산출 문서가 참조하지 않는 `BinData` 를 버리고 남은 참조를 옮긴다.
+///
+/// 참조가 없거나 버릴 것이 없으면 문서를 건드리지 않는다.
+pub(crate) fn prune_unreferenced_bin_data(doc: &mut Document) -> BinDataPruneReport {
+    prune_unreferenced_bin_data_except(doc, &BTreeSet::new())
+}
+
+/// [`prune_unreferenced_bin_data`] 와 같되 `keep_storage` 의 storage id 항목은 남긴다.
+pub(crate) fn prune_unreferenced_bin_data_except(
+    doc: &mut Document,
+    keep_storage: &BTreeSet<u16>,
+) -> BinDataPruneReport {
+    let before = doc.bin_data_content.len();
+    if before == 0 {
+        return BinDataPruneReport::default();
+    }
+
+    let referenced = live_positions(doc, keep_storage);
 
     if referenced.len() == before {
         return BinDataPruneReport {

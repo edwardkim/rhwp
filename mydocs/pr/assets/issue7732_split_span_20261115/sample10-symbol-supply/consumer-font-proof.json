@@ -1,0 +1,36 @@
+{
+  "original_file_sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+  "actual_pua_suppliers": [
+    [
+      {
+        "family": "HY Junggothic,Haansoft Batang",
+        "literalFigureSpace": false,
+        "selectedFamily": "Haansoft Batang",
+        "weight": 400,
+        "style": "normal",
+        "sha256": "e391734bd989a8c45fe671ebcf3a4960985a0dfb1c5638209b55a3dd3f5517df",
+        "sourceSha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+      },
+      {
+        "family": "Myeongjo",
+        "literalFigureSpace": false,
+        "selectedFamily": "Haansoft Batang",
+        "weight": 400,
+        "style": "normal",
+        "sha256": "e391734bd989a8c45fe671ebcf3a4960985a0dfb1c5638209b55a3dd3f5517df",
+        "sourceSha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+      },
+      {
+        "family": "Myeongjo",
+        "literalFigureSpace": false,
+        "selectedFamily": "Haansoft Batang",
+        "weight": 400,
+        "style": "normal",
+        "sha256": "e391734bd989a8c45fe671ebcf3a4960985a0dfb1c5638209b55a3dd3f5517df",
+        "sourceSha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+      }
+    ]
+  ],
+  "normalization": "브라우저 적재본은 cmap terminal .notdef와 내장 bitmap 제거를 거쳐 원본 파일 SHA와 다르다. 원본 신원과 소비자 프로그램 신원을 별도로 기록한다.",
+  "private_binary_committed": false
+}

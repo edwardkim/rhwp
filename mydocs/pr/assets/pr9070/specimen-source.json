@@ -1,0 +1,14 @@
+{
+  "input": "samples/pr9070/hwp3-linechar-specimen.hwp",
+  "sha256": "a20917ea3e4b0d27f3b041078dfae3a2050d0606058bada6fe48fc6a876061a2",
+  "bytes": 4781,
+  "origin": "locally authored synthetic HWP3 based on format 3.0 sections3.2/3.5/4/5/6",
+  "sourceCharCodes": "same 77 line codes and 7 symbols as issue8912; source names/geometry are independent",
+  "font": "HCR Batang",
+  "fontSizePt": 12,
+  "characterRatio": 100,
+  "paragraphLineSpacingPercent": 160,
+  "lineHeightHunit": 300,
+  "lineAdvanceHunit": 480,
+  "rows": 10
+}

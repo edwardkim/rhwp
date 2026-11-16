@@ -1,0 +1,137 @@
+{
+  "head": "3f7e4340ae3038ea77917ff0f45f816e8342770e",
+  "base": "53da4d2da28ae0cacf8feac3a989cc6a69fb2622",
+  "minimum_font_environment": true,
+  "full_nextest_summary": "Summary [ 461.749s] 13565 tests run: 13565 passed (2 slow), 45 skipped",
+  "steps": [
+    {
+      "name": "suite-prepare",
+      "exit_code": 0,
+      "seconds": 4.578,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/canvaskit-common-rust-gates/suite-prepare.log",
+      "log_sha256": "05733f33ea7d4b3f59920510764583e91517a54643df794e8edcf3d344ff7325"
+    },
+    {
+      "name": "undo-original",
+      "exit_code": 0,
+      "seconds": 201.958,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/canvaskit-common-rust-gates/undo-original.log",
+      "log_sha256": "149753fd98a518185babd636fe7a6a6274824fa1a2fb9193d32a25e8dcc87449"
+    },
+    {
+      "name": "full-nextest",
+      "exit_code": 0,
+      "seconds": 1263.13,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/canvaskit-common-rust-gates/full-nextest.log",
+      "log_sha256": "6a2caef4392e811bdad202dd6a8f5ab23ffd38df97fe37ad0b4d58bdce0d46f6"
+    },
+    {
+      "name": "focused-note",
+      "exit_code": 0,
+      "seconds": 192.497,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/canvaskit-common-rust-gates/focused-note.log",
+      "log_sha256": "77f049fbd715964831b1b9afa0eade46716fc8d7731d0aac997c39c56fa3bd61"
+    },
+    {
+      "name": "fmt",
+      "exit_code": 0,
+      "seconds": 14.051,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/canvaskit-common-rust-gates/fmt.log",
+      "log_sha256": "47c366c1de05af714b829770fb46f95ef1d150ebccf531be807d7a6a52e74383"
+    },
+    {
+      "name": "native-clippy",
+      "exit_code": 0,
+      "seconds": 24.472,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/canvaskit-common-rust-gates/native-clippy.log",
+      "log_sha256": "a4a1ab13942f34a2202294494291dbf4776bc7fe0cb45e8fc2f937d3d3cadf57"
+    },
+    {
+      "name": "wasm-clippy",
+      "exit_code": 0,
+      "seconds": 21.841,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/canvaskit-common-rust-gates/wasm-clippy.log",
+      "log_sha256": "a8e9e090191eb96f2d458ce227c044a1a6a2cb7de22419586ab2cfd4ff3c2a01"
+    },
+    {
+      "name": "workspace-build",
+      "exit_code": 0,
+      "seconds": 26.111,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/canvaskit-common-rust-gates/workspace-build.log",
+      "log_sha256": "f3a6efb2ad2c6abd7d90f0ad305fb0b016f32374907d73e26de6a6e3ef340b48"
+    },
+    {
+      "name": "all-target-clippy",
+      "exit_code": 0,
+      "seconds": 35.32,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/canvaskit-common-rust-gates/all-target-clippy.log",
+      "log_sha256": "213b24c2b47e59569ef8d5e71f6874a78cdc3950097c502168eb78c1e9630d49"
+    },
+    {
+      "name": "suite-manifest",
+      "exit_code": 0,
+      "seconds": 1.478,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/canvaskit-common-rust-gates/suite-manifest.log",
+      "log_sha256": "08c6c483e4d4f2a4c06610ffcbc29367e3a46a136693792bf98e6d58bd9c3fdf"
+    },
+    {
+      "name": "unit-tier",
+      "exit_code": 0,
+      "seconds": 15.401,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/canvaskit-common-rust-gates/unit-tier.log",
+      "log_sha256": "e05cb8cc895e0cb8835035cfb859b4257e659cf027965eee04be52520475d0d1"
+    },
+    {
+      "name": "native-skia-lib",
+      "exit_code": 0,
+      "seconds": 206.22,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/canvaskit-common-rust-gates/native-skia-lib.log",
+      "log_sha256": "a7b0734227f8d35611ee0770e5754fdf90ea86f8faf1f4d1a309368ef9592be8"
+    },
+    {
+      "name": "native-skia-placeholder",
+      "exit_code": 0,
+      "seconds": 18.218,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/canvaskit-common-rust-gates/native-skia-placeholder.log",
+      "log_sha256": "217b0473a921be8ee6698422c78b832f202c1de6b67b95a795b06b2459df0212"
+    },
+    {
+      "name": "native-skia-p37",
+      "exit_code": 0,
+      "seconds": 13.738,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/canvaskit-common-rust-gates/native-skia-p37.log",
+      "log_sha256": "559f186cb82204579dc0f33dfd510d91f2c396628a85b35420259daeccf575ed"
+    }
+  ],
+  "summaries": {
+    "suite-prepare": [],
+    "undo-original": [
+      "Summary [   0.021s] 1 test run: 1 passed, 3989 skipped"
+    ],
+    "full-nextest": [
+      "Summary [ 461.749s] 13565 tests run: 13565 passed (2 slow), 45 skipped"
+    ],
+    "focused-note": [
+      "Summary [   2.297s] 2 tests run: 2 passed, 346 skipped"
+    ],
+    "fmt": [],
+    "native-clippy": [],
+    "wasm-clippy": [],
+    "workspace-build": [],
+    "all-target-clippy": [],
+    "suite-manifest": [],
+    "unit-tier": [],
+    "native-skia-lib": [
+      "test result: ok. 3852 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 11.46s",
+      "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+    ],
+    "native-skia-placeholder": [
+      "Summary [   2.415s] 2 tests run: 2 passed, 353 skipped"
+    ],
+    "native-skia-p37": [
+      "Summary [   2.263s] 36 tests run: 36 passed, 297 skipped"
+    ]
+  }
+}

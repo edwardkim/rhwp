@@ -1,6 +1,7 @@
 #ifndef RHWP_WINDOWS_PRODUCER_READY_EVENTS_H_
 #define RHWP_WINDOWS_PRODUCER_READY_EVENTS_H_
 #include "../common/producer_ready.h"
+#include "MessengerLifetime.h"
 #include <flutter/event_channel.h>
 #include <flutter/event_stream_handler_functions.h>
 #include <flutter/standard_method_codec.h>
@@ -16,7 +17,8 @@ class ProducerReadyEvents : public std::enable_shared_from_this<ProducerReadyEve
   using Map = flutter::EncodableMap;
   static constexpr UINT kReady = WM_APP + 0x524;
  public:
-  explicit ProducerReadyEvents(flutter::BinaryMessenger* messenger) {
+  ProducerReadyEvents(flutter::BinaryMessenger* messenger, FlutterDesktopMessengerRef raw_messenger)
+      : messenger_(raw_messenger) {
     WNDCLASSW cls{};
     cls.lpfnWndProc = procedure; cls.hInstance = GetModuleHandleW(nullptr);
     cls.lpszClassName = L"RhwpProducerReadyEvents";
@@ -44,7 +46,9 @@ class ProducerReadyEvents : public std::enable_shared_from_this<ProducerReadyEve
   bool available() const { return window_.load() != nullptr; }
   void stop() {
     mailbox_.listen(false);
-    if (channel_) channel_->SetStreamHandler(nullptr);
+    messenger_.if_available([&] {
+      if (channel_) channel_->SetStreamHandler(nullptr);
+    });
     channel_.reset();
     sink_.reset();
     if (auto window = window_.exchange(nullptr)) DestroyWindow(window);
@@ -76,12 +80,16 @@ class ProducerReadyEvents : public std::enable_shared_from_this<ProducerReadyEve
         Map stamp{{Value("documentId"), number(frame.document)}, {Value("revision"), number(frame.revision)},
             {Value("fontGeneration"), number(frame.font)}, {Value("viewGeneration"), number(frame.view)},
             {Value("deviceGeneration"), number(frame.device)}, {Value("deviceScale"), Value(frame.scale)}};
-        sink_->Success(Value(Map{{Value("event"), Value("producerReady")},
-            {Value("textureId"), number(frame.texture)}, {Value("deviceGeneration"), number(frame.device)},
-            {Value("serial"), number(frame.serial)}, {Value("stamp"), Value(stamp)}}));
+        const bool sent = messenger_.if_available([&] {
+          sink_->Success(Value(Map{{Value("event"), Value("producerReady")},
+              {Value("textureId"), number(frame.texture)}, {Value("deviceGeneration"), number(frame.device)},
+              {Value("serial"), number(frame.serial)}, {Value("stamp"), Value(stamp)}}));
+        });
+        if (!sent) { mailbox_.listen(false); break; }
       }
     } catch (...) { /* Event delivery never changes renderer ownership. */ }
   }
+  MessengerLifetime messenger_;
   std::atomic<HWND> window_{nullptr};
   ProducerReadyMailbox mailbox_;
   std::unique_ptr<flutter::EventChannel<Value>> channel_;

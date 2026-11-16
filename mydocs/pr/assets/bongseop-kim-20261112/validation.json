@@ -1,0 +1,145 @@
+{
+  "finished_at": "2026-11-12T15:17:14+09:00",
+  "regression_source": "39f0ac047778eb3ac382cc36143b92f3a5bf4d94",
+  "product_build_source": "0aa25a66345edbf36aee45bf953611fe041350e0",
+  "production_files_equal": true,
+  "all_local_gates_passed": true,
+  "gate_count": 13,
+  "full_regression_passed": 13341,
+  "full_regression_skipped": 45,
+  "focused_passed": 23,
+  "focused_groups": {
+    "8982": 9,
+    "8983": 6,
+    "7516": 8
+  },
+  "native_official_passed": 4073,
+  "native_library_ignored": 12,
+  "native_groups": {
+    "library": 4035,
+    "placeholder": 2,
+    "direct_pdf": 36
+  },
+  "studio_cases": 6,
+  "studio_save_reopen_comparisons": 24,
+  "focus_pages_per_backend": 13,
+  "focus_minimum_raw_percent": 100.0,
+  "protected_rows": 3542,
+  "protected_official_declines": 0,
+  "handbook_pages": 383,
+  "handbook_passed": true,
+  "exceptions_applied": false,
+  "source_logs": [
+    {
+      "name": "native-lib",
+      "path": "mydocs/pr/assets/bongseop-kim-20261112/gates/native-lib.txt",
+      "sha256": "886abca988340363d5d0f6a8381f0b89e81c19aaff640dc083e7e4e49d2fb541",
+      "original_log_sha256": "275f040c841a50786602563a027f60741c044bb83cb302a450926fa331b8a3cb",
+      "normalization": "terminal blank lines normalized to one LF; result lines unchanged"
+    },
+    {
+      "name": "focused-issue_8943_paste_html_leading_plain_run",
+      "path": "mydocs/pr/assets/bongseop-kim-20261112/gates/focused-issue_8943_paste_html_leading_plain_run.txt",
+      "sha256": "d1aecf2d89e24ab89e9813212f369494420ac26168a41605c12fc787250364ac",
+      "original_log_sha256": "d1aecf2d89e24ab89e9813212f369494420ac26168a41605c12fc787250364ac",
+      "normalization": "terminal blank lines normalized to one LF; result lines unchanged"
+    },
+    {
+      "name": "clippy-workspace",
+      "path": "mydocs/pr/assets/bongseop-kim-20261112/gates/clippy-workspace.txt",
+      "sha256": "81fc4acebed252f858ceba278a2991dd02184c5ae9a798e4da5738a9404cb7a5",
+      "original_log_sha256": "81fc4acebed252f858ceba278a2991dd02184c5ae9a798e4da5738a9404cb7a5",
+      "normalization": "terminal blank lines normalized to one LF; result lines unchanged"
+    },
+    {
+      "name": "native-placeholder",
+      "path": "mydocs/pr/assets/bongseop-kim-20261112/gates/native-placeholder.txt",
+      "sha256": "f9aa2b2a24cf6be45f765f0460ae3c0ddd85a1021f0313cb5162d340302b1a75",
+      "original_log_sha256": "f9aa2b2a24cf6be45f765f0460ae3c0ddd85a1021f0313cb5162d340302b1a75",
+      "normalization": "terminal blank lines normalized to one LF; result lines unchanged"
+    },
+    {
+      "name": "clippy-native",
+      "path": "mydocs/pr/assets/bongseop-kim-20261112/gates/clippy-native.txt",
+      "sha256": "6e7adf7e4cd79e88f35c21a1fb29755b4fdcc4df24594b1d9eaa83622140df71",
+      "original_log_sha256": "6e7adf7e4cd79e88f35c21a1fb29755b4fdcc4df24594b1d9eaa83622140df71",
+      "normalization": "terminal blank lines normalized to one LF; result lines unchanged"
+    },
+    {
+      "name": "native-direct-pdf",
+      "path": "mydocs/pr/assets/bongseop-kim-20261112/gates/native-direct-pdf.txt",
+      "sha256": "6faacc687c67640c39f28d6cd22bf2f7f1060ffa997ed285465e4d690c079ed2",
+      "original_log_sha256": "6faacc687c67640c39f28d6cd22bf2f7f1060ffa997ed285465e4d690c079ed2",
+      "normalization": "terminal blank lines normalized to one LF; result lines unchanged"
+    },
+    {
+      "name": "full-regression",
+      "path": "mydocs/pr/assets/bongseop-kim-20261112/gates/full-regression.txt",
+      "sha256": "5c108245beb7f6bc15b51965bdc9fa95dc02e4f2ca385d5a288216686a576950",
+      "original_log_sha256": "5c108245beb7f6bc15b51965bdc9fa95dc02e4f2ca385d5a288216686a576950",
+      "normalization": "terminal blank lines normalized to one LF; result lines unchanged"
+    },
+    {
+      "name": "clippy-wasm",
+      "path": "mydocs/pr/assets/bongseop-kim-20261112/gates/clippy-wasm.txt",
+      "sha256": "4e16b7c28d7fe4ad7258158345a12bac070417f4bffc5910bf58dfd89523fafe",
+      "original_log_sha256": "4e16b7c28d7fe4ad7258158345a12bac070417f4bffc5910bf58dfd89523fafe",
+      "normalization": "terminal blank lines normalized to one LF; result lines unchanged"
+    },
+    {
+      "name": "focused-issue_7516_html_paste_loose_inline_format",
+      "path": "mydocs/pr/assets/bongseop-kim-20261112/gates/focused-issue_7516_html_paste_loose_inline_format.txt",
+      "sha256": "c0f06f5c86a2366c2b005abb241df5857fdea8f9c2621764a4f7b81dbac64df0",
+      "original_log_sha256": "c0f06f5c86a2366c2b005abb241df5857fdea8f9c2621764a4f7b81dbac64df0",
+      "normalization": "terminal blank lines normalized to one LF; result lines unchanged"
+    },
+    {
+      "name": "manifest",
+      "path": "mydocs/pr/assets/bongseop-kim-20261112/gates/manifest.txt",
+      "sha256": "3c43e31d8d1214190a1deda57e93ef2422c841c71ea34cfc3405d8f538a47d35",
+      "original_log_sha256": "3c43e31d8d1214190a1deda57e93ef2422c841c71ea34cfc3405d8f538a47d35",
+      "normalization": "terminal blank lines normalized to one LF; result lines unchanged"
+    },
+    {
+      "name": "format",
+      "path": "mydocs/pr/assets/bongseop-kim-20261112/gates/format.txt",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "original_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "normalization": "terminal blank lines normalized to one LF; result lines unchanged"
+    },
+    {
+      "name": "focused-issue_8942_paste_html_table_border_attr",
+      "path": "mydocs/pr/assets/bongseop-kim-20261112/gates/focused-issue_8942_paste_html_table_border_attr.txt",
+      "sha256": "bd9b93d939b748ede3829e78fee54c3cc73325beb3ed17abb4e86256f3c2c149",
+      "original_log_sha256": "bd9b93d939b748ede3829e78fee54c3cc73325beb3ed17abb4e86256f3c2c149",
+      "normalization": "terminal blank lines normalized to one LF; result lines unchanged"
+    },
+    {
+      "name": "workspace-build",
+      "path": "mydocs/pr/assets/bongseop-kim-20261112/gates/workspace-build.txt",
+      "sha256": "521c98ddcaac0d060d6a12c2bdf4a03f326b87d9510489527ba6e4537e24dd35",
+      "original_log_sha256": "521c98ddcaac0d060d6a12c2bdf4a03f326b87d9510489527ba6e4537e24dd35",
+      "normalization": "terminal blank lines normalized to one LF; result lines unchanged"
+    }
+  ],
+  "supervisor_observation": {
+    "session_exit": 143,
+    "child_gate_returncodes": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "completion_marker_present": true,
+    "interpretation": "The exec supervisor returned 143 when its output session was collected after completion. Every child gate has its recorded exit 0 and actual PASS log; the final completion marker was written. This supervisor status is retained and no test failure was hidden or test rerun performed."
+  }
+}

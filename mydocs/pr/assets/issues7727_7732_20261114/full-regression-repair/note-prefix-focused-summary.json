@@ -1,0 +1,49 @@
+{
+  "type": "minimum-font standalone Rust tests linked to Native Skia rlib, not Cargo whole suite",
+  "passed": 40,
+  "failed": 0,
+  "cases": [
+    {
+      "case": "margin",
+      "passed": 1,
+      "failed": 0,
+      "log_sha256": "80914539aecdc5ff22c3d8a8f6014242a8320094ebcc45b6882e32d3ca5dd0a2"
+    },
+    {
+      "case": "toc",
+      "passed": 2,
+      "failed": 0,
+      "log_sha256": "95fd991305c285a48bccbe9e25899a9597e9dbf3010c7f1ced49a0c275cf58f1"
+    },
+    {
+      "case": "regulatory",
+      "passed": 4,
+      "failed": 0,
+      "log_sha256": "4897e83d983614c3342a4ee53f9d7f412b494c95d28e87577eeea53b3f86d027"
+    },
+    {
+      "case": "edu",
+      "passed": 24,
+      "failed": 0,
+      "log_sha256": "d623bac411d2909b80b439df5548e2c708267645e471a051bebf17f9830579cd"
+    },
+    {
+      "case": "note",
+      "passed": 1,
+      "failed": 0,
+      "log_sha256": "bd98855489b7a6907478291f38f95e1e6fca694bcd58743fc91523e408f8e133"
+    },
+    {
+      "case": "marker",
+      "passed": 2,
+      "failed": 0,
+      "log_sha256": "5497816de7c4ad3d80551cee241c6762094bf3928a7cd853d74cd424f14b43d0"
+    },
+    {
+      "case": "footnote-shape",
+      "passed": 6,
+      "failed": 0,
+      "log_sha256": "992fa341e3632e7a07a5e77d13cfa6b92bd1e99c8807e161e4466ac0ba9d27c9"
+    }
+  ]
+}

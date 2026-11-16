@@ -1,0 +1,8 @@
+{
+  "documentSubstitutions": [],
+  "id": "native-webfont-bbe796093646e297431efa50",
+  "preserveSourceMetrics": true,
+  "substitutions": {
+    "한양중고딕": "NotoSansKR-Regular"
+  }
+}

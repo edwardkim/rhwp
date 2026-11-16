@@ -648,6 +648,17 @@ impl TypesetEngine {
             .cells
             .iter()
             .any(|cell| cell.row == 0 && cell.row_span > 1);
+        // 저장 원본 프레임이 아니므로 host 줄과 바깥 여백도 물리 예산에 남는다.
+        // 그림 전용 재조판 셀의 내용 하한과 같은 소유 질의를 사용한다.
+        let near_measured_occupied_height = if table
+            .cells
+            .iter()
+            .any(crate::renderer::height_measurer::unstored_square_picture_cell_owns_padding)
+        {
+            table_total
+        } else {
+            ft.effective_height
+        };
         let near_measured_rowbreak_fits = !table.common.treat_as_char
             && matches!(
                 table.layout_page_break(),
@@ -663,7 +674,7 @@ impl TypesetEngine {
                 || has_leading_rowspan_band)
             && declared_object_total > host_spacing_total
             && st.current_height + declared_object_total <= available
-            && st.current_height + ft.effective_height
+            && st.current_height + near_measured_occupied_height
                 <= available + NEAR_MEASURED_ROWBREAK_FIT_PX;
         // HWPX CELL(RowBreak) TAC 표는 일반적으로 선언 높이가 current fragment의
         // source-owned table frame이다. 단, 단일 빈 host의 유일한 non-synthetic

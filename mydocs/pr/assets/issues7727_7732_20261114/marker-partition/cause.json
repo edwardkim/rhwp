@@ -1,0 +1,156 @@
+{
+  "status": "native_and_fresh_wasm_all_original_pages_above_98",
+  "producer": {
+    "parent": "fd9207f300dc8ff1bf53bbee5820ccd17464ac1e",
+    "patch_sha256": "3ae195ca7ee7d0272ea18299fd9d0af441c7e15e9324efced55149c09d8bc382",
+    "binary_sha256": "4367cc9ec06a3c04e8aa4fe398ab57db20b9e6d231a60dfe8bea97aefbf581c6"
+  },
+  "measurements": {
+    "native": [
+      {
+        "key": "cbta",
+        "pages": 204,
+        "minimum": 98.11,
+        "minimum_page": 2,
+        "below_98": [],
+        "tsv_sha256": "9f1bc1effa1845326d5b91fedbf91a03b79f01d0ddc4e035f0abf1bf8965f11d"
+      },
+      {
+        "key": "recommendation",
+        "pages": 22,
+        "minimum": 98.69,
+        "minimum_page": 7,
+        "below_98": [],
+        "tsv_sha256": "87565d8bedb64b4b8d99568e31a669f2c3c57bc9c5f81b0406c8abf265346b63"
+      },
+      {
+        "key": "exam",
+        "pages": 8,
+        "minimum": 99.49,
+        "minimum_page": 3,
+        "below_98": [],
+        "tsv_sha256": "4ee763deecfca07a600b468b5ba6528e59492044afff2ec5891c1655d7cd1419"
+      },
+      {
+        "key": "api",
+        "pages": 105,
+        "minimum": 99.55,
+        "minimum_page": 97,
+        "below_98": [],
+        "tsv_sha256": "0d300742ef260dadda962f4474e3fb347fd3b54879acc5179cdd609b9f3746bf"
+      },
+      {
+        "key": "footnote",
+        "pages": 50,
+        "minimum": 98.58,
+        "minimum_page": 37,
+        "below_98": [],
+        "tsv_sha256": "650f6a1d30fb0cf059371d11477cd6132976a35c02bfdf4ece2244611fa4ad65"
+      }
+    ],
+    "wasm": [
+      {
+        "key": "cbta",
+        "pages": 204,
+        "minimum": 98.08,
+        "minimum_page": 2,
+        "below_98": [],
+        "tsv_sha256": "74183b8f7ebe41b766e41eab96ff3b41475aaf51c9160fc047330d945ce8289a"
+      },
+      {
+        "key": "recommendation",
+        "pages": 22,
+        "minimum": 98.68,
+        "minimum_page": 7,
+        "below_98": [],
+        "tsv_sha256": "cc669817ace630a67f88bc4a571f82c5622172e095fc549242cbe6d26b41ed26"
+      },
+      {
+        "key": "exam",
+        "pages": 8,
+        "minimum": 99.49,
+        "minimum_page": 3,
+        "below_98": [],
+        "tsv_sha256": "4ee763deecfca07a600b468b5ba6528e59492044afff2ec5891c1655d7cd1419"
+      },
+      {
+        "key": "api",
+        "pages": 105,
+        "minimum": 99.55,
+        "minimum_page": 97,
+        "below_98": [],
+        "tsv_sha256": "76f12f9f4b677b340aa930d1894188256638a1e4c8d20a8356d5f7900863a2ac"
+      },
+      {
+        "key": "footnote",
+        "pages": 50,
+        "minimum": 98.58,
+        "minimum_page": 37,
+        "below_98": [],
+        "tsv_sha256": "650f6a1d30fb0cf059371d11477cd6132976a35c02bfdf4ece2244611fa4ad65"
+      }
+    ]
+  },
+  "target_page": {
+    "page": 96,
+    "native_before": 97.0,
+    "wasm_before": 96.99,
+    "native_after": 99.72,
+    "wasm_after": 99.74
+  },
+  "cause": "현재 번호 기하로 채워도 줄 수가 같으면 저장 문자 경계를 재사용하던 경로. 같은 수·높이의 물리 슬롯에서는 현재 프레임의 문자 경계와 원본 세로 원점을 함께 보존한다.",
+  "source_contracts": [
+    "fa7aefdf10: 번호 문단의 현재 프레임 재조판",
+    "17225375ff: 기존 HCI Poppy 일반/굵은 프로그램 폭 보존"
+  ],
+  "regression": {
+    "before": "1 PASS / 1 FAIL",
+    "after": "2 PASS",
+    "minimal_font_focused": "23 PASS / 0 FAIL, 4.110초, 선택 밖2778건",
+    "scope": "기존 번호·내어쓰기·HCI 폭 대조군과 새 고정 좌표 검사 포함. 전체 회귀 아님.",
+    "profile_sha256": "f0ffac3b2f44d33f447aa1dc3674719f7699c1c979146cff40fbca37098e35a0",
+    "log_sha256": "b1442442f635e563b8a1a2f0bc44e88b856201cce5800afdf147f6407e90560c"
+  },
+  "independent_fixed_frames": {
+    "cbta118_picture_border_css": [
+      149.68000284830728,
+      211.927978515625,
+      656.9266764322916,
+      923.789306640625
+    ],
+    "cbta162_closing_line_y_css": 724.5706380208334,
+    "cbta166_closing_line_y_css": 726.0093587239584,
+    "tolerance_css_px": 2.0
+  },
+  "whole_native_change": "원본389쪽 중 CBTA96쪽만 상승. 나머지388쪽 공식 표시값 동일.",
+  "remaining": "전체 회귀·lint/build·보호 문서·실제 소비 경로 및 가능한 잔여100% 개선",
+  "file_sha256": {
+    "marker-partition-regression-before.json": "ef9200dbb8bdb3719b6b34d73de617e986f25db162088fe059a69fd99e99ec89",
+    "wasm-api.tsv": "76f12f9f4b677b340aa930d1894188256638a1e4c8d20a8356d5f7900863a2ac",
+    "cbta-pdf-complete-row-close-lines.json": "f82a655a44f094a5dfd9c5854765969bc95ce5512ff1912e6a672e21d9c8b7e5",
+    "wasm-recommendation.tsv": "cc669817ace630a67f88bc4a571f82c5622172e095fc549242cbe6d26b41ed26",
+    "page-comparison.json": "f14fb7d2a899755d592b5e0c2c5c160282d56894ac70f1e06ee78b3a368eb4a3",
+    "native-p096-overlay.png": "73b803a338cd820f1565516f99a91eb957c1401df8e4808033c9a346c9f424f6",
+    "wasm-footnote.tsv": "650f6a1d30fb0cf059371d11477cd6132976a35c02bfdf4ece2244611fa4ad65",
+    "native-p096-raw.png": "e6f802a3d4db52b8e9991be1444b7cf432f35e912381af66d6f37847715f147f",
+    "marker-partition-regression-after.json": "08a1c5f1c99cf9e18d1bc7af60a87b4d0d3d433da474969538319c66657948fe",
+    "native-footnote.tsv": "650f6a1d30fb0cf059371d11477cd6132976a35c02bfdf4ece2244611fa4ad65",
+    "wasm-p096-raw.png": "a765f472bb3ed627c545228c134fcdf98cf456ebddcf39e76f37cc14237b1bce",
+    "native-exam.tsv": "4ee763deecfca07a600b468b5ba6528e59492044afff2ec5891c1655d7cd1419",
+    "wasm-exam.tsv": "4ee763deecfca07a600b468b5ba6528e59492044afff2ec5891c1655d7cd1419",
+    "pdf-p096.png": "cfd450f04689bd811bcde7559f5198280a6e40d8366c812975bbe393e2e91714",
+    "wasm-p096-overlay.png": "5c5709944649438914c4072058b42af160f1c740a066d9d169f967e64f246c37",
+    "native-p096-review.png": "523b9e93386d5d72fa14dd60c37a2003dc2e23a2989c3236ecfe875d0e9c13fc",
+    "wasm-cbta.tsv": "74183b8f7ebe41b766e41eab96ff3b41475aaf51c9160fc047330d945ce8289a",
+    "native-cbta.tsv": "9f1bc1effa1845326d5b91fedbf91a03b79f01d0ddc4e035f0abf1bf8965f11d",
+    "marker-partition-wasm-producer.json": "27707afe97bb42cd8b31f0d4fceb26cd4ec0d4fe0f12924e0f9a0a3a238b4ee0",
+    "wasm-p096-review.png": "13419476d1f9a371ba881d9ffb339837c87651399cde839b386e3908be165f90",
+    "native-recommendation.tsv": "87565d8bedb64b4b8d99568e31a669f2c3c57bc9c5f81b0406c8abf265346b63",
+    "native-api.tsv": "0d300742ef260dadda962f4474e3fb347fd3b54879acc5179cdd609b9f3746bf",
+    "marker-partition-producer.json": "512b49ef7b81b6dd55e7b32706810eef218342cfdf96a8bd53e7c1783f187a8e"
+  },
+  "direct_reading": {
+    "native_p96_review_and_overlay": "확인 완료",
+    "fresh_wasm_p96_review_and_overlay": "확인 완료"
+  }
+}

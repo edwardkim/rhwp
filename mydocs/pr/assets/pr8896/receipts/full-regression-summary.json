@@ -1,0 +1,13 @@
+{
+  "source": "3fdde2a216e19cedb51a00be17e01a2d20950c88",
+  "partition_policy": "nextest hash:1/3, 2/3, 3/3; identical default feature test inventory; no overlapping PASS identities",
+  "counts": [
+    4438,
+    4372,
+    4436
+  ],
+  "passed": 13246,
+  "failure_count": 0,
+  "pass_identity_sha256": "fd305bfa1f297074bba8b35cc8375a8997a0b73426adb4cc0734d54af9d57eae",
+  "minimal_font_configuration": "five exposed public fonts; private/system font directories hidden; WSL resolver mounted without exposing additional font paths"
+}

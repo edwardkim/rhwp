@@ -1,0 +1,23 @@
+{
+  "purpose": "current reference browser environment only; no document rendering",
+  "version": "Chrome/156.0.8078.79",
+  "executable_path": "/snap/bin/chromium",
+  "gpu_feature_status": {
+    "2d_canvas": "unavailable_software",
+    "direct_rendering_display_compositor": "disabled_off_ok",
+    "gpu_compositing": "disabled_software",
+    "multiple_raster_threads": "enabled_on",
+    "opengl": "disabled_off",
+    "rasterization": "disabled_software",
+    "raw_draw": "disabled_off_ok",
+    "skia_graphite": "disabled_off",
+    "trees_in_viz": "disabled_off",
+    "video_decode": "disabled_software",
+    "video_encode": "disabled_software",
+    "vulkan": "disabled_off",
+    "webgl": "unavailable_software",
+    "webgpu": "unavailable_software",
+    "webgpu_on_vk_via_gl_interop": "disabled_off",
+    "webnn": "unavailable_software"
+  }
+}

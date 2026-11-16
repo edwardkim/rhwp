@@ -1,0 +1,16 @@
+{
+  "hwpx": {
+    "pages": 763,
+    "all_tree_png_hashes_identical": true,
+    "previous": "output/issue8946/stage5/host-hwpx-final-enabled/all-pages.json",
+    "current": "output/issue8946/stage6/host-hwpx-enabled/all-pages.json",
+    "different_pages": []
+  },
+  "hwp3": {
+    "pages": 763,
+    "all_tree_png_hashes_identical": true,
+    "previous": "output/issue8946/stage5/host-hwp3-linked-enabled/all-pages.json",
+    "current": "output/issue8946/stage6/host-hwp3-enabled/all-pages.json",
+    "different_pages": []
+  }
+}

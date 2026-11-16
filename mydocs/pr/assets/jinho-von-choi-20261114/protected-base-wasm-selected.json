@@ -1,0 +1,869 @@
+{
+  "base_source": "53da4d2da28ae0cacf8feac3a989cc6a69fb2622",
+  "candidate_product_source": "eeaecff59e834f28437c98b509089bbb36a7682d",
+  "rows": 56,
+  "different": 0,
+  "checks": [
+    {
+      "key": "yeongwol",
+      "backend": "wasm",
+      "page": "1",
+      "baseline": "100.00",
+      "candidate": "99.99",
+      "decline": "True",
+      "base_actual": "99.99",
+      "same_as_base": true
+    },
+    {
+      "key": "seo-helvetica-styles",
+      "backend": "wasm",
+      "page": "1",
+      "baseline": "100.00",
+      "candidate": "97.55",
+      "decline": "True",
+      "base_actual": "97.55",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwpx",
+      "backend": "wasm",
+      "page": "43",
+      "baseline": "100.00",
+      "candidate": "99.99",
+      "decline": "True",
+      "base_actual": "99.99",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwpx",
+      "backend": "wasm",
+      "page": "51",
+      "baseline": "100.00",
+      "candidate": "99.86",
+      "decline": "True",
+      "base_actual": "99.86",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "4",
+      "baseline": "100.00",
+      "candidate": "99.56",
+      "decline": "True",
+      "base_actual": "99.56",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "5",
+      "baseline": "100.00",
+      "candidate": "99.91",
+      "decline": "True",
+      "base_actual": "99.91",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "6",
+      "baseline": "100.00",
+      "candidate": "99.95",
+      "decline": "True",
+      "base_actual": "99.95",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "8",
+      "baseline": "100.00",
+      "candidate": "99.97",
+      "decline": "True",
+      "base_actual": "99.97",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "10",
+      "baseline": "100.00",
+      "candidate": "99.80",
+      "decline": "True",
+      "base_actual": "99.80",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "11",
+      "baseline": "100.00",
+      "candidate": "99.76",
+      "decline": "True",
+      "base_actual": "99.76",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "12",
+      "baseline": "100.00",
+      "candidate": "99.67",
+      "decline": "True",
+      "base_actual": "99.67",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "13",
+      "baseline": "100.00",
+      "candidate": "99.92",
+      "decline": "True",
+      "base_actual": "99.92",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "14",
+      "baseline": "100.00",
+      "candidate": "99.74",
+      "decline": "True",
+      "base_actual": "99.74",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "15",
+      "baseline": "100.00",
+      "candidate": "99.81",
+      "decline": "True",
+      "base_actual": "99.81",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "16",
+      "baseline": "100.00",
+      "candidate": "99.90",
+      "decline": "True",
+      "base_actual": "99.90",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "17",
+      "baseline": "100.00",
+      "candidate": "99.70",
+      "decline": "True",
+      "base_actual": "99.70",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "18",
+      "baseline": "100.00",
+      "candidate": "99.95",
+      "decline": "True",
+      "base_actual": "99.95",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "19",
+      "baseline": "100.00",
+      "candidate": "99.90",
+      "decline": "True",
+      "base_actual": "99.90",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "20",
+      "baseline": "100.00",
+      "candidate": "99.95",
+      "decline": "True",
+      "base_actual": "99.95",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "21",
+      "baseline": "100.00",
+      "candidate": "99.92",
+      "decline": "True",
+      "base_actual": "99.92",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "22",
+      "baseline": "100.00",
+      "candidate": "99.96",
+      "decline": "True",
+      "base_actual": "99.96",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "23",
+      "baseline": "100.00",
+      "candidate": "99.95",
+      "decline": "True",
+      "base_actual": "99.95",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "24",
+      "baseline": "100.00",
+      "candidate": "99.98",
+      "decline": "True",
+      "base_actual": "99.98",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "25",
+      "baseline": "100.00",
+      "candidate": "99.90",
+      "decline": "True",
+      "base_actual": "99.90",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "27",
+      "baseline": "100.00",
+      "candidate": "99.95",
+      "decline": "True",
+      "base_actual": "99.95",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "28",
+      "baseline": "100.00",
+      "candidate": "99.65",
+      "decline": "True",
+      "base_actual": "99.65",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "29",
+      "baseline": "100.00",
+      "candidate": "99.65",
+      "decline": "True",
+      "base_actual": "99.65",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "30",
+      "baseline": "100.00",
+      "candidate": "99.48",
+      "decline": "True",
+      "base_actual": "99.48",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "31",
+      "baseline": "100.00",
+      "candidate": "99.60",
+      "decline": "True",
+      "base_actual": "99.60",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "32",
+      "baseline": "100.00",
+      "candidate": "99.95",
+      "decline": "True",
+      "base_actual": "99.95",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "33",
+      "baseline": "100.00",
+      "candidate": "99.76",
+      "decline": "True",
+      "base_actual": "99.76",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "34",
+      "baseline": "100.00",
+      "candidate": "99.69",
+      "decline": "True",
+      "base_actual": "99.69",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "38",
+      "baseline": "100.00",
+      "candidate": "99.64",
+      "decline": "True",
+      "base_actual": "99.64",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "43",
+      "baseline": "100.00",
+      "candidate": "99.99",
+      "decline": "True",
+      "base_actual": "99.99",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "45",
+      "baseline": "100.00",
+      "candidate": "99.98",
+      "decline": "True",
+      "base_actual": "99.98",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "46",
+      "baseline": "100.00",
+      "candidate": "99.88",
+      "decline": "True",
+      "base_actual": "99.88",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "47",
+      "baseline": "100.00",
+      "candidate": "99.91",
+      "decline": "True",
+      "base_actual": "99.91",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "48",
+      "baseline": "100.00",
+      "candidate": "99.93",
+      "decline": "True",
+      "base_actual": "99.93",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "49",
+      "baseline": "100.00",
+      "candidate": "99.91",
+      "decline": "True",
+      "base_actual": "99.91",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "50",
+      "baseline": "100.00",
+      "candidate": "99.91",
+      "decline": "True",
+      "base_actual": "99.91",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "51",
+      "baseline": "100.00",
+      "candidate": "99.80",
+      "decline": "True",
+      "base_actual": "99.80",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": "53",
+      "baseline": "100.00",
+      "candidate": "99.83",
+      "decline": "True",
+      "base_actual": "99.83",
+      "same_as_base": true
+    },
+    {
+      "key": "nested",
+      "backend": "wasm",
+      "page": "2",
+      "baseline": "99.98",
+      "candidate": "99.97",
+      "decline": "True",
+      "base_actual": "99.97",
+      "same_as_base": true
+    },
+    {
+      "key": "nested",
+      "backend": "wasm",
+      "page": "6",
+      "baseline": "99.98",
+      "candidate": "99.92",
+      "decline": "True",
+      "base_actual": "99.92",
+      "same_as_base": true
+    },
+    {
+      "key": "nested",
+      "backend": "wasm",
+      "page": "8",
+      "baseline": "100.00",
+      "candidate": "99.24",
+      "decline": "True",
+      "base_actual": "99.24",
+      "same_as_base": true
+    },
+    {
+      "key": "nested",
+      "backend": "wasm",
+      "page": "9",
+      "baseline": "100.00",
+      "candidate": "98.95",
+      "decline": "True",
+      "base_actual": "98.95",
+      "same_as_base": true
+    },
+    {
+      "key": "nested",
+      "backend": "wasm",
+      "page": "10",
+      "baseline": "98.76",
+      "candidate": "98.51",
+      "decline": "True",
+      "base_actual": "98.51",
+      "same_as_base": true
+    },
+    {
+      "key": "nested",
+      "backend": "wasm",
+      "page": "11",
+      "baseline": "99.05",
+      "candidate": "98.83",
+      "decline": "True",
+      "base_actual": "98.83",
+      "same_as_base": true
+    },
+    {
+      "key": "nested",
+      "backend": "wasm",
+      "page": "12",
+      "baseline": "99.84",
+      "candidate": "99.81",
+      "decline": "True",
+      "base_actual": "99.81",
+      "same_as_base": true
+    },
+    {
+      "key": "nested",
+      "backend": "wasm",
+      "page": "13",
+      "baseline": "99.63",
+      "candidate": "99.56",
+      "decline": "True",
+      "base_actual": "99.56",
+      "same_as_base": true
+    },
+    {
+      "key": "nested",
+      "backend": "wasm",
+      "page": "14",
+      "baseline": "98.59",
+      "candidate": "98.35",
+      "decline": "True",
+      "base_actual": "98.35",
+      "same_as_base": true
+    },
+    {
+      "key": "nested",
+      "backend": "wasm",
+      "page": "15",
+      "baseline": "99.12",
+      "candidate": "98.99",
+      "decline": "True",
+      "base_actual": "98.99",
+      "same_as_base": true
+    },
+    {
+      "key": "nested",
+      "backend": "wasm",
+      "page": "16",
+      "baseline": "98.37",
+      "candidate": "98.06",
+      "decline": "True",
+      "base_actual": "98.06",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2024",
+      "backend": "wasm",
+      "page": "43",
+      "baseline": "100.00",
+      "candidate": "99.99",
+      "decline": "True",
+      "base_actual": "99.99",
+      "same_as_base": true
+    },
+    {
+      "key": "sample16-hwp2024",
+      "backend": "wasm",
+      "page": "51",
+      "baseline": "100.00",
+      "candidate": "99.86",
+      "decline": "True",
+      "base_actual": "99.86",
+      "same_as_base": true
+    },
+    {
+      "key": "seo-pic-crop-01",
+      "backend": "wasm",
+      "page": "1",
+      "baseline": "100.00",
+      "candidate": "94.65",
+      "decline": "True",
+      "base_actual": "94.65",
+      "same_as_base": true
+    }
+  ],
+  "pixelComparison": {
+    "pages": 56,
+    "different": 0,
+    "checks": [
+      {
+        "key": "yeongwol",
+        "page": 1,
+        "samePngBytes": true
+      },
+      {
+        "key": "seo-helvetica-styles",
+        "page": 1,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwpx",
+        "page": 43,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwpx",
+        "page": 51,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 4,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 5,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 6,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 8,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 10,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 11,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 12,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 13,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 14,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 15,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 16,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 17,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 18,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 19,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 20,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 21,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 22,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 23,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 24,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 25,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 27,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 28,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 29,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 30,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 31,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 32,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 33,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 34,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 38,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 43,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 45,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 46,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 47,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 48,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 49,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 50,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 51,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2022",
+        "page": 53,
+        "samePngBytes": true
+      },
+      {
+        "key": "nested",
+        "page": 2,
+        "samePngBytes": true
+      },
+      {
+        "key": "nested",
+        "page": 6,
+        "samePngBytes": true
+      },
+      {
+        "key": "nested",
+        "page": 8,
+        "samePngBytes": true
+      },
+      {
+        "key": "nested",
+        "page": 9,
+        "samePngBytes": true
+      },
+      {
+        "key": "nested",
+        "page": 10,
+        "samePngBytes": true
+      },
+      {
+        "key": "nested",
+        "page": 11,
+        "samePngBytes": true
+      },
+      {
+        "key": "nested",
+        "page": 12,
+        "samePngBytes": true
+      },
+      {
+        "key": "nested",
+        "page": 13,
+        "samePngBytes": true
+      },
+      {
+        "key": "nested",
+        "page": 14,
+        "samePngBytes": true
+      },
+      {
+        "key": "nested",
+        "page": 15,
+        "samePngBytes": true
+      },
+      {
+        "key": "nested",
+        "page": 16,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2024",
+        "page": 43,
+        "samePngBytes": true
+      },
+      {
+        "key": "sample16-hwp2024",
+        "page": 51,
+        "samePngBytes": true
+      },
+      {
+        "key": "seo-pic-crop-01",
+        "page": 1,
+        "samePngBytes": true
+      }
+    ]
+  },
+  "basePrograms": {
+    "source": "53da4d2da28ae0cacf8feac3a989cc6a69fb2622",
+    "programs": {
+      "rhwp.js": "2d48f8a6c3ff7f848f08725bb54d04094b296af1a40ae61203081a7cf8061a1a",
+      "rhwp_bg.wasm": "b2baae084cfcf1d794a882dd39e21c5848fbc851ca9fd512931a46f7d0e5705f"
+    }
+  },
+  "candidatePrograms": {
+    "source": "eeaecff59e834f28437c98b509089bbb36a7682d",
+    "buildExitCode": 0,
+    "programs": {
+      "rhwp.js": "2d48f8a6c3ff7f848f08725bb54d04094b296af1a40ae61203081a7cf8061a1a",
+      "rhwp_bg.wasm": "38c420ea5f5d33bd01e805de2342dae7c827797063b755f75482357177e38407"
+    }
+  }
+}

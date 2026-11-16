@@ -1,0 +1,696 @@
+{
+  "product_source": "eeaecff59e834f28437c98b509089bbb36a7682d",
+  "native_program": {
+    "source": "eeaecff59e834f28437c98b509089bbb36a7682d",
+    "buildExitCode": 0,
+    "nativeSha256": "095de7a5bd69cd627cf62017f513bb82760d3c4d145d13a6719700ba74297f11"
+  },
+  "wasm_programs": {
+    "source": "eeaecff59e834f28437c98b509089bbb36a7682d",
+    "buildExitCode": 0,
+    "programs": {
+      "rhwp.js": "2d48f8a6c3ff7f848f08725bb54d04094b296af1a40ae61203081a7cf8061a1a",
+      "rhwp_bg.wasm": "38c420ea5f5d33bd01e805de2342dae7c827797063b755f75482357177e38407"
+    }
+  },
+  "font_metadata": {
+    "HANBatang.ttf": {
+      "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+      "size": 28412796
+    },
+    "HBATANG.TTF": {
+      "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+      "size": 32361044
+    }
+  },
+  "results": [
+    {
+      "key": "01-none-source",
+      "group": "masters",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "native/masters/01-none-source.tsv"
+    },
+    {
+      "key": "01-none-hwp",
+      "group": "masters",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "native/masters/01-none-hwp.tsv"
+    },
+    {
+      "key": "02-both-source",
+      "group": "masters",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "native/masters/02-both-source.tsv"
+    },
+    {
+      "key": "02-both-hwp",
+      "group": "masters",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "native/masters/02-both-hwp.tsv"
+    },
+    {
+      "key": "03-even-source",
+      "group": "masters",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "native/masters/03-even-source.tsv"
+    },
+    {
+      "key": "03-even-hwp",
+      "group": "masters",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "native/masters/03-even-hwp.tsv"
+    },
+    {
+      "key": "04-odd-source",
+      "group": "masters",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "native/masters/04-odd-source.tsv"
+    },
+    {
+      "key": "04-odd-hwp",
+      "group": "masters",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "native/masters/04-odd-hwp.tsv"
+    },
+    {
+      "key": "05-even-odd-source",
+      "group": "masters",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "native/masters/05-even-odd-source.tsv"
+    },
+    {
+      "key": "05-even-odd-hwp",
+      "group": "masters",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "native/masters/05-even-odd-hwp.tsv"
+    },
+    {
+      "key": "06-odd-even-source",
+      "group": "masters",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "native/masters/06-odd-even-source.tsv"
+    },
+    {
+      "key": "06-odd-even-hwp",
+      "group": "masters",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "native/masters/06-odd-even-hwp.tsv"
+    },
+    {
+      "key": "07-both-even-source",
+      "group": "masters",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "native/masters/07-both-even-source.tsv"
+    },
+    {
+      "key": "07-both-even-hwp",
+      "group": "masters",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "native/masters/07-both-even-hwp.tsv"
+    },
+    {
+      "key": "08-even-both-source",
+      "group": "masters",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "native/masters/08-even-both-source.tsv"
+    },
+    {
+      "key": "08-even-both-hwp",
+      "group": "masters",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "native/masters/08-even-both-hwp.tsv"
+    },
+    {
+      "key": "09-both-odd-source",
+      "group": "masters",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "native/masters/09-both-odd-source.tsv"
+    },
+    {
+      "key": "09-both-odd-hwp",
+      "group": "masters",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "native/masters/09-both-odd-hwp.tsv"
+    },
+    {
+      "key": "10-both-even-odd-source",
+      "group": "masters",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "native/masters/10-both-even-odd-source.tsv"
+    },
+    {
+      "key": "10-both-even-odd-hwp",
+      "group": "masters",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "native/masters/10-both-even-odd-hwp.tsv"
+    },
+    {
+      "key": "11-odd-even-both-source",
+      "group": "masters",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "native/masters/11-odd-even-both-source.tsv"
+    },
+    {
+      "key": "11-odd-even-both-hwp",
+      "group": "masters",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "native/masters/11-odd-even-both-hwp.tsv"
+    },
+    {
+      "key": "color-source",
+      "group": "color",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "native/color/color-source.tsv"
+    },
+    {
+      "key": "color-saved",
+      "group": "color",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "native/color/color-saved.tsv"
+    },
+    {
+      "key": "incoming8969",
+      "group": "incoming",
+      "backend": "native",
+      "pages": 11,
+      "minimum": 95.66,
+      "tsv": "native/incoming/incoming8969.tsv"
+    },
+    {
+      "key": "incoming9016",
+      "group": "incoming",
+      "backend": "native",
+      "pages": 10,
+      "minimum": 93.3,
+      "tsv": "native/incoming/incoming9016.tsv"
+    },
+    {
+      "key": "incoming9021",
+      "group": "incoming",
+      "backend": "native",
+      "pages": 1,
+      "minimum": 100.0,
+      "tsv": "native/incoming/incoming9021.tsv"
+    },
+    {
+      "key": "incoming9026-repeated",
+      "group": "incoming",
+      "backend": "native",
+      "pages": 5,
+      "minimum": 99.93,
+      "tsv": "native/incoming/incoming9026-repeated.tsv"
+    },
+    {
+      "key": "incoming9026-orphan",
+      "group": "incoming",
+      "backend": "native",
+      "pages": 8,
+      "minimum": 95.32,
+      "tsv": "native/incoming/incoming9026-orphan.tsv"
+    },
+    {
+      "key": "incoming9055",
+      "group": "incoming",
+      "backend": "native",
+      "pages": 4,
+      "minimum": 95.24,
+      "tsv": "native/incoming/incoming9055.tsv"
+    },
+    {
+      "key": "incoming9062",
+      "group": "incoming",
+      "backend": "native",
+      "pages": 2,
+      "minimum": 99.98,
+      "tsv": "native/incoming/incoming9062.tsv"
+    },
+    {
+      "key": "hwp3-specimen",
+      "group": "specimen",
+      "backend": "native",
+      "pages": 1,
+      "minimum": 98.57,
+      "tsv": "native/specimen/hwp3-specimen.tsv",
+      "unrounded_minimum": 98.56783
+    },
+    {
+      "key": "saved-hwp",
+      "group": "specimen",
+      "backend": "native",
+      "pages": 1,
+      "minimum": 98.57,
+      "tsv": "native/specimen/saved-hwp.tsv",
+      "unrounded_minimum": 98.56783
+    },
+    {
+      "key": "saved-hwpx",
+      "group": "specimen",
+      "backend": "native",
+      "pages": 1,
+      "minimum": 98.57,
+      "tsv": "native/specimen/saved-hwpx.tsv",
+      "unrounded_minimum": 98.56783
+    },
+    {
+      "key": "01-none-source",
+      "group": "masters",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "wasm/masters/01-none-source.tsv"
+    },
+    {
+      "key": "01-none-hwp",
+      "group": "masters",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "wasm/masters/01-none-hwp.tsv"
+    },
+    {
+      "key": "02-both-source",
+      "group": "masters",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "wasm/masters/02-both-source.tsv"
+    },
+    {
+      "key": "02-both-hwp",
+      "group": "masters",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "wasm/masters/02-both-hwp.tsv"
+    },
+    {
+      "key": "03-even-source",
+      "group": "masters",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "wasm/masters/03-even-source.tsv"
+    },
+    {
+      "key": "03-even-hwp",
+      "group": "masters",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "wasm/masters/03-even-hwp.tsv"
+    },
+    {
+      "key": "04-odd-source",
+      "group": "masters",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "wasm/masters/04-odd-source.tsv"
+    },
+    {
+      "key": "04-odd-hwp",
+      "group": "masters",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "wasm/masters/04-odd-hwp.tsv"
+    },
+    {
+      "key": "05-even-odd-source",
+      "group": "masters",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "wasm/masters/05-even-odd-source.tsv"
+    },
+    {
+      "key": "05-even-odd-hwp",
+      "group": "masters",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "wasm/masters/05-even-odd-hwp.tsv"
+    },
+    {
+      "key": "06-odd-even-source",
+      "group": "masters",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "wasm/masters/06-odd-even-source.tsv"
+    },
+    {
+      "key": "06-odd-even-hwp",
+      "group": "masters",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "wasm/masters/06-odd-even-hwp.tsv"
+    },
+    {
+      "key": "07-both-even-source",
+      "group": "masters",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "wasm/masters/07-both-even-source.tsv"
+    },
+    {
+      "key": "07-both-even-hwp",
+      "group": "masters",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "wasm/masters/07-both-even-hwp.tsv"
+    },
+    {
+      "key": "08-even-both-source",
+      "group": "masters",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "wasm/masters/08-even-both-source.tsv"
+    },
+    {
+      "key": "08-even-both-hwp",
+      "group": "masters",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "wasm/masters/08-even-both-hwp.tsv"
+    },
+    {
+      "key": "09-both-odd-source",
+      "group": "masters",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "wasm/masters/09-both-odd-source.tsv"
+    },
+    {
+      "key": "09-both-odd-hwp",
+      "group": "masters",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "wasm/masters/09-both-odd-hwp.tsv"
+    },
+    {
+      "key": "10-both-even-odd-source",
+      "group": "masters",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "wasm/masters/10-both-even-odd-source.tsv"
+    },
+    {
+      "key": "10-both-even-odd-hwp",
+      "group": "masters",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "wasm/masters/10-both-even-odd-hwp.tsv"
+    },
+    {
+      "key": "11-odd-even-both-source",
+      "group": "masters",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "wasm/masters/11-odd-even-both-source.tsv"
+    },
+    {
+      "key": "11-odd-even-both-hwp",
+      "group": "masters",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "wasm/masters/11-odd-even-both-hwp.tsv"
+    },
+    {
+      "key": "color-source",
+      "group": "color",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "wasm/color/color-source.tsv"
+    },
+    {
+      "key": "color-saved",
+      "group": "color",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "wasm/color/color-saved.tsv"
+    },
+    {
+      "key": "incoming8969",
+      "group": "incoming",
+      "backend": "wasm",
+      "pages": 11,
+      "minimum": 95.66,
+      "tsv": "wasm/incoming/incoming8969.tsv"
+    },
+    {
+      "key": "incoming9016",
+      "group": "incoming",
+      "backend": "wasm",
+      "pages": 10,
+      "minimum": 92.46,
+      "tsv": "wasm/incoming/incoming9016.tsv"
+    },
+    {
+      "key": "incoming9021",
+      "group": "incoming",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": 100.0,
+      "tsv": "wasm/incoming/incoming9021.tsv"
+    },
+    {
+      "key": "incoming9026-repeated",
+      "group": "incoming",
+      "backend": "wasm",
+      "pages": 5,
+      "minimum": 99.63,
+      "tsv": "wasm/incoming/incoming9026-repeated.tsv"
+    },
+    {
+      "key": "incoming9026-orphan",
+      "group": "incoming",
+      "backend": "wasm",
+      "pages": 8,
+      "minimum": 95.29,
+      "tsv": "wasm/incoming/incoming9026-orphan.tsv"
+    },
+    {
+      "key": "incoming9055",
+      "group": "incoming",
+      "backend": "wasm",
+      "pages": 4,
+      "minimum": 93.14,
+      "tsv": "wasm/incoming/incoming9055.tsv"
+    },
+    {
+      "key": "incoming9062",
+      "group": "incoming",
+      "backend": "wasm",
+      "pages": 2,
+      "minimum": 99.94,
+      "tsv": "wasm/incoming/incoming9062.tsv"
+    },
+    {
+      "key": "hwp3-specimen",
+      "group": "specimen",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": 98.55,
+      "tsv": "wasm/specimen/hwp3-specimen.tsv",
+      "unrounded_minimum": 98.55072
+    },
+    {
+      "key": "saved-hwp",
+      "group": "specimen",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": 98.55,
+      "tsv": "wasm/specimen/saved-hwp.tsv",
+      "unrounded_minimum": 98.55072
+    },
+    {
+      "key": "saved-hwpx",
+      "group": "specimen",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": 98.55,
+      "tsv": "wasm/specimen/saved-hwpx.tsv",
+      "unrounded_minimum": 98.55072
+    },
+    {
+      "key": "symmetric",
+      "group": "master-controls",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "evidence": "../pr9071/native/symmetric.tsv"
+    },
+    {
+      "key": "symmetric",
+      "group": "master-controls",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "evidence": "../pr9071/wasm/symmetric.tsv"
+    },
+    {
+      "key": "reverse",
+      "group": "master-controls",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "evidence": "../pr9071/native/reverse.tsv"
+    },
+    {
+      "key": "reverse",
+      "group": "master-controls",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "evidence": "../pr9071/wasm/reverse.tsv"
+    },
+    {
+      "key": "rectangle",
+      "group": "master-controls",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "evidence": "../pr9071/native/rectangle.tsv"
+    },
+    {
+      "key": "rectangle",
+      "group": "master-controls",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "evidence": "../pr9071/wasm/rectangle.tsv"
+    },
+    {
+      "key": "table",
+      "group": "master-controls",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "evidence": "../pr9071/native/table.tsv"
+    },
+    {
+      "key": "table",
+      "group": "master-controls",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "evidence": "../pr9071/wasm/table.tsv"
+    },
+    {
+      "backend": "native",
+      "key": "hwp-source",
+      "pages": 3,
+      "minimum": 100.0,
+      "source": "samples/pr9071/issue8318/서식2-간단.hwp",
+      "reference": "pdf/pr9071/서식2-간단-2018.pdf",
+      "tsv": "native/hwp-source.tsv",
+      "group": "issue8307-2018",
+      "evidence": "../pr9071/issue8307/native/hwp-source.tsv"
+    },
+    {
+      "backend": "native",
+      "key": "hwpx-source",
+      "pages": 3,
+      "minimum": 100.0,
+      "source": "samples/pr9071/issue8307/서식2-간단.hwpx",
+      "reference": "pdf/pr9071/서식2-간단-2018.pdf",
+      "tsv": "native/hwpx-source.tsv",
+      "group": "issue8307-2018",
+      "evidence": "../pr9071/issue8307/native/hwpx-source.tsv"
+    },
+    {
+      "backend": "wasm",
+      "key": "hwp-source",
+      "pages": 3,
+      "minimum": 100.0,
+      "source": "samples/pr9071/issue8318/서식2-간단.hwp",
+      "reference": "pdf/pr9071/서식2-간단-2018.pdf",
+      "tsv": "wasm/hwp-source.tsv",
+      "group": "issue8307-2018",
+      "evidence": "../pr9071/issue8307/wasm/hwp-source.tsv"
+    },
+    {
+      "backend": "wasm",
+      "key": "hwpx-source",
+      "pages": 3,
+      "minimum": 100.0,
+      "source": "samples/pr9071/issue8307/서식2-간단.hwpx",
+      "reference": "pdf/pr9071/서식2-간단-2018.pdf",
+      "tsv": "wasm/hwpx-source.tsv",
+      "group": "issue8307-2018",
+      "evidence": "../pr9071/issue8307/wasm/hwpx-source.tsv"
+    }
+  ],
+  "totals": {
+    "native": {
+      "comparisons": 134,
+      "minimum": 93.3
+    },
+    "wasm": {
+      "comparisons": 134,
+      "minimum": 92.46
+    }
+  }
+}

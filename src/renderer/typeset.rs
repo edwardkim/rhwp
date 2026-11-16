@@ -772,6 +772,7 @@ fn para_has_non_whitespace_text(para: &Paragraph) -> bool {
     para.text
         .chars()
         .any(|c| c > '\u{001F}' && c != '\u{FFFC}' && !c.is_whitespace())
+        || crate::renderer::is_unstored_whitespace_object_host(para)
 }
 
 fn take_strict_plain_text_fit_after_empty_host_float_once(
@@ -4172,6 +4173,11 @@ impl TypesetEngine {
                 next_para,
                 is_column_top,
                 external_flow,
+                unchanged_coanchored_frame: self.profile.get().hwp5_stored_pagination_layout()
+                    && !self.render_normalization.table_text_reflowed(table)
+                    && crate::renderer::float_placement::stored_inline_host_has_separate_float_frame(
+                        para, table,
+                    ),
             },
             self.dpi,
             || self.profile.get(),
@@ -4462,6 +4468,15 @@ impl TypesetEngine {
         if intra_para_reset && !st.current_items.is_empty() {
             st.advance_column_or_new_page();
         }
+        // [#9016] 글자 없는 문단의 제목 차례 표시는 CTRL_HEADER 없이 개체보다 앞 슬롯을
+        // 차지하고 자기 저장 줄을 쌓는다(1730000-202000011 pi=168: ts 0 titM 줄 th 2000,
+        // ts 8 표 줄 vpos +2000). 이 문단의 첫 배치 표가 그 뒤 줄을 소유하면 표 원점과
+        // 적합 판정이 그 줄 원점에서 시작하도록 앞 줄의 저장 전진을 먼저 쌓는다.
+        if is_first_placed && !st.pre_emitted_host_paras.contains(&para_idx) {
+            if let Some(prefix) = title_mark_prefix_advance(para, ctrl_idx, self.dpi) {
+                st.advance_flow_by(prefix);
+            }
+        }
         // 다중 TAC 표: LINE_SEG 기반 개별 높이 계산
         let table_height = if tac_count > 1 {
             // [#2322] 마지막 TAC 판정은 개수 기반(prior_tac) — tac_seg_idx 는
@@ -4511,6 +4526,19 @@ impl TypesetEngine {
             }
         } else if let Some(owned_row_height) = owned_single_tac_row_height {
             owned_row_height
+        } else if let Some((owner, _)) =
+            crate::renderer::composer::stored_owned_tac_line(para, ctrl_idx).filter(|(owner, _)| {
+                !st.profile.session_edited()
+                    && !self.render_normalization.table_text_reflowed(table)
+                    && fmt.line_heights.len() == para.line_segs.len()
+                    && *owner > 0
+                    && *owner + 1 < fmt.line_heights.len()
+            })
+        {
+            // 저장 표 줄 앞의 공백 전진은 포함하되, 표 뒤 독립 줄은 그 줄의
+            // PartialParagraph가 소비한다. 문단 전체 적합 높이로 예약하면 꼬리까지
+            // 표에 넣은 뒤 다시 쌓게 된다.
+            fmt.line_content_height(0..owner + 1, 0.0)
         } else if tac_table_line_idx == Some(0) && fmt.line_heights.len() > 1 {
             // PR #1088 follow-up: hwp-multi-001 pi=46 처럼 TAC 표가 문단의
             // 첫 줄이고 뒤따르는 제목 줄이 같은 문단의 line1(vpos reset)로
@@ -5541,6 +5569,35 @@ impl TypesetEngine {
             && is_first_table
             && pre_height <= 0.0
             && (fmt.square_host_plan.is_some() || no_lineseg_square_band.is_some());
+        if is_wrap_around_table
+            && crate::renderer::para_has_no_stored_line_segs(para)
+            && matches!(
+                table.common.vert_rel_to,
+                crate::model::shape::VertRelTo::Para
+            )
+            && matches!(
+                table.common.horz_rel_to,
+                crate::model::shape::HorzRelTo::Column | crate::model::shape::HorzRelTo::Para
+            )
+            && matches!(
+                table.common.horz_align,
+                crate::model::shape::HorzAlign::Left
+            )
+        {
+            let column = st.inline_flow_column();
+            let x0 =
+                column.x + hwpunit_to_px(signed_hwpunit(table.common.horizontal_offset), self.dpi);
+            let x1 = x0
+                + hwpunit_to_px(table.common.width as i32, self.dpi)
+                + hwpunit_to_px(i32::from(table.outer_margin_left), self.dpi)
+                + hwpunit_to_px(i32::from(table.outer_margin_right), self.dpi);
+            let top = para_start_height + hwpunit_to_px(signed_vertical_offset, self.dpi);
+            let bottom = top
+                + hwpunit_to_px(i32::from(table.outer_margin_top), self.dpi)
+                + hwpunit_to_px(table.common.height as i32, self.dpi)
+                + hwpunit_to_px(i32::from(table.outer_margin_bottom), self.dpi);
+            st.record_unstored_square_box(para_idx, x0..x1, top..bottom);
+        }
         // 저장 줄이 없는 **빈** host 의 전폭 Square 표: 표는 오프셋·바깥여백 위 아래에
         // 놓이고 host 빈 줄은 표 아래로 내려간다(layout 과 같은 helper).
         let empty_square_host_geometry = (is_wrap_around_table && is_first_table)
@@ -5603,6 +5660,11 @@ impl TypesetEngine {
         } else if is_wrap_around_table && pre_height > 0.0 {
             let v_off_px = crate::renderer::hwpunit_to_px(vertical_offset as i32, self.dpi);
             let table_bottom = v_off_px + table_total_height;
+            // 표 옆 차선에 흡수되는 뒤 문단의 저장 줄은 host 줄 원점에서 잰다. 그 줄이
+            // 표 바닥보다 아래까지 이어지면 띠도 그 끝까지 늘어나야 하므로, 앞 글자가
+            // 있는 host 도 같은 원점으로 띠를 등록한다(흐름 전진은 그대로).
+            let host_origin = st.current_height;
+            st.register_square_band(host_origin, host_origin + pre_height.max(table_bottom));
             st.advance_flow_by(pre_height.max(table_bottom));
         } else if is_visible_para_float {
             // 통째 배치의 fit 판정에서 확정한 결과를 그대로 소비한다.
@@ -5773,7 +5835,31 @@ impl TypesetEngine {
         } else if let Some(end) = computed_table_row_end {
             st.align_flow_to(end);
         } else if tac_wrap_split {
-            st.advance_flow_by(table_total_height);
+            // 단일 TAC 의 높이는 문단 height_for_fit 이라 앞 글줄을 이미 담는다. 여러 TAC
+            // 표는 각자의 저장 줄만 계상하므로(typeset_tac_table) 첫 표 앞 글줄을 따로 더한다.
+            // 표 줄이 vpos 를 되감아 새 쪽에서 시작하면 앞 글줄은 앞 쪽의 사다리라 더하지 않는다
+            // (1490000-200900057 pi=420: 더하면 같은 쪽 뒤 표가 넘쳐 쪽이 하나 는다).
+            let prefix_continues_into_table = pre_table_end_line > 0
+                && para
+                    .line_segs
+                    .get(pre_table_end_line)
+                    .zip(para.line_segs.get(pre_table_end_line - 1))
+                    .is_some_and(|(table_line, prefix_line)| {
+                        table_line.vertical_pos > prefix_line.vertical_pos
+                    });
+            let per_line_tac_height = prefix_continues_into_table
+                && para
+                    .controls
+                    .iter()
+                    .filter(|control| {
+                        matches!(control, Control::Table(other)
+                        if self.is_effective_tac_table(para, other, fmt))
+                    })
+                    .count()
+                    > 1;
+            st.advance_flow_by(
+                table_total_height + if per_line_tac_height { pre_height } else { 0.0 },
+            );
         } else if let Some(host_spacing_px) = if st.profile.hwpx_stored_layout()
             && is_last_placed
             && total_lines <= pre_table_end_line + 1
@@ -5896,6 +5982,19 @@ impl TypesetEngine {
                         })
                 })
                 .flatten();
+            // 쪽 기준 자리차지 표 띠에 걸린 빈 host 줄은 띠 아래의 독립 줄이다([#8554] 배치와
+            // 같은 판정). 흐름이 아직 띠 아래끝에 이르지 않았을 때만 띠 끝으로 옮긴다.
+            let page_band_host_line = (!table.common.treat_as_char
+                && is_first_placed
+                && is_last_placed
+                && pre_height <= 0.0)
+                .then(|| {
+                    st.page_band_host_line
+                        .filter(|(para, ctrl, ..)| *para == para_idx && *ctrl == ctrl_idx)
+                        .map(|(_, _, band_bottom, advance)| (band_bottom, advance))
+                })
+                .flatten()
+                .filter(|(band_bottom, _)| st.current_height + 0.5 < *band_bottom);
             if hwp3_topbottom_no_reserve {
                 st.advance_flow_by(pre_height + stored_host_line_px.unwrap_or(0.0));
             } else if hangul_flowed_beside_table {
@@ -5908,6 +6007,11 @@ impl TypesetEngine {
                     band_top,
                     frame.map_or(band_top + table_total_height, |frame| frame.occupied_bottom),
                 );
+            } else if let Some((band_bottom, host_advance_hu)) = page_band_host_line {
+                // 배치는 host 에 이르면 띠 아래끝으로 점프하고(`calculate_shape_reserved_heights`)
+                // 그 아래에 host 줄을 둔다. 조판도 같은 끝점까지 흐름을 옮긴다.
+                st.align_flow_to(band_bottom);
+                st.advance_flow_by(hwpunit_to_px(host_advance_hu, self.dpi));
             } else if let Some(extras_hu) = empty_host_physical_extras_hu {
                 st.advance_flow_by(
                     pre_height + table_total_height + hwpunit_to_px(extras_hu as i32, self.dpi),
@@ -5957,7 +6061,15 @@ impl TypesetEngine {
             .iter()
             .filter(|c| matches!(c, Control::Table(t) if self.is_effective_tac_table(para, t, fmt)))
             .count();
-        let post_table_start = if tac_wrap_split {
+        let stored_owned_table_line = (!st.profile.session_edited()
+            && fmt.line_heights.len() == para.line_segs.len())
+        .then(|| crate::renderer::composer::stored_owned_tac_line(para, ctrl_idx))
+        .flatten();
+        let post_table_start = if let Some((owner, _)) = stored_owned_table_line {
+            // 앞 공백 줄의 line_height가 개체 최대 높이를 반복해도 소유 줄은
+            // 제어 슬롯이 결정한다. 이미 소비한 표 줄을 꼬리에 다시 넣지 않는다.
+            (owner + 1).min(total_lines)
+        } else if tac_wrap_split {
             (pre_table_end_line + 1).min(total_lines).max(1)
         } else if self.uses_tac_table_flow(table) {
             pre_table_end_line.max(1)
@@ -6523,8 +6635,9 @@ impl TypesetEngine {
         }
     }
 
-    /// 표 줄 0 다음 글줄이 같은 저장 프레임에서 끊김 없이 이어질 때, 표 줄 원점에서
-    /// 그 글줄 원점까지의 저장 걸음(px). 되감김·합성 줄·편집 세션은 `None` 이다.
+    /// 표 줄 다음 글줄이 같은 저장 프레임에서 끊김 없이 이어질 때의 저장 걸음(px).
+    /// 앞 공백 줄이 따로 있으면 같은 구성에서 소비한 앞 전진도 포함한다.
+    /// 되감김·합성 줄·편집 세션은 `None` 이다.
     fn stored_tac_line_step_to_post_text(
         &self,
         para: &Paragraph,
@@ -6532,13 +6645,36 @@ impl TypesetEngine {
         fmt: &FormattedParagraph,
         post_table_start: usize,
     ) -> Option<f64> {
-        if post_table_start != 1
-            || self.profile.get().session_edited()
-            || self.tac_table_line_index(para, table, fmt) != Some(0)
-        {
+        let owner = self.tac_table_line_index(para, table, fmt)?;
+        if post_table_start != owner + 1 || self.profile.get().session_edited() {
             return None;
         }
-        let (table_line, post_line) = para.line_segs.first().zip(para.line_segs.get(1))?;
+        let (table_line, post_line) = para
+            .line_segs
+            .get(owner)
+            .zip(para.line_segs.get(post_table_start))?;
+        let prefix = if owner == 0 {
+            0.0
+        } else {
+            let control = para.controls.iter().position(|control| {
+                matches!(control, Control::Table(candidate) if std::ptr::eq(candidate.as_ref(), table))
+            })?;
+            let (stored_owner, _) =
+                crate::renderer::composer::stored_owned_tac_line(para, control)?;
+            let advance = fmt.line_advances_sum(0..owner);
+            let stored_advance = hwpunit_to_px(
+                table_line
+                    .vertical_pos
+                    .checked_sub(para.line_segs.first()?.vertical_pos)?,
+                self.dpi,
+            );
+            if stored_owner != owner
+                || (advance - stored_advance).abs() > hwpunit_to_px(1, self.dpi)
+            {
+                return None;
+            }
+            advance
+        };
         // 줄간격은 음수일 수도 있다. 뒤 글줄이 그 간격만큼 표 줄 끝보다 위에서 시작한다는
         // 저장 증언도 같은 프레임의 흐름이다.
         if is_synthetic_line_seg(table_line)
@@ -6551,8 +6687,9 @@ impl TypesetEngine {
             .vertical_pos
             .checked_add(table_line.line_height)?
             .checked_add(table_line.line_spacing)?;
-        (post_line.vertical_pos == step)
-            .then(|| hwpunit_to_px(table_line.line_height + table_line.line_spacing, self.dpi))
+        (post_line.vertical_pos == step).then(|| {
+            prefix + hwpunit_to_px(table_line.line_height + table_line.line_spacing, self.dpi)
+        })
     }
 
     fn tac_flow_query(&self) -> controls::tac_flow::TacFlowQuery<'_> {
@@ -8091,6 +8228,7 @@ mod tests {
             source_cellbreak_row_end: None,
             next_para_stored_top: None,
             relax_terminal_table_footnote_fit: false,
+            host_line_trails_table: false,
         };
         let flow_layout =
             PageLayoutInfo::from_page_def(&a4_page_def(), &ColumnDef::default(), DEFAULT_DPI);
@@ -9611,4 +9749,35 @@ mod tests {
             "actual image band must include p1693..p1697 and stop before p1698",
         );
     }
+}
+
+/// [#9016] 글자 없는 문단에서 제목 차례 표시 줄이 표 소유 줄 앞에 저장돼 있으면 그 저장 전진(px).
+///
+/// 제목 차례 표시는 CTRL_HEADER 없이 8유닛 슬롯을 차지하는 인라인 제어라 `controls[]` 에 없고,
+/// 한/글은 그 슬롯을 자기 줄(글자 높이 줄)로 쌓는다. 소유 줄까지의 저장 vpos 가 되감김 없이
+/// 증가할 때만 같은 조각의 앞 줄로 본다. 재조판·편집된 줄은 저장 원점을 근거로 쓰지 않는다.
+fn title_mark_prefix_advance(para: &Paragraph, ctrl_idx: usize, dpi: f64) -> Option<f64> {
+    if !para.text.is_empty()
+        || !para.title_marks.iter().any(|mark| mark.char_idx == 0)
+        || para.stored_text_partition_is_dirty()
+        || para.cell_format_vpos_dirty
+    {
+        return None;
+    }
+    let owner = crate::renderer::composer::control_slot_line_index(para, ctrl_idx)
+        .filter(|&line| line > 0)?;
+    let rows = para.line_segs.get(..=owner)?;
+    if rows.iter().any(|seg| {
+        is_synthetic_line_seg(seg)
+            || seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+    }) || !rows
+        .windows(2)
+        .all(|pair| pair[1].vertical_pos > pair[0].vertical_pos)
+    {
+        return None;
+    }
+    Some(hwpunit_to_px(
+        rows[owner].vertical_pos - rows[0].vertical_pos,
+        dpi,
+    ))
 }

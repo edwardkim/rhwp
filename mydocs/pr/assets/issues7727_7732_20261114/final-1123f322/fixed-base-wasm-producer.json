@@ -1,0 +1,24 @@
+{
+  "source": "53da4d2da28ae0cacf8feac3a989cc6a69fb2622",
+  "build": {
+    "exit_code": 0,
+    "command": [
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/fixed-base-stored-tab-owned-comparison/pkg",
+      "--no-opt"
+    ],
+    "seconds": 490.871,
+    "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/fixed-base-stored-tab-owned-comparison/fresh-wasm-build.log",
+    "log_sha256": "e8fc5415591f9aaef5a924152399f75ffafa7715d9966b2d701a664bd5135f10"
+  },
+  "build_type": "macOS local alternative --target web --no-opt",
+  "files": {
+    "rhwp.js": "2d48f8a6c3ff7f848f08725bb54d04094b296af1a40ae61203081a7cf8061a1a",
+    "rhwp_bg.wasm": "d0cea0bfd8a77fde34a82535d451b6fd5971629b6e2a2f7c560fa2ba6bbe9315"
+  },
+  "owned_worktree": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/fixed-base-stored-tab-owned-comparison/source",
+  "shared_target": "/Users/tsjang/rhwp/target/pr-review"
+}

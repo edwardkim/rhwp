@@ -1,0 +1,82 @@
+[
+  {
+    "issue": 7727,
+    "key": "cbta",
+    "doc": "samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp",
+    "pdf": "pdf/issue7727/cbta-original-hancom2020-print-20261106.pdf",
+    "expected_pages": 204,
+    "input_sha256": "8ef9de3f35690bf9d7994527f77cb02d4a4fcff447c219a78fbc2855d64be6e7",
+    "input_bytes": 12851712,
+    "pdf_sha256": "0db1eb55eda0f1a4985eeaf187656c23499616b7dccddcbb7c874c0937e1b2e0",
+    "pdf_bytes": 4970756,
+    "pdfinfo": [
+      "Creator:         Hwp 2020 0.0.0.0",
+      "Producer:        Hancom PDF 1.3.0.550",
+      "Pages:           204"
+    ]
+  },
+  {
+    "issue": 7729,
+    "key": "recommendation",
+    "doc": "samples/issue6844/30269-anticorruption-recommendation-toc.hwp",
+    "pdf": "pdf/30269-anticorruption-recommendation-toc-2020.pdf",
+    "expected_pages": 22,
+    "input_sha256": "9e7cc9a3ea8c9d67a9df33fe49921ec87e6f5c38d5cc53b9885a37ef5b285ef7",
+    "input_bytes": 470016,
+    "pdf_sha256": "d01f9ff59664a9c5b4e1a67e38f0d1c295aac8e22e3fbc07017f938f197822c3",
+    "pdf_bytes": 572193,
+    "pdfinfo": [
+      "Creator:         Hwp 2022 0.0.0.0",
+      "Producer:        Hancom PDF 1.3.0.550",
+      "Pages:           22"
+    ]
+  },
+  {
+    "issue": 7730,
+    "key": "exam",
+    "doc": "samples/exam_eng.hwp",
+    "pdf": "pdf/exam_eng-hwp-2020.pdf",
+    "expected_pages": 8,
+    "input_sha256": "7a5755a2f773fce4d295cbfeb1c5d722edb02c7f920bb067fa56940e8cd6a05b",
+    "input_bytes": 3486208,
+    "pdf_sha256": "4f5b9e0b7be65fcb915b2fecc41e9b397b1d85d369b64545209a172bc7b36c98",
+    "pdf_bytes": 1047484,
+    "pdfinfo": [
+      "Creator:         Hwp 2022 0.0.0.0",
+      "Producer:        Hancom PDF 1.3.0.550",
+      "Pages:           8"
+    ]
+  },
+  {
+    "issue": 7731,
+    "key": "api",
+    "doc": "mydocs/pr/assets/issue7445/hwpctl_API_v2.4.hwp",
+    "pdf": "mydocs/pr/assets/issue7731/api-reference/hwpctl_API_v2.4-hwp-2020.pdf",
+    "expected_pages": 105,
+    "input_sha256": "d11dd1331083be4e8c989dfbd587777626b3d77686d3436c35a2c20da9494603",
+    "input_bytes": 262144,
+    "pdf_sha256": "1d289727dd40ed35e48135bf16df06fe4cd080d967441ff464fb0e0b205fae74",
+    "pdf_bytes": 828101,
+    "pdfinfo": [
+      "Creator:         Hwp 2022 0.0.0.0",
+      "Producer:        Hancom PDF 1.3.0.550",
+      "Pages:           105"
+    ]
+  },
+  {
+    "issue": 7732,
+    "key": "footnote",
+    "doc": "mydocs/pr/assets/issue7445/issue1937_rowbreak_footnote_overpagination.hwp",
+    "pdf": "pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf",
+    "expected_pages": 50,
+    "input_sha256": "a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+    "input_bytes": 147456,
+    "pdf_sha256": "7f14bc85eb389a68cc88bd40fcafeb7a638d8454293a30bb2c8fe884a16978eb",
+    "pdf_bytes": 766874,
+    "pdfinfo": [
+      "Creator:         Hwp 2020 0.0.0.0",
+      "Producer:        Hancom PDF 1.3.0.550",
+      "Pages:           50"
+    ]
+  }
+]

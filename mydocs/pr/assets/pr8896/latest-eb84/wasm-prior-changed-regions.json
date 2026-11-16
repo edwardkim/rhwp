@@ -1,0 +1,107 @@
+[
+  {
+    "key": "handbook-hwp",
+    "page": 248,
+    "old_raw": 100.0,
+    "new_raw": 100.0,
+    "diff_bbox": [
+      113,
+      615,
+      643,
+      800
+    ],
+    "panel": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/direct-review/wasm-previous-handbook-hwp-248.png",
+    "direct_read": "Same-scale independent Print comparison: text, borders and WMF preserved; no new omission, overlap or ordering defect",
+    "direct_read_at": "2026-11-12T09:35:47.951757+09:00"
+  },
+  {
+    "key": "handbook-hwpx",
+    "page": 248,
+    "old_raw": 100.0,
+    "new_raw": 100.0,
+    "diff_bbox": [
+      113,
+      615,
+      643,
+      800
+    ],
+    "panel": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/direct-review/wasm-previous-handbook-hwpx-248.png",
+    "direct_read": "Same-scale independent Print comparison: text, borders and WMF preserved; no new omission, overlap or ordering defect",
+    "direct_read_at": "2026-11-12T09:35:47.951783+09:00"
+  },
+  {
+    "key": "nested",
+    "page": 8,
+    "old_raw": 99.52472,
+    "new_raw": 99.5517,
+    "diff_bbox": [
+      220,
+      153,
+      711,
+      946
+    ],
+    "panel": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/direct-review/wasm-previous-nested-008.png",
+    "direct_read": "Same-scale independent Print comparison: text, borders and WMF preserved; no new omission, overlap or ordering defect",
+    "direct_read_at": "2026-11-12T09:35:47.951789+09:00"
+  },
+  {
+    "key": "nested",
+    "page": 9,
+    "old_raw": 99.98759,
+    "new_raw": 99.99522,
+    "diff_bbox": [
+      652,
+      420,
+      701,
+      434
+    ],
+    "panel": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/direct-review/wasm-previous-nested-009.png",
+    "direct_read": "Same-scale independent Print comparison: text, borders and WMF preserved; no new omission, overlap or ordering defect",
+    "direct_read_at": "2026-11-12T09:35:47.951794+09:00"
+  },
+  {
+    "key": "sample16-hwp2022",
+    "page": 51,
+    "old_raw": 100.0,
+    "new_raw": 100.0,
+    "diff_bbox": [
+      92,
+      567,
+      702,
+      940
+    ],
+    "panel": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/direct-review/wasm-previous-sample16-hwp2022-051.png",
+    "direct_read": "Same-scale independent Print comparison: text, borders and WMF preserved; no new omission, overlap or ordering defect",
+    "direct_read_at": "2026-11-12T09:35:47.951798+09:00"
+  },
+  {
+    "key": "sample16-hwp2024",
+    "page": 51,
+    "old_raw": 100.0,
+    "new_raw": 100.0,
+    "diff_bbox": [
+      92,
+      567,
+      702,
+      987
+    ],
+    "panel": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/direct-review/wasm-previous-sample16-hwp2024-051.png",
+    "direct_read": "Same-scale independent Print comparison: text, borders and WMF preserved; no new omission, overlap or ordering defect",
+    "direct_read_at": "2026-11-12T09:35:47.951802+09:00"
+  },
+  {
+    "key": "sample16-hwpx",
+    "page": 51,
+    "old_raw": 100.0,
+    "new_raw": 100.0,
+    "diff_bbox": [
+      92,
+      567,
+      702,
+      940
+    ],
+    "panel": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/direct-review/wasm-previous-sample16-hwpx-051.png",
+    "direct_read": "Same-scale independent Print comparison: text, borders and WMF preserved; no new omission, overlap or ordering defect",
+    "direct_read_at": "2026-11-12T09:35:47.951809+09:00"
+  }
+]

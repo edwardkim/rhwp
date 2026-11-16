@@ -154,7 +154,10 @@ function ciJobs(classification, fastPass = false) {
     package: ['skipped', 'success'],
   }[classification.frontend_mode];
   jobs.push(job(CI_FRONTEND_JOBS[0], frontend[0]));
-  jobs.push(job(CI_FRONTEND_JOBS[1], frontend[1]));
+  jobs.push(job(CI_FRONTEND_JOBS[1], frontend[1], classification.frontend_canvas_required === 'true' ? [
+    step('Build optimized WASM for frontend Canvas gates', 'success'),
+    step('Run frontend Canvas gates', 'success'),
+  ] : []));
   return jobs;
 }
 
@@ -461,17 +464,53 @@ test('invalid classifier output and API collection failure both close to full', 
   ));
 });
 
+test('frontend Canvas steps must actually complete even when their package job is green', () => {
+  const files = [{ filename: 'rhwp-studio/src/core/font-substitution.ts', status: 'modified' }];
+  const input = policyInput({ files, classification: classificationFor(files) });
+  const policy = determinePolicy(input);
+  assert.equal(policy.classification.frontend_canvas_required, 'true');
+  assert.equal(policy.classification.render_required, 'false');
+  const audit = workflows => auditPolicyRuns({ ...input, policy, currentHeadSha: HEAD_SHA, workflows });
+  assert.equal(audit(workflowEvidence(policy)).conclusion, 'success');
+  for (const name of ['Build optimized WASM for frontend Canvas gates', 'Run frontend Canvas gates']) {
+    for (const mutation of ['missing', 'duplicate', 'skipped', 'failure', 'pending']) {
+      const workflows = workflowEvidence(policy);
+      const frontend = workflows.CI.jobs.find(j => j.name === CI_FRONTEND_JOBS[1]);
+      const selected = frontend.steps.find(s => s.name === name);
+      if (mutation === 'missing') frontend.steps = frontend.steps.filter(s => s !== selected);
+      else if (mutation === 'duplicate') frontend.steps.push({ ...selected });
+      else if (mutation === 'pending') Object.assign(selected, { status: 'in_progress', conclusion: '' });
+      else selected.conclusion = mutation;
+      const result = audit(workflows);
+      assert.equal(result.conclusion, mutation === 'pending' ? 'pending' : 'failure', `${name}: ${mutation}`);
+      assert.match(result.reason, /frontend-canvas-step-not-success|pending-step/);
+    }
+  }
+});
+
+test('missing or inconsistent Canvas classification fails closed', () => {
+  for (const value of [undefined, 'unknown', 'true']) {
+    const classification = { ...classificationFor([{ filename: 'rhwp-studio/tests/a.test.ts' }]),
+      frontend_canvas_required: value };
+    const policy = determinePolicy(policyInput({ classification }));
+    assert.equal(policy.classification.classification_status, 'full');
+    assert.equal(policy.classification.render_required, 'true');
+    assert.equal(policy.classification.frontend_canvas_required, 'true');
+  }
+});
+
 test('compact status description round-trips workflow and impact axes', () => {
   const policy = determinePolicy(policyInput());
   assert.ok(policy.status_description.length <= 140);
   assert.deepEqual(parseStatusDescription(policy.status_description), {
-    v: '8',
-    cv: '8',
+    v: '9',
+    cv: '9',
     mode: 'selective',
     rfp: '0',
     wf: '111',
     rust: '0',
     fe: 'unit',
+    fc: '0',
     render: '0',
     skia: '0',
     ql: 'js',
@@ -1105,7 +1144,7 @@ test('CLI writes policy and aggregate audit outputs', (t) => {
   assert.equal(result.audit.conclusion, 'success');
   assert.match(outputs, /^codeql_run_expected=true$/m);
   assert.match(outputs, /^audit_conclusion=success$/m);
-  assert.equal(JSON.parse(fs.readFileSync(resultPath, 'utf8')).policy.policy_version, '8');
+  assert.equal(JSON.parse(fs.readFileSync(resultPath, 'utf8')).policy.policy_version, '9');
 });
 
 test('#7069 completed workflow with nonterminal lint is pending until evidence converges', () => {

@@ -1,0 +1,63 @@
+{
+  "head": "89701eb34af54502e94afa6319240596e98a1367",
+  "focused_run": {
+    "passed": 28,
+    "failed": 0,
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--build-jobs",
+      "8",
+      "--tests",
+      "--test-threads",
+      "8",
+      "--no-fail-fast",
+      "-E",
+      "test(/issue_8941|issue_8944|issue_536_native_save|bullet_create|issue_6766_clickhere_caret_alignment|issue_6840_extract_pages_prunes_bin_data/)"
+    ],
+    "environment": "sandbox-exec minimal-font.sb, RHWP_FONT_PATH unset, fresh XDG/webfont cache",
+    "log_sha256": "8b0c6bcafaaa1f27a31abbf31d4e11e7717781ef5901e24832ba709f6cdc2e0d"
+  },
+  "final_generated_suite_confirmation": {
+    "passed": 28,
+    "failed": 0,
+    "within_full_nextest": 13455,
+    "full_receipt": "full-nextest-result.json",
+    "cases": [
+      "PASS [   0.018s] ( 5059/13455) rhwp::regression_suite_004 issue_536_native_save::active_composition_blocks_editor_prepare_without_losing_a_pending_checkpoint",
+      "PASS [   0.023s] ( 5061/13455) rhwp::regression_suite_004 issue_536_native_save::content_loss_describes_the_actual_empty_entry_in_the_same_prepared_bytes",
+      "PASS [   0.022s] ( 5062/13455) rhwp::regression_suite_004 issue_536_native_save::failed_preparation_preserves_live_state_and_the_previous_checkpoint",
+      "PASS [   0.026s] ( 5063/13455) rhwp::regression_suite_004 issue_536_native_save::hwp_focus_is_stamped_on_the_snapshot_with_the_same_utf16_and_raw_docinfo_contract",
+      "PASS [   0.022s] ( 5064/13455) rhwp::regression_suite_004 issue_536_native_save::hwpx_caret_source_flag_matches_preserved_settings_bytes",
+      "PASS [   0.023s] ( 5065/13455) rhwp::regression_suite_004 issue_536_native_save::late_acknowledgement_keeps_new_edits_dirty_and_does_not_clear_history",
+      "PASS [   0.024s] ( 5066/13455) rhwp::regression_suite_004 issue_536_native_save::new_and_imported_core_are_dirty_but_opened_bytes_start_clean",
+      "PASS [   0.025s] ( 5067/13455) rhwp::regression_suite_004 issue_536_native_save::prepared_formats_own_reopenable_bytes_and_matching_reports_without_mutation",
+      "PASS [   0.020s] ( 5068/13455) rhwp::regression_suite_004 issue_536_native_save::save_acknowledgement_is_explicit_and_single_use",
+      "PASS [   0.019s] ( 5069/13455) rhwp::regression_suite_004 issue_536_native_save::save_formats_and_tokens_have_strict_transport_types",
+      "PASS [   0.026s] ( 5070/13455) rhwp::regression_suite_004 issue_536_native_save::superseded_foreign_and_cancelled_tokens_cannot_consume_the_latest_checkpoint",
+      "PASS [   0.023s] ( 6798/13455) rhwp::regression_suite_009 issue_8941_hwpx_drop_deleted_picture_bindata::bin_data_unreferenced_since_load_is_kept",
+      "PASS [   0.016s] ( 6799/13455) rhwp::regression_suite_009 issue_8941_hwpx_drop_deleted_picture_bindata::picture_bullet_follows_its_image_when_an_earlier_picture_is_dropped",
+      "PASS [   0.018s] ( 6800/13455) rhwp::regression_suite_009 issue_8941_hwpx_drop_deleted_picture_bindata::deleted_picture_is_not_saved",
+      "PASS [   0.017s] ( 6801/13455) rhwp::regression_suite_009 issue_8941_hwpx_drop_deleted_picture_bindata::remaining_picture_keeps_its_own_bytes",
+      "PASS [   0.017s] ( 6802/13455) rhwp::regression_suite_009 issue_8941_hwpx_drop_deleted_picture_bindata::saving_after_deletion_keeps_the_internal_clipboard_picture_available",
+      "PASS [   0.020s] ( 6803/13455) rhwp::regression_suite_009 issue_8941_hwpx_drop_deleted_picture_bindata::remaining_picture_survives_two_saves_in_both_formats_without_mutating_live_resources",
+      "PASS [   0.017s] ( 6804/13455) rhwp::regression_suite_009 issue_8941_hwpx_drop_deleted_picture_bindata::undo_after_save_brings_the_picture_back",
+      "PASS [   0.023s] ( 8135/13455) rhwp::regression_suite_013 issue_8944_empty_paragraph_caret_alignment::empty_paragraph_caret_follows_left_center_and_right_alignment",
+      "PASS [   0.017s] ( 8138/13455) rhwp::regression_suite_013 issue_8944_empty_paragraph_caret_alignment::first_character_does_not_move_the_caret_sideways",
+      "PASS [   0.018s] ( 8594/13455) rhwp::regression_suite_015 bullet_create::bullet_defaults_follow_hancom_head_and_body_char_shape",
+      "PASS [   0.018s] ( 8599/13455) rhwp::regression_suite_015 bullet_create::bullet_rejects_bad_values",
+      "PASS [   0.030s] ( 8600/13455) rhwp::regression_suite_015 bullet_create::custom_bullet_keeps_its_head_values_and_char_shape_in_hwp_and_hwpx",
+      "PASS [   0.029s] ( 8602/13455) rhwp::regression_suite_015 bullet_create::picture_bullet_embeds_its_image_draws_it_and_survives_save",
+      "PASS [   0.021s] ( 9110/13455) rhwp::regression_suite_016 issue_6766_clickhere_caret_alignment::empty_clickhere_caret_follows_left_center_and_right_alignment",
+      "PASS [   0.026s] ( 9476/13455) rhwp::regression_suite_017 issue_6840_extract_pages_prunes_bin_data::embedded_font_bin_data_survives_even_with_no_picture_reference",
+      "PASS [   0.029s] ( 9477/13455) rhwp::regression_suite_017 issue_6840_extract_pages_prunes_bin_data::fully_referenced_bin_data_is_left_alone",
+      "PASS [   0.025s] ( 9478/13455) rhwp::regression_suite_017 issue_6840_extract_pages_prunes_bin_data::unreferenced_bin_data_is_dropped_without_swapping_pictures"
+    ]
+  }
+}

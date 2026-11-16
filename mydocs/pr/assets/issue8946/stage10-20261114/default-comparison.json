@@ -1,0 +1,78 @@
+{
+  "base": "dd7f453898776c262c00e862e10f47d22a4d6ceb",
+  "head": "a6cdfdce4cc7d360df6ee1ef8d9ea978340d1b04",
+  "rows": [
+    {
+      "input": "embedded",
+      "mode": "none",
+      "stable_two_pass": false,
+      "pages": 763,
+      "all_page_hashes_identical": true,
+      "png_identical": true
+    },
+    {
+      "input": "embedded",
+      "mode": "omitted",
+      "stable_two_pass": false,
+      "pages": 763,
+      "all_page_hashes_identical": true,
+      "png_identical": true
+    },
+    {
+      "input": "embedded",
+      "mode": "host",
+      "stable_two_pass": false,
+      "pages": 763,
+      "all_page_hashes_identical": true,
+      "png_identical": true
+    },
+    {
+      "input": "original",
+      "mode": "none",
+      "stable_two_pass": false,
+      "pages": 763,
+      "all_page_hashes_identical": true,
+      "png_identical": true
+    },
+    {
+      "input": "original",
+      "mode": "omitted",
+      "stable_two_pass": false,
+      "pages": 763,
+      "all_page_hashes_identical": true,
+      "png_identical": true
+    },
+    {
+      "input": "original",
+      "mode": "host",
+      "stable_two_pass": false,
+      "pages": 763,
+      "all_page_hashes_identical": true,
+      "png_identical": true
+    },
+    {
+      "input": "hwp3",
+      "mode": "none",
+      "stable_two_pass": false,
+      "pages": 763,
+      "all_page_hashes_identical": true,
+      "png_identical": true
+    },
+    {
+      "input": "hwp3",
+      "mode": "omitted",
+      "stable_two_pass": true,
+      "pages": 763,
+      "all_page_hashes_identical": true,
+      "png_identical": true
+    },
+    {
+      "input": "hwp3",
+      "mode": "host",
+      "stable_two_pass": true,
+      "pages": 763,
+      "all_page_hashes_identical": true,
+      "png_identical": true
+    }
+  ]
+}

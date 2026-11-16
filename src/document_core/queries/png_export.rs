@@ -24,7 +24,9 @@ impl NativePngExporter {
         let otf_changed = self.renderer.prepare_native_otf_fonts(document)?;
         let shadow_changed = self.profile == RenderProfile::Print
             && self.renderer.prepare_text_shadow_fonts(document)?;
-        Ok(fallback_changed || pua_changed || otf_changed || shadow_changed)
+        let metafile_changed = self.profile == RenderProfile::Print
+            && self.renderer.prepare_metafile_fonts(document)?;
+        Ok(fallback_changed || pua_changed || otf_changed || shadow_changed || metafile_changed)
     }
     /// 옵션 없는 기존 screen PNG의 시스템 글꼴 경로를 유지한다.
     pub fn system_defaults() -> Self {

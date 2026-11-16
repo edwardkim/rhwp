@@ -1,0 +1,72 @@
+{
+  "producer_parent": "b60aa5e4a7ac678fe51532f37c0bb861cff2c466",
+  "before": {
+    "passed": 3,
+    "failed": 1,
+    "measured_empty_line_top": 991.89,
+    "measured_table_bottom": 985.47
+  },
+  "after": {
+    "exit": 0,
+    "command": [
+      "sandbox-exec",
+      "-f",
+      "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_9062_ws_host_tac_above_offset_float",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/Users/tsjang/rhwp/target/pr-review",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ]
+  },
+  "actual_after_summary": [
+    "Summary [   0.060s] 4 tests run: 4 passed, 343 skipped"
+  ],
+  "minimum_font_profile_sha256": "d6303bc13d7fdf3cad52056338eae3164b1a2b6049f09bccc70b6b097b093875",
+  "source_files": {
+    "src/renderer/float_placement.rs": "2386d35a16b7dcb5091b505179ff5bdbf3a037aa993a820b31fdefb859d4fa33",
+    "src/renderer/typeset/paragraph/spacing.rs": "03d35b8f00a7ef40dae5a2a33264eca773ece6796573864f7f915e04a9234008",
+    "src/parser/hwpx/tracked_changes.rs": "a7dfbc83d2157187c5608a4cebf5fe1e5f156e75f08ce0974a1553af271a199f",
+    "src/renderer/layout/table_partial.rs": "56aa54a9d63b0afc576bd5993a4765227bc0e467f25e560442fb8b68a44f7bfe",
+    "src/renderer/typeset/section/tail.rs": "6298cbda0d3afd8760157d85116e98c8015f3c3f7e7e5627e9626bc116f02483",
+    "tests/cases/issue_9062_ws_host_tac_above_offset_float.rs": "87448a0aaa2f56810003a37d81553096911b08daf44f153d1e86cdffc55f0ee1"
+  },
+  "logs": {
+    "before-test.log": {
+      "sha256": "bf51d89903eb56e44cd595f5d643a54c77236be8ea611838254a934e501c5a4c",
+      "bytes": 2374,
+      "summary": [
+        "Summary [   0.060s] 4 tests run: 3 passed, 1 failed, 346 skipped"
+      ]
+    },
+    "after-v1-predicate-contradiction.log": {
+      "sha256": "ae02f55b67b695162acde5b2163f1a9db1e2c0452d5d13ea87c97880d10a1c7d",
+      "bytes": 2374,
+      "summary": [
+        "Summary [   0.060s] 4 tests run: 3 passed, 1 failed, 346 skipped"
+      ]
+    },
+    "host-projection-diagnostic.log": {
+      "sha256": "cf4d9b3a4244ecf2f8638590421984bcb840da6b59c492785f836b71c2a9cd41",
+      "bytes": 2437,
+      "summary": [
+        "Summary [   0.060s] 4 tests run: 3 passed, 1 failed, 345 skipped"
+      ]
+    },
+    "after-test.log": {
+      "sha256": "bbe48c191ef0badac479e032b0a2f57ba0049bab2cc09cc72a876f5c450fa59f",
+      "bytes": 1372,
+      "summary": [
+        "Summary [   0.060s] 4 tests run: 4 passed, 343 skipped"
+      ]
+    }
+  },
+  "visual_status": "Native/fresh WASM actual paint verification running separately in combined-final; not complete here",
+  "failed_intermediate_candidates": "v1 predicate contradiction and temporary diagnostic are preserved as unsuccessful attempts, not final proof"
+}

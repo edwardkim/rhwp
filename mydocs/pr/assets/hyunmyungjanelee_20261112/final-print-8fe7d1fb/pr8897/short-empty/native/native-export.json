@@ -1,0 +1,15 @@
+{
+  "pageCount": 1,
+  "all_pages_exported": true,
+  "rasterBackend": "native-skia",
+  "comparisonProfile": "print",
+  "layoutGeneration": "2024",
+  "pages": [
+    {
+      "bytes": 41740,
+      "page": 0,
+      "path": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v8/visual/candidate-native/short-empty/rhwp_png/rhwp_001.png",
+      "renderTreePath": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v8/visual/candidate-native/short-empty/render_tree/render_tree_001.json"
+    }
+  ]
+}

@@ -161,7 +161,6 @@ impl TypesetEngine {
         let v_off = crate::renderer::float_placement::signed_hwpunit(table.common.vertical_offset);
         if st.col_count != 1
             || st.profile.session_edited()
-            || !(st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
             || table.common.treat_as_char
             || !is_para_topbottom_float(&table.common)
             || v_off <= 0
@@ -169,11 +168,18 @@ impl TypesetEngine {
         {
             return;
         }
-        let Some(host_seg) = para.line_segs.iter().find(|ls| !is_synthetic_line_seg(ls)) else {
+        // 저장 줄이 있는 host 는 저장 사다리가, 저장 줄이 없는 host 는 지금 조판한 줄 높이가
+        // 「후속 문단이 띠 위끝 전에 끝난다」의 근거다. 두 근거를 섞지 않는다.
+        let host_stored = para
+            .line_segs
+            .iter()
+            .find(|ls| !is_synthetic_line_seg(ls))
+            .map(|seg| seg.vertical_pos);
+        if host_stored.is_some()
+            && !(st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout())
+        {
             return;
-        };
-        let host_vpos = host_seg.vertical_pos;
-        let band_top = host_vpos.saturating_add(v_off);
+        }
         let col_w = st
             .layout
             .column_areas
@@ -185,18 +191,29 @@ impl TypesetEngine {
         let end = paragraphs_all.len().min(para_idx + 1 + MAX_PREFILL);
         for next_idx in (para_idx + 1)..end {
             let next = &paragraphs_all[next_idx];
-            if !next.controls.is_empty()
-                || next.column_type != ColumnBreakType::None
-                || next.stored_text_partition_is_dirty()
-                || next.line_segs.is_empty()
-                || next.line_segs.iter().any(is_synthetic_line_seg)
-            {
+            if !next.controls.is_empty() || next.column_type != ColumnBreakType::None {
                 break;
             }
-            let first = next.line_segs[0].vertical_pos;
-            let last = next.line_segs.last().expect("저장 줄");
-            // 저장 사다리가 이 문단을 host 뒤, 개체 띠 위에 두었을 때만 채운다.
-            if first <= host_vpos || last.vertical_pos.saturating_add(last.line_height) > band_top {
+            if let Some(host_vpos) = host_stored {
+                if next.stored_text_partition_is_dirty()
+                    || next.line_segs.is_empty()
+                    || next.line_segs.iter().any(is_synthetic_line_seg)
+                {
+                    break;
+                }
+                let band_top = host_vpos.saturating_add(v_off);
+                let first = next.line_segs[0].vertical_pos;
+                let last = next.line_segs.last().expect("저장 줄");
+                // 저장 사다리가 이 문단을 host 뒤, 개체 띠 위에 두었을 때만 채운다.
+                if first <= host_vpos
+                    || last.vertical_pos.saturating_add(last.line_height) > band_top
+                {
+                    break;
+                }
+            } else if !crate::renderer::para_has_no_stored_line_segs(next)
+                || !para_has_visible_text(next)
+            {
+                // 저장 줄 없는 host 뒤에는 저장 줄 없는 글 문단만 지금 높이로 틈에 넣는다.
                 break;
             }
             let fmt_n =

@@ -1,0 +1,40 @@
+{
+  "sha": "3383a9f7308ce34acd8ca571f11f5f5f19e783fa",
+  "node_id": "C_kwDORyECHNoAKDMzODNhOWY3MzA4Y2UzNGFjZDhjYTU3MWYxMWY1ZjVmMTllNzgzZmE",
+  "url": "https://api.github.com/repos/edwardkim/rhwp/git/commits/3383a9f7308ce34acd8ca571f11f5f5f19e783fa",
+  "html_url": "https://github.com/edwardkim/rhwp/commit/3383a9f7308ce34acd8ca571f11f5f5f19e783fa",
+  "author": {
+    "name": "edward kim",
+    "email": "tangokorea@gmail.com",
+    "date": "2026-11-12T01:30:59Z"
+  },
+  "committer": {
+    "name": "GitHub",
+    "email": "noreply@github.com",
+    "date": "2026-11-12T01:30:59Z"
+  },
+  "tree": {
+    "sha": "1a567f6f762ab22d3fad4ca9a15ec0e45bf4cd08",
+    "url": "https://api.github.com/repos/edwardkim/rhwp/git/trees/1a567f6f762ab22d3fad4ca9a15ec0e45bf4cd08"
+  },
+  "message": "Merge 1343907a8340fc032423ce5adb6d248aa80534dd into eb84afc0364c51031bb07cbbb013476293367990",
+  "parents": [
+    {
+      "sha": "eb84afc0364c51031bb07cbbb013476293367990",
+      "url": "https://api.github.com/repos/edwardkim/rhwp/git/commits/eb84afc0364c51031bb07cbbb013476293367990",
+      "html_url": "https://github.com/edwardkim/rhwp/commit/eb84afc0364c51031bb07cbbb013476293367990"
+    },
+    {
+      "sha": "1343907a8340fc032423ce5adb6d248aa80534dd",
+      "url": "https://api.github.com/repos/edwardkim/rhwp/git/commits/1343907a8340fc032423ce5adb6d248aa80534dd",
+      "html_url": "https://github.com/edwardkim/rhwp/commit/1343907a8340fc032423ce5adb6d248aa80534dd"
+    }
+  ],
+  "verification": {
+    "verified": true,
+    "reason": "valid",
+    "signature": "-----BEGIN PGP SIGNATURE-----\n\nwsFcBAABCAAQBQJq9RbTCRC1aQ7uu5UhlAAAVXgQAJ1Bh3u51GxHwEy/3AwTKFya\n90A3AZMNuOZTS/44gqW4xSYfRkINIK+KvmdIv8nM/7WPi3FgLTQXEgnIuxxQW/Eq\ns/JONnv+wdn0oyEICzujn+8SfzbmR47zBd0eINwTkMlp1qnJq772ah96OwjnktQB\nnFy24mdB4Wzzw1/sJwsozEc7xfbk7J0/5QqIBc51NKohOqZgeR1oVgkvyfEHY46k\nxRjnGB8xsAQ1CgNNEozRDS2uBBfJPCPE0l/o/klALrJhb79eMy5lywcqx6Fm5ZK3\nPJWMianbK+IOOHPfFp8IP8aEt5BEEDnJk1txNCH0M4bIjKSDkwGu+l7TCycZDHxv\nVUXGbRLx6L20LpdajJ6WpYiquCZoZnNbiC+R5MNawkoaoL0jOcMzEDC96Uxy04IU\ncuDjxjfviMUl3Rg2AVx7leBqpjSnX9voxsq/X4QjHV3vFtqnKY0V7uh7rmra8ffF\nnG5Yc1giYKof0K0yPYqKlg4utaDDa/S2UqmIFOuhdwJVzIYzqSKb9dDLHv/crish\nkNLCyHtCbbuZXjMxOGEsbN9U1PZqDCTUYr07wEeeujngq85Yo1QkhiMYPttdN7Nl\npq0jJsjgDvauopiLpcXdKdxfzYVjt7HSapbFcHo+02FzPF6OXIkOjr+Btwmn3rLi\nxVkrDwp3ndE4ncby2wAr\n=9g/Z\n-----END PGP SIGNATURE-----\n",
+    "payload": "tree 1a567f6f762ab22d3fad4ca9a15ec0e45bf4cd08\nparent eb84afc0364c51031bb07cbbb013476293367990\nparent 1343907a8340fc032423ce5adb6d248aa80534dd\nauthor edward kim <tangokorea@gmail.com> 1794447059 +0900\ncommitter GitHub <noreply@github.com> 1794447059 +0900\n\nMerge 1343907a8340fc032423ce5adb6d248aa80534dd into eb84afc0364c51031bb07cbbb013476293367990\n",
+    "verified_at": "2026-11-12T01:30:59Z"
+  }
+}

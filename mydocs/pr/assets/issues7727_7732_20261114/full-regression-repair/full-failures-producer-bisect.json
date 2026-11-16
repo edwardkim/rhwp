@@ -1,0 +1,158 @@
+[
+  {
+    "producer": "base-native",
+    "regulatory_page_count": 37,
+    "edu_cut": [
+      {
+        "startRow": 108,
+        "endRow": 121,
+        "startCut": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "endCut": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      }
+    ]
+  },
+  {
+    "producer": "closing-span-clean-native",
+    "regulatory_page_count": 37,
+    "edu_cut": [
+      {
+        "startRow": 108,
+        "endRow": 121,
+        "startCut": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "endCut": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      }
+    ]
+  },
+  {
+    "producer": "underline-baseline-native",
+    "regulatory_page_count": 37,
+    "edu_cut": [
+      {
+        "startRow": 108,
+        "endRow": 121,
+        "startCut": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "endCut": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      }
+    ]
+  },
+  {
+    "producer": "half-space-origin-native",
+    "regulatory_page_count": 37,
+    "edu_cut": [
+      {
+        "startRow": 108,
+        "endRow": 121,
+        "startCut": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "endCut": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      }
+    ]
+  },
+  {
+    "producer": "complete-row-band-native",
+    "regulatory_page_count": 37,
+    "edu_cut": [
+      {
+        "startRow": 108,
+        "endRow": 121,
+        "startCut": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "endCut": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      }
+    ]
+  },
+  {
+    "producer": "gradient-channel-native",
+    "regulatory_page_count": 37,
+    "edu_cut": [
+      {
+        "startRow": 108,
+        "endRow": 121,
+        "startCut": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "endCut": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      }
+    ]
+  },
+  {
+    "producer": "marker-partition-native",
+    "regulatory_page_count": 38,
+    "edu_cut": [
+      {
+        "startRow": 108,
+        "endRow": 120,
+        "startCut": [],
+        "endCut": []
+      }
+    ]
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "candidate": "62a3fe4e2982961f9356a890395dc056eca85570",
+  "base": "1a3ed4a7cd76701085a24ac81d30bc5fb31942c1",
+  "tested_merge_tree": "721ccfdffb245cccd7100e3c5736b735c1784e58",
+  "new_base_tests": 4,
+  "merged_result_tests": 27,
+  "result": "passed",
+  "cache_issue": "Previous merge-result-focused.log linked baseline root library from shared target; root source mtime refresh forced recompilation without content changes. Failed run preserved; passed run is merge-result-focused-recompiled.log.",
+  "source_scope": "#8956 only adds table path query contract; rendering, layout and HTML paste implementation unchanged. Shared helper additions are disjoint.",
+  "observed_at": "2026-11-12T12:50:07.485491+00:00",
+  "logs_sha256": {
+    "new-base-api.log": "74127c1fc01bae5724d3e7dabadfc17691e3d94296516e62bb7afa5f2dfccd86",
+    "merge-result-focused.log": "db657405725754a77f6fb21b99b49c37ae9e3824bbb4ee771f66d07753269344",
+    "merge-result-focused-recompiled.log": "57501a60436fab37e2a781c4502ded90cef1bb4902866af96ddde46cddac6f60"
+  }
+}

@@ -7,11 +7,12 @@
     "expected": {
       "rust_required": "true",
       "frontend_mode": "none",
+      "frontend_canvas_required": "false",
       "render_required": "false",
       "native_skia_required": "false",
       "codeql_languages": "rust",
       "classification_status": "classified",
-      "classifier_version": "8",
+      "classifier_version": "9",
       "reason": "classified:rust"
     }
   },
@@ -23,11 +24,12 @@
     "expected": {
       "rust_required": "true",
       "frontend_mode": "none",
+      "frontend_canvas_required": "false",
       "render_required": "true",
       "native_skia_required": "true",
       "codeql_languages": "rust",
       "classification_status": "classified",
-      "classifier_version": "8",
+      "classifier_version": "9",
       "reason": "classified:rust-render"
     }
   },
@@ -39,11 +41,12 @@
     "expected": {
       "rust_required": "true",
       "frontend_mode": "none",
+      "frontend_canvas_required": "false",
       "render_required": "false",
       "native_skia_required": "false",
       "codeql_languages": "rust",
       "classification_status": "classified",
-      "classifier_version": "8",
+      "classifier_version": "9",
       "reason": "classified:rust"
     }
   },
@@ -55,11 +58,12 @@
     "expected": {
       "rust_required": "true",
       "frontend_mode": "none",
+      "frontend_canvas_required": "false",
       "render_required": "false",
       "native_skia_required": "false",
       "codeql_languages": "rust",
       "classification_status": "classified",
-      "classifier_version": "8",
+      "classifier_version": "9",
       "reason": "classified:rust"
     }
   }

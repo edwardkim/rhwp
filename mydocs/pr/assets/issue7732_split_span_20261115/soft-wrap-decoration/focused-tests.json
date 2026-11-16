@@ -1,0 +1,32 @@
+{
+  "type": "relationship",
+  "minimum_font_environment": true,
+  "before": {
+    "passed": 3,
+    "failed": 4,
+    "seconds": 0.081
+  },
+  "after": {
+    "passed": 7,
+    "failed": 0,
+    "seconds": 0.018
+  },
+  "test_source": "tests/cases/issue_6117_layer_decoration_trim.rs",
+  "source_sha256": "b8e405e656be4f180e52c268487bccb9ceb3d75e045f627b7ad19967f45c4846",
+  "test_sha256": "7d10e803c14a75ea2735d96d718b2fc64ece1c747f93d81e7d4e8789e4153d52",
+  "actual_page11": {
+    "native": {
+      "before": 99.08498,
+      "after": 99.08811,
+      "official": "99.09"
+    },
+    "fresh_wasm": {
+      "before": 99.09499,
+      "after": 99.0981,
+      "official": "99.10",
+      "protected_floor": "99.10"
+    },
+    "pdf_raster_unchanged": true,
+    "render_tree_unchanged": true
+  }
+}

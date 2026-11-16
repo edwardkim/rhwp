@@ -1,0 +1,350 @@
+[
+  {
+    "label": "before",
+    "binarySha256": "288e1fae42fdf4f82878338d18e071431a27cb6762f59b2a9d71a0acf234e973",
+    "inputSha256": "a20917ea3e4b0d27f3b041078dfae3a2050d0606058bada6fe48fc6a876061a2",
+    "mismatchCount": 65,
+    "mismatches": [
+      {
+        "sourceCode": "0x3016",
+        "expected": "U+F0809",
+        "actual": "U+251C"
+      },
+      {
+        "sourceCode": "0x3017",
+        "expected": "U+F080A",
+        "actual": "U+253C"
+      },
+      {
+        "sourceCode": "0x3018",
+        "expected": "U+F080B",
+        "actual": "U+2524"
+      },
+      {
+        "sourceCode": "0x301A",
+        "expected": "U+F080D",
+        "actual": "U+2534"
+      },
+      {
+        "sourceCode": "0x301F",
+        "expected": "U+F0812",
+        "actual": "U+2533"
+      },
+      {
+        "sourceCode": "0x3020",
+        "expected": "U+F0813",
+        "actual": "U+2513"
+      },
+      {
+        "sourceCode": "0x3021",
+        "expected": "U+F0814",
+        "actual": "U+2523"
+      },
+      {
+        "sourceCode": "0x3022",
+        "expected": "U+F0815",
+        "actual": "U+254B"
+      },
+      {
+        "sourceCode": "0x3023",
+        "expected": "U+F0816",
+        "actual": "U+252B"
+      },
+      {
+        "sourceCode": "0x3025",
+        "expected": "U+F0818",
+        "actual": "U+253B"
+      },
+      {
+        "sourceCode": "0x3026",
+        "expected": "U+F0819",
+        "actual": "U+251B"
+      },
+      {
+        "sourceCode": "0x3028",
+        "expected": "U+F081B",
+        "actual": "U+2503"
+      },
+      {
+        "sourceCode": "0x3029",
+        "expected": "U+F0308",
+        "actual": "U+2554"
+      },
+      {
+        "sourceCode": "0x302A",
+        "expected": "U+F0309",
+        "actual": "U+2566"
+      },
+      {
+        "sourceCode": "0x302B",
+        "expected": "U+F030A",
+        "actual": "U+2557"
+      },
+      {
+        "sourceCode": "0x302C",
+        "expected": "U+F030B",
+        "actual": "U+2560"
+      },
+      {
+        "sourceCode": "0x302D",
+        "expected": "U+F030C",
+        "actual": "U+256C"
+      },
+      {
+        "sourceCode": "0x302E",
+        "expected": "U+F030D",
+        "actual": "U+2563"
+      },
+      {
+        "sourceCode": "0x302F",
+        "expected": "U+F030E",
+        "actual": "U+255A"
+      },
+      {
+        "sourceCode": "0x3030",
+        "expected": "U+F030F",
+        "actual": "U+2569"
+      },
+      {
+        "sourceCode": "0x3031",
+        "expected": "U+F0310",
+        "actual": "U+255D"
+      },
+      {
+        "sourceCode": "0x3032",
+        "expected": "U+F081C",
+        "actual": "U+2550"
+      },
+      {
+        "sourceCode": "0x3033",
+        "expected": "U+F081D",
+        "actual": "U+2551"
+      },
+      {
+        "sourceCode": "0x3034",
+        "expected": "U+F081E",
+        "actual": "U+250D"
+      },
+      {
+        "sourceCode": "0x3035",
+        "expected": "U+F081F",
+        "actual": "U+252F"
+      },
+      {
+        "sourceCode": "0x3036",
+        "expected": "U+F0820",
+        "actual": "U+2511"
+      },
+      {
+        "sourceCode": "0x3037",
+        "expected": "U+F0821",
+        "actual": "U+251D"
+      },
+      {
+        "sourceCode": "0x3038",
+        "expected": "U+F0822",
+        "actual": "U+253F"
+      },
+      {
+        "sourceCode": "0x3039",
+        "expected": "U+F0823",
+        "actual": "U+2525"
+      },
+      {
+        "sourceCode": "0x303A",
+        "expected": "U+F0824",
+        "actual": "U+2515"
+      },
+      {
+        "sourceCode": "0x303B",
+        "expected": "U+F0825",
+        "actual": "U+2537"
+      },
+      {
+        "sourceCode": "0x303C",
+        "expected": "U+F0826",
+        "actual": "U+2519"
+      },
+      {
+        "sourceCode": "0x303E",
+        "expected": "U+F0828",
+        "actual": "U+2502"
+      },
+      {
+        "sourceCode": "0x303F",
+        "expected": "U+F0829",
+        "actual": "U+250E"
+      },
+      {
+        "sourceCode": "0x3040",
+        "expected": "U+F082A",
+        "actual": "U+2530"
+      },
+      {
+        "sourceCode": "0x3041",
+        "expected": "U+F082B",
+        "actual": "U+2512"
+      },
+      {
+        "sourceCode": "0x3042",
+        "expected": "U+F082C",
+        "actual": "U+2520"
+      },
+      {
+        "sourceCode": "0x3043",
+        "expected": "U+F082D",
+        "actual": "U+2542"
+      },
+      {
+        "sourceCode": "0x3044",
+        "expected": "U+F082E",
+        "actual": "U+2528"
+      },
+      {
+        "sourceCode": "0x3045",
+        "expected": "U+F082F",
+        "actual": "U+2516"
+      },
+      {
+        "sourceCode": "0x3046",
+        "expected": "U+F0830",
+        "actual": "U+2538"
+      },
+      {
+        "sourceCode": "0x3047",
+        "expected": "U+F0831",
+        "actual": "U+251A"
+      },
+      {
+        "sourceCode": "0x3049",
+        "expected": "U+F0833",
+        "actual": "U+2503"
+      },
+      {
+        "sourceCode": "0x304A",
+        "expected": "U+F0834",
+        "actual": "U+2552"
+      },
+      {
+        "sourceCode": "0x304B",
+        "expected": "U+F0835",
+        "actual": "U+2564"
+      },
+      {
+        "sourceCode": "0x304C",
+        "expected": "U+F0836",
+        "actual": "U+2555"
+      },
+      {
+        "sourceCode": "0x304D",
+        "expected": "U+F0837",
+        "actual": "U+255E"
+      },
+      {
+        "sourceCode": "0x304E",
+        "expected": "U+F0838",
+        "actual": "U+256A"
+      },
+      {
+        "sourceCode": "0x304F",
+        "expected": "U+F0839",
+        "actual": "U+2561"
+      },
+      {
+        "sourceCode": "0x3050",
+        "expected": "U+F083A",
+        "actual": "U+2558"
+      },
+      {
+        "sourceCode": "0x3051",
+        "expected": "U+F083B",
+        "actual": "U+2567"
+      },
+      {
+        "sourceCode": "0x3052",
+        "expected": "U+F083C",
+        "actual": "U+255B"
+      },
+      {
+        "sourceCode": "0x3053",
+        "expected": "U+F083D",
+        "actual": "U+2550"
+      },
+      {
+        "sourceCode": "0x3054",
+        "expected": "U+F083E",
+        "actual": "U+2502"
+      },
+      {
+        "sourceCode": "0x3055",
+        "expected": "U+F083F",
+        "actual": "U+2553"
+      },
+      {
+        "sourceCode": "0x3056",
+        "expected": "U+F0840",
+        "actual": "U+2565"
+      },
+      {
+        "sourceCode": "0x3057",
+        "expected": "U+F0841",
+        "actual": "U+2556"
+      },
+      {
+        "sourceCode": "0x3058",
+        "expected": "U+F0842",
+        "actual": "U+255F"
+      },
+      {
+        "sourceCode": "0x3059",
+        "expected": "U+F0843",
+        "actual": "U+256B"
+      },
+      {
+        "sourceCode": "0x305A",
+        "expected": "U+F0844",
+        "actual": "U+2562"
+      },
+      {
+        "sourceCode": "0x305B",
+        "expected": "U+F0845",
+        "actual": "U+2559"
+      },
+      {
+        "sourceCode": "0x305C",
+        "expected": "U+F0846",
+        "actual": "U+2568"
+      },
+      {
+        "sourceCode": "0x305D",
+        "expected": "U+F0847",
+        "actual": "U+255C"
+      },
+      {
+        "sourceCode": "0x305E",
+        "expected": "U+F0848",
+        "actual": "U+2500"
+      },
+      {
+        "sourceCode": "0x305F",
+        "expected": "U+F0849",
+        "actual": "U+2551"
+      }
+    ],
+    "roundtrip": {
+      "diffCount": 0,
+      "identical": true
+    }
+  },
+  {
+    "label": "after",
+    "binarySha256": "59eee49dfea119b4634381746422595c593026bf9f8d733b0bbf5505f707bb13",
+    "inputSha256": "a20917ea3e4b0d27f3b041078dfae3a2050d0606058bada6fe48fc6a876061a2",
+    "mismatchCount": 0,
+    "mismatches": [],
+    "roundtrip": {
+      "diffCount": 0,
+      "identical": true
+    }
+  }
+]

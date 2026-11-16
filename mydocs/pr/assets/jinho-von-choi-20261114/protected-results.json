@@ -1,0 +1,30 @@
+{
+  "candidate_product_source": "eeaecff59e834f28437c98b509089bbb36a7682d",
+  "baseline_sha256": "1063d78078b704a2bfb712ca3929ab251596dd391b41bc1a9a44e9935e4990e5",
+  "total_rows": 3542,
+  "unreproduced_official_rows": 107,
+  "results": [
+    {
+      "backend": "native",
+      "rows": 1771,
+      "declines": 51,
+      "minimum": 97.99
+    },
+    {
+      "backend": "wasm",
+      "rows": 1771,
+      "declines": 56,
+      "minimum": 94.65
+    }
+  ],
+  "formal_gate": "not_passed",
+  "threshold_or_baseline_changed": false,
+  "exactBaseComparison": {
+    "base": "53da4d2da28ae0cacf8feac3a989cc6a69fb2622",
+    "nativeRows": 1771,
+    "nativeMetricChanges": 0,
+    "wasmUnreproducedRows": 56,
+    "wasmMetricChanges": 0,
+    "wasmPngChanges": 0
+  }
+}

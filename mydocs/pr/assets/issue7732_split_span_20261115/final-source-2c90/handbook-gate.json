@@ -1,0 +1,11 @@
+{
+  "status": "passed",
+  "baseline": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
+  "baseline_sha256": "f405558ec760560f38bc0179864b629736c2a12a53a3c6103150eaa5df5dc569",
+  "metric": "silhouette_raw_match_percent",
+  "backend": "native-skia",
+  "precision": "0.01 percentage points",
+  "pages": 383,
+  "regressions": [],
+  "reuse_basis": "최종 Native 소스의 --handbook-gate 전383쪽 실행 후 보호 표의 상승6행·해시를 갱신했다. 편람383행은 동일하여 기존 전쪽 산출물을 새정본으로 다시 판정했다."
+}

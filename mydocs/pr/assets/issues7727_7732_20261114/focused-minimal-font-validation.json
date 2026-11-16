@@ -1,0 +1,37 @@
+{
+  "normal_faces": 1875,
+  "isolated_faces": 528,
+  "isolated_non_os_faces": 0,
+  "korean_font_sha256": "e33989af92c53dd2b80efd88f50c404094a046658d0e7a7692619587570e616c",
+  "korean_font_path": "/System/Library/Fonts/AppleSDGothicNeo.ttc",
+  "profile_sha256": "230189f1bf0964bdeff2a7e86972794befef15054f7f5f6aae5754bb7acc7f8c",
+  "status": "focused-nextest-passed",
+  "system_profiler_os_font_files": 235,
+  "system_profiler_non_os_files": 0,
+  "normal_registry_unchanged": true,
+  "tests_run": 7,
+  "tests_passed": 7,
+  "tests_failed": 0,
+  "selection_outside": 1024,
+  "runtime_seconds": 3.353,
+  "korean_png_identical": true,
+  "korean_png_sha256": "e9e4d1a60e15c88e1b70cf61c1aa2d79326a8f6c93543cc9ae631ac302504cbc",
+  "source_parent": "da1fbe10f914e753043415b58b75a992c17bb86a",
+  "scope": "새 회귀3개 파일의7개 검사만 실행; 전체 회귀 완료가 아님",
+  "profile_policy": {
+    "blocked_font_roots": [
+      "$HOME/Library/Fonts",
+      "/Library/Fonts",
+      "$HOME/Library/FontCollections",
+      "$HOME/Library/Caches/com.apple.ATS",
+      "$REPO/output/pr-review/native-webfont-cache"
+    ],
+    "blocked_ttfs": "$REPO/ttfs except ttfs/opensource",
+    "blocked_mach_services": [
+      "com.apple.fonts",
+      "com.apple.fonts.atsbridge"
+    ],
+    "preserved_os_fonts": "/System/Library/Fonts",
+    "fresh_cache": true
+  }
+}

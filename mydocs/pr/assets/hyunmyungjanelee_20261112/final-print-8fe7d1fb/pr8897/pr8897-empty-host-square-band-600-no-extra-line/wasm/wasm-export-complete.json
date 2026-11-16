@@ -1,0 +1,82 @@
+{
+  "pageCount": 1,
+  "layoutGeneration": "2022",
+  "comparisonProfile": "print",
+  "rasterBackend": "wasm-canvas2d",
+  "protocolTimeoutMs": 600000,
+  "pngBackground": "opaque-white-print-paper",
+  "captureCanvasPolicy": "fresh-per-page-after-font-and-image-preparation",
+  "fontEnvironment": {
+    "source": "preparedPrograms",
+    "environment": null,
+    "programs": [],
+    "loaded": []
+  },
+  "pages": [
+    {
+      "page": 1,
+      "pngSha256": "1593beb25245608f923d8f945fbfb98617d113455de2936ecef718f0f6002232",
+      "width": 794,
+      "height": 1122,
+      "canvasContext": {
+        "alpha": true,
+        "colorSpace": "srgb",
+        "colorType": "unorm8",
+        "desynchronized": false,
+        "toneMapping": {
+          "mode": "standard"
+        },
+        "willReadFrequently": true
+      }
+    }
+  ],
+  "workers": [
+    {
+      "index": 0,
+      "pages": [
+        1
+      ],
+      "fonts": {
+        "requested": [
+          "rhwp old hangul"
+        ],
+        "loaded": [
+          {
+            "family": "RHWP Old Hangul",
+            "registeredFamily": "RHWP Old Hangul",
+            "sourceSha256": "0a32ff354d11c955f819d84d91e695927d41aca0fd74b4a286b6235345101af4",
+            "sha256": "0a32ff354d11c955f819d84d91e695927d41aca0fd74b4a286b6235345101af4",
+            "textProgramSha256": "0a32ff354d11c955f819d84d91e695927d41aca0fd74b4a286b6235345101af4",
+            "faceIndex": 0,
+            "weight": 400,
+            "style": "normal",
+            "repairs": [],
+            "sourceKind": "external"
+          }
+        ]
+      },
+      "nativePuaFonts": [],
+      "hftOtfFonts": [],
+      "observedFonts": [],
+      "fontEnvironment": {
+        "source": "preparedPrograms",
+        "environment": null,
+        "programs": [],
+        "loaded": []
+      },
+      "screenCanvasMetricsActive": false,
+      "canvasMetricsActive": false,
+      "canvasContext": {
+        "alpha": true,
+        "colorSpace": "srgb",
+        "colorType": "unorm8",
+        "desynchronized": false,
+        "toneMapping": {
+          "mode": "standard"
+        },
+        "willReadFrequently": true
+      },
+      "browser": "Chrome/157.0.8103.51"
+    }
+  ]
+}

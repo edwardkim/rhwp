@@ -1,0 +1,4434 @@
+{
+  "manifest": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v9/priority-actual/baseline-manifest.filtered.json",
+  "browserVersion": "Chrome/157.0.8103.51",
+  "chromiumBuildId": null,
+  "captureError": null,
+  "scope": "representative",
+  "sampleCount": 2,
+  "profiles": [
+    "screen",
+    "print"
+  ],
+  "canvaskitSurface": "software",
+  "results": [
+    {
+      "sampleId": "pr8916-zero_size_para_before_table",
+      "file": "issue8664/zero_size_para_before_table.hwp",
+      "category": "pr8916",
+      "diagnosticAxes": [
+        "layout",
+        "table-ownership",
+        "glyph-supplier"
+      ],
+      "documentDigest": "sha256:29dc4af9b4b746fbd089cff02029fc97bb8a8419d4818b2ddb7785f0fdbac9ce",
+      "page": 0,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "fontFallback": null,
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": null,
+      "readinessGateRequired": false,
+      "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/wingdings-arrow-shaft-repair/actual-consumers/pr8916-zero_size_para_before_table/canvas2d-screen.png",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr8916-zero_size_para_before_table",
+        "documentDigest": "sha256:29dc4af9b4b746fbd089cff02029fc97bb8a8419d4818b2ddb7785f0fdbac9ce",
+        "page": 0,
+        "profile": "screen",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "7d6eea06656d9cba98ac166c43aef94fa3ec281805fdbac3e1576eb0d303c608",
+        "sizeBytes": 7652,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1423.980083,
+        "documentLoadAndInitialRenderMs": 30.200000047683716,
+        "selectedPageRenderMs": 49.37041700000009,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 61.50149999999985,
+        "totalMs": 3077.1459999999997
+      },
+      "diagnostics": {
+        "fontPlan": null,
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "auto",
+              "requested": "auto"
+            },
+            "renderProfile": "screen"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "requestedBackend": "canvas2d",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "explicitCanvas2d",
+            "fallbackReason": null,
+            "documentRevision": 2,
+            "resourceGeneration": 2,
+            "renderProfile": "screen",
+            "documentDigest": "blake3:03e2f20163d21dccce1c76e61c2d455dd1134d303bdd8b58fadf145b7d6f43b0",
+            "decisionKey": "blake3:03e2f20163d21dccce1c76e61c2d455dd1134d303bdd8b58fadf145b7d6f43b0|revision:2|profile:screen|resources:2|request:canvas2d|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": true
+        },
+        "imageEffects": {
+          "canvas2d": null,
+          "canvaskit": null
+        },
+        "surfaceDiagnostics": null,
+        "canvaskitRender": null,
+        "replayPlan": null,
+        "replayPlanError": null,
+        "capture": {
+          "width": 794,
+          "height": 1123,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        }
+      },
+      "layerFeatureProbe": null,
+      "warmReplay": null
+    },
+    {
+      "sampleId": "pr8916-zero_size_para_before_table",
+      "file": "issue8664/zero_size_para_before_table.hwp",
+      "category": "pr8916",
+      "diagnosticAxes": [
+        "layout",
+        "table-ownership",
+        "glyph-supplier"
+      ],
+      "documentDigest": "sha256:29dc4af9b4b746fbd089cff02029fc97bb8a8419d4818b2ddb7785f0fdbac9ce",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "fontFallback": null,
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "readinessGateRequired": false,
+      "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/wingdings-arrow-shaft-repair/actual-consumers/pr8916-zero_size_para_before_table/canvaskit-compat-screen-software.png",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr8916-zero_size_para_before_table",
+        "documentDigest": "sha256:29dc4af9b4b746fbd089cff02029fc97bb8a8419d4818b2ddb7785f0fdbac9ce",
+        "page": 0,
+        "profile": "screen",
+        "backend": "canvaskit-compat",
+        "surface": "software"
+      },
+      "artifact": {
+        "sha256": "62862e64a1609dbdb5729dc80ef94c7e05b23722a88f06cf43fa3dabf110b992",
+        "sizeBytes": 7090,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1041.9727920000005,
+        "documentLoadAndInitialRenderMs": 455.7000000476837,
+        "selectedPageRenderMs": 54.48399999999947,
+        "warmReplayMs": 11.399999856948853,
+        "warmRendererDurationMs": 10.900000095367432,
+        "screenshotMs": 45.97737499999948,
+        "totalMs": 3430.158542
+      },
+      "diagnostics": {
+        "fontPlan": null,
+        "runtime": {
+          "activeBackend": "canvaskit",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "compat",
+              "source": "url",
+              "requested": "compat"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "screen"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvaskit",
+            "selectionReason": "explicitCanvasKit",
+            "fallbackReason": null,
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "screen",
+            "documentDigest": "blake3:03e2f20163d21dccce1c76e61c2d455dd1134d303bdd8b58fadf145b7d6f43b0",
+            "decisionKey": "blake3:03e2f20163d21dccce1c76e61c2d455dd1134d303bdd8b58fadf145b7d6f43b0|revision:3|profile:screen|resources:3|request:canvaskit|mode:compat",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": true
+        },
+        "imageEffects": {
+          "canvas2d": null,
+          "canvaskit": {
+            "cacheHits": 0,
+            "cacheMisses": 0,
+            "preprocessFailures": 0,
+            "fallbackToOriginal": 0,
+            "preprocessedPixels": 0,
+            "preprocessedBytes": 0,
+            "maxPreprocessedBytes": 0,
+            "preprocessTimeMs": 0,
+            "maxPreprocessTimeMs": 0,
+            "directImageReadbackPreprocesses": 0,
+            "nativeSurfacePreprocesses": 0
+          }
+        },
+        "surfaceDiagnostics": {
+          "created": 4,
+          "reused": 2,
+          "backend": "software",
+          "preference": "software",
+          "fallbackReason": null
+        },
+        "canvaskitRender": {
+          "surfaceCreated": 4,
+          "surfaceReused": 2,
+          "staticPictureCacheEntries": 8,
+          "staticPictureCacheBytes": 4480,
+          "staticPictureCacheHits": 24,
+          "staticPictureCacheMisses": 8,
+          "staticPictureCacheEvictions": 0,
+          "textBlobCacheEntries": 3,
+          "textBlobCacheBytes": 1236,
+          "textBlobCacheHits": 9,
+          "textBlobCacheMisses": 3,
+          "fallbackFamilyCacheEntries": 10,
+          "paragraphFontEntries": 4,
+          "paragraphFontBytes": 13900744,
+          "paragraphProviderBuilds": 0,
+          "paragraphFontRejections": 0,
+          "pendingImageLoads": 0,
+          "mode": "compat",
+          "surfacePreference": "software",
+          "surfaceBackend": "software",
+          "surfaceFallbackReason": null,
+          "lastRenderCompleted": true,
+          "lastUnsupportedOps": [],
+          "lastExpectedUnsupportedOps": [],
+          "lastUnexpectedUnsupportedOps": [],
+          "lastRenderError": null,
+          "passesRuntimeReadinessGate": true,
+          "readinessBlockers": [],
+          "hiddenCanvas2dOverlayUsed": false,
+          "lastRenderDurationMs": 10.900000095367432,
+          "renderCount": 4,
+          "imageCacheEntries": 0,
+          "imageCacheLimit": 128,
+          "imageCachePixels": 0,
+          "imageCachePixelLimit": 67108864,
+          "imageCacheHits": 0,
+          "imageCacheMisses": 0,
+          "imageCacheEvictions": 0,
+          "mipmapCacheEntries": 0,
+          "mipmapCacheBytes": 0,
+          "mipmapCacheHits": 0,
+          "mipmapCacheMisses": 0,
+          "imageFailureCacheHits": 0,
+          "imageFailures": [],
+          "localTypefaceCount": 0,
+          "localTypefaceLoadFailureCount": 0,
+          "localTypefacePendingCount": 0,
+          "bundledTypefaceCount": 1,
+          "bundledTypefaceLoadFailureCount": 0,
+          "glyphRunFontBlobCount": 0,
+          "glyphRunFontBlobBytes": 0,
+          "glyphRunTypefaceCount": 0,
+          "glyphRunFontCount": 0,
+          "fontSubstitutionLimit": 4096,
+          "unregisteredFontFallbacks": 0,
+          "fontSubstitutions": [],
+          "replayFeatureCounts": {
+            "dashedStrokes": 0,
+            "glyphRuns": 0,
+            "tabLeaders": 0,
+            "charOverlaps": 0,
+            "verticalPresentationPunctuation": 0,
+            "verticalTextRuns": 0
+          },
+          "textVariantDiagnosticGroups": 0,
+          "textVariantDiagnosticParts": 0,
+          "replayDiagnosticsDropped": 0
+        },
+        "replayPlan": {
+          "mode": "compat",
+          "hiddenCanvas2dOverlayAllowed": false,
+          "directReplayRequired": true,
+          "summary": {
+            "totalItems": 14,
+            "directItems": 14,
+            "directRequiredItems": 0,
+            "compatOverlayItems": 0,
+            "textFallbackItems": 0,
+            "unsupportedItems": 0,
+            "hiddenOverlayViolations": 0
+          },
+          "items": [
+            {
+              "path": "root/group/0/leaf/0",
+              "opType": "pageBackground",
+              "replayPlane": "background",
+              "feature": "pageBackground",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/1/cacheHint",
+              "opType": "cacheHint",
+              "feature": "cacheHint",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false,
+              "detail": "ignored:StaticSubtree"
+            },
+            {
+              "path": "root/group/2/clip",
+              "opType": "clipRect",
+              "feature": "clip",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false,
+              "detail": "body"
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/0/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/1/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/2/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/3/group/0/clip",
+              "opType": "clipRect",
+              "feature": "clip",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false,
+              "detail": "tableCell"
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/3/group/0/clip/child/group/0/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/3/group/1/leaf/0",
+              "opType": "line",
+              "replayPlane": "flow",
+              "feature": "vectorShape",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/3/group/2/leaf/0",
+              "opType": "line",
+              "replayPlane": "flow",
+              "feature": "vectorShape",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/3/group/3/leaf/0",
+              "opType": "line",
+              "replayPlane": "flow",
+              "feature": "vectorShape",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/3/group/4/leaf/0",
+              "opType": "line",
+              "replayPlane": "flow",
+              "feature": "vectorShape",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/4/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/3/cacheHint",
+              "opType": "cacheHint",
+              "feature": "cacheHint",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false,
+              "detail": "ignored:StaticSubtree"
+            }
+          ],
+          "textVariants": [],
+          "requiredFontFamilies": [
+            "함초롬바탕"
+          ],
+          "requiredFontFamiliesComplete": true
+        },
+        "replayPlanError": null,
+        "capture": {
+          "width": 794,
+          "height": 1123,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        }
+      },
+      "layerFeatureProbe": {
+        "featureCounts": {
+          "dashedStrokes": 0,
+          "glyphRuns": 0,
+          "tabLeaders": 0,
+          "charOverlaps": 0,
+          "verticalPresentationPunctuation": 0,
+          "verticalTextRuns": 0
+        },
+        "glyphOutlinePayloadCounts": {}
+      },
+      "warmReplay": {
+        "replayMs": 11.399999856948853,
+        "rerendered": true,
+        "rendererDurationMs": 10.900000095367432,
+        "renderCountDelta": 1,
+        "imageCacheHitDelta": 0,
+        "imageCacheMissDelta": 0,
+        "imageCachePixels": 0
+      }
+    },
+    {
+      "sampleId": "pr8916-zero_size_para_before_table",
+      "file": "issue8664/zero_size_para_before_table.hwp",
+      "category": "pr8916",
+      "diagnosticAxes": [
+        "layout",
+        "table-ownership",
+        "glyph-supplier"
+      ],
+      "documentDigest": "sha256:29dc4af9b4b746fbd089cff02029fc97bb8a8419d4818b2ddb7785f0fdbac9ce",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "fontFallback": null,
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "readinessGateRequired": false,
+      "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/wingdings-arrow-shaft-repair/actual-consumers/pr8916-zero_size_para_before_table/canvaskit-default-screen-software.png",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr8916-zero_size_para_before_table",
+        "documentDigest": "sha256:29dc4af9b4b746fbd089cff02029fc97bb8a8419d4818b2ddb7785f0fdbac9ce",
+        "page": 0,
+        "profile": "screen",
+        "backend": "canvaskit-default",
+        "surface": "software"
+      },
+      "artifact": {
+        "sha256": "62862e64a1609dbdb5729dc80ef94c7e05b23722a88f06cf43fa3dabf110b992",
+        "sizeBytes": 7090,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1112.0427080000009,
+        "documentLoadAndInitialRenderMs": 473.2999999523163,
+        "selectedPageRenderMs": 60.55433300000004,
+        "warmReplayMs": 12.200000047683716,
+        "warmRendererDurationMs": 11.800000190734863,
+        "screenshotMs": 44.94683299999997,
+        "totalMs": 3215.822124999999
+      },
+      "diagnostics": {
+        "fontPlan": null,
+        "runtime": {
+          "activeBackend": "canvaskit",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "url",
+              "requested": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "screen"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvaskit",
+            "selectionReason": "explicitCanvasKit",
+            "fallbackReason": null,
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "screen",
+            "documentDigest": "blake3:03e2f20163d21dccce1c76e61c2d455dd1134d303bdd8b58fadf145b7d6f43b0",
+            "decisionKey": "blake3:03e2f20163d21dccce1c76e61c2d455dd1134d303bdd8b58fadf145b7d6f43b0|revision:3|profile:screen|resources:3|request:canvaskit|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": true
+        },
+        "imageEffects": {
+          "canvas2d": null,
+          "canvaskit": {
+            "cacheHits": 0,
+            "cacheMisses": 0,
+            "preprocessFailures": 0,
+            "fallbackToOriginal": 0,
+            "preprocessedPixels": 0,
+            "preprocessedBytes": 0,
+            "maxPreprocessedBytes": 0,
+            "preprocessTimeMs": 0,
+            "maxPreprocessTimeMs": 0,
+            "directImageReadbackPreprocesses": 0,
+            "nativeSurfacePreprocesses": 0
+          }
+        },
+        "surfaceDiagnostics": {
+          "created": 4,
+          "reused": 2,
+          "backend": "software",
+          "preference": "software",
+          "fallbackReason": null
+        },
+        "canvaskitRender": {
+          "surfaceCreated": 4,
+          "surfaceReused": 2,
+          "staticPictureCacheEntries": 8,
+          "staticPictureCacheBytes": 4480,
+          "staticPictureCacheHits": 24,
+          "staticPictureCacheMisses": 8,
+          "staticPictureCacheEvictions": 0,
+          "textBlobCacheEntries": 3,
+          "textBlobCacheBytes": 1236,
+          "textBlobCacheHits": 9,
+          "textBlobCacheMisses": 3,
+          "fallbackFamilyCacheEntries": 10,
+          "paragraphFontEntries": 4,
+          "paragraphFontBytes": 13900744,
+          "paragraphProviderBuilds": 0,
+          "paragraphFontRejections": 0,
+          "pendingImageLoads": 0,
+          "mode": "default",
+          "surfacePreference": "software",
+          "surfaceBackend": "software",
+          "surfaceFallbackReason": null,
+          "lastRenderCompleted": true,
+          "lastUnsupportedOps": [],
+          "lastExpectedUnsupportedOps": [],
+          "lastUnexpectedUnsupportedOps": [],
+          "lastRenderError": null,
+          "passesRuntimeReadinessGate": true,
+          "readinessBlockers": [],
+          "hiddenCanvas2dOverlayUsed": false,
+          "lastRenderDurationMs": 11.800000190734863,
+          "renderCount": 4,
+          "imageCacheEntries": 0,
+          "imageCacheLimit": 128,
+          "imageCachePixels": 0,
+          "imageCachePixelLimit": 67108864,
+          "imageCacheHits": 0,
+          "imageCacheMisses": 0,
+          "imageCacheEvictions": 0,
+          "mipmapCacheEntries": 0,
+          "mipmapCacheBytes": 0,
+          "mipmapCacheHits": 0,
+          "mipmapCacheMisses": 0,
+          "imageFailureCacheHits": 0,
+          "imageFailures": [],
+          "localTypefaceCount": 0,
+          "localTypefaceLoadFailureCount": 0,
+          "localTypefacePendingCount": 0,
+          "bundledTypefaceCount": 1,
+          "bundledTypefaceLoadFailureCount": 0,
+          "glyphRunFontBlobCount": 0,
+          "glyphRunFontBlobBytes": 0,
+          "glyphRunTypefaceCount": 0,
+          "glyphRunFontCount": 0,
+          "fontSubstitutionLimit": 4096,
+          "unregisteredFontFallbacks": 0,
+          "fontSubstitutions": [],
+          "replayFeatureCounts": {
+            "dashedStrokes": 0,
+            "glyphRuns": 0,
+            "tabLeaders": 0,
+            "charOverlaps": 0,
+            "verticalPresentationPunctuation": 0,
+            "verticalTextRuns": 0
+          },
+          "textVariantDiagnosticGroups": 0,
+          "textVariantDiagnosticParts": 0,
+          "replayDiagnosticsDropped": 0
+        },
+        "replayPlan": {
+          "mode": "default",
+          "hiddenCanvas2dOverlayAllowed": false,
+          "directReplayRequired": true,
+          "summary": {
+            "totalItems": 14,
+            "directItems": 14,
+            "directRequiredItems": 0,
+            "compatOverlayItems": 0,
+            "textFallbackItems": 0,
+            "unsupportedItems": 0,
+            "hiddenOverlayViolations": 0
+          },
+          "items": [
+            {
+              "path": "root/group/0/leaf/0",
+              "opType": "pageBackground",
+              "replayPlane": "background",
+              "feature": "pageBackground",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/1/cacheHint",
+              "opType": "cacheHint",
+              "feature": "cacheHint",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false,
+              "detail": "ignored:StaticSubtree"
+            },
+            {
+              "path": "root/group/2/clip",
+              "opType": "clipRect",
+              "feature": "clip",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false,
+              "detail": "body"
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/0/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/1/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/2/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/3/group/0/clip",
+              "opType": "clipRect",
+              "feature": "clip",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false,
+              "detail": "tableCell"
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/3/group/0/clip/child/group/0/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/3/group/1/leaf/0",
+              "opType": "line",
+              "replayPlane": "flow",
+              "feature": "vectorShape",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/3/group/2/leaf/0",
+              "opType": "line",
+              "replayPlane": "flow",
+              "feature": "vectorShape",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/3/group/3/leaf/0",
+              "opType": "line",
+              "replayPlane": "flow",
+              "feature": "vectorShape",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/3/group/4/leaf/0",
+              "opType": "line",
+              "replayPlane": "flow",
+              "feature": "vectorShape",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/4/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/3/cacheHint",
+              "opType": "cacheHint",
+              "feature": "cacheHint",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false,
+              "detail": "ignored:StaticSubtree"
+            }
+          ],
+          "textVariants": [],
+          "requiredFontFamilies": [
+            "함초롬바탕"
+          ],
+          "requiredFontFamiliesComplete": true
+        },
+        "replayPlanError": null,
+        "capture": {
+          "width": 794,
+          "height": 1123,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        }
+      },
+      "layerFeatureProbe": {
+        "featureCounts": {
+          "dashedStrokes": 0,
+          "glyphRuns": 0,
+          "tabLeaders": 0,
+          "charOverlaps": 0,
+          "verticalPresentationPunctuation": 0,
+          "verticalTextRuns": 0
+        },
+        "glyphOutlinePayloadCounts": {}
+      },
+      "warmReplay": {
+        "replayMs": 12.200000047683716,
+        "rerendered": true,
+        "rendererDurationMs": 11.800000190734863,
+        "renderCountDelta": 1,
+        "imageCacheHitDelta": 0,
+        "imageCacheMissDelta": 0,
+        "imageCachePixels": 0
+      }
+    },
+    {
+      "sampleId": "pr8916-zero_size_para_before_table",
+      "file": "issue8664/zero_size_para_before_table.hwp",
+      "category": "pr8916",
+      "diagnosticAxes": [
+        "layout",
+        "table-ownership",
+        "glyph-supplier"
+      ],
+      "documentDigest": "sha256:29dc4af9b4b746fbd089cff02029fc97bb8a8419d4818b2ddb7785f0fdbac9ce",
+      "page": 0,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "fontFallback": null,
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": null,
+      "readinessGateRequired": false,
+      "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/wingdings-arrow-shaft-repair/actual-consumers/pr8916-zero_size_para_before_table/canvas2d-print.png",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr8916-zero_size_para_before_table",
+        "documentDigest": "sha256:29dc4af9b4b746fbd089cff02029fc97bb8a8419d4818b2ddb7785f0fdbac9ce",
+        "page": 0,
+        "profile": "print",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "1a12531db594c7cb08df5301aec6845ea85055790b07994f99b63f633ee5829d",
+        "sizeBytes": 7335,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1028.131041999999,
+        "documentLoadAndInitialRenderMs": 8.800000190734863,
+        "selectedPageRenderMs": 43.05091700000048,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 63.93733300000167,
+        "totalMs": 2656.8329169999997
+      },
+      "diagnostics": {
+        "fontPlan": null,
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "auto",
+              "requested": "auto"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "requestedBackend": "canvas2d",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "explicitCanvas2d",
+            "fallbackReason": null,
+            "documentRevision": 2,
+            "resourceGeneration": 2,
+            "renderProfile": "print",
+            "documentDigest": "blake3:03e2f20163d21dccce1c76e61c2d455dd1134d303bdd8b58fadf145b7d6f43b0",
+            "decisionKey": "blake3:03e2f20163d21dccce1c76e61c2d455dd1134d303bdd8b58fadf145b7d6f43b0|revision:2|profile:print|resources:2|request:canvas2d|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": true
+        },
+        "imageEffects": {
+          "canvas2d": null,
+          "canvaskit": null
+        },
+        "surfaceDiagnostics": null,
+        "canvaskitRender": null,
+        "replayPlan": null,
+        "replayPlanError": null,
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        }
+      },
+      "layerFeatureProbe": null,
+      "warmReplay": null
+    },
+    {
+      "sampleId": "pr8916-zero_size_para_before_table",
+      "file": "issue8664/zero_size_para_before_table.hwp",
+      "category": "pr8916",
+      "diagnosticAxes": [
+        "layout",
+        "table-ownership",
+        "glyph-supplier"
+      ],
+      "documentDigest": "sha256:29dc4af9b4b746fbd089cff02029fc97bb8a8419d4818b2ddb7785f0fdbac9ce",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "fontFallback": null,
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "readinessGateRequired": false,
+      "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/wingdings-arrow-shaft-repair/actual-consumers/pr8916-zero_size_para_before_table/canvaskit-compat-print-software.png",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr8916-zero_size_para_before_table",
+        "documentDigest": "sha256:29dc4af9b4b746fbd089cff02029fc97bb8a8419d4818b2ddb7785f0fdbac9ce",
+        "page": 0,
+        "profile": "print",
+        "backend": "canvaskit-compat",
+        "surface": "software"
+      },
+      "artifact": {
+        "sha256": "dd3b4a25971376f623bc4e806b3bae8f7f606f61e8a290422b8de16e19899281",
+        "sizeBytes": 6791,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1069.9080410000006,
+        "documentLoadAndInitialRenderMs": 431.39999985694885,
+        "selectedPageRenderMs": 72.8896249999998,
+        "warmReplayMs": 12.200000047683716,
+        "warmRendererDurationMs": 11.400000095367432,
+        "screenshotMs": 44.90483300000051,
+        "totalMs": 3143.8925420000014
+      },
+      "diagnostics": {
+        "fontPlan": null,
+        "runtime": {
+          "activeBackend": "canvaskit",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "compat",
+              "source": "url",
+              "requested": "compat"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvaskit",
+            "selectionReason": "explicitCanvasKit",
+            "fallbackReason": null,
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "print",
+            "documentDigest": "blake3:03e2f20163d21dccce1c76e61c2d455dd1134d303bdd8b58fadf145b7d6f43b0",
+            "decisionKey": "blake3:03e2f20163d21dccce1c76e61c2d455dd1134d303bdd8b58fadf145b7d6f43b0|revision:3|profile:print|resources:3|request:canvaskit|mode:compat",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": true
+        },
+        "imageEffects": {
+          "canvas2d": null,
+          "canvaskit": {
+            "cacheHits": 0,
+            "cacheMisses": 0,
+            "preprocessFailures": 0,
+            "fallbackToOriginal": 0,
+            "preprocessedPixels": 0,
+            "preprocessedBytes": 0,
+            "maxPreprocessedBytes": 0,
+            "preprocessTimeMs": 0,
+            "maxPreprocessTimeMs": 0,
+            "directImageReadbackPreprocesses": 0,
+            "nativeSurfacePreprocesses": 0
+          }
+        },
+        "surfaceDiagnostics": {
+          "created": 4,
+          "reused": 2,
+          "backend": "software",
+          "preference": "software",
+          "fallbackReason": null
+        },
+        "canvaskitRender": {
+          "surfaceCreated": 4,
+          "surfaceReused": 2,
+          "staticPictureCacheEntries": 8,
+          "staticPictureCacheBytes": 5600,
+          "staticPictureCacheHits": 24,
+          "staticPictureCacheMisses": 8,
+          "staticPictureCacheEvictions": 0,
+          "textBlobCacheEntries": 3,
+          "textBlobCacheBytes": 1236,
+          "textBlobCacheHits": 9,
+          "textBlobCacheMisses": 3,
+          "fallbackFamilyCacheEntries": 10,
+          "paragraphFontEntries": 4,
+          "paragraphFontBytes": 13900744,
+          "paragraphProviderBuilds": 0,
+          "paragraphFontRejections": 0,
+          "pendingImageLoads": 0,
+          "mode": "compat",
+          "surfacePreference": "software",
+          "surfaceBackend": "software",
+          "surfaceFallbackReason": null,
+          "lastRenderCompleted": true,
+          "lastUnsupportedOps": [],
+          "lastExpectedUnsupportedOps": [],
+          "lastUnexpectedUnsupportedOps": [],
+          "lastRenderError": null,
+          "passesRuntimeReadinessGate": true,
+          "readinessBlockers": [],
+          "hiddenCanvas2dOverlayUsed": false,
+          "lastRenderDurationMs": 11.400000095367432,
+          "renderCount": 4,
+          "imageCacheEntries": 0,
+          "imageCacheLimit": 128,
+          "imageCachePixels": 0,
+          "imageCachePixelLimit": 67108864,
+          "imageCacheHits": 0,
+          "imageCacheMisses": 0,
+          "imageCacheEvictions": 0,
+          "mipmapCacheEntries": 0,
+          "mipmapCacheBytes": 0,
+          "mipmapCacheHits": 0,
+          "mipmapCacheMisses": 0,
+          "imageFailureCacheHits": 0,
+          "imageFailures": [],
+          "localTypefaceCount": 0,
+          "localTypefaceLoadFailureCount": 0,
+          "localTypefacePendingCount": 0,
+          "bundledTypefaceCount": 1,
+          "bundledTypefaceLoadFailureCount": 0,
+          "glyphRunFontBlobCount": 0,
+          "glyphRunFontBlobBytes": 0,
+          "glyphRunTypefaceCount": 0,
+          "glyphRunFontCount": 0,
+          "fontSubstitutionLimit": 4096,
+          "unregisteredFontFallbacks": 0,
+          "fontSubstitutions": [],
+          "replayFeatureCounts": {
+            "dashedStrokes": 0,
+            "glyphRuns": 0,
+            "tabLeaders": 0,
+            "charOverlaps": 0,
+            "verticalPresentationPunctuation": 0,
+            "verticalTextRuns": 0
+          },
+          "textVariantDiagnosticGroups": 0,
+          "textVariantDiagnosticParts": 0,
+          "replayDiagnosticsDropped": 0
+        },
+        "replayPlan": {
+          "mode": "compat",
+          "hiddenCanvas2dOverlayAllowed": false,
+          "directReplayRequired": true,
+          "summary": {
+            "totalItems": 14,
+            "directItems": 14,
+            "directRequiredItems": 0,
+            "compatOverlayItems": 0,
+            "textFallbackItems": 0,
+            "unsupportedItems": 0,
+            "hiddenOverlayViolations": 0
+          },
+          "items": [
+            {
+              "path": "root/group/0/leaf/0",
+              "opType": "pageBackground",
+              "replayPlane": "background",
+              "feature": "pageBackground",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/1/cacheHint",
+              "opType": "cacheHint",
+              "feature": "cacheHint",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false,
+              "detail": "ignored:StaticSubtree"
+            },
+            {
+              "path": "root/group/2/clip",
+              "opType": "clipRect",
+              "feature": "clip",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false,
+              "detail": "body"
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/0/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/1/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/2/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/3/group/0/clip",
+              "opType": "clipRect",
+              "feature": "clip",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false,
+              "detail": "tableCell"
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/3/group/0/clip/child/group/0/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/3/group/1/leaf/0",
+              "opType": "line",
+              "replayPlane": "flow",
+              "feature": "vectorShape",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/3/group/2/leaf/0",
+              "opType": "line",
+              "replayPlane": "flow",
+              "feature": "vectorShape",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/3/group/3/leaf/0",
+              "opType": "line",
+              "replayPlane": "flow",
+              "feature": "vectorShape",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/3/group/4/leaf/0",
+              "opType": "line",
+              "replayPlane": "flow",
+              "feature": "vectorShape",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/4/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/3/cacheHint",
+              "opType": "cacheHint",
+              "feature": "cacheHint",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false,
+              "detail": "ignored:StaticSubtree"
+            }
+          ],
+          "textVariants": [],
+          "requiredFontFamilies": [
+            "함초롬바탕"
+          ],
+          "requiredFontFamiliesComplete": true
+        },
+        "replayPlanError": null,
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        }
+      },
+      "layerFeatureProbe": {
+        "featureCounts": {
+          "dashedStrokes": 0,
+          "glyphRuns": 0,
+          "tabLeaders": 0,
+          "charOverlaps": 0,
+          "verticalPresentationPunctuation": 0,
+          "verticalTextRuns": 0
+        },
+        "glyphOutlinePayloadCounts": {}
+      },
+      "warmReplay": {
+        "replayMs": 12.200000047683716,
+        "rerendered": true,
+        "rendererDurationMs": 11.400000095367432,
+        "renderCountDelta": 1,
+        "imageCacheHitDelta": 0,
+        "imageCacheMissDelta": 0,
+        "imageCachePixels": 0
+      }
+    },
+    {
+      "sampleId": "pr8916-zero_size_para_before_table",
+      "file": "issue8664/zero_size_para_before_table.hwp",
+      "category": "pr8916",
+      "diagnosticAxes": [
+        "layout",
+        "table-ownership",
+        "glyph-supplier"
+      ],
+      "documentDigest": "sha256:29dc4af9b4b746fbd089cff02029fc97bb8a8419d4818b2ddb7785f0fdbac9ce",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "fontFallback": null,
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "readinessGateRequired": false,
+      "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/wingdings-arrow-shaft-repair/actual-consumers/pr8916-zero_size_para_before_table/canvaskit-default-print-software.png",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr8916-zero_size_para_before_table",
+        "documentDigest": "sha256:29dc4af9b4b746fbd089cff02029fc97bb8a8419d4818b2ddb7785f0fdbac9ce",
+        "page": 0,
+        "profile": "print",
+        "backend": "canvaskit-default",
+        "surface": "software"
+      },
+      "artifact": {
+        "sha256": "dd3b4a25971376f623bc4e806b3bae8f7f606f61e8a290422b8de16e19899281",
+        "sizeBytes": 6791,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1043.3445410000004,
+        "documentLoadAndInitialRenderMs": 441.90000009536743,
+        "selectedPageRenderMs": 77.65279200000077,
+        "warmReplayMs": 9.400000095367432,
+        "warmRendererDurationMs": 8.799999952316284,
+        "screenshotMs": 49.592124999999214,
+        "totalMs": 3134.9828339999985
+      },
+      "diagnostics": {
+        "fontPlan": null,
+        "runtime": {
+          "activeBackend": "canvaskit",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "url",
+              "requested": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvaskit",
+            "selectionReason": "explicitCanvasKit",
+            "fallbackReason": null,
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "print",
+            "documentDigest": "blake3:03e2f20163d21dccce1c76e61c2d455dd1134d303bdd8b58fadf145b7d6f43b0",
+            "decisionKey": "blake3:03e2f20163d21dccce1c76e61c2d455dd1134d303bdd8b58fadf145b7d6f43b0|revision:3|profile:print|resources:3|request:canvaskit|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": true
+        },
+        "imageEffects": {
+          "canvas2d": null,
+          "canvaskit": {
+            "cacheHits": 0,
+            "cacheMisses": 0,
+            "preprocessFailures": 0,
+            "fallbackToOriginal": 0,
+            "preprocessedPixels": 0,
+            "preprocessedBytes": 0,
+            "maxPreprocessedBytes": 0,
+            "preprocessTimeMs": 0,
+            "maxPreprocessTimeMs": 0,
+            "directImageReadbackPreprocesses": 0,
+            "nativeSurfacePreprocesses": 0
+          }
+        },
+        "surfaceDiagnostics": {
+          "created": 4,
+          "reused": 2,
+          "backend": "software",
+          "preference": "software",
+          "fallbackReason": null
+        },
+        "canvaskitRender": {
+          "surfaceCreated": 4,
+          "surfaceReused": 2,
+          "staticPictureCacheEntries": 8,
+          "staticPictureCacheBytes": 5600,
+          "staticPictureCacheHits": 24,
+          "staticPictureCacheMisses": 8,
+          "staticPictureCacheEvictions": 0,
+          "textBlobCacheEntries": 3,
+          "textBlobCacheBytes": 1236,
+          "textBlobCacheHits": 9,
+          "textBlobCacheMisses": 3,
+          "fallbackFamilyCacheEntries": 10,
+          "paragraphFontEntries": 4,
+          "paragraphFontBytes": 13900744,
+          "paragraphProviderBuilds": 0,
+          "paragraphFontRejections": 0,
+          "pendingImageLoads": 0,
+          "mode": "default",
+          "surfacePreference": "software",
+          "surfaceBackend": "software",
+          "surfaceFallbackReason": null,
+          "lastRenderCompleted": true,
+          "lastUnsupportedOps": [],
+          "lastExpectedUnsupportedOps": [],
+          "lastUnexpectedUnsupportedOps": [],
+          "lastRenderError": null,
+          "passesRuntimeReadinessGate": true,
+          "readinessBlockers": [],
+          "hiddenCanvas2dOverlayUsed": false,
+          "lastRenderDurationMs": 8.799999952316284,
+          "renderCount": 4,
+          "imageCacheEntries": 0,
+          "imageCacheLimit": 128,
+          "imageCachePixels": 0,
+          "imageCachePixelLimit": 67108864,
+          "imageCacheHits": 0,
+          "imageCacheMisses": 0,
+          "imageCacheEvictions": 0,
+          "mipmapCacheEntries": 0,
+          "mipmapCacheBytes": 0,
+          "mipmapCacheHits": 0,
+          "mipmapCacheMisses": 0,
+          "imageFailureCacheHits": 0,
+          "imageFailures": [],
+          "localTypefaceCount": 0,
+          "localTypefaceLoadFailureCount": 0,
+          "localTypefacePendingCount": 0,
+          "bundledTypefaceCount": 1,
+          "bundledTypefaceLoadFailureCount": 0,
+          "glyphRunFontBlobCount": 0,
+          "glyphRunFontBlobBytes": 0,
+          "glyphRunTypefaceCount": 0,
+          "glyphRunFontCount": 0,
+          "fontSubstitutionLimit": 4096,
+          "unregisteredFontFallbacks": 0,
+          "fontSubstitutions": [],
+          "replayFeatureCounts": {
+            "dashedStrokes": 0,
+            "glyphRuns": 0,
+            "tabLeaders": 0,
+            "charOverlaps": 0,
+            "verticalPresentationPunctuation": 0,
+            "verticalTextRuns": 0
+          },
+          "textVariantDiagnosticGroups": 0,
+          "textVariantDiagnosticParts": 0,
+          "replayDiagnosticsDropped": 0
+        },
+        "replayPlan": {
+          "mode": "default",
+          "hiddenCanvas2dOverlayAllowed": false,
+          "directReplayRequired": true,
+          "summary": {
+            "totalItems": 14,
+            "directItems": 14,
+            "directRequiredItems": 0,
+            "compatOverlayItems": 0,
+            "textFallbackItems": 0,
+            "unsupportedItems": 0,
+            "hiddenOverlayViolations": 0
+          },
+          "items": [
+            {
+              "path": "root/group/0/leaf/0",
+              "opType": "pageBackground",
+              "replayPlane": "background",
+              "feature": "pageBackground",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/1/cacheHint",
+              "opType": "cacheHint",
+              "feature": "cacheHint",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false,
+              "detail": "ignored:StaticSubtree"
+            },
+            {
+              "path": "root/group/2/clip",
+              "opType": "clipRect",
+              "feature": "clip",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false,
+              "detail": "body"
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/0/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/1/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/2/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/3/group/0/clip",
+              "opType": "clipRect",
+              "feature": "clip",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false,
+              "detail": "tableCell"
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/3/group/0/clip/child/group/0/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/3/group/1/leaf/0",
+              "opType": "line",
+              "replayPlane": "flow",
+              "feature": "vectorShape",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/3/group/2/leaf/0",
+              "opType": "line",
+              "replayPlane": "flow",
+              "feature": "vectorShape",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/3/group/3/leaf/0",
+              "opType": "line",
+              "replayPlane": "flow",
+              "feature": "vectorShape",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/3/group/4/leaf/0",
+              "opType": "line",
+              "replayPlane": "flow",
+              "feature": "vectorShape",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/4/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/3/cacheHint",
+              "opType": "cacheHint",
+              "feature": "cacheHint",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false,
+              "detail": "ignored:StaticSubtree"
+            }
+          ],
+          "textVariants": [],
+          "requiredFontFamilies": [
+            "함초롬바탕"
+          ],
+          "requiredFontFamiliesComplete": true
+        },
+        "replayPlanError": null,
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        }
+      },
+      "layerFeatureProbe": {
+        "featureCounts": {
+          "dashedStrokes": 0,
+          "glyphRuns": 0,
+          "tabLeaders": 0,
+          "charOverlaps": 0,
+          "verticalPresentationPunctuation": 0,
+          "verticalTextRuns": 0
+        },
+        "glyphOutlinePayloadCounts": {}
+      },
+      "warmReplay": {
+        "replayMs": 9.400000095367432,
+        "rerendered": true,
+        "rendererDurationMs": 8.799999952316284,
+        "renderCountDelta": 1,
+        "imageCacheHitDelta": 0,
+        "imageCacheMissDelta": 0,
+        "imageCachePixels": 0
+      }
+    },
+    {
+      "sampleId": "pr8918-wingdings_pua_symbols",
+      "file": "issue8680/wingdings_pua_symbols.hwpx",
+      "category": "pr8918",
+      "diagnosticAxes": [
+        "layout",
+        "table-ownership",
+        "glyph-supplier"
+      ],
+      "documentDigest": "sha256:6173d83f23aed79f162e9c07f5efe19a0590bae650c800a4fcebd49abc73ad8b",
+      "page": 0,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "fontFallback": null,
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": null,
+      "readinessGateRequired": false,
+      "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/wingdings-arrow-shaft-repair/actual-consumers/pr8918-wingdings_pua_symbols/canvas2d-screen.png",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr8918-wingdings_pua_symbols",
+        "documentDigest": "sha256:6173d83f23aed79f162e9c07f5efe19a0590bae650c800a4fcebd49abc73ad8b",
+        "page": 0,
+        "profile": "screen",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "7635f1bad8c28c0f947f48b547a4ca8a3b7aaf16f9d2a7898baed6116ab02433",
+        "sizeBytes": 29268,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 985.8785829999979,
+        "documentLoadAndInitialRenderMs": 21.09999990463257,
+        "selectedPageRenderMs": 53.61187499999869,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 66.76729100000011,
+        "totalMs": 2639.9957079999986
+      },
+      "diagnostics": {
+        "fontPlan": null,
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "auto",
+              "requested": "auto"
+            },
+            "renderProfile": "screen"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "requestedBackend": "canvas2d",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "explicitCanvas2d",
+            "fallbackReason": null,
+            "documentRevision": 2,
+            "resourceGeneration": 2,
+            "renderProfile": "screen",
+            "documentDigest": "blake3:f42ecd661818d076307dcced5c5a08db76b9eef33d4cb89b5eb5e26b2ee8976c",
+            "decisionKey": "blake3:f42ecd661818d076307dcced5c5a08db76b9eef33d4cb89b5eb5e26b2ee8976c|revision:2|profile:screen|resources:2|request:canvas2d|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": true
+        },
+        "imageEffects": {
+          "canvas2d": null,
+          "canvaskit": null
+        },
+        "surfaceDiagnostics": null,
+        "canvaskitRender": null,
+        "replayPlan": null,
+        "replayPlanError": null,
+        "capture": {
+          "width": 794,
+          "height": 1123,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        }
+      },
+      "layerFeatureProbe": null,
+      "warmReplay": null
+    },
+    {
+      "sampleId": "pr8918-wingdings_pua_symbols",
+      "file": "issue8680/wingdings_pua_symbols.hwpx",
+      "category": "pr8918",
+      "diagnosticAxes": [
+        "layout",
+        "table-ownership",
+        "glyph-supplier"
+      ],
+      "documentDigest": "sha256:6173d83f23aed79f162e9c07f5efe19a0590bae650c800a4fcebd49abc73ad8b",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "fontFallback": null,
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "readinessGateRequired": false,
+      "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/wingdings-arrow-shaft-repair/actual-consumers/pr8918-wingdings_pua_symbols/canvaskit-compat-screen-software.png",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr8918-wingdings_pua_symbols",
+        "documentDigest": "sha256:6173d83f23aed79f162e9c07f5efe19a0590bae650c800a4fcebd49abc73ad8b",
+        "page": 0,
+        "profile": "screen",
+        "backend": "canvaskit-compat",
+        "surface": "software"
+      },
+      "artifact": {
+        "sha256": "ad913b2aab3d48ccbefc53824c905bc8e6eafd26363550d6ef6de4e9c95e1832",
+        "sizeBytes": 21747,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1018.9909590000025,
+        "documentLoadAndInitialRenderMs": 452.2000000476837,
+        "selectedPageRenderMs": 83.94279100000131,
+        "warmReplayMs": 16.09999990463257,
+        "warmRendererDurationMs": 15.400000095367432,
+        "screenshotMs": 62.969333000000915,
+        "totalMs": 3146.9509999999973
+      },
+      "diagnostics": {
+        "fontPlan": null,
+        "runtime": {
+          "activeBackend": "canvaskit",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "compat",
+              "source": "url",
+              "requested": "compat"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "screen"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvaskit",
+            "selectionReason": "explicitCanvasKit",
+            "fallbackReason": null,
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "screen",
+            "documentDigest": "blake3:f42ecd661818d076307dcced5c5a08db76b9eef33d4cb89b5eb5e26b2ee8976c",
+            "decisionKey": "blake3:f42ecd661818d076307dcced5c5a08db76b9eef33d4cb89b5eb5e26b2ee8976c|revision:3|profile:screen|resources:3|request:canvaskit|mode:compat",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": true
+        },
+        "imageEffects": {
+          "canvas2d": null,
+          "canvaskit": {
+            "cacheHits": 0,
+            "cacheMisses": 0,
+            "preprocessFailures": 0,
+            "fallbackToOriginal": 0,
+            "preprocessedPixels": 0,
+            "preprocessedBytes": 0,
+            "maxPreprocessedBytes": 0,
+            "preprocessTimeMs": 0,
+            "maxPreprocessTimeMs": 0,
+            "directImageReadbackPreprocesses": 0,
+            "nativeSurfacePreprocesses": 0
+          }
+        },
+        "surfaceDiagnostics": {
+          "created": 4,
+          "reused": 2,
+          "backend": "software",
+          "preference": "software",
+          "fallbackReason": null
+        },
+        "canvaskitRender": {
+          "surfaceCreated": 4,
+          "surfaceReused": 2,
+          "staticPictureCacheEntries": 8,
+          "staticPictureCacheBytes": 4480,
+          "staticPictureCacheHits": 24,
+          "staticPictureCacheMisses": 8,
+          "staticPictureCacheEvictions": 0,
+          "textBlobCacheEntries": 40,
+          "textBlobCacheBytes": 12756,
+          "textBlobCacheHits": 120,
+          "textBlobCacheMisses": 40,
+          "fallbackFamilyCacheEntries": 26,
+          "paragraphFontEntries": 5,
+          "paragraphFontBytes": 14557596,
+          "paragraphProviderBuilds": 0,
+          "paragraphFontRejections": 0,
+          "pendingImageLoads": 0,
+          "mode": "compat",
+          "surfacePreference": "software",
+          "surfaceBackend": "software",
+          "surfaceFallbackReason": null,
+          "lastRenderCompleted": true,
+          "lastUnsupportedOps": [],
+          "lastExpectedUnsupportedOps": [],
+          "lastUnexpectedUnsupportedOps": [],
+          "lastRenderError": null,
+          "passesRuntimeReadinessGate": true,
+          "readinessBlockers": [],
+          "hiddenCanvas2dOverlayUsed": false,
+          "lastRenderDurationMs": 15.400000095367432,
+          "renderCount": 4,
+          "imageCacheEntries": 0,
+          "imageCacheLimit": 128,
+          "imageCachePixels": 0,
+          "imageCachePixelLimit": 67108864,
+          "imageCacheHits": 0,
+          "imageCacheMisses": 0,
+          "imageCacheEvictions": 0,
+          "mipmapCacheEntries": 0,
+          "mipmapCacheBytes": 0,
+          "mipmapCacheHits": 0,
+          "mipmapCacheMisses": 0,
+          "imageFailureCacheHits": 0,
+          "imageFailures": [],
+          "localTypefaceCount": 0,
+          "localTypefaceLoadFailureCount": 0,
+          "localTypefacePendingCount": 0,
+          "bundledTypefaceCount": 2,
+          "bundledTypefaceLoadFailureCount": 0,
+          "glyphRunFontBlobCount": 0,
+          "glyphRunFontBlobBytes": 0,
+          "glyphRunTypefaceCount": 0,
+          "glyphRunFontCount": 0,
+          "fontSubstitutionLimit": 4096,
+          "unregisteredFontFallbacks": 0,
+          "fontSubstitutions": [],
+          "replayFeatureCounts": {
+            "dashedStrokes": 0,
+            "glyphRuns": 0,
+            "tabLeaders": 0,
+            "charOverlaps": 0,
+            "verticalPresentationPunctuation": 0,
+            "verticalTextRuns": 0
+          },
+          "textVariantDiagnosticGroups": 0,
+          "textVariantDiagnosticParts": 0,
+          "replayDiagnosticsDropped": 0
+        },
+        "replayPlan": {
+          "mode": "compat",
+          "hiddenCanvas2dOverlayAllowed": false,
+          "directReplayRequired": true,
+          "summary": {
+            "totalItems": 20,
+            "directItems": 20,
+            "directRequiredItems": 0,
+            "compatOverlayItems": 0,
+            "textFallbackItems": 0,
+            "unsupportedItems": 0,
+            "hiddenOverlayViolations": 0
+          },
+          "items": [
+            {
+              "path": "root/group/0/leaf/0",
+              "opType": "pageBackground",
+              "replayPlane": "background",
+              "feature": "pageBackground",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/1/cacheHint",
+              "opType": "cacheHint",
+              "feature": "cacheHint",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false,
+              "detail": "ignored:StaticSubtree"
+            },
+            {
+              "path": "root/group/2/clip",
+              "opType": "clipRect",
+              "feature": "clip",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false,
+              "detail": "body"
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/0/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/1/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/2/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/2/group/1/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/2/group/2/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/2/group/3/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/2/group/4/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/2/group/5/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/3/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/4/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/4/group/1/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/4/group/2/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/5/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/5/group/1/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/5/group/2/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/6/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/3/cacheHint",
+              "opType": "cacheHint",
+              "feature": "cacheHint",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false,
+              "detail": "ignored:StaticSubtree"
+            }
+          ],
+          "textVariants": [],
+          "requiredFontFamilies": [
+            "Noto Sans Symbols2",
+            "함초롬바탕"
+          ],
+          "requiredFontFamiliesComplete": true
+        },
+        "replayPlanError": null,
+        "capture": {
+          "width": 794,
+          "height": 1123,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        }
+      },
+      "layerFeatureProbe": {
+        "featureCounts": {
+          "dashedStrokes": 0,
+          "glyphRuns": 0,
+          "tabLeaders": 0,
+          "charOverlaps": 0,
+          "verticalPresentationPunctuation": 0,
+          "verticalTextRuns": 0
+        },
+        "glyphOutlinePayloadCounts": {}
+      },
+      "warmReplay": {
+        "replayMs": 16.09999990463257,
+        "rerendered": true,
+        "rendererDurationMs": 15.400000095367432,
+        "renderCountDelta": 1,
+        "imageCacheHitDelta": 0,
+        "imageCacheMissDelta": 0,
+        "imageCachePixels": 0
+      }
+    },
+    {
+      "sampleId": "pr8918-wingdings_pua_symbols",
+      "file": "issue8680/wingdings_pua_symbols.hwpx",
+      "category": "pr8918",
+      "diagnosticAxes": [
+        "layout",
+        "table-ownership",
+        "glyph-supplier"
+      ],
+      "documentDigest": "sha256:6173d83f23aed79f162e9c07f5efe19a0590bae650c800a4fcebd49abc73ad8b",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "fontFallback": null,
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "readinessGateRequired": false,
+      "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/wingdings-arrow-shaft-repair/actual-consumers/pr8918-wingdings_pua_symbols/canvaskit-default-screen-software.png",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr8918-wingdings_pua_symbols",
+        "documentDigest": "sha256:6173d83f23aed79f162e9c07f5efe19a0590bae650c800a4fcebd49abc73ad8b",
+        "page": 0,
+        "profile": "screen",
+        "backend": "canvaskit-default",
+        "surface": "software"
+      },
+      "artifact": {
+        "sha256": "ad913b2aab3d48ccbefc53824c905bc8e6eafd26363550d6ef6de4e9c95e1832",
+        "sizeBytes": 21747,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1051.7934590000004,
+        "documentLoadAndInitialRenderMs": 449.2999999523163,
+        "selectedPageRenderMs": 72.67141699999775,
+        "warmReplayMs": 15.100000143051147,
+        "warmRendererDurationMs": 14.5,
+        "screenshotMs": 59.515166999997746,
+        "totalMs": 3161.466875000002
+      },
+      "diagnostics": {
+        "fontPlan": null,
+        "runtime": {
+          "activeBackend": "canvaskit",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "url",
+              "requested": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "screen"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvaskit",
+            "selectionReason": "explicitCanvasKit",
+            "fallbackReason": null,
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "screen",
+            "documentDigest": "blake3:f42ecd661818d076307dcced5c5a08db76b9eef33d4cb89b5eb5e26b2ee8976c",
+            "decisionKey": "blake3:f42ecd661818d076307dcced5c5a08db76b9eef33d4cb89b5eb5e26b2ee8976c|revision:3|profile:screen|resources:3|request:canvaskit|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": true
+        },
+        "imageEffects": {
+          "canvas2d": null,
+          "canvaskit": {
+            "cacheHits": 0,
+            "cacheMisses": 0,
+            "preprocessFailures": 0,
+            "fallbackToOriginal": 0,
+            "preprocessedPixels": 0,
+            "preprocessedBytes": 0,
+            "maxPreprocessedBytes": 0,
+            "preprocessTimeMs": 0,
+            "maxPreprocessTimeMs": 0,
+            "directImageReadbackPreprocesses": 0,
+            "nativeSurfacePreprocesses": 0
+          }
+        },
+        "surfaceDiagnostics": {
+          "created": 4,
+          "reused": 2,
+          "backend": "software",
+          "preference": "software",
+          "fallbackReason": null
+        },
+        "canvaskitRender": {
+          "surfaceCreated": 4,
+          "surfaceReused": 2,
+          "staticPictureCacheEntries": 8,
+          "staticPictureCacheBytes": 4480,
+          "staticPictureCacheHits": 24,
+          "staticPictureCacheMisses": 8,
+          "staticPictureCacheEvictions": 0,
+          "textBlobCacheEntries": 40,
+          "textBlobCacheBytes": 12756,
+          "textBlobCacheHits": 120,
+          "textBlobCacheMisses": 40,
+          "fallbackFamilyCacheEntries": 26,
+          "paragraphFontEntries": 5,
+          "paragraphFontBytes": 14557596,
+          "paragraphProviderBuilds": 0,
+          "paragraphFontRejections": 0,
+          "pendingImageLoads": 0,
+          "mode": "default",
+          "surfacePreference": "software",
+          "surfaceBackend": "software",
+          "surfaceFallbackReason": null,
+          "lastRenderCompleted": true,
+          "lastUnsupportedOps": [],
+          "lastExpectedUnsupportedOps": [],
+          "lastUnexpectedUnsupportedOps": [],
+          "lastRenderError": null,
+          "passesRuntimeReadinessGate": true,
+          "readinessBlockers": [],
+          "hiddenCanvas2dOverlayUsed": false,
+          "lastRenderDurationMs": 14.5,
+          "renderCount": 4,
+          "imageCacheEntries": 0,
+          "imageCacheLimit": 128,
+          "imageCachePixels": 0,
+          "imageCachePixelLimit": 67108864,
+          "imageCacheHits": 0,
+          "imageCacheMisses": 0,
+          "imageCacheEvictions": 0,
+          "mipmapCacheEntries": 0,
+          "mipmapCacheBytes": 0,
+          "mipmapCacheHits": 0,
+          "mipmapCacheMisses": 0,
+          "imageFailureCacheHits": 0,
+          "imageFailures": [],
+          "localTypefaceCount": 0,
+          "localTypefaceLoadFailureCount": 0,
+          "localTypefacePendingCount": 0,
+          "bundledTypefaceCount": 2,
+          "bundledTypefaceLoadFailureCount": 0,
+          "glyphRunFontBlobCount": 0,
+          "glyphRunFontBlobBytes": 0,
+          "glyphRunTypefaceCount": 0,
+          "glyphRunFontCount": 0,
+          "fontSubstitutionLimit": 4096,
+          "unregisteredFontFallbacks": 0,
+          "fontSubstitutions": [],
+          "replayFeatureCounts": {
+            "dashedStrokes": 0,
+            "glyphRuns": 0,
+            "tabLeaders": 0,
+            "charOverlaps": 0,
+            "verticalPresentationPunctuation": 0,
+            "verticalTextRuns": 0
+          },
+          "textVariantDiagnosticGroups": 0,
+          "textVariantDiagnosticParts": 0,
+          "replayDiagnosticsDropped": 0
+        },
+        "replayPlan": {
+          "mode": "default",
+          "hiddenCanvas2dOverlayAllowed": false,
+          "directReplayRequired": true,
+          "summary": {
+            "totalItems": 20,
+            "directItems": 20,
+            "directRequiredItems": 0,
+            "compatOverlayItems": 0,
+            "textFallbackItems": 0,
+            "unsupportedItems": 0,
+            "hiddenOverlayViolations": 0
+          },
+          "items": [
+            {
+              "path": "root/group/0/leaf/0",
+              "opType": "pageBackground",
+              "replayPlane": "background",
+              "feature": "pageBackground",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/1/cacheHint",
+              "opType": "cacheHint",
+              "feature": "cacheHint",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false,
+              "detail": "ignored:StaticSubtree"
+            },
+            {
+              "path": "root/group/2/clip",
+              "opType": "clipRect",
+              "feature": "clip",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false,
+              "detail": "body"
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/0/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/1/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/2/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/2/group/1/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/2/group/2/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/2/group/3/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/2/group/4/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/2/group/5/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/3/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/4/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/4/group/1/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/4/group/2/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/5/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/5/group/1/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/5/group/2/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/6/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/3/cacheHint",
+              "opType": "cacheHint",
+              "feature": "cacheHint",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false,
+              "detail": "ignored:StaticSubtree"
+            }
+          ],
+          "textVariants": [],
+          "requiredFontFamilies": [
+            "Noto Sans Symbols2",
+            "함초롬바탕"
+          ],
+          "requiredFontFamiliesComplete": true
+        },
+        "replayPlanError": null,
+        "capture": {
+          "width": 794,
+          "height": 1123,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        }
+      },
+      "layerFeatureProbe": {
+        "featureCounts": {
+          "dashedStrokes": 0,
+          "glyphRuns": 0,
+          "tabLeaders": 0,
+          "charOverlaps": 0,
+          "verticalPresentationPunctuation": 0,
+          "verticalTextRuns": 0
+        },
+        "glyphOutlinePayloadCounts": {}
+      },
+      "warmReplay": {
+        "replayMs": 15.100000143051147,
+        "rerendered": true,
+        "rendererDurationMs": 14.5,
+        "renderCountDelta": 1,
+        "imageCacheHitDelta": 0,
+        "imageCacheMissDelta": 0,
+        "imageCachePixels": 0
+      }
+    },
+    {
+      "sampleId": "pr8918-wingdings_pua_symbols",
+      "file": "issue8680/wingdings_pua_symbols.hwpx",
+      "category": "pr8918",
+      "diagnosticAxes": [
+        "layout",
+        "table-ownership",
+        "glyph-supplier"
+      ],
+      "documentDigest": "sha256:6173d83f23aed79f162e9c07f5efe19a0590bae650c800a4fcebd49abc73ad8b",
+      "page": 0,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "fontFallback": null,
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": null,
+      "readinessGateRequired": false,
+      "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/wingdings-arrow-shaft-repair/actual-consumers/pr8918-wingdings_pua_symbols/canvas2d-print.png",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr8918-wingdings_pua_symbols",
+        "documentDigest": "sha256:6173d83f23aed79f162e9c07f5efe19a0590bae650c800a4fcebd49abc73ad8b",
+        "page": 0,
+        "profile": "print",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "bf1ecb9b425350b7d028fb950619fc56a113ae35c82b6a5a9adbebf250f7a675",
+        "sizeBytes": 29027,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 992.0754589999997,
+        "documentLoadAndInitialRenderMs": 9.200000047683716,
+        "selectedPageRenderMs": 44.75133299999652,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 63.90370800000164,
+        "totalMs": 2621.452624999998
+      },
+      "diagnostics": {
+        "fontPlan": null,
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "auto",
+              "requested": "auto"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "requestedBackend": "canvas2d",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "explicitCanvas2d",
+            "fallbackReason": null,
+            "documentRevision": 2,
+            "resourceGeneration": 2,
+            "renderProfile": "print",
+            "documentDigest": "blake3:f42ecd661818d076307dcced5c5a08db76b9eef33d4cb89b5eb5e26b2ee8976c",
+            "decisionKey": "blake3:f42ecd661818d076307dcced5c5a08db76b9eef33d4cb89b5eb5e26b2ee8976c|revision:2|profile:print|resources:2|request:canvas2d|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": true
+        },
+        "imageEffects": {
+          "canvas2d": null,
+          "canvaskit": null
+        },
+        "surfaceDiagnostics": null,
+        "canvaskitRender": null,
+        "replayPlan": null,
+        "replayPlanError": null,
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        }
+      },
+      "layerFeatureProbe": null,
+      "warmReplay": null
+    },
+    {
+      "sampleId": "pr8918-wingdings_pua_symbols",
+      "file": "issue8680/wingdings_pua_symbols.hwpx",
+      "category": "pr8918",
+      "diagnosticAxes": [
+        "layout",
+        "table-ownership",
+        "glyph-supplier"
+      ],
+      "documentDigest": "sha256:6173d83f23aed79f162e9c07f5efe19a0590bae650c800a4fcebd49abc73ad8b",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "fontFallback": null,
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "readinessGateRequired": false,
+      "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/wingdings-arrow-shaft-repair/actual-consumers/pr8918-wingdings_pua_symbols/canvaskit-compat-print-software.png",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr8918-wingdings_pua_symbols",
+        "documentDigest": "sha256:6173d83f23aed79f162e9c07f5efe19a0590bae650c800a4fcebd49abc73ad8b",
+        "page": 0,
+        "profile": "print",
+        "backend": "canvaskit-compat",
+        "surface": "software"
+      },
+      "artifact": {
+        "sha256": "688ed6285c060ba06a7a8927036ecd6fb81de5e84caf1af241d690df497bc6c2",
+        "sizeBytes": 21534,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1043.6236250000002,
+        "documentLoadAndInitialRenderMs": 445.09999990463257,
+        "selectedPageRenderMs": 85.44695800000045,
+        "warmReplayMs": 16.100000143051147,
+        "warmRendererDurationMs": 15.399999856948853,
+        "screenshotMs": 63.71812499999942,
+        "totalMs": 3166.425209000001
+      },
+      "diagnostics": {
+        "fontPlan": null,
+        "runtime": {
+          "activeBackend": "canvaskit",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "compat",
+              "source": "url",
+              "requested": "compat"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvaskit",
+            "selectionReason": "explicitCanvasKit",
+            "fallbackReason": null,
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "print",
+            "documentDigest": "blake3:f42ecd661818d076307dcced5c5a08db76b9eef33d4cb89b5eb5e26b2ee8976c",
+            "decisionKey": "blake3:f42ecd661818d076307dcced5c5a08db76b9eef33d4cb89b5eb5e26b2ee8976c|revision:3|profile:print|resources:3|request:canvaskit|mode:compat",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": true
+        },
+        "imageEffects": {
+          "canvas2d": null,
+          "canvaskit": {
+            "cacheHits": 0,
+            "cacheMisses": 0,
+            "preprocessFailures": 0,
+            "fallbackToOriginal": 0,
+            "preprocessedPixels": 0,
+            "preprocessedBytes": 0,
+            "maxPreprocessedBytes": 0,
+            "preprocessTimeMs": 0,
+            "maxPreprocessTimeMs": 0,
+            "directImageReadbackPreprocesses": 0,
+            "nativeSurfacePreprocesses": 0
+          }
+        },
+        "surfaceDiagnostics": {
+          "created": 4,
+          "reused": 2,
+          "backend": "software",
+          "preference": "software",
+          "fallbackReason": null
+        },
+        "canvaskitRender": {
+          "surfaceCreated": 4,
+          "surfaceReused": 2,
+          "staticPictureCacheEntries": 8,
+          "staticPictureCacheBytes": 5600,
+          "staticPictureCacheHits": 24,
+          "staticPictureCacheMisses": 8,
+          "staticPictureCacheEvictions": 0,
+          "textBlobCacheEntries": 40,
+          "textBlobCacheBytes": 12756,
+          "textBlobCacheHits": 120,
+          "textBlobCacheMisses": 40,
+          "fallbackFamilyCacheEntries": 26,
+          "paragraphFontEntries": 5,
+          "paragraphFontBytes": 14557596,
+          "paragraphProviderBuilds": 0,
+          "paragraphFontRejections": 0,
+          "pendingImageLoads": 0,
+          "mode": "compat",
+          "surfacePreference": "software",
+          "surfaceBackend": "software",
+          "surfaceFallbackReason": null,
+          "lastRenderCompleted": true,
+          "lastUnsupportedOps": [],
+          "lastExpectedUnsupportedOps": [],
+          "lastUnexpectedUnsupportedOps": [],
+          "lastRenderError": null,
+          "passesRuntimeReadinessGate": true,
+          "readinessBlockers": [],
+          "hiddenCanvas2dOverlayUsed": false,
+          "lastRenderDurationMs": 15.399999856948853,
+          "renderCount": 4,
+          "imageCacheEntries": 0,
+          "imageCacheLimit": 128,
+          "imageCachePixels": 0,
+          "imageCachePixelLimit": 67108864,
+          "imageCacheHits": 0,
+          "imageCacheMisses": 0,
+          "imageCacheEvictions": 0,
+          "mipmapCacheEntries": 0,
+          "mipmapCacheBytes": 0,
+          "mipmapCacheHits": 0,
+          "mipmapCacheMisses": 0,
+          "imageFailureCacheHits": 0,
+          "imageFailures": [],
+          "localTypefaceCount": 0,
+          "localTypefaceLoadFailureCount": 0,
+          "localTypefacePendingCount": 0,
+          "bundledTypefaceCount": 2,
+          "bundledTypefaceLoadFailureCount": 0,
+          "glyphRunFontBlobCount": 0,
+          "glyphRunFontBlobBytes": 0,
+          "glyphRunTypefaceCount": 0,
+          "glyphRunFontCount": 0,
+          "fontSubstitutionLimit": 4096,
+          "unregisteredFontFallbacks": 0,
+          "fontSubstitutions": [],
+          "replayFeatureCounts": {
+            "dashedStrokes": 0,
+            "glyphRuns": 0,
+            "tabLeaders": 0,
+            "charOverlaps": 0,
+            "verticalPresentationPunctuation": 0,
+            "verticalTextRuns": 0
+          },
+          "textVariantDiagnosticGroups": 0,
+          "textVariantDiagnosticParts": 0,
+          "replayDiagnosticsDropped": 0
+        },
+        "replayPlan": {
+          "mode": "compat",
+          "hiddenCanvas2dOverlayAllowed": false,
+          "directReplayRequired": true,
+          "summary": {
+            "totalItems": 20,
+            "directItems": 20,
+            "directRequiredItems": 0,
+            "compatOverlayItems": 0,
+            "textFallbackItems": 0,
+            "unsupportedItems": 0,
+            "hiddenOverlayViolations": 0
+          },
+          "items": [
+            {
+              "path": "root/group/0/leaf/0",
+              "opType": "pageBackground",
+              "replayPlane": "background",
+              "feature": "pageBackground",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/1/cacheHint",
+              "opType": "cacheHint",
+              "feature": "cacheHint",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false,
+              "detail": "ignored:StaticSubtree"
+            },
+            {
+              "path": "root/group/2/clip",
+              "opType": "clipRect",
+              "feature": "clip",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false,
+              "detail": "body"
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/0/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/1/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/2/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/2/group/1/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/2/group/2/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/2/group/3/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/2/group/4/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/2/group/5/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/3/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/4/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/4/group/1/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/4/group/2/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/5/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/5/group/1/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/5/group/2/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/6/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/3/cacheHint",
+              "opType": "cacheHint",
+              "feature": "cacheHint",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false,
+              "detail": "ignored:StaticSubtree"
+            }
+          ],
+          "textVariants": [],
+          "requiredFontFamilies": [
+            "Noto Sans Symbols2",
+            "함초롬바탕"
+          ],
+          "requiredFontFamiliesComplete": true
+        },
+        "replayPlanError": null,
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        }
+      },
+      "layerFeatureProbe": {
+        "featureCounts": {
+          "dashedStrokes": 0,
+          "glyphRuns": 0,
+          "tabLeaders": 0,
+          "charOverlaps": 0,
+          "verticalPresentationPunctuation": 0,
+          "verticalTextRuns": 0
+        },
+        "glyphOutlinePayloadCounts": {}
+      },
+      "warmReplay": {
+        "replayMs": 16.100000143051147,
+        "rerendered": true,
+        "rendererDurationMs": 15.399999856948853,
+        "renderCountDelta": 1,
+        "imageCacheHitDelta": 0,
+        "imageCacheMissDelta": 0,
+        "imageCachePixels": 0
+      }
+    },
+    {
+      "sampleId": "pr8918-wingdings_pua_symbols",
+      "file": "issue8680/wingdings_pua_symbols.hwpx",
+      "category": "pr8918",
+      "diagnosticAxes": [
+        "layout",
+        "table-ownership",
+        "glyph-supplier"
+      ],
+      "documentDigest": "sha256:6173d83f23aed79f162e9c07f5efe19a0590bae650c800a4fcebd49abc73ad8b",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "fontFallback": null,
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "readinessGateRequired": false,
+      "path": "mydocs/pr/assets/hyunmyungjanelee_20261112/wingdings-arrow-shaft-repair/actual-consumers/pr8918-wingdings_pua_symbols/canvaskit-default-print-software.png",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "pr8918-wingdings_pua_symbols",
+        "documentDigest": "sha256:6173d83f23aed79f162e9c07f5efe19a0590bae650c800a4fcebd49abc73ad8b",
+        "page": 0,
+        "profile": "print",
+        "backend": "canvaskit-default",
+        "surface": "software"
+      },
+      "artifact": {
+        "sha256": "688ed6285c060ba06a7a8927036ecd6fb81de5e84caf1af241d690df497bc6c2",
+        "sizeBytes": 21534,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1035.289165999995,
+        "documentLoadAndInitialRenderMs": 442.10000014305115,
+        "selectedPageRenderMs": 80.87937500000407,
+        "warmReplayMs": 15,
+        "warmRendererDurationMs": 14.200000047683716,
+        "screenshotMs": 60.038916000004974,
+        "totalMs": 3146.022334000001
+      },
+      "diagnostics": {
+        "fontPlan": null,
+        "runtime": {
+          "activeBackend": "canvaskit",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "url",
+              "requested": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvaskit",
+            "selectionReason": "explicitCanvasKit",
+            "fallbackReason": null,
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "print",
+            "documentDigest": "blake3:f42ecd661818d076307dcced5c5a08db76b9eef33d4cb89b5eb5e26b2ee8976c",
+            "decisionKey": "blake3:f42ecd661818d076307dcced5c5a08db76b9eef33d4cb89b5eb5e26b2ee8976c|revision:3|profile:print|resources:3|request:canvaskit|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": true
+        },
+        "imageEffects": {
+          "canvas2d": null,
+          "canvaskit": {
+            "cacheHits": 0,
+            "cacheMisses": 0,
+            "preprocessFailures": 0,
+            "fallbackToOriginal": 0,
+            "preprocessedPixels": 0,
+            "preprocessedBytes": 0,
+            "maxPreprocessedBytes": 0,
+            "preprocessTimeMs": 0,
+            "maxPreprocessTimeMs": 0,
+            "directImageReadbackPreprocesses": 0,
+            "nativeSurfacePreprocesses": 0
+          }
+        },
+        "surfaceDiagnostics": {
+          "created": 4,
+          "reused": 2,
+          "backend": "software",
+          "preference": "software",
+          "fallbackReason": null
+        },
+        "canvaskitRender": {
+          "surfaceCreated": 4,
+          "surfaceReused": 2,
+          "staticPictureCacheEntries": 8,
+          "staticPictureCacheBytes": 5600,
+          "staticPictureCacheHits": 24,
+          "staticPictureCacheMisses": 8,
+          "staticPictureCacheEvictions": 0,
+          "textBlobCacheEntries": 40,
+          "textBlobCacheBytes": 12756,
+          "textBlobCacheHits": 120,
+          "textBlobCacheMisses": 40,
+          "fallbackFamilyCacheEntries": 26,
+          "paragraphFontEntries": 5,
+          "paragraphFontBytes": 14557596,
+          "paragraphProviderBuilds": 0,
+          "paragraphFontRejections": 0,
+          "pendingImageLoads": 0,
+          "mode": "default",
+          "surfacePreference": "software",
+          "surfaceBackend": "software",
+          "surfaceFallbackReason": null,
+          "lastRenderCompleted": true,
+          "lastUnsupportedOps": [],
+          "lastExpectedUnsupportedOps": [],
+          "lastUnexpectedUnsupportedOps": [],
+          "lastRenderError": null,
+          "passesRuntimeReadinessGate": true,
+          "readinessBlockers": [],
+          "hiddenCanvas2dOverlayUsed": false,
+          "lastRenderDurationMs": 14.200000047683716,
+          "renderCount": 4,
+          "imageCacheEntries": 0,
+          "imageCacheLimit": 128,
+          "imageCachePixels": 0,
+          "imageCachePixelLimit": 67108864,
+          "imageCacheHits": 0,
+          "imageCacheMisses": 0,
+          "imageCacheEvictions": 0,
+          "mipmapCacheEntries": 0,
+          "mipmapCacheBytes": 0,
+          "mipmapCacheHits": 0,
+          "mipmapCacheMisses": 0,
+          "imageFailureCacheHits": 0,
+          "imageFailures": [],
+          "localTypefaceCount": 0,
+          "localTypefaceLoadFailureCount": 0,
+          "localTypefacePendingCount": 0,
+          "bundledTypefaceCount": 2,
+          "bundledTypefaceLoadFailureCount": 0,
+          "glyphRunFontBlobCount": 0,
+          "glyphRunFontBlobBytes": 0,
+          "glyphRunTypefaceCount": 0,
+          "glyphRunFontCount": 0,
+          "fontSubstitutionLimit": 4096,
+          "unregisteredFontFallbacks": 0,
+          "fontSubstitutions": [],
+          "replayFeatureCounts": {
+            "dashedStrokes": 0,
+            "glyphRuns": 0,
+            "tabLeaders": 0,
+            "charOverlaps": 0,
+            "verticalPresentationPunctuation": 0,
+            "verticalTextRuns": 0
+          },
+          "textVariantDiagnosticGroups": 0,
+          "textVariantDiagnosticParts": 0,
+          "replayDiagnosticsDropped": 0
+        },
+        "replayPlan": {
+          "mode": "default",
+          "hiddenCanvas2dOverlayAllowed": false,
+          "directReplayRequired": true,
+          "summary": {
+            "totalItems": 20,
+            "directItems": 20,
+            "directRequiredItems": 0,
+            "compatOverlayItems": 0,
+            "textFallbackItems": 0,
+            "unsupportedItems": 0,
+            "hiddenOverlayViolations": 0
+          },
+          "items": [
+            {
+              "path": "root/group/0/leaf/0",
+              "opType": "pageBackground",
+              "replayPlane": "background",
+              "feature": "pageBackground",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/1/cacheHint",
+              "opType": "cacheHint",
+              "feature": "cacheHint",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false,
+              "detail": "ignored:StaticSubtree"
+            },
+            {
+              "path": "root/group/2/clip",
+              "opType": "clipRect",
+              "feature": "clip",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false,
+              "detail": "body"
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/0/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/1/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/2/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/2/group/1/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/2/group/2/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/2/group/3/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/2/group/4/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/2/group/5/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/3/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/4/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/4/group/1/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/4/group/2/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/5/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/5/group/1/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/5/group/2/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/2/clip/child/group/0/group/6/group/0/leaf/0",
+              "opType": "textRun",
+              "replayPlane": "flow",
+              "feature": "textRun",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false
+            },
+            {
+              "path": "root/group/3/cacheHint",
+              "opType": "cacheHint",
+              "feature": "cacheHint",
+              "status": "direct",
+              "reason": "directReplaySupported",
+              "compatOverlayAllowed": false,
+              "detail": "ignored:StaticSubtree"
+            }
+          ],
+          "textVariants": [],
+          "requiredFontFamilies": [
+            "Noto Sans Symbols2",
+            "함초롬바탕"
+          ],
+          "requiredFontFamiliesComplete": true
+        },
+        "replayPlanError": null,
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        }
+      },
+      "layerFeatureProbe": {
+        "featureCounts": {
+          "dashedStrokes": 0,
+          "glyphRuns": 0,
+          "tabLeaders": 0,
+          "charOverlaps": 0,
+          "verticalPresentationPunctuation": 0,
+          "verticalTextRuns": 0
+        },
+        "glyphOutlinePayloadCounts": {}
+      },
+      "warmReplay": {
+        "replayMs": 15,
+        "rerendered": true,
+        "rendererDurationMs": 14.200000047683716,
+        "renderCountDelta": 1,
+        "imageCacheHitDelta": 0,
+        "imageCacheMissDelta": 0,
+        "imageCachePixels": 0
+      }
+    }
+  ],
+  "browserBackendParity": {
+    "mode": "reportOnly",
+    "backendPairs": [
+      [
+        "canvas2d",
+        "canvaskit-compat"
+      ],
+      [
+        "canvas2d",
+        "canvaskit-default"
+      ]
+    ],
+    "thresholds": {
+      "ignoreChannelDelta": 8,
+      "maxDiffRatio": 0.005
+    },
+    "summary": {
+      "total": 8,
+      "compared": 8,
+      "passed": 4,
+      "failed": 4,
+      "missing": 0,
+      "errors": 0,
+      "identityMismatches": 0
+    },
+    "summaryByTargetBackend": [
+      {
+        "targetBackend": "canvaskit-compat",
+        "total": 4,
+        "compared": 4,
+        "passed": 2,
+        "failed": 2,
+        "missing": 0,
+        "errors": 0,
+        "identityMismatches": 0,
+        "worstSelectedDiffRatio": 0.010021734693190917,
+        "worstTolerantDiffRatio": 0.010021734693190917,
+        "worstMaxChannelDelta": 255
+      },
+      {
+        "targetBackend": "canvaskit-default",
+        "total": 4,
+        "compared": 4,
+        "passed": 2,
+        "failed": 2,
+        "missing": 0,
+        "errors": 0,
+        "identityMismatches": 0,
+        "worstSelectedDiffRatio": 0.010021734693190917,
+        "worstTolerantDiffRatio": 0.010021734693190917,
+        "worstMaxChannelDelta": 255
+      }
+    ],
+    "summaryByProfile": [
+      {
+        "profile": "print",
+        "total": 4,
+        "compared": 4,
+        "passed": 2,
+        "failed": 2,
+        "missing": 0,
+        "errors": 0,
+        "identityMismatches": 0,
+        "worstSelectedDiffRatio": 0.009748919031775752,
+        "worstTolerantDiffRatio": 0.009748919031775752,
+        "worstMaxChannelDelta": 255
+      },
+      {
+        "profile": "screen",
+        "total": 4,
+        "compared": 4,
+        "passed": 2,
+        "failed": 2,
+        "missing": 0,
+        "errors": 0,
+        "identityMismatches": 0,
+        "worstSelectedDiffRatio": 0.010021734693190917,
+        "worstTolerantDiffRatio": 0.010021734693190917,
+        "worstMaxChannelDelta": 255
+      }
+    ],
+    "summaryByCategory": [
+      {
+        "category": "pr8916",
+        "total": 4,
+        "compared": 4,
+        "passed": 4,
+        "failed": 0,
+        "missing": 0,
+        "errors": 0,
+        "identityMismatches": 0,
+        "worstSelectedDiffRatio": 0.0009779490434716294,
+        "worstTolerantDiffRatio": 0.0009779490434716294,
+        "worstMaxChannelDelta": 255
+      },
+      {
+        "category": "pr8918",
+        "total": 4,
+        "compared": 4,
+        "passed": 0,
+        "failed": 4,
+        "missing": 0,
+        "errors": 0,
+        "identityMismatches": 0,
+        "worstSelectedDiffRatio": 0.010021734693190917,
+        "worstTolerantDiffRatio": 0.010021734693190917,
+        "worstMaxChannelDelta": 255
+      }
+    ],
+    "summaryByDiagnosticAxis": [
+      {
+        "diagnosticAxis": "glyph-supplier",
+        "total": 8,
+        "compared": 8,
+        "passed": 4,
+        "failed": 4,
+        "missing": 0,
+        "errors": 0,
+        "identityMismatches": 0,
+        "worstSelectedDiffRatio": 0.010021734693190917,
+        "worstTolerantDiffRatio": 0.010021734693190917,
+        "worstMaxChannelDelta": 255
+      },
+      {
+        "diagnosticAxis": "layout",
+        "total": 8,
+        "compared": 8,
+        "passed": 4,
+        "failed": 4,
+        "missing": 0,
+        "errors": 0,
+        "identityMismatches": 0,
+        "worstSelectedDiffRatio": 0.010021734693190917,
+        "worstTolerantDiffRatio": 0.010021734693190917,
+        "worstMaxChannelDelta": 255
+      },
+      {
+        "diagnosticAxis": "table-ownership",
+        "total": 8,
+        "compared": 8,
+        "passed": 4,
+        "failed": 4,
+        "missing": 0,
+        "errors": 0,
+        "identityMismatches": 0,
+        "worstSelectedDiffRatio": 0.010021734693190917,
+        "worstTolerantDiffRatio": 0.010021734693190917,
+        "worstMaxChannelDelta": 255
+      }
+    ],
+    "worstComparisons": [
+      {
+        "sampleId": "pr8918-wingdings_pua_symbols",
+        "category": "pr8918",
+        "diagnosticAxes": [
+          "layout",
+          "table-ownership",
+          "glyph-supplier"
+        ],
+        "page": 0,
+        "profile": "screen",
+        "targetBackend": "canvaskit-compat",
+        "canvaskitSurface": "software",
+        "passed": false,
+        "selectedDiffPixels": 8936,
+        "selectedDiffRatio": 0.010021734693190917,
+        "tolerantDiffRatio": 0.010021734693190917,
+        "maxChannelDelta": 255,
+        "meanAbsChannelDelta": 0.616285374951495
+      },
+      {
+        "sampleId": "pr8918-wingdings_pua_symbols",
+        "category": "pr8918",
+        "diagnosticAxes": [
+          "layout",
+          "table-ownership",
+          "glyph-supplier"
+        ],
+        "page": 0,
+        "profile": "screen",
+        "targetBackend": "canvaskit-default",
+        "canvaskitSurface": "software",
+        "passed": false,
+        "selectedDiffPixels": 8936,
+        "selectedDiffRatio": 0.010021734693190917,
+        "tolerantDiffRatio": 0.010021734693190917,
+        "maxChannelDelta": 255,
+        "meanAbsChannelDelta": 0.616285374951495
+      },
+      {
+        "sampleId": "pr8918-wingdings_pua_symbols",
+        "category": "pr8918",
+        "diagnosticAxes": [
+          "layout",
+          "table-ownership",
+          "glyph-supplier"
+        ],
+        "page": 0,
+        "profile": "print",
+        "targetBackend": "canvaskit-compat",
+        "canvaskitSurface": "software",
+        "passed": false,
+        "selectedDiffPixels": 8685,
+        "selectedDiffRatio": 0.009748919031775752,
+        "tolerantDiffRatio": 0.009748919031775752,
+        "maxChannelDelta": 255,
+        "meanAbsChannelDelta": 0.6094463489540538
+      },
+      {
+        "sampleId": "pr8918-wingdings_pua_symbols",
+        "category": "pr8918",
+        "diagnosticAxes": [
+          "layout",
+          "table-ownership",
+          "glyph-supplier"
+        ],
+        "page": 0,
+        "profile": "print",
+        "targetBackend": "canvaskit-default",
+        "canvaskitSurface": "software",
+        "passed": false,
+        "selectedDiffPixels": 8685,
+        "selectedDiffRatio": 0.009748919031775752,
+        "tolerantDiffRatio": 0.009748919031775752,
+        "maxChannelDelta": 255,
+        "meanAbsChannelDelta": 0.6094463489540538
+      },
+      {
+        "sampleId": "pr8916-zero_size_para_before_table",
+        "category": "pr8916",
+        "diagnosticAxes": [
+          "layout",
+          "table-ownership",
+          "glyph-supplier"
+        ],
+        "page": 0,
+        "profile": "screen",
+        "targetBackend": "canvaskit-compat",
+        "canvaskitSurface": "software",
+        "passed": true,
+        "selectedDiffPixels": 872,
+        "selectedDiffRatio": 0.0009779490434716294,
+        "tolerantDiffRatio": 0.0009779490434716294,
+        "maxChannelDelta": 255,
+        "meanAbsChannelDelta": 0.053062427242609865
+      },
+      {
+        "sampleId": "pr8916-zero_size_para_before_table",
+        "category": "pr8916",
+        "diagnosticAxes": [
+          "layout",
+          "table-ownership",
+          "glyph-supplier"
+        ],
+        "page": 0,
+        "profile": "screen",
+        "targetBackend": "canvaskit-default",
+        "canvaskitSurface": "software",
+        "passed": true,
+        "selectedDiffPixels": 872,
+        "selectedDiffRatio": 0.0009779490434716294,
+        "tolerantDiffRatio": 0.0009779490434716294,
+        "maxChannelDelta": 255,
+        "meanAbsChannelDelta": 0.053062427242609865
+      },
+      {
+        "sampleId": "pr8916-zero_size_para_before_table",
+        "category": "pr8916",
+        "diagnosticAxes": [
+          "layout",
+          "table-ownership",
+          "glyph-supplier"
+        ],
+        "page": 0,
+        "profile": "print",
+        "targetBackend": "canvaskit-compat",
+        "canvaskitSurface": "software",
+        "passed": true,
+        "selectedDiffPixels": 607,
+        "selectedDiffRatio": 0.0006813579565098308,
+        "tolerantDiffRatio": 0.0006813579565098308,
+        "maxChannelDelta": 255,
+        "meanAbsChannelDelta": 0.04570542437263433
+      },
+      {
+        "sampleId": "pr8916-zero_size_para_before_table",
+        "category": "pr8916",
+        "diagnosticAxes": [
+          "layout",
+          "table-ownership",
+          "glyph-supplier"
+        ],
+        "page": 0,
+        "profile": "print",
+        "targetBackend": "canvaskit-default",
+        "canvaskitSurface": "software",
+        "passed": true,
+        "selectedDiffPixels": 607,
+        "selectedDiffRatio": 0.0006813579565098308,
+        "tolerantDiffRatio": 0.0006813579565098308,
+        "maxChannelDelta": 255,
+        "meanAbsChannelDelta": 0.04570542437263433
+      }
+    ],
+    "comparisons": [
+      {
+        "sampleId": "pr8916-zero_size_para_before_table",
+        "category": "pr8916",
+        "diagnosticAxes": [
+          "layout",
+          "table-ownership",
+          "glyph-supplier"
+        ],
+        "documentDigest": "sha256:29dc4af9b4b746fbd089cff02029fc97bb8a8419d4818b2ddb7785f0fdbac9ce",
+        "page": 0,
+        "profile": "screen",
+        "baselineBackend": "canvas2d",
+        "targetBackend": "canvaskit-compat",
+        "canvaskitSurface": "software",
+        "status": "compared",
+        "baselinePath": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v9/priority-actual/browser/pr8916-zero_size_para_before_table/canvas2d-screen.png",
+        "targetPath": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v9/priority-actual/browser/pr8916-zero_size_para_before_table/canvaskit-compat-screen-software.png",
+        "thresholds": {
+          "ignoreChannelDelta": 8,
+          "maxDiffRatio": 0.005
+        },
+        "diff": {
+          "passed": true,
+          "hasVisualBudget": true,
+          "passMetric": "tolerant",
+          "width": 794,
+          "height": 1123,
+          "exactDiffPixels": 970,
+          "exactDiffRatio": 0.0010878561607425236,
+          "tolerantDiffPixels": 872,
+          "tolerantDiffRatio": 0.0009779490434716294,
+          "inkMaskDiffPixels": 371,
+          "inkMaskDiffRatio": 0.0004160769439540992,
+          "nonInkDiffPixels": 0,
+          "nonInkDiffRatio": 0,
+          "solidInkDiffPixels": 0,
+          "solidInkDiffRatio": 0,
+          "tolerantBudgetPassed": true,
+          "inkMaskBudgetPassed": false,
+          "nonInkBudgetPassed": true,
+          "solidInkBudgetPassed": true,
+          "expectedInkPixels": 3061,
+          "actualInkPixels": 2762,
+          "minimumInkPixels": null,
+          "minimumInkBudgetPassed": true,
+          "selectedDiffPixels": 872,
+          "selectedDiffRatio": 0.0009779490434716294,
+          "maxChannelDelta": 255,
+          "meanAbsChannelDelta": 0.053062427242609865
+        }
+      },
+      {
+        "sampleId": "pr8916-zero_size_para_before_table",
+        "category": "pr8916",
+        "diagnosticAxes": [
+          "layout",
+          "table-ownership",
+          "glyph-supplier"
+        ],
+        "documentDigest": "sha256:29dc4af9b4b746fbd089cff02029fc97bb8a8419d4818b2ddb7785f0fdbac9ce",
+        "page": 0,
+        "profile": "screen",
+        "baselineBackend": "canvas2d",
+        "targetBackend": "canvaskit-default",
+        "canvaskitSurface": "software",
+        "status": "compared",
+        "baselinePath": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v9/priority-actual/browser/pr8916-zero_size_para_before_table/canvas2d-screen.png",
+        "targetPath": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v9/priority-actual/browser/pr8916-zero_size_para_before_table/canvaskit-default-screen-software.png",
+        "thresholds": {
+          "ignoreChannelDelta": 8,
+          "maxDiffRatio": 0.005
+        },
+        "diff": {
+          "passed": true,
+          "hasVisualBudget": true,
+          "passMetric": "tolerant",
+          "width": 794,
+          "height": 1123,
+          "exactDiffPixels": 970,
+          "exactDiffRatio": 0.0010878561607425236,
+          "tolerantDiffPixels": 872,
+          "tolerantDiffRatio": 0.0009779490434716294,
+          "inkMaskDiffPixels": 371,
+          "inkMaskDiffRatio": 0.0004160769439540992,
+          "nonInkDiffPixels": 0,
+          "nonInkDiffRatio": 0,
+          "solidInkDiffPixels": 0,
+          "solidInkDiffRatio": 0,
+          "tolerantBudgetPassed": true,
+          "inkMaskBudgetPassed": false,
+          "nonInkBudgetPassed": true,
+          "solidInkBudgetPassed": true,
+          "expectedInkPixels": 3061,
+          "actualInkPixels": 2762,
+          "minimumInkPixels": null,
+          "minimumInkBudgetPassed": true,
+          "selectedDiffPixels": 872,
+          "selectedDiffRatio": 0.0009779490434716294,
+          "maxChannelDelta": 255,
+          "meanAbsChannelDelta": 0.053062427242609865
+        }
+      },
+      {
+        "sampleId": "pr8916-zero_size_para_before_table",
+        "category": "pr8916",
+        "diagnosticAxes": [
+          "layout",
+          "table-ownership",
+          "glyph-supplier"
+        ],
+        "documentDigest": "sha256:29dc4af9b4b746fbd089cff02029fc97bb8a8419d4818b2ddb7785f0fdbac9ce",
+        "page": 0,
+        "profile": "print",
+        "baselineBackend": "canvas2d",
+        "targetBackend": "canvaskit-compat",
+        "canvaskitSurface": "software",
+        "status": "compared",
+        "baselinePath": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v9/priority-actual/browser/pr8916-zero_size_para_before_table/canvas2d-print.png",
+        "targetPath": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v9/priority-actual/browser/pr8916-zero_size_para_before_table/canvaskit-compat-print-software.png",
+        "thresholds": {
+          "ignoreChannelDelta": 8,
+          "maxDiffRatio": 0.005
+        },
+        "diff": {
+          "passed": true,
+          "hasVisualBudget": true,
+          "passMetric": "tolerant",
+          "width": 794,
+          "height": 1122,
+          "exactDiffPixels": 659,
+          "exactDiffRatio": 0.0007397279956177571,
+          "tolerantDiffPixels": 607,
+          "tolerantDiffRatio": 0.0006813579565098308,
+          "inkMaskDiffPixels": 155,
+          "inkMaskDiffRatio": 0.0001739876165717031,
+          "nonInkDiffPixels": 0,
+          "nonInkDiffRatio": 0,
+          "solidInkDiffPixels": 0,
+          "solidInkDiffRatio": 0,
+          "tolerantBudgetPassed": true,
+          "inkMaskBudgetPassed": false,
+          "nonInkBudgetPassed": true,
+          "solidInkBudgetPassed": true,
+          "expectedInkPixels": 1939,
+          "actualInkPixels": 1856,
+          "minimumInkPixels": null,
+          "minimumInkBudgetPassed": true,
+          "selectedDiffPixels": 607,
+          "selectedDiffRatio": 0.0006813579565098308,
+          "maxChannelDelta": 255,
+          "meanAbsChannelDelta": 0.04570542437263433
+        }
+      },
+      {
+        "sampleId": "pr8916-zero_size_para_before_table",
+        "category": "pr8916",
+        "diagnosticAxes": [
+          "layout",
+          "table-ownership",
+          "glyph-supplier"
+        ],
+        "documentDigest": "sha256:29dc4af9b4b746fbd089cff02029fc97bb8a8419d4818b2ddb7785f0fdbac9ce",
+        "page": 0,
+        "profile": "print",
+        "baselineBackend": "canvas2d",
+        "targetBackend": "canvaskit-default",
+        "canvaskitSurface": "software",
+        "status": "compared",
+        "baselinePath": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v9/priority-actual/browser/pr8916-zero_size_para_before_table/canvas2d-print.png",
+        "targetPath": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v9/priority-actual/browser/pr8916-zero_size_para_before_table/canvaskit-default-print-software.png",
+        "thresholds": {
+          "ignoreChannelDelta": 8,
+          "maxDiffRatio": 0.005
+        },
+        "diff": {
+          "passed": true,
+          "hasVisualBudget": true,
+          "passMetric": "tolerant",
+          "width": 794,
+          "height": 1122,
+          "exactDiffPixels": 659,
+          "exactDiffRatio": 0.0007397279956177571,
+          "tolerantDiffPixels": 607,
+          "tolerantDiffRatio": 0.0006813579565098308,
+          "inkMaskDiffPixels": 155,
+          "inkMaskDiffRatio": 0.0001739876165717031,
+          "nonInkDiffPixels": 0,
+          "nonInkDiffRatio": 0,
+          "solidInkDiffPixels": 0,
+          "solidInkDiffRatio": 0,
+          "tolerantBudgetPassed": true,
+          "inkMaskBudgetPassed": false,
+          "nonInkBudgetPassed": true,
+          "solidInkBudgetPassed": true,
+          "expectedInkPixels": 1939,
+          "actualInkPixels": 1856,
+          "minimumInkPixels": null,
+          "minimumInkBudgetPassed": true,
+          "selectedDiffPixels": 607,
+          "selectedDiffRatio": 0.0006813579565098308,
+          "maxChannelDelta": 255,
+          "meanAbsChannelDelta": 0.04570542437263433
+        }
+      },
+      {
+        "sampleId": "pr8918-wingdings_pua_symbols",
+        "category": "pr8918",
+        "diagnosticAxes": [
+          "layout",
+          "table-ownership",
+          "glyph-supplier"
+        ],
+        "documentDigest": "sha256:6173d83f23aed79f162e9c07f5efe19a0590bae650c800a4fcebd49abc73ad8b",
+        "page": 0,
+        "profile": "screen",
+        "baselineBackend": "canvas2d",
+        "targetBackend": "canvaskit-compat",
+        "canvaskitSurface": "software",
+        "status": "compared",
+        "baselinePath": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v9/priority-actual/browser/pr8918-wingdings_pua_symbols/canvas2d-screen.png",
+        "targetPath": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v9/priority-actual/browser/pr8918-wingdings_pua_symbols/canvaskit-compat-screen-software.png",
+        "thresholds": {
+          "ignoreChannelDelta": 8,
+          "maxDiffRatio": 0.005
+        },
+        "diff": {
+          "passed": false,
+          "hasVisualBudget": true,
+          "passMetric": "tolerant",
+          "width": 794,
+          "height": 1123,
+          "exactDiffPixels": 10395,
+          "exactDiffRatio": 0.01165800493909127,
+          "tolerantDiffPixels": 8936,
+          "tolerantDiffRatio": 0.010021734693190917,
+          "inkMaskDiffPixels": 2391,
+          "inkMaskDiffRatio": 0.0026815093611704884,
+          "nonInkDiffPixels": 0,
+          "nonInkDiffRatio": 0,
+          "solidInkDiffPixels": 221,
+          "solidInkDiffRatio": 0.0002478517644578327,
+          "tolerantBudgetPassed": false,
+          "inkMaskBudgetPassed": false,
+          "nonInkBudgetPassed": true,
+          "solidInkBudgetPassed": false,
+          "expectedInkPixels": 7333,
+          "actualInkPixels": 6748,
+          "minimumInkPixels": null,
+          "minimumInkBudgetPassed": true,
+          "selectedDiffPixels": 8936,
+          "selectedDiffRatio": 0.010021734693190917,
+          "maxChannelDelta": 255,
+          "meanAbsChannelDelta": 0.616285374951495
+        }
+      },
+      {
+        "sampleId": "pr8918-wingdings_pua_symbols",
+        "category": "pr8918",
+        "diagnosticAxes": [
+          "layout",
+          "table-ownership",
+          "glyph-supplier"
+        ],
+        "documentDigest": "sha256:6173d83f23aed79f162e9c07f5efe19a0590bae650c800a4fcebd49abc73ad8b",
+        "page": 0,
+        "profile": "screen",
+        "baselineBackend": "canvas2d",
+        "targetBackend": "canvaskit-default",
+        "canvaskitSurface": "software",
+        "status": "compared",
+        "baselinePath": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v9/priority-actual/browser/pr8918-wingdings_pua_symbols/canvas2d-screen.png",
+        "targetPath": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v9/priority-actual/browser/pr8918-wingdings_pua_symbols/canvaskit-default-screen-software.png",
+        "thresholds": {
+          "ignoreChannelDelta": 8,
+          "maxDiffRatio": 0.005
+        },
+        "diff": {
+          "passed": false,
+          "hasVisualBudget": true,
+          "passMetric": "tolerant",
+          "width": 794,
+          "height": 1123,
+          "exactDiffPixels": 10395,
+          "exactDiffRatio": 0.01165800493909127,
+          "tolerantDiffPixels": 8936,
+          "tolerantDiffRatio": 0.010021734693190917,
+          "inkMaskDiffPixels": 2391,
+          "inkMaskDiffRatio": 0.0026815093611704884,
+          "nonInkDiffPixels": 0,
+          "nonInkDiffRatio": 0,
+          "solidInkDiffPixels": 221,
+          "solidInkDiffRatio": 0.0002478517644578327,
+          "tolerantBudgetPassed": false,
+          "inkMaskBudgetPassed": false,
+          "nonInkBudgetPassed": true,
+          "solidInkBudgetPassed": false,
+          "expectedInkPixels": 7333,
+          "actualInkPixels": 6748,
+          "minimumInkPixels": null,
+          "minimumInkBudgetPassed": true,
+          "selectedDiffPixels": 8936,
+          "selectedDiffRatio": 0.010021734693190917,
+          "maxChannelDelta": 255,
+          "meanAbsChannelDelta": 0.616285374951495
+        }
+      },
+      {
+        "sampleId": "pr8918-wingdings_pua_symbols",
+        "category": "pr8918",
+        "diagnosticAxes": [
+          "layout",
+          "table-ownership",
+          "glyph-supplier"
+        ],
+        "documentDigest": "sha256:6173d83f23aed79f162e9c07f5efe19a0590bae650c800a4fcebd49abc73ad8b",
+        "page": 0,
+        "profile": "print",
+        "baselineBackend": "canvas2d",
+        "targetBackend": "canvaskit-compat",
+        "canvaskitSurface": "software",
+        "status": "compared",
+        "baselinePath": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v9/priority-actual/browser/pr8918-wingdings_pua_symbols/canvas2d-print.png",
+        "targetPath": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v9/priority-actual/browser/pr8918-wingdings_pua_symbols/canvaskit-compat-print-software.png",
+        "thresholds": {
+          "ignoreChannelDelta": 8,
+          "maxDiffRatio": 0.005
+        },
+        "diff": {
+          "passed": false,
+          "hasVisualBudget": true,
+          "passMetric": "tolerant",
+          "width": 794,
+          "height": 1122,
+          "exactDiffPixels": 10037,
+          "exactDiffRatio": 0.011266540048581833,
+          "tolerantDiffPixels": 8685,
+          "tolerantDiffRatio": 0.009748919031775752,
+          "inkMaskDiffPixels": 2216,
+          "inkMaskDiffRatio": 0.002487461666599317,
+          "nonInkDiffPixels": 0,
+          "nonInkDiffRatio": 0,
+          "solidInkDiffPixels": 221,
+          "solidInkDiffRatio": 0.00024807266620868637,
+          "tolerantBudgetPassed": false,
+          "inkMaskBudgetPassed": false,
+          "nonInkBudgetPassed": true,
+          "solidInkBudgetPassed": false,
+          "expectedInkPixels": 7158,
+          "actualInkPixels": 6748,
+          "minimumInkPixels": null,
+          "minimumInkBudgetPassed": true,
+          "selectedDiffPixels": 8685,
+          "selectedDiffRatio": 0.009748919031775752,
+          "maxChannelDelta": 255,
+          "meanAbsChannelDelta": 0.6094463489540538
+        }
+      },
+      {
+        "sampleId": "pr8918-wingdings_pua_symbols",
+        "category": "pr8918",
+        "diagnosticAxes": [
+          "layout",
+          "table-ownership",
+          "glyph-supplier"
+        ],
+        "documentDigest": "sha256:6173d83f23aed79f162e9c07f5efe19a0590bae650c800a4fcebd49abc73ad8b",
+        "page": 0,
+        "profile": "print",
+        "baselineBackend": "canvas2d",
+        "targetBackend": "canvaskit-default",
+        "canvaskitSurface": "software",
+        "status": "compared",
+        "baselinePath": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v9/priority-actual/browser/pr8918-wingdings_pua_symbols/canvas2d-print.png",
+        "targetPath": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v9/priority-actual/browser/pr8918-wingdings_pua_symbols/canvaskit-default-print-software.png",
+        "thresholds": {
+          "ignoreChannelDelta": 8,
+          "maxDiffRatio": 0.005
+        },
+        "diff": {
+          "passed": false,
+          "hasVisualBudget": true,
+          "passMetric": "tolerant",
+          "width": 794,
+          "height": 1122,
+          "exactDiffPixels": 10037,
+          "exactDiffRatio": 0.011266540048581833,
+          "tolerantDiffPixels": 8685,
+          "tolerantDiffRatio": 0.009748919031775752,
+          "inkMaskDiffPixels": 2216,
+          "inkMaskDiffRatio": 0.002487461666599317,
+          "nonInkDiffPixels": 0,
+          "nonInkDiffRatio": 0,
+          "solidInkDiffPixels": 221,
+          "solidInkDiffRatio": 0.00024807266620868637,
+          "tolerantBudgetPassed": false,
+          "inkMaskBudgetPassed": false,
+          "nonInkBudgetPassed": true,
+          "solidInkBudgetPassed": false,
+          "expectedInkPixels": 7158,
+          "actualInkPixels": 6748,
+          "minimumInkPixels": null,
+          "minimumInkBudgetPassed": true,
+          "selectedDiffPixels": 8685,
+          "selectedDiffRatio": 0.009748919031775752,
+          "maxChannelDelta": 255,
+          "meanAbsChannelDelta": 0.6094463489540538
+        }
+      }
+    ]
+  },
+  "fontFallbackGate": {
+    "total": 0,
+    "passed": 0,
+    "failed": 0,
+    "checks": []
+  },
+  "canvaskitReplayDiagnostics": {
+    "mode": "contractGateAndReportInventory",
+    "hardGateViolationCount": 0,
+    "hardGateViolations": [],
+    "summaryByBackendProfile": [
+      {
+        "backend": "canvaskit-compat",
+        "profile": "print",
+        "captureCount": 2,
+        "totalItems": 34,
+        "directItems": 34,
+        "directRequiredItems": 0,
+        "compatOverlayItems": 0,
+        "textFallbackItems": 0,
+        "unsupportedItems": 0,
+        "hiddenOverlayViolations": 0,
+        "hardGateViolationCount": 0,
+        "runtimeRenderErrors": 0,
+        "runtimeUnexpectedUnsupportedOps": 0,
+        "runtimeImageReplayFailures": 0,
+        "planStatusCounts": {
+          "direct": 34
+        },
+        "planReasonCounts": {
+          "directReplaySupported": 34
+        },
+        "planFeatureCounts": {
+          "cacheHint": 4,
+          "clip": 3,
+          "pageBackground": 2,
+          "textRun": 21,
+          "vectorShape": 4
+        },
+        "expectedUnsupportedOpCounts": {},
+        "unexpectedUnsupportedOpCounts": {},
+        "imageFailureReasonCounts": {},
+        "imageFailureSourceCounts": {}
+      },
+      {
+        "backend": "canvaskit-default",
+        "profile": "print",
+        "captureCount": 2,
+        "totalItems": 34,
+        "directItems": 34,
+        "directRequiredItems": 0,
+        "compatOverlayItems": 0,
+        "textFallbackItems": 0,
+        "unsupportedItems": 0,
+        "hiddenOverlayViolations": 0,
+        "hardGateViolationCount": 0,
+        "runtimeRenderErrors": 0,
+        "runtimeUnexpectedUnsupportedOps": 0,
+        "runtimeImageReplayFailures": 0,
+        "planStatusCounts": {
+          "direct": 34
+        },
+        "planReasonCounts": {
+          "directReplaySupported": 34
+        },
+        "planFeatureCounts": {
+          "cacheHint": 4,
+          "clip": 3,
+          "pageBackground": 2,
+          "textRun": 21,
+          "vectorShape": 4
+        },
+        "expectedUnsupportedOpCounts": {},
+        "unexpectedUnsupportedOpCounts": {},
+        "imageFailureReasonCounts": {},
+        "imageFailureSourceCounts": {}
+      },
+      {
+        "backend": "canvaskit-compat",
+        "profile": "screen",
+        "captureCount": 2,
+        "totalItems": 34,
+        "directItems": 34,
+        "directRequiredItems": 0,
+        "compatOverlayItems": 0,
+        "textFallbackItems": 0,
+        "unsupportedItems": 0,
+        "hiddenOverlayViolations": 0,
+        "hardGateViolationCount": 0,
+        "runtimeRenderErrors": 0,
+        "runtimeUnexpectedUnsupportedOps": 0,
+        "runtimeImageReplayFailures": 0,
+        "planStatusCounts": {
+          "direct": 34
+        },
+        "planReasonCounts": {
+          "directReplaySupported": 34
+        },
+        "planFeatureCounts": {
+          "cacheHint": 4,
+          "clip": 3,
+          "pageBackground": 2,
+          "textRun": 21,
+          "vectorShape": 4
+        },
+        "expectedUnsupportedOpCounts": {},
+        "unexpectedUnsupportedOpCounts": {},
+        "imageFailureReasonCounts": {},
+        "imageFailureSourceCounts": {}
+      },
+      {
+        "backend": "canvaskit-default",
+        "profile": "screen",
+        "captureCount": 2,
+        "totalItems": 34,
+        "directItems": 34,
+        "directRequiredItems": 0,
+        "compatOverlayItems": 0,
+        "textFallbackItems": 0,
+        "unsupportedItems": 0,
+        "hiddenOverlayViolations": 0,
+        "hardGateViolationCount": 0,
+        "runtimeRenderErrors": 0,
+        "runtimeUnexpectedUnsupportedOps": 0,
+        "runtimeImageReplayFailures": 0,
+        "planStatusCounts": {
+          "direct": 34
+        },
+        "planReasonCounts": {
+          "directReplaySupported": 34
+        },
+        "planFeatureCounts": {
+          "cacheHint": 4,
+          "clip": 3,
+          "pageBackground": 2,
+          "textRun": 21,
+          "vectorShape": 4
+        },
+        "expectedUnsupportedOpCounts": {},
+        "unexpectedUnsupportedOpCounts": {},
+        "imageFailureReasonCounts": {},
+        "imageFailureSourceCounts": {}
+      }
+    ]
+  },
+  "canvaskitReadinessGate": {
+    "mode": "selectedCorpus",
+    "criteria": {
+      "sampleFlag": "canvaskitReadinessGate",
+      "profile": "screen",
+      "targetBackend": "canvaskit-default (explicit auto request)",
+      "canvaskitSurface": "auto",
+      "requireActiveBackend": true,
+      "requireRuntimeReadiness": true,
+      "requireNoImageReplayFailures": true,
+      "requireVisualParity": true,
+      "requireColdAndWarmPerformanceBudget": true
+    },
+    "summary": {
+      "total": 0,
+      "evaluated": 0,
+      "passed": 0,
+      "failed": 0,
+      "missing": 0
+    },
+    "captureError": null,
+    "checks": []
+  }
+}

@@ -1,0 +1,684 @@
+[
+  {
+    "phase": "setup",
+    "kind": "prepareDeclaredFontEnvironment.start",
+    "docGen": 1,
+    "backend": "canvas2d",
+    "provider": {
+      "active": true,
+      "generation": 1,
+      "count": 0,
+      "lastError": null
+    }
+  },
+  {
+    "phase": "setup",
+    "kind": "getDocumentFontSelectionPlan",
+    "env": null,
+    "requests": [],
+    "slots": []
+  },
+  {
+    "phase": "setup",
+    "kind": "snapshot",
+    "rev": "R1",
+    "enabled": true
+  },
+  {
+    "phase": "setup",
+    "kind": "getDocumentFontSelectionPlan",
+    "env": null,
+    "requests": [],
+    "slots": []
+  },
+  {
+    "phase": "setup",
+    "kind": "buildFontEnvironmentFromAvailablePrograms",
+    "programs": [],
+    "env": null
+  },
+  {
+    "phase": "setup",
+    "kind": "prepareDeclaredFontEnvironment.end",
+    "docGen": 1,
+    "startPhase": "setup",
+    "result": false
+  },
+  {
+    "phase": "setup",
+    "kind": "prepareCanvasMetrics.start",
+    "docGen": 1,
+    "backend": "canvas2d",
+    "provider": {
+      "active": true,
+      "generation": 1,
+      "count": 1,
+      "lastError": null
+    }
+  },
+  {
+    "phase": "setup",
+    "kind": "prepareCanvasMetrics.end",
+    "docGen": 1,
+    "startPhase": "setup",
+    "result": true
+  },
+  {
+    "phase": "setup",
+    "kind": "paint0",
+    "docGen": 1
+  },
+  {
+    "phase": "open",
+    "kind": "getDocumentFontSelectionPlan",
+    "env": null,
+    "requests": [
+      {
+        "primary": [
+          "딸기"
+        ],
+        "source": "딸기",
+        "substitute": []
+      }
+    ],
+    "slots": [
+      {
+        "fontId": 7,
+        "languageSlot": 0,
+        "primary": [
+          "딸기"
+        ],
+        "source": "딸기",
+        "substitute": []
+      }
+    ]
+  },
+  {
+    "phase": "open",
+    "kind": "prepareDeclaredFontEnvironment.start",
+    "docGen": 2,
+    "backend": "canvas2d",
+    "provider": {
+      "active": true,
+      "generation": 1,
+      "count": 1,
+      "lastError": null
+    }
+  },
+  {
+    "phase": "open",
+    "kind": "getDocumentFontSelectionPlan",
+    "env": null,
+    "requests": [
+      {
+        "primary": [
+          "딸기"
+        ],
+        "source": "딸기",
+        "substitute": []
+      }
+    ],
+    "slots": [
+      {
+        "fontId": 7,
+        "languageSlot": 0,
+        "primary": [
+          "딸기"
+        ],
+        "source": "딸기",
+        "substitute": []
+      }
+    ]
+  },
+  {
+    "phase": "open",
+    "kind": "readFace",
+    "id": "otf0",
+    "revision": "R1",
+    "aborted": false
+  },
+  {
+    "phase": "open",
+    "kind": "getDocumentFontSelectionPlan",
+    "env": null,
+    "requests": [
+      {
+        "primary": [
+          "딸기"
+        ],
+        "source": "딸기",
+        "substitute": []
+      }
+    ],
+    "slots": [
+      {
+        "fontId": 7,
+        "languageSlot": 0,
+        "primary": [
+          "딸기"
+        ],
+        "source": "딸기",
+        "substitute": []
+      }
+    ]
+  },
+  {
+    "phase": "open",
+    "kind": "buildFontEnvironmentFromAvailablePrograms",
+    "programs": [
+      {
+        "query": "딸기",
+        "family": "딸기",
+        "trueType": false,
+        "openTypeCff": true,
+        "programId": "host-6844aed54084783e28e7be0da351d08f4c0fe9e16e0844cbad4e4164c47488ca-face-0"
+      }
+    ],
+    "env": "declared-program-599e06ca52a6d5efabe3bddf20a1dc5d8d055af7c189699158fab05e7d32dfde"
+  },
+  {
+    "phase": "open",
+    "kind": "setFontEnvironment",
+    "env": "declared-program-599e06ca52a6d5efabe3bddf20a1dc5d8d055af7c189699158fab05e7d32dfde",
+    "changed": true
+  },
+  {
+    "phase": "open",
+    "kind": "prepareDeclaredFontEnvironment.end",
+    "docGen": 2,
+    "startPhase": "open",
+    "result": true
+  },
+  {
+    "phase": "open",
+    "kind": "prepareCanvasMetrics.start",
+    "docGen": 2,
+    "backend": "canvas2d",
+    "provider": {
+      "active": true,
+      "generation": 1,
+      "count": 1,
+      "lastError": null
+    }
+  },
+  {
+    "phase": "open",
+    "kind": "prepareCanvasMetrics.end",
+    "docGen": 2,
+    "startPhase": "open",
+    "result": true
+  },
+  {
+    "phase": "open",
+    "kind": "paint0",
+    "docGen": 2
+  },
+  {
+    "phase": "refresh",
+    "kind": "prepareDeclaredFontEnvironment.start",
+    "docGen": 2,
+    "backend": "canvas2d",
+    "provider": {
+      "active": true,
+      "generation": 2,
+      "count": 0,
+      "lastError": null
+    }
+  },
+  {
+    "phase": "refresh",
+    "kind": "getDocumentFontSelectionPlan",
+    "env": "declared-program-599e06ca52a6d5efabe3bddf20a1dc5d8d055af7c189699158fab05e7d32dfde",
+    "requests": [
+      {
+        "primary": [
+          "딸기"
+        ],
+        "source": "딸기",
+        "substitute": []
+      }
+    ],
+    "slots": [
+      {
+        "fontId": 7,
+        "languageSlot": 0,
+        "primary": [
+          "딸기"
+        ],
+        "source": "딸기",
+        "substitute": []
+      }
+    ]
+  },
+  {
+    "phase": "refresh",
+    "kind": "snapshot",
+    "rev": "R2",
+    "enabled": true
+  },
+  {
+    "phase": "refresh",
+    "kind": "readFace",
+    "id": "otf0",
+    "revision": "R2",
+    "aborted": false
+  },
+  {
+    "phase": "refresh",
+    "kind": "getDocumentFontSelectionPlan",
+    "env": "declared-program-599e06ca52a6d5efabe3bddf20a1dc5d8d055af7c189699158fab05e7d32dfde",
+    "requests": [
+      {
+        "primary": [
+          "딸기"
+        ],
+        "source": "딸기",
+        "substitute": []
+      }
+    ],
+    "slots": [
+      {
+        "fontId": 7,
+        "languageSlot": 0,
+        "primary": [
+          "딸기"
+        ],
+        "source": "딸기",
+        "substitute": []
+      }
+    ]
+  },
+  {
+    "phase": "refresh",
+    "kind": "buildFontEnvironmentFromAvailablePrograms",
+    "programs": [
+      {
+        "query": "딸기",
+        "family": "딸기",
+        "trueType": false,
+        "openTypeCff": true,
+        "programId": "host-6844aed54084783e28e7be0da351d08f4c0fe9e16e0844cbad4e4164c47488ca-face-0"
+      }
+    ],
+    "env": "declared-program-599e06ca52a6d5efabe3bddf20a1dc5d8d055af7c189699158fab05e7d32dfde"
+  },
+  {
+    "phase": "refresh",
+    "kind": "setFontEnvironment",
+    "env": "declared-program-599e06ca52a6d5efabe3bddf20a1dc5d8d055af7c189699158fab05e7d32dfde",
+    "changed": false
+  },
+  {
+    "phase": "refresh",
+    "kind": "prepareDeclaredFontEnvironment.end",
+    "docGen": 2,
+    "startPhase": "refresh",
+    "result": false
+  },
+  {
+    "phase": "refresh",
+    "kind": "prepareCanvasMetrics.start",
+    "docGen": 2,
+    "backend": "canvas2d",
+    "provider": {
+      "active": true,
+      "generation": 2,
+      "count": 1,
+      "lastError": null
+    }
+  },
+  {
+    "phase": "refresh",
+    "kind": "prepareCanvasMetrics.end",
+    "docGen": 2,
+    "startPhase": "refresh",
+    "result": true
+  },
+  {
+    "phase": "refresh",
+    "kind": "paint0",
+    "docGen": 2
+  },
+  {
+    "phase": "remove",
+    "kind": "prepareDeclaredFontEnvironment.start",
+    "docGen": 2,
+    "backend": "canvas2d",
+    "provider": {
+      "active": true,
+      "generation": 3,
+      "count": 0,
+      "lastError": null
+    }
+  },
+  {
+    "phase": "remove",
+    "kind": "getDocumentFontSelectionPlan",
+    "env": "declared-program-599e06ca52a6d5efabe3bddf20a1dc5d8d055af7c189699158fab05e7d32dfde",
+    "requests": [
+      {
+        "primary": [
+          "딸기"
+        ],
+        "source": "딸기",
+        "substitute": []
+      }
+    ],
+    "slots": [
+      {
+        "fontId": 7,
+        "languageSlot": 0,
+        "primary": [
+          "딸기"
+        ],
+        "source": "딸기",
+        "substitute": []
+      }
+    ]
+  },
+  {
+    "phase": "remove",
+    "kind": "snapshot",
+    "rev": "R3",
+    "enabled": false
+  },
+  {
+    "phase": "remove",
+    "kind": "getDocumentFontSelectionPlan",
+    "env": "declared-program-599e06ca52a6d5efabe3bddf20a1dc5d8d055af7c189699158fab05e7d32dfde",
+    "requests": [
+      {
+        "primary": [
+          "딸기"
+        ],
+        "source": "딸기",
+        "substitute": []
+      }
+    ],
+    "slots": [
+      {
+        "fontId": 7,
+        "languageSlot": 0,
+        "primary": [
+          "딸기"
+        ],
+        "source": "딸기",
+        "substitute": []
+      }
+    ]
+  },
+  {
+    "phase": "remove",
+    "kind": "buildFontEnvironmentFromAvailablePrograms",
+    "programs": [],
+    "env": null
+  },
+  {
+    "phase": "remove",
+    "kind": "setFontEnvironment",
+    "env": null,
+    "changed": true
+  },
+  {
+    "phase": "remove",
+    "kind": "prepareDeclaredFontEnvironment.end",
+    "docGen": 2,
+    "startPhase": "remove",
+    "result": true
+  },
+  {
+    "phase": "remove",
+    "kind": "prepareCanvasMetrics.start",
+    "docGen": 2,
+    "backend": "canvas2d",
+    "provider": {
+      "active": true,
+      "generation": 3,
+      "count": 0,
+      "lastError": null
+    }
+  },
+  {
+    "phase": "remove",
+    "kind": "prepareCanvasMetrics.end",
+    "docGen": 2,
+    "startPhase": "remove",
+    "result": true
+  },
+  {
+    "phase": "remove",
+    "kind": "paint0",
+    "docGen": 2
+  },
+  {
+    "phase": "restore",
+    "kind": "prepareDeclaredFontEnvironment.start",
+    "docGen": 2,
+    "backend": "canvas2d",
+    "provider": {
+      "active": true,
+      "generation": 4,
+      "count": 0,
+      "lastError": null
+    }
+  },
+  {
+    "phase": "restore",
+    "kind": "getDocumentFontSelectionPlan",
+    "env": null,
+    "requests": [
+      {
+        "primary": [
+          "딸기"
+        ],
+        "source": "딸기",
+        "substitute": []
+      }
+    ],
+    "slots": [
+      {
+        "fontId": 7,
+        "languageSlot": 0,
+        "primary": [
+          "딸기"
+        ],
+        "source": "딸기",
+        "substitute": []
+      }
+    ]
+  },
+  {
+    "phase": "restore",
+    "kind": "snapshot",
+    "rev": "R4",
+    "enabled": true
+  },
+  {
+    "phase": "restore",
+    "kind": "readFace",
+    "id": "otf0",
+    "revision": "R4",
+    "aborted": false
+  },
+  {
+    "phase": "restore",
+    "kind": "getDocumentFontSelectionPlan",
+    "env": null,
+    "requests": [
+      {
+        "primary": [
+          "딸기"
+        ],
+        "source": "딸기",
+        "substitute": []
+      }
+    ],
+    "slots": [
+      {
+        "fontId": 7,
+        "languageSlot": 0,
+        "primary": [
+          "딸기"
+        ],
+        "source": "딸기",
+        "substitute": []
+      }
+    ]
+  },
+  {
+    "phase": "restore",
+    "kind": "buildFontEnvironmentFromAvailablePrograms",
+    "programs": [
+      {
+        "query": "딸기",
+        "family": "딸기",
+        "trueType": false,
+        "openTypeCff": true,
+        "programId": "host-6844aed54084783e28e7be0da351d08f4c0fe9e16e0844cbad4e4164c47488ca-face-0"
+      }
+    ],
+    "env": "declared-program-599e06ca52a6d5efabe3bddf20a1dc5d8d055af7c189699158fab05e7d32dfde"
+  },
+  {
+    "phase": "restore",
+    "kind": "setFontEnvironment",
+    "env": "declared-program-599e06ca52a6d5efabe3bddf20a1dc5d8d055af7c189699158fab05e7d32dfde",
+    "changed": true
+  },
+  {
+    "phase": "restore",
+    "kind": "prepareDeclaredFontEnvironment.end",
+    "docGen": 2,
+    "startPhase": "restore",
+    "result": true
+  },
+  {
+    "phase": "restore",
+    "kind": "prepareCanvasMetrics.start",
+    "docGen": 2,
+    "backend": "canvas2d",
+    "provider": {
+      "active": true,
+      "generation": 4,
+      "count": 1,
+      "lastError": null
+    }
+  },
+  {
+    "phase": "restore",
+    "kind": "prepareCanvasMetrics.end",
+    "docGen": 2,
+    "startPhase": "restore",
+    "result": true
+  },
+  {
+    "phase": "restore",
+    "kind": "paint0",
+    "docGen": 2
+  },
+  {
+    "phase": "detach",
+    "kind": "prepareDeclaredFontEnvironment.start",
+    "docGen": 2,
+    "backend": "canvas2d",
+    "provider": {
+      "active": false,
+      "generation": 5,
+      "count": 0,
+      "lastError": null
+    }
+  },
+  {
+    "phase": "detach",
+    "kind": "getDocumentFontSelectionPlan",
+    "env": "declared-program-599e06ca52a6d5efabe3bddf20a1dc5d8d055af7c189699158fab05e7d32dfde",
+    "requests": [
+      {
+        "primary": [
+          "딸기"
+        ],
+        "source": "딸기",
+        "substitute": []
+      }
+    ],
+    "slots": [
+      {
+        "fontId": 7,
+        "languageSlot": 0,
+        "primary": [
+          "딸기"
+        ],
+        "source": "딸기",
+        "substitute": []
+      }
+    ]
+  },
+  {
+    "phase": "detach",
+    "kind": "getDocumentFontSelectionPlan",
+    "env": "declared-program-599e06ca52a6d5efabe3bddf20a1dc5d8d055af7c189699158fab05e7d32dfde",
+    "requests": [
+      {
+        "primary": [
+          "딸기"
+        ],
+        "source": "딸기",
+        "substitute": []
+      }
+    ],
+    "slots": [
+      {
+        "fontId": 7,
+        "languageSlot": 0,
+        "primary": [
+          "딸기"
+        ],
+        "source": "딸기",
+        "substitute": []
+      }
+    ]
+  },
+  {
+    "phase": "detach",
+    "kind": "buildFontEnvironmentFromAvailablePrograms",
+    "programs": [],
+    "env": null
+  },
+  {
+    "phase": "detach",
+    "kind": "setFontEnvironment",
+    "env": null,
+    "changed": true
+  },
+  {
+    "phase": "detach",
+    "kind": "prepareDeclaredFontEnvironment.end",
+    "docGen": 2,
+    "startPhase": "detach",
+    "result": true
+  },
+  {
+    "phase": "detach",
+    "kind": "prepareCanvasMetrics.start",
+    "docGen": 2,
+    "backend": "canvas2d",
+    "provider": {
+      "active": false,
+      "generation": 5,
+      "count": 0,
+      "lastError": null
+    }
+  },
+  {
+    "phase": "detach",
+    "kind": "prepareCanvasMetrics.end",
+    "docGen": 2,
+    "startPhase": "detach",
+    "result": true
+  },
+  {
+    "phase": "detach",
+    "kind": "paint0",
+    "docGen": 2
+  }
+]

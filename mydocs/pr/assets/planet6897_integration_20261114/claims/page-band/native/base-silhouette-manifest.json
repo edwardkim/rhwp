@@ -1,0 +1,195 @@
+{
+  "key": "page-band",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "completed_pages": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "missing_pages": [],
+  "tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-native/page-band/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-native/page-band/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "d773aadc5b665e74b513e19294fdf062c56a99cdfc04d29ec35edb87ae26078c",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-native/page-band/pdf_png/pdf-001.png",
+      "pdf_sha256": "73efef904deb57f964ac00595495fa7b72f3bccdc21f7bdc6dbadce67b5fb370"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-native/page-band/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "734d19118fb6c02509e6228bbe628734705778cacbc971358281dcc5c4fdc830",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-native/page-band/pdf_png/pdf-002.png",
+      "pdf_sha256": "b544b8c5ad1017bbb2312680137ca3489e9d48db0682cdfc46d8db73e5aca6d2"
+    },
+    {
+      "page": 3,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-native/page-band/rhwp_png/rhwp_003.png",
+      "rhwp_sha256": "1fdc53e7b34aee0bead406e1f601d76cccd717f1d7c3888e57064b52a7cf5c66",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-native/page-band/pdf_png/pdf-003.png",
+      "pdf_sha256": "fa8a9e8b43fc1e874f784fe6f36f19652deb3ccd0c59ee964b7beb0e0efb55ad"
+    },
+    {
+      "page": 4,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-native/page-band/rhwp_png/rhwp_004.png",
+      "rhwp_sha256": "84f8aa7e2af6b31baf35c758ebff58b56f72dcc99c682ee8e0ab38faf13de4ce",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-native/page-band/pdf_png/pdf-004.png",
+      "pdf_sha256": "377813a49bc59225b5038e30c88afda85d3f425370ecdc12ff29d9f4842bec12"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 84.43337,
+      "silhouette_raw_unmatched_pixels": 8684,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 55786,
+      "tolerant_content_match_percent": 84.43337
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 61.72118,
+      "silhouette_raw_unmatched_pixels": 35357,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 92367,
+      "tolerant_content_match_percent": 61.72118
+    },
+    {
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 28.38208,
+      "silhouette_raw_unmatched_pixels": 92236,
+      "silhouette_boundary_reconciled_pixels": 100,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 128789,
+      "tolerant_content_match_percent": 28.45973
+    },
+    {
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99356,
+      "silhouette_raw_unmatched_pixels": 3,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 46559,
+      "tolerant_content_match_percent": 99.99356
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "re_review_required",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 1,
+        "silhouette_raw_match_percent": 84.43337
+      },
+      {
+        "page": 2,
+        "silhouette_raw_match_percent": 61.72118
+      },
+      {
+        "page": 3,
+        "silhouette_raw_match_percent": 28.38208
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 4,
+      "pdf": 4
+    },
+    "page_count_mismatch": false
+  },
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue9055/36400525-page-band-empty-host-line.hwpx",
+      "sha256": "75aa3918f793c889be96a24e9dff4766fe85eaa0ed3413c7c7895ce24e84e3ee"
+    },
+    "pdf": {
+      "path": "pdf/issue9055/36400525-page-band-empty-host-line-2020.pdf",
+      "sha256": "9e4458071a21c7bd9e9d100672d6a5633fb2727402a5af523386bc3cd14b9495"
+    },
+    "git_head": "613d992a61cd1e0da317b3875a686cc73d50c010",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+      "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+      "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+      "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+      "version": "152.0.7947.0",
+      "wrapper_version": "5.12.1",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/rhwp-base-native",
+      "path": "output/pr-review/planet6897-integration-20261114/rhwp-base-native",
+      "sha256": "66b5ede9ec6b5d95d595c2baf8128ae606cb3b324fda3b4b211b41addabd9321"
+    },
+    "native_webfont_fallback": {
+      "registry_sha256": "35f3e1ac64348a6497b50cc98c7235a8adcb4c99bfa78fec6302bde6f525a299",
+      "mappings": {},
+      "document_glyph_fallbacks": [],
+      "unmapped_sources": [],
+      "local_document_substitutes": [],
+      "resources": [],
+      "module_sha256": "604d15d877f3a60d6cb2444fafefd3057fc5d595d402f06bb08748c9fe28c1cf"
+    },
+    "raster_backend": "native-skia",
+    "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+    "layout_generation": "2022",
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "automatic_local_and_web",
+      "program_record_count": 1208,
+      "program_records_sha256": "da0784a0e28fa281da660bac15b3e14d4508ffec8cb2dffe8312855e2ce93ff0",
+      "record_policy": "Full installed-program inventory remains local; this digest records the supplied program list without repeating unrelated local font paths."
+    }
+  },
+  "checkpoint": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-native/page-band/silhouette-checkpoint.json",
+  "full_execution_manifest_sha256": "6a2baaccfaf4ff74bbd80f80f6920f00d4b0a64a3189948fe7144d65d9bcc19d"
+}

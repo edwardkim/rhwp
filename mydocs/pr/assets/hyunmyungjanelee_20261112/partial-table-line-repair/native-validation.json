@@ -1,0 +1,102 @@
+{
+  "status": "Native전쪽 완료; fresh WASM·전체 회귀 대기",
+  "producer": {
+    "kind": "candidate",
+    "head": "bdd8b495e096dc6f20b7d9205058a0f85ab828ef",
+    "working_tree_diff_sha256": "f757982ae4c88068f4428ade1ef4c5d4cbe0bc1c5f5ed3f46754f987b594cfe8",
+    "source_files_sha256": {
+      "src/renderer/height_measurer.rs": "a7c0b74c599ca417e70d7c2a3cfd92231b38ff138dd70dfb01587f5338195a29",
+      "src/renderer/typeset/table/block/whole_fit.rs": "05a6680e4541535c3672e4ed3d16e95e445202f976979ddd9510546440d6fd0b",
+      "src/renderer/typeset/table/continuation/fragment/budget.rs": "bef3cb3c3a97828064c9aacf9a1d41ec9410335d1602b82d5108a5c73f6267c6",
+      "src/renderer/mod.rs": "a698fba307d98e214f24e9d9fe77644a8fa0b9cd1f146ec5f8ea718ad91b6bdf",
+      "src/renderer/canvas_text_font.rs": "2c50c0196f6d1f505296440e4e86d7bae77f32aba2a015843dc6d603fc452ce1",
+      "src/renderer/cell_paragraph_spacing.rs": "57bec0c9e24ea7610334d4d8f5cf0b2f2ba0bde037d699ddae3bfc6712592347",
+      "src/renderer/layout/table_layout.rs": "1693b2ebb747201769b85f39125dbb5ecbf4dba84e5c5114f0d4da3abd44c8aa"
+    },
+    "sha256": "7902feaa82262f855beff9cbcc6d06c3bcef7d7a0474eba6b5c80b8797e50937",
+    "exit": 0
+  },
+  "focused": {
+    "run": 125,
+    "pass": 125,
+    "fail": 0,
+    "seconds": 9.131,
+    "minimum_font_profile": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/minimal-font/profile.sb"
+  },
+  "records": [
+    {
+      "key": "pr8920-float_line_rowspan_infront_center",
+      "input": "samples/issue8690/float_line_rowspan_infront_center.hwp",
+      "input_sha256": "4e5fce692945707fef8c39b6a980016fff4a2cd91b02f7abf35b01d19fabba4b",
+      "reference_pdf_sha256": "6cd25f5e58614129f9904b00fbd48c2358ce9b4bf8b61ab18a3c5925b4070b8c",
+      "before_source": "ac8c85ee9dc3ce46f3ea2c23a497e77a61758c34",
+      "before_native_minimum": 87.91,
+      "after_native_minimum": 100.0,
+      "pages": 2,
+      "after_native_below90": 0
+    },
+    {
+      "key": "pr8920-float_line_rowspan_infront_top",
+      "input": "samples/issue8690/float_line_rowspan_infront_top.hwp",
+      "input_sha256": "6b75acfc0deab5f1c55408b8143c7f2b936cd716079225b9392af5610ad38de9",
+      "reference_pdf_sha256": "b63473cdc359fb90d5b423cac252feec6fbb0c4df7d8e7c13e65e4d98857cbe1",
+      "before_source": "ac8c85ee9dc3ce46f3ea2c23a497e77a61758c34",
+      "before_native_minimum": 100.0,
+      "after_native_minimum": 100.0,
+      "pages": 2,
+      "after_native_below90": 0
+    },
+    {
+      "key": "pr8920-float_line_valign_center",
+      "input": "samples/issue8690/float_line_valign_center.hwp",
+      "input_sha256": "52fd73d131678d8ff020dbe46e0985f6fff616e26ed025b8a6f1d46af92b8d67",
+      "reference_pdf_sha256": "5085071ec9c6c14f6f40b53cc62ac5169c75d9b0e39f5111f057649219239d0d",
+      "before_source": "ac8c85ee9dc3ce46f3ea2c23a497e77a61758c34",
+      "before_native_minimum": 90.8,
+      "after_native_minimum": 100.0,
+      "pages": 2,
+      "after_native_below90": 0
+    },
+    {
+      "key": "pr8920-float_line_valign_top",
+      "input": "samples/issue8690/float_line_valign_top.hwp",
+      "input_sha256": "76aab9b56afd2b0ccfeeab8184474219b84d34b4ac247acc4cca0afec0e359d4",
+      "reference_pdf_sha256": "e18e2e917c8dff0fdd4703d461c11ce627eb48a752147a12fa0aaf91036fe556",
+      "before_source": "ac8c85ee9dc3ce46f3ea2c23a497e77a61758c34",
+      "before_native_minimum": 100.0,
+      "after_native_minimum": 100.0,
+      "pages": 2,
+      "after_native_below90": 0
+    }
+  ],
+  "pdf_rasterizer": {
+    "program": "pypdfium2",
+    "backend": "pdfium",
+    "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+    "antialias": {
+      "text": true,
+      "image": true,
+      "path": true
+    },
+    "coordinate_transform": {
+      "scale": "dpi/72 on both axes",
+      "buffer_extent": "ceil(page_points*dpi/72)",
+      "annotations": true
+    },
+    "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+    "available": true,
+    "executable": "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+    "executable_sha256": "87d4df53fd91304be5bac391fb204643c36b7df2023c04a0953bcbc7d4fdf634",
+    "library": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/venv/lib/python3.14/site-packages/pypdfium2_raw/libpdfium.dylib",
+    "library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+    "version": "153.0.7999.0",
+    "wrapper_version": "5.13.0",
+    "version_exit_code": 0
+  },
+  "source_rule": {
+    "font_em_hu": 1000,
+    "object_offset_hu": 600,
+    "object_height_hu": 1,
+    "relation": "anchor = cell.y + pad.top + max(inner - max(source_em, object_extent), 0)/2 + object_offset"
+  }
+}

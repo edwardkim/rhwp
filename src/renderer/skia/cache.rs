@@ -343,10 +343,15 @@ impl<'a> ReplayCacheContext<'a> {
         diagnostics: &'a RefCell<ReplayDiagnostics>,
         culling: &'a CullingIndex,
     ) -> Self {
+        // Native Print는 인쇄 세대와 무관하게 원본 glyph의 소수 원점·윤곽을
+        // 재생한다. 이전 세대의 draw_str 장치 격자는 같은 Print 좌표에서도
+        // 획을 옮긴다(#9075). 공유 layer의 세대별 Canvas 정책은 그대로 두고,
+        // Screen·벡터 출력에는 이 Native raster 정책을 적용하지 않는다.
+        let geometric_text = raster_target && tree.profile == crate::paint::RenderProfile::Print;
         let resources = resource_identity(&tree.resources);
         let seed = resources.as_ref().and_then(|(digest, _)| {
             debug_key(&(
-                "native-skia-replay-v1",
+                "native-skia-replay-v2",
                 LAYER_TREE_SCHEMA,
                 tree.profile,
                 &tree.output_options,
@@ -354,7 +359,7 @@ impl<'a> ReplayCacheContext<'a> {
                 tree.page_height,
                 scale,
                 strict,
-                raster_target,
+                (raster_target, geometric_text),
                 tree.preserves_raster_text_geometry(),
                 tree.uses_raster_clip_coverage(),
                 digest,
@@ -374,7 +379,7 @@ impl<'a> ReplayCacheContext<'a> {
                 .saturating_add(svg_estimate),
             policy: ReplayPolicy::new(tree.profile),
             raster_target,
-            geometric_text: tree.preserves_raster_text_geometry(),
+            geometric_text,
             device_clip: tree.uses_raster_clip_coverage(),
             bitmap_paper_grid: None,
             diagnostics,

@@ -17,8 +17,12 @@ use std::process::{Command, Output};
 const HWPX_SAMPLE: &str = "samples/issue1893_clickhere_field_roundtrip.hwpx";
 /// 비교군 HWP5 — 종전 동작(HWP5 산출)이 그대로인지 확인한다.
 const HWP_SAMPLE: &str = "samples/field-01.hwp";
-/// HWPX 본문에 실재하는 문자열(치환 대상).
-const HWPX_NEEDLE: &str = "검찰청";
+/// HWPX 본문에 실재하는 문자열(치환 대상). 제목·본문 두 곳에 있다.
+///
+/// [#8985] 종전 「검찰청」은 `Command="검찰청의 장;…"`, `dirty="0"` 누름틀의 미기입 안내문이라
+/// 본문이 아니다 — 한컴 engine 2020 Print(`pdf/issue1893_clickhere_field_roundtrip-hwpx-2020.pdf`)는
+/// 「수 신 :」 뒤에 그리지 않는다. 적재 정규화가 안내문을 값에서 빼므로 치환 대상이 될 수 없다.
+const HWPX_NEEDLE: &str = "통신사실확인자료";
 /// HWP5 본문에 실재하는 문자열(치환 대상) — `edit_replace_text_contract` 와 같은 낱말.
 const HWP_NEEDLE: &str = "회사";
 

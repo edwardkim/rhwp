@@ -1,0 +1,815 @@
+{
+  "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+  "source": "최종 실행의 기존 PNG로 canonical Visual Sweep의 같은 쪽 비교 생성",
+  "captures_reexecuted": false,
+  "cases": [
+    {
+      "key": "cbta",
+      "backend": "native",
+      "page": 2,
+      "raw_percent": "98.11",
+      "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+      "files": {
+        "raw": {
+          "path": "cases/cbta/native/raw-002.png",
+          "sha256": "2752871b215c51f3206c026e478ebaec0fd62b740477bc8df23dd4a1cd9d858e"
+        },
+        "pdf": {
+          "path": "cases/cbta/native/pdf-002.png",
+          "sha256": "53d913e93899aea33f11c8e3edf99c5c208e7352bc84911ef7584f0bde95b50e"
+        },
+        "review": {
+          "path": "cases/cbta/native/review-002.png",
+          "sha256": "b59cdea622ea4247d28f87b1b37c01c5b9ede54086c25fd5803ac5d3b2b5d20a"
+        },
+        "overlay": {
+          "path": "cases/cbta/native/overlay-002.png",
+          "sha256": "de98dacd4364726e482a405d5f9072690f62370024c2c13c19199751529e2dc3"
+        }
+      },
+      "direct_reading": "pending"
+    },
+    {
+      "key": "cbta",
+      "backend": "native",
+      "page": 96,
+      "raw_percent": "99.72",
+      "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+      "files": {
+        "raw": {
+          "path": "cases/cbta/native/raw-096.png",
+          "sha256": "e6f802a3d4db52b8e9991be1444b7cf432f35e912381af66d6f37847715f147f"
+        },
+        "pdf": {
+          "path": "cases/cbta/native/pdf-096.png",
+          "sha256": "cfd450f04689bd811bcde7559f5198280a6e40d8366c812975bbe393e2e91714"
+        },
+        "review": {
+          "path": "cases/cbta/native/review-096.png",
+          "sha256": "8bfdffb37c6731a92757d3fb0a82428d6e9412f7d42f6318e8c05fd247f98185"
+        },
+        "overlay": {
+          "path": "cases/cbta/native/overlay-096.png",
+          "sha256": "9cee87e870cbb48a6c6c98491aee4e3526e4219ee7d94558e1d09874993b7ed8"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "같은 쪽 review와 overlay 직접 판독",
+        "observation": "번호 제목의 줄 소유와 다음 본문 시작을 PDF와 비교했다. 잔여 글리프·미세 위치 차이가 있다."
+      }
+    },
+    {
+      "key": "cbta",
+      "backend": "native",
+      "page": 118,
+      "raw_percent": "98.44",
+      "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+      "files": {
+        "raw": {
+          "path": "cases/cbta/native/raw-118.png",
+          "sha256": "8c6fc1aa173364b2da1919e97dd83e0db0a09a4cf99ccf8ba0e7a131c1600f3f"
+        },
+        "pdf": {
+          "path": "cases/cbta/native/pdf-118.png",
+          "sha256": "62a5528364364a3adca493010772232d83acf717e443ff345dd6a9a89d84ee15"
+        },
+        "review": {
+          "path": "cases/cbta/native/review-118.png",
+          "sha256": "48ac1a5ef0f63b4e863263598b278e86ef44d7df69c782b4a6b962a4e693c77c"
+        },
+        "overlay": {
+          "path": "cases/cbta/native/overlay-118.png",
+          "sha256": "6a517c7241b5d8be0038de45e784b0847136802444e5d7e6c86e790a63d35051"
+        }
+      },
+      "direct_reading": "pending"
+    },
+    {
+      "key": "cbta",
+      "backend": "native",
+      "page": 162,
+      "raw_percent": "99.94",
+      "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+      "files": {
+        "raw": {
+          "path": "cases/cbta/native/raw-162.png",
+          "sha256": "2237b40b851fdebaeb58cdc92e030c4f7ecb09b63e57a21fa8db3cbae4e0f850"
+        },
+        "pdf": {
+          "path": "cases/cbta/native/pdf-162.png",
+          "sha256": "97f254a1969dd26949af475ef0149957897352114b20d5bb2194b0bfea91b7b9"
+        },
+        "review": {
+          "path": "cases/cbta/native/review-162.png",
+          "sha256": "42b5d7141e26b8c7b109ee27b44178dee6eefb42432bc8dd8101a98f6f917a00"
+        },
+        "overlay": {
+          "path": "cases/cbta/native/overlay-162.png",
+          "sha256": "8da33bd69c38f4f312773b8fc4b780233e5094c04e266c44869b1a85c431391f"
+        }
+      },
+      "direct_reading": "pending"
+    },
+    {
+      "key": "cbta",
+      "backend": "native",
+      "page": 166,
+      "raw_percent": "99.95",
+      "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+      "files": {
+        "raw": {
+          "path": "cases/cbta/native/raw-166.png",
+          "sha256": "8107cb27611437b38476f615bf208306b0a1b8f6c6a9ac8916908567d0f45412"
+        },
+        "pdf": {
+          "path": "cases/cbta/native/pdf-166.png",
+          "sha256": "daf25aec13a5ad71356458bbb6a93ad74895ca9a3981c255a482636cf26e6fe1"
+        },
+        "review": {
+          "path": "cases/cbta/native/review-166.png",
+          "sha256": "84666652d71d12860d5828f6e04e7be9dd4748b1ca18295c0336b8196b9bdaaa"
+        },
+        "overlay": {
+          "path": "cases/cbta/native/overlay-166.png",
+          "sha256": "2f39bd3fc5baeae5d9250b0a4524b9c175d6257f7e1f9053a4ac5429261a3f49"
+        }
+      },
+      "direct_reading": "pending"
+    },
+    {
+      "key": "recommendation",
+      "backend": "native",
+      "page": 4,
+      "raw_percent": "99.86",
+      "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+      "files": {
+        "raw": {
+          "path": "cases/recommendation/native/raw-004.png",
+          "sha256": "c01b215c9fbd89a39cb0ee4bb4c739ad838c75c1593649ee0415acf45cb8888e"
+        },
+        "pdf": {
+          "path": "cases/recommendation/native/pdf-004.png",
+          "sha256": "d035ef4d927d917cd206e13fafc4c4b956f37df5791996d8440d79f2fad1abad"
+        },
+        "review": {
+          "path": "cases/recommendation/native/review-004.png",
+          "sha256": "551260bd1938d5ac7d385a607dbc6cddc0477d9598c4ba9ad0e3896830ae8e9c"
+        },
+        "overlay": {
+          "path": "cases/recommendation/native/overlay-004.png",
+          "sha256": "d4e1139a6f0a9b003538f7adbe9d32329c8cdd276c06795ccdc9a9ad5b36b84e"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "같은 쪽 review와 overlay 직접 판독",
+        "observation": "배경의 채널 보간과 목차·쪽번호를 비교했다. 소항목 8 쪽번호의 가로 차이는 남아 있다."
+      }
+    },
+    {
+      "key": "recommendation",
+      "backend": "native",
+      "page": 6,
+      "raw_percent": "99.95",
+      "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+      "files": {
+        "raw": {
+          "path": "cases/recommendation/native/raw-006.png",
+          "sha256": "2cd887232f82ca33fb3dc7ea105fea0605d50f37a31767a030059faeb9884f2c"
+        },
+        "pdf": {
+          "path": "cases/recommendation/native/pdf-006.png",
+          "sha256": "429926bf039cbe34115243891b53069f016e3ae9b8d583abb05eec60fb18096f"
+        },
+        "review": {
+          "path": "cases/recommendation/native/review-006.png",
+          "sha256": "e7be137caf3daca6baad891ed8fb78425c960afb3518d99a4a56526b947ad67e"
+        },
+        "overlay": {
+          "path": "cases/recommendation/native/overlay-006.png",
+          "sha256": "f098c50205875aed888fd2deaf29e2d833776a63c271d093c1a284ebd8da4641"
+        }
+      },
+      "direct_reading": "pending"
+    },
+    {
+      "key": "exam",
+      "backend": "native",
+      "page": 2,
+      "raw_percent": "99.96",
+      "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+      "files": {
+        "raw": {
+          "path": "cases/exam/native/raw-002.png",
+          "sha256": "b7092251e81e8960ca1a14889b751716e9ad14561dd3e993f64b9b34f63f74ba"
+        },
+        "pdf": {
+          "path": "cases/exam/native/pdf-002.png",
+          "sha256": "22a8ec5ccfd077b0c262beb647e548fa96778c14a3d2a2361be8ec3e1ea69d80"
+        },
+        "review": {
+          "path": "cases/exam/native/review-002.png",
+          "sha256": "2f374299d875b5f48b90e463445f447fb67ae35046f5431875a86e0098326409"
+        },
+        "overlay": {
+          "path": "cases/exam/native/overlay-002.png",
+          "sha256": "dc1207c8f6b908291caf88d5e9e71f69c1f9519c4afb5e86fa188f7d710fd1c7"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "같은 쪽 review와 overlay 직접 판독",
+        "observation": "영어 응답 줄 낱말 공백·밑줄 원점·좌우 단 내용 소유를 비교했다."
+      }
+    },
+    {
+      "key": "api",
+      "backend": "native",
+      "page": 13,
+      "raw_percent": "100.00",
+      "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+      "files": {
+        "raw": {
+          "path": "cases/api/native/raw-013.png",
+          "sha256": "6b6a0e7faa4d4dcac976735c8736f747b71838b2419ba064496aa39c15136716"
+        },
+        "pdf": {
+          "path": "cases/api/native/pdf-013.png",
+          "sha256": "9bfdda86c939577d5d3986f03cd99a684b06cae318fe71de8ecd745b45eff905"
+        },
+        "review": {
+          "path": "cases/api/native/review-013.png",
+          "sha256": "cc210f4f65a95e0dc75dc80cf1f161915da9503ec8d6537fa90818d4fbf51be5"
+        },
+        "overlay": {
+          "path": "cases/api/native/overlay-013.png",
+          "sha256": "3297f59b0fcf3728e9761291398ecd41e6fbbeaa6f7587ce6918b1d50d01168e"
+        }
+      },
+      "direct_reading": "pending"
+    },
+    {
+      "key": "api",
+      "backend": "native",
+      "page": 35,
+      "raw_percent": "100.00",
+      "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+      "files": {
+        "raw": {
+          "path": "cases/api/native/raw-035.png",
+          "sha256": "ab1d823f69975cf4edd0d347582239eec7d6e4bd50b2d750731d657cd69b1da4"
+        },
+        "pdf": {
+          "path": "cases/api/native/pdf-035.png",
+          "sha256": "947930055143f2df3d49cfb2f4c8d378d57b734df9ed12888a18142915f50c44"
+        },
+        "review": {
+          "path": "cases/api/native/review-035.png",
+          "sha256": "94b8d1644072e544c90e3bee435e45a98810239dd76d0a2d2282c8dea8788e34"
+        },
+        "overlay": {
+          "path": "cases/api/native/overlay-035.png",
+          "sha256": "cc30a62c09c2de6a11fb99f212aeba9c7d9e438af743ff4c7da5193c6c038671"
+        }
+      },
+      "direct_reading": "pending"
+    },
+    {
+      "key": "api",
+      "backend": "native",
+      "page": 36,
+      "raw_percent": "100.00",
+      "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+      "files": {
+        "raw": {
+          "path": "cases/api/native/raw-036.png",
+          "sha256": "c279e50cf223493f7c60f3aa25b5f98c8b55510da5ad42bf56aaf0bd526d8cc4"
+        },
+        "pdf": {
+          "path": "cases/api/native/pdf-036.png",
+          "sha256": "e2f43c432ad1d4ff620869575b8ebf5a9a05ddbf9e0ce8e1180e40a0d8b9e32d"
+        },
+        "review": {
+          "path": "cases/api/native/review-036.png",
+          "sha256": "5a1b0b9ede16f167e58d575400953f521e58a87fdecfacc487a5365c8e1cafa3"
+        },
+        "overlay": {
+          "path": "cases/api/native/overlay-036.png",
+          "sha256": "b0122a2c70fc9e115add2c847c44344b6ee3c537a250b51c330c6f4ed53d139f"
+        }
+      },
+      "direct_reading": "pending"
+    },
+    {
+      "key": "api",
+      "backend": "native",
+      "page": 65,
+      "raw_percent": "100.00",
+      "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+      "files": {
+        "raw": {
+          "path": "cases/api/native/raw-065.png",
+          "sha256": "10346b4952cc067b6efdbb0b142ff9766aaf0f191a0af5c52e626b8072caf65d"
+        },
+        "pdf": {
+          "path": "cases/api/native/pdf-065.png",
+          "sha256": "ecee7489cb021b178e847b7d298ed094940a9c22531c44c2f97e8648d14534a7"
+        },
+        "review": {
+          "path": "cases/api/native/review-065.png",
+          "sha256": "6e1aad723e897bb44e888aa011f6374812b707ded867bc9eb1501db2c76e7205"
+        },
+        "overlay": {
+          "path": "cases/api/native/overlay-065.png",
+          "sha256": "4a141362769f29be70d9628760a0aebdec7f499964ae28e49c8b9d5715a3ba47"
+        }
+      },
+      "direct_reading": "pending"
+    },
+    {
+      "key": "api",
+      "backend": "native",
+      "page": 69,
+      "raw_percent": "100.00",
+      "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+      "files": {
+        "raw": {
+          "path": "cases/api/native/raw-069.png",
+          "sha256": "afe7cc63b65f3e1e7a84ac540aab239ea7589384c3f20d0637d81fb8ec046799"
+        },
+        "pdf": {
+          "path": "cases/api/native/pdf-069.png",
+          "sha256": "224169cf9ba09e39b1235f43d005bde7ab376bc5f268b7ffb7b7297649ce4090"
+        },
+        "review": {
+          "path": "cases/api/native/review-069.png",
+          "sha256": "8377546a8ebdabb93c9aedecfa419c6d295136d22918ce83e7eef465c9289fee"
+        },
+        "overlay": {
+          "path": "cases/api/native/overlay-069.png",
+          "sha256": "68689ca93ba4230d86d44d2d42444af3a705e91e9c5ad8110ef8e729a2be345d"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "같은 쪽 review와 overlay 직접 판독",
+        "observation": "두 표의 시작·종료와 빈 줄·아래 Example·다음 제목의 위치를 비교했다."
+      }
+    },
+    {
+      "key": "footnote",
+      "backend": "native",
+      "page": 37,
+      "raw_percent": "98.75",
+      "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+      "files": {
+        "raw": {
+          "path": "cases/footnote/native/raw-037.png",
+          "sha256": "209ec278e95e1b0bdd6e95dc826a9d676f1a4865dfeeaf3726a476d5fb4d0579"
+        },
+        "pdf": {
+          "path": "cases/footnote/native/pdf-037.png",
+          "sha256": "88253c9179cb22eba2948df03ef02c2daf3bec1cd238cee8fc6ea5ec7ca7a0a8"
+        },
+        "review": {
+          "path": "cases/footnote/native/review-037.png",
+          "sha256": "48c0d1218db5e40b95be17f81996ed6170b25b54c7a152d6509ce996ac8256db"
+        },
+        "overlay": {
+          "path": "cases/footnote/native/overlay-037.png",
+          "sha256": "624eff7fcebd59914f36bb1cda1bc92a3c3abafe00206ad8a6a205b3c33a6f17"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "같은 쪽 review와 overlay 직접 판독",
+        "observation": "24)·25)의 서로 다른 줄 소유와 31번 행의 끝 내용을 비교했다. 일부 경계의 미세 차이는 남아 있다."
+      }
+    },
+    {
+      "key": "footnote",
+      "backend": "native",
+      "page": 38,
+      "raw_percent": "99.84",
+      "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+      "files": {
+        "raw": {
+          "path": "cases/footnote/native/raw-038.png",
+          "sha256": "0947f933f4a8f908a4d78c86e8a6eaa9fb4846820b77775841b992193e6a8e22"
+        },
+        "pdf": {
+          "path": "cases/footnote/native/pdf-038.png",
+          "sha256": "03602e510f33cf49a0bb96beb216eda95daf0d4c95e8c49b3c1c269f38bfb25d"
+        },
+        "review": {
+          "path": "cases/footnote/native/review-038.png",
+          "sha256": "75b7772c63ac56bc330668f3239b348e95daa18b0cd89af5438cd5deee060fa5"
+        },
+        "overlay": {
+          "path": "cases/footnote/native/overlay-038.png",
+          "sha256": "ee38ae67335df1856c774e83a1165a271d9cd4592d5b5a9412fdeef09aab1ea1"
+        }
+      },
+      "direct_reading": "pending"
+    },
+    {
+      "key": "cbta",
+      "backend": "wasm",
+      "page": 2,
+      "raw_percent": "98.08",
+      "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+      "files": {
+        "raw": {
+          "path": "cases/cbta/wasm/raw-002.png",
+          "sha256": "ad7c11a7adb92e6b39f080e8ba3bfdf110bcffc144472d575f95383b4ae52d27"
+        },
+        "pdf": {
+          "path": "cases/cbta/wasm/pdf-002.png",
+          "sha256": "53d913e93899aea33f11c8e3edf99c5c208e7352bc84911ef7584f0bde95b50e"
+        },
+        "review": {
+          "path": "cases/cbta/wasm/review-002.png",
+          "sha256": "4946523e627599d46522d00cc1d133fd9985ce1996fe2876ba8b2f3c6b18f6f4"
+        },
+        "overlay": {
+          "path": "cases/cbta/wasm/overlay-002.png",
+          "sha256": "8aa8a16cfaaa0852b73c26ae44758e40b3cfcfdb0db427d67b0870a9cabea958"
+        }
+      },
+      "direct_reading": "pending"
+    },
+    {
+      "key": "cbta",
+      "backend": "wasm",
+      "page": 96,
+      "raw_percent": "99.74",
+      "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+      "files": {
+        "raw": {
+          "path": "cases/cbta/wasm/raw-096.png",
+          "sha256": "a765f472bb3ed627c545228c134fcdf98cf456ebddcf39e76f37cc14237b1bce"
+        },
+        "pdf": {
+          "path": "cases/cbta/wasm/pdf-096.png",
+          "sha256": "cfd450f04689bd811bcde7559f5198280a6e40d8366c812975bbe393e2e91714"
+        },
+        "review": {
+          "path": "cases/cbta/wasm/review-096.png",
+          "sha256": "cb863803b5ae168b467c0c9f8c7ee56abcfcd2b60f7d1dab2c2b7ee29d8d9624"
+        },
+        "overlay": {
+          "path": "cases/cbta/wasm/overlay-096.png",
+          "sha256": "16b41e1c82b450adcfece7d7dbf9595bfd2ab6dd4702ec4663b0623fdb389380"
+        }
+      },
+      "direct_reading": "pending"
+    },
+    {
+      "key": "cbta",
+      "backend": "wasm",
+      "page": 118,
+      "raw_percent": "98.44",
+      "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+      "files": {
+        "raw": {
+          "path": "cases/cbta/wasm/raw-118.png",
+          "sha256": "e6342adf045c7864645a658f1c137e41796adc631e94c38be79d22909832bf8f"
+        },
+        "pdf": {
+          "path": "cases/cbta/wasm/pdf-118.png",
+          "sha256": "62a5528364364a3adca493010772232d83acf717e443ff345dd6a9a89d84ee15"
+        },
+        "review": {
+          "path": "cases/cbta/wasm/review-118.png",
+          "sha256": "6d5a8f46d1f83aa1047919c78da8e79771e33b63b5c2df724b757e88328dc5e2"
+        },
+        "overlay": {
+          "path": "cases/cbta/wasm/overlay-118.png",
+          "sha256": "2688c13c98f4a26d3a59687044c6d1bc33bea3f9822211c3d0f48190c0d0c628"
+        }
+      },
+      "direct_reading": "pending"
+    },
+    {
+      "key": "cbta",
+      "backend": "wasm",
+      "page": 162,
+      "raw_percent": "99.94",
+      "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+      "files": {
+        "raw": {
+          "path": "cases/cbta/wasm/raw-162.png",
+          "sha256": "185e5782b7b4c74c2d3e729262cf37a05c859836e615cb7a203d2c0edf93f109"
+        },
+        "pdf": {
+          "path": "cases/cbta/wasm/pdf-162.png",
+          "sha256": "97f254a1969dd26949af475ef0149957897352114b20d5bb2194b0bfea91b7b9"
+        },
+        "review": {
+          "path": "cases/cbta/wasm/review-162.png",
+          "sha256": "11e63620a2ebb0615797300c167ee6650e09cf60d2c77330be74ddfe55ce9678"
+        },
+        "overlay": {
+          "path": "cases/cbta/wasm/overlay-162.png",
+          "sha256": "766ab17e1b6777c4f7d25ec93e52789da4bd25a5c6f27e7686db7fa3b0111a69"
+        }
+      },
+      "direct_reading": "pending"
+    },
+    {
+      "key": "cbta",
+      "backend": "wasm",
+      "page": 166,
+      "raw_percent": "99.95",
+      "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+      "files": {
+        "raw": {
+          "path": "cases/cbta/wasm/raw-166.png",
+          "sha256": "af4ab98915fb4d66835f1c85c46fb6f18d43229538cd8625e37c32435ee46359"
+        },
+        "pdf": {
+          "path": "cases/cbta/wasm/pdf-166.png",
+          "sha256": "daf25aec13a5ad71356458bbb6a93ad74895ca9a3981c255a482636cf26e6fe1"
+        },
+        "review": {
+          "path": "cases/cbta/wasm/review-166.png",
+          "sha256": "26640c0426595cf9d204740d4b0615ad99c4925affc95b573b6382c7fef91f39"
+        },
+        "overlay": {
+          "path": "cases/cbta/wasm/overlay-166.png",
+          "sha256": "da0fb7cdc7d8556bb36f78aabaa7f36b58a35e7cd73e99f5603c7bbeb96020eb"
+        }
+      },
+      "direct_reading": "pending"
+    },
+    {
+      "key": "recommendation",
+      "backend": "wasm",
+      "page": 4,
+      "raw_percent": "99.86",
+      "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+      "files": {
+        "raw": {
+          "path": "cases/recommendation/wasm/raw-004.png",
+          "sha256": "3161a6c0c183dd61aea18b0400b07b084dd661fd7480c7dbf0a0c0691d0a13eb"
+        },
+        "pdf": {
+          "path": "cases/recommendation/wasm/pdf-004.png",
+          "sha256": "d035ef4d927d917cd206e13fafc4c4b956f37df5791996d8440d79f2fad1abad"
+        },
+        "review": {
+          "path": "cases/recommendation/wasm/review-004.png",
+          "sha256": "b44b427cd42d43eb34d49e894735254974db90566dcd71c564d8c325139737ad"
+        },
+        "overlay": {
+          "path": "cases/recommendation/wasm/overlay-004.png",
+          "sha256": "6593cb5d484cd63f7cbea63a7db8d8a057d08d19f3b7daf0d5cb8c2e43f24051"
+        }
+      },
+      "direct_reading": "pending"
+    },
+    {
+      "key": "recommendation",
+      "backend": "wasm",
+      "page": 6,
+      "raw_percent": "99.95",
+      "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+      "files": {
+        "raw": {
+          "path": "cases/recommendation/wasm/raw-006.png",
+          "sha256": "3d0bd5accbf0a5a7cda94f4bf22126533e9d578c78fa4719a44dd6abe2bf8c83"
+        },
+        "pdf": {
+          "path": "cases/recommendation/wasm/pdf-006.png",
+          "sha256": "429926bf039cbe34115243891b53069f016e3ae9b8d583abb05eec60fb18096f"
+        },
+        "review": {
+          "path": "cases/recommendation/wasm/review-006.png",
+          "sha256": "d9bfdae59ead3bd7fee794a4bf96b7dba0bfe84893dc95f577fd232d501c0907"
+        },
+        "overlay": {
+          "path": "cases/recommendation/wasm/overlay-006.png",
+          "sha256": "e2353eab6d3df49d2f3be6c1509ff4f3f608949e81651a1859ee543b51f1f9cc"
+        }
+      },
+      "direct_reading": "pending"
+    },
+    {
+      "key": "exam",
+      "backend": "wasm",
+      "page": 2,
+      "raw_percent": "99.96",
+      "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+      "files": {
+        "raw": {
+          "path": "cases/exam/wasm/raw-002.png",
+          "sha256": "cb7851d69e4fd95a84def427468c7ae3d043f21426cfc8faedfffa11996ae5cb"
+        },
+        "pdf": {
+          "path": "cases/exam/wasm/pdf-002.png",
+          "sha256": "22a8ec5ccfd077b0c262beb647e548fa96778c14a3d2a2361be8ec3e1ea69d80"
+        },
+        "review": {
+          "path": "cases/exam/wasm/review-002.png",
+          "sha256": "ea45b6136f42239563e05081803ecf4bfb4b90d2209f6fa83b8315a53ea09519"
+        },
+        "overlay": {
+          "path": "cases/exam/wasm/overlay-002.png",
+          "sha256": "1192a34d1d96ea888e6131507692bbc1de652e5e6f1a8890090b595c38caab48"
+        }
+      },
+      "direct_reading": "pending"
+    },
+    {
+      "key": "api",
+      "backend": "wasm",
+      "page": 13,
+      "raw_percent": "100.00",
+      "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+      "files": {
+        "raw": {
+          "path": "cases/api/wasm/raw-013.png",
+          "sha256": "7757fb17c4fe74af91034b9249ee9aa749b1d9ac1f9eac1b08b2b6f38d375c08"
+        },
+        "pdf": {
+          "path": "cases/api/wasm/pdf-013.png",
+          "sha256": "9bfdda86c939577d5d3986f03cd99a684b06cae318fe71de8ecd745b45eff905"
+        },
+        "review": {
+          "path": "cases/api/wasm/review-013.png",
+          "sha256": "51b5f5ac13846452061ef839dc85407151c10075c3516670a86f75157abafc37"
+        },
+        "overlay": {
+          "path": "cases/api/wasm/overlay-013.png",
+          "sha256": "2f082cd2f7c49b703bb1114e7ed94451e7db8408de781d8f542c3ca25fedec7e"
+        }
+      },
+      "direct_reading": "pending"
+    },
+    {
+      "key": "api",
+      "backend": "wasm",
+      "page": 35,
+      "raw_percent": "100.00",
+      "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+      "files": {
+        "raw": {
+          "path": "cases/api/wasm/raw-035.png",
+          "sha256": "f06b1a894dfd439495e80fc1270151221afed9ef4e7d9c0a9984204176de722f"
+        },
+        "pdf": {
+          "path": "cases/api/wasm/pdf-035.png",
+          "sha256": "947930055143f2df3d49cfb2f4c8d378d57b734df9ed12888a18142915f50c44"
+        },
+        "review": {
+          "path": "cases/api/wasm/review-035.png",
+          "sha256": "f72ded499c482eff2a79d00dfaef46675efd997ddc8dacec8bc312ce67dc7d8f"
+        },
+        "overlay": {
+          "path": "cases/api/wasm/overlay-035.png",
+          "sha256": "e8174e947dd3745c13b0a27d8426fdb40691c845371b50ec6841dacff490cf32"
+        }
+      },
+      "direct_reading": "pending"
+    },
+    {
+      "key": "api",
+      "backend": "wasm",
+      "page": 36,
+      "raw_percent": "100.00",
+      "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+      "files": {
+        "raw": {
+          "path": "cases/api/wasm/raw-036.png",
+          "sha256": "f355b80c58f3a3087d84745265aaac26f95c15bdaabae03a03f5da782d06d3d4"
+        },
+        "pdf": {
+          "path": "cases/api/wasm/pdf-036.png",
+          "sha256": "e2f43c432ad1d4ff620869575b8ebf5a9a05ddbf9e0ce8e1180e40a0d8b9e32d"
+        },
+        "review": {
+          "path": "cases/api/wasm/review-036.png",
+          "sha256": "24f18c4aca433a5e149cd63a6a71c27db6acae08a87e183c6c4e9f0c4e39bc72"
+        },
+        "overlay": {
+          "path": "cases/api/wasm/overlay-036.png",
+          "sha256": "0745d45bd7b42ff1c37c85e58ef33a072fdde91cdb587fca9da3e4336ff951e9"
+        }
+      },
+      "direct_reading": "pending"
+    },
+    {
+      "key": "api",
+      "backend": "wasm",
+      "page": 65,
+      "raw_percent": "100.00",
+      "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+      "files": {
+        "raw": {
+          "path": "cases/api/wasm/raw-065.png",
+          "sha256": "a8330724839cc51d222754be22669442cbeff67996b4784f1176ad9933832566"
+        },
+        "pdf": {
+          "path": "cases/api/wasm/pdf-065.png",
+          "sha256": "ecee7489cb021b178e847b7d298ed094940a9c22531c44c2f97e8648d14534a7"
+        },
+        "review": {
+          "path": "cases/api/wasm/review-065.png",
+          "sha256": "de587808fee0687660c0631ca2be3eee8fc7b32a0a7bfb6dd8e45d8486c6a6ef"
+        },
+        "overlay": {
+          "path": "cases/api/wasm/overlay-065.png",
+          "sha256": "fea517cc246372d380f25fcbdb0f9ece22d4db61e26a8952bfe1e91d1abde75e"
+        }
+      },
+      "direct_reading": "pending"
+    },
+    {
+      "key": "api",
+      "backend": "wasm",
+      "page": 69,
+      "raw_percent": "100.00",
+      "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+      "files": {
+        "raw": {
+          "path": "cases/api/wasm/raw-069.png",
+          "sha256": "703b2029a7a7330067a7b98292b8dd0e0c088fdda7f694adcc73d2df2ef508a1"
+        },
+        "pdf": {
+          "path": "cases/api/wasm/pdf-069.png",
+          "sha256": "224169cf9ba09e39b1235f43d005bde7ab376bc5f268b7ffb7b7297649ce4090"
+        },
+        "review": {
+          "path": "cases/api/wasm/review-069.png",
+          "sha256": "64dc106c408f047739b31adf5630aea4abf943b7628c611da06b8363aacdea9e"
+        },
+        "overlay": {
+          "path": "cases/api/wasm/overlay-069.png",
+          "sha256": "bfb2b00f09ff63a1c6ea806860c566fc1d068442479c934cfd3d12ce756261c0"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "같은 쪽 review와 overlay 직접 판독",
+        "observation": "두 표와 뒤따르는 Example·다음 제목의 배치를 확인했다."
+      }
+    },
+    {
+      "key": "footnote",
+      "backend": "wasm",
+      "page": 37,
+      "raw_percent": "98.75",
+      "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+      "files": {
+        "raw": {
+          "path": "cases/footnote/wasm/raw-037.png",
+          "sha256": "203e09942ac75e067dc2c1f3a790d137ffa26c236f2c1c24dadef66023673d6a"
+        },
+        "pdf": {
+          "path": "cases/footnote/wasm/pdf-037.png",
+          "sha256": "88253c9179cb22eba2948df03ef02c2daf3bec1cd238cee8fc6ea5ec7ca7a0a8"
+        },
+        "review": {
+          "path": "cases/footnote/wasm/review-037.png",
+          "sha256": "3db17c6949b19ba3f899baa0d3b60e079252fa4bfd79a0a923c161ff454b4da7"
+        },
+        "overlay": {
+          "path": "cases/footnote/wasm/overlay-037.png",
+          "sha256": "97796819f1caf1e6ab0c5e3a1fbd31ad132644a5932e82f011201bac14705056"
+        }
+      },
+      "direct_reading": {
+        "status": "completed",
+        "method": "같은 쪽 review와 overlay 직접 판독",
+        "observation": "24)·25)의 줄 소유와 31번 행의 마지막 내용을 확인했다. 일부 경계에 미세 차이가 남는다."
+      }
+    },
+    {
+      "key": "footnote",
+      "backend": "wasm",
+      "page": 38,
+      "raw_percent": "99.84",
+      "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+      "files": {
+        "raw": {
+          "path": "cases/footnote/wasm/raw-038.png",
+          "sha256": "d5d621a4ec00532b74689c587d6d8dcd0d7cca94400a687c6489f76805707bd9"
+        },
+        "pdf": {
+          "path": "cases/footnote/wasm/pdf-038.png",
+          "sha256": "03602e510f33cf49a0bb96beb216eda95daf0d4c95e8c49b3c1c269f38bfb25d"
+        },
+        "review": {
+          "path": "cases/footnote/wasm/review-038.png",
+          "sha256": "340d3e98ad76c4548a9181bf8b865f03114b40c0cc2c05d71e104eace43e4d1b"
+        },
+        "overlay": {
+          "path": "cases/footnote/wasm/overlay-038.png",
+          "sha256": "deec8db7b79d78cdbedc82e780cf4bef84c1ae3a8ed633f863afc34914c64ab3"
+        }
+      },
+      "direct_reading": "pending"
+    }
+  ]
+}

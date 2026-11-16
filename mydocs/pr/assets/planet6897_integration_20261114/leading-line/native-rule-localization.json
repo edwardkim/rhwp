@@ -1,0 +1,74 @@
+{
+  "method": "Diagnostic only: darkest long rule raster row in each already identified band. No transform or threshold change to Visual Sweep.",
+  "rows": [
+    {
+      "target_band_y": 517,
+      "dark_long_rule_rows": {
+        "before": [
+          [
+            514
+          ],
+          600
+        ],
+        "after": [
+          [
+            516
+          ],
+          600
+        ],
+        "print": [
+          [
+            516
+          ],
+          600
+        ]
+      }
+    },
+    {
+      "target_band_y": 663,
+      "dark_long_rule_rows": {
+        "before": [
+          [
+            660
+          ],
+          600
+        ],
+        "after": [
+          [
+            662
+          ],
+          600
+        ],
+        "print": [
+          [
+            662
+          ],
+          600
+        ]
+      }
+    },
+    {
+      "target_band_y": 788,
+      "dark_long_rule_rows": {
+        "before": [
+          [
+            785
+          ],
+          600
+        ],
+        "after": [
+          [
+            787
+          ],
+          600
+        ],
+        "print": [
+          [
+            787
+          ],
+          600
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,255 @@
+{
+  "recorded_at": "2026-11-13T16:35:30.817469+09:00",
+  "pr": 9042,
+  "base": "00d09f773a2f6c21604a4e6394df7152bbb26e8c",
+  "original_head": "3ae4eeb332c3b0edbb3a8fbe334daf2b0a48115b",
+  "local_product_head": "637410dbfa8deb060d1c8739b0bf5e7ae8286c89",
+  "inputs": [
+    {
+      "path": "mydocs/pr/assets/coanchored-table-pagination/float-pagination.hwp",
+      "bytes": 7168,
+      "sha256": "a6c335583559f7e3057cf883c75f5c66942bb7a213da0e46796116a77cfc3ec8"
+    },
+    {
+      "path": "pdf/coanchored-table-pagination/float-pagination-hancom-mac-viewer-12.31.9-print.pdf",
+      "bytes": 11593,
+      "sha256": "f1ec7d39a06824b1407263ef872d4f05cfba57a0f335e5785fe4305b06309206"
+    },
+    {
+      "path": "samples/pr9042/metadata-empty-footer.hwp",
+      "bytes": 7168,
+      "sha256": "b0e28245015a888ff9a2861a44178e4025c599ada1cc312c936ca842690a2580"
+    },
+    {
+      "path": "samples/pr9042/metadata-empty-header.hwp",
+      "bytes": 7168,
+      "sha256": "8b93ad8e2b926fd3359105596bff803a81cfb79ba065776e8ef801428330f70b"
+    },
+    {
+      "path": "samples/pr9042/metadata-unchanged.hwp",
+      "bytes": 7168,
+      "sha256": "fdd0a3e956378a945021a3cd0b6232d5fd1da9ce85d4da07f4152a8cc9b033b8"
+    },
+    {
+      "path": "samples/pr9042/pr9042-hancom-saved.hwp",
+      "bytes": 15872,
+      "sha256": "0e003794aab9c3d49f47a3cb5f08a6c093172a3617b9648185e2b761c66198e6"
+    },
+    {
+      "path": "pdf/pr9042/pr9042-empty-footer-2020.pdf",
+      "bytes": 16273,
+      "sha256": "9b960e6334c12be874db6858be1440374d5a8e17deaeba563ceb8309bd10bddd"
+    },
+    {
+      "path": "pdf/pr9042/pr9042-empty-header-2020.pdf",
+      "bytes": 16273,
+      "sha256": "a8f66beb2d3c08f17ac77194eebc99f571ba2788e42d3e992dc78f535fd5cafd"
+    },
+    {
+      "path": "pdf/pr9042/pr9042-hancom-saved-2020.pdf",
+      "bytes": 16273,
+      "sha256": "314175bff547c8d427bdef0a1727f01e397b611838787d9f37dd87dae6c2e4e0"
+    },
+    {
+      "path": "pdf/pr9042/pr9042-unchanged-2020.pdf",
+      "bytes": 16273,
+      "sha256": "51eee68afa0e6edb57c6aca05d9a31bcc5b739a22655e7f9d0ce64f860fb7873"
+    }
+  ],
+  "producer": {
+    "base_build_head": "1613d6c24338a3166fac4747295758528b703c2b",
+    "base_binary_sha256": "64da5f0b3c29b41a113cdd8aacb35604c94f6bac6bf721a15aa0d5ead235efec",
+    "candidate_binary_sha256": "1966e43a33fed9c18b5980a2323a78f97c6eea95b29e7df7845cb498247469f0",
+    "profile": "release-test",
+    "features": [
+      "native-skia"
+    ],
+    "dpi": 96,
+    "compat": "2022"
+  },
+  "native_font_supply": {
+    "resources": [
+      {
+        "nativeBytes": 22244940,
+        "nativeSha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+        "sourceSha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+        "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.0/HCRDotum.woff"
+      },
+      {
+        "nativeBytes": 28413328,
+        "nativeSha256": "24b49246526c86ddd7bf44d3ee88a3cc044f51f51af4e01c29a1e699059981e1",
+        "sourceSha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+        "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff"
+      }
+    ],
+    "mappings": {
+      "함초롬돋움": "HCRDotum",
+      "함초롬바탕": "HCRBatang"
+    },
+    "unavailable": [],
+    "genericFallbacks": [],
+    "glyphFallbacks": []
+  },
+  "hancom_saved_png_identity": [
+    {
+      "page": 1,
+      "base_sha256": "9eef6503fbd118b65a634841e8f622d9c4b8ff8ce3ec6fa5fd81193d6edf71d5",
+      "candidate_sha256": "9eef6503fbd118b65a634841e8f622d9c4b8ff8ce3ec6fa5fd81193d6edf71d5",
+      "byte_identical": true
+    },
+    {
+      "page": 2,
+      "base_sha256": "3eb6d8b4303746ecd2b6a8e942acd06362a5442e58017fb4dafb83f5af3b0f5c",
+      "candidate_sha256": "3eb6d8b4303746ecd2b6a8e942acd06362a5442e58017fb4dafb83f5af3b0f5c",
+      "byte_identical": true
+    }
+  ],
+  "metadata_boundary": [
+    {
+      "name": "unchanged",
+      "native_pages": 2,
+      "independent_hancom_pages": 2
+    },
+    {
+      "name": "empty-header",
+      "native_pages": 3,
+      "independent_hancom_pages": 2
+    },
+    {
+      "name": "empty-footer",
+      "native_pages": 3,
+      "independent_hancom_pages": 2
+    }
+  ],
+  "independent_metadata_rgb_identity": {
+    "unchanged": [
+      "18c69964a77c452bf062d43982e3cbbf9eae63e197c74f1da05895caacd37aeb",
+      "fd4cce54b0acd3300065110a3692b7c02ae2ec1344fc5cdaa3265d79d155ce8a"
+    ],
+    "empty-header": [
+      "18c69964a77c452bf062d43982e3cbbf9eae63e197c74f1da05895caacd37aeb",
+      "fd4cce54b0acd3300065110a3692b7c02ae2ec1344fc5cdaa3265d79d155ce8a"
+    ],
+    "empty-footer": [
+      "18c69964a77c452bf062d43982e3cbbf9eae63e197c74f1da05895caacd37aeb",
+      "fd4cce54b0acd3300065110a3692b7c02ae2ec1344fc5cdaa3265d79d155ce8a"
+    ]
+  },
+  "independent_jobs": [
+    {
+      "job_id": "05d02b1b-2055-486f-9571-ebc5bee90baa",
+      "target": "pdf",
+      "completed_at": "2026-11-13T07:06:29.390Z",
+      "status": "success",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "font_scope": {
+        "mode": "session0",
+        "status": "verified",
+        "profile_source": "protected_config",
+        "session_id": 0,
+        "mapped_font_count": 2,
+        "registered_font_count": 2,
+        "failed_font_count": 0,
+        "parent_visibility": "verified",
+        "child_visibility": "verified"
+      },
+      "pdf_page_count": 2,
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+    },
+    {
+      "job_id": "70567df0-6d26-4dcf-8476-5f676fc81d50",
+      "target": "pdf",
+      "completed_at": "2026-11-13T07:06:44.410Z",
+      "status": "success",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "font_scope": {
+        "mode": "session0",
+        "status": "verified",
+        "profile_source": "protected_config",
+        "session_id": 0,
+        "mapped_font_count": 2,
+        "registered_font_count": 2,
+        "failed_font_count": 0,
+        "parent_visibility": "verified",
+        "child_visibility": "verified"
+      },
+      "pdf_page_count": 2,
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+    },
+    {
+      "job_id": "988e2d1a-500f-493c-82e1-d356ae05d1d0",
+      "target": "pdf",
+      "completed_at": "2026-11-13T07:07:00.142Z",
+      "status": "success",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "font_scope": {
+        "mode": "session0",
+        "status": "verified",
+        "profile_source": "protected_config",
+        "session_id": 0,
+        "mapped_font_count": 2,
+        "registered_font_count": 2,
+        "failed_font_count": 0,
+        "parent_visibility": "verified",
+        "child_visibility": "verified"
+      },
+      "pdf_page_count": 2,
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+    },
+    {
+      "job_id": "542f552c-302e-4c4a-b7a9-bc440d306d29",
+      "target": "hwp",
+      "completed_at": "2026-11-13T07:17:48.539Z",
+      "status": "success",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "font_scope": {
+        "mode": "session0",
+        "status": "verified",
+        "profile_source": "protected_config",
+        "session_id": 0,
+        "mapped_font_count": 2,
+        "registered_font_count": 2,
+        "failed_font_count": 0,
+        "parent_visibility": "verified",
+        "child_visibility": "verified"
+      },
+      "pdf_page_count": null,
+      "pdf_print_method": null,
+      "pdf_output_mode": ""
+    },
+    {
+      "job_id": "ae168b9a-3899-4c03-a7ea-73af9bfb6a37",
+      "target": "pdf",
+      "completed_at": "2026-11-13T07:22:32.931Z",
+      "status": "success",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "font_scope": {
+        "mode": "session0",
+        "status": "verified",
+        "profile_source": "protected_config",
+        "session_id": 0,
+        "mapped_font_count": 2,
+        "registered_font_count": 2,
+        "failed_font_count": 0,
+        "parent_visibility": "verified",
+        "child_visibility": "verified"
+      },
+      "pdf_page_count": 2,
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+    }
+  ],
+  "verification_limits": [
+    "fresh optimized WASM not yet executed by maintainer",
+    "full mandatory local gates not yet executed",
+    "header TSV contains page 1 only; 3 Native pages versus 2 PDF pages is a blocking mismatch"
+  ]
+}

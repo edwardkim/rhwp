@@ -765,13 +765,14 @@ fn write_serialize_footnote_shape<W: std::io::Write>(
     w.write_u16(char_to_wchar(fs.prefix_char))?;
     w.write_u16(char_to_wchar(fs.suffix_char))?;
     w.write_u16(fs.start_number)?;
-    // [#7862] HWP5 노트 구분선 길이는 4바이트다(한컴 전폭 값 14692344 그대로).
+    // [#7862, #9049] 길이는 플래그와 독립적인 i32다. -1(5cm), 0(없음),
+    // 양수 길이를 그대로 보존하고 상위 2바이트를 여백으로 덮어쓰지 않는다.
     w.write_i32(fs.separator_length)?;
     // "구분선 위" 는 다음 i16 이다. HWPX 출처 모양은 `aboveLine` 을
     // `separator_margin_top` 에 두므로 정규화 접근자로 쓴다(HWP5 출처는 원값 그대로).
     w.write_i16(fs.separator_above_margin_hu())?;
     w.write_i16(fs.note_spacing)?;
-    // 미문서화 2바이트 (원본 보존)
+    // 한컴 UI의 주석 사이 여백(HWPX betweenNotes).
     w.write_u16(fs.raw_unknown)?;
     w.write_u8(fs.separator_line_type)?;
     w.write_u8(fs.separator_line_width)?;

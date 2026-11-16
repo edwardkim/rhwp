@@ -74,7 +74,7 @@ pub struct ListEntry {
     /// 이 리스트를 담은 리스트의 아이디.
     pub host_list_id: u32,
     pub section_index: usize,
-    /// 호스트 리스트 안에서 이 리스트를 담은 문단 번호.
+    /// 호스트 문단 번호. 본문 호스트는 구역 안 번호, 중첩 호스트는 리스트 안 번호.
     pub host_para_index: usize,
     /// 그 문단 안에서 컨트롤 번호 — 상위로 올라갈 때 위치는 `8 × control_index` 다.
     pub control_index: usize,
@@ -129,6 +129,7 @@ impl DocumentCore {
     pub fn collect_fields_and_lists(&self) -> (Vec<FieldInfo>, Vec<ListEntry>) {
         let mut result = Vec::new();
         let mut walk = ListWalk::new();
+        let mut para_base = 0;
         for (si, sec) in self.document.sections.iter().enumerate() {
             for (pi, para) in sec.paragraphs.iter().enumerate() {
                 let loc = FieldLocation {
@@ -136,8 +137,16 @@ impl DocumentCore {
                     para_index: pi,
                     nested_path: Vec::new(),
                 };
-                collect_fields_from_paragraph(para, &loc, ROOT_LIST_ID, &mut walk, &mut result);
+                collect_fields_from_paragraph(
+                    para,
+                    &loc,
+                    ROOT_LIST_ID,
+                    para_base + pi,
+                    &mut walk,
+                    &mut result,
+                );
             }
+            para_base += sec.paragraphs.len();
         }
         (result, walk.lists)
     }
@@ -723,16 +732,15 @@ impl DocumentCore {
         editable: bool,
     ) -> Result<String, HwpError> {
         if list_id == ROOT_LIST_ID {
-            let char_offset = self
-                .document
-                .sections
-                .first()
-                .and_then(|s| s.paragraphs.get(para_in_list))
-                .map(|p| char_idx_at_code_unit(p, pos))
-                .unwrap_or(0);
+            let (section_index, para_index) = root_para_location(self, para_in_list)
+                .ok_or_else(|| HwpError::InvalidField("본문 문단 인덱스 초과".into()))?;
+            let char_offset = char_idx_at_code_unit(
+                &self.document.sections[section_index].paragraphs[para_index],
+                pos,
+            );
             return self.insert_click_here_field_at(
-                0,
-                para_in_list,
+                section_index,
+                para_index,
                 char_offset,
                 guide,
                 memo,
@@ -1579,13 +1587,14 @@ fn collect_fields_from_paragraph(
     para: &Paragraph,
     base_location: &FieldLocation,
     list_id: u32,
+    para_in_list: usize,
     walk: &mut ListWalk,
     result: &mut Vec<FieldInfo>,
 ) {
-    let para_in_list = match base_location.nested_path.last() {
-        Some(NestedEntry::TableCell { para_index, .. }) => *para_index,
-        Some(NestedEntry::TextBox { para_index, .. }) => *para_index,
-        None => base_location.para_index,
+    let host_para_index = if list_id == ROOT_LIST_ID {
+        base_location.para_index
+    } else {
+        para_in_list
     };
 
     // 현재 문단의 field_ranges에서 필드 수집
@@ -1633,7 +1642,7 @@ fn collect_fields_from_paragraph(
                         is_cell: true,
                         host_list_id: list_id,
                         section_index: base_location.section_index,
-                        host_para_index: para_in_list,
+                        host_para_index,
                         control_index: ci,
                         cell_index: cell_i,
                         para_count: cell.paragraphs.len(),
@@ -1695,7 +1704,14 @@ fn collect_fields_from_paragraph(
                             cell_index: cell_i,
                             para_index: pi,
                         });
-                        collect_fields_from_paragraph(cell_para, &loc, cell_list_id, walk, result);
+                        collect_fields_from_paragraph(
+                            cell_para,
+                            &loc,
+                            cell_list_id,
+                            pi,
+                            walk,
+                            result,
+                        );
                     }
                 }
             }
@@ -1710,7 +1726,7 @@ fn collect_fields_from_paragraph(
                         is_cell: false,
                         host_list_id: list_id,
                         section_index: base_location.section_index,
-                        host_para_index: para_in_list,
+                        host_para_index,
                         control_index: ci,
                         // 묶음 안에서 몇 번째 마디인지 — 사슬 쪽과 같은 번호를 쓴다.
                         cell_index: node,
@@ -1723,7 +1739,7 @@ fn collect_fields_from_paragraph(
                             control_index: ci,
                             para_index: pi,
                         });
-                        collect_fields_from_paragraph(tb_para, &loc, box_list_id, walk, result);
+                        collect_fields_from_paragraph(tb_para, &loc, box_list_id, pi, walk, result);
                     }
                 }
             }

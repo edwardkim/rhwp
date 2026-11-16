@@ -1,0 +1,33 @@
+{
+  "profile_sha256": "1576eb0cb9e53e700ad4834aed7ff554eb8245a0054a020339c62fc112ac490d",
+  "checks": [
+    {
+      "path": "$T7/fonts/HBATANG.TTF",
+      "expected_read": false,
+      "exit": 1
+    },
+    {
+      "path": "$T7/fonts/HMKMM.TTF",
+      "expected_read": false,
+      "exit": 1
+    },
+    {
+      "path": "$T7/fonts/Windows-Fonts-20261112-204958/batang.ttc",
+      "expected_read": false,
+      "exit": 1
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/fonts/assets/DejaVuSans.ttf",
+      "expected_read": true,
+      "exit": 0
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/fonts/assets/DejaVuSans-Bold.ttf",
+      "expected_read": true,
+      "exit": 0
+    }
+  ],
+  "explicit_fixture_programs": "explicit-licensed-test-fonts.json",
+  "profile_source": "output/issue8946/stage6/minimal-font.sb (the actual passing stage9 run-full.sh profile)",
+  "source_identical": true
+}

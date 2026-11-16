@@ -1,0 +1,57 @@
+{
+  "documentSubstitutions": [],
+  "id": "native-webfont-7c65ad31acf5dc4a38de006f",
+  "preserveSourceMetrics": true,
+  "selectedPrograms": {
+    "Arial Unicode MS": {
+      "family": "Arial Unicode MS",
+      "openTypeCff": false,
+      "programId": "7a992ab87f53ba9d3c498436f822bb27da490441ed413274af11112cd0f66355",
+      "query": "Arial Unicode MS",
+      "trueType": true
+    }
+  },
+  "substitutions": {
+    "-윤고딕120": "NotoSansKR-Regular",
+    "-윤고딕330": "NotoSansKR-Regular",
+    "08서울남산체 B": "NotoSansKR-Regular",
+    "08서울남산체 M": "NotoSansKR-Regular",
+    "Arial Unicode MS": "Arial Unicode MS",
+    "Calibri": "NotoSansKR-Regular",
+    "HCI Hollyhock": "NotoSansKR-Regular",
+    "HCI Poppy": "NotoSerifKRExtraLight-Regular",
+    "HY견명조": "NotoSerifKRExtraLight-Bold",
+    "HY동녘M": "NotoSansKR-Regular",
+    "HY울릉도M": "NotoSansKR-Regular",
+    "HY헤드라인M": "NotoSansKRThin-Bold",
+    "굴림": "NotoSansKRExtraLight",
+    "굴림체": "D2Coding",
+    "나눔명조": "NanumMyeongjo",
+    "맑은 고딕": "Pretendard-Regular",
+    "명조": "NotoSerifKRExtraLight-Bold",
+    "바탕": "NotoSerifKRExtraLight-Regular",
+    "신명 견명조": "NotoSerifKRExtraLight-Bold",
+    "신명 디나루": "NotoSansKRExtraLight",
+    "신명 순명조": "NotoSerifKRExtraLight-Regular",
+    "신명 중고딕": "NotoSansKR-Regular",
+    "신명 중명조": "NotoSerifKRExtraLight-Regular",
+    "신명 태고딕": "NotoSansKR-Regular",
+    "신명 태그래픽": "NotoSansKR-Regular",
+    "신명 태명조": "NotoSerifKRExtraLight-Regular",
+    "태 나무": "NotoSansKR-Regular",
+    "한양견고딕": "NotoSansKR-Regular",
+    "한양신명조": "NotoSansKR-Regular",
+    "한양중고딕": "NotoSansKR-Regular",
+    "한컴바탕": "HCRBatang",
+    "함초롬돋움": "HCRDotum",
+    "함초롬바탕": "HCRBatang",
+    "휴먼고딕": "NotoSansKR-Regular",
+    "휴먼명조": "NotoSansKR-Regular"
+  },
+  "trueTypeFaces": [
+    "Arial Unicode MS",
+    "HCR Batang",
+    "HCR Dotum",
+    "NanumMyeongjo"
+  ]
+}

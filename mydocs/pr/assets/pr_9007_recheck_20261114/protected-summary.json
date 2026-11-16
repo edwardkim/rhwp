@@ -1,0 +1,18 @@
+[
+  {
+    "backend": "native",
+    "datasets": 18,
+    "pages": 1771,
+    "declines": 78,
+    "below90": 0,
+    "minimum": "96.25"
+  },
+  {
+    "backend": "wasm",
+    "datasets": 18,
+    "pages": 1771,
+    "declines": 87,
+    "below90": 5,
+    "minimum": "31.61"
+  }
+]

@@ -27,6 +27,13 @@ pub(crate) fn supports_style(style: &TextStyle) -> bool {
         && !style.engrave
 }
 
+/// 원 HFT의 명시 자연 프로그램 선택은 자동 표시 치환과 구분한다.
+/// 실제 정적 TTF 여부와 글리프 소유는 등록 공급자에서 별도로 확인한다.
+#[cfg(target_arch = "wasm32")]
+pub(crate) fn has_natural_hft_program(style: &TextStyle) -> bool {
+    style.source_font_is_hft && style.natural_program_metrics && style.preserve_glyph_ink
+}
+
 pub(crate) fn first_family(family: &str) -> &str {
     family
         .split(',')
@@ -198,6 +205,10 @@ pub(crate) struct HftOutlineFonts {
     faces: HashMap<String, Vec<Arc<SourceFace>>>,
     #[cfg(target_arch = "wasm32")]
     print_faces: HashMap<(String, u16), Arc<SourceFace>>,
+    #[cfg(target_arch = "wasm32")]
+    print_primaries: HashMap<String, print_text::PrintPrimary>,
+    #[cfg(target_arch = "wasm32")]
+    print_complete_cff_families: HashSet<String>,
     cache: Arc<Mutex<ContourCache<SourceGlyphKey>>>,
 }
 
@@ -209,12 +220,21 @@ pub(crate) struct FauxBoldOutline {
 }
 
 impl HftOutlineFonts {
+    /// 쪽별 paint 자원을 해제한다. 이미 확정한 cmap coverage는 유지한다.
+    #[cfg(target_arch = "wasm32")]
+    pub(crate) fn clear_outline_family(&mut self, family: &str) {
+        let family = first_family(family).to_lowercase();
+        self.faces.remove(&family);
+    }
+
     pub(crate) fn clear_family(&mut self, family: &str) {
         self.pua_coverage.clear_family(family);
         self.faces.remove(&first_family(family).to_lowercase());
         #[cfg(target_arch = "wasm32")]
         self.print_faces
             .retain(|(name, _), _| name != &first_family(family).to_lowercase());
+        #[cfg(target_arch = "wasm32")]
+        self.clear_print_primary(family);
     }
 
     /// 실제 FontFace의 우선순위를 원자적으로 교체한다. 첫 cmap 소유 face만 소비한다.
@@ -233,6 +253,8 @@ impl HftOutlineFonts {
         if family.is_empty() {
             return Err("invalid outline font family");
         }
+        #[cfg(target_arch = "wasm32")]
+        self.print_complete_cff_families.remove(&family);
         let mut prepared = Vec::new();
         let mut programs = HashSet::new();
         let mut total = 0usize;
@@ -326,7 +348,7 @@ impl HftOutlineFonts {
         None
     }
 
-    /// 실제 공급 목록이 선택한 정적 TTF 대체 face의 unhinted 윤곽이다.
+    /// 실제 공급 목록이 선택한 정적 TTF face의 unhinted 윤곽이다.
     /// 원 face의 정상 글리프·조판 전진·문맥 shaping은 바꾸지 않는다.
     #[cfg(target_arch = "wasm32")]
     pub(crate) fn print_fallback_glyph(
@@ -334,7 +356,10 @@ impl HftOutlineFonts {
         style: &TextStyle,
         character: char,
     ) -> Option<Arc<[PathCommand]>> {
-        if !style.source_font_is_ttf
+        // 원 HFT의 명시 자연 프로그램 선택도 Native Print와 같은 실제 TTF를
+        // 소비한다. 원문의 HFT 유형을 TTF로 바꾸거나 자동 표시 치환까지 확대하지 않는다.
+        let selected_natural_program = has_natural_hft_program(style);
+        if !(style.source_font_is_ttf || selected_natural_program)
             || style.is_visually_bold()
             || style.italic
             || style.outline_type != 0
@@ -352,7 +377,8 @@ impl HftOutlineFonts {
         // 앞 후보의 coverage가 없으면 그 글자의 실제 공급자를 확정할 수 없다.
         // faux bold와 같이 실제 CSS 사다리를 아는 Canvas painter에 맡긴다.
         if !selected.predecessors_known
-            || selected.family == first_family(&style.font_family).to_lowercase()
+            || (!selected_natural_program
+                && selected.family == first_family(&style.font_family).to_lowercase())
         {
             return None;
         }
@@ -446,6 +472,7 @@ impl HftOutlineFonts {
     #[cfg(target_arch = "wasm32")]
     pub(crate) fn register_print_font(&mut self, family: &str, bytes: &[u8], index: u32) {
         let family = first_family(family).to_lowercase();
+        self.clear_print_primary(&family);
         let usable = || {
             if bytes.len() > MAX_SOURCE_BYTES {
                 return None;
@@ -500,3 +527,7 @@ impl HftOutlineFonts {
         self.print_faces.insert(key, source);
     }
 }
+
+#[cfg(target_arch = "wasm32")]
+#[path = "hft_outline/print_text.rs"]
+mod print_text;

@@ -1,0 +1,241 @@
+{
+  "variant": "candidate",
+  "browser": "Chrome/152.0.7946.0",
+  "rows": [
+    {
+      "viewport": {
+        "width": 800,
+        "height": 360
+      },
+      "dialog": {
+        "top": 12,
+        "bottom": 348,
+        "left": 170,
+        "right": 630
+      },
+      "titleClose": {
+        "top": 19.5,
+        "bottom": 35.5,
+        "left": 601,
+        "right": 617
+      },
+      "footerClose": {
+        "top": 309,
+        "bottom": 335,
+        "left": 553,
+        "right": 617
+      },
+      "body": {
+        "top": 42,
+        "bottom": 300,
+        "left": 171,
+        "right": 629,
+        "clientHeight": 258,
+        "scrollHeight": 683,
+        "overflow": "auto"
+      },
+      "sheet": false,
+      "touch": false,
+      "footerClosed": true,
+      "overlayClosed": true,
+      "escapeClosed": true
+    },
+    {
+      "viewport": {
+        "width": 768,
+        "height": 320
+      },
+      "dialog": {
+        "top": 12,
+        "bottom": 308,
+        "left": 154,
+        "right": 614
+      },
+      "titleClose": {
+        "top": 19.5,
+        "bottom": 35.5,
+        "left": 585,
+        "right": 601
+      },
+      "footerClose": {
+        "top": 269,
+        "bottom": 295,
+        "left": 537,
+        "right": 601
+      },
+      "body": {
+        "top": 42,
+        "bottom": 260,
+        "left": 155,
+        "right": 613,
+        "clientHeight": 218,
+        "scrollHeight": 683,
+        "overflow": "auto"
+      },
+      "sheet": false,
+      "touch": false,
+      "footerClosed": true,
+      "overlayClosed": true,
+      "escapeClosed": true
+    },
+    {
+      "viewport": {
+        "width": 767,
+        "height": 360
+      },
+      "dialog": {
+        "top": 36,
+        "bottom": 360,
+        "left": 0,
+        "right": 767
+      },
+      "titleClose": {
+        "top": 49,
+        "bottom": 93,
+        "left": 706,
+        "right": 750
+      },
+      "footerClose": {
+        "top": 303,
+        "bottom": 347,
+        "left": 690,
+        "right": 754
+      },
+      "body": {
+        "top": 105,
+        "bottom": 294,
+        "left": 1,
+        "right": 766,
+        "clientHeight": 189,
+        "scrollHeight": 647,
+        "overflow": "auto"
+      },
+      "sheet": true,
+      "touch": true,
+      "footerClosed": true,
+      "overlayClosed": true,
+      "escapeClosed": true
+    },
+    {
+      "viewport": {
+        "width": 360,
+        "height": 640
+      },
+      "dialog": {
+        "top": 64,
+        "bottom": 640,
+        "left": 0,
+        "right": 360
+      },
+      "titleClose": {
+        "top": 77,
+        "bottom": 121,
+        "left": 299,
+        "right": 343
+      },
+      "footerClose": {
+        "top": 583,
+        "bottom": 627,
+        "left": 283,
+        "right": 347
+      },
+      "body": {
+        "top": 133,
+        "bottom": 574,
+        "left": 1,
+        "right": 359,
+        "clientHeight": 441,
+        "scrollHeight": 725,
+        "overflow": "auto"
+      },
+      "sheet": true,
+      "touch": true,
+      "footerClosed": true,
+      "overlayClosed": true,
+      "escapeClosed": true
+    },
+    {
+      "viewport": {
+        "width": 320,
+        "height": 240
+      },
+      "dialog": {
+        "top": 24,
+        "bottom": 240,
+        "left": 0,
+        "right": 320
+      },
+      "titleClose": {
+        "top": 37,
+        "bottom": 81,
+        "left": 259,
+        "right": 303
+      },
+      "footerClose": {
+        "top": 183,
+        "bottom": 227,
+        "left": 243,
+        "right": 307
+      },
+      "body": {
+        "top": 93,
+        "bottom": 174,
+        "left": 1,
+        "right": 319,
+        "clientHeight": 81,
+        "scrollHeight": 725,
+        "overflow": "auto"
+      },
+      "sheet": true,
+      "touch": true,
+      "footerClosed": true,
+      "overlayClosed": true,
+      "escapeClosed": true
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "dialog": {
+        "top": 69.3125,
+        "bottom": 830.6875,
+        "left": 410,
+        "right": 870
+      },
+      "titleClose": {
+        "top": 76.8125,
+        "bottom": 92.8125,
+        "left": 841,
+        "right": 857
+      },
+      "footerClose": {
+        "top": 791.6875,
+        "bottom": 817.6875,
+        "left": 793,
+        "right": 857
+      },
+      "body": {
+        "top": 99.3125,
+        "bottom": 782.6875,
+        "left": 411,
+        "right": 869,
+        "clientHeight": 683,
+        "scrollHeight": 683,
+        "overflow": "auto"
+      },
+      "sheet": false,
+      "touch": false,
+      "footerClosed": true,
+      "overlayClosed": true,
+      "escapeClosed": true
+    },
+    {
+      "actualMenu": "파일 → 제품 정보",
+      "openedAndClosed": true
+    },
+    {
+      "genericModalOverlayDefaultPreserved": true
+    }
+  ]
+}

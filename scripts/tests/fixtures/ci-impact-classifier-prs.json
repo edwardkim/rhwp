@@ -15,11 +15,12 @@
     "expected": {
       "rust_required": "false",
       "frontend_mode": "package",
+      "frontend_canvas_required": "false",
       "render_required": "false",
       "native_skia_required": "false",
       "codeql_languages": "javascript-typescript",
       "classification_status": "classified",
-      "classifier_version": "8",
+      "classifier_version": "9",
       "reason": "classified:studio-undo-package+studio-unit"
     }
   },
@@ -33,11 +34,12 @@
     "expected": {
       "rust_required": "false",
       "frontend_mode": "package",
+      "frontend_canvas_required": "false",
       "render_required": "false",
       "native_skia_required": "false",
       "codeql_languages": "javascript-typescript",
       "classification_status": "classified",
-      "classifier_version": "8",
+      "classifier_version": "9",
       "reason": "classified:studio-undo-package+studio-unit"
     }
   },
@@ -50,11 +52,12 @@
     "expected": {
       "rust_required": "false",
       "frontend_mode": "package",
+      "frontend_canvas_required": "false",
       "render_required": "false",
       "native_skia_required": "false",
       "codeql_languages": "javascript-typescript",
       "classification_status": "classified",
-      "classifier_version": "8",
+      "classifier_version": "9",
       "reason": "classified:studio-undo-package"
     }
   },
@@ -72,11 +75,12 @@
     "expected": {
       "rust_required": "false",
       "frontend_mode": "package",
+      "frontend_canvas_required": "false",
       "render_required": "false",
       "native_skia_required": "false",
       "codeql_languages": "javascript-typescript",
       "classification_status": "classified",
-      "classifier_version": "8",
+      "classifier_version": "9",
       "reason": "classified:studio-package+studio-unit"
     }
   },
@@ -91,12 +95,13 @@
     "expected": {
       "rust_required": "false",
       "frontend_mode": "package",
-      "render_required": "true",
+      "frontend_canvas_required": "true",
+      "render_required": "false",
       "native_skia_required": "false",
       "codeql_languages": "javascript-typescript",
       "classification_status": "classified",
-      "classifier_version": "8",
-      "reason": "classified:studio-render-package+studio-unit"
+      "classifier_version": "9",
+      "reason": "classified:studio-canvas-package+studio-unit"
     }
   },
   {
@@ -157,11 +162,12 @@
     "expected": {
       "rust_required": "true",
       "frontend_mode": "package",
+      "frontend_canvas_required": "true",
       "render_required": "true",
       "native_skia_required": "true",
       "codeql_languages": "javascript-typescript,python,rust,actions",
       "classification_status": "full",
-      "classifier_version": "8",
+      "classifier_version": "9",
       "reason": "fail-closed:cargo-contract"
     }
   },
@@ -176,11 +182,12 @@
     "expected": {
       "rust_required": "true",
       "frontend_mode": "none",
+      "frontend_canvas_required": "false",
       "render_required": "false",
       "native_skia_required": "true",
       "codeql_languages": "rust",
       "classification_status": "classified",
-      "classifier_version": "8",
+      "classifier_version": "9",
       "reason": "classified:native-skia-rust"
     }
   }

@@ -1,0 +1,33 @@
+{
+  "base": "5cbcc9b451cf286e1b7c680426c857dc802e50f3",
+  "head": "89701eb34af54502e94afa6319240596e98a1367",
+  "changed_files": [
+    "src/document_core/commands/bin_data_prune.rs",
+    "src/document_core/commands/document.rs",
+    "src/document_core/loaded_frame_restore.rs",
+    "src/document_core/mod.rs",
+    "src/document_core/queries/cursor_rect.rs",
+    "tests/cases/issue_536_native_save.rs",
+    "tests/cases/issue_8941_hwpx_drop_deleted_picture_bindata.rs",
+    "tests/cases/issue_8944_empty_paragraph_caret_alignment.rs"
+  ],
+  "renderer_layout_paint_font_diff": [],
+  "scope": {
+    "9043": "loaded-unreferenced storage-id bookkeeping + HWPX export-copy pruning + shared picture-bullet reference visitor",
+    "9048": "cursor query fallback consumes the existing first text-run origin; no new layout calculation"
+  },
+  "visual_gate_classification": "No typeset/layout/paint/font/PDF or page-count change. Caret UI and saved-resource identity are validated through actual Native/WASM entry points; no blanket handbook/protected corpus rerun. Reassess if implementation scope changes.",
+  "focused_tests": {
+    "original": 23,
+    "expanded": 28
+  },
+  "runtime_input": "createBlankDocument + RED_PNG embedded in committed Rust test (69 bytes, b1ff9c8ea3a780bad09b346c423d2d0e46815926879b18e841d928376a946640)",
+  "existing_input": "samples/issue7816/odd_spacing_prev.hwpx",
+  "input_sha256": "b1d3a82bda242971e0aae87a07fe0859089479024bc22d53368854c1b33770ed",
+  "minimal_coretext": {
+    "faces": 528,
+    "private_paths": 0,
+    "korean_covered": true
+  },
+  "normal_visual_environment": "Studio Chrome with isolated temporary profile; no user-font mutation"
+}

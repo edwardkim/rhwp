@@ -1,0 +1,170 @@
+{
+  "state": "complete",
+  "created_at": "2026-11-15T09:57:39.532819+00:00",
+  "previous_table_sha256": "8f073dddd67cf8f44bea7c0315c3f9950ba73641e9393747cdbc52d24b33f9a1",
+  "table_sha256": "43c59cf77a4a86b3744d3df30eb71469de70b584ccc9cb165fa8f7b7884d2e1f",
+  "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+  "code_commit": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+  "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+  "condition_evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+  "dataset_count": 36,
+  "row_count": 3542,
+  "declines": [],
+  "missing": [],
+  "increased_row_count": 19,
+  "increases": [
+    {
+      "document_id": "2fb2575d58042dcf",
+      "logical_key": "handbook-hwp",
+      "backend": "native",
+      "page": 130,
+      "previous": "99.96",
+      "accepted": "99.97"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "logical_key": "nested",
+      "backend": "native",
+      "page": 1,
+      "previous": "98.59",
+      "accepted": "98.63"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "logical_key": "nested",
+      "backend": "native",
+      "page": 4,
+      "previous": "99.95",
+      "accepted": "100.00"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "logical_key": "nested",
+      "backend": "native",
+      "page": 10,
+      "previous": "98.85",
+      "accepted": "99.50"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "logical_key": "nested",
+      "backend": "native",
+      "page": 11,
+      "previous": "99.08",
+      "accepted": "99.67"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "logical_key": "nested",
+      "backend": "native",
+      "page": 13,
+      "previous": "99.85",
+      "accepted": "99.95"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "logical_key": "nested",
+      "backend": "native",
+      "page": 14,
+      "previous": "98.70",
+      "accepted": "99.42"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "logical_key": "nested",
+      "backend": "native",
+      "page": 15,
+      "previous": "99.19",
+      "accepted": "99.65"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "logical_key": "nested",
+      "backend": "native",
+      "page": 16,
+      "previous": "99.99",
+      "accepted": "100.00"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "logical_key": "nested",
+      "backend": "wasm",
+      "page": 1,
+      "previous": "98.59",
+      "accepted": "98.65"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "logical_key": "nested",
+      "backend": "wasm",
+      "page": 2,
+      "previous": "99.98",
+      "accepted": "99.99"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "logical_key": "nested",
+      "backend": "wasm",
+      "page": 4,
+      "previous": "99.96",
+      "accepted": "100.00"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "logical_key": "nested",
+      "backend": "wasm",
+      "page": 10,
+      "previous": "98.83",
+      "accepted": "99.43"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "logical_key": "nested",
+      "backend": "wasm",
+      "page": 11,
+      "previous": "99.10",
+      "accepted": "99.63"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "logical_key": "nested",
+      "backend": "wasm",
+      "page": 13,
+      "previous": "99.85",
+      "accepted": "99.95"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "logical_key": "nested",
+      "backend": "wasm",
+      "page": 14,
+      "previous": "98.70",
+      "accepted": "99.35"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "logical_key": "nested",
+      "backend": "wasm",
+      "page": 15,
+      "previous": "99.19",
+      "accepted": "99.61"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "logical_key": "nested",
+      "backend": "wasm",
+      "page": 16,
+      "previous": "99.99",
+      "accepted": "100.00"
+    },
+    {
+      "document_id": "941fe0c3549c0017",
+      "logical_key": "handbook-hwpx",
+      "backend": "native",
+      "page": 130,
+      "previous": "99.96",
+      "accepted": "99.97"
+    }
+  ],
+  "selection": "One final complete result per dataset; no page maxima, changed thresholds or exceptions."
+}

@@ -305,11 +305,15 @@ def prepare(root, hwp, binary, paths, explicit_environment, compat, dpi):
             mappings[source] = next(iter(aliases))
             continue
         rule = next((rules[_normal(x)] for x in [source, *primary] if _normal(x) in rules), None)
+        # 문서가 선언한 실제 로컬 대체 프로그램은 웹 registry보다 우선한다.
+        # 예: Helvetica 부재 + Arial 공급을 Black Condensed 웹 face로 바꾸지 않는다.
+        if any(_normal(x) in installed for x in group['substitute']):
+            local_substitutes.append(source)
+            if rule is None:
+                unresolved.append(source)
+            continue
         if rule is None:
             unresolved.append(source)
-            if any(_normal(x) in installed for x in group['substitute']):
-                local_substitutes.append(source)
-                continue
             url = FALLBACK
         else:
             url = rule['supply']['sourceUrl']

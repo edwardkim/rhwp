@@ -434,9 +434,9 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
         match result {
             Ok(png_bytes) => {
                 let png_filename = if total_pages == 1 {
-                    format!("{}.png", file_stem)
+                    super::output_file_name(&file_stem, ".png")
                 } else {
-                    format!("{}_{:03}.png", file_stem, page_num + 1)
+                    super::output_file_name(&file_stem, &format!("_{:03}.png", page_num + 1))
                 };
                 let png_path = output_path.join(&png_filename);
                 if let Err(e) = fs::write(&png_path, &png_bytes) {

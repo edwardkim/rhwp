@@ -1,0 +1,10 @@
+{
+  "head": "3f7e4340ae3038ea77917ff0f45f816e8342770e",
+  "tests": 2793,
+  "passed": 2791,
+  "failed": 0,
+  "skipped": 2,
+  "test_log_sha256": "284a83920e801280e0e748a4d103ac3a0f8c7eb236a443ff9623ca2c2a78af4a",
+  "build_log_sha256": "efeee119752e3f4da6540425cc76ed4785a7003312405df2a9093857571e83fb",
+  "renderer_contract_log_sha256": "584239950cfc0969349983aef75acc84fd6228898c319f848ed6c379ed856511"
+}

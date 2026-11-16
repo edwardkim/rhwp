@@ -1,0 +1,33 @@
+{
+  "head": "cc6c60381dfeff9b7892e836b8bf01803d0a5c1a",
+  "frozen_native": {
+    "head": "cc6c60381dfeff9b7892e836b8bf01803d0a5c1a",
+    "sha256": "7913c88c21b9948bd849f2943cd21c1e7e2fb34aa277eb4d14f9776fe31da804"
+  },
+  "pages": [
+    {
+      "key": "original",
+      "page": 1,
+      "raw_png_sha256": "37323bb389fbaa34d94e88be38774e0b9d9b4d35bfcbdb92afbed15986f71937",
+      "base_png_identical": true
+    },
+    {
+      "key": "original",
+      "page": 2,
+      "raw_png_sha256": "87d6b0e780ed968504a7ecc7adaee50edc87ff37e905b3aacef3000737c7f3f0",
+      "base_png_identical": true
+    },
+    {
+      "key": "edited",
+      "page": 1,
+      "raw_png_sha256": "37323bb389fbaa34d94e88be38774e0b9d9b4d35bfcbdb92afbed15986f71937",
+      "base_png_identical": true
+    },
+    {
+      "key": "edited",
+      "page": 2,
+      "raw_png_sha256": "87d6b0e780ed968504a7ecc7adaee50edc87ff37e905b3aacef3000737c7f3f0",
+      "base_png_identical": true
+    }
+  ]
+}

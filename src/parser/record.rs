@@ -66,6 +66,23 @@ impl Record {
                 .checked_add(size as usize)
                 .map_or(true, |end| end > data.len())
             {
+                // 태그 0~15 는 HWPTAG_BEGIN 앞의 예약 영역이라 유효한 레코드가 아니다.
+                // 유효 레코드 뒤에서 그런 머리가 스트림 끝을 넘으면 마지막 유효 레코드
+                // 뒤의 채움·잔여 바이트다(한/글은 정상 연다). 앞서 읽은 예약 태그
+                // 채움까지 버리고 끝낸다. 유효 레코드가 없는 스트림은 그대로 오류다.
+                if tag_id < tags::HWPTAG_BEGIN
+                    && records
+                        .iter()
+                        .any(|record: &Record| record.tag_id >= tags::HWPTAG_BEGIN)
+                {
+                    while records
+                        .last()
+                        .is_some_and(|record: &Record| record.tag_id < tags::HWPTAG_BEGIN)
+                    {
+                        records.pop();
+                    }
+                    break;
+                }
                 return Err(RecordError::UnexpectedEof {
                     tag_id,
                     expected: size as usize,

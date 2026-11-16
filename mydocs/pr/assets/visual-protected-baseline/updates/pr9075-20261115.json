@@ -1,0 +1,228 @@
+{
+  "state": "complete",
+  "created_at": "2026-11-14T22:59:21.734607+00:00",
+  "previous_table_sha256": "1063d78078b704a2bfb712ca3929ab251596dd391b41bc1a9a44e9935e4990e5",
+  "table_sha256": "8f073dddd67cf8f44bea7c0315c3f9950ba73641e9393747cdbc52d24b33f9a1",
+  "evidence_commit": "44ec0fa4ec5d3332100406f6b4779a299a022ee0",
+  "code_commit": "43adf3f7fe412e71797456887e2be44b8ef8d14f",
+  "condition_evidence": "mydocs/pr/assets/issue_9060/final/protected-validation.json",
+  "condition_evidence_sha256": "25efd123a75d014815055bc8f49c036f1d6b0efa8e364983b1a1c63c47cde3eb",
+  "dataset_count": 36,
+  "row_count": 3542,
+  "declines": [],
+  "missing": [],
+  "increased_row_count": 30,
+  "increases": [
+    {
+      "document_id": "a8e95b4accc79fa8",
+      "backend": "wasm",
+      "page": 1,
+      "previous": "99.97",
+      "accepted": "99.98"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "native",
+      "page": 1,
+      "previous": "98.44",
+      "accepted": "98.59"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "native",
+      "page": 2,
+      "previous": "99.98",
+      "accepted": "99.99"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "native",
+      "page": 5,
+      "previous": "99.98",
+      "accepted": "99.99"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "native",
+      "page": 6,
+      "previous": "99.98",
+      "accepted": "100.00"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "native",
+      "page": 7,
+      "previous": "99.98",
+      "accepted": "99.99"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "native",
+      "page": 10,
+      "previous": "98.78",
+      "accepted": "98.85"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "native",
+      "page": 11,
+      "previous": "99.06",
+      "accepted": "99.08"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "native",
+      "page": 12,
+      "previous": "99.87",
+      "accepted": "100.00"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "native",
+      "page": 13,
+      "previous": "99.68",
+      "accepted": "99.85"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "native",
+      "page": 14,
+      "previous": "98.60",
+      "accepted": "98.70"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "native",
+      "page": 15,
+      "previous": "99.13",
+      "accepted": "99.19"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "native",
+      "page": 16,
+      "previous": "98.36",
+      "accepted": "99.99"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "wasm",
+      "page": 1,
+      "previous": "98.45",
+      "accepted": "98.59"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "wasm",
+      "page": 4,
+      "previous": "99.95",
+      "accepted": "99.96"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "wasm",
+      "page": 5,
+      "previous": "99.98",
+      "accepted": "99.99"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "wasm",
+      "page": 6,
+      "previous": "99.98",
+      "accepted": "100.00"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "wasm",
+      "page": 7,
+      "previous": "99.98",
+      "accepted": "99.99"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "wasm",
+      "page": 10,
+      "previous": "98.76",
+      "accepted": "98.83"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "wasm",
+      "page": 11,
+      "previous": "99.05",
+      "accepted": "99.10"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "wasm",
+      "page": 12,
+      "previous": "99.84",
+      "accepted": "100.00"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "wasm",
+      "page": 13,
+      "previous": "99.63",
+      "accepted": "99.85"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "wasm",
+      "page": 14,
+      "previous": "98.59",
+      "accepted": "98.70"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "wasm",
+      "page": 15,
+      "previous": "99.12",
+      "accepted": "99.19"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "backend": "wasm",
+      "page": 16,
+      "previous": "98.37",
+      "accepted": "99.99"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "backend": "native",
+      "page": 757,
+      "previous": "99.56",
+      "accepted": "99.57"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "backend": "wasm",
+      "page": 757,
+      "previous": "99.56",
+      "accepted": "99.57"
+    },
+    {
+      "document_id": "0b7e7d0538284271",
+      "backend": "native",
+      "page": 3,
+      "previous": "99.99",
+      "accepted": "100.00"
+    },
+    {
+      "document_id": "0b7e7d0538284271",
+      "backend": "wasm",
+      "page": 3,
+      "previous": "99.99",
+      "accepted": "100.00"
+    },
+    {
+      "document_id": "4314830495cfde87",
+      "backend": "native",
+      "page": 1,
+      "previous": "99.25",
+      "accepted": "100.00"
+    }
+  ],
+  "selection": "문서/backend마다 같은 최종 실행의 전체 TSV. 페이지별 최댓값을 조합하지 않음."
+}

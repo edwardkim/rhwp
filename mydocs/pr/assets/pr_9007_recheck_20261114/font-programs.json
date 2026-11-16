@@ -1,0 +1,4683 @@
+[
+  {
+    "run": "main-wasm-grouped",
+    "document": "59043",
+    "fonts": [
+      {
+        "file": "malgun.ttf",
+        "source_sha256": "0086c19e81d293a542e7d75564c645fb58070cc850aefebf8fa1c397858e510c",
+        "rasterizer_sha256": "0086c19e81d293a542e7d75564c645fb58070cc850aefebf8fa1c397858e510c",
+        "family": "Malgun Gothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HJJGT.otf",
+        "source_sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1",
+        "rasterizer_sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "SPMJ.otf",
+        "source_sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834",
+        "rasterizer_sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENJGT.otf",
+        "source_sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+        "rasterizer_sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "timesbi.ttf",
+        "source_sha256": "2852329a38acf9252504669d9c23d5e88366cf77e8209d508f5e7198639648ea",
+        "rasterizer_sha256": "2852329a38acf9252504669d9c23d5e88366cf77e8209d508f5e7198639648ea",
+        "family": "Times New Roman",
+        "weight": 700,
+        "style": "italic",
+        "repairs": []
+      },
+      {
+        "file": "FLSMJ.otf",
+        "source_sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b",
+        "rasterizer_sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "times.ttf",
+        "source_sha256": "2cff2a03d8034801979dd6d16f09b9a825c3d710fcf068f2ebfbf0e1425c87cf",
+        "rasterizer_sha256": "2cff2a03d8034801979dd6d16f09b9a825c3d710fcf068f2ebfbf0e1425c87cf",
+        "family": "Times New Roman",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "H2MJRE.TTF",
+        "source_sha256": "2fda1cc69297fe605ee8804984d26666c2543b0ec22b8f50031123a18d81924e",
+        "rasterizer_sha256": "721e2f69319387cfbf7ae8a814413396545973df2be780d3bfd3ade9db049288",
+        "family": "HYMyeongJo-Extra",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef"
+        ]
+      },
+      {
+        "file": "HGMJ.otf",
+        "source_sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287",
+        "rasterizer_sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "timesi.ttf",
+        "source_sha256": "3a1c2bc8528bfa432e0414d4ec69bf5813563c474e16a9ad0f57ca262f8d24a2",
+        "rasterizer_sha256": "3a1c2bc8528bfa432e0414d4ec69bf5813563c474e16a9ad0f57ca262f8d24a2",
+        "family": "Times New Roman",
+        "weight": 400,
+        "style": "italic",
+        "repairs": []
+      },
+      {
+        "file": "HMEPO.otf",
+        "source_sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+        "rasterizer_sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+        "family": "HCI Poppy",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "SPJGT.otf",
+        "source_sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480",
+        "rasterizer_sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "gulim.ttc",
+        "source_sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+        "rasterizer_sha256": "274de69db23379e13a72d358a9816db72b7525db7c7b867def661f74df863e73",
+        "family": "Gulim",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "gulim.ttc",
+        "source_sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+        "rasterizer_sha256": "5015ac2719ced9fec5b145414a753949d0256d5050f95df8ea27d48362ed0b6a",
+        "family": "GulimChe",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "gulim.ttc",
+        "source_sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+        "rasterizer_sha256": "3ce6869b59e8034b8f1cc8dfdfe81e33bbdf215a9a0cc53ef264393811c36aba",
+        "family": "Dotum",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "gulim.ttc",
+        "source_sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+        "rasterizer_sha256": "0d955449da993bba1b2a8e02a128c4349b3afeff16a7d3c001d545e94619a8e5",
+        "family": "DotumChe",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "timesbd.ttf",
+        "source_sha256": "621b4a765fef5d255d19530f4bf936104c6519f2e232a0eef1923474e5b9cf22",
+        "rasterizer_sha256": "621b4a765fef5d255d19530f4bf936104c6519f2e232a0eef1923474e5b9cf22",
+        "family": "Times New Roman",
+        "weight": 700,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "JPSMJ.otf",
+        "source_sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a",
+        "rasterizer_sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "batang.ttc",
+        "source_sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+        "rasterizer_sha256": "d1b08b64aa81f0d5a131c64e4ba8b6352842cfbe9822e61f91bd6efb4c0787a1",
+        "family": "Batang",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "batang.ttc",
+        "source_sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+        "rasterizer_sha256": "f42c29a06c7261a960842300eecfa4e510aecd4c846da4fd3f478517c960e27e",
+        "family": "BatangChe",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "batang.ttc",
+        "source_sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+        "rasterizer_sha256": "fe77a9e847828e8fc30a01b2706a314e8746d5137d93c5dc4616a5dc0d0707d1",
+        "family": "Gungsuh",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "batang.ttc",
+        "source_sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+        "rasterizer_sha256": "93db97eb8ecb6fbac5b72e9f57feea46884f77010393746a8d25c89aff915ca7",
+        "family": "GungsuhChe",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "NGULIM.TTF",
+        "source_sha256": "871b6190046c01ccabf52c80e393af623176c1a30a86a8a297f6f1acfbdd9b43",
+        "rasterizer_sha256": "98ce3fa16445f772f87e8baf6302aa3c9fe9501fb52fabd6eacb7013d514ba72",
+        "family": "New Gulim",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "palab.ttf",
+        "source_sha256": "8e14668bbae03f78ed668dbe3261218881960dcd9fb80ad6c1d1dfb4226a57c3",
+        "rasterizer_sha256": "8e14668bbae03f78ed668dbe3261218881960dcd9fb80ad6c1d1dfb4226a57c3",
+        "family": "Palatino Linotype",
+        "weight": 700,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HMKSM.otf",
+        "source_sha256": "99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d",
+        "rasterizer_sha256": "99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d",
+        "family": "Human Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "palai.ttf",
+        "source_sha256": "99f0af2d1941707fecda23da38bafbed5144a73a3720d773c05b9d4c445920ed",
+        "rasterizer_sha256": "99f0af2d1941707fecda23da38bafbed5144a73a3720d773c05b9d4c445920ed",
+        "family": "Palatino Linotype",
+        "weight": 400,
+        "style": "italic",
+        "repairs": []
+      },
+      {
+        "file": "malgunbd.ttf",
+        "source_sha256": "a541834fb9cdde9bd6d2c3ff1565cb0bb5ccf7a15e4e9daf2cb58d9b1cf282aa",
+        "rasterizer_sha256": "a541834fb9cdde9bd6d2c3ff1565cb0bb5ccf7a15e4e9daf2cb58d9b1cf282aa",
+        "family": "Malgun Gothic",
+        "weight": 700,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "SPSMJ.otf",
+        "source_sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497",
+        "rasterizer_sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "malgunsl.ttf",
+        "source_sha256": "a7217a2e590c86141bddadc74a2bcdff2efe210db48469a77a749e0446d91ea9",
+        "rasterizer_sha256": "a7217a2e590c86141bddadc74a2bcdff2efe210db48469a77a749e0446d91ea9",
+        "family": "Malgun Gothic Semilight",
+        "weight": 300,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HJMJ.otf",
+        "source_sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba",
+        "rasterizer_sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "KoPubBatang-Light.ttf",
+        "source_sha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f",
+        "rasterizer_sha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f",
+        "family": "KoPubBatang Light",
+        "weight": 300,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HBATANG.TTF",
+        "source_sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+        "rasterizer_sha256": "d10501295740bc29bf5a8fe3eb8fad1903ef63a54aa77c6cc744a609f3a627cf",
+        "family": "Haansoft Batang",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "USER.otf",
+        "source_sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece",
+        "rasterizer_sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "FLMJ.otf",
+        "source_sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e",
+        "rasterizer_sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGSMJ.otf",
+        "source_sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0",
+        "rasterizer_sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HMKMM.TTF",
+        "source_sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+        "rasterizer_sha256": "e48a43385fc11e9460c905aa2e19780933307d85e56dcb0e3bfd9e2d4a9cfcf1",
+        "family": "휴먼명조",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "palabi.ttf",
+        "source_sha256": "d0e722b91ffd5391cc2e7d6e976f274d5aee9fe0b8d0fedfffe093763e695cde",
+        "rasterizer_sha256": "d0e722b91ffd5391cc2e7d6e976f274d5aee9fe0b8d0fedfffe093763e695cde",
+        "family": "Palatino Linotype",
+        "weight": 700,
+        "style": "italic",
+        "repairs": []
+      },
+      {
+        "file": "JPJGT.otf",
+        "source_sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63",
+        "rasterizer_sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "pala.ttf",
+        "source_sha256": "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+        "rasterizer_sha256": "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+        "family": "Palatino Linotype",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "H2HDRM.TTF",
+        "source_sha256": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+        "rasterizer_sha256": "c956b7f4082859ac04b5d29b44951b49971ca2c28580d2d99379517e0bd5f248",
+        "family": "HYHeadLine-Medium",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef"
+        ]
+      },
+      {
+        "file": "ENMJ.otf",
+        "source_sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+        "rasterizer_sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "JPMJ.otf",
+        "source_sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c",
+        "rasterizer_sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENSMJ.otf",
+        "source_sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
+        "rasterizer_sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HJSMJ.otf",
+        "source_sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9",
+        "rasterizer_sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      }
+    ]
+  },
+  {
+    "run": "main-wasm-grouped",
+    "document": "hwpspec",
+    "fonts": [
+      {
+        "file": "HANBatang.ttf",
+        "source_sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+        "rasterizer_sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+        "family": "HCR Batang",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "FLSMJ.otf",
+        "source_sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b",
+        "rasterizer_sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HANDotum.ttf",
+        "source_sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+        "rasterizer_sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+        "family": "HCR Dotum",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "JPSMJ.otf",
+        "source_sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a",
+        "rasterizer_sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "H2GTRE.TTF",
+        "source_sha256": "820d3212f688b546a327ea43a7202e3379cdbbd767ebac9753997e3f3d285171",
+        "rasterizer_sha256": "5f64ab96d886cc2fe90fbe70632e5b3b82d6410f6789d12224887cdf88faf5b1",
+        "family": "HYGothic-Extra",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef"
+        ]
+      },
+      {
+        "file": "HANBatangB.ttf",
+        "source_sha256": "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5",
+        "rasterizer_sha256": "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5",
+        "family": "HCR Batang",
+        "weight": 700,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "SPSMJ.otf",
+        "source_sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497",
+        "rasterizer_sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HANDotumB.ttf",
+        "source_sha256": "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4",
+        "rasterizer_sha256": "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4",
+        "family": "HCR Dotum",
+        "weight": 700,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HDotum.TTF",
+        "source_sha256": "b05e5e2f646961c7bdcb9904a7b6d84d288d9c44c3955d60b254cc8ad2305a76",
+        "rasterizer_sha256": "ddd71c887da62b35ea8050c6331b09e6da3b3fbd76ae1d0f1f82e8a929d71dfc",
+        "family": "Haansoft Dotum",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "HGSMJ.otf",
+        "source_sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0",
+        "rasterizer_sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENSMJ.otf",
+        "source_sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
+        "rasterizer_sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HJSMJ.otf",
+        "source_sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9",
+        "rasterizer_sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      }
+    ]
+  },
+  {
+    "run": "main-wasm-grouped",
+    "document": "patterns-hwp",
+    "fonts": [
+      {
+        "file": "HANBatang.ttf",
+        "source_sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+        "rasterizer_sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+        "family": "HCR Batang",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HANDotum.ttf",
+        "source_sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+        "rasterizer_sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+        "family": "HCR Dotum",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HANBatangB.ttf",
+        "source_sha256": "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5",
+        "rasterizer_sha256": "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5",
+        "family": "HCR Batang",
+        "weight": 700,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HANDotumB.ttf",
+        "source_sha256": "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4",
+        "rasterizer_sha256": "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4",
+        "family": "HCR Dotum",
+        "weight": 700,
+        "style": "normal",
+        "repairs": []
+      }
+    ]
+  },
+  {
+    "run": "main-wasm-grouped",
+    "document": "patterns-hwpx",
+    "fonts": [
+      {
+        "file": "HANBatang.ttf",
+        "source_sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+        "rasterizer_sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+        "family": "HCR Batang",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HANDotum.ttf",
+        "source_sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+        "rasterizer_sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+        "family": "HCR Dotum",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HANBatangB.ttf",
+        "source_sha256": "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5",
+        "rasterizer_sha256": "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5",
+        "family": "HCR Batang",
+        "weight": 700,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HANDotumB.ttf",
+        "source_sha256": "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4",
+        "rasterizer_sha256": "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4",
+        "family": "HCR Dotum",
+        "weight": 700,
+        "style": "normal",
+        "repairs": []
+      }
+    ]
+  },
+  {
+    "run": "protected-wasm-reference",
+    "document": "0b7e7d0538284271",
+    "fonts": [
+      {
+        "file": "HBATANG.TTF",
+        "source_sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+        "rasterizer_sha256": "d10501295740bc29bf5a8fe3eb8fad1903ef63a54aa77c6cc744a609f3a627cf",
+        "family": "Haansoft Batang",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "NGULIM.TTF",
+        "source_sha256": "871b6190046c01ccabf52c80e393af623176c1a30a86a8a297f6f1acfbdd9b43",
+        "rasterizer_sha256": "98ce3fa16445f772f87e8baf6302aa3c9fe9501fb52fabd6eacb7013d514ba72",
+        "family": "New Gulim",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "batang.ttc",
+        "source_sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+        "rasterizer_sha256": "d1b08b64aa81f0d5a131c64e4ba8b6352842cfbe9822e61f91bd6efb4c0787a1",
+        "family": "Batang",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "batang.ttc",
+        "source_sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+        "rasterizer_sha256": "f42c29a06c7261a960842300eecfa4e510aecd4c846da4fd3f478517c960e27e",
+        "family": "BatangChe",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "batang.ttc",
+        "source_sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+        "rasterizer_sha256": "fe77a9e847828e8fc30a01b2706a314e8746d5137d93c5dc4616a5dc0d0707d1",
+        "family": "Gungsuh",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "batang.ttc",
+        "source_sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+        "rasterizer_sha256": "93db97eb8ecb6fbac5b72e9f57feea46884f77010393746a8d25c89aff915ca7",
+        "family": "GungsuhChe",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      }
+    ]
+  },
+  {
+    "run": "protected-wasm-reference",
+    "document": "2b43ec3782a748e1",
+    "fonts": [
+      {
+        "file": "arial.ttf",
+        "source_sha256": "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1",
+        "rasterizer_sha256": "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1",
+        "family": "Arial",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      }
+    ]
+  },
+  {
+    "run": "protected-wasm-reference",
+    "document": "2fb2575d58042dcf",
+    "fonts": [
+      {
+        "file": "HANBatang.woff.ttf",
+        "source_sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+        "rasterizer_sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+        "family": "HCR Batang",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HBATANG.TTF",
+        "source_sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+        "rasterizer_sha256": "d10501295740bc29bf5a8fe3eb8fad1903ef63a54aa77c6cc744a609f3a627cf",
+        "family": "Haansoft Batang",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "KoPubBatang-Bold.ttf",
+        "source_sha256": "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b",
+        "rasterizer_sha256": "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b",
+        "family": "KoPubBatang Bold",
+        "weight": 700,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "KoPubBatang-Light.ttf",
+        "source_sha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f",
+        "rasterizer_sha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f",
+        "family": "KoPubBatang Light",
+        "weight": 300,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "KoPubBatang-Medium.ttf",
+        "source_sha256": "7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4",
+        "rasterizer_sha256": "7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4",
+        "family": "KoPubBatang Medium",
+        "weight": 500,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "KoPubDotum-Bold.ttf",
+        "source_sha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275",
+        "rasterizer_sha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275",
+        "family": "KoPubDotum Bold",
+        "weight": 700,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "KoPubDotum-Light.ttf",
+        "source_sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d",
+        "rasterizer_sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d",
+        "family": "KoPubDotum Light",
+        "weight": 300,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "KoPubDotum-Medium.ttf",
+        "source_sha256": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7",
+        "rasterizer_sha256": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7",
+        "family": "KoPubDotum Medium",
+        "weight": 500,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "wingding.ttf",
+        "source_sha256": "9bcd6064e3b52fa30a347edd6e82506e2ec8b1602930b423c629a82c10468a5b",
+        "rasterizer_sha256": "9bcd6064e3b52fa30a347edd6e82506e2ec8b1602930b423c629a82c10468a5b",
+        "family": "Wingdings",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      }
+    ]
+  },
+  {
+    "run": "protected-wasm-reference",
+    "document": "4314830495cfde87",
+    "fonts": [
+      {
+        "file": "arial.ttf",
+        "source_sha256": "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1",
+        "rasterizer_sha256": "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1",
+        "family": "Arial",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "arialbd.ttf",
+        "source_sha256": "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69",
+        "rasterizer_sha256": "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69",
+        "family": "Arial",
+        "weight": 700,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "arialbi.ttf",
+        "source_sha256": "e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994",
+        "rasterizer_sha256": "e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994",
+        "family": "Arial",
+        "weight": 700,
+        "style": "italic",
+        "repairs": []
+      },
+      {
+        "file": "ariali.ttf",
+        "source_sha256": "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62",
+        "rasterizer_sha256": "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62",
+        "family": "Arial",
+        "weight": 400,
+        "style": "italic",
+        "repairs": []
+      }
+    ]
+  },
+  {
+    "run": "protected-wasm-reference",
+    "document": "43c0a207f6daa0bb",
+    "fonts": [
+      {
+        "file": "ENGGT.otf",
+        "source_sha256": "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9",
+        "rasterizer_sha256": "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9",
+        "family": "HY Gyeongothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENGRP.otf",
+        "source_sha256": "472830cfd4f5edc2d9dc9d0a8e3078839977c4bb0e317b198549ce278075bd26",
+        "rasterizer_sha256": "472830cfd4f5edc2d9dc9d0a8e3078839977c4bb0e317b198549ce278075bd26",
+        "family": "HY Graphic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENGS.otf",
+        "source_sha256": "ed503552219ae16332e595c4b2999a3462d55509a4032dfce29c5ee4d0407346",
+        "rasterizer_sha256": "ed503552219ae16332e595c4b2999a3462d55509a4032dfce29c5ee4d0407346",
+        "family": "HY Gungseo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENJGT.otf",
+        "source_sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+        "rasterizer_sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENMJ.otf",
+        "source_sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+        "rasterizer_sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENSMJ.otf",
+        "source_sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
+        "rasterizer_sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENSMJI.otf",
+        "source_sha256": "6f63dc09433ea5cb856020e68e9e9a94ad847504487710c3769e67708eb5cf0b",
+        "rasterizer_sha256": "6f63dc09433ea5cb856020e68e9e9a94ad847504487710c3769e67708eb5cf0b",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "italic",
+        "repairs": []
+      },
+      {
+        "file": "ENSS.otf",
+        "source_sha256": "dbdf067e6e1d40bb8baeae72ca06289a4b8be15ded97f831262f28e8901ee54f",
+        "rasterizer_sha256": "dbdf067e6e1d40bb8baeae72ca06289a4b8be15ded97f831262f28e8901ee54f",
+        "family": "Sans Serif",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "FLMJ.otf",
+        "source_sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e",
+        "rasterizer_sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "FLSMJ.otf",
+        "source_sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b",
+        "rasterizer_sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HBATANG.TTF",
+        "source_sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+        "rasterizer_sha256": "d10501295740bc29bf5a8fe3eb8fad1903ef63a54aa77c6cc744a609f3a627cf",
+        "family": "Haansoft Batang",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "HCENGRP.otf",
+        "source_sha256": "a953806c6ec22f68e9c636efe875b4d83e9306ac29391f0f105214a00e5a57d6",
+        "rasterizer_sha256": "a953806c6ec22f68e9c636efe875b4d83e9306ac29391f0f105214a00e5a57d6",
+        "family": "Graphic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCENGS.otf",
+        "source_sha256": "a9c2638e8cbff793b19b116b743f2ab198219c421d369b7861ac6dc5a3915edf",
+        "rasterizer_sha256": "a9c2638e8cbff793b19b116b743f2ab198219c421d369b7861ac6dc5a3915edf",
+        "family": "Gungseo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCENTGT.otf",
+        "source_sha256": "da4f226e7df89a487af199b836be7d8ea90704330d44b7dbd14dc85d960c4859",
+        "rasterizer_sha256": "da4f226e7df89a487af199b836be7d8ea90704330d44b7dbd14dc85d960c4859",
+        "family": "Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCHGGRP.otf",
+        "source_sha256": "d33ce840dd69a599a9e2cd4e1b06129b817b2bb3679375adde95ea131c9ce679",
+        "rasterizer_sha256": "d33ce840dd69a599a9e2cd4e1b06129b817b2bb3679375adde95ea131c9ce679",
+        "family": "Graphic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCHGGS.otf",
+        "source_sha256": "9749ecdd1159f5319f812f93c06a1ba092da1f433d6b6f35c5ad517b5d527a1a",
+        "rasterizer_sha256": "9749ecdd1159f5319f812f93c06a1ba092da1f433d6b6f35c5ad517b5d527a1a",
+        "family": "Gungseo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCHGTGT.otf",
+        "source_sha256": "fc0a42f9de898629e3c0e18ba59b7f243deba0ab2595425a760e2344195034cf",
+        "rasterizer_sha256": "fc0a42f9de898629e3c0e18ba59b7f243deba0ab2595425a760e2344195034cf",
+        "family": "Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCHJGS.otf",
+        "source_sha256": "fbda1e014fb9e2ccc507be4d655b774deb4044a69b5059b05a577d5875568e9a",
+        "rasterizer_sha256": "fbda1e014fb9e2ccc507be4d655b774deb4044a69b5059b05a577d5875568e9a",
+        "family": "Gungseo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCHJTGT.otf",
+        "source_sha256": "8db67a2414128fff3b26353393d8f49fb1851cf846947293eed79bde926cc426",
+        "rasterizer_sha256": "8db67a2414128fff3b26353393d8f49fb1851cf846947293eed79bde926cc426",
+        "family": "Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCJPTGT.otf",
+        "source_sha256": "2b97862b3496d11adce1c77ef1eca63b4bd15cb188d9a408b29c189bab024882",
+        "rasterizer_sha256": "2b97862b3496d11adce1c77ef1eca63b4bd15cb188d9a408b29c189bab024882",
+        "family": "Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCSPGRP.otf",
+        "source_sha256": "9332b9367ca26fd755c4a8c49097768b3caffb9336de499e0fb44056426aa68c",
+        "rasterizer_sha256": "9332b9367ca26fd755c4a8c49097768b3caffb9336de499e0fb44056426aa68c",
+        "family": "Graphic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCSPGS.otf",
+        "source_sha256": "a7fce3bbac3965f765c2545172afc3daf72963a6d311d807f075e1ed864ab2ee",
+        "rasterizer_sha256": "a7fce3bbac3965f765c2545172afc3daf72963a6d311d807f075e1ed864ab2ee",
+        "family": "Gungseo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCSPTGT.otf",
+        "source_sha256": "869158e2be56c343baf14e40c32d8497b8de3f691747d3ae38b555b606788d07",
+        "rasterizer_sha256": "869158e2be56c343baf14e40c32d8497b8de3f691747d3ae38b555b606788d07",
+        "family": "Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGGGT.otf",
+        "source_sha256": "da42e4819214f960b3561d4acf51571ad0c887f258e3dc034f5c2fae5c842a68",
+        "rasterizer_sha256": "da42e4819214f960b3561d4acf51571ad0c887f258e3dc034f5c2fae5c842a68",
+        "family": "HY Gyeongothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGGRP.otf",
+        "source_sha256": "85a60f7efbc9926e8a634e702442edc0245e86874af3efe640f6402ae56e36f7",
+        "rasterizer_sha256": "85a60f7efbc9926e8a634e702442edc0245e86874af3efe640f6402ae56e36f7",
+        "family": "HY Graphic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGGS.otf",
+        "source_sha256": "b654b6944b6c45a5581d218b8aa0e2e4125a7f348b9f8f91803831f29ce37040",
+        "rasterizer_sha256": "b654b6944b6c45a5581d218b8aa0e2e4125a7f348b9f8f91803831f29ce37040",
+        "family": "HY Gungseo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGMJ.otf",
+        "source_sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287",
+        "rasterizer_sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGSMJ.otf",
+        "source_sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0",
+        "rasterizer_sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HJJGT.otf",
+        "source_sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1",
+        "rasterizer_sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HJMJ.otf",
+        "source_sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba",
+        "rasterizer_sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HJSMJ.otf",
+        "source_sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9",
+        "rasterizer_sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HMEHL.otf",
+        "source_sha256": "4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52",
+        "rasterizer_sha256": "4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52",
+        "family": "HCI Hollyhock",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HMEPO.otf",
+        "source_sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+        "rasterizer_sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+        "family": "HCI Poppy",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HMKMG.otf",
+        "source_sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9",
+        "rasterizer_sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9",
+        "family": "Human Gothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HMKMM.TTF",
+        "source_sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+        "rasterizer_sha256": "e48a43385fc11e9460c905aa2e19780933307d85e56dcb0e3bfd9e2d4a9cfcf1",
+        "family": "휴먼명조",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "HMKOLD.otf",
+        "source_sha256": "f2122c5200148d46a3f13b703e27536748fc5abf912a9b44d8ccd0f2b7f4ce97",
+        "rasterizer_sha256": "f2122c5200148d46a3f13b703e27536748fc5abf912a9b44d8ccd0f2b7f4ce97",
+        "family": "Human Yet",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HMKSM.otf",
+        "source_sha256": "99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d",
+        "rasterizer_sha256": "99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d",
+        "family": "Human Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "JPJGT.otf",
+        "source_sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63",
+        "rasterizer_sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "JPMJ.otf",
+        "source_sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c",
+        "rasterizer_sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "JPSMJ.otf",
+        "source_sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a",
+        "rasterizer_sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "SPJGT.otf",
+        "source_sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480",
+        "rasterizer_sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "SPMJ.otf",
+        "source_sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834",
+        "rasterizer_sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "SPSMJ.otf",
+        "source_sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497",
+        "rasterizer_sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TAENMREN.otf",
+        "source_sha256": "aef1b4e32ba55e42764385e1042b0bc5fbb51998571a380ce7b5e63a0a82c4b2",
+        "rasterizer_sha256": "aef1b4e32ba55e42764385e1042b0bc5fbb51998571a380ce7b5e63a0a82c4b2",
+        "family": "Tae Namu",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TAENMRKR.otf",
+        "source_sha256": "691205fe589ff8e46e7c840304316ea6d0459e54259b16eef6e49dfa66018e2a",
+        "rasterizer_sha256": "691205fe589ff8e46e7c840304316ea6d0459e54259b16eef6e49dfa66018e2a",
+        "family": "Tae Namu",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TESEMEN.otf",
+        "source_sha256": "464e83498110c175392228b406fef6c3c86a54464700fb03cc993f7aae7b8a06",
+        "rasterizer_sha256": "464e83498110c175392228b406fef6c3c86a54464700fb03cc993f7aae7b8a06",
+        "family": "Sinmyeong Semyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TESEMHG.otf",
+        "source_sha256": "d475b282463329667b2f7018812556c143e1b07bad31f07287600ef78997af27",
+        "rasterizer_sha256": "d475b282463329667b2f7018812556c143e1b07bad31f07287600ef78997af27",
+        "family": "Sinmyeong Semyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TESEMHJ.otf",
+        "source_sha256": "4287579604bb420cf62906b885228b070f2a093b3fb09dfa617822862a0c7d3d",
+        "rasterizer_sha256": "4287579604bb420cf62906b885228b070f2a093b3fb09dfa617822862a0c7d3d",
+        "family": "Sinmyeong Semyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TESMJEN.otf",
+        "source_sha256": "1d7e232e98ba8a11e763ea69ff7be6cf36b2fc2c2d632a6b3115c4723969f0e9",
+        "rasterizer_sha256": "1d7e232e98ba8a11e763ea69ff7be6cf36b2fc2c2d632a6b3115c4723969f0e9",
+        "family": "Sinmyeong Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TESMJHG.otf",
+        "source_sha256": "3f13c08d9c437a79e27f359dc8f6931aa1a82718ebede2b83a9a51c3cb0c3963",
+        "rasterizer_sha256": "3f13c08d9c437a79e27f359dc8f6931aa1a82718ebede2b83a9a51c3cb0c3963",
+        "family": "Sinmyeong Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TESMJJP.otf",
+        "source_sha256": "91839ccb18c63ab15463648c4927429c9b098bf422dcab55269a55314cdcccfd",
+        "rasterizer_sha256": "91839ccb18c63ab15463648c4927429c9b098bf422dcab55269a55314cdcccfd",
+        "family": "Sinmyeong Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TESSMEN.otf",
+        "source_sha256": "7c073a836d6837771668cc5be0f1816f502e54d5397f8e05e7b2f0281647219a",
+        "rasterizer_sha256": "7c073a836d6837771668cc5be0f1816f502e54d5397f8e05e7b2f0281647219a",
+        "family": "Sinmyeong Sinsinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TESSMHG.otf",
+        "source_sha256": "49bfc7e5f23e6dc28a687bcd671e2eba5fa15bbae8b46aff5a64fca97931b269",
+        "rasterizer_sha256": "49bfc7e5f23e6dc28a687bcd671e2eba5fa15bbae8b46aff5a64fca97931b269",
+        "family": "Sinmyeong Sinsinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TETGTEN.otf",
+        "source_sha256": "201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3",
+        "rasterizer_sha256": "201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3",
+        "family": "Sinmyeong Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TETGTHG.otf",
+        "source_sha256": "dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3",
+        "rasterizer_sha256": "dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3",
+        "family": "Sinmyeong Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TETGTHJ.otf",
+        "source_sha256": "99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27",
+        "rasterizer_sha256": "99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27",
+        "family": "Sinmyeong Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TETGTJP.otf",
+        "source_sha256": "0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631",
+        "rasterizer_sha256": "0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631",
+        "family": "Sinmyeong Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "USER.otf",
+        "source_sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece",
+        "rasterizer_sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      }
+    ]
+  },
+  {
+    "run": "protected-wasm-reference",
+    "document": "4bac5a5d1702df5f",
+    "fonts": [
+      {
+        "file": "ENGGT.otf",
+        "source_sha256": "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9",
+        "rasterizer_sha256": "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9",
+        "family": "HY Gyeongothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENGRP.otf",
+        "source_sha256": "472830cfd4f5edc2d9dc9d0a8e3078839977c4bb0e317b198549ce278075bd26",
+        "rasterizer_sha256": "472830cfd4f5edc2d9dc9d0a8e3078839977c4bb0e317b198549ce278075bd26",
+        "family": "HY Graphic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENGS.otf",
+        "source_sha256": "ed503552219ae16332e595c4b2999a3462d55509a4032dfce29c5ee4d0407346",
+        "rasterizer_sha256": "ed503552219ae16332e595c4b2999a3462d55509a4032dfce29c5ee4d0407346",
+        "family": "HY Gungseo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENJGT.otf",
+        "source_sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+        "rasterizer_sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENMJ.otf",
+        "source_sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+        "rasterizer_sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENSMJ.otf",
+        "source_sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
+        "rasterizer_sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENSMJI.otf",
+        "source_sha256": "6f63dc09433ea5cb856020e68e9e9a94ad847504487710c3769e67708eb5cf0b",
+        "rasterizer_sha256": "6f63dc09433ea5cb856020e68e9e9a94ad847504487710c3769e67708eb5cf0b",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "italic",
+        "repairs": []
+      },
+      {
+        "file": "ENSS.otf",
+        "source_sha256": "dbdf067e6e1d40bb8baeae72ca06289a4b8be15ded97f831262f28e8901ee54f",
+        "rasterizer_sha256": "dbdf067e6e1d40bb8baeae72ca06289a4b8be15ded97f831262f28e8901ee54f",
+        "family": "Sans Serif",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "FLMJ.otf",
+        "source_sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e",
+        "rasterizer_sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "FLSMJ.otf",
+        "source_sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b",
+        "rasterizer_sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HANDotum.ttf",
+        "source_sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+        "rasterizer_sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+        "family": "HCR Dotum",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HBATANG.TTF",
+        "source_sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+        "rasterizer_sha256": "d10501295740bc29bf5a8fe3eb8fad1903ef63a54aa77c6cc744a609f3a627cf",
+        "family": "Haansoft Batang",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "HCENGRP.otf",
+        "source_sha256": "a953806c6ec22f68e9c636efe875b4d83e9306ac29391f0f105214a00e5a57d6",
+        "rasterizer_sha256": "a953806c6ec22f68e9c636efe875b4d83e9306ac29391f0f105214a00e5a57d6",
+        "family": "Graphic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCENTGT.otf",
+        "source_sha256": "da4f226e7df89a487af199b836be7d8ea90704330d44b7dbd14dc85d960c4859",
+        "rasterizer_sha256": "da4f226e7df89a487af199b836be7d8ea90704330d44b7dbd14dc85d960c4859",
+        "family": "Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCHGGRP.otf",
+        "source_sha256": "d33ce840dd69a599a9e2cd4e1b06129b817b2bb3679375adde95ea131c9ce679",
+        "rasterizer_sha256": "d33ce840dd69a599a9e2cd4e1b06129b817b2bb3679375adde95ea131c9ce679",
+        "family": "Graphic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCHGTGT.otf",
+        "source_sha256": "fc0a42f9de898629e3c0e18ba59b7f243deba0ab2595425a760e2344195034cf",
+        "rasterizer_sha256": "fc0a42f9de898629e3c0e18ba59b7f243deba0ab2595425a760e2344195034cf",
+        "family": "Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCHJTGT.otf",
+        "source_sha256": "8db67a2414128fff3b26353393d8f49fb1851cf846947293eed79bde926cc426",
+        "rasterizer_sha256": "8db67a2414128fff3b26353393d8f49fb1851cf846947293eed79bde926cc426",
+        "family": "Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCJPTGT.otf",
+        "source_sha256": "2b97862b3496d11adce1c77ef1eca63b4bd15cb188d9a408b29c189bab024882",
+        "rasterizer_sha256": "2b97862b3496d11adce1c77ef1eca63b4bd15cb188d9a408b29c189bab024882",
+        "family": "Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCSPGRP.otf",
+        "source_sha256": "9332b9367ca26fd755c4a8c49097768b3caffb9336de499e0fb44056426aa68c",
+        "rasterizer_sha256": "9332b9367ca26fd755c4a8c49097768b3caffb9336de499e0fb44056426aa68c",
+        "family": "Graphic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCSPTGT.otf",
+        "source_sha256": "869158e2be56c343baf14e40c32d8497b8de3f691747d3ae38b555b606788d07",
+        "rasterizer_sha256": "869158e2be56c343baf14e40c32d8497b8de3f691747d3ae38b555b606788d07",
+        "family": "Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGGGT.otf",
+        "source_sha256": "da42e4819214f960b3561d4acf51571ad0c887f258e3dc034f5c2fae5c842a68",
+        "rasterizer_sha256": "da42e4819214f960b3561d4acf51571ad0c887f258e3dc034f5c2fae5c842a68",
+        "family": "HY Gyeongothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGGRP.otf",
+        "source_sha256": "85a60f7efbc9926e8a634e702442edc0245e86874af3efe640f6402ae56e36f7",
+        "rasterizer_sha256": "85a60f7efbc9926e8a634e702442edc0245e86874af3efe640f6402ae56e36f7",
+        "family": "HY Graphic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGGS.otf",
+        "source_sha256": "b654b6944b6c45a5581d218b8aa0e2e4125a7f348b9f8f91803831f29ce37040",
+        "rasterizer_sha256": "b654b6944b6c45a5581d218b8aa0e2e4125a7f348b9f8f91803831f29ce37040",
+        "family": "HY Gungseo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGMJ.otf",
+        "source_sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287",
+        "rasterizer_sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGSMJ.otf",
+        "source_sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0",
+        "rasterizer_sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HJJGT.otf",
+        "source_sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1",
+        "rasterizer_sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HJMJ.otf",
+        "source_sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba",
+        "rasterizer_sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HJSMJ.otf",
+        "source_sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9",
+        "rasterizer_sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HMEHL.otf",
+        "source_sha256": "4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52",
+        "rasterizer_sha256": "4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52",
+        "family": "HCI Hollyhock",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HMEPO.otf",
+        "source_sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+        "rasterizer_sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+        "family": "HCI Poppy",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HMKMG.otf",
+        "source_sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9",
+        "rasterizer_sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9",
+        "family": "Human Gothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HMKOLD.otf",
+        "source_sha256": "f2122c5200148d46a3f13b703e27536748fc5abf912a9b44d8ccd0f2b7f4ce97",
+        "rasterizer_sha256": "f2122c5200148d46a3f13b703e27536748fc5abf912a9b44d8ccd0f2b7f4ce97",
+        "family": "Human Yet",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HMKSM.otf",
+        "source_sha256": "99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d",
+        "rasterizer_sha256": "99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d",
+        "family": "Human Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "JPJGT.otf",
+        "source_sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63",
+        "rasterizer_sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "JPMJ.otf",
+        "source_sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c",
+        "rasterizer_sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "JPSMJ.otf",
+        "source_sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a",
+        "rasterizer_sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "SPJGT.otf",
+        "source_sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480",
+        "rasterizer_sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "SPMJ.otf",
+        "source_sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834",
+        "rasterizer_sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "SPSMJ.otf",
+        "source_sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497",
+        "rasterizer_sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TAENMREN.otf",
+        "source_sha256": "aef1b4e32ba55e42764385e1042b0bc5fbb51998571a380ce7b5e63a0a82c4b2",
+        "rasterizer_sha256": "aef1b4e32ba55e42764385e1042b0bc5fbb51998571a380ce7b5e63a0a82c4b2",
+        "family": "Tae Namu",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TAENMRKR.otf",
+        "source_sha256": "691205fe589ff8e46e7c840304316ea6d0459e54259b16eef6e49dfa66018e2a",
+        "rasterizer_sha256": "691205fe589ff8e46e7c840304316ea6d0459e54259b16eef6e49dfa66018e2a",
+        "family": "Tae Namu",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TESEMEN.otf",
+        "source_sha256": "464e83498110c175392228b406fef6c3c86a54464700fb03cc993f7aae7b8a06",
+        "rasterizer_sha256": "464e83498110c175392228b406fef6c3c86a54464700fb03cc993f7aae7b8a06",
+        "family": "Sinmyeong Semyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TESEMHG.otf",
+        "source_sha256": "d475b282463329667b2f7018812556c143e1b07bad31f07287600ef78997af27",
+        "rasterizer_sha256": "d475b282463329667b2f7018812556c143e1b07bad31f07287600ef78997af27",
+        "family": "Sinmyeong Semyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TESEMHJ.otf",
+        "source_sha256": "4287579604bb420cf62906b885228b070f2a093b3fb09dfa617822862a0c7d3d",
+        "rasterizer_sha256": "4287579604bb420cf62906b885228b070f2a093b3fb09dfa617822862a0c7d3d",
+        "family": "Sinmyeong Semyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TESMJEN.otf",
+        "source_sha256": "1d7e232e98ba8a11e763ea69ff7be6cf36b2fc2c2d632a6b3115c4723969f0e9",
+        "rasterizer_sha256": "1d7e232e98ba8a11e763ea69ff7be6cf36b2fc2c2d632a6b3115c4723969f0e9",
+        "family": "Sinmyeong Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TESMJHG.otf",
+        "source_sha256": "3f13c08d9c437a79e27f359dc8f6931aa1a82718ebede2b83a9a51c3cb0c3963",
+        "rasterizer_sha256": "3f13c08d9c437a79e27f359dc8f6931aa1a82718ebede2b83a9a51c3cb0c3963",
+        "family": "Sinmyeong Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TESMJJP.otf",
+        "source_sha256": "91839ccb18c63ab15463648c4927429c9b098bf422dcab55269a55314cdcccfd",
+        "rasterizer_sha256": "91839ccb18c63ab15463648c4927429c9b098bf422dcab55269a55314cdcccfd",
+        "family": "Sinmyeong Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TESSMEN.otf",
+        "source_sha256": "7c073a836d6837771668cc5be0f1816f502e54d5397f8e05e7b2f0281647219a",
+        "rasterizer_sha256": "7c073a836d6837771668cc5be0f1816f502e54d5397f8e05e7b2f0281647219a",
+        "family": "Sinmyeong Sinsinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TESSMHG.otf",
+        "source_sha256": "49bfc7e5f23e6dc28a687bcd671e2eba5fa15bbae8b46aff5a64fca97931b269",
+        "rasterizer_sha256": "49bfc7e5f23e6dc28a687bcd671e2eba5fa15bbae8b46aff5a64fca97931b269",
+        "family": "Sinmyeong Sinsinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TETGTEN.otf",
+        "source_sha256": "201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3",
+        "rasterizer_sha256": "201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3",
+        "family": "Sinmyeong Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TETGTHG.otf",
+        "source_sha256": "dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3",
+        "rasterizer_sha256": "dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3",
+        "family": "Sinmyeong Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TETGTHJ.otf",
+        "source_sha256": "99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27",
+        "rasterizer_sha256": "99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27",
+        "family": "Sinmyeong Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TETGTJP.otf",
+        "source_sha256": "0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631",
+        "rasterizer_sha256": "0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631",
+        "family": "Sinmyeong Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "USER.otf",
+        "source_sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece",
+        "rasterizer_sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "arialbd.ttf",
+        "source_sha256": "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69",
+        "rasterizer_sha256": "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69",
+        "family": "Arial",
+        "weight": 700,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ariali.ttf",
+        "source_sha256": "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62",
+        "rasterizer_sha256": "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62",
+        "family": "Arial",
+        "weight": 400,
+        "style": "italic",
+        "repairs": []
+      },
+      {
+        "file": "gulim.ttc",
+        "source_sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+        "rasterizer_sha256": "274de69db23379e13a72d358a9816db72b7525db7c7b867def661f74df863e73",
+        "family": "Gulim",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "gulim.ttc",
+        "source_sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+        "rasterizer_sha256": "5015ac2719ced9fec5b145414a753949d0256d5050f95df8ea27d48362ed0b6a",
+        "family": "GulimChe",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "gulim.ttc",
+        "source_sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+        "rasterizer_sha256": "3ce6869b59e8034b8f1cc8dfdfe81e33bbdf215a9a0cc53ef264393811c36aba",
+        "family": "Dotum",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "gulim.ttc",
+        "source_sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+        "rasterizer_sha256": "0d955449da993bba1b2a8e02a128c4349b3afeff16a7d3c001d545e94619a8e5",
+        "family": "DotumChe",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      }
+    ]
+  },
+  {
+    "run": "protected-wasm-reference",
+    "document": "52ee61fe7201e36b",
+    "fonts": [
+      {
+        "file": "HANBatang.woff.ttf",
+        "source_sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+        "rasterizer_sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+        "family": "HCR Batang",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      }
+    ]
+  },
+  {
+    "run": "protected-wasm-reference",
+    "document": "59f6ab1155623bda",
+    "fonts": [
+      {
+        "file": "HANBatang.woff.ttf",
+        "source_sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+        "rasterizer_sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+        "family": "HCR Batang",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      }
+    ]
+  },
+  {
+    "run": "protected-wasm-reference",
+    "document": "69bcf084e2ae31a5",
+    "fonts": [
+      {
+        "file": "ENGGT.otf",
+        "source_sha256": "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9",
+        "rasterizer_sha256": "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9",
+        "family": "HY Gyeongothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENJGT.otf",
+        "source_sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+        "rasterizer_sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENMJ.otf",
+        "source_sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+        "rasterizer_sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENSMJ.otf",
+        "source_sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
+        "rasterizer_sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "FLMJ.otf",
+        "source_sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e",
+        "rasterizer_sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "FLSMJ.otf",
+        "source_sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b",
+        "rasterizer_sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGGGT.otf",
+        "source_sha256": "da42e4819214f960b3561d4acf51571ad0c887f258e3dc034f5c2fae5c842a68",
+        "rasterizer_sha256": "da42e4819214f960b3561d4acf51571ad0c887f258e3dc034f5c2fae5c842a68",
+        "family": "HY Gyeongothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGMJ.otf",
+        "source_sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287",
+        "rasterizer_sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGSMJ.otf",
+        "source_sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0",
+        "rasterizer_sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HJJGT.otf",
+        "source_sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1",
+        "rasterizer_sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HJMJ.otf",
+        "source_sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba",
+        "rasterizer_sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HJSMJ.otf",
+        "source_sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9",
+        "rasterizer_sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HMKSM.otf",
+        "source_sha256": "99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d",
+        "rasterizer_sha256": "99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d",
+        "family": "Human Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "JPJGT.otf",
+        "source_sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63",
+        "rasterizer_sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "JPMJ.otf",
+        "source_sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c",
+        "rasterizer_sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "JPSMJ.otf",
+        "source_sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a",
+        "rasterizer_sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "SPJGT.otf",
+        "source_sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480",
+        "rasterizer_sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "SPMJ.otf",
+        "source_sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834",
+        "rasterizer_sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "SPSMJ.otf",
+        "source_sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497",
+        "rasterizer_sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "USER.otf",
+        "source_sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece",
+        "rasterizer_sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "batang.ttc",
+        "source_sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+        "rasterizer_sha256": "d1b08b64aa81f0d5a131c64e4ba8b6352842cfbe9822e61f91bd6efb4c0787a1",
+        "family": "Batang",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "batang.ttc",
+        "source_sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+        "rasterizer_sha256": "f42c29a06c7261a960842300eecfa4e510aecd4c846da4fd3f478517c960e27e",
+        "family": "BatangChe",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "batang.ttc",
+        "source_sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+        "rasterizer_sha256": "fe77a9e847828e8fc30a01b2706a314e8746d5137d93c5dc4616a5dc0d0707d1",
+        "family": "Gungsuh",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "batang.ttc",
+        "source_sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+        "rasterizer_sha256": "93db97eb8ecb6fbac5b72e9f57feea46884f77010393746a8d25c89aff915ca7",
+        "family": "GungsuhChe",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "gulim.ttc",
+        "source_sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+        "rasterizer_sha256": "274de69db23379e13a72d358a9816db72b7525db7c7b867def661f74df863e73",
+        "family": "Gulim",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "gulim.ttc",
+        "source_sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+        "rasterizer_sha256": "5015ac2719ced9fec5b145414a753949d0256d5050f95df8ea27d48362ed0b6a",
+        "family": "GulimChe",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "gulim.ttc",
+        "source_sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+        "rasterizer_sha256": "3ce6869b59e8034b8f1cc8dfdfe81e33bbdf215a9a0cc53ef264393811c36aba",
+        "family": "Dotum",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "gulim.ttc",
+        "source_sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+        "rasterizer_sha256": "0d955449da993bba1b2a8e02a128c4349b3afeff16a7d3c001d545e94619a8e5",
+        "family": "DotumChe",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      }
+    ]
+  },
+  {
+    "run": "protected-wasm-reference",
+    "document": "71f98206e45c354a",
+    "fonts": [
+      {
+        "file": "ENGMJ.otf",
+        "source_sha256": "92f7b9f4aab6a183da9adedc051eeadb329db563bfb5a3187e4cc861365e633c",
+        "rasterizer_sha256": "92f7b9f4aab6a183da9adedc051eeadb329db563bfb5a3187e4cc861365e633c",
+        "family": "HY Gyeonmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENJGT.otf",
+        "source_sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+        "rasterizer_sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENMJ.otf",
+        "source_sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+        "rasterizer_sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENSMJ.otf",
+        "source_sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
+        "rasterizer_sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENSMJI.otf",
+        "source_sha256": "6f63dc09433ea5cb856020e68e9e9a94ad847504487710c3769e67708eb5cf0b",
+        "rasterizer_sha256": "6f63dc09433ea5cb856020e68e9e9a94ad847504487710c3769e67708eb5cf0b",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "italic",
+        "repairs": []
+      },
+      {
+        "file": "FLMJ.otf",
+        "source_sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e",
+        "rasterizer_sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "FLSMJ.otf",
+        "source_sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b",
+        "rasterizer_sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGGMJ.otf",
+        "source_sha256": "34e58d7685669addf992dd969f14bfea6eb3f7b7aa2b3ff17bba1275d353768b",
+        "rasterizer_sha256": "34e58d7685669addf992dd969f14bfea6eb3f7b7aa2b3ff17bba1275d353768b",
+        "family": "HY Gyeonmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGMJ.otf",
+        "source_sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287",
+        "rasterizer_sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGSMJ.otf",
+        "source_sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0",
+        "rasterizer_sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HJJGT.otf",
+        "source_sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1",
+        "rasterizer_sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HJMJ.otf",
+        "source_sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba",
+        "rasterizer_sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HJSMJ.otf",
+        "source_sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9",
+        "rasterizer_sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "JPJGT.otf",
+        "source_sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63",
+        "rasterizer_sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "JPMJ.otf",
+        "source_sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c",
+        "rasterizer_sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "JPSMJ.otf",
+        "source_sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a",
+        "rasterizer_sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "SPJGT.otf",
+        "source_sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480",
+        "rasterizer_sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "SPMJ.otf",
+        "source_sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834",
+        "rasterizer_sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "SPSMJ.otf",
+        "source_sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497",
+        "rasterizer_sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TEDNREN.otf",
+        "source_sha256": "d292d1972ff9de8641c52e3bff41fa0d5ba012c3fd0a1b6514f49e4a5f29fced",
+        "rasterizer_sha256": "d292d1972ff9de8641c52e3bff41fa0d5ba012c3fd0a1b6514f49e4a5f29fced",
+        "family": "Sinmyeong Dinaru",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TEDNRHG.otf",
+        "source_sha256": "00eae1decfbbee1f2344ff95ec396eacd7581a70d65849a3305d3e2df5137b13",
+        "rasterizer_sha256": "00eae1decfbbee1f2344ff95ec396eacd7581a70d65849a3305d3e2df5137b13",
+        "family": "Sinmyeong Dinaru",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TEGMJEN.otf",
+        "source_sha256": "fc341efba989722650bbba15690cbf91db2eb34fdc0eaaad6c8f04ea4a26154f",
+        "rasterizer_sha256": "fc341efba989722650bbba15690cbf91db2eb34fdc0eaaad6c8f04ea4a26154f",
+        "family": "Sinmyeong Gyeonmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TEGMJHG.otf",
+        "source_sha256": "131637753baf43730900998e21694da10d6b12ca08d08634bc1c00d39f30fd92",
+        "rasterizer_sha256": "131637753baf43730900998e21694da10d6b12ca08d08634bc1c00d39f30fd92",
+        "family": "Sinmyeong Gyeonmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TEGMJHJ.otf",
+        "source_sha256": "2d7451e56c62084fa3debd781825890e18c12fef78409f656057d687a3abd684",
+        "rasterizer_sha256": "2d7451e56c62084fa3debd781825890e18c12fef78409f656057d687a3abd684",
+        "family": "Sinmyeong Gyeonmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TEGMJJP.otf",
+        "source_sha256": "aad05d3cb2ebc9c2e5bc7fb731745179ec51d75fb9b54fb61b2950bf19a305c4",
+        "rasterizer_sha256": "aad05d3cb2ebc9c2e5bc7fb731745179ec51d75fb9b54fb61b2950bf19a305c4",
+        "family": "Sinmyeong Gyeonmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TEGMJSP.otf",
+        "source_sha256": "a73255db51e05eb4a170321f1f6b0288a9dcf7d0e5b86a1e553c16a5635c263b",
+        "rasterizer_sha256": "a73255db51e05eb4a170321f1f6b0288a9dcf7d0e5b86a1e553c16a5635c263b",
+        "family": "Sinmyeong Gyeonmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TEJGTEN.otf",
+        "source_sha256": "e5a90d4446f551d3ae2f412990fe8011395a2d75e5af3ea7f2ed51dde5be366e",
+        "rasterizer_sha256": "e5a90d4446f551d3ae2f412990fe8011395a2d75e5af3ea7f2ed51dde5be366e",
+        "family": "Sinmyeong Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TEJGTHG.otf",
+        "source_sha256": "a2b6e400e1e8beaea1661e55bf5977ee823e2a4ae67033e758574f9238611860",
+        "rasterizer_sha256": "a2b6e400e1e8beaea1661e55bf5977ee823e2a4ae67033e758574f9238611860",
+        "family": "Sinmyeong Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TEJGTHJ.otf",
+        "source_sha256": "5c9e1ea0fc307c155ae7910a9d4acdf618d72ae78489aeac28902c680e426cce",
+        "rasterizer_sha256": "5c9e1ea0fc307c155ae7910a9d4acdf618d72ae78489aeac28902c680e426cce",
+        "family": "Sinmyeong Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TEJGTJP.otf",
+        "source_sha256": "96ee02cb33abb83c7985bed4ff49e7b8c3757299865e06f13c61c750a1f98d1c",
+        "rasterizer_sha256": "96ee02cb33abb83c7985bed4ff49e7b8c3757299865e06f13c61c750a1f98d1c",
+        "family": "Sinmyeong Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TEJMJEN.otf",
+        "source_sha256": "becde524c507ba1e555360eae97f99e1770ac4403a55eda2b8b64ff313d602c9",
+        "rasterizer_sha256": "becde524c507ba1e555360eae97f99e1770ac4403a55eda2b8b64ff313d602c9",
+        "family": "Sinmyeong Jungmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TEJMJHG.otf",
+        "source_sha256": "674bc8b40889eefecddc7833cfd6de1367bc7ed15656814b3cbf6a26fea211cf",
+        "rasterizer_sha256": "674bc8b40889eefecddc7833cfd6de1367bc7ed15656814b3cbf6a26fea211cf",
+        "family": "Sinmyeong Jungmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TEJMJHJ.otf",
+        "source_sha256": "ae4361b1549046dfc09b9415a9a8cdb52a076e96c8415b9eefd046d82465e1be",
+        "rasterizer_sha256": "ae4361b1549046dfc09b9415a9a8cdb52a076e96c8415b9eefd046d82465e1be",
+        "family": "Sinmyeong Jungmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TESGREN.otf",
+        "source_sha256": "653e3453afb3a8a44144b7b9dc5e149f2ae7924c9f908ee04f171749935768cc",
+        "rasterizer_sha256": "653e3453afb3a8a44144b7b9dc5e149f2ae7924c9f908ee04f171749935768cc",
+        "family": "Sinmyeong Singraphic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TESGRHG.otf",
+        "source_sha256": "2845c370f3eb07eaea5e76ffef82fd104108c406d9dd2c1803aa5c1036612cf7",
+        "rasterizer_sha256": "2845c370f3eb07eaea5e76ffef82fd104108c406d9dd2c1803aa5c1036612cf7",
+        "family": "Sinmyeong Singraphic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TESMJEN.otf",
+        "source_sha256": "1d7e232e98ba8a11e763ea69ff7be6cf36b2fc2c2d632a6b3115c4723969f0e9",
+        "rasterizer_sha256": "1d7e232e98ba8a11e763ea69ff7be6cf36b2fc2c2d632a6b3115c4723969f0e9",
+        "family": "Sinmyeong Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TESMJHG.otf",
+        "source_sha256": "3f13c08d9c437a79e27f359dc8f6931aa1a82718ebede2b83a9a51c3cb0c3963",
+        "rasterizer_sha256": "3f13c08d9c437a79e27f359dc8f6931aa1a82718ebede2b83a9a51c3cb0c3963",
+        "family": "Sinmyeong Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TESMJJP.otf",
+        "source_sha256": "91839ccb18c63ab15463648c4927429c9b098bf422dcab55269a55314cdcccfd",
+        "rasterizer_sha256": "91839ccb18c63ab15463648c4927429c9b098bf422dcab55269a55314cdcccfd",
+        "family": "Sinmyeong Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TETGREN.otf",
+        "source_sha256": "48158aad4e733ed85968c3bb93576134a11f2041568efb09ff45a076d6349ea1",
+        "rasterizer_sha256": "48158aad4e733ed85968c3bb93576134a11f2041568efb09ff45a076d6349ea1",
+        "family": "Sinmyeong Taegraphic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TETGRHG.otf",
+        "source_sha256": "51346f5f5cf82c7de4b8f0bd2ba6ff488cada811d98f110bc47f535ddbee2867",
+        "rasterizer_sha256": "51346f5f5cf82c7de4b8f0bd2ba6ff488cada811d98f110bc47f535ddbee2867",
+        "family": "Sinmyeong Taegraphic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TETGRSP.otf",
+        "source_sha256": "4d1cee6065faf8306d01715349b6878982e7e4ecc809956be79a30d95185e8dd",
+        "rasterizer_sha256": "4d1cee6065faf8306d01715349b6878982e7e4ecc809956be79a30d95185e8dd",
+        "family": "Sinmyeong Taegraphic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TETGTEN.otf",
+        "source_sha256": "201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3",
+        "rasterizer_sha256": "201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3",
+        "family": "Sinmyeong Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TETGTHG.otf",
+        "source_sha256": "dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3",
+        "rasterizer_sha256": "dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3",
+        "family": "Sinmyeong Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TETGTHJ.otf",
+        "source_sha256": "99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27",
+        "rasterizer_sha256": "99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27",
+        "family": "Sinmyeong Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TETGTJP.otf",
+        "source_sha256": "0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631",
+        "rasterizer_sha256": "0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631",
+        "family": "Sinmyeong Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "USER.otf",
+        "source_sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece",
+        "rasterizer_sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "batang.ttc",
+        "source_sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+        "rasterizer_sha256": "d1b08b64aa81f0d5a131c64e4ba8b6352842cfbe9822e61f91bd6efb4c0787a1",
+        "family": "Batang",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "batang.ttc",
+        "source_sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+        "rasterizer_sha256": "f42c29a06c7261a960842300eecfa4e510aecd4c846da4fd3f478517c960e27e",
+        "family": "BatangChe",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "batang.ttc",
+        "source_sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+        "rasterizer_sha256": "fe77a9e847828e8fc30a01b2706a314e8746d5137d93c5dc4616a5dc0d0707d1",
+        "family": "Gungsuh",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "batang.ttc",
+        "source_sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+        "rasterizer_sha256": "93db97eb8ecb6fbac5b72e9f57feea46884f77010393746a8d25c89aff915ca7",
+        "family": "GungsuhChe",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      }
+    ]
+  },
+  {
+    "run": "protected-wasm-reference",
+    "document": "78e1720edfe2277d",
+    "fonts": [
+      {
+        "file": "ENJGT.otf",
+        "source_sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+        "rasterizer_sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENMJ.otf",
+        "source_sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+        "rasterizer_sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENSMJ.otf",
+        "source_sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
+        "rasterizer_sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "FLMJ.otf",
+        "source_sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e",
+        "rasterizer_sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "FLSMJ.otf",
+        "source_sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b",
+        "rasterizer_sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "H2HDRM.TTF",
+        "source_sha256": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+        "rasterizer_sha256": "c956b7f4082859ac04b5d29b44951b49971ca2c28580d2d99379517e0bd5f248",
+        "family": "HYHeadLine-Medium",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef"
+        ]
+      },
+      {
+        "file": "HBATANG.TTF",
+        "source_sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+        "rasterizer_sha256": "d10501295740bc29bf5a8fe3eb8fad1903ef63a54aa77c6cc744a609f3a627cf",
+        "family": "Haansoft Batang",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "HDotum.TTF",
+        "source_sha256": "b05e5e2f646961c7bdcb9904a7b6d84d288d9c44c3955d60b254cc8ad2305a76",
+        "rasterizer_sha256": "ddd71c887da62b35ea8050c6331b09e6da3b3fbd76ae1d0f1f82e8a929d71dfc",
+        "family": "Haansoft Dotum",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "HGMJ.otf",
+        "source_sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287",
+        "rasterizer_sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGSMJ.otf",
+        "source_sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0",
+        "rasterizer_sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HJJGT.otf",
+        "source_sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1",
+        "rasterizer_sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HJMJ.otf",
+        "source_sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba",
+        "rasterizer_sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HJSMJ.otf",
+        "source_sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9",
+        "rasterizer_sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HMEHL.otf",
+        "source_sha256": "4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52",
+        "rasterizer_sha256": "4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52",
+        "family": "HCI Hollyhock",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HMEPO.otf",
+        "source_sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+        "rasterizer_sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+        "family": "HCI Poppy",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HMKMG.otf",
+        "source_sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9",
+        "rasterizer_sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9",
+        "family": "Human Gothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HMKSM.otf",
+        "source_sha256": "99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d",
+        "rasterizer_sha256": "99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d",
+        "family": "Human Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "JPJGT.otf",
+        "source_sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63",
+        "rasterizer_sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "JPMJ.otf",
+        "source_sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c",
+        "rasterizer_sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "JPSMJ.otf",
+        "source_sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a",
+        "rasterizer_sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "SPJGT.otf",
+        "source_sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480",
+        "rasterizer_sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "SPMJ.otf",
+        "source_sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834",
+        "rasterizer_sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "SPSMJ.otf",
+        "source_sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497",
+        "rasterizer_sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TETGREN.otf",
+        "source_sha256": "48158aad4e733ed85968c3bb93576134a11f2041568efb09ff45a076d6349ea1",
+        "rasterizer_sha256": "48158aad4e733ed85968c3bb93576134a11f2041568efb09ff45a076d6349ea1",
+        "family": "Sinmyeong Taegraphic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TETGRHG.otf",
+        "source_sha256": "51346f5f5cf82c7de4b8f0bd2ba6ff488cada811d98f110bc47f535ddbee2867",
+        "rasterizer_sha256": "51346f5f5cf82c7de4b8f0bd2ba6ff488cada811d98f110bc47f535ddbee2867",
+        "family": "Sinmyeong Taegraphic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TETGRSP.otf",
+        "source_sha256": "4d1cee6065faf8306d01715349b6878982e7e4ecc809956be79a30d95185e8dd",
+        "rasterizer_sha256": "4d1cee6065faf8306d01715349b6878982e7e4ecc809956be79a30d95185e8dd",
+        "family": "Sinmyeong Taegraphic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TETGTEN.otf",
+        "source_sha256": "201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3",
+        "rasterizer_sha256": "201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3",
+        "family": "Sinmyeong Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TETGTHG.otf",
+        "source_sha256": "dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3",
+        "rasterizer_sha256": "dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3",
+        "family": "Sinmyeong Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TETGTHJ.otf",
+        "source_sha256": "99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27",
+        "rasterizer_sha256": "99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27",
+        "family": "Sinmyeong Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TETGTJP.otf",
+        "source_sha256": "0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631",
+        "rasterizer_sha256": "0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631",
+        "family": "Sinmyeong Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "USER.otf",
+        "source_sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece",
+        "rasterizer_sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "arialbd.ttf",
+        "source_sha256": "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69",
+        "rasterizer_sha256": "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69",
+        "family": "Arial",
+        "weight": 700,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "batang.ttc",
+        "source_sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+        "rasterizer_sha256": "d1b08b64aa81f0d5a131c64e4ba8b6352842cfbe9822e61f91bd6efb4c0787a1",
+        "family": "Batang",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "batang.ttc",
+        "source_sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+        "rasterizer_sha256": "f42c29a06c7261a960842300eecfa4e510aecd4c846da4fd3f478517c960e27e",
+        "family": "BatangChe",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "batang.ttc",
+        "source_sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+        "rasterizer_sha256": "fe77a9e847828e8fc30a01b2706a314e8746d5137d93c5dc4616a5dc0d0707d1",
+        "family": "Gungsuh",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "batang.ttc",
+        "source_sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+        "rasterizer_sha256": "93db97eb8ecb6fbac5b72e9f57feea46884f77010393746a8d25c89aff915ca7",
+        "family": "GungsuhChe",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "gulim.ttc",
+        "source_sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+        "rasterizer_sha256": "274de69db23379e13a72d358a9816db72b7525db7c7b867def661f74df863e73",
+        "family": "Gulim",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "gulim.ttc",
+        "source_sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+        "rasterizer_sha256": "5015ac2719ced9fec5b145414a753949d0256d5050f95df8ea27d48362ed0b6a",
+        "family": "GulimChe",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "gulim.ttc",
+        "source_sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+        "rasterizer_sha256": "3ce6869b59e8034b8f1cc8dfdfe81e33bbdf215a9a0cc53ef264393811c36aba",
+        "family": "Dotum",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "gulim.ttc",
+        "source_sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+        "rasterizer_sha256": "0d955449da993bba1b2a8e02a128c4349b3afeff16a7d3c001d545e94619a8e5",
+        "family": "DotumChe",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      }
+    ]
+  },
+  {
+    "run": "protected-wasm-reference",
+    "document": "7df4af8174abd82a",
+    "fonts": [
+      {
+        "file": "ENGGT.otf",
+        "source_sha256": "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9",
+        "rasterizer_sha256": "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9",
+        "family": "HY Gyeongothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENGRP.otf",
+        "source_sha256": "472830cfd4f5edc2d9dc9d0a8e3078839977c4bb0e317b198549ce278075bd26",
+        "rasterizer_sha256": "472830cfd4f5edc2d9dc9d0a8e3078839977c4bb0e317b198549ce278075bd26",
+        "family": "HY Graphic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENGS.otf",
+        "source_sha256": "ed503552219ae16332e595c4b2999a3462d55509a4032dfce29c5ee4d0407346",
+        "rasterizer_sha256": "ed503552219ae16332e595c4b2999a3462d55509a4032dfce29c5ee4d0407346",
+        "family": "HY Gungseo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENJGT.otf",
+        "source_sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+        "rasterizer_sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENMJ.otf",
+        "source_sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+        "rasterizer_sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENSMJ.otf",
+        "source_sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
+        "rasterizer_sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENSMJI.otf",
+        "source_sha256": "6f63dc09433ea5cb856020e68e9e9a94ad847504487710c3769e67708eb5cf0b",
+        "rasterizer_sha256": "6f63dc09433ea5cb856020e68e9e9a94ad847504487710c3769e67708eb5cf0b",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "italic",
+        "repairs": []
+      },
+      {
+        "file": "ENSS.otf",
+        "source_sha256": "dbdf067e6e1d40bb8baeae72ca06289a4b8be15ded97f831262f28e8901ee54f",
+        "rasterizer_sha256": "dbdf067e6e1d40bb8baeae72ca06289a4b8be15ded97f831262f28e8901ee54f",
+        "family": "Sans Serif",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "FLMJ.otf",
+        "source_sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e",
+        "rasterizer_sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "FLSMJ.otf",
+        "source_sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b",
+        "rasterizer_sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HBATANG.TTF",
+        "source_sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+        "rasterizer_sha256": "d10501295740bc29bf5a8fe3eb8fad1903ef63a54aa77c6cc744a609f3a627cf",
+        "family": "Haansoft Batang",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "HCENGRP.otf",
+        "source_sha256": "a953806c6ec22f68e9c636efe875b4d83e9306ac29391f0f105214a00e5a57d6",
+        "rasterizer_sha256": "a953806c6ec22f68e9c636efe875b4d83e9306ac29391f0f105214a00e5a57d6",
+        "family": "Graphic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCENGS.otf",
+        "source_sha256": "a9c2638e8cbff793b19b116b743f2ab198219c421d369b7861ac6dc5a3915edf",
+        "rasterizer_sha256": "a9c2638e8cbff793b19b116b743f2ab198219c421d369b7861ac6dc5a3915edf",
+        "family": "Gungseo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCENTGT.otf",
+        "source_sha256": "da4f226e7df89a487af199b836be7d8ea90704330d44b7dbd14dc85d960c4859",
+        "rasterizer_sha256": "da4f226e7df89a487af199b836be7d8ea90704330d44b7dbd14dc85d960c4859",
+        "family": "Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCHGGRP.otf",
+        "source_sha256": "d33ce840dd69a599a9e2cd4e1b06129b817b2bb3679375adde95ea131c9ce679",
+        "rasterizer_sha256": "d33ce840dd69a599a9e2cd4e1b06129b817b2bb3679375adde95ea131c9ce679",
+        "family": "Graphic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCHGGS.otf",
+        "source_sha256": "9749ecdd1159f5319f812f93c06a1ba092da1f433d6b6f35c5ad517b5d527a1a",
+        "rasterizer_sha256": "9749ecdd1159f5319f812f93c06a1ba092da1f433d6b6f35c5ad517b5d527a1a",
+        "family": "Gungseo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCHGTGT.otf",
+        "source_sha256": "fc0a42f9de898629e3c0e18ba59b7f243deba0ab2595425a760e2344195034cf",
+        "rasterizer_sha256": "fc0a42f9de898629e3c0e18ba59b7f243deba0ab2595425a760e2344195034cf",
+        "family": "Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCHJGS.otf",
+        "source_sha256": "fbda1e014fb9e2ccc507be4d655b774deb4044a69b5059b05a577d5875568e9a",
+        "rasterizer_sha256": "fbda1e014fb9e2ccc507be4d655b774deb4044a69b5059b05a577d5875568e9a",
+        "family": "Gungseo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCHJTGT.otf",
+        "source_sha256": "8db67a2414128fff3b26353393d8f49fb1851cf846947293eed79bde926cc426",
+        "rasterizer_sha256": "8db67a2414128fff3b26353393d8f49fb1851cf846947293eed79bde926cc426",
+        "family": "Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCJPTGT.otf",
+        "source_sha256": "2b97862b3496d11adce1c77ef1eca63b4bd15cb188d9a408b29c189bab024882",
+        "rasterizer_sha256": "2b97862b3496d11adce1c77ef1eca63b4bd15cb188d9a408b29c189bab024882",
+        "family": "Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCSPGRP.otf",
+        "source_sha256": "9332b9367ca26fd755c4a8c49097768b3caffb9336de499e0fb44056426aa68c",
+        "rasterizer_sha256": "9332b9367ca26fd755c4a8c49097768b3caffb9336de499e0fb44056426aa68c",
+        "family": "Graphic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCSPGS.otf",
+        "source_sha256": "a7fce3bbac3965f765c2545172afc3daf72963a6d311d807f075e1ed864ab2ee",
+        "rasterizer_sha256": "a7fce3bbac3965f765c2545172afc3daf72963a6d311d807f075e1ed864ab2ee",
+        "family": "Gungseo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCSPTGT.otf",
+        "source_sha256": "869158e2be56c343baf14e40c32d8497b8de3f691747d3ae38b555b606788d07",
+        "rasterizer_sha256": "869158e2be56c343baf14e40c32d8497b8de3f691747d3ae38b555b606788d07",
+        "family": "Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGGGT.otf",
+        "source_sha256": "da42e4819214f960b3561d4acf51571ad0c887f258e3dc034f5c2fae5c842a68",
+        "rasterizer_sha256": "da42e4819214f960b3561d4acf51571ad0c887f258e3dc034f5c2fae5c842a68",
+        "family": "HY Gyeongothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGGRP.otf",
+        "source_sha256": "85a60f7efbc9926e8a634e702442edc0245e86874af3efe640f6402ae56e36f7",
+        "rasterizer_sha256": "85a60f7efbc9926e8a634e702442edc0245e86874af3efe640f6402ae56e36f7",
+        "family": "HY Graphic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGGS.otf",
+        "source_sha256": "b654b6944b6c45a5581d218b8aa0e2e4125a7f348b9f8f91803831f29ce37040",
+        "rasterizer_sha256": "b654b6944b6c45a5581d218b8aa0e2e4125a7f348b9f8f91803831f29ce37040",
+        "family": "HY Gungseo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGMJ.otf",
+        "source_sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287",
+        "rasterizer_sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGSMJ.otf",
+        "source_sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0",
+        "rasterizer_sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HJJGT.otf",
+        "source_sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1",
+        "rasterizer_sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HJMJ.otf",
+        "source_sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba",
+        "rasterizer_sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HJSMJ.otf",
+        "source_sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9",
+        "rasterizer_sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HMEHL.otf",
+        "source_sha256": "4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52",
+        "rasterizer_sha256": "4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52",
+        "family": "HCI Hollyhock",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HMEPO.otf",
+        "source_sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+        "rasterizer_sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+        "family": "HCI Poppy",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HMKMG.otf",
+        "source_sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9",
+        "rasterizer_sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9",
+        "family": "Human Gothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HMKMM.TTF",
+        "source_sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+        "rasterizer_sha256": "e48a43385fc11e9460c905aa2e19780933307d85e56dcb0e3bfd9e2d4a9cfcf1",
+        "family": "휴먼명조",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "HMKOLD.otf",
+        "source_sha256": "f2122c5200148d46a3f13b703e27536748fc5abf912a9b44d8ccd0f2b7f4ce97",
+        "rasterizer_sha256": "f2122c5200148d46a3f13b703e27536748fc5abf912a9b44d8ccd0f2b7f4ce97",
+        "family": "Human Yet",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HMKSM.otf",
+        "source_sha256": "99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d",
+        "rasterizer_sha256": "99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d",
+        "family": "Human Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "JPJGT.otf",
+        "source_sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63",
+        "rasterizer_sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "JPMJ.otf",
+        "source_sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c",
+        "rasterizer_sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "JPSMJ.otf",
+        "source_sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a",
+        "rasterizer_sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "SPJGT.otf",
+        "source_sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480",
+        "rasterizer_sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "SPMJ.otf",
+        "source_sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834",
+        "rasterizer_sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "SPSMJ.otf",
+        "source_sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497",
+        "rasterizer_sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TAENMREN.otf",
+        "source_sha256": "aef1b4e32ba55e42764385e1042b0bc5fbb51998571a380ce7b5e63a0a82c4b2",
+        "rasterizer_sha256": "aef1b4e32ba55e42764385e1042b0bc5fbb51998571a380ce7b5e63a0a82c4b2",
+        "family": "Tae Namu",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TAENMRKR.otf",
+        "source_sha256": "691205fe589ff8e46e7c840304316ea6d0459e54259b16eef6e49dfa66018e2a",
+        "rasterizer_sha256": "691205fe589ff8e46e7c840304316ea6d0459e54259b16eef6e49dfa66018e2a",
+        "family": "Tae Namu",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TESEMEN.otf",
+        "source_sha256": "464e83498110c175392228b406fef6c3c86a54464700fb03cc993f7aae7b8a06",
+        "rasterizer_sha256": "464e83498110c175392228b406fef6c3c86a54464700fb03cc993f7aae7b8a06",
+        "family": "Sinmyeong Semyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TESEMHG.otf",
+        "source_sha256": "d475b282463329667b2f7018812556c143e1b07bad31f07287600ef78997af27",
+        "rasterizer_sha256": "d475b282463329667b2f7018812556c143e1b07bad31f07287600ef78997af27",
+        "family": "Sinmyeong Semyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TESEMHJ.otf",
+        "source_sha256": "4287579604bb420cf62906b885228b070f2a093b3fb09dfa617822862a0c7d3d",
+        "rasterizer_sha256": "4287579604bb420cf62906b885228b070f2a093b3fb09dfa617822862a0c7d3d",
+        "family": "Sinmyeong Semyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TESMJEN.otf",
+        "source_sha256": "1d7e232e98ba8a11e763ea69ff7be6cf36b2fc2c2d632a6b3115c4723969f0e9",
+        "rasterizer_sha256": "1d7e232e98ba8a11e763ea69ff7be6cf36b2fc2c2d632a6b3115c4723969f0e9",
+        "family": "Sinmyeong Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TESMJHG.otf",
+        "source_sha256": "3f13c08d9c437a79e27f359dc8f6931aa1a82718ebede2b83a9a51c3cb0c3963",
+        "rasterizer_sha256": "3f13c08d9c437a79e27f359dc8f6931aa1a82718ebede2b83a9a51c3cb0c3963",
+        "family": "Sinmyeong Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TESMJJP.otf",
+        "source_sha256": "91839ccb18c63ab15463648c4927429c9b098bf422dcab55269a55314cdcccfd",
+        "rasterizer_sha256": "91839ccb18c63ab15463648c4927429c9b098bf422dcab55269a55314cdcccfd",
+        "family": "Sinmyeong Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TESSMEN.otf",
+        "source_sha256": "7c073a836d6837771668cc5be0f1816f502e54d5397f8e05e7b2f0281647219a",
+        "rasterizer_sha256": "7c073a836d6837771668cc5be0f1816f502e54d5397f8e05e7b2f0281647219a",
+        "family": "Sinmyeong Sinsinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TESSMHG.otf",
+        "source_sha256": "49bfc7e5f23e6dc28a687bcd671e2eba5fa15bbae8b46aff5a64fca97931b269",
+        "rasterizer_sha256": "49bfc7e5f23e6dc28a687bcd671e2eba5fa15bbae8b46aff5a64fca97931b269",
+        "family": "Sinmyeong Sinsinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TETGTEN.otf",
+        "source_sha256": "201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3",
+        "rasterizer_sha256": "201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3",
+        "family": "Sinmyeong Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TETGTHG.otf",
+        "source_sha256": "dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3",
+        "rasterizer_sha256": "dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3",
+        "family": "Sinmyeong Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TETGTHJ.otf",
+        "source_sha256": "99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27",
+        "rasterizer_sha256": "99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27",
+        "family": "Sinmyeong Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TETGTJP.otf",
+        "source_sha256": "0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631",
+        "rasterizer_sha256": "0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631",
+        "family": "Sinmyeong Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "USER.otf",
+        "source_sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece",
+        "rasterizer_sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      }
+    ]
+  },
+  {
+    "run": "protected-wasm-reference",
+    "document": "941fe0c3549c0017",
+    "fonts": [
+      {
+        "file": "HANBatang.woff.ttf",
+        "source_sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+        "rasterizer_sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+        "family": "HCR Batang",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HBATANG.TTF",
+        "source_sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+        "rasterizer_sha256": "d10501295740bc29bf5a8fe3eb8fad1903ef63a54aa77c6cc744a609f3a627cf",
+        "family": "Haansoft Batang",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "KoPubBatang-Bold.ttf",
+        "source_sha256": "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b",
+        "rasterizer_sha256": "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b",
+        "family": "KoPubBatang Bold",
+        "weight": 700,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "KoPubBatang-Light.ttf",
+        "source_sha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f",
+        "rasterizer_sha256": "b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f",
+        "family": "KoPubBatang Light",
+        "weight": 300,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "KoPubBatang-Medium.ttf",
+        "source_sha256": "7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4",
+        "rasterizer_sha256": "7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4",
+        "family": "KoPubBatang Medium",
+        "weight": 500,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "KoPubDotum-Bold.ttf",
+        "source_sha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275",
+        "rasterizer_sha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275",
+        "family": "KoPubDotum Bold",
+        "weight": 700,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "KoPubDotum-Light.ttf",
+        "source_sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d",
+        "rasterizer_sha256": "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d",
+        "family": "KoPubDotum Light",
+        "weight": 300,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "KoPubDotum-Medium.ttf",
+        "source_sha256": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7",
+        "rasterizer_sha256": "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7",
+        "family": "KoPubDotum Medium",
+        "weight": 500,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "wingding.ttf",
+        "source_sha256": "9bcd6064e3b52fa30a347edd6e82506e2ec8b1602930b423c629a82c10468a5b",
+        "rasterizer_sha256": "9bcd6064e3b52fa30a347edd6e82506e2ec8b1602930b423c629a82c10468a5b",
+        "family": "Wingdings",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      }
+    ]
+  },
+  {
+    "run": "protected-wasm-reference",
+    "document": "a8e95b4accc79fa8",
+    "fonts": [
+      {
+        "file": "ENGGT.otf",
+        "source_sha256": "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9",
+        "rasterizer_sha256": "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9",
+        "family": "HY Gyeongothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENJGT.otf",
+        "source_sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+        "rasterizer_sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENSMJ.otf",
+        "source_sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
+        "rasterizer_sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "FLSMJ.otf",
+        "source_sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b",
+        "rasterizer_sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGGGT.otf",
+        "source_sha256": "da42e4819214f960b3561d4acf51571ad0c887f258e3dc034f5c2fae5c842a68",
+        "rasterizer_sha256": "da42e4819214f960b3561d4acf51571ad0c887f258e3dc034f5c2fae5c842a68",
+        "family": "HY Gyeongothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGSMJ.otf",
+        "source_sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0",
+        "rasterizer_sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HJJGT.otf",
+        "source_sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1",
+        "rasterizer_sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HJSMJ.otf",
+        "source_sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9",
+        "rasterizer_sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "JPJGT.otf",
+        "source_sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63",
+        "rasterizer_sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "JPSMJ.otf",
+        "source_sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a",
+        "rasterizer_sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "SPJGT.otf",
+        "source_sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480",
+        "rasterizer_sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "SPSMJ.otf",
+        "source_sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497",
+        "rasterizer_sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "batang.ttc",
+        "source_sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+        "rasterizer_sha256": "d1b08b64aa81f0d5a131c64e4ba8b6352842cfbe9822e61f91bd6efb4c0787a1",
+        "family": "Batang",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "batang.ttc",
+        "source_sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+        "rasterizer_sha256": "f42c29a06c7261a960842300eecfa4e510aecd4c846da4fd3f478517c960e27e",
+        "family": "BatangChe",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "batang.ttc",
+        "source_sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+        "rasterizer_sha256": "fe77a9e847828e8fc30a01b2706a314e8746d5137d93c5dc4616a5dc0d0707d1",
+        "family": "Gungsuh",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "batang.ttc",
+        "source_sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+        "rasterizer_sha256": "93db97eb8ecb6fbac5b72e9f57feea46884f77010393746a8d25c89aff915ca7",
+        "family": "GungsuhChe",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "gulim.ttc",
+        "source_sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+        "rasterizer_sha256": "274de69db23379e13a72d358a9816db72b7525db7c7b867def661f74df863e73",
+        "family": "Gulim",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "gulim.ttc",
+        "source_sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+        "rasterizer_sha256": "5015ac2719ced9fec5b145414a753949d0256d5050f95df8ea27d48362ed0b6a",
+        "family": "GulimChe",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "gulim.ttc",
+        "source_sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+        "rasterizer_sha256": "3ce6869b59e8034b8f1cc8dfdfe81e33bbdf215a9a0cc53ef264393811c36aba",
+        "family": "Dotum",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "gulim.ttc",
+        "source_sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+        "rasterizer_sha256": "0d955449da993bba1b2a8e02a128c4349b3afeff16a7d3c001d545e94619a8e5",
+        "family": "DotumChe",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      }
+    ]
+  },
+  {
+    "run": "protected-wasm-reference",
+    "document": "b1a9055c4c7e6f09",
+    "fonts": [
+      {
+        "file": "ENCORN.otf",
+        "source_sha256": "c380338aa87f488419c607aae0595c08a373cf756e6ef58dfc82f1e4d05f040f",
+        "rasterizer_sha256": "c380338aa87f488419c607aae0595c08a373cf756e6ef58dfc82f1e4d05f040f",
+        "family": "Corn",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENCUCMBR.otf",
+        "source_sha256": "64b0415c50c1a61d43f0c3c85406ee38986f154f01a3b6b87d20364dd93ab48f",
+        "rasterizer_sha256": "64b0415c50c1a61d43f0c3c85406ee38986f154f01a3b6b87d20364dd93ab48f",
+        "family": "Cucumber",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENGGT.otf",
+        "source_sha256": "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9",
+        "rasterizer_sha256": "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9",
+        "family": "HY Gyeongothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENGS.otf",
+        "source_sha256": "ed503552219ae16332e595c4b2999a3462d55509a4032dfce29c5ee4d0407346",
+        "rasterizer_sha256": "ed503552219ae16332e595c4b2999a3462d55509a4032dfce29c5ee4d0407346",
+        "family": "HY Gungseo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENJGT.otf",
+        "source_sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+        "rasterizer_sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENMJ.otf",
+        "source_sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+        "rasterizer_sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENSMJ.otf",
+        "source_sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
+        "rasterizer_sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "ENSYS.otf",
+        "source_sha256": "f11137ccccd429956b6e386edd8b197f1ff17c9f9385c40752cb8ed2c8b30546",
+        "rasterizer_sha256": "f11137ccccd429956b6e386edd8b197f1ff17c9f9385c40752cb8ed2c8b30546",
+        "family": "System",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "FLMJ.otf",
+        "source_sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e",
+        "rasterizer_sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "FLSMJ.otf",
+        "source_sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b",
+        "rasterizer_sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HBATANG.TTF",
+        "source_sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+        "rasterizer_sha256": "d10501295740bc29bf5a8fe3eb8fad1903ef63a54aa77c6cc744a609f3a627cf",
+        "family": "Haansoft Batang",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "HCENDNR.otf",
+        "source_sha256": "df37d0aad063fcc67a13f00eda6e184b306b61fa57eaf4714eb4fd64c877c54b",
+        "rasterizer_sha256": "df37d0aad063fcc67a13f00eda6e184b306b61fa57eaf4714eb4fd64c877c54b",
+        "family": "Dinaru",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCENGS.otf",
+        "source_sha256": "a9c2638e8cbff793b19b116b743f2ab198219c421d369b7861ac6dc5a3915edf",
+        "rasterizer_sha256": "a9c2638e8cbff793b19b116b743f2ab198219c421d369b7861ac6dc5a3915edf",
+        "family": "Gungseo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCENJGT.otf",
+        "source_sha256": "a5682f13446b5e4c336f8222cd24d4b4a9afd516885e261ba96feafd5b76dce3",
+        "rasterizer_sha256": "a5682f13446b5e4c336f8222cd24d4b4a9afd516885e261ba96feafd5b76dce3",
+        "family": "Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCENSDNR.otf",
+        "source_sha256": "f814256e1a58ae8d898222c9105ab70535291e100fa9d84c780d3c24a30c219b",
+        "rasterizer_sha256": "f814256e1a58ae8d898222c9105ab70535291e100fa9d84c780d3c24a30c219b",
+        "family": "Sindinaru",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCENSNR.otf",
+        "source_sha256": "4aee191decc2ab86c333257d291b5d46fac1717bed5dbd1f8705e6b720e95f70",
+        "rasterizer_sha256": "4aee191decc2ab86c333257d291b5d46fac1717bed5dbd1f8705e6b720e95f70",
+        "family": "Senaru",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCENSSNR.otf",
+        "source_sha256": "7e735396377e6e6a303f2c69d2e13c72add42d6ec79ab9807c905d1beeaf95e1",
+        "rasterizer_sha256": "7e735396377e6e6a303f2c69d2e13c72add42d6ec79ab9807c905d1beeaf95e1",
+        "family": "Sinsenaru",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCENTGT.otf",
+        "source_sha256": "da4f226e7df89a487af199b836be7d8ea90704330d44b7dbd14dc85d960c4859",
+        "rasterizer_sha256": "da4f226e7df89a487af199b836be7d8ea90704330d44b7dbd14dc85d960c4859",
+        "family": "Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCHGDNR.otf",
+        "source_sha256": "39bb7a9355bcd39d9d4ca5eab44a13641196d0d2aa4e890c5fec991586f9f9bc",
+        "rasterizer_sha256": "39bb7a9355bcd39d9d4ca5eab44a13641196d0d2aa4e890c5fec991586f9f9bc",
+        "family": "Dinaru",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCHGGS.otf",
+        "source_sha256": "9749ecdd1159f5319f812f93c06a1ba092da1f433d6b6f35c5ad517b5d527a1a",
+        "rasterizer_sha256": "9749ecdd1159f5319f812f93c06a1ba092da1f433d6b6f35c5ad517b5d527a1a",
+        "family": "Gungseo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCHGJGT.otf",
+        "source_sha256": "2c6e8f5b65eff460abaebecabc2a1073c3eebc148076a6b3830aa38a80e7cc6a",
+        "rasterizer_sha256": "2c6e8f5b65eff460abaebecabc2a1073c3eebc148076a6b3830aa38a80e7cc6a",
+        "family": "Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCHGSDNR.otf",
+        "source_sha256": "31073f9a23497758581591c000da627e4a19c124dfc1b41767a6added37d9e94",
+        "rasterizer_sha256": "31073f9a23497758581591c000da627e4a19c124dfc1b41767a6added37d9e94",
+        "family": "Sindinaru",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCHGSNR.otf",
+        "source_sha256": "c9909c5ed32ed8f03f476171e7fc3aa0941f841292cc07820e006af3ce30c691",
+        "rasterizer_sha256": "c9909c5ed32ed8f03f476171e7fc3aa0941f841292cc07820e006af3ce30c691",
+        "family": "Senaru",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCHGSSNR.otf",
+        "source_sha256": "59aec4439a0cece498a3393287c442f0cd76f2d2384087a9f9d1d03db09623e7",
+        "rasterizer_sha256": "59aec4439a0cece498a3393287c442f0cd76f2d2384087a9f9d1d03db09623e7",
+        "family": "Sinsenaru",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCHGTGT.otf",
+        "source_sha256": "fc0a42f9de898629e3c0e18ba59b7f243deba0ab2595425a760e2344195034cf",
+        "rasterizer_sha256": "fc0a42f9de898629e3c0e18ba59b7f243deba0ab2595425a760e2344195034cf",
+        "family": "Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCHJGS.otf",
+        "source_sha256": "fbda1e014fb9e2ccc507be4d655b774deb4044a69b5059b05a577d5875568e9a",
+        "rasterizer_sha256": "fbda1e014fb9e2ccc507be4d655b774deb4044a69b5059b05a577d5875568e9a",
+        "family": "Gungseo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCHJJGT.otf",
+        "source_sha256": "e594b8a41cc8d64438518b3d2e8eaeb0344db3abdfd44aefea06d1c1b093659d",
+        "rasterizer_sha256": "e594b8a41cc8d64438518b3d2e8eaeb0344db3abdfd44aefea06d1c1b093659d",
+        "family": "Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCHJSDNR.otf",
+        "source_sha256": "dd3127d9c9780f296ed801e2099e25910a7fe1174df96175d039f782078b8107",
+        "rasterizer_sha256": "dd3127d9c9780f296ed801e2099e25910a7fe1174df96175d039f782078b8107",
+        "family": "Sindinaru",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCHJSSNR.otf",
+        "source_sha256": "0d465f4c6bb448b36e712caed92339bd98d9384b20eaf81eac15f79cb60b0bac",
+        "rasterizer_sha256": "0d465f4c6bb448b36e712caed92339bd98d9384b20eaf81eac15f79cb60b0bac",
+        "family": "Sinsenaru",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCHJTGT.otf",
+        "source_sha256": "8db67a2414128fff3b26353393d8f49fb1851cf846947293eed79bde926cc426",
+        "rasterizer_sha256": "8db67a2414128fff3b26353393d8f49fb1851cf846947293eed79bde926cc426",
+        "family": "Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCJPJGT.otf",
+        "source_sha256": "659149ae636a2c3f99efa1429b3644f14d8f1c2cb97b8174932ce60d239a30d8",
+        "rasterizer_sha256": "659149ae636a2c3f99efa1429b3644f14d8f1c2cb97b8174932ce60d239a30d8",
+        "family": "Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCJPTGT.otf",
+        "source_sha256": "2b97862b3496d11adce1c77ef1eca63b4bd15cb188d9a408b29c189bab024882",
+        "rasterizer_sha256": "2b97862b3496d11adce1c77ef1eca63b4bd15cb188d9a408b29c189bab024882",
+        "family": "Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCSPDNR.otf",
+        "source_sha256": "f5517036d1d3fa4a56dfe4311d884c8b997818c77b7d057cb84feeca863babef",
+        "rasterizer_sha256": "f5517036d1d3fa4a56dfe4311d884c8b997818c77b7d057cb84feeca863babef",
+        "family": "Dinaru",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCSPGS.otf",
+        "source_sha256": "a7fce3bbac3965f765c2545172afc3daf72963a6d311d807f075e1ed864ab2ee",
+        "rasterizer_sha256": "a7fce3bbac3965f765c2545172afc3daf72963a6d311d807f075e1ed864ab2ee",
+        "family": "Gungseo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCSPJGT.otf",
+        "source_sha256": "0d4c5ef68b8e4d55b761db725ea54e0f472e96d9ad3c44435def92daf8d226a5",
+        "rasterizer_sha256": "0d4c5ef68b8e4d55b761db725ea54e0f472e96d9ad3c44435def92daf8d226a5",
+        "family": "Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCSPSDNR.otf",
+        "source_sha256": "f2d86ab8a4fbb27d94a5805f0e7603bb65cae2e7a46033237e9173d6282c2e36",
+        "rasterizer_sha256": "f2d86ab8a4fbb27d94a5805f0e7603bb65cae2e7a46033237e9173d6282c2e36",
+        "family": "Sindinaru",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCSPSNR.otf",
+        "source_sha256": "5a77a862312ff284e578da5774ea412e8795284d515b5dc9bff5788e9f96241f",
+        "rasterizer_sha256": "5a77a862312ff284e578da5774ea412e8795284d515b5dc9bff5788e9f96241f",
+        "family": "Senaru",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCSPSSNR.otf",
+        "source_sha256": "d74f7b855fa55c424bcb2ed6269afc849ee38db4cb557b79bb1bfb8687c05136",
+        "rasterizer_sha256": "d74f7b855fa55c424bcb2ed6269afc849ee38db4cb557b79bb1bfb8687c05136",
+        "family": "Sinsenaru",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HCSPTGT.otf",
+        "source_sha256": "869158e2be56c343baf14e40c32d8497b8de3f691747d3ae38b555b606788d07",
+        "rasterizer_sha256": "869158e2be56c343baf14e40c32d8497b8de3f691747d3ae38b555b606788d07",
+        "family": "Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGCORN.otf",
+        "source_sha256": "c067bcdb413c573bde52aa0705583d0329d14a9a0e69eece2ac81e834f7393b0",
+        "rasterizer_sha256": "c067bcdb413c573bde52aa0705583d0329d14a9a0e69eece2ac81e834f7393b0",
+        "family": "Corn",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGCUCMBR.otf",
+        "source_sha256": "da4445d0ebd83dc03631b12a0423a9baf6084aea269008d71d3450fba8d0e0a3",
+        "rasterizer_sha256": "da4445d0ebd83dc03631b12a0423a9baf6084aea269008d71d3450fba8d0e0a3",
+        "family": "Cucumber",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGEGPLNT.otf",
+        "source_sha256": "5a75da50547d1700f457df56b5bea3d0d508dd87593c93590a278fd2f349eb37",
+        "rasterizer_sha256": "5a75da50547d1700f457df56b5bea3d0d508dd87593c93590a278fd2f349eb37",
+        "family": "Eggplant",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGGGT.otf",
+        "source_sha256": "da42e4819214f960b3561d4acf51571ad0c887f258e3dc034f5c2fae5c842a68",
+        "rasterizer_sha256": "da42e4819214f960b3561d4acf51571ad0c887f258e3dc034f5c2fae5c842a68",
+        "family": "HY Gyeongothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGGS.otf",
+        "source_sha256": "b654b6944b6c45a5581d218b8aa0e2e4125a7f348b9f8f91803831f29ce37040",
+        "rasterizer_sha256": "b654b6944b6c45a5581d218b8aa0e2e4125a7f348b9f8f91803831f29ce37040",
+        "family": "HY Gungseo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGKDNYBN.otf",
+        "source_sha256": "a93c32d8a696a0c069bd74f3f42cee8f0f2a6410b6cbd4b77395c44d1603f1e9",
+        "rasterizer_sha256": "a93c32d8a696a0c069bd74f3f42cee8f0f2a6410b6cbd4b77395c44d1603f1e9",
+        "family": "Kidney bean",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGMJ.otf",
+        "source_sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287",
+        "rasterizer_sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGPEACH.otf",
+        "source_sha256": "1ea92a217d1d5d0ce36073b7b3d1661a3253bfb1a6d2a4dc95535433a2c0ea63",
+        "rasterizer_sha256": "1ea92a217d1d5d0ce36073b7b3d1661a3253bfb1a6d2a4dc95535433a2c0ea63",
+        "family": "Peach",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGSMJ.otf",
+        "source_sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0",
+        "rasterizer_sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGSTRBRY.otf",
+        "source_sha256": "6844aed54084783e28e7be0da351d08f4c0fe9e16e0844cbad4e4164c47488ca",
+        "rasterizer_sha256": "6844aed54084783e28e7be0da351d08f4c0fe9e16e0844cbad4e4164c47488ca",
+        "family": "Strawberry",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HGSYS.otf",
+        "source_sha256": "b541cec7bb43f6ef98d5efb033a1dc191922ca7f9893cd2652ce0dfaa13a630e",
+        "rasterizer_sha256": "b541cec7bb43f6ef98d5efb033a1dc191922ca7f9893cd2652ce0dfaa13a630e",
+        "family": "System",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HJJGT.otf",
+        "source_sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1",
+        "rasterizer_sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HJMJ.otf",
+        "source_sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba",
+        "rasterizer_sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HJSMJ.otf",
+        "source_sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9",
+        "rasterizer_sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HJSYS.otf",
+        "source_sha256": "332201f62c6833e9ffba1861fc6c22726a517d1f75a34eaa2f1885216d08a130",
+        "rasterizer_sha256": "332201f62c6833e9ffba1861fc6c22726a517d1f75a34eaa2f1885216d08a130",
+        "family": "System",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "HMKOLD.otf",
+        "source_sha256": "f2122c5200148d46a3f13b703e27536748fc5abf912a9b44d8ccd0f2b7f4ce97",
+        "rasterizer_sha256": "f2122c5200148d46a3f13b703e27536748fc5abf912a9b44d8ccd0f2b7f4ce97",
+        "family": "Human Yet",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "JPJGT.otf",
+        "source_sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63",
+        "rasterizer_sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "JPMJ.otf",
+        "source_sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c",
+        "rasterizer_sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "JPSMJ.otf",
+        "source_sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a",
+        "rasterizer_sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "JPSYS.otf",
+        "source_sha256": "d3c70c4f3af26676105cf9bd44e08417fa28ca03187ffb45dc8d1e7cae6c6579",
+        "rasterizer_sha256": "d3c70c4f3af26676105cf9bd44e08417fa28ca03187ffb45dc8d1e7cae6c6579",
+        "family": "System",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "SPJGT.otf",
+        "source_sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480",
+        "rasterizer_sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480",
+        "family": "HY Junggothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "SPMJ.otf",
+        "source_sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834",
+        "rasterizer_sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "SPSMJ.otf",
+        "source_sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497",
+        "rasterizer_sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497",
+        "family": "HY Sinmyeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "SPSYS.otf",
+        "source_sha256": "a94aaa295c4cd1033926bb0ec97ed5f6b2cd0d3ca06608c18347a87cd005ed07",
+        "rasterizer_sha256": "a94aaa295c4cd1033926bb0ec97ed5f6b2cd0d3ca06608c18347a87cd005ed07",
+        "family": "System",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TEDNREN.otf",
+        "source_sha256": "d292d1972ff9de8641c52e3bff41fa0d5ba012c3fd0a1b6514f49e4a5f29fced",
+        "rasterizer_sha256": "d292d1972ff9de8641c52e3bff41fa0d5ba012c3fd0a1b6514f49e4a5f29fced",
+        "family": "Sinmyeong Dinaru",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TEDNRHG.otf",
+        "source_sha256": "00eae1decfbbee1f2344ff95ec396eacd7581a70d65849a3305d3e2df5137b13",
+        "rasterizer_sha256": "00eae1decfbbee1f2344ff95ec396eacd7581a70d65849a3305d3e2df5137b13",
+        "family": "Sinmyeong Dinaru",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TETGTEN.otf",
+        "source_sha256": "201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3",
+        "rasterizer_sha256": "201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3",
+        "family": "Sinmyeong Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TETGTHG.otf",
+        "source_sha256": "dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3",
+        "rasterizer_sha256": "dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3",
+        "family": "Sinmyeong Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TETGTHJ.otf",
+        "source_sha256": "99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27",
+        "rasterizer_sha256": "99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27",
+        "family": "Sinmyeong Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "TETGTJP.otf",
+        "source_sha256": "0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631",
+        "rasterizer_sha256": "0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631",
+        "family": "Sinmyeong Taegothic",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "USER.otf",
+        "source_sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece",
+        "rasterizer_sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece",
+        "family": "Myeongjo",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      },
+      {
+        "file": "batang.ttc",
+        "source_sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+        "rasterizer_sha256": "d1b08b64aa81f0d5a131c64e4ba8b6352842cfbe9822e61f91bd6efb4c0787a1",
+        "family": "Batang",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "batang.ttc",
+        "source_sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+        "rasterizer_sha256": "f42c29a06c7261a960842300eecfa4e510aecd4c846da4fd3f478517c960e27e",
+        "family": "BatangChe",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "batang.ttc",
+        "source_sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+        "rasterizer_sha256": "fe77a9e847828e8fc30a01b2706a314e8746d5137d93c5dc4616a5dc0d0707d1",
+        "family": "Gungsuh",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      },
+      {
+        "file": "batang.ttc",
+        "source_sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+        "rasterizer_sha256": "93db97eb8ecb6fbac5b72e9f57feea46884f77010393746a8d25c89aff915ca7",
+        "family": "GungsuhChe",
+        "weight": 400,
+        "style": "normal",
+        "repairs": [
+          "cmap-format4-terminal-notdef",
+          "drop-embedded-bitmap-strikes"
+        ]
+      }
+    ]
+  },
+  {
+    "run": "protected-wasm-reference-v3",
+    "document": "cdacd874b6e6ac66",
+    "fonts": [
+      {
+        "file": "LatinModernMath-VariableOutline-subset.otf",
+        "source_sha256": "c3b70b3a6ad5d7b03fb9c86067b6fc212b3a084870a9acff13238190137bf260",
+        "rasterizer_sha256": "c3b70b3a6ad5d7b03fb9c86067b6fc212b3a084870a9acff13238190137bf260",
+        "family": "RHWP LMM Variable Outline",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      }
+    ]
+  },
+  {
+    "run": "protected-wasm-reference-v3",
+    "document": "d03a9dde3d5dc7ac",
+    "fonts": [
+      {
+        "file": "LatinModernMath-VariableOutline-subset.otf",
+        "source_sha256": "c3b70b3a6ad5d7b03fb9c86067b6fc212b3a084870a9acff13238190137bf260",
+        "rasterizer_sha256": "c3b70b3a6ad5d7b03fb9c86067b6fc212b3a084870a9acff13238190137bf260",
+        "family": "RHWP LMM Variable Outline",
+        "weight": 400,
+        "style": "normal",
+        "repairs": []
+      }
+    ]
+  }
+]

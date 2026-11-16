@@ -1,0 +1,73 @@
+{
+  "key": "ws-host",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2
+  ],
+  "completed_pages": [
+    1,
+    2
+  ],
+  "missing_pages": [],
+  "tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/base-common-pages/wasm/ws-host/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-wasm/ws-host/silhouette-parts/p0001-0001/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "e71d4c289f1d3e0855a6b5d8d5f7f4c4d889972d3fcef744ed3d27d0af820e59",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-wasm/ws-host/silhouette-parts/p0001-0001/pdf_png/pdf-001.png",
+      "pdf_sha256": "7e9b3e355e29663ee2b76e6fda91f24973fef62e943c2e5bc89e772b5521730d"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-wasm/ws-host/silhouette-parts/p0002-0003/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "984cd23f6667c4073f34296f8639c5575ac6ec365ccb47ec4eda17a2f4292d3b",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-wasm/ws-host/silhouette-parts/p0002-0003/pdf_png/pdf-002.png",
+      "pdf_sha256": "99713f4f79ca16dc1a69634ef5b70ea7617ddec4fd56258327b080d08c3bfc01"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 91.78661,
+      "silhouette_raw_unmatched_pixels": 12434,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 151387,
+      "tolerant_content_match_percent": 91.78661
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 92.59694,
+      "silhouette_raw_unmatched_pixels": 9596,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 129622,
+      "tolerant_content_match_percent": 92.59694
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "re_review_required",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 3,
+      "pdf": 2
+    },
+    "page_count_mismatch": true
+  }
+}

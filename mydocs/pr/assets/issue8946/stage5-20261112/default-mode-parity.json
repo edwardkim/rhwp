@@ -1,0 +1,41 @@
+{
+  "default-none": {
+    "pages": 763,
+    "tree_and_png_identical": true
+  },
+  "default-omitted": {
+    "pages": 763,
+    "tree_and_png_identical": true
+  },
+  "default-host": {
+    "pages": 763,
+    "tree_and_png_identical": true
+  },
+  "original-none": {
+    "pages": 763,
+    "tree_and_png_identical": true
+  },
+  "original-omitted": {
+    "pages": 763,
+    "tree_and_png_identical": true
+  },
+  "original-host": {
+    "pages": 763,
+    "tree_and_png_identical": true
+  },
+  "hwp3-none": {
+    "pages": 763,
+    "tree_and_png_identical": true,
+    "linked_images_supplied": 3
+  },
+  "hwp3-omitted": {
+    "pages": 763,
+    "tree_and_png_identical": true,
+    "linked_images_supplied": 3
+  },
+  "hwp3-host": {
+    "pages": 763,
+    "tree_and_png_identical": true,
+    "linked_images_supplied": 3
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "measurement": "PDFium FPDFText_GetCharOrigin converted 72pt to96CSS; public getPageTextLayout charX JSON rounded0.1CSS",
+  "source": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+  "rows": [
+    {
+      "format": "hwp",
+      "rhwp_char_origins_css": [
+        324.7,
+        324.7,
+        324.7
+      ],
+      "independent_Print_char_origins_css": [
+        324.4641520182292,
+        324.4641520182292,
+        324.4641520182292
+      ],
+      "difference_css": [
+        0.23584798177080302,
+        0.23584798177080302,
+        0.23584798177080302
+      ],
+      "maximum_absolute_difference_css": 0.23584798177080302
+    },
+    {
+      "format": "hwpx",
+      "rhwp_char_origins_css": [
+        324.7,
+        324.7,
+        324.7
+      ],
+      "independent_Print_char_origins_css": [
+        324.4641520182292,
+        324.4641520182292,
+        324.4641520182292
+      ],
+      "difference_css": [
+        0.23584798177080302,
+        0.23584798177080302,
+        0.23584798177080302
+      ],
+      "maximum_absolute_difference_css": 0.23584798177080302
+    }
+  ],
+  "visual_raster_comparison": "pending"
+}
