@@ -3958,7 +3958,10 @@ impl LayoutEngine {
                             // [PK-40987] 비글자처럼 표(글 앞으로·글 뒤로·자리차지, 문단 기준 위)도 바깥
                             // 여백까지 내용 높이에 든다(웹한글기안기 인쇄 실측: 끝 문단 표 바닥 + 바깥
                             // 아래 여백까지 가운데 정렬 높이). 종전에는 그림·도형만 넣어 내용을 낮게 잡았다.
-                            if let Control::Table(table) = ctrl {
+                            // 저장 줄 없는 글상자는 아래에서 배치한 흐름으로 다시 정렬하므로 표를 넣지
+                            // 않는다(종전 동작. 결재 칸처럼 음수 오프셋 글 앞으로 표가 정렬 높이를 바꾸면
+                            // 웹한글기안기와 어긋난다).
+                            if let (false, Control::Table(table)) = (align_by_laid_out_flow, ctrl) {
                                 if let Some(bottom) = textbox_stored_table_bottom_hu(table) {
                                     // 띠가 앵커 줄을 민 자리차지 표는 앞 문단 끝이 문단 위끝이다.
                                     let lift = if table.common.text_wrap == TextWrap::TopAndBottom {
