@@ -6622,6 +6622,7 @@ impl LayoutEngine {
                     self.profile.get().stored_geometry_policy(),
                     self.profile.get().native_hwp5_layout(),
                     &self.single_line_overflow_cache,
+                    cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
                     |nested| self.nested_table_body_height(nested, styles),
                 );
                 comp
