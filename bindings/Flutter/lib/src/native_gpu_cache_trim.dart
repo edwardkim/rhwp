@@ -55,7 +55,11 @@ final class NativeGpuCacheTrimResult {
       'invalidCacheTrimReply',
       'GPU cache trim receipt does not match its owner, request or byte totals.',
     );
-    NativeGpuCacheTrimResult member(Map item, int expectedTexture) {
+    NativeGpuCacheTrimResult member(
+      Map item,
+      int expectedTexture, {
+      bool aggregate = false,
+    }) {
       int integer(String key) {
         final field = item[key];
         if (field is! int || field < 0 || field > 0x7fffffffffffffff) {
@@ -76,6 +80,13 @@ final class NativeGpuCacheTrimResult {
           item['reason'] is! String ||
           after > before ||
           trimmed != before - after) {
+        throw invalid();
+      }
+      if ((item['pending'] == true && item['busy'] != true) ||
+          (!aggregate &&
+              item['pending'] == false &&
+              item['busy'] == false &&
+              after > targetBytes)) {
         throw invalid();
       }
       return NativeGpuCacheTrimResult._(
@@ -100,7 +111,11 @@ final class NativeGpuCacheTrimResult {
         targetBytes > maxTargetBytes) {
       throw invalid();
     }
-    final root = member(value, textureId);
+    final root = member(
+      value,
+      textureId,
+      aggregate: memberTextureIds.isNotEmpty,
+    );
     if (memberTextureIds.isEmpty) {
       if (value.containsKey('members') || value.containsKey('groupId')) {
         throw invalid();

@@ -210,6 +210,8 @@ void main() {
     {'reason': false},
     {'scope': 'processVram'},
     {'members': []},
+    {'pending': true, 'busy': false},
+    {'after': 1, 'trimmed': 8191},
   ]) {
     test('malformed trim metadata $mutation is rejected', () {
       expect(
@@ -682,8 +684,9 @@ void main() {
         if (next != null) expect(next.canDisplay, isTrue);
       } finally {
         if (!gate.isCompleted) gate.complete();
-        if (next != null)
+        if (next != null) {
           await cleanup(tester, next, nextDocument!, nextPlugin);
+        }
         await cleanup(tester, controller, document, plugin);
       }
     });
