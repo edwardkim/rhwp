@@ -1,0 +1,13 @@
+{
+  "purpose": "실제로 실행한 프로필 원문과 hash의 증거; 일반 기여자에게 이 Mac 경로를 요구하는 지침이 아님",
+  "profiles": {
+    "profile-before-redistributable.sb": {
+      "sha256": "ecf7f95bd5c60f290f85d1acf33d8c09bf26c55b1346e2f85ec1097d627e68a7",
+      "content": "(version 1)\n(allow default)\n(deny mach-lookup (global-name \"com.apple.fonts\") (global-name \"com.apple.fonts.atsbridge\"))\n(deny file-read-data (require-all (regex #\".*\\.([tT][tT][fF]|[oO][tT][fF]|[tT][tT][cC]|[oO][tT][cC]|[wW][oO][fF][fF]2?)$\")\n (require-not (subpath \"/System/Library/Fonts\"))\n (require-not (subpath \"/System/Library/PrivateFrameworks/FontServices.framework/Resources/Reserved\"))\n (require-not (subpath \"/Users/tsjang/rhwp/assets/fonts\"))\n (require-not (subpath \"/Users/tsjang/rhwp/tests/fixtures\"))\n (require-not (subpath \"/Users/tsjang/rhwp/vendor/rhwp-pdf-import-backend/src/fonts/assets\"))\n (require-not (subpath \"/Users/tsjang/rhwp/ttfs/opensource\"))\n (require-not (subpath \"/Users/tsjang/rhwp/output/pr-review/regression-temp\"))\n))\n(deny file-read-data (subpath \"/Users/tsjang/Library/Fonts\") (subpath \"/Library/Fonts\") (subpath \"/Network/Library/Fonts\"))\n"
+    },
+    "profile-v3.sb": {
+      "sha256": "dab5a29efd05b091cf0308729b49d34c7922ea399dc823d70457cde0c1367e8c",
+      "content": "(version 1)\n(allow default)\n(deny mach-lookup (global-name \"com.apple.fonts\") (global-name \"com.apple.fonts.atsbridge\"))\n(deny file-read-data (require-all (regex #\".*\\.([tT][tT][fF]|[oO][tT][fF]|[tT][tT][cC]|[oO][tT][cC]|[wW][oO][fF][fF]2?)$\")\n (require-not (subpath \"/System/Library/Fonts\"))\n (require-not (subpath \"/System/Library/PrivateFrameworks/FontServices.framework/Resources/Reserved\"))\n (require-not (subpath \"/Users/tsjang/rhwp/assets/fonts\"))\n (require-not (subpath \"/Users/tsjang/rhwp/tests/fixtures\"))\n (require-not (subpath \"/Users/tsjang/rhwp/vendor/rhwp-pdf-import-backend/src/fonts/assets\"))\n (require-not (subpath \"/Users/tsjang/rhwp/ttfs/opensource\"))\n (require-not (subpath \"/Users/tsjang/rhwp/ttfs/redistributable/happiness-sans\"))\n (require-not (subpath \"/Users/tsjang/rhwp/output/pr-review/regression-temp\"))\n))\n(deny file-read-data (subpath \"/Users/tsjang/Library/Fonts\") (subpath \"/Library/Fonts\") (subpath \"/Network/Library/Fonts\"))\n"
+    }
+  }
+}

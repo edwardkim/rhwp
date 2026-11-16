@@ -123,3 +123,14 @@ Native Skia 별도 범위·lint·fresh WASM·전쪽 보호 및 실제 소비 검
 않았습니다. [실제 표시 PNG](ureq-native-font-cold.png)에서 한글·라틴·숫자·문장부호를 판독했습니다.
 이는 HTTP·decode·캐시·Native 소비 확인이며 독립 PDF 일치율이나 Visual Sweep 증거를 대신하지
 않습니다. 개인 폰트·시스템 네트워크 설정은 바꾸지 않았고 다운로드 글꼴 바이너리는 Git에 넣지 않습니다.
+
+## Rust 게이트 전체 완료와 격리 증거 보존
+
+[순차 Rust 게이트15개](rust-gates-validation.json)는 fmt·release build/lib·전체 nextest·
+Native Skia3종·Native/WASM Clippy·workspace build/all-target Clippy·Native all-target Clippy·
+doc test와 suite 정책까지 모두 exit0로 완료했습니다. 실제 `cargo test --doc` 명령을 사용했습니다.
+제품·테스트 입력은 runner 시작 source와 동일합니다. 개인 CoreText 목록도 종료 후 다시 비교해
+1,890face가 그대로임을 확인했습니다. 실제 사용한 프로필 원문과 hash를
+[프로필 snapshot](minimal-font-profile-snapshots.json)에, 격리 환경의 OS528face 목록을
+[CoreText TSV](minimal-coretext-os-faces.tsv)에 보존합니다. 일반 기여자에게 이 Mac 경로나
+비공개 폰트를 요구하는 정책 변경은 아닙니다.
