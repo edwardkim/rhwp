@@ -1,0 +1,25 @@
+{
+  "decided_at": "2026-11-16T13:21:32.855981+09:00",
+  "user_instruction": "추가 질문 없이 확보 자료와 실제 재현으로 판단",
+  "unavailable_historical_gulim_sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12",
+  "historical_file_identity_confirmed": false,
+  "decision": "현재 공식 보호 baseline과 동일 입력·PDF의 전쪽 재출력으로 공급 환경을 검증한다. 원본 파일 hash 일치로 잘못 기록하거나 보호 점수·판정 문턱을 완화하지 않는다.",
+  "observed_base_nested": {
+    "phase": "base",
+    "key": "nested",
+    "exit": 0,
+    "seconds": 20.679,
+    "binary_sha256": "fccca6a5d7abc8f803ec3522501be1a79b2d36eedbd5e70ee49dcc977420c98e",
+    "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+    "pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+    "pages": 17,
+    "expected_pages": 17,
+    "minimum": "99.86",
+    "declines": [],
+    "below90": [],
+    "tsv": "output/pr-review/dependabot-integration-20261116/protected/base/nested/silhouette.tsv",
+    "tsv_sha256": "4144f4d00c98c54b8c35b26309c00c86caedeee413aa78059bef0bc231ae1fcc",
+    "passed": true
+  },
+  "candidate_and_fresh_wasm": "현재 검증 대기이며 완료로 간주하지 않음"
+}

@@ -6,5 +6,7 @@
   "profile_sha256": "ecf7f95bd5c60f290f85d1acf33d8c09bf26c55b1346e2f85ec1097d627e68a7",
   "private_programs_tested": 183,
   "private_programs_denied": 183,
-  "public_bundled_allowance": "vendor/rhwp-pdf-import-backend/src/fonts/assets existing licensed DejaVu/Droid/Noto"
+  "public_bundled_allowance": "vendor/rhwp-pdf-import-backend/src/fonts/assets existing licensed DejaVu/Droid/Noto",
+  "normal_before_after_equal": true,
+  "personal_font_registry_unchanged": true
 }
