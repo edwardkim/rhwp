@@ -1,5 +1,5 @@
 {
-  "status": "failed_protected_declines",
+  "status": "passed_whole_tsv",
   "producer_source": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
   "baseline": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
   "baseline_sha256": "2280e97844b2cb262ea73e9c49f09f56c434097fed49af75fd9a7f6198d43da7",
@@ -8,15 +8,7 @@
   "documents_per_backend": 18,
   "pages_per_backend": 1771,
   "total_rows": 3542,
-  "decreases": [
-    {
-      "key": "sample10",
-      "backend": "wasm",
-      "page": "757",
-      "before": "99.57",
-      "after": "99.56"
-    }
-  ],
+  "decreases": [],
   "rises": [],
   "records": [
     {
@@ -268,8 +260,8 @@
       "minimum": "99.57",
       "tsv": "mydocs/pr/assets/all_open_prs_20261116/final-protected-native/sample10.tsv",
       "tsv_sha256": "248740c943667ee2121afdfc125ed838ae7e196e1c90265284613afc48f508bd",
-      "producer_tsv": "mydocs/pr/assets/all_open_prs_20261116/final-protected-native/sample10.tsv",
-      "condition_phase": "native-final"
+      "producer_tsv": "output/pr-review/all-open-pr-integration-20261116/final-visual-matrix/sample10-native-provider-whole-head/sample10/sample10/silhouette.tsv",
+      "condition_phase": "sample10-native-provider-whole-head"
     },
     {
       "key": "angle-narrow",
@@ -517,12 +509,13 @@
       "pdf": "pdf/issue8371/hwp3-sample10-2020.pdf",
       "pdf_sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
       "pages": 763,
-      "minimum": "99.56",
+      "minimum": "99.57",
       "tsv": "mydocs/pr/assets/all_open_prs_20261116/final-protected-wasm/sample10.tsv",
-      "tsv_sha256": "e5623efdcc4d4dcb4e1d0504ea383c867c5e40973a3bfcb0b93335f5bd38d912",
-      "producer_tsv": "output/pr-review/all-open-pr-integration-20261116/final-visual-matrix/protected-wasm/sample10/sample10/silhouette.tsv",
-      "condition_phase": "protected-wasm"
+      "tsv_sha256": "f0ff5f22ed2dfb65f1063f73a3b80fad44ba4f331d714a4acc16657628498de5",
+      "producer_tsv": "output/pr-review/all-open-pr-integration-20261116/final-visual-matrix/sample10-explicit-supply-whole-head/sample10/sample10/silhouette.tsv",
+      "condition_phase": "sample10-explicit-supply-whole-head"
     }
   ],
-  "direct_reading": "Representative direct review/overlay confirmation is recorded separately; whole TSV pass does not alone prove it."
+  "direct_reading": "Representative direct review/overlay confirmation is recorded separately; whole TSV pass does not alone prove it.",
+  "condition_reproduction": "sample10 uses exact original supplied program files and automatic program selection; 14 inactive Windows programs are not required by any actual paint request on either whole run"
 }

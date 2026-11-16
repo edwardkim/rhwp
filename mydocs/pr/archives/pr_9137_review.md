@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**머지 보류 — 데스크톱 Print와 저장 앵커·표 바깥 여백 경계를 검증 중이다.**
+**메인터너 보정 후 수용 가능.** 제한/비제한 머리 경계와 본문 커서의 공용 프레임 소비를 보정하고, 부적합한 고정 좌표 검사를 원본 저장값의 관계 검사로 교체한 통합 후보를 검증했다. 보정 SHA를 포함한 통합 PR의 최신 CI와 mergeability를 확인한 뒤 통합한다.
 
 ## 접수 정보와 범위
 
@@ -42,10 +42,10 @@ Native/fresh WASM 모두 100.00%다. 기존 저장 줄 검사 3건과 새 관계
 [overlay](../assets/all_open_prs_20261116/frame-boundary-validation/restricted-header/native/overlay_001.png),
 [WASM review](../assets/all_open_prs_20261116/frame-boundary-validation/restricted-header/wasm/review_001.png)·
 [overlay](../assets/all_open_prs_20261116/frame-boundary-validation/restricted-header/wasm/overlay_001.png)를 보존했다.
-전체 원 PR 입력·정본 보호·전체 회귀가 남아 있어 최종 판정은 계속 보류다.
+전체 원 PR 입력·정본 보호·전체 회귀도 아래 최종 검증으로 완료했다.
 
 
-## 통합 후보 최종 소스의 중간 검증 결과
+## 통합 후보의 최종 로컬 검증 결과
 
 제품 소스 `167921b3c5`와 검증 head `3e9ce11f9c`에서 최소 글꼴 macOS 전체 회귀는
 **13,696 PASS·0 FAIL·45 skip**이다. Native Skia·세 Clippy·workspace build·fmt·
@@ -63,8 +63,11 @@ suite 정책·unit tier·문서 테스트를 포함한 [Rust 13단계](../assets
 각각 상승 59쪽·하락 0쪽이다. [공통 보호 8조건·명시적 편람 383쪽](../assets/all_open_prs_20261116/public-gates-final.json)도 통과했다.
 [실제 소비](../assets/all_open_prs_20261116/actual-consumers-final.json)는 Native PNG 16개·브라우저 48개를
 실행했고 runtime fallback/replay hard 위반은 없다. report-only 최소 잉크량 32 FAIL과 자동 선택
-readiness 미실행은 그대로 공개하며 통과로 바꾸지 않았다. 정본 전체 비교의 원본 글꼴 공급 재현을
-최종 확인 중이므로 아직 통합 PR 준비 완료나 머지 승인으로 기록하지 않는다.
+readiness 미실행은 그대로 공개하며 통과로 바꾸지 않았다. [정본 전쪽 보호](../assets/all_open_prs_20261116/protected-final.json)는
+Native/fresh WASM 18문서씩 총 3,542행에서 하락·누락 0쪽으로 완료했다. 상승도 0쪽이므로
+정본 하한을 변경하지 않았다. [sample10 원본 공급 재현](../assets/all_open_prs_20261116/sample10-original-supply-validation.json)의
+base/후보 Native/WASM 네 실행은 각각 전 763쪽 최저 99.57%·보호 하락 0쪽이다.
+로컬 필수 검증은 완료했으며 통합 PR 게시 뒤 최신 head CI·병합·후속 처리는 별도 확인한다.
 
 
 
@@ -93,3 +96,6 @@ readiness 미실행은 그대로 공개하며 통과로 바꾸지 않았다. 정
 비교하도록 교체했다. T1→T2→표/BOX→A1→A2의 순서·포함도 함께 확인한다.
 이는 측정 좌표 핀이 아니라 원본 단위의 소비 관계다. 제품 코드·PDF·시각 기준은 바꾸지 않았다.
 이 검사 변경의 집중 실행과 최종 최소 글꼴 전체 회귀·lint 결과를 확인한 뒤 최종 판정을 갱신한다.
+
+보정 SHA는 `e4ca059525`(제한 프레임), `167921b3c5`(본문 커서 공유), `af0a5b9519`(기존 함수의 관계 검사)다.
+97%대 `_pushed`는 고정 px 핀 대신 저장 줄 끝·원본 오프셋·표 바깥 여백과 실제 포함·순서를 보호한다.

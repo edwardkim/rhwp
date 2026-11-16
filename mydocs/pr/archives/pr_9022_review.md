@@ -2,8 +2,7 @@
 
 ## 최종 판정
 
-**머지 보류 — 통합 후보 검증 진행 중.** 원 head의 두 그림 호스트 반례를 메인터너 보정했으며
-관련 전쪽 Native/fresh WASM, 기존 행 높이·쪽 나눔 계약과 보호 문서 검증을 마쳐야 한다.
+**메인터너 보정 후 수용 가능.** 두 그림 호스트·사진 행 보정을 포함한 통합 후보에서 원 PR 범위와 필수 로컬 검증을 완료했다. 원 contributor head를 직접 병합하지 않으며, 통합 PR 최신 head의 CI 성공과 mergeability를 확인한 뒤 통합한다.
 
 ## 접수 정보와 범위
 
@@ -22,8 +21,8 @@
 [원인·독립 Print 출처](../assets/all_open_prs_20261116/picture-host-cause.md)를 따른다.
 
 보정 후 Native는 두 host 반례와 원 PR의 그림 칸 5종, 총 6쪽에서 각각 100.00%다.
-이는 아직 fresh WASM 또는 사진 행·결재 원본 전부의 수용 결과가 아니다.
-원본 HWP/HWPX와 신규 Print PDF의 전체 쪽수·내용 순서·겹침·칸 포함·누락/중복을 확인한다.
+이 초기 집중 실행 뒤 fresh WASM과 사진 행·결재 원본 전쪽도 아래 최종 집계에서 확인했다.
+원본 HWP/HWPX와 신규 Print PDF의 전체 쪽수·내용 순서·겹침·칸 포함·누락/중복을 확인했다.
 TAC float 회피와 #8939 저장 줄 높이 보존의 충돌 해소 내용은
 [접수·충돌 분석](../assets/all_open_prs_20261116/intake-analysis.md)에 기록했다.
 
@@ -51,10 +50,10 @@ Native/fresh WASM 모두 100.00%다. 제목 뒤 사진 행 원본도 전 3쪽 �
 [review](../assets/all_open_prs_20261116/frame-boundary-validation/two-hosts/native/review_001.png)·
 [overlay](../assets/all_open_prs_20261116/frame-boundary-validation/two-hosts/native/overlay_001.png),
 [사진 행 원인과 결과](../assets/all_open_prs_20261116/title-photo-cause.md)를 따른다.
-이 집중 결과를 전체 66종·보호 문서·전체 회귀 완료로 확대하지 않는다.
+전체 66종·보호 문서·전체 회귀는 이 집중 실행과 별도로 아래 최종 집계에서 확인했다.
 
 
-## 통합 후보 최종 소스의 중간 검증 결과
+## 통합 후보의 최종 로컬 검증 결과
 
 제품 소스 `167921b3c5`와 검증 head `3e9ce11f9c`에서 최소 글꼴 macOS 전체 회귀는
 **13,696 PASS·0 FAIL·45 skip**이다. Native Skia·세 Clippy·workspace build·fmt·
@@ -72,5 +71,10 @@ suite 정책·unit tier·문서 테스트를 포함한 [Rust 13단계](../assets
 각각 상승 59쪽·하락 0쪽이다. [공통 보호 8조건·명시적 편람 383쪽](../assets/all_open_prs_20261116/public-gates-final.json)도 통과했다.
 [실제 소비](../assets/all_open_prs_20261116/actual-consumers-final.json)는 Native PNG 16개·브라우저 48개를
 실행했고 runtime fallback/replay hard 위반은 없다. report-only 최소 잉크량 32 FAIL과 자동 선택
-readiness 미실행은 그대로 공개하며 통과로 바꾸지 않았다. 정본 전체 비교의 원본 글꼴 공급 재현을
-최종 확인 중이므로 아직 통합 PR 준비 완료나 머지 승인으로 기록하지 않는다.
+readiness 미실행은 그대로 공개하며 통과로 바꾸지 않았다. [정본 전쪽 보호](../assets/all_open_prs_20261116/protected-final.json)는
+Native/fresh WASM 18문서씩 총 3,542행에서 하락·누락 0쪽으로 완료했다. 상승도 0쪽이므로
+정본 하한을 변경하지 않았다. [sample10 원본 공급 재현](../assets/all_open_prs_20261116/sample10-original-supply-validation.json)의
+base/후보 Native/WASM 네 실행은 각각 전 763쪽 최저 99.57%·보호 하락 0쪽이다.
+로컬 필수 검증은 완료했으며 통합 PR 게시 뒤 최신 head CI·병합·후속 처리는 별도 확인한다.
+
+보정 SHA: `dadfc954fef51162efda8732505ec4d42f32a5ec`(호스트 합집합), `b06037c142`(제목 뒤 사진 행).

@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**머지 보류 — 원본 세 건의 출력·편집·반복 저장과 기존 필드 경계를 검증 중이다.**
+**승인.** 한컴 저장 줄에서 FIELD_END 보조 슬롯 뒤 개체의 줄 소속과 변경 없는 두 형식 반복 저장을 확인했다. 값을 편집한 뒤 저장 줄 없는 TAC 표 재조판까지 해결한 판정은 아니다. 통합 PR의 최신 CI와 mergeability 확인은 병합 전 조건이다.
 
 ## 접수 정보와 범위
 
@@ -17,18 +17,18 @@
 기존 `mydocs/pr/assets/johndoekim-20261116/issue9058/`의 cursor/text 원본과
 `samples/issue9082/textbox_filled_field_tac_tables.hwp`를 검토한다. 같은 입력에 대응하는
 기존 한컴 2022 `Microsoft Print to PDF` 세 건은 새 사용자 지시에 따라 공식 기준에서 제외하고
-참고 자료로 보존한다. 같은 원본을 현행 MCP의 한컴 2020 `Hancom PDF` Print로 새로 확보한다.
+참고 자료로 보존한다. 같은 원본을 현행 MCP의 한컴 2020 `Hancom PDF` Print로 새로 확보했다.
 새 Print 세 건은 모두 MCP 수신을 완료했고 `Hancom PDF 1.3.0.550`·1쪽을 확인했다.
 [66건 Print 영수증](../assets/all_open_prs_20261116/mcp-print-references.json)에 원본/PDF SHA와
 실제 제품·job·출력 경로를 기록했다. 기존 Microsoft 기준의 측정값은 공식 결과로 재사용하지 않고
-새 Print로 재측정한다.
+새 Print로 재측정했다.
 저장 제품·직접 Print 제품·MCP engine을 혼동하지 않는다. 웹한글기안기 PDF도 공식 기준이 아니다.
 
 한컴에서 저장한 빈 필드·4자 값·1자 값 원본에서 FIELD_END 앞뒤·후행 컨트롤·글자 없는 문단의
 소속을 확인했다. HWP/HWPX 저장→재열기→재저장→재열기의 12회에서도 두 표의 위아래 순서와
 글상자 안 포함, 필드 값과 1쪽을 보존했다. 인접 #9074·#9021·#8199 계약은 전체 회귀에 포함된다.
 소스 UTF-16 위치와 저장 스트림 슬롯을 혼용하지 않고 같은 보조 슬롯 계산을 실제 composer와
-fallback 배치가 소비하는지 대조한다. Native/fresh WASM 전쪽 TSV와 직접 판독은 별도로 완료한다.
+fallback 배치가 소비하는지 대조한다. Native/fresh WASM 전쪽 TSV와 직접 판독도 완료했다.
 
 ## Merge 후 contributor PR comment 계획
 
@@ -37,7 +37,7 @@ fallback 배치가 소비하는지 대조한다. Native/fresh WASM 전쪽 TSV와
 범위만 종료하고, 이 PR을 통합한 사실과 남은 범위가 있으면 구분한다.
 
 
-## 통합 후보 최종 소스의 중간 검증 결과
+## 통합 후보의 최종 로컬 검증 결과
 
 제품 소스 `167921b3c5`와 검증 head `3e9ce11f9c`에서 최소 글꼴 macOS 전체 회귀는
 **13,696 PASS·0 FAIL·45 skip**이다. Native Skia·세 Clippy·workspace build·fmt·
@@ -55,8 +55,11 @@ suite 정책·unit tier·문서 테스트를 포함한 [Rust 13단계](../assets
 각각 상승 59쪽·하락 0쪽이다. [공통 보호 8조건·명시적 편람 383쪽](../assets/all_open_prs_20261116/public-gates-final.json)도 통과했다.
 [실제 소비](../assets/all_open_prs_20261116/actual-consumers-final.json)는 Native PNG 16개·브라우저 48개를
 실행했고 runtime fallback/replay hard 위반은 없다. report-only 최소 잉크량 32 FAIL과 자동 선택
-readiness 미실행은 그대로 공개하며 통과로 바꾸지 않았다. 정본 전체 비교의 원본 글꼴 공급 재현을
-최종 확인 중이므로 아직 통합 PR 준비 완료나 머지 승인으로 기록하지 않는다.
+readiness 미실행은 그대로 공개하며 통과로 바꾸지 않았다. [정본 전쪽 보호](../assets/all_open_prs_20261116/protected-final.json)는
+Native/fresh WASM 18문서씩 총 3,542행에서 하락·누락 0쪽으로 완료했다. 상승도 0쪽이므로
+정본 하한을 변경하지 않았다. [sample10 원본 공급 재현](../assets/all_open_prs_20261116/sample10-original-supply-validation.json)의
+base/후보 Native/WASM 네 실행은 각각 전 763쪽 최저 99.57%·보호 하락 0쪽이다.
+로컬 필수 검증은 완료했으며 통합 PR 게시 뒤 최신 head CI·병합·후속 처리는 별도 확인한다.
 
 
 

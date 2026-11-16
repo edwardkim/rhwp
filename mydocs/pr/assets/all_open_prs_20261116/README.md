@@ -3,7 +3,7 @@
 브랜치 `review/integration-20261116-open-prs`, 검증 base
 `53774cc1508591b6ac794950f0063452fbaf6e87`, 제품 소스
 `167921b3c52d78d3da180b746b22d91af9b3d3cc`의 검토 기록이다.
-2026-11-17 현재 아래 완료 항목과 진행 중 항목을 구분한다. 통합 PR 제출·CI·병합은 아직 완료하지 않았다.
+2026-11-17 현재 필수 로컬 검증을 완료했다. 통합 PR 제출·CI·병합은 아직 완료하지 않았다.
 
 ## 원 PR별 근거
 
@@ -33,7 +33,7 @@
   [Print 영수증](mcp-print-references.json)에 입력/PDF 해시·실제 제품·출력 경로를 연결했다.
   웹한글기안기·Microsoft Print to PDF의 원 PR 자료를 새 공식 점수로 재사용하지 않았다.
 - [고정 base 대비 fresh WASM](wasm-base-head-comparison.json): 원 PR 대상 66종·74쪽 중
-  상승 59쪽·하락 0쪽이다. 정본 보호 sample10의 별도 하락을 이 결과로 상쇄하지 않는다.
+  상승 59쪽·하락 0쪽이다. 정본 보호 검증은 별도 전쪽 실행으로 확인했다.
 - [검증 입력 커밋 감사](committed-input-audit.json): 66개 원본과 대응 PDF는 실행 바이트·HEAD의
   바이트·영수증 SHA가 모두 같고 PDF는 모두 50MiB 미만이다. 새 글꼴 바이너리를 넣지 않았다.
 - [Native 정본 보호](native-protected-final.json): **18문서·1,771쪽의 공식 두 자리 하락 0쪽**.
@@ -56,36 +56,35 @@ TAC 표를 폭으로 다시 나누지 못하는 현상은 [고정 base](public-a
 Native 99.97%, WASM 99.96%이며 Native 행을 WASM 기준으로 대체하지 않는다.
 보호 하한·점수·기준 PDF·2px 판정을 낮추거나 서로 다른 조건의 쪽별 최고값을 합치지 않는다.
 
-## 진행 중인 필수 항목
+## 최종 보호 판정과 실제 소비 경로
 
-Native/fresh WASM 정본 보호 36조건·3,542행의 [전쪽 대조](protected-final.json)는 완료했다.
-초기 Mac 전용 수동 환경의 sample10 WASM 757쪽 99.57%→99.56%는 **실패 기록**으로 보존한다.
-[같은 쪽 진단](sample10-p757-diagnosis/metrics.json),
-[review](sample10-p757-diagnosis/wasm/review/review_757.png)·
-[overlay](sample10-p757-diagnosis/wasm/overlay/overlay_757.png)를 보존하고 원인을 확인한다.
-현재 Native와 WASM의 미일치 화소는 각각 176개로 같지만 내용 합집합 화소 수가 달라 표시값이 갈린다.
-이는 이전 WASM 원본 PNG와의 동일성을 입증하지 않으며 하락을 면제하지 않는다.
+[Native/fresh WASM 정본 보호](protected-final.json)는 18문서씩 36조건·3,542행에서
+**공식 두 자리 하락 0쪽·상승 0쪽**이다. 보호 하한을 변경하지 않았다.
+[sample10 원본 공급 재현](sample10-original-supply-validation.json)은 base/후보 Native/WASM을
+각각 전 763쪽 측정해 최저 99.57%·보호 하락 0쪽을 확인했다. 원본 66개 프로그램은 동일 SHA로
+확보했고 미확보 14개 Windows 프로그램은 전쪽 실제 WASM 요청에 없음을 구분했다.
+Native는 원본 프로그램 선택과 독립 Print의 PUA 공급 선언을 함께 고정했다.
+일반 제품의 TTF→TTC→OTF/CFF 선택 순서는 변경하지 않았다.
 
-[고정 base 대비 Native](native-base-head-comparison.json)도 66종·74쪽 전체 대조를 마쳤으며
-2%p 초과 하락은 없다. [공개 공통 4문서 Native/WASM 8조건과 명시적 Native 편람 383쪽](public-gates-final.json)은
-모두 보호 하한을 통과했다.
+초기 잘못 공급한 Mac 환경의 757쪽 99.56%와 Native 자동 공급의 목차 98.25%는
+[이전 실패 집계](protected-before-original-supply.json)·[조건 분석](protected-condition-analysis.md)에
+진단 이력으로 보존하며 수용 결과로 재사용하지 않는다. 쪽별 최고값을 섞지 않았다.
 
+[고정 base 대비 Native](native-base-head-comparison.json)도 66종·74쪽에서 상승 59쪽·하락 0쪽이다.
+[공개 공통 4문서 Native/WASM 8조건과 명시적 Native 편람 383쪽](public-gates-final.json)은 통과했다.
 [실제 소비 경로](actual-consumers-final.json)는 Native PNG 16개·Studio 화면/Print 48개를 산출했고,
-CanvasKit 32개 캡처 모두 요청 backend를 사용했으며 runtime fallback·replay hard 위반은 없었다.
-Native↔CanvasKit 대조 16건은 통과했다. 별도의 report-only Canvas2D↔CanvasKit 대조 32건은
-축소 fixture에 맞지 않는 `minimumInkPixels` 조건 때문에 FAIL이며 통과로 표시하지 않는다.
-차이 예산은 모두 충족했고 자동 선택 readiness gate는 실행하지 않았다. 실제 같은 Print 페이지를
-네 출력 경로에서 직접 읽어 그림·표·문단 소속을 확인했다.
+CanvasKit 32개 캡처가 요청 backend를 사용했으며 runtime fallback·replay hard 위반은 없었다.
+Native↔CanvasKit 대조 16건은 통과했다. 별도 report-only Canvas2D↔CanvasKit 대조 32건은
+축소 fixture의 실제 잉크량이 복사된 `minimumInkPixels` 조건보다 작아 FAIL이며 통과로 바꾸지 않았다.
+차이 예산은 충족했고 자동 선택 readiness gate는 실행하지 않았다. 같은 Print 페이지를
+네 경로에서 직접 읽어 그림·표·문단 소속을 확인했다.
 
 초기 48건의 CDP WASM 본문이 진단 캐시에서 사라진 문제는 별도 실제 초기화 재실행으로 보완했다.
-Root pkg·Studio public·frozen JS/WASM과 실제 응답의 신원을 확인했다. Vite가 JS의 로컬 WASM URL과
-비실행 sourcemap을 바꾼 내역을 구분하며, WASM 응답은 원 바이트 해시가 일치했다.
+Root pkg·Studio public·frozen JS/WASM과 실제 응답의 신원을 확인했다. Vite의 JS 로컬 WASM URL과
+비실행 sourcemap 변경을 구분하며, WASM 응답은 원 바이트 해시가 일치했다.
 
-sample10은 이전 수용 기록의 직접 원본 프로그램 공급 방식으로 WASM base·후보의
-763쪽 전체가 각각 최저 99.57%·보호 하락 0쪽이었다. 정확히 확보한 원본 프로그램 66개와
-미확보 14개를 구분했으며, 전쪽의 실제 WASM paint 요청에는 미확보 계열이 없었다.
-Native 자동 공급 대조에서는 원 PUA 공급자를 명시하지 않아 목차 선 폭이 달라지는 것을 확인했다.
-[검증된 Native 공급자](sample10-native-provider-focus.json)를 같은 원본 프로그램에 명시하면
-base·후보의 2/474/757쪽 여섯 조건이 모두 보호 하한을 복원한다. 이 조건의 Native 전763쪽을
-추가 확인 중이며, 이전 자동 공급 실패·중단은 수용 결과로 사용하지 않는다. 관계형 검사 변경 뒤 최소 글꼴 전체 회귀·lint 재검증도
-완료했다. 남은 최종 결과를 확인하고 원 PR별 판정을 갱신한 뒤 통합 PR을 제출한다.
+## 제출 자료와 남은 원격 절차
+
+[66개 입력·독립 Print PDF·base/후보 Native/WASM TSV 색인](visual-evidence-index.md)에 전체 원문을 연결했다.
+개별 원 PR 판정은 로컬 검증 결과로 갱신했다. 통합 PR 최신 CI·병합·원 PR과 실제 해결 이슈의
+종료·duration·devel 동기화·정리는 아직 원격 실행 결과를 확인해야 하는 후속 단계다.

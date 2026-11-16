@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**머지 보류 — 독립 데스크톱 Print의 Native/fresh WASM 비교와 반복 저장 검증 진행 중.**
+**승인.** 판본별 물리 줄간격이라는 원 PR 범위를 독립 데스크톱 Print와 실제 편집·두 형식 반복 저장으로 확인했다. 검증한 통합 후보의 최신 GitHub CI와 mergeability 확인은 병합 전 조건이다.
 
 ## 접수 정보와 범위
 
@@ -16,7 +16,7 @@
 
 입력 `samples/issue8676/plain_{fixed,between}_v{12,14}.hwpx`의 저장 제품은 한컴 2020 계열이다.
 MCP engine 2020 Print를 사용하며, xmlVersion 1.4라는 이유로 2024 엔진으로 바꾸지 않는다.
-base의 1.4 입력 미달을 확인했으며 후보 출력은 별도 실행으로 판정한다.
+base의 1.4 입력 미달을 확인했으며 후보 출력은 별도 실행으로 판정했다.
 일반 노드와 switch/default의 실제 선택 경로, 백분율·판본 경계와 serializer 역변환을 대조한다.
 기존 #4898 기대값 변경도 독립 단위 근거와 반복 저장 결과로 검토한다.
 
@@ -31,7 +31,7 @@ base의 1.4 입력 미달을 확인했으며 후보 출력은 별도 실행으�
 #8676의 해결 범위를 확인한 뒤 원 PR과 완전 해결된 이슈를 종료한다.
 
 
-## 통합 후보 최종 소스의 중간 검증 결과
+## 통합 후보의 최종 로컬 검증 결과
 
 제품 소스 `167921b3c5`와 검증 head `3e9ce11f9c`에서 최소 글꼴 macOS 전체 회귀는
 **13,696 PASS·0 FAIL·45 skip**이다. Native Skia·세 Clippy·workspace build·fmt·
@@ -49,8 +49,11 @@ suite 정책·unit tier·문서 테스트를 포함한 [Rust 13단계](../assets
 각각 상승 59쪽·하락 0쪽이다. [공통 보호 8조건·명시적 편람 383쪽](../assets/all_open_prs_20261116/public-gates-final.json)도 통과했다.
 [실제 소비](../assets/all_open_prs_20261116/actual-consumers-final.json)는 Native PNG 16개·브라우저 48개를
 실행했고 runtime fallback/replay hard 위반은 없다. report-only 최소 잉크량 32 FAIL과 자동 선택
-readiness 미실행은 그대로 공개하며 통과로 바꾸지 않았다. 정본 전체 비교의 원본 글꼴 공급 재현을
-최종 확인 중이므로 아직 통합 PR 준비 완료나 머지 승인으로 기록하지 않는다.
+readiness 미실행은 그대로 공개하며 통과로 바꾸지 않았다. [정본 전쪽 보호](../assets/all_open_prs_20261116/protected-final.json)는
+Native/fresh WASM 18문서씩 총 3,542행에서 하락·누락 0쪽으로 완료했다. 상승도 0쪽이므로
+정본 하한을 변경하지 않았다. [sample10 원본 공급 재현](../assets/all_open_prs_20261116/sample10-original-supply-validation.json)의
+base/후보 Native/WASM 네 실행은 각각 전 763쪽 최저 99.57%·보호 하락 0쪽이다.
+로컬 필수 검증은 완료했으며 통합 PR 게시 뒤 최신 head CI·병합·후속 처리는 별도 확인한다.
 
 
 
@@ -77,3 +80,8 @@ readiness 미실행은 그대로 공개하며 통과로 바꾸지 않았다. 정
 입력·WASM·저장 바이트 SHA와 각 단계의 속성·피치를 기록했다. Node의 공개 API 구조 검증이며
 브라우저 Canvas 또는 픽셀 일치율 검증으로 표현하지 않는다. 독립 데스크톱 Print와 실제 화면은
 별도 전쪽 TSV·주장 페이지 증적을 따른다.
+
+공식 FIXED/BETWEEN_LINES 1.2/1.4 네 입력은 Native/fresh WASM 모두 100.00%이며,
+[공개 편집·반복 저장](../assets/all_open_prs_20261116/public-api-save-validation/linespacing-repeat-save-result.json)에서
+8개 형식 조건의 16회 재열기를 통과했다. AT_LEAST는 같은 비율 외 단위 분기를 사용하지만
+AT_LEAST의 별도 독립 Print 측정까지 실행한 것으로 확대하지 않는다.

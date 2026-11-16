@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**머지 보류 — 원 PR의 오프셋·바깥 여백·세로 정렬 경계를 독립 Print로 검증 중이다.**
+**승인.** 저장 줄 없는 글상자의 자리차지 표 흐름이라는 원 PR 범위를 같은 입력의 Native/fresh WASM 전쪽과 실제 소비 경로에서 확인했다. 통합 PR의 최신 CI와 mergeability 확인은 병합 전 조건이다.
 
 ## 접수 정보와 범위
 
@@ -21,8 +21,8 @@
 
 원 PR의 **웹한글기안기 PDF는 공식 대조 자료로 사용하지 않는다.** 동일 입력을 실제
 한컴 2020 Print로 출력하고 Native/fresh WASM 전쪽 TSV·내용·쪽수·직접 판독을 확인한다.
-기존 px 검사의 적합성은 이 독립 Print의 시각 선행 조건을 확인한 뒤 판정한다.
-실제 편집·반복 저장과 정상 대조군도 최종 검증에 포함한다.
+기존 px 검사의 적합성도 독립 Print의 시각 선행 조건과 대조했다.
+정상 대조군·반복 저장과 실제 backend 소비도 해당 범위에서 확인했다.
 
 ## Merge 후 contributor PR comment 계획
 
@@ -31,7 +31,7 @@
 #9108은 두 PR의 실제 해결 범위를 합쳐 완전 해결 여부를 확인한 뒤 처리한다.
 
 
-## 통합 후보 최종 소스의 중간 검증 결과
+## 통합 후보의 최종 로컬 검증 결과
 
 제품 소스 `167921b3c5`와 검증 head `3e9ce11f9c`에서 최소 글꼴 macOS 전체 회귀는
 **13,696 PASS·0 FAIL·45 skip**이다. Native Skia·세 Clippy·workspace build·fmt·
@@ -49,8 +49,11 @@ suite 정책·unit tier·문서 테스트를 포함한 [Rust 13단계](../assets
 각각 상승 59쪽·하락 0쪽이다. [공통 보호 8조건·명시적 편람 383쪽](../assets/all_open_prs_20261116/public-gates-final.json)도 통과했다.
 [실제 소비](../assets/all_open_prs_20261116/actual-consumers-final.json)는 Native PNG 16개·브라우저 48개를
 실행했고 runtime fallback/replay hard 위반은 없다. report-only 최소 잉크량 32 FAIL과 자동 선택
-readiness 미실행은 그대로 공개하며 통과로 바꾸지 않았다. 정본 전체 비교의 원본 글꼴 공급 재현을
-최종 확인 중이므로 아직 통합 PR 준비 완료나 머지 승인으로 기록하지 않는다.
+readiness 미실행은 그대로 공개하며 통과로 바꾸지 않았다. [정본 전쪽 보호](../assets/all_open_prs_20261116/protected-final.json)는
+Native/fresh WASM 18문서씩 총 3,542행에서 하락·누락 0쪽으로 완료했다. 상승도 0쪽이므로
+정본 하한을 변경하지 않았다. [sample10 원본 공급 재현](../assets/all_open_prs_20261116/sample10-original-supply-validation.json)의
+base/후보 Native/WASM 네 실행은 각각 전 763쪽 최저 99.57%·보호 하락 0쪽이다.
+로컬 필수 검증은 완료했으며 통합 PR 게시 뒤 최신 head CI·병합·후속 처리는 별도 확인한다.
 
 
 

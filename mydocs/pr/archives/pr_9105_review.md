@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**머지 보류 — 공개 가져오기·반복 저장 경로와 XML 표기 경계를 검증 중이다.**
+**메인터너 보정 후 수용 가능.** 작은따옴표·속성 공백의 원문 참조 누락을 보정한 통합 후보에서 실제 가져오기·두 형식 반복 저장과 전체 회귀를 통과했다. 원 contributor head 직접 병합 대신 보정 통합 PR의 최신 CI를 확인한다.
 
 ## 접수 정보와 범위
 
@@ -23,7 +23,7 @@
 속성 주변 공백 두 경우 모두 모델 참조는 대상 ID 11로 바뀌지만 원문에는 원본 ID 7이 남았다.
 최초 실행은 13/14건 중 11 PASS·2 FAIL이고 fail-fast로 1건이 미실행이다. 제품 실패와
 그에 앞선 진단 코드의 quick-xml API 컴파일 오류를 구분한다. 관련 검사는
-`tests/cases/issue_3587_block_import.rs`이며 보정 후 전체 집중 검사를 다시 실행한다.
+`tests/cases/issue_3587_block_import.rs`이며 보정 후 전체 집중 검사를 다시 실행했다.
 
 보정 후보는 quick-xml로 실제 태그·속성의 의미를 읽고, 검증한 `charPrIDRef` 값의 원문 범위만
 교체한다. 다른 속성·본문·따옴표·공백은 보존하고 원문/모델 불일치 거부를 유지한다.
@@ -44,7 +44,7 @@
 #9103의 전체 해결을 확인한 뒤 원 PR·이슈를 종료한다.
 
 
-## 통합 후보 최종 소스의 중간 검증 결과
+## 통합 후보의 최종 로컬 검증 결과
 
 제품 소스 `167921b3c5`와 검증 head `3e9ce11f9c`에서 최소 글꼴 macOS 전체 회귀는
 **13,696 PASS·0 FAIL·45 skip**이다. Native Skia·세 Clippy·workspace build·fmt·
@@ -62,8 +62,11 @@ suite 정책·unit tier·문서 테스트를 포함한 [Rust 13단계](../assets
 각각 상승 59쪽·하락 0쪽이다. [공통 보호 8조건·명시적 편람 383쪽](../assets/all_open_prs_20261116/public-gates-final.json)도 통과했다.
 [실제 소비](../assets/all_open_prs_20261116/actual-consumers-final.json)는 Native PNG 16개·브라우저 48개를
 실행했고 runtime fallback/replay hard 위반은 없다. report-only 최소 잉크량 32 FAIL과 자동 선택
-readiness 미실행은 그대로 공개하며 통과로 바꾸지 않았다. 정본 전체 비교의 원본 글꼴 공급 재현을
-최종 확인 중이므로 아직 통합 PR 준비 완료나 머지 승인으로 기록하지 않는다.
+readiness 미실행은 그대로 공개하며 통과로 바꾸지 않았다. [정본 전쪽 보호](../assets/all_open_prs_20261116/protected-final.json)는
+Native/fresh WASM 18문서씩 총 3,542행에서 하락·누락 0쪽으로 완료했다. 상승도 0쪽이므로
+정본 하한을 변경하지 않았다. [sample10 원본 공급 재현](../assets/all_open_prs_20261116/sample10-original-supply-validation.json)의
+base/후보 Native/WASM 네 실행은 각각 전 763쪽 최저 99.57%·보호 하락 0쪽이다.
+로컬 필수 검증은 완료했으며 통합 PR 게시 뒤 최신 head CI·병합·후속 처리는 별도 확인한다.
 
 ## 실제 공개 가져오기·저장 검사의 수집 확인
 
@@ -73,3 +76,5 @@ readiness 미실행은 그대로 공개하며 통과로 바꾸지 않았다. 정
 대상 ID 변경 → HWP/HWPX 저장·재열기·재저장의 원문/모델 참조 일치를 검사한다.
 번호 굵기·1500HU 크기, 글머리표 기울임·1200HU 크기와 다른 대상 ID로의 이동을 함께 보호한다.
 원본과 맞지 않는 opaque 원문 및 미지원 자원의 원자적 거부 검사도 같은 14건에 포함된다.
+
+원문 속성 보정 SHA는 `5d0bbeef10`이다. 전체 회귀에서도 [실제 가져오기 14건](../assets/all_open_prs_20261116/scope-test-coverage.json)의 PASS를 개별 확인했다.

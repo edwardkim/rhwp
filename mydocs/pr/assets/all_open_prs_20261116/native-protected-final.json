@@ -8,7 +8,7 @@
   "decreases": [],
   "rises": [],
   "official_display": "two decimals; no decreases",
-  "remaining": "WASM whole protection, explicit public/handbook gates, actual consumers and final PR gates",
+  "remaining": "Native/fresh WASM protection, public gates, handbook and actual consumers completed; remote integration CI and merge remain",
   "records": [
     {
       "key": "angle-narrow",
@@ -224,7 +224,8 @@
       "pdf_sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
       "tsv": "mydocs/pr/assets/all_open_prs_20261116/final-protected-native/sample10.tsv",
       "tsv_sha256": "248740c943667ee2121afdfc125ed838ae7e196e1c90265284613afc48f508bd",
-      "producer_tsv": "output/pr-review/all-open-pr-integration-20261116/final-visual-matrix/protected-native-symbol-corrected/sample10/sample10/silhouette.tsv"
+      "producer_tsv": "output/pr-review/all-open-pr-integration-20261116/final-visual-matrix/sample10-native-provider-whole-head/sample10/sample10/silhouette.tsv",
+      "font_condition_record": "mydocs/pr/assets/all_open_prs_20261116/sample10-original-supply-validation.json"
     }
   ]
 }
