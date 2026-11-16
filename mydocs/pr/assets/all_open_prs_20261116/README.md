@@ -52,6 +52,14 @@ Native 99.97%, WASM 99.96%이며 Native 행을 WASM 기준으로 대체하지 �
 
 ## 진행 중인 필수 항목
 
-fresh WASM 정본 보호 전쪽, 고정 base/후보의 두 출력 비교, 공개 공통 4조건,
-명시적 Native 편람 383쪽 gate와 실제 Native/Studio Canvas2D/지원 CanvasKit 소비 검증이 남아 있다.
+Native/fresh WASM 정본 보호 36조건·3,542행의 [전쪽 대조](protected-final.json)는 완료했다.
+현재 sample10 WASM 757쪽만 99.57%→99.56%로 내려가 보호 판정은 **실패**다.
+[같은 쪽 진단](sample10-p757-diagnosis/metrics.json),
+[review](sample10-p757-diagnosis/wasm/review/review_757.png)·
+[overlay](sample10-p757-diagnosis/wasm/overlay/overlay_757.png)를 보존하고 원인을 확인한다.
+현재 Native와 WASM의 미일치 화소는 각각 176개로 같지만 내용 합집합 화소 수가 달라 표시값이 갈린다.
+이는 이전 WASM 원본 PNG와의 동일성을 입증하지 않으며 하락을 면제하지 않는다.
+
+고정 base/후보의 두 출력 비교, 공개 공통 4조건, 명시적 Native 편람 383쪽 gate와
+실제 Native/Studio Canvas2D/지원 CanvasKit 소비 검증도 남아 있다.
 이 항목의 최종 결과·직접 판독을 확인하고 원 PR별 판정을 갱신한 뒤 통합 PR을 제출한다.
