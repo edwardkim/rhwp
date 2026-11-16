@@ -179,6 +179,7 @@ fn textbox_floating_table_offset_px(
     common: &CommonObjAttr,
     outer_margin_left: i16,
     outer_margin_top: i16,
+    unstored: bool,
     dpi: f64,
 ) -> Option<(f64, f64)> {
     let floating = matches!(
@@ -189,12 +190,29 @@ fn textbox_floating_table_offset_px(
         && common.horz_align == HorzAlign::Left;
     let vert = common.vert_rel_to == VertRelTo::Para && common.vert_align == VertAlign::Top;
     (!common.treat_as_char && floating && horz && vert).then(|| {
+        // 저장 줄 없는 자유 배치 표는 정렬할 글 흐름·바깥 여백을 소유하지 않는다.
+        let free = unstored && !common.flow_with_text;
+        let margin_left = if free {
+            0.0
+        } else {
+            f64::from(outer_margin_left)
+        };
+        let margin_top = if free {
+            0.0
+        } else {
+            f64::from(outer_margin_top)
+        };
         (
             // 부호 있는 저장 오프셋과 여백은 합계가 i32 범위를 넘을 수 있다.
             // f64는 이 정수 범위를 정확히 표현하므로 좌표를 자르거나 감싸지 않는다.
-            (common.horizontal_offset as i32 as f64 + f64::from(outer_margin_left)) * dpi
-                / HWPUNIT_PER_INCH,
-            (common.vertical_offset as i32 as f64 + f64::from(outer_margin_top)) * dpi
+            (common.horizontal_offset as i32 as f64 + margin_left) * dpi / HWPUNIT_PER_INCH,
+            (if unstored && common.flow_with_text {
+                // 글상자 안 영역 제한은 음수 문단 오프셋을 내용 위끝에서 제한한다.
+                f64::from((common.vertical_offset as i32).max(0))
+            } else {
+                common.vertical_offset as i32 as f64
+            } + margin_top)
+                * dpi
                 / HWPUNIT_PER_INCH,
         )
     })
@@ -1185,6 +1203,9 @@ impl LayoutEngine {
 
         let (mut shape_w, mut shape_h) =
             self.resolve_object_size(common, col_area, body_area, paper_area);
+        if let Some(required) = shape.restricted_textbox_table_height_hu() {
+            shape_h = shape_h.max(hwpunit_to_px(required, self.dpi));
+        }
 
         if shape
             .drawing()
@@ -3955,14 +3976,15 @@ impl LayoutEngine {
                                 total_content_height =
                                     total_content_height.max(hwpunit_to_px(bottom, self.dpi));
                             }
-                            // [PK-40987] 비글자처럼 표(글 앞으로·글 뒤로·자리차지, 문단 기준 위)도 바깥
-                            // 여백까지 내용 높이에 든다(웹한글기안기 인쇄 실측: 끝 문단 표 바닥 + 바깥
-                            // 아래 여백까지 가운데 정렬 높이). 종전에는 그림·도형만 넣어 내용을 낮게 잡았다.
-                            // 저장 줄 없는 글상자는 아래에서 배치한 흐름으로 다시 정렬하므로 표를 넣지
-                            // 않는다(종전 동작. 결재 칸처럼 음수 오프셋 글 앞으로 표가 정렬 높이를 바꾸면
-                            // 웹한글기안기와 어긋난다).
-                            if let (false, Control::Table(table)) = (align_by_laid_out_flow, ctrl) {
-                                if let Some(bottom) = textbox_stored_table_bottom_hu(table) {
+                            // 저장 줄 경로는 저장 표 프레임을 쓴다. 저장 줄 없는 제한 표는
+                            // 실제 행 하한과 두 바깥 여백을 포함하며 프레임 확장과 같은 값을 쓴다.
+                            if let Control::Table(table) = ctrl {
+                                let bottom = if align_by_laid_out_flow {
+                                    ShapeObject::restricted_textbox_table_bottom_hu(table)
+                                } else {
+                                    textbox_stored_table_bottom_hu(table)
+                                };
+                                if let Some(bottom) = bottom {
                                     // 띠가 앵커 줄을 민 자리차지 표는 앞 문단 끝이 문단 위끝이다.
                                     let lift = if table.common.text_wrap == TextWrap::TopAndBottom {
                                         textbox_stored_anchor_lift_hu(
@@ -4851,6 +4873,7 @@ impl LayoutEngine {
                             &table.common,
                             table.outer_margin_left,
                             table.outer_margin_top,
+                            align_by_laid_out_flow,
                             self.dpi,
                         )
                         .or_else(|| {
@@ -4957,7 +4980,15 @@ impl LayoutEngine {
                                     },
                                 )
                         } else {
-                            para_start_y + dy
+                            // 자유 배치 표는 글자의 가운데/아래 정렬 전 문단 원점을 유지한다.
+                            let free_table = align_by_laid_out_flow
+                                && !table.common.flow_with_text
+                                && floating_offset.is_some()
+                                && matches!(
+                                    table.common.text_wrap,
+                                    TextWrap::InFrontOfText | TextWrap::BehindText
+                                );
+                            para_start_y + dy - if free_table { vert_offset } else { 0.0 }
                         };
                         let table_y = inline_origin.map_or(fallback_y, |(_, y)| y);
                         let table_bottom = self.layout_embedded_table(
