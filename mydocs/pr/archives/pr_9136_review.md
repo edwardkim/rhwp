@@ -81,3 +81,13 @@ PR 본문·제목이 게시 payload와 같고 BOM이 없음을 확인했다. 전
 merge 후에는 duration 갱신 성공 또는 증거 부족 보류를 확인하고 운영 기록·devel sync를 마친다. #9133 완료 댓글·close, #8905의 기존 질문 답변, PR 결과 댓글과 전용 branch/worktree·root output 전체·사용 종료한 debug 정리를 사용자 승인 범위에서 수행한다. 병합 후 검증 CI는 시작하지 않는다.
 
 UI 댓글에는 실제 merge SHA로 고정한 `mydocs/working/assets/issue9133/rebase/after-page-800x360.png`와 결과 보고·이 리뷰를 연결한다. raw PNG 응답·해시를 검증하고 `--body-file`/구조화 API로 게시한 뒤 본문·이미지를 재조회한다. 문서 Visual Sweep의 지표나 Android Firefox 실기기 결과로 확대하지 않는다. 최종 원격 상태는 [PR #9136](https://github.com/edwardkim/rhwp/pull/9136)과 [이슈 #9133](https://github.com/edwardkim/rhwp/issues/9133)에서 확인한다.
+
+## 실제 병합 결과
+
+code candidate의 성공 결과를 문서 전용 head `207d25d0d8f84c7af6c579256160d9f6891ca986`에서 실제 재사용했다. [CI preflight](https://github.com/edwardkim/rhwp/actions/runs/43847527056/job/133231404444)는 `fast_pass=true`, `build-and-test-green:success`, candidate `15837c689f`를 반환했다. heavy worker는 정상 skip이며 최종 Build & Test·CodeQL·Render Diff·Adapter·Proptest·정책 status가 모두 성공했다. [trailing 실행 영수증](../assets/issue9133/trailing-ci-compact.json)을 참조한다.
+
+2026-11-16 19:20 KST, 최신 base `ae9277dda0`와 exact head를 다시 조회하고 자동 병합 tree `fd9329ab3f96276988e769b584313cb125731182`를 확인했다. 정상 merge commit `8c3a0ee4f510afe12cb30b72e1d624bbe73a21d7`의 실제 tree도 같다. admin·보호 설정 예외·수동 workflow 재실행은 사용하지 않았다. #9133은 자동 completed 종료됐다.
+
+후속 기록과 질문 답변·정리의 최종 상태는 [종료 원장](../assets/issue9133/closure.json)에 기록한다. 댓글용 merge SHA의 raw PNG는 HTTP 200·image/png·SHA-256을 실제 committed asset과 대조했다. [병합 게시 영수증](../assets/issue9133/merge-publication.json).
+
+[duration 자동 갱신](https://github.com/edwardkim/rhwp/actions/runs/43847929087)은 success다. 실제 로그에서 trailing·code CI 양쪽의 Rust worker가 비대상 skip임을 확인해 `ready=false`, `no-verified-pr-duration-measurements`로 새 metrics 게시를 보류했다. 기존 metrics는 보존했으며 병합 후 검증 workflow를 시작하지 않았다. 로컬 devel을 병합 커밋까지 fast-forward했다. 운영 기록을 게시하고 최종 devel 동기화를 확인한 뒤 완료 댓글과 종료 정리를 수행한다.

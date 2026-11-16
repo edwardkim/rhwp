@@ -1,0 +1,28 @@
+{
+  "pr": 9136,
+  "issue": 9133,
+  "mergeSha": "8c3a0ee4f510afe12cb30b72e1d624bbe73a21d7",
+  "codeHead": "15837c689f1a84eaba4661794dd7d8d70bc3f94a",
+  "trailingHead": "207d25d0d8f84c7af6c579256160d9f6891ca986",
+  "mergedAt": "2026-11-16T10:20:16Z",
+  "issueState": "closed",
+  "issueStateReason": "completed",
+  "issueClosedAt": "2026-11-16T10:20:33Z",
+  "duration": {
+    "runId": 43847929087,
+    "url": "https://github.com/edwardkim/rhwp/actions/runs/43847929087",
+    "status": "completed",
+    "conclusion": "success",
+    "ready": false,
+    "reason": "no-verified-pr-duration-measurements",
+    "explanation": "Trailing and code CI both correctly skipped Rust workers; no measurements were published; existing metrics preserved."
+  },
+  "comments": {
+    "status": "pending: operations records and devel sync precede posting"
+  },
+  "cleanup": {
+    "status": "pending: comments and usage checks precede deletion"
+  },
+  "postmergeValidationWorkflowsStarted": false,
+  "develSyncAtMerge": "8c3a0ee4f510afe12cb30b72e1d624bbe73a21d7"
+}
