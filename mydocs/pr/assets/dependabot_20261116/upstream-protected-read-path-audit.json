@@ -125,5 +125,24 @@
   ],
   "serializer_not_used_by_print_capture": true,
   "baseline_files_changed": [],
-  "decision": "자동 병합 충돌 없음·정본 기준 변경 없음·새 조판 분기의 보호18종 해당 문단0. 지침에 따라 단순 devel 전진만으로 반복 리베이스하지 않고 검증된 source/producer를 유지. PR 직전 head·base·merge simulation 재확인; exact merge CI에서 새 필드 기능의 회귀도 확인. 현행 devel 전체 기능을 후보 자체가 이미 포함한다고 주장하지 않음."
+  "decision": "자동 병합 충돌 없음·정본 기준 변경 없음·새 조판 분기의 보호18종 해당 문단0. 지침에 따라 단순 devel 전진만으로 반복 리베이스하지 않고 검증된 source/producer를 유지. PR 직전 head·base·merge simulation 재확인; exact merge CI에서 새 필드 기능의 회귀도 확인. 현행 devel 전체 기능을 후보 자체가 이미 포함한다고 주장하지 않음.",
+  "audit_binary_sha256": "309025aadb01355d6e38cb8c2f702989c8371ff5c23d03dbac6198aaaa860934",
+  "audit_linked_rlib_sha256": "093001681b83ad490207d51ea57e4f1949bc0320f0fe2afd9cc50e8710e07de6",
+  "positive_and_negative_control": [
+    {
+      "upstream_path": "samples/issue9076/textbox_unfilled_field_tac_tables.hwp",
+      "sha256": "cbab3774fedc4d9944cccf6b3e365ed147c8624375f6cffd3f301967f6f6570b",
+      "paragraphs": 33,
+      "textboxes": 1,
+      "new_predicate_matches": 1
+    },
+    {
+      "upstream_path": "samples/issue9076/textbox_unfilled_field_tac_tables_nofield.hwp",
+      "sha256": "055629eea0baa5ffe5090cf682357fc6278b34304c02cd8daefa12bd160099f9",
+      "paragraphs": 33,
+      "textboxes": 1,
+      "new_predicate_matches": 0
+    }
+  ],
+  "audit_program_is_sensitive_to_new_predicate": true
 }
