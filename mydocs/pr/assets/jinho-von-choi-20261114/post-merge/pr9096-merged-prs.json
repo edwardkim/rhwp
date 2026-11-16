@@ -1,0 +1,46 @@
+{
+  "9096": {
+    "number": 9096,
+    "state": "closed",
+    "merged": true,
+    "merged_at": "2026-11-15T13:48:56Z",
+    "merge_commit_sha": "e4f8ff2d637d5b0a313211455ae3ccc53444d969",
+    "html_url": "https://github.com/edwardkim/rhwp/pull/9096",
+    "head": "b6a91166761b212d8501faf70b4b13e19b26474e",
+    "headRef": "review/integration-20261114-jinho-parser-cli-fidelity",
+    "headRepo": "edwardkim/rhwp"
+  },
+  "9070": {
+    "number": 9070,
+    "state": "closed",
+    "merged": true,
+    "merged_at": "2026-11-15T13:48:58Z",
+    "merge_commit_sha": "50f19db3e21168a0d6f658c5034d146b01b17d9e",
+    "html_url": "https://github.com/edwardkim/rhwp/pull/9070",
+    "head": "8669ec6dc4b91a57d6af8e6b82dd391dff0832af",
+    "headRef": "task/8912-hwp3-parser-fixes",
+    "headRepo": "JinHo-von-Choi/rhwp"
+  },
+  "9071": {
+    "number": 9071,
+    "state": "closed",
+    "merged": true,
+    "merged_at": "2026-11-15T13:48:58Z",
+    "merge_commit_sha": "567135cfbf0b30484ec234c0d6e5793fbf6e637e",
+    "html_url": "https://github.com/edwardkim/rhwp/pull/9071",
+    "head": "a1bd3fa4edb8bb79c0ae312166358b6be299e5d0",
+    "headRef": "task/7631-hwpx-hwp-attr-fidelity",
+    "headRepo": "JinHo-von-Choi/rhwp"
+  },
+  "9072": {
+    "number": 9072,
+    "state": "closed",
+    "merged": true,
+    "merged_at": "2026-11-15T13:48:58Z",
+    "merge_commit_sha": "620aad2576b5936c89db73f7adee8709a95fcf1a",
+    "html_url": "https://github.com/edwardkim/rhwp/pull/9072",
+    "head": "d268b792eda1aa678ac5d67d285455f6760a2754",
+    "headRef": "task/7381-cli-field-export-fixes",
+    "headRepo": "JinHo-von-Choi/rhwp"
+  }
+}

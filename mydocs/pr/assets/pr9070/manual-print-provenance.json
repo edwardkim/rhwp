@@ -1,0 +1,22 @@
+{
+  "kind": "independent Hancom Print supplied by maintainer",
+  "attestation": "User reports normal manual document open and direct PDF printing",
+  "claimedFilename": "hwp3-linechar-specimen-2020-direct.pdf",
+  "observedUniquePdfFilename": "hwp3-linechar-specimen-2020.pdf",
+  "filenameNote": "Supplied folder contains one PDF; its actual filename has no -direct suffix. This discrepancy is disclosed in the conversation.",
+  "input": "samples/pr9070/hwp3-linechar-specimen.hwp",
+  "inputSHA256": "a20917ea3e4b0d27f3b041078dfae3a2050d0606058bada6fe48fc6a876061a2",
+  "sourcePdf": "/mnt/e/tmp/rhwp-jinho-20261114/hwp3-linechar-specimen-2020.pdf",
+  "referencePdf": "pdf/pr9070/hwp3-linechar-specimen-2020.pdf",
+  "pdfSHA256": "6aaac8dd100a1267060056cee39533f7da1f6d629a6afd7992a81d776b873d0f",
+  "pdfBytes": 18695,
+  "pageCount": 1,
+  "creator": "Hwp 2020 11.0.0.9166",
+  "producer": "Hancom PDF 1.3.0.550",
+  "pdfVersion": "1.4",
+  "pdfCreationTimeKst": "2026-11-14T18:30:56+09:00",
+  "recordTimeKst": "2026-11-14T18:36:35.625898+09:00",
+  "newHancomCalls": 0,
+  "visualComparison": "not yet completed",
+  "directVisualInspection": "Page 1 raster inspected: seven line-character sets and the seven symbols are visible. Quantitative Native/fresh WASM comparison remains incomplete."
+}

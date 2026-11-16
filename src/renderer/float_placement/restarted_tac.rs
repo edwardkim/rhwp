@@ -7,6 +7,54 @@ use super::InlineBoxPlacement;
 use crate::renderer::{pagination::PageItem, style_resolver::ResolvedStyleSet};
 use std::collections::HashMap;
 
+/// 이전 쪽 원점을 가진 TAC 줄이 새 쪽에서 앞 간격까지 보존했는지 확인한다.
+/// 다음 원본 줄이 앞 간격·개체 소유 줄·뒤 간격을 정수 단위로 정확히 닫을 때만
+/// 새 원점을 발행한다. 다음 소유자가 TAC 표여도 그 자체의 저장 줄이 유효해야 한다.
+pub(crate) fn restarted_tac_opening_before(
+    para: &Paragraph,
+    next: &Paragraph,
+    spacing_before: f64,
+    spacing_after: f64,
+    next_spacing_before: f64,
+    dpi: f64,
+) -> Option<f64> {
+    if !dpi.is_finite()
+        || dpi <= 0.0
+        || !spacing_before.is_finite()
+        || spacing_before <= 0.0
+        || !spacing_after.is_finite()
+        || !next_spacing_before.is_finite()
+        || para.line_segs.len() != 1
+        || para.cell_format_vpos_dirty
+        || next.cell_format_vpos_dirty
+        || next.stored_text_partition_is_dirty()
+        || next.raw_break_type != 0
+        || next.column_type != crate::model::paragraph::ColumnBreakType::None
+        || !(next.controls.is_empty()
+            || (matches!(next.controls.as_slice(), [Control::Table(_)])
+                && crate::renderer::composer::stored_first_tac_line(next).is_some()))
+        || !matches!(para.controls.as_slice(), [Control::Table(_)])
+    {
+        return None;
+    }
+    let line = crate::renderer::composer::stored_first_tac_line(para)?;
+    let after = next.line_segs.first()?;
+    if line.line_spacing < 0
+        || after.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        || after.vertical_pos < 0
+        || after.vertical_pos >= line.vertical_pos
+    {
+        return None;
+    }
+    let before = px_to_hwpunit(spacing_before, dpi);
+    let end = before
+        .checked_add(line.line_height)?
+        .checked_add(line.line_spacing)?
+        .checked_add(px_to_hwpunit(spacing_after, dpi))?
+        .checked_add(px_to_hwpunit(next_spacing_before, dpi))?;
+    (before > 0 && end == after.vertical_pos).then(|| hwpunit_to_px(before, dpi))
+}
+
 /// 표의 전체 점유 줄과 후행 간격이 새 로컬 사다리의 첫 줄을 닫는다.
 /// 물리 쪽/단의 수용 여부와 원점은 호출자가 별도로 확인한다.
 pub(crate) fn restarted_tac_line_advance(
@@ -54,16 +102,34 @@ pub(crate) fn restarted_tac_line_advance(
 pub(crate) fn accepted_opening_origin(
     para: &Paragraph,
     next: &Paragraph,
+    spacing_before: f64,
     spacing_after: f64,
     next_spacing_before: f64,
     placement: &InlineBoxPlacement,
     dpi: f64,
 ) -> Option<i32> {
-    let end = restarted_tac_line_advance(para, next, spacing_after, next_spacing_before, dpi)?;
+    let opening_before = restarted_tac_opening_before(
+        para,
+        next,
+        spacing_before,
+        spacing_after,
+        next_spacing_before,
+        dpi,
+    );
+    let leading = opening_before.unwrap_or(0.0);
+    let end = if opening_before.is_some() {
+        let line = crate::renderer::composer::stored_first_tac_line(para)?;
+        leading
+            + hwpunit_to_px(line.line_height.checked_add(line.line_spacing)?, dpi)
+            + spacing_after
+    } else {
+        restarted_tac_line_advance(para, next, spacing_after, next_spacing_before, dpi)?
+    };
     let tolerance = hwpunit_to_px(1, dpi);
     // StoredTacPlan은 바깥여백을 포함한 줄 원점을 발행한다.
     // 테두리 원점의 위 여백은 paint가 소비하므로 여기서 다시 더하지 않는다.
-    (placement.y.abs() <= tolerance && (placement.advance_end? - end).abs() <= tolerance)
+    ((placement.y - leading).abs() <= tolerance
+        && (placement.advance_end? - end).abs() <= tolerance)
         .then_some(0)
 }
 
@@ -84,10 +150,7 @@ pub(crate) fn accepted_column_origin(
     };
     let para = paragraphs.get(*para_index)?;
     let next = paragraphs.get(para_index.checked_add(1)?)?;
-    let after = styles
-        .para_styles
-        .get(para.para_shape_id as usize)?
-        .spacing_after;
+    let first_style = styles.para_styles.get(para.para_shape_id as usize)?;
     let before = styles
         .para_styles
         .get(next.para_shape_id as usize)?
@@ -95,7 +158,8 @@ pub(crate) fn accepted_column_origin(
     let origin = accepted_opening_origin(
         para,
         next,
-        after,
+        first_style.spacing_before,
+        first_style.spacing_after,
         before,
         placements.get(&(*para_index, *control_index))?,
         dpi,

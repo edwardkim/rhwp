@@ -1,0 +1,562 @@
+{
+  "input_sha256": "87bd087e57cc87c6bcc5d8db6f6755ed6bb43e1c9c616d17b2a0f70ab5a6e95c",
+  "pdf_sha256": "8738cbb10c355c1ad12d10fc4594acf3c664131488857a383263010e7a1d5281",
+  "font_sha256": "ffbe1ee1fe661f68263e37a1410f42e0088f55e8439a78753c0bf15b596b34c3",
+  "family": "RHWP Hancom Independent PUA",
+  "verified_glyphs": 92,
+  "glyphs": [
+    {
+      "unicode": "U+00020",
+      "gid": 3,
+      "contour_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "advance": 341
+    },
+    {
+      "unicode": "U+00028",
+      "gid": 9,
+      "contour_sha256": "12785f49a128f866638460145fc2cadb4f660687881464499d1dcf153c94ce00",
+      "advance": 512
+    },
+    {
+      "unicode": "U+00029",
+      "gid": 11,
+      "contour_sha256": "b86c2445672056bd8f0a46f73d4659011460cf52f8ccbf2410e4d1013adfba99",
+      "advance": 512
+    },
+    {
+      "unicode": "U+0002B",
+      "gid": 4,
+      "contour_sha256": "184980c75cddf837fa6d19cb00cfc81492897019f77d2ae42b508ac476937dba",
+      "advance": 853
+    },
+    {
+      "unicode": "U+0002C",
+      "gid": 14,
+      "contour_sha256": "1f6b818355a9429890f9ca8277784eca10437699d35211f38028af0372671bcd",
+      "advance": 298
+    },
+    {
+      "unicode": "U+0002D",
+      "gid": 16,
+      "contour_sha256": "86abd444efbfc6e8a7ce3423499d1326314887ae8f68027d66d788b8d4757b1c",
+      "advance": 853
+    },
+    {
+      "unicode": "U+0002E",
+      "gid": 18,
+      "contour_sha256": "904f743c2d64bd2c1a78376249db1e919e54e3ebcd4e637cdd2f5903afc42854",
+      "advance": 298
+    },
+    {
+      "unicode": "U+00030",
+      "gid": 5,
+      "contour_sha256": "29ce9f2a22c04ad56084c7b1ab09065dcfbf3d2dd25a96a445a3f72ebe826fd5",
+      "advance": 597
+    },
+    {
+      "unicode": "U+00031",
+      "gid": 20,
+      "contour_sha256": "58c1699ae298353e55182abafd4fb4080f98223197afd078fc726f00df39eef8",
+      "advance": 597
+    },
+    {
+      "unicode": "U+00032",
+      "gid": 6,
+      "contour_sha256": "2f9f8a7cb826640a34d252c35982e8e0e6e4e768686803cd79429031003f6ab9",
+      "advance": 597
+    },
+    {
+      "unicode": "U+00033",
+      "gid": 19,
+      "contour_sha256": "bd29e89d4adfb0d7eb126a7fece67c1601b7c570668ca4d7efdfd802f7cb282c",
+      "advance": 597
+    },
+    {
+      "unicode": "U+00034",
+      "gid": 21,
+      "contour_sha256": "eff37920c1297014b365fd6a51d6a3f7ea5621253bf1188cf02deecb428d08ba",
+      "advance": 597
+    },
+    {
+      "unicode": "U+00035",
+      "gid": 22,
+      "contour_sha256": "7dd02bc7530bb7990be24b72f02cffab3b58492d7bb2ef1c96c13d38f7eefc6c",
+      "advance": 597
+    },
+    {
+      "unicode": "U+00036",
+      "gid": 23,
+      "contour_sha256": "a57d3aa54a1b43a47db81504ee8f0dcfff58a384bbaf5f2c33189d39dd3984ff",
+      "advance": 597
+    },
+    {
+      "unicode": "U+00037",
+      "gid": 24,
+      "contour_sha256": "3e2cb2529f304d552ad8771b6c532958a72648d31e74491b86fc2db5ae22786d",
+      "advance": 597
+    },
+    {
+      "unicode": "U+00038",
+      "gid": 8,
+      "contour_sha256": "378718bb13374a26d9e21d58c13526730339a686e6dd2ca0c3b7cf969ea9cea5",
+      "advance": 597
+    },
+    {
+      "unicode": "U+00039",
+      "gid": 10,
+      "contour_sha256": "2ee1fb74adb91906b8a67d34f762f1053366760113449fb47d06132c326c2dc1",
+      "advance": 597
+    },
+    {
+      "unicode": "U+0003A",
+      "gid": 26,
+      "contour_sha256": "f35439cc735e18bb6b1323033b714c4dcd371bc0940267e54e2b72f20e8f718c",
+      "advance": 341
+    },
+    {
+      "unicode": "U+0003B",
+      "gid": 27,
+      "contour_sha256": "997af3414e4bfb588172f766b2ca1e81d36c137675f40b651440d804ea598d24",
+      "advance": 341
+    },
+    {
+      "unicode": "U+0003D",
+      "gid": 28,
+      "contour_sha256": "d6e62c817fbe9c69c8e775fc369dece0908632e878a7c2809348a717bd887eec",
+      "advance": 853
+    },
+    {
+      "unicode": "U+00041",
+      "gid": 25,
+      "contour_sha256": "9e119cef0654ff0526e850d7380a5ac9ea80795d7a62253cb54c8b157d7732a0",
+      "advance": 768
+    },
+    {
+      "unicode": "U+00042",
+      "gid": 12,
+      "contour_sha256": "91aea335ac344f6b5ef5e1e7e19342a405d90120510dc6aa39a560306084ad7e",
+      "advance": 682
+    },
+    {
+      "unicode": "U+00043",
+      "gid": 13,
+      "contour_sha256": "64d64d8f0782fabf01ae91b8ee620ebed77d697b0df3849bdd6ea2c554e8839c",
+      "advance": 682
+    },
+    {
+      "unicode": "U+00044",
+      "gid": 15,
+      "contour_sha256": "02db62b895d8aa6e1dc43a453c0bb64c4226044c138d9d3825f61c124da58a79",
+      "advance": 725
+    },
+    {
+      "unicode": "U+00045",
+      "gid": 17,
+      "contour_sha256": "97bc74f8d221d9c5a1c0d5690d57b4a1717168fc1aad8f5d7a84951fccc58ac3",
+      "advance": 682
+    },
+    {
+      "unicode": "U+00046",
+      "gid": 29,
+      "contour_sha256": "8739bb1df4be318830b98f29888ce1bb6c339f1aff8f94941c6c6f0434a01460",
+      "advance": 640
+    },
+    {
+      "unicode": "U+00047",
+      "gid": 30,
+      "contour_sha256": "d68c23bdffd53300c9858424a9d0eb0193e32d7900f6a9b1e01789090f6151b6",
+      "advance": 725
+    },
+    {
+      "unicode": "U+00048",
+      "gid": 31,
+      "contour_sha256": "fc9d3e7d627398bf0fa88239c53b7664c91f19201417ec924f60c102f6ea9235",
+      "advance": 768
+    },
+    {
+      "unicode": "U+00049",
+      "gid": 32,
+      "contour_sha256": "e4aa43252325f0616de64e692715d164c6b418b0425531757300324c5d46fe41",
+      "advance": 384
+    },
+    {
+      "unicode": "U+0004A",
+      "gid": 33,
+      "contour_sha256": "1ddea3fda4d345c2e16a4a0a66da1f40c2c2f7557e838686a45f9d855ed79b66",
+      "advance": 469
+    },
+    {
+      "unicode": "U+0004B",
+      "gid": 34,
+      "contour_sha256": "bf163dd9966d5cf60e87c2d6beec72ef5c6801691487155cf5a3ade1baccf9c0",
+      "advance": 768
+    },
+    {
+      "unicode": "U+0004C",
+      "gid": 35,
+      "contour_sha256": "88ee4287d51289961241e34e02c390e84029b4e9a9a039921d30b497fb96b82d",
+      "advance": 640
+    },
+    {
+      "unicode": "U+0004D",
+      "gid": 36,
+      "contour_sha256": "22b43e897ed89c574d7921fd23ce75898389130818a9b75919a54ed83a58d45e",
+      "advance": 938
+    },
+    {
+      "unicode": "U+0004E",
+      "gid": 37,
+      "contour_sha256": "f585f236cf370b76cfc8356841b4c3bd84b206c9aea889c0e8fe3258f3b2a9c6",
+      "advance": 768
+    },
+    {
+      "unicode": "U+0004F",
+      "gid": 38,
+      "contour_sha256": "ebf8ea82d35180efd3baa702dad8f8c398eafcd477e9706db8f66d6003db1bb7",
+      "advance": 725
+    },
+    {
+      "unicode": "U+00050",
+      "gid": 39,
+      "contour_sha256": "c82148d2efc195c78db59e670553f8bd014677bc78c1f1fc5bb5909899039c58",
+      "advance": 640
+    },
+    {
+      "unicode": "U+00051",
+      "gid": 40,
+      "contour_sha256": "1282ede71ca2d7da194b59acdb9d2f3c9bb3b9b94e0a30b28b9e6aaee3be637d",
+      "advance": 725
+    },
+    {
+      "unicode": "U+00052",
+      "gid": 41,
+      "contour_sha256": "e81ad0b8f61709ccd7f6a9e88e2b88d808b915557d47979cd50889042f14d1a0",
+      "advance": 682
+    },
+    {
+      "unicode": "U+00053",
+      "gid": 42,
+      "contour_sha256": "e0bc76540a176111d2432520385035fa588cff1d09e83dfeea4f1b82a7956bb3",
+      "advance": 640
+    },
+    {
+      "unicode": "U+00054",
+      "gid": 43,
+      "contour_sha256": "2b4655625a4957bc8f60e27270cf09f859d66995b39e3e5c882c9ac02832af10",
+      "advance": 768
+    },
+    {
+      "unicode": "U+00055",
+      "gid": 7,
+      "contour_sha256": "0d982436fa35726c908f09a198ff7b72db5cf17c7b38847c565111f79af197c6",
+      "advance": 768
+    },
+    {
+      "unicode": "U+00056",
+      "gid": 44,
+      "contour_sha256": "0dadcd29200b02872fed303f920c8e6568635890a9139386b70fcbafc2d4bbd2",
+      "advance": 725
+    },
+    {
+      "unicode": "U+00057",
+      "gid": 45,
+      "contour_sha256": "4a7841e0e9d0b5b7b337a0f7039462db721958abce12809637e31c49b11c42de",
+      "advance": 981
+    },
+    {
+      "unicode": "U+00058",
+      "gid": 46,
+      "contour_sha256": "203707c4ead0bffc9b02404cfdbc31383c1ebe5af8c890769f1102f36648dc9a",
+      "advance": 682
+    },
+    {
+      "unicode": "U+00059",
+      "gid": 47,
+      "contour_sha256": "61819ccb16335607d41172e66098cd85bb232505dab6c4503cfe79f712ddf922",
+      "advance": 682
+    },
+    {
+      "unicode": "U+0005A",
+      "gid": 48,
+      "contour_sha256": "ac0b7d6d467e583723cc330060de2c89ddec554507c6d801f688bcb6aa098b45",
+      "advance": 640
+    },
+    {
+      "unicode": "U+0005B",
+      "gid": 49,
+      "contour_sha256": "27fcca56fc70fe0c0e80bd3f84108ef3ba4ee3859211b01627f54430bee97030",
+      "advance": 512
+    },
+    {
+      "unicode": "U+0005D",
+      "gid": 50,
+      "contour_sha256": "cab1e3e329212bb7d1f9496bae7db4ad579e3ec6da67143d5dbf970d6de789e8",
+      "advance": 512
+    },
+    {
+      "unicode": "U+00061",
+      "gid": 51,
+      "contour_sha256": "95de594502f05161265c7122fef9b85f865ceb9744eabd012bf635d0329eff7f",
+      "advance": 512
+    },
+    {
+      "unicode": "U+00062",
+      "gid": 52,
+      "contour_sha256": "29ebf94f10618d25c1e685505d8b21ce5261003d704d5e6a1138c354d9ee6697",
+      "advance": 554
+    },
+    {
+      "unicode": "U+00063",
+      "gid": 53,
+      "contour_sha256": "643f538d97c4da22691c0846606c635c80b29e1bba31907de48bfb661b3eb6ca",
+      "advance": 512
+    },
+    {
+      "unicode": "U+00064",
+      "gid": 54,
+      "contour_sha256": "6454069da5d58fcc17e54911c15c093524f40f6c745ccee11e6bc8af59db7b49",
+      "advance": 554
+    },
+    {
+      "unicode": "U+00065",
+      "gid": 55,
+      "contour_sha256": "26d8a5a2db65e286731b817bd647d0670097029021d424f28127cb78a0e51dbc",
+      "advance": 554
+    },
+    {
+      "unicode": "U+00066",
+      "gid": 56,
+      "contour_sha256": "1aeb2638e143ea4d389e2fa154d02c077206ea56f2c93281d0a8d02cddeacf9b",
+      "advance": 384
+    },
+    {
+      "unicode": "U+00067",
+      "gid": 57,
+      "contour_sha256": "75f0ec86dba866e284afa080c80e344c6edc60285b3aaea5066120d728eadaaa",
+      "advance": 554
+    },
+    {
+      "unicode": "U+00068",
+      "gid": 58,
+      "contour_sha256": "9cae9e4a1199b280d389160d6b555904d2de60ec82f47bc732df1b7738c5eee1",
+      "advance": 554
+    },
+    {
+      "unicode": "U+00069",
+      "gid": 59,
+      "contour_sha256": "940d2569f6662be26543c1262d731e0584cc09c4b93ff1e46b9ed34a4289852f",
+      "advance": 298
+    },
+    {
+      "unicode": "U+0006A",
+      "gid": 60,
+      "contour_sha256": "b2109410543f38eda0e457746651ccf9c93f7ba2ab735451da175ff97d820a94",
+      "advance": 298
+    },
+    {
+      "unicode": "U+0006B",
+      "gid": 61,
+      "contour_sha256": "7c752df259ec7aa93d97437daec7487a90cb9733e2ca0ba2016cc12abaec740f",
+      "advance": 554
+    },
+    {
+      "unicode": "U+0006C",
+      "gid": 62,
+      "contour_sha256": "a1beb3a5c28bfea8fd30a152b46adb451e88755f5065bc4bb13864ab8b63938f",
+      "advance": 298
+    },
+    {
+      "unicode": "U+0006D",
+      "gid": 63,
+      "contour_sha256": "7b44a41e004ce301172e04b509dff74044f526f0fba4a7c9038919cb040adbd3",
+      "advance": 853
+    },
+    {
+      "unicode": "U+0006E",
+      "gid": 64,
+      "contour_sha256": "fec4d50f5c3053dbf6da62a6cd1fbfff33004922d75bb533ce2d5172ec090a43",
+      "advance": 554
+    },
+    {
+      "unicode": "U+0006F",
+      "gid": 65,
+      "contour_sha256": "d9f5d27ef3c744a8dc75b660a9949336a84f737354939222e86803f00fb4d2c2",
+      "advance": 554
+    },
+    {
+      "unicode": "U+00070",
+      "gid": 66,
+      "contour_sha256": "3b486e72d687fbdfca8adfd8d324ef2578190f8b7824099c1196c656009245d8",
+      "advance": 554
+    },
+    {
+      "unicode": "U+00071",
+      "gid": 67,
+      "contour_sha256": "40108c9002d3cc57835bacf1ff12f7eb98c88174b82744fd40b628ba68648d72",
+      "advance": 554
+    },
+    {
+      "unicode": "U+00072",
+      "gid": 68,
+      "contour_sha256": "e34ac3e36c8efb13e7489443a15914017aab72b9551794c0b5d1daa8f40e33c2",
+      "advance": 426
+    },
+    {
+      "unicode": "U+00073",
+      "gid": 69,
+      "contour_sha256": "e99e73c1510ce9b65bd48f20b366818d2253a79ec80580f07b54d99f1d5df15f",
+      "advance": 512
+    },
+    {
+      "unicode": "U+00074",
+      "gid": 70,
+      "contour_sha256": "3adb440cd30818d0401ac8f14e0341565a18f4656c552a9ca5e02879c222426d",
+      "advance": 384
+    },
+    {
+      "unicode": "U+00075",
+      "gid": 71,
+      "contour_sha256": "7441619a76e3e8cd412ef3d33b7073d6bdd5427863f082fc7d45348f21bdf967",
+      "advance": 554
+    },
+    {
+      "unicode": "U+00076",
+      "gid": 72,
+      "contour_sha256": "57565cf7b8a612221924e65f675db1b0ef537d31384f0d5581f38f632cc3da32",
+      "advance": 554
+    },
+    {
+      "unicode": "U+00077",
+      "gid": 73,
+      "contour_sha256": "bf6cf40ee91e5df8a37dbc9e2c9891397808731bf69955789dc6bf2ec971d1ae",
+      "advance": 810
+    },
+    {
+      "unicode": "U+00078",
+      "gid": 74,
+      "contour_sha256": "3761242867992a8044d59521e36c045e26e393a67be66bd80eb4895080d57cfe",
+      "advance": 597
+    },
+    {
+      "unicode": "U+00079",
+      "gid": 75,
+      "contour_sha256": "cf4fbc6d32781304453a388426d44f423017b5657dccb6b3a076cca592df5e78",
+      "advance": 597
+    },
+    {
+      "unicode": "U+0007A",
+      "gid": 76,
+      "contour_sha256": "350a65dafe6882e96d30e3f7d63e6aca86fe0e9d8b507b449038f683b5b0f16c",
+      "advance": 469
+    },
+    {
+      "unicode": "U+000D7",
+      "gid": 77,
+      "contour_sha256": "47ac449a20d0c4953e97a294fc1ad66133db8348642a2d29616bde7a4b9be7b4",
+      "advance": 831
+    },
+    {
+      "unicode": "U+000F7",
+      "gid": 78,
+      "contour_sha256": "42fbc42c04eb25eb4a4ffa5731f584119c5d8414d68579aeefec3aa7d01992de",
+      "advance": 831
+    },
+    {
+      "unicode": "U+02027",
+      "gid": 79,
+      "contour_sha256": "2944c3524d367023004bc0ee0b0db19dd4ddaab682164a1d7cbdead3a67fe80c",
+      "advance": 178
+    },
+    {
+      "unicode": "U+021E9",
+      "gid": 80,
+      "contour_sha256": "437535ead22bb9d5c6e5f87e048d5ceb91970857bb5a16e82898c7d2f08698ed",
+      "advance": 1024
+    },
+    {
+      "unicode": "U+025A1",
+      "gid": 81,
+      "contour_sha256": "e1b3245796d3b895d772680eb1e667561f20587854d145112a5f6fdac86d7902",
+      "advance": 1024
+    },
+    {
+      "unicode": "U+025B2",
+      "gid": 82,
+      "contour_sha256": "bedb1b58d79b82af573cbc8ea6882b02263ea98398ae69f8ff6e0863ee16a189",
+      "advance": 1024
+    },
+    {
+      "unicode": "U+025B3",
+      "gid": 83,
+      "contour_sha256": "85c0ac8388e72bff4834d7faf54f33f517b4efee968ec344ee5179a5eb1e4904",
+      "advance": 1024
+    },
+    {
+      "unicode": "U+025BC",
+      "gid": 84,
+      "contour_sha256": "7ee277358e80c241223c0b2901ab8ee2b72800bccff955c3ad16c843b9b0bd4b",
+      "advance": 1024
+    },
+    {
+      "unicode": "U+025BD",
+      "gid": 85,
+      "contour_sha256": "9e9a1a63f2fe389ce4eb9089c038c510815f4e9f35b96855a829a99ccd4356d2",
+      "advance": 1024
+    },
+    {
+      "unicode": "U+025CB",
+      "gid": 86,
+      "contour_sha256": "d43029b511d0ef15737ff9960b3a4dec7ec711b320979d6a968c7ef7b1dc5a4b",
+      "advance": 1024
+    },
+    {
+      "unicode": "U+0300C",
+      "gid": 87,
+      "contour_sha256": "5fa0192bedd9c3dc6b6cd73c47ca74e0579755de9ce27ae4fca9367a52a54ea3",
+      "advance": 1024
+    },
+    {
+      "unicode": "U+0300D",
+      "gid": 88,
+      "contour_sha256": "bbc4e1b8c16f57311761c86d4e29a827ab74e4253598f5dfdb1cbf918babf794",
+      "advance": 1024
+    },
+    {
+      "unicode": "U+0FF62",
+      "gid": 89,
+      "contour_sha256": "f248a7104c3c46179c18de179767d317b3eab9faea802d1e5ee7ace2c45577d2",
+      "advance": 512
+    },
+    {
+      "unicode": "U+0FF63",
+      "gid": 90,
+      "contour_sha256": "c9c9ce7996d8542574ba6f4ca699d298ef2fd524b3722c47db63f4f43e4fa04e",
+      "advance": 512
+    },
+    {
+      "unicode": "U+0FF65",
+      "gid": 91,
+      "contour_sha256": "5d72f3c2b9e7e72df66b4191ff32069bc8125a29e5b32d32e41911256cc4976b",
+      "advance": 512
+    },
+    {
+      "unicode": "U+F02B2",
+      "gid": 92,
+      "contour_sha256": "295727d5aca0eae1ebd12e39a295dc92f8657337d7832199cc6f86136fed8498",
+      "advance": 1024
+    },
+    {
+      "unicode": "U+F02FB",
+      "gid": 93,
+      "contour_sha256": "34dde7016454a8bc2e44ac0465e0b71db2f1379d4659fc419d7fd4594ad2937e",
+      "advance": 1024
+    },
+    {
+      "unicode": "U+F03C5",
+      "gid": 94,
+      "contour_sha256": "a1b1178edd9b333dcb34eb1e9599ec3cbe4a61577997626bbb08328f98354245",
+      "advance": 1024
+    }
+  ],
+  "source": "Independent labelled 92-character Hancom 2020 Print; original outlines, advances, hinting retained; cmap/name metadata only changed."
+}

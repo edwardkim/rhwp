@@ -626,7 +626,30 @@ impl DocumentCore {
     }
 
     /// JSON 문자열에서 CellPathEntry 배열을 파싱한다.
+    ///
+    /// 셀 문단을 가리키는 경로이므로 모든 단계에 `controlIndex`·`cellIndex`·`cellParaIndex`가
+    /// 필요하다.
     pub(crate) fn parse_cell_path(path_json: &str) -> Result<Vec<(usize, usize, usize)>, HwpError> {
+        Self::parse_path_entries(path_json, false)
+    }
+
+    /// 표 자체를 가리키는 경로를 파싱한다 (`getTableDimensionsByPath` 등).
+    ///
+    /// 마지막 단계는 표 컨트롤만 정하므로 `controlIndex`만 필수다. 그 단계의
+    /// `cellIndex`·`cellParaIndex`는 어떤 칸도 고르지 않아 생략할 수 있고, 주어져도 쓰지
+    /// 않는다(생략하면 0). 앞 단계는 바깥 칸 문단을 지나야 하므로 세 필드가 모두 필요하다.
+    pub(crate) fn parse_table_path(
+        path_json: &str,
+    ) -> Result<Vec<(usize, usize, usize)>, HwpError> {
+        Self::parse_path_entries(path_json, true)
+    }
+
+    fn parse_path_entries(
+        path_json: &str,
+        last_step_is_table: bool,
+    ) -> Result<Vec<(usize, usize, usize)>, HwpError> {
+        use super::super::helpers::{json_usize, json_usize_opt};
+
         // 경량 JSON 파서: [{"controlIndex":N,"cellIndex":N,"cellParaIndex":N}, ...]
         let trimmed = path_json.trim();
         if !trimmed.starts_with('[') || !trimmed.ends_with(']') {
@@ -639,8 +662,8 @@ impl DocumentCore {
             return Ok(Vec::new());
         }
 
-        let mut entries = Vec::new();
         // 중괄호 기준으로 각 엔트리 분리
+        let mut entry_strs = Vec::new();
         let mut depth = 0;
         let mut start = 0;
         for (i, ch) in inner.char_indices() {
@@ -654,15 +677,29 @@ impl DocumentCore {
                 '}' => {
                     depth -= 1;
                     if depth == 0 {
-                        let entry_str = &inner[start..=i];
-                        let ci = super::super::helpers::json_usize(entry_str, "controlIndex")?;
-                        let cei = super::super::helpers::json_usize(entry_str, "cellIndex")?;
-                        let cpi = super::super::helpers::json_usize(entry_str, "cellParaIndex")?;
-                        entries.push((ci, cei, cpi));
+                        entry_strs.push(&inner[start..=i]);
                     }
                 }
                 _ => {}
             }
+        }
+
+        let last = entry_strs.len().saturating_sub(1);
+        let mut entries = Vec::with_capacity(entry_strs.len());
+        for (i, entry_str) in entry_strs.into_iter().enumerate() {
+            let ci = json_usize(entry_str, "controlIndex")?;
+            let (cei, cpi) = if last_step_is_table && i == last {
+                (
+                    json_usize_opt(entry_str, "cellIndex")?.unwrap_or(0),
+                    json_usize_opt(entry_str, "cellParaIndex")?.unwrap_or(0),
+                )
+            } else {
+                (
+                    json_usize(entry_str, "cellIndex")?,
+                    json_usize(entry_str, "cellParaIndex")?,
+                )
+            };
+            entries.push((ci, cei, cpi));
         }
         Ok(entries)
     }

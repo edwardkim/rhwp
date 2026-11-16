@@ -1,0 +1,16 @@
+[
+  {
+    "document": "incoming9026-repeated",
+    "page": 5,
+    "exportedRenderTreeEqual": true,
+    "baseSha256": "0231910d579d4c6075a6edb9c16a5507182d05150492c5a7aa2ed229b9e6660b",
+    "candidateSha256": "0231910d579d4c6075a6edb9c16a5507182d05150492c5a7aa2ed229b9e6660b"
+  },
+  {
+    "document": "incoming9016",
+    "page": 1,
+    "exportedRenderTreeEqual": true,
+    "baseSha256": "7190ec1497944e358e2bf32bfd135df98dc7e103da10f53d3544e20eebf282b7",
+    "candidateSha256": "7190ec1497944e358e2bf32bfd135df98dc7e103da10f53d3544e20eebf282b7"
+  }
+]

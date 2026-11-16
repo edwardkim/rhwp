@@ -121,7 +121,7 @@ export async function selectSweepPaintFontFaces(owner, fonts, metafileRequests, 
   return selected;
 }
 
-export async function installCanvasFont(family, bytes, descriptors, sourceOwner = null, metafileSelected = false, intrinsicRequested = false, onPrepared = null, registerOutline = true, registerCoverage = true) {
+export async function installCanvasFont(family, bytes, descriptors, sourceOwner = null, metafileSelected = false, intrinsicRequested = false, onPrepared = null, registerOutline = true, registerCoverage = true, printPrimary = registerOutline) {
   // 제품과 같은 Rust 함수를 사용한다. 원본 메타파일·명시 컬러 자원은 바꾸지 않는다.
   const prepared = sourceOwner?.ordinaryTextFontProgram?.(new Uint8Array(bytes), 0);
   const paintBytes = prepared ? Uint8Array.from(prepared).buffer : bytes;
@@ -145,6 +145,14 @@ export async function installCanvasFont(family, bytes, descriptors, sourceOwner 
       && String(descriptors.weight || '400') === '400'
       && (descriptors.style || 'normal') === 'normal') {
     sourceOwner.registerHftOutlineFont(family, new Uint8Array(paintBytes), 0);
+  }
+  // 주 FontFace의 순서가 확인된 경우만 Print 기하에 연결한다.
+  // 공통 빈 기호 제외와 다른 unicode-range의 TTF는 소유를 확정하지 않는다.
+  const cff = paintBytes.byteLength >= 4 && new DataView(paintBytes).getUint32(0) === 0x4f54544f;
+  if (printPrimary && String(descriptors.weight || '400') === '400'
+      && (descriptors.style || 'normal') === 'normal'
+      && (!descriptors.unicodeRange || descriptors.unicodeRange === unicodeRange || cff)) {
+    sourceOwner?.registerPrintFontPrimary?.(family, new Uint8Array(paintBytes), 0, registerCoverage);
   }
   return font;
 }

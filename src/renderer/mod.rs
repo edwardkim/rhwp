@@ -326,6 +326,25 @@ pub(crate) fn replay_positions_or_compute<'a>(
 
 pub(crate) use glyph_fit::glyph_fit_positions;
 
+// 출력 backend와 기존 unit 검사의 공통 진입점은 유지한다.
+pub(crate) fn canvas_cluster_fit(
+    style: &TextStyle,
+    cluster: &str,
+    layout_cluster_advance: f64,
+    visual_width: f64,
+    ink_width: Option<f64>,
+    pin_ascii_advance: bool,
+) -> Option<(f64, f64)> {
+    glyph_fit::canvas_cluster_fit(
+        style,
+        cluster,
+        layout_cluster_advance,
+        visual_width,
+        ink_width,
+        pin_ascii_advance,
+    )
+}
+
 fn has_no_unjustified_leading_spaces(count: &usize) -> bool {
     *count == 0
 }
@@ -407,12 +426,19 @@ pub struct TextStyle {
     /// 원본 글자 스타일에서 크기를 해소했는지. 명시적인 0과 미지정을 구별한다.
     #[serde(skip_serializing)]
     pub resolved_font_size: bool,
+    /// 공통 Print paint가 확정한 표시 em. 원본 크기·조판 전진은 유지한다.
+    #[serde(skip)]
+    pub print_ink_font_size: Option<f64>,
     /// 원본 언어 슬롯의 글자 위치(%). 0은 기존 직렬화와 같이 생략한다.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub font_position: Option<i8>,
     /// 유지된 원본 HFT의 인쇄 paint 좌표 계약. 논리 조판/전진 폭과 별개다.
     #[serde(skip_serializing)]
     pub hft_print_frame: bool,
+    /// 명시적 원본 TTF 또는 검증된 세션 TTF의 text device 좌표 계약.
+    /// 원문 유형을 추정하지 않으며 Type3 그래픽의 fill 상태와 구분한다.
+    #[serde(skip_serializing)]
+    pub print_text_device_frame: bool,
     /// 명시적으로 선택한 실제 프로그램의 잉크 폭. 논리 전진과 구분한다.
     #[serde(skip_serializing)]
     pub preserve_glyph_ink: bool,
@@ -571,6 +597,10 @@ pub struct TextStyle {
     /// 줄 구성에서 선택한 반각 공백 규칙. 원문의 useFontSpace와 구별한다.
     #[serde(skip_serializing)]
     pub layout_half_space: bool,
+    /// 반각 공백의 기준 em을 현재 언어 슬롯의 em으로 환산한 비율.
+    /// 영문 상대 크기를 바꾸어도 한글 슬롯의 반각 전진은 유지한다.
+    #[serde(skip_serializing)]
+    pub layout_half_space_em: Option<f64>,
     /// 실제 새 줄 구성의 메트릭인지. 공백 규칙과 별도로 측정·배치가 공유한다.
     #[serde(skip_serializing)]
     pub regenerated_font_metrics: bool,
@@ -599,7 +629,7 @@ pub struct TextStyle {
     #[serde(skip_serializing)]
     pub ascii_punct_latin: Option<Box<LatinSlotMetrics>>,
 }
-crate::storage::clone_fields!(TextStyle, {literal_soft_hyphen, text_paint, continuous_shadow, inherited_half_space_em, script_metrics, shadow_offset_percent, space_compression, literal_figure_space, literal_figure_space_em, native_pua_metrics, native_otf_metrics, bidi_layout, emphasis_skip_first_cluster, top_underline_font_size, top_underline_phase, supplemental_metrics, isolated_jamo_font, font_family, font_size, fixed_glyph_advances, source_font_is_hft, source_font_is_ttf, selected_primary_font_program, source_verified_hft_bold_tracking, source_hwp3_hft_bold, resolved_font_size, font_position, hft_print_frame, preserve_glyph_ink, natural_program_metrics, color, bold, italic, underline, strikethrough, kerning, letter_spacing, ratio, default_tab_width, tab_stops, auto_tab_right, auto_left_tab_position, available_width, line_x_offset, text_start_offset, right_tab_block_width_override, tab_leaders, inline_tabs, extra_word_spacing, unjustified_leading_spaces, extra_char_spacing, extra_dash_advance, outline_type, shadow_type, shadow_color, shadow_offset_x, shadow_offset_y, emboss, engrave, superscript, subscript, emphasis_dot, underline_shape, strike_shape, underline_color, strike_color, shade_color, font_metric_trusted, glyph_fallback_advance_explicit, metric_font_family, original_glyph_metric_family, font_space_em, layout_half_space, regenerated_font_metrics, hft_hangul_face, hft_font_face, hft_fullwidth_dot, ascii_punct_latin});
+crate::storage::clone_fields!(TextStyle, {literal_soft_hyphen, text_paint, continuous_shadow, inherited_half_space_em, script_metrics, shadow_offset_percent, space_compression, literal_figure_space, literal_figure_space_em, native_pua_metrics, native_otf_metrics, bidi_layout, emphasis_skip_first_cluster, top_underline_font_size, top_underline_phase, supplemental_metrics, isolated_jamo_font, font_family, font_size, fixed_glyph_advances, source_font_is_hft, source_font_is_ttf, selected_primary_font_program, source_verified_hft_bold_tracking, source_hwp3_hft_bold, resolved_font_size, print_ink_font_size, font_position, hft_print_frame, print_text_device_frame, preserve_glyph_ink, natural_program_metrics, color, bold, italic, underline, strikethrough, kerning, letter_spacing, ratio, default_tab_width, tab_stops, auto_tab_right, auto_left_tab_position, available_width, line_x_offset, text_start_offset, right_tab_block_width_override, tab_leaders, inline_tabs, extra_word_spacing, unjustified_leading_spaces, extra_char_spacing, extra_dash_advance, outline_type, shadow_type, shadow_color, shadow_offset_x, shadow_offset_y, emboss, engrave, superscript, subscript, emphasis_dot, underline_shape, strike_shape, underline_color, strike_color, shade_color, font_metric_trusted, glyph_fallback_advance_explicit, metric_font_family, original_glyph_metric_family, font_space_em, layout_half_space, layout_half_space_em, regenerated_font_metrics, hft_hangul_face, hft_font_face, hft_fullwidth_dot, ascii_punct_latin});
 
 /// [#7418] 영문 슬롯의 기본 메트릭 — [`TextStyle::ascii_punct_latin`] 참조.
 #[derive(Debug, Clone, PartialEq)]
@@ -660,6 +690,9 @@ pub(crate) fn faux_bold_stroke_width(style: &TextStyle, font_size: f64) -> Optio
 impl TextStyle {
     /// 원본의 0 크기를 보존한다. 해소되지 않은 기본 스타일에만 기존 폴백을 쓴다.
     pub(crate) fn effective_font_size(&self) -> f64 {
+        if let Some(size) = self.print_ink_font_size {
+            return size;
+        }
         if self.resolved_font_size || self.font_size > 0.0 {
             self.font_size
         } else {
@@ -783,124 +816,6 @@ impl TextStyle {
     }
 }
 
-/// Canvas 폰트의 glyph를 레이아웃 advance 칸에 놓을 `(가로 배율, x 이동)`을 계산한다.
-///
-/// 양수 문자 간격은 다음 cluster의 시작 위치를 바꾸는 값이므로 glyph 폭 맞춤과
-/// 분리한다. 음수 간격은 #2189 셀 오버플로우 보정의 기존 glyph-fit 계약을
-/// 유지하고, 양수 배분 간격만 `glyph_fit_advance`로 제외한다.
-///
-/// 대체 glyph를 advance로 늘리거나 상자 폭 기준으로 누르면 모양이 망가진다.
-/// - advance보다 좁은 ASCII는 늘리지 않고 칸 가운데에 둔다. 고정폭 원 글꼴의
-///   `1`·`i`·`l`이 최대 2배로 늘어 굵은 글자처럼 보였다.
-/// - advance보다 넓은 기호는 잉크(`ink_width`)가 칸에 들어가면 누르지 않고, 넘칠
-///   때만 잉크를 칸 폭에 맞춘 뒤 상자를 칸 가운데에 둔다. 전각 대체 글꼴의 `μ`·`•`
-///   같은 기호는 넓은 상자 가운데에 좁은 잉크가 있어, 상자 폭으로 누르면 잉크가
-///   0.1~0.5배 실선처럼 눌렸다.
-/// - 한글 음절·한자는 글자 상자를 채우도록 그린 glyph라 종전처럼 상자 폭을
-///   advance에 맞춘다.
-/// - `fixed_glyph_advances` 텍스트(HFT 자동 쪽번호)는 원본 폭 점유 계약이라
-///   종전처럼 상자 폭을 맞추고, ASCII는 양방향으로 맞춘다.
-pub(crate) fn canvas_cluster_fit(
-    style: &TextStyle,
-    cluster: &str,
-    layout_cluster_advance: f64,
-    visual_width: f64,
-    ink_width: Option<f64>,
-    pin_ascii_advance: bool,
-) -> Option<(f64, f64)> {
-    // 원본 TTF에 없는 작은 수학 기호는 대체 face로 그리되 원본의 반각
-    // 칸을 사용한다. 음수 자간은 윤곽을 누르지 않지만, 전각 대체 face의
-    // 양쪽 빈 공간은 반각 칸 중앙에 맞춰야 독립 Print와 같은 원점이 된다.
-    if style.letter_spacing < 0.0
-        && matches!(cluster, "\u{2218}" | "\u{2219}")
-        && style.native_otf_metrics.as_ref().is_some_and(|font| {
-            cluster.chars().next().is_some_and(|ch| {
-                // HWP5의 유형 미상은 TTF 선언이 아니다. 실제 첫 TTF가 결측이면
-                // 뒤 표시 후보가 glyph를 갖더라도 같은 반각 칸의 정렬을 보존한다.
-                // CFF/HFT의 원본 전진 계약을 이 조건으로 승격하지 않는다.
-                (style.source_font_is_ttf && !font.has_glyph(ch))
-                    || (!style.source_font_is_ttf
-                        && !style.source_font_is_hft
-                        && font.primary_truetype_lacks_glyph(ch))
-            })
-        })
-    {
-        let advance =
-            style.glyph_fit_advance(layout_cluster_advance)? * style.script_advance_scale();
-        if advance > 0.0
-            && visual_width > advance + 0.25
-            // Skia 경계의 반올림 오차는 아래 상자 초과 판정과 같은 0.25px을 허용한다.
-            && ink_width.is_some_and(|ink| {
-                ink.is_finite() && ink > 0.0 && ink <= advance * 1.1 + 0.25
-            })
-        {
-            return Some((1.0, (advance - visual_width) / 2.0));
-        }
-    }
-    // 명시 대체의 실제 잉크가 원본 메트릭의 좁은 칸을 차지하는 경우도 있다.
-    // 기호의 음수 자간은 다음 원점만 이동시킨다. 그 간격을 glyph 칸 폭으로
-    // 쓰거나, 잉크 보존을 이유로 전각 표시 프로그램의 여백까지 보존하지 않는다.
-    // 독립 Print의 U+2219는 반각 advance에 원래 원형 잉크를 그대로 놓는다.
-    // 실제 원본 TTF/HFT와 결측·추정 폭은 이 대체 프로그램 계약에 포함하지 않는다.
-    if style.letter_spacing < 0.0
-        && style.preserve_glyph_ink
-        && !style.fixed_glyph_advances
-        && !style.source_font_is_ttf
-        && !style.source_font_is_hft
-        && matches!(cluster, "\u{2218}" | "\u{2219}")
-    {
-        let ch = cluster.chars().next()?;
-        let decision = layout::char_width_decision(&[ch], &[1], 0, style, true);
-        if decision.width_source == "embeddedMetric" && decision.character_match == "hit" {
-            let advance = decision.base_width_px * style.ratio_draw_params(1.0).1;
-            if advance > 0.0
-                && visual_width > advance + 0.25
-                && ink_width
-                    .is_some_and(|ink| ink.is_finite() && ink > 0.0 && ink <= advance * 1.1 + 0.25)
-            {
-                return Some((1.0, (advance - visual_width) / 2.0));
-            }
-        }
-    }
-    // 호출자가 선택한 프로그램은 전진과 잉크 폭을 구분한다. 원본 HFT 선언이나
-    // 폭 표의 신뢰만으로 일반 대체 face의 기존 맞춤까지 차단하지 않는다.
-    if !style.fixed_glyph_advances && style.preserve_glyph_ink {
-        return None;
-    }
-    let cluster_advance =
-        style.glyph_fit_advance(layout_cluster_advance)? * style.script_advance_scale();
-    if cluster_advance <= 0.0 || visual_width <= 0.0 || style.letter_spacing < 0.0 {
-        return None;
-    }
-    let box_scale = cluster_advance / visual_width;
-    if style.fixed_glyph_advances && pin_ascii_advance {
-        // 생성자가 원본 글자 폭을 paint 계약으로 명시한 텍스트(HFT 자동 쪽번호)는
-        // 점유 폭을 원본 폭에 맞춘다.
-        return Some((box_scale.clamp(0.1, 2.0), 0.0));
-    }
-    let overflow_tolerance = if pin_ascii_advance { 0.0 } else { 0.25 };
-    if visual_width > cluster_advance + overflow_tolerance {
-        let box_scale = box_scale.clamp(0.1, 1.0);
-        // 한글 음절·한자(통합·확장 A·호환)
-        let fills_em_box = |ch: char| {
-            ('\u{AC00}'..='\u{D7A3}').contains(&ch)
-                || ('\u{3400}'..='\u{9FFF}').contains(&ch)
-                || ('\u{F900}'..='\u{FAFF}').contains(&ch)
-        };
-        let keeps_box_fit = style.fixed_glyph_advances || cluster.chars().any(fills_em_box);
-        let ink_width = ink_width.filter(|width| width.is_finite() && *width > 0.0);
-        let Some(ink_width) = ink_width.filter(|_| !keeps_box_fit) else {
-            return Some((box_scale, 0.0));
-        };
-        let scale = (cluster_advance / ink_width).clamp(box_scale, 1.0);
-        return Some((scale, (cluster_advance - visual_width * scale) / 2.0));
-    }
-    if pin_ascii_advance {
-        return Some((1.0, (cluster_advance - visual_width) / 2.0));
-    }
-    None
-}
-
 /// 반각 강제 구두점(`U+2018..=U+2027`, 반각 낫표)을 그릴 때의 가로 배율.
 ///
 /// 대체 글꼴의 글리프가 전진폭보다 넓을 때만 전진폭에 맞춰 누른다. 종전에는
@@ -936,8 +851,10 @@ impl Default for TextStyle {
             source_verified_hft_bold_tracking: false,
             source_hwp3_hft_bold: false,
             resolved_font_size: false,
+            print_ink_font_size: None,
             font_position: None,
             hft_print_frame: false,
+            print_text_device_frame: false,
             preserve_glyph_ink: false,
             natural_program_metrics: false,
             color: 0,
@@ -987,6 +904,7 @@ impl Default for TextStyle {
             font_space_em: None,
             inherited_half_space_em: false,
             layout_half_space: false,
+            layout_half_space_em: None,
             regenerated_font_metrics: false,
             literal_figure_space: false,
             literal_figure_space_em: None,
@@ -998,10 +916,10 @@ impl Default for TextStyle {
     }
 }
 
-/// 패턴 채우기 정보 (HWP pattern_type 1~6)
+/// 패턴 채우기 정보
 #[derive(Debug, Clone, Copy, Serialize)]
 pub struct PatternFillInfo {
-    /// 패턴 종류 (1=가로줄, 2=세로줄, 3=역대각선, 4=대각선, 5=십자, 6=격자)
+    /// HWP 무늬 종류 0~5 (`crate::model::style::HatchStyle`). 0=─, 1=│, 2=＼, 3=／, 4=＋, 5=×
     pub pattern_type: i32,
     /// 한컴 인쇄 무늬의 576HU 반복 주기를 현재 출력 DPI로 변환한 값.
     pub tile_size: f64,
@@ -1016,7 +934,7 @@ pub struct PatternFillInfo {
 pub struct ShapeStyle {
     /// 채우기 색상 (None이면 채우기 없음)
     pub fill_color: Option<ColorRef>,
-    /// 패턴 채우기 (pattern_type > 0일 때)
+    /// 패턴 채우기 (무늬 0~5일 때)
     pub pattern: Option<PatternFillInfo>,
     /// 테두리 색상
     pub stroke_color: Option<ColorRef>,
@@ -1086,7 +1004,10 @@ fn lerp_color(from: ColorRef, to: ColorRef, t: f64) -> ColorRef {
     for shift in [0, 8, 16] {
         let a = ((from >> shift) & 0xff) as f64;
         let b = ((to >> shift) & 0xff) as f64;
-        let v = (a + (b - a) * t).round().clamp(0.0, 255.0) as u32;
+        // 독립 한컴 Print의 양방향 RGB 대조군은 최종값 반올림이 아니라
+        // 시작색에 대한 signed 변화량의 소수부를 버린 뒤 더한다.
+        // 예: 210→40의 1/6은182, 40→210의 1/6은68이다.
+        let v = (a + ((b - a) * t).trunc()).clamp(0.0, 255.0) as u32;
         out |= v << shift;
     }
     out
@@ -2744,10 +2665,18 @@ pub(crate) fn cell_uses_overlapping_line_boxes(
 ///
 /// 전진이 줄 높이를 넘으면 겹침 걸음이 아니라 평범한 줄이므로 기존 보존 경로가 판정한다.
 /// 되감김(전진 ≤ 0)도 이 규칙의 대상이 아니다.
-pub(crate) fn stored_overlap_spacer_advance_hu(
+///
+/// [#8981] 저장 차이는 이 줄의 위끝에서 다음 문단 줄의 위끝까지이므로 이 문단의 뒤 간격과
+/// 다음 문단의 앞 간격 띠를 함께 담는다. 두 소비자는 다음 문단에서 앞 간격을 다시 더하고,
+/// 이 문단의 앞 간격을 적용하기 전 커서에 결과를 더한다. 그래서 돌려주는 값(px)은
+/// `stored_empty_successor_geometry` 와 같이 `현재 앞 간격 + 저장 차이 − 다음 앞 간격` 이다
+/// (평가결과서 칸: 6456 → 7536HU 에 다음 앞 간격 300HU 포함).
+pub(crate) fn stored_overlap_spacer_advance(
     paragraphs: &[crate::model::paragraph::Paragraph],
     para_idx: usize,
-) -> Option<i32> {
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    dpi: f64,
+) -> Option<f64> {
     let synthetic = |seg: &crate::model::paragraph::LineSeg| {
         seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
     };
@@ -2759,12 +2688,24 @@ pub(crate) fn stored_overlap_spacer_advance_hu(
         [seg] if !synthetic(seg) && seg.line_height > 0 => seg,
         _ => return None,
     };
-    let next = paragraphs.get(para_idx + 1)?.line_segs.first()?;
+    let next_para = paragraphs.get(para_idx + 1)?;
+    let next = next_para.line_segs.first()?;
     if synthetic(next) {
         return None;
     }
     let forward = i64::from(next.vertical_pos) - i64::from(seg.vertical_pos);
-    (forward > 0 && forward <= i64::from(seg.line_height)).then_some(forward as i32)
+    if forward <= 0 || forward > i64::from(seg.line_height) {
+        return None;
+    }
+    let spacing_before = |p: &crate::model::paragraph::Paragraph| {
+        styles
+            .para_styles
+            .get(p.para_shape_id as usize)
+            .map_or(0.0, |style| style.spacing_before)
+    };
+    let current_before = cell_paragraph_spacing_before(para, para_idx, spacing_before(para));
+    let advance = current_before + hwpunit_to_px(forward as i32, dpi) - spacing_before(next_para);
+    (advance >= 0.0).then_some(advance)
 }
 
 /// [#2287] 저장 LINE_SEG 없는 빈 anchor 문단의 TAC(글자처럼) 그림/도형 플로우
@@ -3126,6 +3067,37 @@ pub(crate) fn solo_title_exit_pad_px(
     )
 }
 
+/// 일반 텍스트 영역 끝의 줄 수와 후행 간격을 같은 확정 구성에서 읽는다.
+/// 저장 줄이 없으면 수용과 배치가 공유하는 재조판 결과만 근거로 사용한다.
+/// 개체·편집 중인 줄·배치용 채움 줄은 영역 간격을 줄일 근거가 아니다.
+pub(crate) fn closing_text_zone_line_metrics(
+    paragraph: &crate::model::paragraph::Paragraph,
+    computed: Option<&composer::ComposedParagraph>,
+    dpi: f64,
+) -> Option<(usize, f64)> {
+    if !paragraph.controls.is_empty() {
+        return None;
+    }
+    if para_has_no_stored_line_segs(paragraph) {
+        if paragraph.stored_text_partition_is_dirty()
+            || paragraph.cell_format_vpos_dirty
+            || paragraph.layout_only_fill_lines > 0
+        {
+            return None;
+        }
+        let computed = computed?;
+        let last = computed.lines.last()?;
+        (last.line_height > 0 && last.line_spacing >= 0)
+            .then_some((computed.lines.len(), hwpunit_to_px(last.line_spacing, dpi)))
+    } else {
+        let last = paragraph.line_segs.last()?;
+        Some((
+            paragraph.line_segs.len(),
+            hwpunit_to_px(last.line_spacing, dpi),
+        ))
+    }
+}
+
 /// 단일 단 구간의 확정 텍스트 끝에서 다음 구간 간격과 중복되는 후행 줄간격.
 /// 구조 제어만 가진 빈 줄도 줄 상자는 보존하며, 개체·부분 문단·재조판 줄은 제외한다.
 pub(crate) fn solo_zone_trailing_spacing_px(
@@ -3420,6 +3392,59 @@ pub(crate) fn stored_empty_square_successor_strip(
     .then_some((first.column_start, first.segment_width))
 }
 
+/// 저장 LINE_SEG 가 없는 공백 host 문단을 글자 있는 host 와 같게 다룰지.
+///
+/// 한/글(웹기안기)은 저장 줄이 없는 host 를 다시 조판할 때 공백만 든 host 줄도 글자 있는
+/// host 줄과 똑같이 놓는다(공백 7칸 host 와 "X" host 의 다음 문단 위치가 같다). 글자처럼
+/// 취급하지 않는 표·그림 하나를 가진 host 에만 적용한다. 글앞·글뒤 개체는 흐름을 차지하지
+/// 않아 함께 있어도 된다. 흐름 개체가 둘 이상인 공백 host(표 두 개를 공동 앵커로 둔 제목
+/// 띠 등)는 기존 공백 host 경로에 남긴다. 세로 오프셋이 음수인 자리차지 개체도 기존 경로에
+/// 남긴다(웹기안기: 공백 host·"X" host 모두 음수 오프셋 자리차지 표를 문단 위끝에 놓는다.
+/// 글자 host 경로는 오프셋을 그대로 써 표를 쪽 위 밖으로 보낸다).
+pub(crate) fn is_unstored_whitespace_object_host(
+    para: &crate::model::paragraph::Paragraph,
+) -> bool {
+    use crate::model::control::Control;
+    use crate::model::shape::TextWrap;
+    if para
+        .line_segs
+        .iter()
+        .any(|seg| seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+        || !para
+            .text
+            .chars()
+            .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}')
+    {
+        return false;
+    }
+    let mut flow_objects = 0usize;
+    let mut table_or_picture = false;
+    for control in &para.controls {
+        let (common, is_table_or_picture) = match control {
+            Control::Table(t) => (&t.common, true),
+            Control::Picture(p) => (&p.common, true),
+            Control::Shape(s) => (s.common(), false),
+            _ => continue,
+        };
+        if common.treat_as_char
+            || matches!(
+                common.text_wrap,
+                TextWrap::InFrontOfText | TextWrap::BehindText
+            )
+        {
+            continue;
+        }
+        if matches!(common.text_wrap, TextWrap::TopAndBottom)
+            && crate::renderer::float_placement::signed_hwpunit(common.vertical_offset) < 0
+        {
+            return false;
+        }
+        flow_objects += 1;
+        table_or_picture |= is_table_or_picture;
+    }
+    flow_objects == 1 && table_or_picture
+}
+
 /// 저장 LINE_SEG 가 하나도 없고 가시 글자가 있는 문단인지. 저장 줄이 없으면 host 글자의
 /// 띠·높이 증거가 없어 표 기하로 판단해야 한다(`no_lineseg_square_table_host_band`).
 pub(crate) fn is_no_lineseg_visible_text_host(para: &crate::model::paragraph::Paragraph) -> bool {
@@ -3431,6 +3456,7 @@ pub(crate) fn is_no_lineseg_visible_text_host(para: &crate::model::paragraph::Pa
             .text
             .chars()
             .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace())
+        || is_unstored_whitespace_object_host(para)
 }
 
 /// 저장 LINE_SEG 가 없는 host 의 글자가 Square 표 **아래**로 흐르는지.
@@ -3907,6 +3933,15 @@ pub(crate) fn render_font_family_names_for_weight(font_family: &str, bold: bool)
 /// 바로 뒤에 base family를 넣어 generic 폴백보다 먼저 선택되게 한다.
 /// 정적 DB 조회의 family key와는 다르다. Canvas 실측은 paint와 이 체인을 공유한다.
 pub fn canvas_font_family_chain(font_family: &str) -> String {
+    canvas_font_family_chain_for_selection(font_family, false)
+}
+
+/// 명시된 글리프 공급자는 주 face 뒤에서 미선택 OS 별칭보다 먼저 소비한다.
+/// 일반 설치 글꼴의 별칭 조회 순서는 바꾸지 않는다.
+pub(crate) fn canvas_font_family_chain_for_selection(
+    font_family: &str,
+    explicit_glyph_fallbacks: bool,
+) -> String {
     let requested = internal_font_family_members(font_family);
     let Some(primary) = requested.first().copied() else {
         return "sans-serif".to_string();
@@ -3915,6 +3950,11 @@ pub fn canvas_font_family_chain(font_family: &str) -> String {
     let fallback = generic_fallback(primary);
     let mut family_names = Vec::new();
     push_unique_family(&mut family_names, primary);
+    if explicit_glyph_fallbacks {
+        for declared_fallback in requested.iter().skip(1) {
+            push_unique_family(&mut family_names, *declared_fallback);
+        }
+    }
     for alias in installed_render_font_aliases(primary) {
         push_unique_family(&mut family_names, *alias);
     }

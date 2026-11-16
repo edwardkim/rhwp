@@ -709,7 +709,7 @@ export class ParaShapeDialog {
     ]);
     this.borderResult.bgFillPicker.value = p.fillColor || '#ffffff';
     this.borderResult.bgPatColorInput.value = p.patternColor || '#000000';
-    this.borderResult.bgPatShapeSelect.value = String(p.patternType ?? 0);
+    this.borderResult.bgPatShapeSelect.value = String(p.patternType ?? -1);
     // 간격 (HWPUNIT → mm)
     const sp = p.borderSpacing ?? [0, 0, 0, 0];
     // bdSpacingInputs: [0]=left, [1]=top, [2]=right, [3]=bottom

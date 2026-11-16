@@ -1,0 +1,13 @@
+{
+  "documentSubstitutions": [],
+  "id": "native-webfont-63b2c919b5eaaa13ace53b4c",
+  "preserveSourceMetrics": true,
+  "substitutions": {
+    "Calibri": "NotoSansKR-Regular",
+    "HY견고딕": "NotoSansKRThin-Bold",
+    "HY견명조": "NotoSerifKRExtraLight-Bold",
+    "HY신명조": "NotoSerifKRExtraLight-Regular",
+    "HY중고딕": "NotoSansKR-Regular",
+    "굴림체": "D2Coding"
+  }
+}

@@ -654,6 +654,40 @@ fn stored_successor_closes_full_gap(seg: &LineSeg, next: &Paragraph) -> bool {
         })
 }
 
+/// 완전한 TAC 저장 줄 뒤에서 후속 문단의 저장 축이 다시 시작하면,
+/// 그 새 축은 앞 줄의 나머지 반간격을 복원할 수 없다. 줄 상자와 바깥
+/// 여백의 소유가 확인된 원본 줄은 후행 간격 전량을 현재 흐름에 남긴다.
+/// 원점 0에서 다시 시작하는 저장 축과 실제 한 줄을 혼자 소유한 TAC 상자를 확인한다.
+/// 좌표 감소만으로 새 축을 추정하지 않는다. 양수 원점의 닫힘은 별도 공통 계약으로 검증한다.
+fn stored_successor_restarts_owned_tac_frame(
+    para: &Paragraph,
+    seg: &LineSeg,
+    next: &Paragraph,
+) -> bool {
+    if para.cell_format_vpos_dirty
+        || next.cell_format_vpos_dirty
+        || next.stored_text_partition_is_dirty()
+        || seg.vertical_pos < 0
+        || seg.line_spacing <= 0
+        || !para
+            .line_segs
+            .last()
+            .is_some_and(|last| std::ptr::eq(last, seg))
+    {
+        return false;
+    }
+    next.line_segs.first().is_some_and(|first| {
+        first.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            && first.line_height > 0
+            // 원점에서 시작하는 새 저장 축만 이 경계의 독립 근거다.
+            // 양수 vpos의 단순 되감김은 앞 줄 간격의 소유를 증명하지 않는다.
+            && first.vertical_pos == 0
+    }) && para.controls.iter().enumerate().any(|(index, _)| {
+        stored_owned_tac_line(para, index)
+            .is_some_and(|(_, owner)| std::ptr::eq(owner, seg))
+    })
+}
+
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn tac_host_trailing_spacing_at_boundary(
     para: &Paragraph,
@@ -678,6 +712,7 @@ pub(crate) fn tac_host_trailing_spacing_at_boundary(
         && next_para.is_some_and(|next| {
             successor_lacks_stored_text_axis(next)
                 || (stored_successor_full_gap && stored_successor_closes_full_gap(seg, next))
+                || stored_successor_restarts_owned_tac_frame(para, seg, next)
         })
     {
         crate::renderer::hwpunit_to_px(seg.line_spacing, dpi)
@@ -815,6 +850,12 @@ pub(crate) fn tac_next_line_full_spacing(
         && !para.stored_text_partition_is_dirty()
         && !para.cell_format_vpos_dirty
         && seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0;
+    if stored_host
+        && next_para
+            .is_some_and(|next| stored_successor_restarts_owned_tac_frame(para, seg, next))
+    {
+        return true;
+    }
     // 다음 흐름 개체가 도형이어도 같은 문단의 저장 줄 간격을 소유한다.
     // 표 개수만 세어 마지막 표로 판단하면 두 줄 사이의 거리를 절반으로 줄인다.
     // 같은 vpos의 수평 조각과 편집/합성 사다리는 이 닫힘의 근거가 아니다.

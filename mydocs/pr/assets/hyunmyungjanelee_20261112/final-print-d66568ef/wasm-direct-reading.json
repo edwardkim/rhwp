@@ -1,0 +1,265 @@
+{
+  "checked_at": "2026-11-12T12:19:31.137823+00:00",
+  "code_head": "d66568ef247859a9c184546cad3ba42b06e806e1",
+  "all_pages_quantitative": 46,
+  "representative_pages": 7,
+  "previous_reading_source": "../final-print-8fe7d1fb/wasm-direct-reading.json",
+  "records": [
+    {
+      "pr": 8895,
+      "key": "pr8895-title_line_overflows",
+      "page": 2,
+      "review_and_overlay_opened": true,
+      "reading": "TITLE 2와 결재 칸이 2쪽 첫 부분에 함께 배치된다. 표 전체 높이로 제목 fit을 대신하지 않는다.",
+      "images": [
+        {
+          "file": "pr8895/pr8895-title_line_overflows/wasm/raw-002.png",
+          "sha256": "2b9106a4e79885b821c317352e967a6b19e9e0a2c93541a5d5a13e7accaad8ea",
+          "previous_sha256": "2b9106a4e79885b821c317352e967a6b19e9e0a2c93541a5d5a13e7accaad8ea"
+        },
+        {
+          "file": "pr8895/pr8895-title_line_overflows/wasm/pdf-002.png",
+          "sha256": "1caf7fb75885d611bddcf8a04fd76ce1c6f943dbb262eeb65ba3c655bbb5353c",
+          "previous_sha256": "1caf7fb75885d611bddcf8a04fd76ce1c6f943dbb262eeb65ba3c655bbb5353c"
+        },
+        {
+          "file": "pr8895/pr8895-title_line_overflows/wasm/review-002.png",
+          "sha256": "d9ecf596b312deca2e548c06f50c0b673ee0f0cdbc7698c394118bbd932dc05a",
+          "previous_sha256": "d9ecf596b312deca2e548c06f50c0b673ee0f0cdbc7698c394118bbd932dc05a"
+        },
+        {
+          "file": "pr8895/pr8895-title_line_overflows/wasm/overlay-002.png",
+          "sha256": "8d575af851c2efd069a7110e879cd7c3082b04d7516ac87510c4b4746cc596d1",
+          "previous_sha256": "8d575af851c2efd069a7110e879cd7c3082b04d7516ac87510c4b4746cc596d1"
+        }
+      ],
+      "new_capture_source": "d66568ef247859a9c184546cad3ba42b06e806e1",
+      "rendered_png_reused": false,
+      "reading_mode": "이전 직접 판독의 raw·PDF 바이트 및 overlay 본문 픽셀 동일성 확인",
+      "overlay_body_equal": true,
+      "label_heights_old_new": [
+        32,
+        32
+      ]
+    },
+    {
+      "pr": 8897,
+      "key": "pr8897-whitespace-host-topbottom-stacked-zones",
+      "page": 1,
+      "review_and_overlay_opened": true,
+      "reading": "Q·표·A를 보존하고 Z·Y의 중복 후행 간격이 제거됐다. fresh WASM 100.00%.",
+      "images": [
+        {
+          "file": "pr8897/pr8897-whitespace-host-topbottom-stacked-zones/wasm/raw-001.png",
+          "sha256": "df2ad6b2b22d3aa05a3cc4bc9b07c25e0efa2266039512acf1e3c9a25aba7ffb",
+          "previous_sha256": "df2ad6b2b22d3aa05a3cc4bc9b07c25e0efa2266039512acf1e3c9a25aba7ffb"
+        },
+        {
+          "file": "pr8897/pr8897-whitespace-host-topbottom-stacked-zones/wasm/pdf-001.png",
+          "sha256": "1321b28b98fc7ea6b2afc5d2114c9af7fbdcd21cbdd17aa7f03564ba1deef0e0",
+          "previous_sha256": "1321b28b98fc7ea6b2afc5d2114c9af7fbdcd21cbdd17aa7f03564ba1deef0e0"
+        },
+        {
+          "file": "pr8897/pr8897-whitespace-host-topbottom-stacked-zones/wasm/review-001.png",
+          "sha256": "93cb3d078eb2afae2cbd5656d0fb654ee264cd9f9901eb393b7042229b485790",
+          "previous_sha256": "93cb3d078eb2afae2cbd5656d0fb654ee264cd9f9901eb393b7042229b485790"
+        },
+        {
+          "file": "pr8897/pr8897-whitespace-host-topbottom-stacked-zones/wasm/overlay-001.png",
+          "sha256": "fd470f8a588af37921d8369cc10125018705698f060da59df3334f143df4f93d",
+          "previous_sha256": "fd470f8a588af37921d8369cc10125018705698f060da59df3334f143df4f93d"
+        }
+      ],
+      "new_capture_source": "d66568ef247859a9c184546cad3ba42b06e806e1",
+      "rendered_png_reused": false,
+      "reading_mode": "이전 직접 판독의 raw·PDF 바이트 및 overlay 본문 픽셀 동일성 확인",
+      "overlay_body_equal": true,
+      "label_heights_old_new": [
+        32,
+        32
+      ]
+    },
+    {
+      "pr": 8897,
+      "key": "page-boundary-text",
+      "page": 2,
+      "review_and_overlay_opened": true,
+      "reading": "마지막 그림 1개와 X·AFTER TABLE·END의 순서와 단일 소속이 Print에 대응한다. base에 없던 둘째 쪽의 구조 복원이다.",
+      "images": [
+        {
+          "file": "pr8897/page-boundary-text/wasm/raw-002.png",
+          "sha256": "5c7d2b34dff0293fbe4344637560d1b021f5777a0352f425ef905767a0391a20",
+          "previous_sha256": "5c7d2b34dff0293fbe4344637560d1b021f5777a0352f425ef905767a0391a20"
+        },
+        {
+          "file": "pr8897/page-boundary-text/wasm/pdf-002.png",
+          "sha256": "4dabe457a26aabc8ebb652425a9fb7ebd03dbef10223b5fa7a8d1201bdc9068a",
+          "previous_sha256": "4dabe457a26aabc8ebb652425a9fb7ebd03dbef10223b5fa7a8d1201bdc9068a"
+        },
+        {
+          "file": "pr8897/page-boundary-text/wasm/review-002.png",
+          "sha256": "d5a79fca95d6f23009b11700dd5e64b223358a31306d835f1ab9454b1660d042",
+          "previous_sha256": "d5a79fca95d6f23009b11700dd5e64b223358a31306d835f1ab9454b1660d042"
+        },
+        {
+          "file": "pr8897/page-boundary-text/wasm/overlay-002.png",
+          "sha256": "256a5f7747b9ea50706cbc418ea5b1ee0cde690066b1d5822f430c1dab240a17",
+          "previous_sha256": "256a5f7747b9ea50706cbc418ea5b1ee0cde690066b1d5822f430c1dab240a17"
+        }
+      ],
+      "new_capture_source": "d66568ef247859a9c184546cad3ba42b06e806e1",
+      "rendered_png_reused": false,
+      "reading_mode": "이전 직접 판독의 raw·PDF 바이트 및 overlay 본문 픽셀 동일성 확인",
+      "overlay_body_equal": true,
+      "label_heights_old_new": [
+        32,
+        32
+      ]
+    },
+    {
+      "pr": 8900,
+      "key": "pr8900-bar_axis_floor",
+      "page": 1,
+      "review_and_overlay_opened": true,
+      "reading": "4.1부터 5.0까지 0.1 눈금과 가로막대 끝 x 위치를 확인했다. plot 높이·세로 배치는 다르므로 차트 전체 해결로 확대하지 않고 #8678을 OPEN 유지한다.",
+      "images": [
+        {
+          "file": "pr8900/pr8900-bar_axis_floor/wasm/raw-001.png",
+          "sha256": "328349ac7f4a37110a549f8708166e3fd01165222ac73305dac17faf764c80b1",
+          "previous_sha256": "328349ac7f4a37110a549f8708166e3fd01165222ac73305dac17faf764c80b1"
+        },
+        {
+          "file": "pr8900/pr8900-bar_axis_floor/wasm/pdf-001.png",
+          "sha256": "8be51bb61bc95d89510a09ee91595cd8340804642261eacca52c57302756c38a",
+          "previous_sha256": "8be51bb61bc95d89510a09ee91595cd8340804642261eacca52c57302756c38a"
+        },
+        {
+          "file": "pr8900/pr8900-bar_axis_floor/wasm/review-001.png",
+          "sha256": "1e57f72a9fab4b68a1936b382ffc54299592049e1d315f24dbe45d66cd89fd07",
+          "previous_sha256": "1e57f72a9fab4b68a1936b382ffc54299592049e1d315f24dbe45d66cd89fd07"
+        },
+        {
+          "file": "pr8900/pr8900-bar_axis_floor/wasm/overlay-001.png",
+          "sha256": "8aa1f4c3cf6ee244bbcf0daf407321bd21270774cdaea87ce81ca2424241ebd3",
+          "previous_sha256": "8aa1f4c3cf6ee244bbcf0daf407321bd21270774cdaea87ce81ca2424241ebd3"
+        }
+      ],
+      "new_capture_source": "d66568ef247859a9c184546cad3ba42b06e806e1",
+      "rendered_png_reused": false,
+      "reading_mode": "이전 직접 판독의 raw·PDF 바이트 및 overlay 본문 픽셀 동일성 확인",
+      "overlay_body_equal": true,
+      "label_heights_old_new": [
+        32,
+        32
+      ]
+    },
+    {
+      "pr": 8916,
+      "key": "pr8916-zero_size_para_before_table",
+      "page": 1,
+      "review_and_overlay_opened": true,
+      "reading": "TOP→표→AFTER의 순서와 표의 높이·위치가 사용자 확인 2024 Print에 대응한다. MCP 2020 성공으로 표시하지 않는다.",
+      "images": [
+        {
+          "file": "pr8916/pr8916-zero_size_para_before_table/wasm/raw-001.png",
+          "sha256": "e1d15ba5e126dd6e017757996b00e847e7610cdc4413c3bc73804d67e78ca5c9",
+          "previous_sha256": "e1d15ba5e126dd6e017757996b00e847e7610cdc4413c3bc73804d67e78ca5c9"
+        },
+        {
+          "file": "pr8916/pr8916-zero_size_para_before_table/wasm/pdf-001.png",
+          "sha256": "cd0e97acafa58de74d86729c9086e5e95a08ae9f744cd46e90845fe3a5076668",
+          "previous_sha256": "cd0e97acafa58de74d86729c9086e5e95a08ae9f744cd46e90845fe3a5076668"
+        },
+        {
+          "file": "pr8916/pr8916-zero_size_para_before_table/wasm/review-001.png",
+          "sha256": "3ff507c0a86ad9dcb841a249452160efbb7fce71a0a35da359b154fc49762ab3",
+          "previous_sha256": "3ff507c0a86ad9dcb841a249452160efbb7fce71a0a35da359b154fc49762ab3"
+        },
+        {
+          "file": "pr8916/pr8916-zero_size_para_before_table/wasm/overlay-001.png",
+          "sha256": "7f4781f138b5b54dc47849ba7b6dc9043cad98f82fa198fb1d41cfa49096c17c",
+          "previous_sha256": "7f4781f138b5b54dc47849ba7b6dc9043cad98f82fa198fb1d41cfa49096c17c"
+        }
+      ],
+      "new_capture_source": "d66568ef247859a9c184546cad3ba42b06e806e1",
+      "rendered_png_reused": false,
+      "reading_mode": "이전 직접 판독의 raw·PDF 바이트 및 overlay 본문 픽셀 동일성 확인",
+      "overlay_body_equal": true,
+      "label_heights_old_new": [
+        32,
+        32
+      ]
+    },
+    {
+      "pr": 8918,
+      "key": "pr8918-wingdings_pua_symbols",
+      "page": 1,
+      "review_and_overlay_opened": true,
+      "reading": "원문자·흰 원·체크 상자의 표시를 유지하고 U+F0FA를 작은 빈 상자 U+1F8AD로 표시한다. 원 전진과 뒤 본문 간격을 확인했다. fresh WASM raw99.73%.",
+      "images": [
+        {
+          "file": "pr8918/pr8918-wingdings_pua_symbols/wasm/raw-001.png",
+          "sha256": "3a9dad5df41f7a57a278b7261eafd5d2536bb967fac59a45b8648fb6ba23cf6c",
+          "previous_sha256": "8ea5bcaa1f6ce3ba0cde5cb325be6cfbc0fb1f8c621033cc8b5cf5c991d3c7cb"
+        },
+        {
+          "file": "pr8918/pr8918-wingdings_pua_symbols/wasm/pdf-001.png",
+          "sha256": "e5892cbb5bd8da09ed68c13c3ed77702b862399ddf87ded68b36b99fcb829135",
+          "previous_sha256": "e5892cbb5bd8da09ed68c13c3ed77702b862399ddf87ded68b36b99fcb829135"
+        },
+        {
+          "file": "pr8918/pr8918-wingdings_pua_symbols/wasm/review-001.png",
+          "sha256": "c6e8a58020c763b85439f26fdc9c6051cd088e8e37b8e7c12c7452815de3a58f",
+          "previous_sha256": "ac4b31b75d709dfce7556b9f4858bf513196fdc6dcc3957de12da3e1b5bb656b"
+        },
+        {
+          "file": "pr8918/pr8918-wingdings_pua_symbols/wasm/overlay-001.png",
+          "sha256": "e4aa5d33ba5044a347d4d4419d05adca8db73d6ac625d41b9ae1b72beda62f28",
+          "previous_sha256": "ba52c24dd8f2f97131eebcaad74f33e59cb022226b8e8131c6d07959de2cfee7"
+        }
+      ],
+      "new_capture_source": "d66568ef247859a9c184546cad3ba42b06e806e1",
+      "rendered_png_reused": false,
+      "reading_mode": "새 source의 review·overlay 직접 판독",
+      "overlay_body_equal": null,
+      "label_heights_old_new": []
+    },
+    {
+      "pr": 8920,
+      "key": "pr8920-float_line_rowspan_infront_center",
+      "page": 1,
+      "review_and_overlay_opened": true,
+      "reading": "병합 칸과 일반 칸의 직선이 모두 표시되고 가운데 정렬 위치가 Print와 대응한다. fresh WASM 100.00%.",
+      "images": [
+        {
+          "file": "pr8920/pr8920-float_line_rowspan_infront_center/wasm/raw-001.png",
+          "sha256": "358c68feddcb878ca58395e7ac9bd045ae1266b5ff4844e4afe4fcb235a88431",
+          "previous_sha256": "358c68feddcb878ca58395e7ac9bd045ae1266b5ff4844e4afe4fcb235a88431"
+        },
+        {
+          "file": "pr8920/pr8920-float_line_rowspan_infront_center/wasm/pdf-001.png",
+          "sha256": "30bdcc0ea47e7295d9e1a640d096f2761468093fb7fc4629c0dbaa1ce90f9267",
+          "previous_sha256": "30bdcc0ea47e7295d9e1a640d096f2761468093fb7fc4629c0dbaa1ce90f9267"
+        },
+        {
+          "file": "pr8920/pr8920-float_line_rowspan_infront_center/wasm/review-001.png",
+          "sha256": "87f9c3a04d318ec7303981bae5e1d3dac671be9cfb37eff9adcdccff28a3e81b",
+          "previous_sha256": "87f9c3a04d318ec7303981bae5e1d3dac671be9cfb37eff9adcdccff28a3e81b"
+        },
+        {
+          "file": "pr8920/pr8920-float_line_rowspan_infront_center/wasm/overlay-001.png",
+          "sha256": "30d12504f1cea130e0979f07706e8bb0d123ae840fdf04652e202c9c9663bd64",
+          "previous_sha256": "30d12504f1cea130e0979f07706e8bb0d123ae840fdf04652e202c9c9663bd64"
+        }
+      ],
+      "new_capture_source": "d66568ef247859a9c184546cad3ba42b06e806e1",
+      "rendered_png_reused": false,
+      "reading_mode": "이전 직접 판독의 raw·PDF 바이트 및 overlay 본문 픽셀 동일성 확인",
+      "overlay_body_equal": true,
+      "label_heights_old_new": [
+        32,
+        32
+      ]
+    }
+  ]
+}

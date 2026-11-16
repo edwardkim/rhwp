@@ -14,6 +14,8 @@ pub struct PageLayoutInfo {
     pub header_area: LayoutRect,
     /// 본문 영역 (px)
     pub body_area: LayoutRect,
+    /// 같은 구역의 홀수 쪽 본문 원점. 양쪽 바탕쪽의 용지 프레임 기준이다.
+    pub unmirrored_body_x: f64,
     /// 단별 본문 영역 (px)
     pub column_areas: Vec<LayoutRect>,
     /// 원본 단 진행 방향. 단 영역 배열도 내용이 흐르는 순서로 유지한다.
@@ -33,7 +35,7 @@ pub struct PageLayoutInfo {
     /// 페이지네이션 하단 허용치 (px). body_area 를 변경하지 않고 paginator 에게만 추가 공간 제공.
     pub pagination_tolerance_px: f64,
 }
-crate::storage::clone_fields!(PageLayoutInfo, {page_width, page_height, header_area, body_area, column_areas, column_direction, footnote_area, footer_area, dpi, separator_type, separator_width, separator_color, pagination_tolerance_px});
+crate::storage::clone_fields!(PageLayoutInfo, {page_width, page_height, header_area, body_area, unmirrored_body_x, column_areas, column_direction, footnote_area, footer_area, dpi, separator_type, separator_width, separator_color, pagination_tolerance_px});
 
 /// 레이아웃 영역 (픽셀 단위)
 #[derive(Debug, Clone, Copy, Default)]
@@ -126,6 +128,11 @@ impl PageLayoutInfo {
 
         let header_area = LayoutRect::from_hwpunit_rect(&areas.header_area, dpi);
         let body_area = LayoutRect::from_hwpunit_rect(&areas.body_area, dpi);
+        let unmirrored_body_x = LayoutRect::from_hwpunit_rect(
+            &PageAreas::from_page_def_for_page(page_def, 1).body_area,
+            dpi,
+        )
+        .x;
         let footer_area = LayoutRect::from_hwpunit_rect(&areas.footer_area, dpi);
         let footnote_area = LayoutRect::from_hwpunit_rect(&areas.footnote_area, dpi);
 
@@ -147,6 +154,7 @@ impl PageLayoutInfo {
             page_height,
             header_area,
             body_area,
+            unmirrored_body_x,
             column_areas,
             column_direction: column_def.direction,
             footnote_area,
@@ -164,12 +172,38 @@ impl PageLayoutInfo {
         Self::from_page_def(page_def, column_def, DEFAULT_DPI)
     }
 
+    /// 양쪽 기본 바탕쪽은 같은 원본 프레임을 맞쪽의 본문 원점으로 옮긴다.
+    /// 홀/짝 전용 및 확장 바탕쪽은 각 적용 쪽에서 정의한 프레임을 사용한다.
+    /// 독립 한컴 #9046 Print의 비대칭·대칭·좌우 반전 여백 대조 근거를 따른다.
+    pub(crate) fn master_page_paper_frame(
+        &self,
+        master: &crate::model::header_footer::MasterPage,
+    ) -> LayoutRect {
+        let shared_frame = master.apply_to == crate::model::header_footer::HeaderFooterApply::Both
+            && !master.is_extension;
+        LayoutRect {
+            x: if shared_frame {
+                self.body_area.x - self.unmirrored_body_x
+            } else {
+                0.0
+            },
+            y: 0.0,
+            width: self.page_width,
+            height: self.page_height,
+        }
+    }
+
     /// 기존 레이아웃을 최종 쪽번호 기준 좌우 여백으로 이동한다.
     ///
     /// ColumnDef가 다른 zone layout일 수 있으므로 단 너비/간격은 보존하고, page body의
     /// 기준 x 이동량만 각 영역에 적용한다.
     pub fn apply_page_number_margins(&mut self, page_def: &PageDef, page_number: u32) {
         self.apply_column_page_number(page_number);
+        self.unmirrored_body_x = LayoutRect::from_hwpunit_rect(
+            &PageAreas::from_page_def_for_page(page_def, 1).body_area,
+            self.dpi,
+        )
+        .x;
         let target_areas = PageAreas::from_page_def_for_page(page_def, page_number);
         let target_header = LayoutRect::from_hwpunit_rect(&target_areas.header_area, self.dpi);
         let target_body = LayoutRect::from_hwpunit_rect(&target_areas.body_area, self.dpi);

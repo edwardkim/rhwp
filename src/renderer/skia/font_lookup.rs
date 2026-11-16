@@ -315,15 +315,17 @@ fn typeface_candidates_for_families_for_source(
             // 글리프를 담을 수 있다. 원 family의 모든 프로그램을 먼저 찾고, 없는
             // 글리프는 같은 family의 다른 프로그램을 대체 family보다 앞에 둔다.
             if has_system_family(system_families, family) {
-                // fontconfig의 합성 Bold는 매칭 결과의 스타일만 바꾼다.
+                // fontconfig의 합성 Bold·Oblique는 매칭 결과의 스타일만 바꾼다.
                 // 실제 Regular 프로그램을 기준으로 같은 family의 분리된
                 // 글리프 공급자를 찾고, paint에서 요청한 굵기를 적용한다.
                 // 같은 형식·스타일 사이에서는 OS가 고른 프로그램을 먼저 보존한다.
                 // 추가 열거는 그 프로그램에 없는 글리프를 공급하는 사다리다.
                 push(typeface.clone(), "system", family_order);
+                let physical = super::synthetic_typeface::unobliqued_typeface(font_mgr, &typeface)
+                    .unwrap_or_else(|| typeface.clone());
                 let program_style =
-                    super::synthetic_typeface::unemboldened_typeface(font_mgr, &typeface)
-                        .map_or_else(|| typeface.font_style(), |face| face.font_style());
+                    super::synthetic_typeface::unemboldened_typeface(font_mgr, &physical)
+                        .map_or_else(|| physical.font_style(), |face| face.font_style());
                 for candidate in matching_system_programs(font_mgr, family, program_style) {
                     push(candidate, "system", family_order);
                 }

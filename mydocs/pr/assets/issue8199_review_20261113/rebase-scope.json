@@ -1,0 +1,16 @@
+{
+  "recorded_at_kst": "2026-11-13T19:42:44.696342+09:00",
+  "rebase": {
+    "before": "d4034ff1889683f30366884bc5fece492cc03de6",
+    "base": "fa32a1633b0677f3dc48ea5cc99a4cab309361b6",
+    "after": "febdbd26f4865974b249c67706e8e2b495196115",
+    "backup_ref": "refs/heads/backup/pr9018-before-rebase-20261113-193943",
+    "exit": 0,
+    "conflicts": []
+  },
+  "range_diff": "1:  ff968b1497 = 1:  6ddeff7b41 test(edit): 글자 없는 문단에 개체를 넣은 뒤 줄 소속 회귀 가드 (#8199)\n2:  588670a754 = 2:  67795ac618 fix(edit): 글자 없는 문단에 컨트롤을 넣을 때 줄 시작·글자모양 위치도 민다 (#8199)\n3:  8d5ec9013f = 3:  1d39629573 증적: #8199 그림을 넣은 여권발급신청서 저장본·한/글 2022 인쇄 PDF·대표 PNG\n4:  1c6d128533 = 4:  b8391debe6 fix: Visual Sweep 한글 라벨 글리프 확인과 공개 글꼴 fallback 보완\n5:  2baa9606ab = 5:  48caf9cf59 docs: Native 시각 검증의 라벨 cmap 의존성 안내\n6:  d4034ff188 = 6:  febdbd26f4 test: 컨트롤 전용 문단 검토 증적과 누름틀 끝 반례 보존\n",
+  "source_head": "be67439b02f42779b50361ace7b8a47dd0d1439a",
+  "source_mergeable": "MERGEABLE",
+  "scope": "commit and conflict-free rebase completed; correction limited to confirmed matched FIELD_END case",
+  "previous_results": "Original producer and pre-rebase evidence retained; not relabeled as fresh results after source correction."
+}

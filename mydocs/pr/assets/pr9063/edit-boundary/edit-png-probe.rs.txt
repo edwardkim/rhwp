@@ -1,0 +1,46 @@
+use rhwp::{DocumentCore, renderer::render_tree::{RenderNode, RenderNodeType}};
+use std::path::{Path, PathBuf};
+use rhwp::{paint::RenderProfile, renderer::font_environment::FontEnvironment, document_core::queries::rendering::PngExportOptions};
+
+fn objects(node: &RenderNode, out: &mut Vec<String>) {
+    if matches!(&node.node_type, RenderNodeType::Image(_) | RenderNodeType::Rectangle(_)) {
+        out.push(format!("y={:.3},height={:.3}", node.bbox.y, node.bbox.height));
+    }
+    for child in &node.children { objects(child, out); }
+}
+
+fn snapshot(core: &DocumentCore, label: &str, out: &Path) {
+    let count = core.page_count();
+    println!("{label}\tpages={count}");
+    for page in 0..count {
+        let tree = core.build_page_render_tree(page).unwrap();
+        let options = PngExportOptions { scale: Some(1.0), dpi: Some(96.0), font_paths: vec![
+            PathBuf::from("/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf"),
+            PathBuf::from("/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c")
+        ], ..Default::default() };
+        let png = core.render_page_png_native_with_profile_and_export_options(page, RenderProfile::Print, &options).unwrap();
+        std::fs::write(out.join(format!("{label}-page{}.png", page + 1)), png).unwrap();
+        let mut found = Vec::new();
+        objects(&tree.root, &mut found);
+        println!("{label}\tpage={}\tobjects={}", page + 1, found.join(";"));
+    }
+}
+
+fn main() {
+    let args: Vec<_> = std::env::args().collect();
+    let input = Path::new(&args[1]);
+    let out = Path::new(&args[2]);
+    std::fs::create_dir_all(out).unwrap();
+    let bytes = std::fs::read(input).unwrap();
+    let mut core = DocumentCore::from_bytes(&bytes).unwrap();
+    let font_json = std::fs::read_to_string("/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/environments/4f8c459a62f05f15a9fe6fe99ee5e13008f271c3a037e88a2ce9f82765172471.json").unwrap();
+    core.set_font_environment(Some(FontEnvironment::from_json(&font_json).unwrap())).unwrap();
+    snapshot(&core, "loaded", out);
+    core.insert_text_native(0, 0, 0, "X").unwrap();
+    snapshot(&core, "edited", out);
+    let saved = core.export_hwp_native().unwrap();
+    std::fs::write(out.join("edited.hwp"), &saved).unwrap();
+    let mut reopened = DocumentCore::from_bytes(&saved).unwrap();
+    reopened.set_font_environment(Some(FontEnvironment::from_json(&font_json).unwrap())).unwrap();
+    snapshot(&reopened, "reopened", out);
+}

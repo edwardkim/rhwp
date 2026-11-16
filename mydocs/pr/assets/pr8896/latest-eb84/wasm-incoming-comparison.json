@@ -1,0 +1,1648 @@
+{
+  "paired_document_counts": [
+    {
+      "key": "pr8689-1411000-201000007_final_report",
+      "base": {
+        "rhwp": 111,
+        "pdf": 111
+      },
+      "head": {
+        "rhwp": 111,
+        "pdf": 111
+      }
+    },
+    {
+      "key": "pr8708-cell_float_offset_space",
+      "base": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head": {
+        "rhwp": 1,
+        "pdf": 1
+      }
+    },
+    {
+      "key": "pr8710-1311000-201100125_saemaul_oda_pilot_report",
+      "base": {
+        "rhwp": 209,
+        "pdf": 209
+      },
+      "head": {
+        "rhwp": 209,
+        "pdf": 209
+      }
+    },
+    {
+      "key": "pr8717-employment_service_interim_report",
+      "base": {
+        "rhwp": 90,
+        "pdf": 90
+      },
+      "head": {
+        "rhwp": 90,
+        "pdf": 90
+      }
+    },
+    {
+      "key": "pr8717-scholarship_recommendation_form",
+      "base": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head": {
+        "rhwp": 1,
+        "pdf": 1
+      }
+    },
+    {
+      "key": "pr8717-tax_source_ledger_form",
+      "base": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head": {
+        "rhwp": 1,
+        "pdf": 1
+      }
+    },
+    {
+      "key": "pr8719-cell_float_inner_anchor",
+      "base": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head": {
+        "rhwp": 1,
+        "pdf": 1
+      }
+    },
+    {
+      "key": "pr8729-hft-hanyang_junggothic-probe",
+      "base": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "head": {
+        "rhwp": 4,
+        "pdf": 4
+      }
+    },
+    {
+      "key": "pr8729-hft-sinmyeong_junggothic-probe",
+      "base": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "head": {
+        "rhwp": 4,
+        "pdf": 4
+      }
+    },
+    {
+      "key": "pr8736-1741000-202200045_second_interim_report",
+      "base": {
+        "rhwp": 138,
+        "pdf": 138
+      },
+      "head": {
+        "rhwp": 138,
+        "pdf": 138
+      }
+    },
+    {
+      "key": "pr8740-156667654_saemangeum_press_release",
+      "base": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head": {
+        "rhwp": 2,
+        "pdf": 2
+      }
+    },
+    {
+      "key": "pr8744-nested_row_cell_cuts",
+      "base": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "head": {
+        "rhwp": 3,
+        "pdf": 3
+      }
+    },
+    {
+      "key": "pr8746-36345427_approval_body",
+      "base": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head": {
+        "rhwp": 1,
+        "pdf": 1
+      }
+    },
+    {
+      "key": "pr8746-36453591_approval_body",
+      "base": {
+        "rhwp": 5,
+        "pdf": 5
+      },
+      "head": {
+        "rhwp": 5,
+        "pdf": 5
+      }
+    },
+    {
+      "key": "pr8746-36483048_approval_body",
+      "base": {
+        "rhwp": 6,
+        "pdf": 6
+      },
+      "head": {
+        "rhwp": 6,
+        "pdf": 6
+      }
+    },
+    {
+      "key": "pr8751-75544_pii_bunseok",
+      "base": {
+        "rhwp": 66,
+        "pdf": 66
+      },
+      "head": {
+        "rhwp": 66,
+        "pdf": 66
+      }
+    },
+    {
+      "key": "pr8751-rowbreak-problem-pages",
+      "base": {
+        "rhwp": 18,
+        "pdf": 18
+      },
+      "head": {
+        "rhwp": 18,
+        "pdf": 18
+      }
+    },
+    {
+      "key": "pr8758-whitespace_host_approval_table",
+      "base": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head": {
+        "rhwp": 1,
+        "pdf": 1
+      }
+    },
+    {
+      "key": "pr8772-46551_road_traffic_rule_amendment",
+      "base": {
+        "rhwp": 30,
+        "pdf": 30
+      },
+      "head": {
+        "rhwp": 30,
+        "pdf": 30
+      }
+    },
+    {
+      "key": "pr8775-field_led_wide_table",
+      "base": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head": {
+        "rhwp": 2,
+        "pdf": 2
+      }
+    },
+    {
+      "key": "pr8775-field_led_wide_table_nofield",
+      "base": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head": {
+        "rhwp": 2,
+        "pdf": 2
+      }
+    },
+    {
+      "key": "pr8785-stored_field_line_page_split",
+      "base": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "head": {
+        "rhwp": 3,
+        "pdf": 3
+      }
+    },
+    {
+      "key": "pr8785-stored_field_line_table",
+      "base": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head": {
+        "rhwp": 2,
+        "pdf": 2
+      }
+    },
+    {
+      "key": "pr8788-reflowed_gap_stored_rewind",
+      "base": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "head": {
+        "rhwp": 3,
+        "pdf": 3
+      }
+    },
+    {
+      "key": "pr8792-6500000-201700118_jeju_tourism_education_plan",
+      "base": {
+        "rhwp": 313,
+        "pdf": 313
+      },
+      "head": {
+        "rhwp": 313,
+        "pdf": 313
+      }
+    },
+    {
+      "key": "pr8794-156739836-float-prefix-row-reduced",
+      "base": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "head": {
+        "rhwp": 4,
+        "pdf": 4
+      }
+    },
+    {
+      "key": "pr8794-36495398-split-row-segments-reduced",
+      "base": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "head": {
+        "rhwp": 3,
+        "pdf": 3
+      }
+    },
+    {
+      "key": "pr8803-1351000-201500141_arrhythmia_research_plan",
+      "base": {
+        "rhwp": 101,
+        "pdf": 101
+      },
+      "head": {
+        "rhwp": 101,
+        "pdf": 101
+      }
+    },
+    {
+      "key": "pr8833-36341965-float-band-gap-reduced",
+      "base": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head": {
+        "rhwp": 2,
+        "pdf": 2
+      }
+    },
+    {
+      "key": "pr8835-36400259-stale-cell-ladder",
+      "base": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head": {
+        "rhwp": 2,
+        "pdf": 2
+      }
+    },
+    {
+      "key": "pr8846-synthetic_forward_tac_axis",
+      "base": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head": {
+        "rhwp": 2,
+        "pdf": 2
+      }
+    },
+    {
+      "key": "pr8848-36355707-unstored-rebase-tac",
+      "base": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head": {
+        "rhwp": 2,
+        "pdf": 2
+      }
+    },
+    {
+      "key": "pr8849-1351000-201800239_hpv_cohort_final_report",
+      "base": {
+        "rhwp": 235,
+        "pdf": 235
+      },
+      "head": {
+        "rhwp": 235,
+        "pdf": 235
+      }
+    },
+    {
+      "key": "pr8861-36388005-host-below-header-table",
+      "base": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head": {
+        "rhwp": 2,
+        "pdf": 2
+      }
+    },
+    {
+      "key": "pr8876-36338125-bottom-fixed-table-margin",
+      "base": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head": {
+        "rhwp": 2,
+        "pdf": 2
+      }
+    },
+    {
+      "key": "pr8881-36441289-tac-host-below-float",
+      "base": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head": {
+        "rhwp": 2,
+        "pdf": 2
+      }
+    },
+    {
+      "key": "pr8901-1480000-201900510_facility_pollution_study",
+      "base": {
+        "rhwp": 241,
+        "pdf": 241
+      },
+      "head": {
+        "rhwp": 241,
+        "pdf": 241
+      }
+    },
+    {
+      "key": "pr8903-36340478-unstored-tac-column-top-spacing",
+      "base": {
+        "rhwp": 7,
+        "pdf": 7
+      },
+      "head": {
+        "rhwp": 7,
+        "pdf": 7
+      }
+    },
+    {
+      "key": "pr8909-36404364-reflowed-cell-tac-row-floor",
+      "base": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "head": {
+        "rhwp": 4,
+        "pdf": 4
+      }
+    },
+    {
+      "key": "pr8921-1471000-group-bullet-column-top",
+      "base": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "head": {
+        "rhwp": 3,
+        "pdf": 3
+      }
+    },
+    {
+      "key": "pr8921-44907-group-bullet-column-top",
+      "base": {
+        "rhwp": 4,
+        "pdf": 4
+      },
+      "head": {
+        "rhwp": 4,
+        "pdf": 4
+      }
+    },
+    {
+      "key": "pr8928-36415413-page-break-tac-full-gap",
+      "base": {
+        "rhwp": 3,
+        "pdf": 3
+      },
+      "head": {
+        "rhwp": 3,
+        "pdf": 3
+      }
+    },
+    {
+      "key": "pr8929-wide_tac_trailing_tail",
+      "base": {
+        "rhwp": 1,
+        "pdf": 1
+      },
+      "head": {
+        "rhwp": 1,
+        "pdf": 1
+      }
+    },
+    {
+      "key": "pr8930-6540000-202500049-post-table-line-stored-page-reset",
+      "base": {
+        "rhwp": 2,
+        "pdf": 2
+      },
+      "head": {
+        "rhwp": 2,
+        "pdf": 2
+      }
+    }
+  ],
+  "nonfont_receipt_entries": [],
+  "scope": "incoming",
+  "backend": "wasm",
+  "base_source": "eb84afc0364c51031bb07cbbb013476293367990",
+  "head_source": "68e8190d334fccc5a2846dcfead4a7c60330774a",
+  "datasets": 44,
+  "pages": 88,
+  "png_equal": 88,
+  "changed": [],
+  "minimum": 90.50728,
+  "minimum_delta_pp": "0.00000",
+  "drops_over_2pp": 0,
+  "head_below_90": 0,
+  "protected_declines": 0,
+  "rows": [
+    {
+      "key": "pr8689-1411000-201000007_final_report",
+      "backend": "wasm",
+      "page": 27,
+      "input_path": "samples/issue8677/1411000-201000007_final_report.hwp",
+      "base_raw": 99.62664,
+      "head_raw": 99.62664,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "b6ae34efef50323e97a444c440486f0dddc4554df800367126f475d4031bc098",
+      "head_png_sha256": "b6ae34efef50323e97a444c440486f0dddc4554df800367126f475d4031bc098",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8689-1411000-201000007_final_report",
+      "backend": "wasm",
+      "page": 28,
+      "input_path": "samples/issue8677/1411000-201000007_final_report.hwp",
+      "base_raw": 99.83756,
+      "head_raw": 99.83756,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "8f4fda2242eba6f9a267c44690ac34cd42c6572c7de115ee31d4de51c2b59c7f",
+      "head_png_sha256": "8f4fda2242eba6f9a267c44690ac34cd42c6572c7de115ee31d4de51c2b59c7f",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8689-1411000-201000007_final_report",
+      "backend": "wasm",
+      "page": 88,
+      "input_path": "samples/issue8677/1411000-201000007_final_report.hwp",
+      "base_raw": 99.89547,
+      "head_raw": 99.89547,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "943edeba62d929e3596dca4fd57ab50f6d33bc001706c576e6055eb383b0014b",
+      "head_png_sha256": "943edeba62d929e3596dca4fd57ab50f6d33bc001706c576e6055eb383b0014b",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8689-1411000-201000007_final_report",
+      "backend": "wasm",
+      "page": 89,
+      "input_path": "samples/issue8677/1411000-201000007_final_report.hwp",
+      "base_raw": 99.95446,
+      "head_raw": 99.95446,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "a5722ffe90c49797df778e5e91f284c7944abc46db425629011f9d148ca6745c",
+      "head_png_sha256": "a5722ffe90c49797df778e5e91f284c7944abc46db425629011f9d148ca6745c",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8708-cell_float_offset_space",
+      "backend": "wasm",
+      "page": 1,
+      "input_path": "samples/issue8686/cell_float_offset_space.hwp",
+      "base_raw": 98.69294,
+      "head_raw": 98.69294,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "c0c7f7717896d2b21e927f017ddff45c4253c7b5e4170d2e606513fd96a4cf1b",
+      "head_png_sha256": "c0c7f7717896d2b21e927f017ddff45c4253c7b5e4170d2e606513fd96a4cf1b",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8710-1311000-201100125_saemaul_oda_pilot_report",
+      "backend": "wasm",
+      "page": 6,
+      "input_path": "samples/issue8685/1311000-201100125_saemaul_oda_pilot_report.hwp",
+      "base_raw": 98.21775,
+      "head_raw": 98.21775,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "4c86aa7b4508f1f3d6d30087d406d46a00e3dce57b8fc42ace9a5d5660ce4d33",
+      "head_png_sha256": "4c86aa7b4508f1f3d6d30087d406d46a00e3dce57b8fc42ace9a5d5660ce4d33",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8710-1311000-201100125_saemaul_oda_pilot_report",
+      "backend": "wasm",
+      "page": 15,
+      "input_path": "samples/issue8685/1311000-201100125_saemaul_oda_pilot_report.hwp",
+      "base_raw": 99.57443,
+      "head_raw": 99.57443,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "57075446d1360be1ae8708cb7db30a6ef233a526d0a4595e33f12fc299e8325c",
+      "head_png_sha256": "57075446d1360be1ae8708cb7db30a6ef233a526d0a4595e33f12fc299e8325c",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8710-1311000-201100125_saemaul_oda_pilot_report",
+      "backend": "wasm",
+      "page": 16,
+      "input_path": "samples/issue8685/1311000-201100125_saemaul_oda_pilot_report.hwp",
+      "base_raw": 99.89492,
+      "head_raw": 99.89492,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "4cf39532aee944d3ed22cc78371e3f8e89068b9b66ceb17bf7ba0377d0d2507b",
+      "head_png_sha256": "4cf39532aee944d3ed22cc78371e3f8e89068b9b66ceb17bf7ba0377d0d2507b",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8717-employment_service_interim_report",
+      "backend": "wasm",
+      "page": 1,
+      "input_path": "samples/issue8692/employment_service_interim_report.hwp",
+      "base_raw": 98.34428,
+      "head_raw": 98.34428,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "e04b0d9e8929637550cb4d47b99bf580a4febc385e485732d442c6f89a37f0b4",
+      "head_png_sha256": "e04b0d9e8929637550cb4d47b99bf580a4febc385e485732d442c6f89a37f0b4",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8717-scholarship_recommendation_form",
+      "backend": "wasm",
+      "page": 1,
+      "input_path": "samples/issue8692/scholarship_recommendation_form.hwp",
+      "base_raw": 99.91344,
+      "head_raw": 99.91344,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "92778c2c3a9a20bc4cc72c3fcce4de7753974c051259c34a9b848775c2d3dca7",
+      "head_png_sha256": "92778c2c3a9a20bc4cc72c3fcce4de7753974c051259c34a9b848775c2d3dca7",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8717-tax_source_ledger_form",
+      "backend": "wasm",
+      "page": 1,
+      "input_path": "samples/issue8692/tax_source_ledger_form.hwp",
+      "base_raw": 96.77588,
+      "head_raw": 96.77588,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "1bd50cc21d513437eefac6aded416b57e1115de7916083b701a28834b6d0db5c",
+      "head_png_sha256": "1bd50cc21d513437eefac6aded416b57e1115de7916083b701a28834b6d0db5c",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8719-cell_float_inner_anchor",
+      "backend": "wasm",
+      "page": 1,
+      "input_path": "samples/issue8686/cell_float_inner_anchor.hwp",
+      "base_raw": 99.76839,
+      "head_raw": 99.76839,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "214487a4c9053cabcf75803714ec5ae1d2a0f301e3de8bc467117333d38a3584",
+      "head_png_sha256": "214487a4c9053cabcf75803714ec5ae1d2a0f301e3de8bc467117333d38a3584",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8729-hft-hanyang_junggothic-probe",
+      "backend": "wasm",
+      "page": 3,
+      "input_path": "samples/issue8697/hft-hanyang_junggothic-probe.hwpx",
+      "base_raw": 92.97737,
+      "head_raw": 92.97737,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "c7c28ad73e063491f66cb15979d5bb2c7cdf4d0812cee4c825716c645f4c75d8",
+      "head_png_sha256": "c7c28ad73e063491f66cb15979d5bb2c7cdf4d0812cee4c825716c645f4c75d8",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8729-hft-sinmyeong_junggothic-probe",
+      "backend": "wasm",
+      "page": 3,
+      "input_path": "samples/issue8697/hft-sinmyeong_junggothic-probe.hwpx",
+      "base_raw": 90.50728,
+      "head_raw": 90.50728,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "3b93e1e467ee57f99228a0af24a6da176c4739435500377ec5c22ac8b25b1e03",
+      "head_png_sha256": "3b93e1e467ee57f99228a0af24a6da176c4739435500377ec5c22ac8b25b1e03",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8736-1741000-202200045_second_interim_report",
+      "backend": "wasm",
+      "page": 16,
+      "input_path": "samples/issue8732/1741000-202200045_second_interim_report.hwp",
+      "base_raw": 99.68122,
+      "head_raw": 99.68122,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "3e973d190bdd9fdb07a42582babe5f9c1b5b64a4abf1fcf5dc82b615842c6b90",
+      "head_png_sha256": "3e973d190bdd9fdb07a42582babe5f9c1b5b64a4abf1fcf5dc82b615842c6b90",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8736-1741000-202200045_second_interim_report",
+      "backend": "wasm",
+      "page": 17,
+      "input_path": "samples/issue8732/1741000-202200045_second_interim_report.hwp",
+      "base_raw": 99.70579,
+      "head_raw": 99.70579,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "dae584b59b9cb2f86f114c607dca07e7ab87a94d4884b6d379dbc6ed3cd71ec5",
+      "head_png_sha256": "dae584b59b9cb2f86f114c607dca07e7ab87a94d4884b6d379dbc6ed3cd71ec5",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8740-156667654_saemangeum_press_release",
+      "backend": "wasm",
+      "page": 1,
+      "input_path": "samples/issue8737/156667654_saemangeum_press_release.hwpx",
+      "base_raw": 99.37968,
+      "head_raw": 99.37968,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "b04b4c9b6e413744c50e611bb76dd96659511cc33b3fb6a3914d265247901dc9",
+      "head_png_sha256": "b04b4c9b6e413744c50e611bb76dd96659511cc33b3fb6a3914d265247901dc9",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8744-nested_row_cell_cuts",
+      "backend": "wasm",
+      "page": 2,
+      "input_path": "samples/issue8715/nested_row_cell_cuts.hwp",
+      "base_raw": 99.17356,
+      "head_raw": 99.17356,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "260084c45b765824807d8c06179546ac15bb2a70019fc2f3aaac8e8cbc694559",
+      "head_png_sha256": "260084c45b765824807d8c06179546ac15bb2a70019fc2f3aaac8e8cbc694559",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8744-nested_row_cell_cuts",
+      "backend": "wasm",
+      "page": 3,
+      "input_path": "samples/issue8715/nested_row_cell_cuts.hwp",
+      "base_raw": 98.35992,
+      "head_raw": 98.35992,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "31ededc0969250171e6b955f75c39502e8004544644971cc17b5565cf493b3aa",
+      "head_png_sha256": "31ededc0969250171e6b955f75c39502e8004544644971cc17b5565cf493b3aa",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8746-36345427_approval_body",
+      "backend": "wasm",
+      "page": 1,
+      "input_path": "samples/issue8742/36345427_approval_body.hwpx",
+      "base_raw": 99.8074,
+      "head_raw": 99.8074,
+      "delta_pp": "0.0000",
+      "base_png_sha256": "13fca423674cd7ed09633a65fc19b3c6f3fade306a3ef3c3898c9fcd5e64096c",
+      "head_png_sha256": "13fca423674cd7ed09633a65fc19b3c6f3fade306a3ef3c3898c9fcd5e64096c",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8746-36453591_approval_body",
+      "backend": "wasm",
+      "page": 4,
+      "input_path": "samples/issue8742/36453591_approval_body.hwpx",
+      "base_raw": 99.81135,
+      "head_raw": 99.81135,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "1985aca1bd21693818f75e138b3ef83ed15492d89ada74cb3073370782fbca74",
+      "head_png_sha256": "1985aca1bd21693818f75e138b3ef83ed15492d89ada74cb3073370782fbca74",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8746-36453591_approval_body",
+      "backend": "wasm",
+      "page": 5,
+      "input_path": "samples/issue8742/36453591_approval_body.hwpx",
+      "base_raw": 99.23893,
+      "head_raw": 99.23893,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "355b49d043fc0d9a749058b29a4c6a6438e82b0a70f0eae25571da2c3d0d3dd5",
+      "head_png_sha256": "355b49d043fc0d9a749058b29a4c6a6438e82b0a70f0eae25571da2c3d0d3dd5",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8746-36483048_approval_body",
+      "backend": "wasm",
+      "page": 4,
+      "input_path": "samples/issue8742/36483048_approval_body.hwpx",
+      "base_raw": 92.26471,
+      "head_raw": 92.26471,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "2f28ffe97ced8b8fbb5fd0abe532addcc3dfb4aed61294296dbb8f9e8f83eae5",
+      "head_png_sha256": "2f28ffe97ced8b8fbb5fd0abe532addcc3dfb4aed61294296dbb8f9e8f83eae5",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8746-36483048_approval_body",
+      "backend": "wasm",
+      "page": 5,
+      "input_path": "samples/issue8742/36483048_approval_body.hwpx",
+      "base_raw": 96.38376,
+      "head_raw": 96.38376,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "6ccfd9155bd8fadaa3369ec858fc0333c9a161d4c6de7771d080e865e87fa5ef",
+      "head_png_sha256": "6ccfd9155bd8fadaa3369ec858fc0333c9a161d4c6de7771d080e865e87fa5ef",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8746-36483048_approval_body",
+      "backend": "wasm",
+      "page": 6,
+      "input_path": "samples/issue8742/36483048_approval_body.hwpx",
+      "base_raw": 99.34487,
+      "head_raw": 99.34487,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "8a4c013702867fbb547c68f3f47475301d37f2b721e7213237887448603384e6",
+      "head_png_sha256": "8a4c013702867fbb547c68f3f47475301d37f2b721e7213237887448603384e6",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8751-75544_pii_bunseok",
+      "backend": "wasm",
+      "page": 59,
+      "input_path": "samples/task2097/75544_pii_bunseok.hwpx",
+      "base_raw": 99.99221,
+      "head_raw": 99.99221,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "14d2efcfc49855baae233bc6eae00dbbfb0c92587bbd159be7208e96339b05d4",
+      "head_png_sha256": "14d2efcfc49855baae233bc6eae00dbbfb0c92587bbd159be7208e96339b05d4",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8751-75544_pii_bunseok",
+      "backend": "wasm",
+      "page": 60,
+      "input_path": "samples/task2097/75544_pii_bunseok.hwpx",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": "0.0",
+      "base_png_sha256": "b15d07f6a81606aed32bd076ab2cc9c8234ed0490d10cf8cfb9188814dd9b68a",
+      "head_png_sha256": "b15d07f6a81606aed32bd076ab2cc9c8234ed0490d10cf8cfb9188814dd9b68a",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8751-rowbreak-problem-pages",
+      "backend": "wasm",
+      "page": 7,
+      "input_path": "samples/rowbreak-problem-pages.hwpx",
+      "base_raw": 99.63101,
+      "head_raw": 99.63101,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "90cc5ff82b882d2af466618b43a653a95c8fffcca112836f2e85d4a8d90dac0c",
+      "head_png_sha256": "90cc5ff82b882d2af466618b43a653a95c8fffcca112836f2e85d4a8d90dac0c",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8758-whitespace_host_approval_table",
+      "backend": "wasm",
+      "page": 1,
+      "input_path": "samples/issue8735/whitespace_host_approval_table.hwpx",
+      "base_raw": 99.60426,
+      "head_raw": 99.60426,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "107e3b8a2909c2f64525fe4bb5fc590b7fdf7d2d2ebef45d2f1a6f209fc9b6db",
+      "head_png_sha256": "107e3b8a2909c2f64525fe4bb5fc590b7fdf7d2d2ebef45d2f1a6f209fc9b6db",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8772-46551_road_traffic_rule_amendment",
+      "backend": "wasm",
+      "page": 13,
+      "input_path": "samples/issue8755/46551_road_traffic_rule_amendment.hwp",
+      "base_raw": 99.73088,
+      "head_raw": 99.73088,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "c6d905e1198f0af7e573b256ce09c642d80e92b1bce04e6151c1fefe91966d01",
+      "head_png_sha256": "c6d905e1198f0af7e573b256ce09c642d80e92b1bce04e6151c1fefe91966d01",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8772-46551_road_traffic_rule_amendment",
+      "backend": "wasm",
+      "page": 28,
+      "input_path": "samples/issue8755/46551_road_traffic_rule_amendment.hwp",
+      "base_raw": 99.77599,
+      "head_raw": 99.77599,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "30e0a467104dbcb09bf69963754bb56752dce1002e3efad3045941f37d68e541",
+      "head_png_sha256": "30e0a467104dbcb09bf69963754bb56752dce1002e3efad3045941f37d68e541",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8775-field_led_wide_table",
+      "backend": "wasm",
+      "page": 1,
+      "input_path": "samples/issue8773/field_led_wide_table.hwpx",
+      "base_raw": 99.99866,
+      "head_raw": 99.99866,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "07ff2c6d765beae64f991cd70a117fe7815487d984844cb6699d25c59136eff7",
+      "head_png_sha256": "07ff2c6d765beae64f991cd70a117fe7815487d984844cb6699d25c59136eff7",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8775-field_led_wide_table",
+      "backend": "wasm",
+      "page": 2,
+      "input_path": "samples/issue8773/field_led_wide_table.hwpx",
+      "base_raw": 94.0489,
+      "head_raw": 94.0489,
+      "delta_pp": "0.0000",
+      "base_png_sha256": "bee3f4afbeb3f59aa9a0cf85a44d9b81cae3cf6b0a40dcea4426cbbb9bcbb7c3",
+      "head_png_sha256": "bee3f4afbeb3f59aa9a0cf85a44d9b81cae3cf6b0a40dcea4426cbbb9bcbb7c3",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8775-field_led_wide_table_nofield",
+      "backend": "wasm",
+      "page": 1,
+      "input_path": "samples/issue8773/field_led_wide_table_nofield.hwpx",
+      "base_raw": 99.99865,
+      "head_raw": 99.99865,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "f7e2c9b03ca4e9c7c13d586d5570547e102969b7dc60072287034274dd3e7106",
+      "head_png_sha256": "f7e2c9b03ca4e9c7c13d586d5570547e102969b7dc60072287034274dd3e7106",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8785-stored_field_line_page_split",
+      "backend": "wasm",
+      "page": 2,
+      "input_path": "samples/issue8782/stored_field_line_page_split.hwpx",
+      "base_raw": 91.45785,
+      "head_raw": 91.45785,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "93f62746ed0d17c8f9744b7e83d20a8c3fdc04aeda4beb474e1b9bae14f5413a",
+      "head_png_sha256": "93f62746ed0d17c8f9744b7e83d20a8c3fdc04aeda4beb474e1b9bae14f5413a",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8785-stored_field_line_page_split",
+      "backend": "wasm",
+      "page": 3,
+      "input_path": "samples/issue8782/stored_field_line_page_split.hwpx",
+      "base_raw": 99.1638,
+      "head_raw": 99.1638,
+      "delta_pp": "0.0000",
+      "base_png_sha256": "cec4df47acb7d57ab8461fce0f2492ada2bffcdb479326d622e1f3fbe71cd8a1",
+      "head_png_sha256": "cec4df47acb7d57ab8461fce0f2492ada2bffcdb479326d622e1f3fbe71cd8a1",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8785-stored_field_line_table",
+      "backend": "wasm",
+      "page": 2,
+      "input_path": "samples/issue8782/stored_field_line_table.hwpx",
+      "base_raw": 95.1741,
+      "head_raw": 95.1741,
+      "delta_pp": "0.0000",
+      "base_png_sha256": "86114bd2bcffc24032c9d4243850feb68c51a1a2e40e4db59cee6215897cf475",
+      "head_png_sha256": "86114bd2bcffc24032c9d4243850feb68c51a1a2e40e4db59cee6215897cf475",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8788-reflowed_gap_stored_rewind",
+      "backend": "wasm",
+      "page": 2,
+      "input_path": "samples/issue8786/reflowed_gap_stored_rewind.hwpx",
+      "base_raw": 99.21249,
+      "head_raw": 99.21249,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "9d38873eea2b0837f354314e14370527e6d5e5aa40bc2553bf6a4514d14ecb54",
+      "head_png_sha256": "9d38873eea2b0837f354314e14370527e6d5e5aa40bc2553bf6a4514d14ecb54",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8788-reflowed_gap_stored_rewind",
+      "backend": "wasm",
+      "page": 3,
+      "input_path": "samples/issue8786/reflowed_gap_stored_rewind.hwpx",
+      "base_raw": 99.98254,
+      "head_raw": 99.98254,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "06a1e586a71bdcd66bac0408cbda79a0a1267e931b65e4606884bd965bfe3000",
+      "head_png_sha256": "06a1e586a71bdcd66bac0408cbda79a0a1267e931b65e4606884bd965bfe3000",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8792-6500000-201700118_jeju_tourism_education_plan",
+      "backend": "wasm",
+      "page": 55,
+      "input_path": "samples/issue8759/6500000-201700118_jeju_tourism_education_plan.hwp",
+      "base_raw": 99.97485,
+      "head_raw": 99.97485,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "b9c1b877cdd2b1589dee70d091205513e1a8fa0ecc96ad578590a651f2d62dd7",
+      "head_png_sha256": "b9c1b877cdd2b1589dee70d091205513e1a8fa0ecc96ad578590a651f2d62dd7",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8792-6500000-201700118_jeju_tourism_education_plan",
+      "backend": "wasm",
+      "page": 271,
+      "input_path": "samples/issue8759/6500000-201700118_jeju_tourism_education_plan.hwp",
+      "base_raw": 99.98033,
+      "head_raw": 99.98033,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "4600eb035cb37e8820d72d041ca5d07b935448b5ba8a7796e3bf09601c3f5237",
+      "head_png_sha256": "4600eb035cb37e8820d72d041ca5d07b935448b5ba8a7796e3bf09601c3f5237",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8792-6500000-201700118_jeju_tourism_education_plan",
+      "backend": "wasm",
+      "page": 272,
+      "input_path": "samples/issue8759/6500000-201700118_jeju_tourism_education_plan.hwp",
+      "base_raw": 99.98894,
+      "head_raw": 99.98894,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "39bf13e4de836c68369eeccdcbe4a8c4dfe71b0bc1b6e54b867ab37780100516",
+      "head_png_sha256": "39bf13e4de836c68369eeccdcbe4a8c4dfe71b0bc1b6e54b867ab37780100516",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8794-156739836-float-prefix-row-reduced",
+      "backend": "wasm",
+      "page": 3,
+      "input_path": "samples/issue8778/156739836-float-prefix-row-reduced.hwpx",
+      "base_raw": 95.75797,
+      "head_raw": 95.75797,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "2743a21ff196f9eb445955ec3702f9306284ccdc4bb950b0b03bb58536975f77",
+      "head_png_sha256": "2743a21ff196f9eb445955ec3702f9306284ccdc4bb950b0b03bb58536975f77",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8794-36495398-split-row-segments-reduced",
+      "backend": "wasm",
+      "page": 2,
+      "input_path": "samples/issue8778/36495398-split-row-segments-reduced.hwpx",
+      "base_raw": 99.97255,
+      "head_raw": 99.97255,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "e8d6947a14c74290104422ece9679729295dfa00e1f1619d9e389fa7fa71cc02",
+      "head_png_sha256": "e8d6947a14c74290104422ece9679729295dfa00e1f1619d9e389fa7fa71cc02",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8794-36495398-split-row-segments-reduced",
+      "backend": "wasm",
+      "page": 3,
+      "input_path": "samples/issue8778/36495398-split-row-segments-reduced.hwpx",
+      "base_raw": 99.15727,
+      "head_raw": 99.15727,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "7aa19acdaa9222e37da00e1eb5dd9a0fbc8756dbdaf1ac28d4593c380df5d7c9",
+      "head_png_sha256": "7aa19acdaa9222e37da00e1eb5dd9a0fbc8756dbdaf1ac28d4593c380df5d7c9",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8803-1351000-201500141_arrhythmia_research_plan",
+      "backend": "wasm",
+      "page": 34,
+      "input_path": "samples/issue8795/1351000-201500141_arrhythmia_research_plan.hwp",
+      "base_raw": 99.91442,
+      "head_raw": 99.91442,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "949278aaea64fc9122fb8d6360aa0d35f6e2c39d3bacb867042b253d2fea1f50",
+      "head_png_sha256": "949278aaea64fc9122fb8d6360aa0d35f6e2c39d3bacb867042b253d2fea1f50",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8803-1351000-201500141_arrhythmia_research_plan",
+      "backend": "wasm",
+      "page": 35,
+      "input_path": "samples/issue8795/1351000-201500141_arrhythmia_research_plan.hwp",
+      "base_raw": 99.53777,
+      "head_raw": 99.53777,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "830a308fa3d1ef43c05cbaae446eda31cda0dc80050db389155b91e436b4cf6c",
+      "head_png_sha256": "830a308fa3d1ef43c05cbaae446eda31cda0dc80050db389155b91e436b4cf6c",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8803-1351000-201500141_arrhythmia_research_plan",
+      "backend": "wasm",
+      "page": 45,
+      "input_path": "samples/issue8795/1351000-201500141_arrhythmia_research_plan.hwp",
+      "base_raw": 99.91442,
+      "head_raw": 99.91442,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "949278aaea64fc9122fb8d6360aa0d35f6e2c39d3bacb867042b253d2fea1f50",
+      "head_png_sha256": "949278aaea64fc9122fb8d6360aa0d35f6e2c39d3bacb867042b253d2fea1f50",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8803-1351000-201500141_arrhythmia_research_plan",
+      "backend": "wasm",
+      "page": 46,
+      "input_path": "samples/issue8795/1351000-201500141_arrhythmia_research_plan.hwp",
+      "base_raw": 99.53777,
+      "head_raw": 99.53777,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "830a308fa3d1ef43c05cbaae446eda31cda0dc80050db389155b91e436b4cf6c",
+      "head_png_sha256": "830a308fa3d1ef43c05cbaae446eda31cda0dc80050db389155b91e436b4cf6c",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8803-1351000-201500141_arrhythmia_research_plan",
+      "backend": "wasm",
+      "page": 54,
+      "input_path": "samples/issue8795/1351000-201500141_arrhythmia_research_plan.hwp",
+      "base_raw": 99.97115,
+      "head_raw": 99.97115,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "53685886e661317eaf6cfc5c354a4d24efad27a65ad207e47b1d01fbce5b00b6",
+      "head_png_sha256": "53685886e661317eaf6cfc5c354a4d24efad27a65ad207e47b1d01fbce5b00b6",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8803-1351000-201500141_arrhythmia_research_plan",
+      "backend": "wasm",
+      "page": 58,
+      "input_path": "samples/issue8795/1351000-201500141_arrhythmia_research_plan.hwp",
+      "base_raw": 99.79432,
+      "head_raw": 99.79432,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "5a0b6f1cb3d7bfdd7bec4fa23e2b31da9cbaedf45f2269532e57f52aa18a3711",
+      "head_png_sha256": "5a0b6f1cb3d7bfdd7bec4fa23e2b31da9cbaedf45f2269532e57f52aa18a3711",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8803-1351000-201500141_arrhythmia_research_plan",
+      "backend": "wasm",
+      "page": 77,
+      "input_path": "samples/issue8795/1351000-201500141_arrhythmia_research_plan.hwp",
+      "base_raw": 99.88882,
+      "head_raw": 99.88882,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "f520a60b0a0e4369065e1575effe4eeac9289f7c493c2b4059b8f714ad0bea63",
+      "head_png_sha256": "f520a60b0a0e4369065e1575effe4eeac9289f7c493c2b4059b8f714ad0bea63",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8803-1351000-201500141_arrhythmia_research_plan",
+      "backend": "wasm",
+      "page": 78,
+      "input_path": "samples/issue8795/1351000-201500141_arrhythmia_research_plan.hwp",
+      "base_raw": 99.89256,
+      "head_raw": 99.89256,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "d0fcab93f2108a5b6b4fd7bdfe7edd21b321b5365c2ec5f9c6d5a9c2e2542cd0",
+      "head_png_sha256": "d0fcab93f2108a5b6b4fd7bdfe7edd21b321b5365c2ec5f9c6d5a9c2e2542cd0",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8803-1351000-201500141_arrhythmia_research_plan",
+      "backend": "wasm",
+      "page": 80,
+      "input_path": "samples/issue8795/1351000-201500141_arrhythmia_research_plan.hwp",
+      "base_raw": 99.91156,
+      "head_raw": 99.91156,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "248658af4465d2936140c3a39de2175b2dbd827ba7d5f5922c789a7b11a4b008",
+      "head_png_sha256": "248658af4465d2936140c3a39de2175b2dbd827ba7d5f5922c789a7b11a4b008",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8833-36341965-float-band-gap-reduced",
+      "backend": "wasm",
+      "page": 1,
+      "input_path": "samples/issue8808/36341965-float-band-gap-reduced.hwpx",
+      "base_raw": 93.79102,
+      "head_raw": 93.79102,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "0c33d8c7f39d34e50da1ea87e26b7e194d1b0b4678f25b22d95e24f295b61aff",
+      "head_png_sha256": "0c33d8c7f39d34e50da1ea87e26b7e194d1b0b4678f25b22d95e24f295b61aff",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8833-36341965-float-band-gap-reduced",
+      "backend": "wasm",
+      "page": 2,
+      "input_path": "samples/issue8808/36341965-float-band-gap-reduced.hwpx",
+      "base_raw": 99.81732,
+      "head_raw": 99.81732,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "b4d142af84e7ea62eddbe4579985b0a7e7ee8340514af4f7632162689edfe393",
+      "head_png_sha256": "b4d142af84e7ea62eddbe4579985b0a7e7ee8340514af4f7632162689edfe393",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8835-36400259-stale-cell-ladder",
+      "backend": "wasm",
+      "page": 1,
+      "input_path": "samples/issue8810/36400259-stale-cell-ladder.hwpx",
+      "base_raw": 99.67086,
+      "head_raw": 99.67086,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "52766b1fcd8dd5215178f6c0a22deaec7dd53478faf00b42790d435960a3996d",
+      "head_png_sha256": "52766b1fcd8dd5215178f6c0a22deaec7dd53478faf00b42790d435960a3996d",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8835-36400259-stale-cell-ladder",
+      "backend": "wasm",
+      "page": 2,
+      "input_path": "samples/issue8810/36400259-stale-cell-ladder.hwpx",
+      "base_raw": 99.96784,
+      "head_raw": 99.96784,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "b2723491cc36f3e663b0066f0c87ad426a72badb0aa2bf8f4ed64e1d548b8d33",
+      "head_png_sha256": "b2723491cc36f3e663b0066f0c87ad426a72badb0aa2bf8f4ed64e1d548b8d33",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8846-synthetic_forward_tac_axis",
+      "backend": "wasm",
+      "page": 1,
+      "input_path": "samples/issue8843/synthetic_forward_tac_axis.hwpx",
+      "base_raw": 99.58193,
+      "head_raw": 99.58193,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "e756726862b9349c984a3be7a4ee3cd814d045c5e038878ec310b28810fc0e64",
+      "head_png_sha256": "e756726862b9349c984a3be7a4ee3cd814d045c5e038878ec310b28810fc0e64",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8846-synthetic_forward_tac_axis",
+      "backend": "wasm",
+      "page": 2,
+      "input_path": "samples/issue8843/synthetic_forward_tac_axis.hwpx",
+      "base_raw": 99.76839,
+      "head_raw": 99.76839,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "bc29b5aef7048aeb6ce17c5ae5616737d5d32a298f86be53aa20bc59ce8e00dc",
+      "head_png_sha256": "bc29b5aef7048aeb6ce17c5ae5616737d5d32a298f86be53aa20bc59ce8e00dc",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8848-36355707-unstored-rebase-tac",
+      "backend": "wasm",
+      "page": 1,
+      "input_path": "samples/issue8845/36355707-unstored-rebase-tac.hwpx",
+      "base_raw": 99.58193,
+      "head_raw": 99.58193,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "e756726862b9349c984a3be7a4ee3cd814d045c5e038878ec310b28810fc0e64",
+      "head_png_sha256": "e756726862b9349c984a3be7a4ee3cd814d045c5e038878ec310b28810fc0e64",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8848-36355707-unstored-rebase-tac",
+      "backend": "wasm",
+      "page": 2,
+      "input_path": "samples/issue8845/36355707-unstored-rebase-tac.hwpx",
+      "base_raw": 99.76839,
+      "head_raw": 99.76839,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "bc29b5aef7048aeb6ce17c5ae5616737d5d32a298f86be53aa20bc59ce8e00dc",
+      "head_png_sha256": "bc29b5aef7048aeb6ce17c5ae5616737d5d32a298f86be53aa20bc59ce8e00dc",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8849-1351000-201800239_hpv_cohort_final_report",
+      "backend": "wasm",
+      "page": 18,
+      "input_path": "samples/issue8842/1351000-201800239_hpv_cohort_final_report.hwp",
+      "base_raw": 99.88716,
+      "head_raw": 99.88716,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "d36477b4c897ec24ab93e1c03b56071f1d9ccccb6cbcc6197179e8d52e75bb8a",
+      "head_png_sha256": "d36477b4c897ec24ab93e1c03b56071f1d9ccccb6cbcc6197179e8d52e75bb8a",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8849-1351000-201800239_hpv_cohort_final_report",
+      "backend": "wasm",
+      "page": 19,
+      "input_path": "samples/issue8842/1351000-201800239_hpv_cohort_final_report.hwp",
+      "base_raw": 99.93278,
+      "head_raw": 99.93278,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "14386512481f832ec1b4ea1970c6aaf0700cd9f8e94df0f649f0a45a41d3ca18",
+      "head_png_sha256": "14386512481f832ec1b4ea1970c6aaf0700cd9f8e94df0f649f0a45a41d3ca18",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8849-1351000-201800239_hpv_cohort_final_report",
+      "backend": "wasm",
+      "page": 56,
+      "input_path": "samples/issue8842/1351000-201800239_hpv_cohort_final_report.hwp",
+      "base_raw": 99.98602,
+      "head_raw": 99.98602,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "23210c3d8f400bec8b41870a7e5810594864f8f084ae72257da70b4e76ba7289",
+      "head_png_sha256": "23210c3d8f400bec8b41870a7e5810594864f8f084ae72257da70b4e76ba7289",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8849-1351000-201800239_hpv_cohort_final_report",
+      "backend": "wasm",
+      "page": 77,
+      "input_path": "samples/issue8842/1351000-201800239_hpv_cohort_final_report.hwp",
+      "base_raw": 99.75384,
+      "head_raw": 99.75384,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "8574a8c05cca7af165687b7fb253ac37a01709ce6c28845649986d169385148e",
+      "head_png_sha256": "8574a8c05cca7af165687b7fb253ac37a01709ce6c28845649986d169385148e",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8849-1351000-201800239_hpv_cohort_final_report",
+      "backend": "wasm",
+      "page": 78,
+      "input_path": "samples/issue8842/1351000-201800239_hpv_cohort_final_report.hwp",
+      "base_raw": 99.35977,
+      "head_raw": 99.35977,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "cacc4a9ce83dafd02b4592f0151cbaf5da0e601f11e9162363d46c1917bb0c33",
+      "head_png_sha256": "cacc4a9ce83dafd02b4592f0151cbaf5da0e601f11e9162363d46c1917bb0c33",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8849-1351000-201800239_hpv_cohort_final_report",
+      "backend": "wasm",
+      "page": 211,
+      "input_path": "samples/issue8842/1351000-201800239_hpv_cohort_final_report.hwp",
+      "base_raw": 99.24673,
+      "head_raw": 99.24673,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "8c182ea38be28e1094218923da65ba4345ce1d90c732bbf91ca8d919c91b73c0",
+      "head_png_sha256": "8c182ea38be28e1094218923da65ba4345ce1d90c732bbf91ca8d919c91b73c0",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8849-1351000-201800239_hpv_cohort_final_report",
+      "backend": "wasm",
+      "page": 212,
+      "input_path": "samples/issue8842/1351000-201800239_hpv_cohort_final_report.hwp",
+      "base_raw": 99.87447,
+      "head_raw": 99.87447,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "05818a63aa706a4ef69f3d99b8db30d8d6eae2ff4e514485b902415b0b8d0143",
+      "head_png_sha256": "05818a63aa706a4ef69f3d99b8db30d8d6eae2ff4e514485b902415b0b8d0143",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8849-1351000-201800239_hpv_cohort_final_report",
+      "backend": "wasm",
+      "page": 234,
+      "input_path": "samples/issue8842/1351000-201800239_hpv_cohort_final_report.hwp",
+      "base_raw": 94.84064,
+      "head_raw": 94.84064,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "c8ad568a6b1b28c46d5b14d712e22e6db3d90b0673f32620ca465b378d1bfce0",
+      "head_png_sha256": "c8ad568a6b1b28c46d5b14d712e22e6db3d90b0673f32620ca465b378d1bfce0",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8861-36388005-host-below-header-table",
+      "backend": "wasm",
+      "page": 1,
+      "input_path": "samples/issue8855/36388005-host-below-header-table.hwpx",
+      "base_raw": 99.91203,
+      "head_raw": 99.91203,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "a49a08d15110db85edacdf3e0d16ab777b6b9818fd7549b2ca993b2eea19ac97",
+      "head_png_sha256": "a49a08d15110db85edacdf3e0d16ab777b6b9818fd7549b2ca993b2eea19ac97",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8861-36388005-host-below-header-table",
+      "backend": "wasm",
+      "page": 2,
+      "input_path": "samples/issue8855/36388005-host-below-header-table.hwpx",
+      "base_raw": 99.76671,
+      "head_raw": 99.76671,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "6cac9baaa6a07fb8ea3804e194ea4feb20a482d9f45d6eb073f2de032d16169f",
+      "head_png_sha256": "6cac9baaa6a07fb8ea3804e194ea4feb20a482d9f45d6eb073f2de032d16169f",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8876-36338125-bottom-fixed-table-margin",
+      "backend": "wasm",
+      "page": 1,
+      "input_path": "samples/issue8864/36338125-bottom-fixed-table-margin.hwpx",
+      "base_raw": 98.98795,
+      "head_raw": 98.98795,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "318b7198ad5f5ee6e43fe12d90e87d82268c2a49886d1afc443ebb65351fa4b3",
+      "head_png_sha256": "318b7198ad5f5ee6e43fe12d90e87d82268c2a49886d1afc443ebb65351fa4b3",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8876-36338125-bottom-fixed-table-margin",
+      "backend": "wasm",
+      "page": 2,
+      "input_path": "samples/issue8864/36338125-bottom-fixed-table-margin.hwpx",
+      "base_raw": 99.8679,
+      "head_raw": 99.8679,
+      "delta_pp": "0.0000",
+      "base_png_sha256": "67410596b1142b25925c06a53d3f82d4bdd7c89d7aa0f3200a619da56da14971",
+      "head_png_sha256": "67410596b1142b25925c06a53d3f82d4bdd7c89d7aa0f3200a619da56da14971",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8881-36441289-tac-host-below-float",
+      "backend": "wasm",
+      "page": 1,
+      "input_path": "samples/issue8878/36441289-tac-host-below-float.hwpx",
+      "base_raw": 99.63292,
+      "head_raw": 99.63292,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "4387973c4ee8665d5a7d8d4ed295629aa8fd1bca05880966adf4df2bbcf8c34e",
+      "head_png_sha256": "4387973c4ee8665d5a7d8d4ed295629aa8fd1bca05880966adf4df2bbcf8c34e",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8881-36441289-tac-host-below-float",
+      "backend": "wasm",
+      "page": 2,
+      "input_path": "samples/issue8878/36441289-tac-host-below-float.hwpx",
+      "base_raw": 99.74203,
+      "head_raw": 99.74203,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "eb37a9ee599966e46d9cf47ae37e941d0bdc5c0a47a2a0dc27a2796a6de6b747",
+      "head_png_sha256": "eb37a9ee599966e46d9cf47ae37e941d0bdc5c0a47a2a0dc27a2796a6de6b747",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8901-1480000-201900510_facility_pollution_study",
+      "backend": "wasm",
+      "page": 113,
+      "input_path": "samples/issue8891/1480000-201900510_facility_pollution_study.hwp",
+      "base_raw": 99.90105,
+      "head_raw": 99.90105,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "e437f7b504923f252748c523bf215b5d4192ce0183bbcbf4517a4788181ccda4",
+      "head_png_sha256": "e437f7b504923f252748c523bf215b5d4192ce0183bbcbf4517a4788181ccda4",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8903-36340478-unstored-tac-column-top-spacing",
+      "backend": "wasm",
+      "page": 4,
+      "input_path": "samples/issue8894/36340478-unstored-tac-column-top-spacing.hwpx",
+      "base_raw": 98.88256,
+      "head_raw": 98.88256,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "8321c22c3d4016688fb4acad4da3ed1c0500bd62141f153bc67f9512f685e390",
+      "head_png_sha256": "8321c22c3d4016688fb4acad4da3ed1c0500bd62141f153bc67f9512f685e390",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8903-36340478-unstored-tac-column-top-spacing",
+      "backend": "wasm",
+      "page": 6,
+      "input_path": "samples/issue8894/36340478-unstored-tac-column-top-spacing.hwpx",
+      "base_raw": 96.00734,
+      "head_raw": 96.00734,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "04f9c1e0454fc11523f8b11d1d319452337ab2855a6ddaf29fc75382710528f6",
+      "head_png_sha256": "04f9c1e0454fc11523f8b11d1d319452337ab2855a6ddaf29fc75382710528f6",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8903-36340478-unstored-tac-column-top-spacing",
+      "backend": "wasm",
+      "page": 7,
+      "input_path": "samples/issue8894/36340478-unstored-tac-column-top-spacing.hwpx",
+      "base_raw": 99.23861,
+      "head_raw": 99.23861,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "a90a57aa5140b333625eb994d68e915c07846fbbc93310f8f4d3b937166b66fb",
+      "head_png_sha256": "a90a57aa5140b333625eb994d68e915c07846fbbc93310f8f4d3b937166b66fb",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8909-36404364-reflowed-cell-tac-row-floor",
+      "backend": "wasm",
+      "page": 3,
+      "input_path": "samples/issue8882/36404364-reflowed-cell-tac-row-floor.hwpx",
+      "base_raw": 99.81224,
+      "head_raw": 99.81224,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "fe79bbcafb5b442a6f0a611cb5e8934fba0595a0e0520590c93e2cfb1be5fae0",
+      "head_png_sha256": "fe79bbcafb5b442a6f0a611cb5e8934fba0595a0e0520590c93e2cfb1be5fae0",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8921-1471000-group-bullet-column-top",
+      "backend": "wasm",
+      "page": 3,
+      "input_path": "samples/issue8917/1471000-group-bullet-column-top.hwpx",
+      "base_raw": 96.56141,
+      "head_raw": 96.56141,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "0874249beaece060fc92238abc6247de695c034e2a577be0c722e8c48ce56126",
+      "head_png_sha256": "0874249beaece060fc92238abc6247de695c034e2a577be0c722e8c48ce56126",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8921-44907-group-bullet-column-top",
+      "backend": "wasm",
+      "page": 2,
+      "input_path": "samples/issue8917/44907-group-bullet-column-top.hwp",
+      "base_raw": 99.83834,
+      "head_raw": 99.83834,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "bbcce0af009ebca1db8590adaa3d04121e25abb6e6494e72f4c39c3f4a73a734",
+      "head_png_sha256": "bbcce0af009ebca1db8590adaa3d04121e25abb6e6494e72f4c39c3f4a73a734",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8921-44907-group-bullet-column-top",
+      "backend": "wasm",
+      "page": 4,
+      "input_path": "samples/issue8917/44907-group-bullet-column-top.hwp",
+      "base_raw": 99.91115,
+      "head_raw": 99.91115,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "7db2b028b3a59fcd6db6259ef3ce46af37895f85e24f00a6e9442025e085a972",
+      "head_png_sha256": "7db2b028b3a59fcd6db6259ef3ce46af37895f85e24f00a6e9442025e085a972",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8928-36415413-page-break-tac-full-gap",
+      "backend": "wasm",
+      "page": 2,
+      "input_path": "samples/issue8925/36415413-page-break-tac-full-gap.hwpx",
+      "base_raw": 98.72108,
+      "head_raw": 98.72108,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "0bdc6bc52f3e6f6c6a8fa1397087325c512f73da3cdf3ead9396b10d325c0d45",
+      "head_png_sha256": "0bdc6bc52f3e6f6c6a8fa1397087325c512f73da3cdf3ead9396b10d325c0d45",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8929-wide_tac_trailing_tail",
+      "backend": "wasm",
+      "page": 1,
+      "input_path": "samples/issue8924/wide_tac_trailing_tail.hwp",
+      "base_raw": 99.84831,
+      "head_raw": 99.84831,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "f35b7d900084cd9b5ccf920b2b20dfc51a2499829e82baab3b7834bfb4e06ccb",
+      "head_png_sha256": "f35b7d900084cd9b5ccf920b2b20dfc51a2499829e82baab3b7834bfb4e06ccb",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8930-6540000-202500049-post-table-line-stored-page-reset",
+      "backend": "wasm",
+      "page": 1,
+      "input_path": "samples/issue8926/6540000-202500049-post-table-line-stored-page-reset.hwp",
+      "base_raw": 99.99258,
+      "head_raw": 99.99258,
+      "delta_pp": "0.00000",
+      "base_png_sha256": "33f90e83f16028b6467a2eafc9bead891ea60c36e52c5e10f9a02bf46fa5973f",
+      "head_png_sha256": "33f90e83f16028b6467a2eafc9bead891ea60c36e52c5e10f9a02bf46fa5973f",
+      "png_equal": true,
+      "head_below_90": false
+    },
+    {
+      "key": "pr8930-6540000-202500049-post-table-line-stored-page-reset",
+      "backend": "wasm",
+      "page": 2,
+      "input_path": "samples/issue8926/6540000-202500049-post-table-line-stored-page-reset.hwp",
+      "base_raw": 100.0,
+      "head_raw": 100.0,
+      "delta_pp": "0.0",
+      "base_png_sha256": "0eb04d23934613b9c72ab22c3d4696c7f2f7a327b82daff00f19beae9973a0a6",
+      "head_png_sha256": "0eb04d23934613b9c72ab22c3d4696c7f2f7a327b82daff00f19beae9973a0a6",
+      "png_equal": true,
+      "head_below_90": false
+    }
+  ]
+}

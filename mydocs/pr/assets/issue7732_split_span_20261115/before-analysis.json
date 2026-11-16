@@ -1,0 +1,38 @@
+{
+  "base": "f8234f6f90cb25d9601c9d5d762e0a565aea19e4",
+  "input": "mydocs/pr/assets/issue7445/issue1937_rowbreak_footnote_overpagination.hwp",
+  "input_sha256": "a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+  "pdf": "pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf",
+  "pdf_sha256": "7f14bc85eb389a68cc88bd40fcafeb7a638d8454293a30bb2c8fe884a16978eb",
+  "page": 37,
+  "pdf_policy_and_number_baseline_pt": 742.9480590820312,
+  "pdf_policy_baseline_css_px": 990.597412109375,
+  "before_policy_baseline_css_px": 981.266666666667,
+  "before_number_baseline_css_px": 990.6000000000004,
+  "policy_error_css_px": -9.33074544270803,
+  "before_cell_box": {
+    "y": 968.053333,
+    "height": 35.76
+  },
+  "pdf_row_borders_css_px": [
+    967.1027018229166,
+    1004.97998046875
+  ],
+  "native_row_borders_css_px": [
+    968.053333,
+    1003.813333
+  ],
+  "prequalified_page_native_wasm_raw": [
+    98.75,
+    98.75
+  ],
+  "qualification_source": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/",
+  "before_tests": {
+    "execution": "diagnostic rustc --test linked existing release-test/librhwp.rlib, not final Cargo gate",
+    "passed": 0,
+    "failed": 2,
+    "log_sha256": "390574a38ba108038e6baff064e6ebf6d0bae1eb4d006b68073c6a956933b199"
+  },
+  "observed_at": "2026-11-15T13:19:32+09:00",
+  "diagnostic_library_sha256": "4ff690c43ac2627d39ee5ddc54683e59073041b28014507c4d3d91814f0a8ffc"
+}

@@ -558,8 +558,9 @@ export function buildBorderTab(
   // 폴백되고, collectMods 가 0!=-1 을 변경으로 오인하여 fillType=solid 를 강제
   // 주입 → 여백만 바꾸거나 확인만 눌러도 의도치 않은 배경/테두리가 생성됐다.
   for (const [val, lbl] of [
-    ['-1', i18nText('dialog.paraShapeTabBuilders.updateBdPreview.label.x696251')], ['1', '━'], ['2', '┃'],
-    ['3', '╲'], ['4', '╱'], ['5', '┼'], ['6', '╳'],
+    // HWP 무늬 종류 0~5 (#8978)
+    ['-1', i18nText('dialog.paraShapeTabBuilders.updateBdPreview.label.x696251')], ['0', '━'], ['1', '┃'],
+    ['2', '╲'], ['3', '╱'], ['4', '┼'], ['5', '╳'],
   ] as const) {
     const o = document.createElement('option');
     o.value = val; o.textContent = lbl;

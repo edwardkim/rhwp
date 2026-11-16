@@ -5,6 +5,29 @@ use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
 impl HwpDocument {
+    /// 실제 로드한 보통 FontFace의 주 프로그램을 Print paint에만 연결한다.
+    /// complete가 false이면 결측 glyph를 뒤 family의 glyph로 추정하지 않는다.
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen(js_name = registerPrintFontPrimary)]
+    pub fn register_print_font_primary(
+        &mut self,
+        family: &str,
+        bytes: &[u8],
+        index: u32,
+        complete: bool,
+    ) {
+        self.core
+            .hft_outline_fonts
+            .register_print_primary(family, bytes, index, complete);
+    }
+
+    /// 페이지별 host FontFace 공급의 수명이 끝나면 그 주 프로그램 증거를 폐기한다.
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen(js_name = clearPrintFontPrimary)]
+    pub fn clear_print_font_primary(&mut self, family: &str) {
+        self.core.hft_outline_fonts.clear_print_primary(family);
+    }
+
     /// 같은 cmap 판정으로 아직 공급되지 않은 글리프만 다음 후보에 전달한다.
     #[wasm_bindgen(js_name = fontMissingText)]
     pub fn font_missing_text_js(

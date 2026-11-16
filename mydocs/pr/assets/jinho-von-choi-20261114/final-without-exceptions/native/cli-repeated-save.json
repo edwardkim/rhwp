@@ -1,0 +1,49 @@
+{
+  "productSource": "411cb7a7e807abbea90c6ab6b6ca0c66b6c3ad71",
+  "nativeSha256": "4319f06f72f35d4825e7acdd71962b75acc95706852447f0d97fcb8dfb18f9e9",
+  "input": "samples/pr9071/issue9046/hancom/02-both.hwpx",
+  "inputSha256": "2f4fdab29a9b4edae67d22d26a84f79ec78ef0cc4fddd5e71af716bdd52fe2d9",
+  "steps": "CLI text edit -> save -> reopen -> resave -> reopen; HWP and HWPX; parser inspection through actual CLI export-hwpx --verify",
+  "results": [
+    {
+      "format": "hwp",
+      "cycle": 1,
+      "fileSha256": "393a015494aea595f35df97757e9b5d8ca9a854b12fbda9892dd136f6c0d7184",
+      "masterPagesUnchanged": 1,
+      "binaryResourcesUnchanged": 1,
+      "changedBodyTextOnce": true,
+      "otherPageLabelsPreserved": true,
+      "commandVerification": true
+    },
+    {
+      "format": "hwp",
+      "cycle": 2,
+      "fileSha256": "393a015494aea595f35df97757e9b5d8ca9a854b12fbda9892dd136f6c0d7184",
+      "masterPagesUnchanged": 1,
+      "binaryResourcesUnchanged": 1,
+      "changedBodyTextOnce": true,
+      "otherPageLabelsPreserved": true,
+      "commandVerification": true
+    },
+    {
+      "format": "hwpx",
+      "cycle": 1,
+      "fileSha256": "4eb200553e9b51029d72927a917e93e9ec23e513b99ad766b2b42af5e7691fa1",
+      "masterPagesUnchanged": 1,
+      "binaryResourcesUnchanged": 1,
+      "changedBodyTextOnce": true,
+      "otherPageLabelsPreserved": true,
+      "commandVerification": true
+    },
+    {
+      "format": "hwpx",
+      "cycle": 2,
+      "fileSha256": "4eb200553e9b51029d72927a917e93e9ec23e513b99ad766b2b42af5e7691fa1",
+      "masterPagesUnchanged": 1,
+      "binaryResourcesUnchanged": 1,
+      "changedBodyTextOnce": true,
+      "otherPageLabelsPreserved": true,
+      "commandVerification": true
+    }
+  ]
+}

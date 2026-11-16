@@ -1,0 +1,16 @@
+{
+  "source_head": "cc6c60381dfeff9b7892e836b8bf01803d0a5c1a",
+  "representatives": [
+    "cases/original/native/review-p001.png",
+    "cases/original/native/overlay-p002.png",
+    "cases/edited/native/review-p002.png",
+    "cases/edited/wasm/overlay-p001.png"
+  ],
+  "observations": [
+    "Both pages retain all form groups, notes 1-14, roman-name notes and processing sequence. No page/content omission or duplicated table.",
+    "Original/edited base and current Native/WASM raw PNGs are byte-identical per backend.",
+    "Known RGB/stroke-edge differences remain within the existing comparison condition; score rounding to 100.00 is not RGB identity.",
+    "Korean footer labels are readable after glyph coverage validation. Windows negative/positive controls use identical raw document PNGs."
+  ],
+  "metric": "unmasked raw silhouette, radius 2, threshold 90; no PDF or metric changes"
+}

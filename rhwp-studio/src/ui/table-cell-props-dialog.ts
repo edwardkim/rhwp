@@ -1165,16 +1165,10 @@ export class TableCellPropsDialog extends ModalDialog {
     const patTypeRow = this.row();
     patTypeRow.appendChild(this.label(i18nText('dialog.tableCellProps.label.label.x0829e0')));
     this.bgPatternTypeSelect = this.selectOptions([
-      ['-1', i18nText('dialog.tableCellProps.selectOptions.label.x696251')], ['1', i18nText('dialog.tableCellProps.selectOptions.label.xd965c1')], ['2', i18nText('dialog.tableCellProps.selectOptions.label.x7842b4')], ['3', i18nText('dialog.tableCellProps.selectOptions.label.xf14cb1')],
-      ['4', i18nText('dialog.tableCellProps.selectOptions.label.xcf200e')], ['5', i18nText('dialog.tableCellProps.buildBackgroundTab.label')], ['6', i18nText('dialog.tableCellProps.buildBackgroundTab.label.x432dc9')],
+      // HWP 무늬 종류: -1=없음, 0~5 = ─ │ ＼ ／ ＋ × (#8978)
+      ['-1', i18nText('dialog.tableCellProps.selectOptions.label.x696251')], ['0', i18nText('dialog.tableCellProps.selectOptions.label.xd965c1')], ['1', i18nText('dialog.tableCellProps.selectOptions.label.x7842b4')], ['2', i18nText('dialog.tableCellProps.selectOptions.label.xf14cb1')],
+      ['3', i18nText('dialog.tableCellProps.selectOptions.label.xcf200e')], ['4', i18nText('dialog.tableCellProps.buildBackgroundTab.label')], ['5', i18nText('dialog.tableCellProps.buildBackgroundTab.label.x432dc9')],
     ]);
-    // HWP에서 읽은 가로 무늬 0은 그대로 보존한다. 새 단색은 -1을 사용한다.
-    // 기존 1~6 UI 계약은 유지하되, 원본 0을 빈 선택/NaN으로 바꾸지 않는다.
-    const storedHorizontal = document.createElement('option');
-    storedHorizontal.value = '0';
-    storedHorizontal.textContent = i18nText('dialog.tableCellProps.selectOptions.label.xd965c1');
-    storedHorizontal.hidden = true;
-    this.bgPatternTypeSelect.appendChild(storedHorizontal);
     this.bgPatternTypeSelect.addEventListener('change', () => {
       this.bgColorRadio.checked = true;
       this.updateBgPreview();
@@ -1255,14 +1249,14 @@ export class TableCellPropsDialog extends ModalDialog {
     const patColor = this.bgPatternColorPicker.value;
     // CSS repeating-linear-gradient 패턴
     const patternMap: Record<number, string> = {
-      1: `repeating-linear-gradient(0deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 4px)`,  // 가로줄
-      2: `repeating-linear-gradient(90deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 4px)`, // 세로줄
-      3: `repeating-linear-gradient(135deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 5px)`,// 역슬래시
-      4: `repeating-linear-gradient(45deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 5px)`, // 슬래시
-      5: `repeating-linear-gradient(0deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 4px),repeating-linear-gradient(90deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 4px)`, // 십자
-      6: `repeating-linear-gradient(45deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 5px),repeating-linear-gradient(135deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 5px)`, // X자
+      0: `repeating-linear-gradient(0deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 4px)`,  // 가로줄
+      1: `repeating-linear-gradient(90deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 4px)`, // 세로줄
+      2: `repeating-linear-gradient(45deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 5px)`, // 역슬래시 ＼
+      3: `repeating-linear-gradient(135deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 5px)`,// 슬래시 ／
+      4: `repeating-linear-gradient(0deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 4px),repeating-linear-gradient(90deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 4px)`, // 십자
+      5: `repeating-linear-gradient(45deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 5px),repeating-linear-gradient(135deg,${patColor} 0px,${patColor} 1px,transparent 1px,transparent 5px)`, // X자
     };
-    this.bgPreviewBox.style.background = `${patternMap[patType === 0 ? 1 : patType] || ''},${faceColor}`;
+    this.bgPreviewBox.style.background = `${patternMap[patType] || ''},${faceColor}`;
   }
 
   // ─── 필드 채우기 ─────────────────────────────────

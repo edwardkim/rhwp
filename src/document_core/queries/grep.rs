@@ -57,10 +57,50 @@ pub struct GrepMatch {
     /// [#2792] 표 안의 표에서 나온 매치면 그 중첩 깊이(바깥 표 = 0). 0 이면 생략되므로
     /// 중첩이 없는 문서의 봉투는 종전과 바이트까지 같다.
     ///
-    /// 0 이 아니면 **`cell` 은 매치의 정확한 위치가 아니라 그것을 담은 바깥 셀 문단**을
-    /// 가리킨다 — 중첩 경로를 그대로 싣는 정밀 주소는 별도 축(#2792 §경로 기반 선택)이다.
+    /// 0 이 아니면 **`cell` 은 매치의 정확한 위치가 아니라 그것을 담은 최외곽 칸 문단**을
+    /// 가리킨다 — 정확한 칸은 `cellPath` 의 마지막 단계다.
     #[serde(rename = "nestedDepth", skip_serializing_if = "is_zero")]
     pub nested_depth: usize,
+    /// [#8989] 표 안의 표·글상자 안의 표에서 나온 매치의 정확한 칸 경로(바깥 → 안쪽).
+    ///
+    /// `fields` 의 `location.nested` 와 같은 꼴이다. 마지막 단계가 매치가 든 칸과 그 칸
+    /// 문단이다. 본문 표 한 단계 매치는 `cell` 로 충분하므로 생략된다 — 중첩이 없는
+    /// 문서의 봉투는 종전과 같다.
+    #[serde(rename = "cellPath", skip_serializing_if = "Vec::is_empty")]
+    pub cell_path: Vec<CellPathStep>,
+}
+
+/// [#8989] 중첩 칸 경로 한 단계. `kind` 는 `tableCell` 또는 `textBox` 다.
+///
+/// `control` 은 앞 단계 문단(첫 단계는 본문 문단) 안의 컨트롤 인덱스, `cell` 은
+/// `tableCell` 단계의 칸 인덱스, `paragraph` 는 그 칸·글상자 안의 문단 인덱스다.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct CellPathStep {
+    pub kind: &'static str,
+    pub control: usize,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cell: Option<usize>,
+    pub paragraph: usize,
+}
+
+impl CellPathStep {
+    pub fn table_cell(control: usize, cell: usize, paragraph: usize) -> Self {
+        Self {
+            kind: "tableCell",
+            control,
+            cell: Some(cell),
+            paragraph,
+        }
+    }
+
+    pub fn text_box(control: usize, paragraph: usize) -> Self {
+        Self {
+            kind: "textBox",
+            control,
+            cell: None,
+            paragraph,
+        }
+    }
 }
 
 /// 중첩이 없는 흔한 경우에 필드를 아예 빼기 위한 serde 술어.
@@ -275,6 +315,7 @@ impl DocumentCore {
                         context_before,
                         context_after,
                         nested_depth: 0,
+                        cell_path: Vec::new(),
                     };
                 // 본문 문단 기준 컨텍스트 — 구역 문단 목록 안에서 앞뒤를 센다.
                 let (body_ctx_before, body_ctx_after) = match context {
@@ -331,8 +372,16 @@ impl DocumentCore {
                             // [#2792] 셀 안의 표까지 내려간다. 종전에는 셀 문단 컨트롤
                             // 순회가 Equation 만 봐서 중첩 표가 조용히 버려졌다.
                             let mut queue = std::collections::VecDeque::new();
-                            queue.push_back((table, 0usize, None::<CellRef>));
-                            while let Some((current, depth, host)) = queue.pop_front() {
+                            queue.push_back((
+                                table,
+                                0usize,
+                                None::<CellRef>,
+                                Vec::<CellPathStep>::new(),
+                                ctrl_idx,
+                            ));
+                            while let Some((current, depth, host, prefix, table_ctrl)) =
+                                queue.pop_front()
+                            {
                                 if depth >= MAX_NEST_DEPTH {
                                     continue;
                                 }
@@ -351,6 +400,13 @@ impl DocumentCore {
                                             cell: cell_idx,
                                             paragraph: cp_idx,
                                         });
+                                        let mut path = prefix.clone();
+                                        path.push(CellPathStep::table_cell(
+                                            table_ctrl, cell_idx, cp_idx,
+                                        ));
+                                        // 한 단계 표는 `cell` 이 곧 정확한 주소다.
+                                        let hit_path =
+                                            if depth > 0 { path.clone() } else { Vec::new() };
                                         let match_page = if depth == 0 {
                                             cell_page(ctrl_idx, cell.row as usize)
                                         } else {
@@ -373,6 +429,7 @@ impl DocumentCore {
                                                 cell_ctx_after.clone(),
                                             );
                                             hit.nested_depth = depth;
+                                            hit.cell_path = hit_path.clone();
                                             out.push(hit);
                                             if limit.is_some_and(|n| out.len() >= n) {
                                                 return out;
@@ -404,6 +461,7 @@ impl DocumentCore {
                                                             cell_ctx_after.clone(),
                                                         );
                                                         hit.nested_depth = depth;
+                                                        hit.cell_path = hit_path.clone();
                                                         out.push(hit);
                                                         if limit.is_some_and(|n| out.len() >= n) {
                                                             return out;
@@ -415,6 +473,8 @@ impl DocumentCore {
                                                         inner,
                                                         depth + 1,
                                                         Some(addr.clone()),
+                                                        path.clone(),
+                                                        equation_idx,
                                                     ));
                                                 }
                                                 _ => {}
@@ -499,16 +559,32 @@ impl DocumentCore {
                                                 // 주소로는 글상자 내부 표의 정확한 경로를 표현할 수
                                                 // 없으므로, match에는 글상자 호스트를 싣는다.
                                                 let mut queue = std::collections::VecDeque::new();
-                                                queue.push_back((table, 0usize));
-                                                while let Some((current, depth)) = queue.pop_front()
+                                                queue.push_back((
+                                                    table,
+                                                    0usize,
+                                                    vec![CellPathStep::text_box(ctrl_idx, tp_idx)],
+                                                    nested_control_idx,
+                                                ));
+                                                while let Some((
+                                                    current,
+                                                    depth,
+                                                    prefix,
+                                                    table_ctrl,
+                                                )) = queue.pop_front()
                                                 {
                                                     if depth >= MAX_NEST_DEPTH {
                                                         continue;
                                                     }
-                                                    for cell in current.cells.iter() {
+                                                    for (cell_idx, cell) in
+                                                        current.cells.iter().enumerate()
+                                                    {
                                                         for (cp_idx, cp) in
                                                             cell.paragraphs.iter().enumerate()
                                                         {
+                                                            let mut path = prefix.clone();
+                                                            path.push(CellPathStep::table_cell(
+                                                                table_ctrl, cell_idx, cp_idx,
+                                                            ));
                                                             let (cell_ctx_before, cell_ctx_after) =
                                                                 match context {
                                                                     Some(n) => {
@@ -548,6 +624,7 @@ impl DocumentCore {
                                                                     cell_ctx_after.clone(),
                                                                 );
                                                                 hit.nested_depth = depth;
+                                                                hit.cell_path = path.clone();
                                                                 out.push(hit);
                                                                 if limit
                                                                     .is_some_and(|n| out.len() >= n)
@@ -585,6 +662,8 @@ impl DocumentCore {
                                                                             );
                                                                             hit.nested_depth =
                                                                                 depth;
+                                                                            hit.cell_path =
+                                                                                path.clone();
                                                                             out.push(hit);
                                                                             if limit.is_some_and(
                                                                                 |n| out.len() >= n,
@@ -597,6 +676,8 @@ impl DocumentCore {
                                                                         queue.push_back((
                                                                             inner,
                                                                             depth + 1,
+                                                                            path.clone(),
+                                                                            inner_control_idx,
                                                                         ));
                                                                     }
                                                                     _ => {}

@@ -1,0 +1,16 @@
+{
+  "base": "d7b927d073489b8c5ea95655224b04096c939534",
+  "method": "Mac locked-wrapper --target web --no-opt local alternative, frozen git source archive",
+  "build_log": "logs/fixed-base-fresh-wasm-v2.log",
+  "exit": 0,
+  "artifacts": {
+    "rhwp.js": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+    "LICENSE": "1c3a7d5643b163a3ead4965e1bea33b832caee5bfca265efe42afcd7bc696b5b",
+    "rhwp_bg.wasm.d.ts": "9d21217c454fa8f1757e7f08e26b27d00c564bcc0be2a228b75bb0dae08aa738",
+    "README.md": "b61d728c2adc15aa0583b4d5a4932d5cd91c799265b8db2af154a18279cbc280",
+    "rhwp_bg.wasm": "2a8594fb25e43d96696c4aab75b80c1704eb4168003e00b008bcb4b546675925",
+    ".gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+    "package.json": "5dd1526473c7d0b8e59067ca464a926ef651dd15d5e3258465af863400ec0a19",
+    "rhwp.d.ts": "0c02b535ff3d0458c0c12b25b5f46d68e49be482d32aec9e5d8db03d1f33c2f0"
+  }
+}

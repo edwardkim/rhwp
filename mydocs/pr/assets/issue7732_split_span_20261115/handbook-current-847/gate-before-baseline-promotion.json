@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "baseline": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
+  "baseline_sha256": "43c59cf77a4a86b3744d3df30eb71469de70b584ccc9cb165fa8f7b7884d2e1f",
+  "metric": "silhouette_raw_match_percent",
+  "backend": "native-skia",
+  "precision": "0.01 percentage points",
+  "pages": 383,
+  "regressions": [],
+  "webfont_fallback": [],
+  "manifest": "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/svg-print-final/post-rebase-4e0b20d2/margin-controls/required-handbook-current/required-handbook-8153-native/silhouette_manifest.json",
+  "elapsed_seconds": 188.372
+}

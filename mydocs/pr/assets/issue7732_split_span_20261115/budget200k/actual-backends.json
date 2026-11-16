@@ -1,0 +1,444 @@
+{
+  "scope": "보정 후 실제 backend 관측 24건. nested CK 요청의 Canvas2D fallback은 CK 성공으로 세지 않는다.",
+  "browser": "Chrome/157.0.8103.51",
+  "results": [
+    {
+      "sampleId": "footnote-p036",
+      "documentDigest": "sha256:a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+      "page": 35,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "fontFallback": null,
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": null,
+      "artifact": {
+        "sha256": "790475b658a3da587ba00590e3927451c71f22bf909f0946bbd2969638285e6e",
+        "sizeBytes": 190392,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "footnote-p036",
+      "documentDigest": "sha256:a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+      "page": 35,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "fontFallback": null,
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "22b9a54f7d753e991c77de922d529710d7cb8b3d4162a87f67ad54a04fd2731c",
+        "sizeBytes": 164422,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "footnote-p036",
+      "documentDigest": "sha256:a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+      "page": 35,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "fontFallback": null,
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "22b9a54f7d753e991c77de922d529710d7cb8b3d4162a87f67ad54a04fd2731c",
+        "sizeBytes": 164422,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "footnote-p036",
+      "documentDigest": "sha256:a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+      "page": 35,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "fontFallback": null,
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": null,
+      "artifact": {
+        "sha256": "ea21abb184e1a5487991f0831e744ff958857b18f7269fb1fd4c8149d594e6e6",
+        "sizeBytes": 187048,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "footnote-p036",
+      "documentDigest": "sha256:a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+      "page": 35,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "fontFallback": null,
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "f1a1b7266d663d4e3ea90456e5ef9861ad1a0f4a443e3531ab7851b6b1f6f329",
+        "sizeBytes": 160873,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "footnote-p036",
+      "documentDigest": "sha256:a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+      "page": 35,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "fontFallback": null,
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "f1a1b7266d663d4e3ea90456e5ef9861ad1a0f4a443e3531ab7851b6b1f6f329",
+        "sizeBytes": 160873,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "footnote-p037",
+      "documentDigest": "sha256:a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+      "page": 36,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "fontFallback": null,
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": null,
+      "artifact": {
+        "sha256": "2ee804e14e878bdcd06e513e4e9ffb2711dbb1356afe05cd5bd30f2f3b6da533",
+        "sizeBytes": 157406,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "footnote-p037",
+      "documentDigest": "sha256:a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+      "page": 36,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "fontFallback": null,
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "7ede22a7397e570a6a1b6f698e4dfb21e9ac2a78ab81fcce3ba0517a08cc952b",
+        "sizeBytes": 134945,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "footnote-p037",
+      "documentDigest": "sha256:a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+      "page": 36,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "fontFallback": null,
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "7ede22a7397e570a6a1b6f698e4dfb21e9ac2a78ab81fcce3ba0517a08cc952b",
+        "sizeBytes": 134945,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "footnote-p037",
+      "documentDigest": "sha256:a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+      "page": 36,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "fontFallback": null,
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": null,
+      "artifact": {
+        "sha256": "24b77f65c6db389a7d7c10bd375ffd0084dcc8632afef9eb51a4d9cec637f808",
+        "sizeBytes": 153288,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "footnote-p037",
+      "documentDigest": "sha256:a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+      "page": 36,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "fontFallback": null,
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "461376947b4f35a5b2d16e75d5ce1c07d85ad1d6fb59dc3e5dd7d35da348c465",
+        "sizeBytes": 131667,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "footnote-p037",
+      "documentDigest": "sha256:a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+      "page": 36,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "fontFallback": null,
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "461376947b4f35a5b2d16e75d5ce1c07d85ad1d6fb59dc3e5dd7d35da348c465",
+        "sizeBytes": 131667,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "footnote-p038",
+      "documentDigest": "sha256:a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+      "page": 37,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "fontFallback": null,
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": null,
+      "artifact": {
+        "sha256": "baf8e986b88d55064bfa93efa8b6516f2a4ee8ec0bb827cb9b60cb45eaf85769",
+        "sizeBytes": 179353,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "footnote-p038",
+      "documentDigest": "sha256:a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+      "page": 37,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "fontFallback": null,
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "c1a0f9cf44f3a163b2e0cbf9dd3c7e880a42a77c66d4ee80a3a1118e246ec4e3",
+        "sizeBytes": 153513,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "footnote-p038",
+      "documentDigest": "sha256:a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+      "page": 37,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "fontFallback": null,
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "c1a0f9cf44f3a163b2e0cbf9dd3c7e880a42a77c66d4ee80a3a1118e246ec4e3",
+        "sizeBytes": 153513,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "footnote-p038",
+      "documentDigest": "sha256:a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+      "page": 37,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "fontFallback": null,
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": null,
+      "artifact": {
+        "sha256": "3e22e6c6f9c4e80daba924164c3bbacd9b26a102ee4c78120632ad481e362c3a",
+        "sizeBytes": 175385,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "footnote-p038",
+      "documentDigest": "sha256:a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+      "page": 37,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "fontFallback": null,
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "3eeb11dbc80ff9c2d96b095b250dcf59e965e4a5b2b35b48e715196501ed6dc6",
+        "sizeBytes": 149708,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "footnote-p038",
+      "documentDigest": "sha256:a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+      "page": 37,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "fontFallback": null,
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "3eeb11dbc80ff9c2d96b095b250dcf59e965e4a5b2b35b48e715196501ed6dc6",
+        "sizeBytes": 149708,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "nested-p011",
+      "documentDigest": "sha256:bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "page": 10,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "fontFallback": null,
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": null,
+      "artifact": {
+        "sha256": "51dcb166072b7ab0bff0df5a6e74cfbb71475408e2733710edc7d51fc636b9d5",
+        "sizeBytes": 241979,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "nested-p011",
+      "documentDigest": "sha256:bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "page": 10,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "NotoSerifKRExtraLight-Regular"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "51dcb166072b7ab0bff0df5a6e74cfbb71475408e2733710edc7d51fc636b9d5",
+        "sizeBytes": 241979,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "nested-p011",
+      "documentDigest": "sha256:bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "page": 10,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "NotoSerifKRExtraLight-Regular"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "51dcb166072b7ab0bff0df5a6e74cfbb71475408e2733710edc7d51fc636b9d5",
+        "sizeBytes": 241979,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "nested-p011",
+      "documentDigest": "sha256:bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "page": 10,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "fontFallback": null,
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": null,
+      "artifact": {
+        "sha256": "d40c71da82d169ef7c17fa9e923a058c4fb5f419d206288a523cd573086aaf16",
+        "sizeBytes": 243696,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "nested-p011",
+      "documentDigest": "sha256:bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "page": 10,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "NotoSerifKRExtraLight-Regular"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "d40c71da82d169ef7c17fa9e923a058c4fb5f419d206288a523cd573086aaf16",
+        "sizeBytes": 243696,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "nested-p011",
+      "documentDigest": "sha256:bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "page": 10,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "NotoSerifKRExtraLight-Regular"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "d40c71da82d169ef7c17fa9e923a058c4fb5f419d206288a523cd573086aaf16",
+        "sizeBytes": 243696,
+        "width": 794,
+        "height": 1122
+      }
+    }
+  ],
+  "wasm_product_source": "393175a0c0f428b3c9b9bbf9b0e0153edc5ba1c7",
+  "studio_face_lookup_source": "71da872631",
+  "studio_face_lookup_unchanged_at_current_source": true,
+  "actual_canvaskit_count": 12,
+  "canvas2d_count": 12,
+  "canvaskit_requested_but_fell_back_count": 4
+}

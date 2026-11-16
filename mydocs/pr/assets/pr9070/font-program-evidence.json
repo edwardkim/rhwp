@@ -1,0 +1,277 @@
+{
+  "referenceFont": [
+    [
+      12,
+      "ttf",
+      "Type0",
+      "INPILL+Haansoft Batang",
+      "F1",
+      "Identity-H",
+      0
+    ]
+  ],
+  "pdfFontSizePt": 11.99020004272461,
+  "fontProgram": {
+    "path": "/home/edward/mygithub/ttfs/hwp/HBATANG.TTF",
+    "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+    "family": "Haansoft Batang",
+    "version": "Version 1.21",
+    "unitsPerEm": 1024
+  },
+  "nonSpaceAdvances": [
+    {
+      "character": "H",
+      "observedPdfAdvancePt": 8.995128631591797,
+      "suppliedHmtxAdvancePt": 8.992650032043457,
+      "differencePt": 0.0024785995483398438
+    },
+    {
+      "character": "W",
+      "observedPdfAdvancePt": 11.513755798339844,
+      "suppliedHmtxAdvancePt": 11.48670531436801,
+      "differencePt": 0.027050483971834183
+    },
+    {
+      "character": "P",
+      "observedPdfAdvancePt": 7.555908203125,
+      "suppliedHmtxAdvancePt": 7.493875026702881,
+      "differencePt": 0.06203317642211914
+    },
+    {
+      "character": "3",
+      "observedPdfAdvancePt": 6.956230163574219,
+      "suppliedHmtxAdvancePt": 6.990380298346281,
+      "differencePt": -0.0341501347720623
+    },
+    {
+      "character": "l",
+      "observedPdfAdvancePt": 3.4781112670898438,
+      "suppliedHmtxAdvancePt": 3.489335559308529,
+      "differencePt": -0.01122429221868515
+    },
+    {
+      "character": "i",
+      "observedPdfAdvancePt": 3.478118896484375,
+      "suppliedHmtxAdvancePt": 3.489335559308529,
+      "differencePt": -0.0112166628241539
+    },
+    {
+      "character": "n",
+      "observedPdfAdvancePt": 6.4764862060546875,
+      "suppliedHmtxAdvancePt": 6.486885569989681,
+      "differencePt": -0.010399363934993744
+    },
+    {
+      "character": "e",
+      "observedPdfAdvancePt": 6.476493835449219,
+      "suppliedHmtxAdvancePt": 6.486885569989681,
+      "differencePt": -0.010391734540462494
+    },
+    {
+      "character": "c",
+      "observedPdfAdvancePt": 5.9967498779296875,
+      "suppliedHmtxAdvancePt": 5.995100021362305,
+      "differencePt": 0.0016498565673828125
+    },
+    {
+      "character": "h",
+      "observedPdfAdvancePt": 6.4764862060546875,
+      "suppliedHmtxAdvancePt": 6.486885569989681,
+      "differencePt": -0.010399363934993744
+    },
+    {
+      "character": "a",
+      "observedPdfAdvancePt": 5.9967498779296875,
+      "suppliedHmtxAdvancePt": 5.995100021362305,
+      "differencePt": 0.0016498565673828125
+    },
+    {
+      "character": "r",
+      "observedPdfAdvancePt": 4.9173431396484375,
+      "suppliedHmtxAdvancePt": 4.988110564649105,
+      "differencePt": -0.07076742500066757
+    },
+    {
+      "character": "a",
+      "observedPdfAdvancePt": 5.9967498779296875,
+      "suppliedHmtxAdvancePt": 5.995100021362305,
+      "differencePt": 0.0016498565673828125
+    },
+    {
+      "character": "c",
+      "observedPdfAdvancePt": 5.9967498779296875,
+      "suppliedHmtxAdvancePt": 5.995100021362305,
+      "differencePt": 0.0016498565673828125
+    },
+    {
+      "character": "t",
+      "observedPdfAdvancePt": 4.557525634765625,
+      "suppliedHmtxAdvancePt": 4.4963250160217285,
+      "differencePt": 0.061200618743896484
+    },
+    {
+      "character": "e",
+      "observedPdfAdvancePt": 6.4764862060546875,
+      "suppliedHmtxAdvancePt": 6.486885569989681,
+      "differencePt": -0.010399363934993744
+    },
+    {
+      "character": "r",
+      "observedPdfAdvancePt": 5.0372772216796875,
+      "suppliedHmtxAdvancePt": 4.988110564649105,
+      "differencePt": 0.04916665703058243
+    },
+    {
+      "character": "s",
+      "observedPdfAdvancePt": 5.9967498779296875,
+      "suppliedHmtxAdvancePt": 5.995100021362305,
+      "differencePt": 0.0016498565673828125
+    },
+    {
+      "character": ":",
+      "observedPdfAdvancePt": 3.957855224609375,
+      "suppliedHmtxAdvancePt": 3.9928302876651287,
+      "differencePt": -0.03497506305575371
+    },
+    {
+      "character": "s",
+      "observedPdfAdvancePt": 5.9967498779296875,
+      "suppliedHmtxAdvancePt": 5.995100021362305,
+      "differencePt": 0.0016498565673828125
+    },
+    {
+      "character": "e",
+      "observedPdfAdvancePt": 6.4764862060546875,
+      "suppliedHmtxAdvancePt": 6.486885569989681,
+      "differencePt": -0.010399363934993744
+    },
+    {
+      "character": "v",
+      "observedPdfAdvancePt": 6.4764862060546875,
+      "suppliedHmtxAdvancePt": 6.486885569989681,
+      "differencePt": -0.010399363934993744
+    },
+    {
+      "character": "e",
+      "observedPdfAdvancePt": 6.4764862060546875,
+      "suppliedHmtxAdvancePt": 6.486885569989681,
+      "differencePt": -0.010399363934993744
+    },
+    {
+      "character": "n",
+      "observedPdfAdvancePt": 6.47650146484375,
+      "suppliedHmtxAdvancePt": 6.486885569989681,
+      "differencePt": -0.010384105145931244
+    },
+    {
+      "character": "s",
+      "observedPdfAdvancePt": 5.9967498779296875,
+      "suppliedHmtxAdvancePt": 5.995100021362305,
+      "differencePt": 0.0016498565673828125
+    },
+    {
+      "character": "e",
+      "observedPdfAdvancePt": 6.4764862060546875,
+      "suppliedHmtxAdvancePt": 6.486885569989681,
+      "differencePt": -0.010399363934993744
+    },
+    {
+      "character": "t",
+      "observedPdfAdvancePt": 4.557525634765625,
+      "suppliedHmtxAdvancePt": 4.4963250160217285,
+      "differencePt": 0.061200618743896484
+    },
+    {
+      "character": "s",
+      "observedPdfAdvancePt": 5.9967498779296875,
+      "suppliedHmtxAdvancePt": 5.995100021362305,
+      "differencePt": 0.0016498565673828125
+    },
+    {
+      "character": "a",
+      "observedPdfAdvancePt": 5.996734619140625,
+      "suppliedHmtxAdvancePt": 5.995100021362305,
+      "differencePt": 0.0016345977783203125
+    },
+    {
+      "character": "n",
+      "observedPdfAdvancePt": 6.47650146484375,
+      "suppliedHmtxAdvancePt": 6.486885569989681,
+      "differencePt": -0.010384105145931244
+    },
+    {
+      "character": "d",
+      "observedPdfAdvancePt": 6.476470947265625,
+      "suppliedHmtxAdvancePt": 6.486885569989681,
+      "differencePt": -0.010414622724056244
+    },
+    {
+      "character": "s",
+      "observedPdfAdvancePt": 5.996734619140625,
+      "suppliedHmtxAdvancePt": 5.995100021362305,
+      "differencePt": 0.0016345977783203125
+    },
+    {
+      "character": "e",
+      "observedPdfAdvancePt": 6.47650146484375,
+      "suppliedHmtxAdvancePt": 6.486885569989681,
+      "differencePt": -0.010384105145931244
+    },
+    {
+      "character": "v",
+      "observedPdfAdvancePt": 6.47650146484375,
+      "suppliedHmtxAdvancePt": 6.486885569989681,
+      "differencePt": -0.010384105145931244
+    },
+    {
+      "character": "e",
+      "observedPdfAdvancePt": 6.476470947265625,
+      "suppliedHmtxAdvancePt": 6.486885569989681,
+      "differencePt": -0.010414622724056244
+    },
+    {
+      "character": "n",
+      "observedPdfAdvancePt": 6.47650146484375,
+      "suppliedHmtxAdvancePt": 6.486885569989681,
+      "differencePt": -0.010384105145931244
+    },
+    {
+      "character": "s",
+      "observedPdfAdvancePt": 5.99676513671875,
+      "suppliedHmtxAdvancePt": 5.995100021362305,
+      "differencePt": 0.0016651153564453125
+    },
+    {
+      "character": "y",
+      "observedPdfAdvancePt": 6.95623779296875,
+      "suppliedHmtxAdvancePt": 6.990380298346281,
+      "differencePt": -0.03414250537753105
+    },
+    {
+      "character": "m",
+      "observedPdfAdvancePt": 9.95458984375,
+      "suppliedHmtxAdvancePt": 9.987930309027433,
+      "differencePt": -0.033340465277433395
+    },
+    {
+      "character": "b",
+      "observedPdfAdvancePt": 6.47650146484375,
+      "suppliedHmtxAdvancePt": 6.486885569989681,
+      "differencePt": -0.010384105145931244
+    },
+    {
+      "character": "o",
+      "observedPdfAdvancePt": 6.476470947265625,
+      "suppliedHmtxAdvancePt": 6.486885569989681,
+      "differencePt": -0.010414622724056244
+    },
+    {
+      "character": "l",
+      "observedPdfAdvancePt": 3.478118896484375,
+      "suppliedHmtxAdvancePt": 3.489335559308529,
+      "differencePt": -0.0112166628241539
+    }
+  ],
+  "maxAbsoluteAdvanceDifferencePt": 0.07076742500066757,
+  "policy": "PDF resources identify Haansoft Batang TrueType; adjacent non-space origins agree with its hmtx. Explicit natural program metrics apply only to this independent reference environment; no source metrics or product defaults changed."
+}

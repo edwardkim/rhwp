@@ -1,0 +1,92 @@
+[
+  {
+    "key": "pr7668-mixed",
+    "backend": "canvas2d",
+    "raw": 100.0,
+    "passed": true
+  },
+  {
+    "key": "pr7675-all-inline",
+    "backend": "canvas2d",
+    "raw": 100.0,
+    "passed": true
+  },
+  {
+    "key": "pr7682-two-paras",
+    "backend": "canvas2d",
+    "raw": 100.0,
+    "passed": true
+  },
+  {
+    "key": "owner-hwp",
+    "backend": "canvas2d",
+    "raw": 100.0,
+    "passed": true
+  },
+  {
+    "key": "owner-hwpx",
+    "backend": "canvas2d",
+    "raw": 100.0,
+    "passed": true
+  },
+  {
+    "key": "pr7668-mixed",
+    "backend": "canvaskit",
+    "raw": 100.0,
+    "passed": true
+  },
+  {
+    "key": "pr7675-all-inline",
+    "backend": "canvaskit",
+    "raw": 100.0,
+    "passed": true
+  },
+  {
+    "key": "pr7682-two-paras",
+    "backend": "canvaskit",
+    "raw": 100.0,
+    "passed": true
+  },
+  {
+    "key": "owner-hwp",
+    "backend": "canvaskit",
+    "raw": 100.0,
+    "passed": true
+  },
+  {
+    "key": "owner-hwpx",
+    "backend": "canvaskit",
+    "raw": 100.0,
+    "passed": true
+  },
+  {
+    "key": "pr7668-mixed",
+    "backend": "native-svg-browser",
+    "raw": 100.0,
+    "passed": true
+  },
+  {
+    "key": "pr7675-all-inline",
+    "backend": "native-svg-browser",
+    "raw": 100.0,
+    "passed": true
+  },
+  {
+    "key": "pr7682-two-paras",
+    "backend": "native-svg-browser",
+    "raw": 100.0,
+    "passed": true
+  },
+  {
+    "key": "owner-hwp",
+    "backend": "native-svg-browser",
+    "raw": 100.0,
+    "passed": true
+  },
+  {
+    "key": "owner-hwpx",
+    "backend": "native-svg-browser",
+    "raw": 100.0,
+    "passed": true
+  }
+]

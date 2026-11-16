@@ -6,6 +6,8 @@
 mod core;
 mod extended;
 
+pub(crate) const REPLACE_TEXT_USAGE: &str = "rhwp edit replace-text <파일.hwp|파일.hwpx> --find <문자열> --replace <문자열> [-o <출력>] [--ignore-case] [--occurrence <k>] [--dry-run] [--json] [--verify] [--expect-sha256 <해시>]";
+
 fn capability_spec(name: &str) -> &'static crate::cli::catalog::CommandSpec {
     let spec = crate::cli::catalog::find(name)
         .unwrap_or_else(|| panic!("capabilities 명령이 catalog에 없습니다: {name}"));
@@ -61,14 +63,14 @@ fn cmd_gated(name: &str, summary: &str, available: bool) -> serde_json::Value {
 /// (`batch.subcommands` 선례를 commands[] 항목으로 옮긴 모양 — 1차는 이름·요약만,
 /// 하위별 recordFields 분화는 별도 판단). 선언 ↔ 디스패치 실물의 대조는
 /// `tests/capabilities_subcommands_contract.rs` 가 USAGE 문자열과 실행 거동으로 잡는다.
-const EDIT_SUBCOMMANDS: [(&str, &str); 112] = [
+const EDIT_SUBCOMMANDS: [(&str, &str); 114] = [
     (
         "fill-fields",
         "누름틀(필드) 값 채우기 — --data 이름=값, 같은 이름은 [k] 순번 지목",
     ),
     (
         "replace-text",
-        "본문 일괄 치환 — --find/--replace, --occurrence 로 k번째만",
+        "본문·표 셀 일괄 치환 — --find/--replace, --occurrence 로 문서 순서 k번째만 (0부터, 생략 시 전체)",
     ),
     ("set-cell", "표 셀 텍스트 기록 — --table/--row/--col/--text"),
     (
@@ -319,12 +321,16 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 112] = [
     ),
     (
         "insert-picture",
-        "본문 그림 삽입 — --image/--section/--para/--offset (문단 좌표)",
+        "본문·표 칸 그림 삽입 — --image/--section/--para/--offset 또는 --table/--row/--col",
     ),
     ("delete-picture", "본문 그림 삭제 — --section/--para/--ctrl"),
     (
         "set-picture",
         "본문 그림 속성 — --section/--para/--ctrl/--props",
+    ),
+    (
+        "move-picture",
+        "떠 있는 그림 옮기기 — --section/--para/--ctrl → --to-para 또는 --table/--row/--col",
     ),
     (
         "set-page-border-fill",
@@ -362,6 +368,7 @@ const EDIT_SUBCOMMANDS: [(&str, &str); 112] = [
     ("insert-number", "쪽 새 번호로 시작 — --number/--section"),
     ("insert-shape", "본문 도형 삽입 — --width/--height"),
     ("delete-shape", "본문 도형 삭제 — --section/--para/--ctrl"),
+    ("set-shape", "본문 도형 속성 — --section/--para/--ctrl/--props"),
     ("group-shapes", "본문 도형 묶기 — --section/--para/--ctrl"),
     ("set-form-value", "본문 양식 값 설정 — --section/--para/--ctrl/--value"),
     (

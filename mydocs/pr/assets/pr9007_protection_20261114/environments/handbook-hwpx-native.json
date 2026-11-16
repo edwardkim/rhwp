@@ -1,0 +1,306 @@
+{
+  "documentSubstitutions": [
+    {
+      "fontId": 5,
+      "languageSlot": 0,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "한컴바탕",
+      "source": "-윤명조120",
+      "target": "Haansoft Batang"
+    },
+    {
+      "fontId": 6,
+      "languageSlot": 0,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "한컴바탕",
+      "source": "-윤명조140",
+      "target": "Haansoft Batang"
+    },
+    {
+      "fontId": 7,
+      "languageSlot": 0,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "한컴바탕",
+      "source": "정부상징 부처명_16040911",
+      "target": "Haansoft Batang"
+    },
+    {
+      "fontId": 16,
+      "languageSlot": 0,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "한컴바탕",
+      "source": "Yoon가변 윤명조 120_TT",
+      "target": "Haansoft Batang"
+    },
+    {
+      "fontId": 7,
+      "languageSlot": 1,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "한컴바탕",
+      "source": "-윤명조140",
+      "target": "Haansoft Batang"
+    },
+    {
+      "fontId": 8,
+      "languageSlot": 1,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "한컴바탕",
+      "source": "정부상징 부처명_16040911",
+      "target": "Haansoft Batang"
+    },
+    {
+      "fontId": 7,
+      "languageSlot": 2,
+      "programId": "92498bd49b56117d79467576eb5ddc73e53a3f286aedc2288d0db79bd431a8c1",
+      "query": "함초롬바탕",
+      "source": "-윤명조120",
+      "target": "HCR Batang"
+    },
+    {
+      "fontId": 8,
+      "languageSlot": 2,
+      "programId": "92498bd49b56117d79467576eb5ddc73e53a3f286aedc2288d0db79bd431a8c1",
+      "query": "함초롬바탕",
+      "source": "-윤명조140",
+      "target": "HCR Batang"
+    },
+    {
+      "fontId": 9,
+      "languageSlot": 2,
+      "programId": "92498bd49b56117d79467576eb5ddc73e53a3f286aedc2288d0db79bd431a8c1",
+      "query": "함초롬바탕",
+      "source": "정부상징 부처명_16040911",
+      "target": "HCR Batang"
+    },
+    {
+      "fontId": 16,
+      "languageSlot": 2,
+      "programId": "92498bd49b56117d79467576eb5ddc73e53a3f286aedc2288d0db79bd431a8c1",
+      "query": "함초롬바탕",
+      "source": "Yoon가변 윤명조 120_TT",
+      "target": "HCR Batang"
+    },
+    {
+      "fontId": 7,
+      "languageSlot": 3,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "한컴바탕",
+      "source": "-윤명조120",
+      "target": "Haansoft Batang"
+    },
+    {
+      "fontId": 8,
+      "languageSlot": 3,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "한컴바탕",
+      "source": "-윤명조140",
+      "target": "Haansoft Batang"
+    },
+    {
+      "fontId": 9,
+      "languageSlot": 3,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "한컴바탕",
+      "source": "정부상징 부처명_16040911",
+      "target": "Haansoft Batang"
+    },
+    {
+      "fontId": 16,
+      "languageSlot": 3,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "한컴바탕",
+      "source": "Yoon가변 윤명조 120_TT",
+      "target": "Haansoft Batang"
+    },
+    {
+      "fontId": 4,
+      "languageSlot": 4,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "한컴바탕",
+      "source": "-윤명조120",
+      "target": "Haansoft Batang"
+    },
+    {
+      "fontId": 5,
+      "languageSlot": 4,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "한컴바탕",
+      "source": "-윤명조140",
+      "target": "Haansoft Batang"
+    },
+    {
+      "fontId": 6,
+      "languageSlot": 4,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "한컴바탕",
+      "source": "정부상징 부처명_16040911",
+      "target": "Haansoft Batang"
+    },
+    {
+      "fontId": 13,
+      "languageSlot": 4,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "한컴바탕",
+      "source": "Yoon가변 윤명조 120_TT",
+      "target": "Haansoft Batang"
+    },
+    {
+      "fontId": 7,
+      "languageSlot": 5,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "한컴바탕",
+      "source": "-윤명조140",
+      "target": "Haansoft Batang"
+    },
+    {
+      "fontId": 8,
+      "languageSlot": 5,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "한컴바탕",
+      "source": "정부상징 부처명_16040911",
+      "target": "Haansoft Batang"
+    },
+    {
+      "fontId": 15,
+      "languageSlot": 5,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "한컴바탕",
+      "source": "Yoon가변 윤명조 120_TT",
+      "target": "Haansoft Batang"
+    },
+    {
+      "fontId": 4,
+      "languageSlot": 6,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "한컴바탕",
+      "source": "-윤명조120",
+      "target": "Haansoft Batang"
+    },
+    {
+      "fontId": 5,
+      "languageSlot": 6,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "한컴바탕",
+      "source": "-윤명조140",
+      "target": "Haansoft Batang"
+    },
+    {
+      "fontId": 6,
+      "languageSlot": 6,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "한컴바탕",
+      "source": "정부상징 부처명_16040911",
+      "target": "Haansoft Batang"
+    },
+    {
+      "fontId": 13,
+      "languageSlot": 6,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "한컴바탕",
+      "source": "Yoon가변 윤명조 120_TT",
+      "target": "Haansoft Batang"
+    }
+  ],
+  "id": "native-webfont-d8af4fca0d8067db97400410",
+  "preserveSourceMetrics": true,
+  "selectedPrograms": {
+    "-윤고딕120": {
+      "family": "Haansoft Batang",
+      "openTypeCff": false,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "한컴바탕",
+      "trueType": true
+    },
+    "Dinbol": {
+      "family": "Haansoft Batang",
+      "openTypeCff": false,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "한컴바탕",
+      "trueType": true
+    },
+    "KoPub돋움체 Bold": {
+      "family": "KoPubDotum Bold",
+      "openTypeCff": false,
+      "programId": "b5a3b58aba479c6a96b5f292c583efc2fb461ec04b1fd3951f37897c89711b4f",
+      "query": "KoPub돋움체 Bold",
+      "trueType": true
+    },
+    "KoPub돋움체 Light": {
+      "family": "KoPubDotum Light",
+      "openTypeCff": false,
+      "programId": "6d6953f3c854de69eb2b947d2abbdd108512617b3cd542cde6d00a1dd496824b",
+      "query": "KoPub돋움체 Light",
+      "trueType": true
+    },
+    "KoPub돋움체 Medium": {
+      "family": "KoPubDotum Medium",
+      "openTypeCff": false,
+      "programId": "f08d9184a96a35fa7306c8e625f47cfd4e2b74a74bd1b596d34cba18de444ca9",
+      "query": "KoPub돋움체 Medium",
+      "trueType": true
+    },
+    "KoPub바탕체 Bold": {
+      "family": "KoPubBatang Bold",
+      "openTypeCff": false,
+      "programId": "ace790df68f1d4d089f242df25ea370225b82d380b0a27c769de0a17b0b22835",
+      "query": "KoPub바탕체 Bold",
+      "trueType": true
+    },
+    "KoPub바탕체 Light": {
+      "family": "KoPubBatang Light",
+      "openTypeCff": false,
+      "programId": "3518b7160348c029ed9ba9fcbfb7c2e73ee60259e4b4ac93e321b802105bdb12",
+      "query": "KoPub바탕체 Light",
+      "trueType": true
+    },
+    "KoPub바탕체 Medium": {
+      "family": "KoPubBatang Medium",
+      "openTypeCff": false,
+      "programId": "cbc430b0a5cb28356a7c8aceac553906c3226c56662f85067c6c30c8d5fd2acf",
+      "query": "KoPub바탕체 Medium",
+      "trueType": true
+    },
+    "Times New Roman": {
+      "family": "Times New Roman",
+      "openTypeCff": false,
+      "programId": "05431e66ef394384694c35739bcff3bd67242cc74aca1f13b54c7a92822f0fde",
+      "query": "Times New Roman",
+      "trueType": true
+    }
+  },
+  "substitutions": {
+    "#태고딕": "NotoSansKR-Regular",
+    "-윤고딕120": "Haansoft Batang",
+    "Dinbol": "Haansoft Batang",
+    "HCI Poppy": "NotoSerifKRExtraLight-Regular",
+    "HY그래픽": "NotoSansKR-Regular",
+    "HY그래픽M": "NotoSansKR-Regular",
+    "KoPub돋움체 Bold": "KoPubDotum Bold",
+    "KoPub돋움체 Light": "KoPubDotum Light",
+    "KoPub돋움체 Medium": "KoPubDotum Medium",
+    "KoPub바탕체 Bold": "KoPubBatang Bold",
+    "KoPub바탕체 Light": "KoPubBatang Light",
+    "KoPub바탕체 Medium": "KoPubBatang Medium",
+    "Times New Roman": "Times New Roman",
+    "굴림체": "D2Coding",
+    "맑은 고딕": "Pretendard-Regular",
+    "명조": "NotoSerifKRExtraLight-Bold",
+    "신명 세명조": "NotoSerifKRExtraLight-Regular",
+    "신명 신명조": "NotoSerifKRExtraLight-Regular",
+    "한양견고딕": "NotoSansKR-Regular",
+    "한양신명조": "NotoSansKR-Regular",
+    "한양중고딕": "NotoSansKR-Regular",
+    "휴먼명조": "NotoSansKR-Regular"
+  },
+  "trueTypeFaces": [
+    "HCR Batang",
+    "Haansoft Batang",
+    "KoPubBatang Bold",
+    "KoPubBatang Light",
+    "KoPubBatang Medium",
+    "KoPubDotum Bold",
+    "KoPubDotum Light",
+    "KoPubDotum Medium",
+    "Times New Roman"
+  ]
+}

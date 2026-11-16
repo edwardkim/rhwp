@@ -1,0 +1,10 @@
+{
+  "path": "rhwp-studio/public/rhwp.js",
+  "head": "cec288ae2fd84b75b884a05ee1ada6ae3a8d2ac7",
+  "before_sha256": "187d86cfd6265d8894d71722f97a6a5247e88dbc4b226cdb6eb18414a13950ba",
+  "tested_generated_sha256": "2d48f8a6c3ff7f848f08725bb54d04094b296af1a40ae61203081a7cf8061a1a",
+  "normalized_before_sha256": "c288849c881f804ae79aaeaf56b5e733018508f6bbdea87276d4dab35cd50863",
+  "normalized_after_sha256": "c288849c881f804ae79aaeaf56b5e733018508f6bbdea87276d4dab35cd50863",
+  "executable_source_identical": true,
+  "reason": "Fresh wasm-pack synchronized #8956 API documentation comments (31 added lines)."
+}

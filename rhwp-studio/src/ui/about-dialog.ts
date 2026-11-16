@@ -35,7 +35,8 @@ const THIRD_PARTY_LICENSES = [
 
 export class AboutDialog extends ModalDialog {
   constructor() {
-    super(t('dialog.about.title'), 460);
+    // 정보 표시 전용이라 잃을 입력이 없다. 배경을 눌러도 닫는다 (#8905).
+    super(t('dialog.about.title'), 460, true);
   }
 
   protected createBody(): HTMLElement {
@@ -115,6 +116,8 @@ export class AboutDialog extends ModalDialog {
 
   override show(): void {
     super.show();
+    // 화면보다 길면 본문만 스크롤하고 제목 줄·닫기 버튼은 화면 안에 둔다 (#8905).
+    this.dialog.classList.add('about-dialog');
     // footer를 "닫기" 버튼 하나로 교체
     const footer = this.dialog.querySelector('.dialog-footer');
     if (footer) {

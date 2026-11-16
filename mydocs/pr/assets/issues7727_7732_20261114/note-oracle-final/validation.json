@@ -1,0 +1,95 @@
+{
+  "head": "57a38d59fee77ce7ffa6bb58a69f63c3c57c77c3",
+  "status": "target_pages_passed_additional_gates_pending",
+  "source_code_sha256": "e81787687c016bcbbf6e8a6cc36e4d117a9ac97c1de7c5e0e9fd8b01775e3b3d",
+  "backends": {
+    "native": {
+      "pages": 389,
+      "cases": [
+        {
+          "key": "cbta",
+          "pages": 204,
+          "minimum": 98.11,
+          "tsv": "native-cbta.tsv",
+          "tsv_sha256": "9f1bc1effa1845326d5b91fedbf91a03b79f01d0ddc4e035f0abf1bf8965f11d"
+        },
+        {
+          "key": "recommendation",
+          "pages": 22,
+          "minimum": 98.69,
+          "tsv": "native-recommendation.tsv",
+          "tsv_sha256": "c917f618379b62d2c92c349af2853cdd4f2ec606c2fd384338439e1558c6b2e9"
+        },
+        {
+          "key": "exam",
+          "pages": 8,
+          "minimum": 99.49,
+          "tsv": "native-exam.tsv",
+          "tsv_sha256": "4ee763deecfca07a600b468b5ba6528e59492044afff2ec5891c1655d7cd1419"
+        },
+        {
+          "key": "api",
+          "pages": 105,
+          "minimum": 99.55,
+          "tsv": "native-api.tsv",
+          "tsv_sha256": "0d300742ef260dadda962f4474e3fb347fd3b54879acc5179cdd609b9f3746bf"
+        },
+        {
+          "key": "footnote",
+          "pages": 50,
+          "minimum": 98.75,
+          "tsv": "native-footnote.tsv",
+          "tsv_sha256": "1e7ec85986045afd1dd77a87d88a53c1fa3f61951494d428ba1c2714acdaca6f"
+        }
+      ],
+      "producer": "native-producer.json"
+    },
+    "wasm": {
+      "pages": 389,
+      "cases": [
+        {
+          "key": "cbta",
+          "pages": 204,
+          "minimum": 98.08,
+          "tsv": "wasm-cbta.tsv",
+          "tsv_sha256": "74183b8f7ebe41b766e41eab96ff3b41475aaf51c9160fc047330d945ce8289a"
+        },
+        {
+          "key": "recommendation",
+          "pages": 22,
+          "minimum": 98.68,
+          "tsv": "wasm-recommendation.tsv",
+          "tsv_sha256": "995214847f754f6bede10a66779ed3e17a732cd86a0f99365a6a41fd0e0f381b"
+        },
+        {
+          "key": "exam",
+          "pages": 8,
+          "minimum": 99.49,
+          "tsv": "wasm-exam.tsv",
+          "tsv_sha256": "4ee763deecfca07a600b468b5ba6528e59492044afff2ec5891c1655d7cd1419"
+        },
+        {
+          "key": "api",
+          "pages": 105,
+          "minimum": 99.55,
+          "tsv": "wasm-api.tsv",
+          "tsv_sha256": "76f12f9f4b677b340aa930d1894188256638a1e4c8d20a8356d5f7900863a2ac"
+        },
+        {
+          "key": "footnote",
+          "pages": 50,
+          "minimum": 98.75,
+          "tsv": "wasm-footnote.tsv",
+          "tsv_sha256": "1e7ec85986045afd1dd77a87d88a53c1fa3f61951494d428ba1c2714acdaca6f"
+        }
+      ],
+      "producer": "wasm-producer.json"
+    }
+  },
+  "pending": [
+    "protected_native_wasm",
+    "actual_consumers",
+    "fixed_base_wasm_comparison",
+    "pre_pr_live_head_check"
+  ]
+}

@@ -1,0 +1,171 @@
+{
+  "key": "issue7620-c-rowbreak-table-moves-next-page",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2
+  ],
+  "completed_pages": [
+    1,
+    2
+  ],
+  "missing_pages": [],
+  "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/visual/wasm/final-head-focus/issue7620-c-rowbreak-table-moves-next-page-run/issue7620-c-rowbreak-table-moves-next-page/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/visual/wasm/final-head-focus/issue7620-c-rowbreak-table-moves-next-page-run/issue7620-c-rowbreak-table-moves-next-page/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "efcee3df1d2e0e182c6d0bfdc42ca63c4e34d78f4c353d3a8c2dd4255924a93d",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/visual/wasm/final-head-focus/issue7620-c-rowbreak-table-moves-next-page-run/issue7620-c-rowbreak-table-moves-next-page/pdf_png/pdf-001.png",
+      "pdf_sha256": "d7267b477fe8dd6aa09f241c9e1f0367b2913dbadaeb9f3959ad085d6671b5db"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/visual/wasm/final-head-focus/issue7620-c-rowbreak-table-moves-next-page-run/issue7620-c-rowbreak-table-moves-next-page/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "f7c9fa6ef35b48871f12f9c5ad929e12e3488e85ba622e438bb19f4a9451f19a",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/visual/wasm/final-head-focus/issue7620-c-rowbreak-table-moves-next-page-run/issue7620-c-rowbreak-table-moves-next-page/pdf_png/pdf-002.png",
+      "pdf_sha256": "6f5ab6c1e03e2cb71d13fe558a63cf2235e0b3dee4981dacca9ae76985779abd"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 13477,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 4453,
+      "tolerant_content_match_percent": 100.0
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 2,
+      "pdf": 2
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue7620/c-rowbreak-table-moves-next-page.hwp",
+      "sha256": "1a19df0ccf31676c411a576963cf322ec9e927fd8727390e94703cd95a297669"
+    },
+    "pdf": {
+      "path": "pdf/issue7620/c-rowbreak-table-moves-next-page-hancomdocs.pdf",
+      "sha256": "dfd39700bc26029a4bc148ab64640ad91243642c549fe6cfd9bfb0870cc61c4d"
+    },
+    "git_head": "68e8190d334fccc5a2846dcfead4a7c60330774a",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/producers/rhwp-head",
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/producers/rhwp-head",
+      "sha256": "961cb8f2e09dade36dbad4a35d102922dd1949a36ccd95ad4cc45992b2eb837f"
+    },
+    "raster_backend": "wasm-canvas2d",
+    "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+    "layout_generation": "2022",
+    "wasm": {
+      "files": [
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/producers/pkg-head/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/producers/pkg-head/rhwp_bg.wasm",
+          "sha256": "69c44690932008ac04546bff02c74757557f003acec94dcd415ba0063e52522b"
+        }
+      ],
+      "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+      "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+      "comparison_profile": "print",
+      "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files": [
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+          "sha256": "67b4003e2be99ea44a7c957e4b35acde1b5e6e82a54fe195c5598c3c617bc2e3"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/ttfs/opensource/NotoSansKR-Regular.ttf",
+          "sha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+          "sha256": "876598db5f1e3bef2bc77c4d94c5b0d5d2c1620be4878a06f18fb5434e331688"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/ttfs/opensource/RHWPOldHangul-Regular.otf",
+          "sha256": "0a32ff354d11c955f819d84d91e695927d41aca0fd74b4a286b6235345101af4"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/pr-8896-table-terminal-fragment/ttfs/opensource/RHWPPublicBatang-Regular.ttf",
+          "sha256": "7e3aee5ee1d8f44cc37d35dbd07e5f66414fee5ce552ebda6b4347643d9d0b78"
+        }
+      ]
+    }
+  },
+  "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/latest-eb84/visual/wasm/final-head-focus/issue7620-c-rowbreak-table-moves-next-page-run/issue7620-c-rowbreak-table-moves-next-page/silhouette-checkpoint.json"
+}

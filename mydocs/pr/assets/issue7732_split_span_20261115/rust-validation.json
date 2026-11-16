@@ -1,0 +1,270 @@
+{
+  "source": "3b4212267b26723917ba0f5a9eaf4c8e1b907afb",
+  "product_and_test_git_objects_match_current": true,
+  "minimum_fonts": {
+    "normal": {
+      "coretext_faces": 1875,
+      "system_profiler_files": 1502,
+      "non_os_files": 1208,
+      "korean_png_sha256": "cc400082a980669554f10ac33b144e7a2c070fd9f5de9240c50d245fac52a5ad"
+    },
+    "isolated": {
+      "coretext_faces": 528,
+      "system_profiler_files": 237,
+      "non_os_files": 0,
+      "korean_png_sha256": "cc400082a980669554f10ac33b144e7a2c070fd9f5de9240c50d245fac52a5ad"
+    }
+  },
+  "isolation_profile_sha256": "b122ab7f3662dcf4a09b6c8a7a13fab1f2be135c120e3f37e6fd3e0af2ed3dc8",
+  "allowed_public_fixture": {
+    "path": "ttfs/redistributable/happiness-sans/HappinessSansVF.ttf",
+    "sha256": "3bbd254dcc5780f7524f9d07af4aa981ba5e3e84cf32d7d4e04301b3943e8694"
+  },
+  "initial_failure": {
+    "scope": "all-target Clippy compile",
+    "cause": "격리 프로필이 공개 include_bytes fixture도 차단함. 해당 파일 하나만 허용해 재실행했으며 제품·테스트 기대값은 바꾸지 않음",
+    "log_sha256": "cd1d08bc04b4b0ffa7b9e0f2f47ef4b57b281f1d27dd89ce59bc79c247c0144b"
+  },
+  "full_nextest": {
+    "run": 13567,
+    "passed": 13567,
+    "failed": 0,
+    "skipped": 45,
+    "test_seconds": 890.642
+  },
+  "native_skia": {
+    "lib_passed": [
+      3852,
+      15,
+      165,
+      2
+    ],
+    "ignored": 12,
+    "picture": 2,
+    "direct_pdf": 36
+  },
+  "checks": [
+    {
+      "name": "fmt",
+      "exit": 0,
+      "seconds": 32.622,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "$REPO/output/pr-review/issue7732-p037-residual-20261115/minimal-font/font-test.sb",
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "native-clippy",
+      "exit": 0,
+      "seconds": 150.637,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "$REPO/output/pr-review/issue7732-p037-residual-20261115/minimal-font/font-test.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "$REPO/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "log_sha256": "fe0a8f4c3f4fc13ef14b7d6e46349ff217217572883646fd0e228e6fe46a97c3"
+    },
+    {
+      "name": "wasm-clippy",
+      "exit": 0,
+      "seconds": 78.66,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "$REPO/output/pr-review/issue7732-p037-residual-20261115/minimal-font/font-test.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "$REPO/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "log_sha256": "e97c7d701d7f80c7e3c59ce3bb38e4feee2c7527963d72aa5de7e60e296ec65a"
+    },
+    {
+      "name": "workspace-build",
+      "exit": 0,
+      "seconds": 225.996,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "$REPO/output/pr-review/issue7732-p037-residual-20261115/minimal-font/font-test.sb",
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "$REPO/target/pr-review"
+      ],
+      "log_sha256": "a3d7911cc411007c27f63d8ddb893d0ad622817720d56d3c7fd49b162df2a8c3"
+    },
+    {
+      "name": "all-target-clippy",
+      "exit": 0,
+      "seconds": 31.461,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "$REPO/output/pr-review/issue7732-p037-residual-20261115/minimal-font/font-test.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "$REPO/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "log_sha256": "6a157b52ba8839090e9df81fa64e2d20667beea2acc301a8b207f23c01205b7c"
+    },
+    {
+      "name": "manifest",
+      "exit": 0,
+      "seconds": 6.649,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "$REPO/output/pr-review/issue7732-p037-residual-20261115/minimal-font/font-test.sb",
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "f8234f6f90cb25d9601c9d5d762e0a565aea19e4"
+      ],
+      "log_sha256": "e9c4de30da3d1520597c4fbf811e06f231ff26f26d5d39c1180f2795dbe2d26f"
+    },
+    {
+      "name": "unit-tiers",
+      "exit": 0,
+      "seconds": 24.542,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "$REPO/output/pr-review/issue7732-p037-residual-20261115/minimal-font/font-test.sb",
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "f8234f6f90cb25d9601c9d5d762e0a565aea19e4"
+      ],
+      "log_sha256": "b0d22c7e9e78b2de09250df5931d136093b5d2ad3c7474ab5c37aa9c3dc75ad0"
+    },
+    {
+      "name": "full-nextest",
+      "exit": 0,
+      "seconds": 2013.582,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "$REPO/output/pr-review/issue7732-p037-residual-20261115/minimal-font/font-test.sb",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "$REPO/target/pr-review",
+        "--tests",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "log_sha256": "0a1da035e6aea92c47d801dc8bdae2dd105c588478365f2ddf1b138108cb1be6"
+    },
+    {
+      "name": "native-skia-lib",
+      "exit": 0,
+      "seconds": 705.584,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "$REPO/output/pr-review/issue7732-p037-residual-20261115/minimal-font/font-test.sb",
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "$REPO/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "8"
+      ],
+      "log_sha256": "4167643c6cc381e21540e69a655ce25ae81deec1e48099adefe5fb57d4723678"
+    },
+    {
+      "name": "native-skia-placeholder",
+      "exit": 0,
+      "seconds": 428.382,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "$REPO/output/pr-review/issue7732-p037-residual-20261115/minimal-font/font-test.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "$REPO/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "log_sha256": "a82c91cb2e442ae3d2b1b11d4fd8505ee62b986d3f539745ec651a040a941e3a"
+    },
+    {
+      "name": "native-skia-pdf",
+      "exit": 0,
+      "seconds": 26.838,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "$REPO/output/pr-review/issue7732-p037-residual-20261115/minimal-font/font-test.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "$REPO/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "log_sha256": "8bd7b3ac27d966cdcbbe1451a92803482c0677a8c242db240e90309c2ad14846"
+    }
+  ]
+}

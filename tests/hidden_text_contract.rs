@@ -269,12 +269,19 @@ fn page_source_is_suppressed_when_a_graphic_covers_the_page() {
     std::fs::write(&path, white).expect("합성본 쓰기");
 
     let v = inspect_json(&path, &[]);
-    assert_eq!(
-        v["clean"],
-        true,
-        "개체가 덮는 쪽인데 쪽 바탕을 근거로 판정했습니다: {}",
-        serde_json::to_string_pretty(&v["hiddenText"]).unwrap_or_default()
+    let sources: Vec<&str> = v["hiddenText"]
+        .as_array()
+        .expect("hiddenText 배열")
+        .iter()
+        .map(|f| f["detail"]["backgroundSource"].as_str().unwrap_or(""))
+        .collect();
+    let dump = serde_json::to_string_pretty(&v["hiddenText"]).unwrap_or_default();
+    assert!(
+        !sources.contains(&"page"),
+        "개체가 덮는 쪽인데 쪽 바탕을 근거로 판정했습니다: {dump}"
     );
+    // 표본의 글상자는 무늬 없는 흰 단색 면이라, 그 안의 흰 글씨는 글상자 면을 근거로 잡힌다(#8978).
+    assert_eq!(sources, ["textBox"], "{dump}");
     let _ = std::fs::remove_file(&path);
 }
 

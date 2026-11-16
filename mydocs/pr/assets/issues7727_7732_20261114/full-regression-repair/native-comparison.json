@@ -1,0 +1,58 @@
+[
+  {
+    "key": "cbta",
+    "pages": 204,
+    "minimum": 98.11,
+    "minimum_page": 2,
+    "below_98": [],
+    "exit_code": 0,
+    "tsv_sha256": "9f1bc1effa1845326d5b91fedbf91a03b79f01d0ddc4e035f0abf1bf8965f11d",
+    "changes_vs_note_only": []
+  },
+  {
+    "key": "recommendation",
+    "pages": 22,
+    "minimum": 98.69,
+    "minimum_page": 7,
+    "below_98": [],
+    "exit_code": 0,
+    "tsv_sha256": "c917f618379b62d2c92c349af2853cdd4f2ec606c2fd384338439e1558c6b2e9",
+    "changes_vs_note_only": [
+      {
+        "page": 4,
+        "before": "99.96",
+        "after": "99.86"
+      }
+    ]
+  },
+  {
+    "key": "exam",
+    "pages": 8,
+    "minimum": 99.49,
+    "minimum_page": 3,
+    "below_98": [],
+    "exit_code": 0,
+    "tsv_sha256": "4ee763deecfca07a600b468b5ba6528e59492044afff2ec5891c1655d7cd1419",
+    "changes_vs_note_only": []
+  },
+  {
+    "key": "api",
+    "pages": 105,
+    "minimum": 99.55,
+    "minimum_page": 97,
+    "below_98": [],
+    "exit_code": 0,
+    "tsv_sha256": "0d300742ef260dadda962f4474e3fb347fd3b54879acc5179cdd609b9f3746bf",
+    "changes_vs_note_only": []
+  },
+  {
+    "key": "footnote",
+    "pages": 50,
+    "minimum": 98.75,
+    "minimum_page": 37,
+    "below_98": [],
+    "exit_code": 0,
+    "tsv_sha256": "1e7ec85986045afd1dd77a87d88a53c1fa3f61951494d428ba1c2714acdaca6f",
+    "changes_vs_note_only": []
+  }
+]

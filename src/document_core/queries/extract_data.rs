@@ -53,7 +53,8 @@ use serde::Serialize;
 use crate::document_core::DocumentCore;
 use crate::model::control::Control;
 
-use super::grep::{CellRef, TextBoxRef};
+use super::grep::{CellPathStep, CellRef, TextBoxRef};
+use crate::model::table::Table;
 
 /// 뽑아내는 값의 종류.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -138,7 +139,22 @@ pub struct DataItem {
     /// 글상자 안의 값이면 글상자 좌표. 본문·표 셀 값이면 생략된다.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub textbox: Option<TextBoxRef>,
+    /// [#8989] 표 안의 표에서 나온 값이면 그 중첩 깊이(바깥 표 = 0). 0 이면 생략된다.
+    /// 0 이 아니면 `cell` 은 최외곽 칸 문단이고, 정확한 칸은 `cellPath` 의 마지막 단계다.
+    #[serde(rename = "nestedDepth", skip_serializing_if = "is_zero")]
+    pub nested_depth: usize,
+    /// [#8989] 중첩 표·글상자 안 표의 칸 경로(바깥 → 안쪽). `search` 의 `cellPath`,
+    /// `fields` 의 `location.nested` 와 같은 꼴이다. 본문 표 한 단계 값이면 생략된다.
+    #[serde(rename = "cellPath", skip_serializing_if = "Vec::is_empty")]
+    pub cell_path: Vec<CellPathStep>,
 }
+
+fn is_zero(value: &usize) -> bool {
+    *value == 0
+}
+
+/// 중첩 표 순회 상한 — `grep`·`table_extract` 와 같은 값(깊이 0..=7).
+const MAX_NEST_DEPTH: usize = 8;
 
 /// 값 하나에 붙일 주소 — 인자 개수를 늘리지 않고 순회 경로마다 갈아 끼운다.
 #[derive(Debug, Clone)]
@@ -148,6 +164,8 @@ struct Address {
     page: Option<u32>,
     cell: Option<CellRef>,
     textbox: Option<TextBoxRef>,
+    nested_depth: usize,
+    cell_path: Vec<CellPathStep>,
 }
 
 /// 주소가 붙기 전의 인식 결과.
@@ -835,7 +853,54 @@ fn collect_into(out: &mut Vec<DataItem>, text: &str, at: &Address) {
             length: found.length,
             cell: at.cell.clone(),
             textbox: at.textbox.clone(),
+            nested_depth: at.nested_depth,
+            cell_path: at.cell_path.clone(),
         });
+    }
+}
+
+/// 문단 `host` 가 품은 표들의 칸 값을 재귀로 뽑는다.
+///
+/// `base` 는 호스트 문단의 주소(쪽·`cell`·`textbox`), `prefix` 는 호스트 문단까지의
+/// 칸 경로, `depth` 는 이 문단이 품은 표의 중첩 깊이다.
+fn collect_inner_tables(
+    out: &mut Vec<DataItem>,
+    host: &crate::model::paragraph::Paragraph,
+    base: &Address,
+    prefix: &[CellPathStep],
+    depth: usize,
+) {
+    if depth >= MAX_NEST_DEPTH {
+        return;
+    }
+    for (control_idx, control) in host.controls.iter().enumerate() {
+        let Control::Table(table) = control else {
+            continue;
+        };
+        collect_table(out, table, control_idx, base, prefix, depth);
+    }
+}
+
+fn collect_table(
+    out: &mut Vec<DataItem>,
+    table: &Table,
+    control_idx: usize,
+    base: &Address,
+    prefix: &[CellPathStep],
+    depth: usize,
+) {
+    for (cell_idx, cell) in table.cells.iter().enumerate() {
+        for (cp_idx, cp) in cell.paragraphs.iter().enumerate() {
+            let mut path = prefix.to_vec();
+            path.push(CellPathStep::table_cell(control_idx, cell_idx, cp_idx));
+            let at = Address {
+                nested_depth: depth,
+                cell_path: path.clone(),
+                ..base.clone()
+            };
+            collect_into(out, &cp.text, &at);
+            collect_inner_tables(out, cp, base, &path, depth + 1);
+        }
     }
 }
 
@@ -861,6 +926,8 @@ impl DocumentCore {
                     page,
                     cell: None,
                     textbox: None,
+                    nested_depth: 0,
+                    cell_path: Vec::new(),
                 };
                 collect_into(&mut out, &para.text, &body);
 
@@ -892,8 +959,15 @@ impl DocumentCore {
                                             paragraph: cp_idx,
                                         }),
                                         textbox: None,
+                                        nested_depth: 0,
+                                        cell_path: Vec::new(),
                                     };
                                     collect_into(&mut out, &cp.text, &at);
+                                    // [#8989] 칸 문단 안의 표(표 안의 표)도 값을 뽑는다.
+                                    // 쪽은 바깥 칸의 쪽을 쓰고, 주소는 바깥 칸 + 경로다.
+                                    let path =
+                                        vec![CellPathStep::table_cell(ctrl_idx, cell_idx, cp_idx)];
+                                    collect_inner_tables(&mut out, cp, &at, &path, 1);
                                 }
                             }
                         }
@@ -911,8 +985,14 @@ impl DocumentCore {
                                             control: ctrl_idx,
                                             paragraph: tp_idx,
                                         }),
+                                        nested_depth: 0,
+                                        cell_path: Vec::new(),
                                     };
                                     collect_into(&mut out, &tp.text, &at);
+                                    // [#8989] 글상자 안 표의 칸 값도 뽑는다(`search` 와 같은
+                                    // 범위). 깊이는 글상자 안 첫 표를 0 으로 센다.
+                                    let path = vec![CellPathStep::text_box(ctrl_idx, tp_idx)];
+                                    collect_inner_tables(&mut out, tp, &at, &path, 0);
                                 }
                             }
                         }

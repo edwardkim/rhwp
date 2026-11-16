@@ -1,0 +1,218 @@
+{
+  "missing": [],
+  "results": [
+    {
+      "empty_non_program_cache_files": {
+        "base": [],
+        "head": []
+      },
+      "output_parity": {
+        "png": {
+          "pages": 1,
+          "changed": []
+        },
+        "tree": {
+          "pages": 1,
+          "changed": []
+        }
+      },
+      "group": "linked",
+      "key": "cover-bold",
+      "backend": "native",
+      "pages": 1,
+      "base_min": 100.0,
+      "head_min": 100.0,
+      "drops_gt2": [],
+      "below90": [],
+      "base_manifest_sha256": "f813c65e77b902201eb96faa6a73d5ad84bba19a871e9cb82b5fc3131747a015",
+      "head_manifest_sha256": "1c07d17dcf64fa48056b8acf76085c56cbc888f286d0b53b2e1195b47878c9a9"
+    },
+    {
+      "empty_non_program_cache_files": {
+        "base": [],
+        "head": []
+      },
+      "output_parity": {
+        "png": {
+          "pages": 1,
+          "changed": [
+            "rhwp_001.png"
+          ]
+        },
+        "tree": {
+          "pages": 1,
+          "changed": []
+        }
+      },
+      "group": "linked",
+      "key": "cover-bold",
+      "backend": "wasm",
+      "pages": 1,
+      "base_min": 100.0,
+      "head_min": 100.0,
+      "drops_gt2": [],
+      "below90": [],
+      "base_manifest_sha256": "c9367c32b64e6f4d0665fb157202ff4c4f159e5ead68fee39b819f482266c602",
+      "head_manifest_sha256": "a70530b78496f58dd82ec64a127be410a3ca67f8f4179bedb50a6abefcafe02e"
+    },
+    {
+      "empty_non_program_cache_files": {
+        "base": [],
+        "head": []
+      },
+      "output_parity": {
+        "png": {
+          "pages": 1,
+          "changed": []
+        },
+        "tree": {
+          "pages": 1,
+          "changed": []
+        }
+      },
+      "group": "linked",
+      "key": "cover-regular",
+      "backend": "native",
+      "pages": 1,
+      "base_min": 100.0,
+      "head_min": 100.0,
+      "drops_gt2": [],
+      "below90": [],
+      "base_manifest_sha256": "75c81ff4bc6c02b8974a90ba34aab4542a476bdd64642b85504a50c5563f1f4e",
+      "head_manifest_sha256": "51ba680625da8cf8ffa8dff510f51a5ca6032161183826ff0b867f0777a9a088"
+    },
+    {
+      "empty_non_program_cache_files": {
+        "base": [],
+        "head": []
+      },
+      "output_parity": {
+        "png": {
+          "pages": 1,
+          "changed": []
+        },
+        "tree": {
+          "pages": 1,
+          "changed": []
+        }
+      },
+      "group": "linked",
+      "key": "cover-regular",
+      "backend": "wasm",
+      "pages": 1,
+      "base_min": 100.0,
+      "head_min": 100.0,
+      "drops_gt2": [],
+      "below90": [],
+      "base_manifest_sha256": "854b2f34a3f7a69ffaddb921b53056b6e49aefe62b1380203ba9aacdaeab703a",
+      "head_manifest_sha256": "15b8f033fd814c87a652bf7dcafa51a4e18576e96c25e744fb22a5a49d65aecb"
+    },
+    {
+      "empty_non_program_cache_files": {
+        "base": [],
+        "head": []
+      },
+      "output_parity": {
+        "png": {
+          "pages": 1,
+          "changed": []
+        },
+        "tree": {
+          "pages": 1,
+          "changed": []
+        }
+      },
+      "group": "linked",
+      "key": "tracking",
+      "backend": "native",
+      "pages": 1,
+      "base_min": 100.0,
+      "head_min": 100.0,
+      "drops_gt2": [],
+      "below90": [],
+      "base_manifest_sha256": "825792b1fd9d6ce9f0c152b9a32fa05469d5e7ff1c6206d693a3cf58f048529e",
+      "head_manifest_sha256": "28e87116eda1fa4a2ad1c69b90138810e671ed8f174a3627b4bedc030b8228f2"
+    },
+    {
+      "empty_non_program_cache_files": {
+        "base": [],
+        "head": []
+      },
+      "output_parity": {
+        "png": {
+          "pages": 1,
+          "changed": []
+        },
+        "tree": {
+          "pages": 1,
+          "changed": []
+        }
+      },
+      "group": "linked",
+      "key": "tracking",
+      "backend": "wasm",
+      "pages": 1,
+      "base_min": 100.0,
+      "head_min": 100.0,
+      "drops_gt2": [],
+      "below90": [],
+      "base_manifest_sha256": "5dba31a0374a9ec9013781e71be5e5b804ff05d45863ef58be1e92e8c2f6357c",
+      "head_manifest_sha256": "05f9fa57f231c7d9742ca343c49cbce7084e5a65e142219ee45f16d9b7b07639"
+    },
+    {
+      "empty_non_program_cache_files": {
+        "base": [],
+        "head": []
+      },
+      "output_parity": {
+        "png": {
+          "pages": 1,
+          "changed": []
+        },
+        "tree": {
+          "pages": 1,
+          "changed": []
+        }
+      },
+      "group": "linked",
+      "key": "mixed",
+      "backend": "native",
+      "pages": 1,
+      "base_min": 100.0,
+      "head_min": 100.0,
+      "drops_gt2": [],
+      "below90": [],
+      "base_manifest_sha256": "dca820eda843786dd16a538e15b294b7595ed125c4ef21213a42c6d671f094e9",
+      "head_manifest_sha256": "568c1177e3672a66464c077ea33164aa7d2b2c25742f4c40a121b82bcc1c3813"
+    },
+    {
+      "empty_non_program_cache_files": {
+        "base": [],
+        "head": []
+      },
+      "output_parity": {
+        "png": {
+          "pages": 1,
+          "changed": [
+            "rhwp_001.png"
+          ]
+        },
+        "tree": {
+          "pages": 1,
+          "changed": []
+        }
+      },
+      "group": "linked",
+      "key": "mixed",
+      "backend": "wasm",
+      "pages": 1,
+      "base_min": 100.0,
+      "head_min": 100.0,
+      "drops_gt2": [],
+      "below90": [],
+      "base_manifest_sha256": "6131d061fe7f09ed400e6e6abb0f626b04a1640106032c8b0b091a96d96922da",
+      "head_manifest_sha256": "3de4230e03654d3244db55cbf87b62d5f92eeaa6969f19917e30ab4e1a3f1c81"
+    }
+  ],
+  "passed": true
+}

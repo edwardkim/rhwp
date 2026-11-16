@@ -1,0 +1,35 @@
+{
+  "code_head": "0c9819d698bcbe3e3d83f563a0154ccb00eb6f07",
+  "inputs": 28,
+  "pages": 37,
+  "minimum": 92.33,
+  "below90": 0,
+  "base_fresh_wasm_comparison": "미실행; Native base 점수로 대신하지 않음",
+  "build": "macOS locked wrapper --target web --out-dir pkg --no-opt, 로컬 대체 빌드",
+  "runtime": {
+    "code_head": "0c9819d698bcbe3e3d83f563a0154ccb00eb6f07",
+    "browser": "Chrome/157.0.8103.51",
+    "actual": {
+      "pageCount": 1,
+      "printCanvasApi": true
+    },
+    "initialization_responses": [
+      {
+        "file": "rhwp.js",
+        "status": 200,
+        "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+        "bytes": 581315
+      },
+      {
+        "file": "rhwp_bg.wasm",
+        "status": 200,
+        "sha256": "505a18e552aba38c525ade903c520595bf3726cc1048a02676c9f5d0cf54d24c",
+        "bytes": 31807462
+      }
+    ],
+    "root_pkg_studio_frozen_and_actual_responses_identical": true,
+    "scope": "runtime JS/WASM; TypeScript declarations are not browser initialization responses"
+  },
+  "method": "canonical fresh WASM Canvas2D direct PNG,96DPI,compat2022,PDFium pdfium_smooth_rgb_exact_dpi_v2, raw silhouette 2px",
+  "page_counts_and_png_hashes_checked": true
+}

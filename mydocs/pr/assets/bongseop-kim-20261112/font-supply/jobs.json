@@ -1,0 +1,140 @@
+[
+  {
+    "name": "legacy-alphabet",
+    "input": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/font-probes/legacy-alphabet.hwpx",
+    "input_sha256": "78271962bc55cadceffce59a9ea63b9159379cd87ab40465fa42c9a4f708b564",
+    "start": {
+      "job_id": "3938e48e-152b-450e-ba74-9546afa24076",
+      "status": "queued",
+      "phase": "queued",
+      "stage": "queued",
+      "progress_percent": null,
+      "progress_current_page": null,
+      "progress_total_pages": null,
+      "target": "pdf",
+      "engine": "2020",
+      "created_at": "2026-11-12T04:45:48.369Z",
+      "started_at": null,
+      "completed_at": null,
+      "elapsed_seconds": 0,
+      "queue_position": 4,
+      "output_bytes": 0,
+      "result": null
+    },
+    "last_status": {
+      "job_id": "3938e48e-152b-450e-ba74-9546afa24076",
+      "status": "succeeded",
+      "phase": "completed",
+      "stage": "waiting_for_output",
+      "progress_percent": 100,
+      "progress_current_page": 4,
+      "progress_total_pages": 4,
+      "target": "pdf",
+      "engine": "2020",
+      "created_at": "2026-11-12T04:45:48.369Z",
+      "started_at": "2026-11-12T04:46:36.782Z",
+      "completed_at": "2026-11-12T04:46:48.935Z",
+      "elapsed_seconds": 12,
+      "queue_position": null,
+      "output_bytes": 41145,
+      "result": {
+        "job_id": "3938e48e-152b-450e-ba74-9546afa24076",
+        "status": "success",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "terminal": true
+    },
+    "download": {
+      "status": "success",
+      "job_id": "3938e48e-152b-450e-ba74-9546afa24076",
+      "output_path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/font-probes/legacy-alphabet-2020.pdf",
+      "output_filename": "legacy-alphabet-2020.pdf",
+      "size": 41145,
+      "sha256": "abfda4b9dac595310e9b28449383a69c5021d4d54d13ba6457dc051f59ee549c",
+      "server": {
+        "job_id": "3938e48e-152b-450e-ba74-9546afa24076",
+        "status": "success",
+        "target": "pdf",
+        "output_filename": "legacy-alphabet-2020.pdf",
+        "size": 41145,
+        "sha256": "abfda4b9dac595310e9b28449383a69c5021d4d54d13ba6457dc051f59ee549c",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      }
+    }
+  },
+  {
+    "name": "legacy-arithmetic",
+    "input": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/font-probes/legacy-arithmetic.hwpx",
+    "input_sha256": "55dfad45dfb103efed9f9fb151a63f48fb5ec2f1fa95393b22521c95766cee07",
+    "start": {
+      "job_id": "fa259054-4b70-4803-b6bc-8b19bb756050",
+      "status": "queued",
+      "phase": "queued",
+      "stage": "queued",
+      "progress_percent": null,
+      "progress_current_page": null,
+      "progress_total_pages": null,
+      "target": "pdf",
+      "engine": "2020",
+      "created_at": "2026-11-12T04:45:49.233Z",
+      "started_at": null,
+      "completed_at": null,
+      "elapsed_seconds": 0,
+      "queue_position": 5,
+      "output_bytes": 0,
+      "result": null
+    },
+    "last_status": {
+      "job_id": "fa259054-4b70-4803-b6bc-8b19bb756050",
+      "status": "succeeded",
+      "phase": "completed",
+      "stage": "waiting_for_output",
+      "progress_percent": 100,
+      "progress_current_page": 4,
+      "progress_total_pages": 4,
+      "target": "pdf",
+      "engine": "2020",
+      "created_at": "2026-11-12T04:45:49.233Z",
+      "started_at": "2026-11-12T04:46:48.937Z",
+      "completed_at": "2026-11-12T04:47:00.929Z",
+      "elapsed_seconds": 11,
+      "queue_position": null,
+      "output_bytes": 42564,
+      "result": {
+        "job_id": "fa259054-4b70-4803-b6bc-8b19bb756050",
+        "status": "success",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "terminal": true
+    },
+    "download": {
+      "status": "success",
+      "job_id": "fa259054-4b70-4803-b6bc-8b19bb756050",
+      "output_path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/font-probes/legacy-arithmetic-2020.pdf",
+      "output_filename": "legacy-arithmetic-2020.pdf",
+      "size": 42564,
+      "sha256": "c6943621c4909c879d7a84a3337c5a54a9ab125fd766e205fdf632b8bc32233a",
+      "server": {
+        "job_id": "fa259054-4b70-4803-b6bc-8b19bb756050",
+        "status": "success",
+        "target": "pdf",
+        "output_filename": "legacy-arithmetic-2020.pdf",
+        "size": 42564,
+        "sha256": "c6943621c4909c879d7a84a3337c5a54a9ab125fd766e205fdf632b8bc32233a",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      }
+    }
+  }
+]

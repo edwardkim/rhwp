@@ -1,0 +1,70 @@
+{
+  "before_source": "a1975f149e",
+  "after_product_source": "eeaecff59e834f28437c98b509089bbb36a7682d",
+  "checks": [
+    {
+      "backend": "native",
+      "state": "before",
+      "contract": "same Both object follows facing body-frame delta",
+      "object_delta": 0.0,
+      "body_frame_delta": -75.6,
+      "passed": false
+    },
+    {
+      "backend": "native",
+      "state": "before",
+      "contract": "both successor paragraphs belong to page 3 in source order",
+      "first_successor_page": 2,
+      "second_successor_page": 3,
+      "passed": false
+    },
+    {
+      "backend": "native",
+      "state": "after",
+      "contract": "same Both object follows facing body-frame delta",
+      "object_delta": -75.6,
+      "body_frame_delta": -75.6,
+      "passed": true
+    },
+    {
+      "backend": "native",
+      "state": "after",
+      "contract": "both successor paragraphs belong to page 3 in source order",
+      "first_successor_page": 3,
+      "second_successor_page": 3,
+      "passed": true
+    },
+    {
+      "backend": "wasm",
+      "state": "before",
+      "contract": "same Both object follows facing body-frame delta",
+      "object_delta": 0.0,
+      "body_frame_delta": -75.6,
+      "passed": false
+    },
+    {
+      "backend": "wasm",
+      "state": "before",
+      "contract": "both successor paragraphs belong to page 3 in source order",
+      "first_successor_page": 2,
+      "second_successor_page": 3,
+      "passed": false
+    },
+    {
+      "backend": "wasm",
+      "state": "after",
+      "contract": "same Both object follows facing body-frame delta",
+      "object_delta": -75.6,
+      "body_frame_delta": -75.6,
+      "passed": true
+    },
+    {
+      "backend": "wasm",
+      "state": "after",
+      "contract": "both successor paragraphs belong to page 3 in source order",
+      "first_successor_page": 3,
+      "second_successor_page": 3,
+      "passed": true
+    }
+  ]
+}

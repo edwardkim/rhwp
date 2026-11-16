@@ -1,0 +1,290 @@
+{
+  "generator": "tools/oracle_page_count/regenerate.py",
+  "generator_sha256": "d553b60b84bc76bae3f1b020e9f359d6e99420d029c427f39e495c26c0f81c29",
+  "scope": "기존 행은 그대로 보존하고 새 공식 MCP Print 33종만 같은 정본 생성기로 산출해 추가",
+  "native_producer": {
+    "kind": "candidate",
+    "head": "bdd8b495e096dc6f20b7d9205058a0f85ab828ef",
+    "working_tree_diff_sha256": "f757982ae4c88068f4428ade1ef4c5d4cbe0bc1c5f5ed3f46754f987b594cfe8",
+    "source_files_sha256": {
+      "src/renderer/height_measurer.rs": "a7c0b74c599ca417e70d7c2a3cfd92231b38ff138dd70dfb01587f5338195a29",
+      "src/renderer/typeset/table/block/whole_fit.rs": "05a6680e4541535c3672e4ed3d16e95e445202f976979ddd9510546440d6fd0b",
+      "src/renderer/typeset/table/continuation/fragment/budget.rs": "bef3cb3c3a97828064c9aacf9a1d41ec9410335d1602b82d5108a5c73f6267c6",
+      "src/renderer/mod.rs": "a698fba307d98e214f24e9d9fe77644a8fa0b9cd1f146ec5f8ea718ad91b6bdf",
+      "src/renderer/canvas_text_font.rs": "2c50c0196f6d1f505296440e4e86d7bae77f32aba2a015843dc6d603fc452ce1",
+      "src/renderer/cell_paragraph_spacing.rs": "57bec0c9e24ea7610334d4d8f5cf0b2f2ba0bde037d699ddae3bfc6712592347",
+      "src/renderer/layout/table_layout.rs": "1693b2ebb747201769b85f39125dbb5ecbf4dba84e5c5114f0d4da3abd44c8aa"
+    },
+    "sha256": "7902feaa82262f855beff9cbcc6d06c3bcef7d7a0474eba6b5c80b8797e50937",
+    "exit": 0
+  },
+  "rows": [
+    "samples/issue8573/empty-host-split-table.hwp\t2\t2",
+    "samples/issue8573/empty-host-square-band-1430-below.hwp\t1\t1",
+    "samples/issue8573/empty-host-square-band-1450-beside.hwp\t1\t1",
+    "samples/issue8573/empty-host-square-band-600-no-extra-line.hwp\t1\t1",
+    "samples/issue8573/empty-host-square-beside-line.hwp\t1\t1",
+    "samples/issue8573/empty-host-square-then-topbottom-push.hwp\t1\t1",
+    "samples/issue8573/text-host-split-table.hwp\t2\t2",
+    "samples/issue8573/text-host-square-paper-companion-beside-line.hwp\t1\t1",
+    "samples/issue8573/text-host-square-then-topbottom-push.hwp\t1\t1",
+    "samples/issue8573/text-host-topbottom-line-below.hwp\t1\t1",
+    "samples/issue8573/whitespace-host-negative-offset-table.hwp\t1\t1",
+    "samples/issue8573/whitespace-host-split-table.hwp\t2\t2",
+    "samples/issue8573/whitespace-host-square-then-topbottom-push.hwp\t1\t1",
+    "samples/issue8573/whitespace-host-topbottom-line-below.hwp\t1\t1",
+    "samples/issue8573/whitespace-host-topbottom-stacked-zones.hwp\t1\t1",
+    "samples/issue8573/whitespace-host-two-tables-negative-offset.hwp\t1\t1",
+    "samples/issue8665/title_line_fits.hwpx\t2\t2",
+    "samples/issue8665/title_line_overflows.hwpx\t2\t2",
+    "samples/issue8678/bar_axis_floor.hwpx\t1\t1",
+    "samples/issue8678/column_axis_floor.hwpx\t1\t1",
+    "samples/issue8678/column_axis_floor_large.hwpx\t1\t1",
+    "samples/issue8678/column_axis_step_tall.hwpx\t1\t1",
+    "samples/issue8680/wingdings_pua_symbols.hwpx\t1\t1",
+    "samples/issue8690/float_line_rowspan_infront_center.hwp\t2\t2",
+    "samples/issue8690/float_line_rowspan_infront_top.hwp\t2\t2",
+    "samples/issue8690/float_line_valign_center.hwp\t2\t2",
+    "samples/issue8690/float_line_valign_top.hwp\t2\t2",
+    "samples/issue8573/picture-cell-short-empty.hwpx\t1\t1",
+    "samples/issue8573/picture-cell-short-spaces.hwpx\t1\t1",
+    "samples/issue8573/picture-cell-short-text.hwpx\t1\t1",
+    "samples/issue8573/picture-cell-page-boundary-empty.hwpx\t2\t2",
+    "samples/issue8573/picture-cell-page-boundary-spaces.hwpx\t2\t2",
+    "samples/issue8573/picture-cell-page-boundary-text.hwpx\t2\t2"
+  ],
+  "references": [
+    {
+      "input": "samples/issue8573/empty-host-split-table.hwp",
+      "input_sha256": "8d5066645589188ac67cb768b124ac9a0d3ad511de891d4283ae653f9027fbf7",
+      "pdf": "pdf/issue8573/empty-host-split-table-hwp-2020.pdf",
+      "pdf_sha256": "c8fcd259e7b8909e477d7f143dbfea6141117c993c789b54aeb80c00ca64a11f",
+      "engine": "2020"
+    },
+    {
+      "input": "samples/issue8573/empty-host-square-band-1430-below.hwp",
+      "input_sha256": "bea3b61b470d9f4d6fd704ee12786c765fde5e1c4fad20d219e2d7397e4f9409",
+      "pdf": "pdf/issue8573/empty-host-square-band-1430-below-hwp-2020.pdf",
+      "pdf_sha256": "1d73e593be48c03af0d2fcc83070598e8bde0f6717b1a98bb4dfc0b9d335cc1a",
+      "engine": "2020"
+    },
+    {
+      "input": "samples/issue8573/empty-host-square-band-1450-beside.hwp",
+      "input_sha256": "2c8763ca2989ae9125e136740890d1a5ea725f0f87a4f41ff0a49770777d6947",
+      "pdf": "pdf/issue8573/empty-host-square-band-1450-beside-hwp-2020.pdf",
+      "pdf_sha256": "02c2be8a1129815143a247c6a941bd193aabb3775c2399608e227ba3e16e4218",
+      "engine": "2020"
+    },
+    {
+      "input": "samples/issue8573/empty-host-square-band-600-no-extra-line.hwp",
+      "input_sha256": "3186a02350c8af4471ffd7099a1af84a0335de94acdbbbeaa1aa1b7178488aa3",
+      "pdf": "pdf/issue8573/empty-host-square-band-600-no-extra-line-hwp-2020.pdf",
+      "pdf_sha256": "a54f77962a36c41acec936f4b52fda6061538b3bbdf7c67aed24a2c037f0d5f7",
+      "engine": "2020"
+    },
+    {
+      "input": "samples/issue8573/empty-host-square-beside-line.hwp",
+      "input_sha256": "6b5f643237a5d98d3351d56dd73053becac129b1aa99511a910b298a42f7d4d3",
+      "pdf": "pdf/issue8573/empty-host-square-beside-line-hwp-2020.pdf",
+      "pdf_sha256": "13945fbd0b2fc917edffb75de82a7d897e19f03bb7dde7102d7f094cdb26461c",
+      "engine": "2020"
+    },
+    {
+      "input": "samples/issue8573/empty-host-square-then-topbottom-push.hwp",
+      "input_sha256": "e9e16c4f57d9d356b9b3a8dd3989edf0d4bd10f902f3ce3c45d6a9be4adab0cb",
+      "pdf": "pdf/issue8573/empty-host-square-then-topbottom-push-hwp-2020.pdf",
+      "pdf_sha256": "6e8264d8402a757cdb34de9727350773018fa218e002824f731da2cd583fc614",
+      "engine": "2020"
+    },
+    {
+      "input": "samples/issue8573/text-host-split-table.hwp",
+      "input_sha256": "85d29b9ae1f6f1254503e744d1e71d37959608b9636f855e04fb11d4bf226738",
+      "pdf": "pdf/issue8573/text-host-split-table-hwp-2020.pdf",
+      "pdf_sha256": "0683de7c2cb1b6504fb93216a19e914500d5592af59db0299d882c258fac39d3",
+      "engine": "2020"
+    },
+    {
+      "input": "samples/issue8573/text-host-square-paper-companion-beside-line.hwp",
+      "input_sha256": "24f9f22eede659338a070672d828f0412e589132d432c610bb42a60b9518a516",
+      "pdf": "pdf/issue8573/text-host-square-paper-companion-beside-line-hwp-2020.pdf",
+      "pdf_sha256": "ad616ac4f9851ef0702a9c21fb27ba93d36229a2b51e9c23bc5aeada64161a72",
+      "engine": "2020"
+    },
+    {
+      "input": "samples/issue8573/text-host-square-then-topbottom-push.hwp",
+      "input_sha256": "07b4e5e54e24ce64340aeb275beb3e482199737c6d8ae283bceecbfe1c8b3eec",
+      "pdf": "pdf/issue8573/text-host-square-then-topbottom-push-hwp-2020.pdf",
+      "pdf_sha256": "3418120390f6480dd0c9cbfb7f5368660b9c088a4114526b8563880868fd43fa",
+      "engine": "2020"
+    },
+    {
+      "input": "samples/issue8573/text-host-topbottom-line-below.hwp",
+      "input_sha256": "f36c04521e0ff7ec1be2a2152e4b628043935557737ce798bf7f0394505bbf84",
+      "pdf": "pdf/issue8573/text-host-topbottom-line-below-hwp-2020.pdf",
+      "pdf_sha256": "483fdc57d7c4c93fde069a00a4f44d69fc9b4d1ee6a0b2e7e6c71a757874cb29",
+      "engine": "2020"
+    },
+    {
+      "input": "samples/issue8573/whitespace-host-negative-offset-table.hwp",
+      "input_sha256": "dfac0c5af294357bad22ccf3132957847b820d4533cdd34d5335dc0781c37662",
+      "pdf": "pdf/issue8573/whitespace-host-negative-offset-table-hwp-2020.pdf",
+      "pdf_sha256": "1fe6711eb710dd8c2abe34c982c2fa84b866202874a4b719cfc9774d50949739",
+      "engine": "2020"
+    },
+    {
+      "input": "samples/issue8573/whitespace-host-split-table.hwp",
+      "input_sha256": "dba90da10c6bcea9294656046a00ebcb08f17c4d7d0f8fd60729dd6f5e019fde",
+      "pdf": "pdf/issue8573/whitespace-host-split-table-hwp-2020.pdf",
+      "pdf_sha256": "573adcc18805f1256b0258f894e3332bbe909389ba334e279b0219e9814c88cb",
+      "engine": "2020"
+    },
+    {
+      "input": "samples/issue8573/whitespace-host-square-then-topbottom-push.hwp",
+      "input_sha256": "4178f240dc0ecfa74fdc6833c82d0d19d64bd6093a8931c80981e247e2835aa5",
+      "pdf": "pdf/issue8573/whitespace-host-square-then-topbottom-push-hwp-2020.pdf",
+      "pdf_sha256": "d1a1f924975f33a0b29810642d2f34f59027e9904d00a8f85370739658f4b3ca",
+      "engine": "2020"
+    },
+    {
+      "input": "samples/issue8573/whitespace-host-topbottom-line-below.hwp",
+      "input_sha256": "4af3cf6fc98884fa2c872e621bf9d13958654500e337182024cb2f9051774d4b",
+      "pdf": "pdf/issue8573/whitespace-host-topbottom-line-below-hwp-2020.pdf",
+      "pdf_sha256": "7cc39698a47c8228e85a782c029efb389835b8eaf8047898fc42b6523bd34912",
+      "engine": "2020"
+    },
+    {
+      "input": "samples/issue8573/whitespace-host-topbottom-stacked-zones.hwp",
+      "input_sha256": "97e347bc79600c7bd9e72d3705a35352f9e347d9c3c6e49f79928a51519723c8",
+      "pdf": "pdf/issue8573/whitespace-host-topbottom-stacked-zones-hwp-2020.pdf",
+      "pdf_sha256": "98c5bee22b4ff94013f5b0253b643a4650d8554298fd7a196fab35e882a44b6c",
+      "engine": "2020"
+    },
+    {
+      "input": "samples/issue8573/whitespace-host-two-tables-negative-offset.hwp",
+      "input_sha256": "21d1211966e48852316e71847d80c96a056c4b0dd72e6d46594ddab1308d329f",
+      "pdf": "pdf/issue8573/whitespace-host-two-tables-negative-offset-hwp-2020.pdf",
+      "pdf_sha256": "c2fbeda6f372592d74b7664e77d0690a1cf6adf094a44f0f3a562df0cc205aea",
+      "engine": "2020"
+    },
+    {
+      "input": "samples/issue8665/title_line_fits.hwpx",
+      "input_sha256": "6a5f2edeb685ba47ea170eec3c241e1f3d102d6c306ea0b245aa6090ed9ab3c5",
+      "pdf": "pdf/issue8665/title_line_fits-hwpx-2024.pdf",
+      "pdf_sha256": "c4d1ef4d2c1b0aa95abf762791af4358daae0ffb4ed8e14f726000975b16d437",
+      "engine": "2024"
+    },
+    {
+      "input": "samples/issue8665/title_line_overflows.hwpx",
+      "input_sha256": "2b30e88a11c007b166560703ed40c917ca0f9fa244795804c108ed45ee770477",
+      "pdf": "pdf/issue8665/title_line_overflows-hwpx-2024.pdf",
+      "pdf_sha256": "6a4d9c305218687056b77d97f40c2798ecc98661597578c87453a87df8a24b4b",
+      "engine": "2024"
+    },
+    {
+      "input": "samples/issue8678/bar_axis_floor.hwpx",
+      "input_sha256": "952db943b46d70849c3f82ba9fe3d4b611ab246ab61018ec4cd451f15989b4d3",
+      "pdf": "pdf/issue8678/bar_axis_floor-hwpx-2020.pdf",
+      "pdf_sha256": "2fbb02306e0e8999686b712cc1c79f83bff50d39311a89fb367ab1d23a8b194e",
+      "engine": "2020"
+    },
+    {
+      "input": "samples/issue8678/column_axis_floor.hwpx",
+      "input_sha256": "aad66c6c81a1c820c420f14b1043f1ac6593e66860fb325071fa8d83376df5d2",
+      "pdf": "pdf/issue8678/column_axis_floor-hwpx-2020.pdf",
+      "pdf_sha256": "ec2e8e61964d89a2415c1e0ed22c5b65ca193de58772789774938d07e5b24ce0",
+      "engine": "2020"
+    },
+    {
+      "input": "samples/issue8678/column_axis_floor_large.hwpx",
+      "input_sha256": "d3b1f0ef997fb60cffd1bd112a691f399026dda11c6dbe215c08a9ec987965aa",
+      "pdf": "pdf/issue8678/column_axis_floor_large-hwpx-2020.pdf",
+      "pdf_sha256": "3afb095dbab90fa6b6bba65e198324c741a7aca4d0ebd0425cf8ef1431477a36",
+      "engine": "2020"
+    },
+    {
+      "input": "samples/issue8678/column_axis_step_tall.hwpx",
+      "input_sha256": "825be7aec4ab07af28c80b9358bb69d272dcb8bef80a5770b3370f45b3d02df3",
+      "pdf": "pdf/issue8678/column_axis_step_tall-hwpx-2020.pdf",
+      "pdf_sha256": "a942a5fbc65f78bba87796b8983485ef0890e3961cc106bedd83044c32b60a98",
+      "engine": "2020"
+    },
+    {
+      "input": "samples/issue8680/wingdings_pua_symbols.hwpx",
+      "input_sha256": "6173d83f23aed79f162e9c07f5efe19a0590bae650c800a4fcebd49abc73ad8b",
+      "pdf": "pdf/issue8680/wingdings_pua_symbols-hwpx-2020.pdf",
+      "pdf_sha256": "99d96e65b8ad607e662e4408b256fd9f64920e0ccd9caa6a20c24e1e41a3a876",
+      "engine": "2020"
+    },
+    {
+      "input": "samples/issue8690/float_line_rowspan_infront_center.hwp",
+      "input_sha256": "4e5fce692945707fef8c39b6a980016fff4a2cd91b02f7abf35b01d19fabba4b",
+      "pdf": "pdf/issue8690/float_line_rowspan_infront_center-hwp-2020.pdf",
+      "pdf_sha256": "6cd25f5e58614129f9904b00fbd48c2358ce9b4bf8b61ab18a3c5925b4070b8c",
+      "engine": "2020"
+    },
+    {
+      "input": "samples/issue8690/float_line_rowspan_infront_top.hwp",
+      "input_sha256": "6b75acfc0deab5f1c55408b8143c7f2b936cd716079225b9392af5610ad38de9",
+      "pdf": "pdf/issue8690/float_line_rowspan_infront_top-hwp-2020.pdf",
+      "pdf_sha256": "b63473cdc359fb90d5b423cac252feec6fbb0c4df7d8e7c13e65e4d98857cbe1",
+      "engine": "2020"
+    },
+    {
+      "input": "samples/issue8690/float_line_valign_center.hwp",
+      "input_sha256": "52fd73d131678d8ff020dbe46e0985f6fff616e26ed025b8a6f1d46af92b8d67",
+      "pdf": "pdf/issue8690/float_line_valign_center-hwp-2020.pdf",
+      "pdf_sha256": "5085071ec9c6c14f6f40b53cc62ac5169c75d9b0e39f5111f057649219239d0d",
+      "engine": "2020"
+    },
+    {
+      "input": "samples/issue8690/float_line_valign_top.hwp",
+      "input_sha256": "76aab9b56afd2b0ccfeeab8184474219b84d34b4ac247acc4cca0afec0e359d4",
+      "pdf": "pdf/issue8690/float_line_valign_top-hwp-2020.pdf",
+      "pdf_sha256": "e18e2e917c8dff0fdd4703d461c11ce627eb48a752147a12fa0aaf91036fe556",
+      "engine": "2020"
+    },
+    {
+      "input": "samples/issue8573/picture-cell-short-empty.hwpx",
+      "input_sha256": "21aeec31c8548de437bd2a1bbcd743c9b859fd1ed21ad6c1c25d7e2f8e014ea2",
+      "pdf": "pdf/issue8573/picture-cell-short-empty-hwpx-2024.pdf",
+      "pdf_sha256": "614596ac63e865caa84ef54cf7ceb029e555e46432c5fc1b42893e9a4c9e655c",
+      "engine": "2024"
+    },
+    {
+      "input": "samples/issue8573/picture-cell-short-spaces.hwpx",
+      "input_sha256": "3a87ba2d6204b94bfab9eed8cd603b1f2bf90b7ee523bcae6f08e2d38afda416",
+      "pdf": "pdf/issue8573/picture-cell-short-spaces-hwpx-2024.pdf",
+      "pdf_sha256": "a9e8972b356ed052c2df0d00ff7f3ee6b7668db738759c157e9a24b30f35823d",
+      "engine": "2024"
+    },
+    {
+      "input": "samples/issue8573/picture-cell-short-text.hwpx",
+      "input_sha256": "7a4512007260e4e9deba07ebc4b7a11f7ff68e9f83abc3a988be53c6771bdcb7",
+      "pdf": "pdf/issue8573/picture-cell-short-text-hwpx-2024.pdf",
+      "pdf_sha256": "e0a7b19ed5d28cc9e5687285fdd5c4836cfa5df5692e793b65eb20705c162b2d",
+      "engine": "2024"
+    },
+    {
+      "input": "samples/issue8573/picture-cell-page-boundary-empty.hwpx",
+      "input_sha256": "f4358c4534c1a37798a77b1fd9ac0b0610481d545e89fdc6d4db5448f63af39d",
+      "pdf": "pdf/issue8573/picture-cell-page-boundary-empty-hwpx-2024.pdf",
+      "pdf_sha256": "9ac8409b6935303944c5d36333af4d99049a7ed3936081dc4cc4a2e2ea519abd",
+      "engine": "2024"
+    },
+    {
+      "input": "samples/issue8573/picture-cell-page-boundary-spaces.hwpx",
+      "input_sha256": "8c40182058ba97216dcb2678c39eee96ef48cf140362447f9e465b5b11df1850",
+      "pdf": "pdf/issue8573/picture-cell-page-boundary-spaces-hwpx-2024.pdf",
+      "pdf_sha256": "2bff84c3969c4cddd8e64873dcf6e8d69198ecb43c751b907b32675ca1730c0e",
+      "engine": "2024"
+    },
+    {
+      "input": "samples/issue8573/picture-cell-page-boundary-text.hwpx",
+      "input_sha256": "cafac0e88d702a1107e85c4dc35e171cdf06be8e40edf25315df94ace6ddb0cb",
+      "pdf": "pdf/issue8573/picture-cell-page-boundary-text-hwpx-2024.pdf",
+      "pdf_sha256": "baba21dff9905ffffc30a4f772cf81632907df0b7affcffb74bb746a0c78533d",
+      "engine": "2024"
+    }
+  ],
+  "manual_2024_reference": "#8916은 원본 저장 제품의 기본 2020이 아니므로 자동 원장에 섞지 않고 기존 전용 관계 검사와 명시적 Print 대조로 보호"
+}

@@ -1,0 +1,931 @@
+{
+  "source": "68e8190d334fccc5a2846dcfead4a7c60330774a",
+  "files": 154,
+  "all_tracked_and_bytes_equal": true,
+  "records": [
+    {
+      "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+      "git_blob": "512875fda389b4eef8987e2b9911e03408f29006",
+      "sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+      "bytes": 10328
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "git_blob": "8f5511811a26703a906360ea22a5e3cf141f8b73",
+      "sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+      "bytes": 6848
+    },
+    {
+      "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx",
+      "git_blob": "a056d1a117139644d05a0d42f32dea1969b995ab",
+      "sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1",
+      "bytes": 140149
+    },
+    {
+      "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law_hancom2018_print.pdf",
+      "git_blob": "74ae2b665f50d81f5747246273afcd4ab7e8f156",
+      "sha256": "1ce35eb7e2d6f93e41834215d6cf7653e3a09ea2fc544856b3df3a89e6d24511",
+      "bytes": 287952
+    },
+    {
+      "path": "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf",
+      "git_blob": "e51c11b3802be0c7b7c047c579e86ba3084a0503",
+      "sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+      "bytes": 4692840
+    },
+    {
+      "path": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+      "git_blob": "c1ffffbf60fd0ff522cfdaa869e8dfca98a2545e",
+      "sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+      "bytes": 4692840
+    },
+    {
+      "path": "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+      "git_blob": "cb168a9199f86c9f935af695af055bfa382e9e8b",
+      "sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+      "bytes": 1830277
+    },
+    {
+      "path": "pdf/hwp3-sample16-hwp5-2024-hwp-2024.pdf",
+      "git_blob": "5974ae3ecf91fca171b847c4d3fdad640920d567",
+      "sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b",
+      "bytes": 2234015
+    },
+    {
+      "path": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+      "git_blob": "d729d2c89320ccd332c9a7ba2fe370629444a0e2",
+      "sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+      "bytes": 2234018
+    },
+    {
+      "path": "pdf/issue7282/wide_paper_table_two_columns-2020.pdf",
+      "git_blob": "27fbfc3ae0688d625bbd4327bef840ce35e7b4fc",
+      "sha256": "53c2a848ee52b4e5d51e85d1c0d82af57a6fd3fd64b31f9b3595f72b43be3bc3",
+      "bytes": 281285
+    },
+    {
+      "path": "pdf/issue7620/a-rowbreak-float-hancomdocs.pdf",
+      "git_blob": "18dd1a8058e89072dc740ed359a9ccbe1e0c6af4",
+      "sha256": "901c26db10c91b3e2284f5506af5c18e7e5c78525ad1b6b9dcd3ea83e73e08e7",
+      "bytes": 7414
+    },
+    {
+      "path": "pdf/issue7620/b-rowbreak-bottom-margin-overflow-hancomdocs.pdf",
+      "git_blob": "fc969ab0e5ebf6d9a721089fe4e789bf5edf3a46",
+      "sha256": "3d5aa0ec87b10af1bc584c7500cdc0d1cf93f5f3812c1ccf3a3585ebf6382387",
+      "bytes": 9568
+    },
+    {
+      "path": "pdf/issue7620/c-rowbreak-table-moves-next-page-hancomdocs.pdf",
+      "git_blob": "604b4c067fffa7892b02fda9270ccb8593eb2547",
+      "sha256": "dfd39700bc26029a4bc148ab64640ad91243642c549fe6cfd9bfb0870cc61c4d",
+      "bytes": 9589
+    },
+    {
+      "path": "pdf/issue7620/d-rowbreak-splits-at-row-boundary-hancomdocs.pdf",
+      "git_blob": "d933e1ef5beb77b4d7147e5d0d024cfcc9c1ece6",
+      "sha256": "80e1acd33c2a9b437e1ecd2020e46b113a953514c0eb4428ecd414f8bcb25347",
+      "bytes": 10277
+    },
+    {
+      "path": "pdf/issue7621/control-float-hancomdocs.pdf",
+      "git_blob": "45b3ee56d6db7b1357d1e8fabc3c591b749819c6",
+      "sha256": "83da2a4b27b50aad35ac4a502e9acb521e1f222ece95bfa15485568bde52f9f1",
+      "bytes": 7414
+    },
+    {
+      "path": "pdf/issue7642-failed-inputs-followup-20261011/20099369_yeongwol_forms-2020.pdf",
+      "git_blob": "66188bfaf0cf278efb90c072f65d1d112020ce30",
+      "sha256": "a04da624238d77da4832dd302017c7d2f559a01da02e4c1b4ae12cfd3f77b123",
+      "bytes": 91696
+    },
+    {
+      "path": "pdf/issue8109/print/body-list-typed-hwp-2020.pdf",
+      "git_blob": "fa874649942acdedaeb5ff774467e08b0920ccf4",
+      "sha256": "d4c80383b977a0f61e057adadb9f302d591bbb26e0917c61128ee36d37aed5b3",
+      "bytes": 19110
+    },
+    {
+      "path": "pdf/issue8109/print/control-styles-hwp-2020.pdf",
+      "git_blob": "eaf9b43202a8df7de4e36d3cf6cd3f4ef8d0fc1c",
+      "sha256": "fd8672dcb24dd7bb1d50983b0545033e7c2513bbb2ecfc48edde1cb4e77058ba",
+      "bytes": 43664
+    },
+    {
+      "path": "pdf/issue8371/hwp3-sample10-2020.pdf",
+      "git_blob": "af35caf0aec471085bf3e738f25c30122538a0b3",
+      "sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+      "bytes": 96185197
+    },
+    {
+      "path": "pdf/issue8677/1411000-201000007_final_report-2020.pdf",
+      "git_blob": "17ce905446233405eb0bb02a3211bf7ff963a9ff",
+      "sha256": "3e39ad38cba5c0e2fb8381388d7186937c0928c143875f117d3492222787062e",
+      "bytes": 1302155
+    },
+    {
+      "path": "pdf/issue8682/ai_procurement_appendix-2020.pdf",
+      "git_blob": "4e40409f89a99da0a9d90dfd7a781e89d379b6ee",
+      "sha256": "a6fe15e195cda7b85c520b69bfa53bc8a0727821ac90c1822e956e227269c68b",
+      "bytes": 272696
+    },
+    {
+      "path": "pdf/issue8682/artifact_loan_form-2020.pdf",
+      "git_blob": "5e3146a63d8d41582c3d09936da75879f5ec0885",
+      "sha256": "72ae7ff498e2371c0f316739f72a09e12cd8fc28e921f446e8f8c8a034f13b9b",
+      "bytes": 55257
+    },
+    {
+      "path": "pdf/issue8682/rental_approval_form-2020.pdf",
+      "git_blob": "afdeaa89bfade44eb04628db874851c3945715a6",
+      "sha256": "4fb0322894a091b29b429344486bdb874feb1afa85edc18837618264cf5dad82",
+      "bytes": 29919
+    },
+    {
+      "path": "pdf/issue8685/1311000-201100125_saemaul_oda_pilot_report-2020.pdf",
+      "git_blob": "abfd97091456530ccdf626ebafc06be6ed0a9076",
+      "sha256": "ac5603e1548de3cd1178ae11b4de9bba8c1cfa1328d145eb1743fe7bfcf03d20",
+      "bytes": 3479958
+    },
+    {
+      "path": "pdf/issue8686_cell_float_inner_anchor-2020.pdf",
+      "git_blob": "f431b0cd0f3febd27ddfc9c8e3a777e6fccb85ea",
+      "sha256": "e333c02b54fb74240b55cb0bec0d353081a8e8a38bdb4427a13d14ddaef8df2e",
+      "bytes": 133479
+    },
+    {
+      "path": "pdf/issue8686_cell_float_offset_space-2020.pdf",
+      "git_blob": "1aab715891f42278d9cde29ef984637189920ce7",
+      "sha256": "bc1ec50fc13b79d301506dfeac32fbb0ff8c39b4b738387b6b1b341db8607add",
+      "bytes": 81414
+    },
+    {
+      "path": "pdf/issue8692/employment_service_interim_report-2020.pdf",
+      "git_blob": "12f4f54a8fa9e786264c753fb9a85e6b1de69b67",
+      "sha256": "f11dbf1389dd43f37911c730d1bf63ee7de0d5821e95fa1d206165819732fc11",
+      "bytes": 1454452
+    },
+    {
+      "path": "pdf/issue8692/scholarship_recommendation_form-2020.pdf",
+      "git_blob": "4a36b50615e22ce80c6fd681dd48192b5bd99451",
+      "sha256": "71ff83b518d311ce9574dfe013954278a308bd2fe11b351221ece6ba134f335a",
+      "bytes": 47986
+    },
+    {
+      "path": "pdf/issue8692/tax_source_ledger_form-2020.pdf",
+      "git_blob": "2e2bcb9dd0242502b8f91343d9ff7feebf44b09c",
+      "sha256": "07ace1ed7a647dc5125d14bf658efd67ec7adc6826448f695cde69ee08fea10e",
+      "bytes": 61068
+    },
+    {
+      "path": "pdf/issue8693/table-end-row-clamp-webhwp-print.pdf",
+      "git_blob": "86cd825a8cd370832a33de1b539a8cb8bb3af38f",
+      "sha256": "2c0bd2817e86e5c9e4c01961852a0ceb0ef6a6ae9076fea0b45d4d0ec7506321",
+      "bytes": 5451
+    },
+    {
+      "path": "pdf/issue8693/two-tables-host-line-fits-webhwp-print.pdf",
+      "git_blob": "c2b9742853a44bdfdb260ab3914d6ba16c9e44b3",
+      "sha256": "b7eba5df3d128aaaca45d0e67a01ec512100cfec27b2227f7273ef20d0f5f71a",
+      "bytes": 6344
+    },
+    {
+      "path": "pdf/issue8693/two-tables-host-line-no-room-webhwp-print.pdf",
+      "git_blob": "62f5ebad5259fada64655722ce9c86db829bea31",
+      "sha256": "09360c400fcc46f1819f6b9b378305d5af5accfe91417d2e534d0026f31f2c8a",
+      "bytes": 6811
+    },
+    {
+      "path": "pdf/issue8697/hft-hanyang_junggothic-probe-2020.pdf",
+      "git_blob": "d4ac6ef110f6545cff21bcd92326f1a33c573e7f",
+      "sha256": "5682714db337de62ef0b0d2a4b67ea7a896e2b48ac65868e68290e9a0b0faa7b",
+      "bytes": 73229
+    },
+    {
+      "path": "pdf/issue8697/hft-sinmyeong_junggothic-probe-2020.pdf",
+      "git_blob": "2f833784a49b48f72dc06636acc6045f2af68c47",
+      "sha256": "221c16c03b6ca3e91ee6e68e4d224dc6c19188d55ef72df3cebbb7789dd82d85",
+      "bytes": 63487
+    },
+    {
+      "path": "pdf/issue8715_nested_row_cell_cuts-2020.pdf",
+      "git_blob": "df683a5a35060b27bfaf6fd8ef52785f135cc7c9",
+      "sha256": "b038ee8ac17403eb22e3984733b7783576fdc4dc414548a2560397c6182b1ad4",
+      "bytes": 68889
+    },
+    {
+      "path": "pdf/issue8732/1741000-202200045_second_interim_report-2020.pdf",
+      "git_blob": "43054332797241cc7927e10808cfb070c35545f5",
+      "sha256": "fa63664ede361a7d588151d009ff1fffff768f04a967e024c9f95e1310b9072b",
+      "bytes": 1130725
+    },
+    {
+      "path": "pdf/issue8735/whitespace_host_approval_table-2020.pdf",
+      "git_blob": "a6a72789281687812e568952ebdd59c606ecb3d7",
+      "sha256": "e8df724587bc39bd8a5fcc1bb39017ed44b3fc4f1be3056cea3236a59c6965af",
+      "bytes": 37089
+    },
+    {
+      "path": "pdf/issue8737/156667654_saemangeum_press_release-2024.pdf",
+      "git_blob": "cb21a55074fe65ec99027dbccc98abc0025e109c",
+      "sha256": "8df0668656443e3ddef086a5044e31e23ccf5ab1fd48a65b45fc7d1ab2c214e4",
+      "bytes": 158124
+    },
+    {
+      "path": "pdf/issue8742/36345427_approval_body-2022.pdf",
+      "git_blob": "5067d2026bcf312375181a0ece3d2d45e1876053",
+      "sha256": "4f2bf6e85f5c2f55278fac2c578ed2eb258b9d677333600502b26f5e54f3e3ab",
+      "bytes": 35035
+    },
+    {
+      "path": "pdf/issue8742/36453591_approval_body-2022.pdf",
+      "git_blob": "ff3f42dbac5e3d43df456a7519c5716aee9d1ca7",
+      "sha256": "608d8d29b8daa703d75719acce480569922b8ff88dd046bc1c62e7836d13805f",
+      "bytes": 279196
+    },
+    {
+      "path": "pdf/issue8742/36483048_approval_body-2022.pdf",
+      "git_blob": "07ab239e192f70769c1b370f342c479977490e1b",
+      "sha256": "228d611db65b0215b3768fb4073c18d421571b3e2bc744199dc92eb053b9692b",
+      "bytes": 198110
+    },
+    {
+      "path": "pdf/issue8755/46551_road_traffic_rule_amendment-2020.pdf",
+      "git_blob": "de12b68bc531ab79bcf19f4f61093231aa860ba8",
+      "sha256": "25c74260354310cb993089888c057ff848090560fa58e75041f5d5228eb69d8d",
+      "bytes": 680845
+    },
+    {
+      "path": "pdf/issue8759/6500000-201700118_jeju_tourism_education_plan-2020.pdf",
+      "git_blob": "1bafd25d4aa0fde0fa909769f852a94ccaa1d55a",
+      "sha256": "56f1bf8b3d92065e2e51ae27f1abbf4a97ccbd83474f29f3c00b4e2bca26659e",
+      "bytes": 23313820
+    },
+    {
+      "path": "pdf/issue8770/4680000-202100038_research_review_request-2020.pdf",
+      "git_blob": "285a34f3449824aa2580c7ad6deeec9f95179baa",
+      "sha256": "f4861e9c548aada2eebd5ce3613b59a97b142c3ade52c5a298fc3aa2ffa844d8",
+      "bytes": 238668
+    },
+    {
+      "path": "pdf/issue8773/field_led_wide_table-2020.pdf",
+      "git_blob": "b5bdd3d106917b710ed889c222869dd16a3dc71c",
+      "sha256": "289b4846ebb2d9bed5316b58b34a68142ba9a5bc262f954c6391bcad3b226c7f",
+      "bytes": 73709
+    },
+    {
+      "path": "pdf/issue8773/field_led_wide_table_nofield-2020.pdf",
+      "git_blob": "e2e2cd39bea363a89fbad2feb78ed74c64931a35",
+      "sha256": "1651e5019c00f7f5721f3451495a61c81236aeff4066810e83f6a29ae744d279",
+      "bytes": 73706
+    },
+    {
+      "path": "pdf/issue8778/156739836-float-prefix-row-reduced-2020.pdf",
+      "git_blob": "6cfb451741fccfe61d5ff38b7622b11283ab5329",
+      "sha256": "e08b2e5ff16f1de38970f97315f3a1dfe14340d9b59d53a1c8278c75d3fcaee1",
+      "bytes": 220286
+    },
+    {
+      "path": "pdf/issue8778/36495398-split-row-segments-reduced-2020.pdf",
+      "git_blob": "43d5bffded718077470675d72804b349038c3513",
+      "sha256": "c8ea97be21d350def41787c22dd3acbf2a5054cd6be02ca78c0f9973ce3458cf",
+      "bytes": 236731
+    },
+    {
+      "path": "pdf/issue8782/stored_field_line_page_split-2020.pdf",
+      "git_blob": "50b1c73b20f0051c2fa9a58e7182ad27dcc66e0a",
+      "sha256": "725af86abb61b9d80796a83d8859794636bec450c288020173c5d6b8c2d9b0a3",
+      "bytes": 100599
+    },
+    {
+      "path": "pdf/issue8782/stored_field_line_table-2020.pdf",
+      "git_blob": "bfd818e5029296b7efb79a58962f265f01ca425b",
+      "sha256": "3761e24b8471dc6b20d08d83177f57de54c909a20a0ee19b5a2e2760395e7183",
+      "bytes": 80697
+    },
+    {
+      "path": "pdf/issue8786/reflowed_gap_stored_rewind-2020.pdf",
+      "git_blob": "82a7f718428ba88f4ba66f0782be1f385ac24b44",
+      "sha256": "eecbd61700b3a4cbc00ab85a8c1f00b74fd32d35297dd327d7318e5752e8fb7e",
+      "bytes": 80501
+    },
+    {
+      "path": "pdf/issue8795/1351000-201500141_arrhythmia_research_plan-2020.pdf",
+      "git_blob": "0538aa389da49065d2c043712bf234403b3c4a47",
+      "sha256": "f3055ffc1c57202bac4ab4e04ea823d07699d9f76db12eb878eccbf9021c984f",
+      "bytes": 3813687
+    },
+    {
+      "path": "pdf/issue8808/36341965-float-band-gap-reduced-2020.pdf",
+      "git_blob": "5e70e788ee36b8b2c4b7f652791af1d9a7755982",
+      "sha256": "681ba666bfd3c0a8714f0ab7a7eb7f84fe741cc0f3f07ea6e3615726109d4370",
+      "bytes": 85530
+    },
+    {
+      "path": "pdf/issue8810/36400259-stale-cell-ladder-2020.pdf",
+      "git_blob": "5cd5220dd22b2d56bd737304eadfbe238e6f8911",
+      "sha256": "ce089cef6811ebea5e01949a8e79050ef3b2d48ce0d3145218af83299b98856a",
+      "bytes": 86143
+    },
+    {
+      "path": "pdf/issue8842/1351000-201800239_hpv_cohort_final_report-2020.pdf",
+      "git_blob": "20a1d80728e87c2201409618fbeeeb09ccc256c9",
+      "sha256": "b104b18e02e562e1396c8bceaba9b6786957e4b8535d76f2b307cbe05fb81167",
+      "bytes": 9966941
+    },
+    {
+      "path": "pdf/issue8843/synthetic_forward_tac_axis-2020.pdf",
+      "git_blob": "8492ab047b0089bc72c0be56d87ebd79c586bb9d",
+      "sha256": "af8ed5627a8cc6281fba5ff438d97ae94bbaa47ef0672d639546eb14cdf0a300",
+      "bytes": 95423
+    },
+    {
+      "path": "pdf/issue8845/36355707-unstored-rebase-tac-2020.pdf",
+      "git_blob": "8492ab047b0089bc72c0be56d87ebd79c586bb9d",
+      "sha256": "af8ed5627a8cc6281fba5ff438d97ae94bbaa47ef0672d639546eb14cdf0a300",
+      "bytes": 95423
+    },
+    {
+      "path": "pdf/issue8855/36388005-host-below-header-table-2020.pdf",
+      "git_blob": "27e421273145210ddf8d0562c8d592d269a89d47",
+      "sha256": "dd5abd9f18b2af7470488aba9d56a55239957597cd2cf9f140c416bb11e8c7ab",
+      "bytes": 75979
+    },
+    {
+      "path": "pdf/issue8864/36338125-bottom-fixed-table-margin-2020.pdf",
+      "git_blob": "b88270fef1b1dfcda6d4ab4e08e865ecc8d75f8f",
+      "sha256": "13c21f5b94305cce580cf2614a7798d4c0bf10f0134c5be8aa48b5a823921152",
+      "bytes": 49184
+    },
+    {
+      "path": "pdf/issue8878/36441289-tac-host-below-float-2020.pdf",
+      "git_blob": "ce1cf5a1cc56e34cf2e09018c250f0ff52f4823a",
+      "sha256": "353324fc860149861c84e8e1b449941b4036ba1b2b5e94899498c81b9c35995a",
+      "bytes": 53176
+    },
+    {
+      "path": "pdf/issue8882/36404364-reflowed-cell-tac-row-floor-2020.pdf",
+      "git_blob": "0f2e7ba8a55ffe5b5a28ae46417c502677008e49",
+      "sha256": "d64c57ff2b4aa19c4797c4d8fb90916534dceb6300e4615150d99bbcb82d7775",
+      "bytes": 102425
+    },
+    {
+      "path": "pdf/issue8888/36384898-unstored-next-float-bottom-margin-2020.pdf",
+      "git_blob": "47449129594c8b57c6dc4d9d663f72e86c469ebb",
+      "sha256": "10b43e69fb22145c63c432f4ad518115140ceea2629e215d288cc1a41b5ff180",
+      "bytes": 88869
+    },
+    {
+      "path": "pdf/issue8891/1480000-201900510_facility_pollution_study-2020.pdf",
+      "git_blob": "c65dab878888217fa8f55219b9daa9b8f6f81376",
+      "sha256": "dd3c1f8fd8dabbd87bc59fd622d561696a37c590bbcf48ee7f9a4c2a69c1d0f7",
+      "bytes": 1910682
+    },
+    {
+      "path": "pdf/issue8894/36340478-unstored-tac-column-top-spacing-2020.pdf",
+      "git_blob": "c7468cab859d9da1e4f385faa2cb9b2227c3c4b8",
+      "sha256": "5270504c40f859d4d9b3f549d65246d3c1dffd5649c56aeab829d2100d21dd93",
+      "bytes": 234400
+    },
+    {
+      "path": "pdf/issue8904/36376635-synthetic-tail-saved-reset-2020.pdf",
+      "git_blob": "265f4f5642487bfeb6afbaadacc3bd90fc957562",
+      "sha256": "20257a2be00588346f8536e1ebf1452fcfab7781b06961b817e2190abb33ff35",
+      "bytes": 48778
+    },
+    {
+      "path": "pdf/issue8917/1471000-group-bullet-column-top-2020.pdf",
+      "git_blob": "9fa123127caa33b0febe1efb8da2bcfde0e497f2",
+      "sha256": "33aa76823643a57852838d48019038ac4dcc44fd82ade2d6b2832abab064e544",
+      "bytes": 159363
+    },
+    {
+      "path": "pdf/issue8917/44907-group-bullet-column-top-2020.pdf",
+      "git_blob": "3ced6d892014ab075b4f947fc5ad2f94152b7f1c",
+      "sha256": "e92a5a1a5ab231fb6411173dbd09abc58da41e4a8ded517892670200a42b5fb2",
+      "bytes": 721922
+    },
+    {
+      "path": "pdf/issue8924/wide_tac_trailing_tail-2020.pdf",
+      "git_blob": "793cd568ffa4d17bf5092fc57a97c3edeeb63b5f",
+      "sha256": "4119269d413dfcc7f3fa6500149fc19875fad8cdb0e6a185e459033fd37b1916",
+      "bytes": 60280
+    },
+    {
+      "path": "pdf/issue8925/36415413-page-break-tac-full-gap-2020.pdf",
+      "git_blob": "c81353416cfd5cc38665e47ba3fe5e457f28a444",
+      "sha256": "f155ead01f28ad36e0a62edad5a555767fda7d995927b086a68ad29670251024",
+      "bytes": 101525
+    },
+    {
+      "path": "pdf/issue8926/6540000-202500049-post-table-line-stored-page-reset-2020.pdf",
+      "git_blob": "557b4698ce43b5a249836edc0879e4b0a60e6269",
+      "sha256": "d0917ecf26c5253658cb02d61429916b903223f795fa5f16f2e77ac8ac8a9982",
+      "bytes": 87181
+    },
+    {
+      "path": "pdf/pic-crop-01-2022.pdf",
+      "git_blob": "171d9dfe4e3511ec9ed8c8078e47cfa5ac2ac7e2",
+      "sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+      "bytes": 19211
+    },
+    {
+      "path": "pdf/pr8040/exam-social-insert-2020.pdf",
+      "git_blob": "07aa6d3a95d37994429bd7df341f4e7b60443fa1",
+      "sha256": "d368c0ded6f0d9309784e9165aad7360b326a86c01d9938beb95c768ae0d4e74",
+      "bytes": 641866
+    },
+    {
+      "path": "pdf/pr8040/exam-social-insert-delete-2020.pdf",
+      "git_blob": "e291015645b6d35b15f9982da9d22a86f1132d35",
+      "sha256": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d",
+      "bytes": 641867
+    },
+    {
+      "path": "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+      "git_blob": "007f057f67b46042b6ec6e67f6aa597226ec00e2",
+      "sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+      "bytes": 11752
+    },
+    {
+      "path": "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+      "git_blob": "23f9278e8a0d0a047c2e12b10076932881dcf7c1",
+      "sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+      "bytes": 625577
+    },
+    {
+      "path": "pdf/rowbreak-problem-pages-2024.pdf",
+      "git_blob": "d5872596c01ba0b89456466b4fc411328aae1c69",
+      "sha256": "9bfe742e084152eb5e204ba66873bffb0af742adc9d4ca89012dc3ce8434b7a2",
+      "bytes": 1123001
+    },
+    {
+      "path": "pdf/shape-group-02-hwp-2020.pdf",
+      "git_blob": "58e8dc8d8a4c11df34acee1058470239c4aea1e3",
+      "sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+      "bytes": 89651
+    },
+    {
+      "path": "pdf/task2097/75544_pii_bunseok-hwpx-2020.pdf",
+      "git_blob": "f6969f01a7497cb1968ed97c91f63449fac647ea",
+      "sha256": "0fef38f44b3825f1c97869c2720112536504eaf30cec2a2d2af6d4399ffe8770",
+      "bytes": 777176
+    },
+    {
+      "path": "pdf/task3307/issue3307_outline_number-2020.pdf",
+      "git_blob": "8780c4d81dd263c2cad63ca20830e933b7b9a268",
+      "sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb",
+      "bytes": 237518
+    },
+    {
+      "path": "samples/2025 행정업무운영 편람(최종).hwp",
+      "git_blob": "492e1702dcfbd59d119af1214e83b99fa8d7cf9f",
+      "sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+      "bytes": 10687488
+    },
+    {
+      "path": "samples/2025 행정업무운영 편람(최종).hwpx",
+      "git_blob": "961e91f0af177689fbef4c240c0947b88c674af5",
+      "sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+      "bytes": 13639865
+    },
+    {
+      "path": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "git_blob": "f6f047708aed3ca5b603fde2c8d41d40c2ba4b98",
+      "sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "bytes": 51712
+    },
+    {
+      "path": "samples/hwp3-sample10.hwp",
+      "git_blob": "88e507c2cef0637eb4ffdaa9da3532a9cc7515c9",
+      "sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+      "bytes": 945360
+    },
+    {
+      "path": "samples/hwp3-sample16-hwp5-2022.hwp",
+      "git_blob": "ce4fc4fddbd57ea4cfcaef2c5e2f4f72991e4f7b",
+      "sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+      "bytes": 3048448
+    },
+    {
+      "path": "samples/hwp3-sample16-hwp5-2024.hwp",
+      "git_blob": "1e7b1834277effd9240a2aa24724799c55b210f1",
+      "sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+      "bytes": 3044864
+    },
+    {
+      "path": "samples/hwp3-sample16-hwp5.hwpx",
+      "git_blob": "119f835b1a7d296e21a43e91715c52ebf1ecb912",
+      "sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+      "bytes": 3061900
+    },
+    {
+      "path": "samples/issue5699/20099369_yeongwol_forms.hwp",
+      "git_blob": "c9832b79acaa3cf88307f540a1e70a859cc2cec4",
+      "sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09",
+      "bytes": 20800
+    },
+    {
+      "path": "samples/issue7282/wide_paper_table_two_columns.hwp",
+      "git_blob": "f3b69c380918c86b5f95ba6862b6c322806ceb64",
+      "sha256": "2400c5a5dd0e6d734d422cea83597c6216341584814e973fc477c37637bb8150",
+      "bytes": 2051584
+    },
+    {
+      "path": "samples/issue7620/a-rowbreak-float.hwp",
+      "git_blob": "d48e7b827e76ca02bbeb0338ee7bb00a39851cc8",
+      "sha256": "44c065e5a770e88903e314b53e1b199f2ab1385e50a79eebb5e8ae8716ec64a3",
+      "bytes": 13312
+    },
+    {
+      "path": "samples/issue7620/b-rowbreak-bottom-margin-overflow.hwp",
+      "git_blob": "ea387fdab2569718530f79cf6eec3642e09a5d18",
+      "sha256": "496d5653cee6205d13a070d3e1c7758459b120f4146a6e9dba05ee3122ce06b4",
+      "bytes": 14336
+    },
+    {
+      "path": "samples/issue7620/c-rowbreak-table-moves-next-page.hwp",
+      "git_blob": "3b27f9b46515f219d405599161445ad2459941c5",
+      "sha256": "1a19df0ccf31676c411a576963cf322ec9e927fd8727390e94703cd95a297669",
+      "bytes": 14336
+    },
+    {
+      "path": "samples/issue7620/d-rowbreak-splits-at-row-boundary.hwp",
+      "git_blob": "b2ca030f8319a78cb628bbfe6b2fcb3e2f022f0a",
+      "sha256": "1ac6b0c2f586b7e7c4a59cfc71834aff9e76e57bb73a846ff7a392c6489f6aee",
+      "bytes": 14336
+    },
+    {
+      "path": "samples/issue7621/control-float.hwp",
+      "git_blob": "55f14a4fec6f19d9116355438d0aea483aec10ec",
+      "sha256": "81d61a11efd5070e64767b8cd32491ba8af93ec212351607694e10aece0a9480",
+      "bytes": 13312
+    },
+    {
+      "path": "samples/issue8677/1411000-201000007_final_report.hwp",
+      "git_blob": "9961e7b1d04e2734bfdd627a1e1f52fc742a0626",
+      "sha256": "b4f0c87e841834c4b73e2b0377b8ec38e1d598a360300906ce6052c780e323a0",
+      "bytes": 713216
+    },
+    {
+      "path": "samples/issue8682/ai_procurement_appendix.hwp",
+      "git_blob": "53fa139bbf8140cc25a17ab61caa59e0e37fff02",
+      "sha256": "8f18a357c73ff2aae4b0e2a2df3f1fecf9679aab65d137e684c7791685c09b5a",
+      "bytes": 57856
+    },
+    {
+      "path": "samples/issue8682/artifact_loan_form.hwp",
+      "git_blob": "1eb3a4933c6a2d8bb9b94d773abce9bef3a8f14c",
+      "sha256": "9dc4fc28bd951a009932298c29263e24544e455726ba9e1cc641c9fdb0a9272b",
+      "bytes": 33792
+    },
+    {
+      "path": "samples/issue8682/rental_approval_form.hwp",
+      "git_blob": "e7d90d8ad54459e906dd11fde01a8a6f7ae74b46",
+      "sha256": "301d6f7e7df4129ee5090d174100b1e0dfcf1b2abfb8afdcf289a0bed2beef46",
+      "bytes": 33280
+    },
+    {
+      "path": "samples/issue8685/1311000-201100125_saemaul_oda_pilot_report.hwp",
+      "git_blob": "53a61a918916d9ab10e631b228cdc37caae2cbc5",
+      "sha256": "87511e1ee2da992acf2bf409456a6318e5179acdae02f2f8e43f0119e34fcb2f",
+      "bytes": 1138688
+    },
+    {
+      "path": "samples/issue8686/cell_float_inner_anchor.hwp",
+      "git_blob": "c8fda54de4bfac557061d259d25e5e2e6bb5290c",
+      "sha256": "05b1d5f1ff65aa423e7ae2800bb1c56114e765e2fdd89cc9583fcb9ebbb0bfe9",
+      "bytes": 80384
+    },
+    {
+      "path": "samples/issue8686/cell_float_offset_space.hwp",
+      "git_blob": "f89a79151457ad6f312da2c33569ebb4e7f6b436",
+      "sha256": "8575be129f222bc9177b14bad5b78f6fd9357df99aa2e5a50a832c22f5de8cb4",
+      "bytes": 130560
+    },
+    {
+      "path": "samples/issue8692/employment_service_interim_report.hwp",
+      "git_blob": "6b1cdd75980e8f95fe1eb1f307c655dd74b4f604",
+      "sha256": "f2af4c2b4e7721cec84488833eaf68b48ee4c852fc2990411188b33bf223606a",
+      "bytes": 3353600
+    },
+    {
+      "path": "samples/issue8692/scholarship_recommendation_form.hwp",
+      "git_blob": "6b557e4423f32a584776287d2cbf18c5540b568e",
+      "sha256": "043c355c598d07ac3761c551e8c988e61873792a83cc69d83e76549818ff2b56",
+      "bytes": 16896
+    },
+    {
+      "path": "samples/issue8692/tax_source_ledger_form.hwp",
+      "git_blob": "bbf556b14182c60639426f4d681b43b5987721fd",
+      "sha256": "cd77e555af065b532c4407d55302d91a98b2f8c5bad377580a8645fd785f2455",
+      "bytes": 10032
+    },
+    {
+      "path": "samples/issue8693/table-end-row-clamp.hwp",
+      "git_blob": "2328a357ad541f1f659167de4d431fdc7720df75",
+      "sha256": "8982493b412cf6ab0165ce234303786f994a6a870433101ce64aed1d82766aa0",
+      "bytes": 14848
+    },
+    {
+      "path": "samples/issue8693/two-tables-host-line-fits.hwp",
+      "git_blob": "e03f60bcaa1c2fc16770375e93370728b1b02d3b",
+      "sha256": "50cf138669be588545fb59c688970f2bc52282168886e998c364d69671e143f2",
+      "bytes": 15360
+    },
+    {
+      "path": "samples/issue8693/two-tables-host-line-no-room.hwp",
+      "git_blob": "755c812edc96e2a9e8caa7b5e5bfdd302420988c",
+      "sha256": "89bb55a075b5429c5cecdd60cb60085bb6bf25ce10e0af6518bab9ba04c67059",
+      "bytes": 15360
+    },
+    {
+      "path": "samples/issue8697/hft-hanyang_junggothic-probe.hwpx",
+      "git_blob": "3b7252c6042a5c5c0d780d718e81e69569920c39",
+      "sha256": "e05e1580ed8310d82c2bc0a48d4666111788e849fabf247f2de2d73c083508d2",
+      "bytes": 5281
+    },
+    {
+      "path": "samples/issue8697/hft-sinmyeong_junggothic-probe.hwpx",
+      "git_blob": "ae8939de6bd1b6d95824879a4d1359cf69e490ae",
+      "sha256": "2efe204f233ceeb19416f5af6abb3fe629bfaf6805038d13352fd6f34c7f3f13",
+      "bytes": 5283
+    },
+    {
+      "path": "samples/issue8715/nested_row_cell_cuts.hwp",
+      "git_blob": "0e46baf69b68996f23a001fce31dd663bbb3a2f4",
+      "sha256": "9c8aca53eb0ebfc92fc3d4bd8f5c2d404f34549063d5ef33fc9c017fcd12c504",
+      "bytes": 104960
+    },
+    {
+      "path": "samples/issue8732/1741000-202200045_second_interim_report.hwp",
+      "git_blob": "dc2aca0f9a12515d094ebe5581dafac6db13a2ba",
+      "sha256": "a8342140eafc10194f9beef693f5da8658f3fc1d170111799aae4b23d8351cae",
+      "bytes": 694272
+    },
+    {
+      "path": "samples/issue8735/whitespace_host_approval_table.hwpx",
+      "git_blob": "301389a4131cd1bf2c57164c60ce9f4752313fe6",
+      "sha256": "58829782ebef6b7fe003db634cff90c3c2de6b2f369597d264965f21568db7a4",
+      "bytes": 15330
+    },
+    {
+      "path": "samples/issue8737/156667654_saemangeum_press_release.hwpx",
+      "git_blob": "b91bf30886ab328ae2b0ef59d29b616f69861f13",
+      "sha256": "57d115d6681d3f527942a58612050a3eecbde793ef07edf577a30e1ffc743a26",
+      "bytes": 245664
+    },
+    {
+      "path": "samples/issue8742/36345427_approval_body.hwpx",
+      "git_blob": "853c1d02962f314132314efe9df9b74fb210f406",
+      "sha256": "e21577b887e19acd88cd582b45083d0ec6d1efa92a14b17de525f7c8a7da4964",
+      "bytes": 35194
+    },
+    {
+      "path": "samples/issue8742/36453591_approval_body.hwpx",
+      "git_blob": "02094d1f8eecf1d0d4252af6461e3ebbbb15504c",
+      "sha256": "f5c89640dd8e9ba32fa4dd5a987ffb78b6d6304831c1a7e93f93d62b140e69af",
+      "bytes": 1064795
+    },
+    {
+      "path": "samples/issue8742/36483048_approval_body.hwpx",
+      "git_blob": "ebcc32c560532ea14807d095c55d9eb34596a22d",
+      "sha256": "221a86e963332d46573de08390bdd70b4c6473904b0671d5c04fc2e3d257e5ca",
+      "bytes": 55907
+    },
+    {
+      "path": "samples/issue8755/46551_road_traffic_rule_amendment.hwp",
+      "git_blob": "3db25b97083b5055e6f7698e49761f6342b97163",
+      "sha256": "6ebb1831ce7e183611bdd0a9b1e2778b73e6f475391b16c967f968cd29376912",
+      "bytes": 114688
+    },
+    {
+      "path": "samples/issue8759/6500000-201700118_jeju_tourism_education_plan.hwp",
+      "git_blob": "16dfae4e6e77f41a211f7a3027a219b28e008ef4",
+      "sha256": "fa87e135c3d609324457adb37230e220be9406ba99a94d26a813ba7132244ac9",
+      "bytes": 24698880
+    },
+    {
+      "path": "samples/issue8770/4680000-202100038_research_review_request.hwp",
+      "git_blob": "461ac9d7722750476d89f8aa8f0abb441b474fdc",
+      "sha256": "13d5f5e3f8579010d3c284d8e1bcf5039502fb485c1fece8f4bbb99e0a23964c",
+      "bytes": 1635328
+    },
+    {
+      "path": "samples/issue8773/field_led_wide_table.hwpx",
+      "git_blob": "8e26c3c1c9df0d7527be2323dd749552cfdd008f",
+      "sha256": "3f77945502ecf43100ade325d49a21e069b449fcc83c9c2888e79395e405a6ff",
+      "bytes": 20264
+    },
+    {
+      "path": "samples/issue8773/field_led_wide_table_nofield.hwpx",
+      "git_blob": "32183457c25bc211b34ef6dfe44917408ddc4605",
+      "sha256": "f083bc8490e24845d8802622703bf51d36ea1b114b63ba95451c9f5804f3c2a2",
+      "bytes": 16087
+    },
+    {
+      "path": "samples/issue8778/156739836-float-prefix-row-reduced.hwpx",
+      "git_blob": "c3b12026c7422b6a50a7ae4b228b29291fc914f7",
+      "sha256": "180f2440b20d5199447b8f716557e07b08aa35f36eb1976cd231a76791b8ee24",
+      "bytes": 228026
+    },
+    {
+      "path": "samples/issue8778/36495398-split-row-segments-reduced.hwpx",
+      "git_blob": "c55f038f98c3ae221eefaad82ba2e2e09847895a",
+      "sha256": "ed64160c378693c843bdcfe782e71cbdb0b4be26bf4c8a3a9fcd3cafe4733af0",
+      "bytes": 313665
+    },
+    {
+      "path": "samples/issue8782/stored_field_line_page_split.hwpx",
+      "git_blob": "211fcaad5459eb230f49ad028511025e0013dbbd",
+      "sha256": "c7438df8e96c46172dc7885362b241614b72c5d104244136ee572ec2e2702d19",
+      "bytes": 105577
+    },
+    {
+      "path": "samples/issue8782/stored_field_line_table.hwpx",
+      "git_blob": "d7964b5c6afa1fdfec49d6797793aac884804272",
+      "sha256": "16454b9308211eeb4536dcda565933672ec14ecf67518c21c567226f0e4c5e01",
+      "bytes": 21685
+    },
+    {
+      "path": "samples/issue8786/reflowed_gap_stored_rewind.hwpx",
+      "git_blob": "e40116869ae896aeee1506a2588708ec9b0011fd",
+      "sha256": "99e29bf8ff37f0972bbc2d1d054b3359ad486a055ea91e29ce1d1698eb311010",
+      "bytes": 46077
+    },
+    {
+      "path": "samples/issue8795/1351000-201500141_arrhythmia_research_plan.hwp",
+      "git_blob": "54c2439f4bbbeb98ea52ac206c94212465a18eb6",
+      "sha256": "3f76136a2300da44efc04692f50c63ab2bf311a2e04abe2d55839e0c94b3f145",
+      "bytes": 15779840
+    },
+    {
+      "path": "samples/issue8808/36341965-float-band-gap-reduced.hwpx",
+      "git_blob": "e8c6512bb2408b05d9cd24da453f55ef924c532d",
+      "sha256": "18ea6268e9022072aa79f16eb6f94afc4fbd6f65ba73103feaa51dca9df96e1e",
+      "bytes": 52582
+    },
+    {
+      "path": "samples/issue8810/36400259-stale-cell-ladder.hwpx",
+      "git_blob": "7192bdafc3819e7da6eb67312c6190cec70b16a5",
+      "sha256": "b66803ca78781cdb6029c98cd5cd0fb25868ed8cc6758698a5786d9b3d98465c",
+      "bytes": 66448
+    },
+    {
+      "path": "samples/issue8842/1351000-201800239_hpv_cohort_final_report.hwp",
+      "git_blob": "f77ddede6f1d93db6c4931a717257a24e9e811a1",
+      "sha256": "49adaad5b74a6019b15ea18876c72f915924666bee993a5c1cbd213414f33f8f",
+      "bytes": 20272128
+    },
+    {
+      "path": "samples/issue8843/synthetic_forward_tac_axis.hwpx",
+      "git_blob": "fc9cf44087ff2adbb120a6b64f7a39390bffb5b6",
+      "sha256": "311a6dcb9a9fb65f4c7fd0abad0b05aee27c4855afdc48a25864bea8b4a65e7f",
+      "bytes": 49729
+    },
+    {
+      "path": "samples/issue8845/36355707-unstored-rebase-tac.hwpx",
+      "git_blob": "fc9cf44087ff2adbb120a6b64f7a39390bffb5b6",
+      "sha256": "311a6dcb9a9fb65f4c7fd0abad0b05aee27c4855afdc48a25864bea8b4a65e7f",
+      "bytes": 49729
+    },
+    {
+      "path": "samples/issue8855/36388005-host-below-header-table.hwpx",
+      "git_blob": "f70968be612ccdef567679b38316d6823cee35e5",
+      "sha256": "225eba45838a970079d6f8b89909699fc878b1cbb46f6fd5e59f472758c9f265",
+      "bytes": 93921
+    },
+    {
+      "path": "samples/issue8864/36338125-bottom-fixed-table-margin.hwpx",
+      "git_blob": "7f9f1858c3855f2d36fc674175c901ad99eb108a",
+      "sha256": "f9c80c5ba2b425fe0aa81936e04a2cf364e7701874ad9a7fa446279550527cb1",
+      "bytes": 13744
+    },
+    {
+      "path": "samples/issue8878/36441289-tac-host-below-float.hwpx",
+      "git_blob": "3de474848067aba99452d3d79a26807dc1c8ceb2",
+      "sha256": "58c946b17020c07c0a06e7f95dee68aa3ec246363e4073df844be5674afaed80",
+      "bytes": 42534
+    },
+    {
+      "path": "samples/issue8882/36404364-reflowed-cell-tac-row-floor.hwpx",
+      "git_blob": "33d6dda559c5a94c8e5f08b2189b5dcae7350398",
+      "sha256": "a102fccb7747c947c7aa0b3df17f6cfe680e9fa566797bafd6b14b4be7a9f218",
+      "bytes": 36672
+    },
+    {
+      "path": "samples/issue8888/36384898-unstored-next-float-bottom-margin.hwpx",
+      "git_blob": "a4bedfb9b0f0916c45c6a6be708b9619c14b8fc4",
+      "sha256": "03e54b5b4517505ce678af874747e9af69c92d0fb16af3881eadc797782b979f",
+      "bytes": 57798
+    },
+    {
+      "path": "samples/issue8891/1480000-201900510_facility_pollution_study.hwp",
+      "git_blob": "5fcf5402f4b772974b45293105ecd5c7c1fde793",
+      "sha256": "f7abda24a89981aea3c84db305fca7938f36ff6b1476e65dedd4328f9410a1b4",
+      "bytes": 9128960
+    },
+    {
+      "path": "samples/issue8894/36340478-unstored-tac-column-top-spacing.hwpx",
+      "git_blob": "e40adc3fc8c543c2e29d95fa1c4e87d4382816e4",
+      "sha256": "62d1b9c736c05c94dd81ed4b930f9a6dcbc2d3b4d53e40867c7ed5e729301a5b",
+      "bytes": 153362
+    },
+    {
+      "path": "samples/issue8904/36376635-synthetic-tail-saved-reset.hwpx",
+      "git_blob": "0f9bd96668e522a8adf0ea17d0b66a5f70163969",
+      "sha256": "27bc644e73eb8cf64d35227775dc7e9d5e27b74f540c610e1da12ad224d7dca5",
+      "bytes": 37971
+    },
+    {
+      "path": "samples/issue8917/1471000-group-bullet-column-top.hwpx",
+      "git_blob": "9b1ad0b3d0f679ffd4ab13150fc4ff20af64d9d0",
+      "sha256": "3fb265a8464f467b497edef5cdc70eb09af93d926ad2eece3efbfbb68df49d59",
+      "bytes": 76733
+    },
+    {
+      "path": "samples/issue8917/44907-group-bullet-column-top.hwp",
+      "git_blob": "ea149bd86ed693456d01b4cd904c8ef8d96d94a9",
+      "sha256": "f6a2331b08e005934d9b8c9d6ce39163b943128446abba35759d628ce57fd8f1",
+      "bytes": 1527296
+    },
+    {
+      "path": "samples/issue8924/wide_tac_trailing_tail.hwp",
+      "git_blob": "acd3009eaf8d4b685b1f5f964b3dfe6766851fea",
+      "sha256": "39e51188c0aa1668196188bb99ef4d87d2dfef44d2c74b25a4b647769fda7dbd",
+      "bytes": 15360
+    },
+    {
+      "path": "samples/issue8925/36415413-page-break-tac-full-gap.hwpx",
+      "git_blob": "a71738ee9f15a4344f06fdcb29e6f274e41ba31b",
+      "sha256": "36041759aae66273c3e25b68a5d03626ccbd38f340bcc5e7b35fd54e715fc506",
+      "bytes": 17586
+    },
+    {
+      "path": "samples/issue8926/6540000-202500049-post-table-line-stored-page-reset.hwp",
+      "git_blob": "c36ccd5234ba5c9c88a83537c6351988d13f354e",
+      "sha256": "78719aa7c6a8743f9b08f1ab0a45fd1c134a6e87068075dd7e6448b199220b84",
+      "bytes": 121344
+    },
+    {
+      "path": "samples/pic-crop-01.hwp",
+      "git_blob": "2ae41567f46adfdecebab27b327500f76b74c4e1",
+      "sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+      "bytes": 131072
+    },
+    {
+      "path": "samples/pr8040/exam-social-insert-delete.hwp",
+      "git_blob": "dcead6985001e73751ca67c325245a62de698597",
+      "sha256": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee",
+      "bytes": 514560
+    },
+    {
+      "path": "samples/pr8040/exam-social-insert.hwp",
+      "git_blob": "1eed74550baf7bcc70d09a4a04d586dfb6584b4b",
+      "sha256": "3c3ff50b430c3129a4ce06575b1a398d01fbd4ec17d9dd895f467a945f656e82",
+      "bytes": 514560
+    },
+    {
+      "path": "samples/re-03-latin-only-hancom.hwp",
+      "git_blob": "b55553422f96b5d2b5c2fd6ee1cf06bdd129f573",
+      "sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+      "bytes": 9216
+    },
+    {
+      "path": "samples/rowbreak-problem-pages.hwpx",
+      "git_blob": "203b4783699fb83d858cda42e691197edf6c09ff",
+      "sha256": "4ccc321e7eb146f28b768654502a128ba1ae408238fd1ed37d51e963732eb5b0",
+      "bytes": 3452994
+    },
+    {
+      "path": "samples/shape-group-02.hwp",
+      "git_blob": "ceb34fdaad8f81674881bfeae7a1089e68aab262",
+      "sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+      "bytes": 16384
+    },
+    {
+      "path": "samples/task2097/75544_pii_bunseok.hwpx",
+      "git_blob": "ad8d7c70b54df29666243f48f02b3c3f1f0ff4b1",
+      "sha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1",
+      "bytes": 162611
+    },
+    {
+      "path": "samples/task3307/issue3307_outline_number.hwpx",
+      "git_blob": "135d3265a8520e4c022a726e7c0677cb4c79c640",
+      "sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d",
+      "bytes": 57890
+    },
+    {
+      "path": "tests/fixtures/issue_8109_saved_fonts/body-list-typed-hwp.hwp",
+      "git_blob": "f8fbd777c431df7cda843626c1cb2f707188d6eb",
+      "sha256": "ebe04aa214d85ca3f472083ae749f534de446ecf6f58eec532a6c2149839e687",
+      "bytes": 4096
+    },
+    {
+      "path": "tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp",
+      "git_blob": "4c82c1bb6f8576c5e875f1508ae0279d77682520",
+      "sha256": "2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da",
+      "bytes": 4096
+    }
+  ]
+}

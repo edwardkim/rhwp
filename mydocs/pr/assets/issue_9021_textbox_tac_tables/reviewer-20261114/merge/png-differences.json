@@ -1,0 +1,23 @@
+[
+  {
+    "key": "handbook-hwp",
+    "backend": "wasm",
+    "page": 258,
+    "base": "<local>/latest88170/base-wasm/handbook-hwp/silhouette-parts/p0258-0321/rhwp_png/rhwp_258.png",
+    "candidate": "<local>/latest88170/candidate-wasm/handbook-hwp/silhouette-parts/p0258-0321/rhwp_png/rhwp_258.png"
+  },
+  {
+    "key": "handbook-hwpx",
+    "backend": "wasm",
+    "page": 82,
+    "base": "<local>/latest88170/base-wasm/handbook-hwpx/silhouette-parts/p0066-0129/rhwp_png/rhwp_082.png",
+    "candidate": "<local>/latest88170/candidate-wasm/handbook-hwpx/silhouette-parts/p0066-0129/rhwp_png/rhwp_082.png"
+  },
+  {
+    "key": "handbook-hwpx",
+    "backend": "wasm",
+    "page": 224,
+    "base": "<local>/latest88170/base-wasm/handbook-hwpx/silhouette-parts/p0194-0257/rhwp_png/rhwp_224.png",
+    "candidate": "<local>/latest88170/candidate-wasm/handbook-hwpx/silhouette-parts/p0194-0257/rhwp_png/rhwp_224.png"
+  }
+]

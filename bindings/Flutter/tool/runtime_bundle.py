@@ -46,6 +46,7 @@ def revision(value):
 def _read(path, *, maximum=MAX_FILE_BYTES, copy_to=None, prefix=4096):
     """Stream one stable regular input; do not follow links for executable input."""
     before = path.lstat()
+    path_signature = _signature(before)
     identity = _file_identity(before)
     if not stat.S_ISREG(before.st_mode) or before.st_nlink != 1 or before.st_size > maximum:
         raise ValueError('bundle input must be a bounded regular file without hardlinks')
@@ -53,7 +54,9 @@ def _read(path, *, maximum=MAX_FILE_BYTES, copy_to=None, prefix=4096):
     head = bytearray()
     flags = os.O_RDONLY | getattr(os, 'O_BINARY', 0) | getattr(os, 'O_NOFOLLOW', 0)
     with os.fdopen(os.open(path, flags), 'rb') as source:
-        if _file_identity(os.fstat(source.fileno())) != identity:
+        opened = os.fstat(source.fileno())
+        fd_signature = _signature(opened)
+        if _file_identity(opened) != identity:
             raise ValueError('bundle input changed before read')
         destination = None
         try:
@@ -70,7 +73,9 @@ def _read(path, *, maximum=MAX_FILE_BYTES, copy_to=None, prefix=4096):
                     head.extend(chunk[:prefix-len(head)])
                 if destination is not None:
                     destination.write(chunk)
-            if count != before.st_size or _file_identity(os.fstat(source.fileno())) != identity:
+            after_fd = os.fstat(source.fileno())
+            if (count != before.st_size or _signature(after_fd) != fd_signature or
+                    _file_identity(after_fd) != identity):
                 raise ValueError('bundle input changed during read')
             if destination is not None:
                 destination.flush()
@@ -78,7 +83,8 @@ def _read(path, *, maximum=MAX_FILE_BYTES, copy_to=None, prefix=4096):
         finally:
             if destination is not None:
                 destination.close()
-    if _file_identity(path.lstat()) != identity:
+    after_path = path.lstat()
+    if _signature(after_path) != path_signature or _file_identity(after_path) != identity:
         raise ValueError('bundle input changed after read')
     if copy_to is not None:
         # Keep executable entry points usable on POSIX; do not copy setuid bits.

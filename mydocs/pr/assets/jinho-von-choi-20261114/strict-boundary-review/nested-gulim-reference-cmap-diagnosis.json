@@ -1,0 +1,34 @@
+[
+  {
+    "referenceGlyph": 106,
+    "actualCharacter": "3",
+    "codepoint": "0x33",
+    "hostGlyph": "three",
+    "referenceAdvance": 588,
+    "hostAdvance": 588
+  },
+  {
+    "referenceGlyph": 309,
+    "actualCharacter": "남",
+    "codepoint": "0xb0a8",
+    "hostGlyph": "uniB0A8",
+    "referenceAdvance": 1024,
+    "hostAdvance": 1024
+  },
+  {
+    "referenceGlyph": 51,
+    "actualCharacter": "데",
+    "codepoint": "0xb370",
+    "hostGlyph": "uniB370",
+    "referenceAdvance": 1024,
+    "hostAdvance": 1024
+  },
+  {
+    "referenceGlyph": 167,
+    "actualCharacter": "접",
+    "codepoint": "0xc811",
+    "hostGlyph": "uniC811",
+    "referenceAdvance": 1024,
+    "hostAdvance": 1024
+  }
+]

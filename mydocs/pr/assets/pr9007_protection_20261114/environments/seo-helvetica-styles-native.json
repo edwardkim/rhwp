@@ -1,0 +1,50 @@
+{
+  "documentSubstitutions": [],
+  "id": "native-webfont-520538f21fb0bb62587251f8",
+  "preserveSourceMetrics": true,
+  "selectedPrograms": {
+    "Helvetica": {
+      "collectionFace": true,
+      "family": "Helvetica",
+      "openTypeCff": false,
+      "programId": "84a0d4e2995bc2e0bb67218a51ed8bce7a00aa93fffe7c017338ff6beaf57388",
+      "query": "Helvetica",
+      "trueType": true
+    },
+    "Helvetica-Bold": {
+      "collectionFace": true,
+      "family": "Helvetica",
+      "openTypeCff": false,
+      "programId": "755082e98104fe62820db51c5c03799eef6621af45e3225e831cc4dc34a03b74",
+      "query": "Helvetica-Bold",
+      "trueType": true
+    },
+    "Helvetica-BoldOblique": {
+      "collectionFace": true,
+      "family": "Helvetica",
+      "openTypeCff": false,
+      "programId": "6fe1d6f7b140a25b047bf6e679382e297282d515bae2ddebccac29df0619b899",
+      "query": "Helvetica-BoldOblique",
+      "trueType": true
+    },
+    "Helvetica-Oblique": {
+      "collectionFace": true,
+      "family": "Helvetica",
+      "openTypeCff": false,
+      "programId": "e8860697297267feaa83994bf43460d8886b296bf412bac4ecd691220e342514",
+      "query": "Helvetica-Oblique",
+      "trueType": true
+    }
+  },
+  "substitutions": {
+    "Helvetica": "Helvetica",
+    "Helvetica-Bold": "Helvetica",
+    "Helvetica-BoldOblique": "Helvetica",
+    "Helvetica-Oblique": "Helvetica",
+    "함초롬바탕": "HCRBatang"
+  },
+  "trueTypeFaces": [
+    "HCR Batang",
+    "Helvetica"
+  ]
+}

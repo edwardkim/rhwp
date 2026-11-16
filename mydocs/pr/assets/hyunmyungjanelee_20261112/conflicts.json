@@ -1,0 +1,22 @@
+[
+  {
+    "pr": 8897,
+    "source_sha": "aa7caf493d76cbdbc00c090014102b7dac3c0ac4",
+    "file": "tests/fixtures/off_canvas_baseline.tsv",
+    "cause": "서로 다른 fixture의 EOF append 충돌",
+    "resolution": "현재 devel의 #8842 12건 행을 유지하고 source의 #8573 신규 2행을 각각 1건으로 추가했다. 기존 기준값 변경 없음.",
+    "verification": "구문·중복 행 확인 완료. 실제 off-canvas 검사와 PDF 대조는 후속 게이트에서 확인할 예정.",
+    "resolved_head": "fe4994ac85ff834f4b99970a75f5157e297a3ffa",
+    "at": "2026-11-12T03:23:27.305785+00:00"
+  },
+  {
+    "pr": 8916,
+    "source_sha": "6ad97a9ae8bd230b1e2fd2d7a61764423e0c2b3b",
+    "file": "tests/security_corpus_regression.rs",
+    "cause": "의도된 실제 숨은 글자 fixture 설명·허용 항목을 양쪽에서 추가함",
+    "resolution": "기존 HPV·공문 fixture 2개와 새 크기 0 fixture를 모두 보존하고 주석의 합계를 6개로 정리했다. 탐지기 규칙은 수정하지 않음.",
+    "verification": "충돌·중복 항목 확인 완료. 실제 hidden-text 및 보안 코퍼스 검사는 후속 실행 예정.",
+    "resolved_head": "95c29dc38eb5518077d61d4b9412c1d5996cb125",
+    "at": "2026-11-12T03:24:23.397377+00:00"
+  }
+]

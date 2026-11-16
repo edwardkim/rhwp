@@ -1,0 +1,17 @@
+{
+  "source": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+  "started": "2026-11-15T08:22:18.869706+00:00",
+  "completed": "2026-11-15T08:35:29.676757+00:00",
+  "exitCode": 0,
+  "optimized": true,
+  "artifacts": {
+    "rhwp.js": {
+      "bytes": 587539,
+      "sha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365"
+    },
+    "rhwp_bg.wasm": {
+      "bytes": 29422993,
+      "sha256": "7c8074771ec32fcc0503ba072fe8f3e077a7322c1a871eeff5dffc98e1dc0c07"
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "phase": "complete",
+  "pid": 50783,
+  "head": "2b5f332d364d07431a66fe085715fa4c25509bbb",
+  "product_diff_sha256": "aafae2f41fa86609655ac452c0761d65369804ee5eed50c820599e1fdff99dc6",
+  "command": [
+    "bash",
+    "scripts/wasm-pack-locked.sh",
+    "--target",
+    "web",
+    "--out-dir",
+    "pkg",
+    "--no-opt"
+  ],
+  "exit": 0,
+  "files": {
+    "rhwp.js": {
+      "sha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+      "bytes": 583724,
+      "root_studio_equal": true
+    },
+    "rhwp_bg.wasm": {
+      "sha256": "c8596bc0a3d2a4097d4f2f0dedf2ca53ac160444f555e12c8366ca1f1d1efdfb",
+      "bytes": 31836777,
+      "root_studio_equal": true
+    }
+  },
+  "build_kind": "Mac locked wrapper no-opt local substitute, not Docker optimized",
+  "completed_at": "2026-11-12T19:11:37.559093+00:00"
+}

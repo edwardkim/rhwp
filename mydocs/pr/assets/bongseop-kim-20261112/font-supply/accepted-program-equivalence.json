@@ -1,0 +1,16 @@
+{
+  "legacy-alphabet": {
+    "new_font_sha256": "1b6257bafa9f31a879973e59d20bd280e273099f3551896a32ea00c36a350417",
+    "previous_font_sha256": "917c88797371322e2d2ebecfe0834ed91acf57b9f123a50a0fd34edda1812fab",
+    "identical_source_glyph_programs": true,
+    "identical_transform": true,
+    "role": "independent-legacy-equation-alphabet-v1"
+  },
+  "legacy-arithmetic": {
+    "new_font_sha256": "6be71c2e207ce7e07402ae4154ecc364674ef3074ade7bfce9c22b771c3feebf",
+    "previous_font_sha256": "257536b9f427e4029ce700094c57cc31e40a7f09d732f159b90fecd63941bf0e",
+    "identical_source_glyph_programs": true,
+    "identical_transform": true,
+    "role": "independent-legacy-equation-alphabet-with-arithmetic-v2"
+  }
+}

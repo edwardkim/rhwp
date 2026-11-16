@@ -144,6 +144,25 @@ fn info_json_multiple_files_exit_usage_silent_stdout() {
 // ── export-text --json ─────────────────────────────────────────────────────
 
 #[test]
+fn export_text_includes_standalone_runs_from_tac_sample() {
+    let sample = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/tac-case-001.hwp");
+    let output = run(&["export-text", sample.to_str().unwrap(), "--json"]);
+    assert!(output.status.success(), "{output:?}");
+    let value: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    let text = value["pages"][0]["text"].as_str().unwrap();
+    assert!(text.contains("표 3 배치 시작"), "{text}");
+    assert!(text.contains("표 다음"), "{text}");
+    let compact: String = text.chars().filter(|c| !c.is_whitespace()).collect();
+    let start = compact
+        .find("표3배치시작")
+        .unwrap_or_else(|| panic!("{text}"));
+    let after = compact.find("표다음").unwrap_or_else(|| panic!("{text}"));
+    assert!(start < after, "{text}");
+    assert_eq!(compact.matches("배치시작").count(), 1);
+    assert_eq!(compact.matches("표다음").count(), 1);
+}
+
+#[test]
 fn export_text_json_contract() {
     let sample = sample_path();
     let args = ["export-text", "--json", sample.to_str().unwrap()];

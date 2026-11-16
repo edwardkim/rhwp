@@ -1244,7 +1244,9 @@ impl DocumentCore {
                         .or(self.marker_end_x)
                         .unwrap_or(self.line_x)
                 } else {
-                    self.line_x
+                    // 빈 문단도 레이아웃이 문단 끝 TextRun을 정렬 앵커에 둔다.
+                    // 줄 왼쪽 끝을 쓰면 가운데·오른쪽 정렬이 사라진다 (#8944).
+                    self.first_body_x.unwrap_or(self.line_x)
                 }
             }
         }
@@ -4272,13 +4274,15 @@ impl DocumentCore {
     }
 
     /// 경로 기반 표 차원 조회 (네이티브).
-    pub(crate) fn get_table_dimensions_by_path_native(
+    ///
+    /// 경로의 마지막 단계는 표 컨트롤만 가리키며 `cellIndex`·`cellParaIndex`를 생략할 수 있다.
+    pub fn get_table_dimensions_by_path_native(
         &self,
         section_idx: usize,
         parent_para_idx: usize,
         path_json: &str,
     ) -> Result<String, HwpError> {
-        let path = Self::parse_cell_path(path_json)?;
+        let path = Self::parse_table_path(path_json)?;
         let table = self.resolve_table_by_path(section_idx, parent_para_idx, &path)?;
 
         Ok(format!(
@@ -4290,7 +4294,9 @@ impl DocumentCore {
     }
 
     /// 경로 기반 표 셀 바운딩박스 조회 (네이티브).
-    pub(crate) fn get_table_cell_bboxes_by_path_native(
+    ///
+    /// 경로의 마지막 단계는 표 컨트롤만 가리키며 `cellIndex`·`cellParaIndex`를 생략할 수 있다.
+    pub fn get_table_cell_bboxes_by_path_native(
         &self,
         section_idx: usize,
         parent_para_idx: usize,
@@ -4298,7 +4304,7 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
-        let path = Self::parse_cell_path(path_json)?;
+        let path = Self::parse_table_path(path_json)?;
         // 표가 존재하는지 검증
         let _table = self.resolve_table_by_path(section_idx, parent_para_idx, &path)?;
 

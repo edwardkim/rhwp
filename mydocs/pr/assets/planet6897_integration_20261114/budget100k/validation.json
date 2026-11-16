@@ -1,0 +1,486 @@
+{
+  "status": "completed-focused-validation",
+  "real_input": "samples/issue9026/press_release_repeated_hidden_end.hwpx",
+  "input_sha256": "fd3775bbbd4f8da5e8b78608a8ee4f084c822fd04941e8762b21a4d02b013310",
+  "before_source": "836615963eedfac9170d45c15cbba32d23e1b4d0",
+  "after_build": {
+    "status": "completed",
+    "parent": "afb3f17c38b2bafec62c1dad16398720552ab958",
+    "base": "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
+    "source_files": {
+      "src/renderer/canvaskit_policy.rs": "885683b76cae587481f0bb105d624b4cdce34c2bf64caf1784b16b3061241476",
+      "src/wasm_api/tests.rs": "4e032ab0c72b6c9c55975a15f40a7d663cd1a03125c6dacaca7d861f5f142a6f",
+      "tests/cases/canvaskit_document_preflight_work_budget.rs": "8938240f4e3f0591277dabc797beabcbac8716b4bbbb0f143a4e37542e7077e0"
+    },
+    "source_patch_sha256": "f057d1de909822f25bc09e689f41679556059e50013a1e4e0630b59ca0162d84",
+    "results": [
+      {
+        "name": "prepare",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit": 0,
+        "seconds": 3.861
+      },
+      {
+        "name": "format",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all"
+        ],
+        "exit": 0,
+        "seconds": 13.666
+      },
+      {
+        "name": "format-check",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit": 0,
+        "seconds": 12.94
+      },
+      {
+        "name": "manifest",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc"
+        ],
+        "exit": 0,
+        "seconds": 0.93
+      },
+      {
+        "name": "unit-tiers",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc"
+        ],
+        "exit": 0,
+        "seconds": 15.86
+      },
+      {
+        "name": "budget-tests",
+        "command": [
+          "sandbox-exec",
+          "-f",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/minimal-font/profile.sb",
+          "node",
+          "scripts/run-rust-test.mjs",
+          "canvaskit_document_preflight_work_budget",
+          "--",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit": 0,
+        "seconds": 168.304
+      },
+      {
+        "name": "native-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--profile",
+          "release-test",
+          "--features",
+          "native-skia",
+          "--bin",
+          "rhwp",
+          "-j",
+          "8",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review"
+        ],
+        "exit": 0,
+        "seconds": 165.602
+      },
+      {
+        "name": "fresh-wasm",
+        "command": [
+          "scripts/wasm-pack-locked.sh",
+          "--target",
+          "web",
+          "--out-dir",
+          "pkg",
+          "--no-opt"
+        ],
+        "exit": 0,
+        "seconds": 321.217
+      }
+    ],
+    "active": null,
+    "native_sha256": "9110f28a5ba71f2ff524c2d96bb37f076af5fc3f631202c1f555809e57cc9925",
+    "passed": true,
+    "wasm_sha256": "01161ceb1e4e8ae97c3d20ff63cd74c7fff7f2ed796c963e30298fa0bd20e13c",
+    "js_sha256": "2d48f8a6c3ff7f848f08725bb54d04094b296af1a40ae61203081a7cf8061a1a"
+  },
+  "node_measurement": "Separate Node processes with the same four-mode loop; constructor and module startup excluded from reported preflight time. maxRSS is whole-process peak, not isolated preflight allocation or browser memory.",
+  "before_limit": 50000,
+  "after_limit": 100000,
+  "actual_work_units": 77079,
+  "actual_pages": 5,
+  "node_preflight_ms": {
+    "before": [
+      123.30387499999995,
+      55.20929099999995,
+      39.59758300000004,
+      45.9855
+    ],
+    "after": [
+      391.61362499999996,
+      454.71699999999987,
+      114.00400000000013,
+      63.55312499999991
+    ]
+  },
+  "node_process_peak_rss_kib": {
+    "before": 510304,
+    "after": 705856
+  },
+  "limits_preserved": [
+    "128 pages",
+    "256 required font families",
+    "bounded work accounting and stop on exhaustion",
+    "existing payload and depth caps"
+  ],
+  "regression_tests": {
+    "passed": 2,
+    "failed": 0,
+    "source": "tests/cases/canvaskit_document_preflight_work_budget.rs",
+    "minimum_font_profile": true
+  },
+  "actual_studio": {
+    "captures": 6,
+    "canvaskit": 4,
+    "canvas2d_controls": 2,
+    "fallbacks": 0,
+    "strict_gate_violations": 0,
+    "rows": [
+      {
+        "backend": "canvas2d",
+        "actual_backend": "canvas2d",
+        "profile": "screen",
+        "actual_profile": "screen",
+        "page": 4,
+        "path": "mydocs/pr/assets/planet6897_integration_20261114/budget100k/canvas2d-screen.png",
+        "sha256": "c3aa719028a793416be3ae564af741cf30a6cfddb08b5f7450968074ffcbd5f1",
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "auto",
+              "requested": "auto"
+            },
+            "renderProfile": "screen"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "requestedBackend": "canvas2d",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "explicitCanvas2d",
+            "fallbackReason": null,
+            "documentRevision": 2,
+            "resourceGeneration": 2,
+            "renderProfile": "screen",
+            "documentDigest": "blake3:b45b4bec6c3b7b889cce4b94415e26a33394ce7212f2f7c2dea8536815ba9a00",
+            "decisionKey": "blake3:b45b4bec6c3b7b889cce4b94415e26a33394ce7212f2f7c2dea8536815ba9a00|revision:2|profile:screen|resources:2|request:canvas2d|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": false
+        }
+      },
+      {
+        "backend": "canvaskit-compat",
+        "actual_backend": "canvaskit-compat",
+        "profile": "screen",
+        "actual_profile": "screen",
+        "page": 4,
+        "path": "mydocs/pr/assets/planet6897_integration_20261114/budget100k/canvaskit-compat-screen-software.png",
+        "sha256": "0a54ae88e41ff24b627c066a1292633131aa1c3cab1ecd5a68eafd9ae5374b73",
+        "runtime": {
+          "activeBackend": "canvaskit",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "compat",
+              "source": "url",
+              "requested": "compat"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "screen"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvaskit",
+            "selectionReason": "explicitCanvasKit",
+            "fallbackReason": null,
+            "documentRevision": 3,
+            "resourceGeneration": 3,
+            "renderProfile": "screen",
+            "documentDigest": "blake3:b45b4bec6c3b7b889cce4b94415e26a33394ce7212f2f7c2dea8536815ba9a00",
+            "decisionKey": "blake3:b45b4bec6c3b7b889cce4b94415e26a33394ce7212f2f7c2dea8536815ba9a00|revision:3|profile:screen|resources:3|request:canvaskit|mode:compat",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": false
+        }
+      },
+      {
+        "backend": "canvaskit-default",
+        "actual_backend": "canvaskit-default",
+        "profile": "screen",
+        "actual_profile": "screen",
+        "page": 4,
+        "path": "mydocs/pr/assets/planet6897_integration_20261114/budget100k/canvaskit-default-screen-software.png",
+        "sha256": "6b9180d0591b5ee4cada831d7ab868ee7d23456983b526d11fc823eb74d18388",
+        "runtime": {
+          "activeBackend": "canvaskit",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "url",
+              "requested": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "screen"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvaskit",
+            "selectionReason": "explicitCanvasKit",
+            "fallbackReason": null,
+            "documentRevision": 4,
+            "resourceGeneration": 4,
+            "renderProfile": "screen",
+            "documentDigest": "blake3:b45b4bec6c3b7b889cce4b94415e26a33394ce7212f2f7c2dea8536815ba9a00",
+            "decisionKey": "blake3:b45b4bec6c3b7b889cce4b94415e26a33394ce7212f2f7c2dea8536815ba9a00|revision:4|profile:screen|resources:4|request:canvaskit|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": false
+        }
+      },
+      {
+        "backend": "canvas2d",
+        "actual_backend": "canvas2d",
+        "profile": "print",
+        "actual_profile": "print",
+        "page": 4,
+        "path": "mydocs/pr/assets/planet6897_integration_20261114/budget100k/canvas2d-print.png",
+        "sha256": "d5559b55a9b7d787a793bedfc07a66ae3a441eca213d0be9a08eca58fc59f989",
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "auto",
+              "requested": "auto"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "requestedBackend": "canvas2d",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "explicitCanvas2d",
+            "fallbackReason": null,
+            "documentRevision": 2,
+            "resourceGeneration": 2,
+            "renderProfile": "print",
+            "documentDigest": "blake3:b45b4bec6c3b7b889cce4b94415e26a33394ce7212f2f7c2dea8536815ba9a00",
+            "decisionKey": "blake3:b45b4bec6c3b7b889cce4b94415e26a33394ce7212f2f7c2dea8536815ba9a00|revision:2|profile:print|resources:2|request:canvas2d|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": false
+        },
+        "raw_match_percent": 99.99792
+      },
+      {
+        "backend": "canvaskit-compat",
+        "actual_backend": "canvaskit-compat",
+        "profile": "print",
+        "actual_profile": "print",
+        "page": 4,
+        "path": "mydocs/pr/assets/planet6897_integration_20261114/budget100k/canvaskit-compat-print-software.png",
+        "sha256": "4bd949da5070f81df50f85d1a38f4d7c4951f0c330d53861c3a046f1838686f1",
+        "runtime": {
+          "activeBackend": "canvaskit",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "compat",
+              "source": "url",
+              "requested": "compat"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvaskit",
+            "selectionReason": "explicitCanvasKit",
+            "fallbackReason": null,
+            "documentRevision": 4,
+            "resourceGeneration": 4,
+            "renderProfile": "print",
+            "documentDigest": "blake3:b45b4bec6c3b7b889cce4b94415e26a33394ce7212f2f7c2dea8536815ba9a00",
+            "decisionKey": "blake3:b45b4bec6c3b7b889cce4b94415e26a33394ce7212f2f7c2dea8536815ba9a00|revision:4|profile:print|resources:4|request:canvaskit|mode:compat",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": false
+        },
+        "raw_match_percent": 100.0
+      },
+      {
+        "backend": "canvaskit-default",
+        "actual_backend": "canvaskit-default",
+        "profile": "print",
+        "actual_profile": "print",
+        "page": 4,
+        "path": "mydocs/pr/assets/planet6897_integration_20261114/budget100k/canvaskit-default-print-software.png",
+        "sha256": "4bd949da5070f81df50f85d1a38f4d7c4951f0c330d53861c3a046f1838686f1",
+        "runtime": {
+          "activeBackend": "canvaskit",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "url",
+              "requested": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvaskit",
+            "selectionReason": "explicitCanvasKit",
+            "fallbackReason": null,
+            "documentRevision": 4,
+            "resourceGeneration": 4,
+            "renderProfile": "print",
+            "documentDigest": "blake3:b45b4bec6c3b7b889cce4b94415e26a33394ce7212f2f7c2dea8536815ba9a00",
+            "decisionKey": "blake3:b45b4bec6c3b7b889cce4b94415e26a33394ce7212f2f7c2dea8536815ba9a00|revision:4|profile:print|resources:4|request:canvaskit|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": false
+        },
+        "raw_match_percent": 100.0
+      }
+    ]
+  },
+  "whole_integration_gates": "running separately; not claimed completed by this focused result"
+}

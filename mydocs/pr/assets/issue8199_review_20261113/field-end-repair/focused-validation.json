@@ -1,0 +1,46 @@
+{
+  "parent_head": "febdbd26f4865974b249c67706e8e2b495196115",
+  "base": "fa32a1633b0677f3dc48ea5cc99a4cab309361b6",
+  "source_sha256": {
+    "src/model/paragraph.rs": "3802693b89b775a50dd975bbb25aa44fcfaa4d95428f3f4456c13a2e16116293",
+    "tests/cases/issue_8199_control_only_para_line_seg.rs": "3e9cc22f58d50166d29ee01caa86ee0d6f7542085a8fdd1924ec4f3ae77c8f5f"
+  },
+  "environment": "Mac sandbox-exec minimal-font.sb; normal-font Visual Sweep is separate",
+  "before": {
+    "passed": 12,
+    "failed": 1,
+    "line_starts_expected": [
+      0,
+      48
+    ],
+    "line_starts_observed": [
+      0,
+      56
+    ]
+  },
+  "after": {
+    "passed": 13,
+    "failed": 0,
+    "selection_skipped": 321,
+    "runtime_seconds": 0.085
+  },
+  "command": [
+    "sandbox-exec",
+    "-f",
+    "mydocs/pr/assets/issue8856/final-20261110/minimal-font.sb",
+    "node",
+    "scripts/run-rust-test.mjs",
+    "issue_8199_control_only_para_line_seg",
+    "--",
+    "--cargo-profile",
+    "release-test",
+    "--target-dir",
+    "target/pr-review",
+    "--build-jobs",
+    "8",
+    "--test-threads",
+    "8",
+    "--no-fail-fast"
+  ],
+  "scope": "matched FIELD_END only; original 12 tests retained; no title/orphan marker expansion"
+}

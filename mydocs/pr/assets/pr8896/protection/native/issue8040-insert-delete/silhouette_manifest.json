@@ -1,0 +1,405 @@
+{
+  "key": "issue8040-insert-delete",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "completed_pages": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "missing_pages": [],
+  "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/visual/native/final-head-protected/issue8040-insert-delete-run/issue8040-insert-delete/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/visual/native/final-head-protected/issue8040-insert-delete-run/issue8040-insert-delete/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "ad5864e61a456835c7a7d5223f8bded9fcd6720a933bff863d5e79c54c19627c",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/visual/native/final-head-protected/issue8040-insert-delete-run/issue8040-insert-delete/pdf_png/pdf-001.png",
+      "pdf_sha256": "7e289924fc95ba63879b5b41381e3bf8ede92b2557656ef3b0c36220fae6e132"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/visual/native/final-head-protected/issue8040-insert-delete-run/issue8040-insert-delete/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "a7229e4124fd3d85ad9fd677f4544ecfe7f6d5cb4fb196ab08c4dde28158231d",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/visual/native/final-head-protected/issue8040-insert-delete-run/issue8040-insert-delete/pdf_png/pdf-002.png",
+      "pdf_sha256": "d4473cab69d296807541f6eefd6cd409ac1269258d0e9c0a6390e32d3590a1bf"
+    },
+    {
+      "page": 3,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/visual/native/final-head-protected/issue8040-insert-delete-run/issue8040-insert-delete/rhwp_png/rhwp_003.png",
+      "rhwp_sha256": "e126b0d07f9ede304207f9f47005b31d46b7ca8152c3cfa95889b010d3115045",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/visual/native/final-head-protected/issue8040-insert-delete-run/issue8040-insert-delete/pdf_png/pdf-003.png",
+      "pdf_sha256": "0922ea03f0aea85977be6a82f524c51ec46c4489081ae493c35672f9bc10efd9"
+    },
+    {
+      "page": 4,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/visual/native/final-head-protected/issue8040-insert-delete-run/issue8040-insert-delete/rhwp_png/rhwp_004.png",
+      "rhwp_sha256": "2e2236d5055909df810d803df52f8e64173970d94b8c3f47a6b3b867ac2c2109",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/visual/native/final-head-protected/issue8040-insert-delete-run/issue8040-insert-delete/pdf_png/pdf-004.png",
+      "pdf_sha256": "fa13c98203772981ecd6021644ffc7400b1980dbf7cbede4654aa6ddd07112d0"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 193150,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99956,
+      "silhouette_raw_unmatched_pixels": 1,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 224851,
+      "tolerant_content_match_percent": 99.99956
+    },
+    {
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 199774,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.98919,
+      "silhouette_raw_unmatched_pixels": 23,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 212678,
+      "tolerant_content_match_percent": 99.98919
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 4,
+      "pdf": 4
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "samples/pr8040/exam-social-insert-delete.hwp",
+      "sha256": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee"
+    },
+    "pdf": {
+      "path": "pdf/pr8040/exam-social-insert-delete-2020.pdf",
+      "sha256": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d"
+    },
+    "git_head": "ae5c72c710ac116132d2b9dcf62078bbc884beff",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/producers/rhwp-restored-head",
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/producers/rhwp-restored-head",
+      "sha256": "9252e95adf8a8b0670610a12d1069732cb14fe9c224471977abe9da9f507d04b"
+    },
+    "native_webfont_fallback": {
+      "registry_sha256": "35f3e1ac64348a6497b50cc98c7235a8adcb4c99bfa78fec6302bde6f525a299",
+      "mappings": {},
+      "document_glyph_fallbacks": [],
+      "unmapped_sources": [],
+      "local_document_substitutes": [],
+      "resources": [],
+      "module_sha256": "604d15d877f3a60d6cb2444fafefd3057fc5d595d402f06bb08748c9fe28c1cf"
+    },
+    "raster_backend": "native-skia",
+    "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+    "layout_generation": "2022",
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files": [
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/ENGMJ.otf",
+          "sha256": "92f7b9f4aab6a183da9adedc051eeadb329db563bfb5a3187e4cc861365e633c"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/ENJGT.otf",
+          "sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/ENMJ.otf",
+          "sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/ENSMJ.otf",
+          "sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/FLMJ.otf",
+          "sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/FLSMJ.otf",
+          "sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/HGGMJ.otf",
+          "sha256": "34e58d7685669addf992dd969f14bfea6eb3f7b7aa2b3ff17bba1275d353768b"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/HGMJ.otf",
+          "sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/HGSMJ.otf",
+          "sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/HJJGT.otf",
+          "sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/HJMJ.otf",
+          "sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/HJSMJ.otf",
+          "sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/JPJGT.otf",
+          "sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/JPMJ.otf",
+          "sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/JPSMJ.otf",
+          "sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/SPJGT.otf",
+          "sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/SPMJ.otf",
+          "sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/SPSMJ.otf",
+          "sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/TEDNREN.otf",
+          "sha256": "d292d1972ff9de8641c52e3bff41fa0d5ba012c3fd0a1b6514f49e4a5f29fced"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/TEDNRHG.otf",
+          "sha256": "00eae1decfbbee1f2344ff95ec396eacd7581a70d65849a3305d3e2df5137b13"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/TEGMJEN.otf",
+          "sha256": "fc341efba989722650bbba15690cbf91db2eb34fdc0eaaad6c8f04ea4a26154f"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/TEGMJHG.otf",
+          "sha256": "131637753baf43730900998e21694da10d6b12ca08d08634bc1c00d39f30fd92"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/TEGMJHJ.otf",
+          "sha256": "2d7451e56c62084fa3debd781825890e18c12fef78409f656057d687a3abd684"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/TEGMJJP.otf",
+          "sha256": "aad05d3cb2ebc9c2e5bc7fb731745179ec51d75fb9b54fb61b2950bf19a305c4"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/TEGMJSP.otf",
+          "sha256": "a73255db51e05eb4a170321f1f6b0288a9dcf7d0e5b86a1e553c16a5635c263b"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/TEJGTEN.otf",
+          "sha256": "e5a90d4446f551d3ae2f412990fe8011395a2d75e5af3ea7f2ed51dde5be366e"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/TEJGTHG.otf",
+          "sha256": "a2b6e400e1e8beaea1661e55bf5977ee823e2a4ae67033e758574f9238611860"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/TEJGTHJ.otf",
+          "sha256": "5c9e1ea0fc307c155ae7910a9d4acdf618d72ae78489aeac28902c680e426cce"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/TEJGTJP.otf",
+          "sha256": "96ee02cb33abb83c7985bed4ff49e7b8c3757299865e06f13c61c750a1f98d1c"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/TEJMJEN.otf",
+          "sha256": "becde524c507ba1e555360eae97f99e1770ac4403a55eda2b8b64ff313d602c9"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/TEJMJHG.otf",
+          "sha256": "674bc8b40889eefecddc7833cfd6de1367bc7ed15656814b3cbf6a26fea211cf"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/TEJMJHJ.otf",
+          "sha256": "ae4361b1549046dfc09b9415a9a8cdb52a076e96c8415b9eefd046d82465e1be"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/TESGREN.otf",
+          "sha256": "653e3453afb3a8a44144b7b9dc5e149f2ae7924c9f908ee04f171749935768cc"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/TESGRHG.otf",
+          "sha256": "2845c370f3eb07eaea5e76ffef82fd104108c406d9dd2c1803aa5c1036612cf7"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/TESMJEN.otf",
+          "sha256": "1d7e232e98ba8a11e763ea69ff7be6cf36b2fc2c2d632a6b3115c4723969f0e9"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/TESMJHG.otf",
+          "sha256": "3f13c08d9c437a79e27f359dc8f6931aa1a82718ebede2b83a9a51c3cb0c3963"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/TESMJJP.otf",
+          "sha256": "91839ccb18c63ab15463648c4927429c9b098bf422dcab55269a55314cdcccfd"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/TETGREN.otf",
+          "sha256": "48158aad4e733ed85968c3bb93576134a11f2041568efb09ff45a076d6349ea1"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/TETGRHG.otf",
+          "sha256": "51346f5f5cf82c7de4b8f0bd2ba6ff488cada811d98f110bc47f535ddbee2867"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/TETGRSP.otf",
+          "sha256": "4d1cee6065faf8306d01715349b6878982e7e4ecc809956be79a30d95185e8dd"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/TETGTEN.otf",
+          "sha256": "201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/TETGTHG.otf",
+          "sha256": "dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/TETGTHJ.otf",
+          "sha256": "99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/TETGTJP.otf",
+          "sha256": "0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/00-hft/USER.otf",
+          "sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/01-hwp/HBATANG.TTF",
+          "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/02-windows/cour.ttf",
+          "sha256": "6aab1f79264ccda1e7129dba62dbe3750b10eaa27408a327dadb808724e62c84"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/02-windows/courbd.ttf",
+          "sha256": "e376f24c9f27eb7370b25aa366d78da731834a1aea651858801c9a14e8906943"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/02-windows/courbi.ttf",
+          "sha256": "ac3b362cf998eb33475655e12ab7cb2f6a35d1f2eff6f76af00ebb6f81c53ee7"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/02-windows/couri.ttf",
+          "sha256": "546406ddbb3e3f6b876a5e8a5dee62ac090d1448662e98d8844b22393813dd13"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/02-windows/gulim.ttc",
+          "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/02-windows/times.ttf",
+          "sha256": "fbb57cdb0079137adc0e478913ca134dfee02aa2ef443738ec5e839bf97a1f7f"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/02-windows/timesbd.ttf",
+          "sha256": "e94ff9111656f17bd81e9f822f1e234edcd370bcbacfdebf998b8938f525ac77"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/02-windows/timesbi.ttf",
+          "sha256": "8d2c8d8d25d9fc529d08558c42effa771617914a455603881e212a26e2f2ddcd"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/02-windows/timesi.ttf",
+          "sha256": "c2c134968be4259aaa78845d3aca5e91c4a0bd10d98e4d2e48ac3c12f3c63b89"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/baseline-repair/repair-fonts/issue8040-insert-delete/03-ttfs/hamchob-r.ttf",
+          "sha256": "ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85"
+        }
+      ]
+    }
+  },
+  "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/pr8896/visual/native/final-head-protected/issue8040-insert-delete-run/issue8040-insert-delete/silhouette-checkpoint.json"
+}

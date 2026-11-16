@@ -1,0 +1,39 @@
+{
+  "head": "3f7e4340ae3038ea77917ff0f45f816e8342770e",
+  "source": "samples/issue6844/30269-anticorruption-recommendation-toc.hwp",
+  "pdf": "pdf/30269-anticorruption-recommendation-toc-2020.pdf",
+  "page": 4,
+  "before_raw": 53.71,
+  "after_raw": 98.26,
+  "canvas2d_control_before_after": 98.3,
+  "profile": "print",
+  "dpi": 96,
+  "raw_neighborhood_px": 2,
+  "channel_threshold": 32,
+  "rendered_backend": "canvaskit-compat",
+  "hidden_canvas2d_overlay": false,
+  "font_supply": {
+    "actual_installed_sfnt_bytes": true,
+    "actual_os_enumeration": false,
+    "platform_api_adapter": true,
+    "inventory_faces": 1221
+  },
+  "face_tie_diagnosis": {
+    "font_only_probe_png_identical": true,
+    "conclusion": "동점 face 보존은 이 표본의 개선 원인이 아니며, 점수 상승은 공통 반경 전달 후 관측됐다."
+  },
+  "direct_reading": "같은 쪽 review와 standalone overlay를 모두 판독했다. 가장 먼 모서리까지 펼친 배경 띠가 복구됐고 목차 순서·쪽번호와 내용 소유가 유지된다. 하위 목차의 글리프·미세 간격 차이는 남으며 100%로 주장하지 않는다.",
+  "report_sha256": "a10374b90d8c7d95abcb69051df8549df92d458dd9fdbe5f645923360e08488b",
+  "files": {
+    "wasm-build-manifest.json": "b5a9b7d441b25ea66567097e95e512409d15400224516e0ab9747b2c464763f8",
+    "pdf-004.png": "d035ef4d927d917cd206e13fafc4c4b956f37df5791996d8440d79f2fad1abad",
+    "before/silhouette.tsv": "1f226b2dce1d25f77f5b846d58ee970d46c583c2c85c21176a364deac16500c8",
+    "before/review.png": "eb446f9e368a52e673d97f729c1eb20a209ae578a34fa93451bfd83e9b6e9396",
+    "before/raw.png": "c1dab72b8b76314112d3848e14b0ef09424146881bdb2ffdbe8685487a00dd1a",
+    "before/overlay.png": "8b6b6f543fa4fcc87422626cd5d7f8d9fc57818da0a6f70a78597f999e0ec9c4",
+    "after/silhouette.tsv": "58ce1f50e62b4ec88863c99e60ab6fe830ea404b09c38846df6c087441325a8f",
+    "after/review.png": "6596244246517ac66faa686e6bc5fdc9002a1ebb4bba33723e5ca6e2c76383f7",
+    "after/raw.png": "5cd3cd31e18f111aeca3ba2b315429c28d4fd40674a181917131fa477ffd8152",
+    "after/overlay.png": "d85a39db001c8bde665a855a84e38f539dd1c0b0a0441d63e98133fc31645e01"
+  }
+}

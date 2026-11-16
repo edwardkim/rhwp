@@ -1,0 +1,184 @@
+[
+  {
+    "url": "fonts/NotoSansKR-ExtraLight.woff2",
+    "source_sha256": "3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673",
+    "native_path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/native.ttf",
+    "native_sha256": "f40f958a1dd2310490030505337433de9244d5d8b30b3ae2bc8592689cdbc2c8",
+    "native_face": "NotoSansKRExtraLight"
+  },
+  {
+    "url": "fonts/NotoSerifKR-Regular.woff2",
+    "source_sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45",
+    "native_path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+    "native_sha256": "0ea7b146035288e22ca008e890bd16dbfb1a1a1ba370af0f15ed2e299ac86d18",
+    "native_face": "NotoSerifKRExtraLight-Regular"
+  },
+  {
+    "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff",
+    "source_sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+    "native_path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/native.ttf",
+    "native_sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+    "native_face": "HCRBatang"
+  },
+  {
+    "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.0/HCRDotum.woff",
+    "source_sha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+    "native_path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/native.ttf",
+    "native_sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+    "native_face": "HCRDotum"
+  },
+  {
+    "url": "fonts/NotoSansKR-Regular.woff2",
+    "source_sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a",
+    "native_path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+    "native_sha256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834",
+    "native_face": "NotoSansKR-Regular"
+  },
+  {
+    "url": "fonts/NotoSansKR-Bold.woff2",
+    "source_sha256": "dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020",
+    "native_path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020/native.ttf",
+    "native_sha256": "68e21f4ed0189ce481d4a18fdf654f410d6e94d6e5b4936f0b20874e9e5b97a6",
+    "native_face": "NotoSansKRThin-Bold"
+  },
+  {
+    "url": "fonts/NotoSerifKR-Bold.woff2",
+    "source_sha256": "504d6af6abb882acd912d47bafa383c4512a6c8c33635e4e8fb37111d9310941",
+    "native_path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/504d6af6abb882acd912d47bafa383c4512a6c8c33635e4e8fb37111d9310941/native.ttf",
+    "native_sha256": "d88ec0ddb32437f9df01fcd6faafed8521e1c11d27ef174d1f4c2bd39ae457d7",
+    "native_face": "NotoSerifKRExtraLight-Bold"
+  },
+  {
+    "url": "https://cdn.jsdelivr.net/npm/font-kopub@1.0.2/fonts/KoPubBatang-Light.woff",
+    "source_sha256": "2e8500e2fca3501397620a8d3459bf927502989a2e1f5967d38c3f4e97c965b1",
+    "native_path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/2e8500e2fca3501397620a8d3459bf927502989a2e1f5967d38c3f4e97c965b1/native.ttf",
+    "native_sha256": "9343be068978dd58b2b0fe76f56f5aa9f6d4bd30e5cbb887af2cb9273ebb6f4c",
+    "native_face": "KoPubBatang-Light"
+  },
+  {
+    "url": "fonts/GowunBatang-Regular.woff2",
+    "source_sha256": "0c6a288aa0c12081dccde769c312f71f290b353243747dd24fb8c57f94f01d72",
+    "native_path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/0c6a288aa0c12081dccde769c312f71f290b353243747dd24fb8c57f94f01d72/native.ttf",
+    "native_sha256": "7ec77182f7d4ea7811554e2f9b077e4710c070b206d00b79be3c65b1b0d1add7",
+    "native_face": "GowunBatang-Regular"
+  },
+  {
+    "url": "fonts/D2Coding-Regular.woff2",
+    "source_sha256": "4d3fa8ed66fedcb1787f200bd75637b816b09057fc06da0aa783e3b305a726d8",
+    "native_path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/4d3fa8ed66fedcb1787f200bd75637b816b09057fc06da0aa783e3b305a726d8/native.ttf",
+    "native_sha256": "16691c74f7152efc5a7c00a0331217bb4088ccd8b74be86b9ba99b26231ccc02",
+    "native_face": "D2Coding"
+  },
+  {
+    "url": "fonts/Pretendard-Regular.woff2",
+    "source_sha256": "fad853f7f47c6c8b103171e7193fa095708cdcd70850a71d93aa5379e8a61d63",
+    "native_path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/fad853f7f47c6c8b103171e7193fa095708cdcd70850a71d93aa5379e8a61d63/native.ttf",
+    "native_sha256": "7a7c63f2c8394dd85870dd22734a2fb479ced783b913141445adf0c8e9b99ebc",
+    "native_face": "Pretendard-Regular"
+  },
+  {
+    "url": "https://cdn.jsdelivr.net/npm/@fontsource/cormorant-garamond@5.3.0/files/cormorant-garamond-cyrillic-300-italic.woff",
+    "source_sha256": "e0acaab460a92f62097245b640bbcbaf814d7aeabaaf1953c37afdaf0ee529a3",
+    "native_path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/e0acaab460a92f62097245b640bbcbaf814d7aeabaaf1953c37afdaf0ee529a3/native.ttf",
+    "native_sha256": "bbacd057232e6835f0b978f4cc32b8818496a4d9bd28554e02c5e83aa74c3e2d",
+    "native_face": "CormorantGaramond-LightItalic"
+  },
+  {
+    "url": "https://cdn.jsdelivr.net/npm/@fontsource/zen-maru-gothic@5.3.0/files/zen-maru-gothic-10-300-normal.woff",
+    "source_sha256": "0e8be88251b2c13c3f1738f52b0d1e4f4951a499a9c04e3b5b02b23ef2558ad3",
+    "native_path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/0e8be88251b2c13c3f1738f52b0d1e4f4951a499a9c04e3b5b02b23ef2558ad3/native.ttf",
+    "native_sha256": "01a1da450c043ce16e209be412875aea77a7faadde1a95da44910ed070a4bd6b",
+    "native_face": "ZenMaruGothic-Light"
+  },
+  {
+    "url": "https://cdn.jsdelivr.net/npm/@fontsource/shippori-mincho@5.3.0/files/shippori-mincho-0-400-normal.woff",
+    "source_sha256": "6cd9feb87ca3665549263eb7ba587c71acc8402c7f83b7db88880ebf371e9bdf",
+    "native_path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/6cd9feb87ca3665549263eb7ba587c71acc8402c7f83b7db88880ebf371e9bdf/native.ttf",
+    "native_sha256": "efe3f12a2f98d98e3a272adade1ea51afe3c2b8d14a5fda825c90b2edf5e68d7",
+    "native_face": "ShipporiMincho-Regular"
+  },
+  {
+    "url": "https://cdn.jsdelivr.net/npm/@fontsource/song-myung@5.3.0/files/song-myung-10-400-normal.woff",
+    "source_sha256": "69b5350e9c4d11b8885da683c1dc6010d38d033f371a3d07fac970ee1e382771",
+    "native_path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/69b5350e9c4d11b8885da683c1dc6010d38d033f371a3d07fac970ee1e382771/native.ttf",
+    "native_sha256": "c7fc55861ec506f3dcde1e8d773e9313bd775968c26a18b040cf3c3d3d3aaef3",
+    "native_face": "SongMyung-Regular"
+  },
+  {
+    "url": "https://cdn.jsdelivr.net/npm/react-native-font-sim@2.0.1/fonts/SimSun.ttf",
+    "source_sha256": "ca4da082cd970f0c8abaa79f213ddcbc475f7b5afabcb81b385998f9ebfbb53f",
+    "native_path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/ca4da082cd970f0c8abaa79f213ddcbc475f7b5afabcb81b385998f9ebfbb53f/source.ttf",
+    "native_sha256": "ca4da082cd970f0c8abaa79f213ddcbc475f7b5afabcb81b385998f9ebfbb53f",
+    "native_face": "SimSun"
+  },
+  {
+    "url": "https://cdn.jsdelivr.net/npm/@fontsource/libre-baskerville@5.3.0/files/libre-baskerville-latin-400-italic.woff",
+    "source_sha256": "67431ee9cf055c785b9c155c6d867ac8a23078a41e654612503d7dd354a0b8c5",
+    "native_path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/67431ee9cf055c785b9c155c6d867ac8a23078a41e654612503d7dd354a0b8c5/native.ttf",
+    "native_sha256": "c0ab01fcb86132d766339d1c399db54192f662f79a736d0629f80991802fe3a4",
+    "native_face": "LibreBaskerville-Italic"
+  },
+  {
+    "url": "https://cdn.jsdelivr.net/npm/@fontsource/bodoni-moda@5.3.0/files/bodoni-moda-latin-400-italic.woff",
+    "source_sha256": "af5632f8ebdccaab99601183265d9c11ce6307017783c1bac14972c7b8af4f12",
+    "native_path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/af5632f8ebdccaab99601183265d9c11ce6307017783c1bac14972c7b8af4f12/native.ttf",
+    "native_sha256": "1a46c36f1d6da2dc4eb267d2205b1ebf4b0ef69fdab3bf3dd85c64b66674a385",
+    "native_face": "BodoniModa-Italic"
+  },
+  {
+    "url": "https://cdn.jsdelivr.net/npm/@fontsource/nanum-brush-script@5.3.0/files/nanum-brush-script-0-400-normal.woff",
+    "source_sha256": "2354024d603f6639c5d5e166d4a2af5fce52e21303370018e5cdbd729bc32f4b",
+    "native_path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/2354024d603f6639c5d5e166d4a2af5fce52e21303370018e5cdbd729bc32f4b/native.ttf",
+    "native_sha256": "be5888a01733d841c5af0a7ae89c3ff6259950f92b2c9158e07ed511ae660e4b",
+    "native_face": "NanumBrush"
+  },
+  {
+    "url": "https://cdn.jsdelivr.net/npm/font-kopub@1.0.2/fonts/KoPubDotum-Light.woff",
+    "source_sha256": "697dd52dcdf4d294924fc0dd58ed82ec568bfa64f1a785ff5e3a35b67f5313fd",
+    "native_path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/697dd52dcdf4d294924fc0dd58ed82ec568bfa64f1a785ff5e3a35b67f5313fd/native.ttf",
+    "native_sha256": "060a9490f985145057ccc502712a4fa6930b2ba59b12b778ecdc39cc6c136fa6",
+    "native_face": "KoPubDotumLight"
+  },
+  {
+    "url": "https://cdn.jsdelivr.net/npm/@fontsource/nanum-gothic@5.3.0/files/nanum-gothic-0-700-normal.woff",
+    "source_sha256": "df75e9a52bd115ffd2229f5ed8d729fba9c225231a71de450f8dafb859f07023",
+    "native_path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/df75e9a52bd115ffd2229f5ed8d729fba9c225231a71de450f8dafb859f07023/native.ttf",
+    "native_sha256": "aab5d21bff06344f1ad1ed8e4ea8335ef70290d23385032565c2173ee553161b",
+    "native_face": "NanumGothicBold"
+  },
+  {
+    "url": "https://cdn.jsdelivr.net/npm/font-kopubworld@1.0.3/fonts/KoPubWorld-Dotum-Bold.woff2",
+    "source_sha256": "61a989ab282d34c898ef538911c07a4956370c624e10a082d44ef9cb32af93fe",
+    "native_path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/61a989ab282d34c898ef538911c07a4956370c624e10a082d44ef9cb32af93fe/native.otf",
+    "native_sha256": "e06951f6280ba3e19fdd6a9f90b41ed3d1547b28c617e5903bfb6a7378f1a54b",
+    "native_face": "KoPubWorldDotumPB"
+  },
+  {
+    "url": "https://cdn.jsdelivr.net/npm/font-kopub@1.0.2/fonts/KoPubBatang-Bold.woff",
+    "source_sha256": "aca3dbb68fa1f09e9ea34753596a8dc7aec29cd15b9559d4ed1ece442fbc8542",
+    "native_path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/aca3dbb68fa1f09e9ea34753596a8dc7aec29cd15b9559d4ed1ece442fbc8542/native.ttf",
+    "native_sha256": "6507506fd13388ebabd254cc6fd71fbe1cfaf009e4fdc5d4628437fc4f2ed939",
+    "native_face": "KoPubBatang-Bold"
+  },
+  {
+    "url": "https://cdn.jsdelivr.net/npm/@kfonts/nanum-barun-gothic-yet-hangul-otf@0.2.0/src/NanumBarunGothic-YetHangul.otf",
+    "source_sha256": "a04fc101076c96063dc2a6c9a2b767232032c1b88de15a7dbf1b5f35a3c6c256",
+    "native_path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/a04fc101076c96063dc2a6c9a2b767232032c1b88de15a7dbf1b5f35a3c6c256/source.otf",
+    "native_sha256": "a04fc101076c96063dc2a6c9a2b767232032c1b88de15a7dbf1b5f35a3c6c256",
+    "native_face": "NanumBarunGothicOTF-YetHangul"
+  },
+  {
+    "url": "fonts/NanumGothic-Regular.woff2",
+    "source_sha256": "b2b25ce9c9179e0a4c867bd2610e1db5595965345aa1cdb857964ab802c4ee3e",
+    "native_path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/b2b25ce9c9179e0a4c867bd2610e1db5595965345aa1cdb857964ab802c4ee3e/native.ttf",
+    "native_sha256": "55ded6d110b0c2851fe9b42328d95257f8c82a0f978f369dec57da89fc3e5348",
+    "native_face": "NanumGothic"
+  },
+  {
+    "url": "fonts/NanumMyeongjo-Regular.woff2",
+    "source_sha256": "52d27bf4ee205020a4aa9eb19ef4835e4aa04a94f7742b13e69e5c8b9a74072a",
+    "native_path": "/home/edward/mygithub/rhwp/output/pr-review/native-webfont-cache/programs/52d27bf4ee205020a4aa9eb19ef4835e4aa04a94f7742b13e69e5c8b9a74072a/native.ttf",
+    "native_sha256": "4bb6afd108a286711b26feed365dc6da21f7d9137e7a521d90c95f5d846aeec5",
+    "native_face": "NanumMyeongjo"
+  }
+]

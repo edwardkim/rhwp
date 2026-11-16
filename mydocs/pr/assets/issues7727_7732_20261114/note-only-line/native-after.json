@@ -1,0 +1,85 @@
+{
+  "status": "native_all_389_at_least_98_wasm_and_cargo_suite_pending",
+  "producer": {
+    "parent": "11a47ad0fc48f53a80925f4e38abfd1b0264c414",
+    "patch_sha256": "e4a42c079e313fdeea79479beb5f21ce83a4b0db2f79d51d0299dc898dcdeade",
+    "binary_sha256": "708db56df8e4cc4259c162303b02fe4c6f87cd6c2a3105cb320823216fc1d7fa",
+    "build_log_sha256": "f60e1738102d5f1152ab799331dd5f7e50c52e2cd2385189dd045e9a04da2ee7",
+    "source_files": {
+      "src/renderer/layout/note_reference.rs": "5bd4b82ce4cdeae9d63e680c6e6a08a9903a34d6e7bff6245e07d27a396826cb",
+      "src/renderer/layout/paragraph_layout.rs": "2dab5102a4e3fe9a89748fa2393bc4ebc7c83c088ab934416cbc250fa9685379"
+    }
+  },
+  "native": [
+    {
+      "key": "cbta",
+      "pages": 204,
+      "minimum": 98.11,
+      "minimum_page": 2,
+      "tsv_sha256": "9f1bc1effa1845326d5b91fedbf91a03b79f01d0ddc4e035f0abf1bf8965f11d"
+    },
+    {
+      "key": "recommendation",
+      "pages": 22,
+      "minimum": 98.69,
+      "minimum_page": 7,
+      "tsv_sha256": "87565d8bedb64b4b8d99568e31a669f2c3c57bc9c5f81b0406c8abf265346b63"
+    },
+    {
+      "key": "exam",
+      "pages": 8,
+      "minimum": 99.49,
+      "minimum_page": 3,
+      "tsv_sha256": "4ee763deecfca07a600b468b5ba6528e59492044afff2ec5891c1655d7cd1419"
+    },
+    {
+      "key": "api",
+      "pages": 105,
+      "minimum": 99.55,
+      "minimum_page": 97,
+      "tsv_sha256": "0d300742ef260dadda962f4474e3fb347fd3b54879acc5179cdd609b9f3746bf"
+    },
+    {
+      "key": "footnote",
+      "pages": 50,
+      "minimum": 98.75,
+      "minimum_page": 37,
+      "tsv_sha256": "1e7ec85986045afd1dd77a87d88a53c1fa3f61951494d428ba1c2714acdaca6f"
+    }
+  ],
+  "changed_official_pages": {
+    "cbta": [],
+    "recommendation": [],
+    "exam": [],
+    "api": [],
+    "footnote": [
+      {
+        "page": 37,
+        "before": "98.58",
+        "after": "98.75"
+      },
+      {
+        "page": 39,
+        "before": "99.83",
+        "after": "99.92"
+      }
+    ]
+  },
+  "minimal_font_standalone_regression": {
+    "passed": 1,
+    "failed": 0,
+    "log_sha256": "90cbf53358d802c8aee1f81888ffd79ed49f4a32e7dbd219d578509a37441ab6",
+    "method": "현재 native-skia rlib을 연결한 rustc --test 및 Mac sandbox-exec. Cargo 파생 suite 검증은 아직."
+  },
+  "before_regression": {
+    "passed": 0,
+    "failed": 1,
+    "log_sha256": "99b8e733b4056644ca42785cc229f551cbf7ad86089834ad701a2a374f1f4f49"
+  },
+  "remaining_validation": [
+    "fresh WASM 전쪽",
+    "정식 Cargo suite",
+    "전체 회귀 네 실패 보정",
+    "필수 lint/build/보호/편람/실제 backend"
+  ]
+}

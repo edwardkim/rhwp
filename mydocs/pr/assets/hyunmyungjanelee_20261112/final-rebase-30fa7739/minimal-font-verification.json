@@ -1,0 +1,12 @@
+{
+  "checked_at": "2026-11-12T12:58:20.351678+00:00",
+  "code_head": "30fa7739f0340f2a248b22542c7dd36d9354f056",
+  "normal_faces": 1701,
+  "isolated_faces": 528,
+  "non_os_isolated_faces": 0,
+  "korean_glyphs_covered": true,
+  "normal_user_font_inventory_unchanged": true,
+  "HBATANG_private_file_read_denied": true,
+  "profile_sha256": "e30e6dd7cd94ebbbd5765024b7eca84308d2df458ca26d93b37d76b5fce57ec3",
+  "scope": "macOS Native Rust regression; browser font permissions and supplied font programs are separate."
+}

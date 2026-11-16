@@ -1,0 +1,24 @@
+{
+  "checked": 18,
+  "paths": [
+    "mydocs/manual/pr_review/review_template.md",
+    "mydocs/manual/pr_review/visual_fixture_evidence.md",
+    "mydocs/pr/archives/pr_8895_review.md",
+    "mydocs/pr/archives/pr_8897_review.md",
+    "mydocs/pr/archives/pr_8900_review.md",
+    "mydocs/pr/archives/pr_8916_review.md",
+    "mydocs/pr/archives/pr_8918_review.md",
+    "mydocs/pr/archives/pr_8920_review.md",
+    "mydocs/pr/assets/hyunmyungjanelee_20261112/README.md",
+    "mydocs/pr/assets/hyunmyungjanelee_20261112/canvas-fallback-selection/cause.md",
+    "mydocs/pr/assets/hyunmyungjanelee_20261112/canvaskit-no-ink-repair/cause.md",
+    "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/rebase-a85d3265/README.md",
+    "mydocs/pr/assets/hyunmyungjanelee_20261112/final-rebase-30fa7739/rebase-read-path-audit.md",
+    "mydocs/pr/assets/hyunmyungjanelee_20261112/mcp-print-reference/README.md",
+    "mydocs/pr/assets/hyunmyungjanelee_20261112/partial-table-line-repair/cause.md",
+    "mydocs/pr/assets/hyunmyungjanelee_20261112/picture-cell-repair/cause.md",
+    "mydocs/pr/assets/hyunmyungjanelee_20261112/stacked-zone-spacing-repair/cause.md",
+    "mydocs/pr/assets/hyunmyungjanelee_20261112/wingdings-arrow-shaft-repair/cause.md"
+  ],
+  "errors": []
+}

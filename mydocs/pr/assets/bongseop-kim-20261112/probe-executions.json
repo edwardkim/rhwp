@@ -1,0 +1,88 @@
+[
+  {
+    "label": "base-focused",
+    "command": [
+      "cargo",
+      "--offline",
+      "test",
+      "--manifest-path",
+      "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/diagnostic-probe/Cargo.toml",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--lib",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 101,
+    "elapsed_seconds": 2.542,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/base-focused.log",
+    "source": "80b1c354c29b7a02fb2b3c14a274da7f5b653ada"
+  },
+  {
+    "label": "base-roundtrip",
+    "command": [
+      "cargo",
+      "--offline",
+      "run",
+      "--manifest-path",
+      "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/diagnostic-probe/Cargo.toml",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--bin",
+      "roundtrip-probe",
+      "--",
+      "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/roundtrip-base"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 2.025,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/base-roundtrip.log",
+    "source": "80b1c354c29b7a02fb2b3c14a274da7f5b653ada"
+  },
+  {
+    "label": "candidate-focused",
+    "command": [
+      "cargo",
+      "--offline",
+      "test",
+      "--manifest-path",
+      "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/diagnostic-probe/Cargo.toml",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--lib",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 282.571,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/candidate-focused.log",
+    "source": "cc6103f1a82149f2d3ae1b49d86a81698df1841a"
+  },
+  {
+    "label": "candidate-roundtrip",
+    "command": [
+      "cargo",
+      "--offline",
+      "run",
+      "--manifest-path",
+      "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/diagnostic-probe/Cargo.toml",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--bin",
+      "roundtrip-probe",
+      "--",
+      "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/roundtrip-candidate"
+    ],
+    "exit_code": 2,
+    "elapsed_seconds": 2.149,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/candidate-roundtrip.log",
+    "source": "cc6103f1a82149f2d3ae1b49d86a81698df1841a"
+  }
+]

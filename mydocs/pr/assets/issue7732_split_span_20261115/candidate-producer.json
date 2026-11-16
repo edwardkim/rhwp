@@ -1,0 +1,23 @@
+{
+  "head": "3b4212267b26723917ba0f5a9eaf4c8e1b907afb",
+  "base": "f8234f6f90cb25d9601c9d5d762e0a565aea19e4",
+  "git_objects": {
+    "src": "76e93d9885784cb25d0e8c1cf54b421a00f4dc0d",
+    "crates": "419c7064dfa4e626ad47734fd105ebc1dfa736a3",
+    "Cargo.toml": "67ffbf80f174ba3465e4454d140f758395833b2e",
+    "Cargo.lock": "34d08aa8d5150817968568e1ab6f68af228eeeac",
+    "build.rs": "a3103a33faf38a899edb68f64fd0739dd4950787",
+    "scripts/wasm-pack-locked.sh": "855ca67dcd4b175287c297d4d015851aab3cf8af"
+  },
+  "product_source_file_sha256": "4feeef254506617c4549f3791b321592b65183cc79aa02ea0239cfe8ba917ba4",
+  "native_sha256": "814859dc990c128e3cc273e003600a81de7ccde7f3ff5ae2898a970e3a050677",
+  "native_build_log": "native-build.log",
+  "native_frozen_before_evidence_commit": true,
+  "source_equivalence": "제품 src/crates 바이트는 3b4212267b와 동일. 분석/PNG/테스트 주석 추가 전 빌드한 실행 파일을 동결했다.",
+  "fresh_wasm": {
+    "rhwp.js": "2d48f8a6c3ff7f848f08725bb54d04094b296af1a40ae61203081a7cf8061a1a",
+    "rhwp_bg.wasm": "1f2c1169cc678b0e57844d2cccfdb4806c45a54d74c0f0fc4dd6e4d3e7368e3c"
+  },
+  "build_mode": "Mac locked wrapper --target web --out-dir pkg --no-opt; local alternative; no Docker/wasm-opt",
+  "root_public_hashes_equal": true
+}

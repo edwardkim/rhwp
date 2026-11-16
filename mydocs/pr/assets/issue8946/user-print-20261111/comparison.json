@@ -1,0 +1,98 @@
+{
+  "status": "re_review_required",
+  "scope": "1쪽 전체 영역, 96dpi raw 2px. 마스크·정렬·크기 보정 없음. 전체 문서 gate가 아님.",
+  "sourcePageCount": 763,
+  "referencePageCount": 1,
+  "comparisons": {
+    "server-print": {
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 91.83368,
+        "silhouette_raw_unmatched_pixels": 929,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 11376,
+        "tolerant_content_match_percent": 91.83368
+      },
+      "input": {
+        "page": 1,
+        "rhwp_png": "output/issue8946/hwpx-wasm-probe/sample10-hwpx/pdf_png/pdf-001.png",
+        "rhwp_sha256": "8a26d571e2c2df5fa56cc5d3867d07a2e282667319438cc8a51159e86c11dc07",
+        "pdf_png": "output/issue8946/user-print/pdf-001.png",
+        "pdf_sha256": "f261046a5518dd134e2a6f4945acf778a9f300a77c31893a0c396b5868082bd1"
+      }
+    },
+    "host-single": {
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 67.33059,
+        "silhouette_raw_unmatched_pixels": 4281,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 13104,
+        "tolerant_content_match_percent": 67.33059
+      },
+      "input": {
+        "page": 1,
+        "rhwp_png": "output/issue8946/user-print-host-enabled/screen_png/rhwp_001.png",
+        "rhwp_sha256": "37f62056ad1190c7c02241d7eefc66bb717ad58587e7c9c02d6a00587a286adc",
+        "pdf_png": "output/issue8946/user-print/pdf-001.png",
+        "pdf_sha256": "f261046a5518dd134e2a6f4945acf778a9f300a77c31893a0c396b5868082bd1"
+      }
+    },
+    "host-full-catalog": {
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 75.11395,
+        "silhouette_raw_unmatched_pixels": 3385,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 13602,
+        "tolerant_content_match_percent": 75.11395
+      },
+      "input": {
+        "page": 1,
+        "rhwp_png": "output/issue8946/final-hwpx-enabled/screen_png/rhwp_001.png",
+        "rhwp_sha256": "4d9f0dc9574fb75d3969e076f3a2cdb062e6a44e492466278e2764a0091c19d3",
+        "pdf_png": "output/issue8946/user-print/pdf-001.png",
+        "pdf_sha256": "f261046a5518dd134e2a6f4945acf778a9f300a77c31893a0c396b5868082bd1"
+      }
+    },
+    "native": {
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 10.01911,
+        "silhouette_raw_unmatched_pixels": 81466,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 90537,
+        "tolerant_content_match_percent": 10.01911
+      },
+      "input": {
+        "page": 1,
+        "rhwp_png": "output/issue8946/hwpx-native-probe/sample10-hwpx/rhwp_png/rhwp_001.png",
+        "rhwp_sha256": "0fb47ddb299565c1b4cf778e1c1ee11a2be72f3dd1367cb754cdcec4dc23bfa3",
+        "pdf_png": "output/issue8946/user-print/pdf-001.png",
+        "pdf_sha256": "f261046a5518dd134e2a6f4945acf778a9f300a77c31893a0c396b5868082bd1"
+      }
+    },
+    "wasm": {
+      "metrics": {
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 34.31863,
+        "silhouette_raw_unmatched_pixels": 19954,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 30380,
+        "tolerant_content_match_percent": 34.31863
+      },
+      "input": {
+        "page": 1,
+        "rhwp_png": "output/issue8946/hwpx-wasm-probe/sample10-hwpx/rhwp_png/rhwp_001.png",
+        "rhwp_sha256": "54d29a59af9b391169837f6186bf5195d47f26ffa4d4bf1f63f2976a1974d22e",
+        "pdf_png": "output/issue8946/user-print/pdf-001.png",
+        "pdf_sha256": "f261046a5518dd134e2a6f4945acf778a9f300a77c31893a0c396b5868082bd1"
+      }
+    }
+  }
+}

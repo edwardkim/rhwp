@@ -1,0 +1,12 @@
+{
+  "validation_head": "3b5e750d66351799fe81c0e1b67c5e78323763f5",
+  "built_product_source": "eeaecff59e834f28437c98b509089bbb36a7682d",
+  "identical_product_paths": [
+    "src",
+    "vendor",
+    "Cargo.toml",
+    "Cargo.lock",
+    "build.rs"
+  ],
+  "git_diff_exit": 0
+}

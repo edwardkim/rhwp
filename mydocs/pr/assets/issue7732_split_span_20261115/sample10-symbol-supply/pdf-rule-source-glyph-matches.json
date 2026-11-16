@@ -1,0 +1,82 @@
+[
+  {
+    "file_sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+    "pdf_glyph": "glyph00017",
+    "source_glyph": "uF080F",
+    "codepoints": [
+      "U+F080F"
+    ],
+    "advance": 512,
+    "outline_sha256": "15ae0b145d886deeb967772fbf628145c6240cd1f43cadaec9b386d919c916a1"
+  },
+  {
+    "file_sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+    "pdf_glyph": "glyph00018",
+    "source_glyph": "uF0827",
+    "codepoints": [
+      "U+F0827"
+    ],
+    "advance": 512,
+    "outline_sha256": "9f6e40793d7c6354eaaffa018f04466c29d13cb842633f186b9346613f08297e"
+  },
+  {
+    "file_sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+    "pdf_glyph": "glyph00018",
+    "source_glyph": "uF083D",
+    "codepoints": [
+      "U+F083D"
+    ],
+    "advance": 512,
+    "outline_sha256": "9f6e40793d7c6354eaaffa018f04466c29d13cb842633f186b9346613f08297e"
+  },
+  {
+    "file_sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+    "pdf_glyph": "glyph00017",
+    "source_glyph": "uF0848",
+    "codepoints": [
+      "U+F0848"
+    ],
+    "advance": 512,
+    "outline_sha256": "15ae0b145d886deeb967772fbf628145c6240cd1f43cadaec9b386d919c916a1"
+  },
+  {
+    "file_sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+    "pdf_glyph": "glyph00017",
+    "source_glyph": "uniA80F",
+    "codepoints": [
+      "U+A80F"
+    ],
+    "advance": 512,
+    "outline_sha256": "15ae0b145d886deeb967772fbf628145c6240cd1f43cadaec9b386d919c916a1"
+  },
+  {
+    "file_sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+    "pdf_glyph": "glyph00018",
+    "source_glyph": "uniA827",
+    "codepoints": [
+      "U+A827"
+    ],
+    "advance": 512,
+    "outline_sha256": "9f6e40793d7c6354eaaffa018f04466c29d13cb842633f186b9346613f08297e"
+  },
+  {
+    "file_sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+    "pdf_glyph": "glyph00018",
+    "source_glyph": "uniA83D",
+    "codepoints": [
+      "U+A83D"
+    ],
+    "advance": 512,
+    "outline_sha256": "9f6e40793d7c6354eaaffa018f04466c29d13cb842633f186b9346613f08297e"
+  },
+  {
+    "file_sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+    "pdf_glyph": "glyph00017",
+    "source_glyph": "uniA848",
+    "codepoints": [
+      "U+A848"
+    ],
+    "advance": 512,
+    "outline_sha256": "15ae0b145d886deeb967772fbf628145c6240cd1f43cadaec9b386d919c916a1"
+  }
+]

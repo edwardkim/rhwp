@@ -1,0 +1,25 @@
+{
+  "source": "hwp2024-mcp-convert status 원본에서 공개 가능한 인쇄/제품/쪽수 필드만 보존. 환경 파일·인증·서버 URL을 포함하지 않음",
+  "receipts": [
+    {
+      "job_id": "cdcdae80-619b-4296-b43a-0a121f00faaa",
+      "status": "success",
+      "engine": "2020",
+      "engine_profile": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_page_count": 1,
+      "input_preprocess": "scripts_disabled",
+      "pdf_print_method": 0
+    },
+    {
+      "job_id": "7a2bc452-42a6-4f4d-be21-4a233768366a",
+      "status": "success",
+      "engine": "2020",
+      "engine_profile": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_page_count": 1,
+      "input_preprocess": "scripts_disabled",
+      "pdf_print_method": 0
+    }
+  ]
+}

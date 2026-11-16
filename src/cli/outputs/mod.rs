@@ -12,6 +12,21 @@ pub(crate) mod tabular;
 pub(crate) mod text;
 pub(crate) mod vector;
 
+/// 파일 시스템 한 이름의 바이트 한도(ext4·APFS 255바이트, NTFS 255 UTF-16 단위 이하).
+pub(crate) const MAX_OUTPUT_FILE_NAME_BYTES: usize = 255;
+
+/// 원본 이름에서 만든 산출 파일·폴더 이름. `suffix`(쪽 번호·확장자 등)를 보존하고,
+/// 전체가 [`MAX_OUTPUT_FILE_NAME_BYTES`] 를 넘으면 `stem` 을 UTF-8 문자 경계에서 줄인다.
+/// 같은 입력이면 같은 이름이다(#9010).
+pub(crate) fn output_file_name(stem: &str, suffix: &str) -> String {
+    let budget = MAX_OUTPUT_FILE_NAME_BYTES.saturating_sub(suffix.len());
+    let mut end = stem.len().min(budget);
+    while !stem.is_char_boundary(end) {
+        end -= 1;
+    }
+    format!("{}{}", &stem[..end], suffix)
+}
+
 pub(crate) fn allows_implicit_sibling_resources(format: rhwp::parser::FileFormat) -> bool {
     // HML sibling paths are untrusted input and require an explicit resolver policy.
     !matches!(format, rhwp::parser::FileFormat::Hml)

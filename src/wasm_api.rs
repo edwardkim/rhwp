@@ -886,6 +886,50 @@ impl HwpDocument {
         self.clear_text_font_family_native(family);
     }
 
+    /// 쪽별 host paint 자원만 해제한다. 측정·coverage·문서 상태는 유지한다.
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen(js_name = clearTextFontOutline)]
+    pub fn clear_text_font_outline_wasm(&mut self, family: &str) {
+        self.hft_outline_fonts.clear_outline_family(family);
+    }
+
+    /// TTC 원본 신원을 보존한 paint 후보. FontFace용 정규화 사본과 구분한다.
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen(js_name = registerHftOutlineFontFaces)]
+    pub fn register_hft_outline_font_faces(
+        &mut self,
+        family: &str,
+        programs: js_sys::Array,
+    ) -> Result<bool, JsValue> {
+        use wasm_bindgen::JsCast;
+        if programs.length() == 0 || programs.length() > 64 {
+            return Err(JsValue::from_str("outline font candidate limit exceeded"));
+        }
+        let mut total = 0usize;
+        let mut faces = Vec::new();
+        for program in programs.iter() {
+            let array = js_sys::Reflect::get(&program, &JsValue::from_str("bytes"))?
+                .dyn_into::<js_sys::Uint8Array>()
+                .map_err(|_| JsValue::from_str("outline font bytes must be Uint8Array"))?;
+            let index = js_sys::Reflect::get(&program, &JsValue::from_str("faceIndex"))?
+                .as_f64()
+                .filter(|v| v.is_finite() && *v >= 0.0 && *v <= u32::MAX as f64 && v.fract() == 0.0)
+                .ok_or_else(|| JsValue::from_str("invalid outline face index"))?;
+            total = total.saturating_add(array.length() as usize);
+            if array.length() == 0 || array.length() > 32 * 1024 * 1024 || total > 64 * 1024 * 1024
+            {
+                return Err(JsValue::from_str("outline font byte limit exceeded"));
+            }
+            faces.push((array.to_vec(), index as u32));
+        }
+        let candidates: Vec<_> = faces
+            .iter()
+            .map(|(bytes, index)| (bytes.as_slice(), *index))
+            .collect();
+        self.register_hft_outline_font_candidates_native(family, &candidates)
+            .map_err(JsValue::from)
+    }
+
     #[wasm_bindgen(js_name = registerTextFontGlyphCoverage)]
     pub fn register_text_font_glyph_coverage(
         &mut self,
@@ -980,18 +1024,33 @@ impl HwpDocument {
             let mut programs = Vec::with_capacity(values.len());
             let mut total_bytes = 0usize;
             for value in values {
-                if !value.is_instance_of::<js_sys::Uint8Array>() {
+                let (source, face_index) = if value.is_instance_of::<js_sys::Uint8Array>() {
+                    (value, 0)
+                } else {
+                    let source = js_sys::Reflect::get(&value, &JsValue::from_str("bytes"))?;
+                    let index = js_sys::Reflect::get(&value, &JsValue::from_str("faceIndex"))?
+                        .as_f64()
+                        .filter(|index| {
+                            index.is_finite()
+                                && *index >= 0.0
+                                && *index <= f64::from(u32::MAX)
+                                && index.fract() == 0.0
+                        })
+                        .ok_or_else(|| JsValue::from_str("OTF provider faceIndex must be a u32"))?;
+                    (source, index as u32)
+                };
+                if !source.is_instance_of::<js_sys::Uint8Array>() {
                     return Err(JsValue::from_str(
                         "OTF provider must return Uint8Array, an array of Uint8Array, or null",
                     ));
                 }
-                let array = js_sys::Uint8Array::new(&value);
+                let array = js_sys::Uint8Array::new(&source);
                 let length = array.length() as usize;
                 total_bytes = total_bytes.saturating_add(length);
                 if length > 32 * 1024 * 1024 || total_bytes > 64 * 1024 * 1024 {
                     return Err(JsValue::from_str("OTF provider program exceeds limit"));
                 }
-                programs.push((array.to_vec(), 0));
+                programs.push((array.to_vec(), face_index));
             }
             prepared.insert(
                 (
@@ -1014,6 +1073,16 @@ impl HwpDocument {
                 .unwrap_or_default()
         })
         .map_err(JsValue::from)
+    }
+
+    /// 원본 SFNT/TTC 바이트와 선택 face를 함께 받는 공급 계약의 기능 탐지 경계.
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen(js_name = prepareNativeOtfFontFaces)]
+    pub fn prepare_native_otf_font_faces_wasm(
+        &mut self,
+        provider: &js_sys::Function,
+    ) -> Result<bool, JsValue> {
+        self.prepare_native_otf_fonts_wasm(provider)
     }
 
     #[wasm_bindgen(js_name = registerNativePuaFont)]
@@ -1272,6 +1341,28 @@ impl HwpDocument {
             renderer.render_page(&tree).map_err(JsValue::from)?;
             Ok(())
         })
+    }
+
+    /// 같은 preview의 paint 자원 준비에 필요한 트리. 일반 쪽 캐시는 변경하지 않는다.
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen(js_name = getHeaderFooterEditPreviewLayerTree)]
+    pub fn get_header_footer_edit_preview_layer_tree(
+        &self,
+        page_num: u32,
+        section_idx: u32,
+        is_header: bool,
+        apply_to: u8,
+    ) -> Result<String, JsValue> {
+        let tree = self
+            .build_header_footer_edit_preview_tree(
+                page_num,
+                section_idx as usize,
+                is_header,
+                apply_to,
+            )
+            .map_err(JsValue::from)?;
+        let mut builder = crate::paint::LayerBuilder::new(crate::paint::RenderProfile::Screen);
+        Ok(builder.build(&tree).to_json())
     }
 
     /// 구역 첫 페이지에 요청한 머리말/꼬리말 정의를 가상 투영해 Canvas 2D로 렌더링한다.
@@ -2289,6 +2380,11 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 경로 기반: 셀/글상자 문단의 글자를 반환한다 (중첩 표/글상자 지원).
+    ///
+    /// `path_json`: `[{"controlIndex":N,"cellIndex":N,"cellParaIndex":N}, ...]` — 본문 문단
+    /// `parent_para_idx`에서 시작해 바깥부터 한 단계씩 적는다. 마지막 단계가 읽을 칸과 칸 문단이다.
+    /// 형식과 중첩 예시는 `getTableDimensionsByPath` 설명을 본다.
     #[wasm_bindgen(js_name = getTextInCellByPath)]
     pub fn get_text_in_cell_by_path_api(
         &self,
@@ -3326,6 +3422,9 @@ impl HwpDocument {
     }
 
     /// 경로 기반: 셀/글상자 내 문단 수를 반환한다 (중첩 표/글상자 지원).
+    ///
+    /// `path_json`: `[{"controlIndex":N,"cellIndex":N,"cellParaIndex":N}, ...]`. 마지막 단계의
+    /// `cellIndex`가 셀을 고른다. 형식과 중첩 예시는 `getTableDimensionsByPath` 설명을 본다.
     #[wasm_bindgen(js_name = getCellParagraphCountByPath)]
     pub fn get_cell_paragraph_count_by_path(
         &self,
@@ -3345,6 +3444,9 @@ impl HwpDocument {
     }
 
     /// 경로 기반: 셀 내 문단의 글자 수를 반환한다 (중첩 표 지원).
+    ///
+    /// `path_json`: `[{"controlIndex":N,"cellIndex":N,"cellParaIndex":N}, ...]`. 마지막 단계가
+    /// 셀과 그 셀의 문단을 고른다. 형식과 중첩 예시는 `getTableDimensionsByPath` 설명을 본다.
     #[wasm_bindgen(js_name = getCellParagraphLengthByPath)]
     pub fn get_cell_paragraph_length_by_path(
         &self,
@@ -7359,6 +7461,10 @@ impl HwpDocument {
 
     /// 경로 기반 셀 정보 조회 (중첩 표용).
     ///
+    /// `path_json`: `[{"controlIndex":N,"cellIndex":N,"cellParaIndex":N}, ...]`. 마지막 단계의
+    /// `controlIndex`가 표, `cellIndex`가 조회할 칸이며 세 필드가 모두 필요하다. 형식과 중첩
+    /// 예시는 `getTableDimensionsByPath` 설명을 본다.
+    ///
     /// 반환: JSON `{"row":N,"col":N,"rowSpan":N,"colSpan":N}`
     #[wasm_bindgen(js_name = getCellInfoByPath)]
     pub fn get_cell_info_by_path(
@@ -7372,6 +7478,19 @@ impl HwpDocument {
     }
 
     /// 경로 기반 표 차원 조회 (중첩 표용).
+    ///
+    /// `path_json`은 본문 문단 `parent_para_idx`에서 시작해 표까지 내려가는 단계의 배열이다.
+    /// `[{"controlIndex":N,"cellIndex":N,"cellParaIndex":N}, ...]`
+    /// - `controlIndex`: 현재 문단의 컨트롤 번호(표·글상자 등).
+    /// - `cellIndex`: 그 표의 칸 번호(행 우선, 0부터). 글상자는 글상자 번호(독립 글상자는 0).
+    /// - `cellParaIndex`: 그 칸(글상자) 안 문단 번호.
+    ///
+    /// 이 API는 표 자체를 가리키므로 **마지막 단계에는 `controlIndex`만 필요**하다. 마지막 단계의
+    /// `cellIndex`·`cellParaIndex`는 생략할 수 있고, 주어져도 쓰지 않는다. 앞 단계(바깥 표의 칸을
+    /// 지나는 단계)는 세 필드가 모두 필요하다.
+    ///
+    /// 예: 본문 문단 3의 컨트롤 1(바깥 표) → 그 표 칸 2의 문단 0에 든 컨트롤 0(안쪽 표)
+    /// `getTableDimensionsByPath(0, 3, '[{"controlIndex":1,"cellIndex":2,"cellParaIndex":0},{"controlIndex":0}]')`
     ///
     /// 반환: JSON `{"rowCount":N,"colCount":N,"cellCount":N}`
     #[wasm_bindgen(js_name = getTableDimensionsByPath)]
@@ -7390,6 +7509,9 @@ impl HwpDocument {
     }
 
     /// 경로 기반 표 셀 바운딩박스 조회 (중첩 표용).
+    ///
+    /// `path_json` 형식은 `getTableDimensionsByPath`와 같다. 표 자체를 가리키므로 마지막 단계에는
+    /// `controlIndex`만 필요하고 `cellIndex`·`cellParaIndex`는 생략할 수 있다(주어져도 쓰지 않음).
     ///
     /// 반환: JSON 배열 `[{"cellIdx":N,"row":N,"col":N,...,"x":F,"y":F,"w":F,"h":F}, ...]`
     #[wasm_bindgen(js_name = getTableCellBboxesByPath)]
