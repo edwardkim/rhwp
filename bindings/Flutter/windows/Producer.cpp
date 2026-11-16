@@ -260,7 +260,7 @@ void State::close() {
   std::shared_ptr<Job> previous; std::shared_ptr<Published> old_frame;
   {
     std::lock_guard<std::mutex> lock(mutex);
-    closed = true; ready = false; gate.close(); previous = std::move(pending); old_frame = std::move(current);
+    closed = true; ready = false; gate.close(); cache_trim.cancel(); previous = std::move(pending); old_frame = std::move(current);
   }
   changed.notify_one();
 }
@@ -290,11 +290,25 @@ void run_producer(const std::shared_ptr<State>& state) noexcept {
     }
     for (;;) {
       std::shared_ptr<Job> job;
+      std::optional<rhwp::cache::TrimReceipt> trim;
       {
         std::unique_lock<std::mutex> lock(state->mutex);
-        state->changed.wait(lock, [&] { return state->closed || state->pending; });
+        state->changed.wait(lock, [&] { return state->closed || state->pending || state->cache_trim.queued(); });
         if (state->closed) break;
-        job = std::move(state->pending); state->in_flight = true;
+        trim = state->cache_trim.take();
+        if (!trim) { job = std::move(state->pending); state->in_flight = true; }
+      }
+      if (trim) {
+        try {
+          const std::string request = "{\"op\":\"trimCache\",\"targetBytes\":" + std::to_string(trim->target) + "}";
+          const auto text = api->read(api->request(presenter, reinterpret_cast<const uint8_t*>(request.data()), request.size()));
+          NativeReply reply(text);
+          if (!reply.field("ok").boolean() || reply.field("targetBytes").integer() != trim->target)
+            throw std::runtime_error("invalid Native cache trim identity");
+          state->cache_trim.finish(trim->request, reply.field("before").integer(), reply.field("after").integer(),
+              reply.field("trimmed").integer(), reply.field("busy").boolean());
+        } catch (...) { state->cache_trim.fail(trim->request); }
+        continue;
       }
       bool completed = false, published = false;
       try {

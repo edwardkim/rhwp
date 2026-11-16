@@ -29,6 +29,9 @@ def main():
     metrics = output / "gpu-cache-metrics-test"
     subprocess.run(command + [str(source.parent / "common/gpu_cache_metrics_test.cc"), "-o", str(metrics)], check=True, timeout=60)
     subprocess.run([str(metrics)], check=True, timeout=30)
+    trims = output / "cache-trim-test"
+    subprocess.run(command + [str(source.parent / "common/cache_trim_test.cc"), "-o", str(trims)], check=True, timeout=60)
+    subprocess.run([str(trims)], check=True, timeout=30)
     subprocess.run([sys.executable, "-B", str(source / "tests/native_d3d_disabled.py"), "--output", str(output / "disabled")], check=True, timeout=60)
     subprocess.run([sys.executable, "-B", str(source / "tests/group_error_limits_contract.py"), "--output", str(output / "group-error-limits")], check=True, timeout=90)
     if args.flutter_public:

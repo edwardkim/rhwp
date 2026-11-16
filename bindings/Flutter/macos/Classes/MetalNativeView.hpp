@@ -59,7 +59,7 @@ NSDictionary* MetalViewLimits() {
     @"closeAcknowledgementRequired":@YES,@"maxRetainedCloseRecords":@2,@"maxClosedReceipts":@2,
     @"tileGroups":@YES,@"sharedSnapshotLeases":@YES,@"maxTileGroupTiles":@2,@"maxTileGroupSnapshots":@4,
     @"maxTileGroups":@1,@"maxRetainedSnapshotIdsPerOwner":@32,
-    @"experimental":@YES,@"requiresTargetQualification":@YES};
+    @"cacheTrim":@YES,@"experimental":@YES,@"requiresTargetQualification":@YES};
 }
 bool MetalJobCurrent(const std::shared_ptr<NativeApi>& api, const std::shared_ptr<Job>& job) {
   NSDictionary* checked = api->read(api->checkFrame(
@@ -134,15 +134,16 @@ void RunMetalView(const std::shared_ptr<MetalViewState>& view) {
     dispatch_async(dispatch_get_main_queue(), ^{UpdateMetalViewGeometry(view);});
     while (presenter) {
       std::shared_ptr<Job> job;
+      std::optional<rhwp::cache::TrimReceipt> trim;
       CAMetalLayer* layer = nil;
       {
         std::unique_lock<std::mutex> lock(state->mutex);
-        state->changed.wait(lock, [&] {return state->closed || (state->pending && view->layerReady);});
+        state->changed.wait(lock, [&] {return state->closed || state->cacheTrim.queued() || (state->pending && view->layerReady);});
         if (state->closed) break;
-        job = std::move(state->pending);
-        layer = view->layer;
-        state->inFlight = true;
+        trim=state->cacheTrim.take();
+        if(!trim) {job = std::move(state->pending);layer = view->layer;state->inFlight = true;}
       }
+      if(trim) { @autoreleasepool {RunCacheTrim(state,api,presenter,*trim);} continue; }
       @autoreleasepool {
         id<CAMetalDrawable> drawable = nil;
         bool nativeSubmitted = false;
@@ -526,7 +527,8 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
   NSDictionary* arguments = call.arguments;
   if ([call.method isEqualToString:@"createGroup"] || [call.method isEqualToString:@"submitGroup"] ||
       [call.method isEqualToString:@"statusGroup"] || [call.method isEqualToString:@"closeGroup"] ||
-      [call.method isEqualToString:@"retireGroupAck"] || [call.method isEqualToString:@"setCoveredGroup"]) {
+      [call.method isEqualToString:@"retireGroupAck"] || [call.method isEqualToString:@"setCoveredGroup"] ||
+      (([call.method isEqualToString:@"trimCache"] || [call.method isEqualToString:@"trimCacheStatus"]) && arguments[@"groupId"])) {
     [self handleTileGroupCall:call result:result];return;
   }
   if ([call.method isEqualToString:@"create"]) {
@@ -573,6 +575,9 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
     result([FlutterError errorWithCode:@"closed" message:@"Unknown native view or expired acknowledged close receipt." details:nil]);return;
   }
   auto owner=view->owner;
+  if([call.method isEqualToString:@"trimCache"] || [call.method isEqualToString:@"trimCacheStatus"]) {
+    result(CacheTrimCall(owner,handle,arguments,[call.method isEqualToString:@"trimCacheStatus"]));return;
+  }
   if([call.method isEqualToString:@"status"]){result(MetalViewStatus(view,_views.registered(handle)));return;}
   if([call.method isEqualToString:@"retireAck"]){
     bool complete;

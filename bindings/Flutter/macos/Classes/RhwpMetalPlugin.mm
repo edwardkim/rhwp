@@ -8,6 +8,7 @@
 #include "TextureCloseRouting.hpp"
 #include "RhwpProducerReadyEvents.hpp"
 #include "../../common/gpu_cache_metrics.h"
+#include "../../common/cache_trim.h"
 #include <atomic>
 #include <condition_variable>
 #include <cstdio>
@@ -36,6 +37,7 @@ ImmutableFrameCredits& Credits() {
 std::atomic<int> activeProducers{0};
 std::atomic<uint64_t> nextDeviceGeneration{1};
 NSDictionary* StampValue(const Stamp& stamp);
+bool Unsigned(id value, uint64_t& output, uint64_t maximum);
 
 struct NativeApi {
   using Capabilities = char* (*)();
@@ -179,6 +181,7 @@ struct State {
   uint64_t staleDrops = 0;
   std::string error;
   std::shared_ptr<NativeApi> api;
+  rhwp::cache::TrimMailbox cacheTrim;
   std::shared_ptr<Job> pending;
   std::shared_ptr<PublishedFrame> current;
   std::map<uint64_t, std::weak_ptr<SnapshotLease>> leases;
@@ -229,6 +232,7 @@ struct State {
     {
       std::lock_guard<std::mutex> lock(mutex);
       closed = true;
+      cacheTrim.cancel();
       ready = false;
       gate.close();
       oldPending = std::move(pending);
@@ -242,6 +246,23 @@ struct State {
     error = text ? std::string(text).substr(0, 2048) : "Metal producer failed";
   }
 };
+
+void RunCacheTrim(const std::shared_ptr<State>& state, const std::shared_ptr<NativeApi>& api,
+                  uint64_t presenter, const rhwp::cache::TrimReceipt& trim) {
+  try {
+    const std::string request = "{\"op\":\"trimCache\",\"targetBytes\":" + std::to_string(trim.target) + "}";
+    NSDictionary* result = api->read(api->request(presenter, reinterpret_cast<const uint8_t*>(request.data()), request.size()));
+    uint64_t before=0,after=0,trimmed=0,target=0;
+    id busy=result[@"busy"];
+    if (![result[@"ok"] boolValue] || !Unsigned(result[@"before"],before,rhwp::cache::kMaxTrimBytes) ||
+        !Unsigned(result[@"after"],after,rhwp::cache::kMaxTrimBytes) ||
+        !Unsigned(result[@"trimmed"],trimmed,rhwp::cache::kMaxTrimBytes) ||
+        !Unsigned(result[@"targetBytes"],target,rhwp::cache::kMaxTrimBytes) || target != trim.target ||
+        ![busy isKindOfClass:[NSNumber class]] || CFGetTypeID((__bridge CFTypeRef)busy) != CFBooleanGetTypeID())
+      throw std::runtime_error("invalid Native cache trim receipt");
+    state->cacheTrim.finish(trim.request,before,after,trimmed,[busy boolValue]);
+  } catch (...) {state->cacheTrim.fail(trim.request);}
+}
 
 std::shared_ptr<PixelResources> CreatePixels(id<MTLDevice> device, CVMetalTextureCacheRef cache,
                                           const Job& job) {
@@ -303,13 +324,15 @@ void RunProducer(const std::shared_ptr<State>& state) {
     }
     while (presenter) {
       std::shared_ptr<Job> job;
+      std::optional<rhwp::cache::TrimReceipt> trim;
       {
         std::unique_lock<std::mutex> lock(state->mutex);
-        state->changed.wait(lock, [&] {return state->closed || state->pending != nullptr;});
+        state->changed.wait(lock, [&] {return state->closed || state->pending != nullptr || state->cacheTrim.queued();});
         if (state->closed) break;
-        job = std::move(state->pending);
-        state->inFlight = true;
+        trim=state->cacheTrim.take();
+        if(!trim) {job = std::move(state->pending);state->inFlight = true;}
       }
+      if(trim) { @autoreleasepool {RunCacheTrim(state,api,presenter,*trim);} continue; }
       @autoreleasepool {
         auto pixels = CreatePixels(device, cache, *job);
         if (!pixels) {
@@ -389,6 +412,39 @@ bool Unsigned(id value, uint64_t& output, uint64_t maximum = INT64_MAX) {
   if (type == 'f' || type == 'd' || [value longLongValue] < 0 || [value unsignedLongLongValue] > maximum) return false;
   output = [value unsignedLongLongValue];
   return true;
+}
+NSDictionary* CacheTrimValue(uint64_t texture,uint64_t generation,const rhwp::cache::TrimReceipt& trim) {
+  return @{@"textureId":@(texture),@"deviceGeneration":@(generation),@"requestId":@(trim.request),
+    @"targetBytes":@(trim.target),@"before":@(trim.before),@"after":@(trim.after),@"trimmed":@(trim.trimmed),
+    @"pending":@(trim.pending),@"busy":@(trim.busy),@"reason":[NSString stringWithUTF8String:trim.reason],
+    @"scope":@"managedGpuTargets"};
+}
+NSDictionary* CacheTrimCall(const std::shared_ptr<State>& state,uint64_t texture,NSDictionary* args,bool poll) {
+  uint64_t generation=0,request=0,target=0;
+  if(!Unsigned(args[@"deviceGeneration"],generation,INT64_MAX) || generation!=state->generation ||
+     !Unsigned(args[@"requestId"],request,INT64_MAX) || !request ||
+     (!poll && args[@"targetBytes"] && !Unsigned(args[@"targetBytes"],target,rhwp::cache::kMaxTrimBytes)))
+    throw std::invalid_argument("cache trim needs matching device generation, positive request ID and bounded target bytes");
+  rhwp::cache::TrimReceipt receipt;
+  {
+    std::lock_guard<std::mutex> lock(state->mutex);
+    if(state->closed || !state->ready) throw std::invalid_argument("cache trim owner is closed or not ready");
+    receipt=poll ? state->cacheTrim.poll(request) : state->cacheTrim.enqueue(request,target);
+  }
+  if(!poll)state->changed.notify_one();
+  return CacheTrimValue(texture,generation,receipt);
+}
+NSDictionary* CacheTrimGroupValue(uint64_t group,uint64_t generation,NSArray* members) {
+  uint64_t before=0,after=0,trimmed=0;bool pending=false,busy=false;
+  for(NSDictionary* member in members) {
+    before += [member[@"before"] unsignedLongLongValue];after += [member[@"after"] unsignedLongLongValue];
+    trimmed += [member[@"trimmed"] unsignedLongLongValue];pending=pending||[member[@"pending"] boolValue];busy=busy||[member[@"busy"] boolValue];
+  }
+  NSDictionary* first=members[0];
+  return @{@"textureId":@(group),@"groupId":@(group),@"deviceGeneration":@(generation),
+    @"requestId":first[@"requestId"],@"targetBytes":first[@"targetBytes"],@"before":@(before),@"after":@(after),
+    @"trimmed":@(trimmed),@"pending":@(pending),@"busy":@(busy),@"members":members,
+    @"reason":pending?@"queued":busy?@"memberBusy":@"completed",@"scope":@"managedGpuTargets"};
 }
 bool Number(id value, double& output) {
   if (![value isKindOfClass:[NSNumber class]] || CFGetTypeID((__bridge CFTypeRef)value) == CFBooleanGetTypeID()) return false;
@@ -470,6 +526,7 @@ NSDictionary* CVLimits(bool negotiated) {
   limits[@"closeAcknowledgementRequired"] = @(negotiated);
   limits[@"consumerGpuCompletionVerified"] = @NO;
   limits[@"closeAckRefundsFrameCredit"] = @NO;
+  limits[@"cacheTrim"] = @YES;
   if (negotiated) {
     limits[@"maxRetainedCloseRecords"] = @2;
     limits[@"maxClosedReceipts"] = @2;
@@ -567,6 +624,8 @@ NSDictionary* CVClosedStatus(const CVCloseReceipt& receipt) {
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
   try {
     [self handleCall:call result:result];
+  } catch (const std::invalid_argument& error) {
+    result([FlutterError errorWithCode:@"invalidArgument" message:[NSString stringWithUTF8String:error.what()] details:nil]);
   } catch (const std::exception&) {
     result([FlutterError errorWithCode:@"nativeAllocation" message:@"The bounded native request could not be allocated." details:nil]);
   }
@@ -693,6 +752,9 @@ NSDictionary* CVClosedStatus(const CVCloseReceipt& receipt) {
   else if (route == TextureCloseRoute::legacyClosed) {state = _lastClosed;texture = nil;}
   if (!state) {result([FlutterError errorWithCode:@"closed" message:@"Unknown texture or expired acknowledged close receipt." details:nil]);return;}
   const bool registered = texture && (!state->closeAckRequired || _closeRecords.registered(state->generation));
+  if ([call.method isEqualToString:@"trimCache"] || [call.method isEqualToString:@"trimCacheStatus"]) {
+    result(CacheTrimCall(state,textureId,arguments,[call.method isEqualToString:@"trimCacheStatus"]));return;
+  }
   if ([call.method isEqualToString:@"retireAck"]) {
     bool complete;
     {std::lock_guard<std::mutex> lock(state->mutex);complete=state->closed&&state->finished&&!state->inFlight;}

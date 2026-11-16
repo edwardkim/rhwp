@@ -5,6 +5,20 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
+pub(crate) mod cache_trim;
+
+pub(crate) fn trim_receipt(
+    before: usize,
+    after: usize,
+    target: usize,
+    reason: &str,
+) -> serde_json::Value {
+    serde_json::json!({"ok":true,"before":before,"after":after,
+        "trimmed":before.saturating_sub(after),"targetBytes":target,
+        "busy":after > target || !reason.is_empty(),"reason":reason,
+        "scope":"managedGpuTargets","wholeFrameReadbacks":0})
+}
+
 use serde::Serialize;
 use skia_safe::Surface;
 
@@ -379,14 +393,9 @@ impl TileCache {
     /// Only unpinned owner-thread entries may be destroyed after the backend
     /// has drained or retained all work that references them.
     pub fn evict_idle(&mut self) -> bool {
-        let Some(index) = self
-            .entries
-            .iter()
-            .position(|entry| Rc::strong_count(entry) == 1)
-        else {
+        let Some(entry) = cache_trim::remove_oldest_idle(&mut self.entries) else {
             return false;
         };
-        let entry = self.entries.remove(index);
         self.observations.evictions = self.observations.evictions.saturating_add(1);
         self.observations.evicted_bytes = self
             .observations

@@ -768,6 +768,48 @@ impl NativeMetalPresenter {
         Ok(true)
     }
 
+    /// Owner-thread trim of completed internal targets; never touches the host output.
+    pub fn trim_cache(
+        &mut self,
+        target_bytes: usize,
+    ) -> Result<serde_json::Value, NativeHostError> {
+        if thread::current().id() != self.owner {
+            return Err(invalid("cache trim belongs to another owner thread"));
+        }
+        if target_bytes > self.config.max_managed_target_bytes {
+            return Err(invalid(
+                "cache trim target exceeds the configured managed-target budget",
+            ));
+        }
+        let before = self.target_budget.stats().estimated_bytes;
+        if self.context.is_none()
+            || self.suspended
+            || self.pending_gpu
+            || self.frame_active
+            || self.frames.working_count() != 0
+            || self.frames.tile_count() != 0
+        {
+            return Ok(super::gpu_tiles::trim_receipt(
+                before,
+                before,
+                target_bytes,
+                "unknownCompletion",
+            ));
+        }
+        while self.target_budget.stats().estimated_bytes > target_bytes && self.tiles.evict_idle() {
+        }
+        if self.target_budget.stats().estimated_bytes > target_bytes {
+            super::gpu_tiles::cache_trim::remove_unique(&mut self.frames.scratch);
+        }
+        let after = self.target_budget.stats().estimated_bytes;
+        Ok(super::gpu_tiles::trim_receipt(
+            before,
+            after,
+            target_bytes,
+            if after > target_bytes { "pinned" } else { "" },
+        ))
+    }
+
     pub fn release(&mut self) -> Result<(), NativeHostError> {
         self.live(self.generation)?;
         if self.pending_gpu || self.frame_active {

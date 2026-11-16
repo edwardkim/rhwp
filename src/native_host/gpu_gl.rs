@@ -1029,6 +1029,38 @@ impl NativeGlPresenter {
         }
     }
 
+    /// Drops only completed internal tile/scratch targets, preserving configured quotas.
+    /// # Safety
+    /// The matching host context must be current on this owner thread.
+    pub unsafe fn trim_cache(
+        &mut self,
+        context_id: u64,
+        generation: u64,
+        target_bytes: usize,
+    ) -> NativeGlResult<serde_json::Value> {
+        self.check_context(context_id, generation)?;
+        if target_bytes > self.config.max_managed_target_bytes {
+            return Err(
+                invalid("cache trim target exceeds the configured managed-target budget").into(),
+            );
+        }
+        self.healthy_device("Skia reported device loss before cache trim")?;
+        let before = self.target_budget.stats().estimated_bytes;
+        while self.target_budget.stats().estimated_bytes > target_bytes && self.tiles.evict_idle() {
+        }
+        while self.target_budget.stats().estimated_bytes > target_bytes && !self.scratch.is_empty()
+        {
+            self.scratch.remove(0);
+        }
+        let after = self.target_budget.stats().estimated_bytes;
+        Ok(super::gpu_tiles::trim_receipt(
+            before,
+            after,
+            target_bytes,
+            if after > target_bytes { "pinned" } else { "" },
+        ))
+    }
+
     /// # Safety
     /// Call only while the matching context is current. No render may be active.
     pub unsafe fn clear_caches(&mut self, context_id: u64, generation: u64) -> NativeGlResult<()> {

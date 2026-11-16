@@ -56,7 +56,8 @@ class FakeBridge : public Bridge {
   SnapshotInfo info{7, 3, 2, true, true};
   uint64_t next = 1, readbacks = 0;
   rhwp::metrics::CacheMetrics cache_metrics;
-  int renders = 0, released = 0, abandoned = 0;
+  int renders = 0, released = 0, abandoned = 0, trims = 0;
+  bool trim_error = false;
   std::string render_error;
   bool cleanup_error = false;
   std::function<void()> during_render;
@@ -77,6 +78,13 @@ class FakeBridge : public Bridge {
     if (during_render) { auto hook = std::move(during_render); hook(); }
     if (!render_error.empty()) throw Failure(render_error, "synthetic replay failure");
     return {readbacks, cache_metrics};
+  }
+  rhwp::cache::TrimReceipt trim_cache(uint64_t presenter,uint64_t identity,uint64_t,uint64_t target) override {
+    auto& owner=owners.at(presenter);
+    CHECK(owner.thread==std::this_thread::get_id());CHECK(owner.callbacks.current(owner.callbacks.user,identity)==1);
+    ++trims;if(trim_error)throw Failure("unknownCompletion","synthetic unknown GPU completion");
+    rhwp::cache::TrimReceipt result;result.before=128;result.after=std::min(uint64_t(128),target);
+    result.trimmed=result.before-result.after;result.busy=false;return result;
   }
   void release(uint64_t presenter, uint64_t identity, uint64_t) override {
     if (cleanup_error) throw Failure("cleanup", "synthetic cleanup failure");
@@ -467,6 +475,31 @@ void tile_group_borrowed_ids_do_not_consume_additional_lease_slots() {
   for(auto id:{940,941,942,943})CHECK(bridge->releases[uint64_t(id)]==1);
 }
 
+void cache_trim_runs_on_raster_owner_without_replacing_public_front() {
+  auto bridge=std::make_shared<FakeBridge>();auto state=std::make_shared<Shared>(bridge);
+  auto device=std::make_shared<Device>();auto context=std::make_shared<FakeContext>(device,1);RasterRegistry registry;
+  state->submit(frame());const auto front=registry.populate(state,context);
+  std::thread ui([&] {CHECK(state->trim_cache(1,1,0,false).pending);});ui.join();
+  CHECK(bridge->trims==0 && state->trim_cache(1,1,0,true).pending);
+  CHECK(registry.populate(state,context).texture==front.texture && bridge->trims==1 && bridge->renders==1);
+  auto result=state->trim_cache(1,1,0,true);CHECK(!result.pending&&!result.busy&&result.before==128&&result.after==0&&result.trimmed==128);
+  CHECK(!state->trim_cache(1,1,0,false).pending && bridge->trims==1);
+  rejected("contextChanged",[&]{state->trim_cache(2,2,0,false);});
+  bridge->trim_error=true;CHECK(state->trim_cache(2,1,0,false).pending);
+  CHECK(registry.populate(state,context).texture==front.texture && bridge->renders==1);
+  CHECK(!state->trim_cache(2,1,0,true).pending&&state->trim_cache(2,1,0,true).busy);
+  state->close();rejected("closing",[&]{registry.populate(state,context);});
+}
+void hidden_cache_trim_stays_pending_and_close_never_reports_a_fake_trim() {
+  auto state=std::make_shared<Shared>(std::make_shared<FakeBridge>());
+  CHECK(state->trim_cache(1,1,0,false).pending);
+  auto waiting=state->trim_cache(1,1,0,true);CHECK(waiting.pending&&waiting.busy&&waiting.trimmed==0);
+  state->close();auto canceled=state->cache_trim.poll(1);
+  CHECK(!canceled.pending&&canceled.busy&&canceled.trimmed==0);
+  CHECK(!state->cache_trim.finish(1,128,0,128,false));
+  rejected("closing",[&]{state->trim_cache(1,1,0,true);});
+}
+
 void unproven_driver_orphans_permanently_consume_the_process_budget() {
   auto bridge = std::make_shared<FakeBridge>();
   auto device = std::make_shared<Device>(); device->reclaim_on_abandon = false;
@@ -507,8 +540,10 @@ int main() {
     tile_group_second_failure_keeps_both_caller_owned();
     tile_group_snapshot_bound_is_union_not_placement_count();
     tile_group_borrowed_ids_do_not_consume_additional_lease_slots();
+    cache_trim_runs_on_raster_owner_without_replacing_public_front();
+    hidden_cache_trim_stays_pending_and_close_never_reports_a_fake_trim();
     unproven_driver_orphans_permanently_consume_the_process_budget();
-    std::cout << "texture state: 19 cases, " << checks << " checks passed\n";
+    std::cout << "texture state: 21 cases, " << checks << " checks passed\n";
     return 0;
   } catch (const std::exception& error) {
     std::cerr << error.what() << '\n'; return 1;

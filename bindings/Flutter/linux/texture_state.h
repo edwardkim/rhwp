@@ -1,6 +1,7 @@
 #ifndef RHWP_FLUTTER_LINUX_TEXTURE_STATE_H_
 #define RHWP_FLUTTER_LINUX_TEXTURE_STATE_H_
 
+#include "../common/cache_trim.h"
 #include <atomic>
 #include <cstdint>
 #include <memory>
@@ -66,6 +67,9 @@ class Bridge {
                           const Description&, const Target&) = 0;
   virtual void release(uint64_t presenter, uint64_t context, uint64_t generation) = 0;
   virtual void abandon(uint64_t presenter) = 0;
+  virtual rhwp::cache::TrimReceipt trim_cache(uint64_t, uint64_t, uint64_t, uint64_t) {
+    throw Failure("unsupported", "Native cache trimming is unavailable");
+  }
 };
 
 // A retained context supplies procedures only to its creating raster OS thread.
@@ -119,6 +123,8 @@ class Shared : public std::enable_shared_from_this<Shared> {
   uint64_t submit(Description description);
   static void submit_group(const std::shared_ptr<Shared>& first, const std::shared_ptr<Shared>& second,
                            Description first_frame, Description second_frame);
+  rhwp::cache::TrimReceipt trim_cache(uint64_t request, uint64_t generation, uint64_t target, bool poll);
+  rhwp::cache::TrimMailbox cache_trim;
   void close();  // Only metadata/registry release: never waits for GPU work.
   Status status() const;
   void error(const std::string& code, const std::string& message);

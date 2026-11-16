@@ -111,6 +111,12 @@
   if (!views[0] || !views[1]) {
     result([FlutterError errorWithCode:@"closed" message:@"Both tile owners must remain observable." details:nil]);return;
   }
+  if ([call.method isEqualToString:@"trimCache"] || [call.method isEqualToString:@"trimCacheStatus"]) {
+    NSMutableArray* members=[NSMutableArray arrayWithCapacity:2];
+    for(size_t i=0;i<2;++i)
+      [members addObject:CacheTrimCall(views[i]->owner,_tileGroup.textures[i],args,[call.method isEqualToString:@"trimCacheStatus"])];
+    result(CacheTrimGroupValue(group,generation,members));return;
+  }
   if ([call.method isEqualToString:@"submitGroup"]) {
     id tilesValue = args[@"tiles"];
     uint64_t clear = 0;
