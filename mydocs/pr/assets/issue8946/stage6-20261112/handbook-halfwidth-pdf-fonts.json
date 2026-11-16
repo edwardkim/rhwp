@@ -1,0 +1,799 @@
+[
+  {
+    "page": 30,
+    "halfwidth_runs": [
+      {
+        "text": "｣ ",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          1282.0,
+          1006.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 100.0
+      },
+      {
+        "text": "｢",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          1011.0,
+          1959.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 100.0
+      },
+      {
+        "text": "｣ ",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          1236.0,
+          1959.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 100.0
+      },
+      {
+        "text": "｢",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          956.0,
+          2178.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 100.0
+      },
+      {
+        "text": "｣",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          1177.0,
+          2178.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 100.0
+      },
+      {
+        "text": "｢",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          1011.0,
+          3128.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 100.0
+      },
+      {
+        "text": "｣ ",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          1498.0,
+          3128.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 100.0
+      },
+      {
+        "text": "｢",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          956.0,
+          3326.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 100.0
+      },
+      {
+        "text": "｣",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          1445.0,
+          3326.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 100.0
+      }
+    ]
+  },
+  {
+    "page": 168,
+    "halfwidth_runs": [
+      {
+        "text": "｢",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          939.0,
+          1011.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 106.0
+      },
+      {
+        "text": "｣ ",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          1388.0,
+          1011.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 106.0
+      },
+      {
+        "text": " ｢",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          939.0,
+          1528.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 106.0
+      },
+      {
+        "text": "｣ ",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          1388.0,
+          1528.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 106.0
+      },
+      {
+        "text": "｢",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          939.0,
+          2502.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 106.0
+      },
+      {
+        "text": "｣ ",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          1388.0,
+          2502.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 106.0
+      },
+      {
+        "text": "｢",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          939.0,
+          4189.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 106.0
+      },
+      {
+        "text": "｣ ",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          1388.0,
+          4189.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 106.0
+      },
+      {
+        "text": " ｢",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          933.0,
+          4693.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 106.0
+      },
+      {
+        "text": "｣",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          1552.0,
+          4693.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 106.0
+      },
+      {
+        "text": "｢",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          2351.0,
+          4693.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 106.0
+      },
+      {
+        "text": "｣",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          3392.0,
+          4693.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 106.0
+      }
+    ]
+  },
+  {
+    "page": 194,
+    "halfwidth_runs": [
+      {
+        "text": "･",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          1044.0,
+          1426.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 100.0
+      },
+      {
+        "text": "･",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          3104.0,
+          1824.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 100.0
+      },
+      {
+        "text": "･",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          1427.0,
+          1994.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 100.0
+      },
+      {
+        "text": "･",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          2725.0,
+          1994.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 100.0
+      },
+      {
+        "text": "･",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          1421.0,
+          2164.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 100.0
+      },
+      {
+        "text": " ｢",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          1112.0,
+          2944.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 100.0
+      },
+      {
+        "text": "｣ ",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          1793.0,
+          2944.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 100.0
+      },
+      {
+        "text": " ｢",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          1112.0,
+          3139.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 100.0
+      },
+      {
+        "text": "｣",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          1612.0,
+          3139.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 100.0
+      },
+      {
+        "text": " ｢",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          1112.0,
+          3334.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 100.0
+      },
+      {
+        "text": "｣ ",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          1793.0,
+          3334.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 100.0
+      },
+      {
+        "text": "･",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          3551.0,
+          3334.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 100.0
+      },
+      {
+        "text": "･",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          3037.0,
+          3724.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 100.0
+      }
+    ]
+  },
+  {
+    "page": 258,
+    "halfwidth_runs": [
+      {
+        "text": "･",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          2387.0,
+          1347.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 133.0
+      },
+      {
+        "text": "･",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          1416.0,
+          3886.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 92.0
+      },
+      {
+        "text": "･",
+        "base_font": "/INPILL+Haansoft Batang",
+        "text_matrix": [
+          1.0,
+          0.0,
+          0.0,
+          -1.0,
+          2339.0,
+          5219.0
+        ],
+        "current_matrix": [
+          0.12,
+          0.0,
+          0.0,
+          -0.12,
+          0.0,
+          754.0
+        ],
+        "font_size": 83.0
+      }
+    ]
+  }
+]

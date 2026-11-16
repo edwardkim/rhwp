@@ -1,4 +1,11 @@
-//! [Issue #6117] layer 재생 경로의 장식선(밑줄/취소선) 트림 대상 선정 계약.
+//! 검사 유형: 관계형. soft-wrap 공백과 저자가 남긴 문단 끝 공백의 장식 소유를 구분한다.
+//! 주석 갱신: 2026-11-15T18:30:14+09:00; 직전 변경: 2026-10-21T14:57:32+09:00, 80968497c2c178eeecb3b2e1d04d086ad27a0dc7.
+//! 실제 반례: samples/basic/issue2007_nested_cell_pagination_42065.hwp, 전17쪽.
+//! 독립 한컴 2020 Print, 96 DPI·2px raw, 2026-11-15: 11쪽 Native99.08% / fresh WASM99.09%.
+//! 전쪽 최저 Native98.60% / fresh WASM98.59%; 두 경로의11쪽 하단 밑줄 끝을 PDF와 대조했다.
+//! 근거: mydocs/pr/assets/issue7732_split_span_20261115/post-rebase-print-font-conditions/.
+//! 아래 합성 fixture는 픽셀을 고정하지 않고 공백 trim 발행·원문 보존 관계를 검사한다.
+//! Issue #6117의 layer 재생 경로 장식선(밑줄/취소선) 트림 계약을 보완한다.
 //!
 //! #6028 이 정한 규칙 — soft-wrap 이 소비한 줄-말미 공백은 장식선 길이에서 뺀다 —
 //! 은 RenderNode 경로에만 배선돼 있었다. studio 는 layer tree 를 그대로 재생하므로
@@ -101,11 +108,49 @@ fn issue_6117_keeps_author_spaces_on_a_paragraph_end_run() {
     assert_eq!(published_trims(vec![run("서명란   ", true)]), vec![0]);
 }
 
-/// 공백뿐인 꼬리 run 은 건너뛰고 그 앞의 가시 run 을 본다.
+/// 같은 soft-wrap 공백이 별도 run으로 나뉘어도 장식에 남지 않는다.
 #[test]
-fn issue_6117_ignores_space_only_runs_after_the_text() {
+fn issue_6117_trims_space_only_runs_after_soft_wrapped_text() {
     assert_eq!(
         published_trims(vec![run("본문  ", false), run("   ", false)]),
-        vec![2, 0]
+        vec![2, 3]
+    );
+}
+
+#[test]
+fn issue_6117_keeps_split_author_spaces_at_paragraph_end() {
+    assert_eq!(
+        published_trims(vec![run("서명란  ", false), run("   ", true)]),
+        vec![0, 0]
+    );
+}
+
+#[test]
+fn issue_6117_keeps_split_author_spaces_before_explicit_break() {
+    let mut tail = run("   ", false);
+    tail.is_line_break_end = true;
+    assert_eq!(
+        published_trims(vec![run("서명란  ", false), tail]),
+        vec![0, 0]
+    );
+}
+
+#[test]
+fn issue_6117_keeps_space_only_form_lines() {
+    assert_eq!(
+        published_trims(vec![run("  ", false), run("   ", false)]),
+        vec![0, 0]
+    );
+}
+
+#[test]
+fn issue_6117_trims_every_split_tail_run_of_the_same_soft_wrap() {
+    assert_eq!(
+        published_trims(vec![
+            run("본문  ", false),
+            run(" ", false),
+            run("  ", false)
+        ]),
+        vec![2, 1, 2]
     );
 }

@@ -1,13 +1,14 @@
 //! 버전 문자열이 빈 옛 수식의 한글·숫자 줄과 단순 분수 프레임.
 //!
 //! 독립 빈 문서의 2024 저장/Print: 두 face·다섯 크기와 버전 대조를 따른다.
-//! 원본 Type3 프로그램은 호출자가 공급한 `RHWP Legacy Equation`에서 읽는다.
+//! 원본 Type3 프로그램은 준비 도구가 공급한 `RHWP Hancom Legacy Equation`에서 읽는다.
+//! 이전 로컬 가족과 현대 대체 이름은 결측 시의 후보로 보존한다.
 //! 영문·그리스 문자와 첨자 등 미확인 구조는 기존 경로를 유지한다.
 
 use super::{EqLayout, EqNode, FontGlyphPaint, FontStyleKind, LayoutBox, LayoutKind};
 use crate::model::control::Equation;
 
-const FAMILY: &str = "RHWP Legacy Equation, HyhwpEQ, serif";
+const FAMILY: &str = "RHWP Hancom Legacy Equation, RHWP Legacy Equation, HyhwpEQ, serif";
 
 pub(super) fn matches_version(equation: &Equation) -> bool {
     if equation.script.trim().is_empty()

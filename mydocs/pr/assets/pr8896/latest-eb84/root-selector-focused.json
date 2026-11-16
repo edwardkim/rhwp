@@ -1,0 +1,13 @@
+{
+  "source": "759212053e4b289db93034c7b2b32f5b50bdcd4e",
+  "command": [
+    "node",
+    "scripts/run-rust-test.mjs",
+    "issue_2007_nested_cell_pagination",
+    "--",
+    "--cargo-profile",
+    "release-test"
+  ],
+  "returncode": 0,
+  "seconds": 25.6
+}

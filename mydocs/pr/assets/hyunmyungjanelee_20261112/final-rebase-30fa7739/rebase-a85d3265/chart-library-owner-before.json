@@ -1,0 +1,9 @@
+[
+  {
+    "file": "/Users/tsjang/rhwp/target/pr-review/release-test/deps/librhwp_ooxml_chart-b0f3c09fa2ff3273.rlib",
+    "sha256": "a6df0cb046f7599623f6b973150645eb5fc85d38cd004f5714e2110f06024c63",
+    "bytes": 984312,
+    "mtime": "2026-11-12T14:10:46.658200+00:00",
+    "contains_base_source_path": true
+  }
+]

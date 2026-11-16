@@ -1,5 +1,5 @@
 //! 관계형: 공개 웹폰트 변환과 Native 로컬 우선 공급 계약을 검사한다.
-//! 주석 갱신: 2026-11-07 07:46:43 KST; 원본 HFT 원형 기호와 표시 프로그램 hmtx의 소유를 추가 검증.
+//! 주석 갱신: 2026-11-15T09:57:56+09:00; 직전 파일 커밋: 2026-11-09T21:27:50+09:00 (65573d0e53a806fdfa22e50eb7a0ca74621d6490)
 //! 직전 파일 변경: 5551091085418c17d8321c0fee2626365911481b (2026-11-04 12:13:59 +09:00).
 //! 합성 글꼴 입력 검사이며 실물 페이지의 일치율이나 고정 px를 주장하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
@@ -88,6 +88,28 @@ fn local_face_wins_and_generic_fallback_does_not_claim_to_supply_the_unknown_ori
         supplied.mappings.is_empty() && supplied.generic_fallbacks.is_empty(),
         "설치된 문서 선언 대체는 일반 웹 대체로 덮어쓰지 않음"
     );
+}
+
+#[test]
+fn declared_local_substitute_precedes_a_registered_webfont() {
+    let core = document_with_face("Helvetica");
+    let mut declared = core.document().doc_info.clone();
+    for face in declared.font_faces.iter_mut().flatten() {
+        face.subst_font = Some(rhwp::model::style::SubstFont {
+            face: "NotoSansKR-Regular".into(),
+            font_type: 1,
+            ..Default::default()
+        });
+    }
+    let local = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("ttfs/opensource/NotoSansKR-Regular.ttf");
+    let supply = prepare(&declared, &[local]).unwrap();
+    assert!(supply.mappings.is_empty(), "문서의 실제 대체 선택을 보존");
+    assert!(
+        supply.paths.is_empty(),
+        "registry가 있어도 다운로드하지 않음"
+    );
+    assert!(supply.web_fonts.is_empty() && supply.generic_fallbacks.is_empty());
 }
 
 #[test]

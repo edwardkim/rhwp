@@ -1,0 +1,72 @@
+{
+  "base": "4c876654d86d071d342fc78706c51cfff6ddbde4",
+  "measuredAt": "2026-11-12T00:59:54.569341+09:00",
+  "hancom": {
+    "version": "13.0.0.3901",
+    "job": "872c3bff-1360-4070-be64-299b46fe1882",
+    "inputPreprocess": "none",
+    "pdfPrintMethod": 0,
+    "pdfOutputMode": "frame_print_to_pdf_ex_one_up"
+  },
+  "inputs": {
+    "strawberry-tracking.hwpx": "beab8620cdee0c839dd0f7904f70bb0aedb82e02f23ac996cfe09943f7e3257a",
+    "strawberry-tracking-2024.pdf": "4e8fb5e08aebf50830cb1fffcc5d118156d6a1f83403a395e6c25c12c17bb212",
+    "HGSTRBRY.otf": "6844aed54084783e28e7be0da351d08f4c0fe9e16e0844cbad4e4164c47488ca"
+  },
+  "builds": {
+    "native": "f981828ef5c3abedc510007bd6f12aa58ec35dad1c4cbcbee23c592096e5189e",
+    "base-native": "c53ecbd67b450911df5a3400825e30350cb8c8ecccda88a5577181d732301b98",
+    "wasm": "6d9ac9fc33019cc1b53bbcb0c665264b12e37c81ae0f9942a884f88afaa46755",
+    "base-wasm": "139df0653880232b4957b837f81beca93d0b9c1688f5718ed95def710d6a656c"
+  },
+  "files": {
+    "README.md": "f8c9e0956f4250bc0ba4fec38f8fbf5f5c971b1856c0529bc2e17cb5429c2b14",
+    "base-native.png": "2f5afd7efbbb04ae67f836ed0f0efd735f662ccfb5f1920e515b6e63d67dcacc",
+    "base-native.tsv": "724285eda98b53dd037ba2754df1fa81a7945b533d6924559d01a5cf6f062255",
+    "base-wasm.png": "6b7deefdc0a28143f8748622cd2b2b84e424867b1a3dbc0d82e917c7b60d5ae7",
+    "base-wasm.tsv": "724285eda98b53dd037ba2754df1fa81a7945b533d6924559d01a5cf6f062255",
+    "clippy-focused.txt": "4cf099ed5fbc8bdf59226ebf95e86ab9c9aabb660abf79641dc9dbec3cea86b7",
+    "cover-bold-base-native.tsv": "f4aeb6397d253d827bbfcf5c7ba1693e5161c97b264d433a880b82e65ff91502",
+    "cover-bold-base-wasm.tsv": "841cab55f4ef25c42f28c9a034aada4654c6333b418da22127c3702423c7849e",
+    "cover-bold-fixed-native.tsv": "679a5e26074c7924f6cd65047bd63a4254e0ee08a7277f89c1275b48e8605949",
+    "cover-bold-fixed-wasm.tsv": "dad43b7829ad5766cebff8058e469955eb9c87d5599a0c83d15f31216902e3b4",
+    "cover-regular-base-native.tsv": "ac87475b5dc51b928ad791589c3ac89a8558e7bcbfd3165efb1b4248929a5dcb",
+    "cover-regular-base-wasm.tsv": "522cf30daee520d2681b1723667e443aa252986ddc41fbd472a2dd230a6c6edb",
+    "cover-regular-fixed-native.tsv": "ac87475b5dc51b928ad791589c3ac89a8558e7bcbfd3165efb1b4248929a5dcb",
+    "cover-regular-fixed-wasm.tsv": "522cf30daee520d2681b1723667e443aa252986ddc41fbd472a2dd230a6c6edb",
+    "driver-separation.json": "bab6ca11688f76551aa660063822aede62d089482d8b34265d622ddb6258d097",
+    "fixed-cover-crop.png": "aeaafd340d368ccc56e0d19681337e549f1fd98e853d86b07e87ae197d137ecf",
+    "fixed-native.png": "bb3500369b9faaf167058c7672e703b408eefa70e2fdbcb1f8a375b952ad0216",
+    "fixed-native.tsv": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "fixed-output-check.json": "6c80694855050e7680c1cc72af62bc0f12e1445d46dfb8388abb8e4a7b68f3a0",
+    "fixed-wasm.png": "c84cf158d8522b336cdbc14f34759fb0503ba7f727b65e012c993ff54ca08ae1",
+    "fixed-wasm.tsv": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "focused-regressions.txt": "75da5cc2fc903953d0d43e46f46a1fac314f63dd4a465a1582e13d0adf0da86e",
+    "hancom.png": "1cb4a49f711abc683cde7b5d87fc2a38c3db28f72a08f232c3ac0fa53d069509",
+    "position-separation.json": "e4dc2ce36f7f63014a681c662a5447ec54e4e696af942b4063db031f1ba57225",
+    "preservation-base-native.tsv": "c311cd9d52afc9f6a29ed31c4802b3d44cc79ed326e239f9037de980cc42f448",
+    "preservation-base-wasm.tsv": "c311cd9d52afc9f6a29ed31c4802b3d44cc79ed326e239f9037de980cc42f448",
+    "preservation-fixed-native.tsv": "c311cd9d52afc9f6a29ed31c4802b3d44cc79ed326e239f9037de980cc42f448",
+    "preservation-fixed-wasm.tsv": "c311cd9d52afc9f6a29ed31c4802b3d44cc79ed326e239f9037de980cc42f448",
+    "tracking-review.png": "a76e838eb1d5ca08cea77e34a7f6f9a5e1e2bd7431a959aca095bd0820ea1c2d"
+  },
+  "sourceDiffSha256": "e91c8f91f914c2530f8efc3ff1087fa26e62fb8d2c9d8408a3fbf1b3486c5ca1",
+  "minimalFonts": {
+    "profileSha256": "9200cd51f7c14f872c6c3073708aed22d3276db23518e06dc188317aa47bef72",
+    "systemProfilerRecords": 237,
+    "coreTextIsolatedUrls": 528,
+    "coreTextNormalUrls": 810,
+    "fixtureAccessVerified": true,
+    "userOtfReadBlocked": true,
+    "additionalAllowedFixture": "RHWPHostFixture-Preferred.ttf (MIT)"
+  },
+  "verification": {
+    "focusedRegressionTests": 57,
+    "failed": 0,
+    "formatCheck": "pass",
+    "wholeRepositoryRegression": "not run",
+    "handbook383PageGate": "not run",
+    "coverWholePageGate": "re_review_required",
+    "focusedClippy": "pass (--lib --test regression_suite_027 --features native-skia --profile release-test, -D warnings)"
+  }
+}

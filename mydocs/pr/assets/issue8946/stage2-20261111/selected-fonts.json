@@ -1,0 +1,783 @@
+[
+  {
+    "catalogIndex": 11,
+    "file": "ENCORN.otf",
+    "sha256": "c380338aa87f488419c607aae0595c08a373cf756e6ef58dfc82f1e4d05f040f",
+    "faceIndex": 0,
+    "families": [
+      "Corn",
+      "옥수수",
+      "Corn-ENCORN"
+    ]
+  },
+  {
+    "catalogIndex": 19,
+    "file": "ENCUCMBR.otf",
+    "sha256": "64b0415c50c1a61d43f0c3c85406ee38986f154f01a3b6b87d20364dd93ab48f",
+    "faceIndex": 0,
+    "families": [
+      "Cucumber",
+      "오이",
+      "Cucumber-ENCUCMBR"
+    ]
+  },
+  {
+    "catalogIndex": 31,
+    "file": "ENGGT.otf",
+    "sha256": "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9",
+    "faceIndex": 0,
+    "families": [
+      "HY Gyeongothic",
+      "한양견고딕",
+      "HYGyeongothic-ENGGT"
+    ]
+  },
+  {
+    "catalogIndex": 37,
+    "file": "ENGS.otf",
+    "sha256": "ed503552219ae16332e595c4b2999a3462d55509a4032dfce29c5ee4d0407346",
+    "faceIndex": 0,
+    "families": [
+      "HY Gungseo",
+      "한양궁서",
+      "HYGungseo-ENGS"
+    ]
+  },
+  {
+    "catalogIndex": 42,
+    "file": "ENJGT.otf",
+    "sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+    "faceIndex": 0,
+    "families": [
+      "HY Junggothic",
+      "한양중고딕",
+      "HYJunggothic-ENJGT"
+    ]
+  },
+  {
+    "catalogIndex": 45,
+    "file": "ENMJ.otf",
+    "sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+    "faceIndex": 0,
+    "families": [
+      "Myeongjo",
+      "명조",
+      "Myeongjo-ENMJ"
+    ]
+  },
+  {
+    "catalogIndex": 55,
+    "file": "ENSMJ.otf",
+    "sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
+    "faceIndex": 0,
+    "families": [
+      "HY Sinmyeongjo",
+      "한양신명조",
+      "HYSinmyeongjo-ENSMJ"
+    ]
+  },
+  {
+    "catalogIndex": 60,
+    "file": "ENSYS.otf",
+    "sha256": "f11137ccccd429956b6e386edd8b197f1ff17c9f9385c40752cb8ed2c8b30546",
+    "faceIndex": 0,
+    "families": [
+      "System",
+      "시스템",
+      "System-ENSYS"
+    ]
+  },
+  {
+    "catalogIndex": 62,
+    "file": "FLMJ.otf",
+    "sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e",
+    "faceIndex": 0,
+    "families": [
+      "Myeongjo",
+      "명조",
+      "Myeongjo-FLMJ"
+    ]
+  },
+  {
+    "catalogIndex": 63,
+    "file": "FLSMJ.otf",
+    "sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b",
+    "faceIndex": 0,
+    "families": [
+      "HY Sinmyeongjo",
+      "한양신명조",
+      "HYSinmyeongjo-FLSMJ"
+    ]
+  },
+  {
+    "catalogIndex": 71,
+    "file": "HCENDNR.otf",
+    "sha256": "df37d0aad063fcc67a13f00eda6e184b306b61fa57eaf4714eb4fd64c877c54b",
+    "faceIndex": 0,
+    "families": [
+      "Dinaru",
+      "디나루",
+      "Dinaru-HCENDNR"
+    ]
+  },
+  {
+    "catalogIndex": 76,
+    "file": "HCENGS.otf",
+    "sha256": "a9c2638e8cbff793b19b116b743f2ab198219c421d369b7861ac6dc5a3915edf",
+    "faceIndex": 0,
+    "families": [
+      "Gungseo",
+      "궁서",
+      "Gungseo-HCENGS"
+    ]
+  },
+  {
+    "catalogIndex": 81,
+    "file": "HCENJGT.otf",
+    "sha256": "a5682f13446b5e4c336f8222cd24d4b4a9afd516885e261ba96feafd5b76dce3",
+    "faceIndex": 0,
+    "families": [
+      "Junggothic",
+      "중고딕",
+      "Junggothic-HCENJGT"
+    ]
+  },
+  {
+    "catalogIndex": 84,
+    "file": "HCENSDNR.otf",
+    "sha256": "f814256e1a58ae8d898222c9105ab70535291e100fa9d84c780d3c24a30c219b",
+    "faceIndex": 0,
+    "families": [
+      "Sindinaru",
+      "신디나루",
+      "Sindinaru-HCENSDNR"
+    ]
+  },
+  {
+    "catalogIndex": 98,
+    "file": "HCENSNR.otf",
+    "sha256": "4aee191decc2ab86c333257d291b5d46fac1717bed5dbd1f8705e6b720e95f70",
+    "faceIndex": 0,
+    "families": [
+      "Senaru",
+      "세나루",
+      "Senaru-HCENSNR"
+    ]
+  },
+  {
+    "catalogIndex": 100,
+    "file": "HCENSSNR.otf",
+    "sha256": "7e735396377e6e6a303f2c69d2e13c72add42d6ec79ab9807c905d1beeaf95e1",
+    "faceIndex": 0,
+    "families": [
+      "Sinsenaru",
+      "신세나루",
+      "Sinsenaru-HCENSSNR"
+    ]
+  },
+  {
+    "catalogIndex": 103,
+    "file": "HCENTGT.otf",
+    "sha256": "da4f226e7df89a487af199b836be7d8ea90704330d44b7dbd14dc85d960c4859",
+    "faceIndex": 0,
+    "families": [
+      "Taegothic",
+      "태고딕",
+      "Taegothic-HCENTGT"
+    ]
+  },
+  {
+    "catalogIndex": 107,
+    "file": "HCHGDNR.otf",
+    "sha256": "39bb7a9355bcd39d9d4ca5eab44a13641196d0d2aa4e890c5fec991586f9f9bc",
+    "faceIndex": 0,
+    "families": [
+      "Dinaru",
+      "디나루",
+      "Dinaru-HCHGDNR"
+    ]
+  },
+  {
+    "catalogIndex": 112,
+    "file": "HCHGGS.otf",
+    "sha256": "9749ecdd1159f5319f812f93c06a1ba092da1f433d6b6f35c5ad517b5d527a1a",
+    "faceIndex": 0,
+    "families": [
+      "Gungseo",
+      "궁서",
+      "Gungseo-HCHGGS"
+    ]
+  },
+  {
+    "catalogIndex": 115,
+    "file": "HCHGJGT.otf",
+    "sha256": "2c6e8f5b65eff460abaebecabc2a1073c3eebc148076a6b3830aa38a80e7cc6a",
+    "faceIndex": 0,
+    "families": [
+      "Junggothic",
+      "중고딕",
+      "Junggothic-HCHGJGT"
+    ]
+  },
+  {
+    "catalogIndex": 117,
+    "file": "HCHGSDNR.otf",
+    "sha256": "31073f9a23497758581591c000da627e4a19c124dfc1b41767a6added37d9e94",
+    "faceIndex": 0,
+    "families": [
+      "Sindinaru",
+      "신디나루",
+      "Sindinaru-HCHGSDNR"
+    ]
+  },
+  {
+    "catalogIndex": 131,
+    "file": "HCHGSNR.otf",
+    "sha256": "c9909c5ed32ed8f03f476171e7fc3aa0941f841292cc07820e006af3ce30c691",
+    "faceIndex": 0,
+    "families": [
+      "Senaru",
+      "세나루",
+      "Senaru-HCHGSNR"
+    ]
+  },
+  {
+    "catalogIndex": 133,
+    "file": "HCHGSSNR.otf",
+    "sha256": "59aec4439a0cece498a3393287c442f0cd76f2d2384087a9f9d1d03db09623e7",
+    "faceIndex": 0,
+    "families": [
+      "Sinsenaru",
+      "신세나루",
+      "Sinsenaru-HCHGSSNR"
+    ]
+  },
+  {
+    "catalogIndex": 136,
+    "file": "HCHGTGT.otf",
+    "sha256": "fc0a42f9de898629e3c0e18ba59b7f243deba0ab2595425a760e2344195034cf",
+    "faceIndex": 0,
+    "families": [
+      "Taegothic",
+      "태고딕",
+      "Taegothic-HCHGTGT"
+    ]
+  },
+  {
+    "catalogIndex": 141,
+    "file": "HCHJGS.otf",
+    "sha256": "fbda1e014fb9e2ccc507be4d655b774deb4044a69b5059b05a577d5875568e9a",
+    "faceIndex": 0,
+    "families": [
+      "Gungseo",
+      "궁서",
+      "Gungseo-HCHJGS"
+    ]
+  },
+  {
+    "catalogIndex": 142,
+    "file": "HCHJJGT.otf",
+    "sha256": "e594b8a41cc8d64438518b3d2e8eaeb0344db3abdfd44aefea06d1c1b093659d",
+    "faceIndex": 0,
+    "families": [
+      "Junggothic",
+      "중고딕",
+      "Junggothic-HCHJJGT"
+    ]
+  },
+  {
+    "catalogIndex": 144,
+    "file": "HCHJSDNR.otf",
+    "sha256": "dd3127d9c9780f296ed801e2099e25910a7fe1174df96175d039f782078b8107",
+    "faceIndex": 0,
+    "families": [
+      "Sindinaru",
+      "신디나루",
+      "Sindinaru-HCHJSDNR"
+    ]
+  },
+  {
+    "catalogIndex": 151,
+    "file": "HCHJSSNR.otf",
+    "sha256": "0d465f4c6bb448b36e712caed92339bd98d9384b20eaf81eac15f79cb60b0bac",
+    "faceIndex": 0,
+    "families": [
+      "Sinsenaru",
+      "신세나루",
+      "Sinsenaru-HCHJSSNR"
+    ]
+  },
+  {
+    "catalogIndex": 152,
+    "file": "HCHJTGT.otf",
+    "sha256": "8db67a2414128fff3b26353393d8f49fb1851cf846947293eed79bde926cc426",
+    "faceIndex": 0,
+    "families": [
+      "Taegothic",
+      "태고딕",
+      "Taegothic-HCHJTGT"
+    ]
+  },
+  {
+    "catalogIndex": 154,
+    "file": "HCJPJGT.otf",
+    "sha256": "659149ae636a2c3f99efa1429b3644f14d8f1c2cb97b8174932ce60d239a30d8",
+    "faceIndex": 0,
+    "families": [
+      "Junggothic",
+      "중고딕",
+      "Junggothic-HCJPJGT"
+    ]
+  },
+  {
+    "catalogIndex": 160,
+    "file": "HCJPTGT.otf",
+    "sha256": "2b97862b3496d11adce1c77ef1eca63b4bd15cb188d9a408b29c189bab024882",
+    "faceIndex": 0,
+    "families": [
+      "Taegothic",
+      "태고딕",
+      "Taegothic-HCJPTGT"
+    ]
+  },
+  {
+    "catalogIndex": 165,
+    "file": "HCSPDNR.otf",
+    "sha256": "f5517036d1d3fa4a56dfe4311d884c8b997818c77b7d057cb84feeca863babef",
+    "faceIndex": 0,
+    "families": [
+      "Dinaru",
+      "디나루",
+      "Dinaru-HCSPDNR"
+    ]
+  },
+  {
+    "catalogIndex": 170,
+    "file": "HCSPGS.otf",
+    "sha256": "a7fce3bbac3965f765c2545172afc3daf72963a6d311d807f075e1ed864ab2ee",
+    "faceIndex": 0,
+    "families": [
+      "Gungseo",
+      "궁서",
+      "Gungseo-HCSPGS"
+    ]
+  },
+  {
+    "catalogIndex": 171,
+    "file": "HCSPJGT.otf",
+    "sha256": "0d4c5ef68b8e4d55b761db725ea54e0f472e96d9ad3c44435def92daf8d226a5",
+    "faceIndex": 0,
+    "families": [
+      "Junggothic",
+      "중고딕",
+      "Junggothic-HCSPJGT"
+    ]
+  },
+  {
+    "catalogIndex": 174,
+    "file": "HCSPSDNR.otf",
+    "sha256": "f2d86ab8a4fbb27d94a5805f0e7603bb65cae2e7a46033237e9173d6282c2e36",
+    "faceIndex": 0,
+    "families": [
+      "Sindinaru",
+      "신디나루",
+      "Sindinaru-HCSPSDNR"
+    ]
+  },
+  {
+    "catalogIndex": 182,
+    "file": "HCSPSNR.otf",
+    "sha256": "5a77a862312ff284e578da5774ea412e8795284d515b5dc9bff5788e9f96241f",
+    "faceIndex": 0,
+    "families": [
+      "Senaru",
+      "세나루",
+      "Senaru-HCSPSNR"
+    ]
+  },
+  {
+    "catalogIndex": 184,
+    "file": "HCSPSSNR.otf",
+    "sha256": "d74f7b855fa55c424bcb2ed6269afc849ee38db4cb557b79bb1bfb8687c05136",
+    "faceIndex": 0,
+    "families": [
+      "Sinsenaru",
+      "신세나루",
+      "Sinsenaru-HCSPSSNR"
+    ]
+  },
+  {
+    "catalogIndex": 187,
+    "file": "HCSPTGT.otf",
+    "sha256": "869158e2be56c343baf14e40c32d8497b8de3f691747d3ae38b555b606788d07",
+    "faceIndex": 0,
+    "families": [
+      "Taegothic",
+      "태고딕",
+      "Taegothic-HCSPTGT"
+    ]
+  },
+  {
+    "catalogIndex": 192,
+    "file": "HGCORN.otf",
+    "sha256": "c067bcdb413c573bde52aa0705583d0329d14a9a0e69eece2ac81e834f7393b0",
+    "faceIndex": 0,
+    "families": [
+      "Corn",
+      "옥수수",
+      "Corn-HGCORN"
+    ]
+  },
+  {
+    "catalogIndex": 193,
+    "file": "HGCUCMBR.otf",
+    "sha256": "da4445d0ebd83dc03631b12a0423a9baf6084aea269008d71d3450fba8d0e0a3",
+    "faceIndex": 0,
+    "families": [
+      "Cucumber",
+      "오이",
+      "Cucumber-HGCUCMBR"
+    ]
+  },
+  {
+    "catalogIndex": 196,
+    "file": "HGEGPLNT.otf",
+    "sha256": "5a75da50547d1700f457df56b5bea3d0d508dd87593c93590a278fd2f349eb37",
+    "faceIndex": 0,
+    "families": [
+      "Eggplant",
+      "가지",
+      "Eggplant-HGEGPLNT"
+    ]
+  },
+  {
+    "catalogIndex": 197,
+    "file": "HGGGT.otf",
+    "sha256": "da42e4819214f960b3561d4acf51571ad0c887f258e3dc034f5c2fae5c842a68",
+    "faceIndex": 0,
+    "families": [
+      "HY Gyeongothic",
+      "한양견고딕",
+      "HYGyeongothic-HGGGT"
+    ]
+  },
+  {
+    "catalogIndex": 200,
+    "file": "HGGS.otf",
+    "sha256": "b654b6944b6c45a5581d218b8aa0e2e4125a7f348b9f8f91803831f29ce37040",
+    "faceIndex": 0,
+    "families": [
+      "HY Gungseo",
+      "한양궁서",
+      "HYGungseo-HGGS"
+    ]
+  },
+  {
+    "catalogIndex": 203,
+    "file": "HGKDNYBN.otf",
+    "sha256": "a93c32d8a696a0c069bd74f3f42cee8f0f2a6410b6cbd4b77395c44d1603f1e9",
+    "faceIndex": 0,
+    "families": [
+      "Kidney bean",
+      "강낭콩",
+      "Kidneybean-HGKDNYBN"
+    ]
+  },
+  {
+    "catalogIndex": 204,
+    "file": "HGMJ.otf",
+    "sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287",
+    "faceIndex": 0,
+    "families": [
+      "Myeongjo",
+      "명조",
+      "Myeongjo-HGMJ"
+    ]
+  },
+  {
+    "catalogIndex": 206,
+    "file": "HGPEACH.otf",
+    "sha256": "1ea92a217d1d5d0ce36073b7b3d1661a3253bfb1a6d2a4dc95535433a2c0ea63",
+    "faceIndex": 0,
+    "families": [
+      "Peach",
+      "복숭아",
+      "Peach-HGPEACH"
+    ]
+  },
+  {
+    "catalogIndex": 210,
+    "file": "HGSMJ.otf",
+    "sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0",
+    "faceIndex": 0,
+    "families": [
+      "HY Sinmyeongjo",
+      "한양신명조",
+      "HYSinmyeongjo-HGSMJ"
+    ]
+  },
+  {
+    "catalogIndex": 211,
+    "file": "HGSTRBRY.otf",
+    "sha256": "6844aed54084783e28e7be0da351d08f4c0fe9e16e0844cbad4e4164c47488ca",
+    "faceIndex": 0,
+    "families": [
+      "Strawberry",
+      "딸기",
+      "Strawberry-HGSTRBRY"
+    ]
+  },
+  {
+    "catalogIndex": 212,
+    "file": "HGSYS.otf",
+    "sha256": "b541cec7bb43f6ef98d5efb033a1dc191922ca7f9893cd2652ce0dfaa13a630e",
+    "faceIndex": 0,
+    "families": [
+      "System",
+      "시스템",
+      "System-HGSYS"
+    ]
+  },
+  {
+    "catalogIndex": 218,
+    "file": "HJJGT.otf",
+    "sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1",
+    "faceIndex": 0,
+    "families": [
+      "HY Junggothic",
+      "한양중고딕",
+      "HYJunggothic-HJJGT"
+    ]
+  },
+  {
+    "catalogIndex": 219,
+    "file": "HJMJ.otf",
+    "sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba",
+    "faceIndex": 0,
+    "families": [
+      "Myeongjo",
+      "명조",
+      "Myeongjo-HJMJ"
+    ]
+  },
+  {
+    "catalogIndex": 220,
+    "file": "HJSMJ.otf",
+    "sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9",
+    "faceIndex": 0,
+    "families": [
+      "HY Sinmyeongjo",
+      "한양신명조",
+      "HYSinmyeongjo-HJSMJ"
+    ]
+  },
+  {
+    "catalogIndex": 221,
+    "file": "HJSYS.otf",
+    "sha256": "332201f62c6833e9ffba1861fc6c22726a517d1f75a34eaa2f1885216d08a130",
+    "faceIndex": 0,
+    "families": [
+      "System",
+      "시스템",
+      "System-HJSYS"
+    ]
+  },
+  {
+    "catalogIndex": 272,
+    "file": "HMKOLD.otf",
+    "sha256": "f2122c5200148d46a3f13b703e27536748fc5abf912a9b44d8ccd0f2b7f4ce97",
+    "faceIndex": 0,
+    "families": [
+      "Human Yet",
+      "휴먼옛체",
+      "HumanYet-HMKOLD"
+    ]
+  },
+  {
+    "catalogIndex": 283,
+    "file": "JPJGT.otf",
+    "sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63",
+    "faceIndex": 0,
+    "families": [
+      "HY Junggothic",
+      "한양중고딕",
+      "HYJunggothic-JPJGT"
+    ]
+  },
+  {
+    "catalogIndex": 285,
+    "file": "JPMJ.otf",
+    "sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c",
+    "faceIndex": 0,
+    "families": [
+      "Myeongjo",
+      "명조",
+      "Myeongjo-JPMJ"
+    ]
+  },
+  {
+    "catalogIndex": 286,
+    "file": "JPSMJ.otf",
+    "sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a",
+    "faceIndex": 0,
+    "families": [
+      "HY Sinmyeongjo",
+      "한양신명조",
+      "HYSinmyeongjo-JPSMJ"
+    ]
+  },
+  {
+    "catalogIndex": 288,
+    "file": "JPSYS.otf",
+    "sha256": "d3c70c4f3af26676105cf9bd44e08417fa28ca03187ffb45dc8d1e7cae6c6579",
+    "faceIndex": 0,
+    "families": [
+      "System",
+      "시스템",
+      "System-JPSYS"
+    ]
+  },
+  {
+    "catalogIndex": 297,
+    "file": "SPJGT.otf",
+    "sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480",
+    "faceIndex": 0,
+    "families": [
+      "HY Junggothic",
+      "한양중고딕",
+      "HYJunggothic-SPJGT"
+    ]
+  },
+  {
+    "catalogIndex": 298,
+    "file": "SPMJ.otf",
+    "sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834",
+    "faceIndex": 0,
+    "families": [
+      "Myeongjo",
+      "명조",
+      "Myeongjo-SPMJ"
+    ]
+  },
+  {
+    "catalogIndex": 299,
+    "file": "SPSMJ.otf",
+    "sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497",
+    "faceIndex": 0,
+    "families": [
+      "HY Sinmyeongjo",
+      "한양신명조",
+      "HYSinmyeongjo-SPSMJ"
+    ]
+  },
+  {
+    "catalogIndex": 300,
+    "file": "SPSYS.otf",
+    "sha256": "a94aaa295c4cd1033926bb0ec97ed5f6b2cd0d3ca06608c18347a87cd005ed07",
+    "faceIndex": 0,
+    "families": [
+      "System",
+      "시스템",
+      "System-SPSYS"
+    ]
+  },
+  {
+    "catalogIndex": 303,
+    "file": "TEDNREN.otf",
+    "sha256": "d292d1972ff9de8641c52e3bff41fa0d5ba012c3fd0a1b6514f49e4a5f29fced",
+    "faceIndex": 0,
+    "families": [
+      "Sinmyeong Dinaru",
+      "신명 디나루",
+      "SinmyeongDinaru-TEDNREN"
+    ]
+  },
+  {
+    "catalogIndex": 304,
+    "file": "TEDNRHG.otf",
+    "sha256": "00eae1decfbbee1f2344ff95ec396eacd7581a70d65849a3305d3e2df5137b13",
+    "faceIndex": 0,
+    "families": [
+      "Sinmyeong Dinaru",
+      "신명 디나루",
+      "SinmyeongDinaru-TEDNRHG"
+    ]
+  },
+  {
+    "catalogIndex": 355,
+    "file": "TETGTEN.otf",
+    "sha256": "201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3",
+    "faceIndex": 0,
+    "families": [
+      "Sinmyeong Taegothic",
+      "신명 태고딕",
+      "SinmyeongTaegothic-TETGTEN"
+    ]
+  },
+  {
+    "catalogIndex": 356,
+    "file": "TETGTHG.otf",
+    "sha256": "dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3",
+    "faceIndex": 0,
+    "families": [
+      "Sinmyeong Taegothic",
+      "신명 태고딕",
+      "SinmyeongTaegothic-TETGTHG"
+    ]
+  },
+  {
+    "catalogIndex": 357,
+    "file": "TETGTHJ.otf",
+    "sha256": "99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27",
+    "faceIndex": 0,
+    "families": [
+      "Sinmyeong Taegothic",
+      "신명 태고딕",
+      "SinmyeongTaegothic-TETGTHJ"
+    ]
+  },
+  {
+    "catalogIndex": 358,
+    "file": "TETGTJP.otf",
+    "sha256": "0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631",
+    "faceIndex": 0,
+    "families": [
+      "Sinmyeong Taegothic",
+      "신명 태고딕",
+      "SinmyeongTaegothic-TETGTJP"
+    ]
+  },
+  {
+    "catalogIndex": 365,
+    "file": "USER.otf",
+    "sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece",
+    "faceIndex": 0,
+    "families": [
+      "Myeongjo",
+      "명조",
+      "Myeongjo-USER"
+    ]
+  },
+  {
+    "catalogIndex": 462,
+    "file": "Pretendard-Bold.otf",
+    "sha256": "2e91915fab54df71cc9598ebf608b2bdb54c6fe3c066ac61dff0bc44fca71cc7",
+    "faceIndex": 0,
+    "families": [
+      "Pretendard",
+      "Pretendard Bold",
+      "Pretendard-Bold"
+    ]
+  },
+  {
+    "catalogIndex": 467,
+    "file": "Pretendard-Regular.otf",
+    "sha256": "3ffbacde6ab8411f1d2db54bb9b1f0b3ee2a738932033722cf0388c06aed1c93",
+    "faceIndex": 0,
+    "families": [
+      "Pretendard",
+      "Pretendard Regular",
+      "Pretendard-Regular"
+    ]
+  }
+]

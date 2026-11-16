@@ -1,0 +1,135 @@
+{
+  "pr": 9092,
+  "head": "c3b0b7191b91e7df57a80da81a43cf632059a609",
+  "merge": "4c4bd16a7a9bc8b00738e6c3cd74bca04ab3345c",
+  "review": "https://github.com/edwardkim/rhwp/pull/9092#pullrequestreview-5911674249",
+  "forkRepository": "JinHeeWond/rhwp",
+  "forkBranch": "task/8905-about-dialog-overflow",
+  "comments": [
+    {
+      "kind": "issue",
+      "number": 8905,
+      "id": 6897580190,
+      "url": "https://github.com/edwardkim/rhwp/issues/8905#issuecomment-6897580190",
+      "bodyVerified": true,
+      "imageCount": 3
+    },
+    {
+      "kind": "pr",
+      "number": 9092,
+      "id": 6897580874,
+      "url": "https://github.com/edwardkim/rhwp/pull/9092#issuecomment-6897580874",
+      "bodyVerified": true,
+      "imageCount": 3
+    }
+  ],
+  "cleanup": {
+    "state": "complete",
+    "startedAt": "2026-11-15T16:25:42.783016+00:00",
+    "activeReferences": [],
+    "beforeBytes": {
+      "/home/edward/mygithub/rhwp/output": 1855488,
+      "/home/edward/mygithub/rhwp/target/pr-review/debug": 290164736,
+      "/home/edward/mygithub/rhwp-worktrees/pr-9092-about-dialog-overflow": 12764520448
+    },
+    "freeBefore": 124022734848,
+    "forkPreserved": "c3b0b7191b91e7df57a80da81a43cf632059a609\trefs/heads/task/8905-about-dialog-overflow",
+    "preserved": "Other worktrees, contributor fork, source/PDF/fonts, and shared release/release-test/wasm32 profiles.",
+    "finishedAt": "2026-11-15T16:25:47.134033+00:00",
+    "removedWorktree": "/home/edward/mygithub/rhwp-worktrees/pr-9092-about-dialog-overflow",
+    "removedLocalBranch": "review/pr-9092-about-dialog-overflow",
+    "removedDirectories": [
+      "/home/edward/mygithub/rhwp/output",
+      "/home/edward/mygithub/rhwp/target/pr-review/debug"
+    ],
+    "afterBytes": {
+      "/home/edward/mygithub/rhwp/output": 0,
+      "/home/edward/mygithub/rhwp/target/pr-review/debug": 0,
+      "/home/edward/mygithub/rhwp-worktrees/pr-9092-about-dialog-overflow": 0
+    },
+    "freeAfter": 137094635520,
+    "remainingWorktrees": "worktree /home/edward/mygithub/rhwp\nHEAD 30f97a0edd5ba515e6a7f4055bc4ab54bfa6ee8d\nbranch refs/heads/devel\n\nworktree /home/edward/mygithub/rhwp-worktrees/pr-8296-seal-pua\nHEAD f3e2128edca7b188080b2a94f25e0988e26c9699\nbranch refs/heads/review/pr-8296-seal-pua\n\nworktree /home/edward/mygithub/rhwp-worktrees/review-integration-20261110-hyunmyungjanelee\nHEAD a5df5add8e64c1a44bc18c9069d41f7341885442\nbranch refs/heads/review/integration-20261110-hyunmyungjanelee\n\nworktree /home/edward/mygithub/rhwp-worktrees/task-8863-base-renderer\nHEAD 5f4e95c187f64116f48f710c3c048162786c1c14\ndetached\n\nworktree /home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes\nHEAD 6b7cbdbe098b8491c0a29656fbdad98a001f6ad1\nbranch refs/heads/task/8863-preserve-existing-char-shapes",
+    "localDevel": "30f97a0edd5ba515e6a7f4055bc4ab54bfa6ee8d"
+  },
+  "record": "30f97a0edd5ba515e6a7f4055bc4ab54bfa6ee8d",
+  "duration": {
+    "run": 43734626476,
+    "conclusion": "success",
+    "collection": {
+      "ready": false,
+      "reason": "no-verified-pr-duration-measurements"
+    }
+  },
+  "remoteImages": [
+    {
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/30f97a0edd5ba515e6a7f4055bc4ab54bfa6ee8d/mydocs/pr/assets/pr9092/base-800x360.png",
+      "bytes": 43310,
+      "sha256": "6beb75e80d68034d8506cb731bdf7318859d552f90187eabc54f486194bef2ad",
+      "matched": true
+    },
+    {
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/30f97a0edd5ba515e6a7f4055bc4ab54bfa6ee8d/mydocs/pr/assets/pr9092/candidate-360x640.png",
+      "bytes": 33745,
+      "sha256": "6c77d0a43aca7d3819883ad9d99009e8e64a8956f7557597a9f89f082e32a813",
+      "matched": true
+    },
+    {
+      "url": "https://raw.githubusercontent.com/edwardkim/rhwp/30f97a0edd5ba515e6a7f4055bc4ab54bfa6ee8d/mydocs/pr/assets/pr9092/candidate-800x360.png",
+      "bytes": 44188,
+      "sha256": "86f9549095aad69461d21ba1ca3d8266683e4244cc7640adf4ab83ec7ddd7d9a",
+      "matched": true
+    }
+  ],
+  "browserVerification": {
+    "checkedAt": "2026-11-15T16:25:08.624Z",
+    "browser": "Chrome/152.0.7946.0",
+    "comments": [
+      {
+        "number": 8905,
+        "url": "https://github.com/edwardkim/rhwp/issues/8905#issuecomment-6897580190",
+        "status": 200,
+        "rendered": true,
+        "images": [
+          {
+            "url": "https://raw.githubusercontent.com/edwardkim/rhwp/30f97a0edd5ba515e6a7f4055bc4ab54bfa6ee8d/mydocs/pr/assets/pr9092/base-800x360.png",
+            "width": 800,
+            "height": 360
+          },
+          {
+            "url": "https://raw.githubusercontent.com/edwardkim/rhwp/30f97a0edd5ba515e6a7f4055bc4ab54bfa6ee8d/mydocs/pr/assets/pr9092/candidate-800x360.png",
+            "width": 800,
+            "height": 360
+          },
+          {
+            "url": "https://raw.githubusercontent.com/edwardkim/rhwp/30f97a0edd5ba515e6a7f4055bc4ab54bfa6ee8d/mydocs/pr/assets/pr9092/candidate-360x640.png",
+            "width": 360,
+            "height": 640
+          }
+        ]
+      },
+      {
+        "number": 9092,
+        "url": "https://github.com/edwardkim/rhwp/pull/9092#issuecomment-6897580874",
+        "status": 200,
+        "rendered": true,
+        "images": [
+          {
+            "url": "https://raw.githubusercontent.com/edwardkim/rhwp/30f97a0edd5ba515e6a7f4055bc4ab54bfa6ee8d/mydocs/pr/assets/pr9092/base-800x360.png",
+            "width": 800,
+            "height": 360
+          },
+          {
+            "url": "https://raw.githubusercontent.com/edwardkim/rhwp/30f97a0edd5ba515e6a7f4055bc4ab54bfa6ee8d/mydocs/pr/assets/pr9092/candidate-800x360.png",
+            "width": 800,
+            "height": 360
+          },
+          {
+            "url": "https://raw.githubusercontent.com/edwardkim/rhwp/30f97a0edd5ba515e6a7f4055bc4ab54bfa6ee8d/mydocs/pr/assets/pr9092/candidate-360x640.png",
+            "width": 360,
+            "height": 640
+          }
+        ]
+      }
+    ]
+  }
+}

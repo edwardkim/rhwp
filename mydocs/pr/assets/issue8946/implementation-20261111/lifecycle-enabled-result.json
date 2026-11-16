@@ -1,0 +1,214 @@
+[
+  {
+    "phase": "open",
+    "docGen": 2,
+    "docDigest": "blake3:234f9c3cf387c47c6b924803228780166909e809f30dc0a5f024c3966b47cf0a",
+    "pages": 763,
+    "state": {
+      "active": true,
+      "generation": 1,
+      "count": 1,
+      "lastError": null
+    },
+    "loaded": {
+      "loaded": 1,
+      "pending": 0,
+      "failed": 0
+    },
+    "document": {
+      "languageSlot": 0,
+      "inheritedLanguageSlot": null,
+      "face": "딸기",
+      "altType": 2,
+      "embedded": false,
+      "substFont": null
+    },
+    "layoutName": {
+      "requestedFace": "딸기",
+      "normalizedFace": "딸기",
+      "cssFamilyChain": [
+        "딸기"
+      ],
+      "steps": [
+        {
+          "kind": "fontEnvironment",
+          "input": "딸기",
+          "output": "딸기",
+          "reason": "declared-program-599e06ca52a6d5efabe3bddf20a1dc5d8d055af7c189699158fab05e7d32dfde"
+        }
+      ]
+    },
+    "widthSource": "nativeOtf",
+    "pngSHA256": "5afa79c85c8293f76e7c60bdc320de6aa8f3cea44bbd71f3b7112d7b314e8409"
+  },
+  {
+    "phase": "refresh",
+    "docGen": 2,
+    "docDigest": "blake3:234f9c3cf387c47c6b924803228780166909e809f30dc0a5f024c3966b47cf0a",
+    "pages": 763,
+    "state": {
+      "active": true,
+      "generation": 2,
+      "count": 1,
+      "lastError": null
+    },
+    "loaded": {
+      "loaded": 1,
+      "pending": 0,
+      "failed": 0
+    },
+    "document": {
+      "languageSlot": 0,
+      "inheritedLanguageSlot": null,
+      "face": "딸기",
+      "altType": 2,
+      "embedded": false,
+      "substFont": null
+    },
+    "layoutName": {
+      "requestedFace": "딸기",
+      "normalizedFace": "딸기",
+      "cssFamilyChain": [
+        "딸기"
+      ],
+      "steps": [
+        {
+          "kind": "fontEnvironment",
+          "input": "딸기",
+          "output": "딸기",
+          "reason": "declared-program-599e06ca52a6d5efabe3bddf20a1dc5d8d055af7c189699158fab05e7d32dfde"
+        }
+      ]
+    },
+    "widthSource": "nativeOtf",
+    "pngSHA256": "5afa79c85c8293f76e7c60bdc320de6aa8f3cea44bbd71f3b7112d7b314e8409"
+  },
+  {
+    "phase": "remove",
+    "docGen": 2,
+    "docDigest": "blake3:234f9c3cf387c47c6b924803228780166909e809f30dc0a5f024c3966b47cf0a",
+    "pages": 763,
+    "state": {
+      "active": true,
+      "generation": 3,
+      "count": 0,
+      "lastError": null
+    },
+    "loaded": {
+      "loaded": 0,
+      "pending": 0,
+      "failed": 0
+    },
+    "document": {
+      "languageSlot": 0,
+      "inheritedLanguageSlot": null,
+      "face": "딸기",
+      "altType": 2,
+      "embedded": false,
+      "substFont": null
+    },
+    "layoutName": {
+      "requestedFace": "딸기",
+      "normalizedFace": "돋움",
+      "cssFamilyChain": [
+        "돋움",
+        "Haansoft Dotum"
+      ],
+      "steps": [
+        {
+          "kind": "styleSubstitution",
+          "input": "딸기",
+          "output": "돋움",
+          "reason": "rust-style-resolution.hft"
+        }
+      ]
+    },
+    "widthSource": "embeddedMetric",
+    "pngSHA256": "101138a9f6d7e5ba3a795a23bd1c41b1393da75f47d57b4fc28259129766e8fc"
+  },
+  {
+    "phase": "restore",
+    "docGen": 2,
+    "docDigest": "blake3:234f9c3cf387c47c6b924803228780166909e809f30dc0a5f024c3966b47cf0a",
+    "pages": 763,
+    "state": {
+      "active": true,
+      "generation": 4,
+      "count": 1,
+      "lastError": null
+    },
+    "loaded": {
+      "loaded": 1,
+      "pending": 0,
+      "failed": 0
+    },
+    "document": {
+      "languageSlot": 0,
+      "inheritedLanguageSlot": null,
+      "face": "딸기",
+      "altType": 2,
+      "embedded": false,
+      "substFont": null
+    },
+    "layoutName": {
+      "requestedFace": "딸기",
+      "normalizedFace": "딸기",
+      "cssFamilyChain": [
+        "딸기"
+      ],
+      "steps": [
+        {
+          "kind": "fontEnvironment",
+          "input": "딸기",
+          "output": "딸기",
+          "reason": "declared-program-599e06ca52a6d5efabe3bddf20a1dc5d8d055af7c189699158fab05e7d32dfde"
+        }
+      ]
+    },
+    "widthSource": "nativeOtf",
+    "pngSHA256": "5afa79c85c8293f76e7c60bdc320de6aa8f3cea44bbd71f3b7112d7b314e8409"
+  },
+  {
+    "phase": "detach",
+    "docGen": 2,
+    "docDigest": "blake3:234f9c3cf387c47c6b924803228780166909e809f30dc0a5f024c3966b47cf0a",
+    "pages": 763,
+    "state": {
+      "active": false,
+      "generation": 5,
+      "count": 0,
+      "lastError": null
+    },
+    "loaded": {
+      "loaded": 0,
+      "pending": 0,
+      "failed": 0
+    },
+    "document": {
+      "languageSlot": 0,
+      "inheritedLanguageSlot": null,
+      "face": "딸기",
+      "altType": 2,
+      "embedded": false,
+      "substFont": null
+    },
+    "layoutName": {
+      "requestedFace": "딸기",
+      "normalizedFace": "돋움",
+      "cssFamilyChain": [
+        "돋움",
+        "Haansoft Dotum"
+      ],
+      "steps": [
+        {
+          "kind": "styleSubstitution",
+          "input": "딸기",
+          "output": "돋움",
+          "reason": "rust-style-resolution.hft"
+        }
+      ]
+    },
+    "widthSource": "embeddedMetric",
+    "pngSHA256": "101138a9f6d7e5ba3a795a23bd1c41b1393da75f47d57b4fc28259129766e8fc"
+  }
+]

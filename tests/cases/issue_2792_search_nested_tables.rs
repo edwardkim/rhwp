@@ -1,3 +1,10 @@
+//! 검사 유형: 관계형 — 원본 중첩 구조의 깊이·소유·값과 검색·추출 결과를 대조한다.
+//! 주석 갱신: 2026-11-13 05:01 KST.
+//! Native/fresh WASM 일치율은 비해당이다. 이 파일은 렌더링 배치나 px 좌표를 검사하지 않는다.
+//! 공개 CLI 재현 입력은 `tests/fixtures/issue8989/nested-values.hml`을 공유한다.
+//! 기존 HML 상수와 바이트가 같은 입력이며, 기존 검색·추출 assertion은 변경하지 않는다.
+//! 실제 CLI 증거: `mydocs/pr/assets/planet6897_clean20_20261113/final-d0cc4657/api-consumers/`.
+//!
 //! [#2792] 표 안의 표(중첩 표) 텍스트가 검색에 잡히지 않던 결함.
 //!
 //! `grep` 은 본문 문단의 컨트롤에서 `Control::Table` 로 들어가 셀 문단까지 훑었지만,
@@ -252,4 +259,133 @@ fn replace_all_native_replaces_nested_only_token() {
     );
     assert!(doc.grep("더깊은셀단어", true, None).is_empty());
     assert_eq!(doc.grep("치환됨", true, None).len(), 1);
+}
+
+// ---------------------------------------------------------------------------
+// [#8989] 중첩 칸의 정확한 경로(`cellPath`) — search·extract-data 공통 계약.
+//
+// `cell` 은 종전대로 최외곽 칸 문단이고(호환), 정확한 칸은 `cellPath` 의 마지막
+// 단계다. 꼴은 `fields` 의 `location.nested` 와 같다(바깥 → 안쪽).
+// 중첩 표 하나에 칸이 여럿이어야 "같은 바깥 칸 안의 다른 안쪽 칸"이 구별되는지 본다.
+// ---------------------------------------------------------------------------
+
+/// 본문 → 바깥 1×2 표 칸 1 → (문단 1) 안쪽 1×3 표, 각 칸에 서로 다른 값.
+const NESTED_VALUES_HML: &str = include_str!("../fixtures/issue8989/nested-values.hml");
+
+fn nested_values() -> DocumentCore {
+    DocumentCore::from_bytes(NESTED_VALUES_HML.as_bytes()).expect("중첩 값 픽스처가 열려야 한다")
+}
+
+fn steps(
+    path: &[rhwp::document_core::queries::grep::CellPathStep],
+) -> Vec<(&str, usize, Option<usize>, usize)> {
+    path.iter()
+        .map(|s| (s.kind, s.control, s.cell, s.paragraph))
+        .collect()
+}
+
+#[test]
+fn issue_8989_search_cell_path_names_the_inner_cell() {
+    let doc = nested_values();
+    let a = doc.grep("42,360명", true, None);
+    let b = doc.grep("4,676건", true, None);
+    assert_eq!((a.len(), b.len()), (1, 1), "{a:?} {b:?}");
+
+    // 호환: cell 은 두 매치 모두 안쪽 표를 품은 바깥 칸 문단이다.
+    let outer = |m: &rhwp::document_core::queries::grep::GrepMatch| {
+        let c = m.cell.as_ref().expect("셀 좌표");
+        (c.control, c.cell, c.paragraph)
+    };
+    assert_eq!(outer(&a[0]), (0, 1, 1));
+    assert_eq!(outer(&b[0]), (0, 1, 1));
+
+    // 정확한 칸: 바깥 칸 1 문단 1 → 안쪽 표(컨트롤 0) 칸 0 문단 1 / 칸 1 문단 0.
+    assert_eq!(
+        steps(&a[0].cell_path),
+        vec![("tableCell", 0, Some(1), 1), ("tableCell", 0, Some(0), 1)]
+    );
+    assert_eq!(
+        steps(&b[0].cell_path),
+        vec![("tableCell", 0, Some(1), 1), ("tableCell", 0, Some(1), 0)]
+    );
+    let json = serde_json::to_string(&a[0]).expect("직렬화");
+    assert!(json.contains("\"cellPath\":[{"), "{json}");
+}
+
+#[test]
+fn issue_8989_one_level_and_flat_matches_have_no_cell_path() {
+    // 한 단계 표 칸·본문 매치는 cell 이 곧 정확한 주소다 — 봉투가 종전과 같아야 한다.
+    let doc = nested_values();
+    let hit = doc.grep("목표", true, None);
+    assert_eq!(hit.len(), 1);
+    assert!(hit[0].cell_path.is_empty(), "{hit:?}");
+    for word in ["본문전용단어", "바깥셀단어"] {
+        let json = serde_json::to_string(&flat().grep(word, true, None)[0]).expect("직렬화");
+        assert!(!json.contains("cellPath"), "{json}");
+    }
+}
+
+#[test]
+fn issue_8989_textbox_table_match_carries_textbox_step() {
+    let doc = textbox_table();
+    let hits = doc.grep("글상자표전용단어", true, None);
+    assert_eq!(
+        steps(&hits[0].cell_path),
+        vec![("textBox", 0, None, 0), ("tableCell", 0, Some(0), 0)]
+    );
+}
+
+#[test]
+fn issue_8989_extract_data_finds_values_in_nested_cells() {
+    let doc = nested_values();
+    let items = doc.extract_data(&[]);
+    let find = |raw: &str| {
+        items
+            .iter()
+            .find(|i| i.raw == raw)
+            .unwrap_or_else(|| panic!("{raw} 를 뽑지 못했습니다: {items:?}"))
+    };
+
+    // 한 단계 칸 값은 종전 그대로 — cellPath·nestedDepth 없음.
+    let date = find("2026년 8월 2일");
+    assert_eq!(date.nested_depth, 0);
+    assert!(date.cell_path.is_empty(), "{date:?}");
+
+    // 안쪽 칸 값은 칸마다 다른 경로로 나온다.
+    let people = find("42,360명");
+    let cases = find("4,676건");
+    let money = find("1,234,000원");
+    for item in [people, cases, money] {
+        assert_eq!(item.nested_depth, 1, "{item:?}");
+        let c = item.cell.as_ref().expect("셀 좌표");
+        assert_eq!((c.control, c.cell, c.paragraph), (0, 1, 1), "{item:?}");
+    }
+    assert_eq!(
+        steps(&people.cell_path),
+        vec![("tableCell", 0, Some(1), 1), ("tableCell", 0, Some(0), 1)]
+    );
+    assert_eq!(steps(&cases.cell_path)[1], ("tableCell", 0, Some(1), 0));
+    assert_eq!(steps(&money.cell_path)[1], ("tableCell", 0, Some(2), 0));
+    let json = serde_json::to_string(people).expect("직렬화");
+    assert!(
+        json.contains("\"nestedDepth\":1") && json.contains("\"cellPath\""),
+        "{json}"
+    );
+}
+
+#[test]
+fn issue_8989_extract_data_reads_tables_inside_textbox() {
+    // search 와 같은 범위 — 글상자 안 표 칸의 값도 뽑는다.
+    let hml = TEXTBOX_TABLE_HML.replace("글상자표전용단어", "12개");
+    let doc = DocumentCore::from_bytes(hml.as_bytes()).expect("픽스처");
+    let items = doc.extract_data(&[]);
+    let item = items
+        .iter()
+        .find(|i| i.raw == "12개")
+        .expect("글상자 안 표 값");
+    assert!(item.textbox.is_some(), "{item:?}");
+    assert_eq!(
+        steps(&item.cell_path),
+        vec![("textBox", 0, None, 0), ("tableCell", 0, Some(0), 0)]
+    );
 }

@@ -1,0 +1,24 @@
+{
+  "source": "ae5c72c710ac116132d2b9dcf62078bbc884beff",
+  "command": [
+    "scripts/wasm-pack-locked.sh",
+    "--target",
+    "web",
+    "--out-dir",
+    "/home/edward/mygithub/rhwp/output/pr-review/pr8896/producers/pkg-restored-head"
+  ],
+  "returncode": 0,
+  "seconds": 936.72,
+  "optimized": true,
+  "codegen_units": 16,
+  "artifacts": {
+    "rhwp_bg.wasm.d.ts": "b81ddf60c79def88898dc3066ccbd70b3c264775850d35885d831152555e63c0",
+    ".gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+    "package.json": "5dd1526473c7d0b8e59067ca464a926ef651dd15d5e3258465af863400ec0a19",
+    "rhwp.js": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+    "rhwp_bg.wasm": "fa470ee68c748af38a6adbbefcfcbde0cab128c90fa7581214b03fd0a4d62fee",
+    "README.md": "b61d728c2adc15aa0583b4d5a4932d5cd91c799265b8db2af154a18279cbc280",
+    "LICENSE": "1c3a7d5643b163a3ead4965e1bea33b832caee5bfca265efe42afcd7bc696b5b",
+    "rhwp.d.ts": "5eef794e294dfb6f9e34afb356d63ee9f92f02f86f69c785db007f7e1e2c5aa3"
+  }
+}

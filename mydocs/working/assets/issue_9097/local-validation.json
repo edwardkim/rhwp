@@ -1,0 +1,132 @@
+{
+  "issue": 9097,
+  "recorded_at": "2026-11-15T23:34:25.455913+09:00",
+  "base_sha": "4e0b20d2922953ee7ab9a1716ac819b921fe484b",
+  "validated_code_sha": "1cf5b6d9ecff01d4fb0a30da632fb77e54ce120b",
+  "environment": "Windows PowerShell; native Rust 1.93.1; shared target/pr-review",
+  "node_contracts": {
+    "passed": 343,
+    "failed": 0,
+    "skipped": 0
+  },
+  "python_workflow_contracts": {
+    "passed": 250,
+    "failed": 0
+  },
+  "wasm_build": {
+    "success": true,
+    "profile": "release",
+    "build_configuration": {
+      "build_mode": "standard"
+    },
+    "source_sha": "1cf5b6d9ecff01d4fb0a30da632fb77e54ce120b",
+    "wall_seconds": 1641.8,
+    "artifacts": {
+      "rhwp.js": {
+        "sha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+        "bytes": 587539
+      },
+      "rhwp_bg.wasm": {
+        "sha256": "ee2c1a26789167c69c405dcfed268e38bfe1bf7734280cd46e4d364ab0ba459f",
+        "bytes": 27687702
+      }
+    }
+  },
+  "wasm_opt_observed": true,
+  "browser_version": "Chrome/157.0.8103.78",
+  "font_alias_checks": 12,
+  "legacy_layer_results": [
+    {
+      "fixture": "basic/KTX.hwp",
+      "pageIndex": 0,
+      "diffPixels": 55,
+      "totalPixels": 891662,
+      "diffRatio": 6.168256581529773e-05,
+      "pass": true
+    },
+    {
+      "fixture": "biz_plan.hwp",
+      "pageIndex": 0,
+      "diffPixels": 0,
+      "totalPixels": 891662,
+      "diffRatio": 0,
+      "pass": true
+    },
+    {
+      "fixture": "tac-case-001.hwp",
+      "pageIndex": 0,
+      "diffPixels": 0,
+      "totalPixels": 891662,
+      "diffRatio": 0,
+      "pass": true
+    }
+  ],
+  "canvaskit_readiness": {
+    "total": 8,
+    "evaluated": 8,
+    "passed": 8,
+    "failed": 0,
+    "missing": 0
+  },
+  "browser_response_hash_matches": 18,
+  "inputs": [
+    {
+      "path": "samples/basic/KTX.hwp",
+      "sha256": "6c1a027d67b33c03f469b56548b4c7d6bca36b1c1190c7cc5eac88e35c403cf1",
+      "matches_commit": "1cf5b6d9ecff01d4fb0a30da632fb77e54ce120b"
+    },
+    {
+      "path": "samples/biz_plan.hwp",
+      "sha256": "8b786d6824622afae2220b203beeef6e5592157e1896fea055ebc602817113c1",
+      "matches_commit": "1cf5b6d9ecff01d4fb0a30da632fb77e54ce120b"
+    },
+    {
+      "path": "samples/hwp_table_test.hwp",
+      "sha256": "dc3e57d7577447ae4b47f59bdb0f499a5ac29066b62af8a650bcdd8d70eee32a",
+      "matches_commit": "1cf5b6d9ecff01d4fb0a30da632fb77e54ce120b"
+    },
+    {
+      "path": "samples/lseg-01-basic.hwp",
+      "sha256": "86e607233a2218928fabe5969155116a46d4ab4400db1402fe45b0082149496c",
+      "matches_commit": "1cf5b6d9ecff01d4fb0a30da632fb77e54ce120b"
+    },
+    {
+      "path": "samples/lseg-05-tab.hwp",
+      "sha256": "0066108df04204324c0802414087563e7673e30f3d142dd014af14e318153d2c",
+      "matches_commit": "1cf5b6d9ecff01d4fb0a30da632fb77e54ce120b"
+    },
+    {
+      "path": "samples/pic-crop-01.hwp",
+      "sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+      "matches_commit": "1cf5b6d9ecff01d4fb0a30da632fb77e54ce120b"
+    },
+    {
+      "path": "samples/pua-test.hwp",
+      "sha256": "592e00e3e8bc72afef829fd71a13cbc340bff3770425b9d1ee025afc1e1649fa",
+      "matches_commit": "1cf5b6d9ecff01d4fb0a30da632fb77e54ce120b"
+    },
+    {
+      "path": "samples/re-font-batang-hancom.hwp",
+      "sha256": "99ec0cd2f55ba45493b97c550333db6d0275831ae6150a041bdbe5e2bd174049",
+      "matches_commit": "1cf5b6d9ecff01d4fb0a30da632fb77e54ce120b"
+    },
+    {
+      "path": "samples/render-p35-font-native-bitmap.hwpx",
+      "sha256": "1c902d41d47e532f42d2b24a44058efd370ee6496927c32e76e955029a0b9eec",
+      "matches_commit": "1cf5b6d9ecff01d4fb0a30da632fb77e54ce120b"
+    },
+    {
+      "path": "samples/table-004.hwp",
+      "sha256": "451ab7c40d47c4200e98b57b7cb3806e64968c32fa9441fc171e7babf64be915",
+      "matches_commit": "1cf5b6d9ecff01d4fb0a30da632fb77e54ce120b"
+    },
+    {
+      "path": "samples/tac-case-001.hwp",
+      "sha256": "c003385b7b3495dd93a2688ea74b8a07848543a6c0128cb693635d8ba6fe43da",
+      "matches_commit": "1cf5b6d9ecff01d4fb0a30da632fb77e54ce120b"
+    }
+  ],
+  "fonts_changed": false,
+  "scope": "CI selection/execution contract only; existing product/rendering assertions and thresholds unchanged",
+  "timing_limit": "Warm Windows build and Chrome are not a comparative Ubuntu CI performance measurement"
+}

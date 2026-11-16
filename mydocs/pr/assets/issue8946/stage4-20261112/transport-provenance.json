@@ -1,0 +1,93 @@
+{
+  "source_sha256": "3395e19bebea8b6689f383df1f4ea1ddb253dee91c4320392cc40e90e2e4f191",
+  "kind": "linked-image-transport-copy",
+  "changed_existing_entries": [
+    {
+      "path": "Contents/content.hpf",
+      "before_sha256": "d82ae2e347fa6e3f2f6838148ee55ca88089fb9894d785714ca8d572444fab21",
+      "after_sha256": "5053620602913170d171c5e88c44f7c4ca9714e1ec117935c0d769e59ae938f5"
+    }
+  ],
+  "unchanged_existing_entries": [
+    {
+      "path": "mimetype",
+      "before_sha256": "5ab5230b5af04f78947736bf8dd1a269aa684e234f7f4a392efb85289d1655c2",
+      "after_sha256": "5ab5230b5af04f78947736bf8dd1a269aa684e234f7f4a392efb85289d1655c2"
+    },
+    {
+      "path": "version.xml",
+      "before_sha256": "550d827061afc1396932c7d964ea4aea25b7ffdb49942a6598df6c318a31fd95",
+      "after_sha256": "550d827061afc1396932c7d964ea4aea25b7ffdb49942a6598df6c318a31fd95"
+    },
+    {
+      "path": "Contents/header.xml",
+      "before_sha256": "3cc58ea6a39354377e4eb0ca73288b801df6ad372a7818b5f857b8bef5ec64fd",
+      "after_sha256": "3cc58ea6a39354377e4eb0ca73288b801df6ad372a7818b5f857b8bef5ec64fd"
+    },
+    {
+      "path": "Contents/section0.xml",
+      "before_sha256": "b768aee7f4eb88d7d9313d78ae419ce6e1346946bae38be8714bc48a95db8e0a",
+      "after_sha256": "b768aee7f4eb88d7d9313d78ae419ce6e1346946bae38be8714bc48a95db8e0a"
+    },
+    {
+      "path": "Preview/PrvText.txt",
+      "before_sha256": "1c548fd019a6a24584ab970bf8bc6e592235947a4495c85bbf14f720d6e3ed1f",
+      "after_sha256": "1c548fd019a6a24584ab970bf8bc6e592235947a4495c85bbf14f720d6e3ed1f"
+    },
+    {
+      "path": "settings.xml",
+      "before_sha256": "680d23d8d7d8df82526cc7ab34479d0e9f9f707218ba54b70f280ac290343ab4",
+      "after_sha256": "680d23d8d7d8df82526cc7ab34479d0e9f9f707218ba54b70f280ac290343ab4"
+    },
+    {
+      "path": "Preview/PrvImage.png",
+      "before_sha256": "ca265603142297b1bb5a99dd55949c0bdc8d6194837404b2a60fe87b789abd81",
+      "after_sha256": "ca265603142297b1bb5a99dd55949c0bdc8d6194837404b2a60fe87b789abd81"
+    },
+    {
+      "path": "META-INF/container.rdf",
+      "before_sha256": "0cfd814c20595c841e48e62fbf7591829f13c177fa92af634c8199f85ecf3a89",
+      "after_sha256": "0cfd814c20595c841e48e62fbf7591829f13c177fa92af634c8199f85ecf3a89"
+    },
+    {
+      "path": "META-INF/container.xml",
+      "before_sha256": "5109d3a9249ec1058177fedab574c5d9616058aa92ebefcd33249ebb36a20f61",
+      "after_sha256": "5109d3a9249ec1058177fedab574c5d9616058aa92ebefcd33249ebb36a20f61"
+    },
+    {
+      "path": "META-INF/manifest.xml",
+      "before_sha256": "2b4b155c1bb6a9ccc212fef113c4831d2f558e67cf1260eb314ce54f26fd32ea",
+      "after_sha256": "2b4b155c1bb6a9ccc212fef113c4831d2f558e67cf1260eb314ce54f26fd32ea"
+    }
+  ],
+  "images": [
+    {
+      "id": "image1",
+      "source": "samples/oracle.gif",
+      "sha256": "464e863dd2c1650fc6997b03a5d96c9413e61bbabaf7337c783db27203cc2761",
+      "bytes": 1813,
+      "package_path": "BinData/oracle.gif",
+      "old_tag": "<opf:item id=\"image1\" href=\"D:\\Work\\Gwjang\\temp\\images\\oracle.gif\" media-type=\"image/gif\" isEmbeded=\"0\"/>",
+      "new_tag": "<opf:item id=\"image1\" href=\"BinData/oracle.gif\" media-type=\"image/gif\" isEmbeded=\"1\"/>"
+    },
+    {
+      "id": "image2",
+      "source": "samples/rdb02.gif",
+      "sha256": "bfadf4cdbbeeb5f3d8632cb54c8c3696977f405204b651f99a7a24c8f39532cf",
+      "bytes": 6098,
+      "package_path": "BinData/rdb02.gif",
+      "old_tag": "<opf:item id=\"image2\" href=\"D:\\Work\\Gwjang\\temp\\images\\rdb02.gif\" media-type=\"image/gif\" isEmbeded=\"0\"/>",
+      "new_tag": "<opf:item id=\"image2\" href=\"BinData/rdb02.gif\" media-type=\"image/gif\" isEmbeded=\"1\"/>"
+    },
+    {
+      "id": "image3",
+      "source": "samples/s1.jpg",
+      "sha256": "77dea18ce7f8f93b0931e133dec222aec642eef0ed87b8f2031b94dcbea5c514",
+      "bytes": 16744,
+      "package_path": "BinData/s1.jpg",
+      "old_tag": "<opf:item id=\"image3\" href=\"D:\\Work\\Gwjang\\temp\\images\\s1.jpg\" media-type=\"image/jpg\" isEmbeded=\"0\"/>",
+      "new_tag": "<opf:item id=\"image3\" href=\"BinData/s1.jpg\" media-type=\"image/jpg\" isEmbeded=\"1\"/>"
+    }
+  ],
+  "transport_sha256": "77f6a3f38cf79b681cf61483b08ed3bb2ea7310331676c548a1af9aefcc58158"
+}

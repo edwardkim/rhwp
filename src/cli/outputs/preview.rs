@@ -129,7 +129,10 @@ pub(crate) fn extract_thumbnail(args: &[String]) -> i32 {
                     .unwrap_or_default()
                     .to_string_lossy();
                 let ext = &result.format;
-                format!("output/{}_thumb.{}", stem, ext)
+                format!(
+                    "output/{}",
+                    super::output_file_name(&stem, &format!("_thumb.{}", ext))
+                )
             });
 
             // 출력 디렉토리 생성

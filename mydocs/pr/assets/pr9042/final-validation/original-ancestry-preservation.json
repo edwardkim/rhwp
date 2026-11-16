@@ -1,0 +1,9 @@
+{
+  "before": "e5987a6555c12f86b2889eee50fbd5df12b179dc",
+  "after": "495787589a35a2ecfaa70b842386a203dde83617",
+  "original": "3ae4eeb332c3b0edbb3a8fbe334daf2b0a48115b",
+  "original_applied_by": "637410dbfa8deb060d1c8739b0bf5e7ae8286c89",
+  "strategy": "ours bookkeeping merge; already-applied contribution retained with validated maintainer corrections",
+  "tree_before_and_after": "e88c89a50fef78a0761bf200d7d915c11730a2d0",
+  "unchanged_tree": true
+}

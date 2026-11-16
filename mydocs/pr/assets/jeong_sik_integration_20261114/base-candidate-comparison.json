@@ -1,0 +1,11 @@
+{
+  "base": "d7b927d073489b8c5ea95655224b04096c939534",
+  "producer_code": "6f8d22ac95147b16d9828fee7976df2de192699f",
+  "rows": 66,
+  "pages_per_backend": 33,
+  "minimum_candidate_raw": "99.97213",
+  "declines": 0,
+  "declines_over_2pp": 0,
+  "all_pages_at_least90": true,
+  "table_sha256": "1ac74bdba5f070443c24096900c42338a86472c042f98b9cde1537c3dc437be5"
+}

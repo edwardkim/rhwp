@@ -1,0 +1,74 @@
+[
+  {
+    "key": "border-hwp",
+    "backend": "native",
+    "pages": 1,
+    "minimum": 100.0
+  },
+  {
+    "key": "border-hwpx",
+    "backend": "native",
+    "pages": 1,
+    "minimum": 100.0
+  },
+  {
+    "key": "leading-hwp",
+    "backend": "native",
+    "pages": 1,
+    "minimum": 100.0
+  },
+  {
+    "key": "leading-hwpx",
+    "backend": "native",
+    "pages": 1,
+    "minimum": 100.0
+  },
+  {
+    "key": "combined-hwp",
+    "backend": "native",
+    "pages": 1,
+    "minimum": 100.0
+  },
+  {
+    "key": "combined-hwpx",
+    "backend": "native",
+    "pages": 1,
+    "minimum": 100.0
+  },
+  {
+    "key": "data-only-hwpx",
+    "backend": "native",
+    "pages": 1,
+    "minimum": 100.0
+  },
+  {
+    "key": "data-before-zero-hwpx",
+    "backend": "native",
+    "pages": 1,
+    "minimum": 100.0
+  },
+  {
+    "key": "value-fake-before-zero-hwpx",
+    "backend": "native",
+    "pages": 1,
+    "minimum": 100.0
+  },
+  {
+    "key": "whitespace-case-hwpx",
+    "backend": "native",
+    "pages": 1,
+    "minimum": 100.0
+  },
+  {
+    "key": "styled-caret-hwpx",
+    "backend": "native",
+    "pages": 1,
+    "minimum": 100.0
+  },
+  {
+    "key": "styled-cell-hwpx",
+    "backend": "native",
+    "pages": 1,
+    "minimum": 100.0
+  }
+]

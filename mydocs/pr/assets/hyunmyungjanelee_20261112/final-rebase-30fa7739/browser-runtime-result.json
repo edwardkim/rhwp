@@ -1,0 +1,44 @@
+{
+  "by_path_api": {
+    "checks": [
+      "outer dimensions [{\"controlIndex\":2}]",
+      "outer dimensions [{\"controlIndex\":2,\"cellIndex\":0}]",
+      "outer dimensions [{\"controlIndex\":2,\"cellIndex\":0,\"cellParaIndex\":0}]",
+      "outer dimensions [{\"controlIndex\":2,\"cellIndex\":99,\"cellParaIndex\":99}]",
+      "six bboxes short/full equal",
+      "missing control rejected",
+      "malformed optional rejected",
+      "cell API still needs cell index",
+      "nested 3x4 short/full equal",
+      "nested missing outer para rejected",
+      "nested missing outer cell rejected"
+    ],
+    "passed": 11,
+    "failed": 0,
+    "consumer": "actual browser WASM HwpDocument"
+  },
+  "local_font_access_permission": "denied",
+  "os_css_font_visibility_isolation_claimed": false,
+  "code_head": "30fa7739f0340f2a248b22542c7dd36d9354f056",
+  "browser": "Chrome/157.0.8103.51",
+  "actual": {
+    "pageCount": 1,
+    "printCanvasApi": true
+  },
+  "initialization_responses": [
+    {
+      "file": "rhwp.js",
+      "status": 200,
+      "sha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+      "bytes": 583724
+    },
+    {
+      "file": "rhwp_bg.wasm",
+      "status": 200,
+      "sha256": "5902ebe7d11b08e381aefe3c4fae7e60f11af92c30b4a942a87d5b889367f5f0",
+      "bytes": 31818393
+    }
+  ],
+  "root_pkg_studio_frozen_and_actual_responses_identical": true,
+  "scope": "runtime JS/WASM; TypeScript declarations are not browser initialization responses"
+}

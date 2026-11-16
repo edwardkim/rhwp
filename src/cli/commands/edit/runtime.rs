@@ -107,12 +107,12 @@ pub(crate) fn edit_verify_report(
     };
     let diff = if rhwp::parser::detect_format(out_bytes) == rhwp::parser::FileFormat::Hwpx {
         rhwp::serializer::hwpx::roundtrip::diff_exported_hwpx_documents(
-            doc.document(),
+            &doc.hwpx_export_expected_document(),
             reloaded.document(),
         )
     } else {
         rhwp::serializer::hwpx::roundtrip::diff_exported_hwp_documents(
-            doc.document(),
+            doc.prepare_hwp_export_snapshot().document(),
             reloaded.document(),
         )
     };

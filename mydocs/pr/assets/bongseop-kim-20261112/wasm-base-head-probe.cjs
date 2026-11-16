@@ -1,0 +1,17 @@
+const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),crypto=require('node:crypto'),assert=require('node:assert/strict');
+const puppeteer=require('/home/edward/mygithub/rhwp/rhwp-studio/node_modules/puppeteer-core');
+const O='/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112';const W='/home/edward/mygithub/rhwp-worktrees/review-integration-8942-bongseop-html-clipboard';
+(async()=>{
+ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://localhost');const [kind,file]=u.pathname.slice(1).split('/');if(!file){res.setHeader('Content-Type','text/html');res.end('<!DOCTYPE html><title>Clipboard source comparison</title>');return;}
+ if(!['base','head'].includes(kind)||!['rhwp.js','rhwp_bg.wasm'].includes(file)){res.statusCode=404;res.end();return;}
+ const root=kind==='base'?O+'/producers/pkg-base':W+'/pkg';res.setHeader('Content-Type',file.endsWith('.wasm')?'application/wasm':'text/javascript');res.end(fs.readFileSync(path.join(root,file)));});await new Promise(r=>server.listen(0,'127.0.0.1',r));
+ const browser=await puppeteer.launch({executablePath:fs.readFileSync(O+'/chrome-path.txt','utf8'),headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});const results={};
+ try{for(const kind of ['base','head']){const page=await browser.newPage();try{await page.goto(`http://127.0.0.1:${server.address().port}/${kind}/`);results[kind]=await page.evaluate(async kind=>{
+  const m=await import(`/${kind}/rhwp.js`);const bytes=await(await fetch(`/${kind}/rhwp_bg.wasm`)).arrayBuffer();const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join('');await m.default({module_or_path:bytes});
+  const fresh=html=>{const doc=m.HwpDocument.createEmpty();doc.createBlankDocument();doc.pasteHtml(0,0,0,html);return doc;};
+  const borders=[];for(const html of ['<table border="1"><tr><td>A</td></tr></table>','<table data-border="1" border="0"><tr><td>A</td></tr></table>']){const doc=fresh(html);let props;for(let p=0;p<doc.getParagraphCount(0);p++){for(let ci=0;ci<8;ci++){try{props=JSON.parse(doc.getCellProperties(0,p,ci,0));}catch{}}}if(!props)throw Error('table absent');borders.push([props.borderLeft.type,props.borderRight.type,props.borderTop.type,props.borderBottom.type]);doc.free();}
+  const doc=fresh('<p>첫 문단</p><p>앞 <b>굵게</b> 뒤</p>');const plain=JSON.parse(doc.getCharPropertiesAt(0,1,0)).bold;const bold=JSON.parse(doc.getCharPropertiesAt(0,1,2)).bold;doc.free();return {wasm_sha256:hash,borders,leadingPlainIsBold:plain,explicitBoldIsBold:bold};
+ },kind);const expected=crypto.createHash('sha256').update(fs.readFileSync((kind==='base'?O+'/producers/pkg-base':W+'/pkg')+'/rhwp_bg.wasm')).digest('hex');assert.equal(results[kind].wasm_sha256,expected);}finally{await page.close();}}
+ assert.deepEqual(results.base.borders[0],[0,0,0,0]);assert.deepEqual(results.head.borders[0],[1,1,1,1]);assert.deepEqual(results.base.borders[1],[0,0,0,0]);assert.deepEqual(results.head.borders[1],[0,0,0,0]);assert.equal(results.base.leadingPlainIsBold,true);assert.equal(results.head.leadingPlainIsBold,false);assert.equal(results.base.explicitBoldIsBold,true);assert.equal(results.head.explicitBoldIsBold,true);results.allExpectedComparisonsPassed=true;
+ }finally{fs.writeFileSync(O+'/wasm-base-head-probe.json',JSON.stringify(results,null,2));await browser.close();await new Promise(r=>server.close(r));}console.log(JSON.stringify(results));
+})().catch(e=>{console.error(e);process.exitCode=1;});

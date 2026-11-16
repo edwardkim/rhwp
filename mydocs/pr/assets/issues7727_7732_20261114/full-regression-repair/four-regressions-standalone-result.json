@@ -1,0 +1,57 @@
+[
+  {
+    "case": "margin",
+    "source": "tests/cases/issue_8797_first_margin_page_origin.rs",
+    "test": "table_after_unstored_first_margin_keeps_the_stored_ladder",
+    "compile_exit": 0,
+    "run_exit": 0,
+    "seconds": 1.249,
+    "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/logs/four-regressions-margin-after.log",
+    "log_sha256": "80914539aecdc5ff22c3d8a8f6014242a8320094ebcc45b6882e32d3ca5dd0a2",
+    "rlib_sha256": "67d4a89e2358ef777772853b65271fce7f13787353797c84318f1c185664ffab"
+  },
+  {
+    "case": "toc",
+    "source": "tests/cases/issue_6844_intra_run_right_tab_bbox.rs",
+    "test": "issue_6844_toc_page_numbers_share_one_right_edge",
+    "compile_exit": 0,
+    "run_exit": 0,
+    "seconds": 1.088,
+    "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/logs/four-regressions-toc-after.log",
+    "log_sha256": "69ceff512c86148592aa42b855fd5ff08a7c7efe6ac3879c2be281e9a95f8225",
+    "rlib_sha256": "67d4a89e2358ef777772853b65271fce7f13787353797c84318f1c185664ffab"
+  },
+  {
+    "case": "regulatory",
+    "source": "tests/issue_1921_59043_pagination_pin.rs",
+    "test": "regulatory_59043_page_count_pin",
+    "compile_exit": 0,
+    "run_exit": 101,
+    "seconds": 1.16,
+    "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/logs/four-regressions-regulatory-after.log",
+    "log_sha256": "d860febfaee778847e4173598a70aa673767552acd86fbcdf7c8ada7ced600ec",
+    "rlib_sha256": "67d4a89e2358ef777772853b65271fce7f13787353797c84318f1c185664ffab"
+  },
+  {
+    "case": "edu",
+    "source": "tests/cases/rowbreak_short_row_whole_carry.rs",
+    "test": "rows_inside_a_crossing_rowspan_still_split_after_one_line",
+    "compile_exit": 0,
+    "run_exit": 101,
+    "seconds": 2.258,
+    "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/logs/four-regressions-edu-after.log",
+    "log_sha256": "8cec4e50d03a2bd533aebcd1c714e0db601a0c466490925d0d9466e8d2703581",
+    "rlib_sha256": "67d4a89e2358ef777772853b65271fce7f13787353797c84318f1c185664ffab"
+  },
+  {
+    "case": "note",
+    "source": "tests/cases/issue_7732_note_only_line_ownership.rs",
+    "test": "separate_note_only_lines_keep_distinct_source_paragraphs",
+    "compile_exit": 0,
+    "run_exit": 0,
+    "seconds": 1.247,
+    "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/logs/four-regressions-note-after.log",
+    "log_sha256": "90cbf53358d802c8aee1f81888ffd79ed49f4a32e7dbd219d578509a37441ab6",
+    "rlib_sha256": "67d4a89e2358ef777772853b65271fce7f13787353797c84318f1c185664ffab"
+  }
+]

@@ -1,6 +1,9 @@
-// 관계형: 실제 WASM의 glyph paint와 Screen/Print 메트릭 전환을 관측한다.
-// 주석 갱신: 2026-11-04 15:18 KST. 합성 공급자·프로필 계약이다.
-// 실물 한컴 원본의 Visual Sweep을 대신하지 않는다.
+// 관계형·고정형: 실제 WASM glyph/프로필과 독립 Print 그림 pen의 재생 계약.
+// 주석 갱신: 2026-11-15T15:29:44+09:00; 직전 파일 커밋: 2026-11-13T06:07:32+09:00 (c72b10990938a6f1f84f1477c48d461ee7140d4a).
+// 글꼴 합성 계약과 실물 그림 검증을 구분한다. pic-crop-01 전 1쪽은 90d7515dee에서
+// Native / 최적화 fresh WASM 각각 raw 100.00%이며 전쪽 최저도 같다(96dpi, PDFium, raw 2px).
+// 독립 pdf/pic-crop-01-2022.pdf의 같은 영역을 직접 확대 판독했다.
+// 근거: mydocs/pr/assets/jinho-von-choi-20261114/final-without-exceptions/picture-pen-independent-source.json.
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {readFileSync, rmSync} from 'node:fs';
@@ -166,6 +169,8 @@ test('Print TTF 대체 글리프는 원 프로그램의 기하를 쓰고 Screen�
   assert.ok(printed.paths > rows[0].paths, '대체 글리프의 실제 path 재생이 있어야 한다');
 });
 
+// 관계형: 글자 기하는 2024 Print에만, 장치 clip 포함 경계는 모든 Print에 적용한다.
+// 주석 갱신: 2026-11-13 06:05 KST. #8986의 독립 Print·Rust 계약을 실제 Canvas 재생과 함께 확인한다.
 test('실제 Canvas Print 글리프는 기하 모드를 소비하고 Screen으로 복귀한다', async t => {
   const pkg = resolve(process.env.RHWP_SWEEP_TEST_WASM_PKG || join(root, 'pkg'));
   const files = new Map([
@@ -270,8 +275,13 @@ test('실제 Canvas Print 글리프는 기하 모드를 소비하고 Screen으�
     assert.equal(row.tree, first.tree, '프로필 전환으로 원본 배치·소속을 바꾸지 않는다');
     assert.deepEqual(row.calls.map(call => call.transform), first.calls.map(call => call.transform),
       '글리프 원점·장평을 모드 보정 수치로 바꾸지 않는다');
-    const expected = row.profile === 'print' && row.compat ? 'geometricPrecision' : 'auto';
-    assert.equal(row.layer.rasterClipCoverage, row.profile === 'print' && row.compat);
+    const expectedTextGeometry = row.profile === 'print' && row.compat;
+    const expectedClipCoverage = row.profile === 'print';
+    const expected = expectedTextGeometry ? 'geometricPrecision' : 'auto';
+    assert.equal(row.layer.rasterTextGeometry, expectedTextGeometry,
+      `글자 기하는 2024 Print에만 적용한다: ${JSON.stringify({compat: row.compat, profile: row.profile})}`);
+    assert.equal(row.layer.rasterClipCoverage, expectedClipCoverage,
+      `장치 clip 포함 경계는 모든 Print에 적용한다: ${JSON.stringify({compat: row.compat, profile: row.profile})}`);
     const clips = [];
     const visit = node => {
       if (node.kind === 'clipRect' && node.clipKind === 'body') clips.push(node.clip);
@@ -281,7 +291,7 @@ test('실제 Canvas Print 글리프는 기하 모드를 소비하고 Screen으�
     visit(row.layer.root);
     assert.ok(clips.length > 0, '본문 clip이 실제 재생 경로에 있어야 한다');
     for (const clip of clips) {
-      const expectedRect = row.layer.rasterClipCoverage
+      const expectedRect = expectedClipCoverage
         ? [Math.floor(clip.x), Math.floor(clip.y), Math.ceil(clip.x + clip.width) - Math.floor(clip.x), Math.ceil(clip.y + clip.height) - Math.floor(clip.y)]
         : [clip.x, clip.y, clip.width, clip.height];
       assert.ok(row.rectangles.some(rect => rect.transform.every((v, i) => v === [1, 0, 0, 1, 0, 0][i])
@@ -290,5 +300,72 @@ test('실제 Canvas Print 글리프는 기하 모드를 소비하고 Screen으�
     }
     assert.ok(row.calls.every(call => call.mode === expected),
       `실제 glyph paint의 ${row.profile} 모드: ${JSON.stringify(row.calls)}`);
+  }
+});
+
+
+// 독립 compound path: band0.480pt + outline0.120pt. 실물의 두 그림과 실제 Canvas를 사용한다.
+// 출력 bbox·글자 위치를 고정하지 않으며 전용 글꼴 설치나 합성 그림을 요구하지 않는다.
+test('Legacy Print picture pen survives bitmap generations and stays out of Screen/HQ', async t => {
+  const pkg = resolve(process.env.RHWP_SWEEP_TEST_WASM_PKG || join(root, 'pkg'));
+  const files = new Map([
+    ['/rhwp.js', ['application/javascript', readFileSync(join(pkg, 'rhwp.js'))]],
+    ['/rhwp_bg.wasm', ['application/wasm', readFileSync(join(pkg, 'rhwp_bg.wasm'))]],
+    ['/source.hwp', ['application/octet-stream', readFileSync(join(root, 'samples/pic-crop-01.hwp'))]],
+  ]);
+  const server = createSweepServer(files, new Map());
+  await new Promise((accept, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', accept); });
+  t.after(async () => { server.closeAllConnections(); await new Promise(accept => server.close(accept)); });
+  const profile = createSweepBrowserProfile(join(root, 'output/pr-review/browser-profile-tests'), 'picture-pen');
+  let browser;
+  t.after(async () => {
+    if (browser) await browser.close();
+    rmSync(profile, {recursive: true, force: true, maxRetries: 5, retryDelay: 100});
+  });
+  browser = await require('puppeteer-core').launch({executablePath: findChrome(process.env.VISUAL_SWEEP_CHROME), headless: true, userDataDir: profile});
+  const page = await browser.newPage();
+  await page.goto(`http://127.0.0.1:${server.address().port}`);
+  const rows = await page.evaluate(async () => {
+    const wasm = await import('/rhwp.js'); await wasm.default();
+    const doc = new wasm.HwpDocument(new Uint8Array(await (await fetch('/source.hwp')).arrayBuffer()));
+    const canvas = document.createElement('canvas'), context = canvas.getContext('2d');
+    let widths = []; const stroke = context.strokeRect.bind(context);
+    context.strokeRect = (...args) => { widths.push(context.lineWidth); return stroke(...args); };
+    const rows = [];
+    function collect(value, out) {
+      if (Array.isArray(value)) for (const item of value) collect(item, out);
+      else if (value && typeof value === 'object') {
+        if (value.type === 'rectangle' && value.style?.strokeColor === '#000000') out.push(value.printPicturePen ?? null);
+        for (const [key, item] of Object.entries(value)) if (!['resources', 'data', 'imageData'].includes(key)) collect(item, out);
+      }
+    }
+    try {
+      for (const generation of [false, true]) {
+        doc.setHangul2024Compat(generation);
+        for (const profile of ['screen', 'print', 'high-quality']) {
+          for (let attempt = 0; attempt < 10; attempt++) {
+            widths = [];
+            doc.renderPageToCanvasFilteredWithProfile(0, canvas, 1, 'all', profile);
+            if (widths.length === 2) break;
+            await new Promise(accept => setTimeout(accept, 25));
+          }
+          const pens = []; collect(JSON.parse(doc.getCanvasPageLayerTree(0, profile, true)), pens);
+          rows.push({generation, profile, pens, widths: [...widths]});
+        }
+      }
+      return rows;
+    } finally { doc.free(); }
+  });
+  for (const row of rows) {
+    assert.equal(row.pens.length, 2, '원문 두 그림 테두리의 실제 발행을 확인한다');
+    if (row.profile === 'print') {
+      for (const pen of row.pens) {
+        assert.ok(pen, `Print 그림 pen 누락: generation=${row.generation}`);
+        assert.ok(Math.abs(pen[0] - 0.64) < 1e-9, '독립 PDF의 0.480pt 채움 띠');
+        assert.ok(Math.abs(pen[1] - 0.16) < 1e-9, '독립 PDF의 0.120pt 외곽 pen');
+      }
+      assert.equal(row.widths.length, 2, '실제 Canvas의 두 stroke를 빠짐없이 재생한다');
+      assert.ok(row.widths.every(width => Math.abs(width - 1.64) < 1e-5), '96dpi에서 물리 띠와 최소 raster 외곽 pen을 함께 소비한다');
+    } else assert.ok(row.pens.every(pen => pen === null), '화면·고품질 프로필을 Print 장치로 바꾸지 않는다');
   }
 });

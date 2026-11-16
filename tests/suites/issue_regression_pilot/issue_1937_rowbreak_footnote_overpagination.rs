@@ -1,5 +1,10 @@
-//! Issue #1937: 원본 표와 각주의 물리 쪽·내용 소유를 독립 한컴 Print50쪽과 대조한다.
-//! 기존 과분할 검사 안에서 종료·이어받기와 내용 보존을 함께 보호한다.
+//! 관계형·고정형: 원본 표·각주의 쪽 소속과 내용 순서, 독립 Print50쪽 및 괘선 ±2 CSSpx를 검사한다.
+//! 주석 갱신: 2026-11-15T01:21:30+09:00. 직전 변경 b4003b826224035de947cd634c4f18ad4fce2a24 (2026-10-27T12:57:13+09:00).
+//! 측정: 2026-11-15 KST, Visual Sweep raw 2px·96 DPI·compat2022·차이 문턱32, 정상 설치 글꼴 환경.
+//! Native/fresh WASM 전50쪽 최저98.75%/98.75%, 37쪽98.75%/98.75%, 38쪽99.84%/99.84%.
+//! 9·13쪽의 기존 독립 PDF 괘선과 38쪽 병합 꼬리 괘선 핀은 양쪽98% 이상 자격으로 유지한다.
+//! 근거: mydocs/pr/assets/issues7727_7732_20261114/note-prefix-final/validation.json 및 양쪽 전쪽 TSV.
+//! 제품 소스602b0595ca의 typed 각주 번호를 수집하고 독립 한컴2020 Print의 원문→번호 순서를 보호한다.
 
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 use rhwp::DocumentCore;
@@ -13,11 +18,14 @@ fn text(node: &RenderNode) -> String {
         }
         return run.display_text.as_ref().unwrap_or(&run.text).clone();
     }
+    if let RenderNodeType::FootnoteMarker(marker) = &node.node_type {
+        return marker.text.clone();
+    }
     node.children.iter().map(text).collect()
 }
 
-// 원문 내용과 표시용 각주 번호를 따로 검사한다. 각주 번호의 TextRun은
-// 원문 문자 오프셋을 소유하지 않으며 독립 Print에는 별도로 표시된다.
+// 원문 내용과 표시용 각주 번호를 따로 검사한다. typed 번호와 오프셋 없는
+// 표시용 TextRun은 원문 문자 오프셋을 소유하지 않으며 독립 Print에는 별도로 표시된다.
 fn source_text(node: &RenderNode) -> String {
     if let RenderNodeType::TextRun(run) = &node.node_type {
         return if run.char_start.is_some() {
@@ -154,7 +162,7 @@ fn rowbreak_footnote_table_does_not_over_paginate() {
     };
     assert_eq!(cells.len(), source.cells.len(), "원본의 모든 셀 소유 보존");
     assert_eq!(
-        annotated_cell, "정책실현24)25)재정조달",
+        annotated_cell, "정책실현24)재정조달25)",
         "독립 Print37쪽의 원문과 두 각주 참조 번호 순서·누락·중복"
     );
     for cell in &source.cells {

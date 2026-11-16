@@ -1,0 +1,22 @@
+{
+  "text-zoom.png": {
+    "bytes": 456037,
+    "sha256": "1b222951a89a0030c3e3785b55db7c468139cb2c883c79474255e6a035fba0b8"
+  },
+  "provenance.json": {
+    "bytes": 974,
+    "sha256": "02cc1b63d7b4284602a28de63a19665ff29c9411c0684e83d0e9ca6d455f917f"
+  },
+  "host-single-p001.png": {
+    "bytes": 45799,
+    "sha256": "37f62056ad1190c7c02241d7eefc66bb717ad58587e7c9c02d6a00587a286adc"
+  },
+  "comparison.json": {
+    "bytes": 4196,
+    "sha256": "d42c45af0418ead6dca5d5da2bd704b9c8d5daef3a90a5f1eaa30d3a38469526"
+  },
+  "pdf-001.png": {
+    "bytes": 19267,
+    "sha256": "f261046a5518dd134e2a6f4945acf778a9f300a77c31893a0c396b5868082bd1"
+  }
+}

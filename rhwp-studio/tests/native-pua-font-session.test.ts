@@ -3,11 +3,39 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { NativePuaFontSession } from '../src/core/native-pua-font-session.ts';
+import { NativePuaFontSession, type NativeFontProgram } from '../src/core/native-pua-font-session.ts';
 import { setHostFontProvider } from '../src/core/local-fonts.ts';
 import type { HostFontData } from '../src/core/host-font-provider.ts';
 
 let serial = 0;
+
+test('indexed OTF API receives the original TTC and selected face', async () => {
+  const file = readFileSync(new URL('../../tests/fixtures/fonts/RHWPHostFixture.ttc', import.meta.url));
+  const bytes = Uint8Array.from(file).buffer;
+  const request = { family: 'Selected TTC', bold: false, italic: false, source_ttf: true };
+  let called = false;
+  await setHostFontProvider({
+    async getSnapshot() { return { revision: 'face-one', faces: [{ id: 'face', family: request.family,
+      fullName: request.family, postscriptName: 'Selected-TTC', style: 'Regular', weight: 400, slant: 'normal' }] }; },
+    async readFace() { return { bytes, faceIndex: 1 }; }, subscribe() { return () => {}; },
+  });
+  try {
+    const owner = {
+      getNativePuaFontRequests: () => '[]', registerNativePuaFont: () => false,
+      getNativeOtfFontRequests: () => JSON.stringify([request]),
+      prepareNativeOtfFonts() { throw new Error('legacy API must not erase the selected face'); },
+      prepareNativeOtfFontFaces(provider: (raw: string) => NativeFontProgram[] | null) {
+        const selected = provider(JSON.stringify(request));
+        assert.equal(selected?.length, 1);
+        assert.equal(selected![0].faceIndex, 1);
+        assert.deepEqual(selected![0].bytes, new Uint8Array(bytes));
+        called = true; return true;
+      },
+    };
+    assert.equal(await new NativePuaFontSession().prepare(owner, 1, () => true, () => true), true);
+    assert.equal(called, true);
+  } finally { await setHostFontProvider(null); }
+});
 
 test('같은 family의 HFT와 TrueType 폭 프로그램을 출처별로 준비한다', async () => {
   const files = new Map(['TTF', 'CFF'].map(id => {

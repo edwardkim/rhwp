@@ -1,0 +1,314 @@
+{
+  "inputSHA256": "037ba98b9c0b2403577ca8830120bdffeabddfc901899d05e238db9aabbc1b12",
+  "referenceHwpxSHA256": "0b288f690b4450cad86a016014c41c8d459381f1058978396d183a41a2bbc89c",
+  "mapping": [
+    {
+      "hwp3_code": "0x3013",
+      "hancom_codepoint": "U+F0806"
+    },
+    {
+      "hwp3_code": "0x3014",
+      "hancom_codepoint": "U+F0807"
+    },
+    {
+      "hwp3_code": "0x3015",
+      "hancom_codepoint": "U+F0808"
+    },
+    {
+      "hwp3_code": "0x3016",
+      "hancom_codepoint": "U+F0809"
+    },
+    {
+      "hwp3_code": "0x3017",
+      "hancom_codepoint": "U+F080A"
+    },
+    {
+      "hwp3_code": "0x3018",
+      "hancom_codepoint": "U+F080B"
+    },
+    {
+      "hwp3_code": "0x3019",
+      "hancom_codepoint": "U+F080C"
+    },
+    {
+      "hwp3_code": "0x301A",
+      "hancom_codepoint": "U+F080D"
+    },
+    {
+      "hwp3_code": "0x301B",
+      "hancom_codepoint": "U+F080E"
+    },
+    {
+      "hwp3_code": "0x301C",
+      "hancom_codepoint": "U+F080F"
+    },
+    {
+      "hwp3_code": "0x301D",
+      "hancom_codepoint": "U+F0810"
+    },
+    {
+      "hwp3_code": "0x301E",
+      "hancom_codepoint": "U+F0811"
+    },
+    {
+      "hwp3_code": "0x301F",
+      "hancom_codepoint": "U+F0812"
+    },
+    {
+      "hwp3_code": "0x3020",
+      "hancom_codepoint": "U+F0813"
+    },
+    {
+      "hwp3_code": "0x3021",
+      "hancom_codepoint": "U+F0814"
+    },
+    {
+      "hwp3_code": "0x3022",
+      "hancom_codepoint": "U+F0815"
+    },
+    {
+      "hwp3_code": "0x3023",
+      "hancom_codepoint": "U+F0816"
+    },
+    {
+      "hwp3_code": "0x3024",
+      "hancom_codepoint": "U+F0817"
+    },
+    {
+      "hwp3_code": "0x3025",
+      "hancom_codepoint": "U+F0818"
+    },
+    {
+      "hwp3_code": "0x3026",
+      "hancom_codepoint": "U+F0819"
+    },
+    {
+      "hwp3_code": "0x3027",
+      "hancom_codepoint": "U+F081A"
+    },
+    {
+      "hwp3_code": "0x3028",
+      "hancom_codepoint": "U+F081B"
+    },
+    {
+      "hwp3_code": "0x3029",
+      "hancom_codepoint": "U+F0308"
+    },
+    {
+      "hwp3_code": "0x302A",
+      "hancom_codepoint": "U+F0309"
+    },
+    {
+      "hwp3_code": "0x302B",
+      "hancom_codepoint": "U+F030A"
+    },
+    {
+      "hwp3_code": "0x302C",
+      "hancom_codepoint": "U+F030B"
+    },
+    {
+      "hwp3_code": "0x302D",
+      "hancom_codepoint": "U+F030C"
+    },
+    {
+      "hwp3_code": "0x302E",
+      "hancom_codepoint": "U+F030D"
+    },
+    {
+      "hwp3_code": "0x302F",
+      "hancom_codepoint": "U+F030E"
+    },
+    {
+      "hwp3_code": "0x3030",
+      "hancom_codepoint": "U+F030F"
+    },
+    {
+      "hwp3_code": "0x3031",
+      "hancom_codepoint": "U+F0310"
+    },
+    {
+      "hwp3_code": "0x3032",
+      "hancom_codepoint": "U+F081C"
+    },
+    {
+      "hwp3_code": "0x3033",
+      "hancom_codepoint": "U+F081D"
+    },
+    {
+      "hwp3_code": "0x3034",
+      "hancom_codepoint": "U+F081E"
+    },
+    {
+      "hwp3_code": "0x3035",
+      "hancom_codepoint": "U+F081F"
+    },
+    {
+      "hwp3_code": "0x3036",
+      "hancom_codepoint": "U+F0820"
+    },
+    {
+      "hwp3_code": "0x3037",
+      "hancom_codepoint": "U+F0821"
+    },
+    {
+      "hwp3_code": "0x3038",
+      "hancom_codepoint": "U+F0822"
+    },
+    {
+      "hwp3_code": "0x3039",
+      "hancom_codepoint": "U+F0823"
+    },
+    {
+      "hwp3_code": "0x303A",
+      "hancom_codepoint": "U+F0824"
+    },
+    {
+      "hwp3_code": "0x303B",
+      "hancom_codepoint": "U+F0825"
+    },
+    {
+      "hwp3_code": "0x303C",
+      "hancom_codepoint": "U+F0826"
+    },
+    {
+      "hwp3_code": "0x303D",
+      "hancom_codepoint": "U+F0827"
+    },
+    {
+      "hwp3_code": "0x303E",
+      "hancom_codepoint": "U+F0828"
+    },
+    {
+      "hwp3_code": "0x303F",
+      "hancom_codepoint": "U+F0829"
+    },
+    {
+      "hwp3_code": "0x3040",
+      "hancom_codepoint": "U+F082A"
+    },
+    {
+      "hwp3_code": "0x3041",
+      "hancom_codepoint": "U+F082B"
+    },
+    {
+      "hwp3_code": "0x3042",
+      "hancom_codepoint": "U+F082C"
+    },
+    {
+      "hwp3_code": "0x3043",
+      "hancom_codepoint": "U+F082D"
+    },
+    {
+      "hwp3_code": "0x3044",
+      "hancom_codepoint": "U+F082E"
+    },
+    {
+      "hwp3_code": "0x3045",
+      "hancom_codepoint": "U+F082F"
+    },
+    {
+      "hwp3_code": "0x3046",
+      "hancom_codepoint": "U+F0830"
+    },
+    {
+      "hwp3_code": "0x3047",
+      "hancom_codepoint": "U+F0831"
+    },
+    {
+      "hwp3_code": "0x3048",
+      "hancom_codepoint": "U+F0832"
+    },
+    {
+      "hwp3_code": "0x3049",
+      "hancom_codepoint": "U+F0833"
+    },
+    {
+      "hwp3_code": "0x304A",
+      "hancom_codepoint": "U+F0834"
+    },
+    {
+      "hwp3_code": "0x304B",
+      "hancom_codepoint": "U+F0835"
+    },
+    {
+      "hwp3_code": "0x304C",
+      "hancom_codepoint": "U+F0836"
+    },
+    {
+      "hwp3_code": "0x304D",
+      "hancom_codepoint": "U+F0837"
+    },
+    {
+      "hwp3_code": "0x304E",
+      "hancom_codepoint": "U+F0838"
+    },
+    {
+      "hwp3_code": "0x304F",
+      "hancom_codepoint": "U+F0839"
+    },
+    {
+      "hwp3_code": "0x3050",
+      "hancom_codepoint": "U+F083A"
+    },
+    {
+      "hwp3_code": "0x3051",
+      "hancom_codepoint": "U+F083B"
+    },
+    {
+      "hwp3_code": "0x3052",
+      "hancom_codepoint": "U+F083C"
+    },
+    {
+      "hwp3_code": "0x3053",
+      "hancom_codepoint": "U+F083D"
+    },
+    {
+      "hwp3_code": "0x3054",
+      "hancom_codepoint": "U+F083E"
+    },
+    {
+      "hwp3_code": "0x3055",
+      "hancom_codepoint": "U+F083F"
+    },
+    {
+      "hwp3_code": "0x3056",
+      "hancom_codepoint": "U+F0840"
+    },
+    {
+      "hwp3_code": "0x3057",
+      "hancom_codepoint": "U+F0841"
+    },
+    {
+      "hwp3_code": "0x3058",
+      "hancom_codepoint": "U+F0842"
+    },
+    {
+      "hwp3_code": "0x3059",
+      "hancom_codepoint": "U+F0843"
+    },
+    {
+      "hwp3_code": "0x305A",
+      "hancom_codepoint": "U+F0844"
+    },
+    {
+      "hwp3_code": "0x305B",
+      "hancom_codepoint": "U+F0845"
+    },
+    {
+      "hwp3_code": "0x305C",
+      "hancom_codepoint": "U+F0846"
+    },
+    {
+      "hwp3_code": "0x305D",
+      "hancom_codepoint": "U+F0847"
+    },
+    {
+      "hwp3_code": "0x305E",
+      "hancom_codepoint": "U+F0848"
+    },
+    {
+      "hwp3_code": "0x305F",
+      "hancom_codepoint": "U+F0849"
+    }
+  ]
+}

@@ -45,6 +45,8 @@ impl DocumentCore {
     ) -> Result<bool, HwpError> {
         use sha2::{Digest, Sha256};
         let family = family.trim();
+        #[cfg(target_arch = "wasm32")]
+        self.hft_outline_fonts.clear_print_primary(family);
         let environment = self.resolved_font_environment();
         // 실제 선택 신원과 첫 공급 face가 같은 경우에만 유형 미상의 CFF도 허용한다.
         // 원본 유형·조판 폭을 다시 분류하지 않으며 기존 프로그램 바이트 한도를 먼저 확인한다.

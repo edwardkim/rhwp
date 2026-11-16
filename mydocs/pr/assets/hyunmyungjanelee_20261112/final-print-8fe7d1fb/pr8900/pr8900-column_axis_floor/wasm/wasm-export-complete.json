@@ -1,0 +1,67 @@
+{
+  "pageCount": 1,
+  "layoutGeneration": "2022",
+  "comparisonProfile": "print",
+  "rasterBackend": "wasm-canvas2d",
+  "protocolTimeoutMs": 600000,
+  "pngBackground": "opaque-white-print-paper",
+  "captureCanvasPolicy": "fresh-per-page-after-font-and-image-preparation",
+  "fontEnvironment": {
+    "source": "preparedPrograms",
+    "environment": null,
+    "programs": [],
+    "loaded": []
+  },
+  "pages": [
+    {
+      "page": 1,
+      "pngSha256": "239efee735fc58d17f9e31563c3909aa59bb1ede7850fa7a9727caf87dece280",
+      "width": 794,
+      "height": 1122,
+      "canvasContext": {
+        "alpha": true,
+        "colorSpace": "srgb",
+        "colorType": "unorm8",
+        "desynchronized": false,
+        "toneMapping": {
+          "mode": "standard"
+        },
+        "willReadFrequently": true
+      }
+    }
+  ],
+  "workers": [
+    {
+      "index": 0,
+      "pages": [
+        1
+      ],
+      "fonts": {
+        "requested": [],
+        "loaded": []
+      },
+      "nativePuaFonts": [],
+      "hftOtfFonts": [],
+      "observedFonts": [],
+      "fontEnvironment": {
+        "source": "preparedPrograms",
+        "environment": null,
+        "programs": [],
+        "loaded": []
+      },
+      "screenCanvasMetricsActive": false,
+      "canvasMetricsActive": false,
+      "canvasContext": {
+        "alpha": true,
+        "colorSpace": "srgb",
+        "colorType": "unorm8",
+        "desynchronized": false,
+        "toneMapping": {
+          "mode": "standard"
+        },
+        "willReadFrequently": true
+      },
+      "browser": "Chrome/157.0.8103.51"
+    }
+  ]
+}

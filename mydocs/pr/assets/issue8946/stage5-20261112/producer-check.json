@@ -1,0 +1,12 @@
+{
+  "head": {
+    "pkg/rhwp.js": "187d86cfd6265d8894d71722f97a6a5247e88dbc4b226cdb6eb18414a13950ba",
+    "pkg/rhwp_bg.wasm": "732c396657baa44ff583c34215d87fe2ccead84c3d85425b06b73a47a7f7ca5d",
+    "outline_api": true
+  },
+  "base": {
+    "pkg/rhwp.js": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+    "pkg/rhwp_bg.wasm": "5bb9735593b081a22228217038fedc939393196ed7055dbca485db5aa2859e32",
+    "outline_api": false
+  }
+}

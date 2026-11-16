@@ -1,0 +1,9 @@
+source	backend	document	page	tolerant_content_match_percent	below_90	silhouette_raw_match_percent	silhouette_boundary_reconciled_pixels
+base	native	a-rowbreak-float	1	100.00	0	100.00	0
+base	native	control-float	1	100.00	0	100.00	0
+base	wasm	a-rowbreak-float	1	100.00	0	100.00	0
+base	wasm	control-float	1	100.00	0	100.00	0
+head	native	a-rowbreak-float	1	100.00	0	100.00	0
+head	native	control-float	1	100.00	0	100.00	0
+head	wasm	a-rowbreak-float	1	100.00	0	100.00	0
+head	wasm	control-float	1	100.00	0	100.00	0

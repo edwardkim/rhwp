@@ -1,0 +1,59 @@
+{
+  "exit": 0,
+  "source_commit": "8472674645",
+  "pages": 50,
+  "minimum": "99.08",
+  "below98": [],
+  "seconds": 247.72646617889404,
+  "command": [
+    "/Users/tsjang/rhwp/venv/bin/python",
+    "scripts/visual_sweep.py",
+    "--rasterizer",
+    "svg",
+    "--silhouette-only",
+    "--rhwp-bin",
+    "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/svg-print-final/post-rebase-4e0b20d2/margin-controls/native-svg-program-repair/rhwp-native",
+    "--hwp",
+    "/Users/tsjang/rhwp/mydocs/pr/assets/issue7445/issue1937_rowbreak_footnote_overpagination.hwp",
+    "--pdf",
+    "/Users/tsjang/rhwp/pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf",
+    "--key",
+    "footnote",
+    "--dpi",
+    "96",
+    "--compat",
+    "2022",
+    "--embed-fonts",
+    "full",
+    "--font-path",
+    "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/wasm-protected-fonts",
+    "--page-workers",
+    "8",
+    "--out",
+    "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/svg-print-final/post-rebase-4e0b20d2/margin-controls/native-svg-program-repair/whole"
+  ],
+  "producer": {
+    "source_parent": "a2dd43ad2966298d1142ff946ced0d67a6a198c2",
+    "source_diff_sha256": "00e31afafde14416980cda8240c8f37d36147601289b7a61df77b55768384be3",
+    "binary_sha256": "fccca6a5d7abc8f803ec3522501be1a79b2d36eedbd5e70ee49dcc977420c98e",
+    "production_command": "cargo nextest run --locked --test regression_suite_026 -E test(/(^|::)issue_7732_native_svg_program_supply::/) --cargo-profile release-test --target-dir target/pr-review --features native-skia --test-threads 8",
+    "focused_before": {
+      "tests": 1,
+      "failed": 1,
+      "seconds": 2.596,
+      "log": "../svg-residual-diagnosis/contract-before-collected.log"
+    },
+    "focused_after": {
+      "tests": 1,
+      "passed": 1,
+      "seconds": 2.439,
+      "log": "../svg-residual-diagnosis/contract-after.log"
+    },
+    "invalid_invocations": [
+      "contract-before.log: 단일 쪽 SVG 파일명 가정 오류. 제품 실패 증거로 사용하지 않음.",
+      "contract-before-corrected.log: 테스트 편집 뒤 suite 재생성 누락으로0건 실행. 통과로 사용하지 않음."
+    ],
+    "scope": "Native native-skia CLI의 layer SVG가 PNG와 같은 실제 공급 전진 준비를 호출한다. 공통 조판·paint·WASM·PNG 함수는 변경하지 않음.",
+    "source_commit": "8472674645743d111d53de80d43d230449beaa3d"
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "measured_at": "2026-11-12T17:04:43+09:00",
+  "source": "5cc77a0da8e1e24afc3a810a4967f7876f890bb4",
+  "base": "80b1c354c29b7a02fb2b3c14a274da7f5b653ada",
+  "native_sha256": "f72ce1276b55f34f4a26a9e4e1cfdd4738ab89ecdf4b943fce4e519f691fa4e5",
+  "wasm_sha256": "86528c97b90ca135e7e704ec5d564124acf35d23c11429d42ce2948e6acdc02a",
+  "js_sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+  "native_features": [
+    "native-skia"
+  ],
+  "wasm_optimized": true,
+  "wasm_codegen_units": 16,
+  "measurements": [
+    {
+      "backend": "native",
+      "key": "cover-bold",
+      "pages": 1,
+      "minimum": "100.00"
+    },
+    {
+      "backend": "native",
+      "key": "cover-regular",
+      "pages": 1,
+      "minimum": "100.00"
+    },
+    {
+      "backend": "native",
+      "key": "tracking",
+      "pages": 1,
+      "minimum": "100.00"
+    },
+    {
+      "backend": "native",
+      "key": "mixed",
+      "pages": 1,
+      "minimum": "100.00"
+    },
+    {
+      "backend": "wasm",
+      "key": "cover-bold",
+      "pages": 1,
+      "minimum": "100.00"
+    },
+    {
+      "backend": "wasm",
+      "key": "cover-regular",
+      "pages": 1,
+      "minimum": "100.00"
+    },
+    {
+      "backend": "wasm",
+      "key": "tracking",
+      "pages": 1,
+      "minimum": "100.00"
+    },
+    {
+      "backend": "wasm",
+      "key": "mixed",
+      "pages": 1,
+      "minimum": "100.00"
+    }
+  ],
+  "direct_reading": "Native/fresh WASM와 한컴의 제목, 14자 본문, 보통/굵게 6행, 정상 그림 및 미해결 연결 그림 자리를 같은 배율로 판독했다. 누락·겹침·줄바꿈 변화가 없고 굵기 전진폭이 복원됐다.",
+  "inputs": {
+    "tests/fixtures/issue8957/strawberry-tracking.hwpx": "beab8620cdee0c839dd0f7904f70bb0aedb82e02f23ac996cfe09943f7e3257a",
+    "tests/fixtures/issue8957/cover-regular.hwpx": "79e868eefdec63873ab08cb918e85dd7e802f51c828d68fb45eebac3c5ace056",
+    "tests/fixtures/issue8957/cover-mixed-images.hwpx": "f15acbf3e2b956a4356c447e0778c32afaad061775a89dfdde7ded7bca864091",
+    "tests/fixtures/issue8957/cover-linked.hwpx": "625a311578ced7a91725998d004590159e0886c5000346279060d7e649b21ab8",
+    "pdf/issue8957/cover-mixed-images-2024.pdf": "6b3b79c54060c8a960f69e3a505a44a014f79179e72de38fa6b5f7821e63d9d6",
+    "pdf/issue8957/cover-linked-2024.pdf": "2088fcfb7498e125306cdcc073bba2307f900087e71f9874d18a91d3aabd6911",
+    "pdf/issue8957/cover-regular-2024.pdf": "701636d1f4d297c47e41a0bd8a2b336cd2c797f58c74137764a35e6587599b34",
+    "pdf/issue8957/strawberry-tracking-2024.pdf": "4e8fb5e08aebf50830cb1fffcc5d118156d6a1f83403a395e6c25c12c17bb212"
+  }
+}

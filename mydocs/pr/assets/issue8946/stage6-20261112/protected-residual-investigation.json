@@ -1,0 +1,22 @@
+{
+  "code_head": "b4855616375c4a8fd1cdd6083d85cd77d655ad26",
+  "base": "80b1c354c29b7a02fb2b3c14a274da7f5b653ada",
+  "pages": {
+    "handbook-hwp": [
+      30,
+      168,
+      194,
+      258
+    ],
+    "handbook-hwpx": [
+      258
+    ]
+  },
+  "base_head_identical": true,
+  "base_check": "Same public font environment and actual Times New Roman files; all five PNGs byte-identical.",
+  "difference": "Official display 100.00 -> 99.99, 2-4 unmatched pixels per page",
+  "direct_read": "Halfwidth corner brackets and middle dot; independent PDF uses Haansoft Batang. Available HCR Batang is a different program.",
+  "times_supply_result": "No change; hypothesis rejected",
+  "canonical_gate": "re_review_required, no threshold or baseline changes",
+  "provided_directory_audit": "387 OTF files; no HBATANG.TTF/HMKMM.TTF or Haansoft Batang family; HMKSM.otf is Human Myeongjo, a different program"
+}

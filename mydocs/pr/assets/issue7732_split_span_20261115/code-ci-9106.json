@@ -1,0 +1,191 @@
+{
+  "checked_at": "2026-11-15T21:31:58.748Z",
+  "head": "5de0973ab13d468c0da5defcc3214398efc847d7",
+  "mergeable": true,
+  "runs": [
+    {
+      "id": 43760923405,
+      "name": "Proptest roundtrip",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 4252,
+      "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/43760923405/jobs",
+      "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/43760923405/logs",
+      "workflow_id": 336733104
+    },
+    {
+      "id": 43760923363,
+      "name": "Adapter inter-diff",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 4166,
+      "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/43760923363/jobs",
+      "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/43760923363/logs",
+      "workflow_id": 336749361
+    },
+    {
+      "id": 43760923432,
+      "name": "CodeQL",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 11830,
+      "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/43760923432/jobs",
+      "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/43760923432/logs",
+      "workflow_id": 257371274
+    },
+    {
+      "id": 43760923348,
+      "name": "Render Diff",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 7506,
+      "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/43760923348/jobs",
+      "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/43760923348/logs",
+      "workflow_id": 268844874
+    },
+    {
+      "id": 43760923507,
+      "name": "CI",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 11931,
+      "jobs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/43760923507/jobs",
+      "logs_url": "https://api.github.com/repos/edwardkim/rhwp/actions/runs/43760923507/logs",
+      "workflow_id": 256052003
+    }
+  ],
+  "jobs": [
+    {
+      "id": 132955334402,
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 132955335410,
+      "name": "WASM Build",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "id": 132955377985,
+      "name": "CI preflight",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 132955791578,
+      "name": "Lint (fmt, clippy, WASM check)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 132955791649,
+      "name": "Frontend package gates",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 132955791650,
+      "name": "Native Skia tests",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 132955791714,
+      "name": "Resolve nextest target duration policy",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 132955791719,
+      "name": "build-test-archive-a / Build test archive (a)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 132955792907,
+      "name": "Frontend unit gates",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "id": 132955793061,
+      "name": "Workflow promotion preflight",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "id": 132955793374,
+      "name": "release-operations-contracts",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "id": 132955793551,
+      "name": "native-host-package",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "id": 132955814296,
+      "name": "build-test-archive-b / Build test archive (b)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 132955814321,
+      "name": "build-test-archive-d / Build test archive (d)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 132955814367,
+      "name": "build-test-archive-c / Build test archive (c)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 132955814370,
+      "name": "build-test-archive-e / Build test archive (e)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 132960466204,
+      "name": "test-archive-c-shard-1 / Default-feature tests (Archive C)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 132960475544,
+      "name": "test-archive-a-shard-1 / Default-feature tests (Archive A)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 132960714515,
+      "name": "test-archive-e-shard-1 / Default-feature tests (Archive E)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 132961005067,
+      "name": "test-archive-d-shard-1 / Default-feature tests (Archive D)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 132961075868,
+      "name": "test-archive-b-shard-1 / Default-feature tests (Archive B)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 132965318406,
+      "name": "Build & Test",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "result": {
+    "initialized": true,
+    "pages": 2
+  },
+  "responses": [
+    {
+      "route": "/rhwp.js",
+      "status": 200,
+      "bytes": 583724,
+      "sha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+      "expected_sha256": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+      "matches": true
+    },
+    {
+      "route": "/rhwp_bg.wasm",
+      "status": 200,
+      "bytes": 31841150,
+      "sha256": "f0153ed0410ba4acb2fb50a3cf030214457d500c66d722db6648381168c7d57d",
+      "expected_sha256": "f0153ed0410ba4acb2fb50a3cf030214457d500c66d722db6648381168c7d57d",
+      "matches": true
+    }
+  ],
+  "packages": {
+    "rhwp.js": {
+      "root": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+      "studio_public": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094"
+    },
+    "rhwp_bg.wasm": {
+      "root": "f0153ed0410ba4acb2fb50a3cf030214457d500c66d722db6648381168c7d57d",
+      "studio_public": "f0153ed0410ba4acb2fb50a3cf030214457d500c66d722db6648381168c7d57d"
+    }
+  }
+}

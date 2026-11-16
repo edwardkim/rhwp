@@ -1,0 +1,58 @@
+{
+  "runtime_source": "5fa2645186fc8bec4e53074aa6ff0af7ef67f0ca",
+  "actual_response": {
+    "url": "http://127.0.0.1:7814/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+    "status": 304,
+    "sha256": "43c75a7923b6abbc7928aeaec73762f6df30ec5e42293a3aa7b013f551e50399",
+    "bytes": 3281327
+  },
+  "root_js_sha256": "2d48f8a6c3ff7f848f08725bb54d04094b296af1a40ae61203081a7cf8061a1a",
+  "vite_source_map_original_sha256": "215ba6afbba32185ed9247ae206b27ee3a83e0e5b9188bdaf072d84cd54937e2",
+  "transformation": "초기 모듈 응답의 Vite source-map에서 상대 WASM URL 한 곳만 root pkg의 /@fs URL로 바뀌었다. 알려진 한 곳을 역변환한 결과가 root JS 바이트와 같다. 후속 fetch가 아닌 초기 response body다.",
+  "normalized_original_equals_root": true,
+  "root_pkg_equals_studio_public_equals_frozen_pkg": true,
+  "wasm_response_checks": {
+    "observations": 6,
+    "sha256": "01161ceb1e4e8ae97c3d20ff63cd74c7fff7f2ed796c963e30298fa0bd20e13c",
+    "browser_log_sha256": "b23b7af250413b0a51128845a0e4da549eacaa78d960ff48680e54e29fa0c9d6",
+    "verification": "E2E helper가 실제 응답 바이트의 SHA를 고정 build manifest와 비교했다."
+  },
+  "document_loads": [
+    {
+      "filename": "issue9026/press_release_repeated_hidden_end.hwpx",
+      "pageCount": 5,
+      "initDocCompleted": true,
+      "loadMs": 17047
+    },
+    {
+      "filename": "issue9026/press_release_repeated_hidden_end.hwpx",
+      "pageCount": 5,
+      "initDocCompleted": true,
+      "loadMs": 15943
+    },
+    {
+      "filename": "issue9026/press_release_repeated_hidden_end.hwpx",
+      "pageCount": 5,
+      "initDocCompleted": true,
+      "loadMs": 18986
+    },
+    {
+      "filename": "issue9026/press_release_repeated_hidden_end.hwpx",
+      "pageCount": 5,
+      "initDocCompleted": true,
+      "loadMs": 2129
+    },
+    {
+      "filename": "issue9026/press_release_repeated_hidden_end.hwpx",
+      "pageCount": 5,
+      "initDocCompleted": true,
+      "loadMs": 20104
+    },
+    {
+      "filename": "issue9026/press_release_repeated_hidden_end.hwpx",
+      "pageCount": 5,
+      "initDocCompleted": true,
+      "loadMs": 17497
+    }
+  ]
+}

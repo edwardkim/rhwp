@@ -1,0 +1,641 @@
+{
+  "product_head": "c6e852a92b3661136552a432d649e168e27f88d4",
+  "regression_font_environment": "macOS process-isolated minimal fonts; OS faces 528, non-OS faces 0, explicitly licensed repository fonts allowed",
+  "visual_font_environment": "normal process with original font programs; not minimal-font regression sandbox",
+  "initial": [
+    {
+      "gate": "focused-nextest",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/minimal-font.sb",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "<repo>/target/pr-review",
+        "--build-jobs",
+        "8",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "--test",
+        "regression_suite_018",
+        "--test",
+        "regression_suite_011",
+        "--test",
+        "regression_suite_013",
+        "--test",
+        "regression_suite_007",
+        "--test",
+        "regression_suite_027",
+        "-E",
+        "test(/issue_(8960|9027|9029|9032|9035)_/)"
+      ],
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/logs/focused-nextest.log",
+      "phase": "passed",
+      "pid": 55900,
+      "exit": 0,
+      "elapsed_seconds": 211.241,
+      "log_sha256": "718d604dfd2ac848ba684c75bd3bc7e304b3a86b3cd8d92f7a14a2579d10a9e2",
+      "summary": [
+        "     Summary [   0.038s] 6 tests run: 6 passed, 1667 skipped"
+      ]
+    },
+    {
+      "gate": "full-nextest",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/minimal-font.sb",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "<repo>/target/pr-review",
+        "--build-jobs",
+        "8",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "--tests"
+      ],
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/logs/full-nextest.log",
+      "phase": "passed",
+      "pid": 69192,
+      "exit": 0,
+      "elapsed_seconds": 713.291,
+      "log_sha256": "0923ed6e55d3f9eef4a5309825141c0abd65ae113d73f41185fce187dbefa8ed",
+      "summary": [
+        "     Summary [ 364.208s] 13429 tests run: 13429 passed, 45 skipped"
+      ]
+    },
+    {
+      "gate": "candidate-native-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--bin",
+        "rhwp",
+        "--target-dir",
+        "<repo>/target/pr-review",
+        "-j",
+        "8"
+      ],
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/logs/candidate-native-build.log",
+      "phase": "passed",
+      "pid": 32693,
+      "exit": 0,
+      "elapsed_seconds": 166.606,
+      "log_sha256": "9949f1670af1a6cc41642819418b2c223e0c41a1f6e30403b2b991107e98e7b7"
+    }
+  ],
+  "completed_gates": [
+    {
+      "gate": "candidate-fresh-wasm",
+      "command": [
+        "bash",
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "phase": "passed",
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/logs/candidate-fresh-wasm.log",
+      "pid": 42823,
+      "exit": 0,
+      "elapsed_seconds": 401.793,
+      "sha256": "cdd5fdf012303714bf26db261b68300893f4e2fccc0f65bccae0dc590d85b5bb"
+    },
+    {
+      "gate": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "phase": "passed",
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/logs/fmt.log",
+      "pid": 68703,
+      "exit": 0,
+      "elapsed_seconds": 15.925,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "gate": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "<repo>/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "phase": "passed",
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/logs/clippy-native.log",
+      "pid": 69642,
+      "exit": 0,
+      "elapsed_seconds": 79.055,
+      "sha256": "322279cc8299d324282910e70b33622a7dfd4a354837644cd04500262840ba37"
+    },
+    {
+      "gate": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "<repo>/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "phase": "passed",
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/logs/clippy-wasm.log",
+      "pid": 76381,
+      "exit": 0,
+      "elapsed_seconds": 43.243,
+      "sha256": "05c4090845d23c5eac54797daf37b4b03368a7a3f66d0862923f051d4653aeed"
+    },
+    {
+      "gate": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "<repo>/target/pr-review",
+        "--jobs",
+        "8"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "phase": "passed",
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/logs/workspace-build.log",
+      "pid": 80095,
+      "exit": 0,
+      "elapsed_seconds": 105.922,
+      "sha256": "9b2298525b775b1f4d42790aa17c06d2ab5a422bd556334ab3abdff491b53222"
+    },
+    {
+      "gate": "clippy-all-targets",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "<repo>/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "phase": "passed",
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/logs/clippy-all-targets.log",
+      "pid": 87100,
+      "exit": 0,
+      "elapsed_seconds": 82.136,
+      "sha256": "0146555a0b0fd849ecd81ec234f9aa73eb663d98216176b983d58a1e3664e078"
+    },
+    {
+      "gate": "native-skia-lib",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/minimal-font.sb",
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "<repo>/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--jobs",
+        "8",
+        "--",
+        "--test-threads",
+        "8"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "phase": "passed",
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/logs/native-skia-lib.log",
+      "pid": 92616,
+      "exit": 0,
+      "elapsed_seconds": 214.529,
+      "sha256": "49f1c6fc42410c54e9d15bf21c66c8d2d3524ffc9a42a11bc5d586d5f5c41324"
+    },
+    {
+      "gate": "native-skia-png",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/minimal-font.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "<repo>/target/pr-review",
+        "--features",
+        "native-skia",
+        "--build-jobs",
+        "8",
+        "--test-threads",
+        "8"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "phase": "passed",
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/logs/native-skia-png.log",
+      "pid": 6279,
+      "exit": 0,
+      "elapsed_seconds": 357.586,
+      "sha256": "6c884bf9456b7237220b9666c725650f0eec06312911f729630e90c4b632d0b9"
+    },
+    {
+      "gate": "native-skia-pdf",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/minimal-font.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "<repo>/target/pr-review",
+        "--features",
+        "native-skia",
+        "--build-jobs",
+        "8",
+        "--test-threads",
+        "8"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "phase": "passed",
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/logs/native-skia-pdf.log",
+      "pid": 28489,
+      "exit": 0,
+      "elapsed_seconds": 29.834,
+      "sha256": "8da4fca77d08cf77d1835a0ec856f4c14d84a327a639a7784eb6fc620a737fd2"
+    },
+    {
+      "gate": "manifest-contracts",
+      "command": [
+        "node",
+        "--test",
+        "scripts/tests/rust-test-suite-manifest.test.mjs"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "phase": "passed",
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/logs/manifest-contracts.log",
+      "pid": 30504,
+      "exit": 0,
+      "elapsed_seconds": 6.172,
+      "sha256": "a95b4dc276bb02ac647af87bca37d527e15eda14abc8f6af7c620c121ccaddc2"
+    },
+    {
+      "gate": "manifest-check",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "1003349996897c6ff097271e7296ae4d1a3d807f"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "phase": "passed",
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/logs/manifest-check.log",
+      "pid": 30798,
+      "exit": 0,
+      "elapsed_seconds": 2.378,
+      "sha256": "c14847397bc622f8fb0804899cfed31493077e5bae3c30b2a99d830929009a1c"
+    },
+    {
+      "gate": "unit-tiers",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "1003349996897c6ff097271e7296ae4d1a3d807f"
+      ],
+      "cwd": "/Users/tsjang/rhwp",
+      "phase": "passed",
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/logs/unit-tiers.log",
+      "pid": 30892,
+      "exit": 0,
+      "elapsed_seconds": 37.325,
+      "sha256": "b0d22c7e9e78b2de09250df5931d136093b5d2ad3c7474ab5c37aa9c3dc75ad0"
+    },
+    {
+      "gate": "fixed-base-native-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--bin",
+        "rhwp",
+        "--target-dir",
+        "<repo>/target/pr-review",
+        "-j",
+        "8"
+      ],
+      "cwd": "<repo>/output/pr-review/planet6897-open7-integration-20261113/fixed-base-source",
+      "phase": "passed",
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/logs/fixed-base-native-build.log",
+      "pid": 35223,
+      "exit": 0,
+      "elapsed_seconds": 437.782,
+      "sha256": "8b297829be73a2f43fabad2ba1ff1856e07be7faac79de354debea4dd6c9c2ef"
+    }
+  ],
+  "skia_lib": {
+    "passed": 4034,
+    "ignored": 12
+  },
+  "skia_png": {
+    "passed": 2
+  },
+  "skia_pdf": {
+    "passed": 36
+  },
+  "candidate_native": {
+    "path": "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-rhwp-native",
+    "sha256": "231fe6135de3d6ab75180a8329d0f6a9a999c03475611a326eca937ce5febbf5",
+    "head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3"
+  },
+  "candidate_wasm": {
+    "kind": "Mac locked wrapper --no-opt local substitute",
+    "docker_optimized": false,
+    "pkg": "<repo>/output/pr-review/planet6897-open7-integration-20261113/candidate-pkg",
+    "root_and_studio_hashes": {
+      "rhwp.js": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+      "rhwp_bg.wasm": "4e7698569738bbb27cfd157fb394be98bc80d15374a8979c645c97fb650c9d56"
+    }
+  },
+  "fixed_base": "1003349996897c6ff097271e7296ae4d1a3d807f",
+  "not_complete_yet": [],
+  "pre_rebase_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+  "post_rebase_results": [
+    {
+      "label": "backup-ref",
+      "command": [
+        "git",
+        "update-ref",
+        "refs/backup/planet6897-open5-before-20261113-final-rebase",
+        "605740c4363e9e6bacd84895d93abbc7d7bf62c3"
+      ],
+      "phase": "passed",
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/upstream-final-check/backup-ref.log",
+      "pid": 5670,
+      "exit": 0,
+      "elapsed_seconds": 0.008,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "rebase",
+      "command": [
+        "git",
+        "rebase",
+        "--onto",
+        "00d09f773a2f6c21604a4e6394df7152bbb26e8c",
+        "1003349996897c6ff097271e7296ae4d1a3d807f",
+        "review/integration-20261113-planet6897-open5"
+      ],
+      "phase": "passed",
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/upstream-final-check/rebase.log",
+      "pid": 5671,
+      "exit": 0,
+      "elapsed_seconds": 23.175,
+      "log_sha256": "3924b5f1422277cdbeaea92159a5f48e0954774b4ff5761405e5430de3a7eefc"
+    },
+    {
+      "label": "range-diff",
+      "command": [
+        "git",
+        "range-diff",
+        "--no-color",
+        "1003349996897c6ff097271e7296ae4d1a3d807f..605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+        "00d09f773a2f6c21604a4e6394df7152bbb26e8c..c6e852a92b3661136552a432d649e168e27f88d4"
+      ],
+      "phase": "passed",
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/upstream-final-check/range-diff.log",
+      "pid": 7860,
+      "exit": 0,
+      "elapsed_seconds": 0.193,
+      "log_sha256": "68b62c9595f7e85c4efb8086cee513a3a0ac4cb6cc54e394d2e907434e36ac2d"
+    },
+    {
+      "label": "prepare-derived",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "phase": "passed",
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/upstream-final-check/prepare-derived.log",
+      "pid": 8033,
+      "exit": 0,
+      "elapsed_seconds": 3.596,
+      "log_sha256": "9ff75f4a74a2b51650240bc9103c5849d959a026ccf7f704db50c5a960bd92f7"
+    },
+    {
+      "label": "incoming-7620-focused",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/minimal-font.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_7620_cellbreak_float_row_carry",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "<repo>/target/pr-review",
+        "--build-jobs",
+        "8",
+        "--test-threads",
+        "8"
+      ],
+      "phase": "passed",
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/upstream-final-check/incoming-7620-focused.log",
+      "pid": 8178,
+      "exit": 0,
+      "elapsed_seconds": 459.543,
+      "log_sha256": "62bf5ca3ee1cc6e440c495de45a84574774dab6abbf122933b71bd13e9ba7ae5"
+    },
+    {
+      "label": "full-nextest",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "<repo>/output/pr-review/planet6897-open7-integration-20261113/minimal-font.sb",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "<repo>/target/pr-review",
+        "--build-jobs",
+        "8",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "--tests"
+      ],
+      "phase": "passed",
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/upstream-final-check/full-nextest.log",
+      "pid": 36095,
+      "exit": 0,
+      "elapsed_seconds": 1299.037,
+      "log_sha256": "848d019c11718bd458610f43237256aaac08e90fc165d1bf3d3973ebd7ff7497"
+    },
+    {
+      "label": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "phase": "passed",
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/upstream-final-check/fmt.log",
+      "pid": 32349,
+      "exit": 0,
+      "elapsed_seconds": 21.691,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "clippy-all-targets",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "<repo>/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "phase": "passed",
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/upstream-final-check/clippy-all-targets.log",
+      "pid": 33817,
+      "exit": 0,
+      "elapsed_seconds": 57.399,
+      "log_sha256": "334bc0a6315a9a5d790ee7eed38967dbe4d2bc8457bc8d06eca89163e0e28f02"
+    },
+    {
+      "label": "manifest-check",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "00d09f773a2f6c21604a4e6394df7152bbb26e8c"
+      ],
+      "phase": "passed",
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/upstream-final-check/manifest-check.log",
+      "pid": 37584,
+      "exit": 0,
+      "elapsed_seconds": 2.492,
+      "log_sha256": "b6451a702ebf33379385d192e046b2aa5e21286e14aa8287ae1e168c04bd50c8"
+    },
+    {
+      "label": "unit-tiers",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "00d09f773a2f6c21604a4e6394df7152bbb26e8c"
+      ],
+      "phase": "passed",
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/upstream-final-check/unit-tiers.log",
+      "pid": 37656,
+      "exit": 0,
+      "elapsed_seconds": 29.724,
+      "log_sha256": "b0d22c7e9e78b2de09250df5931d136093b5d2ad3c7474ab5c37aa9c3dc75ad0"
+    },
+    {
+      "label": "restore-candidate-native",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--bin",
+        "rhwp",
+        "--target-dir",
+        "<repo>/target/pr-review",
+        "-j",
+        "8"
+      ],
+      "phase": "passed",
+      "log": "<repo>/output/pr-review/planet6897-open7-integration-20261113/upstream-final-check/restore-candidate-native.log",
+      "pid": 41377,
+      "exit": 0,
+      "elapsed_seconds": 593.929,
+      "log_sha256": "becc673832774a59db0d6cbb5975043b8c8ffa7c1f649980f05c23b0c4ef675f"
+    }
+  ],
+  "latest_full": {
+    "passed": 13430,
+    "failed": 0,
+    "skipped": 45,
+    "test_seconds": 632.595,
+    "source_head": "c6e852a92b3661136552a432d649e168e27f88d4",
+    "log_sha256": "848d019c11718bd458610f43237256aaac08e90fc165d1bf3d3973ebd7ff7497"
+  },
+  "reuse_qualification": "Runtime/build-script/asset/font-condition bytes unchanged; pre-rebase Native Skia/PNG/PDF and WASM gates retain their recorded producer identities. Full nextest, incoming focused test and all-target Clippy/policy checks actually rerun on the rebased code."
+}

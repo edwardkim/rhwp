@@ -699,24 +699,7 @@ fn color_hex<S: crate::storage::Storage>(c: ColorRef, storage: &S) -> Result<Str
 where
     S::Error: std::fmt::Display,
 {
-    // ColorRef = u32. HWP 내부 저장: 상위 바이트가 비투명 플래그(0이면 유효 색상).
-    // 0xFFFFFFFF = 투명/없음 센티넬 → "none"
-    if c == 0xFFFFFFFF {
-        return xml_value(storage, "none");
-    }
-    // HWPX는 "#RRGGBB" 또는 "#AARRGGBB".
-    let a = ((c >> 24) & 0xFF) as u8;
-    let r = (c & 0xFF) as u8;
-    let g = ((c >> 8) & 0xFF) as u8;
-    let b = ((c >> 16) & 0xFF) as u8;
-    if a == 0 {
-        xml_value(storage, format_args!("#{:02X}{:02X}{:02X}", r, g, b))
-    } else {
-        xml_value(
-            storage,
-            format_args!("#{:02X}{:02X}{:02X}{:02X}", a, r, g, b),
-        )
-    }
+    super::shape::color_to_hex_with_storage(c, storage)
 }
 
 // =====================================================================
@@ -2347,9 +2330,23 @@ mod tests {
 
         assert!(
             xml.contains(
-                r##"<hc:fillBrush><hc:winBrush faceColor="none" hatchColor="#FF000000" alpha="0"/></hc:fillBrush>"##
+                r##"<hc:fillBrush><hc:winBrush faceColor="#FFFFFFFF" hatchColor="#FF000000" alpha="0"/></hc:fillBrush>"##
             ),
-            "보존된 빈 winBrush 가 faceColor=none 으로 복원되어야 함: {xml}"
+            "보존된 빈 winBrush 가 한글 2018 호환 색 없음 값으로 복원되어야 함: {xml}"
+        );
+        let header = format!(
+            r#"<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head" xmlns:hc="http://www.hancom.co.kr/hwpml/2011/core"><hh:refList><hh:borderFills itemCnt="1">{xml}</hh:borderFills></hh:refList></hh:head>"#
+        );
+        let (parsed, _) = crate::parser::hwpx::header::parse_hwpx_header(&header).unwrap();
+        assert_eq!(parsed.border_fills[0].fill.fill_type, FillType::None);
+        assert_eq!(
+            parsed.border_fills[0]
+                .fill
+                .solid
+                .as_ref()
+                .unwrap()
+                .background_color,
+            0xffff_ffff
         );
     }
 

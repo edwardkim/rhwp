@@ -1,0 +1,242 @@
+[
+  {
+    "backend": "native",
+    "document": "issue9021",
+    "page": 1,
+    "base_raw": 61.61,
+    "head_raw": 100.0,
+    "delta": 38.39
+  },
+  {
+    "backend": "native",
+    "document": "metadata-empty-footer",
+    "page": 1,
+    "base_raw": 100.0,
+    "head_raw": 100.0,
+    "delta": 0.0
+  },
+  {
+    "backend": "native",
+    "document": "metadata-empty-footer",
+    "page": 2,
+    "base_raw": 100.0,
+    "head_raw": 100.0,
+    "delta": 0.0
+  },
+  {
+    "backend": "native",
+    "document": "metadata-empty-header",
+    "page": 1,
+    "base_raw": 100.0,
+    "head_raw": 100.0,
+    "delta": 0.0
+  },
+  {
+    "backend": "native",
+    "document": "metadata-empty-header",
+    "page": 2,
+    "base_raw": 100.0,
+    "head_raw": 100.0,
+    "delta": 0.0
+  },
+  {
+    "backend": "native",
+    "document": "metadata-unchanged",
+    "page": 1,
+    "base_raw": 100.0,
+    "head_raw": 100.0,
+    "delta": 0.0
+  },
+  {
+    "backend": "native",
+    "document": "metadata-unchanged",
+    "page": 2,
+    "base_raw": 100.0,
+    "head_raw": 100.0,
+    "delta": 0.0
+  },
+  {
+    "backend": "native",
+    "document": "nested-tail-margins-hancom",
+    "page": 1,
+    "base_raw": 100.0,
+    "head_raw": 100.0,
+    "delta": 0.0
+  },
+  {
+    "backend": "native",
+    "document": "nested-tail-margins-hancom",
+    "page": 2,
+    "base_raw": 100.0,
+    "head_raw": 100.0,
+    "delta": 0.0
+  },
+  {
+    "backend": "native",
+    "document": "nested-tail-single-line-hancom",
+    "page": 1,
+    "base_raw": 100.0,
+    "head_raw": 100.0,
+    "delta": 0.0
+  },
+  {
+    "backend": "native",
+    "document": "nested-tail-single-line-hancom",
+    "page": 2,
+    "base_raw": 100.0,
+    "head_raw": 100.0,
+    "delta": 0.0
+  },
+  {
+    "backend": "native",
+    "document": "nested-tail-two-paragraphs-hancom",
+    "page": 1,
+    "base_raw": 100.0,
+    "head_raw": 100.0,
+    "delta": 0.0
+  },
+  {
+    "backend": "native",
+    "document": "nested-tail-two-paragraphs-hancom",
+    "page": 2,
+    "base_raw": 100.0,
+    "head_raw": 100.0,
+    "delta": 0.0
+  },
+  {
+    "backend": "native",
+    "document": "pr9042-hancom-saved",
+    "page": 1,
+    "base_raw": 100.0,
+    "head_raw": 100.0,
+    "delta": 0.0
+  },
+  {
+    "backend": "native",
+    "document": "pr9042-hancom-saved",
+    "page": 2,
+    "base_raw": 100.0,
+    "head_raw": 100.0,
+    "delta": 0.0
+  },
+  {
+    "backend": "wasm",
+    "document": "issue9021",
+    "page": 1,
+    "base_raw": 61.61,
+    "head_raw": 100.0,
+    "delta": 38.39
+  },
+  {
+    "backend": "wasm",
+    "document": "metadata-empty-footer",
+    "page": 1,
+    "base_raw": 100.0,
+    "head_raw": 100.0,
+    "delta": 0.0
+  },
+  {
+    "backend": "wasm",
+    "document": "metadata-empty-footer",
+    "page": 2,
+    "base_raw": 100.0,
+    "head_raw": 100.0,
+    "delta": 0.0
+  },
+  {
+    "backend": "wasm",
+    "document": "metadata-empty-header",
+    "page": 1,
+    "base_raw": 100.0,
+    "head_raw": 100.0,
+    "delta": 0.0
+  },
+  {
+    "backend": "wasm",
+    "document": "metadata-empty-header",
+    "page": 2,
+    "base_raw": 100.0,
+    "head_raw": 100.0,
+    "delta": 0.0
+  },
+  {
+    "backend": "wasm",
+    "document": "metadata-unchanged",
+    "page": 1,
+    "base_raw": 100.0,
+    "head_raw": 100.0,
+    "delta": 0.0
+  },
+  {
+    "backend": "wasm",
+    "document": "metadata-unchanged",
+    "page": 2,
+    "base_raw": 100.0,
+    "head_raw": 100.0,
+    "delta": 0.0
+  },
+  {
+    "backend": "wasm",
+    "document": "nested-tail-margins-hancom",
+    "page": 1,
+    "base_raw": 100.0,
+    "head_raw": 100.0,
+    "delta": 0.0
+  },
+  {
+    "backend": "wasm",
+    "document": "nested-tail-margins-hancom",
+    "page": 2,
+    "base_raw": 100.0,
+    "head_raw": 100.0,
+    "delta": 0.0
+  },
+  {
+    "backend": "wasm",
+    "document": "nested-tail-single-line-hancom",
+    "page": 1,
+    "base_raw": 100.0,
+    "head_raw": 100.0,
+    "delta": 0.0
+  },
+  {
+    "backend": "wasm",
+    "document": "nested-tail-single-line-hancom",
+    "page": 2,
+    "base_raw": 100.0,
+    "head_raw": 100.0,
+    "delta": 0.0
+  },
+  {
+    "backend": "wasm",
+    "document": "nested-tail-two-paragraphs-hancom",
+    "page": 1,
+    "base_raw": 100.0,
+    "head_raw": 100.0,
+    "delta": 0.0
+  },
+  {
+    "backend": "wasm",
+    "document": "nested-tail-two-paragraphs-hancom",
+    "page": 2,
+    "base_raw": 100.0,
+    "head_raw": 100.0,
+    "delta": 0.0
+  },
+  {
+    "backend": "wasm",
+    "document": "pr9042-hancom-saved",
+    "page": 1,
+    "base_raw": 100.0,
+    "head_raw": 100.0,
+    "delta": 0.0
+  },
+  {
+    "backend": "wasm",
+    "document": "pr9042-hancom-saved",
+    "page": 2,
+    "base_raw": 100.0,
+    "head_raw": 100.0,
+    "delta": 0.0
+  }
+]

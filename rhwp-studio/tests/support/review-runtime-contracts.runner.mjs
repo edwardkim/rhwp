@@ -33,12 +33,12 @@ registerHooks({
       assert.ok(source.includes(needle), '음성 대조 주입 위치 누락');
       return { ...result, source: source.replace(needle, '100') };
     }
-    if (mutation === 'drop-engine-chain' && url.endsWith('/core/wasm-bridge.ts')) {
+    if (mutation === 'drop-engine-chain' && url.endsWith('/core/font-substitution.ts')) {
       const needle = '    push(name);\n  }\n  return prefix + formatCssFontFamilyList';
       assert.ok(source.includes(needle), '음성 대조 주입 위치 누락');
       return { ...result, source: source.replace(needle, '    push(primary);\n  }\n  return prefix + formatCssFontFamilyList') };
     }
-    if (mutation === 'restore-excluded-face' && url.endsWith('/core/wasm-bridge.ts')) {
+    if (mutation === 'restore-excluded-face' && url.endsWith('/core/font-substitution.ts')) {
       const needle = 'if (name === primary && !primaryAllowed) continue;';
       assert.ok(source.includes(needle), '음성 대조 주입 위치 누락');
       return { ...result, source: source.replace(needle, '') };

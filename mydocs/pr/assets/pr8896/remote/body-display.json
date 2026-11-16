@@ -1,0 +1,36 @@
+{
+  "url": "https://github.com/edwardkim/rhwp/pull/8984",
+  "browser": "Chrome/157.0.8103.79",
+  "observedAt": "2026-11-12T01:50:27.374Z",
+  "images": [
+    {
+      "alt": "Native 1쪽 review",
+      "src": "https://raw.githubusercontent.com/edwardkim/rhwp/1343907a8340fc032423ce5adb6d248aa80534dd/mydocs/pr/assets/pr8896/latest-eb84/focus/native/issue8693-table-end-row-clamp/review/review_001.png",
+      "naturalWidth": 2416,
+      "naturalHeight": 1209,
+      "complete": true
+    },
+    {
+      "alt": "Native 1쪽 overlay",
+      "src": "https://raw.githubusercontent.com/edwardkim/rhwp/1343907a8340fc032423ce5adb6d248aa80534dd/mydocs/pr/assets/pr8896/latest-eb84/focus/native/issue8693-table-end-row-clamp/overlay/overlay_001.png",
+      "naturalWidth": 794,
+      "naturalHeight": 1209,
+      "complete": true
+    },
+    {
+      "alt": "WASM 1쪽 review",
+      "src": "https://raw.githubusercontent.com/edwardkim/rhwp/1343907a8340fc032423ce5adb6d248aa80534dd/mydocs/pr/assets/pr8896/latest-eb84/focus/wasm/issue8693-table-end-row-clamp/review/review_001.png",
+      "naturalWidth": 2416,
+      "naturalHeight": 1209,
+      "complete": true
+    },
+    {
+      "alt": "WASM 1쪽 overlay",
+      "src": "https://raw.githubusercontent.com/edwardkim/rhwp/1343907a8340fc032423ce5adb6d248aa80534dd/mydocs/pr/assets/pr8896/latest-eb84/focus/wasm/issue8693-table-end-row-clamp/overlay/overlay_001.png",
+      "naturalWidth": 794,
+      "naturalHeight": 1209,
+      "complete": true
+    }
+  ],
+  "allDisplayed": true
+}

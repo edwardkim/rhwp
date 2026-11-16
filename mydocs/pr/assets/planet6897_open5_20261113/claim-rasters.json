@@ -1,0 +1,792 @@
+[
+  {
+    "pr": 8972,
+    "backend": "native",
+    "product_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+    "source_manifest_sha256": "0e325178a8c8f2b267b8f0df03794b8f0ee37a90e2670818948e2c05d48113d7",
+    "pages": [
+      {
+        "page": 1,
+        "files": {
+          "raw": {
+            "path": "claims/pr8972/native/raw-p001.png",
+            "sha256": "470f6daf57d09f65ef6837961677b96199928656587a0dda82a96232d41bf917",
+            "bytes": 108834
+          },
+          "pdf": {
+            "path": "claims/pr8972/native/pdf-p001.png",
+            "sha256": "1a92d6c4eb78a4cd46d9107d1e8da5f430852c5abbd742b08624111fe345cdb7",
+            "bytes": 99801
+          },
+          "review": {
+            "path": "claims/pr8972/native/review-p001.png",
+            "sha256": "76aa1d34ef9caed62ae60e1e2c49297f074ef0b0eddec0e5b587d130012cdce6",
+            "bytes": 302286
+          },
+          "overlay": {
+            "path": "claims/pr8972/native/overlay-p001.png",
+            "sha256": "5308411a4a6c53dd3a1cc05493f49b0339f860ffd1046ebc5181935b0c092141",
+            "bytes": 109352
+          }
+        },
+        "metric": {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.30058,
+          "silhouette_raw_unmatched_pixels": 665,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 39131,
+          "tolerant_content_match_percent": 98.30058
+        }
+      },
+      {
+        "page": 2,
+        "files": {
+          "raw": {
+            "path": "claims/pr8972/native/raw-p002.png",
+            "sha256": "e60fc526ed3c55e66f1daec183d25b4a7e8fc1f72799bbb87d54f711ec02779e",
+            "bytes": 88900
+          },
+          "pdf": {
+            "path": "claims/pr8972/native/pdf-p002.png",
+            "sha256": "09222a992651b98cd6b9504949b7a25e40827d024aaca92bafed642fe26966ad",
+            "bytes": 77230
+          },
+          "review": {
+            "path": "claims/pr8972/native/review-p002.png",
+            "sha256": "2ee00ce45d91cd30b62f25e9da25c0415d42d6e805369853f5282a84c0cdbeca",
+            "bytes": 238182
+          },
+          "overlay": {
+            "path": "claims/pr8972/native/overlay-p002.png",
+            "sha256": "ee15ec967b066f4b3f3ff88b30d5d507fba8af38fc00a30214ef9c5d7eee7743",
+            "bytes": 89170
+          }
+        },
+        "metric": {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.18464,
+          "silhouette_raw_unmatched_pixels": 248,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 30416,
+          "tolerant_content_match_percent": 99.18464
+        }
+      }
+    ],
+    "tsv_sha256": "dc96f085b2a0a0b38e48ad7b713cf9a4edadb1916d9f47950dfd0e294c109257"
+  },
+  {
+    "pr": 9030,
+    "backend": "native",
+    "product_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+    "source_manifest_sha256": "916cded3ac48141e822f4de99e98d7797675f1fe9340a2dc9a3fa993b901b910",
+    "pages": [
+      {
+        "page": 1,
+        "files": {
+          "raw": {
+            "path": "claims/pr9030/native/raw-p001.png",
+            "sha256": "456cb81e5fae29c7cb283beeb12d81b6559c6751062234ad4f2a1dd98479dcee",
+            "bytes": 295334
+          },
+          "pdf": {
+            "path": "claims/pr9030/native/pdf-p001.png",
+            "sha256": "ccff54707c8d199ed42366c042183a1663d11012c5389eb9c6dc4ca07e631213",
+            "bytes": 246838
+          },
+          "review": {
+            "path": "claims/pr9030/native/review-p001.png",
+            "sha256": "4e8f8d3588fdbb66764d4adfb19a15d70e87a253b31655ea6baa8c5136eb683d",
+            "bytes": 728935
+          },
+          "overlay": {
+            "path": "claims/pr9030/native/overlay-p001.png",
+            "sha256": "7b927bbc5004d0c495f278a4b154abbf6805a1b8083083e15c0e2b2b370f0e74",
+            "bytes": 227365
+          }
+        },
+        "metric": {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.84609,
+          "silhouette_raw_unmatched_pixels": 95,
+          "silhouette_boundary_reconciled_pixels": 86,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 61726,
+          "tolerant_content_match_percent": 99.98542
+        }
+      }
+    ],
+    "tsv_sha256": "eff00dbec51365fbe017439b3863e53633531527b041f11c15532ff2d9d93202"
+  },
+  {
+    "pr": 9034,
+    "backend": "native",
+    "product_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+    "source_manifest_sha256": "055fb6be8a80411adbd1baac35aab8f1bd843f236063a38e64aa523338320fb4",
+    "pages": [
+      {
+        "page": 1,
+        "files": {
+          "raw": {
+            "path": "claims/pr9034/native/raw-p001.png",
+            "sha256": "5e11beee59a0949bc359f65fc061e14cd9f3be2645796f8d82921e50c75c25f3",
+            "bytes": 57071
+          },
+          "pdf": {
+            "path": "claims/pr9034/native/pdf-p001.png",
+            "sha256": "9f48e7aa7c91e2b51047628cec47447f7a3be7f2bda6d7360b84fca3f14d4dcc",
+            "bytes": 45445
+          },
+          "review": {
+            "path": "claims/pr9034/native/review-p001.png",
+            "sha256": "a42a802e06ce77f60801789d1adc505879823275446dfd7cafdd9caa2128b114",
+            "bytes": 138598
+          },
+          "overlay": {
+            "path": "claims/pr9034/native/overlay-p001.png",
+            "sha256": "1f0f468f70f13ab5ce30b9ad8cc7938ce2dbfb4500d37df6d7df520d4ca04399",
+            "bytes": 55229
+          }
+        },
+        "metric": {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 97.85548,
+          "silhouette_raw_unmatched_pixels": 487,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 22709,
+          "tolerant_content_match_percent": 97.85548
+        }
+      },
+      {
+        "page": 2,
+        "files": {
+          "raw": {
+            "path": "claims/pr9034/native/raw-p002.png",
+            "sha256": "ec59e49079960487adcde9a50fa6118836f0a5987e3f59238bb5234dc0c0eff2",
+            "bytes": 132699
+          },
+          "pdf": {
+            "path": "claims/pr9034/native/pdf-p002.png",
+            "sha256": "ed930bd660f878ea9b8e2441512542ce103e298a097c19b1e28942181035d5d1",
+            "bytes": 140168
+          },
+          "review": {
+            "path": "claims/pr9034/native/review-p002.png",
+            "sha256": "5969e709188217623f61251d46c28c4ee3da0db1d547a2f07ae31772eb1144a9",
+            "bytes": 401461
+          },
+          "overlay": {
+            "path": "claims/pr9034/native/overlay-p002.png",
+            "sha256": "1347cabd05ab0a32d405ecccfaeb49d787bb93f2386b86996384b2cb6ef54370",
+            "bytes": 130607
+          }
+        },
+        "metric": {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.9238,
+          "silhouette_raw_unmatched_pixels": 487,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 45252,
+          "tolerant_content_match_percent": 98.9238
+        }
+      },
+      {
+        "page": 3,
+        "files": {
+          "raw": {
+            "path": "claims/pr9034/native/raw-p003.png",
+            "sha256": "17fb9f836d7699d7effff4ee8be18800721144bf762bb47bd62c21278db78ab8",
+            "bytes": 57765
+          },
+          "pdf": {
+            "path": "claims/pr9034/native/pdf-p003.png",
+            "sha256": "7ca359268722399b2ccd3e7d2660e95432b3491bb548902ac93a3adea0b60547",
+            "bytes": 45533
+          },
+          "review": {
+            "path": "claims/pr9034/native/review-p003.png",
+            "sha256": "1a696314779a84334b2b0a74bdab52f395e79f42adf4962ed366c80474675c5d",
+            "bytes": 138819
+          },
+          "overlay": {
+            "path": "claims/pr9034/native/overlay-p003.png",
+            "sha256": "26b2736d1ad162a076faeff2cc4b3ea05d9e29060601d8798d4c0a4f749706ae",
+            "bytes": 55016
+          }
+        },
+        "metric": {
+          "page": 3,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 97.82783,
+          "silhouette_raw_unmatched_pixels": 487,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 22420,
+          "tolerant_content_match_percent": 97.82783
+        }
+      },
+      {
+        "page": 4,
+        "files": {
+          "raw": {
+            "path": "claims/pr9034/native/raw-p004.png",
+            "sha256": "0a2520498a958da25e5c982e97affee8d8da40db2d92c3a5773a0f38da3f65ed",
+            "bytes": 122797
+          },
+          "pdf": {
+            "path": "claims/pr9034/native/pdf-p004.png",
+            "sha256": "7b0a31f58c305295725283a443dbd90e66c8ac7f7e3eb4501d0fdfee016484c5",
+            "bytes": 129897
+          },
+          "review": {
+            "path": "claims/pr9034/native/review-p004.png",
+            "sha256": "3f7d5d62e62928a40ac1b8696fcd2a7c86efdfcdf7cecc76258f063dd52df43e",
+            "bytes": 370776
+          },
+          "overlay": {
+            "path": "claims/pr9034/native/overlay-p004.png",
+            "sha256": "6cfd18797b7ae3bdeb4583cdcc165df24340e5c5105fadc4ebe7db4bdb604414",
+            "bytes": 121486
+          }
+        },
+        "metric": {
+          "page": 4,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.82569,
+          "silhouette_raw_unmatched_pixels": 487,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 41471,
+          "tolerant_content_match_percent": 98.82569
+        }
+      }
+    ],
+    "tsv_sha256": "ce305873b274bad6cebf3f162f141ce1db118eb5d9a5c93755de6cea3df047a1"
+  },
+  {
+    "pr": 9036,
+    "backend": "native",
+    "product_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+    "source_manifest_sha256": "17fe303182483ee05e8a6d5e2bafafed858d29870376b243827f68a4013520f7",
+    "pages": [
+      {
+        "page": 1,
+        "files": {
+          "raw": {
+            "path": "claims/pr9036/native/raw-p001.png",
+            "sha256": "b1f8e6f8b73a4e915f2e25781cc02bf969bb42aa46a72c9e7e9347062eae4d8f",
+            "bytes": 89721
+          },
+          "pdf": {
+            "path": "claims/pr9036/native/pdf-p001.png",
+            "sha256": "16c5d280ce2238fc78f03d85682378dd7dcece963ae0812eac4a0376d42450df",
+            "bytes": 84566
+          },
+          "review": {
+            "path": "claims/pr9036/native/review-p001.png",
+            "sha256": "3e3d332eee603a021fa0f8778e1f5182f7ea8167e8b13e660054371194687485",
+            "bytes": 246988
+          },
+          "overlay": {
+            "path": "claims/pr9036/native/overlay-p001.png",
+            "sha256": "981fb564c8a7317915c390f6db814b85b7fc44375c44c3235cef68c463658e9a",
+            "bytes": 86585
+          }
+        },
+        "metric": {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 57490,
+          "tolerant_content_match_percent": 100.0
+        }
+      }
+    ],
+    "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+  },
+  {
+    "pr": 9041,
+    "backend": "native",
+    "product_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+    "source_manifest_sha256": "07d022497fe6ab90f705dfc2098a5d236f4c89c837b768677977cb79cb0f5bbc",
+    "pages": [
+      {
+        "page": 1,
+        "files": {
+          "raw": {
+            "path": "claims/pr9041/native/raw-p001.png",
+            "sha256": "d7d36fd69616335273039e9eca977aa38196904370e4466f77ebd3e98f1ef937",
+            "bytes": 204530
+          },
+          "pdf": {
+            "path": "claims/pr9041/native/pdf-p001.png",
+            "sha256": "131bae669ce7105d27a133c57129abe69dbb35b3816191e1eceb4e8c874c2ed8",
+            "bytes": 212581
+          },
+          "review": {
+            "path": "claims/pr9041/native/review-p001.png",
+            "sha256": "9a43cb2949f146c12604de5c9354cf24bbe542a61e492e4b90449dc2a9b3a3b3",
+            "bytes": 593525
+          },
+          "overlay": {
+            "path": "claims/pr9041/native/overlay-p001.png",
+            "sha256": "f410e499f381137f7bb5650b4b2c12d80d1810c8cee58134f57c10c0b981cc69",
+            "bytes": 176902
+          }
+        },
+        "metric": {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99406,
+          "silhouette_raw_unmatched_pixels": 7,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 117788,
+          "tolerant_content_match_percent": 99.99406
+        }
+      },
+      {
+        "page": 2,
+        "files": {
+          "raw": {
+            "path": "claims/pr9041/native/raw-p002.png",
+            "sha256": "01229b6769843d138e40b2ea882617b1c96bfdb65ca440acbc54f1e4f5b60bc6",
+            "bytes": 135900
+          },
+          "pdf": {
+            "path": "claims/pr9041/native/pdf-p002.png",
+            "sha256": "fbdd4bf066266fd94e41321ad925943834224fa2d01f03df8f7e747a18336284",
+            "bytes": 156877
+          },
+          "review": {
+            "path": "claims/pr9041/native/review-p002.png",
+            "sha256": "18b6191d30523e43d8b9af09c9453685995218900fa7323ccf8db912723e4f9d",
+            "bytes": 450765
+          },
+          "overlay": {
+            "path": "claims/pr9041/native/overlay-p002.png",
+            "sha256": "384fa9986aea4c893cbe18b860d52ee190eaaaafb11d4367117040097221d44e",
+            "bytes": 154270
+          }
+        },
+        "metric": {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99513,
+          "silhouette_raw_unmatched_pixels": 4,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 82212,
+          "tolerant_content_match_percent": 99.99513
+        }
+      }
+    ],
+    "tsv_sha256": "2d96a69585f096e23614ca2a655493c63d9587b4bc0daa604409a6609f8ddfa7"
+  },
+  {
+    "pr": 8972,
+    "backend": "wasm",
+    "product_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+    "source_manifest_sha256": "40eee7cecf9a6ad842e4ee686a83150e7f9a70c027754df052405d828c061b49",
+    "pages": [
+      {
+        "page": 1,
+        "files": {
+          "raw": {
+            "path": "claims/pr8972/wasm/raw-p001.png",
+            "sha256": "492e70a34160b5afca29fbccb419dfac471308228b33c318a0cf212e92c1c481",
+            "bytes": 117277
+          },
+          "pdf": {
+            "path": "claims/pr8972/wasm/pdf-p001.png",
+            "sha256": "1a92d6c4eb78a4cd46d9107d1e8da5f430852c5abbd742b08624111fe345cdb7",
+            "bytes": 99801
+          },
+          "review": {
+            "path": "claims/pr8972/wasm/review-p001.png",
+            "sha256": "4e6e559c15e67e8beb1b78aef329bc266d245ef9f5fc9d349cdc30b27a40bad1",
+            "bytes": 302844
+          },
+          "overlay": {
+            "path": "claims/pr8972/wasm/overlay-p001.png",
+            "sha256": "22b84748f4d238b31c601582fbf56b8a2a61bc0d53d32868b59a95b8a9e8ca71",
+            "bytes": 109356
+          }
+        },
+        "metric": {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.50289,
+          "silhouette_raw_unmatched_pixels": 577,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 38541,
+          "tolerant_content_match_percent": 98.50289
+        }
+      },
+      {
+        "page": 2,
+        "files": {
+          "raw": {
+            "path": "claims/pr8972/wasm/raw-p002.png",
+            "sha256": "720436d02929c19fc50d01b3372b61e8002a53cc42b6b5674fd2d6f62f815662",
+            "bytes": 95837
+          },
+          "pdf": {
+            "path": "claims/pr8972/wasm/pdf-p002.png",
+            "sha256": "09222a992651b98cd6b9504949b7a25e40827d024aaca92bafed642fe26966ad",
+            "bytes": 77230
+          },
+          "review": {
+            "path": "claims/pr8972/wasm/review-p002.png",
+            "sha256": "3e4e29453ff2cd473ca559f58e2d7682cab5b2305a3215704c50fd910dc373a5",
+            "bytes": 237900
+          },
+          "overlay": {
+            "path": "claims/pr8972/wasm/overlay-p002.png",
+            "sha256": "73cb03beaeacc8e46ede8d3a647e52ae9f2cf71f71e1632edb052cf9b31e160f",
+            "bytes": 88790
+          }
+        },
+        "metric": {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.19195,
+          "silhouette_raw_unmatched_pixels": 245,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 30320,
+          "tolerant_content_match_percent": 99.19195
+        }
+      }
+    ],
+    "tsv_sha256": "3742790daf861141309af5222972faca0b78b0171e817dc405b998188d09c4cd"
+  },
+  {
+    "pr": 9030,
+    "backend": "wasm",
+    "product_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+    "source_manifest_sha256": "9487aeca5316bd728022413e9cb2fcbd54666a64d5de5b49ccb0936f32f4cbd0",
+    "pages": [
+      {
+        "page": 1,
+        "files": {
+          "raw": {
+            "path": "claims/pr9030/wasm/raw-p001.png",
+            "sha256": "f558b7986ffd615e668daf9efdc4951e61a7112a00948dae000367bfe47d6b1b",
+            "bytes": 339834
+          },
+          "pdf": {
+            "path": "claims/pr9030/wasm/pdf-p001.png",
+            "sha256": "ccff54707c8d199ed42366c042183a1663d11012c5389eb9c6dc4ca07e631213",
+            "bytes": 246838
+          },
+          "review": {
+            "path": "claims/pr9030/wasm/review-p001.png",
+            "sha256": "4e8f8d3588fdbb66764d4adfb19a15d70e87a253b31655ea6baa8c5136eb683d",
+            "bytes": 728935
+          },
+          "overlay": {
+            "path": "claims/pr9030/wasm/overlay-p001.png",
+            "sha256": "7b927bbc5004d0c495f278a4b154abbf6805a1b8083083e15c0e2b2b370f0e74",
+            "bytes": 227365
+          }
+        },
+        "metric": {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.84609,
+          "silhouette_raw_unmatched_pixels": 95,
+          "silhouette_boundary_reconciled_pixels": 86,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 61726,
+          "tolerant_content_match_percent": 99.98542
+        }
+      }
+    ],
+    "tsv_sha256": "eff00dbec51365fbe017439b3863e53633531527b041f11c15532ff2d9d93202"
+  },
+  {
+    "pr": 9034,
+    "backend": "wasm",
+    "product_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+    "source_manifest_sha256": "009dfd273b6baa30a6f0f7dbf41fbd2661eb6d1f129c1cf9e01452bcbbd6691f",
+    "pages": [
+      {
+        "page": 1,
+        "files": {
+          "raw": {
+            "path": "claims/pr9034/wasm/raw-p001.png",
+            "sha256": "c6085bd6a6894d5a65965c9d1f07439348bad13e17c93e8112e5937835702688",
+            "bytes": 62400
+          },
+          "pdf": {
+            "path": "claims/pr9034/wasm/pdf-p001.png",
+            "sha256": "9f48e7aa7c91e2b51047628cec47447f7a3be7f2bda6d7360b84fca3f14d4dcc",
+            "bytes": 45445
+          },
+          "review": {
+            "path": "claims/pr9034/wasm/review-p001.png",
+            "sha256": "0b7e5662cfd251834d799106192a859621fc2f81aa0b2f0b1a9427e4dd08092b",
+            "bytes": 138597
+          },
+          "overlay": {
+            "path": "claims/pr9034/wasm/overlay-p001.png",
+            "sha256": "0d2b6762faadc254b7c42290c8f84d09d293c6c45d50d211d70846d13edfb3db",
+            "bytes": 55231
+          }
+        },
+        "metric": {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 97.85548,
+          "silhouette_raw_unmatched_pixels": 487,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 22709,
+          "tolerant_content_match_percent": 97.85548
+        }
+      },
+      {
+        "page": 2,
+        "files": {
+          "raw": {
+            "path": "claims/pr9034/wasm/raw-p002.png",
+            "sha256": "50a2b4e8c19212e767e5fc26bebb39b0ac7d3eb54af61a99bae6c69258c8c3c4",
+            "bytes": 145059
+          },
+          "pdf": {
+            "path": "claims/pr9034/wasm/pdf-p002.png",
+            "sha256": "ed930bd660f878ea9b8e2441512542ce103e298a097c19b1e28942181035d5d1",
+            "bytes": 140168
+          },
+          "review": {
+            "path": "claims/pr9034/wasm/review-p002.png",
+            "sha256": "19e79bfc5ab878622095f874021e703707f5cb3ecb1606f33c532b963a131aab",
+            "bytes": 401437
+          },
+          "overlay": {
+            "path": "claims/pr9034/wasm/overlay-p002.png",
+            "sha256": "5059845260a41df3886842de7739bdbf1b09110aefd14fffa138690b437d0711",
+            "bytes": 130596
+          }
+        },
+        "metric": {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.9238,
+          "silhouette_raw_unmatched_pixels": 487,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 45252,
+          "tolerant_content_match_percent": 98.9238
+        }
+      },
+      {
+        "page": 3,
+        "files": {
+          "raw": {
+            "path": "claims/pr9034/wasm/raw-p003.png",
+            "sha256": "1c40c410b5e7e48c118a1422327c9f2884c2480ade7cc79bd8bd3b4fb78fd046",
+            "bytes": 62789
+          },
+          "pdf": {
+            "path": "claims/pr9034/wasm/pdf-p003.png",
+            "sha256": "7ca359268722399b2ccd3e7d2660e95432b3491bb548902ac93a3adea0b60547",
+            "bytes": 45533
+          },
+          "review": {
+            "path": "claims/pr9034/wasm/review-p003.png",
+            "sha256": "9afee551b75ae946bea01fe2be3f059e4b84f3e604791b20ebd33509de8f6d6c",
+            "bytes": 138807
+          },
+          "overlay": {
+            "path": "claims/pr9034/wasm/overlay-p003.png",
+            "sha256": "2ccf8ca40dfb09d1c59d6fa7848092be25f211bd9b1793d4aece7ce0a57135cc",
+            "bytes": 55017
+          }
+        },
+        "metric": {
+          "page": 3,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 97.82783,
+          "silhouette_raw_unmatched_pixels": 487,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 22420,
+          "tolerant_content_match_percent": 97.82783
+        }
+      },
+      {
+        "page": 4,
+        "files": {
+          "raw": {
+            "path": "claims/pr9034/wasm/raw-p004.png",
+            "sha256": "74fd0f1a82eb48fbc446e757ea043b44184bb0ba18c329513a4f85cc03f41824",
+            "bytes": 133227
+          },
+          "pdf": {
+            "path": "claims/pr9034/wasm/pdf-p004.png",
+            "sha256": "7b0a31f58c305295725283a443dbd90e66c8ac7f7e3eb4501d0fdfee016484c5",
+            "bytes": 129897
+          },
+          "review": {
+            "path": "claims/pr9034/wasm/review-p004.png",
+            "sha256": "70db30549026c3dc598c69cd8d71b4471c3460d874cd20218556f264fe82817b",
+            "bytes": 370771
+          },
+          "overlay": {
+            "path": "claims/pr9034/wasm/overlay-p004.png",
+            "sha256": "4830ea9345cc5f10bc13359df1ddf9657bbb579ae900b059d251bfd73bbb3a7e",
+            "bytes": 121473
+          }
+        },
+        "metric": {
+          "page": 4,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.82569,
+          "silhouette_raw_unmatched_pixels": 487,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 41471,
+          "tolerant_content_match_percent": 98.82569
+        }
+      }
+    ],
+    "tsv_sha256": "ce305873b274bad6cebf3f162f141ce1db118eb5d9a5c93755de6cea3df047a1"
+  },
+  {
+    "pr": 9036,
+    "backend": "wasm",
+    "product_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+    "source_manifest_sha256": "c6ba787cf5040ca19366acf92391686457a98003228a3f1cd6c74780d2ae7398",
+    "pages": [
+      {
+        "page": 1,
+        "files": {
+          "raw": {
+            "path": "claims/pr9036/wasm/raw-p001.png",
+            "sha256": "bb5921a72038b9403557232d310ff0968a8ca28a023e749fc8454c12cea3ea1e",
+            "bytes": 98151
+          },
+          "pdf": {
+            "path": "claims/pr9036/wasm/pdf-p001.png",
+            "sha256": "16c5d280ce2238fc78f03d85682378dd7dcece963ae0812eac4a0376d42450df",
+            "bytes": 84566
+          },
+          "review": {
+            "path": "claims/pr9036/wasm/review-p001.png",
+            "sha256": "b1b5bf3a71b445b54fb41eec39c892d445d3fb303a87ae94ba95aff71aeb42e1",
+            "bytes": 246973
+          },
+          "overlay": {
+            "path": "claims/pr9036/wasm/overlay-p001.png",
+            "sha256": "71052352246bf11e86e5acf7a22f138ef8e3597df7224ada940460f8740dd33e",
+            "bytes": 86894
+          }
+        },
+        "metric": {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 57597,
+          "tolerant_content_match_percent": 100.0
+        }
+      }
+    ],
+    "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+  },
+  {
+    "pr": 9041,
+    "backend": "wasm",
+    "product_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+    "source_manifest_sha256": "8bdbf572eec6ac980da0fb8fff91a5f0c72562683bfb306e98ed7a4d23491409",
+    "pages": [
+      {
+        "page": 1,
+        "files": {
+          "raw": {
+            "path": "claims/pr9041/wasm/raw-p001.png",
+            "sha256": "6ede2bfb668f85572f64f1fd86fd4fc2ebaafe6957c61e92b767a4ec11f48a4e",
+            "bytes": 218244
+          },
+          "pdf": {
+            "path": "claims/pr9041/wasm/pdf-p001.png",
+            "sha256": "131bae669ce7105d27a133c57129abe69dbb35b3816191e1eceb4e8c874c2ed8",
+            "bytes": 212581
+          },
+          "review": {
+            "path": "claims/pr9041/wasm/review-p001.png",
+            "sha256": "5d83ad6c2afd9bb0ccb715c581975eea803d109db9b5e5eec2ff70c5349e867a",
+            "bytes": 594218
+          },
+          "overlay": {
+            "path": "claims/pr9041/wasm/overlay-p001.png",
+            "sha256": "75ecd758b68bbc8cd75019c8dd0e292d049afad8146511c2ac379fb01730f6eb",
+            "bytes": 178981
+          }
+        },
+        "metric": {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99915,
+          "silhouette_raw_unmatched_pixels": 1,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 117700,
+          "tolerant_content_match_percent": 99.99915
+        }
+      },
+      {
+        "page": 2,
+        "files": {
+          "raw": {
+            "path": "claims/pr9041/wasm/raw-p002.png",
+            "sha256": "2b6e00db0910cc2220324a4b1fe58faf8724c92435b240b5172b0683e947ab4f",
+            "bytes": 146102
+          },
+          "pdf": {
+            "path": "claims/pr9041/wasm/pdf-p002.png",
+            "sha256": "fbdd4bf066266fd94e41321ad925943834224fa2d01f03df8f7e747a18336284",
+            "bytes": 156877
+          },
+          "review": {
+            "path": "claims/pr9041/wasm/review-p002.png",
+            "sha256": "e9a9e07c8cdefa7583ec26873ac22c65a81e7dfa411083b5fbb4a243ac2f5466",
+            "bytes": 450067
+          },
+          "overlay": {
+            "path": "claims/pr9041/wasm/overlay-p002.png",
+            "sha256": "dd027bdd512b2e0d68f2db4068f3ec1519e0cdaab18ea339f07329715f8d224b",
+            "bytes": 154378
+          }
+        },
+        "metric": {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 81964,
+          "tolerant_content_match_percent": 100.0
+        }
+      }
+    ],
+    "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690"
+  }
+]

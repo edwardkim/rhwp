@@ -1,0 +1,59 @@
+[
+  {
+    "key": "repeated",
+    "input": "samples/issue9026/press_release_repeated_hidden_end.hwpx",
+    "input_bytes": 1206024,
+    "input_sha256": "fd3775bbbd4f8da5e8b78608a8ee4f084c822fd04941e8762b21a4d02b013310",
+    "pdf": "pdf/issue9026/press_release_repeated_hidden_end-print-2022.pdf",
+    "pdf_sha256": "0e3d4d72f4eaa8a82a03b5e7d4a1d8c91862ca5959139ee698e99538373b1b14",
+    "pdf_bytes": 931029,
+    "pdf_pages": 5,
+    "pdf_metadata": {
+      "format": "PDF 1.4",
+      "title": "",
+      "author": "planet",
+      "subject": "",
+      "keywords": "",
+      "creator": "Hwp 2022 12.0.0.4547",
+      "producer": "Hancom PDF 1.3.0.547",
+      "creationDate": "D:20261112070215+09'00'",
+      "modDate": "D:20261112070215+09'00'",
+      "trapped": "",
+      "encryption": null
+    },
+    "baseline_open_exit": 1,
+    "baseline_error": "오류: 문서 파싱 실패 - 유효하지 않은 파일: HWPX 오류: XML 파싱 오류: tracking structure: hidden range end without begin",
+    "zero_width_source_xml": []
+  },
+  {
+    "key": "orphan",
+    "input": "samples/issue9026/press_release_orphan_hidden_end.hwpx",
+    "input_bytes": 19982711,
+    "input_sha256": "8e255a1553285f012815d773d229ee8ffdda4cb3d054cb478694f1fe292c5475",
+    "pdf": "pdf/issue9026/press_release_orphan_hidden_end-hwpx-2020.pdf",
+    "pdf_sha256": "28b12eac8681b3da4583aaea015b1655b7336b9734a233baba1028541f925214",
+    "pdf_bytes": 2015679,
+    "pdf_pages": 8,
+    "pdf_metadata": {
+      "format": "PDF 1.4",
+      "title": "",
+      "author": "planet",
+      "subject": "",
+      "keywords": "",
+      "creator": "Hwp 2022 12.0.0.4547",
+      "producer": "Hancom PDF 1.3.0.547",
+      "creationDate": "D:20261113100642+09'00'",
+      "modDate": "D:20261113100642+09'00'",
+      "trapped": "",
+      "encryption": null
+    },
+    "baseline_open_exit": 1,
+    "baseline_error": "오류: 문서 파싱 실패 - 유효하지 않은 파일: HWPX 오류: XML 파싱 오류: tracking structure: hidden range end without begin",
+    "zero_width_source_xml": [
+      {
+        "paragraph": 22,
+        "count": 2
+      }
+    ]
+  }
+]

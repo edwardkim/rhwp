@@ -1,0 +1,642 @@
+{
+  "schema_version": 2,
+  "key": "combined-hwp",
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue8942-8943/combined-hwp.hwp",
+      "sha256": "59b4fab33e7be4c556d0c01ea9cc2c1ed5390ba169b4fe0cc2520880d40d9bd9"
+    },
+    "pdf": {
+      "path": "pdf/issue8942-8943/combined-hwp-2020.pdf",
+      "sha256": "aa44aaaaa7805bc878765b1bed06726943ac371a9ac9a466408739b664df0845"
+    },
+    "git_head": "0aa25a66345edbf36aee45bf953611fe041350e0",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/producers/rhwp-candidate",
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/bongseop-kim-20261112/producers/rhwp-candidate",
+      "sha256": "8b2c7a3a51d5e226729857f07fc7dd9239c4e828445d2723aa08db8b437487fc"
+    },
+    "native_webfont_fallback": {
+      "registry_sha256": "35f3e1ac64348a6497b50cc98c7235a8adcb4c99bfa78fec6302bde6f525a299",
+      "mappings": {
+        "함초롬돋움": "HCRDotum",
+        "함초롬바탕": "HCRBatang"
+      },
+      "document_glyph_fallbacks": [],
+      "unmapped_sources": [],
+      "local_document_substitutes": [],
+      "resources": [
+        {
+          "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.0/HCRDotum.woff",
+          "source_sha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+          "native_path": "/home/edward/mygithub/rhwp-worktrees/review-integration-8942-bongseop-html-clipboard/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/native.ttf",
+          "native_sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57",
+          "native_face": "HCRDotum"
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff",
+          "source_sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+          "native_path": "/home/edward/mygithub/rhwp-worktrees/review-integration-8942-bongseop-html-clipboard/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/native.ttf",
+          "native_sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee",
+          "native_face": "HCRBatang"
+        }
+      ],
+      "module_sha256": "604d15d877f3a60d6cb2444fafefd3057fc5d595d402f06bb08748c9fe28c1cf"
+    },
+    "raster_backend": "native-skia",
+    "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+    "layout_generation": "2022",
+    "font_environment": {
+      "path": "/home/edward/mygithub/rhwp-worktrees/review-integration-8942-bongseop-html-clipboard/output/pr-review/native-webfont-cache/environments/5fbcf3e65349c804ee9da2ec15c402501c0418c2cd8632d35a4506224eba46c5.json",
+      "sha256": "5fbcf3e65349c804ee9da2ec15c402501c0418c2cd8632d35a4506224eba46c5"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files": [
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/Baloo-Regular.ttf",
+          "sha256": "718843345772c5dac9e57dd51803f818455b427366906f637b3cb4df1b365da6"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/Diplomata-Regular.ttf",
+          "sha256": "a02adc3d8790dfac28e3ff841a63529024c93233fd6acdede0b044ce1a425477"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/FZSong_Super.TTF",
+          "sha256": "cbf26cf7c72522e4de508373fec17d3499bb4a7c47b0a501fd175b0222c57fc7"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/H2HDRM.TTF",
+          "sha256": "a3f57b4cb4292977479c1511b52997daadaf04c37f180ff05ab152c4d12ccaf5"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HANBaekB.ttf",
+          "sha256": "b9eeeff695317cfcca238b932fbc8a66b5555cb140116e321d811bda58f58f1d"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HANBaekM.ttf",
+          "sha256": "5fe7f3ff8c1f7f619f034c2cef5bd3cf1f546a29719e0cf4adb18e93d7f17726"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HANCooljazzB.ttf",
+          "sha256": "3546f1afc91cbf53f4726bb1a2124533e0f183e77ada0a829b9fc563562d2f1d"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HANCooljazzL.ttf",
+          "sha256": "71d7d8b186b5435a03006e9536d52e6e14cceb3bd19a795164bc9feb62920f43"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HANCooljazzM.ttf",
+          "sha256": "40ec74881ded71b93b1a2cbf99a1cfb39d6c55df64839f3a28e508e010eb6ea2"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HANSaleB.ttf",
+          "sha256": "16011d8cad602ee77bf8966ce2bef337b47edaf017d20e39a6943dad20d5630f"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HANSaleM.ttf",
+          "sha256": "bba583683c6afd14c5cf1df8ae38254aa4c5016a733258b4431be7c7b6dedb80"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HANSolB.ttf",
+          "sha256": "1e8de8463d9b8d3537d9f648d289258d8c54eeae6c16e43d812480b81bde84df"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HANSolM.ttf",
+          "sha256": "710650873dd6802d383868df494a022d624cefa11bfd0304d8f5a77093a3b002"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HANSomaB.ttf",
+          "sha256": "25cca9e486a5f700f1827fe8eb46fc2008723069518c7ca148d60c9ec59574bb"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HANSomaM.ttf",
+          "sha256": "2649474ff0014b8192bfc195b11a25319ca431716bbc2a67e2fb76acd138942b"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HANYGO230.ttf",
+          "sha256": "cdf746176aba807cbf9b168c2d749be6270f44f4b80568b9e18b05d1ba53a200"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HANYGO240.ttf",
+          "sha256": "ed3fbb8f3af1866a7fe31478e4f62ef409f74f65d0db1bf60538f4649e564e4d"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HANYGO250.ttf",
+          "sha256": "7e86818a4310bc4f29fddf34e4490a074aaa366984676fbdb881dc21e19ae75b"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HANYheadB.ttf",
+          "sha256": "1984e8c30aecd04af2bc204ff5fe5bcf1f8fe98451d2d8944122d3235bc1d2f4"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HANYheadL.ttf",
+          "sha256": "c6fc079008e92419dc46f86a3a77b5e131cd717da9cd132d6f628453f7d33ce8"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HANYheadM.ttf",
+          "sha256": "211ea74d327fcb0190833791bf79328cb895c44fa43ae31c90ad53c37e757584"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HANYoonGothic720.ttf",
+          "sha256": "68d56b9946b077d69f150a0889dd508972445e17c3a5917fba9b8b06628f288d"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HANYoonGothic740.ttf",
+          "sha256": "ff227ca64858b4cd6f657da587515c95931841dcba19a579aef06daec97f7057"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HANYoonGothic760.ttf",
+          "sha256": "ae10465357537a2aa73d123df949a169791e295bb97a84393bb8e0ccae79bb0e"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HBATANG.TTF",
+          "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HDOTUM.TTF",
+          "sha256": "63738010103c4b6b33c3b67ae07668f0ec215948804b5a130354c6076cc8e3d0"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HMKMM.TTF",
+          "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HYBDAL.TTF",
+          "sha256": "e418f439658680da75e5c9ed2a665123925ba801315f259ff0684a9e60bb0c84"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HYBDAM.TTF",
+          "sha256": "555367f75d9ad77ade99efacac6d0efcc26cab1f2ee6366f4180f78ebfbd56fd"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HYDNKB.TTF",
+          "sha256": "da24992e369b46fee38c02520b6901f49af16107c6a35ee3d34cd89154f60e31"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HYDNKM.TTF",
+          "sha256": "7ce310f7d24b95844a0188943cdb4dac95bc496e96c876d3ca731e72c578dd48"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HYKANB.TTF",
+          "sha256": "cfd21db0edd632dcff6e6d9179f0266e2febb63586947fffa9dcffa34833e85e"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HYKANM.TTF",
+          "sha256": "896a7b5e562f5d5ee0694ec547b3d1a10587b882a94850fb39e62d5fc5eb8c6d"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HYNAMB.TTF",
+          "sha256": "728450078ea1263e88b5f815777ba526d081be603975c21171aafeb323a39b5b"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HYNAML.TTF",
+          "sha256": "426444500b76ef980f0a933bde22769b50c6b6371f4118995b704c6430a9428a"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HYNAMM.TTF",
+          "sha256": "6448359d4a640184a0224b4a403ae11fd25e7f770c70f5ff5ef9ceca36d494f5"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HYSANB.TTF",
+          "sha256": "5c4ded4685db7f24523391253656f128a42b437aaf6660a3737e54e7aa30a288"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HYSUPB.TTF",
+          "sha256": "3ac03d75b2e752546044990917fab57b415780ca119751e8bfa0136765772071"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HYSUPM.TTF",
+          "sha256": "e36a1f1b97db4c2f71d1d177d573702f2e8cb19a52aa929fc5501a7f79fa70b7"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HYTBRB.TTF",
+          "sha256": "4f7650a93ef862a2ee69d6fdc5a0e9ce94a47ab683cd810961e18cab27ce61a2"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HYWULB.TTF",
+          "sha256": "c48939f1dac8d1946d64d2063adf6e47c6dcecfb978548d52d9e47d1f70ff61a"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/HYWULM.TTF",
+          "sha256": "b6e5c595d3b8986aa31830c228cdf30abefcb182bcfe1c016f464fd8395679b0"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/Limelight-Regular.ttf",
+          "sha256": "f5bf8a9159adfc5b9c756c85d812a4fd1299b8916fefdf39ad4b24ade6d8d0cf"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/MT.TTF",
+          "sha256": "d10509215d923fef07c1f2dffe8ebf55cbca706476559a861dff6f7cf969ff44"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/NanumBrush.ttf",
+          "sha256": "5fe0e02f74c58aa25ba49908fb6775bcb7d00d19ddd68b480b51a926f5ca12ec"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/OleoScriptSwashCaps-Regular.ttf",
+          "sha256": "b8811c803202bbc80e6124200666080a62b63df3b52e1833456189ec1f798c31"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/Rochester-Regular.ttf",
+          "sha256": "268abe034fc69f090b6cd241a429e26f7fac1e4648c7bbcca39e883aa3b19abb"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/Schoolbell.ttf",
+          "sha256": "1a3ae62329871c20600217f19f3472ba8f253c11a7df6cb9a9e6e88ced95ee0a"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/VastShadow-Regular.ttf",
+          "sha256": "98bdf7f93c2330697078ece27e48dea7d97b253a547d699bf7afc4bdfa641a93"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/ahn_b.ttf",
+          "sha256": "2b09bfc55a665e4b0431f79f08c518db434d50c0d8d29c7042729f95a1f2d033"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/ahn_l.ttf",
+          "sha256": "40cb56d66504efb5b8a082d6fccfca415cc38d9d030d04b5b417d16e593cefa4"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/hwp/ahn_m.ttf",
+          "sha256": "8ac417c371a64d49189b18ff60dd7d717313a5a47652027869be325d9c21f746"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/ARIALN.TTF",
+          "sha256": "cad552553cf2a75afca01955751aaa115e2a64fd6c6eea42e1fbd236630b7e0a"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/ARIALNB.TTF",
+          "sha256": "6c4a4b643461def5411e0217b74a625dcf2fb681252ef5da1db0af4eae80aa7e"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/ARIALNBI.TTF",
+          "sha256": "161b859efd20c69ddebb23012a49f4f2030d56a0c1b9bcfd4df753217ce3e358"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/ARIALNI.TTF",
+          "sha256": "faf73aa7ce40b77ad19c09507a2263fe3f3ce9fa5642e8a1cd54fb3c9f52d599"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/ARIALUNI.TTF",
+          "sha256": "fe50313c37c2eca0bbf8cc3565b5ef32314753889afbe44cb275d65c3b58f0df"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSans-Bold.ttf",
+          "sha256": "e6476c1b80502924294eed40894c5b18e06c181444ca953e5334262df9c27724"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSans-BoldOblique.ttf",
+          "sha256": "eb436dca0c2594b73d8b603b892e374fdfd8d885d25ffb4f18df4c4c0b49e50f"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSans-ExtraLight.ttf",
+          "sha256": "6cb0746a1f68d176bebe83752cee35ebdf726cb1a1e88a01fc038ddf76de9ea8"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSans-Oblique.ttf",
+          "sha256": "4af75fa16ee6d3ad43e1ecec41862c24954af26a55c6bb1ebb27bd486a50f5f4"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSans.ttf",
+          "sha256": "7da195a74c55bef988d0d48f9508bd5d849425c1770dba5d7bfc6ce9ed848954"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansCondensed-Bold.ttf",
+          "sha256": "38098d0b8edd8430a0f53fb2831b5d36037563a998a620d3c87a4d7591766d20"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansCondensed-BoldOblique.ttf",
+          "sha256": "43f9fd6b77edf174553cf94857c77c63de7ddb0c6751fd1390e73223518e128f"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansCondensed-Oblique.ttf",
+          "sha256": "dc3526fa25fae4278c4e34b47d4c049b6923421c70921032a0db11bfe9c1b0cf"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansCondensed.ttf",
+          "sha256": "8550cd5ca1acb65a8fc7877c46939cd0b4d909f8e7bc1e24716873d918c5e549"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansMono-Bold.ttf",
+          "sha256": "bce60f1b4421acd9ea51ba6623d7024ecbe6817a953e3654df62a5e6bdf8f769"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansMono-BoldOblique.ttf",
+          "sha256": "91713a71d550bba22c2a6b2bb2a9ad8f9a159e12e4e9f0a5b2677998ba21213e"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansMono-Oblique.ttf",
+          "sha256": "742097840c541870e8d6dc5c9b37bb1ceeea6c0dedd1d475faf903ef9df734b0"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSansMono.ttf",
+          "sha256": "b4a6c3e4faab8773f4ff761d56451646409f29abedd68f05d38c2df667d3c582"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerif-Bold.ttf",
+          "sha256": "c47b5527bcdc8dcf9ea8c77054454c5a884beaca2f44851a2a823ee639cbf07f"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerif-BoldItalic.ttf",
+          "sha256": "8d3dd3d31350309042ed226af82b34539bd773518e6107cb352712853ba80308"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerif-Italic.ttf",
+          "sha256": "2e39b1d50f90b933b00c7bb54a96afd3f86419b3d717c7cf202e36f2d4973e47"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerif.ttf",
+          "sha256": "42d1edeb7952f31b1f96d767ed7030b08a39e0c372b0071641518864e2bffb51"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerifCondensed-Bold.ttf",
+          "sha256": "e09aa87c60c3e8de7f4e6c7bfeec8fd9489b6cd975e3033259bca3d6009aed18"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerifCondensed-BoldItalic.ttf",
+          "sha256": "4cfc5a3700c72413f51c4bb54f09617401a0a63eccb9ff577713e20afa047fa5"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerifCondensed-Italic.ttf",
+          "sha256": "dfe5bf5336d62ca71de419cccf7fd18ab19a57245dc392891ee76347129807e1"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/DejaVuSerifCondensed.ttf",
+          "sha256": "685dcdfb8daf32a453d3426a4eb8d881c72146ddd999229354fb757511357995"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/ENBASKVL.TTF",
+          "sha256": "177de2eea49950c9b7ed74843c032be1a80c7a5a3dd4f07ca953e561ea5df1f1"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYBDAL.TTF",
+          "sha256": "e418f439658680da75e5c9ed2a665123925ba801315f259ff0684a9e60bb0c84"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYBDAM.TTF",
+          "sha256": "555367f75d9ad77ade99efacac6d0efcc26cab1f2ee6366f4180f78ebfbd56fd"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYBSRB.TTF",
+          "sha256": "74f2ae9ab8e0ad36175344a759721cd616a7623613853973a0adfe99ebe79862"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYCYSM.TTF",
+          "sha256": "769537a52d27d648e90a30029deab686f604dfc767382cc8c74ae42cb44df5aa"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYDNKB.TTF",
+          "sha256": "da24992e369b46fee38c02520b6901f49af16107c6a35ee3d34cd89154f60e31"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYDNKM.TTF",
+          "sha256": "7ce310f7d24b95844a0188943cdb4dac95bc496e96c876d3ca731e72c578dd48"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYGPRM.TTF",
+          "sha256": "cf8614cb09e038ff24c0edb2ba2cfa6b8911c7c913cfe590e7e56014e7e63e5a"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYGSRB.TTF",
+          "sha256": "b41cef3386d034040704b1a143ef13a63c5b9f1ec4222a7579c1796ea05517f6"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYGTRE.TTF",
+          "sha256": "82f70d5e221412b10df0431f353f095885888823f5d026694691237c9a3004e8"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYHWPEQ.TTF",
+          "sha256": "c4f768c176ce26de91d6115bfb30c2d87c43c03d054f79e909fd340b1e46740a"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYKANB.TTF",
+          "sha256": "cfd21db0edd632dcff6e6d9179f0266e2febb63586947fffa9dcffa34833e85e"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYKANM.TTF",
+          "sha256": "896a7b5e562f5d5ee0694ec547b3d1a10587b882a94850fb39e62d5fc5eb8c6d"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYMJRE.TTF",
+          "sha256": "a101a7a219ffd57273374a423e734adfba1529e5eaf2e9a7476f7150708ea506"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYMPRL.TTF",
+          "sha256": "6bd4066d8dd5ad7296a5d5e826032872bdf4b5343dbbf20073dec67d6b7d4f28"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYNAMB.TTF",
+          "sha256": "728450078ea1263e88b5f815777ba526d081be603975c21171aafeb323a39b5b"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYNAML.TTF",
+          "sha256": "426444500b76ef980f0a933bde22769b50c6b6371f4118995b704c6430a9428a"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYNAMM.TTF",
+          "sha256": "6448359d4a640184a0224b4a403ae11fd25e7f770c70f5ff5ef9ceca36d494f5"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYPORM.TTF",
+          "sha256": "c59429a54a1aa0bcb71c2b35e3a1a8990752d3993dbf905018a5b0b91cf7cd2f"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYSANB.TTF",
+          "sha256": "5c4ded4685db7f24523391253656f128a42b437aaf6660a3737e54e7aa30a288"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYSNRL.TTF",
+          "sha256": "c676038d3cf13121dd974c2e7ee99c0c81eea04a4a493bc3dc60c9f32b791dc6"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYSUPB.TTF",
+          "sha256": "3ac03d75b2e752546044990917fab57b415780ca119751e8bfa0136765772071"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYSUPM.TTF",
+          "sha256": "e36a1f1b97db4c2f71d1d177d573702f2e8cb19a52aa929fc5501a7f79fa70b7"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYTBRB.TTF",
+          "sha256": "4f7650a93ef862a2ee69d6fdc5a0e9ce94a47ab683cd810961e18cab27ce61a2"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYWULB.TTF",
+          "sha256": "c48939f1dac8d1946d64d2063adf6e47c6dcecfb978548d52d9e47d1f70ff61a"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/HYWULM.TTF",
+          "sha256": "b6e5c595d3b8986aa31830c228cdf30abefcb182bcfe1c016f464fd8395679b0"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/arial.ttf",
+          "sha256": "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/arialbd.ttf",
+          "sha256": "3680a1bbffab914f36b27d5fd97b193de5bccfab882c41b41b5f8f99457b4820"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/arialbi.ttf",
+          "sha256": "77a0b63c5f73eb85923f10359e68b8fc768487ae88ad902a1ea21276954e205b"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/ariali.ttf",
+          "sha256": "c30c71d614e143c0d4e42aaf04d9a1f50f90b365a2654eb3f2c6598e5655af08"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/batang.ttc",
+          "sha256": "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/cour.ttf",
+          "sha256": "6aab1f79264ccda1e7129dba62dbe3750b10eaa27408a327dadb808724e62c84"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/courbd.ttf",
+          "sha256": "e376f24c9f27eb7370b25aa366d78da731834a1aea651858801c9a14e8906943"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/courbi.ttf",
+          "sha256": "ac3b362cf998eb33475655e12ab7cb2f6a35d1f2eff6f76af00ebb6f81c53ee7"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/couri.ttf",
+          "sha256": "546406ddbb3e3f6b876a5e8a5dee62ac090d1448662e98d8844b22393813dd13"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/gulim.ttc",
+          "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/malgun.ttf",
+          "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/malgunbd.ttf",
+          "sha256": "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/malgunsl.ttf",
+          "sha256": "c0ca810a242c4482594182db40f0f9d35a3d51bb2eeac750e6e867b2110eb00e"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/segoeui.ttf",
+          "sha256": "8134dbcd09e7b123c9a7f229d49cffbcb01352cc72ea5e1076b65d0dca9f73cd"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/segoeuib.ttf",
+          "sha256": "aeb9e4a6ec5cc59f4d72df8189032d7dbb28f45161cf1552174818b5465dac4e"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/segoeuii.ttf",
+          "sha256": "be525b9a6d307d73c23908cd269be9be754210a9d93c0c1eaaa126d2a174290a"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/segoeuil.ttf",
+          "sha256": "866557576dfc772395301b581eccef4c0daf1dbb75f9667f26784b260bce7da1"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/segoeuisl.ttf",
+          "sha256": "3432de66f335c7e3058154f7cbb13ef051195653a544b49b1992267e558b33ef"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/segoeuiz.ttf",
+          "sha256": "c886161fa6d102090ff992519b6fdc73057a0e838e9d40b27e187e9e61300a92"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/seguisym.ttf",
+          "sha256": "a4a35dcc62cd30e1a6c97b695ecef83e59d2b149e3af834f6a49f11851d56b37"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/symbol.ttf",
+          "sha256": "bbf1192965e5266fbf23370416337d2861fc1e8bd349def93f2994ba67382fc3"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/times.ttf",
+          "sha256": "fbb57cdb0079137adc0e478913ca134dfee02aa2ef443738ec5e839bf97a1f7f"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/timesbd.ttf",
+          "sha256": "e94ff9111656f17bd81e9f822f1e234edcd370bcbacfdebf998b8938f525ac77"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/timesbi.ttf",
+          "sha256": "8d2c8d8d25d9fc529d08558c42effa771617914a455603881e212a26e2f2ddcd"
+        },
+        {
+          "path": "/home/edward/mygithub/ttfs/windows/timesi.ttf",
+          "sha256": "c2c134968be4259aaa78845d3aca5e91c4a0bd10d98e4d2e48ac3c12f3c63b89"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/review-integration-8942-bongseop-html-clipboard/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/native.ttf",
+          "sha256": "9d0ccb452d2d1b3f585b0179a52be072db95b2a05cd9e47f9be76e594a15fe57"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/review-integration-8942-bongseop-html-clipboard/output/pr-review/native-webfont-cache/programs/49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf/source.woff",
+          "sha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/review-integration-8942-bongseop-html-clipboard/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/native.ttf",
+          "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/review-integration-8942-bongseop-html-clipboard/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/source.woff",
+          "sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c"
+        }
+      ]
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "font_mismatch_evidence": null,
+  "requested_pages": [
+    1
+  ],
+  "requested_page_shards": [
+    [
+      1
+    ]
+  ],
+  "run_state": "complete",
+  "document_page_counts": {
+    "rhwp": 1,
+    "pdf": 1
+  }
+}

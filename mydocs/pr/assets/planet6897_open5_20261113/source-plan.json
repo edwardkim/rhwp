@@ -1,0 +1,163 @@
+{
+  "base": "00d09f773a2f6c21604a4e6394df7152bbb26e8c",
+  "branch": "review/integration-20261113-planet6897-open5",
+  "product_head": "c6e852a92b3661136552a432d649e168e27f88d4",
+  "selected": [
+    {
+      "pr": 8972,
+      "title": "fix(layout): 글자 높이가 표보다 큰 빈 문단의 TAC 표는 기준선에 두고 저장 줄 끝까지 점유한다 (#8960)",
+      "original_head": "9149db3e0c71c565f30779914bf58dad95c90f30",
+      "head_branch": "task/8960-text-dominant-tac-line",
+      "reviewer": "jangster77",
+      "commits": [
+        {
+          "source": "c6b6ef54f2e9b6cc5429ccf23584f17e6b9f5b94",
+          "integrated": "9caf28b0432ac96e16a4604d91c03c6044e47f60",
+          "pre_rebase_integrated": "d21dba5a2ab0762befdcd9511796dc65a15723e0"
+        },
+        {
+          "source": "fe0ecb1b7498f72aef9f8ec3713400abdbb4e56c",
+          "integrated": "8fe89547be1b6a6c03b9519c24f94b8b28e1b3f8",
+          "pre_rebase_integrated": "ffbae0fbd583b66e4da1a8f6f2e60ef583482289"
+        },
+        {
+          "source": "9f09fda8befcd738a138ca1e9892551aa393403c",
+          "integrated": "3d4ef047d7f77d6b79a6159aacc84475eae0159d",
+          "pre_rebase_integrated": "66384f6dbb4151186a9d36633e0266e370c514aa"
+        },
+        {
+          "source": "70b4fb2984e6a9839c055f9a7a1dadb7715b1e01",
+          "integrated": "7d617843242944ff652629dd9f30972ead2dd974",
+          "pre_rebase_integrated": "826c72bca9eaf439795cf5376cfe440ebf116ad7"
+        },
+        {
+          "source": "f0e99ac68e15fd2d85f2967856d0da7b03f188d1",
+          "integrated": "2582a63e8f588e8713836ebd68fbaca671614b35",
+          "pre_rebase_integrated": "9b8f467c3928aad7b1cbe53438a60399be233c13"
+        },
+        {
+          "source": "9149db3e0c71c565f30779914bf58dad95c90f30",
+          "integrated": "69d0f3bc3c5aba6c5e410bf74d6c68ae648eb4f8",
+          "pre_rebase_integrated": "ff2a194e1169acf906d01b551e500f3e4845acf6"
+        }
+      ]
+    },
+    {
+      "pr": 9030,
+      "title": "fix(hwp5): DocInfo 끝 예약 태그 잔여 바이트로 열기 실패와 BinData 이름 대소문자 저장 결함 (#9029)",
+      "original_head": "829245078e6f1191e79fed3e4239a2a5996319ac",
+      "head_branch": "task/9029-docinfo-reserved-tail",
+      "reviewer": "jangster77",
+      "commits": [
+        {
+          "source": "ec9ac795f2a8331865c3603a7f4617b23308c5f7",
+          "integrated": "9265764c07e95a9426c1c8eafeaf5936e493975d",
+          "pre_rebase_integrated": "4b1641e02fccbd6c10361433181965b83467383c"
+        },
+        {
+          "source": "c20dded2dd8e334e3e03f605b78df2035510077e",
+          "integrated": "65b485ccdebab6c7fccfceb820b49f049c221d97",
+          "pre_rebase_integrated": "9f6716a3224c33fecdbf6ede487dc39d05876cdf"
+        },
+        {
+          "source": "829245078e6f1191e79fed3e4239a2a5996319ac",
+          "integrated": "1f15c787da21cf4b0cfe74cdf2da7f652590e066",
+          "pre_rebase_integrated": "737dfb3537a1c05fd4b52bd7c438d8cc7cb0855a"
+        }
+      ]
+    },
+    {
+      "pr": 9034,
+      "title": "fix(hwp3): 날짜 코드(특수 문자 8)를 글자 수 48 hchar 로 세어 본문 어긋남으로 인한 열기 실패 해소 (#9032)",
+      "original_head": "79ba431b70a2625f644918f7a6dbcfe7e9d9298c",
+      "head_branch": "task/9032-hwp3-date-code-hchars",
+      "reviewer": "jangster77",
+      "commits": [
+        {
+          "source": "b4e3309dc08f4325e83eedb4bb293facd36a3614",
+          "integrated": "01720722b95645d6ef84c7020ed21c4940c703ae",
+          "pre_rebase_integrated": "e6720f02a0b1585d6b607cd73e60c8f74709d6d7"
+        },
+        {
+          "source": "79ba431b70a2625f644918f7a6dbcfe7e9d9298c",
+          "integrated": "d2fb7e9aad236b2ce94cdb7563ac83d1ed6ecd97",
+          "pre_rebase_integrated": "a024f96681bc35a3014f18fa591c2ad3c0c809da"
+        }
+      ]
+    },
+    {
+      "pr": 9036,
+      "title": "fix(#9035): 자리차지 개체가 첫 줄을 민 셀 문단의 글자처럼 표를 저장 줄 위치에 놓는다",
+      "original_head": "8716bcb3a4b26862e9b724c7e3f851a2669954d3",
+      "head_branch": "task/9035-float-pushed-tac-table-line",
+      "reviewer": "jangster77",
+      "commits": [
+        {
+          "source": "c031fa633dfea6529731b5bf67a51caa5ecb9afd",
+          "integrated": "6b085d0d29a8cff5f902e14995fb1e61e6dabefc",
+          "pre_rebase_integrated": "2aa0b543db1104f248fc7beb3735033d6283628d"
+        },
+        {
+          "source": "8716bcb3a4b26862e9b724c7e3f851a2669954d3",
+          "integrated": "a851890e5603e2a23727aa6b155d511b7e024a18",
+          "pre_rebase_integrated": "4e8f930690952344d8fe3d42a6410f55ad4b8777"
+        }
+      ]
+    },
+    {
+      "pr": 9041,
+      "title": "fix(layout): 어울림 띠 아래로 넘친 자리차지 표는 표만 다음 쪽으로 넘기고, 띠 바닥은 흡수한 줄 범위로 정한다 (#9027)",
+      "original_head": "3bfcd54a2a6767b1d29962ae1845b9d8868d2abc",
+      "head_branch": "task/9027-float-table-band-overflow",
+      "reviewer": "jangster77",
+      "commits": [
+        {
+          "source": "e67bd9066a3ac3bf4f22661a5221b4b55978725d",
+          "integrated": "83bf281c0e033efbbbb47f367323142a8b0aad45",
+          "pre_rebase_integrated": "bb6e038d027b1e7e97f6edb1a002c3b2e6ba3ba9"
+        },
+        {
+          "source": "f8255b456541b0a7fa2ab12906760ba1b3f653fc",
+          "integrated": "8e36694e3885c19f4c48bcb899fc081eb813f164",
+          "pre_rebase_integrated": "71341450de6449e2fe16ccb19e4082fe41c41042"
+        },
+        {
+          "source": "24d3628c336b42906d9a37bbeebb6f7e88f80ed4",
+          "integrated": "c3cd79b3eba70e2d3f3e7d813df7515be25e31a5",
+          "pre_rebase_integrated": "7e4e9766ac697b1f46b8fa234cf2a1594f8fdbaa"
+        },
+        {
+          "source": "58ac828d209760f1b4facc4b6cfdfb638cc458f0",
+          "integrated": "a7572c093345e20533acac04bad2f8506d08a51f",
+          "pre_rebase_integrated": "2f3e4c35a367b3880ea6379736a93bff92e5d485"
+        },
+        {
+          "source": "e83841e3a81e662e09fa99fce756bcc93e1eb958",
+          "integrated": "e8a96a3943cb21dbbf0ed776fa29e26590b56bdf",
+          "pre_rebase_integrated": "73c0c0df776764f97af76ba8115b9e80d6fdc611"
+        },
+        {
+          "source": "12484348acc0f3656518f5957d4c12d6c0be39dd",
+          "integrated": "85385cb0e101a33b38fdec4042869de16e628c60",
+          "pre_rebase_integrated": "e3a49bdc660f4d63bc7b1ab6b036b2c25839a71e"
+        },
+        {
+          "source": "3bfcd54a2a6767b1d29962ae1845b9d8868d2abc",
+          "integrated": "c6e852a92b3661136552a432d649e168e27f88d4",
+          "pre_rebase_integrated": "605740c4363e9e6bacd84895d93abbc7d7bf62c3"
+        }
+      ]
+    }
+  ],
+  "excluded": [
+    8937,
+    8976
+  ],
+  "simulation": "simulation.json",
+  "applied_unique_commits": 20,
+  "tree_matches_simulation": true,
+  "current_disposition": "local_claim_and_protected_validation_complete_remote_ci_pending",
+  "visual_producer_head": "605740c4363e9e6bacd84895d93abbc7d7bf62c3",
+  "visual_base_producer": "1003349996897c6ff097271e7296ae4d1a3d807f",
+  "rebase_validation": "rebase-validation.json"
+}

@@ -1,0 +1,26 @@
+{
+  "id": "pr8896-gulimche-standalone-reference",
+  "preserveSourceMetrics": true,
+  "substitutions": {
+    "굴림체": "GulimChe"
+  },
+  "trueTypeFaces": [
+    "GulimChe"
+  ],
+  "selectedPrograms": {
+    "GulimChe": {
+      "family": "GulimChe",
+      "query": "GulimChe",
+      "programId": "963beeb5edd34edfecf0ff078a7afe584c60a41bbd4014c1df4c2f5e1795f106",
+      "trueType": true,
+      "openTypeCff": false
+    },
+    "굴림체": {
+      "family": "GulimChe",
+      "query": "GulimChe",
+      "programId": "963beeb5edd34edfecf0ff078a7afe584c60a41bbd4014c1df4c2f5e1795f106",
+      "trueType": true,
+      "openTypeCff": false
+    }
+  }
+}

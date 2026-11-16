@@ -1,0 +1,41 @@
+{
+  "status": "success",
+  "job_id": "7fdac339-0483-4151-97f0-77bbedaf2b9d",
+  "output_path": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-right-tab-with-lines-probe-2020.pdf",
+  "output_filename": "stored-right-tab-with-lines-probe-2020.pdf",
+  "size": 13063,
+  "sha256": "cf81de5dd1a6e8c99088fda345e780a4aa8d3d31b7d7a735cf95b1078e42e173",
+  "server": {
+    "job_id": "7fdac339-0483-4151-97f0-77bbedaf2b9d",
+    "status": "success",
+    "target": "pdf",
+    "input_filename": "stored-right-tab-with-lines-probe.hwp",
+    "output_filename": "stored-right-tab-with-lines-probe-2020.pdf",
+    "size": 13063,
+    "sha256": "cf81de5dd1a6e8c99088fda345e780a4aa8d3d31b7d7a735cf95b1078e42e173",
+    "mime_type": "application/pdf",
+    "engine": "2020",
+    "engine_profile": "2020",
+    "hancom_version": "11.0.0.9136",
+    "backend": "hwp-managed-direct-dll-host",
+    "pdf_page_count": 1,
+    "logical_page_count": null,
+    "pdf_print_method": 0,
+    "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+    "font_scope": {
+      "mode": "session0",
+      "status": "verified",
+      "profile_source": "protected_config",
+      "session_id": 0,
+      "mapped_font_count": 2,
+      "registered_font_count": 2,
+      "failed_font_count": 0,
+      "parent_visibility": "verified",
+      "child_visibility": "verified"
+    },
+    "elapsed_ms": 12101,
+    "worker_elapsed_ms": 11244,
+    "worker_bits": 32,
+    "input_preprocess": "scripts_disabled"
+  }
+}

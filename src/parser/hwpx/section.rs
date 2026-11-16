@@ -2686,9 +2686,9 @@ fn materialize_hwpx_table_attrs(table: &mut Table, table_record_flags: u32) {
     // [#2697·#8335] 번호 범주 비트는 `pack_hwpx_common_obj_attr` 가 numberingType 에서 만든다.
     table.common.attr = pack_hwpx_common_obj_attr(&table.common);
     // HWPX keeps semantic placement in hp:pos, while legacy layout code still reads
-    // table.attr bit0 for some inline-table decisions. Only mirror the minimum
-    // renderer compatibility bit here; the HWP5 storage attr is packed later by
-    // the HWP adapter.
+    // table.attr bit0 for some inline-table decisions. The property API also reads
+    // bits 13/14 for restrictInPage/allowOverlap. The complete HWP5 storage attr
+    // is packed later by the HWP adapter.
     //
     // 순수 HWPX 의 TAC 판정은 `treatAsChar && flowWithText` (#3930) 다. HWP5 원본은
     // CTRL_HEADER bit0 = treatAsChar 만으로 TAC 이다. HWP5-origin HWPX 가 후자
@@ -2705,6 +2705,7 @@ fn materialize_hwpx_table_attrs(table: &mut Table, table_record_flags: u32) {
     } else {
         0
     };
+    table.attr |= table.common.attr & ((1 << 13) | (1 << 14));
     let mut record_attr = match table.page_break {
         TablePageBreak::CellBreak => 0x01,
         TablePageBreak::RowBreak => 0x02,
@@ -9187,7 +9188,7 @@ mod tests {
         assert_eq!(table.common.text_wrap, TextWrap::TopAndBottom);
         assert_eq!(table.common.vertical_offset as i32, -2000);
         assert_eq!(table.common.attr, 0x082a_2211);
-        assert_eq!(table.attr, 0x01);
+        assert_eq!(table.attr, 0x2001); // treatAsChar + flowWithText(쪽 영역 제한)
         assert_eq!(table.raw_table_record_attr, 0x0400_000e);
     }
 

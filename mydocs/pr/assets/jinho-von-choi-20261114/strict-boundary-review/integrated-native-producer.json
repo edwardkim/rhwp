@@ -1,0 +1,23 @@
+{
+  "source": "235da09ed62d23425dad71dddac2bffa9f70cdc1",
+  "command": [
+    "cargo",
+    "build",
+    "--locked",
+    "--profile",
+    "release-test",
+    "--target-dir",
+    "/home/edward/mygithub/rhwp/target/pr-review",
+    "--features",
+    "native-skia",
+    "--lib",
+    "--bin",
+    "rhwp",
+    "--verbose"
+  ],
+  "started": "2026-11-15T06:58:58.971256+00:00",
+  "completed": "2026-11-15T07:04:38.993703+00:00",
+  "exitCode": 0,
+  "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/rhwp-integrated-native",
+  "sha256": "564e8363d1e6ad5f375d9482cc61d18b6771619008b36921110a96a70dceab3a"
+}

@@ -1,0 +1,16 @@
+{
+  "candidate": "cec288ae2fd84b75b884a05ee1ada6ae3a8d2ac7",
+  "other_pr": 9012,
+  "other_head": "71c002495603a34af43f238dd2c98354d942a589",
+  "other_base": "80b1c354c29b7a02fb2b3c14a274da7f5b653ada",
+  "requested_reviewers": [],
+  "reviews": [],
+  "command": "git merge-tree --write-tree HEAD 71c002495603a34af43f238dd2c98354d942a589",
+  "exit_code": 1,
+  "conflicts": [
+    "src/renderer/legacy_font_advances.rs"
+  ],
+  "log": "f7670ac287a436c6adb3eff4e115a2e42c6c0f4d\n100644 56b03bcd51b237fb9d00471966c2d2a974aa2d91 1\tsrc/renderer/legacy_font_advances.rs\n100644 17a40996cf1787af658148ea4d317b6ab5a7c18c 2\tsrc/renderer/legacy_font_advances.rs\n100644 3396414052cfcd2e4c6f351b8266a9166a8b93d2 3\tsrc/renderer/legacy_font_advances.rs\n\nAuto-merging src/renderer/legacy_font_advances.rs\nCONFLICT (content): Merge conflict in src/renderer/legacy_font_advances.rs\nAuto-merging src/renderer/native_pua_fonts.rs\n",
+  "new_devel": "a85d3265dd10b316d1a0ae029ca3f67245b38b77",
+  "checked_at": "2026-11-12T22:53:28.541311+09:00"
+}

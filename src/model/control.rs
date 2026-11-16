@@ -839,11 +839,34 @@ impl Field {
     /// 누름틀(ClickHere) command에서 안내문(Direction) 텍스트를 추출한다.
     ///
     /// command 형식: "Clickhere:set:{len}:Direction:wstring:{n}:{text} HelpState:..."
+    ///
+    /// 한컴 HWPX 에는 `Clickhere:` 꼴이 아닌 평문 command 도 있다 — `<hp:stringParam
+    /// name="Command">본문내용을 입력하세요;</hp:stringParam>` 처럼 `;` 로 끝나는 항목을
+    /// 늘어놓고 첫 항목이 안내문이다(`0000.00.00.;0000.00.00.\;charshape=b;`). 한컴 Print 는
+    /// 미기입(dirty="0") 누름틀의 내용이 이 첫 항목과 같으면 안내문으로 보고 인쇄하지 않는다
+    /// (`mydocs/tech/hwp_spec_errata.md` §39).
     pub fn guide_text(&self) -> Option<&str> {
         if self.field_type != FieldType::ClickHere {
             return None;
         }
-        self.extract_wstring_value("Direction:")
+        if let Some(guide) = self.extract_wstring_value("Direction:") {
+            return Some(guide);
+        }
+        if self.command.starts_with("Clickhere:") {
+            return None;
+        }
+        self.plain_command_guide()
+    }
+
+    /// 평문 command 의 첫 `;` 항목(`guide_text` 설명). 빈 항목과 `\;` 이스케이프가 걸친
+    /// 항목은 원문 조각으로 돌려줄 수 없어 `None` 이다.
+    fn plain_command_guide(&self) -> Option<&str> {
+        let end = self.command.find(';')?;
+        let guide = &self.command[..end];
+        if guide.is_empty() || guide.ends_with('\\') {
+            return None;
+        }
+        Some(guide)
     }
 
     /// 누름틀(ClickHere) 필드 이름을 반환한다.

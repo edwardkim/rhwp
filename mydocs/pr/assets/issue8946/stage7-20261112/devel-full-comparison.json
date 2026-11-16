@@ -1,0 +1,66 @@
+{
+  "base": "1a3ed4a7cd76701085a24ac81d30bc5fb31942c1",
+  "head": "cec288ae2fd84b75b884a05ee1ada6ae3a8d2ac7",
+  "datasets": [
+    {
+      "document": "hwpx",
+      "backend": "native",
+      "pages": 763,
+      "base_min": 85.4558,
+      "head_min": 96.34886,
+      "base_below90": 18,
+      "head_below90": 0,
+      "max_drop_pp": "0",
+      "drops": [],
+      "above_2pp": [],
+      "matched_program_hash_count": 75,
+      "base_manifest_sha256": "dc9c1cb43ba581ba2d3423c98e918f05268bd6c61efb2b5558ab3407938db7e4",
+      "head_manifest_sha256": "31bae16d4eabbd8d906e48be6d1499a0946702a00100f9e004b47e753b493791"
+    },
+    {
+      "document": "hwpx",
+      "backend": "wasm",
+      "pages": 763,
+      "base_min": 85.44688,
+      "head_min": 99.56218,
+      "base_below90": 18,
+      "head_below90": 0,
+      "max_drop_pp": "0",
+      "drops": [],
+      "above_2pp": [],
+      "matched_program_hash_count": 71,
+      "base_manifest_sha256": "82c9c746f281da0cefd16c159381c2a77d4f84f34589014d0c2a93641b242c63",
+      "head_manifest_sha256": "ae4243971309daaaad404f0298c31cdcf0611343dea4ad72cd3dd8c91aebd2a1"
+    },
+    {
+      "document": "hwp3",
+      "backend": "native",
+      "pages": 763,
+      "base_min": 98.77175,
+      "head_min": 98.77175,
+      "base_below90": 0,
+      "head_below90": 0,
+      "max_drop_pp": "0",
+      "drops": [],
+      "above_2pp": [],
+      "matched_program_hash_count": 73,
+      "base_manifest_sha256": "a86343db375ec8ca341ead3bbdb6e2cf4dffbe7c13e9410f892d8d8156895640",
+      "head_manifest_sha256": "dad75587c9048f94ce6a7233f7556f4fa1af682c330b267fcd854068eb173d73"
+    },
+    {
+      "document": "hwp3",
+      "backend": "wasm",
+      "pages": 763,
+      "base_min": 99.5484,
+      "head_min": 99.5484,
+      "base_below90": 0,
+      "head_below90": 0,
+      "max_drop_pp": "0",
+      "drops": [],
+      "above_2pp": [],
+      "matched_program_hash_count": 71,
+      "base_manifest_sha256": "9f25c5aea369f54f50fa20358d4aca096ecb6a5ffa1e7d10b862f21f917da035",
+      "head_manifest_sha256": "fd7da88c37eb172a0811aebbf285541e136151d8854cef5a7f186624b15ec875"
+    }
+  ]
+}

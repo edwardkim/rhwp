@@ -1,0 +1,17 @@
+{
+  "head": "3b4212267b26723917ba0f5a9eaf4c8e1b907afb",
+  "files": [
+    {
+      "path": "mydocs/pr/assets/issue7445/issue1937_rowbreak_footnote_overpagination.hwp",
+      "bytes": 147456,
+      "sha256": "a3a075594994e4741a7fbe973bc230d95ae75fdee6578ac6017cec0d52844990",
+      "matches_git_head": true
+    },
+    {
+      "path": "pdf/issue7382-regression-review/issue1937_rowbreak_footnote_overpagination-2020.pdf",
+      "bytes": 766874,
+      "sha256": "7f14bc85eb389a68cc88bd40fcafeb7a638d8454293a30bb2c8fe884a16978eb",
+      "matches_git_head": true
+    }
+  ]
+}

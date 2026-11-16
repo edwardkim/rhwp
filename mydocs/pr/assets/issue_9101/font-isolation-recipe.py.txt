@@ -1,0 +1,55 @@
+import os
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+root = Path('/home/tsjang/rhwp')
+out = root / 'output/contributor-protected-fonts-20261115'
+command = sys.argv[1:]
+os_basic = command and command[0] == '--os-basic'
+if os_basic:
+    command = command[1:]
+for name in ['fontconfig-cache', 'runtime-cache', 'runtime-tmp', 'webfont-cache']:
+    (out / name).mkdir(exist_ok=True)
+conf = out / 'fonts.conf'
+if not conf.exists():
+    conf.write_text('''<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
+<fontconfig>
+  <include ignore_missing="no">/etc/fonts/fonts.conf</include>
+  <dir>/usr/share/fonts</dir>
+  <dir>/home/tsjang/rhwp/ttfs/opensource</dir>
+  <cachedir>/home/tsjang/rhwp/output/contributor-protected-fonts-20261115/fontconfig-cache</cachedir>
+</fontconfig>
+''')
+
+args = ['bwrap', '--die-with-parent', '--ro-bind', '/usr', '/usr',
+        '--symlink', 'usr/bin', '/bin', '--symlink', 'usr/lib', '/lib',
+        '--symlink', 'usr/lib64', '/lib64', '--ro-bind', '/etc', '/etc',
+        '--proc', '/proc', '--dev', '/dev', '--ro-bind', '/sys', '/sys',
+        '--bind', str(out / 'runtime-tmp'), '/tmp', '--dir', '/home/tsjang',
+        '--bind', str(root), str(root), '--tmpfs', '/usr/local/share/fonts']
+if os_basic:
+    args += ['--tmpfs', '/usr/share/fonts']
+    for child in sorted(Path('/usr/share/fonts').iterdir()):
+        args += ['--ro-bind', str(child), str(child)]
+    args += ['--ro-bind', str(out / 'os-basic-fonts'), '/usr/share/fonts/rhwp-os-basic']
+for name in ['/home/tsjang/rhwp-local-pdf', '/home/tsjang/.cache/puppeteer',
+             '/home/tsjang/.cache/ms-playwright', '/run/systemd/resolve']:
+    if Path(name).exists():
+        args += ['--ro-bind', name, name]
+node = Path(shutil.which('node')).resolve()
+if str(node).startswith('/opt/'):
+    prefix = node.parent.parent
+    args += ['--ro-bind', str(prefix), str(prefix)]
+for name in ['ttfs/hwp', 'ttfs/windows']:
+    path = root / name
+    if path.exists():
+        args += ['--tmpfs', str(path)]
+args += ['--setenv', 'FONTCONFIG_FILE', str(conf), '--unsetenv', 'RHWP_FONT_PATH',
+         '--setenv', 'XDG_CACHE_HOME', str(out / 'runtime-cache'),
+         '--setenv', 'RHWP_WEBFONT_CACHE', str(out / 'webfont-cache'),
+         '--setenv', 'VISUAL_SWEEP_CHROME', '/home/tsjang/.cache/puppeteer/chrome/linux-155.0.8059.79/chrome-linux64/chrome',
+         '--chdir', str(root), '--', *command]
+raise SystemExit(subprocess.run(args).returncode)

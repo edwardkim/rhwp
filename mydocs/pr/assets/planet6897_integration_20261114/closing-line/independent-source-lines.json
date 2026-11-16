@@ -1,0 +1,58 @@
+{
+  "source_sha256": "77dd7e06f2de8419a404a3b30c733389cbdd174b0cdbc274b1de24d3520517b6",
+  "reader": "independent Python olefile + raw HWP record/LineSeg decoder; no rhwp model used",
+  "paragraphs": [
+    {
+      "paragraph": 3,
+      "header": "010000000000000007000000010000000100000000800000",
+      "text": "",
+      "line_segments": [
+        {
+          "textStart": 0,
+          "vpos": 68224,
+          "height": 1400,
+          "textHeight": 1400,
+          "baseline": 1190,
+          "spacing": 280,
+          "columnStart": 0,
+          "width": 48192,
+          "flags": 393216
+        }
+      ],
+      "char_shapes": [
+        [
+          0,
+          10
+        ]
+      ]
+    },
+    {
+      "paragraph": 4,
+      "header": "030000800000000007000000020000000100000000000000",
+      "text": "끝.\r",
+      "line_segments": [
+        {
+          "textStart": 0,
+          "vpos": 70404,
+          "height": 1400,
+          "textHeight": 1400,
+          "baseline": 1190,
+          "spacing": 280,
+          "columnStart": 0,
+          "width": 48192,
+          "flags": 393216
+        }
+      ],
+      "char_shapes": [
+        [
+          0,
+          10
+        ],
+        [
+          2,
+          32
+        ]
+      ]
+    }
+  ]
+}

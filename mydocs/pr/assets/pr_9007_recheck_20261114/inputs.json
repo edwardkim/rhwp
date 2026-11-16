@@ -1,0 +1,98 @@
+[
+  {
+    "document": "patterns-hwp",
+    "backend": "native",
+    "input": {
+      "path": "samples/issue8978/fill-patterns-0-6.hwp",
+      "sha256": "26062124ea6184245e967b0dbba5a2ee129a076188a0a1d8e6ff65ece5321b2b"
+    },
+    "reference": {
+      "path": "pdf/issue8978/fill-patterns-0-6-2024.pdf",
+      "sha256": "be829f0f4647f895ca9e293bad8c36ad2ea95c14442dfe8cfe4fa86d2bb68ee3"
+    }
+  },
+  {
+    "document": "patterns-hwpx",
+    "backend": "native",
+    "input": {
+      "path": "samples/issue8978/fill-patterns-0-6.hancom2024.hwpx",
+      "sha256": "4733e537608f22f6c9b6a144f97830baae998705bd610d0338807cf668075429"
+    },
+    "reference": {
+      "path": "pdf/issue8978/fill-patterns-0-6.hancom2024-hwpx-2024.pdf",
+      "sha256": "0493000b0572a3f1de68d694fc52181d74397aadeaaa2cdad014d2be8ea288f1"
+    }
+  },
+  {
+    "document": "hwpspec",
+    "backend": "native",
+    "input": {
+      "path": "samples/hwpspec.hwp",
+      "sha256": "64df877f3c4accda0111ecf39d837da889741bb821b220cf61b6c126dc88364d"
+    },
+    "reference": {
+      "path": "pdf/hwpspec-2024.pdf",
+      "sha256": "9c8110347efd719c75098b97509bd4ddf4c5eb6c838d4a6d78982da5f610512b"
+    }
+  },
+  {
+    "document": "59043",
+    "backend": "native",
+    "input": {
+      "path": "samples/issue1921/59043_regulatory_analysis.hwp",
+      "sha256": "da9f9c9862475d1710f6ecf93e3ce134726054fe0be0d9523b9d60d1a90c82ef"
+    },
+    "reference": {
+      "path": "pdf/issue1921/59043_regulatory_analysis-2022.pdf",
+      "sha256": "fade38ba20113ab52eaf42c55eec207943fe66e1b18efdeee06bfa65a1d64fa1"
+    }
+  },
+  {
+    "document": "patterns-hwp",
+    "backend": "wasm",
+    "input": {
+      "path": "samples/issue8978/fill-patterns-0-6.hwp",
+      "sha256": "26062124ea6184245e967b0dbba5a2ee129a076188a0a1d8e6ff65ece5321b2b"
+    },
+    "reference": {
+      "path": "pdf/issue8978/fill-patterns-0-6-2024.pdf",
+      "sha256": "be829f0f4647f895ca9e293bad8c36ad2ea95c14442dfe8cfe4fa86d2bb68ee3"
+    }
+  },
+  {
+    "document": "patterns-hwpx",
+    "backend": "wasm",
+    "input": {
+      "path": "samples/issue8978/fill-patterns-0-6.hancom2024.hwpx",
+      "sha256": "4733e537608f22f6c9b6a144f97830baae998705bd610d0338807cf668075429"
+    },
+    "reference": {
+      "path": "pdf/issue8978/fill-patterns-0-6.hancom2024-hwpx-2024.pdf",
+      "sha256": "0493000b0572a3f1de68d694fc52181d74397aadeaaa2cdad014d2be8ea288f1"
+    }
+  },
+  {
+    "document": "hwpspec",
+    "backend": "wasm",
+    "input": {
+      "path": "samples/hwpspec.hwp",
+      "sha256": "64df877f3c4accda0111ecf39d837da889741bb821b220cf61b6c126dc88364d"
+    },
+    "reference": {
+      "path": "pdf/hwpspec-2024.pdf",
+      "sha256": "9c8110347efd719c75098b97509bd4ddf4c5eb6c838d4a6d78982da5f610512b"
+    }
+  },
+  {
+    "document": "59043",
+    "backend": "wasm",
+    "input": {
+      "path": "samples/issue1921/59043_regulatory_analysis.hwp",
+      "sha256": "da9f9c9862475d1710f6ecf93e3ce134726054fe0be0d9523b9d60d1a90c82ef"
+    },
+    "reference": {
+      "path": "pdf/issue1921/59043_regulatory_analysis-2022.pdf",
+      "sha256": "fade38ba20113ab52eaf42c55eec207943fe66e1b18efdeee06bfa65a1d64fa1"
+    }
+  }
+]

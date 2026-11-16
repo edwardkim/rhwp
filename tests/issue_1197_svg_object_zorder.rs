@@ -1,3 +1,14 @@
+//! 관계형: 실제 그림과 표·도형·바탕쪽의 SVG 재생 순서를 보존하는 합성 계약이다.
+//! 주석 갱신: 2026-11-12T17:34:07+09:00. 직전 변경: 3879f85bdba413d9e62feba9341d6bc479487d10,
+//! 2026-08-11T02:56:50+09:00. 실물 페이지의 절대 px golden을 사용하지 않는다.
+//! #8957 입력/표시 계약 근거: 2026-11-12 PDFium 96 DPI, raw 2px 실루엣,
+//! cover-linked·cover-mixed-images 전체 각 1쪽 Native/fresh WASM 각 100.00%, 전쪽 최저 100.00%.
+//! 양쪽 출력의 정상 그림·빈 연결 그림 자리·주변 본문을 확대 판독했다.
+//! 근거: mydocs/pr/assets/issue8957/linked-print/. 이 수치를 #1197 원본의 점수로 승격하지 않는다.
+//! #1197 → #1252와 메인터너 보정 3bd66137의 순서 계약은 유지한다.
+//! 이전 합성 입력은 실제 그림 대신 미해결 경로의 편집용 안내를 사용했다. #8957 이후 인쇄에서
+//! 생략하는 안내를 정상 그림의 대용으로 쓰지 않고, 직접 만든 1px PNG의 실제 image 노드를 검사한다.
+//!
 //! Issue #1197: paper/page anchored Picture/Table/Shape objects must share one
 //! z-order axis regardless of object type.
 //!
@@ -7,6 +18,7 @@
 //! before every table. That leaves the low z-order table text on top of the
 //! image, which is the overlap reported in #1197.
 
+use image::ImageEncoder;
 use rhwp::model::shape::TextWrap;
 use rhwp::renderer::render_tree::{
     BoundingBox, ImageNode, PageRenderTree, RawSvgNode, RenderLayerInfo, RenderNode,
@@ -49,9 +61,12 @@ fn table_with_label(tree: &mut PageRenderTree, label: &str, para_index: usize) -
 }
 
 fn behind_text_image(tree: &mut PageRenderTree) -> RenderNode {
-    let mut image = ImageNode::new(1, None);
+    let mut png = Vec::new();
+    image::codecs::png::PngEncoder::new(&mut png)
+        .write_image(&[255, 0, 0, 255], 1, 1, image::ExtendedColorType::Rgba8)
+        .unwrap();
+    let mut image = ImageNode::new(1, Some(png));
     image.text_wrap = Some(TextWrap::BehindText);
-    image.external_path = Some("Z11_IMAGE".to_string());
     RenderNode::new(
         tree.next_id(),
         RenderNodeType::Image(image),
@@ -110,7 +125,7 @@ fn paper_anchored_tables_and_images_follow_one_z_order_axis() {
 
     let master_page = offset(&svg, "MASTER_PAGE_BACKGROUND");
     let low_table = offset(&svg, "Z01_LOW_TABLE");
-    let image = offset(&svg, "Z11_IMAGE");
+    let image = offset(&svg, "<image ");
     let final_table = offset(&svg, "Z12_FINAL_TABLE");
     let front_shape = offset(&svg, "Z69_FRONT_SHAPE");
 

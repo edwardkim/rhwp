@@ -1,0 +1,234 @@
+{
+  "key": "title-mark",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "completed_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "missing_pages": [],
+  "tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/base-common-pages/wasm/title-mark/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-wasm/title-mark/silhouette-parts/p0001-0001/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "25b6e0389d79f9dab112808d5c7dae291f0898fc0cf520fb15bbd6d2914bd969",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-wasm/title-mark/silhouette-parts/p0001-0001/pdf_png/pdf-001.png",
+      "pdf_sha256": "ce6ba7b271936feb25b871cffd61cee53bb93d81bee4385b9d99202addafd8b9"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-wasm/title-mark/silhouette-parts/p0002-0011/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "4b50808d21de15e9908713d98216e16e1eee3474672c574c31e6ca0e0db7b301",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-wasm/title-mark/silhouette-parts/p0002-0011/pdf_png/pdf-002.png",
+      "pdf_sha256": "385f7d3a07c032186b34e6efd9dbbe1ee50409e5eb3072c72ceafe42e3730b81"
+    },
+    {
+      "page": 3,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-wasm/title-mark/silhouette-parts/p0002-0011/rhwp_png/rhwp_003.png",
+      "rhwp_sha256": "af188a0771cb49af8e93f1bc534efa99f2768fd96ba743978d950bf21effddca",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-wasm/title-mark/silhouette-parts/p0002-0011/pdf_png/pdf-003.png",
+      "pdf_sha256": "8793beb0ddf9b5055f9a605a52138fc6cfde46a95389394bda478605c4ed5d3a"
+    },
+    {
+      "page": 4,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-wasm/title-mark/silhouette-parts/p0002-0011/rhwp_png/rhwp_004.png",
+      "rhwp_sha256": "261d191ee6314e194e1e76e997da43c29f18c5efdb980273913b3cd3c909ddea",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-wasm/title-mark/silhouette-parts/p0002-0011/pdf_png/pdf-004.png",
+      "pdf_sha256": "dc41822c36c2cdaa1f8a1250e9cb4f8e9a408f25485e3c7dd632f24669213181"
+    },
+    {
+      "page": 5,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-wasm/title-mark/silhouette-parts/p0002-0011/rhwp_png/rhwp_005.png",
+      "rhwp_sha256": "ba220b1d967da1a9742bc1446b7a16f328fb01d67730527de98e177f0424cc0c",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-wasm/title-mark/silhouette-parts/p0002-0011/pdf_png/pdf-005.png",
+      "pdf_sha256": "fc6da3ae40a4b0c7dfeed9c6f8fa191f2c4d5b282d42ad9c1a73bbddabaa8628"
+    },
+    {
+      "page": 6,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-wasm/title-mark/silhouette-parts/p0002-0011/rhwp_png/rhwp_006.png",
+      "rhwp_sha256": "bcc834576f7bf268be821b055c319a34d9613a49c65c1ba2db7472ad610ed5af",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-wasm/title-mark/silhouette-parts/p0002-0011/pdf_png/pdf-006.png",
+      "pdf_sha256": "948a02bb0235004aa13813a7cdcc3a02dd0e390ebb8ab7d89923f16765eda4f0"
+    },
+    {
+      "page": 7,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-wasm/title-mark/silhouette-parts/p0002-0011/rhwp_png/rhwp_007.png",
+      "rhwp_sha256": "02d280dd76b40554b8fd8b8407aa27cefabfb54eabcd40844c440fa1b6fa105e",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-wasm/title-mark/silhouette-parts/p0002-0011/pdf_png/pdf-007.png",
+      "pdf_sha256": "d9414824a0f276db0b2ff0065024cd0d5d70a2d2343733d158aa04ffd8bf4f7a"
+    },
+    {
+      "page": 8,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-wasm/title-mark/silhouette-parts/p0002-0011/rhwp_png/rhwp_008.png",
+      "rhwp_sha256": "9e0b4a299225c5de64c74c51d760b3a5f090328fe852ca71ae24d3f6efdc4053",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-wasm/title-mark/silhouette-parts/p0002-0011/pdf_png/pdf-008.png",
+      "pdf_sha256": "ee852b11357bb37a3d88ee5f6543ab97dbffc93ac2ece3fb0b6ccaf46e338dde"
+    },
+    {
+      "page": 9,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-wasm/title-mark/silhouette-parts/p0002-0011/rhwp_png/rhwp_009.png",
+      "rhwp_sha256": "f8cf0b2b1cbc59301d7be7362885f0363ddade536523b012164a4ffa9dfbc44f",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-wasm/title-mark/silhouette-parts/p0002-0011/pdf_png/pdf-009.png",
+      "pdf_sha256": "8dacc84a56045b4727e1bd62f47bba3d819956be341c7c4bcefa58b841bfc564"
+    },
+    {
+      "page": 10,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-wasm/title-mark/silhouette-parts/p0002-0011/rhwp_png/rhwp_010.png",
+      "rhwp_sha256": "3adfd4e1aa254b520ceb10124372f22eb343129f190048f7adc6611952bb7622",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/base-wasm/title-mark/silhouette-parts/p0002-0011/pdf_png/pdf-010.png",
+      "pdf_sha256": "2e4926d88c106831456eafc2f1ff8beb9e30d666f1c8a37f25db749588c857c1"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 94.48671,
+      "silhouette_raw_unmatched_pixels": 2290,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 41536,
+      "tolerant_content_match_percent": 94.48671
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 14011,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.96795,
+      "silhouette_raw_unmatched_pixels": 18,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 56157,
+      "tolerant_content_match_percent": 99.96795
+    },
+    {
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.9513,
+      "silhouette_raw_unmatched_pixels": 25,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 51332,
+      "tolerant_content_match_percent": 99.9513
+    },
+    {
+      "page": 5,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.9835,
+      "silhouette_raw_unmatched_pixels": 8,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 48484,
+      "tolerant_content_match_percent": 99.9835
+    },
+    {
+      "page": 6,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 42960,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 7,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 40397,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 8,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 108702,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 9,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 69.21008,
+      "silhouette_raw_unmatched_pixels": 50836,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 165106,
+      "tolerant_content_match_percent": 69.21008
+    },
+    {
+      "page": 10,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 8.04264,
+      "silhouette_raw_unmatched_pixels": 62108,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 67540,
+      "tolerant_content_match_percent": 8.04264
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "re_review_required",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 9,
+        "silhouette_raw_match_percent": 69.21008
+      },
+      {
+        "page": 10,
+        "silhouette_raw_match_percent": 8.04264
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 11,
+      "pdf": 10
+    },
+    "page_count_mismatch": true
+  }
+}

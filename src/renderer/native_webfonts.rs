@@ -453,13 +453,18 @@ pub fn prepare(doc_info: &DocInfo, paths: &[PathBuf]) -> Result<NativeWebfontSup
                 })
             });
         let generic = rule.is_none();
+        // 문서에 선언된 실제 로컬 대체는 registry의 웹 face보다 우선한다.
+        // 공급 원본이 없는 generic 진단은 유지하되 대체 프로그램은 덮어쓰지 않는다.
+        if substitute.iter().any(|face| present(face)) {
+            if generic {
+                result.unavailable.push(source.clone());
+            }
+            continue;
+        }
         let url = if generic {
             // 원 프로그램의 공급과 일반 문자 대체는 구분한다. 문서가 선언한
             // 설치 대체 글꼴은 유지하고, 그것도 없을 때 공개 Noto를 사용한다.
             result.unavailable.push(source.clone());
-            if substitute.iter().any(|face| present(face)) {
-                continue;
-            }
             if present("NotoSansKR-Regular") {
                 result.generic_fallbacks.push(source.clone());
                 result.mappings.insert(source, "NotoSansKR-Regular".into());

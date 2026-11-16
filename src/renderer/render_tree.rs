@@ -1797,6 +1797,17 @@ pub enum HeaderFooterKind {
 }
 
 impl ImageNode {
+    /// 인쇄할 원본이 없는 그림의 편집용 대체 표시다.
+    /// #8957의 한컴 2024 Print는 정상 그림과 같은 페이지의 미해결 연결 그림만 비운다.
+    /// 경로·배치 공간은 보존하고, 실제 바이트가 공급되면 연결 그림도 정상 인쇄한다.
+    /// 외부 데이터의 디코딩 실패나 채우기 이미지까지 이 계약으로 확대하지 않는다.
+    pub(crate) fn is_nonprinting_picture_placeholder(&self) -> bool {
+        self.is_missing_picture()
+            || (self.fill_mode.is_none()
+                && self.external_path.is_some()
+                && self.data.as_deref().is_none_or(<[u8]>::is_empty))
+    }
+
     /// [#8858] 그림 컨트롤인데 원본 데이터가 없거나 표시할 수 없고 외부 경로도 없으면 `#2225`
     /// 의 「그림 미지정」이다. 그림 배치 경로 일부(`picture_footnote`)만 이 형상을
     /// `PlaceholderKind::MissingPicture` 노드로 바꾸고, 문단·칸·도형·TAC 그림 경로는 데이터
