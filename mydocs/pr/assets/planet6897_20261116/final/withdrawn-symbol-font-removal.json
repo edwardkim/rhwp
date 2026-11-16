@@ -1,0 +1,23 @@
+{
+  "status": "completed",
+  "at": "2026-11-16T12:30:11.888306+00:00",
+  "family": [
+    "RHWP Independent HFT Symbols",
+    "RHWP Independent HFT Symbols Regular",
+    "RHWPIndependentHFTSymbols-Regular"
+  ],
+  "cmap": {
+    "U+203B": "uni203B"
+  },
+  "removed": [
+    {
+      "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/private-fonts/independent-symbol-rebuild/RHWPIndependentHFTSymbols.otf",
+      "sha256": "508e7b8e58778c82b086ce1d414fc400111264bd94a12bafe3c368ead0219f7b",
+      "bytes": 1264
+    }
+  ],
+  "active_case_or_catalog_references": [],
+  "retired_recipe_reference_removed": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v1/nested-restored-recipe.json",
+  "H2GTRM_original_sha256_unchanged": "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5",
+  "hwp_pdf_sources_preserved": true
+}

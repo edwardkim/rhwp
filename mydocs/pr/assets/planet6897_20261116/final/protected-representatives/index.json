@@ -1,0 +1,62 @@
+[
+  {
+    "key": "sample10",
+    "backend": "native",
+    "page": 1,
+    "raw_match_percent": "99.96",
+    "review": "mydocs/pr/assets/planet6897_20261116/final/protected-representatives/sample10/native/review_001.png",
+    "overlay": "mydocs/pr/assets/planet6897_20261116/final/protected-representatives/sample10/native/overlay_001.png",
+    "raw_sha256": "727b75af2b5cb319f06b13e3f44ea38ec12344f83a64034cd7aee2ac292495af",
+    "pdf_sha256": "12b25234c73eae39b045eefa07f19bc024cd47dd349ef91ce1bf9f2811a3e0d0"
+  },
+  {
+    "key": "handbook-hwpx",
+    "backend": "native",
+    "page": 130,
+    "raw_match_percent": "99.97",
+    "review": "mydocs/pr/assets/planet6897_20261116/final/protected-representatives/handbook-hwpx/native/review_130.png",
+    "overlay": "mydocs/pr/assets/planet6897_20261116/final/protected-representatives/handbook-hwpx/native/overlay_130.png",
+    "raw_sha256": "5b4b4fc96c408041bda4f81b71afb942d94947dff0a7b203cc3b676f27770b78",
+    "pdf_sha256": "554b6a770060086a59af0a08f5b9f377fc058bfda47e2e62e05f9a63f49c3abd"
+  },
+  {
+    "key": "issue7905",
+    "backend": "native",
+    "page": 1,
+    "raw_match_percent": "99.97",
+    "review": "mydocs/pr/assets/planet6897_20261116/final/protected-representatives/issue7905/native/review_001.png",
+    "overlay": "mydocs/pr/assets/planet6897_20261116/final/protected-representatives/issue7905/native/overlay_001.png",
+    "raw_sha256": "0e1e57b06e45f778529ed4f1b3374abf7961fd250d65966539633e1afd7c32a1",
+    "pdf_sha256": "46b37b542a259a21086a6fa630192d3ca53414b205c29f3b228c98942057c17f"
+  },
+  {
+    "key": "sample10",
+    "backend": "wasm",
+    "page": 1,
+    "raw_match_percent": "99.96",
+    "review": "mydocs/pr/assets/planet6897_20261116/final/protected-representatives/sample10/wasm/review_001.png",
+    "overlay": "mydocs/pr/assets/planet6897_20261116/final/protected-representatives/sample10/wasm/overlay_001.png",
+    "raw_sha256": "71997bcdd286be23fed8371943d2f4ccebbc0f9d6ab2e6247c089295e9c9c276",
+    "pdf_sha256": "12b25234c73eae39b045eefa07f19bc024cd47dd349ef91ce1bf9f2811a3e0d0"
+  },
+  {
+    "key": "handbook-hwpx",
+    "backend": "wasm",
+    "page": 130,
+    "raw_match_percent": "99.96",
+    "review": "mydocs/pr/assets/planet6897_20261116/final/protected-representatives/handbook-hwpx/wasm/review_130.png",
+    "overlay": "mydocs/pr/assets/planet6897_20261116/final/protected-representatives/handbook-hwpx/wasm/overlay_130.png",
+    "raw_sha256": "02faad561fe2399574adde8ded5beccb9b0b9def51db4b307187cc416d575abf",
+    "pdf_sha256": "554b6a770060086a59af0a08f5b9f377fc058bfda47e2e62e05f9a63f49c3abd"
+  },
+  {
+    "key": "issue7905",
+    "backend": "wasm",
+    "page": 1,
+    "raw_match_percent": "99.98",
+    "review": "mydocs/pr/assets/planet6897_20261116/final/protected-representatives/issue7905/wasm/review_001.png",
+    "overlay": "mydocs/pr/assets/planet6897_20261116/final/protected-representatives/issue7905/wasm/overlay_001.png",
+    "raw_sha256": "c54028779cb7c76cfc4a24a303b59a1bc26651f87885a059856221cd67a46e85",
+    "pdf_sha256": "46b37b542a259a21086a6fa630192d3ca53414b205c29f3b228c98942057c17f"
+  }
+]

@@ -1,0 +1,307 @@
+{
+  "status": "passed_existing_reference_pages",
+  "base_source": "ae9277dda0ca17be279cba89c4deea74fb75dcae",
+  "candidate_source": "0d587554b804183b5cc6d090f396acc47525c089",
+  "pairs": [
+    {
+      "key": "proficiency_test_result_form",
+      "backend": "native",
+      "page": "1",
+      "base": "95.61",
+      "candidate": "100.00",
+      "delta_pp": "4.39"
+    },
+    {
+      "key": "veterans_summer_support_press_release",
+      "backend": "native",
+      "page": "1",
+      "base": "69.73",
+      "candidate": "100.00",
+      "delta_pp": "30.27"
+    },
+    {
+      "key": "veterans_summer_support_press_release",
+      "backend": "native",
+      "page": "2",
+      "base": "99.99",
+      "candidate": "99.99",
+      "delta_pp": "0.00"
+    },
+    {
+      "key": "veterans_summer_support_press_release",
+      "backend": "wasm",
+      "page": "1",
+      "base": "69.99",
+      "candidate": "100.00",
+      "delta_pp": "30.01"
+    },
+    {
+      "key": "veterans_summer_support_press_release",
+      "backend": "wasm",
+      "page": "2",
+      "base": "99.99",
+      "candidate": "99.99",
+      "delta_pp": "0.00"
+    },
+    {
+      "key": "black_stork_restoration_press_release",
+      "backend": "native",
+      "page": "1",
+      "base": "98.20",
+      "candidate": "99.99",
+      "delta_pp": "1.79"
+    },
+    {
+      "key": "black_stork_restoration_press_release",
+      "backend": "native",
+      "page": "2",
+      "base": "39.23",
+      "candidate": "100.00",
+      "delta_pp": "60.77"
+    },
+    {
+      "key": "black_stork_restoration_press_release",
+      "backend": "native",
+      "page": "3",
+      "base": "83.86",
+      "candidate": "100.00",
+      "delta_pp": "16.14"
+    },
+    {
+      "key": "black_stork_restoration_press_release",
+      "backend": "native",
+      "page": "4",
+      "base": "98.25",
+      "candidate": "98.25",
+      "delta_pp": "0.00"
+    },
+    {
+      "key": "black_stork_restoration_press_release",
+      "backend": "native",
+      "page": "5",
+      "base": "99.99",
+      "candidate": "99.99",
+      "delta_pp": "0.00"
+    },
+    {
+      "key": "black_stork_restoration_press_release",
+      "backend": "native",
+      "page": "6",
+      "base": "100.00",
+      "candidate": "100.00",
+      "delta_pp": "0.00"
+    },
+    {
+      "key": "black_stork_restoration_press_release",
+      "backend": "wasm",
+      "page": "1",
+      "base": "98.24",
+      "candidate": "99.99",
+      "delta_pp": "1.75"
+    },
+    {
+      "key": "black_stork_restoration_press_release",
+      "backend": "wasm",
+      "page": "2",
+      "base": "39.46",
+      "candidate": "100.00",
+      "delta_pp": "60.54"
+    },
+    {
+      "key": "black_stork_restoration_press_release",
+      "backend": "wasm",
+      "page": "3",
+      "base": "83.77",
+      "candidate": "100.00",
+      "delta_pp": "16.23"
+    },
+    {
+      "key": "black_stork_restoration_press_release",
+      "backend": "wasm",
+      "page": "4",
+      "base": "98.72",
+      "candidate": "98.72",
+      "delta_pp": "0.00"
+    },
+    {
+      "key": "black_stork_restoration_press_release",
+      "backend": "wasm",
+      "page": "5",
+      "base": "99.99",
+      "candidate": "99.99",
+      "delta_pp": "0.00"
+    },
+    {
+      "key": "black_stork_restoration_press_release",
+      "backend": "wasm",
+      "page": "6",
+      "base": "100.00",
+      "candidate": "100.00",
+      "delta_pp": "0.00"
+    },
+    {
+      "key": "facility_fee_reduction_criteria",
+      "backend": "native",
+      "page": "1",
+      "base": "4.52",
+      "candidate": "99.82",
+      "delta_pp": "95.30"
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-bold-probe",
+      "backend": "native",
+      "page": "1",
+      "base": "95.52",
+      "candidate": "100.00",
+      "delta_pp": "4.48"
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-bold-probe",
+      "backend": "native",
+      "page": "2",
+      "base": "95.98",
+      "candidate": "100.00",
+      "delta_pp": "4.02"
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-bold-probe",
+      "backend": "native",
+      "page": "3",
+      "base": "88.55",
+      "candidate": "99.66",
+      "delta_pp": "11.11"
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-bold-probe",
+      "backend": "native",
+      "page": "4",
+      "base": "93.08",
+      "candidate": "97.60",
+      "delta_pp": "4.52"
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-bold-probe",
+      "backend": "wasm",
+      "page": "1",
+      "base": "96.86",
+      "candidate": "100.00",
+      "delta_pp": "3.14"
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-bold-probe",
+      "backend": "wasm",
+      "page": "2",
+      "base": "97.35",
+      "candidate": "100.00",
+      "delta_pp": "2.65"
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-bold-probe",
+      "backend": "wasm",
+      "page": "3",
+      "base": "89.19",
+      "candidate": "99.66",
+      "delta_pp": "10.47"
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-bold-probe",
+      "backend": "wasm",
+      "page": "4",
+      "base": "93.30",
+      "candidate": "97.51",
+      "delta_pp": "4.21"
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-probe",
+      "backend": "native",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "delta_pp": "0.00"
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-probe",
+      "backend": "native",
+      "page": "2",
+      "base": "100.00",
+      "candidate": "100.00",
+      "delta_pp": "0.00"
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-probe",
+      "backend": "native",
+      "page": "3",
+      "base": "89.33",
+      "candidate": "99.66",
+      "delta_pp": "10.33"
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-probe",
+      "backend": "native",
+      "page": "4",
+      "base": "92.80",
+      "candidate": "97.42",
+      "delta_pp": "4.62"
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-probe",
+      "backend": "wasm",
+      "page": "1",
+      "base": "100.00",
+      "candidate": "100.00",
+      "delta_pp": "0.00"
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-probe",
+      "backend": "wasm",
+      "page": "2",
+      "base": "100.00",
+      "candidate": "100.00",
+      "delta_pp": "0.00"
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-probe",
+      "backend": "wasm",
+      "page": "3",
+      "base": "89.37",
+      "candidate": "99.66",
+      "delta_pp": "10.29"
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-probe",
+      "backend": "wasm",
+      "page": "4",
+      "base": "92.80",
+      "candidate": "97.39",
+      "delta_pp": "4.59"
+    },
+    {
+      "key": "proficiency_test_result_form",
+      "backend": "wasm",
+      "page": "1",
+      "base": "95.64",
+      "candidate": "100.00",
+      "delta_pp": "4.36"
+    },
+    {
+      "key": "facility_fee_reduction_criteria",
+      "backend": "wasm",
+      "page": "1",
+      "base": "4.82",
+      "candidate": "99.83",
+      "delta_pp": "95.01"
+    }
+  ],
+  "decreases_over_2pp": [],
+  "before_page_count_mismatch": {
+    "proficiency_test_result_form": {
+      "base": 2,
+      "print_and_candidate": 1
+    },
+    "facility_fee_reduction_criteria": {
+      "base": 2,
+      "print_and_candidate": 1
+    }
+  },
+  "note": "Unpaired base extra pages have no independent Print counterpart and are not scored or called base whole-page PASS. Candidate covers each exact independent PDF fully."
+}

@@ -1,0 +1,53 @@
+{
+  "status": "all page metrics and PNG hashes retained; full catalog duplication omitted",
+  "records": [
+    {
+      "manifest": "mydocs/pr/assets/planet6897_20261116/claims/proficiency_test_result_form/native/silhouette_manifest.json",
+      "canonical_full_manifest_sha256": "8a3b6addef4e43b509293f240eb5d7be3dadcc39955d76fec35c3204dac8a5c9"
+    },
+    {
+      "manifest": "mydocs/pr/assets/planet6897_20261116/claims/proficiency_test_result_form/wasm/silhouette_manifest.json",
+      "canonical_full_manifest_sha256": "270616f8d86ef40f7651c56cc7350297e4b4e55225e8f46f004f085f2d7a7756"
+    },
+    {
+      "manifest": "mydocs/pr/assets/planet6897_20261116/claims/facility_fee_reduction_criteria/native/silhouette_manifest.json",
+      "canonical_full_manifest_sha256": "f14d685b77d22e45eea3a36a003faff86c2de6169c2a8fd35f647bf8fa0422d1"
+    },
+    {
+      "manifest": "mydocs/pr/assets/planet6897_20261116/claims/facility_fee_reduction_criteria/wasm/silhouette_manifest.json",
+      "canonical_full_manifest_sha256": "1b825f881cf43125878c7e8075d0f36c435666f12defe894701a7e3bb1a0cebb"
+    },
+    {
+      "manifest": "mydocs/pr/assets/planet6897_20261116/claims/black_stork_restoration_press_release/native/silhouette_manifest.json",
+      "canonical_full_manifest_sha256": "04738ab789873cad4e6388688c97fb192f56c209fd802af6e417549b5e1c5ff4"
+    },
+    {
+      "manifest": "mydocs/pr/assets/planet6897_20261116/claims/black_stork_restoration_press_release/wasm/silhouette_manifest.json",
+      "canonical_full_manifest_sha256": "f746bf20e073fb2598e8fe32934b31cf26e2d30fbdd741750b038580b8efad12"
+    },
+    {
+      "manifest": "mydocs/pr/assets/planet6897_20261116/claims/veterans_summer_support_press_release/native/silhouette_manifest.json",
+      "canonical_full_manifest_sha256": "ca59d88852649aa2aa9bf407b92eb13fdcdb5bd88845d3a4e7180a8e3db40adc"
+    },
+    {
+      "manifest": "mydocs/pr/assets/planet6897_20261116/claims/veterans_summer_support_press_release/wasm/silhouette_manifest.json",
+      "canonical_full_manifest_sha256": "9eb6e7e5ee55e128a8161dc52863a211c70acfc5ad96bc7085d84a9287725828"
+    },
+    {
+      "manifest": "mydocs/pr/assets/planet6897_20261116/claims/hft-sinmyeong_sunmyeongjo-bold-probe/native/silhouette_manifest.json",
+      "canonical_full_manifest_sha256": "5f0a3c8b0baa08e2bc42e4a1754a1a86f403b5422d912eb665fe250cabbd12f7"
+    },
+    {
+      "manifest": "mydocs/pr/assets/planet6897_20261116/claims/hft-sinmyeong_sunmyeongjo-bold-probe/wasm/silhouette_manifest.json",
+      "canonical_full_manifest_sha256": "344011244e3b472edf0f78b2fdfd663e2d1f5f0480add78a796466bb1819450d"
+    },
+    {
+      "manifest": "mydocs/pr/assets/planet6897_20261116/claims/hft-sinmyeong_sunmyeongjo-probe/native/silhouette_manifest.json",
+      "canonical_full_manifest_sha256": "5e2fbe2b9ed08689a04f8927f43358e6913618a6eccb26220f2c2a03572bf4ff"
+    },
+    {
+      "manifest": "mydocs/pr/assets/planet6897_20261116/claims/hft-sinmyeong_sunmyeongjo-probe/wasm/silhouette_manifest.json",
+      "canonical_full_manifest_sha256": "852e7cda5ec4db8332523208e21ed3be435b3483f012ce65e3076303e106a51f"
+    }
+  ]
+}

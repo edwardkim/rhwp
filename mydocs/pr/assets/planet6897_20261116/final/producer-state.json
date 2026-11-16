@@ -1,0 +1,97 @@
+{
+  "status": "both_producers_ready",
+  "pid": 97481,
+  "head": "0d587554b804183b5cc6d090f396acc47525c089",
+  "base": "ae9277dda0ca17be279cba89c4deea74fb75dcae",
+  "results": [
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 53.537
+    },
+    {
+      "name": "suite-prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 59.606
+    },
+    {
+      "name": "focused-alias",
+      "command": [
+        "/usr/bin/sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/minimal-font/profile.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "installed_font_program_order",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "exit_code": 0,
+      "seconds": 354.717
+    },
+    {
+      "name": "native-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8"
+      ],
+      "exit_code": 0,
+      "seconds": 210.972
+    },
+    {
+      "name": "fresh-wasm",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "exit_code": 0,
+      "seconds": 363.399
+    }
+  ],
+  "source_sha256": {
+    "src/renderer/mod.rs": "fc96373c8d6c71f0d014bf12d6545e407f25e7509ab9a229634917e2c11a0dde",
+    "src/renderer/layout/text_measurement.rs": "a89fa0f89cbb2e0afd810f1a5ecb04f0fb164b49ca0e9ce6e3b343093cd8ba68",
+    "tests/cases/installed_font_program_order.rs": "fd199b636c7a683a36bfd171ec981ec93d17a156044836f5950efc130423bec0"
+  },
+  "current": "fresh-wasm",
+  "updated_at": "2026-11-16T11:25:46.054670+00:00",
+  "native_sha256": "a8f9b5c0f8f0ee7c14926a743aab2e4784ebfe57ac2e2506f3c08e5237cbce19",
+  "wasm_hashes": {
+    "rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+    "rhwp_bg.wasm": "d1702a3b077f849804f63bace85f6e8c5547ca8e6c26b3bef3382beab96e166f"
+  }
+}

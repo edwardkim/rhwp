@@ -1098,5 +1098,6 @@
         "/Users/tsjang/rhwp/mydocs/pr/assets/issue7732_split_span_20261115/sample10-symbol-supply/native-environment.json"
       ]
     }
-  ]
+  ],
+  "record_role": "historical intermediate; current-source full Native and WASM acceptance is final/protected-validation.json"
 }

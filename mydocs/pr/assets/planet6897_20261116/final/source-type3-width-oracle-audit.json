@@ -1,0 +1,55 @@
+{
+  "status": "passed",
+  "method": "Independent PDF ToUnicode plus Type3 Widths/FontMatrix compared with current source ASCII table and declared punctuation values; does not reconstruct or distribute a font program",
+  "source_sha256": "53adfb58982e73d9a3ffc0f04d2ff3582e1b829a727ca79366383959563bc7c8",
+  "records": [
+    {
+      "pdf": "pdf/issue9087/hft-sinmyeong_sunmyeongjo-probe-2022.pdf",
+      "pdf_sha256": "452361f51b1a62832f9cf7175dcfcfd773b9799117ea015e6ddb113566083fd0",
+      "page_count": 4,
+      "type3_fonts": [
+        {
+          "resource": "/T1",
+          "mapped_characters": 100,
+          "width_count": 100
+        },
+        {
+          "resource": "/T3",
+          "mapped_characters": 1,
+          "width_count": 1
+        }
+      ],
+      "checked_ascii": 95,
+      "checked_extra_punctuation": 5,
+      "missing": [],
+      "mismatches": [],
+      "observed_hangul_width": [
+        1000.0
+      ]
+    },
+    {
+      "pdf": "pdf/issue9087/hft-sinmyeong_sunmyeongjo-bold-probe-2022.pdf",
+      "pdf_sha256": "cc5f80351a7ebdaf66bb3c25074cb72c8cc1be39dec577e598f7fe7049d090ff",
+      "page_count": 4,
+      "type3_fonts": [
+        {
+          "resource": "/T1",
+          "mapped_characters": 100,
+          "width_count": 100
+        },
+        {
+          "resource": "/T3",
+          "mapped_characters": 1,
+          "width_count": 1
+        }
+      ],
+      "checked_ascii": 95,
+      "checked_extra_punctuation": 5,
+      "missing": [],
+      "mismatches": [],
+      "observed_hangul_width": [
+        1000.0
+      ]
+    }
+  ]
+}

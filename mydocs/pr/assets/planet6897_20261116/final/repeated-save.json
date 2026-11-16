@@ -1,0 +1,125 @@
+{
+  "source": "0d587554b804183b5cc6d090f396acc47525c089",
+  "input": "samples/issue9079/black_stork_restoration_press_release.hwpx",
+  "inputSha256": "d3d881a47428936b5700f5efa2b5419aeff93d31cd6e02121aa5202cef537c7b",
+  "wasmSha256": "d1702a3b077f849804f63bace85f6e8c5547ca8e6c26b3bef3382beab96e166f",
+  "paths": [
+    {
+      "format": "hwpx",
+      "edit": {
+        "section": 0,
+        "paragraph": 64,
+        "offset": 82,
+        "marker": "[저장검증]",
+        "result": {
+          "ok": true,
+          "charOffset": 88
+        }
+      },
+      "editedPageCount": 6,
+      "originalTextSha256": "e319227ab721edd64d05c37c80d89874891cc68a83b66df143a823486ca00f93",
+      "editedTextSha256": "db9eed93dd46eac9c457d5a31f255de6859f0a88a1d8c2af3db5584c3d5670c0",
+      "stages": [
+        {
+          "round": 1,
+          "bytes": 6985182,
+          "sha256": "c8c0e36004b212cea91be88969e4c31654db2f030e90029cd5ab73f28aa3dadc",
+          "pageCount": 6,
+          "textSha256": "db9eed93dd46eac9c457d5a31f255de6859f0a88a1d8c2af3db5584c3d5670c0",
+          "page3SvgSha256": "39d2b1a85e9daaa4d2fe41f4130677b86c75ba61f059efbbd5ff3f2e389ed24f",
+          "sameEditedPage3Svg": true,
+          "report": {
+            "schemaVersion": 1,
+            "outputFormat": "hwpx",
+            "count": 0,
+            "losses": []
+          }
+        },
+        {
+          "round": 2,
+          "bytes": 6985182,
+          "sha256": "c8c0e36004b212cea91be88969e4c31654db2f030e90029cd5ab73f28aa3dadc",
+          "pageCount": 6,
+          "textSha256": "db9eed93dd46eac9c457d5a31f255de6859f0a88a1d8c2af3db5584c3d5670c0",
+          "page3SvgSha256": "39d2b1a85e9daaa4d2fe41f4130677b86c75ba61f059efbbd5ff3f2e389ed24f",
+          "sameEditedPage3Svg": true,
+          "report": {
+            "schemaVersion": 1,
+            "outputFormat": "hwpx",
+            "count": 0,
+            "losses": []
+          }
+        }
+      ]
+    },
+    {
+      "format": "hwp",
+      "edit": {
+        "section": 0,
+        "paragraph": 64,
+        "offset": 82,
+        "marker": "[저장검증]",
+        "result": {
+          "ok": true,
+          "charOffset": 88
+        }
+      },
+      "editedPageCount": 6,
+      "originalTextSha256": "e319227ab721edd64d05c37c80d89874891cc68a83b66df143a823486ca00f93",
+      "editedTextSha256": "db9eed93dd46eac9c457d5a31f255de6859f0a88a1d8c2af3db5584c3d5670c0",
+      "stages": [
+        {
+          "round": 1,
+          "bytes": 7259136,
+          "sha256": "c7645c62911468b66be1f9cc853423b659b83e6ce83818b5470d8985f053f4b2",
+          "pageCount": 6,
+          "textSha256": "db9eed93dd46eac9c457d5a31f255de6859f0a88a1d8c2af3db5584c3d5670c0",
+          "page3SvgSha256": "ef121daa080afc992087c64bda64c670615f4e12949ef85be305b3f85da95e75",
+          "sameEditedPage3Svg": false,
+          "report": {
+            "schemaVersion": 1,
+            "outputFormat": "hwp",
+            "count": 0,
+            "losses": []
+          }
+        },
+        {
+          "round": 2,
+          "bytes": 7259136,
+          "sha256": "320810e3aa51a33283330407fdaf9f25bc9fb21570e7d76d4131b14cd343781a",
+          "pageCount": 6,
+          "textSha256": "db9eed93dd46eac9c457d5a31f255de6859f0a88a1d8c2af3db5584c3d5670c0",
+          "page3SvgSha256": "ef121daa080afc992087c64bda64c670615f4e12949ef85be305b3f85da95e75",
+          "sameEditedPage3Svg": false,
+          "report": {
+            "schemaVersion": 1,
+            "outputFormat": "hwp",
+            "count": 0,
+            "losses": []
+          }
+        }
+      ]
+    }
+  ],
+  "status": "passed_text_caption_layout_and_repeated_save",
+  "structureComparison": {
+    "hwp": {
+      "all_text_and_caption_positions_preserved": true,
+      "image_geometry_preserved": false,
+      "resaved_svg_stable": true,
+      "outer_image_viewport_frames_preserved": true,
+      "image_count": 4,
+      "caption_text_elements_preserved": true,
+      "interpretation": "본문·캡션 text/tspan 254개 속성 및 내용 동일. 그림 4개의 문서 viewport 위치·크기 동일. HWP 저장은 내부 SVG viewport 표현이 달라 원본 SVG 바이트 동일성을 주장하지 않음. 1차/2차 저장 후 SVG는 동일."
+    },
+    "hwpx": {
+      "all_text_and_caption_positions_preserved": true,
+      "image_geometry_preserved": true,
+      "resaved_svg_stable": true,
+      "outer_image_viewport_frames_preserved": true,
+      "image_count": 4,
+      "caption_text_elements_preserved": true,
+      "interpretation": "본문·캡션 text/tspan 254개 속성 및 내용 동일. 그림 4개의 문서 viewport 위치·크기 동일. HWP 저장은 내부 SVG viewport 표현이 달라 원본 SVG 바이트 동일성을 주장하지 않음. 1차/2차 저장 후 SVG는 동일."
+    }
+  }
+}

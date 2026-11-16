@@ -1,0 +1,1302 @@
+{
+  "status": "passed_scoped_consumers_and_direct_reading",
+  "frozen_source": "0d587554b804183b5cc6d090f396acc47525c089",
+  "browser": "Chrome/157.0.8103.51",
+  "states": 42,
+  "screen_and_print": true,
+  "main_claim_states": 36,
+  "nested_supplemental_states": 6,
+  "selected_backend_mismatches": 0,
+  "selected_font_fallbacks": 0,
+  "hard_gate_violations": 0,
+  "canvaskit_surface": "software",
+  "automatic_readiness_gate_evaluated": false,
+  "scope": "Explicit Canvas2D, CanvasKit compat and default on seven representative pages; not whole-document Studio visual acceptance.",
+  "original_unsupported_controls": {
+    "nested_4_states": "actual-backends and actual-nested-original fell back for 한양신명조; those are not CK PASS and are excluded from accepted selected-program consumer records",
+    "accepted_nested_font_supply": "single already-installed complete HFT original-outline family; original H2GTRM TTF unchanged",
+    "initial_page_console_errors": "During document load before preparation, non-selected page1 reported missing font; final selected page5 had no resource error or fallback. No full17-page Studio CK success claim."
+  },
+  "artifact_response_proof": {
+    "status": "passed",
+    "artifact": {
+      "rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "rhwp_bg.wasm": "d1702a3b077f849804f63bace85f6e8c5547ca8e6c26b3bef3382beab96e166f"
+    },
+    "initialResponses": [
+      {
+        "url": "http://127.0.0.1:54549/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+        "sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+        "bytes": 3288478,
+        "sourceEquivalentSha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365"
+      },
+      {
+        "url": "http://127.0.0.1:54549/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+        "sha256": "d1702a3b077f849804f63bace85f6e8c5547ca8e6c26b3bef3382beab96e166f",
+        "bytes": 32139436,
+        "sourceEquivalentSha256": null
+      },
+      {
+        "url": "http://127.0.0.1:54549/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+        "sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+        "bytes": 3288478,
+        "sourceEquivalentSha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365"
+      },
+      {
+        "url": "http://127.0.0.1:54549/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+        "sha256": "d1702a3b077f849804f63bace85f6e8c5547ca8e6c26b3bef3382beab96e166f",
+        "bytes": 32139436,
+        "sourceEquivalentSha256": null
+      },
+      {
+        "url": "http://127.0.0.1:54549/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+        "sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+        "bytes": 3288478,
+        "sourceEquivalentSha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365"
+      },
+      {
+        "url": "http://127.0.0.1:54549/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+        "sha256": "d1702a3b077f849804f63bace85f6e8c5547ca8e6c26b3bef3382beab96e166f",
+        "bytes": 32139436,
+        "sourceEquivalentSha256": null
+      },
+      {
+        "url": "http://127.0.0.1:54549/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+        "sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+        "bytes": 3288478,
+        "sourceEquivalentSha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365"
+      },
+      {
+        "url": "http://127.0.0.1:54549/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+        "sha256": "d1702a3b077f849804f63bace85f6e8c5547ca8e6c26b3bef3382beab96e166f",
+        "bytes": 32139436,
+        "sourceEquivalentSha256": null
+      },
+      {
+        "url": "http://127.0.0.1:54549/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+        "sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+        "bytes": 3288478,
+        "sourceEquivalentSha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365"
+      },
+      {
+        "url": "http://127.0.0.1:54549/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+        "sha256": "d1702a3b077f849804f63bace85f6e8c5547ca8e6c26b3bef3382beab96e166f",
+        "bytes": 32139436,
+        "sourceEquivalentSha256": null
+      },
+      {
+        "url": "http://127.0.0.1:54549/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+        "sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+        "bytes": 3288478,
+        "sourceEquivalentSha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365"
+      },
+      {
+        "url": "http://127.0.0.1:54549/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+        "sha256": "d1702a3b077f849804f63bace85f6e8c5547ca8e6c26b3bef3382beab96e166f",
+        "bytes": 32139436,
+        "sourceEquivalentSha256": null
+      }
+    ],
+    "scope": "All main-claim first-run initialization JS responses match the audited Vite transformation. Supplemental same-source nested browser initializes the exact same JS and WASM bytes with enlarged CDP observation buffer. Vite source rewriting is checked exactly; raw/served hashes remain distinct."
+  },
+  "results": [
+    {
+      "sampleId": "form",
+      "file": "issue9073/proficiency_test_result_form.hwpx",
+      "page": 0,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": null,
+      "artifact": {
+        "sha256": "09dc8f3d6b2c431e30f8c2cf44cf2597620a334267ab895f7d51bbc4c28562bd",
+        "sizeBytes": 56197,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1482.0606670000002,
+        "documentLoadAndInitialRenderMs": 2455.2999999523163,
+        "selectedPageRenderMs": 2075.7365,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 61.62224999999853,
+        "totalMs": 7635.313042000001
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/form/canvas2d-screen.png",
+      "sha256": "09dc8f3d6b2c431e30f8c2cf44cf2597620a334267ab895f7d51bbc4c28562bd"
+    },
+    {
+      "sampleId": "form",
+      "file": "issue9073/proficiency_test_result_form.hwpx",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "456d57eac861ca0714ecb6425fd95957de00f75d6f90b704f27af64a78d33756",
+        "sizeBytes": 44978,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 809.6107499999998,
+        "documentLoadAndInitialRenderMs": 563.7000000476837,
+        "selectedPageRenderMs": 167.7325409999994,
+        "warmReplayMs": 66.60000014305115,
+        "warmRendererDurationMs": 64.5,
+        "screenshotMs": 57.976542000000336,
+        "totalMs": 3267.3112089999995
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/form/canvaskit-compat-screen-software.png",
+      "sha256": "456d57eac861ca0714ecb6425fd95957de00f75d6f90b704f27af64a78d33756"
+    },
+    {
+      "sampleId": "form",
+      "file": "issue9073/proficiency_test_result_form.hwpx",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "456d57eac861ca0714ecb6425fd95957de00f75d6f90b704f27af64a78d33756",
+        "sizeBytes": 44978,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1130.9476249999989,
+        "documentLoadAndInitialRenderMs": 478.7000000476837,
+        "selectedPageRenderMs": 169.56791599999997,
+        "warmReplayMs": 66.09999990463257,
+        "warmRendererDurationMs": 64.20000004768372,
+        "screenshotMs": 59.8253339999992,
+        "totalMs": 3450.823166
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/form/canvaskit-default-screen-software.png",
+      "sha256": "456d57eac861ca0714ecb6425fd95957de00f75d6f90b704f27af64a78d33756"
+    },
+    {
+      "sampleId": "form",
+      "file": "issue9073/proficiency_test_result_form.hwpx",
+      "page": 0,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": null,
+      "artifact": {
+        "sha256": "71b68bdef125457ff2066d4bb608cba4f21201334081ddb78e8cdd16760f69ed",
+        "sizeBytes": 52572,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 746.7976250000011,
+        "documentLoadAndInitialRenderMs": 1349.8999998569489,
+        "selectedPageRenderMs": 64.57170799999949,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 63.0848330000008,
+        "totalMs": 3766.605625
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/form/canvas2d-print.png",
+      "sha256": "71b68bdef125457ff2066d4bb608cba4f21201334081ddb78e8cdd16760f69ed"
+    },
+    {
+      "sampleId": "form",
+      "file": "issue9073/proficiency_test_result_form.hwpx",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "30ab624920d794fd93b52abaf840f49e5f7fc569c17f37825a4efde0cf23dae2",
+        "sizeBytes": 43203,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 853.8255409999983,
+        "documentLoadAndInitialRenderMs": 588.2000000476837,
+        "selectedPageRenderMs": 152.55075000000215,
+        "warmReplayMs": 68.09999990463257,
+        "warmRendererDurationMs": 66.19999980926514,
+        "screenshotMs": 57.72399999999834,
+        "totalMs": 3265.7981660000005
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/form/canvaskit-compat-print-software.png",
+      "sha256": "30ab624920d794fd93b52abaf840f49e5f7fc569c17f37825a4efde0cf23dae2"
+    },
+    {
+      "sampleId": "form",
+      "file": "issue9073/proficiency_test_result_form.hwpx",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "30ab624920d794fd93b52abaf840f49e5f7fc569c17f37825a4efde0cf23dae2",
+        "sizeBytes": 43203,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 843.2143749999996,
+        "documentLoadAndInitialRenderMs": 563.1000001430511,
+        "selectedPageRenderMs": 180.64649999999892,
+        "warmReplayMs": 67.40000009536743,
+        "warmRendererDurationMs": 65.5,
+        "screenshotMs": 59.42950000000201,
+        "totalMs": 3267.4915
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/form/canvaskit-default-print-software.png",
+      "sha256": "30ab624920d794fd93b52abaf840f49e5f7fc569c17f37825a4efde0cf23dae2"
+    },
+    {
+      "sampleId": "press",
+      "file": "issue9073/veterans_summer_support_press_release.hwpx",
+      "page": 0,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": null,
+      "artifact": {
+        "sha256": "eeebcdc69ea16b93817f9e11ef50655a00070bbe90059005cb4dc29ebe891e6f",
+        "sizeBytes": 187434,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 730.0417080000007,
+        "documentLoadAndInitialRenderMs": 4389.700000047684,
+        "selectedPageRenderMs": 2197.4296659999964,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 73.22262500000215,
+        "totalMs": 11192.498792000002
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/press/canvas2d-screen.png",
+      "sha256": "eeebcdc69ea16b93817f9e11ef50655a00070bbe90059005cb4dc29ebe891e6f"
+    },
+    {
+      "sampleId": "press",
+      "file": "issue9073/veterans_summer_support_press_release.hwpx",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "61fad0b19d3701315ad51d9b56532e4508ffaa887b7de39e4f76cf43d81ce9d5",
+        "sizeBytes": 190003,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 989.065290999999,
+        "documentLoadAndInitialRenderMs": 2833.600000143051,
+        "selectedPageRenderMs": 263.0717500000028,
+        "warmReplayMs": 106.39999985694885,
+        "warmRendererDurationMs": 103,
+        "screenshotMs": 56.810874999995576,
+        "totalMs": 5816.477334000003
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/press/canvaskit-compat-screen-software.png",
+      "sha256": "61fad0b19d3701315ad51d9b56532e4508ffaa887b7de39e4f76cf43d81ce9d5"
+    },
+    {
+      "sampleId": "press",
+      "file": "issue9073/veterans_summer_support_press_release.hwpx",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "0bc9146e71cdf4e1c7be16f95b29aa4a53b370bea9073219580b07c30139ea0f",
+        "sizeBytes": 189165,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 893.5307079999984,
+        "documentLoadAndInitialRenderMs": 1594.0999999046326,
+        "selectedPageRenderMs": 301.20966699999553,
+        "warmReplayMs": 111,
+        "warmRendererDurationMs": 107.40000009536743,
+        "screenshotMs": 78.90462499999558,
+        "totalMs": 4643.363250000002
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/press/canvaskit-default-screen-software.png",
+      "sha256": "0bc9146e71cdf4e1c7be16f95b29aa4a53b370bea9073219580b07c30139ea0f"
+    },
+    {
+      "sampleId": "press",
+      "file": "issue9073/veterans_summer_support_press_release.hwpx",
+      "page": 0,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": null,
+      "artifact": {
+        "sha256": "6a707258a030dd970e15f6f8f10d1991faf15a85cc1b5cc46b11ebf7755ede5c",
+        "sizeBytes": 213828,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 773.0426660000012,
+        "documentLoadAndInitialRenderMs": 2968.4000000953674,
+        "selectedPageRenderMs": 50.01904099999956,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 76.20675000000483,
+        "totalMs": 5459.288166999999
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/press/canvas2d-print.png",
+      "sha256": "6a707258a030dd970e15f6f8f10d1991faf15a85cc1b5cc46b11ebf7755ede5c"
+    },
+    {
+      "sampleId": "press",
+      "file": "issue9073/veterans_summer_support_press_release.hwpx",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "b50ce95bdb5cd9caa8591ee017e4fe3549a11656b4bea189d646a3653779b99b",
+        "sizeBytes": 191709,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1049.151791999997,
+        "documentLoadAndInitialRenderMs": 1849.7999999523163,
+        "selectedPageRenderMs": 300.73537499999657,
+        "warmReplayMs": 115.10000014305115,
+        "warmRendererDurationMs": 111.20000004768372,
+        "screenshotMs": 78.15233300000546,
+        "totalMs": 5039.771334000005
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/press/canvaskit-compat-print-software.png",
+      "sha256": "b50ce95bdb5cd9caa8591ee017e4fe3549a11656b4bea189d646a3653779b99b"
+    },
+    {
+      "sampleId": "press",
+      "file": "issue9073/veterans_summer_support_press_release.hwpx",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "b50ce95bdb5cd9caa8591ee017e4fe3549a11656b4bea189d646a3653779b99b",
+        "sizeBytes": 191709,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1197.9446250000037,
+        "documentLoadAndInitialRenderMs": 2627,
+        "selectedPageRenderMs": 277.1291249999995,
+        "warmReplayMs": 121.79999995231628,
+        "warmRendererDurationMs": 117.70000004768372,
+        "screenshotMs": 69.05862499999785,
+        "totalMs": 5980.205291999999
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/press/canvaskit-default-print-software.png",
+      "sha256": "b50ce95bdb5cd9caa8591ee017e4fe3549a11656b4bea189d646a3653779b99b"
+    },
+    {
+      "sampleId": "caption",
+      "file": "issue9079/black_stork_restoration_press_release.hwpx",
+      "page": 2,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": null,
+      "artifact": {
+        "sha256": "397813656bba868c19c36245525f8b2379da7743e7323c7f580ca87da6ea2b50",
+        "sizeBytes": 349198,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 936.3000830000019,
+        "documentLoadAndInitialRenderMs": 4964.300000190735,
+        "selectedPageRenderMs": 2196.065333999999,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 161.03504099999554,
+        "totalMs": 10945.770666999997
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/caption/canvas2d-screen.png",
+      "sha256": "397813656bba868c19c36245525f8b2379da7743e7323c7f580ca87da6ea2b50"
+    },
+    {
+      "sampleId": "caption",
+      "file": "issue9079/black_stork_restoration_press_release.hwpx",
+      "page": 2,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "7e98f9d901e983cbc504f746fe1c4bb78bf061c33c6a00050c0f4517ce2774e2",
+        "sizeBytes": 347274,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1261.0594160000037,
+        "documentLoadAndInitialRenderMs": 3022.2000000476837,
+        "selectedPageRenderMs": 663.3412910000043,
+        "warmReplayMs": 0,
+        "warmRendererDurationMs": 290.19999980926514,
+        "screenshotMs": 78.50354099999822,
+        "totalMs": 6774.940417000005
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/caption/canvaskit-compat-screen-software.png",
+      "sha256": "7e98f9d901e983cbc504f746fe1c4bb78bf061c33c6a00050c0f4517ce2774e2"
+    },
+    {
+      "sampleId": "caption",
+      "file": "issue9079/black_stork_restoration_press_release.hwpx",
+      "page": 2,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "6b6e0ef4b0694076028d78673534fc2549e763704d6656c352b36e5076934a6c",
+        "sizeBytes": 342073,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 930.1517920000042,
+        "documentLoadAndInitialRenderMs": 2905.7999999523163,
+        "selectedPageRenderMs": 604.2337499999994,
+        "warmReplayMs": 0,
+        "warmRendererDurationMs": 259.2000000476837,
+        "screenshotMs": 77.99795799999265,
+        "totalMs": 6200.732042000003
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/caption/canvaskit-default-screen-software.png",
+      "sha256": "6b6e0ef4b0694076028d78673534fc2549e763704d6656c352b36e5076934a6c"
+    },
+    {
+      "sampleId": "caption",
+      "file": "issue9079/black_stork_restoration_press_release.hwpx",
+      "page": 2,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": null,
+      "artifact": {
+        "sha256": "989dfe9a23da6328e858b81a1ddb44680c43bb8c78e7a4cf536cfbb7a0633a43",
+        "sizeBytes": 404067,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 875.226125000001,
+        "documentLoadAndInitialRenderMs": 3809.4000000953674,
+        "selectedPageRenderMs": 264.8163749999949,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 93.89704199999687,
+        "totalMs": 6669.510834000001
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/caption/canvas2d-print.png",
+      "sha256": "989dfe9a23da6328e858b81a1ddb44680c43bb8c78e7a4cf536cfbb7a0633a43"
+    },
+    {
+      "sampleId": "caption",
+      "file": "issue9079/black_stork_restoration_press_release.hwpx",
+      "page": 2,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "1aba4217e40ac2035989ccf220648ec9efb56f2d2d640e290cd113b5cc29e920",
+        "sizeBytes": 397673,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1241.3827499999898,
+        "documentLoadAndInitialRenderMs": 2839.5,
+        "selectedPageRenderMs": 528.1654169999965,
+        "warmReplayMs": 0,
+        "warmRendererDurationMs": 206.79999995231628,
+        "screenshotMs": 86.97299999999814,
+        "totalMs": 6386.025750000001
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/caption/canvaskit-compat-print-software.png",
+      "sha256": "1aba4217e40ac2035989ccf220648ec9efb56f2d2d640e290cd113b5cc29e920"
+    },
+    {
+      "sampleId": "caption",
+      "file": "issue9079/black_stork_restoration_press_release.hwpx",
+      "page": 2,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "1aba4217e40ac2035989ccf220648ec9efb56f2d2d640e290cd113b5cc29e920",
+        "sizeBytes": 397673,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 990.9364579999965,
+        "documentLoadAndInitialRenderMs": 2628.699999809265,
+        "selectedPageRenderMs": 541.9176249999873,
+        "warmReplayMs": 0,
+        "warmRendererDurationMs": 216.70000004768372,
+        "screenshotMs": 98.02054099999077,
+        "totalMs": 5980.275500000003
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/caption/canvaskit-default-print-software.png",
+      "sha256": "1aba4217e40ac2035989ccf220648ec9efb56f2d2d640e290cd113b5cc29e920"
+    },
+    {
+      "sampleId": "squeeze",
+      "file": "issue9085/facility_fee_reduction_criteria.hwpx",
+      "page": 0,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": null,
+      "artifact": {
+        "sha256": "b93ae80ce949dd800bcf9857c65b21a71195d0bde28784dc95edcc45476f2adc",
+        "sizeBytes": 173892,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 930.1629169999942,
+        "documentLoadAndInitialRenderMs": 3993.2999999523163,
+        "selectedPageRenderMs": 3270.047207999989,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 70.7558330000029,
+        "totalMs": 9815.224624999988
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/squeeze/canvas2d-screen.png",
+      "sha256": "b93ae80ce949dd800bcf9857c65b21a71195d0bde28784dc95edcc45476f2adc"
+    },
+    {
+      "sampleId": "squeeze",
+      "file": "issue9085/facility_fee_reduction_criteria.hwpx",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "b66469bb679fc88a808f48ec148d1f0e1d05c431ee4b33574689ded59fa82341",
+        "sizeBytes": 152790,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1040.853041999988,
+        "documentLoadAndInitialRenderMs": 872.7999999523163,
+        "selectedPageRenderMs": 366.3490829999937,
+        "warmReplayMs": 176.20000004768372,
+        "warmRendererDurationMs": 172.20000004768372,
+        "screenshotMs": 117.41558400000213,
+        "totalMs": 4147.099000000002
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/squeeze/canvaskit-compat-screen-software.png",
+      "sha256": "b66469bb679fc88a808f48ec148d1f0e1d05c431ee4b33574689ded59fa82341"
+    },
+    {
+      "sampleId": "squeeze",
+      "file": "issue9085/facility_fee_reduction_criteria.hwpx",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "b66469bb679fc88a808f48ec148d1f0e1d05c431ee4b33574689ded59fa82341",
+        "sizeBytes": 152790,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 997.7926670000015,
+        "documentLoadAndInitialRenderMs": 1240.2000000476837,
+        "selectedPageRenderMs": 415.3630830000038,
+        "warmReplayMs": 196.20000004768372,
+        "warmRendererDurationMs": 189.20000004768372,
+        "screenshotMs": 82.8768749999872,
+        "totalMs": 4504.11983299999
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/squeeze/canvaskit-default-screen-software.png",
+      "sha256": "b66469bb679fc88a808f48ec148d1f0e1d05c431ee4b33574689ded59fa82341"
+    },
+    {
+      "sampleId": "squeeze",
+      "file": "issue9085/facility_fee_reduction_criteria.hwpx",
+      "page": 0,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": null,
+      "artifact": {
+        "sha256": "94c3dcae719fa7ab9ac2b33208da97d85b4997dd4c05ef6fa30de4332dec3315",
+        "sizeBytes": 172991,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1059.552416000006,
+        "documentLoadAndInitialRenderMs": 2620.0999999046326,
+        "selectedPageRenderMs": 55.83491700000013,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 79.13262500001292,
+        "totalMs": 5389.616957999999
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/squeeze/canvas2d-print.png",
+      "sha256": "94c3dcae719fa7ab9ac2b33208da97d85b4997dd4c05ef6fa30de4332dec3315"
+    },
+    {
+      "sampleId": "squeeze",
+      "file": "issue9085/facility_fee_reduction_criteria.hwpx",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "39fc4b988d881af4467d89109b57a616d7243aa20ccee7a3aa233eca62275d4c",
+        "sizeBytes": 152013,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1067.1689579999947,
+        "documentLoadAndInitialRenderMs": 1085.5,
+        "selectedPageRenderMs": 361.51466600000276,
+        "warmReplayMs": 163.90000009536743,
+        "warmRendererDurationMs": 159.89999985694885,
+        "screenshotMs": 71.63462499997695,
+        "totalMs": 4395.366499999989
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/squeeze/canvaskit-compat-print-software.png",
+      "sha256": "39fc4b988d881af4467d89109b57a616d7243aa20ccee7a3aa233eca62275d4c"
+    },
+    {
+      "sampleId": "squeeze",
+      "file": "issue9085/facility_fee_reduction_criteria.hwpx",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "39fc4b988d881af4467d89109b57a616d7243aa20ccee7a3aa233eca62275d4c",
+        "sizeBytes": 152013,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 996.5476670000062,
+        "documentLoadAndInitialRenderMs": 798.8000001907349,
+        "selectedPageRenderMs": 539.895749999996,
+        "warmReplayMs": 161.5,
+        "warmRendererDurationMs": 157.60000014305115,
+        "screenshotMs": 90.94224999999278,
+        "totalMs": 4170.116291000013
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/squeeze/canvaskit-default-print-software.png",
+      "sha256": "39fc4b988d881af4467d89109b57a616d7243aa20ccee7a3aa233eca62275d4c"
+    },
+    {
+      "sampleId": "hft-cjk",
+      "file": "issue9087/hft-sinmyeong_sunmyeongjo-probe.hwpx",
+      "page": 2,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": null,
+      "artifact": {
+        "sha256": "3b0bf0b1eb22cd0161316b7e9fc5dbbfa9913aae9e0344e268eadd1e411172fd",
+        "sizeBytes": 55980,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1042.4951250000158,
+        "documentLoadAndInitialRenderMs": 2313,
+        "selectedPageRenderMs": 2182.2751250000147,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 62.04666699998779,
+        "totalMs": 7216.049041999999
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/hft-cjk/canvas2d-screen.png",
+      "sha256": "3b0bf0b1eb22cd0161316b7e9fc5dbbfa9913aae9e0344e268eadd1e411172fd"
+    },
+    {
+      "sampleId": "hft-cjk",
+      "file": "issue9087/hft-sinmyeong_sunmyeongjo-probe.hwpx",
+      "page": 2,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "a788fef4deb956593ae273e8853daf9a984abfbd0abfbe3c12d9a33e18d6b582",
+        "sizeBytes": 45427,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1049.303292000026,
+        "documentLoadAndInitialRenderMs": 990,
+        "selectedPageRenderMs": 273.5319169999857,
+        "warmReplayMs": 0,
+        "warmRendererDurationMs": 110.40000009536743,
+        "screenshotMs": 75.59004199999617,
+        "totalMs": 4085.7509589999972
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/hft-cjk/canvaskit-compat-screen-software.png",
+      "sha256": "a788fef4deb956593ae273e8853daf9a984abfbd0abfbe3c12d9a33e18d6b582"
+    },
+    {
+      "sampleId": "hft-cjk",
+      "file": "issue9087/hft-sinmyeong_sunmyeongjo-probe.hwpx",
+      "page": 2,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "a788fef4deb956593ae273e8853daf9a984abfbd0abfbe3c12d9a33e18d6b582",
+        "sizeBytes": 45427,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1057.5442500000063,
+        "documentLoadAndInitialRenderMs": 712.7999999523163,
+        "selectedPageRenderMs": 257.39816700000665,
+        "warmReplayMs": 0,
+        "warmRendererDurationMs": 106.20000004768372,
+        "screenshotMs": 60.98358400000143,
+        "totalMs": 3868.854458000016
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/hft-cjk/canvaskit-default-screen-software.png",
+      "sha256": "a788fef4deb956593ae273e8853daf9a984abfbd0abfbe3c12d9a33e18d6b582"
+    },
+    {
+      "sampleId": "hft-cjk",
+      "file": "issue9087/hft-sinmyeong_sunmyeongjo-probe.hwpx",
+      "page": 2,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": null,
+      "artifact": {
+        "sha256": "6d161952bbef4057f4fd8ef94d3b5f996531d00f28ac5d69c47b97c28ab2ff39",
+        "sizeBytes": 59000,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 881.7745830000204,
+        "documentLoadAndInitialRenderMs": 1025.3999998569489,
+        "selectedPageRenderMs": 67.91000000000349,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 59.825500000006286,
+        "totalMs": 3609.3944159999955
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/hft-cjk/canvas2d-print.png",
+      "sha256": "6d161952bbef4057f4fd8ef94d3b5f996531d00f28ac5d69c47b97c28ab2ff39"
+    },
+    {
+      "sampleId": "hft-cjk",
+      "file": "issue9087/hft-sinmyeong_sunmyeongjo-probe.hwpx",
+      "page": 2,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "4d559232cab8ebe3470617593b270a0451672ee8a2a590d08f63536acb0e64b3",
+        "sizeBytes": 45243,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 889.5239170000132,
+        "documentLoadAndInitialRenderMs": 561.4000000953674,
+        "selectedPageRenderMs": 228.7135830000043,
+        "warmReplayMs": 0,
+        "warmRendererDurationMs": 94.70000004768372,
+        "screenshotMs": 57.674417000001995,
+        "totalMs": 3384.5658750000002
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/hft-cjk/canvaskit-compat-print-software.png",
+      "sha256": "4d559232cab8ebe3470617593b270a0451672ee8a2a590d08f63536acb0e64b3"
+    },
+    {
+      "sampleId": "hft-cjk",
+      "file": "issue9087/hft-sinmyeong_sunmyeongjo-probe.hwpx",
+      "page": 2,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "4d559232cab8ebe3470617593b270a0451672ee8a2a590d08f63536acb0e64b3",
+        "sizeBytes": 45243,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 930.4300000000221,
+        "documentLoadAndInitialRenderMs": 629.3000001907349,
+        "selectedPageRenderMs": 260.905374999973,
+        "warmReplayMs": 0,
+        "warmRendererDurationMs": 103.79999995231628,
+        "screenshotMs": 58.553375000017695,
+        "totalMs": 3550.6475830000127
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/hft-cjk/canvaskit-default-print-software.png",
+      "sha256": "4d559232cab8ebe3470617593b270a0451672ee8a2a590d08f63536acb0e64b3"
+    },
+    {
+      "sampleId": "hft-bold",
+      "file": "issue9087/hft-sinmyeong_sunmyeongjo-bold-probe.hwpx",
+      "page": 0,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": null,
+      "artifact": {
+        "sha256": "41b84c644d0176c69e5bb831dde4842d957f05cb603d537566c846c6c9494c4b",
+        "sizeBytes": 71412,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 811.6551250000193,
+        "documentLoadAndInitialRenderMs": 1060,
+        "selectedPageRenderMs": 218.94262499999604,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 60.86354200000642,
+        "totalMs": 3811.144417000003
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/hft-bold/canvas2d-screen.png",
+      "sha256": "41b84c644d0176c69e5bb831dde4842d957f05cb603d537566c846c6c9494c4b"
+    },
+    {
+      "sampleId": "hft-bold",
+      "file": "issue9087/hft-sinmyeong_sunmyeongjo-bold-probe.hwpx",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "5666b713415dd1714c1b0d4eb539adad73a2070237b74463d6bf335ee9e59f9f",
+        "sizeBytes": 53900,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 921.2383750000154,
+        "documentLoadAndInitialRenderMs": 602.2000000476837,
+        "selectedPageRenderMs": 174.27120799999102,
+        "warmReplayMs": 69.40000009536743,
+        "warmRendererDurationMs": 67.79999995231628,
+        "screenshotMs": 56.968124999984866,
+        "totalMs": 3472.2590829999826
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/hft-bold/canvaskit-compat-screen-software.png",
+      "sha256": "5666b713415dd1714c1b0d4eb539adad73a2070237b74463d6bf335ee9e59f9f"
+    },
+    {
+      "sampleId": "hft-bold",
+      "file": "issue9087/hft-sinmyeong_sunmyeongjo-bold-probe.hwpx",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "5666b713415dd1714c1b0d4eb539adad73a2070237b74463d6bf335ee9e59f9f",
+        "sizeBytes": 53900,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 907.5495419999934,
+        "documentLoadAndInitialRenderMs": 584.8000001907349,
+        "selectedPageRenderMs": 160.56066600000486,
+        "warmReplayMs": 74.20000004768372,
+        "warmRendererDurationMs": 72.5,
+        "screenshotMs": 51.554624999989755,
+        "totalMs": 3416.6922090000007
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/hft-bold/canvaskit-default-screen-software.png",
+      "sha256": "5666b713415dd1714c1b0d4eb539adad73a2070237b74463d6bf335ee9e59f9f"
+    },
+    {
+      "sampleId": "hft-bold",
+      "file": "issue9087/hft-sinmyeong_sunmyeongjo-bold-probe.hwpx",
+      "page": 0,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": null,
+      "artifact": {
+        "sha256": "df4f1ea682201c1c018a914065e712a11ce4991460cb92e5f573867483befb42",
+        "sizeBytes": 79699,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 752.8254589999851,
+        "documentLoadAndInitialRenderMs": 832.4000000953674,
+        "selectedPageRenderMs": 59.34445900001447,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 59.468124999984866,
+        "totalMs": 3263.6142080000136
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/hft-bold/canvas2d-print.png",
+      "sha256": "df4f1ea682201c1c018a914065e712a11ce4991460cb92e5f573867483befb42"
+    },
+    {
+      "sampleId": "hft-bold",
+      "file": "issue9087/hft-sinmyeong_sunmyeongjo-bold-probe.hwpx",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "9aff934ce5f2acee1276f73bf9011d6e6c95c08fe26e96d82b2ef54c74d81176",
+        "sizeBytes": 53744,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 877.679833000002,
+        "documentLoadAndInitialRenderMs": 608.8999998569489,
+        "selectedPageRenderMs": 177.43862500000978,
+        "warmReplayMs": 72.79999995231628,
+        "warmRendererDurationMs": 70.79999995231628,
+        "screenshotMs": 51.559708000015235,
+        "totalMs": 3434.085207999975
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/hft-bold/canvaskit-compat-print-software.png",
+      "sha256": "9aff934ce5f2acee1276f73bf9011d6e6c95c08fe26e96d82b2ef54c74d81176"
+    },
+    {
+      "sampleId": "hft-bold",
+      "file": "issue9087/hft-sinmyeong_sunmyeongjo-bold-probe.hwpx",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "9aff934ce5f2acee1276f73bf9011d6e6c95c08fe26e96d82b2ef54c74d81176",
+        "sizeBytes": 53744,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 900.5244999999995,
+        "documentLoadAndInitialRenderMs": 552.7999999523163,
+        "selectedPageRenderMs": 170.98541699998896,
+        "warmReplayMs": 70.70000004768372,
+        "warmRendererDurationMs": 69,
+        "screenshotMs": 53.93554200002109,
+        "totalMs": 3383.180207999976
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/hft-bold/canvaskit-default-print-software.png",
+      "sha256": "9aff934ce5f2acee1276f73bf9011d6e6c95c08fe26e96d82b2ef54c74d81176"
+    },
+    {
+      "sampleId": "nested-h2gtrm",
+      "file": "basic/issue2007_nested_cell_pagination_42065.hwp",
+      "page": 4,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": null,
+      "artifact": {
+        "sha256": "dbe6d96e6cb4c08fd7fefe4d0e96c340e1c09f7522130f3b2b45b8298d1b3501",
+        "sizeBytes": 125546,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 2410.338125,
+        "documentLoadAndInitialRenderMs": 5593.799999952316,
+        "selectedPageRenderMs": 2416.119666999999,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 67.97416599999997,
+        "totalMs": 13130.367
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/nested-h2gtrm/canvas2d-screen.png",
+      "sha256": "dbe6d96e6cb4c08fd7fefe4d0e96c340e1c09f7522130f3b2b45b8298d1b3501"
+    },
+    {
+      "sampleId": "nested-h2gtrm",
+      "file": "basic/issue2007_nested_cell_pagination_42065.hwp",
+      "page": 4,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "e45ac5dd4050a28dcfa3f6960f96123cedba4fd5f0cc19077de52748de99ad0a",
+        "sizeBytes": 106384,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1205.386124999999,
+        "documentLoadAndInitialRenderMs": 1938,
+        "selectedPageRenderMs": 283.03704199999993,
+        "warmReplayMs": 0.10000014305114746,
+        "warmRendererDurationMs": 95.5,
+        "screenshotMs": 66.2367919999997,
+        "totalMs": 5101.8565419999995
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/nested-h2gtrm/canvaskit-compat-screen-software.png",
+      "sha256": "e45ac5dd4050a28dcfa3f6960f96123cedba4fd5f0cc19077de52748de99ad0a"
+    },
+    {
+      "sampleId": "nested-h2gtrm",
+      "file": "basic/issue2007_nested_cell_pagination_42065.hwp",
+      "page": 4,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "e45ac5dd4050a28dcfa3f6960f96123cedba4fd5f0cc19077de52748de99ad0a",
+        "sizeBytes": 106384,
+        "width": 794,
+        "height": 1123
+      },
+      "timings": {
+        "appLoadMs": 1162.6879999999983,
+        "documentLoadAndInitialRenderMs": 1755.7000000476837,
+        "selectedPageRenderMs": 243.5853750000024,
+        "warmReplayMs": 0,
+        "warmRendererDurationMs": 100.60000014305115,
+        "screenshotMs": 67.65424999999959,
+        "totalMs": 4833.342042
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/nested-h2gtrm/canvaskit-default-screen-software.png",
+      "sha256": "e45ac5dd4050a28dcfa3f6960f96123cedba4fd5f0cc19077de52748de99ad0a"
+    },
+    {
+      "sampleId": "nested-h2gtrm",
+      "file": "basic/issue2007_nested_cell_pagination_42065.hwp",
+      "page": 4,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": null,
+      "artifact": {
+        "sha256": "ff50b186d5af71198891bd9fc3945bebf10092e19033424cde409e805bad76f4",
+        "sizeBytes": 126127,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1115.9824160000026,
+        "documentLoadAndInitialRenderMs": 4231.400000095367,
+        "selectedPageRenderMs": 3917.422916000003,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 58.81025000000227,
+        "totalMs": 10895.246333
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/nested-h2gtrm/canvas2d-print.png",
+      "sha256": "ff50b186d5af71198891bd9fc3945bebf10092e19033424cde409e805bad76f4"
+    },
+    {
+      "sampleId": "nested-h2gtrm",
+      "file": "basic/issue2007_nested_cell_pagination_42065.hwp",
+      "page": 4,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "b0335333aeb9cfc04e7819133a821cb8cef5db7c7b3d9ee906d72aa3a8a271b5",
+        "sizeBytes": 104097,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1402.832917000007,
+        "documentLoadAndInitialRenderMs": 1682,
+        "selectedPageRenderMs": 277.7974580000009,
+        "warmReplayMs": 0,
+        "warmRendererDurationMs": 98.20000004768372,
+        "screenshotMs": 62.36699999999837,
+        "totalMs": 5048.8163330000025
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/nested-h2gtrm/canvaskit-compat-print-software.png",
+      "sha256": "b0335333aeb9cfc04e7819133a821cb8cef5db7c7b3d9ee906d72aa3a8a271b5"
+    },
+    {
+      "sampleId": "nested-h2gtrm",
+      "file": "basic/issue2007_nested_cell_pagination_42065.hwp",
+      "page": 4,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "artifact": {
+        "sha256": "b0335333aeb9cfc04e7819133a821cb8cef5db7c7b3d9ee906d72aa3a8a271b5",
+        "sizeBytes": 104097,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 1359.887625000003,
+        "documentLoadAndInitialRenderMs": 1650.8000001907349,
+        "selectedPageRenderMs": 287.3989999999976,
+        "warmReplayMs": 0,
+        "warmRendererDurationMs": 96.30000019073486,
+        "screenshotMs": 63.37212500000169,
+        "totalMs": 4984.489625000002
+      },
+      "fontFallback": null,
+      "path": "mydocs/pr/assets/planet6897_20261116/final/actual/nested-h2gtrm/canvaskit-default-print-software.png",
+      "sha256": "b0335333aeb9cfc04e7819133a821cb8cef5db7c7b3d9ee906d72aa3a8a271b5"
+    }
+  ],
+  "report_only_pixel_parity": {
+    "mode": "reportOnly",
+    "main": {
+      "total": 24,
+      "compared": 24,
+      "passed": 0,
+      "failed": 24,
+      "missing": 0,
+      "errors": 0,
+      "identityMismatches": 0
+    },
+    "nested": {
+      "total": 4,
+      "compared": 4,
+      "passed": 0,
+      "failed": 4,
+      "missing": 0,
+      "errors": 0,
+      "identityMismatches": 0
+    },
+    "interpretation": "28 comparisons exceed the cross-backend pixel threshold; they are not pixel parity PASS. Native/fresh WASM PDF acceptance is separately governed by the whole-page TSVs. Direct inspection confirms scoped ownership, line counts, captions, glyph presence and before/after content; do not infer exact pixel identity from backend selection."
+  }
+}

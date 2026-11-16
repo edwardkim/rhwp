@@ -15,35 +15,35 @@
     4
   ],
   "missing_pages": [],
-  "tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v1/claims/candidate-native/hft-sinmyeong_sunmyeongjo-probe/hft-sinmyeong_sunmyeongjo-probe/tsv/silhouette.tsv",
+  "tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/native/hft-sinmyeong_sunmyeongjo-probe/hft-sinmyeong_sunmyeongjo-probe/silhouette.tsv",
   "radius_px": 2,
   "inputs": [
     {
       "page": 1,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v1/claims/candidate-native/hft-sinmyeong_sunmyeongjo-probe/hft-sinmyeong_sunmyeongjo-probe/rhwp_png/rhwp_001.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/native/hft-sinmyeong_sunmyeongjo-probe/hft-sinmyeong_sunmyeongjo-probe/rhwp_png/rhwp_001.png",
       "rhwp_sha256": "f50c521701c32db51cffa3cbe2379e341b780789f7e5e84f6aa6e172b090e91c",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v1/claims/candidate-native/hft-sinmyeong_sunmyeongjo-probe/hft-sinmyeong_sunmyeongjo-probe/pdf_png/pdf-001.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/native/hft-sinmyeong_sunmyeongjo-probe/hft-sinmyeong_sunmyeongjo-probe/pdf_png/pdf-001.png",
       "pdf_sha256": "8beb991092e322e88276ae795e4bf67b7e0d0079df1fb86322ff80f7db907dc0"
     },
     {
       "page": 2,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v1/claims/candidate-native/hft-sinmyeong_sunmyeongjo-probe/hft-sinmyeong_sunmyeongjo-probe/rhwp_png/rhwp_002.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/native/hft-sinmyeong_sunmyeongjo-probe/hft-sinmyeong_sunmyeongjo-probe/rhwp_png/rhwp_002.png",
       "rhwp_sha256": "71d0808d5485817e26b1613e608285f5500711c06840c99a0c69152a4be66334",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v1/claims/candidate-native/hft-sinmyeong_sunmyeongjo-probe/hft-sinmyeong_sunmyeongjo-probe/pdf_png/pdf-002.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/native/hft-sinmyeong_sunmyeongjo-probe/hft-sinmyeong_sunmyeongjo-probe/pdf_png/pdf-002.png",
       "pdf_sha256": "2b50f161729a2f11cf28cd303c507ec5bf3e20098ca7c3d8de7902c6cbc3a287"
     },
     {
       "page": 3,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v1/claims/candidate-native/hft-sinmyeong_sunmyeongjo-probe/hft-sinmyeong_sunmyeongjo-probe/rhwp_png/rhwp_003.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/native/hft-sinmyeong_sunmyeongjo-probe/hft-sinmyeong_sunmyeongjo-probe/rhwp_png/rhwp_003.png",
       "rhwp_sha256": "6a2ae6217ade769f2861046f8eebfb59e4f6daf192ee62479af9ecdc26deefb7",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v1/claims/candidate-native/hft-sinmyeong_sunmyeongjo-probe/hft-sinmyeong_sunmyeongjo-probe/pdf_png/pdf-003.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/native/hft-sinmyeong_sunmyeongjo-probe/hft-sinmyeong_sunmyeongjo-probe/pdf_png/pdf-003.png",
       "pdf_sha256": "12193356e6fec935f16dd09bcfa24435d9bcfff054b3a92810aab1019b5b2ba3"
     },
     {
       "page": 4,
-      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v1/claims/candidate-native/hft-sinmyeong_sunmyeongjo-probe/hft-sinmyeong_sunmyeongjo-probe/rhwp_png/rhwp_004.png",
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/native/hft-sinmyeong_sunmyeongjo-probe/hft-sinmyeong_sunmyeongjo-probe/rhwp_png/rhwp_004.png",
       "rhwp_sha256": "effd7c4800373caf4389b880ba1e7a4f34af6891b5ac8fef5510e4207c67bc01",
-      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v1/claims/candidate-native/hft-sinmyeong_sunmyeongjo-probe/hft-sinmyeong_sunmyeongjo-probe/pdf_png/pdf-004.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/native/hft-sinmyeong_sunmyeongjo-probe/hft-sinmyeong_sunmyeongjo-probe/pdf_png/pdf-004.png",
       "pdf_sha256": "fd60b71c0c1618435cc2269d1f6ab09f0ade028ac1bc5e814e1ea7ea8b394d14"
     }
   ],
@@ -102,8 +102,14 @@
     "below_threshold_pages": [],
     "unavailable_metric_pages": [],
     "font_mismatch_evidence": null,
-    "document_page_counts": null,
+    "document_page_counts": {
+      "rhwp": 4,
+      "pdf": 4
+    },
     "page_count_mismatch": false,
     "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
-  }
+  },
+  "canonical_full_manifest_sha256": "5e2fbe2b9ed08689a04f8927f43358e6913618a6eccb26220f2c2a03572bf4ff",
+  "record_scope": "Compact canonical manifest: all page metrics and PNG hashes retained; full environment catalog retained locally and referenced by hash.",
+  "full_environment_provenance_sha256": "926ee042443ca30d79872ba4c627a12228451af675fff6d2b6e3364dfe896a11"
 }
