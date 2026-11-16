@@ -1,25 +1,26 @@
 {
   "status": "passed",
-  "head": "21950b8ab84777fb5642036e5dea9bb0dbf6eac7",
+  "head": "3e9ce11f9c3111c4faa217f6e3db202e41914561",
   "base": "53774cc1508591b6ac794950f0063452fbaf6e87",
   "minimum_font_isolation": "output/pr-review/all-open-pr-integration-20261116/minimal-font/isolation-validation.json",
   "results": [
     {
       "gate": "suite-prepare",
       "exit": 0,
-      "seconds": 28.371,
-      "minimum_font": false,
+      "seconds": 4.77,
       "command": [
         "node",
         "scripts/rust-test-suite-manifest.mjs",
         "--prepare"
-      ]
+      ],
+      "minimum_font": false,
+      "test_head": "3e9ce11f9c3111c4faa217f6e3db202e41914561",
+      "evidence": "current execution after relation test change"
     },
     {
       "gate": "full-nextest",
       "exit": 0,
-      "seconds": 1240.909,
-      "minimum_font": true,
+      "seconds": 1244.867,
       "command": [
         "sandbox-exec",
         "-f",
@@ -36,7 +37,10 @@
         "--test-threads",
         "8",
         "--no-fail-fast"
-      ]
+      ],
+      "minimum_font": true,
+      "test_head": "3e9ce11f9c3111c4faa217f6e3db202e41914561",
+      "evidence": "current execution after relation test change"
     },
     {
       "gate": "native-skia-lib",
@@ -62,7 +66,10 @@
         "--",
         "--test-threads",
         "8"
-      ]
+      ],
+      "test_head": "21950b8ab84777fb5642036e5dea9bb0dbf6eac7",
+      "evidence": "reused unaffected execution",
+      "reuse_reason": "product src/crates/Cargo inputs and these Native feature/doc test sources are unchanged; the sole later test behavior change is covered by the new complete integration run"
     },
     {
       "gate": "native-picture-placeholder",
@@ -87,7 +94,10 @@
         "--test-threads",
         "8",
         "--no-fail-fast"
-      ]
+      ],
+      "test_head": "21950b8ab84777fb5642036e5dea9bb0dbf6eac7",
+      "evidence": "reused unaffected execution",
+      "reuse_reason": "product src/crates/Cargo inputs and these Native feature/doc test sources are unchanged; the sole later test behavior change is covered by the new complete integration run"
     },
     {
       "gate": "native-direct-pdf",
@@ -112,26 +122,30 @@
         "--test-threads",
         "8",
         "--no-fail-fast"
-      ]
+      ],
+      "test_head": "21950b8ab84777fb5642036e5dea9bb0dbf6eac7",
+      "evidence": "reused unaffected execution",
+      "reuse_reason": "product src/crates/Cargo inputs and these Native feature/doc test sources are unchanged; the sole later test behavior change is covered by the new complete integration run"
     },
     {
       "gate": "fmt",
       "exit": 0,
-      "seconds": 52.765,
-      "minimum_font": false,
+      "seconds": 15.379,
       "command": [
         "cargo",
         "fmt",
         "--all",
         "--",
         "--check"
-      ]
+      ],
+      "minimum_font": false,
+      "test_head": "3e9ce11f9c3111c4faa217f6e3db202e41914561",
+      "evidence": "current execution after relation test change"
     },
     {
       "gate": "clippy-native",
       "exit": 0,
-      "seconds": 152.723,
-      "minimum_font": true,
+      "seconds": 3.13,
       "command": [
         "sandbox-exec",
         "-f",
@@ -146,13 +160,15 @@
         "--",
         "-D",
         "warnings"
-      ]
+      ],
+      "minimum_font": true,
+      "test_head": "3e9ce11f9c3111c4faa217f6e3db202e41914561",
+      "evidence": "current execution after relation test change"
     },
     {
       "gate": "clippy-wasm",
       "exit": 0,
-      "seconds": 110.811,
-      "minimum_font": true,
+      "seconds": 1.374,
       "command": [
         "sandbox-exec",
         "-f",
@@ -172,13 +188,15 @@
         "--",
         "-D",
         "warnings"
-      ]
+      ],
+      "minimum_font": true,
+      "test_head": "3e9ce11f9c3111c4faa217f6e3db202e41914561",
+      "evidence": "current execution after relation test change"
     },
     {
       "gate": "workspace-build",
       "exit": 0,
-      "seconds": 234.86,
-      "minimum_font": true,
+      "seconds": 29.102,
       "command": [
         "sandbox-exec",
         "-f",
@@ -191,13 +209,15 @@
         "/Users/tsjang/rhwp/target/pr-review",
         "-j",
         "8"
-      ]
+      ],
+      "minimum_font": true,
+      "test_head": "3e9ce11f9c3111c4faa217f6e3db202e41914561",
+      "evidence": "current execution after relation test change"
     },
     {
       "gate": "clippy-all-targets",
       "exit": 0,
-      "seconds": 203.736,
-      "minimum_font": true,
+      "seconds": 16.271,
       "command": [
         "sandbox-exec",
         "-f",
@@ -214,33 +234,40 @@
         "--",
         "-D",
         "warnings"
-      ]
+      ],
+      "minimum_font": true,
+      "test_head": "3e9ce11f9c3111c4faa217f6e3db202e41914561",
+      "evidence": "current execution after relation test change"
     },
     {
       "gate": "suite-policy",
       "exit": 0,
-      "seconds": 19.764,
-      "minimum_font": false,
+      "seconds": 1.809,
       "command": [
         "node",
         "scripts/rust-test-suite-manifest.mjs",
         "--check",
         "--base-ref",
         "53774cc1508591b6ac794950f0063452fbaf6e87"
-      ]
+      ],
+      "minimum_font": false,
+      "test_head": "3e9ce11f9c3111c4faa217f6e3db202e41914561",
+      "evidence": "current execution after relation test change"
     },
     {
       "gate": "unit-tier-policy",
       "exit": 0,
-      "seconds": 58.684,
-      "minimum_font": false,
+      "seconds": 20.907,
       "command": [
         "node",
         "scripts/rust-unit-test-tiers.mjs",
         "--check",
         "--base-ref",
         "53774cc1508591b6ac794950f0063452fbaf6e87"
-      ]
+      ],
+      "minimum_font": false,
+      "test_head": "3e9ce11f9c3111c4faa217f6e3db202e41914561",
+      "evidence": "current execution after relation test change"
     },
     {
       "gate": "doc-test",
@@ -259,7 +286,10 @@
         "/Users/tsjang/rhwp/target/pr-review",
         "-j",
         "8"
-      ]
+      ],
+      "test_head": "21950b8ab84777fb5642036e5dea9bb0dbf6eac7",
+      "evidence": "reused unaffected execution",
+      "reuse_reason": "product src/crates/Cargo inputs and these Native feature/doc test sources are unchanged; the sole later test behavior change is covered by the new complete integration run"
     }
   ],
   "native_skia_lib_summary": {
@@ -287,5 +317,10 @@
   "native_picture_placeholder_summary": {
     "passed": 2,
     "failed": 0
-  }
+  },
+  "previous_test_head": "21950b8ab84777fb5642036e5dea9bb0dbf6eac7",
+  "product_source": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+  "rerun_gates": 9,
+  "reused_unaffected_gates": 4,
+  "minimum_font_profile_sha256": "d6303bc13d7fdf3cad52056338eae3164b1a2b6049f09bccc70b6b097b093875"
 }

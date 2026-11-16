@@ -49,3 +49,29 @@ Native에서 복원한 issue7905·outline은 fresh WASM의 자동 선택에서 �
 후보 Native 18종·1,771쪽의 [최종 전쪽 TSV 집계](native-protected-final.json)는
 보호값 하락·누락·쪽수 불일치 0쪽이다. sample10 763쪽도 수정한 같은 공급 조건으로
 전쪽을 다시 산출했으며 최저 99.57%·하락 0쪽이다. 474쪽의 집중 최고값만 전쪽 결과에 섞지 않았다.
+
+
+## sample10 WASM 757쪽: 이전 수용의 직접 프로그램 공급 재현
+
+앞선 Mac 전용 선택 JSON과 전체 사용자 글꼴 1,233 face를 사용한 WASM은 757쪽이 99.56%였다.
+같은 입력·PDF·2px·96DPI·compat2022에서 base/후보와 GPU/소프트웨어를 대조해 모두 재현했다.
+base/후보 PNG도 같으므로 현재 기능 변경의 새 회귀로 보지 않지만, 이 조건의 보호 실패는 보존한다.
+
+정본이 연결한 `bd26dedc3ee867bd32a847006bf3bb35d81a2a7e`의 수용 기록은
+Mac Native용 `selectedPrograms` JSON이 아닌 `--font-path` 직접 공급이다. 그때 공급한 80개 중
+현재 필요한 원본 프로그램 66개를 동일 SHA-256으로 확보해 별도 경로에 공급했다.
+미확보 Windows 프로그램 14개를 같은 파일이라고 주장하지 않는다. 후보 전 763쪽의 실제 Canvas
+요청은 HFT 7개 계열과 Haansoft Batang이며, 미확보 바탕/TTC·굴림·Courier·Times·Arial 계열의
+paint 요청은 없었다. 추가 시스템 글꼴이 같은 이름/별칭으로 등록되는 넓은 공급과 구분했다.
+
+이 조건의 후보 fresh WASM 전 763쪽은 최저 99.57%·공식 보호값 하락 0쪽이며,
+474쪽은 100.00%, 757쪽은 99.57%다. 원본·기준·계산 코드·기준 하한은 바꾸지 않았다.
+전쪽 한 실행의 TSV를 사용했고 쪽별 최고값을 섞지 않았다. 같은 조건의 base 및 Native 확인은
+아직 진행 중이므로 이 집중/후보 결과만으로 보호 전체 통과를 선언하지 않는다.
+
+[새 전쪽 후보의 757쪽 review](sample10-original-supply-pages/wasm/review/review_757.png)·
+[overlay](sample10-original-supply-pages/wasm/overlay/overlay_757.png)와
+[474쪽 review](sample10-original-supply-pages/wasm/review/review_474.png)·
+[overlay](sample10-original-supply-pages/wasm/overlay/overlay_474.png)를 직접 판독했다.
+제목·본문·명령·쪽번호가 유지되며 기존 ASCII 순서도의 미세 선 차이는 남아 있다.
+이는 이번 원 PR 범위의 새 개선이나 RGB 완전 동일성으로 계산하지 않는다.

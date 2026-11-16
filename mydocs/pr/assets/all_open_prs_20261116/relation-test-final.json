@@ -1,0 +1,217 @@
+{
+  "status": "passed",
+  "product_source": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+  "test_head": "3e9ce11f9c3111c4faa217f6e3db202e41914561",
+  "test_source_sha256": "bbe7ef2c076acde8784da4ccd21bb4a28fbca54411be9a047aa0b05539666b75",
+  "gates": [
+    {
+      "gate": "suite-prepare",
+      "exit": 0,
+      "seconds": 4.77,
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "minimum_font": false
+    },
+    {
+      "gate": "fmt",
+      "exit": 0,
+      "seconds": 15.379,
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "minimum_font": false
+    },
+    {
+      "gate": "clippy-native",
+      "exit": 0,
+      "seconds": 3.13,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261116/minimal-font/profile.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "minimum_font": true
+    },
+    {
+      "gate": "clippy-wasm",
+      "exit": 0,
+      "seconds": 1.374,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261116/minimal-font/profile.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "minimum_font": true
+    },
+    {
+      "gate": "workspace-build",
+      "exit": 0,
+      "seconds": 29.102,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261116/minimal-font/profile.sb",
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8"
+      ],
+      "minimum_font": true
+    },
+    {
+      "gate": "clippy-all-targets",
+      "exit": 0,
+      "seconds": 16.271,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261116/minimal-font/profile.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "minimum_font": true
+    },
+    {
+      "gate": "suite-policy",
+      "exit": 0,
+      "seconds": 1.809,
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "53774cc1508591b6ac794950f0063452fbaf6e87"
+      ],
+      "minimum_font": false
+    },
+    {
+      "gate": "unit-tier-policy",
+      "exit": 0,
+      "seconds": 20.907,
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "53774cc1508591b6ac794950f0063452fbaf6e87"
+      ],
+      "minimum_font": false
+    },
+    {
+      "gate": "full-nextest",
+      "exit": 0,
+      "seconds": 1244.867,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261116/minimal-font/profile.sb",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--tests",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "minimum_font": true
+    }
+  ],
+  "full_summary": "Summary [ 888.636s] 13696 tests run: 13696 passed (4 slow), 45 skipped",
+  "same_test_source_focused_pass": {
+    "status": "passed",
+    "head": "af0a5b9519b55e5e840f6e9adb85c1d17cd51d8d",
+    "test_source_sha256": "bbe7ef2c076acde8784da4ccd21bb4a28fbca54411be9a047aa0b05539666b75",
+    "results": [
+      {
+        "step": "prepare",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit": 0,
+        "seconds": 14.255
+      },
+      {
+        "step": "focused",
+        "command": [
+          "sandbox-exec",
+          "-f",
+          "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261116/minimal-font/profile.sb",
+          "node",
+          "scripts/run-rust-test.mjs",
+          "textbox_stored_lines_table_align",
+          "--",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit": 0,
+        "seconds": 27.145
+      }
+    ],
+    "current": "focused",
+    "test_source": "tests/cases/textbox_stored_lines_table_align.rs",
+    "summary": "6 tests run: 6 passed, 349 skipped",
+    "environment": "macOS minimum-font sandbox",
+    "log_sha256": "772c38c7d2f408a3f9fcd322c60446cf2ddd7dead6caa483e9f425fcc9a42d18",
+    "earlier_invalid_attempt": "stale generated suites selected a different module and ran zero tests; never counted as PASS; --prepare preceded this valid rerun",
+    "remaining": "Latest full regression and Rust lint gates are queued after actual consumers."
+  }
+}

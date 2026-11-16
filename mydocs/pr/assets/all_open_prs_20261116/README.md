@@ -23,8 +23,10 @@
 ## 완료한 검증
 
 - [Rust 13단계](rust-gates-final.json): 최소 글꼴 macOS 전체 nextest
-  **13,696 PASS·0 FAIL·45 skip**. Native Skia lib, Native 그림 placeholder·직접 PDF,
-  fmt·Native/WASM/all-target Clippy·workspace build·suite 정책·unit tier·문서 테스트도 exit 0이었다.
+  **13,696 PASS·0 FAIL·45 skip**. 관계형 검사 보정 뒤 검증 head `3e9ce11f9c`에서 888.636초의 새 전체 실행과
+  9단계(full nextest·fmt·Native/WASM/all-target Clippy·workspace build·suite 준비/정책·unit tier)를
+  다시 완료했다. 제품·해당 검사 소스가 같은 Native Skia lib·Native 그림 placeholder·직접 PDF·문서
+  테스트 4단계는 `21950b8ab8`의 exit 0 실행을 신원을 보존해 재사용했다.
   [전체 회귀 결과](full-nextest-final.json)의 source와 검증 head를 구분한다.
 - 독립 데스크톱 한컴 2020/2024의 **Hancom PDF Print 66종·74쪽**:
   [Native](native-claims-final.json)와 [fresh WASM](wasm-claims-final.json) 모두 전쪽 90% 이상이다.
@@ -83,4 +85,4 @@ sample10 757쪽은 이전 수용 기록의 직접 원본 프로그램 공급 방
 회복했고 474쪽도 100%였다. 정확히 확보한 원본 프로그램 66개와 미확보 14개를 구분했으며,
 이 집중 결과를 전체 수용으로 대신하지 않고 같은 조건으로 763쪽 전체 base/후보를 재산출한다.
 위의 이전 조건 실패 결과는 보존한다. 관계형 검사 변경 뒤 최소 글꼴 전체 회귀·lint 재검증도
-진행 중이다. 남은 최종 결과를 확인하고 원 PR별 판정을 갱신한 뒤 통합 PR을 제출한다.
+완료했다. 남은 최종 결과를 확인하고 원 PR별 판정을 갱신한 뒤 통합 PR을 제출한다.

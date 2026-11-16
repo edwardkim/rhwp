@@ -200,5 +200,14 @@
       "sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590"
     },
     "elapsed_seconds": 241.43
+  },
+  "direct_reading": {
+    "native_review_and_wasm_overlay": "4 documents each directly inspected",
+    "observations": [
+      "라틴 본문 세 줄과 줄바꿈, 책괄호·연도 위치가 보존됐다.",
+      "두 배너 그림의 crop·외곽·내용이 보존됐다.",
+      "그룹 도형의 외곽·그림자·그라데이션이 보존됐다."
+    ],
+    "note": "기존 2px raw 실수와 공식 두 자리로 판정하며 RGB 완전 동일을 주장하지 않는다."
   }
 }
