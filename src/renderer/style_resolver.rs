@@ -45,6 +45,23 @@ pub(crate) fn resolve_styles_for_document(document: &Document, dpi: f64) -> Reso
     }
 }
 
+/// 문서의 호환 대상이 MS 워드인가. HWP5 는 `HWPTAG_COMPATIBLE_DOCUMENT` 의 대상 프로그램 값
+/// (0 = 한/글 현재, 1 = 한/글 2007, 2 = MS 워드), HWPX 는 `hh:compatibleDocument` 의
+/// `targetProgram` 이다.
+fn doc_targets_ms_word(doc_info: &crate::model::document::DocInfo) -> bool {
+    let hwp5_word = doc_info.extra_records.iter().any(|record| {
+        record.tag_id == crate::parser::tags::HWPTAG_COMPATIBLE_DOCUMENT
+            && record.data.get(..4).is_some_and(|bytes| {
+                u32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]) == 2
+            })
+    });
+    let hwpx_word = doc_info
+        .hwpx_head_tail
+        .as_deref()
+        .is_some_and(|tail| tail.contains(r#"targetProgram="MS_WORD""#));
+    hwp5_word || hwpx_word
+}
+
 pub(crate) fn try_resolve_styles_for_document<S: storage::Storage>(
     document: &Document,
     dpi: f64,
@@ -54,6 +71,7 @@ pub(crate) fn try_resolve_styles_for_document<S: storage::Storage>(
     let lookup = missing_fonts::try_lookup_context(document, storage)?;
     let mut styles = try_resolve_styles_with_variant(&lookup, dpi, profile.hwp3_layout(), storage)?;
     styles.source_hwp3_native = profile.hwp3_native_layout();
+    styles.word_compat_target = doc_targets_ms_word(&document.doc_info);
     if document.provenance.format == crate::model::provenance::SourceFormat::Hwp5
         && !document.provenance.hwpx_lineage
     {
@@ -532,6 +550,7 @@ fn try_resolve_styles_with_variant<S: storage::Storage>(
 
     let mut styles = ResolvedStyleSet {
         source_hwp3_native: false,
+        word_compat_target: false,
         source_program_projection_slots: Default::default(),
         script_metrics: Default::default(),
         native_pua_fonts: Default::default(),
