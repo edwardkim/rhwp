@@ -76,6 +76,23 @@ def main():
               "bridgeSha256": hashlib.sha256(bridge_path.read_bytes()).hexdigest(),
               "consumerGpuCompletionVerified": False, "continuousPresentationSupported": False,
               "flutterConsumerSamplingVerified": False, "results": [], "started": time.time()}
+    def invoke(request):
+        encoded = json.dumps(request).encode()
+        data = (ctypes.c_uint8 * len(encoded)).from_buffer_copy(encoded)
+        pointer = call(str(native).encode(), data, len(encoded))
+        if not pointer:
+            raise RuntimeError("Metal bridge returned null")
+        try:
+            raw = ctypes.cast(pointer, ctypes.POINTER(ctypes.c_uint8))
+            length = 0
+            while length <= 64 * 1024 and raw[length]:
+                length += 1
+            if length > 64 * 1024:
+                raise ValueError("Metal bridge reply exceeded its byte bound")
+            return json.loads(ctypes.string_at(pointer, length))
+        finally:
+            free(pointer)
+
     try:
         with NativeWorker(native) as worker:
             def run(command):
@@ -93,6 +110,11 @@ def main():
                             "fontGeneration": info["fontGeneration"], "page": 0,
                             "profile": "screen"})["snapshot"]
             try:
+                from metal_tile_cache_contract import CONFIGS, requests, validate_responses
+                frames = requests(stamp, snapshot)
+                batches = {name: invoke({"frames": frames, "config": config})
+                           for name, config in CONFIGS.items()}
+                report["tileCache"] = {"responses": batches, "checks": validate_responses(batches, stamp)}
                 for name, color, stale in [("opaque", 0xff102030, False),
                                             ("premultiplied-alpha", 0x80402010, False),
                                             ("stale-preserves-target", 0xff102030, True)]:
@@ -108,21 +130,7 @@ def main():
                                "placements": [{"snapshot": snapshot, "scale": .25,
                                                "originX": 4096, "originY": 4096,
                                                "backgroundColor": 0xffffffff}], "clearColor": color}
-                    encoded = json.dumps(request).encode()
-                    data = (ctypes.c_uint8 * len(encoded)).from_buffer_copy(encoded)
-                    pointer = call(str(native).encode(), data, len(encoded))
-                    if not pointer:
-                        raise RuntimeError("Metal bridge returned null")
-                    try:
-                        raw = ctypes.cast(pointer, ctypes.POINTER(ctypes.c_uint8))
-                        length = 0
-                        while length <= 64 * 1024 and raw[length]:
-                            length += 1
-                        if length > 64 * 1024:
-                            raise ValueError("Metal bridge reply exceeded its byte bound")
-                        response = json.loads(ctypes.string_at(pointer, length))
-                    finally:
-                        free(pointer)
+                    response = invoke(request)
                     checks = validate_response(response, stamp, color, stale=stale)
                     report["results"].append({"name": name, "response": response, "checks": checks})
             finally:

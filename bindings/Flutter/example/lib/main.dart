@@ -316,6 +316,18 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
     }
   }
 
+  Future<bool> _closeWindow() async {
+    if (_busy) return false;
+    final lifecycle = _lifecycle;
+    if (lifecycle == null) return _document == null;
+    if (lifecycle.isClosed) return true;
+    if (lifecycle.isBusy) return false;
+    final texture = _texture;
+    await _act((owner) => owner.close());
+    _reportGpuTrace(texture);
+    return identical(lifecycle, _lifecycle) && lifecycle.isClosed;
+  }
+
   Widget _documentView() {
     final view = NativePagedDocumentView(
       document: _document!,
@@ -342,131 +354,141 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('rhwp Flutter Native Reference')),
-    body: Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _path,
-                  enabled: !_busy && _lifecycle?.isBusy != true,
-                  decoration: const InputDecoration(
-                    labelText: 'HWP/HWPX 파일 경로',
+  Widget build(BuildContext context) => NativeWindowClose(
+    onClose: _closeWindow,
+    onError: (error) {
+      if (mounted) setState(() => _error = '$error');
+    },
+    child: Scaffold(
+      appBar: AppBar(title: const Text('rhwp Flutter Native Reference')),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _path,
+                    enabled: !_busy && _lifecycle?.isBusy != true,
+                    decoration: const InputDecoration(
+                      labelText: 'HWP/HWPX 파일 경로',
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              FilledButton(
-                onPressed:
-                    _busy || _document == null || _lifecycle?.isBusy == true
-                    ? null
-                    : () => _act((lifecycle) => lifecycle.openPath(_path.text)),
-                child: const Text('열기'),
-              ),
-            ],
-          ),
-        ),
-        if (_document != null)
-          Wrap(
-            spacing: 8,
-            children: [
-              for (final entry
-                  in <String, Future<bool> Function(NativeDocumentLifecycle)>{
-                    '새 문서': (lifecycle) => lifecycle.newDocument(),
-                    '저장': (lifecycle) => lifecycle.save(),
-                    '다른 이름으로 저장': (lifecycle) async {
-                      final path = await _askPath('저장할 HWP/HWPX 경로');
-                      return path != null &&
-                          await lifecycle.save(destination: path);
-                    },
-                    '복구 파일 열기': (lifecycle) =>
-                        lifecycle.openPath(_path.text, recovery: true),
-                    '복구 파일 만들기': (lifecycle) async {
-                      final directory = await _askPath('복구 파일을 보관할 디렉터리');
-                      return directory != null &&
-                          await lifecycle.writeRecovery(directory) != null;
-                    },
-                    '문서 닫기': (lifecycle) => lifecycle.close(),
-                  }.entries)
-                TextButton(
-                  onPressed: _busy || _lifecycle?.isBusy == true
+                const SizedBox(width: 8),
+                FilledButton(
+                  onPressed:
+                      _busy || _document == null || _lifecycle?.isBusy == true
                       ? null
-                      : () => _act(entry.value),
-                  child: Text(entry.key),
+                      : () =>
+                            _act((lifecycle) => lifecycle.openPath(_path.text)),
+                  child: const Text('열기'),
                 ),
-            ],
+              ],
+            ),
           ),
-        if (_lifecycle?.sourcePath != null) Text(_lifecycle!.sourcePath!),
-        if (_document != null)
-          Wrap(
-            spacing: 8,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              TextButton(
-                onPressed: _lifecycle?.isBusy == true || _pages.currentPage == 0
-                    ? null
-                    : () => _pages.jumpToPage(_pages.currentPage - 1),
-                child: const Text('이전 쪽'),
-              ),
-              Text(
-                '${_pages.currentPage + 1} / ${_document!.info?.pageCount ?? 0}쪽',
-              ),
-              TextButton(
-                onPressed:
-                    _lifecycle?.isBusy == true ||
-                        _pages.currentPage + 1 >= _pages.pageCount
-                    ? null
-                    : () => _pages.jumpToPage(_pages.currentPage + 1),
-                child: const Text('다음 쪽'),
-              ),
-              TextButton(
-                onPressed: _lifecycle?.isBusy == true || _pages.zoom <= .25
-                    ? null
-                    : () => _pages.setZoom(
-                        (_pages.zoom / 1.25).clamp(.25, 4.0).toDouble(),
-                      ),
-                child: const Text('축소'),
-              ),
-              Text('${(_pages.zoom * 100).round()}%'),
-              TextButton(
-                onPressed: _lifecycle?.isBusy == true || _pages.zoom >= 4
-                    ? null
-                    : () => _pages.setZoom(
-                        (_pages.zoom * 1.25).clamp(.25, 4.0).toDouble(),
-                      ),
-                child: const Text('확대'),
-              ),
-            ],
-          ),
-        if (_gpuSession != null)
-          TextButton(
-            onPressed:
-                _busy || _lifecycle?.isBusy == true || !_gpuSession!.canRecover
-                ? null
-                : _recoverGpu,
-            child: const Text('GPU 다시 연결'),
-          ),
-        if (_document?.info?.isDirty == true) const Text('저장하지 않은 변경 사항'),
-        if (_busy || _lifecycle?.isBusy == true)
-          const LinearProgressIndicator(),
-        if (!_busy && _document == null)
-          TextButton(onPressed: _connect, child: const Text('문서 연결')),
-        if (_error != null) Text(_error!),
-        Expanded(
-          child: _document == null
-              ? const SizedBox.shrink()
-              : AbsorbPointer(
-                  absorbing:
+          if (_document != null)
+            Wrap(
+              spacing: 8,
+              children: [
+                for (final entry
+                    in <String, Future<bool> Function(NativeDocumentLifecycle)>{
+                      '새 문서': (lifecycle) => lifecycle.newDocument(),
+                      '저장': (lifecycle) => lifecycle.save(),
+                      '다른 이름으로 저장': (lifecycle) async {
+                        final path = await _askPath('저장할 HWP/HWPX 경로');
+                        return path != null &&
+                            await lifecycle.save(destination: path);
+                      },
+                      '복구 파일 열기': (lifecycle) =>
+                          lifecycle.openPath(_path.text, recovery: true),
+                      '복구 파일 만들기': (lifecycle) async {
+                        final directory = await _askPath('복구 파일을 보관할 디렉터리');
+                        return directory != null &&
+                            await lifecycle.writeRecovery(directory) != null;
+                      },
+                      '문서 닫기': (lifecycle) => lifecycle.close(),
+                    }.entries)
+                  TextButton(
+                    onPressed: _busy || _lifecycle?.isBusy == true
+                        ? null
+                        : () => _act(entry.value),
+                    child: Text(entry.key),
+                  ),
+              ],
+            ),
+          if (_lifecycle?.sourcePath != null) Text(_lifecycle!.sourcePath!),
+          if (_document != null)
+            Wrap(
+              spacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                TextButton(
+                  onPressed:
+                      _lifecycle?.isBusy == true || _pages.currentPage == 0
+                      ? null
+                      : () => _pages.jumpToPage(_pages.currentPage - 1),
+                  child: const Text('이전 쪽'),
+                ),
+                Text(
+                  '${_pages.currentPage + 1} / ${_document!.info?.pageCount ?? 0}쪽',
+                ),
+                TextButton(
+                  onPressed:
                       _lifecycle?.isBusy == true ||
-                      _gpuSession?.recovering == true,
-                  child: _documentView(),
+                          _pages.currentPage + 1 >= _pages.pageCount
+                      ? null
+                      : () => _pages.jumpToPage(_pages.currentPage + 1),
+                  child: const Text('다음 쪽'),
                 ),
-        ),
-      ],
+                TextButton(
+                  onPressed: _lifecycle?.isBusy == true || _pages.zoom <= .25
+                      ? null
+                      : () => _pages.setZoom(
+                          (_pages.zoom / 1.25).clamp(.25, 4.0).toDouble(),
+                        ),
+                  child: const Text('축소'),
+                ),
+                Text('${(_pages.zoom * 100).round()}%'),
+                TextButton(
+                  onPressed: _lifecycle?.isBusy == true || _pages.zoom >= 4
+                      ? null
+                      : () => _pages.setZoom(
+                          (_pages.zoom * 1.25).clamp(.25, 4.0).toDouble(),
+                        ),
+                  child: const Text('확대'),
+                ),
+              ],
+            ),
+          if (_gpuSession != null)
+            TextButton(
+              onPressed:
+                  _busy ||
+                      _lifecycle?.isBusy == true ||
+                      !_gpuSession!.canRecover
+                  ? null
+                  : _recoverGpu,
+              child: const Text('GPU 다시 연결'),
+            ),
+          if (_document?.info?.isDirty == true) const Text('저장하지 않은 변경 사항'),
+          if (_busy || _lifecycle?.isBusy == true)
+            const LinearProgressIndicator(),
+          if (!_busy && _document == null)
+            TextButton(onPressed: _connect, child: const Text('문서 연결')),
+          if (_error != null) Text(_error!),
+          Expanded(
+            child: _document == null
+                ? const SizedBox.shrink()
+                : AbsorbPointer(
+                    absorbing:
+                        _lifecycle?.isBusy == true ||
+                        _gpuSession?.recovering == true,
+                    child: _documentView(),
+                  ),
+          ),
+        ],
+      ),
     ),
   );
 

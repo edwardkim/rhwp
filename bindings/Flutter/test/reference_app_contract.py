@@ -15,11 +15,77 @@ import reference_app
 import runtime_bundle_contract as fixtures
 
 
+LINUX_PROJECT = '  g_autoptr(FlDartProject) project = fl_dart_project_new();\n'
+LINUX_VIEW = '  FlView* view = fl_view_new(project);\n'
+LINUX_RUNNER = ('#include <flutter_linux/flutter_linux.h>\n'
+                'static void create_view() {\n' + LINUX_PROJECT +
+                '  fl_dart_project_set_dart_entrypoint_arguments(project, nullptr);\n' +
+                LINUX_VIEW + '  (void)view;\n}\n')
+
+
 class ReferenceAppContracts(unittest.TestCase):
     def setUp(self):
         self.fixture = fixtures.RuntimeBundleContracts()
         self.fixture.setUp()
         self.addCleanup(self.fixture.tearDown)
+
+    def reference_inputs(self, root=None):
+        root = root or self.fixture.root
+        runner, example = root / 'runner', root / 'example'
+        (runner / 'lib').mkdir(parents=True)
+        (runner / 'lib/main.dart').write_text('discarded template')
+        (example / 'lib').mkdir(parents=True)
+        (example / 'lib/main.dart').write_bytes(b'// reference app\r\nvoid main() {}\r\n')
+        (example / 'pubspec.yaml').write_text('    path: ../\n')
+        return runner, example
+
+    def test_generated_linux_runner_selects_skia_and_separate_ui_before_view_creation(self):
+        runner, example = self.reference_inputs()
+        path = runner / 'linux/runner/my_application.cc'
+        path.parent.mkdir(parents=True)
+        path.write_text(LINUX_RUNNER)
+        reference_app.configure_reference_runner(runner, example, 'linux')
+        configured = path.read_text()
+        policy = ('  fl_dart_project_set_ui_thread_policy(\n'
+                  '      project, FL_UI_THREAD_POLICY_RUN_ON_SEPARATE_THREAD);\n'
+                  '  fl_dart_project_set_enable_impeller(project, FALSE);\n')
+        self.assertEqual(configured.count(policy), 1)
+        self.assertLess(configured.index(LINUX_PROJECT), configured.index(policy))
+        self.assertLess(configured.index(policy), configured.index(LINUX_VIEW))
+        self.assertEqual(configured.replace(policy, ''), LINUX_RUNNER)
+        self.assertEqual((runner / 'lib/main.dart').read_bytes(),
+                         (example / 'lib/main.dart').read_bytes())
+
+    def test_changed_linux_runner_template_is_rejected(self):
+        variants = [
+            LINUX_RUNNER.replace(LINUX_PROJECT, ''),
+            LINUX_RUNNER.replace(LINUX_PROJECT, LINUX_PROJECT * 2),
+            LINUX_RUNNER.replace(LINUX_VIEW, ''),
+            LINUX_RUNNER.replace(LINUX_VIEW, LINUX_VIEW * 2),
+            LINUX_RUNNER.replace(LINUX_PROJECT, '').replace(
+                LINUX_VIEW, LINUX_VIEW + LINUX_PROJECT),
+            LINUX_RUNNER.replace(LINUX_VIEW,
+                '  fl_dart_project_set_ui_thread_policy(project, FL_UI_THREAD_POLICY_DEFAULT);\n' +
+                LINUX_VIEW),
+            LINUX_RUNNER.replace(LINUX_VIEW,
+                '  fl_dart_project_set_enable_impeller(project, TRUE);\n' + LINUX_VIEW),
+        ]
+        for index, source in enumerate(variants):
+            with self.subTest(index=index):
+                runner, example = self.reference_inputs(self.fixture.root / str(index))
+                path = runner / 'linux/runner/my_application.cc'
+                path.parent.mkdir(parents=True)
+                path.write_text(source)
+                with self.assertRaisesRegex(ValueError, 'generated Linux runner'):
+                    reference_app.configure_reference_runner(runner, example, 'linux')
+                self.assertEqual(path.read_text(), source)
+
+    def test_windows_runner_does_not_require_or_modify_linux_scaffolding(self):
+        runner, example = self.reference_inputs()
+        reference_app.configure_reference_runner(runner, example, 'windows')
+        self.assertFalse((runner / 'linux').exists())
+        self.assertEqual((runner / 'lib/main.dart').read_bytes(),
+                         (example / 'lib/main.dart').read_bytes())
 
     def test_current_desktop_mapping_and_unknown_hosts(self):
         for system, machine, expected in [('linux', 'x86_64', ('linux', 'x86_64')),
@@ -166,13 +232,7 @@ class ReferenceAppContracts(unittest.TestCase):
                     reference_app.built_runtime(runner, 'macos', 'x86_64', 'release')
 
     def test_generated_macos_reference_can_access_sibling_bundle_and_document_paths(self):
-        f = self.fixture
-        runner, example = f.root / 'runner', f.root / 'example'
-        (runner / 'lib').mkdir(parents=True)
-        (runner / 'lib/main.dart').write_text('discarded template')
-        (example / 'lib').mkdir(parents=True)
-        (example / 'lib/main.dart').write_text('unchanged reference app')
-        (example / 'pubspec.yaml').write_text('    path: ../\n')
+        runner, example = self.reference_inputs()
         macos = runner / 'macos/Runner'
         macos.mkdir(parents=True)
         for name in ('DebugProfile.entitlements', 'Release.entitlements'):
@@ -180,7 +240,8 @@ class ReferenceAppContracts(unittest.TestCase):
                 'com.apple.security.app-sandbox': True,
                 'com.apple.security.network.client': True}))
         reference_app.configure_reference_runner(runner, example, 'macos')
-        self.assertEqual((runner / 'lib/main.dart').read_text(), 'unchanged reference app')
+        self.assertEqual((runner / 'lib/main.dart').read_bytes(),
+                         (example / 'lib/main.dart').read_bytes())
         for path in macos.glob('*.entitlements'):
             self.assertEqual(plistlib.loads(path.read_bytes()), {
                 'com.apple.security.app-sandbox': False,

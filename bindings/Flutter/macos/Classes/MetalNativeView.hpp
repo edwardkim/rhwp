@@ -44,6 +44,7 @@ struct MetalViewState {
   uint64_t viewIdentifier = 0, drawableTimeouts = 0, sizeMismatches = 0;
   uint64_t renderedSequence = 0;
   Stamp renderedStamp;
+  rhwp::metrics::CacheMetrics cacheMetrics;
   uint32_t drawableWidth = 0, drawableHeight = 0;
   double drawableDeviceScale = 0;
 };
@@ -58,7 +59,7 @@ NSDictionary* MetalViewLimits() {
     @"closeAcknowledgementRequired":@YES,@"maxRetainedCloseRecords":@2,@"maxClosedReceipts":@2,
     @"tileGroups":@YES,@"sharedSnapshotLeases":@YES,@"maxTileGroupTiles":@2,@"maxTileGroupSnapshots":@4,
     @"maxTileGroups":@1,@"maxRetainedSnapshotIdsPerOwner":@32,
-    @"experimental":@YES,@"requiresTargetQualification":@YES};
+    @"cacheTrim":@YES,@"experimental":@YES,@"requiresTargetQualification":@YES};
 }
 bool MetalJobCurrent(const std::shared_ptr<NativeApi>& api, const std::shared_ptr<Job>& job) {
   NSDictionary* checked = api->read(api->checkFrame(
@@ -133,15 +134,16 @@ void RunMetalView(const std::shared_ptr<MetalViewState>& view) {
     dispatch_async(dispatch_get_main_queue(), ^{UpdateMetalViewGeometry(view);});
     while (presenter) {
       std::shared_ptr<Job> job;
+      std::optional<rhwp::cache::TrimReceipt> trim;
       CAMetalLayer* layer = nil;
       {
         std::unique_lock<std::mutex> lock(state->mutex);
-        state->changed.wait(lock, [&] {return state->closed || (state->pending && view->layerReady);});
+        state->changed.wait(lock, [&] {return state->closed || state->cacheTrim.queued() || (state->pending && view->layerReady);});
         if (state->closed) break;
-        job = std::move(state->pending);
-        layer = view->layer;
-        state->inFlight = true;
+        trim=state->cacheTrim.take();
+        if(!trim) {job = std::move(state->pending);layer = view->layer;state->inFlight = true;}
       }
+      if(trim) { @autoreleasepool {RunCacheTrim(state,api,presenter,*trim);} continue; }
       @autoreleasepool {
         id<CAMetalDrawable> drawable = nil;
         bool nativeSubmitted = false;
@@ -197,6 +199,7 @@ void RunMetalView(const std::shared_ptr<MetalViewState>& view) {
         if (!MetalProducerComplete(rendered, *job, state->generation)) {
           QuarantineMetalView(view, job, drawable, queue, layer, @"Native Metal completion was not proved; drawable/producer quarantined.");
         }
+        const auto measured = CaptureMetalCacheMetrics(api, presenter);
         {
           std::lock_guard<std::mutex> lock(state->mutex);
           view->flow.producer_complete(job->sequence);
@@ -224,6 +227,7 @@ void RunMetalView(const std::shared_ptr<MetalViewState>& view) {
           QuarantineMetalView(view, job, drawable, queue, layer, @"Core Animation presentation command did not complete; owner quarantined.");
         }
         std::shared_ptr<Job> oldDisplayed;
+        bool published = false;
         {
           std::lock_guard<std::mutex> lock(state->mutex);
           if (!state->closed && state->gate.current(job->sequence, job->stamp)) {
@@ -232,12 +236,15 @@ void RunMetalView(const std::shared_ptr<MetalViewState>& view) {
             view->displayed = job;
             view->renderedSequence = job->sequence;
             view->renderedStamp = job->stamp;
+            view->cacheMetrics = measured;
+            published = true;
             state->error.clear();
           } else {
             view->flow.discard_completed(job->sequence);
           }
           state->inFlight = false;
         }
+        if (published && state->producerReady) state->producerReady(job->sequence, job->stamp);
         } catch (const std::exception&) {
           if (nativeSubmitted) QuarantineMetalView(view, job, drawable, queue, layer,
               @"Native Metal view allocation/decoding failed after submission; owner quarantined.");
@@ -422,6 +429,7 @@ NSDictionary* MetalViewStatusLocked(const std::shared_ptr<MetalViewState>& view,
   return @{@"ready":@(owner->ready&&view->layerReady),@"apiReady":@(owner->ready),@"closed":@(owner->closed),@"ownerFinished":@(owner->finished),
     @"registered":@(registered),@"pending":@(owner->pending!=nullptr),@"inFlight":@(owner->inFlight),
     @"hasFrame":@(hasFrame),@"renderedStamp":hasFrame?StampValue(view->renderedStamp):@{},
+    @"producerDiagnostics":hasFrame ? (MetalCacheMetricsValue(view->cacheMetrics, view->renderedStamp) ?: (id)[NSNull null]) : (id)[NSNull null],
     @"acceptedStamp":StampValue(owner->acceptedStamp),@"acceptedSnapshots":ids,@"deviceGeneration":@(owner->generation),
     @"closeAcknowledgementRequired":@YES,
     @"presentationKind":@"nativeView",@"viewBound":@(view->bound),@"layerReady":@(view->layerReady),
@@ -480,6 +488,7 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
 - (void)handleTileGroupCall:(FlutterMethodCall*)call result:(FlutterResult)result;
 @end
 @implementation RhwpMetalViewPlugin {
+  RhwpProducerReadyEvents* _readyEvents;
   rhwp::metal::RetirementRegistry<MetalViewState,MetalViewReceipt> _views;
   rhwp::tiles::Identity _tileGroup;
   __strong NSDictionary* _tileTerminal;
@@ -487,6 +496,8 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
 }
 + (void)registerWithRegistrar:(id<FlutterPluginRegistrar>)registrar {
   RhwpMetalViewPlugin* plugin = [[RhwpMetalViewPlugin alloc] init];
+  plugin->_readyEvents = [[RhwpProducerReadyEvents alloc] initWithMessenger:registrar.messenger
+      name:@"rhwp_native/metal_view_macos/events"];
   FlutterMethodChannel* channel = [FlutterMethodChannel methodChannelWithName:@"rhwp_native/metal_view_macos"
       binaryMessenger:registrar.messenger];
   [registrar addMethodCallDelegate:plugin channel:channel];
@@ -516,7 +527,8 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
   NSDictionary* arguments = call.arguments;
   if ([call.method isEqualToString:@"createGroup"] || [call.method isEqualToString:@"submitGroup"] ||
       [call.method isEqualToString:@"statusGroup"] || [call.method isEqualToString:@"closeGroup"] ||
-      [call.method isEqualToString:@"retireGroupAck"] || [call.method isEqualToString:@"setCoveredGroup"]) {
+      [call.method isEqualToString:@"retireGroupAck"] || [call.method isEqualToString:@"setCoveredGroup"] ||
+      (([call.method isEqualToString:@"trimCache"] || [call.method isEqualToString:@"trimCacheStatus"]) && arguments[@"groupId"])) {
     [self handleTileGroupCall:call result:result];return;
   }
   if ([call.method isEqualToString:@"create"]) {
@@ -536,6 +548,7 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
     NSString* path=input.stringByResolvingSymlinksInPath;
     if(!generation||generation>INT64_MAX||!handle||handle>INT64_MAX||!path.UTF8String){result([FlutterError errorWithCode:@"generation" message:@"Native view identity is exhausted or path invalid." details:nil]);return;}
     auto owner=std::make_shared<State>(generation,path.UTF8String,std::move(slot));
+    owner->producerReady = ProducerReadyCallback(_readyEvents, handle);
     auto view=std::make_shared<MetalViewState>(owner);
     if(!_views.insert(handle,view)){result([FlutterError errorWithCode:@"backpressure" message:@"Native view registry capacity is exhausted." details:nil]);return;}
     try {std::thread([view] {
@@ -544,6 +557,7 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
     }).detach();}
     catch(const std::exception&){_views.erase_unstarted(handle);owner->close();throw;}
     result(@{@"textureId":@(handle),@"deviceGeneration":@(generation),@"initializing":@YES,@"ready":@NO,
+      @"producerReadyEvents":@YES,
       @"presentationKind":@"nativeView",@"viewType":@"rhwp_native/metal_view",@"limits":MetalViewLimits()});return;
   }
   uint64_t handle = 0;
@@ -561,6 +575,9 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
     result([FlutterError errorWithCode:@"closed" message:@"Unknown native view or expired acknowledged close receipt." details:nil]);return;
   }
   auto owner=view->owner;
+  if([call.method isEqualToString:@"trimCache"] || [call.method isEqualToString:@"trimCacheStatus"]) {
+    result(CacheTrimCall(owner,handle,arguments,[call.method isEqualToString:@"trimCacheStatus"]));return;
+  }
   if([call.method isEqualToString:@"status"]){result(MetalViewStatus(view,_views.registered(handle)));return;}
   if([call.method isEqualToString:@"retireAck"]){
     bool complete;
@@ -624,5 +641,5 @@ void StopMetalView(const std::shared_ptr<MetalViewState>& view) {
   result(FlutterMethodNotImplemented);
 }
 #include "MetalTileGroupMethods.inc"
-- (void)dealloc {for(const auto& item:_views.records())StopMetalView(item.second.value);}
+- (void)dealloc {[_readyEvents shutdown];for(const auto& item:_views.records())StopMetalView(item.second.value);}
 @end

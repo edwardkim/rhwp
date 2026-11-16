@@ -492,5 +492,91 @@ class WindowsSourcePixelControls(unittest.TestCase):
                                          source_reference=b"", reference_scale=4)
 
 
+class WindowsPrivateTargetContracts(unittest.TestCase):
+    def pooled_stage(self, index=1):
+        value = stage(index)
+        value["limits"].update(privateTargetReuse=True, maxPrivateTargets=4, maxIdlePrivateTargets=2,
+                               privateTargets=1, privateTargetBytes=512 * 1024,
+                               frameReservedBytes=value["limits"]["producerOwnedBytes"],
+                               idlePrivateTargets=1, idlePrivateTargetBytes=512 * 1024,
+                               privateTargetReuses=index - 1,
+                               reservedTargetBytes=value["limits"]["producerOwnedBytes"] + 512 * 1024)
+        return value
+
+    def validate(self, value):
+        return qualification.validate_stage(value, nonce="owned", index=value["index"], pid=42)
+
+    def test_private_pool_bytes_are_separate_from_public_frame_creator_bytes(self):
+        first, second = self.pooled_stage(), self.pooled_stage(2)
+        self.validate(first); self.validate(second)
+        qualification.validate_transition(first, second)
+        wrong = copy.deepcopy(first)
+        wrong["limits"]["reservedTargetBytes"] = wrong["limits"]["producerOwnedBytes"]
+        with self.assertRaisesRegex(ValueError, "accounting"):
+            self.validate(wrong)
+
+    def test_missing_private_receipts_or_expanded_bounds_cannot_qualify(self):
+        for key, replacement in (("privateTargetReuse", False), ("maxPrivateTargets", 5),
+                                  ("maxIdlePrivateTargets", 3), ("privateTargets", 5),
+                                  ("privateTargetBytes", 8 * 1024 * 1024 + 1),
+                                  ("privateTargetBytes", 0), ("idlePrivateTargets", 2),
+                                  ("idlePrivateTargetBytes", 0), ("privateTargetReuses", True)):
+            with self.subTest(field=key):
+                value = self.pooled_stage(); value["limits"][key] = replacement
+                with self.assertRaises(ValueError): self.validate(value)
+        for key in ("privateTargetReuse", "privateTargetBytes", "privateTargetReuses"):
+            value = self.pooled_stage(); value["limits"].pop(key)
+            with self.assertRaises(ValueError): self.validate(value)
+        for key in ("maxPrivateTargets", "maxIdlePrivateTargets", "frameReservedBytes"):
+            value = stage(); value["limits"][key] = self.pooled_stage()["limits"][key]
+            with self.subTest(partial=key), self.assertRaises(ValueError): self.validate(value)
+
+    def test_combined_public_and_private_bytes_cannot_exceed_sixty_four_mib(self):
+        value = self.pooled_stage()
+        value["limits"].update(producerOwnedFrames=4, outstandingFrames=4, pendingRetireFrames=4,
+                               producerOwnedBytes=32 * 1024 * 1024, privateTargets=4,
+                               frameReservedBytes=32 * 1024 * 1024,
+                               privateTargetBytes=32 * 1024 * 1024, reservedTargetBytes=64 * 1024 * 1024)
+        self.validate(value)
+        value["limits"]["producerOwnedBytes"] += 1
+        value["limits"]["reservedTargetBytes"] += 1
+        with self.assertRaises(ValueError): self.validate(value)
+
+    def test_close_requires_private_pool_drain_and_retains_reuse_observations(self):
+        previous = self.pooled_stage(32)
+        value = completion()
+        value["closed"]["limits"].update({key: previous["limits"][key] for key in (
+            "privateTargetReuse", "maxPrivateTargets", "maxIdlePrivateTargets", "privateTargetReuses")})
+        value["closed"]["limits"].update(privateTargets=0, privateTargetBytes=0,
+                                          frameReservedBytes=0, idlePrivateTargets=0, idlePrivateTargetBytes=0)
+        qualification.validate_result(value, nonce="owned", frames=32, last_stage=previous)
+        retained = copy.deepcopy(value)
+        retained["closed"]["limits"].update(privateTargets=1, privateTargetBytes=512 * 1024,
+                                             idlePrivateTargets=1, idlePrivateTargetBytes=512 * 1024,
+                                             reservedTargetBytes=512 * 1024)
+        with self.assertRaisesRegex(ValueError, "drain"):
+            qualification.validate_result(retained, nonce="owned", frames=32, last_stage=previous)
+        value["closed"]["limits"]["privateTargetReuses"] = 0
+        with self.assertRaisesRegex(ValueError, "cumulative"):
+            qualification.validate_result(value, nonce="owned", frames=32, last_stage=previous)
+
+    def test_reuse_counter_and_capability_cannot_disappear_mid_session(self):
+        first, second = self.pooled_stage(2), self.pooled_stage(3)
+        second["limits"]["privateTargetReuses"] = 0
+        with self.assertRaisesRegex(ValueError, "backwards"):
+            qualification.validate_transition(first, second)
+        with self.assertRaisesRegex(ValueError, "accounting changed"):
+            qualification.validate_transition(first, stage(3))
+
+    def test_same_geometry_requires_observed_reuse_but_resize_can_allocate(self):
+        first, second = self.pooled_stage(), self.pooled_stage(2)
+        second["limits"]["privateTargetReuses"] = first["limits"]["privateTargetReuses"]
+        with self.assertRaisesRegex(ValueError, "reuse"):
+            qualification.validate_transition(first, second)
+        resized = self.pooled_stage(3)
+        resized["limits"]["privateTargetReuses"] = second["limits"]["privateTargetReuses"]
+        qualification.validate_transition(second, resized)
+
+
 if __name__ == "__main__":
     unittest.main()

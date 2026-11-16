@@ -8,9 +8,11 @@ import 'package:flutter/services.dart';
 
 import 'native_document.dart';
 import 'native_ffi.dart';
+import 'native_gpu_cache_trim.dart';
 import 'native_gpu_tiles.dart';
 import 'native_gpu_trace.dart';
 import 'native_presentation.dart';
+import 'native_producer_ready.dart';
 import 'native_viewport.dart';
 
 enum NativeTexturePlatform {
@@ -334,7 +336,13 @@ class NativeTextureController extends ChangeNotifier {
       _coverWorking = false,
       _nativeCoverConfirmed = false;
   Completer<void>? _coverWaiter;
+  VoidCallback? _detachReadyEvents;
+  final _readySerials = <int, int>{};
+  bool _readyEventPending = false, _readyEventsAvailable = false;
   Future<void>? _pauseFuture;
+  Future<NativeGpuCacheTrimResult>? _trimFuture;
+  VoidCallback? _cancelTrim;
+  int _trimRequestId = 0, _trimEpoch = 0;
   Timer? _coverWaitDeadline;
   final _releases = <Future<void>>{};
   static int get retainedOwnedSnapshots => _OwnedSnapshot.retained.length;
@@ -371,11 +379,23 @@ class NativeTextureController extends ChangeNotifier {
     if (readbacks is int) {
       counters[NativeGpuCounter.pluginWholeFrameReadbacks] = readbacks;
     }
+    final current = generation ?? _generation;
+    final stamp = _frame?.stamp;
+    final cacheSample =
+        stage == NativeGpuTraceStage.producerReady &&
+            current == _generation &&
+            !_closing &&
+            !_stopped &&
+            stamp != null &&
+            status != null
+        ? NativeGpuCacheSample.fromStatus(status, stamp)
+        : null;
     recorder.record(
       stage,
-      generation: generation ?? _generation,
+      generation: current,
       failure: failure,
       counters: counters,
+      producerDiagnostics: cacheSample,
     );
   }
 
@@ -496,6 +516,7 @@ class NativeTextureController extends ChangeNotifier {
   void _invalidate({bool configurationChanged = false}) {
     if (_closing || _stopped || _plan == null || document.isDisposed) return;
     _traceSuperseded();
+    _readyEventPending = false;
     ++_generation;
     _view = document.beginPresentation();
     _raster = document.rasterInvalidationGeneration;
@@ -521,6 +542,121 @@ class NativeTextureController extends ChangeNotifier {
     _requestNativeCover();
     _signal(); // Cover cached platform pixels in this same UI turn.
     if (!_paused) unawaited(_pump());
+  }
+
+  /// Trims unused Native targets without changing publication or snapshot
+  /// ownership. Concurrent calls share the first request's future and target.
+  /// A final busy receipt is returned immediately; only pending work is polled.
+  Future<NativeGpuCacheTrimResult> trimCaches({int targetBytes = 0}) {
+    if (targetBytes < 0 ||
+        targetBytes > NativeGpuCacheTrimResult.maxTargetBytes) {
+      throw ArgumentError.value(
+        targetBytes,
+        'targetBytes',
+        'Invalid trim target.',
+      );
+    }
+    final id = textureId, device = _device;
+    NativeGpuCacheTrimResult unavailable(String reason, {int? requestId}) =>
+        NativeGpuCacheTrimResult.unavailable(
+          reason: reason,
+          textureId: id,
+          deviceGeneration: device > 0 ? device : null,
+          requestId: requestId,
+          targetBytes: targetBytes,
+        );
+    if (_closing || _stopped || document.isDisposed) {
+      return Future.value(unavailable('closed'));
+    }
+    final existing = _trimFuture;
+    if (existing != null) return existing;
+    if (id == null || device <= 0) {
+      return Future.value(unavailable('notReady'));
+    }
+    if (_trimRequestId == 0x7fffffffffffffff) {
+      return Future.error(
+        const NativeCallException(
+          'trimRequestLimit',
+          'GPU trim IDs exhausted.',
+        ),
+      );
+    }
+    final request = ++_trimRequestId, epoch = ++_trimEpoch;
+    final memberIds = List<int>.of(tileTextureIds);
+    final done = Completer<NativeGpuCacheTrimResult>();
+    _trimFuture = done.future;
+    _cancelTrim = () {
+      if (!done.isCompleted) {
+        done.complete(unavailable('closed', requestId: request));
+      }
+    };
+    bool current() =>
+        epoch == _trimEpoch &&
+        !_closing &&
+        !_stopped &&
+        !document.isDisposed &&
+        textureId == id &&
+        _device == device;
+    Future<NativeGpuCacheTrimResult> perform() async {
+      var method = 'trimCache';
+      while (current()) {
+        final reply = await _invoke(method, {
+          'textureId': id,
+          'deviceGeneration': device,
+          'requestId': request,
+          'targetBytes': targetBytes,
+        });
+        if (!current()) return unavailable('ownerChanged', requestId: request);
+        final result = NativeGpuCacheTrimResult.fromJson(
+          reply,
+          textureId: id,
+          deviceGeneration: device,
+          requestId: request,
+          targetBytes: targetBytes,
+          memberTextureIds: memberIds,
+        );
+        if (!result.pending) return result;
+        await Future<void>.delayed(pollInterval);
+        method = 'trimCacheStatus';
+      }
+      return unavailable('ownerChanged', requestId: request);
+    }
+
+    unawaited(() async {
+      try {
+        final result = await perform().timeout(operationTimeout);
+        if (!done.isCompleted) done.complete(result);
+      } catch (error, stack) {
+        final unsupported =
+            error is MissingPluginException ||
+            (error is PlatformException &&
+                const {
+                  'unsupported',
+                  'featureDisabled',
+                  'notImplemented',
+                }.contains(error.code));
+        if (!done.isCompleted) {
+          if (unsupported) {
+            done.complete(unavailable('unsupported', requestId: request));
+          } else {
+            done.completeError(error, stack);
+          }
+        }
+      } finally {
+        if (epoch == _trimEpoch) ++_trimEpoch;
+        if (identical(_trimFuture, done.future)) {
+          _trimFuture = null;
+          _cancelTrim = null;
+        }
+      }
+    }());
+    return done.future;
+  }
+
+  void _cancelCacheTrim() {
+    ++_trimEpoch; // Late channel replies retain their original RPC observer only.
+    _cancelTrim?.call();
+    _cancelTrim = null;
   }
 
   /// Stops presentation admission and waits for the native view to be hidden.
@@ -955,6 +1091,15 @@ class NativeTextureController extends ChangeNotifier {
             'The macOS plugin did not negotiate a native Metal view.',
           );
         }
+        if (created['producerReadyEvents'] == true && !_closing && !_stopped) {
+          _detachReadyEvents ??= NativeProducerReadyEvents.attach(
+            channel,
+            _producerReady,
+            onAvailabilityChanged: (available) {
+              _readyEventsAvailable = available;
+            },
+          );
+        }
       }
       await _waitReady(generation).timeout(operationTimeout);
       if (!_current(generation)) return;
@@ -1128,6 +1273,7 @@ class NativeTextureController extends ChangeNotifier {
         // A slow producer returns to the existing periodic polling cadence.
         unawaited(_poll());
       }
+      _drainReadyEvent();
     }
   }
 
@@ -1263,6 +1409,8 @@ class NativeTextureController extends ChangeNotifier {
     };
     diagnostic = error;
     _stopped = true;
+    _cancelCacheTrim();
+    _stopReadyEvents();
     _wanted = false;
     _phase = fallback ? NativeTexturePhase.fallback : NativeTexturePhase.failed;
     _timer.cancel();
@@ -1298,7 +1446,76 @@ class NativeTextureController extends ChangeNotifier {
       unawaited(_pump());
       return;
     }
-    if (_frame != null) unawaited(_poll());
+    // A fully checked current publication needs no idle platform/snapshot RPC.
+    // Pending work still polls until the existing publication deadline, and a
+    // missing/failed event transport keeps the legacy polling path.
+    if (_frame != null &&
+        (!_readyEventsAvailable || !canDisplay || _readyEventPending)) {
+      unawaited(_poll());
+    }
+  }
+
+  void _stopReadyEvents() {
+    _detachReadyEvents?.call();
+    _detachReadyEvents = null;
+    _readyEventPending = false;
+    _readyEventsAvailable = false;
+    _readySerials.clear();
+  }
+
+  void _producerReady(Object? event) {
+    if (_closing ||
+        _stopped ||
+        _paused ||
+        _plan == null ||
+        event is! Map ||
+        event['event'] != 'producerReady') {
+      return;
+    }
+    final id = event['textureId'], serial = event['serial'];
+    if (id is! int ||
+        serial is! int ||
+        serial <= 0 ||
+        serial > 0x7fffffffffffffff ||
+        !(useTileGroups ? tileTextureIds.contains(id) : textureId == id) ||
+        event['deviceGeneration'] != _device) {
+      return;
+    }
+    final info = document.info;
+    if (info == null ||
+        document.isDisposed ||
+        _raster != document.rasterInvalidationGeneration ||
+        !NativePresentationStamp(
+          documentId: info.documentId,
+          revision: info.revision,
+          fontGeneration: info.fontGeneration,
+          viewGeneration: _view,
+          deviceGeneration: _device,
+          deviceScale: _plan!.dpr,
+        ).matches(event['stamp']) ||
+        serial <= (_readySerials[id] ?? 0)) {
+      return;
+    }
+    _readySerials[id] = serial; // At most the current one/two registrations.
+    _readyEventPending = true;
+    _drainReadyEvent();
+  }
+
+  void _drainReadyEvent() {
+    if (!_readyEventPending ||
+        _working ||
+        _polling ||
+        _wanted ||
+        _closing ||
+        _stopped ||
+        _paused ||
+        _frame == null) {
+      return;
+    }
+    // A hint cannot clear the cover. The ordinary status/full-stamp/snapshot
+    // checks below must confirm the entire publication (including both tiles).
+    _readyEventPending = false;
+    unawaited(_poll());
   }
 
   Future<void> _poll() async {
@@ -1311,6 +1528,7 @@ class NativeTextureController extends ChangeNotifier {
       return;
     }
     _polling = true;
+    _readyEventPending = false;
     final frame = _frame!, generation = _generation;
     try {
       if (!_localCurrent(frame)) {
@@ -1381,6 +1599,7 @@ class NativeTextureController extends ChangeNotifier {
       }
     } finally {
       _polling = false;
+      _drainReadyEvent();
     }
   }
 
@@ -1572,6 +1791,8 @@ class NativeTextureController extends ChangeNotifier {
         done.future; // Publish idempotency before notifying listeners.
     _closing = true;
     _stopped = true;
+    _cancelCacheTrim();
+    _stopReadyEvents();
     ++_generation;
     _wanted = false;
     _phase = NativeTexturePhase.closing;

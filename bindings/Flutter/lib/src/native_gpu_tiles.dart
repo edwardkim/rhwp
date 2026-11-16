@@ -89,7 +89,7 @@ class NativeGpuTilePlan {
 /// It never creates a second document/view owner or transfers an ID twice.
 class NativeTileGroupChannel extends MethodChannel {
   NativeTileGroupChannel(this.delegate, {required this.windows})
-    : super(delegate.name);
+    : super(delegate.name, delegate.codec, delegate.binaryMessenger);
   final MethodChannel delegate;
   final bool windows;
   NativeGpuTilePlan? _plan;
@@ -128,6 +128,43 @@ class NativeTileGroupChannel extends MethodChannel {
       );
       final result = _members(raw, creating: true);
       return result as T?;
+    }
+    if (method == 'trimCache' || method == 'trimCacheStatus') {
+      if (_group == null || _device == null || _textures.length != 2) {
+        throw const NativeCallException(
+          'closed',
+          'The tile cache owner is unavailable.',
+        );
+      }
+      final raw = await delegate.invokeMapMethod<String, Object?>(method, {
+        ...args,
+        'groupId': _group,
+        'deviceGeneration': _device,
+      });
+      final members = raw?['members'];
+      if (raw?['groupId'] != _group ||
+          raw?['deviceGeneration'] != _device ||
+          raw?['requestId'] != args['requestId'] ||
+          members is! List ||
+          members.length != 2) {
+        throw const NativeCallException(
+          'invalidTileReply',
+          'The cache trim group identity changed.',
+        );
+      }
+      for (var index = 0; index < 2; index++) {
+        final member = members[index];
+        if (member is! Map ||
+            member['textureId'] != _textures[index] ||
+            member['deviceGeneration'] != _device ||
+            member['requestId'] != args['requestId']) {
+          throw const NativeCallException(
+            'invalidTileReply',
+            'A cache trim member identity changed.',
+          );
+        }
+      }
+      return <String, Object?>{...raw!, 'textureId': _group} as T?;
     }
     if (method == 'submit') {
       final width = args['width'], height = args['height'];
@@ -286,6 +323,12 @@ class NativeTileGroupChannel extends MethodChannel {
         (v) => v['registered'] == false || v['unregistered'] == true,
       ),
     };
+    // Keep both sample slots, including unknown/missing diagnostics. Copying the
+    // first tile's counters would misrepresent the whole viewport as measured.
+    result.remove('producerDiagnostics');
+    result['producerDiagnosticsSamples'] = [
+      for (final value in values) value['producerDiagnostics'],
+    ];
     for (final key in [
       'ready',
       'apiReady',
@@ -300,6 +343,7 @@ class NativeTileGroupChannel extends MethodChannel {
       'covered',
       'accepted',
       'closeAcknowledgementRequired',
+      'producerReadyEvents',
     ]) {
       result[key] = all(key);
     }

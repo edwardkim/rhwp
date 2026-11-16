@@ -50,9 +50,11 @@
     NSMutableArray* members = [NSMutableArray arrayWithCapacity:2];
     for (size_t i = 0; i < 2; ++i) {
       auto owner = std::make_shared<State>(generation, path.UTF8String, std::move(slots[i]));
+      owner->producerReady = ProducerReadyCallback(_readyEvents, identity.textures[i]);
       views[i] = std::make_shared<MetalViewState>(owner);
       if (!records.insert(identity.textures[i], views[i])) throw std::runtime_error("tile view registry is full");
       [members addObject:@{@"textureId":@(identity.textures[i]),@"deviceGeneration":@(generation),
+          @"producerReadyEvents":@YES,
           @"initializing":@YES,@"ready":@NO,@"presentationKind":@"nativeView",
           @"closeAcknowledgementRequired":@YES,
           @"viewType":@"rhwp_native/metal_view",@"limits":MetalViewLimits()}];
@@ -108,6 +110,12 @@
       _views.lookup(_tileGroup.textures[0]), _views.lookup(_tileGroup.textures[1])};
   if (!views[0] || !views[1]) {
     result([FlutterError errorWithCode:@"closed" message:@"Both tile owners must remain observable." details:nil]);return;
+  }
+  if ([call.method isEqualToString:@"trimCache"] || [call.method isEqualToString:@"trimCacheStatus"]) {
+    NSMutableArray* members=[NSMutableArray arrayWithCapacity:2];
+    for(size_t i=0;i<2;++i)
+      [members addObject:CacheTrimCall(views[i]->owner,_tileGroup.textures[i],args,[call.method isEqualToString:@"trimCacheStatus"])];
+    result(CacheTrimGroupValue(group,generation,members));return;
   }
   if ([call.method isEqualToString:@"submitGroup"]) {
     id tilesValue = args[@"tiles"];

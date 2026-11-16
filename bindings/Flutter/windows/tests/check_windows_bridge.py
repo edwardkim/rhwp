@@ -18,13 +18,20 @@ def main():
     command = ["g++", "-std=c++17", "-pthread", "-Wall", "-Wextra", "-Werror", "-I" + str(source)]
     if args.sanitize:
         command += ["-fsanitize=address,undefined", "-fno-omit-frame-pointer", "-g"]
-    for name in ["frame_lifetime_test", "import_lifetime_test", "close_registry_test"]:
+    for name in ["frame_lifetime_test", "import_lifetime_test", "close_registry_test", "messenger_lifetime_test"]:
         executable = output / name
-        subprocess.run(command + [str(source / "tests" / (name + ".cpp")), "-o", str(executable)], check=True, timeout=60)
+        modeled_sdk = ["-I" + str(source / "tests/support")] if name == "messenger_lifetime_test" else []
+        subprocess.run(command + modeled_sdk + [str(source / "tests" / (name + ".cpp")), "-o", str(executable)], check=True, timeout=60)
         subprocess.run([str(executable)], check=True, timeout=30)
     tiles = output / "bounded-tile-group-test"
     subprocess.run(command + [str(source.parent / "common/bounded_tile_group_test.cc"), "-o", str(tiles)], check=True, timeout=60)
     subprocess.run([str(tiles)], check=True, timeout=30)
+    metrics = output / "gpu-cache-metrics-test"
+    subprocess.run(command + [str(source.parent / "common/gpu_cache_metrics_test.cc"), "-o", str(metrics)], check=True, timeout=60)
+    subprocess.run([str(metrics)], check=True, timeout=30)
+    trims = output / "cache-trim-test"
+    subprocess.run(command + [str(source.parent / "common/cache_trim_test.cc"), "-o", str(trims)], check=True, timeout=60)
+    subprocess.run([str(trims)], check=True, timeout=30)
     subprocess.run([sys.executable, "-B", str(source / "tests/native_d3d_disabled.py"), "--output", str(output / "disabled")], check=True, timeout=60)
     subprocess.run([sys.executable, "-B", str(source / "tests/group_error_limits_contract.py"), "--output", str(output / "group-error-limits")], check=True, timeout=90)
     if args.flutter_public:

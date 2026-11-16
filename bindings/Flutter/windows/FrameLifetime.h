@@ -65,12 +65,15 @@ class ImmutableFrames {
     size_t bytes = 0;
     Phase phase = Phase::Free;
     PublicationMode mode = PublicationMode::LegacyImmutable;
+    bool private_split = false;
     std::shared_ptr<void> resources;
   };
   struct State {
     std::mutex mutex;
     std::array<Slot, 4> slots;
     size_t bytes = 0;
+    size_t private_targets = 0, private_bytes = 0, private_idle = 0, private_idle_bytes = 0;
+    uint64_t private_reuses = 0;
     uint64_t handed_off = 0, unexposed_discarded = 0;
   };
  public:
@@ -79,6 +82,38 @@ class ImmutableFrames {
     size_t producer_owned = 0, producer_owned_bytes = 0, import_pending = 0, import_pending_bytes = 0;
     size_t legacy_retained = 0, permanent = 0;
     uint64_t handed_off = 0, unexposed_discarded = 0;
+    size_t private_targets = 0, private_bytes = 0, private_idle = 0, private_idle_bytes = 0;
+    uint64_t private_reuses = 0;
+  };
+  class Reservation;
+  // This charge outlives the frame which first allocated its private target.
+  // It shares the original 64-MiB ledger and never consumes a public frame slot.
+  class PrivateReservation {
+   public:
+    ~PrivateReservation() {
+      if (!charged_) return;
+      std::lock_guard<std::mutex> lock(state_->mutex);
+      state_->bytes -= bytes_; state_->private_bytes -= bytes_; --state_->private_targets;
+      if (idle_) { --state_->private_idle; state_->private_idle_bytes -= bytes_; }
+    }
+    size_t bytes() const { return bytes_; }
+    bool set_idle(bool idle) {
+      std::lock_guard<std::mutex> lock(state_->mutex);
+      if (!charged_) return false;
+      if (idle_ == idle) return true;
+      if (idle && state_->private_idle == 2) return false;
+      if (idle) { ++state_->private_idle; state_->private_idle_bytes += bytes_; }
+      else { --state_->private_idle; state_->private_idle_bytes -= bytes_; }
+      idle_ = idle; return true;
+    }
+    PrivateReservation(const PrivateReservation&) = delete;
+    PrivateReservation& operator=(const PrivateReservation&) = delete;
+   private:
+    friend class Reservation;
+    PrivateReservation(std::shared_ptr<State> state, size_t bytes) : state_(std::move(state)), bytes_(bytes) {}
+    std::shared_ptr<State> state_;
+    const size_t bytes_;
+    bool charged_ = false, idle_ = false;
   };
   class Reservation {
    public:
@@ -101,6 +136,29 @@ class ImmutableFrames {
       }
     }
     size_t bytes() const { std::lock_guard<std::mutex> lock(state_->mutex); return state_->slots[index_].bytes; }
+    std::shared_ptr<PrivateReservation> split_private(size_t bytes) {
+      std::lock_guard<std::mutex> lock(state_->mutex);
+      auto& slot = state_->slots[index_];
+      if (!charged_ || slot.phase != Phase::Reserved || slot.private_split || !bytes ||
+          bytes > 8 * 1024 * 1024 || slot.bytes != bytes * 2 || state_->private_targets == 4) return {};
+      auto result = std::shared_ptr<PrivateReservation>(new PrivateReservation(state_, bytes));
+      slot.bytes -= bytes; slot.private_split = true;
+      ++state_->private_targets; state_->private_bytes += bytes;
+      result->charged_ = true; return result; // state_->bytes is unchanged.
+    }
+    bool adopt_private(const std::shared_ptr<PrivateReservation>& credit) {
+      if (!credit || credit->state_ != state_) return false;
+      std::lock_guard<std::mutex> lock(state_->mutex);
+      auto& slot = state_->slots[index_];
+      if (!charged_ || slot.phase != Phase::Reserved || slot.private_split || !credit->charged_ ||
+          !credit->idle_ || slot.bytes != credit->bytes_ * 2) return false;
+      // The private allocation already owns its charge. Remove only the new
+      // frame's duplicate allowance; its public D3D11 destination stays fresh.
+      slot.bytes -= credit->bytes_; state_->bytes -= credit->bytes_; slot.private_split = true;
+      credit->idle_ = false; --state_->private_idle; state_->private_idle_bytes -= credit->bytes_;
+      if (state_->private_reuses < uint64_t(std::numeric_limits<int64_t>::max())) ++state_->private_reuses;
+      return true;
+    }
     // Resource bundle is attached before the first producer GPU operation, so
     // exceptions/close cannot drop potentially in-flight D3D12/D3D11 resources.
     bool begin_gpu(std::shared_ptr<void> resources) {
@@ -167,6 +225,9 @@ class ImmutableFrames {
   Stats stats() const {
     std::lock_guard<std::mutex> lock(state_->mutex);
     Stats result; result.bytes = state_->bytes;
+    result.private_targets = state_->private_targets; result.private_bytes = state_->private_bytes;
+    result.private_idle = state_->private_idle; result.private_idle_bytes = state_->private_idle_bytes;
+    result.private_reuses = state_->private_reuses;
     result.handed_off = state_->handed_off; result.unexposed_discarded = state_->unexposed_discarded;
     for (const auto& slot : state_->slots) {
       if (slot.phase != Phase::Free) ++result.outstanding;

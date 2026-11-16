@@ -32,7 +32,10 @@ use recovery::ContextCredit;
 pub use recovery::{
     context_credits, NativeGlContextCredits, NativeGlRecoveryInfo, MAX_GL_CONTEXT_CREDITS,
 };
-use tiles::{CachedTile, ManagedTarget, TargetAllocation, TargetBudget, TileCache, TilePlan};
+use tiles::{
+    CachedTile, ManagedTarget, TargetAllocation, TargetBudget, TileCache, TileConfig,
+    TilePlacement, TilePlan, TileTarget,
+};
 pub use tiles::{NativeGlTargetStats, NativeGlTileStats};
 
 const MIB: usize = 1024 * 1024;
@@ -791,10 +794,30 @@ impl NativeGlPresenter {
         frame_pins: &mut Vec<Rc<CachedTile>>,
     ) -> NativeGlResult<bool> {
         let Some(plan) = TilePlan::new(
-            self.config,
+            TileConfig {
+                max_dimension: self.config.max_dimension,
+                max_pixels: self.config.max_pixels,
+                max_target_bytes: self
+                    .config
+                    .max_target_bytes
+                    .min(self.config.max_scratch_bytes)
+                    .min(self.config.max_managed_target_bytes),
+                tile_size: self.config.tile_size,
+                max_cached_tiles: self.config.max_cached_tiles,
+                max_tile_bytes: self.config.max_tile_bytes,
+            },
             stamp,
-            target,
-            placement,
+            TileTarget {
+                context_id: target.context_id,
+                width: target.width,
+                height: target.height,
+            },
+            TilePlacement {
+                scale: placement.scale,
+                origin_x: placement.origin_x,
+                origin_y: placement.origin_y,
+                background_color: placement.background_color,
+            },
             input.snapshot(),
             clear_color,
         ) else {
@@ -810,10 +833,12 @@ impl NativeGlPresenter {
                 .filter(|(_, tile)| tile.is_none())
                 .map(|(key, _)| key.region.bytes())
                 .sum();
-            while !self
-                .tiles
-                .has_room(self.config, missing_count, missing_bytes)
-            {
+            while !self.tiles.has_room(
+                self.config.max_cached_tiles,
+                self.config.max_tile_bytes,
+                missing_count,
+                missing_bytes,
+            ) {
                 if !self.tiles.evict_idle() {
                     self.tiles.observations.pinned_admission_fallbacks = self
                         .tiles
@@ -920,7 +945,7 @@ impl NativeGlPresenter {
                     index,
                     Rc::new(CachedTile {
                         key: key.clone(),
-                        target: RefCell::new(tile),
+                        target: Rc::new(RefCell::new(tile)),
                     }),
                 ));
             }
@@ -1002,6 +1027,38 @@ impl NativeGlPresenter {
                 })
             }
         }
+    }
+
+    /// Drops only completed internal tile/scratch targets, preserving configured quotas.
+    /// # Safety
+    /// The matching host context must be current on this owner thread.
+    pub unsafe fn trim_cache(
+        &mut self,
+        context_id: u64,
+        generation: u64,
+        target_bytes: usize,
+    ) -> NativeGlResult<serde_json::Value> {
+        self.check_context(context_id, generation)?;
+        if target_bytes > self.config.max_managed_target_bytes {
+            return Err(
+                invalid("cache trim target exceeds the configured managed-target budget").into(),
+            );
+        }
+        self.healthy_device("Skia reported device loss before cache trim")?;
+        let before = self.target_budget.stats().estimated_bytes;
+        while self.target_budget.stats().estimated_bytes > target_bytes && self.tiles.evict_idle() {
+        }
+        while self.target_budget.stats().estimated_bytes > target_bytes && !self.scratch.is_empty()
+        {
+            self.scratch.remove(0);
+        }
+        let after = self.target_budget.stats().estimated_bytes;
+        Ok(super::gpu_tiles::trim_receipt(
+            before,
+            after,
+            target_bytes,
+            if after > target_bytes { "pinned" } else { "" },
+        ))
     }
 
     /// # Safety

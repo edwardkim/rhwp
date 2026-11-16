@@ -16,11 +16,15 @@ class NativeGpuLifecycle extends StatefulWidget {
     required this.controller,
     required this.child,
     this.onPauseError,
+    this.onTrimError,
   });
 
   final NativeTextureController controller;
   final Widget child;
   final ValueChanged<Object>? onPauseError;
+
+  /// Reports a current owner's optional memory-pressure trim failure.
+  final ValueChanged<Object>? onTrimError;
 
   @override
   State<NativeGpuLifecycle> createState() => _NativeGpuLifecycleState();
@@ -34,6 +38,8 @@ class _NativeGpuLifecycleState extends State<NativeGpuLifecycle>
   AppLifecycleState? _lifecycle;
   int _metricsGeneration = 0;
   bool _metricsPending = false;
+  int _controllerEpoch = 0;
+  Future<void>? _memoryPressure;
 
   bool get _hidden => const {
     AppLifecycleState.hidden,
@@ -66,7 +72,11 @@ class _NativeGpuLifecycleState extends State<NativeGpuLifecycle>
   @override
   void didUpdateWidget(NativeGpuLifecycle oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (!identical(oldWidget.controller, widget.controller)) _sync();
+    if (!identical(oldWidget.controller, widget.controller)) {
+      ++_controllerEpoch;
+      _memoryPressure = null;
+      _sync();
+    }
   }
 
   void _pause() {
@@ -94,6 +104,37 @@ class _NativeGpuLifecycleState extends State<NativeGpuLifecycle>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _lifecycle = state;
     _sync();
+  }
+
+  @override
+  void didHaveMemoryPressure() {
+    if (!mounted || _memoryPressure != null) return;
+    final controller = widget.controller, epoch = _controllerEpoch;
+    late final Future<void> observed;
+    observed = controller
+        .trimCaches(targetBytes: 0)
+        .then<void>(
+          (_) {},
+          onError: (Object error, StackTrace stack) {
+            if (mounted &&
+                epoch == _controllerEpoch &&
+                identical(controller, widget.controller) &&
+                !const {
+                  NativeTexturePhase.closing,
+                  NativeTexturePhase.closed,
+                  NativeTexturePhase.retirePending,
+                  NativeTexturePhase.failed,
+                  NativeTexturePhase.fallback,
+                }.contains(controller.phase)) {
+              widget.onTrimError?.call(error);
+            }
+          },
+        )
+        .whenComplete(() {
+          if (identical(_memoryPressure, observed)) _memoryPressure = null;
+        });
+    _memoryPressure = observed;
+    unawaited(observed);
   }
 
   @override
@@ -127,6 +168,8 @@ class _NativeGpuLifecycleState extends State<NativeGpuLifecycle>
   @override
   void dispose() {
     ++_metricsGeneration;
+    ++_controllerEpoch;
+    _memoryPressure = null;
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }

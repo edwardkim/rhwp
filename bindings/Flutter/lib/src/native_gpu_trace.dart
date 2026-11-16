@@ -1,6 +1,9 @@
 import 'dart:collection';
 import 'dart:math' as math;
 
+import 'native_gpu_cache_metrics.dart';
+export 'native_gpu_cache_metrics.dart';
+
 /// These are producer/controller milestones, never compositor display or fences.
 enum NativeGpuTraceStage {
   configured,
@@ -31,33 +34,19 @@ enum NativeGpuTraceFailure {
   other,
 }
 
-enum NativeGpuCounter {
-  dartOwnedSnapshots,
-  controllerRpc,
-  isolateRpc,
-  visiblePages,
-  pluginProducerOwnedBytes,
-  pluginImportPendingBytes,
-  pluginReservedTargetBytes,
-  pluginOutstandingFrames,
-  pluginDescriptorTickets,
-  pluginWholeFrameReadbacks,
-  nativeFrameBytes,
-  nativeSnapshotHandles,
-  nativeLeases,
-}
-
 final class NativeGpuTraceEvent {
   NativeGpuTraceEvent._(
     this.stage,
     this.generation,
     this.elapsedMicros,
     this.failure,
+    this.producerDiagnostics,
     Map<NativeGpuCounter, int> counters,
   ) : counters = Map.unmodifiable(counters);
   final NativeGpuTraceStage stage;
   final int generation, elapsedMicros;
   final NativeGpuTraceFailure? failure;
+  final NativeGpuCacheSample? producerDiagnostics;
   final Map<NativeGpuCounter, int> counters;
 
   Map<String, Object?> toJson() => {
@@ -65,6 +54,8 @@ final class NativeGpuTraceEvent {
     'generation': generation,
     'elapsedMicros': elapsedMicros,
     if (failure != null) 'failure': failure!.name,
+    if (producerDiagnostics != null)
+      'producerDiagnostics': producerDiagnostics!.toJson(),
     if (counters.isNotEmpty)
       'counters': {
         for (final entry in counters.entries) entry.key.name: entry.value,
@@ -113,6 +104,7 @@ final class NativeGpuTrace {
     required int generation,
     NativeGpuTraceFailure? failure,
     Map<NativeGpuCounter, int> counters = const {},
+    NativeGpuCacheSample? producerDiagnostics,
   }) {
     try {
       final now = _clock();
@@ -127,11 +119,15 @@ final class NativeGpuTrace {
           if (entry.value >= 0 && entry.value <= 9007199254740991)
             entry.key: entry.value,
       };
+      if (producerDiagnostics != null) {
+        filtered.addAll(producerDiagnostics.traceCounters);
+      }
       final event = NativeGpuTraceEvent._(
         stage,
         generation,
         now - _origin!,
         failure,
+        producerDiagnostics,
         filtered,
       );
       _counts.update(stage, (count) => count + 1, ifAbsent: () => 1);

@@ -97,6 +97,24 @@ def configure_reference_runner(runner, example, target):
     (runner / 'pubspec.yaml').write_text(spec, encoding='utf-8')
     shutil.rmtree(runner / 'lib')
     shutil.copytree(example / 'lib', runner / 'lib')
+    if target == 'linux':
+        path = runner / 'linux/runner/my_application.cc'
+        source = path.read_text(encoding='utf-8')
+        project = '  g_autoptr(FlDartProject) project = fl_dart_project_new();\n'
+        view = '  FlView* view = fl_view_new(project);\n'
+        if (source.count(project) != 1 or source.count(view) != 1 or
+                source.index(project) > source.index(view) or
+                'fl_dart_project_set_ui_thread_policy' in source or
+                'fl_dart_project_set_enable_impeller' in source):
+            raise ValueError('unexpected generated Linux runner policy template')
+        # Native owner/worker completion is polled by Dart timers. Keep those
+        # timers independent of GTK draw/resize work on the platform thread.
+        # Use the public Skia selection for the Native GL bridge: the pinned
+        # Impeller GLES path can stall texture sampling across large resizes.
+        policy = ('  fl_dart_project_set_ui_thread_policy(\n'
+                  '      project, FL_UI_THREAD_POLICY_RUN_ON_SEPARATE_THREAD);\n'
+                  '  fl_dart_project_set_enable_impeller(project, FALSE);\n')
+        path.write_text(source.replace(project, project + policy), encoding='utf-8')
     if target == 'macos':
         # This developer reference uses explicit file paths and sibling Native
         # libraries. It does not implement App Store sandbox/bookmark access.
@@ -208,6 +226,8 @@ def build(args):
             path.relative_to(runner).as_posix(): digest(path)
             for path in sorted(runner.rglob('*')) if path.is_file()}
         receipt['macosSandbox'] = False if target == 'macos' else None
+        receipt['linuxUiThreadPolicy'] = 'separate' if target == 'linux' else None
+        receipt['linuxRenderer'] = 'skia' if target == 'linux' else None
         run([*flutter, 'pub', 'get', '--offline'], runner)
         run([*flutter, 'build', target, '--' + args.mode,
              '--dart-define=RHWP_GPU=' + str(not args.cpu).lower(),

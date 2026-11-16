@@ -2,6 +2,7 @@
 #include "gl_state_guard.h"
 #include "texture_state.h"
 #include "../common/bounded_tile_group.h"
+#include "../common/producer_ready.h"
 #include <optional>
 #include "rhwp_native_ffi.h"
 
@@ -81,6 +82,56 @@ FlValue* stamp_value(const Stamp& stamp) {
   fl_value_set_string_take(map, "deviceScale", fl_value_new_float(stamp.dpr));
   return map;
 }
+
+class ReadyEvents : public std::enable_shared_from_this<ReadyEvents> {
+ public:
+  rhwp::ProducerReadyMailbox mailbox;
+  FlEventChannel* channel;
+  GMainContext* context;
+  explicit ReadyEvents(FlBinaryMessenger* messenger) {
+    auto* codec = fl_standard_method_codec_new();
+    channel = fl_event_channel_new(messenger, "rhwp_native/texture_linux/events", FL_METHOD_CODEC(codec));
+    g_object_unref(codec);
+    context = g_main_context_ref_thread_default();
+    fl_event_channel_set_stream_handlers(channel,
+        [](FlEventChannel*, FlValue*, gpointer data) -> FlMethodErrorResponse* {
+          static_cast<ReadyEvents*>(data)->mailbox.listen(true); return nullptr;
+        }, [](FlEventChannel*, FlValue*, gpointer data) -> FlMethodErrorResponse* {
+          static_cast<ReadyEvents*>(data)->mailbox.listen(false); return nullptr;
+        }, this, nullptr);
+  }
+  void stop() {
+    mailbox.listen(false);
+    fl_event_channel_set_stream_handlers(channel, nullptr, nullptr, nullptr, nullptr);
+    g_clear_object(&channel);
+  }
+  ~ReadyEvents() { if (channel) g_object_unref(channel); g_main_context_unref(context); }
+  void offer(const rhwp::ProducerReadyFrame& frame) noexcept {
+    try {
+      if (!mailbox.offer(frame)) return;
+      auto* kept = new std::shared_ptr<ReadyEvents>(shared_from_this());
+      GSource* source = g_idle_source_new();
+      g_source_set_callback(source, [](gpointer data) -> gboolean {
+        auto ready = *static_cast<std::shared_ptr<ReadyEvents>*>(data);
+        try {
+        for (const auto& frame : ready->mailbox.take()) {
+          Value event(fl_value_new_map());
+          set_text(event.value, "event", "producerReady");
+          set_int(event.value, "textureId", frame.texture);
+          set_int(event.value, "deviceGeneration", frame.device);
+          set_int(event.value, "serial", frame.serial);
+          fl_value_set_string_take(event.value, "stamp", stamp_value(
+              {frame.document, frame.revision, frame.font, frame.view, frame.device, frame.scale}));
+          fl_event_channel_send(ready->channel, event.value, nullptr, nullptr);
+        }
+        } catch (...) { ready->mailbox.listen(false); }
+        return G_SOURCE_REMOVE;
+      }, kept, [](gpointer data) { delete static_cast<std::shared_ptr<ReadyEvents>*>(data); });
+      if (!g_source_attach(source, context)) mailbox.listen(false);
+      g_source_unref(source);
+    } catch (...) { mailbox.listen(false); } // Optional hints never change frame ownership.
+  }
+};
 
 // Native strings are freed on the same calling thread. This codec only sees
 // bounded ABI metadata; it never parses document bytes or calls a legacy HOST.
@@ -190,7 +241,7 @@ class NativeBridge final : public Bridge {
         callbacks.user, reinterpret_cast<const uint8_t*>(config), sizeof(config) - 1), free_fn));
     return integer(response.value, "presenter");
   }
-  uint64_t render(uint64_t presenter, uint64_t context, const Description& frame, const Target& target) override {
+  RenderResult render(uint64_t presenter, uint64_t context, const Description& frame, const Target& target) override {
     Value command(fl_value_new_map());
     set_text(command.value, "op", "render");
     set_int(command.value, "clearColor", frame.clear);
@@ -219,7 +270,11 @@ class NativeBridge final : public Bridge {
     }
     fl_value_set_string_take(command.value, "placements", pages);
     Value result(request(presenter, command.value));
-    return integer(field(result.value, "info"), "wholeFrameReadbacks");
+    auto* info = field(result.value, "info");
+    auto metrics = rhwp::metrics::capture([&](bool target, const char* key) -> std::optional<uint64_t> {
+      return integer(field(info, target ? "managedTargets" : "tileCache"), key);
+    });
+    return {integer(info, "wholeFrameReadbacks"), metrics};
   }
   void release(uint64_t presenter, uint64_t context, uint64_t generation) override {
     Value command(fl_value_new_map());
@@ -227,6 +282,21 @@ class NativeBridge final : public Bridge {
     set_int(command.value, "contextId", context);
     set_int(command.value, "deviceGeneration", generation);
     Value result(request(presenter, command.value));
+  }
+  rhwp::cache::TrimReceipt trim_cache(uint64_t presenter, uint64_t context, uint64_t generation, uint64_t target) override {
+    Value command(fl_value_new_map());
+    set_text(command.value, "op", "trimCache");
+    set_int(command.value, "contextId", context); set_int(command.value, "deviceGeneration", generation);
+    set_int(command.value, "targetBytes", target);
+    Value result(request(presenter, command.value));
+    auto* busy = field(result.value, "busy");
+    if (!boolean(result.value, "ok") || fl_value_get_type(busy) != FL_VALUE_TYPE_BOOL)
+      throw Failure("contract", "missing Native cache trim receipt");
+    rhwp::cache::TrimReceipt receipt;
+    receipt.before = integer(result.value, "before"); receipt.after = integer(result.value, "after");
+    receipt.trimmed = integer(result.value, "trimmed"); receipt.busy = fl_value_get_bool(busy);
+    if (integer(result.value, "targetBytes") != target) throw Failure("contract", "cache trim target changed");
+    return receipt;
   }
   void abandon(uint64_t presenter) override {
     Value command(fl_value_new_map());
@@ -354,6 +424,8 @@ struct Notice {
   GMainContext* main_context;
   GWeakRef texture, registrar;
   std::atomic<bool> queued{false}, registered{true};
+  std::weak_ptr<ReadyEvents> ready_events;
+  uint64_t texture_id = 0;
   Notice(std::shared_ptr<Shared> state, FlTextureRegistrar* registrar, GObject* texture)
       : state(std::move(state)), main_context(g_main_context_ref_thread_default()) {
     g_weak_ref_init(&this->texture, texture);
@@ -424,6 +496,15 @@ static gboolean populate(FlTextureGL* texture, uint32_t* target, uint32_t* name,
     GlStateGuard restore;
     const auto frame = registry.populate(state, std::move(context));
     *target = GL_TEXTURE_2D; *name = frame.texture; *width = frame.width; *height = frame.height;
+    const auto status = state->status();
+    auto notice = *self->notice;
+    if (!status.closing && status.rendered && status.code.empty()) {
+      if (auto ready = notice->ready_events.lock()) {
+        const auto& stamp = status.rendered_stamp;
+        ready->offer({notice->texture_id, stamp.device, status.rendered,
+                      stamp.document, stamp.revision, stamp.font, stamp.view, stamp.dpr});
+      }
+    }
     return TRUE;
   } catch (const Failure& failure) {
     // A newly registered Texture may be painted before the owner captures its
@@ -473,10 +554,14 @@ struct LinuxTileGroup {
 std::atomic<uint64_t> next_device_generation{1};
 struct Plugin {
   FlTextureRegistrar* registrar;
+  std::shared_ptr<ReadyEvents> ready_events;
   std::map<int64_t, RhwpTexture*> textures;
   std::optional<LinuxTileGroup> group;
-  explicit Plugin(FlTextureRegistrar* registrar) : registrar(FL_TEXTURE_REGISTRAR(g_object_ref(registrar))) {}
+  Plugin(FlTextureRegistrar* registrar, FlBinaryMessenger* messenger)
+      : registrar(FL_TEXTURE_REGISTRAR(g_object_ref(registrar))),
+        ready_events(std::make_shared<ReadyEvents>(messenger)) {}
   ~Plugin() {
+    ready_events->stop();
     for (const auto& item : textures) {
       auto notice = *item.second->notice;
       notice->state->close();
@@ -506,6 +591,7 @@ struct Plugin {
 FlValue* status_value(const std::shared_ptr<Notice>& notice) {
   auto status = notice->state->status();
   auto* value = fl_value_new_map();
+  set_bool(value, "producerReadyEvents", true);
   set_int(value, "deviceGeneration", status.device);
   set_int(value, "acceptedSerial", status.accepted);
   set_int(value, "renderedSerial", status.rendered);
@@ -536,6 +622,20 @@ FlValue* status_value(const std::shared_ptr<Notice>& notice) {
     for (const auto id : status.accepted_snapshots) fl_value_append_take(ids, fl_value_new_int(int64_t(id)));
   }
   if (status.rendered) fl_value_set_string_take(value, "renderedStamp", stamp_value(status.rendered_stamp));
+  if (status.rendered && !status.closing && status.code.empty() && !status.cache_metrics.empty()) {
+    auto* metrics = fl_value_new_map();
+    set_int(metrics, "schemaVersion", 1);
+    set_text(metrics, "backend", "openGlGanesh");
+    set_text(metrics, "scope", rhwp::metrics::kScope);
+    fl_value_set_string_take(metrics, "stamp", stamp_value(status.rendered_stamp));
+    auto* counters = fl_value_new_map();
+    for (size_t index = 0; index < rhwp::metrics::kCounters.size(); ++index) {
+      if (status.cache_metrics.values[index])
+        set_int(counters, rhwp::metrics::kCounters[index].name, *status.cache_metrics.values[index]);
+    }
+    fl_value_set_string_take(metrics, "counters", counters);
+    fl_value_set_string_take(value, "producerDiagnostics", metrics);
+  }
   return value;
 }
 
@@ -577,10 +677,46 @@ FlValue* group_reply(Plugin& plugin) {
   if(complete)group.terminal=std::shared_ptr<FlValue>(fl_value_ref(reply),fl_value_unref);
   return fl_value_ref(reply);
 }
+FlValue* trim_value(uint64_t texture, uint64_t generation, const rhwp::cache::TrimReceipt& trim) {
+  auto* value = fl_value_new_map();
+  set_int(value,"textureId",texture); set_int(value,"deviceGeneration",generation);
+  set_int(value,"requestId",trim.request); set_int(value,"targetBytes",trim.target);
+  set_int(value,"before",trim.before); set_int(value,"after",trim.after); set_int(value,"trimmed",trim.trimmed);
+  set_bool(value,"pending",trim.pending); set_bool(value,"busy",trim.busy);
+  set_text(value,"reason",trim.reason); set_text(value,"scope","managedGpuTargets"); return value;
+}
 FlValue* invoke(Plugin& plugin, const std::string& method, FlValue* args, uint64_t creation_device=0) {
   if(method=="capabilities") {
     auto* reply=fl_value_new_map();set_bool(reply,"tileGroups",true);set_int(reply,"maxTileGroupTiles",2);
-    set_int(reply,"maxTileGroupSnapshots",4);set_bool(reply,"sharedSnapshotLeases",true);return reply;
+    set_int(reply,"maxTileGroupSnapshots",4);set_bool(reply,"sharedSnapshotLeases",true);set_bool(reply,"cacheTrim",true);return reply;
+  }
+  if ((method=="trimCache" || method=="trimCacheStatus") && (!args || fl_value_get_type(args)!=FL_VALUE_TYPE_MAP))
+    throw Failure("invalidArgument","cache trim requires a bounded argument map");
+  if ((method=="trimCache" || method=="trimCacheStatus") && fl_value_lookup_string(args,"groupId")) {
+    if (!plugin.group || !plugin.group->identity.matches(integer(args,"groupId")) ||
+        integer(args,"deviceGeneration") != plugin.group->identity.generation || plugin.group->terminal)
+      throw Failure("contextChanged","unknown, retired or stale trim group");
+    const auto generation=plugin.group->identity.generation;
+    const auto request=integer(args,"requestId");
+    const auto target=method=="trimCache" && fl_value_lookup_string(args,"targetBytes") ? integer(args,"targetBytes") : 0;
+    auto* result=fl_value_new_map(); Value owned(result); auto* members=fl_value_new_list();
+    fl_value_set_string_take(result,"members",members);
+    rhwp::cache::TrimReceipt combined; combined.request=request; combined.target=target; combined.busy=false;
+    for (const auto id : plugin.group->identity.textures) {
+      auto found=plugin.textures.find(int64_t(id));
+      if(found==plugin.textures.end())throw Failure("closing","trim group member is closed");
+      auto notice=*found->second->notice;
+      const auto receipt=notice->state->trim_cache(request,generation,target,method=="trimCacheStatus");
+      combined.target=receipt.target;combined.before+=receipt.before;combined.after+=receipt.after;combined.trimmed+=receipt.trimmed;
+      combined.pending=combined.pending||receipt.pending;combined.busy=combined.busy||receipt.busy;
+      fl_value_append_take(members,trim_value(id,generation,receipt));
+      if(method=="trimCache")notify(notice->state);
+    }
+    combined.reason=combined.pending?"queued":combined.busy?"memberBusy":"completed";
+    Value summary(trim_value(plugin.group->identity.id(),generation,combined));
+    for (const char* key : {"textureId","deviceGeneration","requestId","targetBytes","before","after","trimmed","pending","busy","reason","scope"})
+      fl_value_set_string_take(result,key,fl_value_ref(field(summary.value,key)));
+    set_int(result,"groupId",plugin.group->identity.id()); return fl_value_ref(result);
   }
   if(method=="createGroup") {
     if(plugin.group&&!plugin.group->terminal)throw Failure("backpressure","one tile group is already retained");
@@ -662,6 +798,8 @@ FlValue* invoke(Plugin& plugin, const std::string& method, FlValue* args, uint64
       throw Failure("unsupported", "Flutter texture registration failed");
     }
     const auto id = fl_texture_get_id(FL_TEXTURE(texture));
+    notice->texture_id = uint64_t(id);
+    notice->ready_events = plugin.ready_events;
     bool inserted = false;
     try {
       if (id <= 0) throw Failure("nativeError", "Flutter returned an invalid texture ID");
@@ -684,6 +822,13 @@ FlValue* invoke(Plugin& plugin, const std::string& method, FlValue* args, uint64
     return value;
   }
   auto notice = *plugin.find(args)->notice;
+  if(method=="trimCache" || method=="trimCacheStatus") {
+    const auto generation=integer(args,"deviceGeneration"),request=integer(args,"requestId");
+    const auto target=method=="trimCache" && fl_value_lookup_string(args,"targetBytes") ? integer(args,"targetBytes") : 0;
+    const auto receipt=notice->state->trim_cache(request,generation,target,method=="trimCacheStatus");
+    if(method=="trimCache")notify(notice->state);
+    return trim_value(notice->texture_id,generation,receipt);
+  }
   if (method == "status") return status_value(notice);
   if (method == "close") {
     notice->state->close();
@@ -710,7 +855,8 @@ void rhwp_texture_plugin_register_with_registrar(FlPluginRegistrar* registrar) {
     (void)dlopen(self.dli_fname, RTLD_NOW | RTLD_LOCAL | RTLD_NODELETE);
   auto* codec = fl_standard_method_codec_new();
   auto* channel = fl_method_channel_new(fl_plugin_registrar_get_messenger(registrar), kChannel, FL_METHOD_CODEC(codec));
-  auto* plugin = new Plugin(fl_plugin_registrar_get_texture_registrar(registrar));
+  auto* plugin = new Plugin(fl_plugin_registrar_get_texture_registrar(registrar),
+                           fl_plugin_registrar_get_messenger(registrar));
   fl_method_channel_set_method_call_handler(channel, [](FlMethodChannel*, FlMethodCall* call, gpointer user) {
     auto* plugin = static_cast<Plugin*>(user);
     FlMethodResponse* response;

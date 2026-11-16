@@ -26,6 +26,15 @@ def main():
     tiles = output / "bounded-tile-group-test"
     run(common + [str(source.parent / "common/bounded_tile_group_test.cc"), "-o", str(tiles)])
     run([str(tiles)])
+    events = output / "producer-ready-test"
+    run(common + [str(source.parent / "common/producer_ready_test.cc"), "-o", str(events)])
+    run([str(events)])
+    metrics = output / "gpu-cache-metrics-test"
+    run(common + [str(source.parent / "common/gpu_cache_metrics_test.cc"), "-o", str(metrics)])
+    run([str(metrics)])
+    trims = output / "cache-trim-test"
+    run(common + [str(source.parent / "common/cache_trim_test.cc"), "-o", str(trims)])
+    run([str(trims)])
     if not args.flutter_engine:
         return
     includes = ["-I" + str(args.flutter_engine.resolve())]

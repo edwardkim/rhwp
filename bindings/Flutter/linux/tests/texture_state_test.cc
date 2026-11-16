@@ -55,7 +55,9 @@ class FakeBridge : public Bridge {
   std::map<uint64_t, int> releases;
   SnapshotInfo info{7, 3, 2, true, true};
   uint64_t next = 1, readbacks = 0;
-  int renders = 0, released = 0, abandoned = 0;
+  rhwp::metrics::CacheMetrics cache_metrics;
+  int renders = 0, released = 0, abandoned = 0, trims = 0;
+  bool trim_error = false;
   std::string render_error;
   bool cleanup_error = false;
   std::function<void()> during_render;
@@ -68,14 +70,21 @@ class FakeBridge : public Bridge {
     owners.emplace(id, Owner{std::this_thread::get_id(), callbacks, identity});
     return id;
   }
-  uint64_t render(uint64_t presenter, uint64_t, const Description&, const Target&) override {
+  RenderResult render(uint64_t presenter, uint64_t, const Description&, const Target&) override {
     auto& owner = owners.at(presenter);
     CHECK(owner.thread == std::this_thread::get_id());
     CHECK(owner.callbacks.current(owner.callbacks.user, owner.identity) == 1);
     ++renders;
     if (during_render) { auto hook = std::move(during_render); hook(); }
     if (!render_error.empty()) throw Failure(render_error, "synthetic replay failure");
-    return readbacks;
+    return {readbacks, cache_metrics};
+  }
+  rhwp::cache::TrimReceipt trim_cache(uint64_t presenter,uint64_t identity,uint64_t,uint64_t target) override {
+    auto& owner=owners.at(presenter);
+    CHECK(owner.thread==std::this_thread::get_id());CHECK(owner.callbacks.current(owner.callbacks.user,identity)==1);
+    ++trims;if(trim_error)throw Failure("unknownCompletion","synthetic unknown GPU completion");
+    rhwp::cache::TrimReceipt result;result.before=128;result.after=std::min(uint64_t(128),target);
+    result.trimmed=result.before-result.after;result.busy=false;return result;
   }
   void release(uint64_t presenter, uint64_t identity, uint64_t) override {
     if (cleanup_error) throw Failure("cleanup", "synthetic cleanup failure");
@@ -187,6 +196,28 @@ void changed_inflight_frame_is_never_committed() {
   CHECK(bridge->releases[20] == 1);
   CHECK(registry.populate(state, context).texture != first.texture);
   CHECK(state->status().rendered == 3);
+  state->close(); rejected("closing", [&] { registry.populate(state, context); });
+}
+
+void cache_metrics_follow_only_the_committed_full_stamp() {
+  auto bridge = std::make_shared<FakeBridge>();
+  auto state = std::make_shared<Shared>(bridge);
+  auto context = std::make_shared<FakeContext>(std::make_shared<Device>(), 1);
+  RasterRegistry registry;
+  bridge->cache_metrics.values[0] = 2;
+  state->submit(frame());
+  registry.populate(state, context);
+  auto first = state->status();
+  CHECK(first.rendered_stamp.view == 1 && first.cache_metrics.values[0] == 2);
+  bridge->cache_metrics.values[0] = 7;
+  state->submit(frame(2, 20));
+  bridge->during_render = [&] { state->submit(frame(3, 21)); };
+  registry.populate(state, context);
+  CHECK(state->status().rendered_stamp.view == 1 && state->status().cache_metrics.values[0] == 2);
+  bridge->cache_metrics.values[0] = 9;
+  registry.populate(state, context);
+  CHECK(state->status().rendered_stamp.view == 3 && state->status().cache_metrics.values[0] == 9);
+  CHECK(first.cache_metrics.values[0] == 2); // A status receipt is an immutable measurement.
   state->close(); rejected("closing", [&] { registry.populate(state, context); });
 }
 
@@ -444,6 +475,31 @@ void tile_group_borrowed_ids_do_not_consume_additional_lease_slots() {
   for(auto id:{940,941,942,943})CHECK(bridge->releases[uint64_t(id)]==1);
 }
 
+void cache_trim_runs_on_raster_owner_without_replacing_public_front() {
+  auto bridge=std::make_shared<FakeBridge>();auto state=std::make_shared<Shared>(bridge);
+  auto device=std::make_shared<Device>();auto context=std::make_shared<FakeContext>(device,1);RasterRegistry registry;
+  state->submit(frame());const auto front=registry.populate(state,context);
+  std::thread ui([&] {CHECK(state->trim_cache(1,1,0,false).pending);});ui.join();
+  CHECK(bridge->trims==0 && state->trim_cache(1,1,0,true).pending);
+  CHECK(registry.populate(state,context).texture==front.texture && bridge->trims==1 && bridge->renders==1);
+  auto result=state->trim_cache(1,1,0,true);CHECK(!result.pending&&!result.busy&&result.before==128&&result.after==0&&result.trimmed==128);
+  CHECK(!state->trim_cache(1,1,0,false).pending && bridge->trims==1);
+  rejected("contextChanged",[&]{state->trim_cache(2,2,0,false);});
+  bridge->trim_error=true;CHECK(state->trim_cache(2,1,0,false).pending);
+  CHECK(registry.populate(state,context).texture==front.texture && bridge->renders==1);
+  CHECK(!state->trim_cache(2,1,0,true).pending&&state->trim_cache(2,1,0,true).busy);
+  state->close();rejected("closing",[&]{registry.populate(state,context);});
+}
+void hidden_cache_trim_stays_pending_and_close_never_reports_a_fake_trim() {
+  auto state=std::make_shared<Shared>(std::make_shared<FakeBridge>());
+  CHECK(state->trim_cache(1,1,0,false).pending);
+  auto waiting=state->trim_cache(1,1,0,true);CHECK(waiting.pending&&waiting.busy&&waiting.trimmed==0);
+  state->close();auto canceled=state->cache_trim.poll(1);
+  CHECK(!canceled.pending&&canceled.busy&&canceled.trimmed==0);
+  CHECK(!state->cache_trim.finish(1,128,0,128,false));
+  rejected("closing",[&]{state->trim_cache(1,1,0,true);});
+}
+
 void unproven_driver_orphans_permanently_consume_the_process_budget() {
   auto bridge = std::make_shared<FakeBridge>();
   auto device = std::make_shared<Device>(); device->reclaim_on_abandon = false;
@@ -470,6 +526,7 @@ int main() {
     multipage_receipt_tracks_only_the_accepted_transaction();
     strict_failure_preserves_front_and_releases_on_own_populate();
     changed_inflight_frame_is_never_committed();
+    cache_metrics_follow_only_the_committed_full_stamp();
     readback_contract_failure_is_not_a_gpu_success();
     context_switch_requires_new_generation_and_abandons_without_callback();
     close_does_not_wait_or_call_foreign_thread_native_handles();
@@ -483,8 +540,10 @@ int main() {
     tile_group_second_failure_keeps_both_caller_owned();
     tile_group_snapshot_bound_is_union_not_placement_count();
     tile_group_borrowed_ids_do_not_consume_additional_lease_slots();
+    cache_trim_runs_on_raster_owner_without_replacing_public_front();
+    hidden_cache_trim_stays_pending_and_close_never_reports_a_fake_trim();
     unproven_driver_orphans_permanently_consume_the_process_budget();
-    std::cout << "texture state: 18 cases, " << checks << " checks passed\n";
+    std::cout << "texture state: 21 cases, " << checks << " checks passed\n";
     return 0;
   } catch (const std::exception& error) {
     std::cerr << error.what() << '\n'; return 1;

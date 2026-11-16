@@ -130,6 +130,32 @@ void main() {
               call.method == 'setCoveredGroup') {
             return group(statuses);
           }
+          if (call.method == 'trimCache' || call.method == 'trimCacheStatus') {
+            final args = call.arguments as Map;
+            final target = args['targetBytes'] as int? ?? 0;
+            return {
+              ...group([
+                for (final status in statuses)
+                  {
+                    ...Map<String, Object?>.from(status as Map),
+                    'requestId': args['requestId'],
+                    'targetBytes': target,
+                    'before': 64,
+                    'after': target,
+                    'trimmed': 64 - target,
+                    'pending': false,
+                    'busy': false,
+                  },
+              ]),
+              'requestId': args['requestId'],
+              'targetBytes': target,
+              'before': 128,
+              'after': target * 2,
+              'trimmed': 128 - target * 2,
+              'pending': false,
+              'busy': false,
+            };
+          }
           if (call.method == 'submitGroup') {
             return {
               'accepted': true,
@@ -262,4 +288,50 @@ void main() {
       );
     },
   );
+  test(
+    'cache trim reaches both native owners and preserves per-owner target',
+    () async {
+      final channel = NativeTileGroupChannel(delegate, windows: true);
+      await channel.invokeMethod<Object?>('create', {});
+      final result = await channel.invokeMapMethod<String, Object?>(
+        'trimCache',
+        {
+          'textureId': 11,
+          'deviceGeneration': 5,
+          'requestId': 9,
+          'targetBytes': 32,
+        },
+      );
+      expect(calls.last.method, 'trimCache');
+      expect((calls.last.arguments as Map)['groupId'], 11);
+      expect((calls.last.arguments as Map)['deviceGeneration'], 5);
+      expect(result?['textureId'], 11);
+      expect(result?['targetBytes'], 32);
+      expect(result?['after'], 64);
+      expect(result?['busy'], false);
+      expect((result?['members'] as List).map((v) => (v as Map)['textureId']), [
+        11,
+        12,
+      ]);
+      await channel.invokeMethod<Object?>('trimCacheStatus', {'requestId': 9});
+      expect(calls.last.method, 'trimCacheStatus');
+      expect((calls.last.arguments as Map)['groupId'], 11);
+    },
+  );
+  test('cache trim rejects a mismatched or uncreated tile owner', () async {
+    final channel = NativeTileGroupChannel(delegate, windows: false);
+    await expectLater(
+      channel.invokeMethod<Object?>('trimCache', {'requestId': 1}),
+      throwsA(isA<NativeCallException>()),
+    );
+    await channel.invokeMethod<Object?>('create', {});
+    statuses = [
+      member(11),
+      {...member(12), 'textureId': 13},
+    ];
+    await expectLater(
+      channel.invokeMethod<Object?>('trimCacheStatus', {'requestId': 1}),
+      throwsA(isA<NativeCallException>()),
+    );
+  });
 }

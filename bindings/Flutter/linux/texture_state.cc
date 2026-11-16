@@ -213,11 +213,19 @@ void Shared::submit_group(const std::shared_ptr<Shared>& first, const std::share
   }
 }
 
+rhwp::cache::TrimReceipt Shared::trim_cache(uint64_t request, uint64_t generation, uint64_t target, bool poll) {
+  std::lock_guard<std::mutex> lock(mutex_);
+  if (status_.closing) throw Failure("closing", "texture is closing");
+  if (generation != status_.device) throw Failure("contextChanged", "cache trim owner generation changed");
+  return poll ? cache_trim.poll(request) : cache_trim.enqueue(request, target);
+}
+
 void Shared::close() {
   std::shared_ptr<const Frame> previous;
   {
     std::lock_guard<std::mutex> lock(mutex_);
     status_.closing = true;
+    cache_trim.cancel();
     previous = std::move(latest_);
     if (!status_.raster_owner) status_.cleanup_complete = true;
   }
@@ -280,6 +288,7 @@ size_t RasterRegistry::orphaned_slots() {
 
 void RasterRegistry::retire(size_t index, bool thread_exit) {
   auto& slot = *slots_[index];
+  slot.state->cache_trim.cancel();
   const bool current = !thread_exit && slot.context->same_current();
   bool native_clean = true;
   bool abandoned_owner = !current && slot.presenter;
@@ -418,13 +427,20 @@ Target RasterRegistry::populate(const std::shared_ptr<Shared>& state, std::share
           Callbacks{Slot::load, Slot::current, &slot});
       if (!slot.presenter) throw Failure("contract", "native returned a zero presenter handle");
     }
+    if (auto trim = state->cache_trim.take()) {
+      try {
+        const auto result = state->bridge->trim_cache(slot.presenter, slot.identity, slot.generation, trim->target);
+        state->cache_trim.finish(trim->request, result.before, result.after, result.trimmed, result.busy);
+      } catch (...) { state->cache_trim.fail(trim->request); }
+    }
     if (state->status().rendered == frame->serial && slot.front.texture) return slot.front;
     const auto& description = frame->description;
     if (slot.back.width != description.width || slot.back.height != description.height) {
       slot.context->destroy(slot.back);
       slot.back = slot.context->allocate(description.width, description.height);
     }
-    const auto readbacks = state->bridge->render(slot.presenter, slot.identity, description, slot.back);
+    const auto rendered = state->bridge->render(slot.presenter, slot.identity, description, slot.back);
+    const auto readbacks = rendered.whole_frame_readbacks;
     if (readbacks) {
       {
         std::lock_guard<std::mutex> lock(state->mutex_);
@@ -443,6 +459,7 @@ Target RasterRegistry::populate(const std::shared_ptr<Shared>& state, std::share
         ++state->status_.frames;
         state->status_.whole_frame_readbacks = readbacks;
         state->status_.code.clear();
+        state->status_.cache_metrics = rendered.cache_metrics;
         state->status_.message.clear();
         committed = true;
       }
