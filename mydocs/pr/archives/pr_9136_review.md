@@ -91,3 +91,9 @@ code candidate의 성공 결과를 문서 전용 head `207d25d0d8f84c7af6c579256
 후속 기록과 질문 답변·정리의 최종 상태는 [종료 원장](../assets/issue9133/closure.json)에 기록한다. 댓글용 merge SHA의 raw PNG는 HTTP 200·image/png·SHA-256을 실제 committed asset과 대조했다. [병합 게시 영수증](../assets/issue9133/merge-publication.json).
 
 [duration 자동 갱신](https://github.com/edwardkim/rhwp/actions/runs/43847929087)은 success다. 실제 로그에서 trailing·code CI 양쪽의 Rust worker가 비대상 skip임을 확인해 `ready=false`, `no-verified-pr-duration-measurements`로 새 metrics 게시를 보류했다. 기존 metrics는 보존했으며 병합 후 검증 workflow를 시작하지 않았다. 로컬 devel을 병합 커밋까지 fast-forward했다. 운영 기록을 게시하고 최종 devel 동기화를 확인한 뒤 완료 댓글과 종료 정리를 수행한다.
+
+## 후속 처리 완료
+
+#9133의 completed 종료와 #8905의 CLOSED 유지를 재조회했다. 운영 기록 `71890c886c`의 devel 게시·동기화 뒤 [#9133 완료 댓글](https://github.com/edwardkim/rhwp/issues/9133#issuecomment-6913820737), [#8905 추가 질문 답변](https://github.com/edwardkim/rhwp/issues/8905#issuecomment-6913821397), [PR 결과 댓글](https://github.com/edwardkim/rhwp/pull/9136#issuecomment-6913822105)을 게시했다. API 본문과 실제 GitHub 페이지에서 각 이미지의 800×360 표시를 확인했다.
+
+실제 파일 사용·빌드 종료·소유·exact remote SHA·병합 포함을 확인한 뒤 전용 upstream/local branch와 worktree, root `output/` 전체를 제거했다. 공용 `target/pr-review/debug`는 이미 없었으며 다른 profile·worktree·정식 자료·외부 글꼴은 보존했다. 삭제 경로·전후 용량과 부재 확인은 로컬 `.git/codex-cleanup-pr9136.log`, 댓글·정리의 최종 실행 값은 [종료 원장](../assets/issue9133/closure.json)에 남겼다.
