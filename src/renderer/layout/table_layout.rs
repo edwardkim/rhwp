@@ -33065,9 +33065,7 @@ impl CellSquareStackTextFloor {
             // 여러 그림을 담은 호스트의 빈 줄이 자체 그림 아래로 내려가면 그 줄의
             // 전진도 한 번 소비한다. 뒤 문단이 또 다른 그림 호스트인 경우에도 같다.
             if let Some(host) = self.hosts.last().filter(|host| {
-                pidx == host.pidx + 1
-                    && host.stack.boxes.len() > 1
-                    && text_follows(host.pidx + 1)
+                pidx == host.pidx + 1 && host.stack.boxes.len() > 1 && text_follows(host.pidx + 1)
             }) {
                 let (host_h, host_need, host_advance) = host.line;
                 let host_top = host.stack.text_line_top(0.0, host_h, host_need, width);

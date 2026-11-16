@@ -4672,12 +4672,11 @@ let body_height=match nested_body_heights
                         table, cell, styles, depth, cell_w_px, storage,
                     )?;
                     let stored_end = hwpunit_to_px(last_seg_end, self.dpi);
-                    let wrap_bottom =
-                        self.cell_wrap_objects_bottom_height(
-                            &cell.paragraphs,
-                            styles,
-                            Some(&para_flow_heights),
-                        );
+                    let wrap_bottom = self.cell_wrap_objects_bottom_height(
+                        &cell.paragraphs,
+                        styles,
+                        Some(&para_flow_heights),
+                    );
                     // 글자처럼 취급 표의 칸에서 저장 사다리가 칸 선언 높이 안에 담기면 배치는
                     // 문단을 저장 vpos 에 놓는다(table_layout `nested_stored_overflow_rescue` →
                     // `trust_stored_cell_flow`). 재조판 줄 합으로 칸을 키우면 배치가 쓰지 않는
