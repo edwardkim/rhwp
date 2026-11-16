@@ -223,3 +223,12 @@ Firefox160의 확장 문맥 검사는 공식 Remote Agent 계약에 필요한
 `MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1`을 이번 격리 테스트 프로세스에만 공급합니다.
 [Mozilla 공식 계약](https://firefox-source-docs.mozilla.org/remote/Security.html)을 따르며
 사용자 Firefox 프로필과 시스템 설정은 변경하지 않습니다.
+
+## Firefox 실제 다운로드와 BiDi 검증
+
+Firefox160에서 확장은 실제 viewer를 자동으로 열었지만 Puppeteer의 browser.pages 캐시에
+그 탭이 누락돼 검사만 시간 초과했습니다. 확장 API의 실제 탭과 BiDi getTree를 대조했습니다.
+기존 E2E는 같은 실제 viewer 문맥을 getTree로 찾아 script.callFunction에서 기존 DOM 명령을
+실행하도록 보완했습니다. 새 viewer를 만들어 대체하지 않았으며 제품 코드 변경은 없습니다.
+최종 원 E2E 명령이 정상 exit0으로 완료되어 다운로드3건·viewer1개·편집 보존을 확인했습니다.
+[원인과 실행 영수증](firefox-bidi-validation.json)을 따릅니다.
