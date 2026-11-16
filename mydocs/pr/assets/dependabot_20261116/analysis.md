@@ -134,3 +134,31 @@ doc test와 suite 정책까지 모두 exit0로 완료했습니다. 실제 `cargo
 [프로필 snapshot](minimal-font-profile-snapshots.json)에, 격리 환경의 OS528face 목록을
 [CoreText TSV](minimal-coretext-os-faces.tsv)에 보존합니다. 일반 기여자에게 이 Mac 경로나
 비공개 폰트를 요구하는 정책 변경은 아닙니다.
+
+## Native 정본 전쪽 비교 완료
+
+[Native 보호 검증](protected-native-validation.json)은 18개 입력의 base·후보 각각1,771쪽을
+실제로 산출해 통과했습니다. 두 단계 모두 정본 공식 표시값 하락0쪽이며, **같은 쪽1,771개의
+base·후보 원본 PNG hash가 전부 같습니다.** 독립 PDF와 모든 픽셀이 같다는 뜻은 아닙니다.
+상승한 쪽도0이므로 Native 보호 기준을 임의로 변경하지 않습니다.
+[빌드 신원과 base 재사용 근거](native-and-base-build-producers.json)를 별도로 보존합니다.
+일부 캡처 wall time에는 메모리 조정을 위한 보존 대기가 있으므로 성능 비교로 쓰지 않습니다.
+이후 같은 제품 source의 fresh WASM과 해당 전쪽·실제 제품 소비 검증을 계속합니다.
+
+
+## WASM 재생 경로 원인과 실제 제품 소비 완료
+
+[브라우저 경로 대조](wasm-raster-mode-diagnosis.json)에서 같은 Chrome·WASM·글꼴·PDF의
+GPU 재생은 법령1쪽99.96967%, 소프트웨어 재생은99.98059%였습니다. Mac·Linux PDFium의
+기준 PNG는 디코딩한 픽셀까지 동일하므로 PDF 변환이나 의존성 변경으로 단정하지 않습니다.
+현재 GPU raw PNG는 과거 커밋의 동일 쪽과도 픽셀까지 같습니다. 기존 지침의 소프트웨어 Print
+비교 경로를 명시하여 base/head 각각18종 전쪽을 별도 output에 다시 산출합니다. 보호값·DPI·
+마스크·원본·PDF·글꼴·2px·90%를 바꾸지 않으며 이전 GPU 결과도 보존합니다. 집중1쪽 통과만으로
+전쪽 보호 완료를 선언하지 않습니다.
+
+[제품 소비 검증](production-consumers-validation.json)은 Studio·Chrome·Firefox production build,
+Studio AI 패널·설정·공급자 mock3종과 Chrome 확장의 smoke·다운로드·수명주기3종을 실제
+통과했습니다. 루트 pkg·Studio public/dist·Chrome/Firefox dist와 HTTP 응답의 JS/WASM hash를
+새 package와 대조했습니다. 유료 API 호출이나 실제 비밀 키는 사용하지 않았습니다.
+Firefox 편집·저장 E2E와 정본 보호·공통 게이트·출력 백엔드 검증은 별도로 남아 있습니다.
+[Native 대표22쪽 판독](native-direct-reading.json)은 같은 쪽의 review·overlay 쌍으로 확인했습니다.

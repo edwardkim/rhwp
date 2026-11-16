@@ -1,0 +1,659 @@
+{
+  "status": "completed",
+  "dependencies": [
+    "rust-gates-state.json",
+    "protected-native-state.json",
+    "fresh-wasm-state.json"
+  ],
+  "results": [
+    {
+      "name": "studio-production",
+      "cwd": "/Users/tsjang/rhwp/rhwp-studio",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "exit": 0,
+      "seconds": 7.86
+    },
+    {
+      "name": "chrome-production",
+      "cwd": "/Users/tsjang/rhwp/rhwp-chrome",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "exit": 0,
+      "seconds": 3.678
+    },
+    {
+      "name": "firefox-production",
+      "cwd": "/Users/tsjang/rhwp/rhwp-firefox",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "exit": 0,
+      "seconds": 2.184
+    },
+    {
+      "name": "studio-ai-browser",
+      "cwd": "/Users/tsjang/rhwp",
+      "command": [
+        "node",
+        "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/consumer-studio.mjs"
+      ],
+      "exit": 0,
+      "seconds": 26.81
+    },
+    {
+      "name": "chrome-extension-browser",
+      "cwd": "/Users/tsjang/rhwp/rhwp-chrome",
+      "command": [
+        "node",
+        "e2e/run.mjs",
+        "--dist",
+        "/Users/tsjang/rhwp/rhwp-chrome/dist",
+        "--output",
+        "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/consumer/chrome-extension"
+      ],
+      "exit": 0,
+      "seconds": 54.827
+    }
+  ],
+  "scheduling_note": "전체 보호 TSV 판정과 별도로 제품 빌드·실제 소비 검증 실행; 보호 통과를 면제하지 않음",
+  "source": "c47698bb7bdc07c84e674c587256759543053727",
+  "started_at": "2026-11-16T14:36:02.865996+09:00",
+  "stage": "chrome-extension-browser",
+  "wasm_consumer_hashes": {
+    "root": {
+      "rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "rhwp_bg.wasm": "dd58a4fa7680674379adb94f874123029c39001a94600e7d1a369aec823a11bb"
+    },
+    "studio-public": {
+      "rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "rhwp_bg.wasm": "dd58a4fa7680674379adb94f874123029c39001a94600e7d1a369aec823a11bb"
+    },
+    "studio-dist": {
+      "rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "rhwp_bg.wasm": "dd58a4fa7680674379adb94f874123029c39001a94600e7d1a369aec823a11bb"
+    },
+    "chrome": {
+      "rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "rhwp_bg.wasm": "dd58a4fa7680674379adb94f874123029c39001a94600e7d1a369aec823a11bb"
+    },
+    "firefox": {
+      "rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "rhwp_bg.wasm": "dd58a4fa7680674379adb94f874123029c39001a94600e7d1a369aec823a11bb"
+    }
+  },
+  "completed_at": "2026-11-16T14:37:38.330617+09:00",
+  "studio_ai_scenarios": [
+    {
+      "name": "ai-panel",
+      "exit": 0
+    },
+    {
+      "name": "ai-settings",
+      "exit": 0
+    },
+    {
+      "name": "ai-providers",
+      "exit": 0
+    }
+  ],
+  "actual_http_initialization_artifacts": {
+    "rhwp.js": {
+      "sha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "bytes": 587539,
+      "url": "http://127.0.0.1:7788/rhwp.js"
+    },
+    "rhwp_bg.wasm": {
+      "sha256": "dd58a4fa7680674379adb94f874123029c39001a94600e7d1a369aec823a11bb",
+      "bytes": 32134247,
+      "url": "http://127.0.0.1:7788/rhwp_bg.wasm"
+    }
+  },
+  "chrome_extension": {
+    "schemaVersion": 1,
+    "evidenceVersion": 1,
+    "runId": "bdc83e52-8b46-4fde-8503-b119770825d7",
+    "status": "pass",
+    "startedAt": "2026-11-16T05:36:43.459Z",
+    "candidate": {
+      "directory": "/Users/tsjang/rhwp/rhwp-chrome/dist",
+      "version": "0.9.0",
+      "manifestVersion": 3,
+      "sha256": "56ff5d13548b3842baafd5d57a71174bcff17b36b1a04ba78200588ef9a49a92",
+      "files": [
+        {
+          "path": "THIRD_PARTY_LICENSES.md",
+          "sha256": "04732c873fc0d743552d30890c97503ca5d63aff36b3886ea3c365cc60d430c6"
+        },
+        {
+          "path": "_locales/en/messages.json",
+          "sha256": "383eb889181a36fc511c6f56288eed2b3b514e351f3b5aba507d19b01eb0d55d"
+        },
+        {
+          "path": "_locales/ko/messages.json",
+          "sha256": "d073548303133323460876cf32ee0fbf496db083604f0fe0243f959e6219b024"
+        },
+        {
+          "path": "assets/canvaskit-SCAxUyCS.wasm",
+          "sha256": "25ebed8e60158c5854f8dc807b936daca21354f8bfb6a2231266b0a93812f301"
+        },
+        {
+          "path": "assets/canvaskit-renderer-Cbxvyvkc.js",
+          "sha256": "cd83b627112ff517173cc297152b1ba59090983eaf0d89163d69f4a10a52c826"
+        },
+        {
+          "path": "assets/form-action-worker-BEckcfC_.js",
+          "sha256": "e68b32663d978b49e2825b7d9068862bc58a28260f5fb66602734b2941a63b4c"
+        },
+        {
+          "path": "assets/import-worker-DxRsrUxb.js",
+          "sha256": "d86207b1adca6e4c4929f2d9234e6b8f86609813d3678f2f5a6a494f4529916f"
+        },
+        {
+          "path": "assets/rhwp-hwpctrl-plugin.d-BvRk9kiK.js",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "assets/rhwp_bg-C095drTL.wasm",
+          "sha256": "dd58a4fa7680674379adb94f874123029c39001a94600e7d1a369aec823a11bb"
+        },
+        {
+          "path": "assets/viewer-BUA9poB0.js",
+          "sha256": "2550a03747d74f23b024878bb7fe0943afcf75ae4a5e40d80ca333992e34c3dc"
+        },
+        {
+          "path": "assets/viewer-DP1BbGIg.css",
+          "sha256": "8cea803a5facb9f8234767c987ed535b7720b00e15dbcd7de19750d38c0600f4"
+        },
+        {
+          "path": "background.js",
+          "sha256": "771408ab19363086e793b9512ebbd6c1b5500267676a0f3791ea23524f28f945"
+        },
+        {
+          "path": "content-script.css",
+          "sha256": "9d1e9ff2997e19a1df7812d0e246fe212bc274aad52bdc01fe868bfeba0c2db4"
+        },
+        {
+          "path": "content-script.js",
+          "sha256": "0b0742583dfb7909ea2b092095d55b5b57d749be30b818b905c48104ae1bb1d6"
+        },
+        {
+          "path": "dev-tools-inject.js",
+          "sha256": "9b5ef83620bd6095c068df65490e3712cb275b038652d4a17ef1190db974102f"
+        },
+        {
+          "path": "favicon.ico",
+          "sha256": "136d51c3d0a12bc67352964998fa78a5dcf2702873f73eb261990f9e20eb0ade"
+        },
+        {
+          "path": "fonts/Cafe24Ssurround-v2.0.woff2",
+          "sha256": "2d726dbf8863d66e6d5cf56e2532c5d14d8a4b514461b565c513c1da6ae2f41a"
+        },
+        {
+          "path": "fonts/Cafe24Supermagic-Regular-v1.0.woff2",
+          "sha256": "65434a217b9532867a1fe41417d0ad51210a60027a51dca40748aafed48ef0ba"
+        },
+        {
+          "path": "fonts/D2Coding-Bold.woff2",
+          "sha256": "cf59ac9e719ce9888870ec012cdf8cbc8ffdb632f823652d5b3ba3236ce6b7c8"
+        },
+        {
+          "path": "fonts/D2Coding-Regular.woff2",
+          "sha256": "4d3fa8ed66fedcb1787f200bd75637b816b09057fc06da0aa783e3b305a726d8"
+        },
+        {
+          "path": "fonts/GowunBatang-Bold.woff2",
+          "sha256": "aef1b91ea9ea4688fb296044959b38dfeeaa3e1650af5d543a2b5c160fa30b36"
+        },
+        {
+          "path": "fonts/GowunBatang-Regular.woff2",
+          "sha256": "0c6a288aa0c12081dccde769c312f71f290b353243747dd24fb8c57f94f01d72"
+        },
+        {
+          "path": "fonts/GowunDodum-Regular.woff2",
+          "sha256": "349c098a6181952dab564bf891b8efcacfbf855adc28d40b4aa2e5937c101c56"
+        },
+        {
+          "path": "fonts/Happiness-Sans-Bold.woff2",
+          "sha256": "54becdfd4f7f58e872eba8fbc67778e29cff94c1cd03f9a0ebadfbe482b4aba0"
+        },
+        {
+          "path": "fonts/Happiness-Sans-Regular.woff2",
+          "sha256": "4fc37e7663c3d440b5a6af6938bde0c6618b666553ed521745f3362050bd4988"
+        },
+        {
+          "path": "fonts/Happiness-Sans-Title.woff2",
+          "sha256": "057e6821a062d9192964d99cf058fe6608230e9e4a464c9652b3756e02460e22"
+        },
+        {
+          "path": "fonts/HappinessSansVF.woff2",
+          "sha256": "cd29de60acf8c466938400561fcbfb14812dd5981f4f78b0c8da74609682423c"
+        },
+        {
+          "path": "fonts/LatinModernMath-Regular.woff2",
+          "sha256": "b11060f37967c090457580275129d0d7da1d5fbfc82b04e78c91aa31977f547c"
+        },
+        {
+          "path": "fonts/NanumGothic-Bold.woff2",
+          "sha256": "f1a3a97599e73746b1af08f88bc542c0f6b091818ffa67b31efb5b88d49ebc2e"
+        },
+        {
+          "path": "fonts/NanumGothic-ExtraBold.woff2",
+          "sha256": "a1961b5f8820d1c03519e21858508bedd32ea9f748805db5cad11536404c1801"
+        },
+        {
+          "path": "fonts/NanumGothic-Regular.woff2",
+          "sha256": "b2b25ce9c9179e0a4c867bd2610e1db5595965345aa1cdb857964ab802c4ee3e"
+        },
+        {
+          "path": "fonts/NanumGothicCoding-Bold.woff2",
+          "sha256": "81c3ae9d714c4b31fb0fac7596e4a472e1a19776193a4a595e6f7e5b23daeeb3"
+        },
+        {
+          "path": "fonts/NanumGothicCoding-Regular.woff2",
+          "sha256": "6bd0831252dc3bd96f3257ec4eaf794d88ffb185346eb5d3f889248a7a3c6239"
+        },
+        {
+          "path": "fonts/NanumMyeongjo-Bold.woff2",
+          "sha256": "65c47ec072dd91cbaac538f4482be3185fb0896b5f3909aa8a9834604b1eec08"
+        },
+        {
+          "path": "fonts/NanumMyeongjo-ExtraBold.woff2",
+          "sha256": "dda2e9b5d670b63dd66a9a83468ee0ee9e64bef09d4fc24771865a7ab2529332"
+        },
+        {
+          "path": "fonts/NanumMyeongjo-Regular.woff2",
+          "sha256": "52d27bf4ee205020a4aa9eb19ef4835e4aa04a94f7742b13e69e5c8b9a74072a"
+        },
+        {
+          "path": "fonts/NotoSansKR-Bold.woff2",
+          "sha256": "dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020"
+        },
+        {
+          "path": "fonts/NotoSansKR-ExtraLight.woff2",
+          "sha256": "3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673"
+        },
+        {
+          "path": "fonts/NotoSansKR-Regular.woff2",
+          "sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a"
+        },
+        {
+          "path": "fonts/NotoSansMath-OFL.txt",
+          "sha256": "4fbd190167f23b4c0e2368160f412bf2d1fade887b78b6aec66689ce31698e8b"
+        },
+        {
+          "path": "fonts/NotoSansMath-Regular.woff2",
+          "sha256": "6836027b99d29fd0e6f668cf0c2e89107de4131b91116cd96516ad4a7e19d66d"
+        },
+        {
+          "path": "fonts/NotoSansSymbols2-OFL.txt",
+          "sha256": "075f91382875da1c4b491f1facf2586f55448705133264d98ce15cab6211b125"
+        },
+        {
+          "path": "fonts/NotoSerifKR-Bold.woff2",
+          "sha256": "504d6af6abb882acd912d47bafa383c4512a6c8c33635e4e8fb37111d9310941"
+        },
+        {
+          "path": "fonts/NotoSerifKR-Regular.woff2",
+          "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+        },
+        {
+          "path": "fonts/Pretendard-Black.woff2",
+          "sha256": "c5fd0c3568fc1368a3edc0d0fbb36df029935954276e3573451b3bae09e27296"
+        },
+        {
+          "path": "fonts/Pretendard-Bold.woff2",
+          "sha256": "4609c3356e536fafe38f4add0daeceb3d8595d3057bce13c428c33ddbd43d362"
+        },
+        {
+          "path": "fonts/Pretendard-ExtraBold.woff2",
+          "sha256": "dd7c1e156f508eb962acc7a33a7a1896d1e0b71e11156fad96e731689ceb6dc3"
+        },
+        {
+          "path": "fonts/Pretendard-ExtraLight.woff2",
+          "sha256": "df43dc9165dff4542114674bcd8b79b7daae6dec004004586d5d076fec6fe2aa"
+        },
+        {
+          "path": "fonts/Pretendard-Light.woff2",
+          "sha256": "b7426635cce2ea2b95c9c802e43fba1c620e0dafaf25f737c069b8b4e09fa841"
+        },
+        {
+          "path": "fonts/Pretendard-Medium.woff2",
+          "sha256": "d03481330eeba0659ab5b87f25ceb504a35de377dd90a0d0aba2982eb2d05e2c"
+        },
+        {
+          "path": "fonts/Pretendard-Regular.woff2",
+          "sha256": "fad853f7f47c6c8b103171e7193fa095708cdcd70850a71d93aa5379e8a61d63"
+        },
+        {
+          "path": "fonts/Pretendard-SemiBold.woff2",
+          "sha256": "c863f76a7de5c1ddc1ed8b2fa794964530774592c4f31407a84e2a2ae93f17f0"
+        },
+        {
+          "path": "fonts/Pretendard-Thin.woff2",
+          "sha256": "1539755224a64719d5b18406762c476db74fcc299b9e4641ca1e9812fbc7a09b"
+        },
+        {
+          "path": "fonts/RHWPOldHangul-Regular.woff2",
+          "sha256": "1a45a61e9a320c1bc62ca1401f7b23ceffffe8133dc2a9650ad4e12524f8dcab"
+        },
+        {
+          "path": "fonts/RHWPPublicBatang-Regular.woff2",
+          "sha256": "20d454f45cdf29cc4619e769f1f59f3b8920941b6b274a530e82d3b75e24dbfb"
+        },
+        {
+          "path": "fonts/SourceHanSerifK-OFL.txt",
+          "sha256": "9ff5bb567e1b92c801fc1069e5fbf992ff8efccacb9db94e5959a5b3ba9bb903"
+        },
+        {
+          "path": "fonts/SpoqaHanSans-Regular.woff2",
+          "sha256": "6568bf80b50c14f2e54f56f2c07e668416f39f880baf5ea2825d315767f98f69"
+        },
+        {
+          "path": "fonts/licenses/Cafe24Ssurround-LICENSE.pdf",
+          "sha256": "de2158b3dc8aa27513451108fb09088f9afd8fce1d65c2cac29c7e554b37a7d9"
+        },
+        {
+          "path": "fonts/licenses/Cafe24Supermagic-LICENSE.pdf",
+          "sha256": "bdf5e278410f73faaf5a34db9ad4ce328cabd673d8f699bd986869a690193511"
+        },
+        {
+          "path": "fonts/licenses/D2Coding-OFL.txt",
+          "sha256": "1807e8dec4d65f474cbf9be39f5e2254ecb81702babc320749e272ea66ffcc69"
+        },
+        {
+          "path": "fonts/licenses/GowunBatang-OFL.txt",
+          "sha256": "49a57cc769fa9affd6eefb9070a61e3d3f6b757c97cafb15848bc6d1c81acc78"
+        },
+        {
+          "path": "fonts/licenses/GowunDodum-OFL.txt",
+          "sha256": "a7c73f9521cd646bbdfb6684c99a62311bbd7bce11898dc11ef0b3c69eda1aca"
+        },
+        {
+          "path": "fonts/licenses/HappinessSans-LICENSE.pdf",
+          "sha256": "f5bd344131ee034f3425517ea376ab6acea9126310e7b2cd74cd18673991b055"
+        },
+        {
+          "path": "fonts/licenses/LPPL-1.3c.txt",
+          "sha256": "3d262cdf34dafa6955f703c634a8c238ec44109bc8dd6ef34fb7aa54809f7e66"
+        },
+        {
+          "path": "fonts/licenses/LatinModernMath-GUST-FONT-LICENSE.txt",
+          "sha256": "49ea6cb9257bbee0a3979c48a774cd221550ac1c20c95549efe45fc99cc18050"
+        },
+        {
+          "path": "fonts/licenses/NanumGothic-OFL.txt",
+          "sha256": "eeacf16032901d0ed0456876ec77b8f0fda6b3fecec7d972f8543eb602e6c30f"
+        },
+        {
+          "path": "fonts/licenses/NanumGothicCoding-OFL.txt",
+          "sha256": "eeacf16032901d0ed0456876ec77b8f0fda6b3fecec7d972f8543eb602e6c30f"
+        },
+        {
+          "path": "fonts/licenses/NanumMyeongjo-OFL.txt",
+          "sha256": "8eb1c1019fe7fe6d0b6e7d7bbbba1d9cbdd969d8c5f26455708f6cfb8a77284c"
+        },
+        {
+          "path": "fonts/licenses/NotoCJKSerif-OFL.txt",
+          "sha256": "6a73f9541c2de74158c0e7cf6b0a58ef774f5a780bf191f2d7ec9cc53efe2bf2"
+        },
+        {
+          "path": "fonts/licenses/NotoSansKR-OFL.txt",
+          "sha256": "1c05c68c34f9708415aada51f17e1b0092d2cea709bf4a94cd38114f9e73d7d9"
+        },
+        {
+          "path": "fonts/licenses/NotoSansMath-OFL.txt",
+          "sha256": "4fbd190167f23b4c0e2368160f412bf2d1fade887b78b6aec66689ce31698e8b"
+        },
+        {
+          "path": "fonts/licenses/NotoSansSymbols2-OFL.txt",
+          "sha256": "075f91382875da1c4b491f1facf2586f55448705133264d98ce15cab6211b125"
+        },
+        {
+          "path": "fonts/licenses/Pretendard-OFL.txt",
+          "sha256": "82e9c8a4b203261f10ddba1296422d64914ff3d4b7bd8a12896d03f0f088d70a"
+        },
+        {
+          "path": "fonts/licenses/README.md",
+          "sha256": "a577ccb2a4ff374e388c9bfb5d360e0b62e3cfd6e8b09b43df601d8dd8605130"
+        },
+        {
+          "path": "fonts/licenses/RHWPPublicBatang-OFL.txt",
+          "sha256": "cc115f501827fffddcbf1ef86e5248ee55e40f0c3fb9725173b248ccc2d5df51"
+        },
+        {
+          "path": "fonts/licenses/SIL-OFL-1.1.txt",
+          "sha256": "f19c674290e5dc79f02e8efe16139ab56a06a7128876f5b1579ffd0db5bc897e"
+        },
+        {
+          "path": "fonts/licenses/SourceHanSerifK-OFL.txt",
+          "sha256": "9ff5bb567e1b92c801fc1069e5fbf992ff8efccacb9db94e5959a5b3ba9bb903"
+        },
+        {
+          "path": "fonts/licenses/SpoqaHanSans-OFL.txt",
+          "sha256": "279753543734e7a1846e3cb3f80d4dcdcc91f49c436411adaba82e3913c61cde"
+        },
+        {
+          "path": "fonts/licenses/font-notices.json",
+          "sha256": "1a5a9c276ad4bd1127e56f56732aca1c0eadef15212900a7d764375296527a39"
+        },
+        {
+          "path": "icons/icon-128.png",
+          "sha256": "ce3047204dedd260b62b507ef1773ecfa1e68be1ddf08304a664fcb1341d502d"
+        },
+        {
+          "path": "icons/icon-16.png",
+          "sha256": "ea7d417dc9de2f04a3074a63690c99363d8738b9d614e96ccb289ea7b6573390"
+        },
+        {
+          "path": "icons/icon-256.png",
+          "sha256": "b851d2271495a9858efd51def7615f68f2204417977672cde1da1ced53120ad0"
+        },
+        {
+          "path": "icons/icon-32.png",
+          "sha256": "5b4c651a33a497996428de9180a906fbff36c95f9e9d01cca35ba620177ffbb7"
+        },
+        {
+          "path": "icons/icon-48.png",
+          "sha256": "9bbbd945ff99b1b44178e721d44113d3d925671d98322232ccf19bee8bc730c4"
+        },
+        {
+          "path": "images/icon_small_ko.svg",
+          "sha256": "a0ac1200a41b6a75e9afb30cda5bb850276087d45c2f25870605888238ba9b39"
+        },
+        {
+          "path": "images/icon_small_ko_dark.svg",
+          "sha256": "9d02ea0b8c1d399a89290d97613759826f19f3e3f392b6d79dcf6109e7e15fa6"
+        },
+        {
+          "path": "locale-init.js",
+          "sha256": "633d47a6a53b2211cf816769f8c084b097c1b60b6ab263803d8610c0531539fa"
+        },
+        {
+          "path": "manifest.json",
+          "sha256": "0be2a280315c63bd52c24e8fabe2e598ebcce62229db920b9d2cd879fee34b4f"
+        },
+        {
+          "path": "options.html",
+          "sha256": "b7161ebac5c693c11a8bf67844e132944c601ea165ff5b0cb2a3c5c1aa7257e5"
+        },
+        {
+          "path": "options.js",
+          "sha256": "709b18ba5d9a0698a0d07ee992b402008f0790d86f61125e813ce452565f0f23"
+        },
+        {
+          "path": "print.html",
+          "sha256": "930907863afbafcc76099d386f6a995bc6c69387cb56838b18e4cdaf6eea6b79"
+        },
+        {
+          "path": "sw/context-menus.js",
+          "sha256": "a328cba2351dd3c6b7255c53a2151f4acbd5034c37e65d355125122d7aaf957c"
+        },
+        {
+          "path": "sw/document-filename.js",
+          "sha256": "61a7d813a2f9d0ea2f927985616071d555b56f05e88b8eb7faf7e0dc022fca17"
+        },
+        {
+          "path": "sw/document-url-resolver.js",
+          "sha256": "c6d30a74abb748b948faa95580353d8c192e931c5682e54fbaf1520e316ca9a6"
+        },
+        {
+          "path": "sw/download-interceptor-common.js",
+          "sha256": "184843186094f7924b338ee3a5887544e2de8167928457565b326f92fccdbaec"
+        },
+        {
+          "path": "sw/download-interceptor.js",
+          "sha256": "1d6ea926f2d3436b5091eba82d924a431811b0e2dec564833d938823788a3769"
+        },
+        {
+          "path": "sw/download-observer-state.js",
+          "sha256": "d8e092c72e492710b6d2f274f8b57b473cac469d0aeb0e75f660512ceda710fe"
+        },
+        {
+          "path": "sw/extension-lifecycle.js",
+          "sha256": "53e3786099b97fe890fe86850cd7bebd6dff61fccc33159eaee84a73a135ffad"
+        },
+        {
+          "path": "sw/fetch-security.js",
+          "sha256": "7d3a6334636e2b0760c2fdbdadfd9a55e50630a016966233a67594893db8e332"
+        },
+        {
+          "path": "sw/message-router.js",
+          "sha256": "cdca3a85c276d2758e1e33cb2a6769d792f3c881c21b636d360430c45d8a4b16"
+        },
+        {
+          "path": "sw/settings-store.js",
+          "sha256": "7799aba82ccdd950318c20b693d3ec1271b521263fc807d3e729c61655e4a5f4"
+        },
+        {
+          "path": "sw/thumbnail-decompression.js",
+          "sha256": "8f10511874921548f99195d529ae9a970c514979bc11d18eef11b14894192eb3"
+        },
+        {
+          "path": "sw/thumbnail-extractor.js",
+          "sha256": "32ebf59b367852c8914b556adb64fc0fc86ed4bffbbd7b3be75c649d4f11cab9"
+        },
+        {
+          "path": "sw/viewer-launcher.js",
+          "sha256": "4df4d320b275e4dfe50c83bcd42bc806ba2091020a3e94ab1b8938fcf0cc2872"
+        },
+        {
+          "path": "theme-init.js",
+          "sha256": "5a3afcc0139187bfe509414cd60fde2a0dfea72fd72751c4e6e696cdc0f6c587"
+        },
+        {
+          "path": "viewer.html",
+          "sha256": "3a075a38e15d1f5499916872d391ef041dcac20e024262d2414e55887b9f7e5b"
+        },
+        {
+          "path": "wasm/rhwp.d.ts",
+          "sha256": "d2d9be4be0fdebfdd0f203b797ee99247c92fd0d3dba6143e9431e9ea78e9441"
+        },
+        {
+          "path": "wasm/rhwp.js",
+          "sha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365"
+        },
+        {
+          "path": "wasm/rhwp_bg.wasm",
+          "sha256": "dd58a4fa7680674379adb94f874123029c39001a94600e7d1a369aec823a11bb"
+        },
+        {
+          "path": "wasm/rhwp_bg.wasm.d.ts",
+          "sha256": "f8c2a955e57a9a5d5c1c02c5147abf8cf033cae56e139bc8c9b28adf3bc093bd"
+        }
+      ]
+    },
+    "environment": {
+      "node": "v24.15.0",
+      "platform": "darwin",
+      "arch": "arm64",
+      "puppeteer": "25.17.0",
+      "chrome": "157.0.8103.50",
+      "executable": "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/browser-cache/chrome/mac_arm-157.0.8103.50/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
+      "harnessSha": "c47698bb7bdc07c84e674c587256759543053727",
+      "harnessDirty": false
+    },
+    "results": [
+      {
+        "name": "extension-smoke",
+        "status": "pass",
+        "signal": null,
+        "timedOut": false,
+        "durationMs": 2700,
+        "exitCode": 0,
+        "artifacts": [
+          {
+            "path": "extension-smoke.log",
+            "runId": "bdc83e52-8b46-4fde-8503-b119770825d7",
+            "sha256": "d5838e42a397d7636af3bacebf163b9f3b7696a3c2d153eb2d1bb0809d38e35a"
+          }
+        ]
+      },
+      {
+        "name": "download-interceptor",
+        "status": "pass",
+        "signal": null,
+        "timedOut": false,
+        "durationMs": 15472,
+        "exitCode": 0,
+        "artifacts": [
+          {
+            "path": "download-interceptor.log",
+            "runId": "bdc83e52-8b46-4fde-8503-b119770825d7",
+            "sha256": "f69cdc3451e86fb833ff7b620398c58a5e4319c246e336ab5c1814c893f2e28c"
+          }
+        ]
+      },
+      {
+        "name": "extension-lifecycle",
+        "status": "pass",
+        "signal": null,
+        "timedOut": false,
+        "durationMs": 34856,
+        "exitCode": 0,
+        "artifacts": [
+          {
+            "path": "extension-lifecycle.log",
+            "runId": "bdc83e52-8b46-4fde-8503-b119770825d7",
+            "sha256": "dd80726cc1489f02fef61b8273d53190abd6d3b04d0d86c74b15a3877607b751"
+          }
+        ]
+      }
+    ],
+    "limitations": [
+      "Unpacked Chrome for Testing only",
+      "Store installation and upgrades not tested",
+      "Edge/Firefox and real user profiles not tested",
+      "Visual fidelity and release approval require manual review"
+    ],
+    "candidateUnchanged": true,
+    "finishedAt": "2026-11-16T05:37:38.224Z"
+  },
+  "browser": {
+    "path": "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/browser-cache/chrome/mac_arm-157.0.8103.50/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
+    "version": "Google Chrome for Testing 157.0.8103.50",
+    "sha256": "dd7c40bb30a70d1079e962b80b6a75bc9a9355b817288744c4ec5166d5af6e1d",
+    "purpose": "separate official Chrome for Testing for extension regression only; user Chrome profile untouched"
+  },
+  "no_real_api_key_or_paid_call": true,
+  "screenshots": [
+    {
+      "path": "mydocs/pr/assets/dependabot_20261116/consumers/ai-panel-answer.png",
+      "sha256": "d2cba4c21315289ebe6a943ff2c320c15825fc179dac2fd513a4f429136336db",
+      "direct_read": true
+    },
+    {
+      "path": "mydocs/pr/assets/dependabot_20261116/consumers/ai-settings-dialog.png",
+      "sha256": "b40571a7c7000ef4bcdf991a9d87510b8353c51f9925c9a18ccdede9acec53e5",
+      "direct_read": true
+    }
+  ]
+}

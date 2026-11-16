@@ -1,0 +1,33 @@
+{
+  "key": "yeongwol",
+  "page": 1,
+  "raw_match_percent": "100.00",
+  "input_source": {
+    "page": 1,
+    "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/protected/candidate/yeongwol/rhwp_png/rhwp_001.png",
+    "rhwp_sha256": "30a12802a375151b9d104894457e309697088f7ffaeb62fb77af06f5db3a8a40",
+    "pdf_png": "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/protected/candidate/yeongwol/pdf_png/pdf-001.png",
+    "pdf_sha256": "1c663ee4b56f8560de850d46c02f9e398f49fd5afea94c1157d99b28688536ad"
+  },
+  "files": {
+    "raw": {
+      "path": "mydocs/pr/assets/dependabot_20261116/cases/yeongwol/native/raw-p001.png",
+      "sha256": "30a12802a375151b9d104894457e309697088f7ffaeb62fb77af06f5db3a8a40"
+    },
+    "pdf": {
+      "path": "mydocs/pr/assets/dependabot_20261116/cases/yeongwol/native/pdf-p001.png",
+      "sha256": "1c663ee4b56f8560de850d46c02f9e398f49fd5afea94c1157d99b28688536ad"
+    },
+    "overlay": {
+      "path": "mydocs/pr/assets/dependabot_20261116/cases/yeongwol/native/overlay-p001.png",
+      "sha256": "e3ccf9acc1d0199666ebd00ed3775d1d054df31f87bc99f28790894a36d1d689"
+    },
+    "review": {
+      "path": "mydocs/pr/assets/dependabot_20261116/cases/yeongwol/native/review-p001.png",
+      "sha256": "cff54cffba92ac429db4b8d676322585be2ee3979291c805db352da540d4279f"
+    }
+  },
+  "canonical_functions": "make_overlay_compares/make_compares/make_review_panels",
+  "pixel_diff_threshold": 32,
+  "recaptured": false
+}
