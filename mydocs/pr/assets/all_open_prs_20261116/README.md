@@ -30,6 +30,10 @@
   [Native](native-claims-final.json)와 [fresh WASM](wasm-claims-final.json) 모두 전쪽 90% 이상이다.
   [Print 영수증](mcp-print-references.json)에 입력/PDF 해시·실제 제품·출력 경로를 연결했다.
   웹한글기안기·Microsoft Print to PDF의 원 PR 자료를 새 공식 점수로 재사용하지 않았다.
+- [고정 base 대비 fresh WASM](wasm-base-head-comparison.json): 원 PR 대상 66종·74쪽 중
+  상승 59쪽·하락 0쪽이다. 정본 보호 sample10의 별도 하락을 이 결과로 상쇄하지 않는다.
+- [검증 입력 커밋 감사](committed-input-audit.json): 66개 원본과 대응 PDF는 실행 바이트·HEAD의
+  바이트·영수증 SHA가 모두 같고 PDF는 모두 50MiB 미만이다. 새 글꼴 바이너리를 넣지 않았다.
 - [Native 정본 보호](native-protected-final.json): **18문서·1,771쪽의 공식 두 자리 하락 0쪽**.
   [조건 재현 분석](protected-condition-analysis.md)은 입력·PDF·판정 기준을 바꾸지 않고
   실제 독립 Print의 글꼴 공급자와 기존 수용 브라우저 조건을 재현한 근거다.
