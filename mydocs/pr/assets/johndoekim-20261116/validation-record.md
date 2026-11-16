@@ -1,5 +1,7 @@
 # source·실행·글꼴 공급 기록
 
+> 최신 devel 재검증 완료: 아래 수치는 **직전 후보 `105be723b2`의 역사적 기록**이다. 최종 source `4deadfa963`의 실제 13,632개·Native 4,073개·전쪽 보호 및 승인된 Native 1행 예외는 [최종 기록](latest-devel-revalidation.md)을 따른다.
+
 최종 실행 명령·종료 코드·해시는 이 문서에 기록한다. 원시 로그·MCP 응답·중간 JSON은 Git 제외 경로에만 둔다.
 
 ## 제품 source와 실제 산출물

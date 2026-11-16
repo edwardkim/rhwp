@@ -2,11 +2,11 @@
 
 ## 최종 판정
 
-**메인터너 보정 후 수용 가능.** 원 기여의 목표 2입력은 Native·fresh WASM 모두 raw 100.00%이며,
-주석만 보완한 제출 코드 `e958314dc9078fdb55e7cde04227a1a22054a72d`의 검증 입력으로 전체 회귀 13,614건·
-Native 공식 4073건·모든 lint를 통과했다. 정본 보호 3,542쪽의 공식값 하락·누락·예외는 0건이다.
-원 head의 주석 규약을 보완한 통합 후보이며 제품 코드·assertion은 원 기여 그대로다.
-원격 push·새 PR·승인 리뷰·댓글·merge는 수행하지 않았다. 작업지시자 승인과 새 exact-head GitHub CI·self-review 뒤 통합한다.
+**메인터너 보정 후 수용 가능.** 최신 devel `6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0`를 실제 병합한 source `4deadfa9638baffc3b4dc7e9d56a3edff9f83aeb`에서 필수 로컬 검증을 완료했다. 전체 회귀 13,632개·Native 공식 4,073개·모든 lint·목표 Native/fresh WASM 전쪽 100.00%·편람·공개 공통 검사가 통과했다.
+
+특별 보호 3,542쪽은 승인된 Native 10쪽 1행의 기존 차이(99.86% → 99.85%)만 예외로 수용한다. 다른 하락·누락은 0건이며 [정확한 결정](assets/johndoekim-20261116/native-floor-decision.md)을 연결한다. [최종 실행·전쪽 증적](assets/johndoekim-20261116/latest-devel-revalidation.md)을 기준으로 한다.
+
+작업지시자가 push·Open 수용 PR·해당 head CI·self-review·merge와 후속 처리를 승인했다. 새 PR의 CI와 실제 merge는 실행 뒤 확인하며 현재 성공으로 기록하지 않는다. 원 기여 SHA·fork branch와 #9058 OPEN을 보존한다.
 
 ## 접수 정보
 
@@ -15,7 +15,7 @@ Native 공식 4073건·모든 lint를 통과했다. 정본 보호 3,542쪽의 �
 | PR·작성자·base | [#9081](https://github.com/edwardkim/rhwp/pull/9081) / johndoekim / devel |
 | 원 head | `3a2fcbf7d12d4f57fa3fcff33721ff7ed9059738` |
 | 최초 base·누적 코드 | `7ee4fe0327d0cdfc8dec12c450e5dd5b5369b826` / `3843f897ae410fdf67347651b39214d9dd9cafff` |
-| 최신 base·통합 후보 | `67b4ff8d3a55e5bb50c46a44315de749a4ef07a7` / `e958314dc9078fdb55e7cde04227a1a22054a72d` (주석 보완) |
+| 최신 base·통합 후보 | `6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0` / `4deadfa9638baffc3b4dc7e9d56a3edff9f83aeb` (주석 보완) |
 | 관련 이슈 | [#9076](https://github.com/edwardkim/rhwp/issues/9076). #9057의 누름틀 없는 경우와 #9023의 안내문 처리를 선행 분석했다. |
 | 규모·reviewer | 원 기여 4 commits·22 files / edwardkim 지정·재조회 완료 / Open, non-Draft |
 
@@ -62,28 +62,21 @@ base/후보 PNG가 바이트 단위로 같았고, 기존 줄 소속 문제는 �
 
 ## 로컬·CI 검증과 최신 base 반영
 
-- 최소 글꼴 `bwrap` 환경의 집중 회귀 57건은 모두 통과했다. 신규 6건, #9021·#9005, 필드 슬롯,
-  인라인 개체 이동과 전체 IR field baseline이 포함된다. 사설·Windows/HFT 글꼴 경로를 가렸다.
-- [원 head CI](https://github.com/edwardkim/rhwp/actions/runs/43644452017)와 CodeQL·Render Diff·Adapter·Proptest·정책은 성공했다.
-  이후 메인터너가 Rust 회귀 주석을 변경했으므로 원 CI를 새 후보의 lint·전체 검사 대신 사용하지 않는다.
-  같은 검증 입력으로 모든 Rust lint·전체 release-test 13,614개·Native 공식 4073개를 통과했다.
-- 실제 Native·최적화 WASM 빌드, 독립 Print 대조와 focused는 별도로 실행했다.
-  현재 `shape_layout.rs` Git blob은 원 head와 같다.
-- 검토 중 반영한 #9102는 매뉴얼·공개 공통 검사와 증적 추가다. Rust·Cargo·원본·PDF·asset 입력의 변경은
-  0개임을 [source 증거](assets/johndoekim-20261116/validation-record.md)로 확인했다.
-  새 공통 검사는 공개 글꼴만 노출한 격리 환경에서 Native/WASM 각 4개 문서·8개 실행 모두 통과했다.
-- 편람 Native 383쪽 `--handbook-gate`는 통과했다. 보호 TSV 전체도 하락 0건으로 통과했으며 실제 결과는
-  [공유 증적](assets/johndoekim-20261116/README.md)에 구분해 기록한다.
+- 최소 글꼴 환경의 집중 9묶음 30건과 전체 회귀 13,632개가 통과했다. 전체 회귀에는 인접 필드·개체 이동·IR field baseline도 포함한다. Native 공식 4,073개·모든 Rust lint·workspace build를 완료했다.
+- [원 head CI](https://github.com/edwardkim/rhwp/actions/runs/43644452017)는 성공했지만 새 제출 후보의 CI로 대신 쓰지 않는다.
+- #9102 공개 공통 검사와 #9106의 실제 분할 셀·Print TTF em·괘선·Native SVG 글꼴 준비·CanvasKit 예산의 선행 근거와 현재 소비 경로를 대조했다. 새 base와 후보의 각주 50쪽·중첩 표 17쪽은 Native/WASM 각각 PNG 67개가 모두 같다.
+- Native 편람 383쪽과 공개 공통 Native/WASM 8개 실행이 통과했다. 특별 보호 3,542쪽은 Native 10쪽 한 행의 승인된 기존 차이 외 하락 0건이다.
+- 실제 source·프로그램 해시·전쪽 TSV·직접 판독·독립 글꼴 복원은 [최종 기록](assets/johndoekim-20261116/latest-devel-revalidation.md)에 구분했다.
 
 ## 조판 원칙 준수 검토
 
 | 항목 | 판정·근거 |
 | --- | --- |
-| 제출 전 검증·PR 상태 | 충족 — 목표·focused·전체 회귀 13,614개·Native 4073개·편람·공개 공통·특별 보호·lint 통과 |
+| 제출 전 검증·PR 상태 | 충족 — 목표·집중·전체 회귀 13,632개·Native 4,073개·편람·공개 공통·lint 통과, 보호 1행 예외 승인 |
 | 기존 이슈·해결 PR 선행 분석 | 충족 — #9057·#9023의 계약과 #9058/#9082의 다른 원인을 분리 |
 | 근거·일반성 | 충족 — 실제 저장/Print의 안내문 차이에 기존 공통 재조판 적용, 샘플별 수치 분기 없음 |
 | 측정·배치 일관성 | 충족 — 재조판 줄 → 뒤 문단 흐름 → 조합기 줄 소속 → 표 배치 추적·실행 |
-| 최신 base 기능 보존 | 충족 — #9102는 실행 엔진 입력 변경 없음, 새 공통 검사도 실제 통과 |
+| 최신 base 기능 보존 | 충족 — #9106까지 실제 병합하고 Native/WASM 각 67쪽 PNG 동일·관련 경계 검사 통과 |
 | 최종 backend 소비 | 충족 — 같은 source의 Native Skia·최적화 WASM Canvas를 실제 실행 |
 | 분할·이어받기 | 비해당 — 컷·예약 높이·continuation 알고리즘은 변경하지 않음 |
 | 줄 소속·점유 높이 | 충족 — 저장 줄과 안내문 없는 현재 줄을 구분하며 표·후속 문단 흐름 공유 |
@@ -91,7 +84,7 @@ base/후보 PNG가 바이트 단위로 같았고, 기존 줄 소속 문제는 �
 | 기준값 | 충족 — 시각 기준·허용치 수정 없음, IR baseline 1행은 별도 저장 손실의 기존 상한 |
 | 렌더 회귀 선행 조건 | 충족 — 목표 두 문서 Native/WASM 모두 전쪽 100.00% |
 | 확대 판독 | 충족 — 표 순서·포함·선분·간격·안내문 비표시를 같은 배율로 대조 |
-| 최종 주장 범위 | 충족 — 원 사례 개선·대조군 보존·특별 보호 하락 0건, 기존 #9058을 해결 범위로 포함하지 않음 |
+| 최종 주장 범위 | 충족 — 원 사례 개선·대조군 보존·보호 1행의 승인된 기존 차이만 수용, 기존 #9058을 해결 범위로 포함하지 않음 |
 
 ## 메인터너 주석 보완과 남은 조건
 
@@ -101,13 +94,13 @@ base/후보 PNG가 바이트 단위로 같았고, 기존 줄 소속 문제는 �
 (`2026-11-15T05:28:15+09:00`), 메인터너의 실제 측정 근거를 기록했다. 제품과 test body는 바이트 단위로 같다.
 
 구형 수식 글꼴은 독립 문자표 Print로 복구했고 77개 원본 프로그램이 이전 provenance와 일치한다.
-복구 후 보호 전체의 공식값 하락은 0건이며 기준값·허용치를 변경하지 않았다.
+직전 후보에서는 공식값 하락 0건이었으며 새 #9106 하한에서는 Native 10쪽 한 행의 기존 차이를 별도로 승인받았다. 기준값·허용치는 변경하지 않았다.
 [공급·빌드 기록](assets/johndoekim-20261116/validation-record.md)과
 [보호 전쪽 TSV](assets/johndoekim-20261116/protected-validation.md)를 연결한다.
 
-전체 회귀 13,614개와 Native 공식 4073개를 모두 통과해 수용 후보를 확정했다.
+전체 회귀 13,632개와 Native 공식 4,073개를 모두 통과해 수용 후보를 확정했다.
 실행 당시 임시 SHA와 공개할 제출 코드의 Rust·test·검증 입력은 같으며 [실행 기록](assets/johndoekim-20261116/validation-record.md)에 구분했다.
-새 PR의 exact-head GitHub CI·self-review와 작업지시자의 원격 승인이 필요하다.
+작업지시자의 원격 승인은 확보했다. 새 PR의 exact-head GitHub CI·self-review를 실제 완료한 뒤 병합한다.
 
 ## Merge 후 contributor PR comment 계획
 

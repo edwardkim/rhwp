@@ -67,3 +67,26 @@ Native 공식 3종도 같은 최소 글꼴 환경에서 4073개 모두 통과했
 별도 사설 수식 글꼴은 독립 문자표 Print로 복구해 원본 77개 프로그램의 동일성과 실제 출력을 확인했다.
 [검증 기록](assets/johndoekim-20261116/README.md)과 [원격 처리안](assets/johndoekim-20261116/remote-action-plan.md)에
 필수 검사 완료 뒤의 구체적인 범위와 승인 경계를 기록한다.
+
+## 원격 승인 뒤 새 devel #9106 반영
+
+작업지시자는 후보 `105be723b2`의 upstream push·Open PR·새 head CI·self-review·merge와 후속 처리를 승인했다.
+직후 원격에서 #9106 `6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0`의 추가 병합을 발견했다. 최신 base 반영·검증 요구에 따라
+충돌 없이 merge한 `4deadfa9638baffc3b4dc7e9d56a3edff9f83aeb`에서 검증을 갱신한다. 아직 원격 push·새 PR은 수행하지 않았다.
+
+- source 변경: 분할 셀 정렬·표 바깥여백, 구형 Print의 표시 em, Native SVG 프로그램 준비,
+  CanvasKit 사전 작업 예산. 새 정본은 중첩 표 Native/WASM 각 17쪽을 수용했고 SHA는
+  `2280e97844b2cb262ea73e9c49f09f56c434097fed49af75fd9a7f6198d43da7`이다.
+- 선행 근거: #9106의 원 code `5de0973a`, 독립 한컴 2020 Print, 실제 각주 50쪽·중첩 표 17쪽,
+  관련 회귀·전쪽 증적·공급 자격을 읽고 현재 source와 대조했다.
+- 범위: 원 PR 두 목표와 실제 반복 저장, 새 base의 각주·중첩 표 PNG 및 Native SVG 7·28쪽,
+  필수 최소 글꼴 Rust 게이트·편람·공개 공통 gate·정본 보호 전체를 새 생산자로 검증한다.
+- base/candidate Native와 최적화 WASM은 공용 target에서 순차 빌드하고 별도 output에 고정한다.
+  source가 다른데 후보 Native가 base와 동일한 바이너리를 재사용한 캐시 오류는 무효로 구분했다.
+  해당 rhwp 패키지의 프로필 캐시만 무효화해 재컴파일하며 base snapshot과 다른 의존성 캐시는 보존한다.
+
+## 최신 source의 최종 로컬 완료
+
+`4deadfa9638baffc3b4dc7e9d56a3edff9f83aeb`에서 전체 회귀 13,632개·집중 30개·Native 공식 4,073개·모든 lint·편람 383쪽·공개 공통 8개 실행을 실제 완료했다. 목표 전쪽 Native/fresh WASM은 모두 100.00%, 새 base와 후보의 각주/중첩 표 각 67쪽 PNG는 동일하다. 실제 CLI와 최적화 WASM API의 두 차례 HWP 저장·재열기·HWPX 교차 저장도 완료했다.
+
+보호 3,542쪽 중 Native 중첩 표 10쪽 한 행의 99.86%/99.85% 기존 차이만 작업지시자가 한정 수용했다. 다른 하락·누락은 0건이며 정본·허용치는 변경하지 않았다. [최종 실행 기록](assets/johndoekim-20261116/latest-devel-revalidation.md)과 [확정된 원격 범위](assets/johndoekim-20261116/remote-action-plan.md)를 따른다. 현재 로컬 필수 검증을 완료했고, 새 PR의 CI·self-review·merge·후속 처리는 승인된 다음 실행 단계다.
