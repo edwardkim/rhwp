@@ -1,0 +1,11 @@
+  ➜  Local:   http://127.0.0.1:7700/
+=== E2E: Task #1448 자동 백업 복구 ===
+
+  [browser] headless Chrome 실행
+  PASS: 복구 대화상자 표시
+  PASS: 원본 자동 덮어쓰기 아님 안내 표시
+  PASS: 복구 후보 파일명 표시 (새 문서.hwp)
+테스트 오류: Waiting for selector `#scroll-container canvas` failed
+  Screenshot: e2e/screenshots/error.png
+
+📋 HTML 보고서: ../output/e2e/autosave-recovery-report.html
