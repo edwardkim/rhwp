@@ -1,0 +1,190 @@
+{
+  "recorded_at": "2026-11-16T16:21:16.821107+09:00",
+  "head": "5fbe7c1f6a0f3e4a652aa05d31b89882265c6c83",
+  "upstream_devel": "6269cb0f1707a1c5afcae4840ac875f928c4a03d",
+  "self_open": [],
+  "sources": [
+    {
+      "headRefOid": "e4095fb524b10e6f23c83d699a809f2a84decb0b",
+      "number": 9125,
+      "reviewRequests": [
+        {
+          "__typename": "User",
+          "login": "jangster77"
+        }
+      ],
+      "url": "https://github.com/edwardkim/rhwp/pull/9125"
+    },
+    {
+      "headRefOid": "c82f19e4ec17423ec2bb4264068bbb719a444ab0",
+      "number": 9124,
+      "reviewRequests": [
+        {
+          "__typename": "User",
+          "login": "jangster77"
+        }
+      ],
+      "url": "https://github.com/edwardkim/rhwp/pull/9124"
+    },
+    {
+      "headRefOid": "a48a87263145cfe1a39b97609e5e5ec0b08ab645",
+      "number": 9123,
+      "reviewRequests": [
+        {
+          "__typename": "User",
+          "login": "jangster77"
+        }
+      ],
+      "url": "https://github.com/edwardkim/rhwp/pull/9123"
+    },
+    {
+      "headRefOid": "aa1803a119d8601a7e997c3294ebc628b07ada84",
+      "number": 9122,
+      "reviewRequests": [
+        {
+          "__typename": "User",
+          "login": "jangster77"
+        }
+      ],
+      "url": "https://github.com/edwardkim/rhwp/pull/9122"
+    },
+    {
+      "headRefOid": "99a2a983e3bb5ab68cd89180b8d5a2a51613f8c3",
+      "number": 9121,
+      "reviewRequests": [
+        {
+          "__typename": "User",
+          "login": "jangster77"
+        }
+      ],
+      "url": "https://github.com/edwardkim/rhwp/pull/9121"
+    },
+    {
+      "headRefOid": "df3402457cec6a8460da983554ed6e30d586cdcf",
+      "number": 9120,
+      "reviewRequests": [
+        {
+          "__typename": "User",
+          "login": "jangster77"
+        }
+      ],
+      "url": "https://github.com/edwardkim/rhwp/pull/9120"
+    },
+    {
+      "headRefOid": "35b4eb1d32ce48047e599237674fb71677d17314",
+      "number": 9119,
+      "reviewRequests": [
+        {
+          "__typename": "User",
+          "login": "jangster77"
+        }
+      ],
+      "url": "https://github.com/edwardkim/rhwp/pull/9119"
+    },
+    {
+      "headRefOid": "323b6e679e2cecdd547a24d02ddb73675470c409",
+      "number": 9118,
+      "reviewRequests": [
+        {
+          "__typename": "User",
+          "login": "jangster77"
+        }
+      ],
+      "url": "https://github.com/edwardkim/rhwp/pull/9118"
+    },
+    {
+      "headRefOid": "cf1e36465afd86fbe3248da6797353457f48984f",
+      "number": 9117,
+      "reviewRequests": [
+        {
+          "__typename": "User",
+          "login": "jangster77"
+        }
+      ],
+      "url": "https://github.com/edwardkim/rhwp/pull/9117"
+    },
+    {
+      "headRefOid": "60445ffb0b70b1c60b1069d0c58d7f00d86ce95b",
+      "number": 9116,
+      "reviewRequests": [
+        {
+          "__typename": "User",
+          "login": "jangster77"
+        }
+      ],
+      "url": "https://github.com/edwardkim/rhwp/pull/9116"
+    },
+    {
+      "headRefOid": "19b1b058bdbf6d9aae520467c752f042c867a9f4",
+      "number": 9115,
+      "reviewRequests": [
+        {
+          "__typename": "User",
+          "login": "jangster77"
+        }
+      ],
+      "url": "https://github.com/edwardkim/rhwp/pull/9115"
+    },
+    {
+      "headRefOid": "311e2218334c5ca3dda3573ee2b845e162d4e2d8",
+      "number": 9114,
+      "reviewRequests": [
+        {
+          "__typename": "User",
+          "login": "jangster77"
+        }
+      ],
+      "url": "https://github.com/edwardkim/rhwp/pull/9114"
+    },
+    {
+      "headRefOid": "eedeec54ba2e52d50a4401837ceafb4084753eec",
+      "number": 9113,
+      "reviewRequests": [
+        {
+          "__typename": "User",
+          "login": "jangster77"
+        }
+      ],
+      "url": "https://github.com/edwardkim/rhwp/pull/9113"
+    },
+    {
+      "headRefOid": "667bf5cd99d11e414e4d06ac060ae675b085b606",
+      "number": 9112,
+      "reviewRequests": [
+        {
+          "__typename": "User",
+          "login": "jangster77"
+        }
+      ],
+      "url": "https://github.com/edwardkim/rhwp/pull/9112"
+    },
+    {
+      "headRefOid": "278d652414e61403580106f97960cecc875d2c7f",
+      "number": 9111,
+      "reviewRequests": [
+        {
+          "__typename": "User",
+          "login": "jangster77"
+        }
+      ],
+      "url": "https://github.com/edwardkim/rhwp/pull/9111"
+    },
+    {
+      "headRefOid": "bc10af451374b283f8869918a2002231df0fdffd",
+      "number": 9110,
+      "reviewRequests": [
+        {
+          "__typename": "User",
+          "login": "jangster77"
+        }
+      ],
+      "url": "https://github.com/edwardkim/rhwp/pull/9110"
+    }
+  ],
+  "merge_simulation": {
+    "exit": 0,
+    "tree": "1f9f2c4e3f88c3ef5f5d5ff90f6daa87d8be76ee"
+  },
+  "actual_rebase_performed": false,
+  "read_path_audit": "upstream-protected-read-path-audit.json"
+}

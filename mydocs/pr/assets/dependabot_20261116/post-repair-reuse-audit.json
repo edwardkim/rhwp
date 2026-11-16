@@ -1,0 +1,98 @@
+{
+  "source_after": "5fbe7c1f6a0f3e4a652aa05d31b89882265c6c83",
+  "dependency_source": "87c78424bc261f90e1167ecedc6a0f2106864d37",
+  "changed_paths_after_dependency_source": [
+    "rhwp-firefox/e2e/download-save.test.mjs",
+    "rhwp-studio/e2e/helpers.mjs",
+    "rhwp-studio/src/view/canvaskit-renderer.ts",
+    "rhwp-studio/tests/browser-close-lifecycle.test.ts",
+    "rhwp-studio/tests/canvaskit-device-stroke-contract.test.ts"
+  ],
+  "rust_wasm_build_inputs_unchanged": true,
+  "whole_visual_sweep_consumers_unchanged": true,
+  "whole_visual_sweep_route": [
+    "scripts/visual_sweep.py",
+    "scripts/export-wasm-for-sweep.mjs",
+    "frozen Native Skia binary / frozen fresh WASM pkg"
+  ],
+  "studio_canvaskit_not_imported_by_sweep": true,
+  "production_rebuilt": true,
+  "production_product_source": "c712d77ac0",
+  "test_helper_source": "2cfc59de5d",
+  "actual_renderer_hard_gate_passed": true,
+  "actual_renderer_forced_exit": false,
+  "actual_renderer_manual_stream_release": false,
+  "reused": [
+    "minimum-font Rust15gates / full13617PASS",
+    "Native/fresh WASM18inputs1771pages per phase",
+    "contributor8 / explicit Native handbook383",
+    "actual WASM4format encrypted/normal repeated save",
+    "Studio AI3 / Chrome extension3"
+  ],
+  "rerun": [
+    "CanvasKit raster tests12PASS",
+    "browser close ownership tests4PASS (full npm suite included)",
+    "Studio full2805PASS/0FAIL/2SKIP",
+    "Studio/Chrome/Firefox production builds",
+    "actual renderer30captures / runtime hard violations0 / normal exit0",
+    "Firefox download/edit/save/save-as actual test"
+  ],
+  "artifact_checks": [
+    {
+      "path": "pkg/rhwp.js",
+      "sha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "bytes": 587539
+    },
+    {
+      "path": "pkg/rhwp_bg.wasm",
+      "sha256": "dd58a4fa7680674379adb94f874123029c39001a94600e7d1a369aec823a11bb",
+      "bytes": 32134247
+    },
+    {
+      "path": "rhwp-studio/public/rhwp.js",
+      "sha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "bytes": 587539
+    },
+    {
+      "path": "rhwp-studio/public/rhwp_bg.wasm",
+      "sha256": "dd58a4fa7680674379adb94f874123029c39001a94600e7d1a369aec823a11bb",
+      "bytes": 32134247
+    },
+    {
+      "path": "rhwp-studio/dist/rhwp.js",
+      "sha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "bytes": 587539
+    },
+    {
+      "path": "rhwp-studio/dist/rhwp_bg.wasm",
+      "sha256": "dd58a4fa7680674379adb94f874123029c39001a94600e7d1a369aec823a11bb",
+      "bytes": 32134247
+    },
+    {
+      "path": "rhwp-chrome/dist/wasm/rhwp.js",
+      "sha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "bytes": 587539
+    },
+    {
+      "path": "rhwp-chrome/dist/wasm/rhwp_bg.wasm",
+      "sha256": "dd58a4fa7680674379adb94f874123029c39001a94600e7d1a369aec823a11bb",
+      "bytes": 32134247
+    },
+    {
+      "path": "rhwp-firefox/dist/wasm/rhwp.js",
+      "sha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "bytes": 587539
+    },
+    {
+      "path": "rhwp-firefox/dist/wasm/rhwp_bg.wasm",
+      "sha256": "dd58a4fa7680674379adb94f874123029c39001a94600e7d1a369aec823a11bb",
+      "bytes": 32134247
+    }
+  ],
+  "renderer_http_initialization_receipts": "actual-initialization-wasm-identities.json",
+  "not_claimed": [
+    "report-only pixel parity differences are not all green",
+    "no new whole Rust or fresh WASM build after TS-only repair",
+    "not Docker or wasm-opt build"
+  ]
+}

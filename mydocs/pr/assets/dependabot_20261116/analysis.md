@@ -1,9 +1,13 @@
 # Dependabot 16개 PR 통합 검토 — 원인과 검증 범위
 
 현재: 최소 글꼴 Rust 필수15단계·전체13,617건, Native/fresh WASM 각각18종전쪽1,771쪽,
-제품3종 build와 Studio/Chrome 실제 소비·WASM 일반/암호화 반복 저장을 완료했습니다.
-정본 보호는 양쪽 모두 하락·누락0이며 실제 원본 PNG도 base/head 전쪽 모두 같습니다.
-공개 공통/편람·추가 출력 소비 검증은 진행 중입니다. PR 생성·CI·병합은 아직 하지 않았습니다.
+제품3종 build·Studio/Chrome 실제 소비·WASM 일반/암호화 반복 저장을 완료했습니다.
+정본 보호는 양쪽 모두 하락·누락0이며 base/head 전쪽 원본 PNG도 같습니다.
+추가 공개8조건·명시적편람383쪽·실제 renderer30캡처·Firefox 편집저장을 완료했습니다.
+실제 소비 중 발견한 기존 CanvasKit 빈 일반 선 패턴과 검증 브라우저 종료를 보정했고,
+최종 Studio 전체2805PASS·0FAIL·2SKIP 및 강제 종료 없는 실제 backend 검증을 완료했습니다.
+4개 수식 backend 비교는 report-only pixel parity 차이이며 runtime hard gate0과 구분합니다.
+PR 생성·CI·병합은 아직 하지 않았습니다.
 아래 시간별 실행 기록은 당시 상태이며, 완료 범위는 각 최종 JSON 증거를 따릅니다.
 
 2026-11-16, `review/integration-20261116-dependabot`에서 최신 고정 devel

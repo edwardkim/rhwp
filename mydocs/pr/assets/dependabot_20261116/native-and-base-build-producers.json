@@ -10,12 +10,13 @@
     "wasm_build_input_difference_native_cli_only": [
       "src/cli/outputs/vector.rs"
     ],
-    "font_supply": "verified 183-original-program bundle in dataset-preserved order; independent base qualification in progress",
+    "font_supply": "verified 183-original-program bundle in dataset-preserved order; independent Native/fresh WASM base qualification completed",
     "no_new_base_build_claimed": true,
     "native_source_full": "8472674645743d111d53de80d43d230449beaa3d",
     "native_qualification_completed": true,
     "native_qualification": "protected-native-validation.json",
-    "wasm_qualification_completed": false
+    "wasm_qualification_completed": true,
+    "wasm_qualification": "protected-wasm-validation.json"
   },
   "candidate_native": {
     "source_head": "87c78424bc261f90e1167ecedc6a0f2106864d37",

@@ -16,10 +16,13 @@
       ],
       "evidence_files": [
         "mydocs/pr/assets/dependabot_20261116/npm-validation.json",
-        "mydocs/pr/assets/dependabot_20261116/production-consumers-validation.json"
+        "mydocs/pr/assets/dependabot_20261116/production-consumers-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/protected-wasm-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/applicable-gates-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/post-repair-reuse-audit.json"
       ],
       "observed_pass_tests": [],
-      "final_acceptance": "pending whole WASM/applicable gates/CI; not source closure",
+      "final_acceptance": "local scope verified; integration Full CI/normal merge required before source closure",
       "no_visual_improvement_claim": true
     },
     {
@@ -36,10 +39,13 @@
       ],
       "evidence_files": [
         "mydocs/pr/assets/dependabot_20261116/npm-validation.json",
-        "mydocs/pr/assets/dependabot_20261116/production-consumers-validation.json"
+        "mydocs/pr/assets/dependabot_20261116/production-consumers-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/protected-wasm-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/applicable-gates-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/post-repair-reuse-audit.json"
       ],
       "observed_pass_tests": [],
-      "final_acceptance": "pending whole WASM/applicable gates/CI; not source closure",
+      "final_acceptance": "local scope verified; integration Full CI/normal merge required before source closure",
       "no_visual_improvement_claim": true
     },
     {
@@ -56,10 +62,13 @@
       ],
       "evidence_files": [
         "mydocs/pr/assets/dependabot_20261116/npm-validation.json",
-        "mydocs/pr/assets/dependabot_20261116/production-consumers-validation.json"
+        "mydocs/pr/assets/dependabot_20261116/production-consumers-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/protected-wasm-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/applicable-gates-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/post-repair-reuse-audit.json"
       ],
       "observed_pass_tests": [],
-      "final_acceptance": "pending whole WASM/applicable gates/CI; not source closure",
+      "final_acceptance": "local scope verified; integration Full CI/normal merge required before source closure",
       "no_visual_improvement_claim": true
     },
     {
@@ -75,10 +84,13 @@
         "extension smoke/download/lifecycle actual browser"
       ],
       "evidence_files": [
-        "mydocs/pr/assets/dependabot_20261116/production-consumers-validation.json"
+        "mydocs/pr/assets/dependabot_20261116/production-consumers-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/protected-wasm-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/applicable-gates-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/post-repair-reuse-audit.json"
       ],
       "observed_pass_tests": [],
-      "final_acceptance": "pending whole WASM/applicable gates/CI; not source closure",
+      "final_acceptance": "local scope verified; integration Full CI/normal merge required before source closure",
       "no_visual_improvement_claim": true
     },
     {
@@ -95,7 +107,10 @@
       "evidence_files": [
         "mydocs/pr/assets/dependabot_20261116/full-nextest-result.json",
         "mydocs/pr/assets/dependabot_20261116/rust-gates-validation.json",
-        "mydocs/pr/assets/dependabot_20261116/native-webfont-network-validation.json"
+        "mydocs/pr/assets/dependabot_20261116/native-webfont-network-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/protected-wasm-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/applicable-gates-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/post-repair-reuse-audit.json"
       ],
       "observed_pass_tests": [
         "rhwp::regression_suite_026 issue_8533_native_webfont_supply::declared_hft_substitute_keeps_its_own_punctuation_contract",
@@ -107,7 +122,7 @@
         "rhwp::regression_suite_026 issue_8533_native_webfont_supply::declared_local_substitute_precedes_a_registered_webfont",
         "rhwp::regression_suite_026 issue_8533_native_webfont_supply::local_face_wins_and_generic_fallback_does_not_claim_to_supply_the_unknown_original"
       ],
-      "final_acceptance": "pending whole WASM/applicable gates/CI; not source closure",
+      "final_acceptance": "local scope verified; integration Full CI/normal merge required before source closure",
       "no_visual_improvement_claim": true
     },
     {
@@ -123,10 +138,13 @@
         "extension smoke/download/lifecycle actual browser"
       ],
       "evidence_files": [
-        "mydocs/pr/assets/dependabot_20261116/production-consumers-validation.json"
+        "mydocs/pr/assets/dependabot_20261116/production-consumers-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/protected-wasm-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/applicable-gates-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/post-repair-reuse-audit.json"
       ],
       "observed_pass_tests": [],
-      "final_acceptance": "pending whole WASM/applicable gates/CI; not source closure",
+      "final_acceptance": "local scope verified; integration Full CI/normal merge required before source closure",
       "no_visual_improvement_claim": true
     },
     {
@@ -147,7 +165,10 @@
         "mydocs/pr/assets/dependabot_20261116/rust-gates-validation.json",
         "mydocs/pr/assets/dependabot_20261116/protected-native-validation.json",
         "mydocs/pr/assets/dependabot_20261116/native-direct-reading.json",
-        "mydocs/pr/assets/dependabot_20261116/fresh-wasm-build-validation.json"
+        "mydocs/pr/assets/dependabot_20261116/fresh-wasm-build-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/protected-wasm-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/applicable-gates-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/post-repair-reuse-audit.json"
       ],
       "observed_pass_tests": [
         "rhwp::regression_suite_013 issue_536_native_font_selection::native_and_browser_collection_contract_keeps_exact_faces_and_rejects_invalid_indexes",
@@ -156,7 +177,7 @@
         "rhwp::regression_suite_013 issue_536_native_font_selection::native_variation_contract_checks_exact_axes_ranges_duplicates_and_budget",
         "rhwp::regression_suite_020 issue_6520_svg_layer_contract::subset_font_bytes_are_deterministic_for_multiple_codepoints"
       ],
-      "final_acceptance": "pending whole WASM/applicable gates/CI; not source closure",
+      "final_acceptance": "local scope verified; integration Full CI/normal merge required before source closure",
       "no_visual_improvement_claim": true
     },
     {
@@ -171,10 +192,13 @@
         "Firefox production/fresh WASM file hash"
       ],
       "evidence_files": [
-        "mydocs/pr/assets/dependabot_20261116/production-consumers-validation.json"
+        "mydocs/pr/assets/dependabot_20261116/production-consumers-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/protected-wasm-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/applicable-gates-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/post-repair-reuse-audit.json"
       ],
       "observed_pass_tests": [],
-      "final_acceptance": "pending whole WASM/applicable gates/CI; not source closure",
+      "final_acceptance": "local scope verified; integration Full CI/normal merge required before source closure",
       "no_visual_improvement_claim": true
     },
     {
@@ -189,7 +213,10 @@
       ],
       "evidence_files": [
         "mydocs/pr/assets/dependabot_20261116/full-nextest-result.json",
-        "mydocs/pr/assets/dependabot_20261116/rust-gates-validation.json"
+        "mydocs/pr/assets/dependabot_20261116/rust-gates-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/protected-wasm-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/applicable-gates-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/post-repair-reuse-audit.json"
       ],
       "observed_pass_tests": [
         "rhwp parser::cfb_reader::tests::open_decompression_stream_readers_enforce_limit",
@@ -199,7 +226,7 @@
         "rhwp parser::cfb_reader::tests::test_limited_decompression_rejects_compact_oversized_output",
         "rhwp parser::crypto::tests::password_limit_rejects_expanded_stream"
       ],
-      "final_acceptance": "pending whole WASM/applicable gates/CI; not source closure",
+      "final_acceptance": "local scope verified; integration Full CI/normal merge required before source closure",
       "no_visual_improvement_claim": true
     },
     {
@@ -222,10 +249,13 @@
       ],
       "evidence_files": [
         "mydocs/pr/assets/dependabot_20261116/action-source-audit.json",
-        "mydocs/pr/assets/dependabot_20261116/workflow-validation.json"
+        "mydocs/pr/assets/dependabot_20261116/workflow-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/protected-wasm-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/applicable-gates-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/post-repair-reuse-audit.json"
       ],
       "observed_pass_tests": [],
-      "final_acceptance": "pending whole WASM/applicable gates/CI; not source closure",
+      "final_acceptance": "local scope verified; integration Full CI/normal merge required before source closure",
       "no_visual_improvement_claim": true
     },
     {
@@ -240,7 +270,10 @@
       ],
       "evidence_files": [
         "mydocs/pr/assets/dependabot_20261116/full-nextest-result.json",
-        "mydocs/pr/assets/dependabot_20261116/rust-gates-validation.json"
+        "mydocs/pr/assets/dependabot_20261116/rust-gates-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/protected-wasm-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/applicable-gates-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/post-repair-reuse-audit.json"
       ],
       "observed_pass_tests": [
         "rhwp parser::hwpx::reader::tests::test_compressed_entry_limited_read_rejects_before_materialization",
@@ -254,7 +287,7 @@
         "rhwp parser::hwpx::reader::tests::test_zip_bomb_xml_entry_rejected",
         "rhwp::regression_suite_024 armor_cli_contract::encrypted_hwp3_and_hwpx_open_through_password_stdin"
       ],
-      "final_acceptance": "pending whole WASM/applicable gates/CI; not source closure",
+      "final_acceptance": "local scope verified; integration Full CI/normal merge required before source closure",
       "no_visual_improvement_claim": true
     },
     {
@@ -275,7 +308,10 @@
         "mydocs/pr/assets/dependabot_20261116/rust-gates-validation.json",
         "mydocs/pr/assets/dependabot_20261116/protected-native-validation.json",
         "mydocs/pr/assets/dependabot_20261116/native-direct-reading.json",
-        "mydocs/pr/assets/dependabot_20261116/fresh-wasm-build-validation.json"
+        "mydocs/pr/assets/dependabot_20261116/fresh-wasm-build-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/protected-wasm-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/applicable-gates-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/post-repair-reuse-audit.json"
       ],
       "observed_pass_tests": [
         "rhwp::regression_suite_013 issue_536_native_font_selection::native_and_browser_collection_contract_keeps_exact_faces_and_rejects_invalid_indexes",
@@ -284,7 +320,7 @@
         "rhwp::regression_suite_013 issue_536_native_font_selection::native_variation_contract_checks_exact_axes_ranges_duplicates_and_budget",
         "rhwp::regression_suite_020 issue_6520_svg_layer_contract::subset_font_bytes_are_deterministic_for_multiple_codepoints"
       ],
-      "final_acceptance": "pending whole WASM/applicable gates/CI; not source closure",
+      "final_acceptance": "local scope verified; integration Full CI/normal merge required before source closure",
       "no_visual_improvement_claim": true
     },
     {
@@ -299,7 +335,10 @@
       ],
       "evidence_files": [
         "mydocs/pr/assets/dependabot_20261116/full-nextest-result.json",
-        "mydocs/pr/assets/dependabot_20261116/rust-gates-validation.json"
+        "mydocs/pr/assets/dependabot_20261116/rust-gates-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/protected-wasm-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/applicable-gates-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/post-repair-reuse-audit.json"
       ],
       "observed_pass_tests": [
         "rhwp::regression_suite_017 password_crypto_multiformat_contract::hwp3_common_module_reencrypts_the_actual_password_fixture",
@@ -308,7 +347,7 @@
         "rhwp-password-crypto tests::hwp5_decrypt_matches_external_vector",
         "rhwp-password-crypto tests::hwp5_stream_roundtrip_preserves_partial_block"
       ],
-      "final_acceptance": "pending whole WASM/applicable gates/CI; not source closure",
+      "final_acceptance": "local scope verified; integration Full CI/normal merge required before source closure",
       "no_visual_improvement_claim": true
     },
     {
@@ -326,10 +365,13 @@
       ],
       "evidence_files": [
         "mydocs/pr/assets/dependabot_20261116/action-source-audit.json",
-        "mydocs/pr/assets/dependabot_20261116/workflow-validation.json"
+        "mydocs/pr/assets/dependabot_20261116/workflow-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/protected-wasm-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/applicable-gates-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/post-repair-reuse-audit.json"
       ],
       "observed_pass_tests": [],
-      "final_acceptance": "pending whole WASM/applicable gates/CI; not source closure",
+      "final_acceptance": "local scope verified; integration Full CI/normal merge required before source closure",
       "no_visual_improvement_claim": true
     },
     {
@@ -344,7 +386,10 @@
       ],
       "evidence_files": [
         "mydocs/pr/assets/dependabot_20261116/full-nextest-result.json",
-        "mydocs/pr/assets/dependabot_20261116/rust-gates-validation.json"
+        "mydocs/pr/assets/dependabot_20261116/rust-gates-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/protected-wasm-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/applicable-gates-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/post-repair-reuse-audit.json"
       ],
       "observed_pass_tests": [
         "rhwp parser::crypto::tests::distribute_aes_matches_nist_vector",
@@ -352,7 +397,7 @@
         "rhwp::regression_suite_024 armor_cli_contract::encrypted_hwp3_and_hwpx_open_through_password_stdin",
         "rhwp-password-crypto tests::hwp5_decrypt_matches_external_vector"
       ],
-      "final_acceptance": "pending whole WASM/applicable gates/CI; not source closure",
+      "final_acceptance": "local scope verified; integration Full CI/normal merge required before source closure",
       "no_visual_improvement_claim": true
     },
     {
@@ -373,11 +418,16 @@
         "mydocs/pr/assets/dependabot_20261116/rust-gates-validation.json",
         "mydocs/pr/assets/dependabot_20261116/protected-native-validation.json",
         "mydocs/pr/assets/dependabot_20261116/native-direct-reading.json",
-        "mydocs/pr/assets/dependabot_20261116/fresh-wasm-build-validation.json"
+        "mydocs/pr/assets/dependabot_20261116/fresh-wasm-build-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/protected-wasm-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/applicable-gates-validation.json",
+        "mydocs/pr/assets/dependabot_20261116/post-repair-reuse-audit.json"
       ],
       "observed_pass_tests": [],
-      "final_acceptance": "pending whole WASM/applicable gates/CI; not source closure",
+      "final_acceptance": "local scope verified; integration Full CI/normal merge required before source closure",
       "no_visual_improvement_claim": true
     }
-  ]
+  ],
+  "final_local_source": "5fbe7c1f6a0f3e4a652aa05d31b89882265c6c83",
+  "status": "local checks completed; integration Full CI and normal merge pending"
 }
