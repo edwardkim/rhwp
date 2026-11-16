@@ -1,0 +1,262 @@
+{
+  "status": "passed",
+  "audited_at": "2026-11-16T15:44:15.836378+09:00",
+  "method": "actual PNG file bytes rehashed against each capture manifest, then corresponding base/head page hashes compared; no recapture/no image edits",
+  "total_actual_files_rehashed": 7084,
+  "pages_per_backend_per_phase": 1771,
+  "all_base_head_pngs_identical": true,
+  "results": [
+    {
+      "backend": "native",
+      "key": "angle-narrow",
+      "pages": 1,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "fc92dea2729ab696fbb0e78073622f86a5abead23d864e43f7302e347ea78e93"
+    },
+    {
+      "backend": "native",
+      "key": "handbook-hwp",
+      "pages": 383,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "057506893041ab41c35198c0283ffcd16e046571f43907b6c7f21b2aae0b384f"
+    },
+    {
+      "backend": "native",
+      "key": "handbook-hwpx",
+      "pages": 383,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "3c3a011a632c1193e8467c1a893c200ad3eb800999a2d71815b7a495148b0530"
+    },
+    {
+      "backend": "native",
+      "key": "issue7905",
+      "pages": 6,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "6c90b7031afa2842506bf117db9a714ea5b4f23576661487e682a6209747b665"
+    },
+    {
+      "backend": "native",
+      "key": "issue8040-insert",
+      "pages": 4,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "8b90f8e545ed9957cdd0f526064f200f48ad3966793ad2689fc19b2d5698c5f1"
+    },
+    {
+      "backend": "native",
+      "key": "issue8040-insert-delete",
+      "pages": 4,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "b29f6803517b10f1e840587a8aa9f690c72238899f4a3f674de5753f2a3c6612"
+    },
+    {
+      "backend": "native",
+      "key": "nested",
+      "pages": 17,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "f01c9bf3e99a3a199c79a53d574bc605428e6b5744d1d5dcb3c10e48ec8482b2"
+    },
+    {
+      "backend": "native",
+      "key": "outline",
+      "pages": 9,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "3f02d8d75b569f2e083a2530a764a39e107ae7f2511b546ce1ab76e875353392"
+    },
+    {
+      "backend": "native",
+      "key": "sample10",
+      "pages": 763,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "826ac7ac382123128823c1ddafc73c365013270ef47243835e4bd35fc10a3f4a"
+    },
+    {
+      "backend": "native",
+      "key": "sample16-hwp2022",
+      "pages": 64,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "ce063b9892b944a47b91a0ea24d5ab270825b231a9fabe9a6f33529a502117f9"
+    },
+    {
+      "backend": "native",
+      "key": "sample16-hwp2024",
+      "pages": 64,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "ebf58886884f8f6bdd45c94cb6b11092a7bf0f90fa5cc1575e0169e89da300ee"
+    },
+    {
+      "backend": "native",
+      "key": "sample16-hwpx",
+      "pages": 64,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "d9ae4bb37cbca88253c841833a476c7fd0e90103c2596e7ad85fa606bb899c66"
+    },
+    {
+      "backend": "native",
+      "key": "seo-body-list-typed",
+      "pages": 1,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "ff1a9aeaa58792bcba985cdc336ef7ecaaab956eed1b3ca6b366fd2e69470ada"
+    },
+    {
+      "backend": "native",
+      "key": "seo-helvetica-styles",
+      "pages": 1,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "024a15c23559a1cca1b5021a61c8883537be5119a327d5d1f3673930f119bb40"
+    },
+    {
+      "backend": "native",
+      "key": "seo-pic-crop-01",
+      "pages": 1,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "d29074a205e9341cfc88a7e0889c42b04df7f7565922b8855981765d3dbb2132"
+    },
+    {
+      "backend": "native",
+      "key": "seo-re-03-latin",
+      "pages": 1,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "c860757b4228050d7097df091d7a379f0b6a0d837ba2098f6da8739b11eeddb9"
+    },
+    {
+      "backend": "native",
+      "key": "seo-shape-group-02",
+      "pages": 1,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "c3eee39d2ed0e942175adc70a091621a3b6441c861c00d29168434187ef0d53b"
+    },
+    {
+      "backend": "native",
+      "key": "yeongwol",
+      "pages": 4,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "e82433f67497316b4a5a0b7554aa311c95f47b4070bdf71dbfc70aa5b6d015aa"
+    },
+    {
+      "backend": "wasm",
+      "key": "angle-narrow",
+      "pages": 1,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "fec730eb4f04c2ab5fb5ab9e962eddbe6bef251e5b87729d720797849ae2b3d8"
+    },
+    {
+      "backend": "wasm",
+      "key": "handbook-hwp",
+      "pages": 383,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "e29638f57804e76cd148c1ee7551a55636abc2d4cade76debb431d24df0e44ab"
+    },
+    {
+      "backend": "wasm",
+      "key": "handbook-hwpx",
+      "pages": 383,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "2ee3690c370fbf97c279f83bb947a5f7137fe37b54df757d8bebe444c34ca638"
+    },
+    {
+      "backend": "wasm",
+      "key": "issue7905",
+      "pages": 6,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "2b9007bd4eecef32c274c636b74add7498d6ffe63d3ce4f257588e25d7a9576a"
+    },
+    {
+      "backend": "wasm",
+      "key": "issue8040-insert",
+      "pages": 4,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "b4b21332c48c09bf63fb6f090ecd5760d1a9c2e9f4d3e7140322885d0c2ab1ae"
+    },
+    {
+      "backend": "wasm",
+      "key": "issue8040-insert-delete",
+      "pages": 4,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "f2dd9cbd10e4529e982042dbdd264cc402edf9dcb5d3e30ca2b2efb45d0d3d33"
+    },
+    {
+      "backend": "wasm",
+      "key": "nested",
+      "pages": 17,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "f1eba787f21bd788051d3409a0ca440731f83da384e35bedc0002cbdbd6ab487"
+    },
+    {
+      "backend": "wasm",
+      "key": "outline",
+      "pages": 9,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "568a8fcd6d3da3f07f15e49ee485d629b5a53465bd7dbdb477706d2dd4d409d9"
+    },
+    {
+      "backend": "wasm",
+      "key": "sample10",
+      "pages": 763,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "e662f2f401a467322c595f31c19c51ac9ee5c91215c628d5816bfa57e822ec36"
+    },
+    {
+      "backend": "wasm",
+      "key": "sample16-hwp2022",
+      "pages": 64,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "8072903fe75456fcabeaaf75cb9318448f5322d9756601f7f3d700c4e7bcd0b7"
+    },
+    {
+      "backend": "wasm",
+      "key": "sample16-hwp2024",
+      "pages": 64,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "3670c4bbd18bc35ad2bcba4b5c7918673b06a39448068f820afa62c27dc3111d"
+    },
+    {
+      "backend": "wasm",
+      "key": "sample16-hwpx",
+      "pages": 64,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "b3bee37e3f1091e0dd8bbb35f64af77b554e768cf53b71bb8f1ad7ff1c84fc64"
+    },
+    {
+      "backend": "wasm",
+      "key": "seo-body-list-typed",
+      "pages": 1,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "f92018efccb0868b94bcc82f7a1f18841205152e5ada8e8e46ada13dd21f930e"
+    },
+    {
+      "backend": "wasm",
+      "key": "seo-helvetica-styles",
+      "pages": 1,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "4849b37c0988dfd4e52a0fb97778726d31bea05f4e246a7d955d407a1ebff6d9"
+    },
+    {
+      "backend": "wasm",
+      "key": "seo-pic-crop-01",
+      "pages": 1,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "fd321566035cad794327ae3c2de5e765316e98f0ab14551252f14d11728f6396"
+    },
+    {
+      "backend": "wasm",
+      "key": "seo-re-03-latin",
+      "pages": 1,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "087565c07a263dc7f71575a35a9dfbe43b141e4a83961463a84ed0b30f019da8"
+    },
+    {
+      "backend": "wasm",
+      "key": "seo-shape-group-02",
+      "pages": 1,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "36c399540f3e40f088b8854132da10567f20ecdc815750c4c6b2b30a09e2ea23"
+    },
+    {
+      "backend": "wasm",
+      "key": "yeongwol",
+      "pages": 4,
+      "base_candidate_png_bytes_identical": true,
+      "ordered_page_and_png_hashes_sha256": "18bbd7d529d5b1df94d5bb5bd74f30269c32429e64c898a948afa970069b4007"
+    }
+  ]
+}

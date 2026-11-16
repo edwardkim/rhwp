@@ -1,8 +1,9 @@
 # Dependabot 16개 PR 통합 검토 — 원인과 검증 범위
 
-현재: 최소 글꼴 Rust 필수15단계·전체13,617건, Native18종전쪽1,771쪽, 제품3종 build와
-Studio/Chrome 실제 소비 검증을 완료했습니다. fresh WASM build도 완료했으며, 정본 WASM
-전쪽·공개 공통/편람·추가 출력 소비 검증은 진행 중입니다. PR 생성·CI·병합은 아직 하지 않았습니다.
+현재: 최소 글꼴 Rust 필수15단계·전체13,617건, Native/fresh WASM 각각18종전쪽1,771쪽,
+제품3종 build와 Studio/Chrome 실제 소비·WASM 일반/암호화 반복 저장을 완료했습니다.
+정본 보호는 양쪽 모두 하락·누락0이며 실제 원본 PNG도 base/head 전쪽 모두 같습니다.
+공개 공통/편람·추가 출력 소비 검증은 진행 중입니다. PR 생성·CI·병합은 아직 하지 않았습니다.
 아래 시간별 실행 기록은 당시 상태이며, 완료 범위는 각 최종 JSON 증거를 따릅니다.
 
 2026-11-16, `review/integration-20261116-dependabot`에서 최신 고정 devel
@@ -189,3 +190,13 @@ head·병합 시뮬레이션을 다시 확인하고 실제 merge CI에서 새 �
 같았습니다. 암호화 산출물은 암호 없음·틀린 암호의 열기를 거절했습니다. AES·zip·DEFLATE의
 실제 WASM 소비를 확인한 것으로, 시각 일치율·전체 형식의 모든 내용 보존을 대신하지 않습니다.
 원본 입력은 수정하지 않았고 생성 문서·임시 난수 암호는 Git에 넣지 않습니다.
+
+
+## fresh WASM 전쪽 완료와 실제 PNG 바이트 재확인
+
+[fresh WASM 보호 검증](protected-wasm-validation.json)은18종의 base·후보 각각1,771쪽을
+완료했고 공식 표시값 하락·누락·쪽수 불일치0건입니다. 상승도0건이라 Native와 함께
+정본 보호 하한을 바꾸지 않습니다. [실제 파일 재확인](whole-png-identity-audit.json)에서
+Native/fresh WASM base·후보의 원본 PNG 총7,084개를 파일 바이트로 다시 해시했고,
+캡처 manifest와 모두 일치하며 각 backend의 같은 쪽 base/head도 전1,771개가 동일했습니다.
+PDF와 모든 RGB가 같다는 뜻이나 기존 미세 잉크 차이의 새 해결 주장은 아닙니다.
