@@ -1,0 +1,28 @@
+{
+  "native": {
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "silhouette_raw_match_percent": 99.56641,
+    "silhouette_raw_unmatched_pixels": 176,
+    "silhouette_boundary_reconciled_pixels": 0,
+    "silhouette_color_tolerance": 32,
+    "silhouette_content_union_pixels": 40591,
+    "tolerant_content_match_percent": 99.56641
+  },
+  "wasm": {
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "silhouette_raw_match_percent": 99.56105,
+    "silhouette_raw_unmatched_pixels": 176,
+    "silhouette_boundary_reconciled_pixels": 0,
+    "silhouette_color_tolerance": 32,
+    "silhouette_content_union_pixels": 40096,
+    "tolerant_content_match_percent": 99.56105
+  },
+  "wasm_extra_bbox": null,
+  "wasm_extra_pixels": 0,
+  "native_vs_wasm_rgb_diff_bbox": [
+    179,
+    134,
+    680,
+    1024
+  ]
+}

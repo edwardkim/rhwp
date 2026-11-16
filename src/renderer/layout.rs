@@ -3337,8 +3337,10 @@ pub(crate) fn control_line_seg_index_with_storage<S: crate::storage::Storage>(
         let p = *positions.get(control_index)?;
         if para.text.is_empty() && para.char_offsets.is_empty() {
             // [#8507] 완전 대응을 증명하지 못한 스트림(필드 범위 등)은 줄 재조판이 줄 시작을
-            // 매기는 것과 같은 축 — 앞 컨트롤의 제어 슬롯 수 — 으로 센다. 글자 없는 문단의
-            // 논리 위치 `p` 는 모든 컨트롤에서 0 이라, 필드 뒤 다음 줄로 넘긴 표도 첫 줄에 붙었다.
+            // 매기는 것과 같은 축 — 앞 컨트롤의 제어 슬롯과 `controls[]` 밖 슬롯 수 — 으로 센다.
+            // 글자 없는 문단의 논리 위치 `p` 는 모든 컨트롤에서 0 이라, 필드 뒤 다음 줄로 넘긴
+            // 표도 첫 줄에 붙었다.
+            let auxiliary_slots = para.trailing_auxiliary_slots_before(control_index) as usize;
             let stream_pos = para
                 .empty_control_stream_position(control_index)
                 .map(|pos| pos as usize)
@@ -3347,6 +3349,7 @@ pub(crate) fn control_line_seg_index_with_storage<S: crate::storage::Storage>(
                         .iter()
                         .filter(|control| control.occupies_ctrl_char_slot())
                         .count()
+                        .saturating_add(auxiliary_slots)
                         .saturating_mul(crate::model::control::CTRL_CHAR_CODE_UNITS as usize)
                         .max(p.saturating_mul(8))
                 });
@@ -4098,6 +4101,7 @@ pub(crate) use shape_layout::{
     normalized_single_line_inline_textbox_host_with_storage,
 };
 pub(crate) use table_layout::border_style_has_diagonal;
+pub(crate) use table_layout::CellSquareStackTextFloor;
 pub(crate) use table_layout::SavedZeroOriginWitness;
 pub(crate) use table_partial::cell_crosses_fragment_end;
 pub(crate) use utils::extract_picture_transform;

@@ -1,0 +1,383 @@
+{
+  "status": "same_page_review_and_overlay_directly_read",
+  "records": [
+    {
+      "pr": 9107,
+      "key": "plain_fixed_v14-hwpx",
+      "backend": "native",
+      "page": 1,
+      "input": "samples/issue8676/plain_fixed_v14.hwpx",
+      "input_sha256": "f0b14aaf49102931bb671f537a7edbb0af9695a7d813fd601ddd96d0642e1bf9",
+      "pdf": "pdf/pr-review-all-open-20261116/plain_fixed_v14-hwpx-2020.pdf",
+      "pdf_sha256": "48e98f124347686f8beb9a1df513a634f55bf46051a2f99d594d2e9dc6bbe686",
+      "review": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9107/plain_fixed_v14-hwpx/native/review/review_001.png",
+      "overlay": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9107/plain_fixed_v14-hwpx/native/overlay/overlay_001.png",
+      "raw": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9107/plain_fixed_v14-hwpx/native/raw-001.png",
+      "direct_reading": "Native/fresh WASM 양쪽 같은 쪽 review·overlay 직접 판독: TOP→AONE→ATWO→END의 줄 순서와 FIXED/BETWEEN 간격을 Print와 확인했다.",
+      "source": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+      "minimum_raw": "100.00",
+      "files_sha256": {
+        "review": "a81f52505430b70f73cf03fddb8f30425554c95a79a46985af4df1ebe25539f2",
+        "overlay": "41cb5db93718cd8373fce905394a3bf90314d7b6c9784d6b008350c8428ef7bc",
+        "raw": "463309ebf3e6cf38553f7d18433c5e121041e478fd2e87495e85ce75b52fa7af"
+      }
+    },
+    {
+      "pr": 9107,
+      "key": "plain_fixed_v14-hwpx",
+      "backend": "wasm",
+      "page": 1,
+      "input": "samples/issue8676/plain_fixed_v14.hwpx",
+      "input_sha256": "f0b14aaf49102931bb671f537a7edbb0af9695a7d813fd601ddd96d0642e1bf9",
+      "pdf": "pdf/pr-review-all-open-20261116/plain_fixed_v14-hwpx-2020.pdf",
+      "pdf_sha256": "48e98f124347686f8beb9a1df513a634f55bf46051a2f99d594d2e9dc6bbe686",
+      "review": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9107/plain_fixed_v14-hwpx/wasm/review/review_001.png",
+      "overlay": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9107/plain_fixed_v14-hwpx/wasm/overlay/overlay_001.png",
+      "raw": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9107/plain_fixed_v14-hwpx/wasm/raw-001.png",
+      "direct_reading": "Native/fresh WASM 양쪽 같은 쪽 review·overlay 직접 판독: TOP→AONE→ATWO→END의 줄 순서와 FIXED/BETWEEN 간격을 Print와 확인했다.",
+      "source": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+      "minimum_raw": "100.00",
+      "files_sha256": {
+        "review": "04554b3a5193010faface2bf3b41cc0e275dbbdb6671b93a421c24e789000875",
+        "overlay": "729095735ce46986b7c2c1dfbe3bfa70a2ed7a81b0853876f9c97eeeb1dce1fe",
+        "raw": "49253a9a6198434546df1cee38a7a096753ab0218898180dd45a16c7e82717ae"
+      }
+    },
+    {
+      "pr": 9107,
+      "key": "plain_between_v14-hwpx",
+      "backend": "native",
+      "page": 1,
+      "input": "samples/issue8676/plain_between_v14.hwpx",
+      "input_sha256": "ddd4d0c1ccc2881d96a888fc961cb3f18771e223f078240567f235c3d087c578",
+      "pdf": "pdf/pr-review-all-open-20261116/plain_between_v14-hwpx-2020.pdf",
+      "pdf_sha256": "37780de89e4efda98b71f108eff7c0bf6cc2479840b827b1fe2f4ec765725e71",
+      "review": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9107/plain_between_v14-hwpx/native/review/review_001.png",
+      "overlay": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9107/plain_between_v14-hwpx/native/overlay/overlay_001.png",
+      "raw": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9107/plain_between_v14-hwpx/native/raw-001.png",
+      "direct_reading": "Native/fresh WASM 양쪽 같은 쪽 review·overlay 직접 판독: TOP→AONE→ATWO→END의 줄 순서와 FIXED/BETWEEN 간격을 Print와 확인했다.",
+      "source": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+      "minimum_raw": "100.00",
+      "files_sha256": {
+        "review": "ff946a0c49903a3cf65a4ae3673627f628a92e7484a885e227b85c47972c8447",
+        "overlay": "31ee977683febda66395cc9c368f760c5acd755408a6fbd359ef5c583a059b64",
+        "raw": "af265203a6456894b72244ef1b6f89d71c0fff4ef4a678bc489e0d6ab64d7381"
+      }
+    },
+    {
+      "pr": 9107,
+      "key": "plain_between_v14-hwpx",
+      "backend": "wasm",
+      "page": 1,
+      "input": "samples/issue8676/plain_between_v14.hwpx",
+      "input_sha256": "ddd4d0c1ccc2881d96a888fc961cb3f18771e223f078240567f235c3d087c578",
+      "pdf": "pdf/pr-review-all-open-20261116/plain_between_v14-hwpx-2020.pdf",
+      "pdf_sha256": "37780de89e4efda98b71f108eff7c0bf6cc2479840b827b1fe2f4ec765725e71",
+      "review": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9107/plain_between_v14-hwpx/wasm/review/review_001.png",
+      "overlay": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9107/plain_between_v14-hwpx/wasm/overlay/overlay_001.png",
+      "raw": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9107/plain_between_v14-hwpx/wasm/raw-001.png",
+      "direct_reading": "Native/fresh WASM 양쪽 같은 쪽 review·overlay 직접 판독: TOP→AONE→ATWO→END의 줄 순서와 FIXED/BETWEEN 간격을 Print와 확인했다.",
+      "source": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+      "minimum_raw": "100.00",
+      "files_sha256": {
+        "review": "f29b6255d407638bff0a2dc309a2580e3a726e62fa306600261535544a48c1d8",
+        "overlay": "a118769477ce68934ea0a0b8d31aabf4b0f7ec8b2a4cb082fbe83ca32405f7f9",
+        "raw": "d00246a7bd5a380c255373ee42fec3c2d96f082548ba0b5689ed148385453bc4"
+      }
+    },
+    {
+      "pr": 9109,
+      "key": "textbox_tb_table_center_v2000_text-hwpx",
+      "backend": "native",
+      "page": 1,
+      "input": "samples/textbox_tb_table/textbox_tb_table_center_v2000_text.hwpx",
+      "input_sha256": "ea5027e6e3b51ed187f78fb8718ba79884693a2aedf64ce6d4c86348077301a9",
+      "pdf": "pdf/pr-review-all-open-20261116/textbox_tb_table_center_v2000_text-hwpx-2020.pdf",
+      "pdf_sha256": "d1c886067a263f62f8672ebcfd79ceb49f8f2fcb6e41e85ba293f0b6b44bc97c",
+      "review": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9109/textbox_tb_table_center_v2000_text-hwpx/native/review/review_001.png",
+      "overlay": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9109/textbox_tb_table_center_v2000_text-hwpx/native/overlay/overlay_001.png",
+      "raw": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9109/textbox_tb_table_center_v2000_text-hwpx/native/raw-001.png",
+      "direct_reading": "같은 쪽 review·overlay 직접 판독: 원본의 T1·T2·ANCHOR·BOX·A1·A2·BODY가 각각 보존되고 TopBottom 표의 소속·세로 위치가 Print와 일치한다.",
+      "source": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+      "minimum_raw": "100.00",
+      "files_sha256": {
+        "review": "8c7fd2d3b7953fa978f8c63c72e968c1d193ec5861e18e586835ded0d46e4d4e",
+        "overlay": "4c949b9cd69272667723de8cb7a3b60036465432f457035ba1203f1ca9546b06",
+        "raw": "5cec8c7d877dab496914d1179aa877b2861ae0dea95a0ba96ea440b109e33b15"
+      }
+    },
+    {
+      "pr": 9109,
+      "key": "textbox_tb_table_center_v2000_text-hwpx",
+      "backend": "wasm",
+      "page": 1,
+      "input": "samples/textbox_tb_table/textbox_tb_table_center_v2000_text.hwpx",
+      "input_sha256": "ea5027e6e3b51ed187f78fb8718ba79884693a2aedf64ce6d4c86348077301a9",
+      "pdf": "pdf/pr-review-all-open-20261116/textbox_tb_table_center_v2000_text-hwpx-2020.pdf",
+      "pdf_sha256": "d1c886067a263f62f8672ebcfd79ceb49f8f2fcb6e41e85ba293f0b6b44bc97c",
+      "review": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9109/textbox_tb_table_center_v2000_text-hwpx/wasm/review/review_001.png",
+      "overlay": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9109/textbox_tb_table_center_v2000_text-hwpx/wasm/overlay/overlay_001.png",
+      "raw": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9109/textbox_tb_table_center_v2000_text-hwpx/wasm/raw-001.png",
+      "direct_reading": "같은 쪽 review·overlay 직접 판독: 원본의 T1·T2·ANCHOR·BOX·A1·A2·BODY가 각각 보존되고 TopBottom 표의 소속·세로 위치가 Print와 일치한다.",
+      "source": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+      "minimum_raw": "100.00",
+      "files_sha256": {
+        "review": "09be1dba2ccc481711cb97ed812841de326a006a4ec701a8b9962858ff46ea78",
+        "overlay": "4651a63d2ef5a86014a901a6fd95e702734b067a7f474ed35b5dd70b89edfe03",
+        "raw": "9bc478ba4edc9ac722ed682c13879db13b5c9d5f16b4a7144471819fff2d80a9"
+      }
+    },
+    {
+      "pr": 9109,
+      "key": "textbox_tb_table_top_v0_text-hwp",
+      "backend": "native",
+      "page": 1,
+      "input": "samples/textbox_tb_table/textbox_tb_table_top_v0_text.hwp",
+      "input_sha256": "fab783da4918de7fd7e5ec5040ab52a9b67f601982b5345281f287254566536d",
+      "pdf": "pdf/pr-review-all-open-20261116/textbox_tb_table_top_v0_text-hwp-2020.pdf",
+      "pdf_sha256": "1cf567912aeb2eba9781a3e9c56a7d2772de00b9d4793062276a3410da9ebedb",
+      "review": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9109/textbox_tb_table_top_v0_text-hwp/native/review/review_001.png",
+      "overlay": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9109/textbox_tb_table_top_v0_text-hwp/native/overlay/overlay_001.png",
+      "raw": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9109/textbox_tb_table_top_v0_text-hwp/native/raw-001.png",
+      "direct_reading": "같은 쪽 review·overlay 직접 판독: 원본의 T1·T2·ANCHOR·BOX·A1·A2·BODY가 각각 보존되고 TopBottom 표의 소속·세로 위치가 Print와 일치한다.",
+      "source": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+      "minimum_raw": "100.00",
+      "files_sha256": {
+        "review": "2c07723ac9b8087629e4d770993e91182a4be360e638728f5910900c7de372fe",
+        "overlay": "7c2ecde539f4272ad853b9750c0a3b17d6578030ec9edfd790e7ed1c664fa196",
+        "raw": "e320746a1b7074ce19cbd5cc98dff0fc8123ca608307c9b172355dcdfa2be7ec"
+      }
+    },
+    {
+      "pr": 9109,
+      "key": "textbox_tb_table_top_v0_text-hwp",
+      "backend": "wasm",
+      "page": 1,
+      "input": "samples/textbox_tb_table/textbox_tb_table_top_v0_text.hwp",
+      "input_sha256": "fab783da4918de7fd7e5ec5040ab52a9b67f601982b5345281f287254566536d",
+      "pdf": "pdf/pr-review-all-open-20261116/textbox_tb_table_top_v0_text-hwp-2020.pdf",
+      "pdf_sha256": "1cf567912aeb2eba9781a3e9c56a7d2772de00b9d4793062276a3410da9ebedb",
+      "review": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9109/textbox_tb_table_top_v0_text-hwp/wasm/review/review_001.png",
+      "overlay": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9109/textbox_tb_table_top_v0_text-hwp/wasm/overlay/overlay_001.png",
+      "raw": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9109/textbox_tb_table_top_v0_text-hwp/wasm/raw-001.png",
+      "direct_reading": "같은 쪽 review·overlay 직접 판독: 원본의 T1·T2·ANCHOR·BOX·A1·A2·BODY가 각각 보존되고 TopBottom 표의 소속·세로 위치가 Print와 일치한다.",
+      "source": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+      "minimum_raw": "100.00",
+      "files_sha256": {
+        "review": "48380c7e198ed7c5dfca702934bc6f13ed7968d1a4d84b0378911d03ba7f014c",
+        "overlay": "a9e548e0ab595988060bfb90c83a216c79f32df728381c012a40392179298299",
+        "raw": "47cbb34d5e124c89fdbbee98d7f12ffd9719fb4bffdba93accb243863e662704"
+      }
+    },
+    {
+      "pr": 9137,
+      "key": "textbox_stored_center_tb_v2000-hwpx",
+      "backend": "native",
+      "page": 1,
+      "input": "samples/textbox_stored_table/textbox_stored_center_tb_v2000.hwpx",
+      "input_sha256": "62e8b60e465c58aa34f86967b036c55201348aa4533845436847fcd38aaf3f06",
+      "pdf": "pdf/pr-review-all-open-20261116/textbox_stored_center_tb_v2000-hwpx-2020.pdf",
+      "pdf_sha256": "9fee3405239b3b5bf82869b60b41c523376a4c1057b78d9273873e8b3e6a75fb",
+      "review": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9137/textbox_stored_center_tb_v2000-hwpx/native/review/review_001.png",
+      "overlay": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9137/textbox_stored_center_tb_v2000-hwpx/native/overlay/overlay_001.png",
+      "raw": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9137/textbox_stored_center_tb_v2000-hwpx/native/raw-001.png",
+      "direct_reading": "같은 쪽 review·overlay 직접 판독: T1–T4와 BOX·BODY의 저장 줄·가운데 정렬 위치가 Print와 일치한다.",
+      "source": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+      "minimum_raw": "100.00",
+      "files_sha256": {
+        "review": "ec0d8a7875de2182c780df4ebdc9eb3a24c04ccf0792d16213b0229e19253e44",
+        "overlay": "2cbd6a1d7cb545466256fd36e67f6acb2329a5ab61f73c2a972b8abf5161ff11",
+        "raw": "9f2bcf3b5b73a6a9fcbf256c0caca0f64b1f25cab7f65421417088617872644b"
+      }
+    },
+    {
+      "pr": 9137,
+      "key": "textbox_stored_center_tb_v2000-hwpx",
+      "backend": "wasm",
+      "page": 1,
+      "input": "samples/textbox_stored_table/textbox_stored_center_tb_v2000.hwpx",
+      "input_sha256": "62e8b60e465c58aa34f86967b036c55201348aa4533845436847fcd38aaf3f06",
+      "pdf": "pdf/pr-review-all-open-20261116/textbox_stored_center_tb_v2000-hwpx-2020.pdf",
+      "pdf_sha256": "9fee3405239b3b5bf82869b60b41c523376a4c1057b78d9273873e8b3e6a75fb",
+      "review": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9137/textbox_stored_center_tb_v2000-hwpx/wasm/review/review_001.png",
+      "overlay": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9137/textbox_stored_center_tb_v2000-hwpx/wasm/overlay/overlay_001.png",
+      "raw": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9137/textbox_stored_center_tb_v2000-hwpx/wasm/raw-001.png",
+      "direct_reading": "같은 쪽 review·overlay 직접 판독: T1–T4와 BOX·BODY의 저장 줄·가운데 정렬 위치가 Print와 일치한다.",
+      "source": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+      "minimum_raw": "100.00",
+      "files_sha256": {
+        "review": "0880ccd26a2493ad6eab72f821c69aeb6f7fba61e5c96a317c0f540a57620e6c",
+        "overlay": "e02cbc2a8096b1d68f3efa68e31680652f53e2500c3ae56770435a7c678fa3f0",
+        "raw": "1600ccb235425016ad3664267c0243ea880c30f431a1b2bf73b3ab71f70e4a01"
+      }
+    },
+    {
+      "pr": 9137,
+      "key": "textbox_stored_top_tb_v0_pushed-hwp",
+      "backend": "native",
+      "page": 1,
+      "input": "samples/textbox_stored_table/textbox_stored_top_tb_v0_pushed.hwp",
+      "input_sha256": "11cf0fb05851bffb8c0a1da5fa6be3aa620d56686107be280d0f39b0622ee637",
+      "pdf": "pdf/pr-review-all-open-20261116/textbox_stored_top_tb_v0_pushed-hwp-2020.pdf",
+      "pdf_sha256": "adf356e22163959fd4dd63cfd47715110231398b7a06fb38a764bc138ba69082",
+      "review": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9137/textbox_stored_top_tb_v0_pushed-hwp/native/review/review_001.png",
+      "overlay": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9137/textbox_stored_top_tb_v0_pushed-hwp/native/overlay/overlay_001.png",
+      "raw": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9137/textbox_stored_top_tb_v0_pushed-hwp/native/raw-001.png",
+      "direct_reading": "같은 쪽 review·overlay 직접 판독: BOX와 BODY는 Print 위치에 맞고 A1·A2는 한 줄 피치 낮다. 원 PR이 공개한 잔여 경계로 기록하며 100%나 완전한 간격 일치로 표현하지 않는다. 중복·누락은 없다.",
+      "source": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+      "minimum_raw": "97.48",
+      "files_sha256": {
+        "review": "d556c7fe1539b231e598119e31cf22094cc2f51142fe003acb6cfe602af88bfe",
+        "overlay": "2919c7738d7aaf3cb1e3b33de3bf3eb286e129fe9df589a5a0dd376094b17ae6",
+        "raw": "ba363acc284367fa028232e48a899cf4cad5ff071c01681740ad9a6e41391f15"
+      }
+    },
+    {
+      "pr": 9137,
+      "key": "textbox_stored_top_tb_v0_pushed-hwp",
+      "backend": "wasm",
+      "page": 1,
+      "input": "samples/textbox_stored_table/textbox_stored_top_tb_v0_pushed.hwp",
+      "input_sha256": "11cf0fb05851bffb8c0a1da5fa6be3aa620d56686107be280d0f39b0622ee637",
+      "pdf": "pdf/pr-review-all-open-20261116/textbox_stored_top_tb_v0_pushed-hwp-2020.pdf",
+      "pdf_sha256": "adf356e22163959fd4dd63cfd47715110231398b7a06fb38a764bc138ba69082",
+      "review": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9137/textbox_stored_top_tb_v0_pushed-hwp/wasm/review/review_001.png",
+      "overlay": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9137/textbox_stored_top_tb_v0_pushed-hwp/wasm/overlay/overlay_001.png",
+      "raw": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9137/textbox_stored_top_tb_v0_pushed-hwp/wasm/raw-001.png",
+      "direct_reading": "같은 쪽 review·overlay 직접 판독: BOX와 BODY는 Print 위치에 맞고 A1·A2는 한 줄 피치 낮다. 원 PR이 공개한 잔여 경계로 기록하며 100%나 완전한 간격 일치로 표현하지 않는다. 중복·누락은 없다.",
+      "source": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+      "minimum_raw": "97.37",
+      "files_sha256": {
+        "review": "6542a371873af668a28b59755aca1f15545b3be4e0572e0af988f089bd09c01f",
+        "overlay": "6c0d630dcd237c2e69df9d3e54b35d36d9d92f4e1837d2e9ceca263be0d351a2",
+        "raw": "b54fcd586dcdb0bb018b940df12d0f0673b4f4d42babe047678507977f152bcc"
+      }
+    },
+    {
+      "pr": 9141,
+      "key": "field_end_slot_textbox_with_cursor-hwp",
+      "backend": "native",
+      "page": 1,
+      "input": "mydocs/pr/assets/johndoekim-20261116/issue9058/field_end_slot_textbox_with_cursor.hwp",
+      "input_sha256": "384c46a75ea7a7f80e7baf94cc0d446c7c18717aafb45b729c3571e81e4101f5",
+      "pdf": "pdf/pr-review-all-open-20261116/field_end_slot_textbox_with_cursor-hwp-2020.pdf",
+      "pdf_sha256": "32d885aaf56d48f5af8eedce68cc11350541f4e7027fa8239bc71fc5592a6612",
+      "review": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9141/field_end_slot_textbox_with_cursor-hwp/native/review/review_001.png",
+      "overlay": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9141/field_end_slot_textbox_with_cursor-hwp/native/overlay/overlay_001.png",
+      "raw": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9141/field_end_slot_textbox_with_cursor-hwp/native/raw-001.png",
+      "direct_reading": "같은 쪽 review·overlay 직접 판독: 글상자 안 두 TAC 표의 행·열·간격이 Print와 맞고 빈 누름틀은 Print에 안내문을 남기지 않는다. 입력된 가·나·다·라 또는 값은 해당 원문대로 보존된다.",
+      "source": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+      "minimum_raw": "100.00",
+      "files_sha256": {
+        "review": "3340dec148737662f6efae85887ca2db37ef0e0f4f4a41615380b415230f71c6",
+        "overlay": "3d4d5d58bb731b87ff968e7b60012d705e54f8b1e9a6e65503069274159938c9",
+        "raw": "5662c736d4323daa8e9887109be391e3abecd6715cbff3a40fec0cbc36082040"
+      }
+    },
+    {
+      "pr": 9141,
+      "key": "field_end_slot_textbox_with_cursor-hwp",
+      "backend": "wasm",
+      "page": 1,
+      "input": "mydocs/pr/assets/johndoekim-20261116/issue9058/field_end_slot_textbox_with_cursor.hwp",
+      "input_sha256": "384c46a75ea7a7f80e7baf94cc0d446c7c18717aafb45b729c3571e81e4101f5",
+      "pdf": "pdf/pr-review-all-open-20261116/field_end_slot_textbox_with_cursor-hwp-2020.pdf",
+      "pdf_sha256": "32d885aaf56d48f5af8eedce68cc11350541f4e7027fa8239bc71fc5592a6612",
+      "review": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9141/field_end_slot_textbox_with_cursor-hwp/wasm/review/review_001.png",
+      "overlay": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9141/field_end_slot_textbox_with_cursor-hwp/wasm/overlay/overlay_001.png",
+      "raw": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9141/field_end_slot_textbox_with_cursor-hwp/wasm/raw-001.png",
+      "direct_reading": "같은 쪽 review·overlay 직접 판독: 글상자 안 두 TAC 표의 행·열·간격이 Print와 맞고 빈 누름틀은 Print에 안내문을 남기지 않는다. 입력된 가·나·다·라 또는 값은 해당 원문대로 보존된다.",
+      "source": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+      "minimum_raw": "100.00",
+      "files_sha256": {
+        "review": "0de6743e2249ad861e5b2d1e79f340dbbee0eb46926aff2859e92c57345fe6e3",
+        "overlay": "c941b01f13d061375f4f60bdbb208b017b9884c1d3da81e0e9b6f1fd44377e4b",
+        "raw": "cb15ce2f1dc0ed033da1ecc830dc6bbf1a91991359d874b31a984baa0c2475da"
+      }
+    },
+    {
+      "pr": 9141,
+      "key": "field_end_slot_textbox_with_text-hwp",
+      "backend": "native",
+      "page": 1,
+      "input": "mydocs/pr/assets/johndoekim-20261116/issue9058/field_end_slot_textbox_with_text.hwp",
+      "input_sha256": "4fe0ecb6c7723f752097c43696557eea02d986649bce12c300926108aa42dea2",
+      "pdf": "pdf/pr-review-all-open-20261116/field_end_slot_textbox_with_text-hwp-2020.pdf",
+      "pdf_sha256": "5a0dc272d643e6634500494ccf1c5e1eeb66d403805ef9dcc1f4ac44752b7819",
+      "review": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9141/field_end_slot_textbox_with_text-hwp/native/review/review_001.png",
+      "overlay": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9141/field_end_slot_textbox_with_text-hwp/native/overlay/overlay_001.png",
+      "raw": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9141/field_end_slot_textbox_with_text-hwp/native/raw-001.png",
+      "direct_reading": "같은 쪽 review·overlay 직접 판독: 글상자 안 두 TAC 표의 행·열·간격이 Print와 맞고 빈 누름틀은 Print에 안내문을 남기지 않는다. 입력된 가·나·다·라 또는 값은 해당 원문대로 보존된다.",
+      "source": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+      "minimum_raw": "100.00",
+      "files_sha256": {
+        "review": "6114d650a6448c67025287dd6ab025626f6e34eeb500770e349b951b2b141a14",
+        "overlay": "e266f5453d37a0a439099614042f60c425e3b1a173ea238a5f2a9abccc5f66e5",
+        "raw": "a7a5f87aceee22228326c8ae56d210ca8dec50cac88c8bc088d2a8f4f6cd90ae"
+      }
+    },
+    {
+      "pr": 9141,
+      "key": "field_end_slot_textbox_with_text-hwp",
+      "backend": "wasm",
+      "page": 1,
+      "input": "mydocs/pr/assets/johndoekim-20261116/issue9058/field_end_slot_textbox_with_text.hwp",
+      "input_sha256": "4fe0ecb6c7723f752097c43696557eea02d986649bce12c300926108aa42dea2",
+      "pdf": "pdf/pr-review-all-open-20261116/field_end_slot_textbox_with_text-hwp-2020.pdf",
+      "pdf_sha256": "5a0dc272d643e6634500494ccf1c5e1eeb66d403805ef9dcc1f4ac44752b7819",
+      "review": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9141/field_end_slot_textbox_with_text-hwp/wasm/review/review_001.png",
+      "overlay": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9141/field_end_slot_textbox_with_text-hwp/wasm/overlay/overlay_001.png",
+      "raw": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9141/field_end_slot_textbox_with_text-hwp/wasm/raw-001.png",
+      "direct_reading": "같은 쪽 review·overlay 직접 판독: 글상자 안 두 TAC 표의 행·열·간격이 Print와 맞고 빈 누름틀은 Print에 안내문을 남기지 않는다. 입력된 가·나·다·라 또는 값은 해당 원문대로 보존된다.",
+      "source": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+      "minimum_raw": "100.00",
+      "files_sha256": {
+        "review": "98680ca066286e46d3d72470e41aa3c5d98e63e1a346aca2bd89981372698680",
+        "overlay": "2c484e0ed43573c1a87d3cacaedc1ec7a94a20941bc7a3185b6a58859db366eb",
+        "raw": "104692e6292abc62093e9982192b40e3fc22353aefcfd2e79667dc884774acea"
+      }
+    },
+    {
+      "pr": 9141,
+      "key": "textbox_filled_field_tac_tables-hwp",
+      "backend": "native",
+      "page": 1,
+      "input": "samples/issue9082/textbox_filled_field_tac_tables.hwp",
+      "input_sha256": "a4dd2bd52c02ca3d25414e63e8c8af7cefc96d53b00e49fa635ed6f1610cb069",
+      "pdf": "pdf/pr-review-all-open-20261116/textbox_filled_field_tac_tables-hwp-2020.pdf",
+      "pdf_sha256": "fd8dfdfae138a58069dfed1b377ba27c1c9778da8df667462b93e3fae9cb0d09",
+      "review": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9141/textbox_filled_field_tac_tables-hwp/native/review/review_001.png",
+      "overlay": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9141/textbox_filled_field_tac_tables-hwp/native/overlay/overlay_001.png",
+      "raw": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9141/textbox_filled_field_tac_tables-hwp/native/raw-001.png",
+      "direct_reading": "같은 쪽 review·overlay 직접 판독: 글상자 안 두 TAC 표의 행·열·간격이 Print와 맞고 빈 누름틀은 Print에 안내문을 남기지 않는다. 입력된 가·나·다·라 또는 값은 해당 원문대로 보존된다.",
+      "source": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+      "minimum_raw": "100.00",
+      "files_sha256": {
+        "review": "128f41113a5f0cbee5c7fd8042a2804b774f758353eff2ed017a8815dd27621d",
+        "overlay": "d7354e25c1dff5a03b4d3659ca928c024ef6c13610b2dc172c18b1147bc4f6f4",
+        "raw": "598789b44c6f21c48d8400a444fc0792b9541cff75346e6212fd73f1f99bb132"
+      }
+    },
+    {
+      "pr": 9141,
+      "key": "textbox_filled_field_tac_tables-hwp",
+      "backend": "wasm",
+      "page": 1,
+      "input": "samples/issue9082/textbox_filled_field_tac_tables.hwp",
+      "input_sha256": "a4dd2bd52c02ca3d25414e63e8c8af7cefc96d53b00e49fa635ed6f1610cb069",
+      "pdf": "pdf/pr-review-all-open-20261116/textbox_filled_field_tac_tables-hwp-2020.pdf",
+      "pdf_sha256": "fd8dfdfae138a58069dfed1b377ba27c1c9778da8df667462b93e3fae9cb0d09",
+      "review": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9141/textbox_filled_field_tac_tables-hwp/wasm/review/review_001.png",
+      "overlay": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9141/textbox_filled_field_tac_tables-hwp/wasm/overlay/overlay_001.png",
+      "raw": "mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9141/textbox_filled_field_tac_tables-hwp/wasm/raw-001.png",
+      "direct_reading": "같은 쪽 review·overlay 직접 판독: 글상자 안 두 TAC 표의 행·열·간격이 Print와 맞고 빈 누름틀은 Print에 안내문을 남기지 않는다. 입력된 가·나·다·라 또는 값은 해당 원문대로 보존된다.",
+      "source": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+      "minimum_raw": "100.00",
+      "files_sha256": {
+        "review": "bdd2d0dffd89eefc14defd123e905d11e2f30ee5730c61915544d0220c0a5edf",
+        "overlay": "a0c26a1eb248fbc79a0fc5c51187721c74197fe1a671d361e38c89ccef20f13d",
+        "raw": "b22012b0d714218e36e0fc39e5af0efb9b5093fe6c616da0b82d96ba7e2c8933"
+      }
+    }
+  ]
+}

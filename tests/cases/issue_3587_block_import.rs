@@ -1,4 +1,5 @@
-//! Native foreign template import contracts; synthetic inputs are not Hancom visual oracles.
+//! 관계형: Native 문단 블록 가져오기의 리소스 소유·참조·원자성과 반복 저장 계약.
+//! 합성 입력의 구조를 검사하며 한컴 PDF의 시각 일치율이나 실물 px 좌표를 고정하지 않는다.
 use rhwp::{
     document_core::{DocumentCore, ImportParagraphBlockLimits, ImportParagraphBlockRequest},
     model::{
@@ -376,15 +377,197 @@ fn sparse_target_storage_collision_and_opaque_numbering_are_not_silently_repaire
         .doc_info
         .numberings
         .push(rhwp::model::style::Numbering {
-            raw_para_heads: Some("<hh:paraHead charPrIDRef=\"0\"/>".into()),
+            // 읽은 1수준 값(글자 모양 0)과 다른 원본 참조는 고쳐 옮기지 않는다.
+            raw_para_heads: Some("<hh:paraHead level=\"1\" charPrIDRef=\"7\"/>".into()),
             ..Default::default()
         });
     assert!(target
         .import_paragraph_block_native(source.document(), &request())
         .unwrap_err()
         .to_string()
-        .contains("opaque HWPX"));
+        .contains("charPrIDRef differs"));
     assert_eq!(unchanged(&target), before);
+}
+
+/// HWPX에서 연 번호·글머리표 정의는 원본 `hh:paraHead` 구간을 그대로 다시 쓴다.
+/// 다른 문서로 옮기면 그 안의 글자 모양 참조도 대상 문서의 ID로 바뀌어야 한다.
+#[test]
+fn hwpx_numbering_and_bullet_import_with_target_char_shape_references() {
+    check_hwpx_list_import_char_refs("canonical");
+}
+
+#[test]
+fn hwpx_numbering_and_bullet_import_preserves_single_quoted_char_references() {
+    check_hwpx_list_import_char_refs("single_quotes");
+}
+
+#[test]
+fn hwpx_numbering_and_bullet_import_preserves_spaced_char_reference_attributes() {
+    check_hwpx_list_import_char_refs("attribute_whitespace");
+}
+
+// 관계형: 공개 가져오기 API와 HWP/HWPX 반복 저장에서 같은 글자 모양을 가리키는지
+// 검사한다. 합성 입력의 ID 충돌·XML 표기만 달리하며 실물 배치의 px 기대값은 만들지 않는다.
+fn check_hwpx_list_import_char_refs(xml_spelling: &str) {
+    use rhwp::model::style::HeadType;
+    use rhwp::wasm_api::HwpDocument;
+
+    fn blank(texts: &[&str]) -> HwpDocument {
+        let mut doc = HwpDocument::create_empty();
+        doc.create_blank_document_native().unwrap();
+        for (para, text) in texts.iter().enumerate() {
+            if para > 0 {
+                let end = texts[para - 1].chars().count();
+                doc.split_paragraph_native(0, para - 1, end, None).unwrap();
+            }
+            doc.insert_text_native(0, para, 0, text).unwrap();
+        }
+        doc
+    }
+    fn reopen(doc: &DocumentCore, hwpx: bool) -> DocumentCore {
+        let bytes = if hwpx {
+            doc.export_hwpx_native().unwrap()
+        } else {
+            doc.export_hwp_native().unwrap()
+        };
+        DocumentCore::from_bytes(&bytes).unwrap()
+    }
+    /// 원본 구간에서 `level` 수준(글머리표는 첫 태그)의 `charPrIDRef` 값.
+    fn raw_char_ref(raw: &str, level: Option<usize>) -> u32 {
+        let mut reader = quick_xml::Reader::from_str(raw);
+        loop {
+            match reader.read_event().unwrap() {
+                quick_xml::events::Event::Start(tag) | quick_xml::events::Event::Empty(tag)
+                    if tag.local_name().as_ref() == "paraHead" =>
+                {
+                    let attributes: Vec<_> = tag.attributes().map(Result::unwrap).collect();
+                    let at = attributes
+                        .iter()
+                        .find(|a| a.key.as_ref() == "level")
+                        .map(|a| {
+                            a.normalized_value(quick_xml::XmlVersion::Implicit1_0)
+                                .unwrap()
+                                .parse::<usize>()
+                                .unwrap()
+                        });
+                    if level.is_none() || at == level {
+                        return attributes
+                            .iter()
+                            .find(|a| a.key.as_ref() == "charPrIDRef")
+                            .unwrap()
+                            .normalized_value(quick_xml::XmlVersion::Implicit1_0)
+                            .unwrap()
+                            .parse()
+                            .unwrap();
+                    }
+                }
+                quick_xml::events::Event::Eof => panic!("paraHead 참조가 없다"),
+                _ => {}
+            }
+        }
+    }
+
+    let mut list = blank(&["head", "numb", "bull", "tail"]);
+    let number =
+        list.create_numbering(r#"{"levelFormats":["^1."],"numberFormats":[0],"startNumber":1}"#);
+    list.set_numbering_char_shape_native(number, 0, Some(r#"{"bold":true,"fontSize":1500}"#))
+        .unwrap();
+    list.apply_para_format_native(
+        0,
+        1,
+        &format!(r#"{{"headType":"Number","paraLevel":0,"numberingId":{number}}}"#),
+    )
+    .unwrap();
+    let bullet = list
+        .create_bullet_native(
+            r#"{"char":"●","charShape":{"italic":true,"fontSize":1200}}"#,
+            None,
+        )
+        .unwrap();
+    list.apply_para_format_native(
+        0,
+        2,
+        &format!(r#"{{"headType":"Bullet","numberingId":{bullet}}}"#),
+    )
+    .unwrap();
+    let mut source = reopen(&list, true);
+    let rewrite = |raw: &str| match xml_spelling {
+        "canonical" => raw.to_owned(),
+        "single_quotes" => raw.replace('"', "'"),
+        "attribute_whitespace" => raw.replace(" charPrIDRef=", "\tcharPrIDRef = "),
+        _ => unreachable!(),
+    };
+    for numbering in &mut source.document_mut().doc_info.numberings {
+        if let Some(raw) = numbering.raw_para_heads.as_mut() {
+            *raw = rewrite(raw);
+        }
+    }
+    for bullet in &mut source.document_mut().doc_info.bullets {
+        if let Some(raw) = bullet.raw_para_head.as_mut() {
+            *raw = rewrite(raw);
+        }
+    }
+    // 표기가 다른 실제 HWPX 바이트를 파싱한 뒤 가져온다. 원시 모델만 바꾼 검사가 아니다.
+    let source = reopen(&source, true);
+    let info = &source.document().doc_info;
+    let source_number = &info.numberings[usize::from(number) - 1];
+    let source_bullet = &info.bullets[usize::from(bullet) - 1];
+    assert!(source_number.raw_para_heads.is_some() && source_bullet.raw_para_head.is_some());
+
+    // 대상에 글자 모양을 먼저 쌓아 원본과 같은 ID가 다른 모양을 가리키게 한다.
+    let mut target = blank(&["first", "last"]);
+    for (index, size) in [700, 800, 900, 1100].into_iter().enumerate() {
+        target
+            .apply_char_format_native(0, 0, index, index + 1, &format!(r#"{{"fontSize":{size}}}"#))
+            .unwrap();
+    }
+    let result = target
+        .import_paragraph_block_native(
+            source.document(),
+            &ImportParagraphBlockRequest {
+                source_start: 1,
+                source_end: 3,
+                count: 1,
+                ..request()
+            },
+        )
+        .unwrap();
+    assert_eq!(result.inserted, 1..3);
+
+    let check = |doc: &DocumentCore| {
+        let info = &doc.document().doc_info;
+        let paras = &doc.document().sections[0].paragraphs;
+        let number_shape = &info.para_shapes[usize::from(paras[1].para_shape_id)];
+        let bullet_shape = &info.para_shapes[usize::from(paras[2].para_shape_id)];
+        assert_eq!(number_shape.head_type, HeadType::Number);
+        assert_eq!(bullet_shape.head_type, HeadType::Bullet);
+        let number = &info.numberings[usize::from(number_shape.numbering_id) - 1];
+        let bullet = &info.bullets[usize::from(bullet_shape.numbering_id) - 1];
+        let number_char = &info.char_shapes[number.heads[0].char_shape_id as usize];
+        let bullet_char = &info.char_shapes[bullet.char_shape_id as usize];
+        assert!(number_char.bold && number_char.base_size == 1500);
+        assert!(bullet_char.italic && bullet_char.base_size == 1200);
+        if let Some(raw) = &number.raw_para_heads {
+            assert_eq!(raw_char_ref(raw, Some(1)), number.heads[0].char_shape_id);
+        }
+        if let Some(raw) = &bullet.raw_para_head {
+            assert_eq!(raw_char_ref(raw, None), bullet.char_shape_id);
+        }
+    };
+    check(&target);
+    let imported = &target.document().doc_info;
+    let paras = &target.document().sections[0].paragraphs;
+    let number_id = imported.para_shapes[usize::from(paras[1].para_shape_id)].numbering_id;
+    assert_ne!(
+        imported.numberings[usize::from(number_id) - 1].heads[0].char_shape_id,
+        source_number.heads[0].char_shape_id,
+        "the fixture must move the reference to a different target ID"
+    );
+    for hwpx in [true, false] {
+        let saved = reopen(&target, hwpx);
+        check(&saved);
+        check(&reopen(&saved, hwpx));
+    }
 }
 
 #[test]

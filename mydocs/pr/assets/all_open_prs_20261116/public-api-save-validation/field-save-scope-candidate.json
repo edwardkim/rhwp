@@ -1,0 +1,764 @@
+{
+  "producer": "candidate",
+  "wasm_sha256": "eac7b3815766a8c5f6d7a01285e50fbbb1e31f15dedd6ec3ff8badafc3e0481c",
+  "source": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+  "runtime": "Node WASM public API; structure only, no browser or pixel score claim",
+  "static_save": [
+    {
+      "input": "mydocs/pr/assets/johndoekim-20261116/issue9058/field_end_slot_textbox_with_cursor.hwp",
+      "input_sha256": "384c46a75ea7a7f80e7baf94cc0d446c7c18717aafb45b729c3571e81e4101f5",
+      "format": "hwp",
+      "initial": {
+        "value": "",
+        "pages": 1,
+        "box": {
+          "x": 121.2,
+          "y": 157.5,
+          "w": 632.8,
+          "h": 764.1
+        },
+        "tables": [
+          {
+            "x": 125,
+            "y": 469.8,
+            "w": 625.2,
+            "h": 51.3
+          },
+          {
+            "x": 125,
+            "y": 536.7,
+            "w": 625.2,
+            "h": 51.3
+          }
+        ],
+        "stacked": true,
+        "contained": true
+      },
+      "rounds": [
+        {
+          "round": 1,
+          "bytes": 17408,
+          "sha256": "0bb7c98024c553853917180930950cc0c58fd26647f4336138fcf8cdae6a7527",
+          "state": {
+            "value": "",
+            "pages": 1,
+            "box": {
+              "x": 121.2,
+              "y": 157.5,
+              "w": 632.8,
+              "h": 764.1
+            },
+            "tables": [
+              {
+                "x": 125,
+                "y": 469.8,
+                "w": 625.2,
+                "h": 51.3
+              },
+              {
+                "x": 125,
+                "y": 536.7,
+                "w": 625.2,
+                "h": 51.3
+              }
+            ],
+            "stacked": true,
+            "contained": true
+          }
+        },
+        {
+          "round": 2,
+          "bytes": 17408,
+          "sha256": "0bb7c98024c553853917180930950cc0c58fd26647f4336138fcf8cdae6a7527",
+          "state": {
+            "value": "",
+            "pages": 1,
+            "box": {
+              "x": 121.2,
+              "y": 157.5,
+              "w": 632.8,
+              "h": 764.1
+            },
+            "tables": [
+              {
+                "x": 125,
+                "y": 469.8,
+                "w": 625.2,
+                "h": 51.3
+              },
+              {
+                "x": 125,
+                "y": 536.7,
+                "w": 625.2,
+                "h": 51.3
+              }
+            ],
+            "stacked": true,
+            "contained": true
+          }
+        }
+      ]
+    },
+    {
+      "input": "mydocs/pr/assets/johndoekim-20261116/issue9058/field_end_slot_textbox_with_cursor.hwp",
+      "input_sha256": "384c46a75ea7a7f80e7baf94cc0d446c7c18717aafb45b729c3571e81e4101f5",
+      "format": "hwpx",
+      "initial": {
+        "value": "",
+        "pages": 1,
+        "box": {
+          "x": 121.2,
+          "y": 157.5,
+          "w": 632.8,
+          "h": 764.1
+        },
+        "tables": [
+          {
+            "x": 125,
+            "y": 469.8,
+            "w": 625.2,
+            "h": 51.3
+          },
+          {
+            "x": 125,
+            "y": 536.7,
+            "w": 625.2,
+            "h": 51.3
+          }
+        ],
+        "stacked": true,
+        "contained": true
+      },
+      "rounds": [
+        {
+          "round": 1,
+          "bytes": 9507,
+          "sha256": "fc8fc329d5a0ce43c5463899fe9d5293904da45cbe4acccbbb7b82dfd75a5dd8",
+          "state": {
+            "value": "",
+            "pages": 1,
+            "box": {
+              "x": 121.2,
+              "y": 157.5,
+              "w": 632.8,
+              "h": 764.1
+            },
+            "tables": [
+              {
+                "x": 125,
+                "y": 469.8,
+                "w": 625.2,
+                "h": 51.3
+              },
+              {
+                "x": 125,
+                "y": 536.7,
+                "w": 625.2,
+                "h": 51.3
+              }
+            ],
+            "stacked": true,
+            "contained": true
+          }
+        },
+        {
+          "round": 2,
+          "bytes": 9507,
+          "sha256": "fc8fc329d5a0ce43c5463899fe9d5293904da45cbe4acccbbb7b82dfd75a5dd8",
+          "state": {
+            "value": "",
+            "pages": 1,
+            "box": {
+              "x": 121.2,
+              "y": 157.5,
+              "w": 632.8,
+              "h": 764.1
+            },
+            "tables": [
+              {
+                "x": 125,
+                "y": 469.8,
+                "w": 625.2,
+                "h": 51.3
+              },
+              {
+                "x": 125,
+                "y": 536.7,
+                "w": 625.2,
+                "h": 51.3
+              }
+            ],
+            "stacked": true,
+            "contained": true
+          }
+        }
+      ]
+    },
+    {
+      "input": "mydocs/pr/assets/johndoekim-20261116/issue9058/field_end_slot_textbox_with_text.hwp",
+      "input_sha256": "4fe0ecb6c7723f752097c43696557eea02d986649bce12c300926108aa42dea2",
+      "format": "hwp",
+      "initial": {
+        "value": "가나다라",
+        "pages": 1,
+        "box": {
+          "x": 121.2,
+          "y": 157.5,
+          "w": 632.8,
+          "h": 764.1
+        },
+        "tables": [
+          {
+            "x": 125,
+            "y": 480.5,
+            "w": 625.2,
+            "h": 51.3
+          },
+          {
+            "x": 125,
+            "y": 547.3,
+            "w": 625.2,
+            "h": 51.3
+          }
+        ],
+        "stacked": true,
+        "contained": true
+      },
+      "rounds": [
+        {
+          "round": 1,
+          "bytes": 17920,
+          "sha256": "05a86fcd85bc33e1102e93ed30732baa0b9d3e163e34094ea6c235fa60a9c50a",
+          "state": {
+            "value": "가나다라",
+            "pages": 1,
+            "box": {
+              "x": 121.2,
+              "y": 157.5,
+              "w": 632.8,
+              "h": 764.1
+            },
+            "tables": [
+              {
+                "x": 125,
+                "y": 480.5,
+                "w": 625.2,
+                "h": 51.3
+              },
+              {
+                "x": 125,
+                "y": 547.3,
+                "w": 625.2,
+                "h": 51.3
+              }
+            ],
+            "stacked": true,
+            "contained": true
+          }
+        },
+        {
+          "round": 2,
+          "bytes": 17920,
+          "sha256": "05a86fcd85bc33e1102e93ed30732baa0b9d3e163e34094ea6c235fa60a9c50a",
+          "state": {
+            "value": "가나다라",
+            "pages": 1,
+            "box": {
+              "x": 121.2,
+              "y": 157.5,
+              "w": 632.8,
+              "h": 764.1
+            },
+            "tables": [
+              {
+                "x": 125,
+                "y": 480.5,
+                "w": 625.2,
+                "h": 51.3
+              },
+              {
+                "x": 125,
+                "y": 547.3,
+                "w": 625.2,
+                "h": 51.3
+              }
+            ],
+            "stacked": true,
+            "contained": true
+          }
+        }
+      ]
+    },
+    {
+      "input": "mydocs/pr/assets/johndoekim-20261116/issue9058/field_end_slot_textbox_with_text.hwp",
+      "input_sha256": "4fe0ecb6c7723f752097c43696557eea02d986649bce12c300926108aa42dea2",
+      "format": "hwpx",
+      "initial": {
+        "value": "가나다라",
+        "pages": 1,
+        "box": {
+          "x": 121.2,
+          "y": 157.5,
+          "w": 632.8,
+          "h": 764.1
+        },
+        "tables": [
+          {
+            "x": 125,
+            "y": 480.5,
+            "w": 625.2,
+            "h": 51.3
+          },
+          {
+            "x": 125,
+            "y": 547.3,
+            "w": 625.2,
+            "h": 51.3
+          }
+        ],
+        "stacked": true,
+        "contained": true
+      },
+      "rounds": [
+        {
+          "round": 1,
+          "bytes": 9534,
+          "sha256": "7520eca59eda8a8adcb984419f17bf47c842860ff3c1e6f2f5c6240b81f1e3f2",
+          "state": {
+            "value": "가나다라",
+            "pages": 1,
+            "box": {
+              "x": 121.2,
+              "y": 157.5,
+              "w": 632.8,
+              "h": 764.1
+            },
+            "tables": [
+              {
+                "x": 125,
+                "y": 480.5,
+                "w": 625.2,
+                "h": 51.3
+              },
+              {
+                "x": 125,
+                "y": 547.3,
+                "w": 625.2,
+                "h": 51.3
+              }
+            ],
+            "stacked": true,
+            "contained": true
+          }
+        },
+        {
+          "round": 2,
+          "bytes": 9534,
+          "sha256": "7520eca59eda8a8adcb984419f17bf47c842860ff3c1e6f2f5c6240b81f1e3f2",
+          "state": {
+            "value": "가나다라",
+            "pages": 1,
+            "box": {
+              "x": 121.2,
+              "y": 157.5,
+              "w": 632.8,
+              "h": 764.1
+            },
+            "tables": [
+              {
+                "x": 125,
+                "y": 480.5,
+                "w": 625.2,
+                "h": 51.3
+              },
+              {
+                "x": 125,
+                "y": 547.3,
+                "w": 625.2,
+                "h": 51.3
+              }
+            ],
+            "stacked": true,
+            "contained": true
+          }
+        }
+      ]
+    },
+    {
+      "input": "samples/issue9082/textbox_filled_field_tac_tables.hwp",
+      "input_sha256": "a4dd2bd52c02ca3d25414e63e8c8af7cefc96d53b00e49fa635ed6f1610cb069",
+      "format": "hwp",
+      "initial": {
+        "value": "값",
+        "pages": 1,
+        "box": {
+          "x": 121.2,
+          "y": 157.5,
+          "w": 632.8,
+          "h": 764.1
+        },
+        "tables": [
+          {
+            "x": 125,
+            "y": 480.5,
+            "w": 625.2,
+            "h": 51.3
+          },
+          {
+            "x": 125,
+            "y": 547.3,
+            "w": 625.2,
+            "h": 51.3
+          }
+        ],
+        "stacked": true,
+        "contained": true
+      },
+      "rounds": [
+        {
+          "round": 1,
+          "bytes": 17408,
+          "sha256": "a1b4c6ccde11faa755fb3b4c10322d780e8aafc924b1c5937458a04c070d3b8a",
+          "state": {
+            "value": "값",
+            "pages": 1,
+            "box": {
+              "x": 121.2,
+              "y": 157.5,
+              "w": 632.8,
+              "h": 764.1
+            },
+            "tables": [
+              {
+                "x": 125,
+                "y": 480.5,
+                "w": 625.2,
+                "h": 51.3
+              },
+              {
+                "x": 125,
+                "y": 547.3,
+                "w": 625.2,
+                "h": 51.3
+              }
+            ],
+            "stacked": true,
+            "contained": true
+          }
+        },
+        {
+          "round": 2,
+          "bytes": 17408,
+          "sha256": "a1b4c6ccde11faa755fb3b4c10322d780e8aafc924b1c5937458a04c070d3b8a",
+          "state": {
+            "value": "값",
+            "pages": 1,
+            "box": {
+              "x": 121.2,
+              "y": 157.5,
+              "w": 632.8,
+              "h": 764.1
+            },
+            "tables": [
+              {
+                "x": 125,
+                "y": 480.5,
+                "w": 625.2,
+                "h": 51.3
+              },
+              {
+                "x": 125,
+                "y": 547.3,
+                "w": 625.2,
+                "h": 51.3
+              }
+            ],
+            "stacked": true,
+            "contained": true
+          }
+        }
+      ]
+    },
+    {
+      "input": "samples/issue9082/textbox_filled_field_tac_tables.hwp",
+      "input_sha256": "a4dd2bd52c02ca3d25414e63e8c8af7cefc96d53b00e49fa635ed6f1610cb069",
+      "format": "hwpx",
+      "initial": {
+        "value": "값",
+        "pages": 1,
+        "box": {
+          "x": 121.2,
+          "y": 157.5,
+          "w": 632.8,
+          "h": 764.1
+        },
+        "tables": [
+          {
+            "x": 125,
+            "y": 480.5,
+            "w": 625.2,
+            "h": 51.3
+          },
+          {
+            "x": 125,
+            "y": 547.3,
+            "w": 625.2,
+            "h": 51.3
+          }
+        ],
+        "stacked": true,
+        "contained": true
+      },
+      "rounds": [
+        {
+          "round": 1,
+          "bytes": 9523,
+          "sha256": "5c1a00bf0ea6d4fdd3bca949ff908e5188ddbae80e1e99d422e2b56478566bf7",
+          "state": {
+            "value": "값",
+            "pages": 1,
+            "box": {
+              "x": 121.2,
+              "y": 157.5,
+              "w": 632.8,
+              "h": 764.1
+            },
+            "tables": [
+              {
+                "x": 125,
+                "y": 480.5,
+                "w": 625.2,
+                "h": 51.3
+              },
+              {
+                "x": 125,
+                "y": 547.3,
+                "w": 625.2,
+                "h": 51.3
+              }
+            ],
+            "stacked": true,
+            "contained": true
+          }
+        },
+        {
+          "round": 2,
+          "bytes": 9523,
+          "sha256": "5c1a00bf0ea6d4fdd3bca949ff908e5188ddbae80e1e99d422e2b56478566bf7",
+          "state": {
+            "value": "값",
+            "pages": 1,
+            "box": {
+              "x": 121.2,
+              "y": 157.5,
+              "w": 632.8,
+              "h": 764.1
+            },
+            "tables": [
+              {
+                "x": 125,
+                "y": 480.5,
+                "w": 625.2,
+                "h": 51.3
+              },
+              {
+                "x": 125,
+                "y": 547.3,
+                "w": 625.2,
+                "h": 51.3
+              }
+            ],
+            "stacked": true,
+            "contained": true
+          }
+        }
+      ]
+    }
+  ],
+  "edit_diagnostic": [
+    {
+      "input": "mydocs/pr/assets/johndoekim-20261116/issue9058/field_end_slot_textbox_with_cursor.hwp",
+      "before": {
+        "value": "",
+        "pages": 1,
+        "box": {
+          "x": 121.2,
+          "y": 157.5,
+          "w": 632.8,
+          "h": 764.1
+        },
+        "tables": [
+          {
+            "x": 125,
+            "y": 469.8,
+            "w": 625.2,
+            "h": 51.3
+          },
+          {
+            "x": 125,
+            "y": 536.7,
+            "w": 625.2,
+            "h": 51.3
+          }
+        ],
+        "stacked": true,
+        "contained": true
+      },
+      "edit": {
+        "ok": true,
+        "fieldId": 1247331804,
+        "oldValue": "",
+        "newValue": "추가값"
+      },
+      "after": {
+        "value": "추가값",
+        "pages": 1,
+        "box": {
+          "x": 121.2,
+          "y": 157.5,
+          "w": 632.8,
+          "h": 764.1
+        },
+        "tables": [
+          {
+            "x": 164,
+            "y": 503.2,
+            "w": 625.2,
+            "h": 51.3
+          },
+          {
+            "x": 796.7,
+            "y": 503.2,
+            "w": 625.2,
+            "h": 51.3
+          }
+        ],
+        "stacked": false,
+        "contained": false
+      }
+    },
+    {
+      "input": "mydocs/pr/assets/johndoekim-20261116/issue9058/field_end_slot_textbox_with_text.hwp",
+      "before": {
+        "value": "가나다라",
+        "pages": 1,
+        "box": {
+          "x": 121.2,
+          "y": 157.5,
+          "w": 632.8,
+          "h": 764.1
+        },
+        "tables": [
+          {
+            "x": 125,
+            "y": 480.5,
+            "w": 625.2,
+            "h": 51.3
+          },
+          {
+            "x": 125,
+            "y": 547.3,
+            "w": 625.2,
+            "h": 51.3
+          }
+        ],
+        "stacked": true,
+        "contained": true
+      },
+      "edit": {
+        "ok": true,
+        "fieldId": 1247331804,
+        "oldValue": "가나다라",
+        "newValue": "추가값"
+      },
+      "after": {
+        "value": "추가값",
+        "pages": 1,
+        "box": {
+          "x": 121.2,
+          "y": 157.5,
+          "w": 632.8,
+          "h": 764.1
+        },
+        "tables": [
+          {
+            "x": 164,
+            "y": 503.2,
+            "w": 625.2,
+            "h": 51.3
+          },
+          {
+            "x": 796.7,
+            "y": 503.2,
+            "w": 625.2,
+            "h": 51.3
+          }
+        ],
+        "stacked": false,
+        "contained": false
+      }
+    },
+    {
+      "input": "samples/issue9082/textbox_filled_field_tac_tables.hwp",
+      "before": {
+        "value": "값",
+        "pages": 1,
+        "box": {
+          "x": 121.2,
+          "y": 157.5,
+          "w": 632.8,
+          "h": 764.1
+        },
+        "tables": [
+          {
+            "x": 125,
+            "y": 480.5,
+            "w": 625.2,
+            "h": 51.3
+          },
+          {
+            "x": 125,
+            "y": 547.3,
+            "w": 625.2,
+            "h": 51.3
+          }
+        ],
+        "stacked": true,
+        "contained": true
+      },
+      "edit": {
+        "ok": true,
+        "fieldId": 1247331804,
+        "oldValue": "값",
+        "newValue": "추가값"
+      },
+      "after": {
+        "value": "추가값",
+        "pages": 1,
+        "box": {
+          "x": 121.2,
+          "y": 157.5,
+          "w": 632.8,
+          "h": 764.1
+        },
+        "tables": [
+          {
+            "x": 164,
+            "y": 503.2,
+            "w": 625.2,
+            "h": 51.3
+          },
+          {
+            "x": 796.7,
+            "y": 503.2,
+            "w": 625.2,
+            "h": 51.3
+          }
+        ],
+        "stacked": false,
+        "contained": false
+      }
+    }
+  ],
+  "status": "completed"
+}

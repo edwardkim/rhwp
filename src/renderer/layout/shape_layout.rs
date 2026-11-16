@@ -179,6 +179,7 @@ fn textbox_floating_table_offset_px(
     common: &CommonObjAttr,
     outer_margin_left: i16,
     outer_margin_top: i16,
+    unstored: bool,
     dpi: f64,
 ) -> Option<(f64, f64)> {
     let floating = matches!(
@@ -189,15 +190,158 @@ fn textbox_floating_table_offset_px(
         && common.horz_align == HorzAlign::Left;
     let vert = common.vert_rel_to == VertRelTo::Para && common.vert_align == VertAlign::Top;
     (!common.treat_as_char && floating && horz && vert).then(|| {
+        // 저장 줄 없는 자유 배치 표는 정렬할 글 흐름·바깥 여백을 소유하지 않는다.
+        let free = unstored && !common.flow_with_text;
+        let margin_left = if free {
+            0.0
+        } else {
+            f64::from(outer_margin_left)
+        };
+        let margin_top = if free {
+            0.0
+        } else {
+            f64::from(outer_margin_top)
+        };
         (
             // 부호 있는 저장 오프셋과 여백은 합계가 i32 범위를 넘을 수 있다.
             // f64는 이 정수 범위를 정확히 표현하므로 좌표를 자르거나 감싸지 않는다.
-            (common.horizontal_offset as i32 as f64 + f64::from(outer_margin_left)) * dpi
-                / HWPUNIT_PER_INCH,
-            (common.vertical_offset as i32 as f64 + f64::from(outer_margin_top)) * dpi
+            (common.horizontal_offset as i32 as f64 + margin_left) * dpi / HWPUNIT_PER_INCH,
+            (if unstored && common.flow_with_text {
+                // 글상자 안 영역 제한은 음수 문단 오프셋을 내용 위끝에서 제한한다.
+                f64::from((common.vertical_offset as i32).max(0))
+            } else {
+                common.vertical_offset as i32 as f64
+            } + margin_top)
+                * dpi
                 / HWPUNIT_PER_INCH,
         )
     })
+}
+
+/// [PK-40987] 저장 줄 없는 글상자 문단에 놓인 문단 기준 자리차지(위아래) 표의 띠.
+///
+/// 한컴(웹한글기안기 인쇄·화면 실측)은 이 표를 `문단 위끝 + 세로 오프셋 + 바깥 위 여백` 에 놓고, 다음
+/// 문단을 `표 바닥 + 바깥 아래 여백` 에서 시작한다. 빈 앵커 문단의 자기 줄은 그 띠에 흡수되고,
+/// 글 있는 앵커 문단은 띠에 걸리는 줄만 띠 아래로 간다(띠 위의 줄은 제자리).
+/// 가로·세로 정렬은 단·문단 기준 왼쪽, 문단 기준 위만 다룬다. 앵커 문단의 컨트롤은 이런 표뿐이어야 한다.
+/// 돌려주는 값은 문단 위끝 기준 (가로 오프셋, 표 위 오프셋, 띠 아래끝) px 이며, 해당하지 않으면 `None` 이다.
+fn textbox_topbottom_table_band_px(
+    para: &Paragraph,
+    table: &crate::model::table::Table,
+    dpi: f64,
+) -> Option<(f64, f64, f64)> {
+    let common = &table.common;
+    if !textbox_topbottom_table_shape(table)
+        || !crate::renderer::para_has_no_stored_line_segs(para)
+        || !para.controls.iter().all(|control| match control {
+            Control::Table(other) => textbox_topbottom_table_shape(other),
+            _ => false,
+        })
+    {
+        return None;
+    }
+    let px = |hu: f64| hu * dpi / HWPUNIT_PER_INCH;
+    let top = common.vertical_offset as i32 as f64 + f64::from(table.outer_margin_top);
+    let bottom = top + f64::from(common.height) + f64::from(table.outer_margin_bottom);
+    Some((
+        px(common.horizontal_offset as i32 as f64 + f64::from(table.outer_margin_left)),
+        px(top),
+        px(bottom),
+    ))
+}
+
+/// [PK-40987] 띠 계약이 다루는 표 형상(글자처럼 아님, 자리차지, 문단 기준 위, 단·문단 기준 왼쪽).
+fn textbox_topbottom_table_shape(table: &crate::model::table::Table) -> bool {
+    let common = &table.common;
+    !common.treat_as_char
+        && common.text_wrap == TextWrap::TopAndBottom
+        && common.vert_rel_to == VertRelTo::Para
+        && common.vert_align == VertAlign::Top
+        && matches!(common.horz_rel_to, HorzRelTo::Column | HorzRelTo::Para)
+        && common.horz_align == HorzAlign::Left
+}
+
+/// [PK-40987] 문단이 가진 띠 표들의 (가장 위 표 위, 가장 아래 띠 끝)(문단 위끝 기준 px).
+fn textbox_topbottom_table_band_extent_px(para: &Paragraph, dpi: f64) -> Option<(f64, f64)> {
+    para.controls
+        .iter()
+        .filter_map(|control| match control {
+            Control::Table(table) => textbox_topbottom_table_band_px(para, table, dpi),
+            _ => None,
+        })
+        .map(|(_, top, bottom)| (top, bottom))
+        .reduce(|(t0, b0), (t1, b1)| (t0.min(t1), b0.max(b1)))
+}
+
+/// [PK-40987] 저장 줄 있는 글상자의 세로 정렬 높이에 드는 비글자처럼 표의 바닥(문단 저장 vpos 기준 HU).
+/// 문단 기준 위 정렬의 글 앞으로·글 뒤로·자리차지 표만 다룬다: 세로 오프셋 + 바깥 위 + 높이 + 바깥 아래.
+fn textbox_stored_table_bottom_hu(table: &crate::model::table::Table) -> Option<i32> {
+    let common = &table.common;
+    (!common.treat_as_char
+        && matches!(
+            common.text_wrap,
+            TextWrap::InFrontOfText | TextWrap::BehindText | TextWrap::TopAndBottom
+        )
+        && common.vert_rel_to == VertRelTo::Para
+        && common.vert_align == VertAlign::Top)
+        .then(|| {
+            (common.vertical_offset as i32)
+                .saturating_add(i32::from(table.outer_margin_top))
+                .saturating_add(common.height as i32)
+                .saturating_add(i32::from(table.outer_margin_bottom))
+        })
+}
+
+/// [PK-40987] 저장 줄 있는 글상자 문단의 앵커 위끝이 첫 저장 줄보다 위에 있는 양(HU, 0 이상).
+///
+/// 한컴은 자리차지 표 띠가 앵커 문단의 줄을 밀면 그 줄을 띠 아래에 저장한다(실문서: 앞 문단 끝
+/// 44967 + 오프셋 164 + 바깥 위 283 + 높이 11650 + 바깥 아래 283 = 앵커 줄 57347). 표 자리와 내용
+/// 높이는 줄이 아니라 앞 문단 끝(앞 문단 마지막 줄 vpos + 줄 높이 + 줄 간격)을 문단 위끝으로 쓴다.
+/// 앞 문단이 없거나 줄이 밀리지 않았으면 0 이다.
+fn textbox_stored_anchor_lift_hu(paragraphs: &[Paragraph], index: usize) -> i32 {
+    let Some(own) = paragraphs
+        .get(index)
+        .and_then(|para| para.line_segs.first())
+        .map(|line| line.vertical_pos)
+    else {
+        return 0;
+    };
+    let Some(previous_end) = index
+        .checked_sub(1)
+        .and_then(|prev| paragraphs.get(prev))
+        .and_then(|para| para.line_segs.last())
+        .map(|line| {
+            line.vertical_pos
+                .saturating_add(line.line_height)
+                .saturating_add(line.line_spacing)
+        })
+    else {
+        return 0;
+    };
+    own.saturating_sub(previous_end).max(0)
+}
+
+/// [PK-40987] 저장 줄 있는 글상자 문단의 자리차지 표 자리(가로·세로 오프셋 + 바깥 여백, px).
+/// 저장 줄이 뒤 흐름을 이미 담으므로 표 자리만 글 앞으로 표와 같은 오프셋에 놓는다. 띠가 앵커 줄을
+/// 민 문단은 앞 문단 끝을 문단 위끝으로 쓴다(`anchor_lift_hu`).
+fn textbox_stored_topbottom_table_offset_px(
+    para: &Paragraph,
+    table: &crate::model::table::Table,
+    anchor_lift_hu: i32,
+    dpi: f64,
+) -> Option<(f64, f64)> {
+    let common = &table.common;
+    (textbox_topbottom_table_shape(table) && !crate::renderer::para_has_no_stored_line_segs(para))
+        .then(|| {
+            (
+                (common.horizontal_offset as i32 as f64 + f64::from(table.outer_margin_left)) * dpi
+                    / HWPUNIT_PER_INCH,
+                (common.vertical_offset as i32 as f64 + f64::from(table.outer_margin_top)
+                    - f64::from(anchor_lift_hu))
+                    * dpi
+                    / HWPUNIT_PER_INCH,
+            )
+        })
 }
 
 fn push_placeholder_render_node(
@@ -1059,6 +1203,9 @@ impl LayoutEngine {
 
         let (mut shape_w, mut shape_h) =
             self.resolve_object_size(common, col_area, body_area, paper_area);
+        if let Some(required) = shape.restricted_textbox_table_height_hu() {
+            shape_h = shape_h.max(hwpunit_to_px(required, self.dpi));
+        }
 
         if shape
             .drawing()
@@ -3804,7 +3951,7 @@ impl LayoutEngine {
                         .last()
                         .unwrap_or(0.0);
 
-                    for para in &textbox_paragraphs[..para_count] {
+                    for (para_idx, para) in textbox_paragraphs[..para_count].iter().enumerate() {
                         let para_vpos = para
                             .line_segs
                             .first()
@@ -3828,6 +3975,30 @@ impl LayoutEngine {
                                 let bottom = top.saturating_add(common.height as i32);
                                 total_content_height =
                                     total_content_height.max(hwpunit_to_px(bottom, self.dpi));
+                            }
+                            // 저장 줄 경로는 저장 표 프레임을 쓴다. 저장 줄 없는 제한 표는
+                            // 실제 행 하한과 두 바깥 여백을 포함하며 프레임 확장과 같은 값을 쓴다.
+                            if let Control::Table(table) = ctrl {
+                                let bottom = if align_by_laid_out_flow {
+                                    ShapeObject::restricted_textbox_table_bottom_hu(table)
+                                } else {
+                                    textbox_stored_table_bottom_hu(table)
+                                };
+                                if let Some(bottom) = bottom {
+                                    // 띠가 앵커 줄을 민 자리차지 표는 앞 문단 끝이 문단 위끝이다.
+                                    let lift = if table.common.text_wrap == TextWrap::TopAndBottom {
+                                        textbox_stored_anchor_lift_hu(
+                                            &textbox_paragraphs[..para_count],
+                                            para_idx,
+                                        )
+                                    } else {
+                                        0
+                                    };
+                                    total_content_height = total_content_height.max(hwpunit_to_px(
+                                        para_vpos.saturating_sub(lift).saturating_add(bottom),
+                                        self.dpi,
+                                    ));
+                                }
                             }
                         }
                         // [#5820 축2] 저장 lineseg 가 없는 문단(기계생성 로고 줄)은
@@ -3884,6 +4055,8 @@ impl LayoutEngine {
         let flow_first_border_range = self.para_border_ranges.borrow().len();
         let mut paragraph_origins = Vec::with_capacity(composed_paras.len());
         let mut para_y = inner_area.y + vert_offset;
+        // [PK-40987] 빈 앵커 문단의 자리차지 표 띠가 차지한 흐름의 가장 아래끝(글상자 글 영역 기준).
+        let mut topbottom_band_bottom = 0.0f64;
         for (tb_para_idx, composed) in composed_paras.iter().enumerate() {
             // vpos 기반 수직 위치: 원본 HWP 파일에서는 vertical_pos가 누적 절대값,
             // 편집 후 reflow된 문단은 vertical_pos=0이므로 incremental para_y와 비교하여
@@ -3921,6 +4094,7 @@ impl LayoutEngine {
                 },
             };
             let is_last_para = tb_para_idx + 1 == composed_paras.len();
+            let para_first_child = textbox_node.children.len();
             para_y = self.layout_composed_paragraph(
                 tree,
                 &mut textbox_node,
@@ -3941,13 +4115,42 @@ impl LayoutEngine {
                 None,
                 None, // 도형 컨텍스트 — wrap zone 무관
             );
+            // [PK-40987] 빈 앵커 문단의 자리차지 표는 흐름을 차지한다. 다음 문단은 표 띠 아래에서
+            // 시작하고 앵커 문단의 빈 줄은 띠에 흡수된다(띠가 줄보다 짧으면 줄을 지킨다).
+            if let Some((band_top, band)) = textbox_topbottom_table_band_extent_px(para, self.dpi) {
+                let para_start = paragraph_origins[tb_para_idx];
+                let anchor_has_text = !para
+                    .text
+                    .chars()
+                    .all(|c| c.is_whitespace() || c == '\u{FFFC}');
+                if anchor_has_text {
+                    // 글 있는 앵커: 띠에 걸리는 첫 줄부터 이 문단의 뒤 줄을 띠 아래로 민다.
+                    let (top, bottom) = (para_start + band_top, para_start + band);
+                    let mut shift = 0.0f64;
+                    for node in &mut textbox_node.children[para_first_child..] {
+                        if shift == 0.0
+                            && matches!(node.node_type, RenderNodeType::TextLine(_))
+                            && node.bbox.y < bottom
+                            && node.bbox.y + node.bbox.height > top
+                        {
+                            shift = bottom - node.bbox.y;
+                        }
+                        if shift > 0.0 {
+                            Self::translate_subtree_y(node, shift);
+                        }
+                    }
+                    para_y += shift;
+                }
+                para_y = para_y.max(para_start + band);
+                topbottom_band_bottom = topbottom_band_bottom.max(para_start + band - inner_area.y);
+            }
         }
 
         if align_by_laid_out_flow {
             let flow_bottom = textbox_node.children[flow_first_child..]
                 .iter()
                 .map(|node| node.bbox.y + node.bbox.height - inner_area.y)
-                .fold(0.0f64, f64::max);
+                .fold(topbottom_band_bottom, f64::max);
             let free_space =
                 (inner_area.height - content_height_for_align.max(flow_bottom)).max(0.0);
             vert_offset = match text_box.vertical_align {
@@ -4664,12 +4867,30 @@ impl LayoutEngine {
                             .unwrap_or(Alignment::Left);
                         // 글상자 안에서 글앞으로/글뒤로 떠 있는 표는 자기 가로·세로 오프셋 자리에 놓는다.
                         // 글상자 안의 단·문단 기준은 글상자 글 영역이다.
+                        // [PK-40987] 빈 앵커 문단의 자리차지 표도 자기 오프셋 자리에 놓는다(흐름 전진은
+                        // 문단 단계가 같은 띠로 이미 반영했다).
                         let floating_offset = textbox_floating_table_offset_px(
                             &table.common,
                             table.outer_margin_left,
                             table.outer_margin_top,
+                            align_by_laid_out_flow,
                             self.dpi,
-                        );
+                        )
+                        .or_else(|| {
+                            textbox_topbottom_table_band_px(para, table, self.dpi)
+                                .map(|(dx, dy, _)| (dx, dy))
+                        })
+                        .or_else(|| {
+                            textbox_stored_topbottom_table_offset_px(
+                                para,
+                                table,
+                                textbox_stored_anchor_lift_hu(
+                                    &textbox_paragraphs[..para_count],
+                                    pi,
+                                ),
+                                self.dpi,
+                            )
+                        });
                         let table_ctx = CellContext {
                             in_textbox: true,
                             parent_para_index: para_index,
@@ -4759,7 +4980,15 @@ impl LayoutEngine {
                                     },
                                 )
                         } else {
-                            para_start_y + dy
+                            // 자유 배치 표는 글자의 가운데/아래 정렬 전 문단 원점을 유지한다.
+                            let free_table = align_by_laid_out_flow
+                                && !table.common.flow_with_text
+                                && floating_offset.is_some()
+                                && matches!(
+                                    table.common.text_wrap,
+                                    TextWrap::InFrontOfText | TextWrap::BehindText
+                                );
+                            para_start_y + dy - if free_table { vert_offset } else { 0.0 }
                         };
                         let table_y = inline_origin.map_or(fallback_y, |(_, y)| y);
                         let table_bottom = self.layout_embedded_table(

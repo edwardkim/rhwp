@@ -563,6 +563,18 @@ name = "build_issue_5800_fixture"
 path = "tools/fixture_generators/build_issue_5800_fixture.rs"
 
 [[example]]
+name = "build_photo_caption_rows_fixture"
+path = "tools/fixture_generators/build_photo_caption_rows_fixture.rs"
+
+[[example]]
+name = "build_square_floor_empty_lead_fixture"
+path = "tools/fixture_generators/build_square_floor_empty_lead_fixture.rs"
+
+[[example]]
+name = "build_square_stamp_cell_fixture"
+path = "tools/fixture_generators/build_square_stamp_cell_fixture.rs"
+
+[[example]]
 name = "font_metric_coverage_worker"
 path = "tools/diagnostics/font_metric_coverage_worker.rs"
 

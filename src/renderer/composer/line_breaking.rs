@@ -6307,11 +6307,16 @@ fn try_reflow_line_segs_impl<S: Storage>(
         // 차지하므로, 컨트롤 인덱스를 그대로 쓰면 둘째 줄이 첫 제어문자 블록 한가운데(=1)를
         // 가리킨다. 한글 2022 는 그런 문서를 열 때 본문을 통째로 버리고 빈 1쪽으로 연다
         // (10k 전수 스윕의 x2h 본문 소실군 — 저장본은 rhwp 재파싱만 통과하는 함정).
+        // [#9058] 줄 시작은 제어 위치(`control_source_positions`)와 같은 축으로 센다. 제어 앞에
+        // 놓인 `controls[]` 밖 슬롯(누름틀 끝·제목 차례 표시)을 빼면 그 뒤 개체가 저장 줄보다
+        // 8유닛 앞에서 시작하고, 제어 위치와 비교할 때 한 줄 뒤로 판정된다.
         let inline_sizes = storage.collect(
             para.controls
                 .iter()
-                .scan(0u32, |utf16_pos, ctrl| {
-                    let start = *utf16_pos;
+                .enumerate()
+                .scan(0u32, |utf16_pos, (index, ctrl)| {
+                    let start = *utf16_pos
+                        + para.trailing_auxiliary_slots_before(index) * CTRL_CHAR_CODE_UNITS;
                     if ctrl.occupies_ctrl_char_slot() {
                         *utf16_pos += CTRL_CHAR_CODE_UNITS;
                     }

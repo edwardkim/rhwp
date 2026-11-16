@@ -1,0 +1,46 @@
+{
+  "status": "passed",
+  "head": "af0a5b9519b55e5e840f6e9adb85c1d17cd51d8d",
+  "test_source_sha256": "bbe7ef2c076acde8784da4ccd21bb4a28fbca54411be9a047aa0b05539666b75",
+  "results": [
+    {
+      "step": "prepare",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit": 0,
+      "seconds": 14.255
+    },
+    {
+      "step": "focused",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261116/minimal-font/profile.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "textbox_stored_lines_table_align",
+        "--",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit": 0,
+      "seconds": 27.145
+    }
+  ],
+  "current": "focused",
+  "test_source": "tests/cases/textbox_stored_lines_table_align.rs",
+  "summary": "6 tests run: 6 passed, 349 skipped",
+  "environment": "macOS minimum-font sandbox",
+  "log_sha256": "772c38c7d2f408a3f9fcd322c60446cf2ddd7dead6caa483e9f425fcc9a42d18",
+  "earlier_invalid_attempt": "stale generated suites selected a different module and ran zero tests; never counted as PASS; --prepare preceded this valid rerun",
+  "remaining": "Latest full regression and Rust lint gates are queued after actual consumers."
+}

@@ -146,6 +146,10 @@ Cargo 성공은 시각 검증 판정을 대체하지 않는다. 다음 중 하�
 이 경우 review 문서의 최종 판정을 `승인`으로 쓰기 전에 다음 중 하나를 완료해야 한다.
 
 - 기존 기준 PDF를 [재사용 규칙](visual_fixture_evidence.md#35-시각-검증-원칙)에 따라 먼저 확인한다.
+  **한컴 웹한글기안기 PDF는 공식 대조 자료가 아니므로 기존 첨부본도 공식 기준으로 재사용하지 않는다.**
+  공식 기준은 데스크톱 한컴의 **`Hancom PDF` 프린터 인쇄(Print)**이며,
+  **`Microsoft Print to PDF` 출력도 공식 비교에서 제외한다.** 실제 프린터 출처를 확인한다.
+  [출처 확인과 데스크톱 Print 기준 확보](visual_fixture_evidence.md#원-pr이-웹한글기안기-pdf를-기준으로-제시한-경우)를 따른다.
   PDF 형식 버전·Creator의 연도/빌드만으로 제외하거나 MCP 재변환을 요구하지 않는다. 기존 기준이
   없을 때 `rhwp info --json`으로 MCP engine을 선택해 보완 산출하고, visual sweep 대표 PNG와
   요약 지표를 실제로 열어 확인한다.

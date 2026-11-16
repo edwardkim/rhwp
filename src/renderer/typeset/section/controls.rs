@@ -743,7 +743,11 @@ impl TypesetEngine {
                                     && matches!(s.common().vert_rel_to, VertRelTo::Para) =>
                             {
                                 let cm = s.common();
-                                let h = hwpunit_to_px(cm.height as i32, self.dpi);
+                                let h = hwpunit_to_px(
+                                    s.restricted_textbox_table_height_hu()
+                                        .map_or(cm.height as i32, |h| h.max(cm.height as i32)),
+                                    self.dpi,
+                                );
                                 let mb = hwpunit_to_px(cm.margin.bottom as i32, self.dpi);
                                 let hl = hwpunit_to_px(cm.horizontal_offset as i32, self.dpi);
                                 let hr = hl + hwpunit_to_px(cm.width as i32, self.dpi);

@@ -1,0 +1,213 @@
+{
+  "status": "passed",
+  "candidate_source": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+  "baseline_sha256": "2280e97844b2cb262ea73e9c49f09f56c434097fed49af75fd9a7f6198d43da7",
+  "public_documents": 4,
+  "public_backend_conditions": 8,
+  "results": [
+    {
+      "document_id": "52ee61fe7201e36b",
+      "input": "samples/re-03-latin-only-hancom.hwp",
+      "backend": "native",
+      "status": "passed",
+      "minimum": "100.0",
+      "page_count": 1,
+      "tsv": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/public-gates/52ee61fe7201e36b/native/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "images": {
+        "review": {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/public-gates/52ee61fe7201e36b/native/review.png",
+          "sha256": "5881cf19f9f338bc640a799341c47ea472c65c5c8ffb1d5b684c76c13e3e1fdc"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/public-gates/52ee61fe7201e36b/native/overlay.png",
+          "sha256": "5d71693b65adc4f8da4603be47b5779fc75f956f33a3110661dfda481342528e"
+        }
+      },
+      "source_report_sha256": "3852075ec9efacb1181a67aa9f4e9efcd7a3b06d55729ef9d1f02503ae030eb8"
+    },
+    {
+      "document_id": "52ee61fe7201e36b",
+      "input": "samples/re-03-latin-only-hancom.hwp",
+      "backend": "wasm",
+      "status": "passed",
+      "minimum": "100.0",
+      "page_count": 1,
+      "tsv": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/public-gates/52ee61fe7201e36b/wasm/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "images": {
+        "review": {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/public-gates/52ee61fe7201e36b/wasm/review.png",
+          "sha256": "10fd1852de090f9deed07f3d00f07cfc573581dcac90ee05adcceb8386686aad"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/public-gates/52ee61fe7201e36b/wasm/overlay.png",
+          "sha256": "6112c22b8007f586ff5f6a853989c2e354c2987e740f9d07d330978dcb901c08"
+        }
+      },
+      "source_report_sha256": "3852075ec9efacb1181a67aa9f4e9efcd7a3b06d55729ef9d1f02503ae030eb8"
+    },
+    {
+      "document_id": "59f6ab1155623bda",
+      "input": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "backend": "native",
+      "status": "passed",
+      "minimum": "100.0",
+      "page_count": 1,
+      "tsv": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/public-gates/59f6ab1155623bda/native/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "images": {
+        "review": {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/public-gates/59f6ab1155623bda/native/review.png",
+          "sha256": "fc569a1f551b40e749c536a9fa8167b2d8ba43e3f497c541a7933af7630f1127"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/public-gates/59f6ab1155623bda/native/overlay.png",
+          "sha256": "bad2076ac3b2cd803de4a804441f38e2a5f3639ea4c11bcd4d2580476ab314c7"
+        }
+      },
+      "source_report_sha256": "3852075ec9efacb1181a67aa9f4e9efcd7a3b06d55729ef9d1f02503ae030eb8"
+    },
+    {
+      "document_id": "59f6ab1155623bda",
+      "input": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "backend": "wasm",
+      "status": "passed",
+      "minimum": "100.0",
+      "page_count": 1,
+      "tsv": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/public-gates/59f6ab1155623bda/wasm/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "images": {
+        "review": {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/public-gates/59f6ab1155623bda/wasm/review.png",
+          "sha256": "66b0f584991aff6c49f676b95febb56c527238b4fdd2c557f3202837c0bfb022"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/public-gates/59f6ab1155623bda/wasm/overlay.png",
+          "sha256": "f005a352a1010f14d075fa08c798890b23a3d773b92422dc4ed0414656fc0b45"
+        }
+      },
+      "source_report_sha256": "3852075ec9efacb1181a67aa9f4e9efcd7a3b06d55729ef9d1f02503ae030eb8"
+    },
+    {
+      "document_id": "cdacd874b6e6ac66",
+      "input": "samples/pic-crop-01.hwp",
+      "backend": "native",
+      "status": "passed",
+      "minimum": "99.99756",
+      "page_count": 1,
+      "tsv": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/public-gates/cdacd874b6e6ac66/native/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "images": {
+        "review": {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/public-gates/cdacd874b6e6ac66/native/review.png",
+          "sha256": "df5248c3837863609c3385b59f23898d97bbd36b96f40df59d1cfde882cf273c"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/public-gates/cdacd874b6e6ac66/native/overlay.png",
+          "sha256": "66403aaaffe871648bd66be9607c3b2fac5a884adfc8d55e4232de50bb841c62"
+        }
+      },
+      "source_report_sha256": "3852075ec9efacb1181a67aa9f4e9efcd7a3b06d55729ef9d1f02503ae030eb8"
+    },
+    {
+      "document_id": "cdacd874b6e6ac66",
+      "input": "samples/pic-crop-01.hwp",
+      "backend": "wasm",
+      "status": "passed",
+      "minimum": "99.99756",
+      "page_count": 1,
+      "tsv": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/public-gates/cdacd874b6e6ac66/wasm/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "images": {
+        "review": {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/public-gates/cdacd874b6e6ac66/wasm/review.png",
+          "sha256": "37764373d56f44033d9442d1a9a63acd9a06a5b39c3b69e3e27ced8e05f5dd2b"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/public-gates/cdacd874b6e6ac66/wasm/overlay.png",
+          "sha256": "a9a1430d6fbe87d8eaf3d6f9db75c7d1e442c0071d9ce4ce7261df386be967de"
+        }
+      },
+      "source_report_sha256": "3852075ec9efacb1181a67aa9f4e9efcd7a3b06d55729ef9d1f02503ae030eb8"
+    },
+    {
+      "document_id": "d03a9dde3d5dc7ac",
+      "input": "samples/shape-group-02.hwp",
+      "backend": "native",
+      "status": "passed",
+      "minimum": "100.0",
+      "page_count": 1,
+      "tsv": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/public-gates/d03a9dde3d5dc7ac/native/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "images": {
+        "review": {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/public-gates/d03a9dde3d5dc7ac/native/review.png",
+          "sha256": "b81b21b068d8c1817f14108e9aa84ea1ece53136458f1877ba401bd553a28be9"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/public-gates/d03a9dde3d5dc7ac/native/overlay.png",
+          "sha256": "e36839b6320e613821d513bbf2fbe9384010671e926b07a2f7f8d3c49676f6f3"
+        }
+      },
+      "source_report_sha256": "3852075ec9efacb1181a67aa9f4e9efcd7a3b06d55729ef9d1f02503ae030eb8"
+    },
+    {
+      "document_id": "d03a9dde3d5dc7ac",
+      "input": "samples/shape-group-02.hwp",
+      "backend": "wasm",
+      "status": "passed",
+      "minimum": "100.0",
+      "page_count": 1,
+      "tsv": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/public-gates/d03a9dde3d5dc7ac/wasm/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "images": {
+        "review": {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/public-gates/d03a9dde3d5dc7ac/wasm/review.png",
+          "sha256": "9f18890b2567cb7e19db0f23ef926a54201303a987fa70d62ef626af844febe2"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/all_open_prs_20261116/public-gates/d03a9dde3d5dc7ac/wasm/overlay.png",
+          "sha256": "7690fc866c0466d82a2e0f9e5c04e1b17afbfe1107c8b3556c7585137d37ab97"
+        }
+      },
+      "source_report_sha256": "3852075ec9efacb1181a67aa9f4e9efcd7a3b06d55729ef9d1f02503ae030eb8"
+    }
+  ],
+  "explicit_handbook_gate": {
+    "status": "passed",
+    "backend": "native-skia",
+    "pages": 383,
+    "regressions": [],
+    "tsv": {
+      "path": "mydocs/pr/assets/all_open_prs_20261116/public-gates/handbook-native.tsv",
+      "sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590"
+    },
+    "elapsed_seconds": 241.43
+  },
+  "direct_reading": {
+    "native_review_and_wasm_overlay": "4 documents each directly inspected",
+    "observations": [
+      "라틴 본문 세 줄과 줄바꿈, 책괄호·연도 위치가 보존됐다.",
+      "두 배너 그림의 crop·외곽·내용이 보존됐다.",
+      "그룹 도형의 외곽·그림자·그라데이션이 보존됐다."
+    ],
+    "note": "기존 2px raw 실수와 공식 두 자리로 판정하며 RGB 완전 동일을 주장하지 않는다."
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "summary": {
+    "compared_pages": 1,
+    "average_silhouette_raw_match_percent": 97.47594,
+    "worst_silhouette_raw_match_percent": 97.47594,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 99.58894,
+    "worst_pixel_match_percent": 99.58894,
+    "average_ink_match_percent": 33.50281,
+    "worst_ink_match_percent": 33.50281,
+    "average_visual_accuracy_proxy_percent": 33.50281,
+    "worst_visual_accuracy_proxy_percent": 33.50281,
+    "average_tolerant_content_match_percent": 97.47594,
+    "worst_tolerant_content_match_percent": 97.47594,
+    "worst_pages": [
+      1
+    ]
+  },
+  "pages": [
+    {
+      "page": 1,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261116/final-visual-matrix/claims-native/textbox_stored_top_tb_v0_pushed-hwp/textbox_stored_top_tb_v0_pushed-hwp/rhwp_png/rhwp_001.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261116/final-visual-matrix/claims-native/textbox_stored_top_tb_v0_pushed-hwp/textbox_stored_top_tb_v0_pushed-hwp/pdf_png/pdf-001.png",
+      "overlay_png": "/Users/tsjang/rhwp/mydocs/pr/assets/all_open_prs_20261116/claim-page-evidence/9137/textbox_stored_top_tb_v0_pushed-hwp/native/overlay/overlay_001.png",
+      "width": 794,
+      "height": 1122,
+      "pixel_diff_threshold": 32,
+      "overlay_color_legend": {
+        "rhwp_only": "blue",
+        "pdf_only": "red",
+        "both_different": "orange",
+        "matching": "gray"
+      },
+      "total_pixels": 890868,
+      "diff_pixels": 3662,
+      "diff_ratio": 0.0041106,
+      "pixel_match_percent": 99.58894,
+      "ink_union_pixels": 5507,
+      "ink_diff_pixels": 3662,
+      "ink_diff_ratio": 0.66497185,
+      "ink_match_percent": 33.50281,
+      "visual_accuracy_proxy_percent": 33.50281,
+      "tolerant_content_match_radius_px": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 97.47594,
+      "silhouette_raw_unmatched_pixels": 139,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 5507,
+      "tolerant_content_match_percent": 97.47594,
+      "mean_abs_channel_delta": 0.453,
+      "max_channel_delta": 222,
+      "diff_bbox": [
+        113,
+        131,
+        673,
+        543
+      ]
+    }
+  ]
+}

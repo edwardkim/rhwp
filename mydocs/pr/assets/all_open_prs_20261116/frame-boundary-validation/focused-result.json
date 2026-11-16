@@ -1,0 +1,35 @@
+{
+  "source_head": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+  "environment": "macOS sandbox minimum fonts; CoreText private fonts denied; RHWP_FONT_PATH unset",
+  "results": [
+    {
+      "case": "textbox_stored_lines_table_align",
+      "exit": 0,
+      "test_sha256": "d989695a9dbed5479a98162440714ce9de5b61d1e56d0e86ab30fce5a088fb82",
+      "summary": "Summary [   0.039s] 6 tests run: 6 passed, 330 skipped"
+    },
+    {
+      "case": "issue_8695_cell_text_below_stacked_pictures",
+      "exit": 0,
+      "test_sha256": "8e1d3966615a40c46baf0bc5fa7830ae560f99345a70f53494d71fab11e21183",
+      "summary": "Summary [   0.144s] 7 tests run: 7 passed, 355 skipped"
+    },
+    {
+      "case": "title_flow_photo_row_height",
+      "exit": 0,
+      "test_sha256": "b41c0a07e048031adf6bae51f1c02c0533f13aeb8810b1e36db9ab7f5ae28dc7",
+      "summary": "Summary [   0.031s] 3 tests run: 3 passed, 347 skipped"
+    }
+  ],
+  "earlier_before_record": {
+    "source_head": "959afe38afe282f2f179a232fe06e61c44b74fd2",
+    "passed": 11,
+    "failed": 5,
+    "qualification": "보정 전 초안 검사이며 자유 표/작은 그림 대조군의 기대를 독립 PDF에 따라 교정했다. 최종 검사와 바이트가 같다고 주장하지 않는다."
+  },
+  "corrected_test_expectations": [
+    "작은 그림 유무와 무관하게 빈 뒤 문단은 보존되며 두 독립 Print의 이름표 위치가 같다.",
+    "자유 표의 음수 오프셋은 같은 원본의 오프셋 0 재저장 대조군과 비교한다. 내용 상자보다 위라는 추정은 사용하지 않는다."
+  ],
+  "shared_target_build_note": "이전 worktree 검사 뒤 첫 실행은 옛 geometry를 재사용했다. src/lib.rs의 바이트를 바꾸지 않고 mtime을 갱신해 주 저장소 library를 실제 재컴파일한 뒤 검증했다. 초기 빌드 출처 불명 결과는 최종 증거로 사용하지 않는다."
+}

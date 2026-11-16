@@ -1,0 +1,48 @@
+{
+  "status": "passed_native_focused_page_only",
+  "at": "2026-11-16T18:07:48.777825+00:00",
+  "base": "53774cc1508591b6ac794950f0063452fbaf6e87",
+  "candidate_source": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+  "input": "samples/hwp3-sample10.hwp",
+  "pdf": "pdf/issue8371/hwp3-sample10-2020.pdf",
+  "page": 474,
+  "dpi": 96,
+  "compat": "2022",
+  "radius_px": 2,
+  "original_provider": "Haansoft Batang; independent PDF font resource",
+  "source_text": "10 equal signs followed by 25 U+F0827",
+  "invalid_prior_provider": "RHWP Hancom Junggothic Symbols unavailable in current catalog",
+  "before": {
+    "base": "99.96",
+    "candidate": "99.96",
+    "unmatched_pixels": 25,
+    "unmatched_bbox_exclusive": [
+      376,
+      380,
+      381,
+      385
+    ]
+  },
+  "after": {
+    "base": "100.00",
+    "candidate": "100.00"
+  },
+  "direct_reading": "Read both same-page review and overlay: the double rule reaches the PDF endpoint; all heading/body/footer content retained. Raw silhouette 100.00 is not RGB identity.",
+  "remaining": [
+    "whole 763-page Native",
+    "fresh WASM whole protection"
+  ],
+  "files": {
+    "raw-474.png": "ebeabd0aeae2745f9be981e5a51a209fd3795a9e8ed5716fa36002ae15865b4f",
+    "overlay-474.png": "76f38c1b50b8d26cd6170a815e3b233edd12f757e515ae9b49379447245f124c",
+    "pdf-474.png": "f04465ea253960834560974819f4215029c5acb3937efa8813b6cf78e9a24d9e",
+    "review-474.png": "1af9b95bc09c7e40055587b6f36275868370edc80aefd961a43cd3b41d8676fd",
+    "base.tsv": "754c36a9693e492af7bc353f085647e0b189b8f2000ba10f5e1c7e5c65905d8d",
+    "candidate.tsv": "754c36a9693e492af7bc353f085647e0b189b8f2000ba10f5e1c7e5c65905d8d",
+    "environment.json": "3ccb024b3dbdb87abe250ed1628cd9eb6018aaea15f91cda15ae4313547e19c8"
+  },
+  "input_sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+  "pdf_sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+  "base_binary_sha256": "a8f9b5c0f8f0ee7c14926a743aab2e4784ebfe57ac2e2506f3c08e5237cbce19",
+  "candidate_binary_sha256": "7baff70e9b0a37a939b8c965589542cd31dade2b43b32adec73ef9260b69ae04"
+}

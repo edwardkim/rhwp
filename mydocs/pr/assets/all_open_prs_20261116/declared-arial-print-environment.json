@@ -1,0 +1,47 @@
+{
+  "id": "protected-seo-independent-print-declared-arial-programs",
+  "preserveSourceMetrics": true,
+  "substitutions": {
+    "Helvetica": "Arial",
+    "Helvetica-Bold": "Arial",
+    "Helvetica-Oblique": "Arial",
+    "Helvetica-BoldOblique": "Arial"
+  },
+  "selectedPrograms": {
+    "Helvetica": {
+      "query": "Arial",
+      "family": "Arial",
+      "trueType": true,
+      "openTypeCff": false,
+      "collectionFace": false,
+      "programId": "4e21f9fd8dfaecba75dbc00fd1e60665450905eebbf5685d4cb671ef1b702fab"
+    },
+    "Helvetica-Bold": {
+      "query": "Arial",
+      "family": "Arial",
+      "trueType": true,
+      "openTypeCff": false,
+      "collectionFace": false,
+      "programId": "57d1a7cad3956edc6e16f05ca9e349463f289f848eaf337d1e297f68804a6304"
+    },
+    "Helvetica-Oblique": {
+      "query": "Arial",
+      "family": "Arial",
+      "trueType": true,
+      "openTypeCff": false,
+      "collectionFace": false,
+      "programId": "57ca893dc73da5edeed10e23da940260ceeda11390467508786d121e8c8cab24"
+    },
+    "Helvetica-BoldOblique": {
+      "query": "Arial",
+      "family": "Arial",
+      "trueType": true,
+      "openTypeCff": false,
+      "collectionFace": false,
+      "programId": "f8cc2705bfc6c92623ee5350aeab1c5ba3b1c635a1a95949f3a8b57eb28fdb10"
+    }
+  },
+  "trueTypeFaces": [
+    "Arial"
+  ]
+}

@@ -1,0 +1,339 @@
+{
+  "status": "independent_controls_completed_candidate_validation_pending",
+  "cases": [
+    {
+      "input": "samples/textbox_stored_table/textbox_nostored_header_front_zero_offset.hwpx",
+      "input_sha256": "7ffa08421223931b7c09549160027269f44b11ab509e8d4f566aa63296cef12e",
+      "pdf": "pdf/pr-review-all-open-20261116/textbox_nostored_header_front_zero_offset-hwpx-2020.pdf",
+      "pdf_sha256": "d03f3ea6de0b4d96ea343532040549a8b4a3bcd46bb1706dc471aed57dd76a5f",
+      "result": {
+        "job_id": "1c75bf0e-b37c-41f6-b8b7-7c099c6845ed",
+        "status": "success",
+        "engine": "2020",
+        "engine_profile": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "input_format": "hwpx",
+        "format": "pdf",
+        "bytes": 10625,
+        "pdf_page_count": 1,
+        "logical_page_count": null,
+        "elapsed_ms": 12723,
+        "worker_elapsed_ms": 11487,
+        "worker_bits": 32,
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "input_preprocess": "none",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      }
+    },
+    {
+      "input": "samples/textbox_stored_table/textbox_nostored_header_front_unrestricted.hwpx",
+      "input_sha256": "2b921fbc833ad8544988c2cd68385d940e1a691661c8e5dfc3e65a280ed3d571",
+      "pdf": "pdf/pr-review-all-open-20261116/textbox_nostored_header_front_unrestricted-hwpx-2020.pdf",
+      "pdf_sha256": "6e9752a62074d03d70a8198ff3d4e87c71a808081070f0e9509b9c04266e785f",
+      "result": {
+        "job_id": "bae8308b-7b2e-4999-8305-e0ba8139e67c",
+        "status": "success",
+        "engine": "2020",
+        "engine_profile": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "input_format": "hwpx",
+        "format": "pdf",
+        "bytes": 10626,
+        "pdf_page_count": 1,
+        "logical_page_count": null,
+        "elapsed_ms": 16145,
+        "worker_elapsed_ms": 14211,
+        "worker_bits": 32,
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "input_preprocess": "none",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      }
+    },
+    {
+      "input": "samples/textbox_stored_table/textbox_nostored_header_front_resolved_height.hwpx",
+      "input_sha256": "faabd1877977cc8e7d04e0c8577413b144344e0dc5314f43a928e2db3508bda6",
+      "pdf": "pdf/pr-review-all-open-20261116/textbox_nostored_header_front_resolved_height-hwpx-2020.pdf",
+      "pdf_sha256": "91c8578147a44a42bcd475094226a709100955d98e6d9af8898110ba0e1ea4f1",
+      "result": {
+        "job_id": "1469c9bf-cb97-44e4-a21f-1ded1ba27a67",
+        "status": "success",
+        "engine": "2020",
+        "engine_profile": "2020",
+        "hancom_version": "11.0.0.9136",
+        "backend": "hwp-managed-direct-dll-host",
+        "input_format": "hwpx",
+        "format": "pdf",
+        "bytes": 10625,
+        "pdf_page_count": 1,
+        "logical_page_count": null,
+        "elapsed_ms": 14643,
+        "worker_elapsed_ms": 13874,
+        "worker_bits": 32,
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "input_preprocess": "none",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      }
+    }
+  ],
+  "comparison": {
+    "original": {
+      "pdf_sha256": "36dcaba2272e7515519e31ad72f3fcdece368cbb02a349b83edafbf0dcb9ad3f",
+      "pdfium_rgb_sha256": "ce1beefec910194760975547ad1dddcb00014fe871719bcaf323529b232862a8",
+      "text_char_boxes_pt": {
+        "TITLE": [
+          88.39824,
+          714.40002,
+          94.1352,
+          721.68079
+        ],
+        "BOX": [
+          392.60822,
+          704.20001,
+          397.73761,
+          711.48077
+        ],
+        "BODY": [
+          85.48187,
+          665.39191,
+          90.60849,
+          672.66473
+        ]
+      },
+      "paths_pt": [
+        [
+          84.914,
+          673.78302,
+          504.448,
+          741.98804
+        ],
+        [
+          84.674,
+          673.54303,
+          504.689,
+          742.22797
+        ],
+        [
+          390.15002,
+          679.177,
+          390.87,
+          736.59497
+        ],
+        [
+          503.48901,
+          679.177,
+          504.20898,
+          736.59497
+        ],
+        [
+          390.03003,
+          735.875,
+          504.44897,
+          736.59497
+        ]
+      ]
+    },
+    "unrestricted": {
+      "pdf_sha256": "6e9752a62074d03d70a8198ff3d4e87c71a808081070f0e9509b9c04266e785f",
+      "pdfium_rgb_sha256": "c14e691b1ea5e078b50512c1e30a45d00d39b9ff43fc9b624e8e21dbbba5e00f",
+      "text_char_boxes_pt": {
+        "TITLE": [
+          88.39824,
+          700.59998,
+          94.1352,
+          707.88074
+        ],
+        "BOX": [
+          389.72821,
+          710.91998,
+          394.8576,
+          718.20074
+        ],
+        "BODY": [
+          85.48187,
+          674.02246,
+          90.60849,
+          681.29529
+        ]
+      },
+      "paths_pt": [
+        [
+          84.914,
+          682.41302,
+          504.448,
+          741.98804
+        ],
+        [
+          84.674,
+          682.17303,
+          504.689,
+          742.22797
+        ],
+        [
+          387.39102,
+          685.88904,
+          388.11099,
+          743.30701
+        ],
+        [
+          500.73102,
+          685.88904,
+          501.45099,
+          743.30701
+        ],
+        [
+          387.272,
+          742.58704,
+          501.68997,
+          743.30701
+        ]
+      ]
+    },
+    "zero-offset": {
+      "pdf_sha256": "d03f3ea6de0b4d96ea343532040549a8b4a3bcd46bb1706dc471aed57dd76a5f",
+      "pdfium_rgb_sha256": "ce1beefec910194760975547ad1dddcb00014fe871719bcaf323529b232862a8",
+      "text_char_boxes_pt": {
+        "TITLE": [
+          88.39824,
+          714.40002,
+          94.1352,
+          721.68079
+        ],
+        "BOX": [
+          392.60822,
+          704.20001,
+          397.73761,
+          711.48077
+        ],
+        "BODY": [
+          85.48187,
+          665.39191,
+          90.60849,
+          672.66473
+        ]
+      },
+      "paths_pt": [
+        [
+          84.914,
+          673.78302,
+          504.448,
+          741.98804
+        ],
+        [
+          84.674,
+          673.54303,
+          504.689,
+          742.22797
+        ],
+        [
+          390.15002,
+          679.177,
+          390.87,
+          736.59497
+        ],
+        [
+          503.48901,
+          679.177,
+          504.20898,
+          736.59497
+        ],
+        [
+          390.03003,
+          735.875,
+          504.44897,
+          736.59497
+        ]
+      ]
+    },
+    "resolved-height": {
+      "pdf_sha256": "91c8578147a44a42bcd475094226a709100955d98e6d9af8898110ba0e1ea4f1",
+      "pdfium_rgb_sha256": "ce1beefec910194760975547ad1dddcb00014fe871719bcaf323529b232862a8",
+      "text_char_boxes_pt": {
+        "TITLE": [
+          88.39824,
+          714.40002,
+          94.1352,
+          721.68079
+        ],
+        "BOX": [
+          392.60822,
+          704.20001,
+          397.73761,
+          711.48077
+        ],
+        "BODY": [
+          85.48187,
+          665.39191,
+          90.60849,
+          672.66473
+        ]
+      },
+      "paths_pt": [
+        [
+          84.914,
+          673.78302,
+          504.448,
+          741.98804
+        ],
+        [
+          84.674,
+          673.54303,
+          504.689,
+          742.22797
+        ],
+        [
+          390.15002,
+          679.177,
+          390.87,
+          736.59497
+        ],
+        [
+          503.48901,
+          679.177,
+          504.20898,
+          736.59497
+        ],
+        [
+          390.03003,
+          735.875,
+          504.44897,
+          736.59497
+        ]
+      ]
+    }
+  }
+}
