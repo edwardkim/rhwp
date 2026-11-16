@@ -32,6 +32,26 @@ class MeasuredPlugin extends FakeTexturePlugin {
   int get statusCalls => calls.where((method) => method == 'status').length;
 }
 
+class CacheMeasuredPlugin extends MeasuredPlugin {
+  CacheMeasuredPlugin({required this.stale});
+  final bool stale;
+  @override
+  Map<String, Object?> status() {
+    final value = super.status();
+    final stamp = value['acceptedStamp'];
+    return {
+      ...value,
+      'producerDiagnostics': {
+        'schemaVersion': 1,
+        'backend': 'openGlGanesh',
+        'scope': NativeGpuCacheSample.scope,
+        'stamp': stamp is Map ? {...stamp, if (stale) 'revision': 999} : {},
+        'counters': {'cacheHits': 7, 'managedBytes': 8192},
+      },
+    };
+  }
+}
+
 Future<void> until(WidgetTester tester, bool Function() ready) async {
   for (var index = 0; index < 40 && !ready(); ++index) {
     await tester.pump(const Duration(milliseconds: 5));
@@ -81,6 +101,50 @@ Future<void> cleanUp(
 }
 
 void main() {
+  for (final stale in [false, true]) {
+    testWidgets('cache trace accepts current full stamps only (stale=$stale)', (
+      tester,
+    ) async {
+      final plugin = CacheMeasuredPlugin(stale: stale)..install();
+      final document = await open(tester, GpuTransport());
+      final metadata = FakePresentation();
+      final trace = NativeGpuTrace();
+      final controller = controllerFor(document, metadata, trace: trace);
+      try {
+        configure(controller);
+        await until(tester, () => controller.canDisplay);
+        final ready = trace.events
+            .where((event) => event.stage == NativeGpuTraceStage.producerReady)
+            .single;
+        expect(
+          ready.counters[NativeGpuCounter.nativeGpuCacheHits],
+          stale ? isNull : 7,
+        );
+        expect(ready.producerDiagnostics, stale ? isNull : isNotNull);
+        expect(
+          trace.events
+              .where(
+                (event) => event.stage != NativeGpuTraceStage.producerReady,
+              )
+              .every(
+                (event) => !event.counters.containsKey(
+                  NativeGpuCounter.nativeGpuCacheHits,
+                ),
+              ),
+          isTrue,
+        );
+        expect(metadata.checks, hasLength(2));
+        expect(
+          controller.canDisplay,
+          isTrue,
+          reason: 'Optional diagnostics never reject a valid frame.',
+        );
+      } finally {
+        await cleanUp(tester, controller, document, plugin);
+      }
+    });
+  }
+
   testWidgets(
     'accepted ready batch is checked before the next default 100 ms tick',
     (tester) async {

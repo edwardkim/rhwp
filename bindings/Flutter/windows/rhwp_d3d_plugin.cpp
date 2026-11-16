@@ -148,6 +148,18 @@ Value status(const std::shared_ptr<State>& state) {
       {Value("renderedSerial"), unsigned_value(has_frame ? state->current->job->serial : 0)},
       {Value("limits"), limits(state->publication_mode, state->close_ack_required)}};
   value[Value("renderedStamp")] = has_frame ? Value(stamp_value(state->current->job->stamp)) : Value();
+  if (has_frame && !state->current->cache_metrics.empty()) {
+    Map counters;
+    const auto& sample = state->current->cache_metrics;
+    for (size_t index = 0; index < rhwp::metrics::kCounters.size(); ++index) {
+      if (sample.values[index])
+        counters[Value(rhwp::metrics::kCounters[index].name)] = unsigned_value(*sample.values[index]);
+    }
+    value[Value("producerDiagnostics")] = Value(Map{{Value("schemaVersion"), Value(1)},
+        {Value("backend"), Value("d3d12Ganesh")}, {Value("scope"), Value(rhwp::metrics::kScope)},
+        {Value("stamp"), Value(stamp_value(state->current->job->stamp))},
+        {Value("counters"), Value(std::move(counters))}});
+  }
   return Value(std::move(value));
 }
 std::shared_ptr<Job> parse_job(const Map& args, PublicationMode mode) {

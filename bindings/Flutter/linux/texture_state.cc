@@ -424,7 +424,8 @@ Target RasterRegistry::populate(const std::shared_ptr<Shared>& state, std::share
       slot.context->destroy(slot.back);
       slot.back = slot.context->allocate(description.width, description.height);
     }
-    const auto readbacks = state->bridge->render(slot.presenter, slot.identity, description, slot.back);
+    const auto rendered = state->bridge->render(slot.presenter, slot.identity, description, slot.back);
+    const auto readbacks = rendered.whole_frame_readbacks;
     if (readbacks) {
       {
         std::lock_guard<std::mutex> lock(state->mutex_);
@@ -443,6 +444,7 @@ Target RasterRegistry::populate(const std::shared_ptr<Shared>& state, std::share
         ++state->status_.frames;
         state->status_.whole_frame_readbacks = readbacks;
         state->status_.code.clear();
+        state->status_.cache_metrics = rendered.cache_metrics;
         state->status_.message.clear();
         committed = true;
       }

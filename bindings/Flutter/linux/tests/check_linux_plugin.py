@@ -29,6 +29,9 @@ def main():
     events = output / "producer-ready-test"
     run(common + [str(source.parent / "common/producer_ready_test.cc"), "-o", str(events)])
     run([str(events)])
+    metrics = output / "gpu-cache-metrics-test"
+    run(common + [str(source.parent / "common/gpu_cache_metrics_test.cc"), "-o", str(metrics)])
+    run([str(metrics)])
     if not args.flutter_engine:
         return
     includes = ["-I" + str(args.flutter_engine.resolve())]

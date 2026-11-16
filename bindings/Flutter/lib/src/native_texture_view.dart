@@ -375,11 +375,23 @@ class NativeTextureController extends ChangeNotifier {
     if (readbacks is int) {
       counters[NativeGpuCounter.pluginWholeFrameReadbacks] = readbacks;
     }
+    final current = generation ?? _generation;
+    final stamp = _frame?.stamp;
+    final cacheSample =
+        stage == NativeGpuTraceStage.producerReady &&
+            current == _generation &&
+            !_closing &&
+            !_stopped &&
+            stamp != null &&
+            status != null
+        ? NativeGpuCacheSample.fromStatus(status, stamp)
+        : null;
     recorder.record(
       stage,
-      generation: generation ?? _generation,
+      generation: current,
       failure: failure,
       counters: counters,
+      producerDiagnostics: cacheSample,
     );
   }
 

@@ -48,6 +48,19 @@ bool producer_proof(const std::string& text, const Job& job) {
       frame.field("origin").text() == "topLeft";
 }
 
+rhwp::metrics::CacheMetrics cache_metrics(const std::shared_ptr<NativeApi>& api, uint64_t presenter) noexcept {
+  try {
+    static const uint8_t command[] = "{\"op\":\"info\"}";
+    const auto response = api->read(api->request(presenter, command, sizeof(command) - 1));
+    NativeReply reply(response);
+    if (!reply.field("ok").boolean()) return {};
+    auto info = reply.field("info");
+    return rhwp::metrics::capture([&](bool target, const char* key) -> std::optional<uint64_t> {
+      return info.field(target ? "managedTargets" : "tileCache").field(key).integer();
+    });
+  } catch (...) { return {}; }
+}
+
 struct Device {
   ComPtr<ID3D12Device> device12;
   ComPtr<ID3D12CommandQueue> queue12;
@@ -305,6 +318,7 @@ void run_producer(const std::shared_ptr<State>& state) noexcept {
             else throw NativeFailure(reply.field("code").text(), reply.field("error").text());
           } else {
             if (!producer_proof(rendered, *job)) throw std::runtime_error("native D3D frame proof/metadata mismatch");
+            const auto measured = cache_metrics(api, presenter);
             if (!pixels->producer->native_complete()) throw std::runtime_error("private Native completion phase mismatch");
             completed = true;  // D3D12 is complete; D3D11 copy has not started.
             if (api->current(job->check_json)) {
@@ -313,6 +327,7 @@ void run_producer(const std::shared_ptr<State>& state) noexcept {
               device.recycle_private(pixels);
               if (api->current(job->check_json)) {
                 auto frame = std::make_shared<Published>(); frame->job = job; frame->pixels = pixels;
+                frame->cache_metrics = measured;
                 {
                   std::lock_guard<std::mutex> lock(state->mutex);
                   if (state->gate.current(job->serial, job->stamp)) {

@@ -7,6 +7,7 @@
 #include "MetalFrameLifetime.hpp"
 #include "TextureCloseRouting.hpp"
 #include "RhwpProducerReadyEvents.hpp"
+#include "../../common/gpu_cache_metrics.h"
 #include <atomic>
 #include <condition_variable>
 #include <cstdio>
@@ -132,7 +133,36 @@ struct Job {
 struct PublishedFrame {
   std::shared_ptr<Job> job;
   std::shared_ptr<PixelResources> pixels;
+  rhwp::metrics::CacheMetrics cacheMetrics;
 };
+
+rhwp::metrics::CacheMetrics CaptureMetalCacheMetrics(const std::shared_ptr<NativeApi>& api, uint64_t presenter) noexcept {
+  try {
+    static const uint8_t command[] = "{\"op\":\"info\"}";
+    NSDictionary* response = api->read(api->request(presenter, command, sizeof(command) - 1));
+    NSDictionary* info = response[@"info"];
+    if (![response[@"ok"] boolValue] || ![info isKindOfClass:[NSDictionary class]]) return {};
+    return rhwp::metrics::capture([&](bool target, const char* key) -> std::optional<uint64_t> {
+      NSDictionary* values = info[target ? @"managedTargets" : @"tiles"];
+      if (![values isKindOfClass:[NSDictionary class]]) return {};
+      id value = values[[NSString stringWithUTF8String:key]];
+      if (![value isKindOfClass:[NSNumber class]] || CFGetTypeID((__bridge CFTypeRef)value) == CFBooleanGetTypeID() ||
+          CFNumberIsFloatType((__bridge CFNumberRef)value) || [value longLongValue] < 0) return {};
+      return [value unsignedLongLongValue];
+    });
+  } catch (...) { return {}; }
+}
+
+NSDictionary* MetalCacheMetricsValue(const rhwp::metrics::CacheMetrics& sample, const Stamp& stamp) {
+  if (sample.empty()) return nil;
+  NSMutableDictionary* counters = [NSMutableDictionary dictionary];
+  for (size_t index = 0; index < rhwp::metrics::kCounters.size(); ++index) {
+    if (sample.values[index])
+      counters[[NSString stringWithUTF8String:rhwp::metrics::kCounters[index].name]] = @(*sample.values[index]);
+  }
+  return @{@"schemaVersion":@1,@"backend":@"metalGanesh",@"scope":@"publishedFramePostRenderSnapshot",
+    @"stamp":StampValue(stamp),@"counters":counters};
+}
 
 struct State {
   State(uint64_t generation, std::string path, std::shared_ptr<int> slot, bool closeAckRequired = false)
@@ -310,11 +340,13 @@ void RunProducer(const std::shared_ptr<State>& state) {
             state->fail(@"Metal replay failed; target quarantined without GPU-completion evidence.");
             state->close();
           } else {
+            const auto measured = CaptureMetalCacheMetrics(api, presenter);
             std::lock_guard<std::mutex> lock(state->mutex);
             if (state->gate.current(job->sequence, job->stamp)) {
               auto frame = std::make_shared<PublishedFrame>();
               frame->job = job;
               frame->pixels = pixels;
+              frame->cacheMetrics = measured;
               job->credit->retain_until_process_exit(pixels);
               state->current = std::move(frame);
               state->error.clear();
@@ -455,6 +487,7 @@ NSDictionary* CVStatus(uint64_t textureId, const std::shared_ptr<State>& state, 
     @"pending":@(state->pending!=nullptr),@"inFlight":@(state->inFlight),@"hasFrame":@(state->current!=nullptr),
     @"staleFramesDropped":@(state->staleDrops),@"textureUnregisteredNotification":@(state->unregistered),
     @"error":error?:@"",@"acceptedStamp":StampValue(state->acceptedStamp),@"acceptedSnapshots":ids,
+    @"producerDiagnostics":state->current ? (MetalCacheMetricsValue(state->current->cacheMetrics, state->current->job->stamp) ?: (id)[NSNull null]) : (id)[NSNull null],
     @"limits":CVLimits(state->closeAckRequired)};
 }
 NSDictionary* CVRetireAck(uint64_t textureId, uint64_t generation) {

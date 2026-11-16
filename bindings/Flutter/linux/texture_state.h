@@ -9,6 +9,7 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include "../common/gpu_cache_metrics.h"
 
 namespace rhwp_flutter {
 
@@ -49,6 +50,10 @@ struct Callbacks {
   int32_t (*current)(void*, uint64_t);
   void* user;
 };
+struct RenderResult {
+  uint64_t whole_frame_readbacks = 0;
+  rhwp::metrics::CacheMetrics cache_metrics;
+};
 
 class Bridge {
  public:
@@ -57,7 +62,7 @@ class Bridge {
   virtual void release_snapshot(uint64_t snapshot) noexcept = 0;
   virtual uint64_t snapshot_release_failures() const noexcept { return 0; }
   virtual uint64_t create(uint64_t context, uint64_t generation, Callbacks) = 0;
-  virtual uint64_t render(uint64_t presenter, uint64_t context,
+  virtual RenderResult render(uint64_t presenter, uint64_t context,
                           const Description&, const Target&) = 0;
   virtual void release(uint64_t presenter, uint64_t context, uint64_t generation) = 0;
   virtual void abandon(uint64_t presenter) = 0;
@@ -103,6 +108,7 @@ struct Status {
   std::vector<uint64_t> accepted_snapshots;
   Stamp rendered_stamp;
   DriverInfo driver;
+  rhwp::metrics::CacheMetrics cache_metrics;
 };
 
 class Shared : public std::enable_shared_from_this<Shared> {

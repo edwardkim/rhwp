@@ -44,6 +44,7 @@ struct MetalViewState {
   uint64_t viewIdentifier = 0, drawableTimeouts = 0, sizeMismatches = 0;
   uint64_t renderedSequence = 0;
   Stamp renderedStamp;
+  rhwp::metrics::CacheMetrics cacheMetrics;
   uint32_t drawableWidth = 0, drawableHeight = 0;
   double drawableDeviceScale = 0;
 };
@@ -197,6 +198,7 @@ void RunMetalView(const std::shared_ptr<MetalViewState>& view) {
         if (!MetalProducerComplete(rendered, *job, state->generation)) {
           QuarantineMetalView(view, job, drawable, queue, layer, @"Native Metal completion was not proved; drawable/producer quarantined.");
         }
+        const auto measured = CaptureMetalCacheMetrics(api, presenter);
         {
           std::lock_guard<std::mutex> lock(state->mutex);
           view->flow.producer_complete(job->sequence);
@@ -233,6 +235,7 @@ void RunMetalView(const std::shared_ptr<MetalViewState>& view) {
             view->displayed = job;
             view->renderedSequence = job->sequence;
             view->renderedStamp = job->stamp;
+            view->cacheMetrics = measured;
             published = true;
             state->error.clear();
           } else {
@@ -425,6 +428,7 @@ NSDictionary* MetalViewStatusLocked(const std::shared_ptr<MetalViewState>& view,
   return @{@"ready":@(owner->ready&&view->layerReady),@"apiReady":@(owner->ready),@"closed":@(owner->closed),@"ownerFinished":@(owner->finished),
     @"registered":@(registered),@"pending":@(owner->pending!=nullptr),@"inFlight":@(owner->inFlight),
     @"hasFrame":@(hasFrame),@"renderedStamp":hasFrame?StampValue(view->renderedStamp):@{},
+    @"producerDiagnostics":hasFrame ? (MetalCacheMetricsValue(view->cacheMetrics, view->renderedStamp) ?: (id)[NSNull null]) : (id)[NSNull null],
     @"acceptedStamp":StampValue(owner->acceptedStamp),@"acceptedSnapshots":ids,@"deviceGeneration":@(owner->generation),
     @"closeAcknowledgementRequired":@YES,
     @"presentationKind":@"nativeView",@"viewBound":@(view->bound),@"layerReady":@(view->layerReady),

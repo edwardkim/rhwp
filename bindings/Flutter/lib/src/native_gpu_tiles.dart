@@ -286,6 +286,12 @@ class NativeTileGroupChannel extends MethodChannel {
         (v) => v['registered'] == false || v['unregistered'] == true,
       ),
     };
+    // Keep both sample slots, including unknown/missing diagnostics. Copying the
+    // first tile's counters would misrepresent the whole viewport as measured.
+    result.remove('producerDiagnostics');
+    result['producerDiagnosticsSamples'] = [
+      for (final value in values) value['producerDiagnostics'],
+    ];
     for (final key in [
       'ready',
       'apiReady',

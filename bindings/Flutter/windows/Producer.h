@@ -4,6 +4,7 @@
 #include "PrivateTargetPool.h"
 #include "SurfaceImportTickets.h"
 #include "NativeApi.h"
+#include "../common/gpu_cache_metrics.h"
 #include <flutter_texture_registrar.h>
 #include <d3d11_1.h>
 #include <d3d12.h>
@@ -53,7 +54,11 @@ struct Pixels {
   FlutterDesktopGpuSurfaceDescriptor descriptor{};
   std::atomic<uint64_t> opened_notifications{0};
 };
-struct Published { std::shared_ptr<Job> job; std::shared_ptr<Pixels> pixels; };
+struct Published {
+  std::shared_ptr<Job> job;
+  std::shared_ptr<Pixels> pixels;
+  rhwp::metrics::CacheMetrics cache_metrics;
+};
 using SurfaceImports = SurfaceImportTickets<FlutterDesktopGpuSurfaceDescriptor>;
 struct State : std::enable_shared_from_this<State> {
   State(uint64_t generation, std::string path, ComPtr<IDXGIAdapter1> adapter,

@@ -241,7 +241,7 @@ class NativeBridge final : public Bridge {
         callbacks.user, reinterpret_cast<const uint8_t*>(config), sizeof(config) - 1), free_fn));
     return integer(response.value, "presenter");
   }
-  uint64_t render(uint64_t presenter, uint64_t context, const Description& frame, const Target& target) override {
+  RenderResult render(uint64_t presenter, uint64_t context, const Description& frame, const Target& target) override {
     Value command(fl_value_new_map());
     set_text(command.value, "op", "render");
     set_int(command.value, "clearColor", frame.clear);
@@ -270,7 +270,11 @@ class NativeBridge final : public Bridge {
     }
     fl_value_set_string_take(command.value, "placements", pages);
     Value result(request(presenter, command.value));
-    return integer(field(result.value, "info"), "wholeFrameReadbacks");
+    auto* info = field(result.value, "info");
+    auto metrics = rhwp::metrics::capture([&](bool target, const char* key) -> std::optional<uint64_t> {
+      return integer(field(info, target ? "managedTargets" : "tileCache"), key);
+    });
+    return {integer(info, "wholeFrameReadbacks"), metrics};
   }
   void release(uint64_t presenter, uint64_t context, uint64_t generation) override {
     Value command(fl_value_new_map());
@@ -603,6 +607,20 @@ FlValue* status_value(const std::shared_ptr<Notice>& notice) {
     for (const auto id : status.accepted_snapshots) fl_value_append_take(ids, fl_value_new_int(int64_t(id)));
   }
   if (status.rendered) fl_value_set_string_take(value, "renderedStamp", stamp_value(status.rendered_stamp));
+  if (status.rendered && !status.closing && status.code.empty() && !status.cache_metrics.empty()) {
+    auto* metrics = fl_value_new_map();
+    set_int(metrics, "schemaVersion", 1);
+    set_text(metrics, "backend", "openGlGanesh");
+    set_text(metrics, "scope", rhwp::metrics::kScope);
+    fl_value_set_string_take(metrics, "stamp", stamp_value(status.rendered_stamp));
+    auto* counters = fl_value_new_map();
+    for (size_t index = 0; index < rhwp::metrics::kCounters.size(); ++index) {
+      if (status.cache_metrics.values[index])
+        set_int(counters, rhwp::metrics::kCounters[index].name, *status.cache_metrics.values[index]);
+    }
+    fl_value_set_string_take(metrics, "counters", counters);
+    fl_value_set_string_take(value, "producerDiagnostics", metrics);
+  }
   return value;
 }
 

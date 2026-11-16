@@ -55,6 +55,7 @@ class FakeBridge : public Bridge {
   std::map<uint64_t, int> releases;
   SnapshotInfo info{7, 3, 2, true, true};
   uint64_t next = 1, readbacks = 0;
+  rhwp::metrics::CacheMetrics cache_metrics;
   int renders = 0, released = 0, abandoned = 0;
   std::string render_error;
   bool cleanup_error = false;
@@ -68,14 +69,14 @@ class FakeBridge : public Bridge {
     owners.emplace(id, Owner{std::this_thread::get_id(), callbacks, identity});
     return id;
   }
-  uint64_t render(uint64_t presenter, uint64_t, const Description&, const Target&) override {
+  RenderResult render(uint64_t presenter, uint64_t, const Description&, const Target&) override {
     auto& owner = owners.at(presenter);
     CHECK(owner.thread == std::this_thread::get_id());
     CHECK(owner.callbacks.current(owner.callbacks.user, owner.identity) == 1);
     ++renders;
     if (during_render) { auto hook = std::move(during_render); hook(); }
     if (!render_error.empty()) throw Failure(render_error, "synthetic replay failure");
-    return readbacks;
+    return {readbacks, cache_metrics};
   }
   void release(uint64_t presenter, uint64_t identity, uint64_t) override {
     if (cleanup_error) throw Failure("cleanup", "synthetic cleanup failure");
@@ -187,6 +188,28 @@ void changed_inflight_frame_is_never_committed() {
   CHECK(bridge->releases[20] == 1);
   CHECK(registry.populate(state, context).texture != first.texture);
   CHECK(state->status().rendered == 3);
+  state->close(); rejected("closing", [&] { registry.populate(state, context); });
+}
+
+void cache_metrics_follow_only_the_committed_full_stamp() {
+  auto bridge = std::make_shared<FakeBridge>();
+  auto state = std::make_shared<Shared>(bridge);
+  auto context = std::make_shared<FakeContext>(std::make_shared<Device>(), 1);
+  RasterRegistry registry;
+  bridge->cache_metrics.values[0] = 2;
+  state->submit(frame());
+  registry.populate(state, context);
+  auto first = state->status();
+  CHECK(first.rendered_stamp.view == 1 && first.cache_metrics.values[0] == 2);
+  bridge->cache_metrics.values[0] = 7;
+  state->submit(frame(2, 20));
+  bridge->during_render = [&] { state->submit(frame(3, 21)); };
+  registry.populate(state, context);
+  CHECK(state->status().rendered_stamp.view == 1 && state->status().cache_metrics.values[0] == 2);
+  bridge->cache_metrics.values[0] = 9;
+  registry.populate(state, context);
+  CHECK(state->status().rendered_stamp.view == 3 && state->status().cache_metrics.values[0] == 9);
+  CHECK(first.cache_metrics.values[0] == 2); // A status receipt is an immutable measurement.
   state->close(); rejected("closing", [&] { registry.populate(state, context); });
 }
 
@@ -470,6 +493,7 @@ int main() {
     multipage_receipt_tracks_only_the_accepted_transaction();
     strict_failure_preserves_front_and_releases_on_own_populate();
     changed_inflight_frame_is_never_committed();
+    cache_metrics_follow_only_the_committed_full_stamp();
     readback_contract_failure_is_not_a_gpu_success();
     context_switch_requires_new_generation_and_abandons_without_callback();
     close_does_not_wait_or_call_foreign_thread_native_handles();
@@ -484,7 +508,7 @@ int main() {
     tile_group_snapshot_bound_is_union_not_placement_count();
     tile_group_borrowed_ids_do_not_consume_additional_lease_slots();
     unproven_driver_orphans_permanently_consume_the_process_budget();
-    std::cout << "texture state: 18 cases, " << checks << " checks passed\n";
+    std::cout << "texture state: 19 cases, " << checks << " checks passed\n";
     return 0;
   } catch (const std::exception& error) {
     std::cerr << error.what() << '\n'; return 1;
