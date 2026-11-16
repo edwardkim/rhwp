@@ -1,0 +1,62 @@
+{
+  "base": "ae9277dda0ca17be279cba89c4deea74fb75dcae",
+  "branch": "review/integration-20261116-planet6897",
+  "source_code_head": "c72c16d88efc615c592b8640320899ed31e28c0e",
+  "applied": [
+    {
+      "pr": 9078,
+      "source": "d9458af38001922d665332212b0a7687a4fe4d5a",
+      "applied": "93de9b33aa5b021e35abb2f8cd8cafd0fd8ddc4c"
+    },
+    {
+      "pr": 9078,
+      "source": "4d2332018372c7d9eb5c76128c891e4c7d2386d2",
+      "applied": "b2dfb8709c393246c7a966fd32411058681420a5"
+    },
+    {
+      "pr": 9080,
+      "source": "b8fb8b898d92c40301207e674b1cd5bc74532b70",
+      "applied": "fa634c26790b5a68f20f20564e81afbb6079ef64"
+    },
+    {
+      "pr": 9080,
+      "source": "0e8d7669971ae89bbd2607ddee17f265bebc46af",
+      "applied": "73fc88711bdb25c393b24dd7d9b2c5a43a76cdcd"
+    },
+    {
+      "pr": 9086,
+      "source": "70266b902ecc5b8f279184a4c2a1a727d9662820",
+      "applied": "4b63a0f2dfacbfb534dae57c006572ffb753ed0a"
+    },
+    {
+      "pr": 9086,
+      "source": "df9e88aaed2a1ded5b6003988924033df4d9e7e9",
+      "applied": "7f8dc8105845404986bcaec3c4a1aab9be9a629e"
+    },
+    {
+      "pr": 9098,
+      "source": "fbec9d688d2d5f5dde917c6e200904c8f7659534",
+      "applied": "709bd6962c3b46f81de15b35560e023eb2246908"
+    },
+    {
+      "pr": 9098,
+      "source": "cb888d8497151b089c029d1b963ab2952d4e7c06",
+      "applied": "c72c16d88efc615c592b8640320899ed31e28c0e"
+    }
+  ],
+  "stacked_duplicates_skipped": [
+    {
+      "pr": 9080,
+      "shared_with": 9078,
+      "commits": [
+        "d9458af38001922d665332212b0a7687a4fe4d5a",
+        "4d2332018372c7d9eb5c76128c891e4c7d2386d2"
+      ]
+    }
+  ],
+  "individual_merge_conflicts": 0,
+  "pair_merge_conflicts": 0,
+  "actual_cherry_pick_conflicts": 0,
+  "reviewer": "jangster77",
+  "verification_status": "진행 중, 최종 수용 아님"
+}
