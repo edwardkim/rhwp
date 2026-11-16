@@ -1,0 +1,13 @@
+{
+  "source": "4b72435a0765fdc1d38698ac46f0556339986c05",
+  "base": "6269cb0f1707a1c5afcae4840ac875f928c4a03d",
+  "hashes": {
+    "pkg/rhwp_bg.wasm": "806bc205fb3a23d1018007d9bdf6bec1e778c7e5a01e483c3fd8622f5ca22f82",
+    "pkg/rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+    "pkg/rhwp.d.ts": "d2d9be4be0fdebfdd0f203b797ee99247c92fd0d3dba6143e9431e9ea78e9441",
+    "rhwp-studio/public/rhwp_bg.wasm": "806bc205fb3a23d1018007d9bdf6bec1e778c7e5a01e483c3fd8622f5ca22f82",
+    "rhwp-studio/public/rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365"
+  },
+  "validationSource": "80bf4c9e1b01ca6b621a7bc5d49d7fd64a1f7ad7",
+  "note": "Fresh optimized package; final E2E-only follow-up changes no Rust/build input."
+}

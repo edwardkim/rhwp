@@ -1,0 +1,13 @@
+{
+  "source": "b57fb3d5ef8ea924e5cd37fed3798ed1b18e54e7",
+  "base": "ae9277dda0ca17be279cba89c4deea74fb75dcae",
+  "optimized": true,
+  "profile": "release",
+  "hashes": {
+    "pkg/rhwp_bg.wasm": "44eaf435692537c84b1e13d7fc34017953318961171533d6a970e07badd33ef6",
+    "pkg/rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+    "pkg/rhwp.d.ts": "d2d9be4be0fdebfdd0f203b797ee99247c92fd0d3dba6143e9431e9ea78e9441",
+    "rhwp-studio/public/rhwp_bg.wasm": "44eaf435692537c84b1e13d7fc34017953318961171533d6a970e07badd33ef6",
+    "rhwp-studio/public/rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365"
+  }
+}

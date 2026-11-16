@@ -1,0 +1,5551 @@
+{
+  "results": [
+    {
+      "name": "page-800x360",
+      "before": {
+        "viewport": {
+          "width": 800,
+          "height": 360
+        },
+        "frame": {
+          "top": -70,
+          "bottom": 430,
+          "left": 180,
+          "right": 620
+        },
+        "close": {
+          "top": -62.5,
+          "bottom": -46.5,
+          "left": 591,
+          "right": 607
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 391,
+            "bottom": 417,
+            "left": 471,
+            "right": 535
+          },
+          {
+            "text": "취소",
+            "top": 391,
+            "bottom": 417,
+            "left": 543,
+            "right": 607
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 431,
+        "top": -40,
+        "bottom": 391,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 800,
+          "height": 360
+        },
+        "frame": {
+          "top": -70,
+          "bottom": 430,
+          "left": 180,
+          "right": 620
+        },
+        "close": {
+          "top": -62.5,
+          "bottom": -46.5,
+          "left": 591,
+          "right": 607
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 391,
+            "bottom": 417,
+            "left": 471,
+            "right": 535
+          },
+          {
+            "text": "취소",
+            "top": 391,
+            "bottom": 417,
+            "left": 543,
+            "right": 607
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "page-768x320",
+      "before": {
+        "viewport": {
+          "width": 768,
+          "height": 320
+        },
+        "frame": {
+          "top": -90,
+          "bottom": 410,
+          "left": 164,
+          "right": 604
+        },
+        "close": {
+          "top": -82.5,
+          "bottom": -66.5,
+          "left": 575,
+          "right": 591
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 371,
+            "bottom": 397,
+            "left": 455,
+            "right": 519
+          },
+          {
+            "text": "취소",
+            "top": 371,
+            "bottom": 397,
+            "left": 527,
+            "right": 591
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 431,
+        "top": -60,
+        "bottom": 371,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 768,
+          "height": 320
+        },
+        "frame": {
+          "top": -90,
+          "bottom": 410,
+          "left": 164,
+          "right": 604
+        },
+        "close": {
+          "top": -82.5,
+          "bottom": -66.5,
+          "left": 575,
+          "right": 591
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 371,
+            "bottom": 397,
+            "left": 455,
+            "right": 519
+          },
+          {
+            "text": "취소",
+            "top": 371,
+            "bottom": 397,
+            "left": 527,
+            "right": 591
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "page-767x320",
+      "before": {
+        "viewport": {
+          "width": 767,
+          "height": 320
+        },
+        "frame": {
+          "top": 32,
+          "bottom": 320,
+          "left": 0,
+          "right": 767
+        },
+        "close": {
+          "top": 45,
+          "bottom": 89,
+          "left": 706,
+          "right": 750
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 263,
+            "bottom": 307,
+            "left": 618,
+            "right": 682
+          },
+          {
+            "text": "취소",
+            "top": 263,
+            "bottom": 307,
+            "left": 690,
+            "right": 754
+          }
+        ],
+        "wrapScroll": 379
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 541,
+        "top": -278,
+        "bottom": 263,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 767,
+          "height": 320
+        },
+        "frame": {
+          "top": 32,
+          "bottom": 320,
+          "left": 0,
+          "right": 767
+        },
+        "close": {
+          "top": 45,
+          "bottom": 89,
+          "left": 706,
+          "right": 750
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 263,
+            "bottom": 307,
+            "left": 618,
+            "right": 682
+          },
+          {
+            "text": "취소",
+            "top": 263,
+            "bottom": 307,
+            "left": 690,
+            "right": 754
+          }
+        ],
+        "wrapScroll": 379
+      }
+    },
+    {
+      "name": "page-320x240",
+      "before": {
+        "viewport": {
+          "width": 320,
+          "height": 240
+        },
+        "frame": {
+          "top": 24,
+          "bottom": 240,
+          "left": 0,
+          "right": 320
+        },
+        "close": {
+          "top": 37,
+          "bottom": 81,
+          "left": 259,
+          "right": 303
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 183,
+            "bottom": 227,
+            "left": 171,
+            "right": 235
+          },
+          {
+            "text": "취소",
+            "top": 183,
+            "bottom": 227,
+            "left": 243,
+            "right": 307
+          }
+        ],
+        "wrapScroll": 528
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 618,
+        "top": -435,
+        "bottom": 183,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 320,
+          "height": 240
+        },
+        "frame": {
+          "top": 24,
+          "bottom": 240,
+          "left": 0,
+          "right": 320
+        },
+        "close": {
+          "top": 37,
+          "bottom": 81,
+          "left": 259,
+          "right": 303
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 183,
+            "bottom": 227,
+            "left": 171,
+            "right": 235
+          },
+          {
+            "text": "취소",
+            "top": 183,
+            "bottom": 227,
+            "left": 243,
+            "right": 307
+          }
+        ],
+        "wrapScroll": 528
+      }
+    },
+    {
+      "name": "page-360x640",
+      "before": {
+        "viewport": {
+          "width": 360,
+          "height": 640
+        },
+        "frame": {
+          "top": 64,
+          "bottom": 640,
+          "left": 0,
+          "right": 360
+        },
+        "close": {
+          "top": 77,
+          "bottom": 121,
+          "left": 299,
+          "right": 343
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 583,
+            "bottom": 627,
+            "left": 211,
+            "right": 275
+          },
+          {
+            "text": "취소",
+            "top": 583,
+            "bottom": 627,
+            "left": 283,
+            "right": 347
+          }
+        ],
+        "wrapScroll": 168
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 618,
+        "top": -35,
+        "bottom": 583,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 360,
+          "height": 640
+        },
+        "frame": {
+          "top": 64,
+          "bottom": 640,
+          "left": 0,
+          "right": 360
+        },
+        "close": {
+          "top": 77,
+          "bottom": 121,
+          "left": 299,
+          "right": 343
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 583,
+            "bottom": 627,
+            "left": 211,
+            "right": 275
+          },
+          {
+            "text": "취소",
+            "top": 583,
+            "bottom": 627,
+            "left": 283,
+            "right": 347
+          }
+        ],
+        "wrapScroll": 168
+      }
+    },
+    {
+      "name": "page-1280x900",
+      "before": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "frame": {
+          "top": 200,
+          "bottom": 700,
+          "left": 420,
+          "right": 860
+        },
+        "close": {
+          "top": 207.5,
+          "bottom": 223.5,
+          "left": 831,
+          "right": 847
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 661,
+            "bottom": 687,
+            "left": 711,
+            "right": 775
+          },
+          {
+            "text": "취소",
+            "top": 661,
+            "bottom": 687,
+            "left": 783,
+            "right": 847
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 431,
+        "top": 230,
+        "bottom": 661,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "frame": {
+          "top": 200,
+          "bottom": 700,
+          "left": 420,
+          "right": 860
+        },
+        "close": {
+          "top": 207.5,
+          "bottom": 223.5,
+          "left": 831,
+          "right": 847
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 661,
+            "bottom": 687,
+            "left": 711,
+            "right": 775
+          },
+          {
+            "text": "취소",
+            "top": 661,
+            "bottom": 687,
+            "left": 783,
+            "right": 847
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "options-800x360",
+      "before": {
+        "viewport": {
+          "width": 800,
+          "height": 360
+        },
+        "frame": {
+          "top": -62.09375,
+          "bottom": 422.09375,
+          "left": 160,
+          "right": 640
+        },
+        "close": {
+          "top": -54.59375,
+          "bottom": -38.59375,
+          "left": 611,
+          "right": 627
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 383.09375,
+            "bottom": 409.09375,
+            "left": 491,
+            "right": 555
+          },
+          {
+            "text": "취소",
+            "top": 383.09375,
+            "bottom": 409.09375,
+            "left": 563,
+            "right": 627
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 415,
+        "top": -32.09375,
+        "bottom": 383.09375,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 800,
+          "height": 360
+        },
+        "frame": {
+          "top": -62.09375,
+          "bottom": 422.09375,
+          "left": 160,
+          "right": 640
+        },
+        "close": {
+          "top": -54.59375,
+          "bottom": -38.59375,
+          "left": 611,
+          "right": 627
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 383.09375,
+            "bottom": 409.09375,
+            "left": 491,
+            "right": 555
+          },
+          {
+            "text": "취소",
+            "top": 383.09375,
+            "bottom": 409.09375,
+            "left": 563,
+            "right": 627
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "options-768x320",
+      "before": {
+        "viewport": {
+          "width": 768,
+          "height": 320
+        },
+        "frame": {
+          "top": -82.09375,
+          "bottom": 402.09375,
+          "left": 144,
+          "right": 624
+        },
+        "close": {
+          "top": -74.59375,
+          "bottom": -58.59375,
+          "left": 595,
+          "right": 611
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 363.09375,
+            "bottom": 389.09375,
+            "left": 475,
+            "right": 539
+          },
+          {
+            "text": "취소",
+            "top": 363.09375,
+            "bottom": 389.09375,
+            "left": 547,
+            "right": 611
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 415,
+        "top": -52.09375,
+        "bottom": 363.09375,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 768,
+          "height": 320
+        },
+        "frame": {
+          "top": -82.09375,
+          "bottom": 402.09375,
+          "left": 144,
+          "right": 624
+        },
+        "close": {
+          "top": -74.59375,
+          "bottom": -58.59375,
+          "left": 595,
+          "right": 611
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 363.09375,
+            "bottom": 389.09375,
+            "left": 475,
+            "right": 539
+          },
+          {
+            "text": "취소",
+            "top": 363.09375,
+            "bottom": 389.09375,
+            "left": 547,
+            "right": 611
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "options-767x320",
+      "before": {
+        "viewport": {
+          "width": 767,
+          "height": 320
+        },
+        "frame": {
+          "top": 32,
+          "bottom": 320,
+          "left": 0,
+          "right": 767
+        },
+        "close": {
+          "top": 45,
+          "bottom": 89,
+          "left": 706,
+          "right": 750
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 263.1875,
+            "bottom": 307.1875,
+            "left": 618,
+            "right": 682
+          },
+          {
+            "text": "취소",
+            "top": 263.1875,
+            "bottom": 307.1875,
+            "left": 690,
+            "right": 754
+          }
+        ],
+        "wrapScroll": 315
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 477,
+        "top": -214,
+        "bottom": 263.1875,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 767,
+          "height": 320
+        },
+        "frame": {
+          "top": 32,
+          "bottom": 320,
+          "left": 0,
+          "right": 767
+        },
+        "close": {
+          "top": 45,
+          "bottom": 89,
+          "left": 706,
+          "right": 750
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 263.1875,
+            "bottom": 307.1875,
+            "left": 618,
+            "right": 682
+          },
+          {
+            "text": "취소",
+            "top": 263.1875,
+            "bottom": 307.1875,
+            "left": 690,
+            "right": 754
+          }
+        ],
+        "wrapScroll": 315
+      }
+    },
+    {
+      "name": "options-320x240",
+      "before": {
+        "viewport": {
+          "width": 320,
+          "height": 240
+        },
+        "frame": {
+          "top": 24,
+          "bottom": 240,
+          "left": 0,
+          "right": 320
+        },
+        "close": {
+          "top": 37,
+          "bottom": 81,
+          "left": 259,
+          "right": 303
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 182.578125,
+            "bottom": 226.578125,
+            "left": 171,
+            "right": 235
+          },
+          {
+            "text": "취소",
+            "top": 182.578125,
+            "bottom": 226.578125,
+            "left": 243,
+            "right": 307
+          }
+        ],
+        "wrapScroll": 490
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 580,
+        "top": -397,
+        "bottom": 182.578125,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 320,
+          "height": 240
+        },
+        "frame": {
+          "top": 24,
+          "bottom": 240,
+          "left": 0,
+          "right": 320
+        },
+        "close": {
+          "top": 37,
+          "bottom": 81,
+          "left": 259,
+          "right": 303
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 182.578125,
+            "bottom": 226.578125,
+            "left": 171,
+            "right": 235
+          },
+          {
+            "text": "취소",
+            "top": 182.578125,
+            "bottom": 226.578125,
+            "left": 243,
+            "right": 307
+          }
+        ],
+        "wrapScroll": 490
+      }
+    },
+    {
+      "name": "options-360x640",
+      "before": {
+        "viewport": {
+          "width": 360,
+          "height": 640
+        },
+        "frame": {
+          "top": 64,
+          "bottom": 640,
+          "left": 0,
+          "right": 360
+        },
+        "close": {
+          "top": 77,
+          "bottom": 121,
+          "left": 299,
+          "right": 343
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 582.78125,
+            "bottom": 626.78125,
+            "left": 211,
+            "right": 275
+          },
+          {
+            "text": "취소",
+            "top": 582.78125,
+            "bottom": 626.78125,
+            "left": 283,
+            "right": 347
+          }
+        ],
+        "wrapScroll": 113
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 563,
+        "top": 20,
+        "bottom": 582.78125,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 360,
+          "height": 640
+        },
+        "frame": {
+          "top": 64,
+          "bottom": 640,
+          "left": 0,
+          "right": 360
+        },
+        "close": {
+          "top": 77,
+          "bottom": 121,
+          "left": 299,
+          "right": 343
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 582.78125,
+            "bottom": 626.78125,
+            "left": 211,
+            "right": 275
+          },
+          {
+            "text": "취소",
+            "top": 582.78125,
+            "bottom": 626.78125,
+            "left": 283,
+            "right": 347
+          }
+        ],
+        "wrapScroll": 113
+      }
+    },
+    {
+      "name": "options-1280x900",
+      "before": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "frame": {
+          "top": 207.90625,
+          "bottom": 692.09375,
+          "left": 400,
+          "right": 880
+        },
+        "close": {
+          "top": 215.40625,
+          "bottom": 231.40625,
+          "left": 851,
+          "right": 867
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 653.09375,
+            "bottom": 679.09375,
+            "left": 731,
+            "right": 795
+          },
+          {
+            "text": "취소",
+            "top": 653.09375,
+            "bottom": 679.09375,
+            "left": 803,
+            "right": 867
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 415,
+        "top": 237.90625,
+        "bottom": 653.09375,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "frame": {
+          "top": 207.90625,
+          "bottom": 692.09375,
+          "left": 400,
+          "right": 880
+        },
+        "close": {
+          "top": 215.40625,
+          "bottom": 231.40625,
+          "left": 851,
+          "right": 867
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 653.09375,
+            "bottom": 679.09375,
+            "left": 731,
+            "right": 795
+          },
+          {
+            "text": "취소",
+            "top": 653.09375,
+            "bottom": 679.09375,
+            "left": 803,
+            "right": 867
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "about-800x360",
+      "before": {
+        "viewport": {
+          "width": 800,
+          "height": 360
+        },
+        "frame": {
+          "top": 12,
+          "bottom": 348,
+          "left": 170,
+          "right": 630
+        },
+        "close": {
+          "top": 19.5,
+          "bottom": 35.5,
+          "left": 601,
+          "right": 617
+        },
+        "actions": [
+          {
+            "text": "닫기",
+            "top": 309,
+            "bottom": 335,
+            "left": 553,
+            "right": 617
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 425,
+        "moved": 425,
+        "remaining": 0,
+        "clientHeight": 258,
+        "top": 42,
+        "bottom": 300,
+        "inFrame": true,
+        "overflow": "auto"
+      },
+      "after": {
+        "viewport": {
+          "width": 800,
+          "height": 360
+        },
+        "frame": {
+          "top": 12,
+          "bottom": 348,
+          "left": 170,
+          "right": 630
+        },
+        "close": {
+          "top": 19.5,
+          "bottom": 35.5,
+          "left": 601,
+          "right": 617
+        },
+        "actions": [
+          {
+            "text": "닫기",
+            "top": 309,
+            "bottom": 335,
+            "left": 553,
+            "right": 617
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "about-768x320",
+      "before": {
+        "viewport": {
+          "width": 768,
+          "height": 320
+        },
+        "frame": {
+          "top": 12,
+          "bottom": 308,
+          "left": 154,
+          "right": 614
+        },
+        "close": {
+          "top": 19.5,
+          "bottom": 35.5,
+          "left": 585,
+          "right": 601
+        },
+        "actions": [
+          {
+            "text": "닫기",
+            "top": 269,
+            "bottom": 295,
+            "left": 537,
+            "right": 601
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 465,
+        "moved": 465,
+        "remaining": 0,
+        "clientHeight": 218,
+        "top": 42,
+        "bottom": 260,
+        "inFrame": true,
+        "overflow": "auto"
+      },
+      "after": {
+        "viewport": {
+          "width": 768,
+          "height": 320
+        },
+        "frame": {
+          "top": 12,
+          "bottom": 308,
+          "left": 154,
+          "right": 614
+        },
+        "close": {
+          "top": 19.5,
+          "bottom": 35.5,
+          "left": 585,
+          "right": 601
+        },
+        "actions": [
+          {
+            "text": "닫기",
+            "top": 269,
+            "bottom": 295,
+            "left": 537,
+            "right": 601
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "about-767x320",
+      "before": {
+        "viewport": {
+          "width": 767,
+          "height": 320
+        },
+        "frame": {
+          "top": 32,
+          "bottom": 320,
+          "left": 0,
+          "right": 767
+        },
+        "close": {
+          "top": 45,
+          "bottom": 89,
+          "left": 706,
+          "right": 750
+        },
+        "actions": [
+          {
+            "text": "닫기",
+            "top": 263,
+            "bottom": 307,
+            "left": 690,
+            "right": 754
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 494,
+        "moved": 494,
+        "remaining": 0,
+        "clientHeight": 153,
+        "top": 101,
+        "bottom": 254,
+        "inFrame": true,
+        "overflow": "auto"
+      },
+      "after": {
+        "viewport": {
+          "width": 767,
+          "height": 320
+        },
+        "frame": {
+          "top": 32,
+          "bottom": 320,
+          "left": 0,
+          "right": 767
+        },
+        "close": {
+          "top": 45,
+          "bottom": 89,
+          "left": 706,
+          "right": 750
+        },
+        "actions": [
+          {
+            "text": "닫기",
+            "top": 263,
+            "bottom": 307,
+            "left": 690,
+            "right": 754
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "about-320x240",
+      "before": {
+        "viewport": {
+          "width": 320,
+          "height": 240
+        },
+        "frame": {
+          "top": 24,
+          "bottom": 240,
+          "left": 0,
+          "right": 320
+        },
+        "close": {
+          "top": 37,
+          "bottom": 81,
+          "left": 259,
+          "right": 303
+        },
+        "actions": [
+          {
+            "text": "닫기",
+            "top": 183,
+            "bottom": 227,
+            "left": 243,
+            "right": 307
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 644,
+        "moved": 644,
+        "remaining": 0,
+        "clientHeight": 81,
+        "top": 93,
+        "bottom": 174,
+        "inFrame": true,
+        "overflow": "auto"
+      },
+      "after": {
+        "viewport": {
+          "width": 320,
+          "height": 240
+        },
+        "frame": {
+          "top": 24,
+          "bottom": 240,
+          "left": 0,
+          "right": 320
+        },
+        "close": {
+          "top": 37,
+          "bottom": 81,
+          "left": 259,
+          "right": 303
+        },
+        "actions": [
+          {
+            "text": "닫기",
+            "top": 183,
+            "bottom": 227,
+            "left": 243,
+            "right": 307
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "about-360x640",
+      "before": {
+        "viewport": {
+          "width": 360,
+          "height": 640
+        },
+        "frame": {
+          "top": 64,
+          "bottom": 640,
+          "left": 0,
+          "right": 360
+        },
+        "close": {
+          "top": 77,
+          "bottom": 121,
+          "left": 299,
+          "right": 343
+        },
+        "actions": [
+          {
+            "text": "닫기",
+            "top": 583,
+            "bottom": 627,
+            "left": 283,
+            "right": 347
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 284,
+        "moved": 284,
+        "remaining": 0,
+        "clientHeight": 441,
+        "top": 133,
+        "bottom": 574,
+        "inFrame": true,
+        "overflow": "auto"
+      },
+      "after": {
+        "viewport": {
+          "width": 360,
+          "height": 640
+        },
+        "frame": {
+          "top": 64,
+          "bottom": 640,
+          "left": 0,
+          "right": 360
+        },
+        "close": {
+          "top": 77,
+          "bottom": 121,
+          "left": 299,
+          "right": 343
+        },
+        "actions": [
+          {
+            "text": "닫기",
+            "top": 583,
+            "bottom": 627,
+            "left": 283,
+            "right": 347
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "about-1280x900",
+      "before": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "frame": {
+          "top": 69.3125,
+          "bottom": 830.6875,
+          "left": 410,
+          "right": 870
+        },
+        "close": {
+          "top": 76.8125,
+          "bottom": 92.8125,
+          "left": 841,
+          "right": 857
+        },
+        "actions": [
+          {
+            "text": "닫기",
+            "top": 791.6875,
+            "bottom": 817.6875,
+            "left": 793,
+            "right": 857
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 683,
+        "top": 99.3125,
+        "bottom": 782.6875,
+        "inFrame": true,
+        "overflow": "auto"
+      },
+      "after": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "frame": {
+          "top": 69.3125,
+          "bottom": 830.6875,
+          "left": 410,
+          "right": 870
+        },
+        "close": {
+          "top": 76.8125,
+          "bottom": 92.8125,
+          "left": 841,
+          "right": 857
+        },
+        "actions": [
+          {
+            "text": "닫기",
+            "top": 791.6875,
+            "bottom": 817.6875,
+            "left": 793,
+            "right": 857
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "char-800x360",
+      "before": {
+        "viewport": {
+          "width": 800,
+          "height": 360
+        },
+        "frame": {
+          "top": -39.5,
+          "bottom": 399.5,
+          "left": 140,
+          "right": 660
+        },
+        "close": {
+          "top": -32,
+          "bottom": -16,
+          "left": 631,
+          "right": 647
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": -1.5,
+            "bottom": 24.5,
+            "left": 577,
+            "right": 649
+          },
+          {
+            "text": "취소",
+            "top": 28.5,
+            "bottom": 54.5,
+            "left": 577,
+            "right": 649
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 380,
+        "top": 18.5,
+        "bottom": 398.5,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 800,
+          "height": 360
+        },
+        "frame": {
+          "top": -39.5,
+          "bottom": 399.5,
+          "left": 140,
+          "right": 660
+        },
+        "close": {
+          "top": -32,
+          "bottom": -16,
+          "left": 631,
+          "right": 647
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": -1.5,
+            "bottom": 24.5,
+            "left": 577,
+            "right": 649
+          },
+          {
+            "text": "취소",
+            "top": 28.5,
+            "bottom": 54.5,
+            "left": 577,
+            "right": 649
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "char-768x320",
+      "before": {
+        "viewport": {
+          "width": 768,
+          "height": 320
+        },
+        "frame": {
+          "top": -59.5,
+          "bottom": 379.5,
+          "left": 124,
+          "right": 644
+        },
+        "close": {
+          "top": -52,
+          "bottom": -36,
+          "left": 615,
+          "right": 631
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": -21.5,
+            "bottom": 4.5,
+            "left": 561,
+            "right": 633
+          },
+          {
+            "text": "취소",
+            "top": 8.5,
+            "bottom": 34.5,
+            "left": 561,
+            "right": 633
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 380,
+        "top": -1.5,
+        "bottom": 378.5,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 768,
+          "height": 320
+        },
+        "frame": {
+          "top": -59.5,
+          "bottom": 379.5,
+          "left": 124,
+          "right": 644
+        },
+        "close": {
+          "top": -52,
+          "bottom": -36,
+          "left": 615,
+          "right": 631
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": -21.5,
+            "bottom": 4.5,
+            "left": 561,
+            "right": 633
+          },
+          {
+            "text": "취소",
+            "top": 8.5,
+            "bottom": 34.5,
+            "left": 561,
+            "right": 633
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "char-767x320",
+      "before": {
+        "viewport": {
+          "width": 767,
+          "height": 320
+        },
+        "frame": {
+          "top": 32,
+          "bottom": 320,
+          "left": 0,
+          "right": 767
+        },
+        "close": {
+          "top": 45,
+          "bottom": 89,
+          "left": 706,
+          "right": 750
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": 109,
+            "bottom": 153,
+            "left": 684,
+            "right": 756
+          },
+          {
+            "text": "취소",
+            "top": 157,
+            "bottom": 201,
+            "left": 684,
+            "right": 756
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 394,
+        "top": 129,
+        "bottom": 522.984375,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 767,
+          "height": 320
+        },
+        "frame": {
+          "top": 32,
+          "bottom": 320,
+          "left": 0,
+          "right": 767
+        },
+        "close": {
+          "top": 45,
+          "bottom": 89,
+          "left": 706,
+          "right": 750
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": 109,
+            "bottom": 153,
+            "left": 684,
+            "right": 756
+          },
+          {
+            "text": "취소",
+            "top": 157,
+            "bottom": 201,
+            "left": 684,
+            "right": 756
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "char-320x240",
+      "before": {
+        "viewport": {
+          "width": 320,
+          "height": 240
+        },
+        "frame": {
+          "top": 24,
+          "bottom": 240,
+          "left": 0,
+          "right": 320
+        },
+        "close": {
+          "top": 37,
+          "bottom": 81,
+          "left": 259,
+          "right": 303
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": 101,
+            "bottom": 145,
+            "left": 237,
+            "right": 309
+          },
+          {
+            "text": "취소",
+            "top": 149,
+            "bottom": 193,
+            "left": 237,
+            "right": 309
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 409,
+        "top": 121,
+        "bottom": 529.984375,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 320,
+          "height": 240
+        },
+        "frame": {
+          "top": 24,
+          "bottom": 240,
+          "left": 0,
+          "right": 320
+        },
+        "close": {
+          "top": 37,
+          "bottom": 81,
+          "left": 259,
+          "right": 303
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": 101,
+            "bottom": 145,
+            "left": 237,
+            "right": 309
+          },
+          {
+            "text": "취소",
+            "top": 149,
+            "bottom": 193,
+            "left": 237,
+            "right": 309
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "char-360x640",
+      "before": {
+        "viewport": {
+          "width": 360,
+          "height": 640
+        },
+        "frame": {
+          "top": 133.015625,
+          "bottom": 640,
+          "left": 0,
+          "right": 360
+        },
+        "close": {
+          "top": 146.015625,
+          "bottom": 190.015625,
+          "left": 299,
+          "right": 343
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": 210.015625,
+            "bottom": 254.015625,
+            "left": 277,
+            "right": 349
+          },
+          {
+            "text": "취소",
+            "top": 258.015625,
+            "bottom": 302.015625,
+            "left": 277,
+            "right": 349
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 409,
+        "top": 230.015625,
+        "bottom": 639,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 360,
+          "height": 640
+        },
+        "frame": {
+          "top": 133.015625,
+          "bottom": 640,
+          "left": 0,
+          "right": 360
+        },
+        "close": {
+          "top": 146.015625,
+          "bottom": 190.015625,
+          "left": 299,
+          "right": 343
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": 210.015625,
+            "bottom": 254.015625,
+            "left": 277,
+            "right": 349
+          },
+          {
+            "text": "취소",
+            "top": 258.015625,
+            "bottom": 302.015625,
+            "left": 277,
+            "right": 349
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "char-1280x900",
+      "before": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "frame": {
+          "top": 230.5,
+          "bottom": 669.5,
+          "left": 380,
+          "right": 900
+        },
+        "close": {
+          "top": 238,
+          "bottom": 254,
+          "left": 871,
+          "right": 887
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": 268.5,
+            "bottom": 294.5,
+            "left": 817,
+            "right": 889
+          },
+          {
+            "text": "취소",
+            "top": 298.5,
+            "bottom": 324.5,
+            "left": 817,
+            "right": 889
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 380,
+        "top": 288.5,
+        "bottom": 668.5,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "frame": {
+          "top": 230.5,
+          "bottom": 669.5,
+          "left": 380,
+          "right": 900
+        },
+        "close": {
+          "top": 238,
+          "bottom": 254,
+          "left": 871,
+          "right": 887
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": 268.5,
+            "bottom": 294.5,
+            "left": 817,
+            "right": 889
+          },
+          {
+            "text": "취소",
+            "top": 298.5,
+            "bottom": 324.5,
+            "left": 817,
+            "right": 889
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "para-800x360",
+      "before": {
+        "viewport": {
+          "width": 800,
+          "height": 360
+        },
+        "frame": {
+          "top": -38.75,
+          "bottom": 398.75,
+          "left": 160,
+          "right": 640
+        },
+        "close": {
+          "top": -31.25,
+          "bottom": -15.25,
+          "left": 611,
+          "right": 627
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": -0.75,
+            "bottom": 25.25,
+            "left": 557,
+            "right": 629
+          },
+          {
+            "text": "취소",
+            "top": 29.25,
+            "bottom": 55.25,
+            "left": 557,
+            "right": 629
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 379,
+        "top": 19.25,
+        "bottom": 397.75,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 800,
+          "height": 360
+        },
+        "frame": {
+          "top": -38.75,
+          "bottom": 398.75,
+          "left": 160,
+          "right": 640
+        },
+        "close": {
+          "top": -31.25,
+          "bottom": -15.25,
+          "left": 611,
+          "right": 627
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": -0.75,
+            "bottom": 25.25,
+            "left": 557,
+            "right": 629
+          },
+          {
+            "text": "취소",
+            "top": 29.25,
+            "bottom": 55.25,
+            "left": 557,
+            "right": 629
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "para-768x320",
+      "before": {
+        "viewport": {
+          "width": 768,
+          "height": 320
+        },
+        "frame": {
+          "top": -58.75,
+          "bottom": 378.75,
+          "left": 144,
+          "right": 624
+        },
+        "close": {
+          "top": -51.25,
+          "bottom": -35.25,
+          "left": 595,
+          "right": 611
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": -20.75,
+            "bottom": 5.25,
+            "left": 541,
+            "right": 613
+          },
+          {
+            "text": "취소",
+            "top": 9.25,
+            "bottom": 35.25,
+            "left": 541,
+            "right": 613
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 379,
+        "top": -0.75,
+        "bottom": 377.75,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 768,
+          "height": 320
+        },
+        "frame": {
+          "top": -58.75,
+          "bottom": 378.75,
+          "left": 144,
+          "right": 624
+        },
+        "close": {
+          "top": -51.25,
+          "bottom": -35.25,
+          "left": 595,
+          "right": 611
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": -20.75,
+            "bottom": 5.25,
+            "left": 541,
+            "right": 613
+          },
+          {
+            "text": "취소",
+            "top": 9.25,
+            "bottom": 35.25,
+            "left": 541,
+            "right": 613
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "para-767x320",
+      "before": {
+        "viewport": {
+          "width": 767,
+          "height": 320
+        },
+        "frame": {
+          "top": 32,
+          "bottom": 320,
+          "left": 0,
+          "right": 767
+        },
+        "close": {
+          "top": 45,
+          "bottom": 89,
+          "left": 706,
+          "right": 750
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": 109,
+            "bottom": 153,
+            "left": 684,
+            "right": 756
+          },
+          {
+            "text": "취소",
+            "top": 157,
+            "bottom": 201,
+            "left": 684,
+            "right": 756
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 427,
+        "top": 129,
+        "bottom": 556,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 767,
+          "height": 320
+        },
+        "frame": {
+          "top": 32,
+          "bottom": 320,
+          "left": 0,
+          "right": 767
+        },
+        "close": {
+          "top": 45,
+          "bottom": 89,
+          "left": 706,
+          "right": 750
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": 109,
+            "bottom": 153,
+            "left": 684,
+            "right": 756
+          },
+          {
+            "text": "취소",
+            "top": 157,
+            "bottom": 201,
+            "left": 684,
+            "right": 756
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "para-320x240",
+      "before": {
+        "viewport": {
+          "width": 320,
+          "height": 240
+        },
+        "frame": {
+          "top": 24,
+          "bottom": 240,
+          "left": 0,
+          "right": 320
+        },
+        "close": {
+          "top": 37,
+          "bottom": 81,
+          "left": 259,
+          "right": 303
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": 101,
+            "bottom": 145,
+            "left": 237,
+            "right": 309
+          },
+          {
+            "text": "취소",
+            "top": 149,
+            "bottom": 193,
+            "left": 237,
+            "right": 309
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 523,
+        "top": 152,
+        "bottom": 675,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 320,
+          "height": 240
+        },
+        "frame": {
+          "top": 24,
+          "bottom": 240,
+          "left": 0,
+          "right": 320
+        },
+        "close": {
+          "top": 37,
+          "bottom": 81,
+          "left": 259,
+          "right": 303
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": 101,
+            "bottom": 145,
+            "left": 237,
+            "right": 309
+          },
+          {
+            "text": "취소",
+            "top": 149,
+            "bottom": 193,
+            "left": 237,
+            "right": 309
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "para-360x640",
+      "before": {
+        "viewport": {
+          "width": 360,
+          "height": 640
+        },
+        "frame": {
+          "top": 64,
+          "bottom": 640,
+          "left": 0,
+          "right": 360
+        },
+        "close": {
+          "top": 77,
+          "bottom": 121,
+          "left": 299,
+          "right": 343
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": 141,
+            "bottom": 185,
+            "left": 277,
+            "right": 349
+          },
+          {
+            "text": "취소",
+            "top": 189,
+            "bottom": 233,
+            "left": 277,
+            "right": 349
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 523,
+        "top": 177,
+        "bottom": 700,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 360,
+          "height": 640
+        },
+        "frame": {
+          "top": 64,
+          "bottom": 640,
+          "left": 0,
+          "right": 360
+        },
+        "close": {
+          "top": 77,
+          "bottom": 121,
+          "left": 299,
+          "right": 343
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": 141,
+            "bottom": 185,
+            "left": 277,
+            "right": 349
+          },
+          {
+            "text": "취소",
+            "top": 189,
+            "bottom": 233,
+            "left": 277,
+            "right": 349
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "para-1280x900",
+      "before": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "frame": {
+          "top": 231.25,
+          "bottom": 668.75,
+          "left": 400,
+          "right": 880
+        },
+        "close": {
+          "top": 238.75,
+          "bottom": 254.75,
+          "left": 851,
+          "right": 867
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": 269.25,
+            "bottom": 295.25,
+            "left": 797,
+            "right": 869
+          },
+          {
+            "text": "취소",
+            "top": 299.25,
+            "bottom": 325.25,
+            "left": 797,
+            "right": 869
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 379,
+        "top": 289.25,
+        "bottom": 667.75,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "frame": {
+          "top": 231.25,
+          "bottom": 668.75,
+          "left": 400,
+          "right": 880
+        },
+        "close": {
+          "top": 238.75,
+          "bottom": 254.75,
+          "left": 851,
+          "right": 867
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": 269.25,
+            "bottom": 295.25,
+            "left": 797,
+            "right": 869
+          },
+          {
+            "text": "취소",
+            "top": 299.25,
+            "bottom": 325.25,
+            "left": 797,
+            "right": 869
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "fonts-800x360",
+      "before": {
+        "viewport": {
+          "width": 800,
+          "height": 360
+        },
+        "frame": {
+          "top": -14.5,
+          "bottom": 374.5,
+          "left": 140,
+          "right": 660
+        },
+        "close": {
+          "top": -7,
+          "bottom": 9,
+          "left": 631,
+          "right": 647
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 335.5,
+            "bottom": 361.5,
+            "left": 511,
+            "right": 575
+          },
+          {
+            "text": "취소",
+            "top": 335.5,
+            "bottom": 361.5,
+            "left": 583,
+            "right": 647
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 320,
+        "top": 15.5,
+        "bottom": 335.5,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 800,
+          "height": 360
+        },
+        "frame": {
+          "top": -14.5,
+          "bottom": 374.5,
+          "left": 140,
+          "right": 660
+        },
+        "close": {
+          "top": -7,
+          "bottom": 9,
+          "left": 631,
+          "right": 647
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 335.5,
+            "bottom": 361.5,
+            "left": 511,
+            "right": 575
+          },
+          {
+            "text": "취소",
+            "top": 335.5,
+            "bottom": 361.5,
+            "left": 583,
+            "right": 647
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "fonts-768x320",
+      "before": {
+        "viewport": {
+          "width": 768,
+          "height": 320
+        },
+        "frame": {
+          "top": -34.5,
+          "bottom": 354.5,
+          "left": 124,
+          "right": 644
+        },
+        "close": {
+          "top": -27,
+          "bottom": -11,
+          "left": 615,
+          "right": 631
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 315.5,
+            "bottom": 341.5,
+            "left": 495,
+            "right": 559
+          },
+          {
+            "text": "취소",
+            "top": 315.5,
+            "bottom": 341.5,
+            "left": 567,
+            "right": 631
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 320,
+        "top": -4.5,
+        "bottom": 315.5,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 768,
+          "height": 320
+        },
+        "frame": {
+          "top": -34.5,
+          "bottom": 354.5,
+          "left": 124,
+          "right": 644
+        },
+        "close": {
+          "top": -27,
+          "bottom": -11,
+          "left": 615,
+          "right": 631
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 315.5,
+            "bottom": 341.5,
+            "left": 495,
+            "right": 559
+          },
+          {
+            "text": "취소",
+            "top": 315.5,
+            "bottom": 341.5,
+            "left": 567,
+            "right": 631
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "fonts-767x320",
+      "before": {
+        "viewport": {
+          "width": 767,
+          "height": 320
+        },
+        "frame": {
+          "top": 32,
+          "bottom": 320,
+          "left": 0,
+          "right": 767
+        },
+        "close": {
+          "top": 45,
+          "bottom": 89,
+          "left": 706,
+          "right": 750
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 263,
+            "bottom": 307,
+            "left": 618,
+            "right": 682
+          },
+          {
+            "text": "취소",
+            "top": 263,
+            "bottom": 307,
+            "left": 690,
+            "right": 754
+          }
+        ],
+        "wrapScroll": 182
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 344,
+        "top": -81,
+        "bottom": 263,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 767,
+          "height": 320
+        },
+        "frame": {
+          "top": 32,
+          "bottom": 320,
+          "left": 0,
+          "right": 767
+        },
+        "close": {
+          "top": 45,
+          "bottom": 89,
+          "left": 706,
+          "right": 750
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 263,
+            "bottom": 307,
+            "left": 618,
+            "right": 682
+          },
+          {
+            "text": "취소",
+            "top": 263,
+            "bottom": 307,
+            "left": 690,
+            "right": 754
+          }
+        ],
+        "wrapScroll": 182
+      }
+    },
+    {
+      "name": "fonts-320x240",
+      "before": {
+        "viewport": {
+          "width": 320,
+          "height": 240
+        },
+        "frame": {
+          "top": 24,
+          "bottom": 240,
+          "left": 0,
+          "right": 320
+        },
+        "close": {
+          "top": 37,
+          "bottom": 81,
+          "left": 259,
+          "right": 303
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 183,
+            "bottom": 227,
+            "left": 171,
+            "right": 235
+          },
+          {
+            "text": "취소",
+            "top": 183,
+            "bottom": 227,
+            "left": 243,
+            "right": 307
+          }
+        ],
+        "wrapScroll": 254
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 344,
+        "top": -161,
+        "bottom": 183,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 320,
+          "height": 240
+        },
+        "frame": {
+          "top": 24,
+          "bottom": 240,
+          "left": 0,
+          "right": 320
+        },
+        "close": {
+          "top": 37,
+          "bottom": 81,
+          "left": 259,
+          "right": 303
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 183,
+            "bottom": 227,
+            "left": 171,
+            "right": 235
+          },
+          {
+            "text": "취소",
+            "top": 183,
+            "bottom": 227,
+            "left": 243,
+            "right": 307
+          }
+        ],
+        "wrapScroll": 254
+      }
+    },
+    {
+      "name": "fonts-360x640",
+      "before": {
+        "viewport": {
+          "width": 360,
+          "height": 640
+        },
+        "frame": {
+          "top": 170,
+          "bottom": 640,
+          "left": 0,
+          "right": 360
+        },
+        "close": {
+          "top": 183,
+          "bottom": 227,
+          "left": 299,
+          "right": 343
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 583,
+            "bottom": 627,
+            "left": 211,
+            "right": 275
+          },
+          {
+            "text": "취소",
+            "top": 583,
+            "bottom": 627,
+            "left": 283,
+            "right": 347
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 344,
+        "top": 239,
+        "bottom": 583,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 360,
+          "height": 640
+        },
+        "frame": {
+          "top": 170,
+          "bottom": 640,
+          "left": 0,
+          "right": 360
+        },
+        "close": {
+          "top": 183,
+          "bottom": 227,
+          "left": 299,
+          "right": 343
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 583,
+            "bottom": 627,
+            "left": 211,
+            "right": 275
+          },
+          {
+            "text": "취소",
+            "top": 583,
+            "bottom": 627,
+            "left": 283,
+            "right": 347
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "fonts-1280x900",
+      "before": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "frame": {
+          "top": 255.5,
+          "bottom": 644.5,
+          "left": 380,
+          "right": 900
+        },
+        "close": {
+          "top": 263,
+          "bottom": 279,
+          "left": 871,
+          "right": 887
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 605.5,
+            "bottom": 631.5,
+            "left": 751,
+            "right": 815
+          },
+          {
+            "text": "취소",
+            "top": 605.5,
+            "bottom": 631.5,
+            "left": 823,
+            "right": 887
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 320,
+        "top": 285.5,
+        "bottom": 605.5,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "frame": {
+          "top": 255.5,
+          "bottom": 644.5,
+          "left": 380,
+          "right": 900
+        },
+        "close": {
+          "top": 263,
+          "bottom": 279,
+          "left": 871,
+          "right": 887
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 605.5,
+            "bottom": 631.5,
+            "left": 751,
+            "right": 815
+          },
+          {
+            "text": "취소",
+            "top": 605.5,
+            "bottom": 631.5,
+            "left": 823,
+            "right": 887
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "style-800x360",
+      "before": {
+        "viewport": {
+          "width": 800,
+          "height": 360
+        },
+        "frame": {
+          "top": -51,
+          "bottom": 411,
+          "left": 120,
+          "right": 680
+        },
+        "close": {
+          "top": -43.5,
+          "bottom": -27.5,
+          "left": 651,
+          "right": 667
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 372,
+            "bottom": 398,
+            "left": 531,
+            "right": 595
+          },
+          {
+            "text": "취소",
+            "top": 372,
+            "bottom": 398,
+            "left": 603,
+            "right": 667
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 393,
+        "top": -21,
+        "bottom": 372,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 800,
+          "height": 360
+        },
+        "frame": {
+          "top": -51,
+          "bottom": 411,
+          "left": 120,
+          "right": 680
+        },
+        "close": {
+          "top": -43.5,
+          "bottom": -27.5,
+          "left": 651,
+          "right": 667
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 372,
+            "bottom": 398,
+            "left": 531,
+            "right": 595
+          },
+          {
+            "text": "취소",
+            "top": 372,
+            "bottom": 398,
+            "left": 603,
+            "right": 667
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "style-768x320",
+      "before": {
+        "viewport": {
+          "width": 768,
+          "height": 320
+        },
+        "frame": {
+          "top": -71,
+          "bottom": 391,
+          "left": 104,
+          "right": 664
+        },
+        "close": {
+          "top": -63.5,
+          "bottom": -47.5,
+          "left": 635,
+          "right": 651
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 352,
+            "bottom": 378,
+            "left": 515,
+            "right": 579
+          },
+          {
+            "text": "취소",
+            "top": 352,
+            "bottom": 378,
+            "left": 587,
+            "right": 651
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 393,
+        "top": -41,
+        "bottom": 352,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 768,
+          "height": 320
+        },
+        "frame": {
+          "top": -71,
+          "bottom": 391,
+          "left": 104,
+          "right": 664
+        },
+        "close": {
+          "top": -63.5,
+          "bottom": -47.5,
+          "left": 635,
+          "right": 651
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 352,
+            "bottom": 378,
+            "left": 515,
+            "right": 579
+          },
+          {
+            "text": "취소",
+            "top": 352,
+            "bottom": 378,
+            "left": 587,
+            "right": 651
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "style-767x320",
+      "before": {
+        "viewport": {
+          "width": 767,
+          "height": 320
+        },
+        "frame": {
+          "top": 32,
+          "bottom": 320,
+          "left": 0,
+          "right": 767
+        },
+        "close": {
+          "top": 45,
+          "bottom": 89,
+          "left": 706,
+          "right": 750
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 324,
+            "bottom": 368,
+            "left": 618,
+            "right": 682
+          },
+          {
+            "text": "취소",
+            "top": 324,
+            "bottom": 368,
+            "left": 690,
+            "right": 754
+          }
+        ],
+        "wrapScroll": 178
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 401,
+        "top": -77,
+        "bottom": 324,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 767,
+          "height": 320
+        },
+        "frame": {
+          "top": 32,
+          "bottom": 320,
+          "left": 0,
+          "right": 767
+        },
+        "close": {
+          "top": 45,
+          "bottom": 89,
+          "left": 706,
+          "right": 750
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 324,
+            "bottom": 368,
+            "left": 618,
+            "right": 682
+          },
+          {
+            "text": "취소",
+            "top": 324,
+            "bottom": 368,
+            "left": 690,
+            "right": 754
+          }
+        ],
+        "wrapScroll": 178
+      }
+    },
+    {
+      "name": "style-320x240",
+      "before": {
+        "viewport": {
+          "width": 320,
+          "height": 240
+        },
+        "frame": {
+          "top": 24,
+          "bottom": 240,
+          "left": 0,
+          "right": 320
+        },
+        "close": {
+          "top": 37,
+          "bottom": 81,
+          "left": 259,
+          "right": 303
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 812.375,
+            "bottom": 856.375,
+            "left": 171,
+            "right": 235
+          },
+          {
+            "text": "취소",
+            "top": 812.375,
+            "bottom": 856.375,
+            "left": 243,
+            "right": 307
+          }
+        ],
+        "wrapScroll": 250
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 969,
+        "top": -157,
+        "bottom": 812.375,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 320,
+          "height": 240
+        },
+        "frame": {
+          "top": 24,
+          "bottom": 240,
+          "left": 0,
+          "right": 320
+        },
+        "close": {
+          "top": 37,
+          "bottom": 81,
+          "left": 259,
+          "right": 303
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 812.375,
+            "bottom": 856.375,
+            "left": 171,
+            "right": 235
+          },
+          {
+            "text": "취소",
+            "top": 812.375,
+            "bottom": 856.375,
+            "left": 243,
+            "right": 307
+          }
+        ],
+        "wrapScroll": 250
+      }
+    },
+    {
+      "name": "style-360x640",
+      "before": {
+        "viewport": {
+          "width": 360,
+          "height": 640
+        },
+        "frame": {
+          "top": 64,
+          "bottom": 640,
+          "left": 0,
+          "right": 360
+        },
+        "close": {
+          "top": 77,
+          "bottom": 121,
+          "left": 299,
+          "right": 343
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 691.1875,
+            "bottom": 735.1875,
+            "left": 211,
+            "right": 275
+          },
+          {
+            "text": "취소",
+            "top": 691.1875,
+            "bottom": 735.1875,
+            "left": 283,
+            "right": 347
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 558,
+        "top": 133,
+        "bottom": 691.1875,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 360,
+          "height": 640
+        },
+        "frame": {
+          "top": 64,
+          "bottom": 640,
+          "left": 0,
+          "right": 360
+        },
+        "close": {
+          "top": 77,
+          "bottom": 121,
+          "left": 299,
+          "right": 343
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 691.1875,
+            "bottom": 735.1875,
+            "left": 211,
+            "right": 275
+          },
+          {
+            "text": "취소",
+            "top": 691.1875,
+            "bottom": 735.1875,
+            "left": 283,
+            "right": 347
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "style-1280x900",
+      "before": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "frame": {
+          "top": 219,
+          "bottom": 681,
+          "left": 360,
+          "right": 920
+        },
+        "close": {
+          "top": 226.5,
+          "bottom": 242.5,
+          "left": 891,
+          "right": 907
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 642,
+            "bottom": 668,
+            "left": 771,
+            "right": 835
+          },
+          {
+            "text": "취소",
+            "top": 642,
+            "bottom": 668,
+            "left": 843,
+            "right": 907
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 393,
+        "top": 249,
+        "bottom": 642,
+        "inFrame": true,
+        "overflow": "visible"
+      },
+      "after": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "frame": {
+          "top": 219,
+          "bottom": 681,
+          "left": 360,
+          "right": 920
+        },
+        "close": {
+          "top": 226.5,
+          "bottom": 242.5,
+          "left": 891,
+          "right": 907
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 642,
+            "bottom": 668,
+            "left": 771,
+            "right": 835
+          },
+          {
+            "text": "취소",
+            "top": 642,
+            "bottom": 668,
+            "left": 843,
+            "right": 907
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "recovery-800x360",
+      "before": {
+        "viewport": {
+          "width": 800,
+          "height": 360
+        },
+        "frame": {
+          "top": 16,
+          "bottom": 344,
+          "left": 140,
+          "right": 660
+        },
+        "close": {
+          "top": 23.5,
+          "bottom": 39.5,
+          "left": 631,
+          "right": 647
+        },
+        "actions": [
+          {
+            "text": "복구",
+            "top": 305,
+            "bottom": 331,
+            "left": 439,
+            "right": 503
+          },
+          {
+            "text": "삭제",
+            "top": 305,
+            "bottom": 331,
+            "left": 511,
+            "right": 575
+          },
+          {
+            "text": "나중에",
+            "top": 305,
+            "bottom": 331,
+            "left": 583,
+            "right": 647
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 634,
+        "moved": 634,
+        "remaining": 0,
+        "clientHeight": 164,
+        "top": 125.1875,
+        "bottom": 289,
+        "inFrame": true,
+        "overflow": "auto"
+      },
+      "after": {
+        "viewport": {
+          "width": 800,
+          "height": 360
+        },
+        "frame": {
+          "top": 16,
+          "bottom": 344,
+          "left": 140,
+          "right": 660
+        },
+        "close": {
+          "top": 23.5,
+          "bottom": 39.5,
+          "left": 631,
+          "right": 647
+        },
+        "actions": [
+          {
+            "text": "복구",
+            "top": 305,
+            "bottom": 331,
+            "left": 439,
+            "right": 503
+          },
+          {
+            "text": "삭제",
+            "top": 305,
+            "bottom": 331,
+            "left": 511,
+            "right": 575
+          },
+          {
+            "text": "나중에",
+            "top": 305,
+            "bottom": 331,
+            "left": 583,
+            "right": 647
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "recovery-768x320",
+      "before": {
+        "viewport": {
+          "width": 768,
+          "height": 320
+        },
+        "frame": {
+          "top": 16,
+          "bottom": 304,
+          "left": 124,
+          "right": 644
+        },
+        "close": {
+          "top": 23.5,
+          "bottom": 39.5,
+          "left": 615,
+          "right": 631
+        },
+        "actions": [
+          {
+            "text": "복구",
+            "top": 265,
+            "bottom": 291,
+            "left": 423,
+            "right": 487
+          },
+          {
+            "text": "삭제",
+            "top": 265,
+            "bottom": 291,
+            "left": 495,
+            "right": 559
+          },
+          {
+            "text": "나중에",
+            "top": 265,
+            "bottom": 291,
+            "left": 567,
+            "right": 631
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 674,
+        "moved": 674,
+        "remaining": 0,
+        "clientHeight": 124,
+        "top": 125.1875,
+        "bottom": 249,
+        "inFrame": true,
+        "overflow": "auto"
+      },
+      "after": {
+        "viewport": {
+          "width": 768,
+          "height": 320
+        },
+        "frame": {
+          "top": 16,
+          "bottom": 304,
+          "left": 124,
+          "right": 644
+        },
+        "close": {
+          "top": 23.5,
+          "bottom": 39.5,
+          "left": 615,
+          "right": 631
+        },
+        "actions": [
+          {
+            "text": "복구",
+            "top": 265,
+            "bottom": 291,
+            "left": 423,
+            "right": 487
+          },
+          {
+            "text": "삭제",
+            "top": 265,
+            "bottom": 291,
+            "left": 495,
+            "right": 559
+          },
+          {
+            "text": "나중에",
+            "top": 265,
+            "bottom": 291,
+            "left": 567,
+            "right": 631
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "recovery-767x320",
+      "before": {
+        "viewport": {
+          "width": 767,
+          "height": 320
+        },
+        "frame": {
+          "top": 32,
+          "bottom": 320,
+          "left": 0,
+          "right": 767
+        },
+        "close": {
+          "top": 45,
+          "bottom": 89,
+          "left": 706,
+          "right": 750
+        },
+        "actions": [
+          {
+            "text": "복구",
+            "top": 263,
+            "bottom": 307,
+            "left": 540.109375,
+            "right": 604.109375
+          },
+          {
+            "text": "삭제",
+            "top": 263,
+            "bottom": 307,
+            "left": 612.109375,
+            "right": 676.109375
+          },
+          {
+            "text": "나중에",
+            "top": 263,
+            "bottom": 307,
+            "left": 684.109375,
+            "right": 754
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 731,
+        "moved": 731,
+        "remaining": 0,
+        "clientHeight": 67,
+        "top": 180.1875,
+        "bottom": 247,
+        "inFrame": true,
+        "overflow": "auto"
+      },
+      "after": {
+        "viewport": {
+          "width": 767,
+          "height": 320
+        },
+        "frame": {
+          "top": 32,
+          "bottom": 320,
+          "left": 0,
+          "right": 767
+        },
+        "close": {
+          "top": 45,
+          "bottom": 89,
+          "left": 706,
+          "right": 750
+        },
+        "actions": [
+          {
+            "text": "복구",
+            "top": 263,
+            "bottom": 307,
+            "left": 540.109375,
+            "right": 604.109375
+          },
+          {
+            "text": "삭제",
+            "top": 263,
+            "bottom": 307,
+            "left": 612.109375,
+            "right": 676.109375
+          },
+          {
+            "text": "나중에",
+            "top": 263,
+            "bottom": 307,
+            "left": 684.109375,
+            "right": 754
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "recovery-320x240",
+      "before": {
+        "viewport": {
+          "width": 320,
+          "height": 240
+        },
+        "frame": {
+          "top": 24,
+          "bottom": 240,
+          "left": 0,
+          "right": 320
+        },
+        "close": {
+          "top": 37,
+          "bottom": 81,
+          "left": 259,
+          "right": 303
+        },
+        "actions": [
+          {
+            "text": "복구",
+            "top": 183,
+            "bottom": 227,
+            "left": 93.109375,
+            "right": 157.109375
+          },
+          {
+            "text": "삭제",
+            "top": 183,
+            "bottom": 227,
+            "left": 165.109375,
+            "right": 229.109375
+          },
+          {
+            "text": "나중에",
+            "top": 183,
+            "bottom": 227,
+            "left": 237.109375,
+            "right": 307
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 1021,
+        "moved": 1021,
+        "remaining": 0,
+        "clientHeight": 0,
+        "top": 167.375,
+        "bottom": 167.375,
+        "inFrame": false,
+        "overflow": "auto"
+      },
+      "after": {
+        "viewport": {
+          "width": 320,
+          "height": 240
+        },
+        "frame": {
+          "top": 24,
+          "bottom": 240,
+          "left": 0,
+          "right": 320
+        },
+        "close": {
+          "top": 37,
+          "bottom": 81,
+          "left": 259,
+          "right": 303
+        },
+        "actions": [
+          {
+            "text": "복구",
+            "top": 183,
+            "bottom": 227,
+            "left": 93.109375,
+            "right": 157.109375
+          },
+          {
+            "text": "삭제",
+            "top": 183,
+            "bottom": 227,
+            "left": 165.109375,
+            "right": 229.109375
+          },
+          {
+            "text": "나중에",
+            "top": 183,
+            "bottom": 227,
+            "left": 237.109375,
+            "right": 307
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "recovery-360x640",
+      "before": {
+        "viewport": {
+          "width": 360,
+          "height": 640
+        },
+        "frame": {
+          "top": 64,
+          "bottom": 640,
+          "left": 0,
+          "right": 360
+        },
+        "close": {
+          "top": 77,
+          "bottom": 121,
+          "left": 299,
+          "right": 343
+        },
+        "actions": [
+          {
+            "text": "복구",
+            "top": 583,
+            "bottom": 627,
+            "left": 133.109375,
+            "right": 197.109375
+          },
+          {
+            "text": "삭제",
+            "top": 583,
+            "bottom": 627,
+            "left": 205.109375,
+            "right": 269.109375
+          },
+          {
+            "text": "나중에",
+            "top": 583,
+            "bottom": 627,
+            "left": 277.109375,
+            "right": 347
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 703,
+        "moved": 703,
+        "remaining": 0,
+        "clientHeight": 318,
+        "top": 249.375,
+        "bottom": 567,
+        "inFrame": true,
+        "overflow": "auto"
+      },
+      "after": {
+        "viewport": {
+          "width": 360,
+          "height": 640
+        },
+        "frame": {
+          "top": 64,
+          "bottom": 640,
+          "left": 0,
+          "right": 360
+        },
+        "close": {
+          "top": 77,
+          "bottom": 121,
+          "left": 299,
+          "right": 343
+        },
+        "actions": [
+          {
+            "text": "복구",
+            "top": 583,
+            "bottom": 627,
+            "left": 133.109375,
+            "right": 197.109375
+          },
+          {
+            "text": "삭제",
+            "top": 583,
+            "bottom": 627,
+            "left": 205.109375,
+            "right": 269.109375
+          },
+          {
+            "text": "나중에",
+            "top": 583,
+            "bottom": 627,
+            "left": 277.109375,
+            "right": 347
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "recovery-1280x900",
+      "before": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "frame": {
+          "top": 16,
+          "bottom": 884,
+          "left": 380,
+          "right": 900
+        },
+        "close": {
+          "top": 23.5,
+          "bottom": 39.5,
+          "left": 871,
+          "right": 887
+        },
+        "actions": [
+          {
+            "text": "복구",
+            "top": 845,
+            "bottom": 871,
+            "left": 679,
+            "right": 743
+          },
+          {
+            "text": "삭제",
+            "top": 845,
+            "bottom": 871,
+            "left": 751,
+            "right": 815
+          },
+          {
+            "text": "나중에",
+            "top": 845,
+            "bottom": 871,
+            "left": 823,
+            "right": 887
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 94,
+        "moved": 94,
+        "remaining": 0,
+        "clientHeight": 704,
+        "top": 125.1875,
+        "bottom": 829,
+        "inFrame": true,
+        "overflow": "auto"
+      },
+      "after": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "frame": {
+          "top": 16,
+          "bottom": 884,
+          "left": 380,
+          "right": 900
+        },
+        "close": {
+          "top": 23.5,
+          "bottom": 39.5,
+          "left": 871,
+          "right": 887
+        },
+        "actions": [
+          {
+            "text": "복구",
+            "top": 845,
+            "bottom": 871,
+            "left": 679,
+            "right": 743
+          },
+          {
+            "text": "삭제",
+            "top": 845,
+            "bottom": 871,
+            "left": 751,
+            "right": 815
+          },
+          {
+            "text": "나중에",
+            "top": 845,
+            "bottom": 871,
+            "left": 823,
+            "right": 887
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "pdf-800x360",
+      "before": {
+        "viewport": {
+          "width": 800,
+          "height": 360
+        },
+        "frame": {
+          "top": 37.5,
+          "bottom": 322.5,
+          "left": 140,
+          "right": 660
+        },
+        "close": {
+          "top": 45,
+          "bottom": 61,
+          "left": 631,
+          "right": 647
+        },
+        "actions": [
+          {
+            "text": "가져오기",
+            "top": 283.5,
+            "bottom": 309.5,
+            "left": 504.828125,
+            "right": 575
+          },
+          {
+            "text": "취소",
+            "top": 283.5,
+            "bottom": 309.5,
+            "left": 583,
+            "right": 647
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 216,
+        "top": 67.5,
+        "bottom": 283.5,
+        "inFrame": true,
+        "overflow": "auto"
+      },
+      "after": {
+        "viewport": {
+          "width": 800,
+          "height": 360
+        },
+        "frame": {
+          "top": 37.5,
+          "bottom": 322.5,
+          "left": 140,
+          "right": 660
+        },
+        "close": {
+          "top": 45,
+          "bottom": 61,
+          "left": 631,
+          "right": 647
+        },
+        "actions": [
+          {
+            "text": "가져오기",
+            "top": 283.5,
+            "bottom": 309.5,
+            "left": 504.828125,
+            "right": 575
+          },
+          {
+            "text": "취소",
+            "top": 283.5,
+            "bottom": 309.5,
+            "left": 583,
+            "right": 647
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "pdf-768x320",
+      "before": {
+        "viewport": {
+          "width": 768,
+          "height": 320
+        },
+        "frame": {
+          "top": 17.5,
+          "bottom": 302.5,
+          "left": 124,
+          "right": 644
+        },
+        "close": {
+          "top": 25,
+          "bottom": 41,
+          "left": 615,
+          "right": 631
+        },
+        "actions": [
+          {
+            "text": "가져오기",
+            "top": 263.5,
+            "bottom": 289.5,
+            "left": 488.828125,
+            "right": 559
+          },
+          {
+            "text": "취소",
+            "top": 263.5,
+            "bottom": 289.5,
+            "left": 567,
+            "right": 631
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 216,
+        "top": 47.5,
+        "bottom": 263.5,
+        "inFrame": true,
+        "overflow": "auto"
+      },
+      "after": {
+        "viewport": {
+          "width": 768,
+          "height": 320
+        },
+        "frame": {
+          "top": 17.5,
+          "bottom": 302.5,
+          "left": 124,
+          "right": 644
+        },
+        "close": {
+          "top": 25,
+          "bottom": 41,
+          "left": 615,
+          "right": 631
+        },
+        "actions": [
+          {
+            "text": "가져오기",
+            "top": 263.5,
+            "bottom": 289.5,
+            "left": 488.828125,
+            "right": 559
+          },
+          {
+            "text": "취소",
+            "top": 263.5,
+            "bottom": 289.5,
+            "left": 567,
+            "right": 631
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "pdf-767x320",
+      "before": {
+        "viewport": {
+          "width": 767,
+          "height": 320
+        },
+        "frame": {
+          "top": 24,
+          "bottom": 320,
+          "left": 12,
+          "right": 755
+        },
+        "close": {
+          "top": 37,
+          "bottom": 81,
+          "left": 694,
+          "right": 738
+        },
+        "actions": [
+          {
+            "text": "가져오기",
+            "top": 263,
+            "bottom": 307,
+            "left": 588.15625,
+            "right": 670
+          },
+          {
+            "text": "취소",
+            "top": 263,
+            "bottom": 307,
+            "left": 678,
+            "right": 742
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 58,
+        "moved": 58,
+        "remaining": 0,
+        "clientHeight": 170,
+        "top": 93,
+        "bottom": 263,
+        "inFrame": true,
+        "overflow": "auto"
+      },
+      "after": {
+        "viewport": {
+          "width": 767,
+          "height": 320
+        },
+        "frame": {
+          "top": 24,
+          "bottom": 320,
+          "left": 12,
+          "right": 755
+        },
+        "close": {
+          "top": 37,
+          "bottom": 81,
+          "left": 694,
+          "right": 738
+        },
+        "actions": [
+          {
+            "text": "가져오기",
+            "top": 263,
+            "bottom": 307,
+            "left": 588.15625,
+            "right": 670
+          },
+          {
+            "text": "취소",
+            "top": 263,
+            "bottom": 307,
+            "left": 678,
+            "right": 742
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "pdf-320x240",
+      "before": {
+        "viewport": {
+          "width": 320,
+          "height": 240
+        },
+        "frame": {
+          "top": 24,
+          "bottom": 240,
+          "left": 12,
+          "right": 308
+        },
+        "close": {
+          "top": 37,
+          "bottom": 81,
+          "left": 247,
+          "right": 291
+        },
+        "actions": [
+          {
+            "text": "가져오기",
+            "top": 183,
+            "bottom": 227,
+            "left": 141.15625,
+            "right": 223
+          },
+          {
+            "text": "취소",
+            "top": 183,
+            "bottom": 227,
+            "left": 231,
+            "right": 295
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 138,
+        "moved": 138,
+        "remaining": 0,
+        "clientHeight": 90,
+        "top": 93,
+        "bottom": 183,
+        "inFrame": true,
+        "overflow": "auto"
+      },
+      "after": {
+        "viewport": {
+          "width": 320,
+          "height": 240
+        },
+        "frame": {
+          "top": 24,
+          "bottom": 240,
+          "left": 12,
+          "right": 308
+        },
+        "close": {
+          "top": 37,
+          "bottom": 81,
+          "left": 247,
+          "right": 291
+        },
+        "actions": [
+          {
+            "text": "가져오기",
+            "top": 183,
+            "bottom": 227,
+            "left": 141.15625,
+            "right": 223
+          },
+          {
+            "text": "취소",
+            "top": 183,
+            "bottom": 227,
+            "left": 231,
+            "right": 295
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "pdf-360x640",
+      "before": {
+        "viewport": {
+          "width": 360,
+          "height": 640
+        },
+        "frame": {
+          "top": 286,
+          "bottom": 640,
+          "left": 12,
+          "right": 348
+        },
+        "close": {
+          "top": 299,
+          "bottom": 343,
+          "left": 287,
+          "right": 331
+        },
+        "actions": [
+          {
+            "text": "가져오기",
+            "top": 583,
+            "bottom": 627,
+            "left": 181.15625,
+            "right": 263
+          },
+          {
+            "text": "취소",
+            "top": 583,
+            "bottom": 627,
+            "left": 271,
+            "right": 335
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 228,
+        "top": 355,
+        "bottom": 583,
+        "inFrame": true,
+        "overflow": "auto"
+      },
+      "after": {
+        "viewport": {
+          "width": 360,
+          "height": 640
+        },
+        "frame": {
+          "top": 286,
+          "bottom": 640,
+          "left": 12,
+          "right": 348
+        },
+        "close": {
+          "top": 299,
+          "bottom": 343,
+          "left": 287,
+          "right": 331
+        },
+        "actions": [
+          {
+            "text": "가져오기",
+            "top": 583,
+            "bottom": 627,
+            "left": 181.15625,
+            "right": 263
+          },
+          {
+            "text": "취소",
+            "top": 583,
+            "bottom": 627,
+            "left": 271,
+            "right": 335
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "pdf-1280x900",
+      "before": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "frame": {
+          "top": 307.5,
+          "bottom": 592.5,
+          "left": 380,
+          "right": 900
+        },
+        "close": {
+          "top": 315,
+          "bottom": 331,
+          "left": 871,
+          "right": 887
+        },
+        "actions": [
+          {
+            "text": "가져오기",
+            "top": 553.5,
+            "bottom": 579.5,
+            "left": 744.828125,
+            "right": 815
+          },
+          {
+            "text": "취소",
+            "top": 553.5,
+            "bottom": 579.5,
+            "left": 823,
+            "right": 887
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 216,
+        "top": 337.5,
+        "bottom": 553.5,
+        "inFrame": true,
+        "overflow": "auto"
+      },
+      "after": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "frame": {
+          "top": 307.5,
+          "bottom": 592.5,
+          "left": 380,
+          "right": 900
+        },
+        "close": {
+          "top": 315,
+          "bottom": 331,
+          "left": 871,
+          "right": 887
+        },
+        "actions": [
+          {
+            "text": "가져오기",
+            "top": 553.5,
+            "bottom": 579.5,
+            "left": 744.828125,
+            "right": 815
+          },
+          {
+            "text": "취소",
+            "top": 553.5,
+            "bottom": 579.5,
+            "left": 823,
+            "right": 887
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "table-800x360",
+      "before": {
+        "viewport": {
+          "width": 800,
+          "height": 360
+        },
+        "frame": {
+          "top": 16,
+          "bottom": 344,
+          "left": 65,
+          "right": 735
+        },
+        "close": {
+          "top": 23.5,
+          "bottom": 39.5,
+          "left": 706,
+          "right": 722
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 305,
+            "bottom": 331,
+            "left": 586,
+            "right": 650
+          },
+          {
+            "text": "취소",
+            "top": 305,
+            "bottom": 331,
+            "left": 658,
+            "right": 722
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 355,
+        "moved": 355,
+        "remaining": 0,
+        "clientHeight": 207,
+        "top": 86,
+        "bottom": 293,
+        "inFrame": true,
+        "overflow": "auto"
+      },
+      "after": {
+        "viewport": {
+          "width": 800,
+          "height": 360
+        },
+        "frame": {
+          "top": 16,
+          "bottom": 344,
+          "left": 65,
+          "right": 735
+        },
+        "close": {
+          "top": 23.5,
+          "bottom": 39.5,
+          "left": 706,
+          "right": 722
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 305,
+            "bottom": 331,
+            "left": 586,
+            "right": 650
+          },
+          {
+            "text": "취소",
+            "top": 305,
+            "bottom": 331,
+            "left": 658,
+            "right": 722
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "table-768x320",
+      "before": {
+        "viewport": {
+          "width": 768,
+          "height": 320
+        },
+        "frame": {
+          "top": 16,
+          "bottom": 304,
+          "left": 49,
+          "right": 719
+        },
+        "close": {
+          "top": 23.5,
+          "bottom": 39.5,
+          "left": 690,
+          "right": 706
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 265,
+            "bottom": 291,
+            "left": 570,
+            "right": 634
+          },
+          {
+            "text": "취소",
+            "top": 265,
+            "bottom": 291,
+            "left": 642,
+            "right": 706
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 395,
+        "moved": 395,
+        "remaining": 0,
+        "clientHeight": 167,
+        "top": 86,
+        "bottom": 253,
+        "inFrame": true,
+        "overflow": "auto"
+      },
+      "after": {
+        "viewport": {
+          "width": 768,
+          "height": 320
+        },
+        "frame": {
+          "top": 16,
+          "bottom": 304,
+          "left": 49,
+          "right": 719
+        },
+        "close": {
+          "top": 23.5,
+          "bottom": 39.5,
+          "left": 690,
+          "right": 706
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 265,
+            "bottom": 291,
+            "left": 570,
+            "right": 634
+          },
+          {
+            "text": "취소",
+            "top": 265,
+            "bottom": 291,
+            "left": 642,
+            "right": 706
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "table-767x320",
+      "before": {
+        "viewport": {
+          "width": 767,
+          "height": 320
+        },
+        "frame": {
+          "top": 32,
+          "bottom": 320,
+          "left": 48.5,
+          "right": 718.5
+        },
+        "close": {
+          "top": 45,
+          "bottom": 89,
+          "left": 657.5,
+          "right": 701.5
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 263,
+            "bottom": 307,
+            "left": 569.5,
+            "right": 633.5
+          },
+          {
+            "text": "취소",
+            "top": 263,
+            "bottom": 307,
+            "left": 641.5,
+            "right": 705.5
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 578,
+        "moved": 578,
+        "remaining": 0,
+        "clientHeight": 110,
+        "top": 141,
+        "bottom": 251,
+        "inFrame": true,
+        "overflow": "auto"
+      },
+      "after": {
+        "viewport": {
+          "width": 767,
+          "height": 320
+        },
+        "frame": {
+          "top": 32,
+          "bottom": 320,
+          "left": 48.5,
+          "right": 718.5
+        },
+        "close": {
+          "top": 45,
+          "bottom": 89,
+          "left": 657.5,
+          "right": 701.5
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 263,
+            "bottom": 307,
+            "left": 569.5,
+            "right": 633.5
+          },
+          {
+            "text": "취소",
+            "top": 263,
+            "bottom": 307,
+            "left": 641.5,
+            "right": 705.5
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "table-320x240",
+      "before": {
+        "viewport": {
+          "width": 320,
+          "height": 240
+        },
+        "frame": {
+          "top": 32,
+          "bottom": 240,
+          "left": 16,
+          "right": 304
+        },
+        "close": {
+          "top": 45,
+          "bottom": 89,
+          "left": 243,
+          "right": 287
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 183,
+            "bottom": 227,
+            "left": 155,
+            "right": 219
+          },
+          {
+            "text": "취소",
+            "top": 183,
+            "bottom": 227,
+            "left": 227,
+            "right": 291
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 688,
+        "moved": 688,
+        "remaining": 0,
+        "clientHeight": 0,
+        "top": 188,
+        "bottom": 188,
+        "inFrame": false,
+        "overflow": "auto"
+      },
+      "after": {
+        "viewport": {
+          "width": 320,
+          "height": 240
+        },
+        "frame": {
+          "top": 32,
+          "bottom": 240,
+          "left": 16,
+          "right": 304
+        },
+        "close": {
+          "top": 45,
+          "bottom": 89,
+          "left": 243,
+          "right": 287
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 183,
+            "bottom": 227,
+            "left": 155,
+            "right": 219
+          },
+          {
+            "text": "취소",
+            "top": 183,
+            "bottom": 227,
+            "left": 227,
+            "right": 291
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "table-360x640",
+      "before": {
+        "viewport": {
+          "width": 360,
+          "height": 640
+        },
+        "frame": {
+          "top": 64,
+          "bottom": 640,
+          "left": 16,
+          "right": 344
+        },
+        "close": {
+          "top": 77,
+          "bottom": 121,
+          "left": 283,
+          "right": 327
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 583,
+            "bottom": 627,
+            "left": 195,
+            "right": 259
+          },
+          {
+            "text": "취소",
+            "top": 583,
+            "bottom": 627,
+            "left": 267,
+            "right": 331
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 306,
+        "moved": 306,
+        "remaining": 0,
+        "clientHeight": 382,
+        "top": 189,
+        "bottom": 571,
+        "inFrame": true,
+        "overflow": "auto"
+      },
+      "after": {
+        "viewport": {
+          "width": 360,
+          "height": 640
+        },
+        "frame": {
+          "top": 64,
+          "bottom": 640,
+          "left": 16,
+          "right": 344
+        },
+        "close": {
+          "top": 77,
+          "bottom": 121,
+          "left": 283,
+          "right": 327
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 583,
+            "bottom": 627,
+            "left": 195,
+            "right": 259
+          },
+          {
+            "text": "취소",
+            "top": 583,
+            "bottom": 627,
+            "left": 267,
+            "right": 331
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "table-1280x900",
+      "before": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "frame": {
+          "top": 90,
+          "bottom": 810,
+          "left": 305,
+          "right": 975
+        },
+        "close": {
+          "top": 97.5,
+          "bottom": 113.5,
+          "left": 946,
+          "right": 962
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 771,
+            "bottom": 797,
+            "left": 826,
+            "right": 890
+          },
+          {
+            "text": "취소",
+            "top": 771,
+            "bottom": 797,
+            "left": 898,
+            "right": 962
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 599,
+        "top": 160,
+        "bottom": 759,
+        "inFrame": true,
+        "overflow": "auto"
+      },
+      "after": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "frame": {
+          "top": 90,
+          "bottom": 810,
+          "left": 305,
+          "right": 975
+        },
+        "close": {
+          "top": 97.5,
+          "bottom": 113.5,
+          "left": 946,
+          "right": 962
+        },
+        "actions": [
+          {
+            "text": "확인",
+            "top": 771,
+            "bottom": 797,
+            "left": 826,
+            "right": 890
+          },
+          {
+            "text": "취소",
+            "top": 771,
+            "bottom": 797,
+            "left": 898,
+            "right": 962
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "picture-800x360",
+      "before": {
+        "viewport": {
+          "width": 800,
+          "height": 360
+        },
+        "frame": {
+          "top": 16,
+          "bottom": 344,
+          "left": 62.5,
+          "right": 737.5
+        },
+        "close": {
+          "top": 23.5,
+          "bottom": 39.5,
+          "left": 708.5,
+          "right": 724.5
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": 54,
+            "bottom": 80,
+            "left": 654.5,
+            "right": 726.5
+          },
+          {
+            "text": "취소",
+            "top": 84,
+            "bottom": 110,
+            "left": 654.5,
+            "right": 726.5
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 256,
+        "moved": 256,
+        "remaining": 0,
+        "clientHeight": 245,
+        "top": 86,
+        "bottom": 331,
+        "inFrame": true,
+        "overflow": "auto"
+      },
+      "after": {
+        "viewport": {
+          "width": 800,
+          "height": 360
+        },
+        "frame": {
+          "top": 16,
+          "bottom": 344,
+          "left": 62.5,
+          "right": 737.5
+        },
+        "close": {
+          "top": 23.5,
+          "bottom": 39.5,
+          "left": 708.5,
+          "right": 724.5
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": 54,
+            "bottom": 80,
+            "left": 654.5,
+            "right": 726.5
+          },
+          {
+            "text": "취소",
+            "top": 84,
+            "bottom": 110,
+            "left": 654.5,
+            "right": 726.5
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "picture-768x320",
+      "before": {
+        "viewport": {
+          "width": 768,
+          "height": 320
+        },
+        "frame": {
+          "top": 16,
+          "bottom": 304,
+          "left": 46.5,
+          "right": 721.5
+        },
+        "close": {
+          "top": 23.5,
+          "bottom": 39.5,
+          "left": 692.5,
+          "right": 708.5
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": 54,
+            "bottom": 80,
+            "left": 638.5,
+            "right": 710.5
+          },
+          {
+            "text": "취소",
+            "top": 84,
+            "bottom": 110,
+            "left": 638.5,
+            "right": 710.5
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 296,
+        "moved": 296,
+        "remaining": 0,
+        "clientHeight": 205,
+        "top": 86,
+        "bottom": 291,
+        "inFrame": true,
+        "overflow": "auto"
+      },
+      "after": {
+        "viewport": {
+          "width": 768,
+          "height": 320
+        },
+        "frame": {
+          "top": 16,
+          "bottom": 304,
+          "left": 46.5,
+          "right": 721.5
+        },
+        "close": {
+          "top": 23.5,
+          "bottom": 39.5,
+          "left": 692.5,
+          "right": 708.5
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": 54,
+            "bottom": 80,
+            "left": 638.5,
+            "right": 710.5
+          },
+          {
+            "text": "취소",
+            "top": 84,
+            "bottom": 110,
+            "left": 638.5,
+            "right": 710.5
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "picture-767x320",
+      "before": {
+        "viewport": {
+          "width": 767,
+          "height": 320
+        },
+        "frame": {
+          "top": 32,
+          "bottom": 320,
+          "left": 0,
+          "right": 767
+        },
+        "close": {
+          "top": 45,
+          "bottom": 89,
+          "left": 706,
+          "right": 750
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": 109,
+            "bottom": 153,
+            "left": 684,
+            "right": 756
+          },
+          {
+            "text": "취소",
+            "top": 157,
+            "bottom": 201,
+            "left": 684,
+            "right": 756
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 472,
+        "moved": 472,
+        "remaining": 0,
+        "clientHeight": 158,
+        "top": 145,
+        "bottom": 303,
+        "inFrame": true,
+        "overflow": "auto"
+      },
+      "after": {
+        "viewport": {
+          "width": 767,
+          "height": 320
+        },
+        "frame": {
+          "top": 32,
+          "bottom": 320,
+          "left": 0,
+          "right": 767
+        },
+        "close": {
+          "top": 45,
+          "bottom": 89,
+          "left": 706,
+          "right": 750
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": 109,
+            "bottom": 153,
+            "left": 684,
+            "right": 756
+          },
+          {
+            "text": "취소",
+            "top": 157,
+            "bottom": 201,
+            "left": 684,
+            "right": 756
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "picture-320x240",
+      "before": {
+        "viewport": {
+          "width": 320,
+          "height": 240
+        },
+        "frame": {
+          "top": 32,
+          "bottom": 240,
+          "left": 0,
+          "right": 320
+        },
+        "close": {
+          "top": 45,
+          "bottom": 89,
+          "left": 259,
+          "right": 303
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": 109,
+            "bottom": 153,
+            "left": 237,
+            "right": 309
+          },
+          {
+            "text": "취소",
+            "top": 157,
+            "bottom": 201,
+            "left": 237,
+            "right": 309
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 727,
+        "moved": 727,
+        "remaining": 0,
+        "clientHeight": 15,
+        "top": 208,
+        "bottom": 223,
+        "inFrame": true,
+        "overflow": "auto"
+      },
+      "after": {
+        "viewport": {
+          "width": 320,
+          "height": 240
+        },
+        "frame": {
+          "top": 32,
+          "bottom": 240,
+          "left": 0,
+          "right": 320
+        },
+        "close": {
+          "top": 45,
+          "bottom": 89,
+          "left": 259,
+          "right": 303
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": 109,
+            "bottom": 153,
+            "left": 237,
+            "right": 309
+          },
+          {
+            "text": "취소",
+            "top": 157,
+            "bottom": 201,
+            "left": 237,
+            "right": 309
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "picture-360x640",
+      "before": {
+        "viewport": {
+          "width": 360,
+          "height": 640
+        },
+        "frame": {
+          "top": 64,
+          "bottom": 640,
+          "left": 0,
+          "right": 360
+        },
+        "close": {
+          "top": 77,
+          "bottom": 121,
+          "left": 299,
+          "right": 343
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": 141,
+            "bottom": 185,
+            "left": 277,
+            "right": 349
+          },
+          {
+            "text": "취소",
+            "top": 189,
+            "bottom": 233,
+            "left": 277,
+            "right": 349
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 359,
+        "moved": 359,
+        "remaining": 0,
+        "clientHeight": 383,
+        "top": 240,
+        "bottom": 623,
+        "inFrame": true,
+        "overflow": "auto"
+      },
+      "after": {
+        "viewport": {
+          "width": 360,
+          "height": 640
+        },
+        "frame": {
+          "top": 64,
+          "bottom": 640,
+          "left": 0,
+          "right": 360
+        },
+        "close": {
+          "top": 77,
+          "bottom": 121,
+          "left": 299,
+          "right": 343
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": 141,
+            "bottom": 185,
+            "left": 277,
+            "right": 349
+          },
+          {
+            "text": "취소",
+            "top": 189,
+            "bottom": 233,
+            "left": 277,
+            "right": 349
+          }
+        ],
+        "wrapScroll": 0
+      }
+    },
+    {
+      "name": "picture-1280x900",
+      "before": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "frame": {
+          "top": 90,
+          "bottom": 810,
+          "left": 302.5,
+          "right": 977.5
+        },
+        "close": {
+          "top": 97.5,
+          "bottom": 113.5,
+          "left": 948.5,
+          "right": 964.5
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": 128,
+            "bottom": 154,
+            "left": 894.5,
+            "right": 966.5
+          },
+          {
+            "text": "취소",
+            "top": 158,
+            "bottom": 184,
+            "left": 894.5,
+            "right": 966.5
+          }
+        ],
+        "wrapScroll": 0
+      },
+      "scroll": {
+        "max": 0,
+        "moved": 0,
+        "remaining": 0,
+        "clientHeight": 637,
+        "top": 160,
+        "bottom": 797,
+        "inFrame": true,
+        "overflow": "auto"
+      },
+      "after": {
+        "viewport": {
+          "width": 1280,
+          "height": 900
+        },
+        "frame": {
+          "top": 90,
+          "bottom": 810,
+          "left": 302.5,
+          "right": 977.5
+        },
+        "close": {
+          "top": 97.5,
+          "bottom": 113.5,
+          "left": 948.5,
+          "right": 964.5
+        },
+        "actions": [
+          {
+            "text": "설정(D)",
+            "top": 128,
+            "bottom": 154,
+            "left": 894.5,
+            "right": 966.5
+          },
+          {
+            "text": "취소",
+            "top": 158,
+            "bottom": 184,
+            "left": 894.5,
+            "right": 966.5
+          }
+        ],
+        "wrapScroll": 0
+      }
+    }
+  ],
+  "failures": [
+    "page-800x360: frame",
+    "page-800x360: title close",
+    "page-800x360: actions",
+    "page-800x360: fixed actions after scroll",
+    "page-768x320: frame",
+    "page-768x320: title close",
+    "page-768x320: actions",
+    "page-768x320: fixed actions after scroll",
+    "page-767x320: fixed actions after scroll",
+    "page-320x240: fixed actions after scroll",
+    "page-360x640: fixed actions after scroll",
+    "options-800x360: frame",
+    "options-800x360: title close",
+    "options-800x360: actions",
+    "options-800x360: fixed actions after scroll",
+    "options-768x320: frame",
+    "options-768x320: title close",
+    "options-768x320: actions",
+    "options-768x320: fixed actions after scroll",
+    "options-767x320: fixed actions after scroll",
+    "options-320x240: fixed actions after scroll",
+    "options-360x640: fixed actions after scroll",
+    "char-800x360: frame",
+    "char-800x360: title close",
+    "char-800x360: actions",
+    "char-800x360: fixed actions after scroll",
+    "char-768x320: frame",
+    "char-768x320: title close",
+    "char-768x320: actions",
+    "char-768x320: fixed actions after scroll",
+    "para-800x360: frame",
+    "para-800x360: title close",
+    "para-800x360: actions",
+    "para-800x360: fixed actions after scroll",
+    "para-768x320: frame",
+    "para-768x320: title close",
+    "para-768x320: actions",
+    "para-768x320: fixed actions after scroll",
+    "fonts-800x360: frame",
+    "fonts-800x360: title close",
+    "fonts-800x360: actions",
+    "fonts-800x360: fixed actions after scroll",
+    "fonts-768x320: frame",
+    "fonts-768x320: title close",
+    "fonts-768x320: actions",
+    "fonts-768x320: fixed actions after scroll",
+    "fonts-767x320: fixed actions after scroll",
+    "fonts-320x240: fixed actions after scroll",
+    "style-800x360: frame",
+    "style-800x360: title close",
+    "style-800x360: actions",
+    "style-800x360: fixed actions after scroll",
+    "style-768x320: frame",
+    "style-768x320: title close",
+    "style-768x320: actions",
+    "style-768x320: fixed actions after scroll",
+    "style-767x320: actions",
+    "style-767x320: fixed actions after scroll",
+    "style-320x240: actions",
+    "style-320x240: fixed actions after scroll",
+    "style-360x640: actions",
+    "style-360x640: fixed actions after scroll",
+    "recovery-320x240: visible scroll viewport",
+    "recovery-320x240: last draft can be selected",
+    "table-320x240: visible scroll viewport",
+    "picture-320x240: cancel hit target",
+    "picture-360x640: cancel hit target"
+  ]
+}

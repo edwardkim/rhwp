@@ -93,6 +93,22 @@ async function navigateApp(page, search = '') {
   await page.goto(`${APP_URL}${search}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   await page.waitForFunction(() => !!window.__wasm && !!window.__canvasView, { timeout: 15000 });
   await page.evaluate(() => new Promise(r => setTimeout(r, 500)));
+  await acceptFontFallbackWhenOffered(page);
+}
+
+// #8397의 문서 글꼴 선택은 복구 로드에도 적용된다. 설치 글꼴이 없는 headless에서도
+// 실제 선택에 응답하며, 복구 UI나 문서 로드를 우회하지 않는다 (#9133).
+async function acceptFontFallbackWhenOffered(page) {
+  await page.waitForFunction(() => document.querySelector('.recovery-dialog')
+    || document.querySelector('#scroll-container canvas')
+    || [...document.querySelectorAll('.modal-overlay button')]
+      .some(button => button.textContent?.trim() === '대체 글꼴로 보기'), { timeout: 15000 });
+  for (const button of await page.$$('.modal-overlay button')) {
+    if (await button.evaluate(el => el.textContent?.trim() === '대체 글꼴로 보기')) {
+      await button.click();
+      break;
+    }
+  }
 }
 
 async function exportHwpFromSample(page, filename) {
@@ -130,6 +146,7 @@ async function openAndRestore(page, expectedFileNamePart) {
     if (!button) throw new Error('복구 버튼을 찾을 수 없습니다');
     button.click();
   });
+  await acceptFontFallbackWhenOffered(page);
   await waitForCanvas(page, 10000);
   await page.evaluate(() => new Promise(r => setTimeout(r, 800)));
 }

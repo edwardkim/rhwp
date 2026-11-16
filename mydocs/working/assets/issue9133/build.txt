@@ -1,0 +1,32 @@
+
+> rhwp-studio@0.9.0 build
+> tsc && vite build
+
+vite v8.3.5 building client environment for production...
+transforming...
+✓ 354 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/registerSW.js                               0.13 kB
+dist/manifest.webmanifest                        0.76 kB
+dist/assets/form-action-worker-BEckcfC_.js      10.79 kB
+dist/index.html                                 87.08 kB │ gzip:     11.53 kB
+dist/assets/import-worker-BOZeIEYc.js          152.15 kB
+dist/assets/canvaskit-SCAxUyCS.wasm          7,317.34 kB │ gzip:  2,989.78 kB
+dist/assets/rhwp_bg-vYRq7q8r.wasm           27,691.18 kB │ gzip: 10,589.55 kB
+dist/assets/index-C3LMT7O_.css                 119.64 kB │ gzip:     20.59 kB
+dist/assets/studio-plugin-DTxgAKj_.js           55.39 kB │ gzip:     16.53 kB
+dist/assets/canvaskit-renderer-yDfDHd33.js     339.49 kB │ gzip:    102.08 kB
+dist/assets/index-BAP3EPNI.js                2,334.64 kB │ gzip:    497.73 kB
+
+✓ built in 1.34s
+Browserslist: browsers data (caniuse-lite) is 6 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+PWA v2.0.0
+mode      generateSW
+precache  65 entries (30944.53 KiB)
+files generated
+  dist/sw.js
+  dist/workbox-dcde9eb3.js

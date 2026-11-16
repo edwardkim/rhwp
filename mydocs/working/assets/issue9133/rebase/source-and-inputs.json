@@ -1,0 +1,39 @@
+{
+  "oldBase": "6269cb0f1707a1c5afcae4840ac875f928c4a03d",
+  "oldCandidate": "e27e724802b8546ec8ba52ab7983761c04fca89e",
+  "newBase": "ae9277dda0ca17be279cba89c4deea74fb75dcae",
+  "source": "b57fb3d5ef8ea924e5cd37fed3798ed1b18e54e7",
+  "integratedPRs": [
+    9134,
+    9135
+  ],
+  "rangeDiff": "1:  5e9f208486 = 1:  7e96fd9ef8 docs: #9133 공통 대화상자 viewport 보완 계획\n2:  4b72435a07 = 2:  a56c93db7b fix(studio): #9133 공통 대화상자의 제목과 조작을 화면 안에 유지\n3:  80bf4c9e1b = 3:  9f33810353 test(studio): #9133 복구 E2E에서 실제 글꼴 선택 처리\n4:  e27e724802 = 4:  b57fb3d5ef docs: #9133 공통 대화상자 최종 검증과 화면 증거 기록\n",
+  "inputs": [
+    {
+      "path": "samples/셀보호2.hwp",
+      "bytes": 16384,
+      "sha256": "676c27ab07c3bacbc4241540024b7327b9d2c578b88c37a36f96cda15514c2e2",
+      "commit": "b57fb3d5ef8ea924e5cd37fed3798ed1b18e54e7",
+      "blob_matches": true
+    },
+    {
+      "path": "samples/셀보호2.hwpx",
+      "bytes": 17449,
+      "sha256": "17d4533e5dcec03e4f52244ed20528770718c3e09ad7ac7b5c708ed82b530e23",
+      "commit": "b57fb3d5ef8ea924e5cd37fed3798ed1b18e54e7",
+      "blob_matches": true
+    },
+    {
+      "path": "pdf/issue8403/image-patterns.pdf",
+      "bytes": 3578,
+      "sha256": "f121e0f0ca222f397ea80d5b16dba45b1e2d768cc339e1e495ade9e3f512869f",
+      "commit": "b57fb3d5ef8ea924e5cd37fed3798ed1b18e54e7",
+      "blob_matches": true
+    }
+  ],
+  "npmVersions": {
+    "vite": "8.3.8",
+    "puppeteer-core": "25.17.0",
+    "@anthropic-ai/sdk": "1.8.0"
+  }
+}

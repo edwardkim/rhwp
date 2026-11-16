@@ -1,0 +1,9 @@
+  ➜  Local:   http://127.0.0.1:7700/
+=== E2E: PDF 가져오기 화면·키보드·한도·재시도 (#8411) ===
+
+  [browser] headless Chrome 실행
+PASS: 2개 테마·작은 화면·긴 파일명·키보드·유효 한도/입력 오류
+PASS: 실제 1초 제한·실패 후 재시도·동일 한도의 Worker 전달과 PDF 변환
+PASS: Escape 취소
+
+📋 HTML 보고서: ../output/e2e/pdf-import-dialog-issue8411-report.html

@@ -1,0 +1,25 @@
+  ➜  Local:   http://127.0.0.1:7700/
+=== E2E: Issue #8905 제품 정보 창이 작은 화면에서도 화면 안에 있고 닫힌다 ===
+
+  [browser] headless Chrome 실행
+  PASS: 대화상자 전체가 화면 안에 있다 — 가로로 눕힌 휴대폰 800x360: {"viewport":{"width":800,"height":360},"dialog":{"top":12,"bottom":348,"left":170,"right":630},"titleClose":{"top":19.5,"bottom":35.5,"left":601,"right":617},"footerClose":{"top":309,"bottom":335,"left":553,"right":617},"bodyScrollHeight":683,"bodyClientHeight":258,"bodyOverflowY":"auto"}
+  PASS: 제목 줄 닫기(×) 버튼이 화면 안에 있다 — 가로로 눕힌 휴대폰 800x360: {"viewport":{"width":800,"height":360},"dialog":{"top":12,"bottom":348,"left":170,"right":630},"titleClose":{"top":19.5,"bottom":35.5,"left":601,"right":617},"footerClose":{"top":309,"bottom":335,"left":553,"right":617},"bodyScrollHeight":683,"bodyClientHeight":258,"bodyOverflowY":"auto"}
+  PASS: 하단 닫기 버튼이 화면 안에 있다 — 가로로 눕힌 휴대폰 800x360: {"viewport":{"width":800,"height":360},"dialog":{"top":12,"bottom":348,"left":170,"right":630},"titleClose":{"top":19.5,"bottom":35.5,"left":601,"right":617},"footerClose":{"top":309,"bottom":335,"left":553,"right":617},"bodyScrollHeight":683,"bodyClientHeight":258,"bodyOverflowY":"auto"}
+  PASS: 본문이 넘치면 본문 안에서 스크롤한다 — 가로로 눕힌 휴대폰 800x360: {"viewport":{"width":800,"height":360},"dialog":{"top":12,"bottom":348,"left":170,"right":630},"titleClose":{"top":19.5,"bottom":35.5,"left":601,"right":617},"footerClose":{"top":309,"bottom":335,"left":553,"right":617},"bodyScrollHeight":683,"bodyClientHeight":258,"bodyOverflowY":"auto"}
+  PASS: 스크롤하면 본문 끝(저작권 줄)까지 볼 수 있다 — 가로로 눕힌 휴대폰
+  PASS: 대화상자 안을 눌러서는 닫히지 않는다 — 가로로 눕힌 휴대폰
+  PASS: 닫은 뒤 남은 overlay가 없다 — 가로로 눕힌 휴대폰
+  PASS: 대화상자 전체가 화면 안에 있다 — 세로 휴대폰 360x640: {"viewport":{"width":360,"height":640},"dialog":{"top":64,"bottom":640,"left":0,"right":360},"titleClose":{"top":77,"bottom":121,"left":299,"right":343},"footerClose":{"top":583,"bottom":627,"left":283,"right":347},"bodyScrollHeight":725,"bodyClientHeight":441,"bodyOverflowY":"auto"}
+  PASS: 제목 줄 닫기(×) 버튼이 화면 안에 있다 — 세로 휴대폰 360x640: {"viewport":{"width":360,"height":640},"dialog":{"top":64,"bottom":640,"left":0,"right":360},"titleClose":{"top":77,"bottom":121,"left":299,"right":343},"footerClose":{"top":583,"bottom":627,"left":283,"right":347},"bodyScrollHeight":725,"bodyClientHeight":441,"bodyOverflowY":"auto"}
+  PASS: 하단 닫기 버튼이 화면 안에 있다 — 세로 휴대폰 360x640: {"viewport":{"width":360,"height":640},"dialog":{"top":64,"bottom":640,"left":0,"right":360},"titleClose":{"top":77,"bottom":121,"left":299,"right":343},"footerClose":{"top":583,"bottom":627,"left":283,"right":347},"bodyScrollHeight":725,"bodyClientHeight":441,"bodyOverflowY":"auto"}
+  PASS: 본문이 넘치면 본문 안에서 스크롤한다 — 세로 휴대폰 360x640: {"viewport":{"width":360,"height":640},"dialog":{"top":64,"bottom":640,"left":0,"right":360},"titleClose":{"top":77,"bottom":121,"left":299,"right":343},"footerClose":{"top":583,"bottom":627,"left":283,"right":347},"bodyScrollHeight":725,"bodyClientHeight":441,"bodyOverflowY":"auto"}
+  PASS: 스크롤하면 본문 끝(저작권 줄)까지 볼 수 있다 — 세로 휴대폰
+  PASS: 대화상자 안을 눌러서는 닫히지 않는다 — 세로 휴대폰
+  PASS: 닫은 뒤 남은 overlay가 없다 — 세로 휴대폰
+  PASS: 대화상자 전체가 화면 안에 있다 — 데스크톱 1280x900: {"viewport":{"width":1280,"height":900},"dialog":{"top":69.3125,"bottom":830.6875,"left":410,"right":870},"titleClose":{"top":76.8125,"bottom":92.8125,"left":841,"right":857},"footerClose":{"top":791.6875,"bottom":817.6875,"left":793,"right":857},"bodyScrollHeight":683,"bodyClientHeight":683,"bodyOverflowY":"auto"}
+  PASS: 제목 줄 닫기(×) 버튼이 화면 안에 있다 — 데스크톱 1280x900: {"viewport":{"width":1280,"height":900},"dialog":{"top":69.3125,"bottom":830.6875,"left":410,"right":870},"titleClose":{"top":76.8125,"bottom":92.8125,"left":841,"right":857},"footerClose":{"top":791.6875,"bottom":817.6875,"left":793,"right":857},"bodyScrollHeight":683,"bodyClientHeight":683,"bodyOverflowY":"auto"}
+  PASS: 하단 닫기 버튼이 화면 안에 있다 — 데스크톱 1280x900: {"viewport":{"width":1280,"height":900},"dialog":{"top":69.3125,"bottom":830.6875,"left":410,"right":870},"titleClose":{"top":76.8125,"bottom":92.8125,"left":841,"right":857},"footerClose":{"top":791.6875,"bottom":817.6875,"left":793,"right":857},"bodyScrollHeight":683,"bodyClientHeight":683,"bodyOverflowY":"auto"}
+  PASS: 대화상자 안을 눌러서는 닫히지 않는다 — 데스크톱
+  PASS: 닫은 뒤 남은 overlay가 없다 — 데스크톱
+
+📋 HTML 보고서: ../output/e2e/about-dialog-issue8905-report.html
