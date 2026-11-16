@@ -1,10 +1,8 @@
 // Fake-clock widget/channel regressions for idle RPC admission. No actual GPU,
 // power, CPU scheduling, compositor display or consumer-fence evidence.
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rhwp_native_reference/rhwp_native_flutter.dart';
 import 'package:rhwp_native_reference/src/native_producer_ready.dart';
