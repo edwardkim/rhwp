@@ -1,0 +1,10 @@
+{
+  "pr": 9134,
+  "head": "77393b9f96f1011d624d2c4d72a579e9d77f2a89",
+  "metadata_only_bot_review_waiver_applied": true,
+  "body_api_exact": true,
+  "body_sha256": "ee0f39c171d9092a94438437b22f1a32d2b46b265a5439f4e09e6d22b302ae10",
+  "evidence_url_set_unchanged_count": 85,
+  "prior_download_receipt": "posted-evidence-validation.json",
+  "checked_at": "2026-11-16T16:58:23.287544+09:00"
+}

@@ -1,0 +1,58 @@
+{
+  "status": "completed",
+  "scope": "기존 report-only 수식4개 비교의 base/candidate 실제 브라우저 출력 대조",
+  "base_wasm_sha256": "1cc3864ad1097224f125ceb5513ba55e110cd3517de5b84237dfada4b51bfe7e",
+  "candidate_wasm_sha256": "dd58a4fa7680674379adb94f874123029c39001a94600e7d1a369aec823a11bb",
+  "same_frontend_and_browser": true,
+  "forced_exit": false,
+  "base_hard_violations": 0,
+  "base_report_only_parity": {
+    "total": 4,
+    "compared": 4,
+    "passed": 0,
+    "failed": 4,
+    "missing": 0,
+    "errors": 0,
+    "identityMismatches": 0
+  },
+  "actual_png_pairs": [
+    {
+      "file": "canvas2d-screen.png",
+      "base_sha256": "9faabb14acc276b8684a754858a2ee33be22e0db808477214e4ea23e797cfd68",
+      "candidate_sha256": "9faabb14acc276b8684a754858a2ee33be22e0db808477214e4ea23e797cfd68",
+      "identical": true
+    },
+    {
+      "file": "canvaskit-default-print-software.png",
+      "base_sha256": "070ed9b211440f4be0b1bc6e080dcde9c9c9f050fbce94264a06551b8a14d127",
+      "candidate_sha256": "070ed9b211440f4be0b1bc6e080dcde9c9c9f050fbce94264a06551b8a14d127",
+      "identical": true
+    },
+    {
+      "file": "canvaskit-compat-print-software.png",
+      "base_sha256": "070ed9b211440f4be0b1bc6e080dcde9c9c9f050fbce94264a06551b8a14d127",
+      "candidate_sha256": "070ed9b211440f4be0b1bc6e080dcde9c9c9f050fbce94264a06551b8a14d127",
+      "identical": true
+    },
+    {
+      "file": "canvaskit-default-screen-software.png",
+      "base_sha256": "97afc03bdb40e1a59222ae00d6259b06084dbc9a09ded1f81f437ebcc11c4aaf",
+      "candidate_sha256": "97afc03bdb40e1a59222ae00d6259b06084dbc9a09ded1f81f437ebcc11c4aaf",
+      "identical": true
+    },
+    {
+      "file": "canvaskit-compat-screen-software.png",
+      "base_sha256": "97afc03bdb40e1a59222ae00d6259b06084dbc9a09ded1f81f437ebcc11c4aaf",
+      "candidate_sha256": "97afc03bdb40e1a59222ae00d6259b06084dbc9a09ded1f81f437ebcc11c4aaf",
+      "identical": true
+    },
+    {
+      "file": "canvas2d-print.png",
+      "base_sha256": "d1fdd21b2a0817e57199cd872307d17f29f4c89ecc7ed7d69cfb92e352ccb041",
+      "candidate_sha256": "d1fdd21b2a0817e57199cd872307d17f29f4c89ecc7ed7d69cfb92e352ccb041",
+      "identical": true
+    }
+  ],
+  "result": "수식 screen/print × Canvas2D/CanvasKit 두 모드의6개 PNG가 모두 byte-identical; 네 report-only 차이는 의존성 갱신의 새 악화가 아님",
+  "created_at": "2026-11-16T16:41:30.269448+09:00"
+}

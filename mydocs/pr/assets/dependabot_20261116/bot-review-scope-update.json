@@ -1,0 +1,15 @@
+{
+  "requested_at": "2026-11-16T16:57:22.696778+09:00",
+  "user_instruction": "봇이므로 개별 pr review 는 안해도 됨.",
+  "omit": [
+    "16개 원 PR별 archive review 문서",
+    "16개 원 PR의 상세 개별 review 댓글"
+  ],
+  "keep": [
+    "통합 PR9134 전체 CI와 정상 병합",
+    "옵션2의 통합 검증 기록·오늘할일",
+    "원 PR별 간단한 통합 링크 댓글과 supersede close",
+    "duration/devel sync/소유 정리, output 보존"
+  ],
+  "prepared_drafts": "output에 보존하되 게시/커밋하지 않음"
+}
