@@ -102,3 +102,11 @@ manifest와 release 문서 변경이며 nextest manifest·설치 runtime을 바�
 저장소 workflow8개는 승인된 두 action의 SHA와 version 주석만 치환한 결과가 실제 후보와
 완전히 같습니다. trigger·권한·cache key·save-if·설치 tool을 바꾸지 않았습니다.
 로컬 Mac에서 action의 sudo purge를 실행하지 않았으며 실제 GitHub CI는 로컬 게이트 뒤 확인합니다.
+
+## 최소 글꼴 전체 회귀 완료
+
+수정한 격리 프로필에서 [전체 nextest](full-nextest-result.json)는 실제 13,617건 실행·
+13,617PASS·0FAIL·45SKIP, 테스트 본문 474.565초로 완료했습니다. runner 시작 source와
+현재 head 사이의 제품·테스트·빌드·공개 fixture 입력 변경이 없음을 확인했습니다.
+Native Skia 별도 범위·lint·fresh WASM·전쪽 보호 및 실제 소비 검증은 진행 중이므로
+이 결과만으로 모든 로컬 게이트 완료나 PR 준비 완료로 기록하지 않습니다.
