@@ -337,7 +337,7 @@ class NativeTextureController extends ChangeNotifier {
   Completer<void>? _coverWaiter;
   VoidCallback? _detachReadyEvents;
   final _readySerials = <int, int>{};
-  bool _readyEventPending = false;
+  bool _readyEventPending = false, _readyEventsAvailable = false;
   Future<void>? _pauseFuture;
   Timer? _coverWaitDeadline;
   final _releases = <Future<void>>{};
@@ -964,6 +964,9 @@ class NativeTextureController extends ChangeNotifier {
           _detachReadyEvents ??= NativeProducerReadyEvents.attach(
             channel,
             _producerReady,
+            onAvailabilityChanged: (available) {
+              _readyEventsAvailable = available;
+            },
           );
         }
       }
@@ -1311,13 +1314,20 @@ class NativeTextureController extends ChangeNotifier {
       unawaited(_pump());
       return;
     }
-    if (_frame != null) unawaited(_poll());
+    // A fully checked current publication needs no idle platform/snapshot RPC.
+    // Pending work still polls until the existing publication deadline, and a
+    // missing/failed event transport keeps the legacy polling path.
+    if (_frame != null &&
+        (!_readyEventsAvailable || !canDisplay || _readyEventPending)) {
+      unawaited(_poll());
+    }
   }
 
   void _stopReadyEvents() {
     _detachReadyEvents?.call();
     _detachReadyEvents = null;
     _readyEventPending = false;
+    _readyEventsAvailable = false;
     _readySerials.clear();
   }
 
