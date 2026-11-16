@@ -60,3 +60,27 @@ Linux 로컬 실행에서는 Flutter 3.47.9 release 참조 앱을 Xvfb/Mesa llvm
 정상 종료의 근거로 사용하지 않았다. 이 실행은 기존 Native 라이브러리
 `b5064fae1eefff92d60464c51844a38debec09f9`를 사용한 Linux 소프트웨어 GPU 확인이며,
 물리 GPU·macOS·Windows 및 최종 문서 자료 검증은 포함하지 않는다.
+
+## 메모리 압력과 Native 캐시 정리 (P129)
+
+`NativeGpuLifecycle`은 Flutter `didHaveMemoryPressure`에서 현재 controller의
+`trimCaches(targetBytes: 0)`을 요청한다. 같은 controller의 진행 중 요청은 첫 요청의
+future와 목표를 공유하며, 창이 숨겨져 있어도 새 문서·snapshot·GPU owner를 만들지 않는다.
+숨김·복귀와 geometry 변경은 기존 pause/resume 경로를 유지한다.
+
+`NativeGpuCacheTrimResult`는 Native가 관리하는 target의 `before`, `after`, `trimmed`
+바이트와 `pending`, `busy`, `reason`을 구분한다. Native 접수만 된 `pending:true`인 동안만
+기존 cadence로 status를 조회하고 하나의 `operationTimeout` 기한을 적용한다.
+`pending:false`인 `busy:true`는 pin·미확정 완료 등으로 목표까지 줄이지 못한 최종 결과이며
+반복 polling하거나 성공으로 바꾸지 않는다. 두 타일의 결과는 멤버별 owner·device·request·목표와
+합계 및 상태 OR를 검증하며, `targetBytes`는 각 presenter의 목표다.
+
+오래된 plugin의 미지원은 `supported:false, reason:'unsupported'`로 반환한다. 등록 전과
+종료된 controller도 이유가 있는 unavailable 결과를 반환한다. 잘못된 응답·backend 오류·기한
+초과는 trim future 또는 선택적 `onTrimError`로 전달하며 renderer를 자동으로 fallback시키지
+않는다. controller 교체·widget 제거·종료 뒤의 늦은 응답은 새 viewport나 오류 표시를 갱신하지
+않으며, 이미 시작한 RPC의 기존 credit·종료 observer는 계속 유지한다.
+
+정리 범위는 `managedGpuTargets`다. Flutter에 공개한 immutable 이미지, snapshot 소유권,
+consumer GPU 완료, 드라이버·전체 프로세스 VRAM 사용량과 구분한다. 실제 메모리 압력의 OS별
+전달과 물리 GPU의 장시간 메모리 계측은 플랫폼 검증에서 확인한다.
