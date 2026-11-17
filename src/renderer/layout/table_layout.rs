@@ -12404,6 +12404,19 @@ impl LayoutEngine {
         crate::renderer::float_placement::nested_table_is_overlay(table)
     }
 
+    /// 저장 줄 없는 문단의 글 앞/뒤 중첩 표(문단·쪽·종이 기준)는 칸의 글줄을 밀지 않는다.
+    /// 칸 흐름 높이처럼 행 나눔 유닛에도 흐름 띠로 세지 않는다. 저장 줄이 있는 문단은
+    /// 한/글이 저장한 조각 상자(#8715)를 따르므로 이 규칙 밖이다.
+    fn nested_table_takes_no_flow(
+        &self,
+        host: &Paragraph,
+        table: &crate::model::table::Table,
+    ) -> bool {
+        crate::renderer::para_has_no_stored_line_segs(host)
+            && (self.nested_table_is_overlay(table)
+                || crate::renderer::float_placement::nested_table_is_page_overlay(table))
+    }
+
     /// 셀 유닛 컷 `cut`(없으면 셀 전체)이 문단 `para_idx` 의 모든 유닛 — host 글줄과 중첩
     /// 표의 모든 행 — 을 소유하는지. 앞 조각에서 이어받았거나 다음 조각으로 이어지는 host 는
     /// 이 조각에 host 글줄 끝과 표 하단이 함께 있지 않다.
@@ -17591,9 +17604,11 @@ impl LayoutEngine {
                     None => with_tac(raw_lh),
                 }
             };
-            let has_table_in_para = source_controls
-                .iter()
-                .any(|c| matches!(c, Control::Table(_)));
+            // 저장 줄 없는 문단의 글 앞/뒤 중첩 표는 행 나눔 유닛에 세지 않는다.
+            let has_table_in_para = source_controls.iter().any(|c| {
+                matches!(c, Control::Table(t)
+                    if !self.nested_table_takes_no_flow(&cell.paragraphs[pi], t))
+            });
             let frame_owns_table_bands = comp.frame_owns_multiple_inline_tables()
                 && source_controls.iter().enumerate().all(|(index, control)| {
                     !matches!(control, Control::Table(_)) || comp.frame_owns_inline_table(index)
@@ -19174,6 +19189,11 @@ impl LayoutEngine {
                 let nested_h: f64 = source_controls
                     .iter()
                     .map(|ctrl| match ctrl {
+                        Control::Table(t)
+                            if self.nested_table_takes_no_flow(&cell.paragraphs[pi], t) =>
+                        {
+                            0.0
+                        }
                         Control::Table(t) => {
                             self.calc_nested_table_height(t, styles)
                                 + if host_is_cell_last_para {
@@ -19216,8 +19236,12 @@ impl LayoutEngine {
                                 .unwrap_or(0.0)
                             }
                     } else if crate::renderer::para_has_no_stored_line_segs(p)
-                        && source_controls.is_empty()
+                        && source_controls.iter().all(|ctrl| {
+                            matches!(ctrl, Control::Table(t)
+                                if self.nested_table_takes_no_flow(&cell.paragraphs[pi], t))
+                        })
                     {
+                        // 글 앞/뒤 표만 든 문단도 빈 문단과 같은 줄 하나를 차지한다.
                         // [#2169] NO_LS 순수 빈 문단 = 완전한 em 줄박스 (한글 공식:
                         // 80168 r4 c2 = 10줄×em + 9gap 정확). 비마지막 문단은
                         // fs×ls%(gap 포함 동치), 셀 마지막 문단은 em.
