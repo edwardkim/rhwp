@@ -3,7 +3,7 @@
 ## 구현과 기준
 
 [이슈 #9154](https://github.com/edwardkim/rhwp/issues/9154), [수행 계획](../plans/task_m100_9154.md).
-기준 devel은 `1e2488ebd432deb7c326be532f8a91945f260231`, 구현·실행 source는 `9815b65c3606f42ae57b68df66293f921a1db254`다.
+기준 devel은 `1e2488ebd432deb7c326be532f8a91945f260231`, 최초 로컬 구현·실행 source는 `9815b65c3606f42ae57b68df66293f921a1db254`다.
 
 GitHub의 `ubuntu-latest` 26.04 전환에 따라 제품 빌드·검사와 Native host Linux 패키지의
 기준을 Ubuntu 24.04로 고정했다. archive producer/consumer도 같은 OS를 사용한다.
@@ -64,7 +64,7 @@ layout 안내문은 통합 [#5530](https://github.com/edwardkim/rhwp/pull/5530)�
 [독립 실행으로 확인](../working/assets/issue9154/advisory-note-equivalence.json)했다.
 검사 비활성화나 허용치 완화는 하지 않았다.
 
-## 재현과 남은 원격 단계
+## 재현과 원격 처리 결과
 
 빌드·패키징 명령은 [Native 패키징 안내](../../bindings/Native/examples/PACKAGING.md)에 있다.
 Docker base digest와 설치 recipe는 [이미지 기록](../working/assets/issue9154/docker-runtime-build-results.json),
@@ -75,10 +75,24 @@ Docker base digest와 설치 recipe는 [이미지 기록](../working/assets/issu
 [거절 결과](../working/assets/issue9154/newer-glibc-control-result.json)와
 [24.04 loader 오류](../working/assets/issue9154/newer-glibc-24-loader.log)는 실제 실행 결과다.
 
-로컬 필수 검증은 완료했으며 원격 push·PR·CI·dispatch·merge는 아직 수행하지 않았다.
-현재 본인 열린 PR은 없고 원격 devel은 기준 SHA와 같다. 제출 직전 최신 상태와 최종 head
-병합 시뮬레이션을 다시 확인한다. 원격 승인을 받은 뒤 devel PR의 Full CI·self-review를 진행한다.
-CI 실행 정의 변경의 review·오늘할일 후속 기록은 옵션 2의 별도 기록 PR로 처리한다.
+PR [#9155](https://github.com/edwardkim/rhwp/pull/9155)의 최종 code head는 `d9868f4ef1e506918bb3eceece5453333b047e64`이며
+devel merge는 `1ea5d6df80eebcdc16cf451b4e76d4a48d5edc2a`다. 새 head Full CI·CodeQL·Render Diff·Adapter·Proptest·정책과
+Fuzz 두 OS 12개 build/run이 모두 성공했다. Archive 13,523건·선택 Native 245건·Studio 2,805건이 통과했다.
+실제 Native package 3플랫폼·Full Renderer 두 OS는 producer source `de94e7cc23`의 증거를
+사용자 승인에 따라 동일 실행 정의의 컴포넌트 증거로 유지했다. 최신 devel 병합의 새 바이너리와 혼동하지 않는다.
+
+Fuzz cold build의 기본 단일 codegen unit에서 로컬 compiler peak 16.64 GiB를 관측했다.
+같은 SDK/source/lockfile의 16개 단위 target build는 13.18 GiB였으며 양 구성의 실제 퍼징·느린 입력이 통과했다.
+이후 실제 GitHub 두 OS 12개 빌드의 peak 최대는 8.092 GiB였다.
+원격 OOM은 직접 확인되지 않았으므로 이전 exit 143의 원인을 확정하지 않는다.
+60분 job·60초 퍼징·입력별 30초·RSS 2 GiB·ASan·coverage·6개 타깃을 유지했다.
+
+[최종 검토](../pr/archives/pr_9155_review.md)와 [원격 검증 원장](../pr/assets/pr9155/README.md)에
+개별 source·run·job·digest·실제 소비 결과와 제한을 보존했다. Full Renderer browser 378 PNG·105 SVG는
+OS 간 같지만 Native 34 PNG에는 실제 차이가 있었고 report-only parity는 22/72 통과였다.
+이를 Native 전체 동일성이나 독립 한컴 조판 개선으로 승격하지 않는다.
+cache budget/read-only 경고도 유지하며 cache 삭제·예산·과금 설정을 변경하지 않았다.
+CI 변경의 옵션 2 별도 기록 PR로 review·오늘할일·실제 merge SHA를 반영한다.
 
 정기 Fuzz는 main workflow를 사용하므로 devel 반영만으로 적용 완료가 아니다.
 main 적용 범위·검증 후보를 별도로 준비해 승인받고 실제 GitHub runner의 수동 선택·cache·

@@ -1,0 +1,25 @@
+{
+  "total_count": 1,
+  "artifacts": [
+    {
+      "id": 14327729877,
+      "node_id": "MDg6QXJ0aWZhY3QxNDMyNzcyOTg3Nw==",
+      "name": "full-renderer-sweep-artifacts",
+      "size_in_bytes": 32434965,
+      "url": "https://api.github.com/repos/edwardkim/rhwp/actions/artifacts/14327729877",
+      "archive_download_url": "https://api.github.com/repos/edwardkim/rhwp/actions/artifacts/14327729877/zip",
+      "expired": false,
+      "digest": "sha256:8433cb1127dc638fcef435bf9a84f64f01689197ef34818959d7bc10fa86c5cd",
+      "created_at": "2026-11-17T12:32:37Z",
+      "updated_at": "2026-11-17T12:32:37Z",
+      "expires_at": "2026-12-01T12:32:35Z",
+      "workflow_run": {
+        "id": 44072292744,
+        "repository_id": 1193345564,
+        "head_repository_id": 1193345564,
+        "head_branch": "task/9154-ubuntu-runner-baseline",
+        "head_sha": "de94e7cc23dcbea3fe857a726646a872399f8f9c"
+      }
+    }
+  ]
+}

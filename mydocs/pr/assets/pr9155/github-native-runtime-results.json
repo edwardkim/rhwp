@@ -1,0 +1,183 @@
+{
+  "artifactId": 14324237355,
+  "run": 44072214045,
+  "source": "de94e7cc23dcbea3fe857a726646a872399f8f9c",
+  "sourceRevisionEvidence": "caller-declared; binary provenance not verified",
+  "producerEvidence": "exact GitHub run SHA, build and ABI/headless logs, archive digest verified independently of the manifest declaration",
+  "abi": {
+    "ok": true,
+    "artifact": "/home/edward/mygithub/rhwp/output/ubuntu-runner-baseline/github-native-linux/lib/librhwp_native_ffi.so",
+    "sha256": "096bbcd8a634b641331583316eb9c82b176f6387b0f15f427e605f0d013969c2",
+    "elfClass": 64,
+    "elfMachine": 62,
+    "maxGlibc": "2.39",
+    "maxRequiredGlibc": "2.35",
+    "requiredGlibcVersions": [
+      "2.2.5",
+      "2.3",
+      "2.3.4",
+      "2.7",
+      "2.14",
+      "2.17",
+      "2.18",
+      "2.25",
+      "2.27",
+      "2.28",
+      "2.29",
+      "2.30",
+      "2.32",
+      "2.33",
+      "2.34",
+      "2.35"
+    ],
+    "scope": "declared ELF version needs; runtime loading verified separately"
+  },
+  "consumers": [
+    {
+      "ubuntu": "24.04",
+      "exitCode": 0,
+      "result": {
+        "ok": true,
+        "mode": "blank-ime",
+        "output": "/result/edited.hwpx",
+        "render": {
+          "width": 256,
+          "height": 256,
+          "stride": 1024,
+          "revision": 0,
+          "fontGeneration": 0,
+          "originX": 0,
+          "originY": 0,
+          "sha256": "3b874d3ba46c638fc3094f8e92fb744ca974893873f8885f54e23760f9b6311b"
+        },
+        "queries": {
+          "hit": {
+            "caret": {
+              "cellBounds": null,
+              "cellOverflowed": false,
+              "height": 13.3,
+              "page": 0,
+              "x": 113.4,
+              "y": 132.9
+            },
+            "position": {
+              "cellPath": [],
+              "paragraph": 0,
+              "scalarOffset": 0,
+              "section": 0
+            }
+          },
+          "caret": {
+            "cellBounds": null,
+            "cellOverflowed": false,
+            "height": 13.3,
+            "page": 0,
+            "x": 113.4,
+            "y": 132.3
+          },
+          "selectionRects": [
+            {
+              "bounds": {
+                "height": 13.3,
+                "width": 13.0,
+                "x": 113.4,
+                "y": 132.3
+              },
+              "page": 0
+            }
+          ]
+        },
+        "save": {
+          "revision": 5,
+          "byteLength": 7391,
+          "isDirty": false,
+          "report": {
+            "count": 0,
+            "losses": [],
+            "outputFormat": "hwpx",
+            "schemaVersion": 1
+          },
+          "caretSaved": false,
+          "caretPreservedFromSource": false
+        },
+        "reopenedPages": 1,
+        "imeRoundtripVerified": true,
+        "savedTextCharacters": 2
+      },
+      "outputSha256": "b1799df347dd99854cb03ee499c261d39a68292439ef14ad798eb82f92226bd1"
+    },
+    {
+      "ubuntu": "26.04",
+      "exitCode": 0,
+      "result": {
+        "ok": true,
+        "mode": "blank-ime",
+        "output": "/result/edited.hwpx",
+        "render": {
+          "width": 256,
+          "height": 256,
+          "stride": 1024,
+          "revision": 0,
+          "fontGeneration": 0,
+          "originX": 0,
+          "originY": 0,
+          "sha256": "3b874d3ba46c638fc3094f8e92fb744ca974893873f8885f54e23760f9b6311b"
+        },
+        "queries": {
+          "hit": {
+            "caret": {
+              "cellBounds": null,
+              "cellOverflowed": false,
+              "height": 13.3,
+              "page": 0,
+              "x": 113.4,
+              "y": 132.9
+            },
+            "position": {
+              "cellPath": [],
+              "paragraph": 0,
+              "scalarOffset": 0,
+              "section": 0
+            }
+          },
+          "caret": {
+            "cellBounds": null,
+            "cellOverflowed": false,
+            "height": 13.3,
+            "page": 0,
+            "x": 113.4,
+            "y": 132.3
+          },
+          "selectionRects": [
+            {
+              "bounds": {
+                "height": 13.3,
+                "width": 13.0,
+                "x": 113.4,
+                "y": 132.3
+              },
+              "page": 0
+            }
+          ]
+        },
+        "save": {
+          "revision": 5,
+          "byteLength": 7391,
+          "isDirty": false,
+          "report": {
+            "count": 0,
+            "losses": [],
+            "outputFormat": "hwpx",
+            "schemaVersion": 1
+          },
+          "caretSaved": false,
+          "caretPreservedFromSource": false
+        },
+        "reopenedPages": 1,
+        "imeRoundtripVerified": true,
+        "savedTextCharacters": 2
+      },
+      "outputSha256": "b1799df347dd99854cb03ee499c261d39a68292439ef14ad798eb82f92226bd1"
+    }
+  ]
+}
