@@ -130,25 +130,33 @@ def stop_process_tree(process, grace=5):
         process.wait()
 
 
-def execute_step(command, *, repository, env, log_path, step, record, timeout, stop_grace=5):
+def execute_step(command, *, repository, env, log_path, step, record, timeout, stop_grace=5,
+                 inherit_process_group=False, stop_failed_group=False):
+    """The outer supervisor owns cleanup when a child inherits its group."""
     if not math.isfinite(timeout) or timeout <= 0 or timeout > 7200:
         raise ValueError("step timeout must be finite and within two hours")
     step["timeoutSeconds"] = timeout
     with Path(log_path).open("wb") as log:
         Path(log_path).chmod(0o600)
         process = subprocess.Popen(command, cwd=repository, env=env, stdin=subprocess.DEVNULL,
-                                   stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
+                                   stdout=log, stderr=subprocess.STDOUT,
+                                   start_new_session=not inherit_process_group)
         step["pid"] = process.pid
         try:
             record()
-            return process.wait(timeout=timeout)
+            code = process.wait(timeout=timeout)
+            if code and stop_failed_group and not inherit_process_group:
+                stop_process_tree(process, grace=stop_grace)
+            return code
         except subprocess.TimeoutExpired as error:
             step["timedOut"] = True
-            stop_process_tree(process, grace=stop_grace)
+            if not inherit_process_group:
+                stop_process_tree(process, grace=stop_grace)
             raise TimeoutError("SDK step exceeded its deadline: " + str(log_path)) from error
         except BaseException:
             step["interrupted"] = True
-            stop_process_tree(process, grace=stop_grace)
+            if not inherit_process_group:
+                stop_process_tree(process, grace=stop_grace)
             raise
         finally:
             step.update(exitCode=process.returncode, finished=time.time())

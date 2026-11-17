@@ -13,11 +13,13 @@ from pathlib import Path
 import platform
 import shlex
 import shutil
+import signal
 import subprocess
 import sys
 import time
 
 from build_desktop_probe import artifact, checked_sha
+from build_linux_probe import SDK_SUPERVISION_ENV
 from check_macos_metal_sdk import execute_step, source_hashes
 from native_artifact_provenance import load_native_artifact
 from qualify_desktop_texture import MAX_BUILD_RECEIPT_BYTES, digest, read_json, write_json
@@ -120,19 +122,22 @@ def qualify(args, *, repository=None, executor=execute_step):
                DART_SUPPRESS_ANALYTICS='true', PYTHONDONTWRITEBYTECODE='1', TMPDIR=str(output / 'tmp'),
                CARGO_TARGET_DIR=str(output / 'native-target'), CARGO_BUILD_BUILD_DIR=str(output / 'native-build'),
                CARGO_BUILD_JOBS='2', CARGO_INCREMENTAL='0')
+    env.pop(SDK_SUPERVISION_ENV, None)
     record = lambda: write_json(receipt, state)
     def unchanged():
         return source_hashes(repo) == before and subprocess.check_output(
             ['git', '-c', 'gc.auto=0', 'rev-parse', 'HEAD'], cwd=repo, text=True).strip() == head
-    def run(command, *, cwd=repo, timeout=None):
+    def run(command, *, cwd=repo, timeout=None, supervise_children=False):
         if not unchanged():
             raise ValueError('source checkout changed before SDK step')
         step = {'command': command, 'cwd': str(cwd), 'started': time.time(), 'exitCode': None,
                 'log': str(output / f'step-{len(state["steps"])}.log')}
         state['steps'].append(step)
         record()
-        code = executor(command, repository=cwd, env=env, log_path=step['log'], step=step,
-                        record=record, timeout=timeout or args.step_timeout)
+        child_env = {**env, SDK_SUPERVISION_ENV: '1'} if supervise_children else env
+        code = executor(command, repository=cwd, env=child_env, log_path=step['log'], step=step,
+                        record=record, timeout=timeout or args.step_timeout,
+                        stop_failed_group=supervise_children)
         if not unchanged():
             raise ValueError('source checkout changed during SDK step')
         if code:
@@ -203,7 +208,7 @@ def qualify(args, *, repository=None, executor=execute_step):
                 build = output / (label + '-build')
                 run([sys.executable, '-B', str(repo / 'bindings/Flutter/tool/build_linux_probe.py'),
                      '--flutter-sdk', str(sdk), '--native', str(native), '--native-source-head', native_head,
-                     '--output', str(build), *(['--tile-group'] if tiled else [])])
+                     '--output', str(build), *(['--tile-group'] if tiled else [])], supervise_children=True)
                 built = read_json(build / 'build-receipt.json', limit=MAX_BUILD_RECEIPT_BYTES)
                 if (type(built.get('buildExitCode')) is not int or built['buildExitCode'] != 0 or built.get('sourceHead') != head or
                         built.get('nativeSourceHead') != native_head or built.get('probeKind') != ('twoTileGroup' if tiled else 'singleTexture') or
@@ -219,7 +224,7 @@ def qualify(args, *, repository=None, executor=execute_step):
                     command += ['--build-receipt', str(build / 'build-receipt.json'), '--output', str(capture)]
                     if not tiled:
                         command += ['--frames', '32']
-                    run(command, timeout=330)
+                    run(command, timeout=330, supervise_children=True)
                     captured = read_json(capture / 'receipt.json', limit=32 * 1024 * 1024)
                     if (captured.get('qualification') != ('linux-two-tile-consumer-passed' if tiled else 'linux-consumer-passed') or
                             type(captured.get('exitCode')) is not int or captured['exitCode'] != 0 or captured.get('consumerGpuCompletionVerified') is not False or
@@ -267,6 +272,9 @@ def main():
     else:
         if not args.flutter_sdk or not args.output:
             parser.error('--flutter-sdk and --output are required')
+        def interrupt(signum, _frame):
+            raise KeyboardInterrupt(f'Linux SDK qualification interrupted by signal {signum}')
+        signal.signal(signal.SIGTERM, interrupt)
         print(qualify(args))
 
 
