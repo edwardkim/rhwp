@@ -52,6 +52,15 @@ TSV를 같은 조건·페이지로 비교한 증거를 적는다. 원본/PDF·pr
 90% 이상·평균 개선·CI 성공과 관계없이 재검토다. 기준 TSV가 없으면 미검증으로 기록한다.
 [상세 비교 기준](../verification/visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)을 따른다.
 
+기여자용 OS 기본 글꼴 100% 보호 페이지가 등재되어 있으면 다음을 **각각** 기록한다.
+
+- 등재 경계의 ±1px 자동 회귀 테스트 실행·결과
+- 기여자가 PR 제출 전 실행한 Native/fresh WASM Visual Sweep의 raw 100% 유지와 TSV·review/overlay
+- 제출 OS·기본 글꼴만 사용한 격리와 실제 프로그램의 근거, 하락·누락 0 확인
+
+[기여자용 100% 보호 정본](../verification/visual_verification_governance.md#기여자용-os-기본-글꼴-100-보호)에 따라
+회귀 통과와 시각 100% 유지를 구분한다. 이 검증은 아래 메인터너 정본 전체 특별 검증과 별개다.
+
 collaborator·maintainer의 조판·렌더링 PR review에는
 [정본 보호 TSV 비교](../verification/visual_verification_governance.md#정본-보호-tsv의-공식-표시값-보존)도 기록한다.
 공식 두 자리 표시값의 페이지별 하락은 허용하지 않는다. 일반 사용자·외부 contributor에게 이 검증이나
