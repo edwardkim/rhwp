@@ -57,4 +57,6 @@ CanvasKit은 명시적 software 경로로 실행했으며 실제 backend·원본
 - 보호 WMF가 요청하는 원본 굴림체의 WASM 공급 누락은 [동일 조건 base/후보 전쪽 대조와 원본 TTC 공급](protected-resource-repair/cause.md)으로 바로잡았다. 점수/PDF/제품 구현을 바꾸지 않았다.
 - [fresh WASM 빌드](wasm-build-validation.json)는 Mac locked wrapper `--target web --out-dir pkg --no-opt` 로컬 대체 빌드다. Docker 최적화 빌드 통과로 주장하지 않는다.
 
+[입력·제출 범위 감사](submission-audit.json)와 [렌더 트리 반복 결정성](snapshot-determinism.json)을 확인했다.
+
 로컬 검토를 완료했으며 통합 PR 최신 head CI·오늘할일 trailing 기록·병합과 원 PR/이슈 후속 처리는 별도 원격 단계에서 확인한다.

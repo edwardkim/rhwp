@@ -1,0 +1,93 @@
+{
+  "status": "passed",
+  "checked_commit": "b250e31b39e6c23cccef0ba6cecf8ef66c342a48",
+  "base": "1e2488ebd432deb7c326be532f8a91945f260231",
+  "product_source": "2c5e3fe38726d23bec1c970ba3f92a49e15cae34",
+  "product_content_changes_after_producer": [],
+  "input_records": [
+    {
+      "kind": "input",
+      "path": "samples/issue8582/hwp_band.hwpx",
+      "bytes": 10457,
+      "sha256": "48f0330396fbfeb7610515fc8cbcceeeab4b2d5f64af766fc59a4b72682865b2",
+      "committed_identical": true
+    },
+    {
+      "kind": "pdf",
+      "path": "pdf/pr-review-open-prs-20261117/hwp_band-2024.pdf",
+      "bytes": 12041,
+      "sha256": "c4d1c9bb280032271a8acd48aeb5914b9f8d10751a5642cb7b2032c632cf9b98",
+      "committed_identical": true
+    },
+    {
+      "kind": "input",
+      "path": "samples/tab_overflow/tab_stop_beyond_line.hwpx",
+      "bytes": 9921,
+      "sha256": "cc61958e1fda95d76417600fe640a1acf32c489ddc1b904ddb4e80d0c94471e8",
+      "committed_identical": true
+    },
+    {
+      "kind": "pdf",
+      "path": "pdf/pr-review-open-prs-20261117/tab_stop_beyond_line-2024.pdf",
+      "bytes": 12217,
+      "sha256": "c4d2a09fea409b88f80eb3d95b90d5097098c4cdfced1e2c9d35339277c029cc",
+      "committed_identical": true
+    },
+    {
+      "kind": "control",
+      "path": "samples/tab_overflow/tab_stop_beyond_line_msword.hwpx",
+      "bytes": 9836,
+      "sha256": "1a33e386cd21eba2e27b2358e0e756f97d4c8ccc12350f646843ed055692db2d",
+      "committed_identical": true
+    },
+    {
+      "kind": "control",
+      "path": "samples/issue9142/inserted-table.hwp",
+      "bytes": 12288,
+      "sha256": "64c1f2cf0e2c4adf49cfe51c330c876e1a931816b6f8e038e20ac07d1989f965",
+      "committed_identical": true
+    }
+  ],
+  "workflow_changes": [],
+  "private_font_binary_changes": [],
+  "generated_suite_changes": [],
+  "raw_log_commits": [],
+  "new_pdf_over_50MiB": [],
+  "root_pkg_studio_public_frozen_package_hashes": "equal",
+  "source_pr_heads_unchanged": {
+    "9144": "5cffd27772756f21796569060de9bc7132a9a1e1",
+    "9149": "6e9f7fc98f78e8c6a180fb2e46c2cf57cc0a68da",
+    "9152": "acdb778b35dd9efe30ad63a8ba9d3f1ef6b88e4b"
+  },
+  "open_authored_pr_preflight": [],
+  "doc_links": {
+    "status": "passed",
+    "documents": [
+      "mydocs/pr/archives/pr_9144_review.md",
+      "mydocs/pr/archives/pr_9149_review.md",
+      "mydocs/pr/archives/pr_9152_review.md",
+      "mydocs/pr/assets/open_prs_20261117/README.md"
+    ],
+    "broken_links": 0,
+    "method": "scripts.check_markdown_links.collect_broken_links on exact changed documents",
+    "generic_wrapper": "Stopped its unrelated unconditional tracked-file/registry scan after the scoped check completed; not reported as full wrapper PASS."
+  },
+  "all_changed_pdfs_size_checked": [
+    {
+      "path": "pdf/issue8582/hwp_band-webhwp-print.pdf",
+      "bytes": 7345
+    },
+    {
+      "path": "pdf/pr-review-open-prs-20261117/hwp_band-2024.pdf",
+      "bytes": 12041
+    },
+    {
+      "path": "pdf/pr-review-open-prs-20261117/tab_stop_beyond_line-2024.pdf",
+      "bytes": 12217
+    },
+    {
+      "path": "pdf/tab_overflow/tab_stop_beyond_line-webhwp-print.pdf",
+      "bytes": 9419
+    }
+  ]
+}
