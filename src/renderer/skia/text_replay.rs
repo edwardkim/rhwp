@@ -553,22 +553,27 @@ impl SkiaTextReplay<'_> {
                         }) {
                             continue;
                         }
-                        if let Some((cx, cy, rx, ry)) = crate::renderer::implicit_symbol::ink(
+                        if let Some((shape, cx, cy, rx, ry)) = crate::renderer::implicit_symbol::ink(
                             symbol_sources.as_deref(),
                             *char_idx,
                             style,
                         ) {
                             let cx = f64::from(char_x) + cx;
                             let cy = y + f64::from(dy) + cy;
-                            canvas.draw_oval(
-                                skia_safe::Rect::from_xywh(
-                                    (cx - rx) as f32,
-                                    (cy - ry) as f32,
-                                    (2.0 * rx) as f32,
-                                    (2.0 * ry) as f32,
-                                ),
-                                &text_paint,
+                            let bounds = skia_safe::Rect::from_xywh(
+                                (cx - rx) as f32,
+                                (cy - ry) as f32,
+                                (2.0 * rx) as f32,
+                                (2.0 * ry) as f32,
                             );
+                            match shape {
+                                crate::renderer::implicit_symbol::InkShape::Ellipse => {
+                                    canvas.draw_oval(bounds, &text_paint);
+                                }
+                                crate::renderer::implicit_symbol::InkShape::Rectangle => {
+                                    canvas.draw_rect(bounds, &text_paint);
+                                }
+                            }
                             continue;
                         }
                         if let Some((cx, cy, rx, ry)) =

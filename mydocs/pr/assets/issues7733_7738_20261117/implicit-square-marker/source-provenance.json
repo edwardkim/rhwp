@@ -1,0 +1,14 @@
+{
+  "parent": "685c607a808cfcede8e1537bc45db6f4d870e91a",
+  "captured_at": "2026-11-18T03:59:09.313295+09:00",
+  "sources": {
+    "src/renderer/implicit_symbol.rs": "46a56dcc46897e112c6890262b2e55243e94330788c50a21bfe0bab50bcaf94d",
+    "src/renderer/skia/text_replay.rs": "d165f0ee04b01ff0ff7c2998cbb746b86379d32497c7f9ac73c7108bb3e5bfa4",
+    "src/renderer/svg.rs": "92a4ede5af2b52c2af0466d4259ee3402c7ad5b31aa80206c72e243914b03ff7",
+    "src/renderer/web_canvas/implicit_symbol.rs": "ea87e47da0a55b85c473043954037befb4c4199900475108cf324199b8b0168d",
+    "tests/cases/issue_7735_implicit_square_marker.rs": "7400ab1970f73e26c7617190c47963c8eb921525d46ec4b8c6e6c5d37c899d93"
+  },
+  "source_diff_sha256": "df7ad13e5f29cdf9eb2c7399038500e99b5a506b88eac2b9560774adf5258144",
+  "cargo_lock_sha256": "972bdb0994b216f0cef357b856ce0807ce3d437af6791377446b62f2e26c05a1",
+  "font_environment_sha256": "39ec77d269dcd5e687ecd68cd3c5ffb2d19f91a5d9580b2e11c0c4db8a9cb4b0"
+}

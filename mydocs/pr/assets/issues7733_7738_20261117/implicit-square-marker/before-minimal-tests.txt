@@ -1,0 +1,54 @@
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 13.01s
+────────────
+ Nextest run ID 6aa97d45-e4b5-4078-8ec4-baa119c98297 with nextest profile: default
+    Starting 6 tests across 2 binaries (681 tests skipped)
+        PASS [   0.150s] (1/6) rhwp::regression_suite_024 implicit_wingdings_marker_source::implicit_wingdings_keeps_source_identity_and_a_separate_advance
+        PASS [   0.197s] (2/6) rhwp::regression_suite_024 implicit_wingdings_marker_source::normal_unicode_bullet_keeps_its_own_font_contract
+        PASS [   0.227s] (3/6) rhwp::regression_suite_010 issue_7735_implicit_square_marker::literal_unicode_square_keeps_its_declared_font_contract
+        FAIL [   0.227s] (4/6) rhwp::regression_suite_010 issue_7735_implicit_square_marker::square_marker_keeps_its_original_program_address_and_advance
+  stdout ───
+
+    running 1 test
+    test issue_7735_implicit_square_marker::square_marker_keeps_its_original_program_address_and_advance ... FAILED
+
+    failures:
+
+    failures:
+        issue_7735_implicit_square_marker::square_marker_keeps_its_original_program_address_and_advance
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 349 filtered out; finished in 0.21s
+
+  stderr ───
+
+    thread 'issue_7735_implicit_square_marker::square_marker_keeps_its_original_program_address_and_advance' (266410738) panicked at tests/generated/../cases/issue_7735_implicit_square_marker.rs:54:9:
+    assertion `left == right` failed: 다른 글꼴의 Unicode 작은 네모로 원 주소를 잃지 않는다
+      left: "▪"
+     right: "\u{f0a7}"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        PASS [   0.271s] (5/6) rhwp::regression_suite_024 implicit_wingdings_marker_source::declared_display_fallback_does_not_replace_implicit_program_metrics
+        FAIL [   0.378s] (6/6) rhwp::regression_suite_010 issue_7735_implicit_square_marker::original_square_and_circle_keep_their_shared_program_advance
+  stdout ───
+
+    running 1 test
+    test issue_7735_implicit_square_marker::original_square_and_circle_keep_their_shared_program_advance ... FAILED
+
+    failures:
+
+    failures:
+        issue_7735_implicit_square_marker::original_square_and_circle_keep_their_shared_program_advance
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 349 filtered out; finished in 0.36s
+
+  stderr ───
+
+    thread 'issue_7735_implicit_square_marker::original_square_and_circle_keep_their_shared_program_advance' (266410735) panicked at tests/generated/../cases/issue_7735_implicit_square_marker.rs:70:9:
+    같은 원 프로그램의 두 도형은 전진도 같다: 15.2 vs 6.933333333333334
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.382s] 6 tests run: 4 passed, 2 failed, 681 skipped
+        FAIL [   0.227s] (4/6) rhwp::regression_suite_010 issue_7735_implicit_square_marker::square_marker_keeps_its_original_program_address_and_advance
+        FAIL [   0.378s] (6/6) rhwp::regression_suite_010 issue_7735_implicit_square_marker::original_square_and_circle_keep_their_shared_program_advance
+error: test run failed

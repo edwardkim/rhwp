@@ -12,12 +12,20 @@ pub(super) fn paint(
     y: f64,
     stroke: bool,
 ) -> bool {
-    let Some((cx, cy, rx, ry)) = crate::renderer::implicit_symbol::ink(sources, index, style)
+    let Some((shape, cx, cy, rx, ry)) =
+        crate::renderer::implicit_symbol::ink(sources, index, style)
     else {
         return false;
     };
     ctx.begin_path();
-    let _ = ctx.ellipse(x + cx, y + cy, rx, ry, 0.0, 0.0, std::f64::consts::TAU);
+    match shape {
+        crate::renderer::implicit_symbol::InkShape::Ellipse => {
+            let _ = ctx.ellipse(x + cx, y + cy, rx, ry, 0.0, 0.0, std::f64::consts::TAU);
+        }
+        crate::renderer::implicit_symbol::InkShape::Rectangle => {
+            ctx.rect(x + cx - rx, y + cy - ry, 2.0 * rx, 2.0 * ry);
+        }
+    }
     ctx.fill();
     if stroke {
         ctx.stroke();

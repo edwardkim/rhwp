@@ -33,6 +33,29 @@ mod italic_fonts;
 mod pua_glyph;
 mod stroke_pattern;
 
+/// 공통 기호 프로그램의 도형을 그림자·양각·일반 출력에 같은 상자로 직렬화한다.
+fn implicit_symbol_svg(
+    shape: super::implicit_symbol::InkShape,
+    cx: f64,
+    cy: f64,
+    rx: f64,
+    ry: f64,
+    attrs: &str,
+) -> String {
+    match shape {
+        super::implicit_symbol::InkShape::Ellipse => format!(
+            "<ellipse cx=\"{cx:.4}\" cy=\"{cy:.4}\" rx=\"{rx:.4}\" ry=\"{ry:.4}\" {attrs}/>\n"
+        ),
+        super::implicit_symbol::InkShape::Rectangle => format!(
+            "<rect x=\"{:.4}\" y=\"{:.4}\" width=\"{:.4}\" height=\"{:.4}\" {attrs}/>\n",
+            cx - rx,
+            cy - ry,
+            2.0 * rx,
+            2.0 * ry,
+        ),
+    }
+}
+
 /// Hanyang-PUA 옛한글 코드포인트를 KS X 1026-1:2007 자모 시퀀스로 확장.
 /// PUA 가 없으면 원본 문자열 그대로 반환 (allocation 없음).
 fn expand_pua_old_hangul(text: &str) -> String {
@@ -3712,12 +3735,16 @@ impl Renderer for SvgRenderer {
                             continue;
                         }
                     }
-                    if let Some((cx, cy, rx, ry)) =
+                    if let Some((shape, cx, cy, rx, ry)) =
                         super::implicit_symbol::ink(symbol_sources.as_deref(), *char_idx, style)
                     {
-                        self.output.push_str(&format!(
-                            "<ellipse cx=\"{:.4}\" cy=\"{:.4}\" rx=\"{rx:.4}\" ry=\"{ry:.4}\" fill=\"{shadow_color}\"/>\n",
-                            x + cluster_x(*char_idx, cluster_str) + cx + dx, y + cy + dy,
+                        self.output.push_str(&implicit_symbol_svg(
+                            shape,
+                            x + cluster_x(*char_idx, cluster_str) + cx + dx,
+                            y + cy + dy,
+                            rx,
+                            ry,
+                            &format!("fill=\"{shadow_color}\""),
                         ));
                         continue;
                     }
@@ -3826,7 +3853,7 @@ impl Renderer for SvgRenderer {
                         continue;
                     }
                 }
-                if let Some((cx, cy, rx, ry)) =
+                if let Some((shape, cx, cy, rx, ry)) =
                     super::implicit_symbol::ink(symbol_sources.as_deref(), *char_idx, style)
                 {
                     let char_x = x + cluster_x(*char_idx, cluster_str);
@@ -3838,9 +3865,13 @@ impl Renderer for SvgRenderer {
                             ("#808080", "#ffffff")
                         };
                         for (delta, fill) in [(-offset, upper), (offset, lower)] {
-                            self.output.push_str(&format!(
-                                "<ellipse cx=\"{:.4}\" cy=\"{:.4}\" rx=\"{rx:.4}\" ry=\"{ry:.4}\" fill=\"{fill}\"/>\n",
-                                char_x + cx + delta, y + cy + delta,
+                            self.output.push_str(&implicit_symbol_svg(
+                                shape,
+                                char_x + cx + delta,
+                                y + cy + delta,
+                                rx,
+                                ry,
+                                &format!("fill=\"{fill}\""),
                             ));
                         }
                     }
@@ -3851,9 +3882,13 @@ impl Renderer for SvgRenderer {
                     };
                     let attrs = attrs_for_cluster(cluster_str, fill);
                     let outline = outline_attrs.as_deref().unwrap_or("");
-                    self.output.push_str(&format!(
-                        "<ellipse cx=\"{:.4}\" cy=\"{:.4}\" rx=\"{rx:.4}\" ry=\"{ry:.4}\" {attrs}{outline}/>\n",
-                        char_x + cx, y + cy,
+                    self.output.push_str(&implicit_symbol_svg(
+                        shape,
+                        char_x + cx,
+                        y + cy,
+                        rx,
+                        ry,
+                        &format!("{attrs}{outline}"),
                     ));
                     self.output.push_str(&format!(
                         "<text x=\"{char_x:.4}\" y=\"{y:.4}\" fill-opacity=\"0\">{}</text>\n",
