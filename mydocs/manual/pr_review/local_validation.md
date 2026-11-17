@@ -38,13 +38,6 @@ code head의 기존 CI·증적 재사용은 그 조건을 확인해 기록한다
 해당 문서의 정본 raw 표시값 하락이면 제출을 보류한다. 이 검사는 변경 대상 문서 자체의
 시각 검증과 통합 담당자의 정본 전체 특별 검증을 대체하지 않는다.
 
-조판·렌더링 영향 PR의 [기여자용 OS 기본 글꼴 100% 보호](../verification/visual_verification_governance.md#기여자용-os-기본-글꼴-100-보호)는
-비공개 OTF를 쓰는 정본 전체 특별 검증과 별개다. 등재 페이지의 **±1px 자동 회귀 검사**와
-**기여자가 제출 전 직접 실행하는 Native/fresh WASM Visual Sweep의 raw 100% 유지**를
-각각 확인한다. 하나로 다른 하나를 대신하지 않으며 조금의 하락·누락도 제출 보류다.
-OS별 기본 글꼴만 사용했다는 근거와 두 backend TSV·대표 review/overlay를 제출한다.
-등록 검증은 세 OS를 확인하고, 일반 기여자는 본인의 제출 OS에서 등재 조건을 재현한다.
-
 Mac에서 다른 호스트의 보호 결과를 비교할 때는
 [정본 글꼴 공급 재현 절차](../verification/visual_sweep_guide.md#macos에서-정본-보호-문서의-글꼴-공급-재현)에
 따라 누락된 기준 글꼴을 확보하고 SHA·face·대체 설정을 맞춘다. 보호 문서 Visual Sweep은

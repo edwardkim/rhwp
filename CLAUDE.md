@@ -73,11 +73,6 @@ Docker 또는 호스트 빌드를 선택해 동일한 필수 검증을 완료한
 검증은 통합 담당 collaborator·maintainer에게만 추가 적용한다. 일반 Visual Sweep에서는 자동 실행하지 않으며,
 실행과 판정은 [로컬 사전 검증](mydocs/manual/pr_review/local_validation.md)을 따른다.
 
-기여자용 OS 기본 글꼴 100% 보호 목록의 등재 페이지는 중요한 좌표의 **±1px 자동 회귀 테스트**와
-**기여자의 PR 제출 전 Native/fresh WASM Visual Sweep raw 100% 유지 검증**을 각각 필수로 한다.
-조금의 하락·누락도 허용하지 않는다. 원본 OTF를 쓰는 메인터너 정본 전체 보호와 별개이며,
-[기여자용 100% 보호 정본](mydocs/manual/verification/visual_verification_governance.md#기여자용-os-기본-글꼴-100-보호)을 따른다.
-
 ## 리뷰어 지정 후 추가 커밋 제한
 
 리뷰어 지정 후 기여자와 그 대행 자동화는 해당 PR에 임의로 추가 커밋을 push하지 않는다.

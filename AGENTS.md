@@ -74,10 +74,6 @@
   사용할 수 있으며 비공개 원본 OTF 보유는 요구하지 않는다. 정본 보호 TSV 전체의 특별 하락 금지
   검증은 통합 담당 collaborator·maintainer에게만 추가 적용한다. 일반 Visual Sweep에서는 자동 실행하지 않으며,
   실행과 판정은 [로컬 사전 검증](mydocs/manual/pr_review/local_validation.md)을 따른다.
-- 기여자용 OS 기본 글꼴 100% 보호 목록의 등재 페이지는 중요한 좌표의 **±1px 자동 회귀 테스트**와
-  **기여자의 PR 제출 전 Native/fresh WASM Visual Sweep raw 100% 유지 검증**을 각각 필수로 한다.
-  조금의 하락·누락도 허용하지 않는다. 원본 OTF를 쓰는 메인터너 정본 전체 보호와 별개이며,
-  [기여자용 100% 보호 정본](mydocs/manual/verification/visual_verification_governance.md#기여자용-os-기본-글꼴-100-보호)을 따른다.
 - Docker 설치는 로컬 검증의 필수 조건이 아니다. 사용 가능 환경과 불가 환경의
   [fresh WASM 실행 경로](mydocs/manual/pr_review/local_validation.md#환경에-따른-fresh-wasm-검증)를
   구분하고, 호스트 경로도 최적화·브라우저·시각 검증까지 동일하게 완료한다.

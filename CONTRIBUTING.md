@@ -313,16 +313,6 @@ Windows 데스크톱 한컴에서 **`Hancom PDF` 프린터를 선택한 인쇄(P
 일반 기여자에게 메인터너 MCP 사용을 요구하지 않으며 직접 출력한 유효한 Print PDF를 첨부하면 됩니다.
 [공식 기준 PDF와 기존 첨부본의 출처 확인](mydocs/manual/pr_review/visual_fixture_evidence.md#원-pr이-웹한글기안기-pdf를-기준으로-제시한-경우)을 따르세요.
 
-**기여자용 OS 기본 글꼴 100% 보호:** Windows·Linux·macOS의 기본 제공 글꼴만으로
-Native/fresh WASM 각각 100%를 확인해 [등재한 페이지](mydocs/pr/assets/contributor-os-default-protected/README.md)는
-중요한 좌표의 **±1px 자동 회귀 테스트**를 유지·실행해야 합니다. 이와 별도로 기여자가
-**PR 제출 전 Visual Sweep을 실행해 두 backend의 raw 100% 유지를 직접 확인**하고
-TSV·대표 review/overlay·실행 OS와 글꼴 환경을 제출하세요. 점수가 조금이라도 내려가거나
-검증이 누락되면 PR을 제출하지 않습니다. 회귀 통과가 Visual Sweep을 대신하지 않으며,
-일반 하락 허용폭이나 다른 페이지의 상승으로 상쇄하지 않습니다.
-이 목록은 비공개 원본 OTF를 쓰는 메인터너·콜라보레이터의 정본 전체 보호와 별개입니다.
-등록 조건과 실제 제출 OS의 검증은 [기여자용 100% 보호 정본](mydocs/manual/verification/visual_verification_governance.md#기여자용-os-기본-글꼴-100-보호)을 따르세요.
-
 **페이지별 TSV 산출 명령과 저장 위치:** [「실루엣 보조값만 빠르게 TSV 산출」](mydocs/manual/verification/visual_sweep_guide.md#실루엣-보조값만-빠르게-tsv-산출)의 Native/fresh WASM 예제를 각각 실행하세요.
 검증 대상 전체 페이지의 Native/fresh WASM `silhouette.tsv`에서 비교 쪽수·최저값과
 90% 미만/누락 쪽을 확인하고, 해당 쪽과 구조 차이·대표 경계는 일반 모드의 PNG로 직접 판독합니다.
