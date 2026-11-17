@@ -13,8 +13,8 @@ use serde::{Deserialize, Serialize};
 use super::render_snapshot::{NativeRenderSnapshot, NativeRenderSnapshotUsage};
 use super::runtime::{NativeRequestId, NativeRuntimeObserver, NativeRuntimeTarget};
 use super::NativeHostError;
-use crate::atomic_update::try_update_u64;
 use crate::renderer::raster_pixels::RasterRegion;
+use rhwp_codec_resource::atomic::try_update_u64;
 
 const MAX_OBJECTS: usize = 64;
 const MAX_BYTES: usize = 128 * 1024 * 1024;

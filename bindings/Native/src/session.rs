@@ -706,7 +706,7 @@ fn worker_output(host: &mut Host, worker: u64, output: NativeRuntimeOutput) -> V
 }
 
 fn next_handle() -> Result<u64, NativeHostError> {
-    rhwp_core::atomic_update::try_update_u64(
+    rhwp_codec_resource::atomic::try_update_u64(
         &NEXT_HANDLE,
         Ordering::Relaxed,
         Ordering::Relaxed,

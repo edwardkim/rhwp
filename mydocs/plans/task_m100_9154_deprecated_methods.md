@@ -27,7 +27,7 @@
    성공·실패 ordering, callback 재평가와 `Ok/Err(previous)` 계약을 보존한다.
 2. usize/u64 진입점은 한 macro 본문에서 생성한다. no_std와 해당 target의 atomic 지원
    조건을 보존한다. 새 외부 의존성·Rust 버전 분기·경고 억제를 추가하지 않는다.
-3. core는 이미 사용 중인 이 경량 crate를 직접 연결해 Native FFI에도 공통 구현을 제공한다.
+3. core와 Native FFI는 이미 사용 중인 이 경량 crate를 직접 연결해 공통 구현을 소비한다.
    PDF backend와 codec 시험도 같은 구현을 소비한다. schema 전용 `rhwp-contracts`의 닫힌
    경계를 범용 utility로 확장하지 않는다. Cargo.lock 변경은 이 직접 의존성 연결만 허용한다.
 4. 모든 13개 호출에서 기존 checked_add/sub·상한·ID 고갈·sticky failure와 메모리 순서를
@@ -39,7 +39,7 @@
 
 - 수정 전 최신 Rust workspace/all-target 진단 목록과 static 호출 목록을 보존한다.
 - 공통 구현의 정상 갱신·거절·정수 경계·CAS 실패 후 재평가·경합 시 중복 없는 ID와 예산 상한을
-  검사한다. 기존 root unit 자동 실행 경로에 계약 시험을 포함하며 CI 개별 호출을 추가하지 않는다.
+  검사한다. 기존 `tests/cases/` 자동 수집 경로에 계약 시험을 포함하며 CI 개별 호출을 추가하지 않는다.
 - MSRV 1.93.1과 최신 Rust에서 core·PDF·Native FFI와 codec 자원 시험을 실행한다.
 - Metal admission의 SDK 독립 Rust 모듈 시험과 기존 Native 요청·저장·presentation·자원 한도
   집중 회귀를 실행한다. GPU 장치 구동 성공으로 확대하지 않는다.

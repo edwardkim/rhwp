@@ -264,7 +264,7 @@ mod enabled {
                 Ok(())
             }
         })?;
-        let id = rhwp_core::atomic_update::try_update_u64(
+        let id = rhwp_codec_resource::atomic::try_update_u64(
             &NEXT_ID,
             Ordering::Relaxed,
             Ordering::Relaxed,

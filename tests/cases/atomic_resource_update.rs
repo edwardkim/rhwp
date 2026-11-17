@@ -1,6 +1,7 @@
-//! Atomic resource/identifier contracts, independent of document rendering.
+//! 고정형 계약: 자원 상한·ID 고갈·CAS 재시도·경합(시각 측정 비해당).
+//! 작성: 2026-11-18T02:25:43+09:00; 문서·글꼴·페이지 좌표를 사용하지 않는다.
 
-use crate::atomic_update::{try_update_u64, try_update_usize};
+use rhwp_codec_resource::atomic::{try_update_u64, try_update_usize};
 use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::sync::Arc;
 

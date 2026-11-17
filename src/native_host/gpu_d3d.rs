@@ -44,7 +44,7 @@ struct ContextCredit {
 }
 impl ContextCredit {
     fn reserve() -> Result<Self, NativeHostError> {
-        crate::atomic_update::try_update_usize(
+        rhwp_codec_resource::atomic::try_update_usize(
             &CONTEXTS,
             Ordering::Relaxed,
             Ordering::Relaxed,

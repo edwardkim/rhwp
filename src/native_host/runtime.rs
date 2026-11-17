@@ -661,7 +661,7 @@ struct ByteBudget {
 
 impl ByteBudget {
     fn try_add(&self, amount: usize) -> bool {
-        crate::atomic_update::try_update_usize(
+        rhwp_codec_resource::atomic::try_update_usize(
             &self.used,
             Ordering::AcqRel,
             Ordering::Acquire,
@@ -865,7 +865,7 @@ impl NativeRuntime {
         let Some(reservation) = self.shared.budget.reserve(reservation) else {
             return Err(reject(NativeRuntimeError::ByteCapacity, command));
         };
-        let Ok(id) = crate::atomic_update::try_update_u64(
+        let Ok(id) = rhwp_codec_resource::atomic::try_update_u64(
             &NEXT_REQUEST_ID,
             Ordering::Relaxed,
             Ordering::Relaxed,

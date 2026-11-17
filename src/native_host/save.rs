@@ -216,7 +216,7 @@ impl NativeDocumentSession {
                 .document()
                 .hwpx_aux_entry("settings.xml")
                 .is_some();
-        let token = crate::atomic_update::try_update_u64(
+        let token = rhwp_codec_resource::atomic::try_update_u64(
             &NEXT_SAVE_TOKEN,
             Ordering::Relaxed,
             Ordering::Relaxed,
