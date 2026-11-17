@@ -1,0 +1,11 @@
+{
+  "parent": "e6bc573c5058731047e67b3062da7c04cfbc9418",
+  "captured_at": "2026-11-18T02:48:33.581478+09:00",
+  "sources": {
+    "src/renderer/layout/paragraph_layout/inline_text_advance.rs": "8178f7bc228c7114900c4c2f137150cf6a8b6547f6ddab5fd137ce5a9b66ba40",
+    "tests/cases/issue_7733_inline_table_list_marker.rs": "494262052cd7613ba0430a86cafa43c9ba780a2c89bc631ecbe04e43660499e5"
+  },
+  "source_diff_sha256": "e61393893a16c06d0e8c0e5d1d032b68541a1653d4b1322a7ee8669903203726",
+  "cargo_lock_sha256": "972bdb0994b216f0cef357b856ce0807ce3d437af6791377446b62f2e26c05a1",
+  "font_environment_sha256": "39ec77d269dcd5e687ecd68cd3c5ffb2d19f91a5d9580b2e11c0c4db8a9cb4b0"
+}

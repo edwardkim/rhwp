@@ -106,15 +106,14 @@ fn inline_table_list_uses_the_same_body_and_hanging_origin_as_its_plain_peer() {
     }
 }
 
-#[test]
-fn text_only_continuation_after_inline_table_fills_its_own_stored_line_region() {
+fn text_only_line_fills_its_own_stored_region(line_index: usize, prefix: &str) {
     let mut core = DocumentCore::from_bytes(include_bytes!(
         "../../samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp"
     ))
     .unwrap();
     core.set_hangul2024_compat(false);
     let source = &core.document().sections[4].paragraphs[260];
-    let stored = &source.line_segs[2];
+    let stored = &source.line_segs[line_index];
     assert!(
         source.line_segs.len() > 3,
         "검사 줄은 문단의 마지막 줄이 아니다"
@@ -131,9 +130,9 @@ fn text_only_continuation_after_inline_table_fills_its_own_stored_line_region() 
         .iter()
         .find(|node| {
             matches!(&node.node_type, RenderNodeType::TextRun(run)
-        if run.para_index == Some(260) && run.text.starts_with("제품이"))
+        if run.para_index == Some(260) && run.text.starts_with(prefix))
         })
-        .expect("표 다음 설명 줄");
+        .expect("표를 담지 않은 저장 본문 줄");
     let last = nodes.iter().rev().find(|node| matches!(&node.node_type, RenderNodeType::TextRun(run)
         if run.para_index == Some(260) && (node.bbox.y - first.bbox.y).abs() < 1e-6 && !run.text.trim_end_matches(' ').is_empty()))
         .unwrap();
@@ -145,12 +144,41 @@ fn text_only_continuation_after_inline_table_fills_its_own_stored_line_region() 
         .layout_positions
         .as_ref()
         .expect("인라인 본문 문자별 전진");
-    let actual = last.bbox.x + positions[visible];
+    // 저장 우단은 가시 점유 끝이다. 마지막 글자 뒤의 signed 자간은 다음
+    // 글자가 없는 이 경계에 포함하지 않는다. advance 자체와 구분한다.
+    use rhwp::renderer::layout::{EmbeddedTextMeasurer, TextMeasurer};
+    let final_character = run.text.chars().nth(visible - 1).unwrap().to_string();
+    let tracked = *EmbeddedTextMeasurer
+        .compute_char_positions(&final_character, &run.style)
+        .last()
+        .unwrap();
+    let mut natural_style = run.style.clone();
+    natural_style.letter_spacing = 0.0;
+    if let Some(latin) = natural_style.ascii_punct_latin.as_mut() {
+        latin.letter_spacing = 0.0;
+    }
+    let natural = *EmbeddedTextMeasurer
+        .compute_char_positions(&final_character, &natural_style)
+        .last()
+        .unwrap();
+    let actual = last.bbox.x + positions[visible] - (tracked - natural);
     let expected = column.bbox.x + right_offset;
     assert!(
         (actual - expected).abs() <= 96.0 / 7200.0,
-        "표가 없는 중간 줄은 자신의 저장 우단까지 공백을 배분한다: {actual} vs {expected}"
+        "표가 없는 중간 줄은 자신의 저장 우단까지 공백을 배분한다: {actual} vs {expected}; first={:?}, last={:?}, text={:?}, size={}, ratio={}, tracking={}, word={}, char={}, tracked={}, natural={}",
+        first.bbox, last.bbox, run.text, run.style.font_size, run.style.ratio,
+        run.style.letter_spacing, run.style.extra_word_spacing, run.style.extra_char_spacing, tracked, natural
     );
+}
+
+#[test]
+fn text_only_continuation_after_inline_table_fills_its_own_stored_line_region() {
+    text_only_line_fills_its_own_stored_region(2, "제품이");
+}
+
+#[test]
+fn text_only_opening_before_inline_table_fills_its_own_stored_line_region() {
+    text_only_line_fills_its_own_stored_region(0, "(");
 }
 
 #[test]

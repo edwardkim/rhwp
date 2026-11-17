@@ -103,8 +103,13 @@ impl InlineTextAdvance {
                 || composed
                     .inline_controls
                     .iter()
-                    .any(|control| control.line_index == line_index)
-                // 요약된 소속과 별개로 원본 컨트롤의 실제 저장 줄을 확인한다.
+                    .any(|control| {
+                        // 원본 주소가 있는 컨트롤은 실제 저장 줄을 권위로 쓴다.
+                        // 요약의 기본 line_index=0이 앞선 일반 본문 줄까지 막지 않는다.
+                        super::super::control_line_seg_index(para, control.control_index)
+                            .map_or(control.line_index == line_index, |owner| owner == line_index)
+                    })
+                // 요약에 빠진 컨트롤도 원본의 실제 저장 줄을 확인한다.
                 // 문자열에서 빠진 TAC 폭을 공백 여유로 중복 배분하지 않는다.
                 || para.controls.iter().enumerate().any(|(index, control)| {
                     control.is_treat_as_char_object()

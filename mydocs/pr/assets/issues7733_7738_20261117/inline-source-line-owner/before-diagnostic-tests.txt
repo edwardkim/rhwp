@@ -1,0 +1,31 @@
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 13.84s
+────────────
+ Nextest run ID ef2b40e9-8749-4146-acf9-e5a33b8315e2 with nextest profile: default
+    Starting 4 tests across 1 binary (351 tests skipped)
+        PASS [   0.122s] (1/4) rhwp::regression_suite_013 issue_7733_inline_table_list_marker::inline_table_list_uses_the_same_body_and_hanging_origin_as_its_plain_peer
+        PASS [   0.122s] (2/4) rhwp::regression_suite_013 issue_7733_inline_table_list_marker::text_only_continuation_after_inline_table_fills_its_own_stored_line_region
+        FAIL [   0.122s] (3/4) rhwp::regression_suite_013 issue_7733_inline_table_list_marker::text_only_opening_before_inline_table_fills_its_own_stored_line_region
+  stdout ───
+
+    running 1 test
+    test issue_7733_inline_table_list_marker::text_only_opening_before_inline_table_fills_its_own_stored_line_region ... FAILED
+
+    failures:
+
+    failures:
+        issue_7733_inline_table_list_marker::text_only_opening_before_inline_table_fills_its_own_stored_line_region
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 354 filtered out; finished in 0.11s
+
+  stderr ───
+
+    thread 'issue_7733_inline_table_list_marker::text_only_opening_before_inline_table_fills_its_own_stored_line_region' (265887686) panicked at tests/generated/../cases/issue_7733_inline_table_list_marker.rs:149:5:
+    표가 없는 중간 줄은 자신의 저장 우단까지 공백을 배분한다: 694.7333333333333 vs 699.1866666666667
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        PASS [   0.122s] (4/4) rhwp::regression_suite_013 issue_7733_inline_table_list_marker::table_owned_line_keeps_its_natural_prefix_and_does_not_distribute_the_object_width
+────────────
+     Summary [   0.126s] 4 tests run: 3 passed, 1 failed, 351 skipped
+        FAIL [   0.122s] (3/4) rhwp::regression_suite_013 issue_7733_inline_table_list_marker::text_only_opening_before_inline_table_fills_its_own_stored_line_region
+error: test run failed
