@@ -44,11 +44,13 @@ struct ContextCredit {
 }
 impl ContextCredit {
     fn reserve() -> Result<Self, NativeHostError> {
-        CONTEXTS
-            .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |count| {
-                (count < MAX_CONTEXTS).then_some(count + 1)
-            })
-            .map_err(|_| limit("D3D process context/quarantine budget exhausted"))?;
+        crate::atomic_update::try_update_usize(
+            &CONTEXTS,
+            Ordering::Relaxed,
+            Ordering::Relaxed,
+            |count| (count < MAX_CONTEXTS).then_some(count + 1),
+        )
+        .map_err(|_| limit("D3D process context/quarantine budget exhausted"))?;
         Ok(Self { returnable: true })
     }
     fn quarantine(&mut self) {

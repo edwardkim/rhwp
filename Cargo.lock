@@ -2231,6 +2231,7 @@ dependencies = [
  "rand_core",
  "read-fonts 0.47.0",
  "resvg 0.47.0",
+ "rhwp-codec-resource",
  "rhwp-contracts",
  "rhwp-jpeg-encoder",
  "rhwp-ooxml-chart",

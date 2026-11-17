@@ -40,11 +40,13 @@ impl Admission {
     }
 
     pub fn reserve(&self) -> Option<Credit<'_>> {
-        self.state
-            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |state| {
-                (state % QUARANTINE_UNIT < MAX_PROCESS_PRESENTERS).then_some(state + 1)
-            })
-            .ok()?;
+        rhwp_core::atomic_update::try_update_usize(
+            &self.state,
+            Ordering::AcqRel,
+            Ordering::Acquire,
+            |state| (state % QUARANTINE_UNIT < MAX_PROCESS_PRESENTERS).then_some(state + 1),
+        )
+        .ok()?;
         Some(Credit {
             admission: self,
             state: CreditState::Reserved,
@@ -105,5 +107,57 @@ impl Drop for Credit<'_> {
             CreditState::Live => self.quarantine(),
             CreditState::Released | CreditState::Quarantined => {}
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn reservations_stop_at_the_process_cap_and_failed_construction_refunds() {
+        let admission = Admission::new();
+        let mut credits: Vec<_> = (0..MAX_PROCESS_PRESENTERS)
+            .map(|_| admission.reserve().expect("available construction credit"))
+            .collect();
+        assert!(admission.reserve().is_none());
+        assert_eq!(admission.stats().in_use, MAX_PROCESS_PRESENTERS);
+        drop(credits.pop());
+        assert_eq!(admission.stats().in_use, MAX_PROCESS_PRESENTERS - 1);
+        credits.push(admission.reserve().expect("refunded construction credit"));
+        assert!(admission.reserve().is_none());
+        drop(credits);
+        assert_eq!(admission.stats().in_use, 0);
+    }
+
+    #[test]
+    fn an_unconfirmed_live_owner_keeps_its_quarantined_credit() {
+        let admission = Admission::new();
+        let mut owner = admission.reserve().expect("initial credit");
+        owner.mark_live();
+        drop(owner);
+        let stats = admission.stats();
+        assert_eq!(stats.in_use, 1);
+        assert_eq!(stats.quarantined, 1);
+        let available: Vec<_> = (1..MAX_PROCESS_PRESENTERS)
+            .map(|_| admission.reserve().expect("remaining process credit"))
+            .collect();
+        assert!(admission.reserve().is_none());
+        drop(available);
+        assert_eq!(admission.stats().in_use, 1);
+        assert_eq!(admission.stats().quarantined, 1);
+    }
+
+    #[test]
+    fn confirmed_release_refunds_a_live_credit_only_once() {
+        let admission = Admission::new();
+        let mut owner = admission.reserve().expect("initial credit");
+        owner.mark_live();
+        assert!(owner.release_confirmed());
+        assert!(!owner.release_confirmed());
+        assert_eq!(admission.stats().in_use, 0);
+        drop(owner);
+        assert_eq!(admission.stats().in_use, 0);
+        assert_eq!(admission.stats().quarantined, 0);
     }
 }

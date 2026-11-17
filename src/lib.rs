@@ -4,6 +4,13 @@
 
 use wasm_bindgen::prelude::*;
 
+/// Internal resource-counter operations shared with Native bindings.
+#[doc(hidden)]
+pub use rhwp_codec_resource::atomic as atomic_update;
+
+#[cfg(test)]
+mod atomic_update_tests;
+
 pub mod agent;
 pub mod agent_seal;
 pub mod capabilities_schema;

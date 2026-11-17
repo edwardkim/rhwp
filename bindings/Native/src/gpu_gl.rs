@@ -293,9 +293,13 @@ mod enabled {
                 "matching host GL context is not current",
             ));
         }
-        let id = NEXT_ID
-            .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
-            .map_err(|_| NativeHostError::LimitExceeded("GL handle space exhausted".into()))?;
+        let id = rhwp_core::atomic_update::try_update_u64(
+            &NEXT_ID,
+            Ordering::Relaxed,
+            Ordering::Relaxed,
+            |id| id.checked_add(1),
+        )
+        .map_err(|_| NativeHostError::LimitExceeded("GL handle space exhausted".into()))?;
         let presenter = unsafe {
             NativeGlPresenter::new(context_id, device_generation, config, |name| {
                 loader(user_data, name.as_ptr())

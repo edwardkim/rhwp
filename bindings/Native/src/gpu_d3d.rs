@@ -198,9 +198,13 @@ mod enabled {
                 Ok(())
             }
         })?;
-        let id = NEXT_ID
-            .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |v| v.checked_add(1))
-            .map_err(|_| NativeHostError::LimitExceeded("D3D12 handle space exhausted".into()))?;
+        let id = rhwp_core::atomic_update::try_update_u64(
+            &NEXT_ID,
+            Ordering::Relaxed,
+            Ordering::Relaxed,
+            |v| v.checked_add(1),
+        )
+        .map_err(|_| NativeHostError::LimitExceeded("D3D12 handle space exhausted".into()))?;
         let presenter =
             unsafe { NativeD3dPresenter::new(adapter, device, queue, generation, config)? };
         let info = presenter.info()?;
