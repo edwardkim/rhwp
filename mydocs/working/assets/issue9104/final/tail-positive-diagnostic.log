@@ -22,4 +22,3 @@ LAYOUT_OVERFLOW: page=33, sec=2, col=0, para=390, type=FullParagraph, first=fals
 test same_style_authored_fields_keep_all_spaces_and_their_underline ... ok
 
 test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.99s
-

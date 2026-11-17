@@ -31,4 +31,3 @@ failures:
     inherited_trailing_decoration_does_not_compress_visible_body
 
 test result: FAILED. 10 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 11.22s
-
