@@ -1,0 +1,85 @@
+{
+  "product_source": "1da7afbd64bbc59d9338a187ebcd21860ddc0842",
+  "tested_head": "13bb8191967f7e2efc9c182deaf0e7e075576205",
+  "unchanged_native_test_scopes": [
+    "src",
+    "crates",
+    "vendor",
+    "Cargo.toml",
+    "Cargo.lock",
+    "build.rs",
+    "tests/cases/issue_2225_missing_picture_placeholder.rs",
+    "tests/cases/render_p37_direct_pdf_export.rs",
+    "tests/cases/issue_8533_native_webfont_supply.rs"
+  ],
+  "native_official_passed": 4073,
+  "native_observation_module_passed": 12,
+  "commands": [
+    {
+      "name": "candidate-native-lib",
+      "source": "1da7afbd64bbc59d9338a187ebcd21860ddc0842",
+      "product_source": "1da7afbd64bbc59d9338a187ebcd21860ddc0842",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "4"
+      ],
+      "exit_code": 0,
+      "seconds": 395.88,
+      "log": "/home/edward/mygithub/rhwp/output/issue9104/candidate-native-lib.log",
+      "completed_at": "2026-11-17T01:19:37.326973+00:00"
+    },
+    {
+      "name": "candidate-issue_2225_missing_picture_placeholder",
+      "source": "1da7afbd64bbc59d9338a187ebcd21860ddc0842",
+      "product_source": "1da7afbd64bbc59d9338a187ebcd21860ddc0842",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exit_code": 0,
+      "seconds": 384.078,
+      "log": "/home/edward/mygithub/rhwp/output/issue9104/candidate-issue_2225_missing_picture_placeholder.log",
+      "completed_at": "2026-11-17T01:26:01.410339+00:00"
+    },
+    {
+      "name": "candidate-render_p37_direct_pdf_export",
+      "source": "1da7afbd64bbc59d9338a187ebcd21860ddc0842",
+      "product_source": "1da7afbd64bbc59d9338a187ebcd21860ddc0842",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exit_code": 0,
+      "seconds": 23.732,
+      "log": "/home/edward/mygithub/rhwp/output/issue9104/candidate-render_p37_direct_pdf_export.log",
+      "completed_at": "2026-11-17T01:26:25.148195+00:00"
+    }
+  ]
+}

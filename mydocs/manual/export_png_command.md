@@ -40,6 +40,38 @@ rhwp export-png <파일.hwp> [옵션]
 | `--vlm-target <프리셋>` | | VLM (Vision-Language Model) 입력 프리셋 |
 | `--dpi <값>` | | DPI 메타데이터 (PNG `pHYs` chunk). 인쇄 워크플로우 크기 힌트 |
 
+### JSON의 실제 대체 글꼴 관측
+
+Native PNG를 실제로 그리는 동안 고른 대체 face는
+`nativeFontSupply.localFallbacks`에 기록한다.
+
+- `records`: 요청한 `requested`, 선택한 `resolved`, 공급 출처 `source`
+  (`custom`·`system`·`bundled`·`legacy`)와 요청 스타일 `bold`·`italic`.
+- `missingRequests`: 준비된 후보 중 해당 문자의 glyph를 찾지 못한 요청 글꼴 이름.
+  본문 문자 자체는 보고서에 담지 않는다.
+- `state`: 관측을 완료하면 `complete`, 상한 초과 또는 일부 페이지 실패면 `partial`,
+  `--metadata-only`로 실제 출력하지 않았으면 `notRendered`.
+- `scope`: `nativeTextTypefaceSelection`. 이미지 내부 SVG·메타파일의 별도 글꼴 선택까지
+  관측했다는 의미는 아니다.
+- 상한은 항목 256개·요청/해결 이름 합계 64 KiB다. 초과한 관측은
+  `droppedObservations`에 집계하며 완전한 결과로 표시하지 않는다.
+
+관측 범위는 이번 명령에서 실제로 출력한 쪽이다. `--page`를 사용했다면 선택하지 않은 쪽의
+글꼴 선택까지 포함하지 않는다. `requested`는 렌더러에 전달된 요청 이름이며, 출력 전 치환이
+있으면 원본 이름과의 연결은 `mappings`에서 확인한다.
+
+실제로 일반 대체를 선택한 요청 이름은 `genericFallbacks`에도 합친다.
+원래 글꼴이나 명시 공급 face를 정상 선택한 것은 일반 대체로 세지 않는다.
+`mappings`·`resources`는 출력 전 공급·치환 준비 기록이며 실제 선택 관측과 구분한다.
+다운로드 실패가 `unavailable`에 있어도 설치된 대체 face로 그릴 수 있다.
+자동 검수는 `state`와 `missingRequests`를 함께 확인한다. 관측이 `complete`라는 사실만으로
+원본과 같은 조판이나 모든 문자의 정상 표시를 보장하지 않는다.
+
+```bash
+rhwp export-png 문서.hwpx --json -o output/png > output/png-report.json
+jq '.nativeFontSupply.localFallbacks | {state, scope, records, missingRequests}' output/png-report.json
+```
+
 ### VLM 프리셋
 
 AI 파이프라인 + VLM 연동 사용 사례. `--vlm-target` 으로 입력 사양 자동 조정.

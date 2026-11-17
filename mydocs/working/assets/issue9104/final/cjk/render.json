@@ -1,0 +1,145 @@
+{
+  "backend": "native-skia",
+  "comparisonProfile": "print",
+  "fontEnvironment": {
+    "id": "declared-program-b5761f0cecd28f1ebed0353daf3cc9b9a34587bb8a431b2f41589d4c2309cbd4",
+    "preserveSourceMetrics": true,
+    "selectedPrograms": {
+      "Noto Sans CJK KR": {
+        "collectionFace": true,
+        "family": "Noto Sans CJK KR",
+        "openTypeCff": true,
+        "programId": "2c6ca2dfb4b25f9eb7962f5d0eb8676eec67751cd0ff323240cf3d086479274c",
+        "query": "Noto Sans CJK KR",
+        "trueType": false
+      },
+      "Noto Serif CJK KR": {
+        "collectionFace": true,
+        "family": "Noto Serif CJK KR",
+        "openTypeCff": true,
+        "programId": "67f767ecf30569e2f3793ee9d3f1c524c7bd3fd2a6e141e385db86fd2b446632",
+        "query": "Noto Serif CJK KR",
+        "trueType": false
+      }
+    },
+    "substitutions": {
+      "Noto Sans CJK KR": "Noto Sans CJK KR",
+      "Noto Serif CJK KR": "Noto Serif CJK KR"
+    }
+  },
+  "layoutGeneration": "2022",
+  "nativeFontSupply": {
+    "genericFallbacks": [
+      "HY견고딕",
+      "HY신명조",
+      "HY중고딕",
+      "HY헤드라인M",
+      "맑은 고딕",
+      "신명 태고딕",
+      "함초롬돋움",
+      "함초롬바탕"
+    ],
+    "glyphFallbacks": [],
+    "localFallbacks": {
+      "droppedObservations": 0,
+      "missingRequests": [],
+      "nameByteLimit": 65536,
+      "recordLimit": 256,
+      "records": [
+        {
+          "bold": false,
+          "italic": false,
+          "requested": "HY견고딕",
+          "resolved": "Noto Sans CJK KR",
+          "source": "system"
+        },
+        {
+          "bold": false,
+          "italic": false,
+          "requested": "HY신명조",
+          "resolved": "Noto Serif CJK KR",
+          "source": "system"
+        },
+        {
+          "bold": false,
+          "italic": false,
+          "requested": "HY중고딕",
+          "resolved": "Noto Sans CJK KR",
+          "source": "system"
+        },
+        {
+          "bold": false,
+          "italic": false,
+          "requested": "HY헤드라인M",
+          "resolved": "Noto Sans CJK KR",
+          "source": "system"
+        },
+        {
+          "bold": false,
+          "italic": false,
+          "requested": "맑은 고딕",
+          "resolved": "Noto Sans CJK KR",
+          "source": "system"
+        },
+        {
+          "bold": false,
+          "italic": false,
+          "requested": "신명 태고딕",
+          "resolved": "Noto Sans CJK KR",
+          "source": "system"
+        },
+        {
+          "bold": false,
+          "italic": false,
+          "requested": "함초롬돋움",
+          "resolved": "Noto Sans CJK KR",
+          "source": "system"
+        },
+        {
+          "bold": false,
+          "italic": false,
+          "requested": "함초롬바탕",
+          "resolved": "Noto Serif CJK KR",
+          "source": "system"
+        }
+      ],
+      "scope": "nativeTextTypefaceSelection",
+      "state": "complete"
+    },
+    "mappings": {},
+    "paths": [],
+    "resources": [],
+    "unavailable": [
+      "HY견고딕: 오프라인 모드이며 검증된 캐시가 없습니다",
+      "HY신명조: 오프라인 모드이며 검증된 캐시가 없습니다",
+      "HY중고딕: 오프라인 모드이며 검증된 캐시가 없습니다",
+      "HY헤드라인M: 오프라인 모드이며 검증된 캐시가 없습니다",
+      "맑은 고딕: 오프라인 모드이며 검증된 캐시가 없습니다",
+      "신명 태고딕",
+      "신명 태고딕: 오프라인 모드이며 검증된 캐시가 없습니다",
+      "함초롬돋움: 오프라인 모드이며 검증된 캐시가 없습니다",
+      "함초롬바탕: 오프라인 모드이며 검증된 캐시가 없습니다"
+    ],
+    "webFontStyles": {},
+    "webFonts": {}
+  },
+  "outputDir": "/home/edward/mygithub/rhwp/output/issue9104/cjk/render",
+  "pageCount": 1,
+  "pages": [
+    {
+      "bytes": 50139,
+      "page": 0,
+      "path": "/home/edward/mygithub/rhwp/output/issue9104/cjk/render/offline-font-families.png",
+      "renderTreePath": null
+    }
+  ],
+  "renderedCount": 1,
+  "schemaVersion": "1.0",
+  "source": "mydocs/working/assets/issue9104/inputs/offline-font-families.hwpx",
+  "tool": "export-png",
+  "untrustedContent": true,
+  "untrustedFields": [
+    "nativeFontSupply",
+    "fontEnvironment"
+  ]
+}

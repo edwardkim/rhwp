@@ -1,0 +1,32 @@
+{
+  "producer": "1da7afbd64bbc59d9338a187ebcd21860ddc0842",
+  "evidence_commit": "5d8f64bf042d197851467f2a107de7871ee6e1e7",
+  "previous_table_sha256": "2280e97844b2cb262ea73e9c49f09f56c434097fed49af75fd9a7f6198d43da7",
+  "table_sha256": "7eb001e3e30d6892d8bc03ba3e16456a4dd758cccb0e9aba073671366a9a5a1b",
+  "rows": 3542,
+  "declines": [],
+  "increases": [
+    {
+      "document_id": "78e1720edfe2277d",
+      "logical_key": "nested",
+      "backend": "native",
+      "page": "10",
+      "floor": "99.86",
+      "candidate": "100.00",
+      "candidate_raw": "100.0",
+      "previous": "99.86"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "logical_key": "nested",
+      "backend": "wasm",
+      "page": "10",
+      "floor": "99.86",
+      "candidate": "100.00",
+      "candidate_raw": "100.0",
+      "previous": "99.86"
+    }
+  ],
+  "updated_datasets": 2,
+  "no_per_page_source_mixing": true
+}

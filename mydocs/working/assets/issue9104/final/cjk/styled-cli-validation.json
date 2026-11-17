@@ -1,0 +1,103 @@
+{
+  "product_source": "1da7afbd64bbc59d9338a187ebcd21860ddc0842",
+  "input_generation": "Public current WASM applyCharFormat/exportHwpx; diagnostic API fixture, not Hancom Print golden",
+  "input_sha256": "c57ef7f6d5f90de39aa74717edce408f98db2f26c8c33fb80423877c60a1e02c",
+  "commands": [
+    {
+      "mode": "json",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/issue9104/rhwp-candidate-native",
+        "export-png",
+        "/home/edward/mygithub/rhwp/output/issue9104/cjk/styled-input.hwpx",
+        "--profile",
+        "print",
+        "-o",
+        "/home/edward/mygithub/rhwp/output/issue9104/cjk/styled-json",
+        "--json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "mode": "plain",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/issue9104/rhwp-candidate-native",
+        "export-png",
+        "/home/edward/mygithub/rhwp/output/issue9104/cjk/styled-input.hwpx",
+        "--profile",
+        "print",
+        "-o",
+        "/home/edward/mygithub/rhwp/output/issue9104/cjk/styled-plain"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "report": {
+    "droppedObservations": 0,
+    "missingRequests": [],
+    "nameByteLimit": 65536,
+    "recordLimit": 256,
+    "records": [
+      {
+        "bold": false,
+        "italic": false,
+        "requested": "HY견고딕",
+        "resolved": "Noto Sans CJK KR",
+        "source": "system"
+      },
+      {
+        "bold": false,
+        "italic": true,
+        "requested": "HY신명조",
+        "resolved": "Noto Serif CJK KR",
+        "source": "system"
+      },
+      {
+        "bold": true,
+        "italic": false,
+        "requested": "HY중고딕",
+        "resolved": "Noto Sans CJK KR",
+        "source": "system"
+      },
+      {
+        "bold": false,
+        "italic": false,
+        "requested": "HY헤드라인M",
+        "resolved": "Noto Sans CJK KR",
+        "source": "system"
+      },
+      {
+        "bold": false,
+        "italic": true,
+        "requested": "맑은 고딕",
+        "resolved": "Noto Sans CJK KR",
+        "source": "system"
+      },
+      {
+        "bold": false,
+        "italic": true,
+        "requested": "신명 태고딕",
+        "resolved": "Noto Sans CJK KR",
+        "source": "system"
+      },
+      {
+        "bold": true,
+        "italic": false,
+        "requested": "함초롬돋움",
+        "resolved": "Noto Sans CJK KR",
+        "source": "system"
+      },
+      {
+        "bold": false,
+        "italic": false,
+        "requested": "함초롬바탕",
+        "resolved": "Noto Serif CJK KR",
+        "source": "system"
+      }
+    ],
+    "scope": "nativeTextTypefaceSelection",
+    "state": "complete"
+  },
+  "all_three_requested_style_states_observed": true,
+  "diagnostic_on_off_png_identical": true,
+  "png_sha256": "c872baf18ab0aa1d9999f3dede20103adf84bd0abe0fcdab5db5eaaf852544c2"
+}

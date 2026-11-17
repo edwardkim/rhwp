@@ -1,0 +1,23 @@
+{
+  "source": "4f44355f5ff234abd1289d340cb4a3fe13297982",
+  "inspection_head": "4f44355f5ff234abd1289d340cb4a3fe13297982",
+  "package": "/home/edward/mygithub/rhwp/output/issue9104/base-pkg",
+  "artifacts": {
+    "rhwp_bg.wasm.d.ts": "aaf40f8dd3029f9e04130f874a3c79d0a349992926872528d4c16c4d835aeacb",
+    "rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+    "rhwp_bg.wasm": "e17abbc8847790564e0f2f43cdffe4677f06288c44880698a7903786c1e65dea",
+    "rhwp.d.ts": "89e5744df168946d3617ea9b7cb767b4c3172e9fcc9fea848eee327a73c407d7"
+  },
+  "command": [
+    "scripts/wasm-pack-locked.sh",
+    "--target",
+    "web",
+    "--out-dir",
+    "/home/edward/mygithub/rhwp/output/issue9104/base-pkg"
+  ],
+  "optimized": true,
+  "explicit_root_library_rebuild": true,
+  "distinct_known_base_behavior": true,
+  "seconds": 923.443,
+  "completed_at": "2026-11-17T02:12:09.418057+00:00"
+}

@@ -78,6 +78,7 @@ pub(super) fn match_supplied_family(
 pub(super) struct TypefaceCandidate {
     pub(super) typeface: Typeface,
     pub(super) source: &'static str,
+    pub(super) declared: bool,
     family_order: usize,
 }
 
@@ -87,6 +88,7 @@ impl TypefaceCandidate {
         Self {
             typeface,
             source,
+            declared: true,
             family_order: 0,
         }
     }
@@ -278,6 +280,9 @@ fn typeface_candidates_for_families_for_source(
             chain.push(TypefaceCandidate {
                 typeface,
                 source,
+                declared: families
+                    .get(family_order)
+                    .is_some_and(|family| postscript_requests.contains(family)),
                 family_order,
             });
         }

@@ -1,0 +1,25 @@
+{
+  "checked_at": "2026-11-17T03:13:25.205987+00:00",
+  "evidence_commit": "5d8f64bf042d197851467f2a107de7871ee6e1e7",
+  "product_source": "1da7afbd64bbc59d9338a187ebcd21860ddc0842",
+  "test_head": "13bb8191967f7e2efc9c182deaf0e7e075576205",
+  "old_baseline_sha256": "2280e97844b2cb262ea73e9c49f09f56c434097fed49af75fd9a7f6198d43da7",
+  "new_baseline_sha256": "7eb001e3e30d6892d8bc03ba3e16456a4dd758cccb0e9aba073671366a9a5a1b",
+  "changed_rows": 2,
+  "unchanged_rows": 3540,
+  "consumer_changes_only_full_table_identity": true,
+  "rust_source_and_tests_unchanged": true,
+  "handbook_manifest_sha256": "fe788e1a4242cadcaf5e259517b22d6313a538de6923f1192921a6aa8233e495",
+  "handbook_gate": {
+    "status": "passed",
+    "baseline": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
+    "baseline_sha256": "7eb001e3e30d6892d8bc03ba3e16456a4dd758cccb0e9aba073671366a9a5a1b",
+    "metric": "silhouette_raw_match_percent",
+    "backend": "native-skia",
+    "precision": "0.01 percentage points",
+    "pages": 383,
+    "regressions": []
+  },
+  "initial_actual_handbook_command": "handbook-final-process.json",
+  "note": "Rechecked canonical gate against the same actual completed383-page source/PNG evidence; no renderer or handbook row changes, no rerasterization claimed"
+}

@@ -1,0 +1,33 @@
+COMMAND ['bwrap', '--ro-bind', '/usr', '/usr', '--symlink', 'usr/bin', '/bin', '--symlink', 'usr/lib', '/lib', '--symlink', 'usr/lib64', '/lib64', '--ro-bind', '/etc', '/etc', '--proc', '/proc', '--dev', '/dev', '--ro-bind', '/sys', '/sys', '--bind', '/tmp', '/tmp', '--dir', '/home/edward', '--bind', '/home/edward/mygithub/rhwp', '/home/edward/mygithub/rhwp', '--bind', '/home/edward/mygithub/rhwp-worktrees/task-9104-native-font-reporting', '/home/edward/mygithub/rhwp-worktrees/task-9104-native-font-reporting', '--bind', '/home/edward/.cargo', '/home/edward/.cargo', '--ro-bind', '/home/edward/.rustup', '/home/edward/.rustup', '--ro-bind', '/home/edward/.nvm/versions/node/v24.15.0', '/home/edward/.nvm/versions/node/v24.15.0', '--tmpfs', '/usr/share/fonts', '--tmpfs', '/usr/local/share/fonts', '--setenv', 'HOME', '/home/edward', '--setenv', 'FONTCONFIG_FILE', '/home/edward/mygithub/rhwp/output/issue9104/minfont/task-9104-native-font-reporting/fonts.conf', '--setenv', 'PATH', '/home/edward/.nvm/versions/node/v24.15.0/bin:/home/edward/.cargo/bin:/usr/bin:/bin', '--setenv', 'CARGO_BUILD_JOBS', '14', '--unsetenv', 'RHWP_FONT_PATH', '--chdir', '/home/edward/mygithub/rhwp-worktrees/task-9104-native-font-reporting', '--ro-bind', '/mnt/wsl/resolv.conf', '/mnt/wsl/resolv.conf', '--bind', '/home/edward/.cache/.wasm-pack', '/home/edward/.cache/.wasm-pack', '/home/edward/mygithub/rhwp/output/issue9104/tail-negative-control', '--test-threads', '2', '--nocapture']
+
+running 11 tests
+test inherited_tail_preserves_authored_decoration_in_the_line_budget ... ok
+LAYOUT_OVERFLOW: page=36, sec=2, col=0, para=414, type=FullParagraph, first=false, y=894.3, bottom=888.2, overflow=6.1px
+LAYOUT_OVERFLOW: page=36, sec=2, col=0, para=414, type=FullParagraph, first=false, y=894.3, bottom=888.2, overflow=6.1px
+
+thread 'inherited_trailing_decoration_does_not_compress_visible_body' (7618) panicked at /home/edward/mygithub/rhwp/output/issue9104/tail-negative-control.rs:346:17:
+inherited decoration must preserve visible body frame 특정점포의 장에게 금융거래정보의 제출을 요구할 수 있으며: BoundingBox { x: 100.97333333333336, y: 670.5666666666666, width: 347.61169590643266, height: 13.333333333333334 } -> BoundingBox { x: 100.97333333333336, y: 670.5666666666666, width: 350.77333333333354, height: 13.333333333333334 }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test inherited_trailing_decoration_does_not_compress_visible_body ... FAILED
+test issue_6117_keeps_author_spaces_on_a_paragraph_end_run ... ok
+test issue_6117_keeps_space_only_form_lines ... ok
+test issue_6117_keeps_split_author_spaces_at_paragraph_end ... ok
+test issue_6117_keeps_split_author_spaces_before_explicit_break ... ok
+test issue_6117_trims_every_split_tail_run_of_the_same_soft_wrap ... ok
+test issue_6117_trims_space_only_runs_after_soft_wrapped_text ... ok
+test issue_6117_trims_trailing_spaces_of_the_last_visible_run ... ok
+LAYOUT_OVERFLOW: page=33, sec=2, col=0, para=390, type=FullParagraph, first=false, y=896.6, bottom=888.2, overflow=8.4px
+LAYOUT_OVERFLOW: page=33, sec=2, col=0, para=390, type=FullParagraph, first=false, y=896.6, bottom=888.2, overflow=8.4px
+LAYOUT_OVERFLOW: page=36, sec=2, col=0, para=414, type=FullParagraph, first=false, y=894.3, bottom=888.2, overflow=6.1px
+LAYOUT_OVERFLOW: page=36, sec=2, col=0, para=414, type=FullParagraph, first=false, y=894.3, bottom=888.2, overflow=6.1px
+test independently_styled_blank_field_keeps_its_occupancy_and_underline ... ok
+LAYOUT_OVERFLOW: page=33, sec=2, col=0, para=390, type=FullParagraph, first=false, y=896.6, bottom=888.2, overflow=8.4px
+LAYOUT_OVERFLOW: page=33, sec=2, col=0, para=390, type=FullParagraph, first=false, y=896.6, bottom=888.2, overflow=8.4px
+test same_style_authored_fields_keep_all_spaces_and_their_underline ... ok
+
+failures:
+
+failures:
+    inherited_trailing_decoration_does_not_compress_visible_body
+
+test result: FAILED. 10 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 11.22s

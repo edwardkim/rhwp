@@ -1,0 +1,19 @@
+{
+  "source": "1da7afbd64bbc59d9338a187ebcd21860ddc0842",
+  "inspection_head": "1da7afbd64bbc59d9338a187ebcd21860ddc0842",
+  "package": "/home/edward/mygithub/rhwp/output/issue9104/candidate-pkg",
+  "artifacts": {
+    "rhwp_bg.wasm.d.ts": "8775f69402f37411324ed980fb9c87ae364ca9d416057c6fea0c794d89ca1db0",
+    "rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+    "rhwp_bg.wasm": "03ab651c34387c849b11f1ff1beb1cf578c4c717c4ad16e5915d3da9f0375723",
+    "rhwp.d.ts": "cf54c30ec552ad013b737f125c8fabfa9c76e558384cd37a617e2c710e08b75a"
+  },
+  "command": [
+    "scripts/wasm-pack-locked.sh",
+    "--target",
+    "web",
+    "--out-dir",
+    "/home/edward/mygithub/rhwp/output/issue9104/candidate-pkg"
+  ],
+  "optimized": true
+}

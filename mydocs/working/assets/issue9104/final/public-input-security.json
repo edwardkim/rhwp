@@ -1,0 +1,44 @@
+{
+  "source": "1da7afbd64bbc59d9338a187ebcd21860ddc0842",
+  "input": "mydocs/working/assets/issue9104/inputs/offline-font-families.hwpx",
+  "input_sha256": "ad4a3660999e616731cd55d0135c6d06119eda8c8041c9e7a3e9f38713eab044",
+  "committed_blob_matches": true,
+  "checks": [
+    {
+      "axis": "hidden-text",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/issue9104/rhwp-candidate-native",
+        "inspect",
+        "hidden-text",
+        "mydocs/working/assets/issue9104/inputs/offline-font-families.hwpx",
+        "--json"
+      ],
+      "exit_code": 0,
+      "clean": true
+    },
+    {
+      "axis": "injection",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/issue9104/rhwp-candidate-native",
+        "inspect",
+        "injection",
+        "mydocs/working/assets/issue9104/inputs/offline-font-families.hwpx",
+        "--json"
+      ],
+      "exit_code": 0,
+      "clean": true
+    },
+    {
+      "axis": "unicode",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/issue9104/rhwp-candidate-native",
+        "inspect",
+        "unicode",
+        "mydocs/working/assets/issue9104/inputs/offline-font-families.hwpx",
+        "--json"
+      ],
+      "exit_code": 0,
+      "clean": true
+    }
+  ]
+}

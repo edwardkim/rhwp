@@ -1,0 +1,19 @@
+{
+  "command": [
+    "/home/edward/mygithub/rhwp/venv/bin/python",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "scripts/tests",
+    "-p",
+    "test_visual_sweep*.py"
+  ],
+  "passed": 267,
+  "exit_code": 0,
+  "seconds": 13.835,
+  "log_sha256": "12bc7f0b02bca27ff8f43ee0fd93061b5354185e478f779512454fd624925d7f",
+  "recorded_at": "2026-11-17T03:15:38.657668+00:00",
+  "source_test_head": "13bb8191967f7e2efc9c182deaf0e7e075576205",
+  "baseline_sha256": "7eb001e3e30d6892d8bc03ba3e16456a4dd758cccb0e9aba073671366a9a5a1b"
+}

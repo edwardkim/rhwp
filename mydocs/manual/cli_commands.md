@@ -356,6 +356,11 @@ HWP/HWPX → PDF (svg2pdf + pdf-writer).
     `RHWP_WEBFONT_OFFLINE=1`은 해시를 확인한 기존 캐시만 사용하며 네트워크 요청을 하지 않는다.
     JSON `nativeFontSupply.resources`는 공급 URL·원본 SHA-256·Native 변환본 SHA-256·크기를
     구분한다. 이는 공급 준비 기록이며 개별 글리프의 최종 선택 증거는 아니다.
+  - Native `export-png --json`의 `nativeFontSupply.localFallbacks`는 실제 텍스트 face 선택을
+    관측한 요청/해결 이름·출처·스타일과 미해결 요청을 별도로 기록한다.
+    관측 상한 초과·일부 쪽 실패는 `partial`, `--metadata-only`는 `notRendered`다.
+    [실제 대체 글꼴 관측](export_png_command.md#json의-실제-대체-글꼴-관측)을 따른다.
+    이 진단 때문에 실제 환경의 `mappings`나 glyph 선택을 바꾸지 않는다.
   - SVG의 비임베딩·style 출력은 준비한 웹폰트의 `local()` 우선 CSS 참조를 함께 기록한다.
     외부에서 SVG를 열 때는 해당 호스트의 글꼴이나 CDN 접근이 필요하다. subset·full 임베딩은
     기존 임베딩 정책을 유지한다. 캐시의 글꼴 파일을 시스템에 설치하거나 출력에 자동 첨부하지 않는다.

@@ -1,0 +1,17 @@
+{
+  "source": "1da7afbd64bbc59d9338a187ebcd21860ddc0842",
+  "command": [
+    "node",
+    "scripts/run-rust-test.mjs",
+    "issue_8533_native_webfont_supply",
+    "--",
+    "--cargo-profile",
+    "release-test",
+    "--target-dir",
+    "/home/edward/mygithub/rhwp/target/pr-review",
+    "--features",
+    "native-skia"
+  ],
+  "exit": 0,
+  "seconds": 23.606
+}

@@ -1,0 +1,37 @@
+{
+  "checked_at": "2026-11-17T03:19:47.640510+00:00",
+  "runtime_producer": "1da7afbd64bbc59d9338a187ebcd21860ddc0842",
+  "rust_test_head": "13bb8191967f7e2efc9c182deaf0e7e075576205",
+  "evidence_commit": "5d8f64bf042d197851467f2a107de7871ee6e1e7",
+  "changed_baseline_rows": 2,
+  "unchanged_baseline_rows": 3540,
+  "unchanged_dataset_provenance": 34,
+  "changed_dataset_evidence_commits_verified": true,
+  "markdown_link_command": [
+    "python3",
+    "scripts/check_markdown_links.py",
+    "--changed-from",
+    "4f44355f5ff234abd1289d340cb4a3fe13297982",
+    "--forbid-redirect-references",
+    "explicit changed Markdown paths"
+  ],
+  "markdown_link_exit_code": 0,
+  "markdown_link_log_sha256": "9504f5bf8a5c28dc1d85458d8c5d6e440de3e6c50d76516f26f8c9d3c1adb2e0",
+  "diff_check_exit_code": 0,
+  "font_program_files_distributed": 0,
+  "diagnostic_log_curation": [
+    {
+      "path": "tail-negative-control.log",
+      "original_sha256": "0686de29380fb92000efc8f401ce7a65d5437f186e3e63009731ad3b1e9e89aa",
+      "committed_sha256": "d2cbc6531d9e11e3608b96b286d7eb9c05ec88fa84e8d568233f520ac9ed0eb3",
+      "change": "Trailing empty lines only; commands, stdout/stderr and outcomes preserved"
+    },
+    {
+      "path": "tail-positive-diagnostic.log",
+      "original_sha256": "8287dee14ecb94c9ae7602909b8619b57b7016ad5ad050e316e424baa1eb0b82",
+      "committed_sha256": "e4a4b1b31ebdb0aea72948a15d969a790ea12c83dbcbf1a76a0aa8a73e93299b",
+      "change": "Trailing empty lines only; commands, stdout/stderr and outcomes preserved"
+    }
+  ],
+  "diff_check_scope": "Full base-to-current candidate diff"
+}

@@ -1,0 +1,2509 @@
+{
+  "checked_at": "2026-11-17T04:14:43.163760+00:00",
+  "pr": 9147,
+  "code_head": "6f99912b5013b3a82da9869f536e1488859d4f83",
+  "base": "4f44355f5ff234abd1289d340cb4a3fe13297982",
+  "reviewer": "author self-review; none assigned",
+  "workflows": [
+    {
+      "id": 44011681949,
+      "name": "CI Impact Policy Controller",
+      "sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "event": "pull_request_target",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/44011681949",
+      "conclusion": "success",
+      "attempt": 1,
+      "jobs": [
+        {
+          "id": 133799931832,
+          "name": "Evaluate trusted CI impact policy",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011681949/job/133799931832",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:39:02Z",
+          "completed_at": "2026-11-17T03:39:15Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Resolve live pull request identity",
+              "conclusion": "success"
+            },
+            {
+              "name": "Check out trusted base policy implementation",
+              "conclusion": "success"
+            },
+            {
+              "name": "Collect policy and same-head workflow evidence",
+              "conclusion": "success"
+            },
+            {
+              "name": "Verify trusted current-base merge bridge",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Classify with trusted base implementation",
+              "conclusion": "success"
+            },
+            {
+              "name": "Prepare trusted policy input",
+              "conclusion": "success"
+            },
+            {
+              "name": "Evaluate trusted policy and aggregate audit",
+              "conclusion": "success"
+            },
+            {
+              "name": "Summarize trusted policy",
+              "conclusion": "success"
+            },
+            {
+              "name": "Publish exact-head policy status",
+              "conclusion": "success"
+            },
+            {
+              "name": "Explain CI failure evidence",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Check out trusted base policy implementation",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 44011682001,
+      "name": "Adapter inter-diff",
+      "sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "event": "pull_request",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682001",
+      "conclusion": "success",
+      "attempt": 1,
+      "jobs": [
+        {
+          "id": 133799928183,
+          "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682001/job/133799928183",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:39:02Z",
+          "completed_at": "2026-11-17T03:39:07Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Default to full verification",
+              "conclusion": "success"
+            },
+            {
+              "name": "Capture PR merge-tree evidence",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload PR merge-tree evidence",
+              "conclusion": "success"
+            },
+            {
+              "name": "Resolve trusted source base parent",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Checkout trusted verifier",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Evaluate exact PR workflow evidence",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Publish validated Archive B duration measurement",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Publish validated Archive C duration measurement",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Publish validated Archive D duration measurement",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Publish validated Archive E duration measurement",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Finalize reuse after validated evidence publication",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 133799975042,
+          "name": "adapter inter-diff preflight",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682001/job/133799975042",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:39:09Z",
+          "completed_at": "2026-11-17T03:39:42Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Classify review-only or trusted trailing review tail",
+              "conclusion": "success"
+            },
+            {
+              "name": "Check out current-base merge tree inputs",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Verify current-base merge tree",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Finalize adapter impact",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 133800187274,
+          "name": "adapter inter-diff",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682001/job/133800187274",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:39:45Z",
+          "completed_at": "2026-11-17T03:49:07Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install Rust toolchain",
+              "conclusion": "success"
+            },
+            {
+              "name": "Rust build cache",
+              "conclusion": "success"
+            },
+            {
+              "name": "Check adapter-diff runner contract",
+              "conclusion": "success"
+            },
+            {
+              "name": "Check adapter-diff harness",
+              "conclusion": "success"
+            },
+            {
+              "name": "Discover adapters (honest skip)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Prepare derived Rust test suites",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run adapter inter-diff case",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Rust build cache",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 44011682062,
+      "name": "Proptest roundtrip",
+      "sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "event": "pull_request",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682062",
+      "conclusion": "success",
+      "attempt": 1,
+      "jobs": [
+        {
+          "id": 133799927914,
+          "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682062/job/133799927914",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:39:02Z",
+          "completed_at": "2026-11-17T03:39:09Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Default to full verification",
+              "conclusion": "success"
+            },
+            {
+              "name": "Capture PR merge-tree evidence",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload PR merge-tree evidence",
+              "conclusion": "success"
+            },
+            {
+              "name": "Resolve trusted source base parent",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Checkout trusted verifier",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Evaluate exact PR workflow evidence",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Publish validated Archive B duration measurement",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Publish validated Archive C duration measurement",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Publish validated Archive D duration measurement",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Publish validated Archive E duration measurement",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Finalize reuse after validated evidence publication",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 133799989409,
+          "name": "Proptest preflight",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682062/job/133799989409",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:39:11Z",
+          "completed_at": "2026-11-17T03:39:42Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Detect review-only or trusted trailing review tail",
+              "conclusion": "success"
+            },
+            {
+              "name": "Check out current-base merge tree inputs",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Verify current-base merge tree",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Finalize fast pass",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 133800186365,
+          "name": "prop roundtrip",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682062/job/133800186365",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:39:45Z",
+          "completed_at": "2026-11-17T03:49:55Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install Rust toolchain",
+              "conclusion": "success"
+            },
+            {
+              "name": "Rust build cache",
+              "conclusion": "success"
+            },
+            {
+              "name": "Check property runner contract",
+              "conclusion": "success"
+            },
+            {
+              "name": "Prepare derived Rust test suites",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run property roundtrip cases",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Rust build cache",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 44011682064,
+      "name": "CodeQL",
+      "sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "event": "pull_request",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682064",
+      "conclusion": "success",
+      "attempt": 1,
+      "jobs": [
+        {
+          "id": 133799928048,
+          "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682064/job/133799928048",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:39:02Z",
+          "completed_at": "2026-11-17T03:39:06Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Default to full verification",
+              "conclusion": "success"
+            },
+            {
+              "name": "Capture PR merge-tree evidence",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload PR merge-tree evidence",
+              "conclusion": "success"
+            },
+            {
+              "name": "Resolve trusted source base parent",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Checkout trusted verifier",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Evaluate exact PR workflow evidence",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Publish validated Archive B duration measurement",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Publish validated Archive C duration measurement",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Publish validated Archive D duration measurement",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Publish validated Archive E duration measurement",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Finalize reuse after validated evidence publication",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 133799970362,
+          "name": "CodeQL preflight",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682064/job/133799970362",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:39:09Z",
+          "completed_at": "2026-11-17T03:40:07Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Detect review-only fast pass",
+              "conclusion": "success"
+            },
+            {
+              "name": "Check out current-base merge tree inputs",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Verify current-base merge tree",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Finalize review-only fast pass",
+              "conclusion": "success"
+            },
+            {
+              "name": "Check out trusted CodeQL impact classifier",
+              "conclusion": "success"
+            },
+            {
+              "name": "Collect CodeQL impact input",
+              "conclusion": "success"
+            },
+            {
+              "name": "Classify CodeQL impact",
+              "conclusion": "success"
+            },
+            {
+              "name": "Finalize CodeQL language selection",
+              "conclusion": "success"
+            },
+            {
+              "name": "Summarize CodeQL impact classification",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Check out trusted CodeQL impact classifier",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 133800339694,
+          "name": "Analyze (rust)",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682064/job/133800339694",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:40:10Z",
+          "completed_at": "2026-11-17T04:04:38Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Skip unselected language",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Initialize CodeQL (non-Rust)",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Initialize CodeQL (Rust)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Initialize CodeQL (Rust post-merge)",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Initialize CodeQL (Rust full scan)",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Install Rust toolchain",
+              "conclusion": "success"
+            },
+            {
+              "name": "Perform CodeQL Analysis",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Perform CodeQL Analysis",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Initialize CodeQL (Rust)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 133800339719,
+          "name": "Analyze (javascript-typescript)",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682064/job/133800339719",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:40:10Z",
+          "completed_at": "2026-11-17T03:51:54Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Skip unselected language",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Initialize CodeQL (non-Rust)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Initialize CodeQL (Rust)",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Initialize CodeQL (Rust post-merge)",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Initialize CodeQL (Rust full scan)",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Install Rust toolchain",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Perform CodeQL Analysis",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Perform CodeQL Analysis",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Initialize CodeQL (non-Rust)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 133800339728,
+          "name": "Analyze (actions)",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682064/job/133800339728",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:40:10Z",
+          "completed_at": "2026-11-17T03:45:02Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Skip unselected language",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Initialize CodeQL (non-Rust)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Initialize CodeQL (Rust)",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Initialize CodeQL (Rust post-merge)",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Initialize CodeQL (Rust full scan)",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Install Rust toolchain",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Perform CodeQL Analysis",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Perform CodeQL Analysis",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Initialize CodeQL (non-Rust)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 133800339747,
+          "name": "Analyze (python)",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682064/job/133800339747",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:40:10Z",
+          "completed_at": "2026-11-17T03:45:42Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Skip unselected language",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Initialize CodeQL (non-Rust)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Initialize CodeQL (Rust)",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Initialize CodeQL (Rust post-merge)",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Initialize CodeQL (Rust full scan)",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Install Rust toolchain",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Perform CodeQL Analysis",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Perform CodeQL Analysis",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Initialize CodeQL (non-Rust)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 44011682098,
+      "name": "Render Diff",
+      "sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "event": "pull_request",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682098",
+      "conclusion": "success",
+      "attempt": 1,
+      "jobs": [
+        {
+          "id": 133799927891,
+          "name": "Render Diff preflight",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682098/job/133799927891",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:39:02Z",
+          "completed_at": "2026-11-17T03:39:11Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Detect review-only fast pass",
+              "conclusion": "success"
+            },
+            {
+              "name": "Check out current-base merge tree inputs",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Verify current-base merge tree",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Finalize review-only fast pass",
+              "conclusion": "success"
+            },
+            {
+              "name": "Check out trusted CI impact classifier",
+              "conclusion": "success"
+            },
+            {
+              "name": "Collect Render Diff impact input",
+              "conclusion": "success"
+            },
+            {
+              "name": "Classify Render Diff impact",
+              "conclusion": "success"
+            },
+            {
+              "name": "Summarize Render Diff impact",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Check out trusted CI impact classifier",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 133799999973,
+          "name": "Canvas visual diff",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682098/job/133799999973",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:39:14Z",
+          "completed_at": "2026-11-17T04:11:00Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Render Diff identity PR #9147 base 4f44355f5ff234abd1289d340cb4a3fe13297982",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Free disk space (remove unused pre-installed toolchains)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install Rust toolchain",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install PDF raster tools",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install wasm-pack",
+              "conclusion": "success"
+            },
+            {
+              "name": "Resolve WASM build configuration",
+              "conclusion": "success"
+            },
+            {
+              "name": "Restore cargo registry & build cache",
+              "conclusion": "success"
+            },
+            {
+              "name": "Build WASM package",
+              "conclusion": "success"
+            },
+            {
+              "name": "Build native CLI for PDF report",
+              "conclusion": "success"
+            },
+            {
+              "name": "Save cargo registry & build cache",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Setup Node.js",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install Studio dependencies",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate Visual Sweep Canvas font registration",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install Chromium",
+              "conclusion": "success"
+            },
+            {
+              "name": "Check render diff script syntax",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run canvas visual diff and PDF report",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run selected CanvasKit readiness gate",
+              "conclusion": "success"
+            },
+            {
+              "name": "Add render diff summary",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload render diff artifacts",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Setup Node.js",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 44011682101,
+      "name": "CI",
+      "sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "event": "pull_request",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101",
+      "conclusion": "success",
+      "attempt": 1,
+      "jobs": [
+        {
+          "id": 133799928812,
+          "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133799928812",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:39:02Z",
+          "completed_at": "2026-11-17T03:39:09Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Default to full verification",
+              "conclusion": "success"
+            },
+            {
+              "name": "Capture PR merge-tree evidence",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload PR merge-tree evidence",
+              "conclusion": "success"
+            },
+            {
+              "name": "Resolve trusted source base parent",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Checkout trusted verifier",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Evaluate exact PR workflow evidence",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Publish validated Archive B duration measurement",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Publish validated Archive C duration measurement",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Publish validated Archive D duration measurement",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Publish validated Archive E duration measurement",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Finalize reuse after validated evidence publication",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 133799930434,
+          "name": "WASM Build",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133799930434",
+          "conclusion": "skipped",
+          "started_at": "2026-11-17T03:39:00Z",
+          "completed_at": "2026-11-17T03:38:59Z",
+          "steps": []
+        },
+        {
+          "id": 133799989717,
+          "name": "CI preflight",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133799989717",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:39:12Z",
+          "completed_at": "2026-11-17T03:40:08Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Select test profile policy",
+              "conclusion": "success"
+            },
+            {
+              "name": "Detect review-only fast pass",
+              "conclusion": "success"
+            },
+            {
+              "name": "Check out current-base merge tree inputs",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Verify current-base merge tree",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Finalize review-only fast pass",
+              "conclusion": "success"
+            },
+            {
+              "name": "Check out trusted CI impact classifier",
+              "conclusion": "success"
+            },
+            {
+              "name": "Collect CI impact input",
+              "conclusion": "success"
+            },
+            {
+              "name": "Classify CI impact",
+              "conclusion": "success"
+            },
+            {
+              "name": "Summarize CI impact classification",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Check out trusted CI impact classifier",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 133800345630,
+          "name": "Native Skia tests",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133800345630",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:40:11Z",
+          "completed_at": "2026-11-17T04:13:00Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Free disk space (remove unused pre-installed toolchains)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install Rust toolchain",
+              "conclusion": "success"
+            },
+            {
+              "name": "Rust build cache",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install native Skia runtime packages",
+              "conclusion": "success"
+            },
+            {
+              "name": "Prepare derived Rust test suites",
+              "conclusion": "success"
+            },
+            {
+              "name": "Native Skia tests",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Rust build cache",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 133800345637,
+          "name": "Resolve nextest target duration policy",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133800345637",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:40:11Z",
+          "completed_at": "2026-11-17T03:40:13Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run set -euo pipefail",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 133800345656,
+          "name": "Frontend package gates",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133800345656",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:40:11Z",
+          "completed_at": "2026-11-17T04:08:14Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Free disk space (remove unused pre-installed toolchains)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install Rust toolchain",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install wasm-pack",
+              "conclusion": "success"
+            },
+            {
+              "name": "Restore frontend WASM cargo cache",
+              "conclusion": "success"
+            },
+            {
+              "name": "Build fresh WASM package for frontend gates",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Build optimized WASM for frontend Canvas gates",
+              "conclusion": "success"
+            },
+            {
+              "name": "Set up Node.js",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install frontend package dependencies",
+              "conclusion": "success"
+            },
+            {
+              "name": "Verify WASM bindings and editor embed contract",
+              "conclusion": "success"
+            },
+            {
+              "name": "Verify build dependency compatibility",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run editor package tests when declared",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run shared and extension service worker tests",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run Chrome extension options UI tests",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run Studio unit tests",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install headless Chrome",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate Visual Sweep Canvas font binding",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install frontend Canvas Chromium",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run frontend Canvas gates",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload frontend Canvas evidence",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run undo depth measurement gate (#5769)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run Studio responsive toolbar gate (#6118,",
+              "conclusion": "success"
+            },
+            {
+              "name": "Build Studio",
+              "conclusion": "success"
+            },
+            {
+              "name": "Build browser extensions",
+              "conclusion": "success"
+            },
+            {
+              "name": "Verify extension distributions",
+              "conclusion": "success"
+            },
+            {
+              "name": "Compile VS Code extension",
+              "conclusion": "success"
+            },
+            {
+              "name": "Verify VS Code webview outline keyboard contract",
+              "conclusion": "success"
+            },
+            {
+              "name": "Verify font asset contracts",
+              "conclusion": "success"
+            },
+            {
+              "name": "Save frontend WASM cargo cache",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Post Set up Node.js",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 133800345662,
+          "name": "Lint (fmt, clippy, WASM check)",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133800345662",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:40:11Z",
+          "completed_at": "2026-11-17T03:58:56Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Disk space before checkout",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Disk space after checkout",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install Rust toolchain",
+              "conclusion": "success"
+            },
+            {
+              "name": "Disk space after Rust toolchain installation",
+              "conclusion": "success"
+            },
+            {
+              "name": "Rust build cache",
+              "conclusion": "success"
+            },
+            {
+              "name": "Disk space after Rust build cache restore",
+              "conclusion": "success"
+            },
+            {
+              "name": "Prepare derived Rust test suites",
+              "conclusion": "success"
+            },
+            {
+              "name": "Format check",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate Visual Sweep PNG contracts",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate CI impact classifier",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate Rust test suite manifest",
+              "conclusion": "success"
+            },
+            {
+              "name": "Test internal Rust crates",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate LLM verifier tool contracts",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate Visual Sweep PNG server",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate Render Diff trigger policy",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate canvaskit-parity batch map",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate workflow contracts",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate adoption spine contract",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate planner templates",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate agent org contract",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate agent frame contract",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate external reality check contract",
+              "conclusion": "success"
+            },
+            {
+              "name": "Clippy",
+              "conclusion": "success"
+            },
+            {
+              "name": "Clippy (WASM32)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Check workspace members (FFI bindings, tools)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Agent preflight (failure-path sweep + undeclared-command detection)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Check WASM target",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Rust build cache",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 133800345815,
+          "name": "build-test-archive-a / Build test archive (a)",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133800345815",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:40:11Z",
+          "completed_at": "2026-11-17T03:55:08Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate test archive policy",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Free disk space (remove unused pre-installed toolchains)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install Rust toolchain",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install cargo-nextest",
+              "conclusion": "success"
+            },
+            {
+              "name": "Rust build cache",
+              "conclusion": "success"
+            },
+            {
+              "name": "Inspect disk space after Rust build cache",
+              "conclusion": "success"
+            },
+            {
+              "name": "Summarize test archive policy",
+              "conclusion": "success"
+            },
+            {
+              "name": "Build default-feature test archive",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload test archive",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload archive expected count",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Rust build cache",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 133800347091,
+          "name": "native-host-package",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133800347091",
+          "conclusion": "skipped",
+          "started_at": "2026-11-17T03:40:09Z",
+          "completed_at": "2026-11-17T03:40:08Z",
+          "steps": []
+        },
+        {
+          "id": 133800347216,
+          "name": "Workflow promotion preflight",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133800347216",
+          "conclusion": "skipped",
+          "started_at": "2026-11-17T03:40:09Z",
+          "completed_at": "2026-11-17T03:40:08Z",
+          "steps": []
+        },
+        {
+          "id": 133800347734,
+          "name": "Frontend unit gates",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133800347734",
+          "conclusion": "skipped",
+          "started_at": "2026-11-17T03:40:09Z",
+          "completed_at": "2026-11-17T03:40:08Z",
+          "steps": []
+        },
+        {
+          "id": 133800348179,
+          "name": "release-operations-contracts",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133800348179",
+          "conclusion": "skipped",
+          "started_at": "2026-11-17T03:40:09Z",
+          "completed_at": "2026-11-17T03:40:08Z",
+          "steps": []
+        },
+        {
+          "id": 133800379576,
+          "name": "build-test-archive-b / Build test archive (b)",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133800379576",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:40:16Z",
+          "completed_at": "2026-11-17T03:54:25Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate test archive policy",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Free disk space (remove unused pre-installed toolchains)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install Rust toolchain",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install cargo-nextest",
+              "conclusion": "success"
+            },
+            {
+              "name": "Rust build cache",
+              "conclusion": "success"
+            },
+            {
+              "name": "Inspect disk space after Rust build cache",
+              "conclusion": "success"
+            },
+            {
+              "name": "Summarize test archive policy",
+              "conclusion": "success"
+            },
+            {
+              "name": "Build default-feature test archive",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload test archive",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload archive expected count",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Rust build cache",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 133800379604,
+          "name": "build-test-archive-d / Build test archive (d)",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133800379604",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:40:17Z",
+          "completed_at": "2026-11-17T03:59:11Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate test archive policy",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Free disk space (remove unused pre-installed toolchains)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install Rust toolchain",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install cargo-nextest",
+              "conclusion": "success"
+            },
+            {
+              "name": "Rust build cache",
+              "conclusion": "success"
+            },
+            {
+              "name": "Inspect disk space after Rust build cache",
+              "conclusion": "success"
+            },
+            {
+              "name": "Summarize test archive policy",
+              "conclusion": "success"
+            },
+            {
+              "name": "Build default-feature test archive",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload test archive",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload archive expected count",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Rust build cache",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 133800379610,
+          "name": "build-test-archive-c / Build test archive (c)",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133800379610",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:40:16Z",
+          "completed_at": "2026-11-17T03:59:37Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate test archive policy",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Free disk space (remove unused pre-installed toolchains)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install Rust toolchain",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install cargo-nextest",
+              "conclusion": "success"
+            },
+            {
+              "name": "Rust build cache",
+              "conclusion": "success"
+            },
+            {
+              "name": "Inspect disk space after Rust build cache",
+              "conclusion": "success"
+            },
+            {
+              "name": "Summarize test archive policy",
+              "conclusion": "success"
+            },
+            {
+              "name": "Build default-feature test archive",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload test archive",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload archive expected count",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Rust build cache",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 133800379671,
+          "name": "build-test-archive-e / Build test archive (e)",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133800379671",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:40:16Z",
+          "completed_at": "2026-11-17T03:59:27Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate test archive policy",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Free disk space (remove unused pre-installed toolchains)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install Rust toolchain",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install cargo-nextest",
+              "conclusion": "success"
+            },
+            {
+              "name": "Rust build cache",
+              "conclusion": "success"
+            },
+            {
+              "name": "Inspect disk space after Rust build cache",
+              "conclusion": "success"
+            },
+            {
+              "name": "Summarize test archive policy",
+              "conclusion": "success"
+            },
+            {
+              "name": "Build default-feature test archive",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload test archive",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload archive expected count",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Rust build cache",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 133805611756,
+          "name": "test-archive-b-shard-1 / Default-feature tests (Archive B)",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133805611756",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:54:29Z",
+          "completed_at": "2026-11-17T04:04:46Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install Rust toolchain",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install cargo-nextest",
+              "conclusion": "success"
+            },
+            {
+              "name": "Download shared test archive",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run Archive B",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload Archive B count",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload upstream PR B/C/D/E target durations",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload devel B/C/D/E target durations",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 133805882145,
+          "name": "test-archive-a-shard-1 / Default-feature tests (Archive A)",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133805882145",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:55:11Z",
+          "completed_at": "2026-11-17T04:01:16Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install Rust toolchain",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install cargo-nextest",
+              "conclusion": "success"
+            },
+            {
+              "name": "Download shared test archive",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run Archive A",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload Archive A count",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload upstream PR B/C/D/E target durations",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Upload devel B/C/D/E target durations",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 133807335944,
+          "name": "test-archive-d-shard-1 / Default-feature tests (Archive D)",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133807335944",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:59:14Z",
+          "completed_at": "2026-11-17T04:08:53Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install Rust toolchain",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install cargo-nextest",
+              "conclusion": "success"
+            },
+            {
+              "name": "Download shared test archive",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run Archive D",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload Archive D count",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload upstream PR B/C/D/E target durations",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload devel B/C/D/E target durations",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 133807434367,
+          "name": "test-archive-e-shard-1 / Default-feature tests (Archive E)",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133807434367",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:59:31Z",
+          "completed_at": "2026-11-17T04:10:20Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install Rust toolchain",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install cargo-nextest",
+              "conclusion": "success"
+            },
+            {
+              "name": "Download shared test archive",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run Archive E",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload Archive E count",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload upstream PR B/C/D/E target durations",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload devel B/C/D/E target durations",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 133807488207,
+          "name": "test-archive-c-shard-1 / Default-feature tests (Archive C)",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133807488207",
+          "conclusion": "success",
+          "started_at": "2026-11-17T03:59:39Z",
+          "completed_at": "2026-11-17T04:08:57Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install Rust toolchain",
+              "conclusion": "success"
+            },
+            {
+              "name": "Install cargo-nextest",
+              "conclusion": "success"
+            },
+            {
+              "name": "Download shared test archive",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run Archive C",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload Archive C count",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload upstream PR B/C/D/E target durations",
+              "conclusion": "success"
+            },
+            {
+              "name": "Upload devel B/C/D/E target durations",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "id": 133812707701,
+          "name": "Build & Test",
+          "url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133812707701",
+          "conclusion": "success",
+          "started_at": "2026-11-17T04:13:03Z",
+          "completed_at": "2026-11-17T04:13:14Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Download archive A expected count",
+              "conclusion": "success"
+            },
+            {
+              "name": "Download archive B expected count",
+              "conclusion": "success"
+            },
+            {
+              "name": "Download archive C expected count",
+              "conclusion": "success"
+            },
+            {
+              "name": "Download archive D expected count",
+              "conclusion": "success"
+            },
+            {
+              "name": "Download archive E expected count",
+              "conclusion": "success"
+            },
+            {
+              "name": "Download shard counts",
+              "conclusion": "success"
+            },
+            {
+              "name": "Verify archive shard totals",
+              "conclusion": "success"
+            },
+            {
+              "name": "Check Build & Test worker results",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "id": 133812707701,
+      "name": "Build & Test",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133812707701"
+    },
+    {
+      "id": 133807488207,
+      "name": "test-archive-c-shard-1 / Default-feature tests (Archive C)",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133807488207"
+    },
+    {
+      "id": 133807434367,
+      "name": "test-archive-e-shard-1 / Default-feature tests (Archive E)",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133807434367"
+    },
+    {
+      "id": 133807335944,
+      "name": "test-archive-d-shard-1 / Default-feature tests (Archive D)",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133807335944"
+    },
+    {
+      "id": 133805882145,
+      "name": "test-archive-a-shard-1 / Default-feature tests (Archive A)",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133805882145"
+    },
+    {
+      "id": 133805611756,
+      "name": "test-archive-b-shard-1 / Default-feature tests (Archive B)",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133805611756"
+    },
+    {
+      "id": 133802092735,
+      "name": "CodeQL",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/runs/133802092735"
+    },
+    {
+      "id": 133800379671,
+      "name": "build-test-archive-e / Build test archive (e)",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133800379671"
+    },
+    {
+      "id": 133800379610,
+      "name": "build-test-archive-c / Build test archive (c)",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133800379610"
+    },
+    {
+      "id": 133800379604,
+      "name": "build-test-archive-d / Build test archive (d)",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133800379604"
+    },
+    {
+      "id": 133800379576,
+      "name": "build-test-archive-b / Build test archive (b)",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133800379576"
+    },
+    {
+      "id": 133800348179,
+      "name": "release-operations-contracts",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "skipped",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133800348179"
+    },
+    {
+      "id": 133800347734,
+      "name": "Frontend unit gates",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "skipped",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133800347734"
+    },
+    {
+      "id": 133800347216,
+      "name": "Workflow promotion preflight",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "skipped",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133800347216"
+    },
+    {
+      "id": 133800347091,
+      "name": "native-host-package",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "skipped",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133800347091"
+    },
+    {
+      "id": 133800345815,
+      "name": "build-test-archive-a / Build test archive (a)",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133800345815"
+    },
+    {
+      "id": 133800345662,
+      "name": "Lint (fmt, clippy, WASM check)",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133800345662"
+    },
+    {
+      "id": 133800345656,
+      "name": "Frontend package gates",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133800345656"
+    },
+    {
+      "id": 133800345637,
+      "name": "Resolve nextest target duration policy",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133800345637"
+    },
+    {
+      "id": 133800345630,
+      "name": "Native Skia tests",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133800345630"
+    },
+    {
+      "id": 133800339747,
+      "name": "Analyze (python)",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682064/job/133800339747"
+    },
+    {
+      "id": 133800339728,
+      "name": "Analyze (actions)",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682064/job/133800339728"
+    },
+    {
+      "id": 133800339719,
+      "name": "Analyze (javascript-typescript)",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682064/job/133800339719"
+    },
+    {
+      "id": 133800339694,
+      "name": "Analyze (rust)",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682064/job/133800339694"
+    },
+    {
+      "id": 133800187274,
+      "name": "adapter inter-diff",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682001/job/133800187274"
+    },
+    {
+      "id": 133800186365,
+      "name": "prop roundtrip",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682062/job/133800186365"
+    },
+    {
+      "id": 133799999973,
+      "name": "Canvas visual diff",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682098/job/133799999973"
+    },
+    {
+      "id": 133799989717,
+      "name": "CI preflight",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133799989717"
+    },
+    {
+      "id": 133799989409,
+      "name": "Proptest preflight",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682062/job/133799989409"
+    },
+    {
+      "id": 133799975042,
+      "name": "adapter inter-diff preflight",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682001/job/133799975042"
+    },
+    {
+      "id": 133799970362,
+      "name": "CodeQL preflight",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682064/job/133799970362"
+    },
+    {
+      "id": 133799931832,
+      "name": "Evaluate trusted CI impact policy",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011681949/job/133799931832"
+    },
+    {
+      "id": 133799930434,
+      "name": "WASM Build",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "skipped",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133799930434"
+    },
+    {
+      "id": 133799928812,
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682101/job/133799928812"
+    },
+    {
+      "id": 133799928183,
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682001/job/133799928183"
+    },
+    {
+      "id": 133799928048,
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682064/job/133799928048"
+    },
+    {
+      "id": 133799927914,
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682062/job/133799927914"
+    },
+    {
+      "id": 133799927891,
+      "name": "Render Diff preflight",
+      "head_sha": "6f99912b5013b3a82da9869f536e1488859d4f83",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/edwardkim/rhwp/actions/runs/44011682098/job/133799927891"
+    }
+  ],
+  "statuses": [
+    {
+      "url": "https://api.github.com/repos/edwardkim/rhwp/statuses/6f99912b5013b3a82da9869f536e1488859d4f83",
+      "avatar_url": "https://avatars.githubusercontent.com/in/15368?v=4",
+      "id": 59103277248,
+      "node_id": "SC_kwDORyECHM8AAAANwtRwwA",
+      "state": "success",
+      "description": "v=9;cv=9;mode=full;rfp=0;wf=111;rust=1;fe=package;fc=1;render=1;skia=1;ql=js,py,rs,ac;b=4f44355f5ff234abd1289d340cb4a3fe13297982",
+      "target_url": "https://github.com/edwardkim/rhwp/actions/runs/44015649036",
+      "context": "CI Impact Policy",
+      "created_at": "2026-11-17T04:13:35Z",
+      "updated_at": "2026-11-17T04:13:35Z"
+    }
+  ],
+  "full_default_tests": {
+    "passed": 13516,
+    "failed": 0,
+    "skipped": 45,
+    "source": "actual five nextest worker log summaries"
+  },
+  "native_log_result_summaries": [
+    "2026-11-17T03:58:57.5040983Z test result: ok. 58 passed; 0 failed; 0 ignored; 0 measured; 3807 filtered out; finished in 0.36s",
+    "2026-11-17T03:58:57.5110060Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 15 filtered out; finished in 0.00s",
+    "2026-11-17T03:58:57.5126617Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 165 filtered out; finished in 0.00s",
+    "2026-11-17T03:58:57.5137847Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s",
+    "2026-11-17T04:06:07.0101147Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.30s",
+    "2026-11-17T04:06:09.7540874Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s",
+    "2026-11-17T04:06:36.3744762Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 353 filtered out; finished in 0.67s",
+    "2026-11-17T04:07:07.6936528Z test result: ok. 36 passed; 0 failed; 0 ignored; 0 measured; 330 filtered out; finished in 0.49s",
+    "2026-11-17T04:07:34.7590585Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 352 filtered out; finished in 0.57s",
+    "2026-11-17T04:07:59.4001501Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 359 filtered out; finished in 0.15s",
+    "2026-11-17T04:08:25.3784835Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 334 filtered out; finished in 0.09s",
+    "2026-11-17T04:08:51.3905160Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 333 filtered out; finished in 1.09s",
+    "2026-11-17T04:08:52.2007178Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 353 filtered out; finished in 0.03s",
+    "2026-11-17T04:09:19.7606762Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 341 filtered out; finished in 0.02s",
+    "2026-11-17T04:09:21.3630481Z test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 343 filtered out; finished in 0.84s",
+    "2026-11-17T04:09:49.2077151Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 358 filtered out; finished in 6.93s",
+    "2026-11-17T04:10:13.9166211Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 354 filtered out; finished in 0.68s",
+    "2026-11-17T04:10:41.8909083Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 328 filtered out; finished in 0.24s",
+    "2026-11-17T04:10:43.1994218Z test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 333 filtered out; finished in 0.53s",
+    "2026-11-17T04:11:11.8478129Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 336 filtered out; finished in 2.97s",
+    "2026-11-17T04:11:35.9260183Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 360 filtered out; finished in 0.02s",
+    "2026-11-17T04:12:00.9802276Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 356 filtered out; finished in 0.09s",
+    "2026-11-17T04:12:28.9549008Z test result: ok. 39 passed; 0 failed; 0 ignored; 0 measured; 307 filtered out; finished in 0.38s",
+    "2026-11-17T04:12:29.7533285Z test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 325 filtered out; finished in 0.01s",
+    "2026-11-17T04:12:55.6441880Z test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 347 filtered out; finished in 0.03s"
+  ]
+}
