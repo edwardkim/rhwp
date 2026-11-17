@@ -535,10 +535,21 @@ function waitForNextPaint(): Promise<void> {
   });
 }
 
-async function updateLoadProgress(percent: number, label: string): Promise<void> {
+const supersededOpen = new Error('새 문서 열기가 시작되었습니다.');
+let documentOpen: AbortController | undefined;
+
+function beginDocumentOpen(): AbortSignal {
+  documentOpen?.abort(supersededOpen);
+  documentOpen = new AbortController();
+  return documentOpen.signal;
+}
+
+async function updateLoadProgress(percent: number, label: string, signal: AbortSignal): Promise<void> {
+  signal.throwIfAborted();
   const safePercent = Math.max(0, Math.min(100, Math.round(percent)));
   sbMessage().textContent = `파일 로딩 ${safePercent}% - ${label}`;
   await waitForNextPaint();
+  signal.throwIfAborted();
 }
 
 /**
@@ -719,7 +730,7 @@ async function initialize(): Promise<void> {
     // 화면이 이전 프레임(그림 없는 상태)에 머무른다. 주입 완료 시 뷰 문서를 다시
     // 로드해 페이지 트리를 재구성한다 — dirty 마킹 없는 뷰 전용 갱신.
     wasm.onExternalImagesInjected = () => {
-      void canvasView?.loadDocument();
+      void canvasView?.loadDocument().catch(showLoadErrorUnlessCancelled);
     };
 
     // 눈금자 초기화
@@ -1515,19 +1526,24 @@ function applySavedTextMarkSettings(): void {
 async function initializeDocument(
   docInfo: DocumentInfo,
   displayName: string,
+  signal: AbortSignal,
   options: { suppressDialogs?: boolean; suppressLocalFontPrompt?: boolean } = {},
 ): Promise<void> {
   const msg = sbMessage();
   try {
+    signal.throwIfAborted();
     // 이미 승인된 snapshot을 권한 prompt 없이 준비한 뒤 프로그램을 선택한다.
     await loadStoredLocalFonts();
+    signal.throwIfAborted();
     // 초기화 후 첫 문서 로드의 선택을 프로그램 공급·조판보다 먼저 확정한다.
     // 감지 완료와 이전 대체 환경의 비동기 갱신이 경합하지 않게 한다.
     if (!options.suppressDialogs && !options.suppressLocalFontPrompt) {
       await promptLocalFontsIfNeeded(displayName);
+      signal.throwIfAborted();
     }
     // 실제 프로그램을 먼저 확정한 뒤 같은 문서 정보로 공급과 view를 준비한다.
     await wasm.prepareDeclaredFontEnvironment(canvasView?.getRenderBackend());
+    signal.throwIfAborted();
     docInfo = wasm.getDocumentInfo();
     setDocumentFontSubstitutions(docInfo.fontSubstitutions);
     currentDocumentFonts = [...new Set([
@@ -1536,35 +1552,38 @@ async function initializeDocument(
     ])];
     lastAppliedLocalFontGeneration = null;
     console.log('[initDoc] 1. 폰트 로딩 시작');
-    await updateLoadProgress(55, '폰트 준비 중...');
+    await updateLoadProgress(55, '폰트 준비 중...', signal);
     if (currentDocumentFonts.length) {
       await loadWebFonts(currentDocumentFonts, (loaded, total) => {
+        if (signal.aborted) return;
         const fontPercent = total > 0 ? 55 + Math.round((loaded / total) * 20) : 65;
         msg.textContent = `파일 로딩 ${fontPercent}% - 폰트 로딩 중... (${loaded}/${total})`;
       }, extensionViewerSettings);
     }
     console.log('[initDoc] 2. 폰트 로딩 완료');
-    await updateLoadProgress(75, '문서 상태 적용 중...');
+    await updateLoadProgress(75, '문서 상태 적용 중...', signal);
     totalSections = docInfo.sectionCount ?? 1;
     sbSection().textContent = t('ui.sbSection.text', { p1: 1, p2: totalSections });
     applySavedTextMarkSettings();
     console.log('[initDoc] 3. inputHandler deactivate');
     inputHandler?.deactivate();
     console.log('[initDoc] 4. canvasView loadDocument');
-    await updateLoadProgress(82, '페이지 렌더 준비 중...');
+    await updateLoadProgress(82, '페이지 렌더 준비 중...', signal);
+    if (!canvasView) throw new Error('문서 화면이 준비되지 않았습니다.');
     const savedZoomFitMode = userSettings.getViewSettings().zoomFitMode;
     await canvasView?.loadDocument();
+    signal.throwIfAborted();
     // 쪽 크기를 알 수 있는 첫 시점이다 — 저장된 맞춤은 이 문서의 쪽으로 다시 계산한다.
     applySavedZoomFitMode(savedZoomFitMode);
     prepareCanvasKitLocalFonts(docInfo.fontsUsed);
     console.log('[initDoc] 5. toolbar setEnabled');
-    await updateLoadProgress(90, '도구 모음 준비 중...');
+    await updateLoadProgress(90, '도구 모음 준비 중...', signal);
     toolbar?.setEnabled(true);
     console.log('[initDoc] 6. toolbar initFontDropdown + initStyleDropdown');
     toolbar?.initFontDropdown(docInfo.fontsUsed);
     toolbar?.initStyleDropdown();
     console.log('[initDoc] 7. 사전 검증 및 로컬 글꼴 확인');
-    await updateLoadProgress(94, '문서 검증 및 글꼴 확인 중...');
+    await updateLoadProgress(94, '문서 검증 및 글꼴 확인 중...', signal);
 
     // #177: HWPX 비표준 lineseg 감지 (진단 로그).
     // #2527: 자동 보정(reflowLinesegs)이 빈-lineseg 문서에서 글리프 좌표를 붕괴시켜
@@ -1586,7 +1605,7 @@ async function initializeDocument(
 
     // 로컬 글꼴 감지 결과가 뷰를 갱신한 뒤에 캐럿을 연결해야 입력 포커스가 재설정과 경합하지 않는다.
     console.log('[initDoc] 8. inputHandler activateWithCaretPosition');
-    await updateLoadProgress(96, '편집 상태 초기화 중...');
+    await updateLoadProgress(96, '편집 상태 초기화 중...', signal);
     inputHandler?.activateWithCaretPosition();
     // 최종 단계 뒤에는 비동기 작업이 없으므로 100% progress paint를 기다리지 않는다.
     msg.textContent = displayName;
@@ -1595,8 +1614,9 @@ async function initializeDocument(
     // #2527: 자동 보정을 하지 않으므로 로드 직후 문서는 항상 clean.
     documentState.markClean('document-initialized');
   } catch (error) {
+    signal.throwIfAborted();
     console.error('[initDoc] 오류:', error);
-    if (window.innerWidth < 768) alert(`초기화 오류: ${error}`);
+    throw error;
   }
 }
 
@@ -1632,7 +1652,7 @@ const PASSWORD_REQUIRED_MESSAGE = '비밀번호가 필요한 암호 문서';
 const PASSWORD_REJECTED_MESSAGE = '비밀번호가 일치하지 않거나 암호화 데이터가 손상되었습니다';
 
 function isDocumentOpenCancelled(error: unknown): error is DocumentOpenCancelledError {
-  return error instanceof DocumentOpenCancelledError || (error as { code?: string })?.code === 'PDF_IMPORT_CANCELLED';
+  return error === supersededOpen || error instanceof DocumentOpenCancelledError || (error as { code?: string })?.code === 'PDF_IMPORT_CANCELLED';
 }
 
 function isPasswordRequiredError(error: unknown): boolean {
@@ -1661,18 +1681,20 @@ function passwordOpenFailure(error: unknown): Error {
  * 일반 열기를 먼저 시도하고, 지원되는 HWP3/HWP5 암호 문서가 감지된 경우에만 암호
  * 입력 UI로 전환한다. 암호 문자열은 이 함수의 단일 시도 범위를 벗어나 보관하지 않는다.
  */
-async function openPasswordProtectedDocument(data: Uint8Array, fileName: string): Promise<void> {
+async function openPasswordProtectedDocument(data: Uint8Array, fileName: string, signal: AbortSignal): Promise<void> {
   let retryMessage: string | undefined;
   const generation = wasm.documentGeneration;
 
   while (true) {
     let password = await showHwpPasswordDialog(fileName, retryMessage);
+    signal.throwIfAborted();
     if (password === null) throw new DocumentOpenCancelledError();
 
     let cipher: RecoveryCipher | null = null;
     try {
       if (wasm.documentGeneration !== generation) throw new DocumentOpenCancelledError();
       cipher = await RecoveryCipher.create(password);
+      signal.throwIfAborted();
       if (wasm.documentGeneration !== generation) throw new DocumentOpenCancelledError();
       wasm.loadDocumentWithPassword(data, password, fileName);
       wasm.setRecoveryCipher(cipher);
@@ -1697,15 +1719,17 @@ async function openPasswordProtectedDocument(data: Uint8Array, fileName: string)
   }
 }
 
-async function loadDocumentForOpen(data: Uint8Array, fileName: string, pdfSource?: PdfInputSource): Promise<DocumentInfo> {
+async function loadDocumentForOpen(data: Uint8Array, fileName: string, openSignal: AbortSignal, pdfSource?: PdfInputSource): Promise<DocumentInfo> {
   if (pdfSource || isPdfInput(data, fileName)) {
     if (!wasm.hasPdfImportCapability()) throw new Error('PDF_IMPORT_DISABLED: 이 빌드에서는 PDF 가져오기를 사용할 수 없습니다.');
     const generation = wasm.documentGeneration;
     let imported: DocumentInfo | undefined;
     await showPdfImportDialog(pdfSource ?? { byteLength: data.byteLength, read: async () => data },
       fileName, options => wasm.getPdfImportPolicy(options), async (prepared, signal) => {
+        openSignal.throwIfAborted();
         imported = await wasm.loadImportedPdf(prepared, fileName, signal, generation);
       }, userSettings.getPdfImportLayout());
+    openSignal.throwIfAborted();
     if (!imported) throw new Error('PDF_IMPORT_CANCELLED');
     return imported;
   }
@@ -1713,7 +1737,7 @@ async function loadDocumentForOpen(data: Uint8Array, fileName: string, pdfSource
     return wasm.loadDocument(data, fileName);
   } catch (error) {
     if (!isPasswordRequiredError(error)) throw error;
-    await openPasswordProtectedDocument(data, fileName);
+    await openPasswordProtectedDocument(data, fileName, openSignal);
     return wasm.getDocumentInfo();
   }
 }
@@ -1730,6 +1754,7 @@ function restoreViewAfterFailedOpen(): void {
 }
 
 function showLoadErrorUnlessCancelled(error: unknown): void {
+  if (error === supersededOpen) return;
   if (isDocumentOpenCancelled(error)) {
     sbMessage().textContent = '문서 열기를 취소했습니다.';
     restoreViewAfterFailedOpen();
@@ -1742,23 +1767,27 @@ async function loadFile(
   file: File,
   options: { skipUnsavedGuard?: boolean; fileHandle?: FileSystemFileHandleLike | null } = {},
 ): Promise<boolean> {
+  let signal: AbortSignal | undefined;
   try {
     if (!await canReplaceCurrentDocument(options.skipUnsavedGuard)) return false;
+    const openSignal = beginDocumentOpen();
+    signal = openSignal;
     const startTime = performance.now();
     // 파일 읽기만 감싼다. loadBytes가 여는 PDF 선택 대화창까지 busy를 소유하지 않는다.
     const { pdf, data } = await withBusyCursor(document.documentElement, async () => {
-      await updateLoadProgress(0, '파일 읽는 중...');
+      await updateLoadProgress(0, '파일 읽는 중...', openSignal);
       const pdf = /\.pdf$/i.test(file.name)
         || isPdfInput(new Uint8Array(await file.slice(0, 1024).arrayBuffer()), file.name);
       const data = pdf ? new Uint8Array() : new Uint8Array(await file.arrayBuffer());
-      if (!pdf) await updateLoadProgress(15, '파일 읽기 완료');
+      if (!pdf) await updateLoadProgress(15, '파일 읽기 완료', openSignal);
       return { pdf, data };
     });
-    await loadBytes(data, file.name, options.fileHandle ?? null, startTime, { dataReadProgressShown: true,
+    await loadBytes(data, file.name, options.fileHandle ?? null, startTime, { dataReadProgressShown: true, signal,
       ...(pdf ? { pdfSource: { byteLength: file.size, read: async () => new Uint8Array(await file.arrayBuffer()) } } : {}),
     });
     return true;
   } catch (error) {
+    if (signal?.aborted) return false;
     showLoadErrorUnlessCancelled(error);
     return false;
   }
@@ -1773,9 +1802,11 @@ async function loadBytes(
   fileName: string,
   fileHandle: typeof wasm.currentFileHandle,
   startTime = performance.now(),
-  options: { dataReadProgressShown?: boolean; skipRecent?: boolean; suppressDialogs?: boolean; pdfSource?: PdfInputSource; recoveryCipher?: RecoveryCipher; validateBeforeOpen?: () => Promise<void> } = {},
+  options: { signal?: AbortSignal; dataReadProgressShown?: boolean; skipRecent?: boolean; suppressDialogs?: boolean; pdfSource?: PdfInputSource; recoveryCipher?: RecoveryCipher; validateBeforeOpen?: () => Promise<void> } = {},
 ): Promise<void> {
   // 바이트로 여는 모든 경로(파일 열기 · ?url= · 자동저장 복구 · 호스트 API)의 공통 깔때기다.
+  const signal = options.signal ?? beginDocumentOpen();
+  signal.throwIfAborted();
   const pdf = Boolean(options.pdfSource) || isPdfInput(data, fileName);
   cancelPdfImport();
   let imported: DocumentInfo | undefined;
@@ -1784,7 +1815,9 @@ async function loadBytes(
     // 표시하며, 성공 뒤의 뷰 초기화부터 아래 busy 범위가 소유한다 (#8398).
     sbMessage().textContent = 'PDF 가져오기';
     await options.validateBeforeOpen?.();
-    imported = await loadDocumentForOpen(data, fileName, options.pdfSource);
+    signal.throwIfAborted();
+    imported = await loadDocumentForOpen(data, fileName, signal, options.pdfSource);
+    signal.throwIfAborted();
   }
   // 일반 문서의 파싱·쪽 계산과 성공한 PDF의 뷰 초기화 동안 대기 커서를 든다.
   await withBusyCursor(document.documentElement, async () => {
@@ -1793,12 +1826,14 @@ async function loadBytes(
     if (!pdf) canvasView?.showBlankPage();
     if (!pdf) {
       if (!options.dataReadProgressShown) {
-        await updateLoadProgress(0, '문서 데이터 준비 중...');
+        await updateLoadProgress(0, '문서 데이터 준비 중...', signal);
       }
-      await updateLoadProgress(25, '문서 파싱 및 쪽 계산 중...');
+      await updateLoadProgress(25, '문서 파싱 및 쪽 계산 중...', signal);
       await options.validateBeforeOpen?.();
     }
-    const docInfo = imported ?? await loadDocumentForOpen(data, fileName);
+    signal.throwIfAborted();
+    const docInfo = imported ?? await loadDocumentForOpen(data, fileName, signal);
+    signal.throwIfAborted();
     if (options.recoveryCipher) {
       wasm.requiresPasswordForSave = true;
       wasm.setRecoveryCipher(options.recoveryCipher);
@@ -1814,7 +1849,7 @@ async function loadBytes(
     // 칸 좌표를 그대로 들고 살아남았다(`cachedTableRef` 는 `{sec, ppi, ci}` 라 문서가
     // 바뀌어도 신선도 검사를 통과한다 — 3184241).
     eventBus.emit('document-swapped');
-    await updateLoadProgress(45, '자동 저장 준비 중...');
+    await updateLoadProgress(45, '자동 저장 준비 중...', signal);
     forgetConvertedHmlSaveHandle(fileHandle);
     forgetConvertedPdfSaveHandle(fileHandle);
     // Imported PDF handles are retained for identity checks/recent files; resolveSaveTarget
@@ -1838,9 +1873,9 @@ async function loadBytes(
       { fileName: wasm.fileName, sourceFormat: wasm.getSourceFormat() },
       { discardPreviousDraft: true },
     );
-    await updateLoadProgress(50, '문서 초기화 중...');
+    await updateLoadProgress(50, '문서 초기화 중...', signal);
     const elapsed = performance.now() - startTime;
-    await initializeDocument(docInfo, t('ui.sbMessage.filePagesTimed', { p1: fileName, p2: docInfo.pageCount, p3: elapsed.toFixed(1) }), {
+    await initializeDocument(docInfo, t('ui.sbMessage.filePagesTimed', { p1: fileName, p2: docInfo.pageCount, p3: elapsed.toFixed(1) }), signal, {
       suppressDialogs: options.suppressDialogs,
     });
   });
@@ -2007,6 +2042,7 @@ async function restoreAutosaveDraft(draft: AutosaveDraft): Promise<void> {
 
 
 async function createNewDocument(): Promise<void> {
+  const signal = beginDocumentOpen();
   cancelPdfImport();
   const msg = sbMessage();
   try {
@@ -2021,11 +2057,12 @@ async function createNewDocument(): Promise<void> {
         { discardPreviousDraft: true },
       );
       // 빈 문서는 사용자 파일의 원본 글꼴이 없으므로 확인창 없이 바로 편집한다.
-      await initializeDocument(docInfo, t('ui.sbMessage.newDocPages', { p1: docInfo.pageCount }), {
+      await initializeDocument(docInfo, t('ui.sbMessage.newDocPages', { p1: docInfo.pageCount }), signal, {
         suppressLocalFontPrompt: true,
       });
     });
   } catch (error) {
+    if (signal.aborted) return;
     msg.textContent = `새 문서 생성 실패: ${error}`;
     console.error('[main] 새 문서 생성 실패:', error);
   }

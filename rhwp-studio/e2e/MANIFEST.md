@@ -28,6 +28,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `issue8174-modal-focus.test.mjs` | 상시 | active | #8174 암호 모달·중첩 모달의 입력 소유 보존 | 빈 문서 | 수동 | 늦은 편집기 focus가 암호 입력을 빼앗지 않음 |
 | `about-dialog-issue8905.test.mjs` | 상시 | active | #8905 낮거나 좁은 화면의 제품 정보 창 — 화면 안 배치·본문 스크롤·닫기 버튼·배경·Escape 닫기 | 문서 없음 | npm e2e:issue-8905 | dev server 필요 — run-with-vite.mjs 경유, 800x360·360x640·1280x900 |
 | `dialog-viewport-issue9133.test.mjs` | 상시 | active | #9133 공통 창 11종·66개 화면 조합의 제목/버튼·본문/탭/목록 스크롤, resize 입력 보존, F7 확인·Undo/Redo·취소 | 새 문서·합성 표/그림·복구 metadata | npm e2e:dialog-viewport | run-with-vite.mjs 경유, 767/768px 경계·320x240·가로/세로·데스크톱 |
+| `initial-page-render-issue9164.test.mjs` | 상시 | active | 최초 페이지 렌더 완료와 성공 표시 순서, 글꼴 갱신·준비 실패·빠른 문서 교체 | 기존 합성 HWP·HWPX | 수동 | 같은 실행의 정상 대조군과 첫 페이지 대조 |
 | `selection-layout-issue8103.test.mjs` | 상시 | active | #8103 Canvas2D/auto의 400문단 Undo/Redo 선택·focus 원점, smooth zoom·scroll·배치·지연 중 새 선택·문서 교체 보존 | plain-text paste 합성 | npm e2e:selection-layout | 첫/중간/마지막 쪽 관계 검사, 명시 CanvasKit·원본 font cache 옵션 |
 | `canvaskit-periodic-borders-issue7998.test.mjs` | 상시 | active | 기존 CanvasKit 주기 테두리의 실제 dash 소비와 잉크 검사 | pdf/issue7998/periodic-borders/native-dot-widths.hwpx | 수동 | 기준 devel의 목록 누락 보완, 테스트 구현 변경 없음 |
 | `autosave-recovery.test.mjs` | 상시 | active | Task #1448 — 미저장 문서 자동 백업 복구 E2E | — | 수동 |  |
