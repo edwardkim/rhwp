@@ -1,0 +1,6 @@
+{
+  "buildImage": "rhwp-9154-runtime:26.04",
+  "gateExit": 1,
+  "stdout": "",
+  "stderr": "{\"ok\": false, \"error\": \"glibc baseline 2.39 exceeded: 2.43\"}\n"
+}
