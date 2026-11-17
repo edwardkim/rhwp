@@ -1,0 +1,11 @@
+{
+  "parent": "59e989c0984e64c5b2276722f91bdc65156412fa",
+  "captured_at": "2026-11-18T02:30:22.124349+09:00",
+  "sources": {
+    "src/renderer/typeset/table/continuation/fragment/budget.rs": "dd40293becbac13872cb822628314b2fd85547a92e2c996fa6a15a6a3a951dc8",
+    "tests/cases/issue_7733_offset_fragment_outer_margin.rs": "a356e3e6982894ae76d54ad0cdbc1d404784ee13c728dc8af09ebe6ee2cba91c"
+  },
+  "source_diff_sha256": "048dad4815b29138b8cc14e6ce4928e287878c52298abd2a09b3b7f75a9ce286",
+  "cargo_lock_sha256": "972bdb0994b216f0cef357b856ce0807ce3d437af6791377446b62f2e26c05a1",
+  "font_environment_sha256": "39ec77d269dcd5e687ecd68cd3c5ffb2d19f91a5d9580b2e11c0c4db8a9cb4b0"
+}
