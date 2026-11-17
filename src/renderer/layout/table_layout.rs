@@ -19941,9 +19941,10 @@ impl LayoutEngine {
 
     /// 저장 줄 없는 문단의 글 앞/뒤 중첩 표는 글줄을 밀지 않지만, 표가 글줄보다 길면 칸은
     /// 표 끝까지 이어진다. 칸이 쪽에서 나뉠 때 남은 몫이 다음 쪽 조각으로 가도록, 흐름 유닛
-    /// 끝에서 표 끝까지를 높이만 가진 유닛으로 잇는다. 유닛 경계는 중첩 표의 행 경계에
-    /// 맞춘다. 이 유닛은 글줄을 갖지 않으므로(`vis_start == vis_end`) 문단과 표의 소유를
-    /// 바꾸지 않는다.
+    /// 끝에서 표 끝까지를 높이만 가진 유닛으로 잇는다. 유닛은 중첩 표의 행 조각(행 안 컷)
+    /// 또는 행을 하나씩 싣고, 나뉜 칸의 다음 쪽 조각은 이 유닛으로 중첩 표를 그 조각부터
+    /// 이어 그린다. 유닛은 글줄을 갖지 않으므로(`vis_start == vis_end`) 문단 소유를 바꾸지
+    /// 않는다.
     fn append_overlay_table_reach_units(
         &self,
         cell: &crate::model::table::Cell,
@@ -19951,14 +19952,11 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
         units: &mut Vec<CellUnit>,
     ) {
-        let Some(last) = units.last() else {
-            return;
-        };
-        let (last_para, last_vis_end) = (last.para_idx, last.vis_end);
         let mut origin = 0.0f64;
         let mut seen_para: Option<usize> = None;
-        // (표 바깥 상자 끝, 행 경계들)
-        let mut reach: Option<(f64, Vec<f64>)> = None;
+        // (표 바깥 상자 끝, 조각들(끝 위치, 행, 행 안 컷), 호스트 문단)
+        type Piece = (f64, usize, Option<NestedTableUnitCut>);
+        let mut reach: Option<(f64, Vec<Piece>, usize)> = None;
         for unit in units.iter() {
             if seen_para != Some(unit.para_idx) {
                 seen_para = Some(unit.para_idx);
@@ -19980,29 +19978,51 @@ impl LayoutEngine {
                         else {
                             continue;
                         };
-                        if reach.as_ref().is_some_and(|(end, _)| *end >= frame.end) {
+                        if reach.as_ref().is_some_and(|(end, _, _)| *end >= frame.end) {
                             continue;
                         }
-                        let ncol = child.col_count as usize;
-                        let nrow = child.row_count as usize;
+                        // 행 안쪽까지 나눈 조각(저장 레이아웃)이 있으면 그 경계로, 없으면
+                        // 행 경계로 나눈다.
                         let mut edge = frame.start
                             + hwpunit_to_px(i32::from(child.outer_margin_top), self.dpi);
-                        let mut edges = Vec::with_capacity(nrow);
-                        for height in
-                            self.resolve_row_heights(child, ncol, nrow, None, styles, true)
+                        let pieces: Vec<Piece> = if let Some(fragments) =
+                            self.text_host_nested_row_fragments(child, styles)
                         {
-                            edge += height;
-                            edges.push(edge);
-                        }
-                        reach = Some((frame.end, edges));
+                            fragments
+                                .into_iter()
+                                .map(|fragment| {
+                                    edge += fragment.height;
+                                    (edge, fragment.row, Some(fragment.cut))
+                                })
+                                .collect()
+                        } else {
+                            let ncol = child.col_count as usize;
+                            let nrow = child.row_count as usize;
+                            self.resolve_row_heights(child, ncol, nrow, None, styles, true)
+                                .into_iter()
+                                .enumerate()
+                                .map(|(row, height)| {
+                                    edge += height;
+                                    (edge, row, None)
+                                })
+                                .collect()
+                        };
+                        reach = Some((frame.end, pieces, unit.para_idx));
                     }
                 }
             }
             origin += unit.height;
         }
-        let Some((end, edges)) = reach else {
+        let Some((end, pieces, host_para)) = reach else {
             return;
         };
+        // 높이 유닛은 표의 호스트 문단에 속하되 글줄은 갖지 않는다(호스트 글줄 끝 위치).
+        let host_vis_end = units
+            .iter()
+            .filter(|unit| unit.para_idx == host_para)
+            .map(|unit| unit.vis_end)
+            .max()
+            .unwrap_or(0);
         let (_, _, pad_top, pad_bottom) = self.resolve_cell_padding(cell, table);
         let declared =
             hwpunit_to_px(cell.height.min(i32::MAX as u32) as i32, self.dpi) - pad_top - pad_bottom;
@@ -20019,26 +20039,30 @@ impl LayoutEngine {
         if target <= origin + 0.5 {
             return;
         }
+        // 조각마다 유닛 하나. 흐름 끝보다 위에서 끝나는 조각은 높이 0(호스트 줄과 같은 조각에
+        // 놓인다), 흐름 끝에 걸친 조각은 흐름 끝부터 센다. 마지막 조각은 표 끝까지 간다.
+        let piece_count = pieces.len();
         let mut cursor = origin;
-        for stop in edges
-            .into_iter()
-            .filter(|&edge| edge > origin + 0.5 && edge < target - 0.5)
-            .chain(std::iter::once(target))
-        {
+        for (index, (edge, row, cut)) in pieces.into_iter().enumerate() {
+            let stop = if index + 1 == piece_count {
+                target
+            } else {
+                edge.clamp(cursor, target)
+            };
             units.push(CellUnit {
-                height: stop - cursor,
+                height: (stop - cursor).max(0.0),
                 following_line_advance: 0.0,
                 reflowed_line_slot: false,
                 hard_break_before: false,
                 stored_frame_break_before: false,
                 page_frame_reset_before: false,
                 vpos_gap_before: false,
-                para_idx: last_para,
-                vis_start: last_vis_end,
-                vis_end: last_vis_end,
-                nested_row: None,
+                para_idx: host_para,
+                vis_start: host_vis_end,
+                vis_end: host_vis_end,
+                nested_row: Some(row),
                 nested_row_flow_edges: None,
-                nested_table_fragment: None,
+                nested_table_fragment: cut,
                 mixed_nested_fragment: false,
                 mixed_nested_trailing: false,
                 mixed_nested_content_height: 0.0,
@@ -20054,7 +20078,7 @@ impl LayoutEngine {
                 host_trailing_spacing_charged: false,
                 carried_float_lead: 0.0,
             });
-            cursor = stop;
+            cursor = cursor.max(stop);
         }
     }
 
@@ -20078,11 +20102,13 @@ impl LayoutEngine {
         }
         let units = self.cell_units(cell, table, styles);
         let mut origin = 0.0f64;
-        let mut seen_para: Option<usize> = None;
+        let mut seen = vec![false; cell.paragraphs.len()];
         let mut reach = 0.0f64;
+        // 문단 원점은 그 문단의 첫 유닛이다. 표 끝까지 이은 높이 유닛은 호스트 문단에
+        // 속하지만 뒤 문단 유닛 다음에 오므로 다시 세지 않는다.
         for unit in units.iter() {
-            if seen_para != Some(unit.para_idx) {
-                seen_para = Some(unit.para_idx);
+            if seen.get(unit.para_idx).is_some_and(|seen| !seen) {
+                seen[unit.para_idx] = true;
                 if let Some(para) = cell.paragraphs.get(unit.para_idx) {
                     for control in &para.controls {
                         let Control::Table(child) = control else {
@@ -24420,7 +24446,12 @@ impl LayoutEngine {
             };
             let Some(child) = cell.paragraphs.get(last.para_idx).and_then(|para| {
                 para.controls.iter().find_map(|control| match control {
-                    Control::Table(child) => Some(child.as_ref()),
+                    // 글 앞/뒤 중첩 표는 칸 흐름을 차지하지 않아 저장 자식 프레임의 빈 띠를
+                    // 칸에 예약하지 않는다. 예약하면 그 띠에 다음 쪽 몫의 행이 겹쳐 그려지고
+                    // 같은 행 칸들의 세로 정렬이 위쪽으로 바뀐다.
+                    Control::Table(child) if !self.nested_table_takes_no_flow(para, child) => {
+                        Some(child.as_ref())
+                    }
                     _ => None,
                 })
             }) else {
@@ -28495,10 +28526,20 @@ impl LayoutEngine {
             + 1;
         // 저장 호스트의 원자 행은 기존 첫 프레임/문단 범위를 보존한다.
         // 저장 줄 없는 재조판 호스트의 행과 실제 내부 컷은 같은 재귀 원장을 쓴다.
-        if !Self::nested_row_run_uses_recursive_frame(
-            cell.paragraphs.get(para_idx)?,
-            &units[run_start..run_end],
-        ) {
+        let host = cell.paragraphs.get(para_idx)?;
+        if !Self::nested_row_run_uses_recursive_frame(host, &units[run_start..run_end]) {
+            return None;
+        }
+        // 행 안 컷 없이 행 경계로만 나눈 글 앞/뒤 중첩 표의 높이 유닛은 재귀 원장이 아니라
+        // 행 범위(`nested_row_range_from_cut_units`)로 이어 그린다.
+        if units[run_start..run_end]
+            .iter()
+            .all(|unit| unit.nested_table_fragment.is_none())
+            && host.controls.iter().all(|control| {
+                matches!(control, Control::Table(child)
+                    if self.nested_table_takes_no_flow(host, child))
+            })
+        {
             return None;
         }
         let mut visible_height = 0.0;
@@ -29088,6 +29129,17 @@ impl LayoutEngine {
                 }
                 // 같은 부모 컷 안에 뒤 유닛이 있으면 자식은 점유 끝이 아니라
                 // 다음 내용으로의 전진을 소유한다. 빈 뒤 문단도 순서에서 제외하지 않는다.
+                // 글 앞/뒤 중첩 표의 높이 유닛은 흐름 끝에서 표 끝까지를 이미 담는다.
+                // 호스트 줄 뒤에 자식 표를 쌓는 재귀 예약을 더하지 않는다.
+                if cell.paragraphs.get(pi).is_some_and(|para| {
+                    !para.controls.is_empty()
+                        && para.controls.iter().all(|control| {
+                            matches!(control, Control::Table(child)
+                                if self.nested_table_takes_no_flow(para, child))
+                        })
+                }) {
+                    continue;
+                }
                 let run_purpose = if hi > u {
                     row_physical_band::CutHeight::Capacity
                 } else {
