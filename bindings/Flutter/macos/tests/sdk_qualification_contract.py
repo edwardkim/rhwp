@@ -162,6 +162,49 @@ class MetalReceiptContracts(unittest.TestCase):
         self.assertIn("NATIVE_SOURCE_HEAD", producer)
 
 
+@unittest.skipUnless(sys.platform in ("linux", "darwin"), "real POSIX dynamic loader required")
+class MetalApiLoaderContracts(unittest.TestCase):
+    def test_real_loader_distinguishes_required_owner_and_optional_metal_exports(self):
+        cxx = ["c++", "-std=c++17", "-Wall", "-Wextra", "-Werror"]
+        shared = ["-dynamiclib"] if sys.platform == "darwin" else ["-shared", "-fPIC"]
+        link = [] if sys.platform == "darwin" else ["-ldl"]
+
+        def run(*args):
+            result = subprocess.run(args, capture_output=True, text=True, timeout=30)
+            self.assertEqual(result.returncode, 0, result.stderr)
+
+        with tempfile.TemporaryDirectory(prefix="rhwp-metal-loader-contract-") as scratch:
+            root = Path(scratch)
+            module = root / "fixture.cc"
+            module.write_text("""#include <cstddef>
+#include <cstdint>
+extern "C" {
+char* rhwp_presentation_request(const uint8_t*, size_t) { return nullptr; }
+#if OWNER_ABI
+void rhwp_string_free(char*) {}
+#endif
+#if METAL_ABI
+char* rhwp_metal_capabilities() { return nullptr; }
+char* rhwp_metal_presenter_create(const void*, const void*, uint64_t, const uint8_t*, size_t) {
+  return nullptr;
+}
+char* rhwp_metal_presenter_render(uint64_t, const void*, const uint8_t*, size_t) { return nullptr; }
+char* rhwp_metal_presenter_request(uint64_t, const uint8_t*, size_t) { return nullptr; }
+char* rhwp_metal_frame_check(const uint8_t*, size_t) { return nullptr; }
+#endif
+}
+""", encoding="utf-8")
+            modules = []
+            suffix = ".dylib" if sys.platform == "darwin" else ".so"
+            for name, owner, metal in (("missing-core", 0, 0), ("owner-only", 1, 0), ("full", 1, 1)):
+                fixture = root / (name + suffix)
+                run(*cxx, *shared, f"-DOWNER_ABI={owner}", f"-DMETAL_ABI={metal}", module, "-o", fixture)
+                modules.append(fixture)
+            probe = root / "loader_probe"
+            run(*cxx, "-pthread", HERE / "metal_native_api_loader_test.cc", "-o", probe, *link)
+            run(probe, root / ("missing" + suffix), *modules)
+
+
 class SourceAndProcessContracts(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory(prefix="rhwp-sdk-source-contract-")
