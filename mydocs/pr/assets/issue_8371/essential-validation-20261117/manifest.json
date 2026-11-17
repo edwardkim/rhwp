@@ -474,9 +474,19 @@
       "bytes": 4731
     },
     {
+      "path": "native-ci-registration/code-ci-0b54.json",
+      "sha256": "c934c141bd701e2b0a6a2fb158aa2a9f00f0c5559b31ee64530495154fe8ce38",
+      "bytes": 103403
+    },
+    {
       "path": "native-ci-registration/fixture-identity.json",
       "sha256": "c9b62f1f2205e74528b3d3811a75aa68e6adae5437ae5a4ee74735311e6051d4",
       "bytes": 591
+    },
+    {
+      "path": "native-ci-registration/github-current-merge-proof.json",
+      "sha256": "e66b460ec39c2409cfd47f5940da4f322ed368dd1eaea59fba975cebd8d68859",
+      "bytes": 12377
     },
     {
       "path": "native-ci-registration/input-commit-audit.json",
@@ -489,14 +499,19 @@
       "bytes": 1790
     },
     {
+      "path": "native-ci-registration/native-ci-job-excerpt.json",
+      "sha256": "7f886e68f300d9f5e5083540b6796d96a71863ca3fad6151543f3bda0997632d",
+      "bytes": 873
+    },
+    {
       "path": "native-ci-registration/previous-head-ci.json",
       "sha256": "508d2fc6bf8e8c40ea315f3c7cbffd464b2d539a2755f259e8fe5d5d94277a35",
       "bytes": 579
     },
     {
       "path": "native-ci-registration/protected-font-qualification.json",
-      "sha256": "e4dffbcf0c3a0cf8260226aa438572fa3d6e6b037ac1f53bb1a3059c672f3dfd",
-      "bytes": 14026
+      "sha256": "e4c6c8f35efd7feed496a168ecceeff0e6db11cebf7fe06aa1e91325002af72c",
+      "bytes": 12105
     },
     {
       "path": "native-ci-registration/routing-and-equivalence.json",
@@ -515,8 +530,8 @@
     },
     {
       "path": "README.md",
-      "sha256": "5691a36ffff9e93f438e974a62609967f53bde2e96e41161d949bb2dd3f11d2c",
-      "bytes": 9854
+      "sha256": "232dfe2625a042f1b3b9f6e325e877c273277c70dad903094e4eebf66b957661",
+      "bytes": 10769
     },
     {
       "path": "rust-validation.json",

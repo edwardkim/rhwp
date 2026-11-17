@@ -103,3 +103,16 @@ pic-crop의 두 자리 표시 100.00%는 반올림 전 완전 일치라는 뜻�
 정본 보호 18종은 **현재 후보의 통합 담당자 검증이 미완료**다.
 [원본 글꼴 공급 확인 상태](native-ci-registration/protected-font-qualification.json)를 남기며, 동일 공급 조건의 전쪽 검증을 완료하기 전까지 병합을 보류한다.
 위 4종 공통 보호·편람 gate·sample4 검증을 이 18종 전체 검증으로 확장해 표시하지 않는다.
+
+## Code head CI와 현재 통합 보류
+
+정확한 제출 code head `0b54ec2b3f4fcb416c215f3c152c37b299202443`의
+[5개 workflow 실제 성공·PR 신원 영수증](native-ci-registration/code-ci-0b54.json)과
+[Native 두 검사 실제 CI PASS 발췌](native-ci-registration/native-ci-job-excerpt.json)를 보존했다.
+문서 trailing head의 CI는 별도로 확인한다.
+
+#9156의 보호 18종·Native/fresh WASM 각 1,771쪽 무하락 통과는 유효한 base 검증이다.
+현재 후보의 전체 보호 검증을 대신하는 결과로 사용하지 않는다.
+[현재 공급 조건 확인](native-ci-registration/protected-font-qualification.json)은 선언된 309개 중
+정확한 해시 286개를 찾았고 23개가 미확인인 재고이며, 실제 사용 프로그램의 확정 목록이 아니다.
+현재 후보의 동일 조건 전쪽 검증이 남아 있으므로 병합은 보류한다.
