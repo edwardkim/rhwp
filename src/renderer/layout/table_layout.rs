@@ -21170,6 +21170,11 @@ impl LayoutEngine {
         end_cut: usize,
         styles: &ResolvedStyleSet,
     ) -> f64 {
+        if let Some(trim) =
+            self.stored_inline_picture_opening_tail(table, cell, units, start_cut, end_cut)
+        {
+            return trim;
+        }
         let nested_bottom =
             self.nested_source_frame_bottom_padding(table, cell, units, start_cut, end_cut, styles);
         if nested_bottom > 0.0 {

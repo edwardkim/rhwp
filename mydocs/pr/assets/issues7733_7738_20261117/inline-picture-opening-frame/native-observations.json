@@ -1,0 +1,86 @@
+[
+  {
+    "stage": "before",
+    "page": 79,
+    "metrics": {
+      "page": 79,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 92.22271,
+      "silhouette_raw_unmatched_pixels": 1936,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 24893,
+      "tolerant_content_match_percent": 92.22271
+    },
+    "input": {
+      "page": 79,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/quote-width-whole-native/chemical/rhwp_png/rhwp_079.png",
+      "rhwp_sha256": "1047478182dbe2230e7c97ae75358fc8e6440b40ff2e995adfd36cfd2c715591",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/quote-width-whole-native/chemical/pdf_png/pdf-079.png",
+      "pdf_sha256": "9ed5e0a8146a2e24880e5c2658ae9bb1e2c0f55d170675989365a102970c8945"
+    }
+  },
+  {
+    "stage": "before",
+    "page": 80,
+    "metrics": {
+      "page": 80,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 2036,
+      "tolerant_content_match_percent": 100.0
+    },
+    "input": {
+      "page": 80,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/quote-width-whole-native/chemical/rhwp_png/rhwp_080.png",
+      "rhwp_sha256": "d708dacf69c4701e30b20f1b8b28ade54d564a36578df4ebbb6e836a800f5717",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/quote-width-whole-native/chemical/pdf_png/pdf-080.png",
+      "pdf_sha256": "e002e541ee5a5600c794c04d11af2e13d2fa74c88c84e4da42999fbdf5f4908e"
+    }
+  },
+  {
+    "stage": "after",
+    "page": 79,
+    "metrics": {
+      "page": 79,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.98752,
+      "silhouette_raw_unmatched_pixels": 3,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 24034,
+      "tolerant_content_match_percent": 99.98752
+    },
+    "input": {
+      "page": 79,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/picture-opening-whole-native/chemical/rhwp_png/rhwp_079.png",
+      "rhwp_sha256": "0ba8c831e729940410dcee86e1801b55e4fa9481eb626e17ee57df2a3841cc5d",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/picture-opening-whole-native/chemical/pdf_png/pdf-079.png",
+      "pdf_sha256": "9ed5e0a8146a2e24880e5c2658ae9bb1e2c0f55d170675989365a102970c8945"
+    }
+  },
+  {
+    "stage": "after",
+    "page": 80,
+    "metrics": {
+      "page": 80,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 2036,
+      "tolerant_content_match_percent": 100.0
+    },
+    "input": {
+      "page": 80,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/picture-opening-whole-native/chemical/rhwp_png/rhwp_080.png",
+      "rhwp_sha256": "d708dacf69c4701e30b20f1b8b28ade54d564a36578df4ebbb6e836a800f5717",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/picture-opening-whole-native/chemical/pdf_png/pdf-080.png",
+      "pdf_sha256": "e002e541ee5a5600c794c04d11af2e13d2fa74c88c84e4da42999fbdf5f4908e"
+    }
+  }
+]

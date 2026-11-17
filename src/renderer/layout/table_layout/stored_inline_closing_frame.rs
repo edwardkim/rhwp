@@ -7,6 +7,89 @@ use crate::model::table::{Table, TablePageBreak};
 use crate::renderer::hwpunit_to_px;
 
 impl LayoutEngine {
+    /// 첫 Common 상자와 첫 그림 줄의 잉크·안여백이 정수 원본 단위에서 닫히면,
+    /// 원점 0으로 다시 시작한 다음 그림의 전진은 다음 조각이 소유한다.
+    /// 문단 로컬 원점만으로 쪽을 추정하거나 그림 자체의 높이를 줄이지 않는다.
+    pub(super) fn stored_inline_picture_opening_tail(
+        &self,
+        table: &Table,
+        cell: &crate::model::table::Cell,
+        units: &[super::CellUnit],
+        start: usize,
+        end: usize,
+    ) -> Option<f64> {
+        if start != 0
+            || end != 1
+            || cell.row_span != 1
+            || !self.stored_inline_content_cell_frame(table, cell)
+        {
+            return None;
+        }
+        let closing = units.first()?;
+        let next = units.get(end)?;
+        if closing.para_idx != 0
+            || closing.vis_start != 0
+            || closing.vis_end != 1
+            || next.para_idx != 1
+            || next.vis_start != 0
+        {
+            return None;
+        }
+        let before = cell.paragraphs.first()?;
+        let after = cell.paragraphs.get(1)?;
+        let ([Control::Picture(picture)], [line]) =
+            (before.controls.as_slice(), before.line_segs.as_slice())
+        else {
+            return None;
+        };
+        let next_line = after.line_segs.first()?;
+        if !picture.common.treat_as_char
+            || !before.text.trim().is_empty()
+            || picture.common.vertical_offset != 0
+            || picture.common.height != line.line_height as u32
+            || picture.common.margin.top != 0
+            || picture.common.margin.bottom != 0
+            || line.vertical_pos != 0
+            || next_line.vertical_pos != 0
+            || line.column_start != next_line.column_start
+            || line.segment_width != next_line.segment_width
+            || line.line_spacing <= 0
+            || !matches!(after.controls.as_slice(), [Control::Picture(next)] if next.common.treat_as_char)
+        {
+            return None;
+        }
+        let row = usize::from(cell.row);
+        let rows = table.get_raw_row_heights();
+        let prefix = rows.get(..row)?;
+        if prefix.contains(&0) {
+            return None;
+        }
+        let padding = cell.effective_padding(&table.padding);
+        let prefix: u64 = prefix.iter().map(|&height| u64::from(height)).sum::<u64>()
+            + u64::try_from(table.cell_spacing).ok()? * row as u64;
+        let physical = prefix
+            + line.line_height as u64
+            + u64::try_from(padding.top).ok()?
+            + u64::try_from(padding.bottom).ok()?;
+        if physical != u64::from(table.common.height) {
+            return None;
+        }
+        let (_, _, top, bottom) = self.resolve_cell_padding(cell, table);
+        let stored_padding =
+            hwpunit_to_px(i32::from(padding.top) + i32::from(padding.bottom), self.dpi);
+        let epsilon = hwpunit_to_px(2, self.dpi);
+        let advance = hwpunit_to_px(line.line_height.checked_add(line.line_spacing)?, self.dpi);
+        if (top + bottom - stored_padding).abs() > epsilon
+            || (closing.height - advance).abs() > epsilon
+        {
+            return None;
+        }
+        Some(
+            hwpunit_to_px(line.line_spacing, self.dpi)
+                .min((closing.height - hwpunit_to_px(line.line_height, self.dpi)).max(0.0)),
+        )
+    }
+
     /// 일반 행의 마지막 원본 프레임이 그림 글줄로 다시 시작한 경우다.
     /// 앞 프레임의 줄 전진 합이나 행 전체의 최소를 현재 프레임에 재할당하지 않는다.
     /// 이 높이는 다음 컷의 측정과 실제 배치가 함께 소비하는 이어받기 상자가 된다.

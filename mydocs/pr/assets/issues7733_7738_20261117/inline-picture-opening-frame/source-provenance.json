@@ -1,0 +1,10 @@
+{
+  "parent": "5e8a4f6342fbf42042dd8a99a41a4fbdbd511b92",
+  "captured_at": "2026-11-18T00:21:35.797355+09:00",
+  "sources": {
+    "src/renderer/layout/table_layout.rs": "f8c36509ee4b9798b8fb25dfe775a2f54bd7f0413329684230fc92e3cf99020a",
+    "src/renderer/layout/table_layout/stored_inline_closing_frame.rs": "be07ba81538651cef1290806980e61cfb5ec36fa36525423f13808f916b86cce",
+    "tests/cases/issue_7733_inline_picture_opening_frame.rs": "ec49977490ca2ab551c48a79fd1d020b9174938b5fcc580eef3362d1aa4abb08"
+  },
+  "source_diff_sha256": "80091738af85fdb692d09a8e9e2264f46bb69f2bc78832fdc17eeaf599995248"
+}

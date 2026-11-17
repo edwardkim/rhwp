@@ -1,0 +1,78 @@
+[
+  {
+    "key": "chemical",
+    "pages": 103,
+    "minimum": 94.95486,
+    "increased": [
+      [
+        79,
+        92.22271,
+        99.98752
+      ]
+    ],
+    "decreased": [],
+    "below98": [
+      [
+        14,
+        97.82415
+      ],
+      [
+        28,
+        97.56592
+      ],
+      [
+        40,
+        96.46128
+      ],
+      [
+        95,
+        94.95486
+      ]
+    ]
+  },
+  {
+    "key": "spec13",
+    "pages": 71,
+    "minimum": 99.33397,
+    "increased": [],
+    "decreased": [],
+    "below98": []
+  },
+  {
+    "key": "outline-demo",
+    "pages": 3,
+    "minimum": 100.0,
+    "increased": [],
+    "decreased": [],
+    "below98": []
+  },
+  {
+    "key": "decree",
+    "pages": 74,
+    "minimum": 95.47612,
+    "increased": [],
+    "decreased": [],
+    "below98": [
+      [
+        13,
+        96.51
+      ],
+      [
+        19,
+        95.47612
+      ],
+      [
+        36,
+        97.04691
+      ]
+    ]
+  },
+  {
+    "key": "outline-minimal",
+    "pages": 1,
+    "minimum": 100.0,
+    "increased": [],
+    "decreased": [],
+    "below98": []
+  }
+]
