@@ -13,6 +13,8 @@ import subprocess
 import time
 import uuid
 
+import gpu_memory_acceptance as memory_acceptance
+
 from check_macos_metal_sdk import stop_process_tree
 from qualify_desktop_texture import (MAX_BUILD_RECEIPT_BYTES, compare_pixels,
     read_json, verify_runtime_artifacts, verify_runtime_bundle, write_json)
@@ -114,14 +116,34 @@ def compare_stage(stage, output, captured, index):
     return comparisons
 
 
+def validate_result(result, nonce, *, memory_cycles=0, stages=(), pid=None):
+    require(result.get("ok") is True and result.get("nonce") == nonce and
+            result.get("publications") == result.get("captures") == 3 and result.get("callerReleases") == 0,
+            "actual group lifecycle result")
+    for member in result["closed"]["members"]:
+        require(member["registered"] is False and member["cleanupComplete"] is True, "both registrations retired")
+        for key in ("liveRasterSlots", "pendingRetireSlots", "orphanedRasterSlots", "abandonedTargets", "orphanedOwners", "snapshotReleaseFailures", "wholeFrameReadbacks"):
+            require(member[key] == 0, "native tile teardown " + key)
+    for key in ("sources", "snapshotHandles", "retainedSnapshots", "snapshotEstimatedBytes", "frameHandles", "retainedFrames", "frameBytes", "leases", "inFlightReplays"):
+        require(result["stats"][key] == 0, "Native owner teardown " + key)
+    return memory_acceptance.validate_memory_acceptance(result, cycles=memory_cycles,
+        stages=stages, pid=pid, publication_profile="linuxThreeStageTileGroup")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("runner", "native", "dispatcher", "fixture", "build-receipt", "output"):
         parser.add_argument("--" + name, type=Path, required=True)
     parser.add_argument("--timeout", type=float, default=240)
+    memory_acceptance.add_memory_arguments(parser, "linuxThreeStageTileGroup")
     args = parser.parse_args()
     require_linux()
     require(30 <= args.timeout <= 300, "bounded qualification duration")
+    cycles = args.memory_pressure_cycles
+    try:
+        memory_acceptance.memory_pressure_schedule(3, cycles, "linuxThreeStageTileGroup")
+    except ValueError as error:
+        parser.error(str(error))
     files = {key: getattr(args, key).resolve(strict=True) for key in ("runner", "native", "dispatcher", "fixture")}
     build = read_json(args.build_receipt, limit=MAX_BUILD_RECEIPT_BYTES)
     require(build.get("buildExitCode") == 0 and build.get("probeKind") == "twoTileGroup", "clean pinned tile-group build receipt")
@@ -132,9 +154,13 @@ def main():
     output.mkdir(mode=0o700, parents=True, exist_ok=False)
     nonce = uuid.uuid4().hex
     write_json(output / "config.json", {"protocol": 1, "nonce": nonce, "output": str(output),
+        **({"memoryPressureCycles": cycles} if cycles else {}),
         **{key: str(value) for key, value in files.items()}})
     state = {"qualification": "pending", "build": build, "stages": [], "started": time.time(),
         "capture": "visible-x11-root", "consumerGpuCompletionVerified": False, "hardwareAccelerationVerified": False}
+    if cycles:
+        state.update(memoryPressureCycles=cycles, memoryCollectorSourceFiles=
+                     memory_acceptance.verify_memory_sources(build, Path(__file__).resolve()))
     env = dict(os.environ, GDK_BACKEND="x11", GTK_CSD="0", RHWP_CONSUMER_PROBE_CONFIG=str(output / "config.json"))
     process = compositor = None
     log_path = output / "runner.log"
@@ -167,15 +193,11 @@ def main():
                 write_json(output / f"ack-{index}.json", {"protocol": 1, "nonce": nonce, "index": index})
             code = process.wait(timeout=max(.1, deadline-time.monotonic()))
             result = read_json(output / "result.json")
-            require(code == 0 and result.get("ok") is True and result.get("nonce") == nonce and
-                    result.get("publications") == result.get("captures") == 3 and result.get("callerReleases") == 0,
-                    "actual group lifecycle result")
-            for member in result["closed"]["members"]:
-                require(member["registered"] is False and member["cleanupComplete"] is True, "both registrations retired")
-                for key in ("liveRasterSlots", "pendingRetireSlots", "orphanedRasterSlots", "abandonedTargets", "orphanedOwners", "snapshotReleaseFailures", "wholeFrameReadbacks"):
-                    require(member[key] == 0, "native tile teardown " + key)
-            for key in ("sources", "snapshotHandles", "retainedSnapshots", "snapshotEstimatedBytes", "frameHandles", "retainedFrames", "frameBytes", "leases", "inFlightReplays"):
-                require(result["stats"][key] == 0, "Native owner teardown " + key)
+            require(code == 0, "actual group lifecycle result")
+            memory_summary = validate_result(result, nonce, memory_cycles=cycles,
+                stages=[entry["stage"] for entry in state["stages"]], pid=process.pid)
+            if memory_summary is not None:
+                state["memoryAcceptance"] = memory_summary
             verify_runtime_artifacts(files, build, platform="linux")
             verify_runtime_bundle(files["runner"].parent, build["runtimeBundle"])
             state.update(qualification="linux-two-tile-consumer-passed", exitCode=code, result=result)

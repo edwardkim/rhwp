@@ -21,20 +21,29 @@ def integer(value, minimum=0):
     return value
 
 
-def memory_pressure_schedule(frames, cycles):
+def memory_pressure_schedule(frames, cycles, publication_profile="continuous32To64"):
     integer(cycles)
-    if cycles > 4:
+    if publication_profile not in ("continuous32To64", "linuxThreeStageTileGroup"):
+        raise ValueError("unknown memory-pressure publication profile")
+    maximum = 2 if publication_profile == "linuxThreeStageTileGroup" else 4
+    if cycles > maximum:
         raise ValueError("memory-pressure cycles must be 0..4")
     if not cycles:
         return []
+    if publication_profile == "linuxThreeStageTileGroup":
+        if type(frames) is not int or frames != 3:
+            raise ValueError("Linux tile memory acceptance retains exactly three publications")
+        return list(range(1, cycles + 1))
     if type(frames) is not int or not 32 <= frames <= 64:
         raise ValueError("memory-pressure cycles require 32..64 publications")
     return [3 + (frames - 3) * index // cycles for index in range(cycles)]
 
 
-def add_memory_arguments(parser):
+def add_memory_arguments(parser, publication_profile="continuous32To64"):
     parser.add_argument("--memory-pressure-cycles", type=int, default=0,
-                        help="0 (default) or 1..4 actual binding/trim/idle cycles within 32..64 frames")
+                        help="0 (default) or " + ("1..2 cycles between the existing three Linux tile publications"
+                            if publication_profile == "linuxThreeStageTileGroup" else
+                            "1..4 actual binding/trim/idle cycles within 32..64 frames"))
 
 
 def verify_memory_sources(build, collector):
@@ -135,6 +144,20 @@ def sample(value, held, identity):
         raise ValueError("idle native publication counters are missing")
     for count in progress.values():
         integer(count, 1)
+    members = native.get("members")
+    if identity["memberTextureIds"]:
+        if not isinstance(members, list) or len(members) != 2:
+            raise ValueError("idle observation must retain both native tile owners")
+        for member, texture in zip(members, identity["memberTextureIds"]):
+            if not isinstance(member, dict) or integer(member.get("textureId"), 1) != texture or \
+                    integer(member.get("deviceGeneration"), 1) != identity["deviceGeneration"] or \
+                    member.get("renderedStamp") != held["stamp"] or not isinstance(member.get("progress"), dict) or \
+                    not member["progress"] or not set(member["progress"]) <= set(progress):
+                raise ValueError("idle native tile identity/source/progress changed")
+            for count in member["progress"].values():
+                integer(count, 1)
+    elif members is not None:
+        raise ValueError("single-owner idle sample cannot invent native members")
     diagnostic = value.get("producerDiagnostics")
     if diagnostic is not None:
         if not isinstance(diagnostic, dict) or type(diagnostic.get("schemaVersion")) is not int or diagnostic["schemaVersion"] != 1 or \
@@ -151,9 +174,10 @@ def sample(value, held, identity):
     return value
 
 
-def validate_memory_acceptance(result, *, cycles, stages, pid):
+def validate_memory_acceptance(result, *, cycles, stages, pid,
+                               publication_profile="continuous32To64"):
     """Require pressure -> final trim -> held idle -> later sampled frame -> close."""
-    schedule = memory_pressure_schedule(len(stages), cycles)
+    schedule = memory_pressure_schedule(len(stages), cycles, publication_profile)
     memory = result.get("memoryAcceptance")
     if not cycles:
         if memory is not None:
@@ -161,13 +185,15 @@ def validate_memory_acceptance(result, *, cycles, stages, pid):
         return None
     if not isinstance(memory, dict) or type(memory.get("schemaVersion")) is not int or memory["schemaVersion"] != 1 or \
             memory.get("scope") != SCOPE or integer(memory.get("pid"), 1) != pid or \
+            memory.get("publicationProfile") != publication_profile or \
             integer(memory.get("requestedCycles"), 1) != cycles or memory.get("rssScope") != "probeProcessRss" or \
             "physicalVramBytes" not in memory or memory["physicalVramBytes"] is not None or \
             memory.get("consumerAndDriverMemoryIncluded") is not False or \
             memory.get("consumerGpuCompletionVerified") is not False:
         raise ValueError("memory acceptance identity/scope overstates its actual measurements")
     integer(memory.get("rssStartBytes"), 1)
-    if type(result.get("publications")) is not int or result["publications"] != len(stages):
+    if type(result.get("publications")) is not int or result["publications"] != len(stages) or \
+            result.get("consumerGpuCompletionVerified") is not False:
         raise ValueError("memory evidence does not cover all externally sampled publications")
     session_owner = owner(stages[0].get("memoryOwner"), stages[0])
     if any(owner(stage.get("memoryOwner"), stage) != session_owner for stage in stages):
@@ -217,7 +243,7 @@ def validate_memory_acceptance(result, *, cycles, stages, pid):
             if not elapsed <= current <= duration or \
                     any(counts.get(key, -1) < count for key, count in previous_counts.items()) or \
                     any(counts[key] != before["traceCounts"][key] for key in ("captureStarted", "submitStarted")) or \
-                    observed["native"]["progress"] != before["native"]["progress"]:
+                    observed["native"] != before["native"]:
                 raise ValueError("idle source/capture/submission progressed or trace time went backwards")
             elapsed, previous_counts = current, counts
         if samples[-1]["elapsedMicros"] - samples[0]["elapsedMicros"] < 400000 or \
@@ -233,6 +259,14 @@ def validate_memory_acceptance(result, *, cycles, stages, pid):
     if not isinstance(native_closed, dict) or integer(native_closed.get("deviceGeneration"), 1) != session_owner["deviceGeneration"] or \
             ("textureId" in native_closed and native_closed["textureId"] != session_owner["textureId"]):
         raise ValueError("memory close differs from the actual native close owner")
+    if session_owner["memberTextureIds"]:
+        members = native_closed.get("members", result.get("nativeTileMembers"))
+        if not isinstance(members, list) or len(members) != 2:
+            raise ValueError("memory close must retain both actual native tile receipts")
+        for member, texture in zip(members, session_owner["memberTextureIds"]):
+            if not isinstance(member, dict) or integer(member.get("textureId"), 1) != texture or \
+                    integer(member.get("deviceGeneration"), 1) != session_owner["deviceGeneration"]:
+                raise ValueError("memory close changed a native tile owner")
     counts = trace_counts(closed.get("traceCounts"))
     if counts["closeRequested"] < 1 or any(counts[key] < len(stages) for key in ("captureStarted", "submitStarted")) or \
             any(counts.get(key, -1) < count for key, count in last_counts.items()):

@@ -33,6 +33,14 @@ List<int> desktopMemoryPressureSchedule(int frames, int cycles) {
   );
 }
 
+/// The existing Linux two-tile probe has exactly three sampled publications.
+List<int> desktopLinuxTileMemoryPressureSchedule(int cycles) {
+  _require(cycles >= 0 && cycles <= 2, 'Linux tile memory cycles must be 0..2');
+  return List<int>.unmodifiable(
+    List<int>.generate(cycles, (index) => index + 1),
+  );
+}
+
 /// Delivers the actual framework system channel message to binding observers.
 /// This does not call a lifecycle observer or substitute a GPU trim result.
 Future<void> dispatchDesktopMemoryPressure() {
@@ -55,6 +63,7 @@ class DesktopMemoryTextureController extends NativeTextureController {
     super.allowImmutableOwnershipTransfer,
     super.operationTimeout,
     super.trace,
+    super.channel,
   });
 
   int trimCalls = 0;
@@ -88,6 +97,193 @@ Map<String, Object?> desktopCacheTrimReceipt(NativeGpuCacheTrimResult result) =>
         ],
       },
     };
+
+/// Shared real-runtime observations for the continuous and three-stage probes.
+class DesktopMemoryAcceptanceObserver {
+  DesktopMemoryAcceptanceObserver({
+    required this.controller,
+    required this.status,
+    required this.rssStartBytes,
+  });
+  final DesktopMemoryTextureController controller;
+  final Future<Map<String, Object?>> Function() status;
+  final int rssStartBytes;
+  final observations = <Map<String, Object?>>[];
+  Object? trimError;
+
+  Map<String, Object?> owner(NativePresentationStamp stamp) => {
+    'textureId': controller.textureId,
+    'deviceGeneration': stamp.deviceGeneration,
+    'memberTextureIds': controller.tileTextureIds,
+  };
+
+  Map<String, int> traceCounts() => {
+    for (final stage in NativeGpuTraceStage.values)
+      stage.name: controller.trace!.counts[stage] ?? 0,
+  };
+
+  Map<String, Object?> _progress(Map value) => {
+    for (final name in [
+      'acceptedSerial',
+      'renderedSerial',
+      'framesSubmitted',
+      'frames',
+    ])
+      if (value[name] is int) name: value[name],
+  };
+
+  Future<Map<String, Object?>> takeSample(NativePresentationStamp stamp) async {
+    final native = await status();
+    final group = controller.tileTextureIds.isNotEmpty;
+    final rawMembers = native['members'];
+    _require(
+      !group || rawMembers is List && rawMembers.length == 2,
+      'memory observation needs both actual native tile statuses',
+    );
+    final states = group
+        ? (rawMembers! as List)
+              .map((item) => Map<String, Object?>.from(item as Map))
+              .toList()
+        : [native];
+    _require(
+      controller.canDisplay &&
+          native['deviceGeneration'] == stamp.deviceGeneration,
+      'memory-pressure probe lost its displayed device owner',
+    );
+    if (group) {
+      _require(
+        (native['groupId'] ?? native['textureId']) == controller.textureId,
+        'memory-pressure group owner changed',
+      );
+    }
+    for (var index = 0; index < states.length; index++) {
+      final state = states[index];
+      _require(
+        stamp.matches(state['renderedStamp']) &&
+            state['deviceGeneration'] == stamp.deviceGeneration &&
+            (!group || state['textureId'] == controller.tileTextureIds[index]),
+        'memory-pressure probe lost a held native publication/owner',
+      );
+    }
+    return {
+      'owner': owner(stamp),
+      'stamp': stamp.toJson(),
+      'rssBytes': ProcessInfo.currentRss,
+      'canDisplay': controller.canDisplay,
+      'traceCounts': traceCounts(),
+      'native': {
+        'deviceGeneration': native['deviceGeneration'],
+        'renderedStamp': states.first['renderedStamp'],
+        'progress': _progress(states.first),
+        if (group)
+          'members': [
+            for (final state in states)
+              {
+                'textureId': state['textureId'],
+                'deviceGeneration': state['deviceGeneration'],
+                'renderedStamp': state['renderedStamp'],
+                'progress': _progress(state),
+              },
+          ],
+      },
+      // This remains a published-frame snapshot, including after trim. It is
+      // never substituted for the live managed-target trim receipt below.
+      'producerDiagnostics': NativeGpuCacheSample.fromStatus(
+        group
+            ? {
+                'producerDiagnosticsSamples': [
+                  for (final state in states) state['producerDiagnostics'],
+                ],
+              }
+            : native,
+        stamp,
+      )?.toJson(),
+    };
+  }
+
+  Future<Map<String, Object?>> pressureAfter(
+    int publication,
+    NativePresentationStamp stamp,
+  ) async {
+    _require(observations.length < 4, 'memory observation cycle bound');
+    final before = await takeSample(stamp);
+    final calls = controller.trimCalls;
+    await dispatchDesktopMemoryPressure();
+    _require(
+      controller.trimCalls == calls + 1 && controller.lastTrim != null,
+      'binding memory pressure did not invoke the real lifecycle trim',
+    );
+    final trim = await controller.lastTrim!.timeout(const Duration(seconds: 9));
+    _require(
+      trimError == null &&
+          trim.supported &&
+          !trim.pending &&
+          trim.textureId == controller.textureId &&
+          trim.deviceGeneration == stamp.deviceGeneration,
+      'memory pressure did not return a current final native trim receipt',
+    );
+    final watch = Stopwatch()..start();
+    final samples = <Map<String, Object?>>[];
+    for (var index = 0; index < 3; index++) {
+      if (index != 0) {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      }
+      final sample = await takeSample(stamp);
+      sample['elapsedMicros'] = watch.elapsedMicroseconds;
+      samples.add(sample);
+    }
+    final first = samples.first['traceCounts']! as Map;
+    final last = samples.last['traceCounts']! as Map;
+    _require(
+      first['captureStarted'] == last['captureStarted'] &&
+          first['submitStarted'] == last['submitStarted'],
+      'held idle publication unexpectedly captured or submitted another frame',
+    );
+    final cycle = {
+      'cycle': observations.length + 1,
+      'afterPublication': publication,
+      'trigger': 'flutter/system:memoryPressure',
+      'observer': 'NativeGpuLifecycle.didHaveMemoryPressure',
+      'before': before,
+      'trim': desktopCacheTrimReceipt(trim),
+      'outcome': trim.trimmed == 0 ? 'observedNoop' : 'observedReclamation',
+      'idle': {
+        'durationMicros': watch.elapsedMicroseconds,
+        'probeStatusPolls': samples.length,
+        'controllerStatusPolls':
+            (last['statusPolled']! as int) - (first['statusPolled']! as int),
+        'samples': samples,
+      },
+    };
+    observations.add(cycle);
+    return cycle;
+  }
+
+  Map<String, Object?> report(
+    NativePresentationStamp stamp, {
+    required int requestedCycles,
+    String publicationProfile = 'continuous32To64',
+  }) => {
+    'schemaVersion': 1,
+    'scope': 'managedGpuTargetsAndProcessRss',
+    'publicationProfile': publicationProfile,
+    'pid': pid,
+    'requestedCycles': requestedCycles,
+    'rssScope': 'probeProcessRss',
+    'rssStartBytes': rssStartBytes,
+    'physicalVramBytes': null,
+    'consumerAndDriverMemoryIncluded': false,
+    'consumerGpuCompletionVerified': false,
+    'cycles': observations,
+    'close': {
+      'owner': owner(stamp),
+      'controllerPhase': controller.phase.name,
+      'retirementPending': controller.retirementPending,
+      'rssBytes': ProcessInfo.currentRss,
+      'traceCounts': traceCounts(),
+    },
+  };
+}
 
 class DesktopConsumerOracle {
   DesktopConsumerOracle(String path) {
@@ -272,9 +468,8 @@ class _ProbeState extends State<_Probe> {
   var _nativeCoverProbe = false;
   var _tileGroups = false;
   List<int> _memorySchedule = const [];
-  final _memoryCycles = <Map<String, Object?>>[];
+  DesktopMemoryAcceptanceObserver? _memory;
   NativeGpuTrace? _memoryTrace;
-  Object? _memoryTrimError;
   int? _rssStartBytes;
   List<Map<String, Object?>> _tileMembers = const [];
   @override
@@ -334,111 +529,11 @@ class _ProbeState extends State<_Probe> {
     throw TimeoutException(message);
   }
 
-  Map<String, Object?> _memoryOwner(NativePresentationStamp stamp) => {
-    'textureId': _controller!.textureId,
-    'deviceGeneration': stamp.deviceGeneration,
-    'memberTextureIds': _controller!.tileTextureIds,
-  };
-
-  Map<String, int> _memoryTraceCounts() => {
-    for (final stage in NativeGpuTraceStage.values)
-      stage.name: _memoryTrace!.counts[stage] ?? 0,
-  };
-
-  Future<Map<String, Object?>> _memorySample(
-    NativePresentationStamp stamp,
-  ) async {
-    final status = await _status(), controller = _controller!;
-    _require(
-      controller.canDisplay &&
-          stamp.matches(status['renderedStamp']) &&
-          status['deviceGeneration'] == stamp.deviceGeneration,
-      'memory-pressure probe lost its held publication/owner',
-    );
-    return {
-      'owner': _memoryOwner(stamp),
-      'stamp': stamp.toJson(),
-      'rssBytes': ProcessInfo.currentRss,
-      'canDisplay': controller.canDisplay,
-      'traceCounts': _memoryTraceCounts(),
-      'native': {
-        'deviceGeneration': status['deviceGeneration'],
-        'renderedStamp': status['renderedStamp'],
-        'progress': {
-          for (final name in [
-            'acceptedSerial',
-            'renderedSerial',
-            'framesSubmitted',
-            'frames',
-          ])
-            if (status[name] is int) name: status[name],
-        },
-      },
-      // This remains a published-frame snapshot, including after trim. It is
-      // never substituted for the live managed-target trim receipt below.
-      'producerDiagnostics': NativeGpuCacheSample.fromStatus(
-        status,
-        stamp,
-      )?.toJson(),
-    };
-  }
-
   Future<void> _memoryPressureAfter(int publication) async {
     if (!_memorySchedule.contains(publication)) return;
     _stage = 'memory-pressure-after-$publication';
-    final controller = _controller! as DesktopMemoryTextureController;
-    final stamp = _metadata!.stamp!;
-    final before = await _memorySample(stamp);
-    final calls = controller.trimCalls;
-    await dispatchDesktopMemoryPressure();
-    _require(
-      controller.trimCalls == calls + 1 && controller.lastTrim != null,
-      'binding memory pressure did not invoke the real lifecycle trim',
-    );
-    final trim = await controller.lastTrim!.timeout(const Duration(seconds: 9));
-    _require(
-      _memoryTrimError == null &&
-          trim.supported &&
-          !trim.pending &&
-          trim.textureId == controller.textureId &&
-          trim.deviceGeneration == stamp.deviceGeneration,
-      'memory pressure did not return a current final native trim receipt',
-    );
-    final watch = Stopwatch()..start();
-    final samples = <Map<String, Object?>>[];
-    for (var index = 0; index < 3; index++) {
-      if (index != 0) {
-        await Future<void>.delayed(const Duration(milliseconds: 200));
-      }
-      final sample = await _memorySample(stamp);
-      sample['elapsedMicros'] = watch.elapsedMicroseconds;
-      samples.add(sample);
-    }
-    final first = samples.first['traceCounts']! as Map;
-    final last = samples.last['traceCounts']! as Map;
-    _require(
-      first['captureStarted'] == last['captureStarted'] &&
-          first['submitStarted'] == last['submitStarted'],
-      'held idle publication unexpectedly captured or submitted another frame',
-    );
-    final cycle = {
-      'cycle': _memoryCycles.length + 1,
-      'afterPublication': publication,
-      'trigger': 'flutter/system:memoryPressure',
-      'observer': 'NativeGpuLifecycle.didHaveMemoryPressure',
-      'before': before,
-      'trim': desktopCacheTrimReceipt(trim),
-      'outcome': trim.trimmed == 0 ? 'observedNoop' : 'observedReclamation',
-      'idle': {
-        'durationMicros': watch.elapsedMicroseconds,
-        'probeStatusPolls': samples.length,
-        'controllerStatusPolls':
-            (last['statusPolled']! as int) - (first['statusPolled']! as int),
-        'samples': samples,
-      },
-    };
-    _memoryCycles.add(cycle);
-    await _write('memory-cycle-${_memoryCycles.length}.json', {
+    final cycle = await _memory!.pressureAfter(publication, _metadata!.stamp!);
+    await _write('memory-cycle-$publication.json', {
       'protocol': 1,
       'nonce': _nonce,
       'pid': pid,
@@ -562,7 +657,7 @@ class _ProbeState extends State<_Probe> {
         'geometryProof': {'cpu': cpuGeometry, 'reference': referenceGeometry},
       },
       'nativeStatus': status,
-      if (_memorySchedule.isNotEmpty) 'memoryOwner': _memoryOwner(stamp),
+      if (_memorySchedule.isNotEmpty) 'memoryOwner': _memory!.owner(stamp),
       if (_tileGroups) ...{
         'tileGroup': true,
         'groupId': controller.textureId,
@@ -808,6 +903,16 @@ class _ProbeState extends State<_Probe> {
               operationTimeout: const Duration(seconds: 8),
               trace: _memoryTrace,
             );
+      if (_memorySchedule.isNotEmpty) {
+        _memory = DesktopMemoryAcceptanceObserver(
+          controller: _controller! as DesktopMemoryTextureController,
+          rssStartBytes: _rssStartBytes!,
+          status: () async => {
+            ...await _status(),
+            if (_tileGroups) 'members': _tileMembers,
+          },
+        );
+      }
       _viewport = NativePageViewport.fit(
         await document.pageSize(0),
         _physicalSize / MediaQuery.devicePixelRatioOf(context),
@@ -919,26 +1024,11 @@ class _ProbeState extends State<_Probe> {
                     true),
         'presentationKind': presentationKind,
         'publications': _frameCount,
-        if (_memorySchedule.isNotEmpty)
-          'memoryAcceptance': {
-            'schemaVersion': 1,
-            'scope': 'managedGpuTargetsAndProcessRss',
-            'pid': pid,
-            'requestedCycles': _memorySchedule.length,
-            'rssScope': 'probeProcessRss',
-            'rssStartBytes': _rssStartBytes,
-            'physicalVramBytes': null,
-            'consumerAndDriverMemoryIncluded': false,
-            'consumerGpuCompletionVerified': false,
-            'cycles': _memoryCycles,
-            'close': {
-              'owner': _memoryOwner(_metadata!.stamp!),
-              'controllerPhase': _controller!.phase.name,
-              'retirementPending': _controller!.retirementPending,
-              'rssBytes': ProcessInfo.currentRss,
-              'traceCounts': _memoryTraceCounts(),
-            },
-          },
+        if (_memory != null)
+          'memoryAcceptance': _memory!.report(
+            _metadata!.stamp!,
+            requestedCycles: _memorySchedule.length,
+          ),
         if (_tileGroups) ...{
           'tileGroup': true,
           'nativeTileMembers': _tileMembers,
@@ -994,7 +1084,7 @@ class _ProbeState extends State<_Probe> {
         ? texture
         : NativeGpuLifecycle(
             controller: _controller!,
-            onTrimError: (error) => _memoryTrimError = error,
+            onTrimError: (error) => _memory!.trimError = error,
             child: texture,
           );
   }

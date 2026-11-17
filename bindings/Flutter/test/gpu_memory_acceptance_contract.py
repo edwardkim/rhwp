@@ -15,6 +15,7 @@ sys.path.insert(0, str(ROOT / "tool"))
 import gpu_memory_acceptance as memory
 import qualify_linux_texture as linux
 import qualify_windows_continuous as windows
+import qualify_linux_tile_group as linux_group
 import linux_qualification_contract as linux_cases
 import windows_continuous_qualification_contract as windows_cases
 
@@ -23,10 +24,11 @@ mac = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mac)
 
 
-def evidence(cycles=2, group=False):
+def evidence(cycles=2, group=False, publication_profile="continuous32To64"):
+    frames = 3 if publication_profile == "linuxThreeStageTileGroup" else 32
     identity = {"textureId": 4, "deviceGeneration": 1, "memberTextureIds": [4, 5] if group else []}
     stages = []
-    for index in range(1, 33):
+    for index in range(1, frames + 1):
         stamp = {"documentId": 1, "revision": 1, "fontGeneration": 0,
                  "deviceGeneration": 1, "deviceScale": 1.25, "viewGeneration": index}
         stages.append({"index": index, "stamp": stamp, "memoryOwner": copy.deepcopy(identity),
@@ -35,12 +37,17 @@ def evidence(cycles=2, group=False):
 
     def sample(after, ordinal):
         stamp = copy.deepcopy(stages[after - 1]["stamp"])
-        return {"owner": copy.deepcopy(identity), "stamp": stamp, "rssBytes": 120000000,
+        result = {"owner": copy.deepcopy(identity), "stamp": stamp, "rssBytes": 120000000,
                 "canDisplay": True, "producerDiagnostics": None,
                 "traceCounts": {"captureStarted": after, "submitStarted": after,
                                 "statusPolled": ordinal * 3, "closeRequested": 0},
                 "native": {"deviceGeneration": 1, "renderedStamp": stamp,
                            "progress": {"acceptedSerial": after, "renderedSerial": after}}}
+        if group:
+            result["native"]["members"] = [{"textureId": texture, "deviceGeneration": 1,
+                "renderedStamp": copy.deepcopy(stamp), "progress": copy.deepcopy(result["native"]["progress"])}
+                for texture in identity["memberTextureIds"]]
+        return result
 
     def trim(texture, ordinal):
         noop = ordinal % 2 == 0
@@ -50,7 +57,7 @@ def evidence(cycles=2, group=False):
                 "pending": False, "busy": noop, "reason": "pinned" if noop else "trimmed"}
 
     observations = []
-    for ordinal, after in enumerate(memory.memory_pressure_schedule(32, cycles), 1):
+    for ordinal, after in enumerate(memory.memory_pressure_schedule(frames, cycles, publication_profile), 1):
         before = sample(after, ordinal)
         receipt = trim(4, ordinal)
         if group:
@@ -68,15 +75,20 @@ def evidence(cycles=2, group=False):
                              "outcome": "observedNoop" if receipt["trimmed"] == 0 else "observedReclamation",
                              "idle": {"durationMicros": 442000, "probeStatusPolls": 3,
                                       "controllerStatusPolls": 1, "samples": samples}})
-    value = {"publications": 32, "closed": {"textureId": 4, "deviceGeneration": 1},
+    value = {"publications": frames, "consumerGpuCompletionVerified": False,
+             "closed": {"textureId": 4, "deviceGeneration": 1},
              "memoryAcceptance": {"schemaVersion": 1, "scope": memory.SCOPE, "pid": 42,
+                "publicationProfile": publication_profile,
                 "requestedCycles": cycles, "rssScope": "probeProcessRss", "rssStartBytes": 100000000,
                 "physicalVramBytes": None, "consumerAndDriverMemoryIncluded": False,
                 "consumerGpuCompletionVerified": False, "cycles": observations,
                 "close": {"owner": copy.deepcopy(identity), "controllerPhase": "closed",
                           "retirementPending": False, "rssBytes": 110000000,
-                          "traceCounts": {"captureStarted": 32, "submitStarted": 32,
+                          "traceCounts": {"captureStarted": frames, "submitStarted": frames,
                                           "statusPolled": cycles * 4, "closeRequested": 1}}}}
+    if group:
+        value["closed"]["members"] = [{"textureId": texture, "deviceGeneration": 1}
+                                      for texture in identity["memberTextureIds"]]
     return value, stages
 
 
@@ -242,6 +254,46 @@ class MemoryAcceptanceContracts(unittest.TestCase):
             collector.write_bytes(b"changed collector")
             with self.assertRaises(ValueError):
                 memory.verify_memory_sources({"sourceFiles": expected}, collector)
+
+    def test_linux_tile_profile_preserves_three_publications_and_later_captures(self):
+        profile = "linuxThreeStageTileGroup"
+        self.assertEqual(memory.memory_pressure_schedule(3, 1, profile), [1])
+        self.assertEqual(memory.memory_pressure_schedule(3, 2, profile), [1, 2])
+        for frames, cycles in [(32, 1), (3, 3), (3, True)]:
+            with self.assertRaises(ValueError): memory.memory_pressure_schedule(frames, cycles, profile)
+        value, stages = evidence(group=True, publication_profile=profile)
+        summary = memory.validate_memory_acceptance(value, cycles=2, stages=stages, pid=42,
+                                                   publication_profile=profile)
+        self.assertEqual(summary["resumedPublications"], [2, 3])
+        with self.assertRaises(ValueError): self.validate(value, stages)
+        value.update(ok=True, nonce="owned", captures=3, callerReleases=0,
+                     stats=dict.fromkeys(linux_cases.result()["stats"], 0))
+        for member in value["closed"]["members"]:
+            member.update(registered=False, cleanupComplete=True,
+                **dict.fromkeys(("liveRasterSlots", "pendingRetireSlots", "orphanedRasterSlots", "abandonedTargets",
+                                 "orphanedOwners", "snapshotReleaseFailures", "wholeFrameReadbacks"), 0))
+        self.assertEqual(linux_group.validate_result(value, "owned", memory_cycles=2,
+            stages=stages, pid=42)["resumedPublications"], [2, 3])
+        del value["memoryAcceptance"]
+        self.assertIsNone(linux_group.validate_result(value, "owned"))
+        with self.assertRaises(ValueError): linux_group.validate_result(value, "owned",
+            memory_cycles=2, stages=stages, pid=42)
+
+    def test_idle_and_close_retain_both_actual_tile_owners(self):
+        profile = "linuxThreeStageTileGroup"
+        for change in ("missing", "order", "foreign", "stamp", "progress", "closedMissing", "closedOrder"):
+            value, stages = evidence(group=True, publication_profile=profile)
+            native = value["memoryAcceptance"]["cycles"][0]["idle"]["samples"][-1]["native"]
+            if change == "missing": native["members"].pop()
+            if change == "order": native["members"].reverse()
+            if change == "foreign": native["members"][1]["deviceGeneration"] += 1
+            if change == "stamp": native["members"][1]["renderedStamp"]["revision"] += 1
+            if change == "progress": native["members"][1]["progress"]["renderedSerial"] += 1
+            if change == "closedMissing": value["closed"]["members"].pop()
+            if change == "closedOrder": value["closed"]["members"].reverse()
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                memory.validate_memory_acceptance(value, cycles=2, stages=stages, pid=42,
+                                                  publication_profile=profile)
 
 
 if __name__ == "__main__":
