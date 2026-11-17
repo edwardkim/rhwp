@@ -1,0 +1,87 @@
+{
+  "observedAt": "2026-11-17T16:45:04.813076+00:00",
+  "merge": "1ea5d6df80eebcdc16cf451b4e76d4a48d5edc2a",
+  "runs": [
+    {
+      "id": 44128058117,
+      "name": "Close Issues on devel Push",
+      "head_sha": "1ea5d6df80eebcdc16cf451b4e76d4a48d5edc2a",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "push",
+      "html_url": "https://github.com/edwardkim/rhwp/actions/runs/44128058117"
+    },
+    {
+      "id": 44128057943,
+      "name": "Refresh nextest target duration data",
+      "head_sha": "1ea5d6df80eebcdc16cf451b4e76d4a48d5edc2a",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "push",
+      "html_url": "https://github.com/edwardkim/rhwp/actions/runs/44128057943"
+    }
+  ],
+  "unexpectedValidationRuns": [],
+  "durationJobs": [
+    {
+      "id": 134197177909,
+      "name": "Refresh nextest target duration data",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "durationLogExcerpts": [
+    "2026-11-17T16:38:32.7215454Z Complete job name: Refresh nextest target duration data",
+    "const { collectPostmergeDurations } = await import(pathToFileURL(path.join(",
+    "  process.env.GITHUB_WORKSPACE, 'scripts/collect-postmerge-duration-data.mjs',",
+    "const result = await collectPostmergeDurations({",
+    "  github, ...context.repo, mergeSha: context.sha, outputDir: process.env.DURATION_DIR,",
+    "await core.summary.addHeading('PR duration metadata refresh')",
+    "2026-11-17T16:43:24.7801724Z   DURATION_DIR: /home/runner/work/_temp/postmerge-duration-data",
+    "2026-11-17T16:43:31.1398634Z \u001b[36;1m  measurement=\"${DURATION_DIR}/duration-${label}/target-durations-${label}.json\"\u001b[0m",
+    "2026-11-17T16:43:31.1400267Z \u001b[36;1mnode scripts/refresh-nextest-target-duration-policy.mjs \\\u001b[0m",
+    "2026-11-17T16:43:31.1400743Z \u001b[36;1m  --policy tests/suites/nextest-target-duration-policy.json \\\u001b[0m",
+    "2026-11-17T16:43:31.3296024Z   DURATION_DIR: /home/runner/work/_temp/postmerge-duration-data",
+    "2026-11-17T16:43:31.3296739Z   OUTPUT_POLICY: /home/runner/work/_temp/nextest-target-duration-policy.json",
+    "2026-11-17T16:43:31.9814365Z [NextestTargetDuration] refreshed_targets=44",
+    "const { publishNextestDurationData } = await import(pathToFileURL(path.join(",
+    "  process.env.GITHUB_WORKSPACE, 'scripts/publish-nextest-duration-data.mjs',",
+    "const result = await publishNextestDurationData({",
+    "  content: fs.readFileSync(path.join(process.env.RUNNER_TEMP, 'nextest-target-duration-policy.json'), 'utf8'),",
+    "await core.summary.addHeading('Duration metadata publication')"
+  ],
+  "collectionResult": {
+    "ready": true,
+    "reason": "successful-pr-worker-measurements",
+    "pullNumber": 9155,
+    "finalHeadRunId": 44117430108,
+    "finalHeadRunAttempt": 1,
+    "finalHeadSha": "d9868f4ef1e506918bb3eceece5453333b047e64",
+    "reviewOnlyTail": false,
+    "sourceRunId": 44117430108,
+    "latestRunAttempt": 1,
+    "measurementAttempts": {
+      "b": 1,
+      "c": 1,
+      "d": 1,
+      "e": 1
+    },
+    "testedMergeSha": "abe881565082d737440568a3056c10c7ac947c7c",
+    "sourceHeadSha": "d9868f4ef1e506918bb3eceece5453333b047e64",
+    "artifactIds": [
+      14346111296,
+      14346856520,
+      14345522278,
+      14345707758
+    ]
+  },
+  "publicationResult": {
+    "published": true,
+    "reason": "published",
+    "previousSha": "89fce769c9dfc75029e3b76ee32cea29e75051ca",
+    "commitSha": "6970ff7a8e0c009ff4e4eb56e072f9733c7646f4",
+    "blobSha": "b6f7fce48183a897c478c9e83dc0c989f1a4ac01",
+    "sourceMergeSha": "1ea5d6df80eebcdc16cf451b4e76d4a48d5edc2a"
+  },
+  "refreshedTargets": 44
+}

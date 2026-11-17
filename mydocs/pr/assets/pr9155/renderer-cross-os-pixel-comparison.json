@@ -1,0 +1,587 @@
+{
+  "pngTotal": 462,
+  "byteIdentical": 428,
+  "pixelIdenticalAdditional": 0,
+  "differentPngAllNative": true,
+  "browserCapturePngTotal": 378,
+  "rows": [
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/endnote/native-skia-fast-preview/endnote-01.png",
+      "sameDimensions": true,
+      "changedPixels": 45106,
+      "totalPixels": 891662,
+      "changedPercent": 5.058643,
+      "changedBoundsYX": [
+        [
+          166,
+          116
+        ],
+        [
+          994,
+          716
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/endnote/native-skia-high-quality/endnote-01.png",
+      "sameDimensions": true,
+      "changedPixels": 45106,
+      "totalPixels": 891662,
+      "changedPercent": 5.058643,
+      "changedBoundsYX": [
+        [
+          166,
+          116
+        ],
+        [
+          994,
+          716
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/endnote/native-skia-screen/endnote-01.png",
+      "sameDimensions": true,
+      "changedPixels": 45106,
+      "totalPixels": 891662,
+      "changedPercent": 5.058643,
+      "changedBoundsYX": [
+        [
+          166,
+          116
+        ],
+        [
+          994,
+          716
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/equation-inline/native-skia-fast-preview/eq-01.png",
+      "sameDimensions": true,
+      "changedPixels": 966,
+      "totalPixels": 891662,
+      "changedPercent": 0.108337,
+      "changedBoundsYX": [
+        [
+          211,
+          178
+        ],
+        [
+          511,
+          526
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/equation-inline/native-skia-high-quality/eq-01.png",
+      "sameDimensions": true,
+      "changedPixels": 966,
+      "totalPixels": 891662,
+      "changedPercent": 0.108337,
+      "changedBoundsYX": [
+        [
+          211,
+          178
+        ],
+        [
+          511,
+          526
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/equation-inline/native-skia-print/eq-01.png",
+      "sameDimensions": true,
+      "changedPixels": 966,
+      "totalPixels": 890868,
+      "changedPercent": 0.108434,
+      "changedBoundsYX": [
+        [
+          211,
+          178
+        ],
+        [
+          511,
+          526
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/equation-inline/native-skia-screen/eq-01.png",
+      "sameDimensions": true,
+      "changedPixels": 966,
+      "totalPixels": 891662,
+      "changedPercent": 0.108337,
+      "changedBoundsYX": [
+        [
+          211,
+          178
+        ],
+        [
+          511,
+          526
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/footnote/native-skia-fast-preview/footnote-01.png",
+      "sameDimensions": true,
+      "changedPixels": 45053,
+      "totalPixels": 891662,
+      "changedPercent": 5.052699,
+      "changedBoundsYX": [
+        [
+          166,
+          116
+        ],
+        [
+          963,
+          716
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/footnote/native-skia-high-quality/footnote-01.png",
+      "sameDimensions": true,
+      "changedPixels": 45053,
+      "totalPixels": 891662,
+      "changedPercent": 5.052699,
+      "changedBoundsYX": [
+        [
+          166,
+          116
+        ],
+        [
+          963,
+          716
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/footnote/native-skia-screen/footnote-01.png",
+      "sameDimensions": true,
+      "changedPixels": 45053,
+      "totalPixels": 891662,
+      "changedPercent": 5.052699,
+      "changedBoundsYX": [
+        [
+          166,
+          116
+        ],
+        [
+          963,
+          716
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/image-start/native-skia-fast-preview/img-start-001.png",
+      "sameDimensions": true,
+      "changedPixels": 59250,
+      "totalPixels": 891662,
+      "changedPercent": 6.644895,
+      "changedBoundsYX": [
+        [
+          125,
+          84
+        ],
+        [
+          1030,
+          713
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/image-start/native-skia-high-quality/img-start-001.png",
+      "sameDimensions": true,
+      "changedPixels": 59250,
+      "totalPixels": 891662,
+      "changedPercent": 6.644895,
+      "changedBoundsYX": [
+        [
+          125,
+          84
+        ],
+        [
+          1030,
+          713
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/image-start/native-skia-screen/img-start-001.png",
+      "sameDimensions": true,
+      "changedPixels": 59250,
+      "totalPixels": 891662,
+      "changedPercent": 6.644895,
+      "changedBoundsYX": [
+        [
+          125,
+          84
+        ],
+        [
+          1030,
+          713
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/legacy-doc-2010/native-skia-fast-preview/2010-01-06.png",
+      "sameDimensions": true,
+      "changedPixels": 44774,
+      "totalPixels": 891662,
+      "changedPercent": 5.021409,
+      "changedBoundsYX": [
+        [
+          104,
+          95
+        ],
+        [
+          1029,
+          698
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/legacy-doc-2010/native-skia-high-quality/2010-01-06.png",
+      "sameDimensions": true,
+      "changedPixels": 44774,
+      "totalPixels": 891662,
+      "changedPercent": 5.021409,
+      "changedBoundsYX": [
+        [
+          104,
+          95
+        ],
+        [
+          1029,
+          698
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/legacy-doc-2010/native-skia-screen/2010-01-06.png",
+      "sameDimensions": true,
+      "changedPixels": 44774,
+      "totalPixels": 891662,
+      "changedPercent": 5.021409,
+      "changedBoundsYX": [
+        [
+          104,
+          95
+        ],
+        [
+          1029,
+          698
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/paragraph-basic/native-skia-fast-preview/lseg-05-tab.png",
+      "sameDimensions": true,
+      "changedPixels": 45179,
+      "totalPixels": 891662,
+      "changedPercent": 5.06683,
+      "changedBoundsYX": [
+        [
+          132,
+          113
+        ],
+        [
+          529,
+          680
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/paragraph-basic/native-skia-high-quality/lseg-05-tab.png",
+      "sameDimensions": true,
+      "changedPixels": 45179,
+      "totalPixels": 891662,
+      "changedPercent": 5.06683,
+      "changedBoundsYX": [
+        [
+          132,
+          113
+        ],
+        [
+          529,
+          680
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/paragraph-basic/native-skia-screen/lseg-05-tab.png",
+      "sameDimensions": true,
+      "changedPixels": 45179,
+      "totalPixels": 891662,
+      "changedPercent": 5.06683,
+      "changedBoundsYX": [
+        [
+          132,
+          113
+        ],
+        [
+          529,
+          680
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/paragraph-line-basic/native-skia-fast-preview/lseg-01-basic.png",
+      "sameDimensions": true,
+      "changedPixels": 11671,
+      "totalPixels": 891662,
+      "changedPercent": 1.308904,
+      "changedBoundsYX": [
+        [
+          132,
+          114
+        ],
+        [
+          230,
+          680
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/paragraph-line-basic/native-skia-high-quality/lseg-01-basic.png",
+      "sameDimensions": true,
+      "changedPixels": 11671,
+      "totalPixels": 891662,
+      "changedPercent": 1.308904,
+      "changedBoundsYX": [
+        [
+          132,
+          114
+        ],
+        [
+          230,
+          680
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/paragraph-line-basic/native-skia-screen/lseg-01-basic.png",
+      "sameDimensions": true,
+      "changedPixels": 11671,
+      "totalPixels": 891662,
+      "changedPercent": 1.308904,
+      "changedBoundsYX": [
+        [
+          132,
+          114
+        ],
+        [
+          230,
+          680
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/paragraph-text-marks/native-skia-fast-preview/lseg-05-tab.png",
+      "sameDimensions": true,
+      "changedPixels": 45179,
+      "totalPixels": 891662,
+      "changedPercent": 5.06683,
+      "changedBoundsYX": [
+        [
+          132,
+          113
+        ],
+        [
+          529,
+          680
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/paragraph-text-marks/native-skia-high-quality/lseg-05-tab.png",
+      "sameDimensions": true,
+      "changedPixels": 45179,
+      "totalPixels": 891662,
+      "changedPercent": 5.06683,
+      "changedBoundsYX": [
+        [
+          132,
+          113
+        ],
+        [
+          529,
+          680
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/paragraph-text-marks/native-skia-screen/lseg-05-tab.png",
+      "sameDimensions": true,
+      "changedPixels": 45179,
+      "totalPixels": 891662,
+      "changedPercent": 5.06683,
+      "changedBoundsYX": [
+        [
+          132,
+          113
+        ],
+        [
+          529,
+          680
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/table-border-style/native-skia-fast-preview/table-004.png",
+      "sameDimensions": true,
+      "changedPixels": 24421,
+      "totalPixels": 891662,
+      "changedPercent": 2.738818,
+      "changedBoundsYX": [
+        [
+          177,
+          154
+        ],
+        [
+          485,
+          701
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/table-border-style/native-skia-high-quality/table-004.png",
+      "sameDimensions": true,
+      "changedPixels": 24421,
+      "totalPixels": 891662,
+      "changedPercent": 2.738818,
+      "changedBoundsYX": [
+        [
+          177,
+          154
+        ],
+        [
+          485,
+          701
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/table-border-style/native-skia-screen/table-004.png",
+      "sameDimensions": true,
+      "changedPixels": 24421,
+      "totalPixels": 891662,
+      "changedPercent": 2.738818,
+      "changedBoundsYX": [
+        [
+          177,
+          154
+        ],
+        [
+          485,
+          701
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/table-core/native-skia-fast-preview/hwp_table_test.png",
+      "sameDimensions": true,
+      "changedPixels": 20213,
+      "totalPixels": 891662,
+      "changedPercent": 2.26689,
+      "changedBoundsYX": [
+        [
+          132,
+          115
+        ],
+        [
+          923,
+          614
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/table-core/native-skia-high-quality/hwp_table_test.png",
+      "sameDimensions": true,
+      "changedPixels": 20213,
+      "totalPixels": 891662,
+      "changedPercent": 2.26689,
+      "changedBoundsYX": [
+        [
+          132,
+          115
+        ],
+        [
+          923,
+          614
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/table-core/native-skia-screen/hwp_table_test.png",
+      "sameDimensions": true,
+      "changedPixels": 20213,
+      "totalPixels": 891662,
+      "changedPercent": 2.26689,
+      "changedBoundsYX": [
+        [
+          132,
+          115
+        ],
+        [
+          923,
+          614
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/table-in-textbox/native-skia-fast-preview/table-in-tbox.png",
+      "sameDimensions": true,
+      "changedPixels": 83186,
+      "totalPixels": 891662,
+      "changedPercent": 9.32932,
+      "changedBoundsYX": [
+        [
+          110,
+          97
+        ],
+        [
+          995,
+          682
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/table-in-textbox/native-skia-high-quality/table-in-tbox.png",
+      "sameDimensions": true,
+      "changedPixels": 83186,
+      "totalPixels": 891662,
+      "changedPercent": 9.32932,
+      "changedBoundsYX": [
+        [
+          110,
+          97
+        ],
+        [
+          995,
+          682
+        ]
+      ]
+    },
+    {
+      "path": "output/renderer-baseline/workflow-dispatch/table-in-textbox/native-skia-screen/table-in-tbox.png",
+      "sameDimensions": true,
+      "changedPixels": 83186,
+      "totalPixels": 891662,
+      "changedPercent": 9.32932,
+      "changedBoundsYX": [
+        [
+          110,
+          97
+        ],
+        [
+          995,
+          682
+        ]
+      ]
+    }
+  ]
+}

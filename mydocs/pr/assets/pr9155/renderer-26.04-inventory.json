@@ -1,0 +1,40 @@
+{
+  "ubuntu": "26.04",
+  "runId": 44072292744,
+  "artifactId": 14327729877,
+  "zipBytes": 32434965,
+  "zipSha256": "8433cb1127dc638fcef435bf9a84f64f01689197ef34818959d7bc10fa86c5cd",
+  "fileCount": 611,
+  "extensions": {
+    ".html": 1,
+    ".json": 18,
+    ".md": 4,
+    ".png": 462,
+    ".svg": 105,
+    ".pdf": 21
+  },
+  "reportPaths": [
+    "output/renderer-baseline/workflow-dispatch/baseline-report.json",
+    "output/renderer-baseline/workflow-dispatch/baseline-manifest.filtered.json",
+    "output/renderer-baseline/workflow-dispatch/baseline-report.md",
+    "output/renderer-baseline/workflow-dispatch/browser/browser-baseline-report.json",
+    "output/renderer-baseline/workflow-dispatch/native-canvaskit-parity-report.json",
+    "output/renderer-baseline/workflow-dispatch/native-results.json",
+    "output/renderer-baseline/workflow-dispatch/performance-summary.json",
+    "output/renderer-baseline/workflow-dispatch/renderer_baseline_manifest.json",
+    "output/renderer-baseline/workflow-dispatch-software/baseline-manifest.filtered.json",
+    "output/renderer-baseline/workflow-dispatch-software/baseline-report.json",
+    "output/renderer-baseline/workflow-dispatch-software/baseline-report.md",
+    "output/renderer-baseline/workflow-dispatch-software/browser/browser-baseline-report.json",
+    "output/renderer-baseline/workflow-dispatch-webgpu/baseline-manifest.filtered.json",
+    "output/renderer-baseline/workflow-dispatch-webgpu/baseline-report.json",
+    "output/renderer-baseline/workflow-dispatch-software/performance-summary.json",
+    "output/renderer-baseline/workflow-dispatch-software/renderer_baseline_manifest.json",
+    "output/renderer-baseline/workflow-dispatch-webgpu/baseline-report.md",
+    "output/renderer-baseline/workflow-dispatch-webgpu/browser/browser-baseline-report.json",
+    "output/renderer-baseline/workflow-dispatch-webgpu/performance-summary.json",
+    "output/renderer-baseline/workflow-dispatch-webgpu/renderer_baseline_manifest.json",
+    "rhwp-studio/e2e/screenshots/render-diff/results.json",
+    "rhwp-studio/e2e/screenshots/render-diff/summary.md"
+  ]
+}
