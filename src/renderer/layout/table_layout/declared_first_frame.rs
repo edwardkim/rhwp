@@ -105,15 +105,41 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
     ) -> Option<DeclaredRowFirstFrame> {
         let reflowed = self.row_uses_reflow_physical_frame(table, row);
-        if reflowed {
-            if self
-                .reflow_row_physical_minimum(table, row, row_frame_height, None, styles)
-                .is_some()
+        let mixed_minimum = reflowed
+            .then(|| self.reflow_row_physical_minimum(table, row, row_frame_height, None, styles))
+            .flatten();
+        if mixed_minimum.is_some() {
+            // 일반 글줄 행의 독립 최소는 스캐너의 기존 물리 잔여 원장이 맡는다.
+            // 옆 셀이 중첩 표를 소유하면 그 일반 행 분기로 들어가지 않으므로,
+            // 첫 바깥 조각이 같은 선언 상자와 선택한 라벨의 정렬을 함께 소유한다.
+            // 자식 viewport에 부모의 본문 프레임을 다시 강제하지 않는다.
+            if !self.row_uses_outer_fragment_frame(table, row)
+                || self.row_has_plain_line_units(table, row, styles)
             {
                 return None;
             }
         }
-        let cell_alignment_heights = if reflowed {
+        let cell_alignment_heights = if mixed_minimum.is_some() {
+            self.indexed_row_cut_cell_order(table, row)
+                .into_iter()
+                .enumerate()
+                .filter_map(|(slot, index)| {
+                    let cell = &table.cells[index];
+                    let end = *end_cut.get(slot)?;
+                    if end == 0 || !self.cell_has_plain_line_units(cell, table, styles) {
+                        return None;
+                    }
+                    let units = self.cell_units(cell, table, styles);
+                    let end = end.min(units.len());
+                    let advance = units[..end].iter().map(|unit| unit.height).sum();
+                    let content = super::row_block_cut::CellCutFrame::new(
+                        self, cell, table, styles, &units, 0,
+                    )
+                    .content_height(end, advance);
+                    Some((index, content))
+                })
+                .collect()
+        } else if reflowed {
             Vec::new()
         } else {
             self.stored_row_atomic_picture_alignment(table, row, end_cut, styles)?

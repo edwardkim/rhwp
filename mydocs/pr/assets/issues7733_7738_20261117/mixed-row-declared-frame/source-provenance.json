@@ -1,0 +1,11 @@
+{
+  "parent": "fb6ba46d95c42f8568633081725f4238636c3269",
+  "captured_at": "2026-11-18T03:38:12.804340+09:00",
+  "sources": {
+    "src/renderer/layout/table_layout/declared_first_frame.rs": "670e4ea653d723c0150f802b549a603d2a46220868336d63e20ce474d5e08059",
+    "tests/cases/issue_7737_mixed_row_declared_frame.rs": "80c7f7a8f530cfac33117b9fdbfb1bfd320cc7591e5bb3f07393fcacae0777f1"
+  },
+  "source_diff_sha256": "6807dcd89951047b9d0a58054e55573b71873f287f647e77ebf2d7a4b1fb71fb",
+  "cargo_lock_sha256": "972bdb0994b216f0cef357b856ce0807ce3d437af6791377446b62f2e26c05a1",
+  "font_environment_sha256": "39ec77d269dcd5e687ecd68cd3c5ffb2d19f91a5d9580b2e11c0c4db8a9cb4b0"
+}

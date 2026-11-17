@@ -1,0 +1,13 @@
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 3m 25s
+────────────
+ Nextest run ID 31288d24-e10f-46fe-9b7a-7fa6275ced03 with nextest profile: default
+    Starting 6 tests across 3 binaries (1043 tests skipped)
+        PASS [   0.037s] (1/6) rhwp::regression_suite_007 issue_7870_tac_nested_table_atomic::split_reflow_row_first_fragment_takes_declared_row_height
+        PASS [   0.037s] (2/6) rhwp::regression_suite_007 issue_7870_tac_nested_table_atomic::tac_nested_table_moves_whole_line_to_next_page
+        PASS [   0.083s] (3/6) rhwp::regression_suite_007 issue_7870_tac_nested_table_atomic::floating_nested_table_still_splits_between_rows
+        PASS [   2.914s] (4/6) rhwp::regression_suite_010 issue_7737_inline_picture_following_frame::picture_host_following_spacing_advances_the_owned_frame_and_paint_once
+        PASS [   3.238s] (5/6) rhwp::regression_suite_022 issue_7737_mixed_row_declared_frame::mixed_row_first_frame_keeps_its_page_limit_when_the_table_origin_moves
+        PASS [   6.118s] (6/6) rhwp::regression_suite_022 issue_7737_mixed_row_declared_frame::center_label_uses_its_selected_prefix_while_top_label_keeps_its_origin
+────────────
+     Summary [   6.122s] 6 tests run: 6 passed, 1043 skipped
