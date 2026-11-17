@@ -1,5 +1,5 @@
 //! 검사 유형: 관계형 — 원본 프로그램의 결측과 실제 공급자의 자연 전진·paint를 대조한다.
-//! 주석 갱신: 2026-11-18 05:26 KST.
+//! 주석 갱신: 2026-11-18 06:25 KST.
 //! 화학 92쪽 보정 전 Native 98.49337% / fresh WASM 98.48877%(96 DPI·Print·2px raw).
 //! 독립 한컴 2020 Hancom PDF Print의 U+257A는 Haansoft Batang을 사용한다.
 //! BatangChe TTC에는 없고, 공급자의 원폭은 1024/1024em이다. 원점 이동으로 맞추지 않는다.
@@ -94,5 +94,38 @@ fn directly_supplied_program_hit_precedes_the_reference_programs_missing_glyph()
         paint_family(&supplied),
         "BatangChe",
         "실제 제공 프로그램의 hit를 같은 이름의 기준 TTC 결측으로 대체하지 않는다"
+    );
+}
+
+#[test]
+fn original_hanyang_hft_right_bar_keeps_its_independent_full_em_advance() {
+    // 독립 한컴 2020 Print의 T11 /Widths=1000, FontMatrix=.001이다.
+    // 표시용 프로그램의 결측 때문에 이 원본 폭을 반각으로 추정하면 잉크가 눌린다.
+    let mut source = style("HY Sinmyeongjo");
+    source.source_font_is_ttf = false;
+    source.source_font_is_hft = true;
+    source.metric_font_family = Some("한양신명조 (HFT)".into());
+    source.original_glyph_metric_family = Some(std::sync::Arc::new("한양신명조".to_owned()));
+    for size in [16.0, 32.0] {
+        source.font_size = size;
+        let width = EmbeddedTextMeasurer.estimate_text_width("╺", &source);
+        assert!(
+            (width - size).abs() <= 96.0 / 7200.0,
+            "원본 Type3 전각 폭과 같은 크기의 전진: 크기={size}, 전진={width}"
+        );
+    }
+}
+
+#[test]
+fn another_hft_source_does_not_inherit_the_hanyang_right_bar_contract() {
+    let mut source = style("BatangChe");
+    source.source_font_is_ttf = false;
+    source.source_font_is_hft = true;
+    let ordinary = EmbeddedTextMeasurer.estimate_text_width("╺", &source);
+    source.original_glyph_metric_family = Some(std::sync::Arc::new("산세리프".to_owned()));
+    assert_eq!(
+        EmbeddedTextMeasurer.estimate_text_width("╺", &source),
+        ordinary,
+        "같은 표식이라는 이유로 다른 원본 프로그램의 폭을 인증하지 않는다"
     );
 }

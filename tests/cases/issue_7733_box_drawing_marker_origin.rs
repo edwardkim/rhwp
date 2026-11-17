@@ -1,5 +1,5 @@
 //! 검사 유형: 고정형 — 양쪽 98% 이상인 화학 92쪽의 독립 Print 좌표를 ±2px로 보호한다.
-//! 주석 갱신: 2026-11-18 05:50 KST.
+//! 주석 갱신: 2026-11-18 06:33 KST.
 //! 보정 전 Native 98.49337% / fresh WASM 98.48877%(96 DPI·Print·2px raw).
 //! 독립 한컴 2020 Hancom PDF Print의 첫 U+257A 원점은 (120, 152.64), 본문 x는 144다.
 //! 올바른 glyph 공급은 이 원점이나 원문·쪽수를 바꾸지 않아야 한다.
@@ -119,6 +119,11 @@ fn inherited_marker_keeps_the_paragraph_end_size_and_its_body_distance() {
         run.style.font_size
     );
     assert!((marker.bbox.x - 120.0).abs() <= 2.0);
+    assert!(
+        (marker.bbox.width - 25.28).abs() <= 2.0,
+        "최종 paint의 glyph-fit 칸도 Type3의 전각 전진을 유지한다: {}",
+        marker.bbox.width
+    );
     assert!((marker.bbox.y + run.baseline - 974.88).abs() <= 2.0);
     let body = runs
         .iter()

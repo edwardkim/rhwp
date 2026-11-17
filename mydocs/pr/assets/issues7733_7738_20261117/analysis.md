@@ -319,3 +319,12 @@ Native 98.53555→100.00000%, fresh WASM 97.57430→100.00000%를 확인했다.
 화학 92쪽은 99.93984%, 76쪽은 99.99873%로 상승했다. Native 전 252쪽은 모두
 98% 이상이며 공식 두 자리 표시값 하락은 없다. 14쪽의 미일치 2픽셀은 같고 union만
 달라 정밀값은 0.00001%p 내려갔다는 사실도 기록했다. 마지막 표식의 잉크 차이는 추적 중이다.
+
+## 원본 HFT U+257A의 전각 전진 복구
+
+[원인과 검증](hft-original-bar-advance/cause.md): 독립 Type3의 1000/1000em 전진을
+기존 원본 글리프 계약에서 소비한다. 최소 글꼴 집중 180 PASS, Native 전 252쪽은
+이번 단계 하락 없이 화학 92쪽만 99.93984→99.99180%로 개선됐다.
+[review](hft-original-bar-advance/after-native-review-092.png)와
+[overlay](hft-original-bar-advance/after-native-overlay-092.png)를 함께 보존했다.
+최신 fresh WASM·전체 회귀·보호 검증을 완료한 결과로 대신하지 않는다.

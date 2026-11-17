@@ -1,0 +1,36 @@
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 12.93s
+────────────
+ Nextest run ID f480b53d-ee55-4d0c-9e32-65f76e690e4c with nextest profile: default
+    Starting 9 tests across 2 binaries (739 tests skipped)
+        PASS [   0.018s] (1/9) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::another_hft_source_does_not_inherit_the_hanyang_right_bar_contract
+        PASS [   0.022s] (2/9) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::print_uses_the_same_program_that_supplied_the_measured_glyph
+        PASS [   0.022s] (3/9) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::directly_supplied_program_hit_precedes_the_reference_programs_missing_glyph
+        PASS [   0.022s] (4/9) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::missing_batangche_right_bar_uses_the_independent_supplier_advance
+        FAIL [   0.021s] (5/9) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::original_hanyang_hft_right_bar_keeps_its_independent_full_em_advance
+  stdout ───
+
+    running 1 test
+    test issue_7733_box_drawing_glyph_supplier::original_hanyang_hft_right_bar_keeps_its_independent_full_em_advance ... FAILED
+
+    failures:
+
+    failures:
+        issue_7733_box_drawing_glyph_supplier::original_hanyang_hft_right_bar_keeps_its_independent_full_em_advance
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 381 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'issue_7733_box_drawing_glyph_supplier::original_hanyang_hft_right_bar_keeps_its_independent_full_em_advance' (267570737) panicked at tests/generated/../cases/issue_7733_box_drawing_glyph_supplier.rs:112:9:
+    원본 Type3 전각 폭과 같은 크기의 전진: 크기=16, 전진=8
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        PASS [   0.023s] (6/9) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::explicit_hft_and_existing_supplier_keep_their_own_programs
+        PASS [   0.019s] (7/9) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::supplier_program_has_its_verified_full_em_advance
+        PASS [   0.134s] (8/9) rhwp::regression_suite_016 issue_7733_box_drawing_marker_origin::inherited_marker_keeps_the_paragraph_end_size_and_its_body_distance
+        PASS [   0.218s] (9/9) rhwp::regression_suite_016 issue_7733_box_drawing_marker_origin::right_bar_supplier_preserves_the_print_origin_and_following_text
+────────────
+     Summary [   0.221s] 9 tests run: 8 passed, 1 failed, 739 skipped
+        FAIL [   0.021s] (5/9) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::original_hanyang_hft_right_bar_keeps_its_independent_full_em_advance
+error: test run failed
