@@ -1,0 +1,37 @@
+{
+  "at": "2026-11-17T17:26:06.952166+00:00",
+  "rows": [
+    {
+      "head": "efd401f2e665b12666017a885d32019b5ce5f17a",
+      "toolchain": "1.93.1",
+      "source": "atomic_resource_update.rs",
+      "count": 6,
+      "exitCode": 0,
+      "output": "\nrunning 6 tests\ntest u64_identifiers_return_the_prior_value_and_stop_at_exhaustion ... ok\ntest usize_budget_rejection_and_arithmetic_boundaries_do_not_write ... ok\ntest usize_retry_rechecks_the_current_budget_before_charging ... ok\ntest u64_retry_returns_the_value_actually_replaced ... ok\ntest concurrent_identifier_exhaustion_does_not_wrap_or_duplicate ... ok\ntest concurrent_budget_claims_never_exceed_the_cap_or_reuse_a_credit ... ok\n\ntest result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n"
+    },
+    {
+      "head": "efd401f2e665b12666017a885d32019b5ce5f17a",
+      "toolchain": "1.93.1",
+      "source": "issue_8701_metal_context_admission.rs",
+      "count": 8,
+      "exitCode": 0,
+      "output": "\nrunning 8 tests\ntest abandon_is_idempotent_and_cannot_be_revived_or_refunded ... ok\ntest construction_failures_refund_only_unexposed_reservations ... ok\ntest panic_before_live_rolls_back_but_exposed_owner_panic_quarantines ... ok\ntest live_and_quarantined_owners_share_one_consistent_budget ... ok\ntest successful_native_release_refunds_and_repeated_release_is_inert ... ok\ntest thread_local_owner_drop_preserves_quarantine_admission ... ok\ntest repeated_abandon_consumes_four_process_slots_across_new_threads ... ok\ntest parallel_creators_never_cross_the_process_limit_and_can_release ... ok\n\ntest result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n"
+    },
+    {
+      "head": "efd401f2e665b12666017a885d32019b5ce5f17a",
+      "toolchain": "nightly-2026-11-17",
+      "source": "atomic_resource_update.rs",
+      "count": 6,
+      "exitCode": 0,
+      "output": "\nrunning 6 tests\ntest u64_identifiers_return_the_prior_value_and_stop_at_exhaustion ... ok\ntest u64_retry_returns_the_value_actually_replaced ... ok\ntest usize_budget_rejection_and_arithmetic_boundaries_do_not_write ... ok\ntest usize_retry_rechecks_the_current_budget_before_charging ... ok\ntest concurrent_identifier_exhaustion_does_not_wrap_or_duplicate ... ok\ntest concurrent_budget_claims_never_exceed_the_cap_or_reuse_a_credit ... ok\n\ntest result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n"
+    },
+    {
+      "head": "efd401f2e665b12666017a885d32019b5ce5f17a",
+      "toolchain": "nightly-2026-11-17",
+      "source": "issue_8701_metal_context_admission.rs",
+      "count": 8,
+      "exitCode": 0,
+      "output": "\nrunning 8 tests\ntest abandon_is_idempotent_and_cannot_be_revived_or_refunded ... ok\ntest construction_failures_refund_only_unexposed_reservations ... ok\ntest live_and_quarantined_owners_share_one_consistent_budget ... ok\ntest panic_before_live_rolls_back_but_exposed_owner_panic_quarantines ... ok\ntest successful_native_release_refunds_and_repeated_release_is_inert ... ok\ntest thread_local_owner_drop_preserves_quarantine_admission ... ok\ntest repeated_abandon_consumes_four_process_slots_across_new_threads ... ok\ntest parallel_creators_never_cross_the_process_limit_and_can_release ... ok\n\ntest result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n"
+    }
+  ]
+}

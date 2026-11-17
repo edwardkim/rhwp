@@ -31,7 +31,7 @@
    PDF backend와 codec 시험도 같은 구현을 소비한다. schema 전용 `rhwp-contracts`의 닫힌
    경계를 범용 utility로 확장하지 않는다. Cargo.lock 변경은 이 직접 의존성 연결만 허용한다.
 4. 모든 13개 호출에서 기존 checked_add/sub·상한·ID 고갈·sticky failure와 메모리 순서를
-   보존한다. 공개 API·문서 조판·저장 형식·암호화 표현은 변경하지 않는다.
+   보존한다. core·FFI의 기존 공개 API·문서 조판·저장 형식·암호화 표현은 변경하지 않는다.
 5. 전체 빌드 진단에서 추가 deprecated method가 확인되면 원 API 계약과 기존 해결 이력을
    확인하고 동일 동작의 현행 호출로 수정한다. 의도된 외부 호환 API를 삭제해 경고를 없애지 않는다.
 
@@ -48,3 +48,10 @@
   새 시각 baseline이나 fixture를 등록하지 않는다.
 - 최신 Rust의 deprecated method 진단과 source의 obsolete 호출이 남지 않는지 확인한다.
   실제 실행한 범위·예외적인 공개 호환 계약·미실행 대상은 결과 보고에 구분한다.
+
+## 완료 기록
+
+구현 code head `efd401f2e665b12666017a885d32019b5ce5f17a`에서 전체 회귀 13,723개와
+필수 Rust lint·두 Rust 버전의 계약 시험을 통과했다. 기존 Atomic 호출은 0곳이며 최신
+nightly의 deprecated 진단도 0건이다. 실제 명령과 호환 범위는
+[결과 보고서](../report/task_m100_9154_deprecated_methods_report.md)에 연결한다.
