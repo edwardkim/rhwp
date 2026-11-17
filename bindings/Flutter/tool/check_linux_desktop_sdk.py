@@ -146,7 +146,7 @@ def qualify(args, *, repository=None, executor=execute_step):
         child_env = {**env, SDK_SUPERVISION_ENV: '1'} if supervise_children else env
         code = executor(command, repository=cwd, env=child_env, log_path=step['log'], step=step,
                         record=record, timeout=timeout or args.step_timeout,
-                        stop_failed_group=supervise_children)
+                        stop_failed_group=True)
         if not unchanged():
             raise ValueError('source checkout changed during SDK step')
         if code:
