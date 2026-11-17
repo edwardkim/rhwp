@@ -1969,10 +1969,12 @@ fn measure_char_width_embedded_decision_for_font<'a>(
         // HFT `한양중고딕`(정본 Type3) 이었고, 같은 문서의 TTF 휴먼명조 `’` 는 1.0em 이다.
         // 한/글은 HFT 를 제 글리프로 그리므로 그 face 를 빌린 TTF 표(HY중고딕)의 전각이
         // 틀린 것이지 TTF 글리프가 틀린 것이 아니다.
-        let quote_width_is_authentic = (matches!(c, '\u{2018}' | '\u{2019}')
-            && is_monospace_metric(mm.metric))
-            || (matches!(c, '\u{2018}' | '\u{2019}' | '\u{201C}' | '\u{201D}')
-                && font_metric_trusted);
+        // 고정폭 표의 큰따옴표도 원 프로그램의 전각이다. 종류 미상으로 저장된
+        // 바탕체의 독립 Print는 “/” 뒤에 한글과 같은 1em을 소비한다.
+        // TrueType 선언 유무로 같은 고정폭 프로그램의 전진을 반각으로 바꾸지 않는다.
+        let quote_width_is_authentic =
+            matches!(c, '\u{2018}' | '\u{2019}' | '\u{201C}' | '\u{201D}')
+                && (is_monospace_metric(mm.metric) || font_metric_trusted);
         let is_narrow_unicode_punct =
             matches!(c, '\u{2018}' | '\u{2019}' | '\u{2027}') && !quote_width_is_authentic;
         // [#7092] 전각으로 **적힌** 가운뎃점은 대개 글꼴이 지닌 진짜 값이다 — 결측 글리프는

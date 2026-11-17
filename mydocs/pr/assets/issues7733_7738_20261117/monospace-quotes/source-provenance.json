@@ -1,0 +1,11 @@
+{
+  "parent": "d98252a476a8d2803491127a5b89559af9e0eb92",
+  "captured_at": "2026-11-17T23:50:15.356134+09:00",
+  "sources": {
+    "src/renderer/layout/paragraph_layout.rs": "d9a24f2f5fd62b6da232e9cc6bd3c4a229f23dfcb56db96e1a97fd47f0d918fb",
+    "src/renderer/layout/paragraph_layout/list_marker_geometry.rs": "529801424b8a9d47d8b2ab916d5a3ad00964960954b52913221529bf8eab193d",
+    "src/renderer/typeset/table/continuation/fragment/emit.rs": "85b195254be7d09185fd67e3c00fd2fc70a1e6890a36835206f3e76c8cffe729",
+    "src/renderer/layout/text_measurement.rs": "b8eecb505ab84daed365c779942075b24a77ffa7bd92d324cd4128a4d86f14c1"
+  },
+  "source_diff_sha256": "ee97a9da73dc0ab0c7c830122c49d873fb8e8b01887b9fd80f14ab249f264c33"
+}
