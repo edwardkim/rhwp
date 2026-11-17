@@ -780,6 +780,62 @@ pub(crate) fn assign_numbering_markers(
     sections: &mut [crate::model::document::Section],
     styles: &ResolvedStyleSet,
 ) {
+    // 글상자는 본문의 번호 계수기를 진행하지 않는 별도 흐름이다. 다만 명시된
+    // 빈 머리도 본문 거리를 갖는다. 표시 번호를 합성하거나 본문 계수기를 바꾸지
+    // 않고 이 경우의 공통 머리 기하만 저장 줄 없는 글상자에 미리 전달한다.
+    fn visit_textbox(para: &mut Paragraph, styles: &ResolvedStyleSet, outline_id: u16) {
+        if para.line_segs.is_empty() {
+            if let Some(style) = styles.para_styles.get(para.para_shape_id as usize) {
+                if matches!(style.head_type, HeadType::Number | HeadType::Outline) {
+                    let id = resolve_numbering_id(style.head_type, style.numbering_id, outline_id);
+                    let level = usize::from(style.para_level)
+                        .min(crate::model::style::NUMBERING_LEVELS - 1);
+                    let empty_format = id
+                        .checked_sub(1)
+                        .and_then(|id| styles.numberings.get(usize::from(id)))
+                        .is_some_and(|numbering| numbering.level_formats[level].is_empty());
+                    if empty_format {
+                        if let Some((text, head)) = numbering_head_text(
+                            para,
+                            style,
+                            styles,
+                            outline_id,
+                            &mut super::NumberingState::default(),
+                        ) {
+                            para.numbering_marker = NumberingMarker::Text(text, head);
+                        }
+                    }
+                }
+            }
+        }
+        for control in &mut para.controls {
+            match control {
+                Control::Table(table) => {
+                    for cell in &mut table.cells {
+                        for child in &mut cell.paragraphs {
+                            visit_textbox(child, styles, outline_id);
+                        }
+                    }
+                }
+                Control::Shape(shape) => visit_shape(shape, styles, outline_id),
+                _ => {}
+            }
+        }
+    }
+    fn visit_shape(shape: &mut ShapeObject, styles: &ResolvedStyleSet, outline_id: u16) {
+        if let ShapeObject::Group(group) = shape {
+            for child in &mut group.children {
+                visit_shape(child, styles, outline_id);
+            }
+        } else if let Some(textbox) = shape
+            .drawing_mut()
+            .and_then(|drawing| drawing.text_box.as_mut())
+        {
+            for para in &mut textbox.paragraphs {
+                visit_textbox(para, styles, outline_id);
+            }
+        }
+    }
     fn visit(
         para: &mut Paragraph,
         styles: &ResolvedStyleSet,
@@ -819,6 +875,7 @@ pub(crate) fn assign_numbering_markers(
                         visit(hf_para, styles, outline_numbering_id, state);
                     }
                 }
+                Control::Shape(shape) => visit_shape(shape, styles, outline_numbering_id),
                 _ => {}
             }
         }

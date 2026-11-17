@@ -3847,10 +3847,19 @@ impl LayoutEngine {
         let mut composed_paras: Vec<_> = textbox_paragraphs[..para_count]
             .iter()
             .map(|para| {
-                let composed =
+                let mut composed =
                     crate::renderer::composer::compose_paragraph_in_context(para, styles);
                 if !para.line_segs.is_empty() {
                     return composed;
+                }
+                // 빈 개요 머리의 본문 거리는 줄 채움과 paint가 함께 점유한다.
+                // 사전 계산한 빈 머리만 소비하므로 글상자가 본문 번호를 진행하지 않는다.
+                if let crate::model::paragraph::NumberingMarker::Text(text, head) =
+                    &para.numbering_marker
+                {
+                    if text.is_empty() {
+                        composed.numbering_text = Some((text.clone(), *head));
+                    }
                 }
 
                 // [#4968 R4C-4] 저장 LINE_SEG가 없는 가로 글상자는 본문·표 셀과
