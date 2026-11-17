@@ -21,8 +21,10 @@
       "rhwp.d.ts": "d2d9be4be0fdebfdd0f203b797ee99247c92fd0d3dba6143e9431e9ea78e9441",
       "rhwp_bg.wasm.d.ts": "f8c2a955e57a9a5d5c1c02c5147abf8cf033cae56e139bc8c9b28adf3bc093bd"
     },
-    "initial_compile_log": "mydocs/pr/assets/open_prs_20261117/builds/base-fresh-wasm.log",
-    "packaging_note": "Initial base compilation succeeded in 7m49s; wrapper copy failed because archived build-only source lacked Studio/public. Created that temporary directory and reran the same locked wrapper, reusing the compiled WASM; no source or build option changed."
+    "initial_compile_log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/logs/base-fresh-wasm.log",
+    "packaging_note": "Initial base compilation succeeded in 7m49s; wrapper copy failed because archived build-only source lacked Studio/public. Created that temporary directory and reran the same locked wrapper, reusing the compiled WASM; no source or build option changed.",
+    "log_sha256": "36919432d1923f8f5ed5d9753652befdfbdeaeae1ec9ff46d265b4cb515d7369",
+    "initial_compile_log_sha256": "770e98e51992dea779bccf4539c271c262062693f682c43cd9c73e4effd26f07"
   },
   {
     "label": "candidate",
@@ -45,6 +47,7 @@
       "rhwp_bg.wasm": "280057fd4e2257a45a3aa5911e81cae7b1cfb1a2d3d3026ae070736f8fc77796",
       "rhwp.d.ts": "d2d9be4be0fdebfdd0f203b797ee99247c92fd0d3dba6143e9431e9ea78e9441",
       "rhwp_bg.wasm.d.ts": "f8c2a955e57a9a5d5c1c02c5147abf8cf033cae56e139bc8c9b28adf3bc093bd"
-    }
+    },
+    "log_sha256": "c3981f4a5d578bc69245fe54a523e2b481c1e8d2e503f2cba22d067cdb5171d3"
   }
 ]
