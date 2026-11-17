@@ -720,6 +720,43 @@ gh workflow run cache-generation-sweep.yml --repo edwardkim/rhwp \
   현재 runner 존재의 근거로 쓰지 않는다.
 - runner 추가·삭제·label 변경은 O4이며, 동시 쓰기 경로·도구 설치·cache·메모리 격리를 먼저 설계한다.
 
+#### 10.2.1 Linux 제품 작업의 OS 기준
+
+제품 CI의 빌드·검사·archive producer/consumer, WASM·확장·Pages 빌드, CodeQL 분석과
+Oracle·layout advisory의 제품 실행은 `ubuntu-24.04`를 사용한다. metadata·정책 감사·게시
+제어 작업과 별도 Gym benchmark의 `ubuntu-latest`는 제품 baseline으로 간주하지 않는다.
+CLI 배포의 기존 `ubuntu-24.04`/`ubuntu-24.04-arm`과 macOS·Windows matrix는 유지한다.
+Rust·Node 버전 고정과 OS 고정은 별개다. OS를 고정해도 같은 LTS 이미지의 도구·패키지가
+갱신될 수 있으므로 실제 runner image version·도구 버전과 source SHA를 결과에 남긴다.
+
+Fuzz smoke와 Full Renderer Sweep은 schedule·기본 수동 실행에서 24.04를 사용한다.
+기존 `workflow_dispatch`의 `runner_image=ubuntu-26.04`만 명시적 호환성 대조로 허용한다.
+허용값 밖의 입력이나 선택 불일치는 checkout 전에 실패하며 자동 26.04 job은 추가하지 않는다.
+새 OS의 runner 가용성은 live 실행으로 확인한다. GitHub workflow 실행은 승인 뒤 수행한다.
+
+Fuzz의 sanitizer build와 run은 모두 `--codegen-units 16`을 사용한다. 같은 source·nightly의
+로컬 대조에서 기본 단일 단위의 peak RSS는 16.64 GiB, 분할은 13.18 GiB였다. 이는
+[표준 runner의 16 GB RAM](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)에
+맞추기 위한 빌드 자원 보완이며, 원격 exit 143의 OOM 원인을 확정하는 근거는 아니다.
+ASan·coverage·debug/overflow 검사, 기본 60초·입력별 30초·RSS 2 GiB는 유지한다.
+RSS 2 GiB는 퍼징 프로세스의 제한이며 컴파일러 메모리 한도가 아니다. 빌드 단계에서
+`free -m`·`nproc`와 GNU time의 실제 peak RSS를 남긴다. cache 상태·host/proc-macro
+재사용·CPU 차이를 기록하고 로컬 시간만으로 원격 완료나 같은 퍼징 throughput을 단정하지 않는다.
+
+네이티브 build cache의 key와 restore prefix에는 `ubuntu-24.04` 또는 선택한 OS를 넣는다.
+일반 `Linux-` prefix로 이전 OS의 산출물을 복원하지 않는다. 기존 cache를 삭제할 필요는 없으며,
+새 namespace의 첫 실행은 cold build와 cache 생성 비용을 관찰한다.
+
+Native host Linux 패키지는 24.04에서 빌드하고 `scripts/verify-linux-abi.py`로 실제 ELF의
+glibc 요구 버전이 2.39 이하인지 로드 전에 검사한다. 이후 기존 capability·패키징·headless
+편집·저장·재열기 검증을 수행한다. 자세한 명령과 소비 의존성은
+[Native 패키징 안내](../../bindings/Native/examples/PACKAGING.md)를 따른다.
+
+devel 반영만으로 main의 schedule·태그 배포 workflow가 바뀌지는 않는다. main 승격은 별도
+승인된 PR과 해당 source 검증으로 진행하고, 성공한 devel 검사나 로컬 Docker 실행을
+main·GitHub runner 실행 성공으로 대신하지 않는다. Fuzz의 과거 exit 143은 종료 계기가
+확정되지 않았으므로 OS 기준 보완을 그 종료 원인의 입증이나 영구 해결로 기록하지 않는다.
+
 ### 10.3 Git LFS
 
 LFS quota와 smudge 실패는 Actions cache 문제와 별개다. pointer만 있는 파일을 정상 blob으로 오인하거나,

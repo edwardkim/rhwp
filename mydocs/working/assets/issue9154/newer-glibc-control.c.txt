@@ -1,0 +1,3 @@
+#include <math.h>
+/* Independent ABI control: dynamically bind the OS math implementation. */
+float newer_glibc_control(float x, float y) { return atan2f(x, y); }

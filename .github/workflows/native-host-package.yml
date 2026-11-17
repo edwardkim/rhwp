@@ -23,7 +23,7 @@ jobs:
       matrix:
         include:
           - platform: linux-x86_64
-            runner: ubuntu-latest
+            runner: ubuntu-24.04
             target: x86_64-unknown-linux-gnu
             library: librhwp_native_ffi.so
           - platform: macos-aarch64
@@ -68,13 +68,20 @@ jobs:
             -o Acquire::Retries=3 -o Acquire::http::Timeout=30 \
             -o Acquire::https::Timeout=30 -o DPkg::Lock::Timeout=60 \
             install -y --no-install-recommends \
-            fonts-dejavu-core libfontconfig1-dev libfreetype6-dev
+            binutils fonts-dejavu-core libfontconfig1-dev libfreetype6-dev
 
       - name: Check packaging contracts
         run: python bindings/Native/tests/package_native_host_contract.py
 
       - name: Build native Skia C ABI
         run: cargo build --locked --release -p rhwp-native-ffi --features native-skia --target '${{ matrix.target }}'
+
+      - name: Verify Linux ABI baseline
+        if: runner.os == 'Linux'
+        run: |
+          python scripts/verify-linux-abi.py \
+            --artifact "$CARGO_TARGET_DIR/${{ matrix.target }}/release/${{ matrix.library }}" \
+            --max-glibc 2.39
 
       - name: Probe actual library capabilities
         run: |

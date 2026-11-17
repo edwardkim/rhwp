@@ -76,7 +76,7 @@ jobs:
     name: Build WASM
     timeout-minutes: 45
     needs: validate-release-source
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -96,9 +96,9 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ runner.os }}-wasm-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-ubuntu-24.04-wasm-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-wasm-
+            ${{ runner.os }}-ubuntu-24.04-wasm-
 
       - name: Build WASM
         run: python3 scripts/measure_render_diff_wasm.py --profile release --build-mode standard
@@ -115,7 +115,7 @@ jobs:
   build-vsix:
     name: Build VSIX once
     needs: build-wasm
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

@@ -1,0 +1,22 @@
+{
+  "base": "22da83586aab1baf960f2159abda347062ecf7ed",
+  "localMergeCommit": "53b6e26b3cce494323d977d55ffd5222f9c363d4",
+  "localMergeTree": "187fd087a4c578af060d62b8a26aa8c8c6d835bd",
+  "taskSource": "133af5aa18699fd77d183687ee9a3963db1ad5af",
+  "sourceRule": "task branch frozen; production code in actual merge result equals latest devel; PR CI checks default GitHub merge ref",
+  "focusedCases": 7,
+  "passed": 7,
+  "privateFontPathsAbsent": true,
+  "systemFontDirectoriesHidden": true,
+  "fontconfigExposedFiles": [
+    "/home/edward/mygithub/rhwp-worktrees/verify-9154-current-devel/ttfs/opensource/RHWPOldHangul-Regular.otf",
+    "/home/edward/mygithub/rhwp-worktrees/verify-9154-current-devel/ttfs/opensource/NotoSansKR-Regular.ttf",
+    "/home/edward/mygithub/rhwp-worktrees/verify-9154-current-devel/ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+    "/home/edward/mygithub/rhwp-worktrees/verify-9154-current-devel/ttfs/opensource/RHWPPublicBatang-Regular.ttf",
+    "/home/edward/mygithub/rhwp-worktrees/verify-9154-current-devel/ttfs/opensource/NotoSansKR-ExtraLight.ttf"
+  ],
+  "initialBuildSeconds": 350.513,
+  "warmConfirmSeconds": 0.638,
+  "checkedAt": "2026-11-17T13:10:57.163563+00:00",
+  "upstreamPr": 9156
+}

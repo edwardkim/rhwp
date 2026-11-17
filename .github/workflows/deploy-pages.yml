@@ -30,7 +30,7 @@ jobs:
   build:
     name: Build
     timeout-minutes: 45
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
 
@@ -53,9 +53,9 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ runner.os }}-wasm-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-ubuntu-24.04-wasm-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-wasm-
+            ${{ runner.os }}-ubuntu-24.04-wasm-
 
       - name: Build WASM
         run: python3 scripts/measure_render_diff_wasm.py --profile release --build-mode standard
