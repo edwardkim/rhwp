@@ -111,11 +111,12 @@ void CoverMetalViews(const std::shared_ptr<MetalViewState>& view);
 void RunMetalView(const std::shared_ptr<MetalViewState>& view) {
   @autoreleasepool {
     auto state = view->owner;
-    auto api = LoadApi(state->path);
+    const auto loaded = rhwp::metal::LoadMetalApi<NativeApi>(state->path);
+    const auto& api = loaded.api;
     id<MTLDevice> device = MTLCreateSystemDefaultDevice();
     id<MTLCommandQueue> queue = [device newCommandQueue];
     uint64_t presenter = 0;
-    if (MetalBackendReady(state, api, device, queue))
+    if (MetalBackendReady(state, loaded, device, queue))
       presenter = CreateMetalPresenter(state, api, device, queue);
     {
       std::lock_guard<std::mutex> lock(state->mutex);
