@@ -112,11 +112,10 @@ pub(super) fn marker_text_width(text: &str, style: &TextStyle) -> f64 {
 
 /// 상대 크기는 glyph에 적용한다. '%' 거리의 기준은 참조 글자모양의 기본 크기다.
 /// 명시된 머리 글자모양과 본문 상속 경로가 같은 선택 규칙을 사용한다. 본문 글자 크기를 따르는
-/// 머리 글자모양은 번호를 그리는 크기인 문단 끝 글자모양 `end_id` 의 크기를 기준으로 한다.
+/// 머리 글자모양과 별도 모양 없는 기본 머리는 문단 끝 `end_id` 의 크기를 기준으로 한다.
 pub(super) fn nominal_marker_size(
     styles: &ResolvedStyleSet,
     head: MarkerHead,
-    fallback_id: u32,
     end_id: u32,
     fallback_size: f64,
 ) -> f64 {
@@ -129,7 +128,7 @@ pub(super) fn nominal_marker_size(
             head.char_shape_id
         }
     } else {
-        fallback_id
+        end_id
     };
     styles
         .char_styles

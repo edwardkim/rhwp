@@ -910,7 +910,7 @@ pub(crate) fn assign_numbering_markers(
 /// 값은 문단 들여쓰기가 이미 준 줄 시작(`paragraph_line_indent`) **위에** 얹는 양이다.
 /// 줄 나눔(`layout_paragraph_in_frame`·`reflow_line_segs`)과 배치
 /// (`layout_composed_paragraph_in_frame`)가 이 값 하나를 쓴다. 스타일은 배치의 마커 스타일
-/// (`numbering_marker_text_style`, 첫 run)과 같은 글자모양을 상속하되 마커 문자열의 언어를 사용한다.
+/// (`numbering_marker_text_style`, 문단 끝 모양)과 같은 글자모양을 상속하되 마커 문자열의 언어를 사용한다.
 /// 문단의 목록 마커 기하. 글머리표는 문단 모양만으로, 번호·개요는 문서 순서로 미리 계산한
 /// 번호(#7436, [`assign_numbering_markers`])로 문자열을 정한다. 아직 계산하지 않은 번호
 /// 문단은 폭을 모르므로 `None` 이다.
@@ -933,12 +933,12 @@ pub(crate) fn list_marker_geometry(
         .unwrap_or(0);
     let end_id = paragraph_end_char_shape_id(para).unwrap_or(char_shape_id);
     let style = marker_char_style(styles, head, &text, end_id)
-        .unwrap_or_else(|| marker_text_style(styles, char_shape_id, &text));
+        .unwrap_or_else(|| marker_text_style(styles, end_id, &text));
     Some(list_marker_geometry_for(
         &text,
         head,
         &style,
-        nominal_marker_size(styles, head, char_shape_id, end_id, style.font_size),
+        nominal_marker_size(styles, head, end_id, style.font_size),
         para_style.indent,
         para_style.head_type == HeadType::Bullet,
     ))
@@ -1066,7 +1066,7 @@ fn numbering_marker_text_style(
 ) -> TextStyle {
     marker_text_style(
         styles,
-        marker_body_char_shape_id(para, first_run),
+        marker_end_char_shape_id(para, first_run),
         marker_text,
     )
 }
@@ -1081,7 +1081,9 @@ fn marker_body_char_shape_id(para: Option<&Paragraph>, first_run: Option<&Compos
     .unwrap_or(0)
 }
 
-/// '본문 글자 크기 따름' 번호가 크기를 따르는 글자 모양: 문단 끝, 문단이 없으면 첫 run.
+/// 별도 글자 모양 없는 머리와 '본문 글자 크기 따름' 번호의 상속 원점.
+/// 독립 Print에서 본문이 12pt여도 끝 모양이 19pt면 기본 글머리표는 19pt다.
+/// 문단이 없을 때만 첫 run으로 내려가며 명시한 머리 글자 모양은 별도로 우선한다.
 fn marker_end_char_shape_id(para: Option<&Paragraph>, first_run: Option<&ComposedTextRun>) -> u32 {
     para.and_then(paragraph_end_char_shape_id)
         .unwrap_or_else(|| marker_body_char_shape_id(para, first_run))
@@ -6423,17 +6425,8 @@ impl LayoutEngine {
                         .para_styles
                         .get(composed.para_style_id as usize)
                         .is_some_and(|ps| ps.head_type == HeadType::Bullet);
-                    let nominal_size = nominal_marker_size(
-                        styles,
-                        *head,
-                        composed
-                            .lines
-                            .first()
-                            .and_then(|line| line.runs.first())
-                            .map_or(0, |run| run.char_style_id),
-                        end_id,
-                        num_style.font_size,
-                    );
+                    let nominal_size =
+                        nominal_marker_size(styles, *head, end_id, num_style.font_size);
                     list_marker_geometry_for(
                         num_text,
                         *head,

@@ -1,0 +1,34 @@
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 3m 29s
+────────────
+ Nextest run ID bcbf541a-4a1a-426d-acc2-87075b03d270 with nextest profile: default
+    Starting 7 tests across 2 binaries (739 tests skipped)
+        PASS [   0.020s] (1/7) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::supplier_program_has_its_verified_full_em_advance
+        PASS [   0.020s] (2/7) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::print_uses_the_same_program_that_supplied_the_measured_glyph
+        PASS [   0.020s] (3/7) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::explicit_hft_and_existing_supplier_keep_their_own_programs
+        PASS [   0.021s] (4/7) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::directly_supplied_program_hit_precedes_the_reference_programs_missing_glyph
+        PASS [   0.021s] (5/7) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::missing_batangche_right_bar_uses_the_independent_supplier_advance
+        FAIL [   0.123s] (6/7) rhwp::regression_suite_016 issue_7733_box_drawing_marker_origin::inherited_marker_keeps_the_paragraph_end_size_and_its_body_distance
+  stdout ───
+
+    running 1 test
+    test issue_7733_box_drawing_marker_origin::inherited_marker_keeps_the_paragraph_end_size_and_its_body_distance ... FAILED
+
+    failures:
+
+    failures:
+        issue_7733_box_drawing_marker_origin::inherited_marker_keeps_the_paragraph_end_size_and_its_body_distance
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 365 filtered out; finished in 0.10s
+
+  stderr ───
+
+    thread 'issue_7733_box_drawing_marker_origin::inherited_marker_keeps_the_paragraph_end_size_and_its_body_distance' (267255957) panicked at tests/generated/../cases/issue_7733_box_drawing_marker_origin.rs:116:5:
+    독립 PDF의 18.96pt 표식 크기: 16
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        PASS [   0.184s] (7/7) rhwp::regression_suite_016 issue_7733_box_drawing_marker_origin::right_bar_supplier_preserves_the_print_origin_and_following_text
+────────────
+     Summary [   0.189s] 7 tests run: 6 passed, 1 failed, 739 skipped
+        FAIL [   0.123s] (6/7) rhwp::regression_suite_016 issue_7733_box_drawing_marker_origin::inherited_marker_keeps_the_paragraph_end_size_and_its_body_distance
+error: test run failed
