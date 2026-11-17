@@ -155,6 +155,31 @@ void main() {
   });
 
   test(
+    'focus settlement shares only an active commit at the queue tail',
+    () async {
+      final (document, editor, transport) = await _open();
+      addTearDown(document.dispose);
+      addTearDown(editor.dispose);
+      final blur = editor.focusLost();
+      final saveBarrier = editor.focusLost();
+      final pendingAtBlur = editor.pending;
+
+      final movement = editor.command('moveLeft');
+      final afterMovement = editor.focusLost();
+      final escape = editor.focusLost(cancel: true);
+      final pendingAfterMovement = editor.pending;
+      await Future.wait([blur, saveBarrier, movement, afterMovement, escape]);
+      expect(pendingAtBlur, 1);
+      expect(pendingAfterMovement, 4);
+      expect(transport.settlements, ['commitComposition']);
+
+      final nextBlur = editor.focusLost();
+      expect(editor.pending, 1);
+      await nextBlur;
+    },
+  );
+
+  test(
     'save waits for composition acknowledgement and preserves the syllable',
     () async {
       final (document, editor, transport) = await _open();
@@ -385,6 +410,20 @@ void main() {
           );
           expect(editor!.value.text, '한');
           expect(editor!.value.composing, const TextRange(start: 0, end: 1));
+          final queuedEdits = <Future<void>>[
+            // Leave one queue slot for the synchronous blur settlement. The
+            // save barrier must wait for that same operation and its edits.
+            if (deltaModel)
+              for (var index = 0; index < 31; index++)
+                editor!.setEditingValue(
+                  TextEditingValue(
+                    text: index.isEven ? '한' : '하',
+                    selection: const TextSelection.collapsed(offset: 1),
+                    composing: const TextRange(start: 0, end: 1),
+                  ),
+                ),
+          ];
+          expect(editor!.pending, queuedEdits.length);
           final client = tester.state(find.byType(NativeEditorView));
           final files = _Files(document, transport);
           lifecycle = NativeDocumentLifecycle(
@@ -406,7 +445,16 @@ void main() {
               onError: (Object _, StackTrace _) => saveComplete = true,
             ),
           );
+          if (deltaModel) await tester.pump(const Duration(seconds: 2));
           await pumpUntil(tester, () => transport.settlements.isNotEmpty);
+          await Future.wait(queuedEdits);
+          expect(saveComplete, isFalse);
+          expect(
+            transport.requests.where(
+              (request) => request['op'] == 'applyImeEdit',
+            ),
+            hasLength(1 + queuedEdits.length),
+          );
           expect(tester.testTextInput.hasAnyClients, isFalse);
           expect(files.saved, isEmpty);
           final pending = editor!.pending;
