@@ -7181,9 +7181,15 @@ pub(crate) fn solve_rowspan_row_heights(
             row_heights[r + span - 1] += total_h - known_sum;
         }
     }
-    constraints
-        .iter()
-        .all(|&(r, span, _)| (r..r + span).all(|i| i >= row_heights.len() || row_heights[i] != 0.0))
+    // 최장 경로에서 요구가 없는 행의 높이 0도 완성된 해다. 예전 미지 행
+    // 판정을 남기면 내용 제약으로 다시 푼 결과를 버리고, 앞 행 성장 전에
+    // 배정한 병합 잔여를 뒤 행에 다시 남긴다. 행별 양수가 아니라 제약 충족을 본다.
+    constraints.iter().all(|&(r, span, total_h)| {
+        span > 0
+            && row_heights
+                .get(r..r + span)
+                .is_some_and(|rows| rows.iter().sum::<f64>() + 1e-6 >= total_h)
+    })
 }
 
 /// 표의 모든 셀을 검사하여 rowspan 묶음 블록 경계를 산출한다 (Task #398).

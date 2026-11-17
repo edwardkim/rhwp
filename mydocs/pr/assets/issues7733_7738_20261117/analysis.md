@@ -272,3 +272,17 @@ hmtx를 확인하고, 원본 슬롯 선언을 바꾸지 않고 공급·전진을
 공식 형식문서 13·70쪽은 정밀 raw 100.00000%가 됐고 16·21쪽도 상승했다. Native 전 252쪽
 비교에서 4쪽 상승·248쪽 동일·하락 0쪽이다. 최신 fresh WASM과 전체 필수 검증은 미완료다.
 화학 85쪽 작은 TAC 표의 가운데 정렬과 저장 슬롯 소유를 다음으로 확인한다.
+
+## 화학 85쪽의 미결 병합 행과 동일 총높이 재배분
+
+[원인·선행 해결 대조](merged-empty-row-frame/cause.md)에 #8755의 성공 판정과 #8641의
+총높이 비교가 완성된 높이 0 행을 버리던 경로를 기록했다. 한컴 2020의 위·아래 정렬
+독립 Print로 기준선 이동과 행 원장을 구분했다. 특정 문서 좌표 대신 두 공통 계산 계약을
+보완했다. 보정 전 새 관계 검사 1 FAIL → 첫 시도 기존 160 PASS·새 검사 1 FAIL →
+최종 최소 글꼴 집중 161 PASS다.
+
+[Native 전 252쪽 정밀 비교](merged-empty-row-frame/whole-native-comparison.json)에서
+85쪽 98.46202→99.83880%, 다른 251쪽 동일, 하락 0쪽·98% 미만 0쪽이다.
+같은 쪽의 [review](merged-empty-row-frame/after-native-review-085.png)·
+[overlay](merged-empty-row-frame/after-native-overlay-085.png)를 직접 확인했다.
+최신 fresh WASM 전쪽·전체 회귀·보호 문서·실제 소비 경로는 아직 완료하지 않았다.

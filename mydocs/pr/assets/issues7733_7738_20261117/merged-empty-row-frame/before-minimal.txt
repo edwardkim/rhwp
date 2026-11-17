@@ -1,0 +1,28 @@
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 14.20s
+────────────
+ Nextest run ID 9f06103e-ee8d-4e77-80a8-958d5e81deb7 with nextest profile: default
+    Starting 1 test across 1 binary (332 tests skipped)
+        FAIL [   0.120s] (1/1) rhwp::regression_suite_023 issue_7733_merged_empty_row_frame::merged_spans_that_already_fit_do_not_insert_an_empty_opening_band
+  stdout ───
+
+    running 1 test
+    test issue_7733_merged_empty_row_frame::merged_spans_that_already_fit_do_not_insert_an_empty_opening_band ... FAILED
+
+    failures:
+
+    failures:
+        issue_7733_merged_empty_row_frame::merged_spans_that_already_fit_do_not_insert_an_empty_opening_band
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 332 filtered out; finished in 0.11s
+
+  stderr ───
+
+    thread 'issue_7733_merged_empty_row_frame::merged_spans_that_already_fit_do_not_insert_an_empty_opening_band' (266605352) panicked at tests/generated/../cases/issue_7733_merged_empty_row_frame.rs:45:5:
+    병합 칸의 내용으로 앞 행 구간이 이미 닫혔으면 미결 행의 높이는 0이다: 앞=BoundingBox { x: 383.6933333333333, y: 857.4000000000001, width: 332.58666666666664, height: 116.34666666666658 }, 라벨=BoundingBox { x: 96.37333333333333, y: 865.7333333333333, width: 272.24, height: 108.01333333333332 }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.126s] 1 test run: 0 passed, 1 failed, 332 skipped
+        FAIL [   0.120s] (1/1) rhwp::regression_suite_023 issue_7733_merged_empty_row_frame::merged_spans_that_already_fit_do_not_insert_an_empty_opening_band
+error: test run failed

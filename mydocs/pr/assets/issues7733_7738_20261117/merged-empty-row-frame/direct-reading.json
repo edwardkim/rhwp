@@ -1,0 +1,35 @@
+{
+  "page": 85,
+  "backend": "Native",
+  "source_provenance": "source-provenance.json",
+  "raw_percent": 99.8388,
+  "same_page_review": "after-native-review-085.png",
+  "same_page_overlay": "after-native-overlay-085.png",
+  "read_directly": true,
+  "selected_cells": [
+    {
+      "type": "Cell",
+      "bbox": {
+        "x": 383.7,
+        "y": 857.4,
+        "w": 332.6,
+        "h": 116.3
+      },
+      "row": 6,
+      "col": 3
+    },
+    {
+      "type": "Cell",
+      "bbox": {
+        "x": 96.4,
+        "y": 857.4,
+        "w": 272.2,
+        "h": 116.3
+      },
+      "row": 7,
+      "col": 0
+    }
+  ],
+  "remaining": "Leading hyphens, middle-dot text and tiny glyph raster differences remain; not classified as WMF/image differences",
+  "scope": "Not fresh WASM or full regression completion"
+}
