@@ -1,0 +1,15 @@
+{
+  "pageCount": 1,
+  "all_pages_exported": true,
+  "rasterBackend": "native-skia",
+  "comparisonProfile": "print",
+  "layoutGeneration": "2024",
+  "pages": [
+    {
+      "bytes": 32197,
+      "page": 0,
+      "path": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/claims/repair1-native/band/rhwp_png/rhwp_001.png",
+      "renderTreePath": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/claims/repair1-native/band/render_tree/render_tree_001.json"
+    }
+  ]
+}
