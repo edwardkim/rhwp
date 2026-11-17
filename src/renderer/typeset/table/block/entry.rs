@@ -1918,6 +1918,7 @@ impl TypesetEngine {
             table,
             host_spacing_before,
             ft.effective_height,
+            false,
         );
         let consumed_whole_anchor = self.query_stored_whole_flow_anchor(
             st,
@@ -2633,6 +2634,7 @@ impl TypesetEngine {
             host_spacing_before,
             ft.effective_height,
             resolved_host_placement,
+            false,
         );
         // Without an authenticated mid-column origin, the frame still rejects
         // a row-only fit, but cannot replace paint's original anchor contract.

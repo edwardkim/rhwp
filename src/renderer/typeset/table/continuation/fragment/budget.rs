@@ -641,6 +641,7 @@ impl TypesetEngine {
             table,
             host_before_overhead,
             0.0,
+            deferred_anchor_consumed,
         );
         let captioned_object_frame = captioned_current_placement.is_some();
         let fragment_placement = closed_source_frame_placement
