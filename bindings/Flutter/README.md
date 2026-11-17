@@ -1,8 +1,10 @@
 # Flutter Native 참조 호스트
 
-Flutter UI에서 기존 rhwp Native worker C ABI를 호출하는 작은 CPU 참조 패키지다.
-브라우저·WASM·platform channel의 대형 픽셀 JSON을 사용하지 않는다. 문서 열기·정보·페이지 크기·
-CPU RGBA 표시와 종료를 연결한다. 문서 편집·IME·접근성·GPU texture plugin·설치 프로그램은 이 단계의 범위가 아니다.
+Flutter UI에서 기존 rhwp Native worker C ABI를 호출하는 범위가 제한된 참조 편집기다.
+HWP/HWPX 열기·편집·저장, IME·선택·caret·undo/redo, 다중 페이지 탐색과 CPU 표시를 연결하며
+선택적으로 Native GPU viewport를 사용한다. 브라우저·WASM·platform channel의 대형 픽셀 JSON을
+사용하지 않는다. 각 경로의 상한과 실행 절차는 아래 입력·다중 페이지·GPU 및 실행 번들 문서를 따른다.
+제품용 전체 UI와 실물 OS IME·접근성·GPU/hardware qualification은 별도 범위다.
 
 ## 스레드와 메모리 계약
 
@@ -46,8 +48,10 @@ flutter test --concurrency=1
 Linux의 dispatcher 파일은 `.so`, macOS는 `.dylib`, Windows는 `.dll`이다. Windows 빌드는 C11을 지원하는
 Visual Studio 개발 셸에서 실행한다. 실제 검증한 OS·SDK와 source SHA는 PR 검증 기록을 따른다.
 
-`example/lib/main.dart`는 파일 경로로 HWP/HWPX를 열고 첫 페이지의 보이는 CPU 영역을 표시한다.
-큰 문서·화면은 위 상한을 명시적으로 거절하며 전체 데스크톱 편집기를 제공하지 않는다.
+`example/lib/main.dart`는 HWP/HWPX 파일 열기·편집·저장과 bounded 다중 페이지 viewport를 연결한다.
+기본 CPU 경로와 선택적 GPU 경로의 실행·fallback 절차는 [실행 번들 가이드](RUNTIME_BUNDLE.md)를 따른다.
+페이지 metadata는 최대 256개, 한 번에 보이는 영역은 최대 4쪽이며 큰 요청은 명시적으로 거절한다.
+서식 도구 등 제품용 전체 데스크톱 UI는 별도 범위다.
 표준 Flutter desktop runner가 없는 checkout에서는 example에 필요한 runner를 먼저 생성한다.
 
 ```bash
@@ -107,8 +111,9 @@ DPR은 raster/texture 해상도에만 적용하고 pointer/candidate rect의 log
 불완전 scope는 Native limitations/complete 상태를 유지한다. 여러 문단/객체를 걸친 선택은 Native에
 유지되며 clipboard/명령으로 다룰 수 있지만 이 IME 문맥으로 편집하지 않는다.
 
-이 뷰는 한 페이지 상단을 표시하는 참조 연결이다. 제품용 다중 페이지 navigation/scroll,
-서식 도구·파일 전환 UI 전체와 OS별 실물 IME/AT qualification을 완료했다고 표시하지 않는다.
+`NativeEditorView`는 [다중 페이지 viewport](#다중-페이지-참조-viewport-p105p111)의 배치와 연결해
+페이지 탐색·scroll 및 선택/caret follow를 제공한다. 최대 256쪽 metadata·4쪽 visible 영역의
+bounded 참조 연결이며, 서식 도구 등 전체 제품 UI와 OS별 실물 IME/AT qualification은 별도 범위다.
 
 ## 스냅샷 전송과 종료 경계
 

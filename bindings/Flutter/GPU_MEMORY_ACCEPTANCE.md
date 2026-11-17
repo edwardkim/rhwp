@@ -26,9 +26,9 @@ The same flag is supported by
       --frames 32 --memory-pressure-cycles 2 --output /private/rhwp-macos-memory
 
 Use --tile-group on that macOS capture command when the matching probe supports
-the existing two-AppKit-view case. This addition covers the existing Linux
-single-texture, Windows immutable-transfer, and macOS AppKit single/pair probes;
-it does not turn other platform probes into memory-pressure evidence.
+the existing two-AppKit-view case. These continuous cycles cover the existing
+Linux single-texture, Windows immutable-transfer, and macOS AppKit single/pair
+probes.
 
 One to four cycles are accepted. They occur after publication 3 and between
 later continuous publications, with a later externally sampled publication
@@ -37,6 +37,26 @@ For 32 frames and two cycles, pressure follows publications 3 and 17, and visibl
 publications 4 and 18 prove that the same native owner continues rendering.
 The collector and shared memory validator must match the actual runner build's
 recorded source hashes.
+
+The primary Linux two-tile probe keeps its existing three-stage initial, edit,
+and resize protocol. Its separate collector accepts zero to two pressure cycles:
+
+    python3 tool/qualify_linux_tile_group.py \
+      --runner /private/rhwp-linux-tile-build/runner/build/linux/x64/debug/bundle/rhwp_texture_qualification \
+      --native /artifacts/librhwp_native_ffi.so \
+      --dispatcher /private/rhwp-linux-tile-build/librhwp_flutter_owner.so \
+      --fixture /private/rhwp-linux-tile-build/source/bindings/Flutter/test/fixtures/desktop-consumer.hwpx \
+      --build-receipt /private/rhwp-linux-tile-build/build-receipt.json \
+      --memory-pressure-cycles 2 --output /private/rhwp-linux-tile-memory
+
+One cycle follows publication 1; two follow publications 1 and 2. Publications 2
+and 3 then retain the existing full viewport/independent CPU strip/seam checks.
+There is no extra capture, publication index, or synthetic 32-frame claim. Both
+native tile identities, full stamps, per-tile idle progress, and ordered trim
+members are retained. The aggregate byte totals are the sums of both receipts;
+the zero-byte target still applies separately to each native owner. The shared
+Windows tile/recovery probe retains its default behavior and does not accept
+this Linux memory profile.
 
 Each cycle records the current full presentation stamp, texture/device identity,
 ordered tile identities when present, the real typed managedGpuTargets trim
