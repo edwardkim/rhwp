@@ -30,3 +30,12 @@ native-hft2ttf.tsv, wasm-hft2ttf.tsv와 final-p021/025/026-*.png는
 과거 a27afaf 실행의 독립 Print 대조 자료다. 현재 정리 head의 측정으로 재명명하지 않는다.
 현재 head의 집중 회귀와 선택 순서·기호 판정 검사 결과는 후속 실행 기록에 덧붙인다.
 새 PR의 전체 검증이나 제출 완료를 주장하는 기록은 아니다.
+
+## Native 빈 기호 판정
+
+원 수정 146a6e5d9a는 Windows DWrite face가 직접 메모리 데이터를 주지 않아도
+기존 공통 SFNT 복구 경로에서 실제 빈 기호를 확인하게 한다. 이름별 대체 규칙은 추가하지 않는다.
+독립 Print의 HCR 글리프·원래 한컴바탕 우선 공급 순서를 대조한 기존 진단과 확대 자료를 보존했다.
+handbook-ordered-probe.tsv 및 handbook-ordered-symbol-preservation-v6.json은 과거 실행 자료이며,
+200쪽 개선과 다른 9쪽의 출력 보존 근거다. typeface-data-probe-summary.json에 직접 API 관측을 요약한다.
+이 증거도 현재 정리 head의 새로운 전383쪽 gate 통과로 표시하지 않는다.

@@ -378,14 +378,15 @@ fn has_empty_symbol_glyph(typeface: &Typeface, character: char) -> bool {
     EMPTY_SYMBOL_CACHE.with(|cache| {
         let mut cache = cache.borrow_mut();
         let empty = cache.entry(typeface.unique_id()).or_insert_with(|| {
-            typeface
-                .to_existing_font_data()
-                .map_or_else(Default::default, |(data, index)| {
-                    crate::renderer::font_symbol_coverage::empty_symbol_codepoints(
-                        data.as_bytes(),
-                        index,
-                    )
-                })
+            // DWrite는 읽을 수 있는 SFNT를 직접 메모리 stream으로 제공하지
+            // 않을 수 있다. 공통 추출 경로의 table 복구까지 사용해야 빈 기호
+            // 글리프가 다음 실제 공급자를 가리는 일이 없다.
+            super::font_program::typeface_program_bytes(typeface).map_or_else(
+                Default::default,
+                |(data, index)| {
+                    crate::renderer::font_symbol_coverage::empty_symbol_codepoints(&data, index)
+                },
+            )
         });
         empty.contains(&(character as u32))
     })

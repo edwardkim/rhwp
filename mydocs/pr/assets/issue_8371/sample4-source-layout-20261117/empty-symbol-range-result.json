@@ -1,0 +1,12 @@
+[
+  {
+    "file": "HBATANG.TTF",
+    "allowsU26AB": false,
+    "rangeLength": 716
+  },
+  {
+    "file": "HANBatang.ttf",
+    "allowsU26AB": true,
+    "rangeLength": 0
+  }
+]
