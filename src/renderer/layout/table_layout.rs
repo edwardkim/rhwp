@@ -19175,7 +19175,7 @@ impl LayoutEngine {
                     0.0
                 } else if line_count == 0 {
                     let h = if nested_h > 0.0 {
-                        // 원자 표도 호스트 글줄의 뒤 간격을 소유한다. 행별 투영과
+                        // 원자 표·그림도 호스트 글줄의 뒤 간격을 소유한다. 행별 투영과
                         // 측정·부분 배치에서 쓰는 같은 간격을 한 번 계상한다.
                         // 조각 끝의 이송 간격 제외는 nested_atom_invisible_tail이
                         // 이 유닛과 실제 표 상자의 차이로 판정한다.
@@ -19183,7 +19183,7 @@ impl LayoutEngine {
                             + if is_last_para {
                                 0.0
                             } else {
-                                crate::renderer::height_measurer::no_ls_tac_table_host_trailing_spacing_px(
+                                crate::renderer::height_measurer::no_ls_tac_object_host_trailing_spacing_px(
                                     p, styles, self.dpi,
                                 )
                                 .unwrap_or(0.0)

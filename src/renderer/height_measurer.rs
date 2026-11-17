@@ -717,6 +717,30 @@ pub(crate) fn no_ls_tac_table_host_trailing_spacing_px(
     reflowed_tac_table_host_trailing_spacing_px(p, styles, dpi)
 }
 
+/// 저장 줄 없는 원자 TAC 표·그림 호스트의 뒤 간격이다.
+/// 그림 높이는 셀 유닛과 paint가 이미 소유한다. 뒤에 원문이 이어지면 글자 크기로
+/// 정한 줄간격도 같은 유닛에 한 번 예약하며, 마지막 문단의 제외는 호출자가 맡는다.
+pub(crate) fn no_ls_tac_object_host_trailing_spacing_px(
+    p: &Paragraph,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Option<f64> {
+    if !crate::renderer::para_has_no_stored_line_segs(p)
+        || p.text
+            .chars()
+            .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace())
+        || p.controls.is_empty()
+        || !p.controls.iter().all(|control| match control {
+            Control::Table(table) => table.common.treat_as_char,
+            Control::Picture(picture) => picture.common.treat_as_char,
+            _ => false,
+        })
+    {
+        return None;
+    }
+    tac_host_font_trailing_spacing_px(p, styles, dpi)
+}
+
 /// [#7872] 저장 줄이 있는 TAC 표 host 가 **낡은** 줄인가 — 칸 내용이 자라난 표의 점유
 /// 높이(`occupied_px`: 자란 행 합 + 바깥 위·아래 여백)가 저장 줄 높이를 넘는다.
 ///
@@ -769,6 +793,15 @@ pub(crate) fn reflowed_tac_table_host_trailing_spacing_px(
     {
         return None;
     }
+    tac_host_font_trailing_spacing_px(p, styles, dpi)
+}
+
+/// TAC 개체의 상자 높이와 분리된 호스트 글꼴의 뒤 줄간격을 공통으로 계산한다.
+fn tac_host_font_trailing_spacing_px(
+    p: &Paragraph,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Option<f64> {
     let fs = p
         .char_shapes
         .first()

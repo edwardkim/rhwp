@@ -1,0 +1,6 @@
+{
+  "change": "테스트 상단 설명의 시각 오기만 실제 갱신 시각으로 정정",
+  "tested_sha256": "f4ccda14cfd192d86b57297926652341f6c88e88af1fda9ea1990f8f55b2deea",
+  "committed_sha256": "7ddbdeaab861b0e8d653a101be9d4779f363dbe7ba761c82108443d9d3cb174b",
+  "rust_body_unchanged": true
+}

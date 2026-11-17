@@ -1,0 +1,37 @@
+{
+  "status": "cause_confirmed_candidate_validation_running",
+  "source_parent": "a3a1a11935",
+  "source": {
+    "section": 0,
+    "paragraph": 193,
+    "row": 6,
+    "column": 1,
+    "nested_picture_paragraph": 12,
+    "no_stored_line_segments": true,
+    "source_font_size_hwpunit": 1300,
+    "source_percent_line_spacing": 120,
+    "picture_box_px": 312.4
+  },
+  "independent_pdf": {
+    "picture_top_css96": 82.3093262,
+    "picture_bottom_css96": 394.447998,
+    "closing_border_y_css96": 767.31999
+  },
+  "current_producer_before": {
+    "picture_top_css96": 82.3333333,
+    "picture_box_px": 312.4,
+    "last_text_baseline_css96": 760.56,
+    "pdf_last_text_baseline_css96": 760.63997,
+    "missing_picture_following_advance_css96": 3.466666666666667
+  },
+  "relation_before": {
+    "change_line_spacing_percent": [
+      120,
+      160
+    ],
+    "painted_following_text_delta_css96": 6.933333333333337,
+    "reserved_frame_bottom_delta_css96": 0,
+    "log": "logs/inline-picture-spacing-before-minimal.log"
+  },
+  "contract": "TAC 그림의 상자와 뒤 호스트 글줄 간격을 분리하고 같은 뒤 간격을 원자 CellUnit에도 한 번 예약한다. 다음 소유자가 없는 셀 끝은 제외한다. 그림 위치나 원본·PDF·쪽수·판정 문턱은 변경하지 않는다."
+}
