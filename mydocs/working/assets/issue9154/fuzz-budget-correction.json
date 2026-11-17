@@ -1,0 +1,8 @@
+{
+  "approvedAt": "2026-11-17T12:43:52.899183+00:00",
+  "scope": "60m job budget, explicit build/run, commit/push/new CI, conditional cancel old26, new24/new26 once each; keep other workflows and main untouched",
+  "localWorkflowTests": 263,
+  "localPolicyTests": 339,
+  "actionlintPassed": true,
+  "noProductRustChange": true
+}

@@ -42,8 +42,8 @@ jobs:
   fuzz-smoke:
     name: fuzz ${{ matrix.target }}
     runs-on: ${{ github.event_name == 'workflow_dispatch' && inputs.runner_image == 'ubuntu-26.04' && 'ubuntu-26.04' || 'ubuntu-24.04' }}
-    # 컴파일(sanitizer) + 60초 런. hang 상한이지 성능 목표가 아니다.
-    timeout-minutes: 45
+    # Sanitizer cold build와 퍼징을 구분한다. 입력별 제한·실행 시간은 아래에서 유지한다.
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -84,6 +84,13 @@ jobs:
 
       - name: Install cargo-fuzz
         run: cargo install cargo-fuzz
+
+      - name: Build sanitizer target ${{ matrix.target }}
+        env:
+          TARGET: ${{ matrix.target }}
+        run: |
+          set -euo pipefail
+          cargo +nightly fuzz build "${TARGET}"
 
       - name: Smoke-run ${{ matrix.target }} (60s)
         env:

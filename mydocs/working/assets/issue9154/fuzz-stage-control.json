@@ -1,0 +1,45 @@
+{
+  "toolchain": "rustc 1.100.0-nightly (2e2b193f8 2026-09-02)",
+  "cargoFuzz": "cargo-fuzz 0.13.2",
+  "targetDirectory": "/home/edward/mygithub/rhwp/target/pr-review",
+  "fixture": "/home/edward/mygithub/rhwp/output/ubuntu-runner-baseline/minimal-fuzzer/fuzz",
+  "stages": [
+    {
+      "stage": "build",
+      "command": [
+        "cargo",
+        "+nightly",
+        "fuzz",
+        "build",
+        "--fuzz-dir",
+        "/home/edward/mygithub/rhwp/output/ubuntu-runner-baseline/minimal-fuzzer/fuzz",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "smoke"
+      ],
+      "exitCode": 0,
+      "seconds": 13.273
+    },
+    {
+      "stage": "run",
+      "command": [
+        "cargo",
+        "+nightly",
+        "fuzz",
+        "run",
+        "--fuzz-dir",
+        "/home/edward/mygithub/rhwp/output/ubuntu-runner-baseline/minimal-fuzzer/fuzz",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "smoke",
+        "--",
+        "-max_total_time=1",
+        "-rss_limit_mb=2048",
+        "-timeout=30",
+        "-print_final_stats=1"
+      ],
+      "exitCode": 0,
+      "seconds": 2.33
+    }
+  ]
+}

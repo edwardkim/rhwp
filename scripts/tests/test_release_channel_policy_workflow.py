@@ -351,6 +351,25 @@ class LinuxRunnerBaselineWorkflowTests(unittest.TestCase):
         self.assertIn("-timeout=30", fuzz)
         self.assertIn('default: "60"', fuzz)
 
+    def test_sanitizer_build_has_its_own_stage_without_changing_fuzzer_limits(self):
+        source = self.workflow("fuzz-smoke.yml")
+        header = source.split("  fuzz-smoke:\n", 1)[1].split("    strategy:\n", 1)[0]
+        self.assertIn("timeout-minutes: 60", header)
+        self.assertLess(source.index("      - name: Build sanitizer target "),
+                        source.index("      - name: Smoke-run "))
+        build = source.split("      - name: Build sanitizer target ", 1)[1].split(
+            "      - name: Smoke-run ", 1)[0]
+        smoke = source.split("      - name: Smoke-run ", 1)[1].split(
+            "      - name: Upload crash artifacts", 1)[0]
+        self.assertIn('cargo +nightly fuzz build "${TARGET}"', build)
+        self.assertNotIn("continue-on-error:", build)
+        self.assertNotIn("if: always()", build + smoke)
+        self.assertIn('cargo +nightly fuzz run "${TARGET}" --', smoke)
+        self.assertIn('-max_total_time="${MAX_TOTAL_TIME}"', smoke)
+        self.assertIn("-rss_limit_mb=2048", smoke)
+        self.assertIn("-timeout=30", smoke)
+        self.assertNotIn("timeout-minutes:", smoke)
+
     def test_actual_runner_validation_rejects_unknown_mismatch_and_shell_input(self):
         for name in ("fuzz-smoke.yml", "full-renderer-sweep.yml"):
             source = self.workflow(name)

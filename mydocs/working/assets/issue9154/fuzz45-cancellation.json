@@ -1,0 +1,185 @@
+{
+  "at": "2026-11-17T12:13:32.263661+00:00",
+  "jobs": [
+    {
+      "job": "fuzz parse_wmf",
+      "id": 134001082563,
+      "status": "completed",
+      "conclusion": "cancelled",
+      "completedAt": "2026-11-17T12:09:41Z",
+      "checkConclusion": "cancelled",
+      "annotations": [
+        {
+          "level": "failure",
+          "title": "",
+          "message": "The job has exceeded the maximum execution time of 45m0s"
+        }
+      ],
+      "stepResults": [
+        {
+          "name": "Smoke-run parse_wmf (60s)",
+          "status": "in_progress",
+          "conclusion": null,
+          "started_at": "2026-11-17T11:19:22Z",
+          "completed_at": null
+        },
+        {
+          "name": "Upload crash artifacts",
+          "status": "pending",
+          "conclusion": null,
+          "started_at": null,
+          "completed_at": null
+        },
+        {
+          "name": "Post Cache cargo-fuzz + sanitizer build",
+          "status": "pending",
+          "conclusion": null,
+          "started_at": null,
+          "completed_at": null
+        },
+        {
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "pending",
+          "conclusion": null,
+          "started_at": null,
+          "completed_at": null
+        }
+      ]
+    },
+    {
+      "job": "fuzz parse_hwp",
+      "id": 134001082874,
+      "status": "completed",
+      "conclusion": "cancelled",
+      "completedAt": "2026-11-17T12:09:42Z",
+      "checkConclusion": "cancelled",
+      "annotations": [
+        {
+          "level": "failure",
+          "title": "",
+          "message": "The job has exceeded the maximum execution time of 45m0s"
+        }
+      ],
+      "stepResults": [
+        {
+          "name": "Smoke-run parse_hwp (60s)",
+          "status": "in_progress",
+          "conclusion": null,
+          "started_at": "2026-11-17T11:19:35Z",
+          "completed_at": null
+        },
+        {
+          "name": "Upload crash artifacts",
+          "status": "pending",
+          "conclusion": null,
+          "started_at": null,
+          "completed_at": null
+        },
+        {
+          "name": "Post Cache cargo-fuzz + sanitizer build",
+          "status": "pending",
+          "conclusion": null,
+          "started_at": null,
+          "completed_at": null
+        },
+        {
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "pending",
+          "conclusion": null,
+          "started_at": null,
+          "completed_at": null
+        }
+      ]
+    },
+    {
+      "job": "fuzz parse_hwpx",
+      "id": 134001082950,
+      "status": "completed",
+      "conclusion": "cancelled",
+      "completedAt": "2026-11-17T12:09:42Z",
+      "checkConclusion": "cancelled",
+      "annotations": [
+        {
+          "level": "failure",
+          "title": "",
+          "message": "The job has exceeded the maximum execution time of 45m0s"
+        }
+      ],
+      "stepResults": [
+        {
+          "name": "Smoke-run parse_hwpx (60s)",
+          "status": "in_progress",
+          "conclusion": null,
+          "started_at": "2026-11-17T11:20:40Z",
+          "completed_at": null
+        },
+        {
+          "name": "Upload crash artifacts",
+          "status": "pending",
+          "conclusion": null,
+          "started_at": null,
+          "completed_at": null
+        },
+        {
+          "name": "Post Cache cargo-fuzz + sanitizer build",
+          "status": "pending",
+          "conclusion": null,
+          "started_at": null,
+          "completed_at": null
+        },
+        {
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "pending",
+          "conclusion": null,
+          "started_at": null,
+          "completed_at": null
+        }
+      ]
+    },
+    {
+      "job": "fuzz parse_hwp3",
+      "id": 134001082961,
+      "status": "completed",
+      "conclusion": "cancelled",
+      "completedAt": "2026-11-17T12:09:42Z",
+      "checkConclusion": "cancelled",
+      "annotations": [
+        {
+          "level": "failure",
+          "title": "",
+          "message": "The job has exceeded the maximum execution time of 45m0s"
+        }
+      ],
+      "stepResults": [
+        {
+          "name": "Smoke-run parse_hwp3 (60s)",
+          "status": "in_progress",
+          "conclusion": null,
+          "started_at": "2026-11-17T11:20:07Z",
+          "completed_at": null
+        },
+        {
+          "name": "Upload crash artifacts",
+          "status": "pending",
+          "conclusion": null,
+          "started_at": null,
+          "completed_at": null
+        },
+        {
+          "name": "Post Cache cargo-fuzz + sanitizer build",
+          "status": "pending",
+          "conclusion": null,
+          "started_at": null,
+          "completed_at": null
+        },
+        {
+          "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "status": "pending",
+          "conclusion": null,
+          "started_at": null,
+          "completed_at": null
+        }
+      ]
+    }
+  ]
+}
