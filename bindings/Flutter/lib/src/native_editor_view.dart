@@ -267,7 +267,7 @@ class _NativeEditorViewState extends State<NativeEditorView>
       return KeyEventResult.handled;
     }
     if (event.logicalKey == LogicalKeyboardKey.escape) {
-      _perform(editor.focusLost);
+      _perform(() => editor.focusLost(cancel: true));
       return KeyEventResult.handled;
     }
     // Let the platform IME own editing keys while composing; handling them here
@@ -502,20 +502,27 @@ class _NativeEditorViewState extends State<NativeEditorView>
   TextEditingValue? get currentTextEditingValue => _editor?.value;
   @override
   AutofillScope? get currentAutofillScope => null;
+
+  bool get _acceptsPlatformInput =>
+      mounted && _focus.hasFocus && _connection?.attached == true;
+
   @override
   void updateEditingValueWithDeltas(List<TextEditingDelta> deltas) {
+    if (!_acceptsPlatformInput) return;
     final editor = _editor;
     if (editor != null) _perform(() => editor.applyDeltas(deltas));
   }
 
   @override
   void updateEditingValue(TextEditingValue value) {
+    if (!_acceptsPlatformInput) return;
     final editor = _editor;
     if (editor != null) _perform(() => editor.setEditingValue(value));
   }
 
   @override
   void performAction(TextInputAction action) {
+    if (!_acceptsPlatformInput) return;
     if (action == TextInputAction.newline) {
       final editor = _editor;
       if (editor != null) _perform(() => editor.command('splitParagraph'));
@@ -524,6 +531,7 @@ class _NativeEditorViewState extends State<NativeEditorView>
 
   @override
   void performSelector(String selectorName) {
+    if (!_acceptsPlatformInput) return;
     final editor = _editor;
     if (editor == null) return;
     final name = selectorName.replaceAll(':', '');

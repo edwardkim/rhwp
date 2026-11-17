@@ -7,10 +7,15 @@ destination, overwrite, and content-loss decisions.
 
 ## Replacement and close
 
-Before reading dirty state, `settleInput` must drain the view's accepted editor
-input. `NativeEditorView.onControllerChanged` exposes the view-owned initialized
-editor for this barrier: call `focusLost()` and await it. The host observes this
-controller and must not dispose it. A null notification detaches it.
+Before reading dirty state, `settleInput` must first stop platform input admission
+and then drain the view's accepted editor input. The example unfocuses and calls
+`FocusManager.applyFocusChangesIfNeeded()` synchronously to detach the text input
+connection. Late editing values, deltas, actions, and selectors from that detached
+connection are ignored. `NativeEditorView.onControllerChanged` exposes the
+view-owned initialized editor for the next barrier: call `focusLost()` and await
+it. Ordinary focus loss commits the accepted Native preedit; Escape explicitly
+cancels it. The host observes this controller and must not dispose it. A null
+notification detaches it.
 
 The lifecycle then waits for a pending file operation and refreshes Native info.
 A discard decision authorizes only the observed document/revision/font
