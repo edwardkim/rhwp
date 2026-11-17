@@ -1,0 +1,22 @@
+{
+  "status": "same_product_source_bytes",
+  "execution_producer_parent": "fbbfb55cfb19b7ef365c574663c4cdfdd3ef84e0",
+  "committed_equivalent_head": "c89572f72a8cdbd7c4f14262dae44eee9938fa2a",
+  "changed_product_sources": [
+    "src/renderer/height_measurer.rs"
+  ],
+  "captured_source_comparison": [
+    {
+      "path": "src/renderer/height_measurer.rs",
+      "captured_sha256": "ec5f5b1528bca0cdb0359018f7bde79fff89ef182bca92bd22eae1dadbed275a",
+      "committed_sha256": "ec5f5b1528bca0cdb0359018f7bde79fff89ef182bca92bd22eae1dadbed275a"
+    },
+    {
+      "path": "tests/cases/issue_7737_picture_anchor_before_frame.rs",
+      "captured_sha256": "347626e17fe744ed2060b40bfd75c057f62e0a1bca7f57faeb246596dd47db0b",
+      "committed_sha256": "347626e17fe744ed2060b40bfd75c057f62e0a1bca7f57faeb246596dd47db0b"
+    }
+  ],
+  "rule": "실행 당시 HEAD를 변경하지 않고, parent+기록된 dirty 소스와 최종 커밋의 제품 바이트 일치만 확인",
+  "cargo_lock_sha256": "972bdb0994b216f0cef357b856ce0807ce3d437af6791377446b62f2e26c05a1"
+}

@@ -1,0 +1,37 @@
+{
+  "status": "passed",
+  "source_head": "c89572f72a8cdbd7c4f14262dae44eee9938fa2a",
+  "font_scope": "verified macOS minimum-font sandbox; no personal font visibility",
+  "full_nextest": {
+    "run": 13757,
+    "passed": 13757,
+    "failed": 0,
+    "skipped": 45,
+    "seconds": 692.176
+  },
+  "native_skia": {
+    "lib_passed": 4034,
+    "lib_ignored": 12,
+    "placeholder_passed": 2,
+    "direct_pdf_passed": 36,
+    "total_passed": 4072
+  },
+  "required_steps": [
+    "fmt",
+    "suite-manifest",
+    "full-nextest",
+    "native-clippy",
+    "wasm-clippy",
+    "workspace-build",
+    "all-targets-clippy",
+    "native-skia-lib",
+    "native-skia-placeholder",
+    "native-skia-pdf"
+  ],
+  "unit_tier": "passed",
+  "manifest_tool_contracts": {
+    "passed": 24,
+    "failed": 0
+  },
+  "old_run_setup_failure": "테스트 생성 폰트의 임시 경로를 허용된 TMPDIR로 지정해 해소; 제품·검사 기대값·격리 프로필 변경 없음"
+}

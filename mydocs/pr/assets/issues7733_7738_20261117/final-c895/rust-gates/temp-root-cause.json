@@ -1,0 +1,20 @@
+{
+  "head": "c89572f72a8cdbd7c4f14262dae44eee9938fa2a",
+  "original_summary": {
+    "run": 13757,
+    "passed": 13748,
+    "failed": 9,
+    "skipped": 45,
+    "seconds": 517.816
+  },
+  "cause": "격리 프로필은 regression-temp만 허용하지만 driver가 TMPDIR를 설정하지 않아 테스트 생성 글꼴까지 차단함",
+  "change": "제품 코드와 프로필 변경 없이 TMPDIR를 기존 허용 경로로 지정",
+  "focused": {
+    "run": 17,
+    "passed": 17,
+    "failed": 0,
+    "seconds": 0.171
+  },
+  "personal_font_visibility": "여전히 차단",
+  "new_run": "final-c895-rust-gates-v2"
+}

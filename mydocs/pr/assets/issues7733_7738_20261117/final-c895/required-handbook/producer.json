@@ -1,0 +1,25 @@
+{
+  "status": "passed",
+  "source": "c89572f72a8cdbd7c4f14262dae44eee9938fa2a",
+  "workers": 8,
+  "font_scope": "정상 원본 글꼴 환경; 최소 글꼴 격리 아님",
+  "command": [
+    "/Users/tsjang/rhwp/venv/bin/python",
+    "/Users/tsjang/rhwp/scripts/visual_sweep.py",
+    "--handbook-gate",
+    "--rhwp-bin",
+    "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/rhwp-picture-before-native",
+    "--page-workers",
+    "8",
+    "--font-path",
+    "/Users/tsjang/Library/Fonts",
+    "--font-environment",
+    "/Users/tsjang/rhwp/mydocs/pr/assets/planet6897_integration_final/pr8389_8397/handbook-font-environment.json",
+    "--out",
+    "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/required-handbook-c895"
+  ],
+  "started_at": "2026-11-18T08:26:27.852899+09:00",
+  "exit_code": 0,
+  "finished_at": "2026-11-18T08:31:02.249673+09:00",
+  "note": "별도 정본 보호 18종 전체 수용을 대신하지 않음"
+}

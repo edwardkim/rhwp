@@ -1,0 +1,102 @@
+{
+  "status": "passed",
+  "head": "c89572f72a8cdbd7c4f14262dae44eee9938fa2a",
+  "font_scope": "verified macOS minimum-font sandbox; no personal font visibility",
+  "profile_sha256": "dab5a29efd05b091cf0308729b49d34c7922ea399dc823d70457cde0c1367e8c",
+  "steps": [
+    {
+      "name": "fmt",
+      "exit_code": 0,
+      "started_at": "2026-11-18T08:02:48.407048+09:00",
+      "finished_at": "2026-11-18T08:03:04.414756+09:00",
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/final-c895-rust-gates-v2/fmt.log"
+    },
+    {
+      "name": "suite-manifest",
+      "exit_code": 0,
+      "started_at": "2026-11-18T08:03:04.415544+09:00",
+      "finished_at": "2026-11-18T08:03:06.865907+09:00",
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/final-c895-rust-gates-v2/suite-manifest.log"
+    },
+    {
+      "name": "full-nextest",
+      "exit_code": 0,
+      "started_at": "2026-11-18T08:03:06.866289+09:00",
+      "finished_at": "2026-11-18T08:14:43.203661+09:00",
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/final-c895-rust-gates-v2/full-nextest.log"
+    },
+    {
+      "name": "native-clippy",
+      "exit_code": 0,
+      "started_at": "2026-11-18T08:14:43.206693+09:00",
+      "finished_at": "2026-11-18T08:16:31.662188+09:00",
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/final-c895-rust-gates-v2/native-clippy.log"
+    },
+    {
+      "name": "wasm-clippy",
+      "exit_code": 0,
+      "started_at": "2026-11-18T08:16:31.665541+09:00",
+      "finished_at": "2026-11-18T08:17:50.952960+09:00",
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/final-c895-rust-gates-v2/wasm-clippy.log"
+    },
+    {
+      "name": "workspace-build",
+      "exit_code": 0,
+      "started_at": "2026-11-18T08:17:50.958918+09:00",
+      "finished_at": "2026-11-18T08:20:28.442309+09:00",
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/final-c895-rust-gates-v2/workspace-build.log"
+    },
+    {
+      "name": "all-targets-clippy",
+      "exit_code": 0,
+      "started_at": "2026-11-18T08:20:28.447477+09:00",
+      "finished_at": "2026-11-18T08:22:43.364082+09:00",
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/final-c895-rust-gates-v2/all-targets-clippy.log"
+    },
+    {
+      "name": "native-skia-lib",
+      "exit_code": 0,
+      "started_at": "2026-11-18T08:22:43.364747+09:00",
+      "finished_at": "2026-11-18T08:27:45.980044+09:00",
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/final-c895-rust-gates-v2/native-skia-lib.log"
+    },
+    {
+      "name": "native-skia-placeholder",
+      "exit_code": 0,
+      "started_at": "2026-11-18T08:27:46.002440+09:00",
+      "finished_at": "2026-11-18T08:33:01.276812+09:00",
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/final-c895-rust-gates-v2/native-skia-placeholder.log"
+    },
+    {
+      "name": "native-skia-pdf",
+      "exit_code": 0,
+      "started_at": "2026-11-18T08:33:01.279747+09:00",
+      "finished_at": "2026-11-18T08:33:20.169600+09:00",
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/final-c895-rust-gates-v2/native-skia-pdf.log"
+    }
+  ],
+  "active": null,
+  "command": [
+    "sandbox-exec",
+    "-f",
+    "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/minimal-font/profile.sb",
+    "env",
+    "-u",
+    "RHWP_FONT_PATH",
+    "node",
+    "scripts/run-rust-test.mjs",
+    "render_p37_direct_pdf_export",
+    "--",
+    "--cargo-profile",
+    "release-test",
+    "--target-dir",
+    "target/pr-review",
+    "--features",
+    "native-skia",
+    "--build-jobs",
+    "8",
+    "--test-threads",
+    "8"
+  ],
+  "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/final-c895-rust-gates-v2/native-skia-pdf.log"
+}
