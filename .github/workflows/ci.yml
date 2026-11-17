@@ -1020,7 +1020,7 @@ jobs:
 
   lint:
     name: Lint (fmt, clippy, WASM check)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
     # [#8548] checkout·선행 계약 검사 뒤 Native/WASM/workspace 검사를 끝낼 여유를 포함한다.
     timeout-minutes: 45
@@ -1058,7 +1058,7 @@ jobs:
       - name: Rust build cache
         uses: Swatinem/rust-cache@eedcf2fb1c22f010a0eb66b92f378c110977f266 # v2.9.3 이후 workspace root key 보정
         with:
-          shared-key: lint
+          shared-key: ubuntu-24.04-lint
           save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
 
       - name: Disk space after Rust build cache restore
@@ -1318,7 +1318,7 @@ jobs:
 
   native-skia-tests:
     name: Native Skia tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
     # 차가운 캐시의 빌드와 정식 Native 검사 묶음을 끝까지 실행한다 (#8889 run 42744623533).
     timeout-minutes: 45
@@ -1376,7 +1376,7 @@ jobs:
       - name: Rust build cache
         uses: Swatinem/rust-cache@eedcf2fb1c22f010a0eb66b92f378c110977f266 # v2.9.3 이후 workspace root key 보정
         with:
-          shared-key: native-skia
+          shared-key: ubuntu-24.04-native-skia
           save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
 
       - name: Install native Skia runtime packages
@@ -1501,7 +1501,7 @@ jobs:
 
   frontend-unit-gates:
     name: Frontend unit gates
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     # unit lane은 Studio 전체 TypeScript와 unit test를 검증하되 fresh WASM·extension build는 생략한다.
     needs: preflight
@@ -1531,7 +1531,7 @@ jobs:
 
   frontend-package-gates:
     name: Frontend package gates
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # [#6717] 직렬 package 설치가 지연돼도 회귀 gate를 실행할 여유를 두되 hang은 실패로 드러낸다.
     # [#8548] 실측 checkout 23분 49초와 fresh WASM·전체 package gate를 함께 수용한다.
     timeout-minutes: 60
@@ -1589,9 +1589,9 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ runner.os }}-frontend-wasm-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-ubuntu-24.04-frontend-wasm-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-frontend-wasm-cargo-
+            ${{ runner.os }}-ubuntu-24.04-frontend-wasm-cargo-
 
       - name: Build fresh WASM package for frontend gates
         if: ${{ needs.preflight.outputs.frontend_canvas_required != 'true' }}
@@ -1744,7 +1744,7 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ runner.os }}-frontend-wasm-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-ubuntu-24.04-frontend-wasm-cargo-${{ hashFiles('**/Cargo.lock') }}
 
   test-archive-a-shard-1:
     uses: ./.github/workflows/run-nextest-archives.yml
@@ -2219,7 +2219,7 @@ jobs:
           exit "$failed"
   wasm-build:
     name: WASM Build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
     timeout-minutes: 30
     permissions:
@@ -2253,9 +2253,9 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ runner.os }}-wasm-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-ubuntu-24.04-wasm-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-wasm-
+            ${{ runner.os }}-ubuntu-24.04-wasm-
 
       - name: Build WASM
         run: wasm-pack build --target web --release

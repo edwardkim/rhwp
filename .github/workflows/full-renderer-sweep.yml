@@ -3,6 +3,14 @@ name: Full Renderer Sweep
 on:
   workflow_dispatch:
     inputs:
+      runner_image:
+        description: 'Linux baseline (26.04 is an explicit compatibility run)'
+        required: true
+        default: ubuntu-24.04
+        type: choice
+        options:
+          - ubuntu-24.04
+          - ubuntu-26.04
       corpus:
         description: Renderer baseline corpus tier
         required: true
@@ -14,11 +22,12 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  RHWP_RUNNER_IMAGE: ${{ github.event_name == 'workflow_dispatch' && inputs.runner_image == 'ubuntu-26.04' && 'ubuntu-26.04' || 'ubuntu-24.04' }}
 
 jobs:
   full-renderer-sweep:
     name: Full Renderer Sweep
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'workflow_dispatch' && inputs.runner_image == 'ubuntu-26.04' && 'ubuntu-26.04' || 'ubuntu-24.04' }}
     # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
     # Cold WASM build and all multi-profile/surface captures retain their full scope.
     timeout-minutes: 90
@@ -26,6 +35,20 @@ jobs:
       contents: read
 
     steps:
+      - name: Validate runner selection
+        env:
+          REQUESTED_RUNNER_IMAGE: ${{ github.event_name == 'workflow_dispatch' && inputs.runner_image || 'ubuntu-24.04' }}
+        run: |
+          set -euo pipefail
+          case "${REQUESTED_RUNNER_IMAGE}" in
+            ubuntu-24.04|ubuntu-26.04) ;;
+            *) echo "::error::Unsupported runner_image" >&2; exit 1 ;;
+          esac
+          if [[ "${REQUESTED_RUNNER_IMAGE}" != "${RHWP_RUNNER_IMAGE}" ]]; then
+            echo "::error::Runner selection does not match the requested baseline" >&2
+            exit 1
+          fi
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install Rust toolchain
@@ -44,10 +67,10 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ runner.os }}-full-renderer-sweep-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ env.RHWP_RUNNER_IMAGE }}-full-renderer-sweep-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-full-renderer-sweep-cargo-
-            ${{ runner.os }}-cargo-
+            ${{ runner.os }}-${{ env.RHWP_RUNNER_IMAGE }}-full-renderer-sweep-cargo-
+            ${{ runner.os }}-${{ env.RHWP_RUNNER_IMAGE }}-cargo-
 
       - name: Setup Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0

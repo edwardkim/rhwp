@@ -135,10 +135,11 @@ class WasmBuildMeasurementTests(unittest.TestCase):
         workflow = WORKFLOW_PATH.read_text()
         restore = workflow.split("      - name: Restore cargo registry & build cache\n")[1].split(
             "      - name: Build WASM package\n")[0]
-        prefix = "${{ runner.os }}-render-diff-cargo-v2-${{ steps.wasm_configuration.outputs.cache_variant }}-"
+        prefix = "${{ runner.os }}-ubuntu-24.04-render-diff-cargo-v2-${{ steps.wasm_configuration.outputs.cache_variant }}-"
         self.assertIn(f"key: {prefix}", restore)
         self.assertIn(f"restore-keys: |\n            {prefix}\n", restore)
         self.assertNotIn("${{ runner.os }}-render-diff-cargo-\n", restore)
+        self.assertNotIn("${{ runner.os }}-render-diff-cargo-v2-", restore)
         self.assertIn("key: ${{ steps.render_diff_cargo_cache_restore.outputs.cache-primary-key }}", workflow)
         self.assertIn("github.event_name == 'workflow_dispatch' && inputs['wasm-build-mode'] || 'standard'", workflow)
         self.assertIn("github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main'", workflow)
