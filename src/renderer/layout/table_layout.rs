@@ -11726,6 +11726,7 @@ impl LayoutEngine {
                     // a saved extent; do not rebuild a separate nested sum.
                     self.cell_units_content_height(cell, table, styles)
                         .max(wrap_object_bottom)
+                        .max(self.cell_overlay_table_reach(cell, table, styles))
                 } else {
                     composed_height
                         .max(vpos_height)
@@ -19935,6 +19936,57 @@ impl LayoutEngine {
         self.preserve_source_page_frame_extents(cell, table, styles, &mut units);
         self.preserve_stored_blank_opening_frame(cell, table, styles, &mut units);
         units
+    }
+
+    /// 저장 줄 없는 문단의 글 앞/뒤 중첩 표는 글줄을 밀지 않지만 칸 내용의 끝은 그 표의
+    /// 바깥 상자 끝(문단 원점 + 세로 오프셋 + 바깥 높이)까지 간다. 세로 가운데·아래 정렬의
+    /// 내용 높이는 흐름 유닛 합과 이 끝 가운데 큰 값이다. 표를 빼고 글줄만으로 정렬 여유를
+    /// 잡으면 표가 칸 아래로 밀린다. 행 나눔 유닛에는 더하지 않는다.
+    pub(crate) fn cell_overlay_table_reach(
+        &self,
+        cell: &crate::model::table::Cell,
+        table: &crate::model::table::Table,
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
+        if !cell.paragraphs.iter().any(|para| {
+            para.controls.iter().any(|control| {
+                matches!(control, Control::Table(child)
+                    if self.nested_table_takes_no_flow(para, child))
+            })
+        }) {
+            return 0.0;
+        }
+        let units = self.cell_units(cell, table, styles);
+        let mut origin = 0.0f64;
+        let mut seen_para: Option<usize> = None;
+        let mut reach = 0.0f64;
+        for unit in units.iter() {
+            if seen_para != Some(unit.para_idx) {
+                seen_para = Some(unit.para_idx);
+                if let Some(para) = cell.paragraphs.get(unit.para_idx) {
+                    for control in &para.controls {
+                        let Control::Table(child) = control else {
+                            continue;
+                        };
+                        if !self.nested_table_takes_no_flow(para, child) {
+                            continue;
+                        }
+                        if let Some(frame) =
+                            crate::renderer::float_placement::nested_overlay_outer_frame(
+                                child,
+                                origin,
+                                self.calc_nested_table_height(child, styles),
+                                self.dpi,
+                            )
+                        {
+                            reach = reach.max(frame.end);
+                        }
+                    }
+                }
+            }
+            origin += unit.height;
+        }
+        reach
     }
 
     /// 이어받는 조각 첫머리에서 컷 선택기가 높이 없이 소비하는 빈 spacer 인가.

@@ -2216,7 +2216,9 @@ impl LayoutEngine {
                     .iter()
                     .any(|p| p.controls.iter().any(|c| matches!(c, Control::Table(_))));
                 if has_nested {
-                    let unit_content_h = self.cell_units_content_height(cell, table, styles);
+                    let unit_content_h = self
+                        .cell_units_content_height(cell, table, styles)
+                        .max(self.cell_overlay_table_reach(cell, table, styles));
                     let last_seg_end: i32 = cell
                         .paragraphs
                         .iter()
