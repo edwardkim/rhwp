@@ -13,6 +13,16 @@ owner dispatcher ABI 2. The native metadata capability
 platform, missing plugin, or exhausted GPU budget selects the supplied CPU
 reference path. A document/resource replay error stays a visible diagnostic.
 
+Windows and both macOS producers report unavailable features as
+`errorCode:featureDisabled` and a missing/unsupported device as
+`errorCode:backendUnavailable`. These initialization outcomes select CPU
+fallback without capturing a GPU snapshot or retrying an unavailable backend.
+ABI incompatibility reports `unsupported`. Queue/target allocation and replay
+failures keep their resource/Native error codes and visible diagnostics, even
+when the producer has already closed. An unclassified error message is never
+treated as availability evidence. macOS includes the same bounded `errorCode`
+in CV texture and native Metal view status; the two-tile adapter preserves it.
+
 ## Ownership and call boundaries
 
 `NativeDocument.capturePresentation` sends configure and capture through its

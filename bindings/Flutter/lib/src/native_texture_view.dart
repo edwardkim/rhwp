@@ -1322,9 +1322,6 @@ class NativeTextureController extends ChangeNotifier {
   }
 
   void _checkStatus(Map<String, Object?> status) {
-    if (status['closed'] == true || status['closing'] == true) {
-      throw const NativeCallException('closed', 'Texture owner is closing.');
-    }
     final device = status['deviceGeneration'];
     if (device is! int || device <= 0 || device != _device) {
       throw const NativeCallException(
@@ -1349,6 +1346,11 @@ class NativeTextureController extends ChangeNotifier {
             : 'Texture rendering failed.',
       );
     }
+    // A producer may close itself after a replay/resource failure. Preserve its
+    // typed diagnostic instead of replacing it with a normal-close fallback.
+    if (status['closed'] == true || status['closing'] == true) {
+      throw const NativeCallException('closed', 'Texture owner is closing.');
+    }
   }
 
   bool _canFallback(Object error) =>
@@ -1359,6 +1361,7 @@ class NativeTextureController extends ChangeNotifier {
             'unsupportedPresentation',
             'unsupported',
             'featureDisabled',
+            'backendUnavailable',
             'backpressure',
             'targetTooLarge',
             'retireLimit',
@@ -1375,6 +1378,7 @@ class NativeTextureController extends ChangeNotifier {
           const {
             'unsupported',
             'featureDisabled',
+            'backendUnavailable',
             'backpressure',
             'targetTooLarge',
             'retireLimit',
@@ -1402,7 +1406,8 @@ class NativeTextureController extends ChangeNotifier {
         'textureRpcLimit' => NativeGpuTraceFailure.backpressure,
         'unsupportedPresentation' ||
         'unsupported' ||
-        'featureDisabled' => NativeGpuTraceFailure.unsupported,
+        'featureDisabled' ||
+        'backendUnavailable' => NativeGpuTraceFailure.unsupported,
         'deviceLost' || 'contextChanged' => NativeGpuTraceFailure.device,
         _ => NativeGpuTraceFailure.other,
       },
