@@ -52,6 +52,10 @@ fn find_table_cells(
     page_idx: usize,
     result: &mut Vec<String>,
 ) -> bool {
+    // 본문 표다. 같은 문단·컨트롤 번호의 머리말·꼬리말·바탕쪽 표를 잡지 않는다.
+    if node.node_type.is_page_area() {
+        return false;
+    }
     if let RenderNodeType::Table(ref tn) = node.node_type {
         if tn.section_index == Some(sec)
             && tn.para_index == Some(ppi)

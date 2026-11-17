@@ -2428,7 +2428,12 @@ impl DocumentCore {
 
         // 주요 페이지 트리 미리 빌드
         for &pn in &page_nums {
-            tree_cache.push((pn, selection_tree(pn)?));
+            let mut tree = selection_tree(pn)?;
+            // 본문 칸이다. 같은 문단·컨트롤 번호의 머리말·꼬리말 표 칸을 잡지 않는다.
+            if cell_target.is_some() {
+                tree.root.remove_page_areas();
+            }
+            tree_cache.push((pn, tree));
         }
 
         // 한 line segment의 양 cursor는 반드시 같은 page tree에서 찾는다. split paragraph의
