@@ -10,10 +10,12 @@
 //! --nested-rows 36 --vert 0 --mid-cell-h 72000 --outer-wrap IN_FRONT_OF_TEXT --outer-own-para 3`.
 //!
 //! 참고(웹한글기안기 인쇄, `pdf/pk40991_overlay_nested/overlay_nested_grow_split-webhwp-print.pdf`):
-//! 2쪽. 가운데 칸이 2쪽 위에서 이어지고(중첩 표 9행 몫), `TAIL ROW` 행은 그 아래에 놓인다.
+//! 2쪽. 가운데 칸이 2쪽 위에서 이어지고 중첩 표의 남은 행(`NESTED 27`~`NESTED 35`)이 그
+//! 조각에 그려진다. `TAIL ROW` 행은 그 아래에 놓인다.
 //!
 //! 수정 전 rhwp 는 칸 유닛이 빈 줄 하나뿐이라 칸 전체가 1쪽 조각에 든 것으로 보고, 2쪽의
-//! 이어지는 칸 조각을 통째로 빠뜨렸다. `TAIL ROW` 가 2쪽 맨 위로 올라갔다.
+//! 이어지는 칸 조각을 통째로 빠뜨렸다. `TAIL ROW` 가 2쪽 맨 위로 올라갔고, 중첩 표의 남은
+//! 행은 어느 쪽에도 그려지지 않았다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::Path;
@@ -35,6 +37,7 @@ fn load(name: &str) -> DocumentCore {
 struct Found {
     row1_cell: Option<BoundingBox>,
     tail_line: Option<BoundingBox>,
+    nested_rows: Vec<String>,
 }
 
 fn run_text(node: &RenderNode) -> String {
@@ -62,6 +65,9 @@ fn collect(node: &RenderNode, depth: usize, found: &mut Found) {
         RenderNodeType::TextLine(_) if run_text(node).contains("TAIL") => {
             found.tail_line.get_or_insert_with(|| node.bbox.clone());
         }
+        RenderNodeType::TextLine(_) if run_text(node).contains("NESTED") => {
+            found.nested_rows.push(run_text(node).trim().to_string());
+        }
         _ => {}
     }
     for child in &node.children {
@@ -69,12 +75,38 @@ fn collect(node: &RenderNode, depth: usize, found: &mut Found) {
     }
 }
 
+fn page(core: &DocumentCore, index: u32) -> Found {
+    let tree = core.build_page_render_tree(index).unwrap();
+    let mut found = Found::default();
+    collect(&tree.root, 0, &mut found);
+    found
+}
+
 fn check(name: &str) {
     let core = load(name);
     assert_eq!(core.page_count(), 2, "{name}: 쪽 수");
-    let tree = core.build_page_render_tree(1).unwrap();
-    let mut found = Found::default();
-    collect(&tree.root, 0, &mut found);
+    let first = page(&core, 0);
+    let found = page(&core, 1);
+    // 중첩 표 남은 행이 2쪽에 이어 그려지고, 1쪽에 그린 행을 다시 그리지 않는다.
+    assert!(
+        found.nested_rows.iter().any(|row| row == "NESTED 35"),
+        "{name}: 2쪽 중첩 행 {:?}",
+        found.nested_rows
+    );
+    assert!(
+        first.nested_rows.iter().any(|row| row == "NESTED 00"),
+        "{name}: 1쪽 중첩 행 {:?}",
+        first.nested_rows
+    );
+    let repeated: Vec<_> = found
+        .nested_rows
+        .iter()
+        .filter(|row| first.nested_rows.contains(row))
+        .collect();
+    assert!(
+        repeated.is_empty(),
+        "{name}: 두 쪽에 겹친 중첩 행 {repeated:?}"
+    );
     let cell = found
         .row1_cell
         .unwrap_or_else(|| panic!("{name}: 2쪽에 가운데 칸이 이어진다"));
