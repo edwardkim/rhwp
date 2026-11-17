@@ -24,6 +24,7 @@ from check_macos_metal_sdk import execute_step, source_hashes
 from native_artifact_provenance import load_native_artifact
 from qualify_desktop_texture import MAX_BUILD_RECEIPT_BYTES, digest, read_json, write_json
 from runtime_bundle import binary_identity
+import gpu_memory_acceptance as memory_acceptance
 
 TARGET = 'x86_64-unknown-linux-gnu'
 FEATURE = 'native-skia-gl'
@@ -87,6 +88,11 @@ def probe_native(path, output):
 
 def qualify(args, *, repository=None, executor=execute_step):
     require_host()
+    cycles = getattr(args, 'memory_pressure_cycles', 0)
+    if type(cycles) is not int or not 0 <= cycles <= 2:
+        raise ValueError('combined Linux memory-pressure cycles must be 0..2')
+    if cycles and (args.compile_only or args.build_only):
+        raise ValueError('memory-pressure cycles require actual consumer sampling, not compile-only/build-only')
     if not math.isfinite(args.step_timeout) or not 30 <= args.step_timeout <= 7200:
         raise ValueError('step timeout must be 30..7200 seconds')
     if bool(args.native_artifact_root) != bool(args.native_source_head):
@@ -118,6 +124,9 @@ def qualify(args, *, repository=None, executor=execute_step):
              'nativeGlCapabilitiesVerified': False, 'probeBuildsVerified': False,
              'singleConsumerSamplingVerified': False, 'tileConsumerSamplingVerified': False,
              'consumerGpuCompletionVerified': False, 'hardwareAccelerationVerified': False}
+    if cycles:
+        state.update(requestedMemoryPressureCycles=cycles,
+                     singleMemoryPressureVerified=False, tileMemoryPressureVerified=False)
     env = dict(os.environ, CI='true', FLUTTER_ROOT=str(sdk), FLUTTER_SUPPRESS_ANALYTICS='true',
                DART_SUPPRESS_ANALYTICS='true', PYTHONDONTWRITEBYTECODE='1', TMPDIR=str(output / 'tmp'),
                CARGO_TARGET_DIR=str(output / 'native-target'), CARGO_BUILD_BUILD_DIR=str(output / 'native-build'),
@@ -224,12 +233,28 @@ def qualify(args, *, repository=None, executor=execute_step):
                     command += ['--build-receipt', str(build / 'build-receipt.json'), '--output', str(capture)]
                     if not tiled:
                         command += ['--frames', '32']
+                    if cycles:
+                        command += ['--memory-pressure-cycles', str(cycles)]
                     run(command, timeout=330, supervise_children=True)
                     captured = read_json(capture / 'receipt.json', limit=32 * 1024 * 1024)
                     if (captured.get('qualification') != ('linux-two-tile-consumer-passed' if tiled else 'linux-consumer-passed') or
                             type(captured.get('exitCode')) is not int or captured['exitCode'] != 0 or captured.get('consumerGpuCompletionVerified') is not False or
                             captured.get('hardwareAccelerationVerified') is not False):
                         raise ValueError('actual consumer capture did not pass its bounded contract')
+                    if cycles:
+                        stages, result = captured.get('stages'), captured.get('result')
+                        if (type(captured.get('memoryPressureCycles')) is not int or captured['memoryPressureCycles'] != cycles or
+                                not isinstance(stages, list) or len(stages) != (3 if tiled else 32) or
+                                any(not isinstance(entry, dict) or not isinstance(entry.get('stage'), dict) for entry in stages) or
+                                not isinstance(result, dict) or type(captured.get('pid')) is not int or captured['pid'] <= 0):
+                            raise ValueError('actual memory-pressure capture is missing its requested cycles/stages/owner')
+                        summary = memory_acceptance.validate_memory_acceptance(result, cycles=cycles,
+                            stages=[entry['stage'] for entry in stages], pid=captured['pid'],
+                            publication_profile='linuxThreeStageTileGroup' if tiled else 'continuous32To64')
+                        if captured.get('memoryAcceptance') != summary:
+                            raise ValueError('actual memory-pressure summary differs from its native receipts')
+                        state[label + 'MemoryPressureVerified'] = True
+                        state[label + 'MemoryAcceptance'] = summary
                     state[label + 'ConsumerSamplingVerified'] = True
                     state[label + 'ConsumerReceipt'] = artifact(capture / 'receipt.json')
             state['probeBuildsVerified'] = True
@@ -262,11 +287,13 @@ def main():
     parser.add_argument('--native-source-head')
     parser.add_argument('--cxx', default=os.environ.get('CXX', 'clang++'))
     parser.add_argument('--step-timeout', type=float, default=3600)
+    parser.add_argument('--memory-pressure-cycles', type=int, default=0,
+                        help='0 (default) or 1..2 actual pressure/trim/idle cycles in both consumer probes')
     parser.add_argument('--probe-native', type=Path, help=argparse.SUPPRESS)
     parser.add_argument('--probe-output', type=Path, help=argparse.SUPPRESS)
     args = parser.parse_args()
     if args.probe_native or args.probe_output:
-        if not args.probe_native or not args.probe_output or args.flutter_sdk or args.output:
+        if not args.probe_native or not args.probe_output or args.flutter_sdk or args.output or args.memory_pressure_cycles:
             parser.error('internal capability probe requires only Native and a new output path')
         probe_native(args.probe_native, args.probe_output)
     else:

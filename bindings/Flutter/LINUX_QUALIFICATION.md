@@ -48,6 +48,11 @@ feature probe, 두 Flutter runner build, single/tile compositor sampling을 별�
 표시 검증 flag는 false다. capability probe는 context 생성·GPU replay·sampling 증거가 아니다.
 실제 두 수집기가 각각 성공해야 `linux-desktop-consumer-passed`로 기록하며,
 그 경우에도 consumer GPU fence·hardware acceleration은 false를 유지한다.
+전체 수집에 `--memory-pressure-cycles 2`를 더하면 single 32회와 기존 두 타일 3단계 모두에서
+실제 binding→Native trim·RSS·idle·후속 표시·종료를 확인한다. 통합 실행기는 0..2회만 받고,
+측정을 생략하는 `--compile-only`·`--build-only`와 양수 압박 횟수의 조합은 거절한다.
+두 경로의 압박 검증 flag와 영수증을 각각 기록하며, 회수량 0은 observedNoop으로 보존한다.
+자세한 범위와 개별 수집기 옵션은 [메모리 검증 가이드](GPU_MEMORY_ACCEPTANCE.md)를 따른다.
 각 child의 private log·PID·timeout·exit와 source/SDK/engine/artifact hash를 기록하고,
 실패 시 이미 통과한 단계와 아직 입증하지 못한 단계를 구분한다.
 

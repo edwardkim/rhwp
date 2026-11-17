@@ -16,6 +16,7 @@ from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tool'))
 import check_linux_desktop_sdk as runner
+from gpu_memory_acceptance_contract import evidence as memory_evidence
 
 
 def capabilities():
@@ -37,7 +38,7 @@ class LinuxSdkRunner(unittest.TestCase):
             file.write_bytes(b'portable orchestration fixture, never executable')
         self.args = SimpleNamespace(flutter_sdk=self.sdk, output=self.root / 'output', cxx=sys.executable,
                                     step_timeout=60, compile_only=False, build_only=False,
-                                    native_artifact_root=None, native_source_head=None)
+                                    native_artifact_root=None, native_source_head=None, memory_pressure_cycles=0)
         self.commands, self.environments = [], []
         self.sources = {'fixture': '100644:blob'}
         self.capabilities = capabilities()
@@ -47,6 +48,8 @@ class LinuxSdkRunner(unittest.TestCase):
         self.wrong_build_hash = False
         self.wrong_plugin_machine = False
         self.fail_command_keyword = None
+        self.memory_fault = None
+        self.memory_noop = False
 
     def tearDown(self):
         self.temporary.cleanup()
@@ -101,9 +104,30 @@ class LinuxSdkRunner(unittest.TestCase):
         elif any('/qualify_linux_' in part for part in command):
             capture = Path(command[command.index('--output') + 1]); capture.mkdir()
             tiled = any(part.endswith('/qualify_linux_tile_group.py') for part in command)
-            (capture / 'receipt.json').write_text(json.dumps({'qualification': 'failed' if self.fail_capture else
+            receipt = {'qualification': 'failed' if self.fail_capture else
                 'linux-two-tile-consumer-passed' if tiled else 'linux-consumer-passed', 'exitCode': 0,
-                'consumerGpuCompletionVerified': False, 'hardwareAccelerationVerified': False}))
+                'consumerGpuCompletionVerified': False, 'hardwareAccelerationVerified': False}
+            if '--memory-pressure-cycles' in command:
+                cycles = int(command[command.index('--memory-pressure-cycles') + 1])
+                profile = 'linuxThreeStageTileGroup' if tiled else 'continuous32To64'
+                result, stages = memory_evidence(cycles, group=tiled, publication_profile=profile)
+                if self.memory_noop:
+                    for cycle in result['memoryAcceptance']['cycles']:
+                        trim = cycle['trim']
+                        for item in [trim, *trim.get('members', [])]:
+                            item.update(after=item['before'], trimmed=0, busy=True)
+                        cycle['outcome'] = 'observedNoop'
+                summary = runner.memory_acceptance.validate_memory_acceptance(
+                    result, cycles=cycles, stages=stages, pid=42, publication_profile=profile)
+                receipt.update(pid=42, memoryPressureCycles=cycles, result=result,
+                               stages=[{'stage': stage} for stage in stages], memoryAcceptance=summary)
+                if self.memory_fault == 'missing': receipt.pop('memoryAcceptance')
+                if self.memory_fault == 'count': receipt['memoryPressureCycles'] += 1
+                if self.memory_fault == 'stages': receipt['stages'].pop()
+                if self.memory_fault == 'vram': receipt['memoryAcceptance']['physicalVramBytes'] = 0
+                if tiled and self.memory_fault == 'tile':
+                    result['memoryAcceptance']['cycles'][0]['trim']['members'][1]['deviceGeneration'] += 1
+            (capture / 'receipt.json').write_text(json.dumps(receipt))
         if self.change_source:
             self.sources['changed'] = 'different blob'
         Path(log_path).write_text(log)
@@ -152,6 +176,63 @@ class LinuxSdkRunner(unittest.TestCase):
         self.assertTrue(receipt['tileConsumerSamplingVerified'])
         self.assertFalse(receipt['consumerGpuCompletionVerified'])
         self.assertFalse(receipt['hardwareAccelerationVerified'])
+        self.assertFalse(any('--memory-pressure-cycles' in command for command in self.commands))
+        self.assertNotIn('singleMemoryPressureVerified', receipt)
+
+    def test_pressure_bounds_are_checked_before_any_build_or_outputs(self):
+        for cycles in (-1, 3, True, 1.0):
+            self.args.memory_pressure_cycles = cycles
+            with self.subTest(cycles=cycles), self.assertRaisesRegex(ValueError, '0..2'):
+                self.run_fixture()
+        self.assertEqual(self.commands, [])
+        self.assertFalse(self.args.output.exists())
+
+    def test_pressure_cannot_claim_measurement_in_compile_or_build_only(self):
+        self.args.memory_pressure_cycles = 1
+        for stage in ('compile_only', 'build_only'):
+            setattr(self.args, stage, True)
+            with self.subTest(stage=stage), self.assertRaisesRegex(ValueError, 'actual consumer sampling'):
+                self.run_fixture()
+            setattr(self.args, stage, False)
+        self.assertEqual(self.commands, [])
+        self.assertFalse(self.args.output.exists())
+
+    def test_pressure_forwards_to_single32_and_existing_tile3_without_extra_frames(self):
+        self.args.memory_pressure_cycles = 2
+        self.run_fixture()
+        captures = [command for command in self.commands if any('/qualify_linux_' in part for part in command)]
+        self.assertEqual(len(captures), 2)
+        for command in captures:
+            self.assertEqual(command[command.index('--memory-pressure-cycles') + 1], '2')
+        self.assertEqual(captures[0][captures[0].index('--frames') + 1], '32')
+        self.assertNotIn('--frames', captures[1])
+        receipt = self.receipt()
+        self.assertTrue(receipt['singleMemoryPressureVerified'])
+        self.assertTrue(receipt['tileMemoryPressureVerified'])
+        self.assertEqual(receipt['singleMemoryAcceptance']['resumedPublications'], [4, 18])
+        self.assertEqual(receipt['tileMemoryAcceptance']['resumedPublications'], [2, 3])
+
+    def test_pressure_receipts_cannot_omit_or_overstate_actual_sampling(self):
+        self.args.memory_pressure_cycles = 2
+        for fault in ('missing', 'count', 'stages', 'vram', 'tile'):
+            self.args.output = self.root / fault
+            self.memory_fault = fault
+            with self.subTest(fault=fault), self.assertRaises(ValueError): self.run_fixture()
+            receipt = self.receipt()
+            self.assertEqual(receipt['build'], 'failed')
+            self.assertFalse(receipt['tileMemoryPressureVerified'])
+            self.assertEqual(receipt['singleMemoryPressureVerified'], fault == 'tile')
+
+    def test_pressure_noop_does_not_invent_memory_reclamation(self):
+        self.args.memory_pressure_cycles = 2
+        self.memory_noop = True
+        self.run_fixture()
+        receipt = self.receipt()
+        for key in ('singleMemoryAcceptance', 'tileMemoryAcceptance'):
+            self.assertEqual(receipt[key]['managedBytesTrimmed'], 0)
+            self.assertEqual(receipt[key]['outcomes'], ['observedNoop', 'observedNoop'])
+            self.assertIsNone(receipt[key]['physicalVramBytes'])
+            self.assertFalse(receipt[key]['consumerGpuCompletionVerified'])
 
     def test_cpu_library_cannot_turn_a_feature_build_receipt_into_gpu_pass(self):
         self.capabilities['gpuGl']['available'] = False

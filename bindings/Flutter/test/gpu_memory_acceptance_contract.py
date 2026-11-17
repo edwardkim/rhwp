@@ -261,6 +261,8 @@ class MemoryAcceptanceContracts(unittest.TestCase):
         self.assertEqual(memory.memory_pressure_schedule(3, 2, profile), [1, 2])
         for frames, cycles in [(32, 1), (3, 3), (3, True)]:
             with self.assertRaises(ValueError): memory.memory_pressure_schedule(frames, cycles, profile)
+        with self.assertRaisesRegex(ValueError, '0[.][.]2'):
+            memory.memory_pressure_schedule(3, 3, profile)
         value, stages = evidence(group=True, publication_profile=profile)
         summary = memory.validate_memory_acceptance(value, cycles=2, stages=stages, pid=42,
                                                    publication_profile=profile)
