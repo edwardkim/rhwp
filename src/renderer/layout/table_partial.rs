@@ -5728,7 +5728,9 @@ impl LayoutEngine {
                                                 )
                                                 ..flow_end,
                                         );
-                                    } else {
+                                    } else if !self.nested_table_takes_no_flow(para, nested_table) {
+                                        // 저장 줄 없는 문단의 글 앞/뒤 표는 흐름을 전진시키지 않는다
+                                        // (온전한 칸의 `nested_table_flow_advance` 와 같다).
                                         para_y = flow_end;
                                     }
                                     has_preceding_text = true;

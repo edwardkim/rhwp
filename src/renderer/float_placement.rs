@@ -8708,8 +8708,22 @@ pub(crate) fn nested_overlay_outer_frame(
     {
         return None;
     }
-    let top = paragraph_origin + hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), dpi);
+    let top = paragraph_origin + hwpunit_to_px(nested_overlay_vertical_offset_hu(table), dpi);
     Some(top..top + outer_height)
+}
+
+/// 칸 안 문단 기준 글 앞/뒤 표의 세로 오프셋. '쪽 영역 안으로 제한'(`flow_with_text`)이
+/// 켜진 표의 음수 오프셋은 문단 원점 위로 올라가지 않는다 — 칸 안 어울림 개체의
+/// [`cell_wrap_vertical_offset_hu`] 와 같은 규칙이다. 웹한글기안기 인쇄에서 칸 첫 문단의
+/// 표(-10385 HU)는 칸 위끝에, 열한째 문단의 표(-6000 HU)는 그 문단 줄 위끝에 놓인다.
+/// 제한이 꺼진 표는 저장 오프셋 그대로다.
+pub(crate) fn nested_overlay_vertical_offset_hu(table: &Table) -> i32 {
+    let offset = signed_hwpunit(table.common.vertical_offset);
+    if table.common.flow_with_text {
+        offset.max(0)
+    } else {
+        offset
+    }
 }
 
 /// Original stored cell positions describe the first line, after leading space.

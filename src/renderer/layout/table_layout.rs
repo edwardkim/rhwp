@@ -12407,7 +12407,7 @@ impl LayoutEngine {
     /// 저장 줄 없는 문단의 글 앞/뒤 중첩 표(문단·쪽·종이 기준)는 칸의 글줄을 밀지 않는다.
     /// 칸 흐름 높이처럼 행 나눔 유닛에도 흐름 띠로 세지 않는다. 저장 줄이 있는 문단은
     /// 한/글이 저장한 조각 상자(#8715)를 따르므로 이 규칙 밖이다.
-    fn nested_table_takes_no_flow(
+    pub(super) fn nested_table_takes_no_flow(
         &self,
         host: &Paragraph,
         table: &crate::model::table::Table,
@@ -27338,7 +27338,17 @@ impl LayoutEngine {
         let units = self.cell_units(cell, table, styles);
         let mut owners = vec![false; cell.paragraphs.len()];
         for unit in units.iter().take(end_unit).skip(start_unit) {
-            if unit.empty_spacer
+            // 글 앞/뒤 중첩 표만 든 저장 줄 없는 문단은 빈 줄 하나를 차지한다.
+            // 그 줄을 가진 조각이 문단과 표를 소유한다.
+            let overlay_table_line = cell.paragraphs.get(unit.para_idx).is_some_and(|para| {
+                !para.controls.is_empty()
+                    && para.text.trim().is_empty()
+                    && para.controls.iter().all(|control| {
+                        matches!(control, Control::Table(child)
+                            if self.nested_table_takes_no_flow(para, child))
+                    })
+            });
+            if (unit.empty_spacer || overlay_table_line)
                 && unit.vis_start == 0
                 && unit.vis_end == 1
                 && unit.nested_row.is_none()
