@@ -179,7 +179,7 @@ struct State {
   const bool closeAckRequired;
   bool closed = false, ready = false, finished = false, inFlight = false, unregistered = false;
   uint64_t staleDrops = 0;
-  std::string error;
+  std::string error, errorCode;
   std::shared_ptr<NativeApi> api;
   rhwp::cache::TrimMailbox cacheTrim;
   std::shared_ptr<Job> pending;
@@ -240,12 +240,45 @@ struct State {
     }
     changed.notify_one();
   }
-  void fail(NSString* message) {
+  void fail(NSString* message, const std::string& code = "nativeTextureError") {
     std::lock_guard<std::mutex> lock(mutex);
     const char* text = message.UTF8String;
     error = text ? std::string(text).substr(0, 2048) : "Metal producer failed";
+    errorCode = code.substr(0, 64);
   }
 };
+
+bool MetalBackendReady(const std::shared_ptr<State>& state, const std::shared_ptr<NativeApi>& api,
+                       id<MTLDevice> device, id<MTLCommandQueue> queue) {
+  if (!api) {state->fail(@"Native Metal ABI is unavailable.", "unsupported");return false;}
+  NSDictionary* caps = api->read(api->capabilities());
+  uint64_t abi = 0;
+  id available = caps[@"available"];
+  if (![caps[@"ok"] boolValue] || !Unsigned(caps[@"abiVersion"], abi, INT64_MAX) ||
+      ![available isKindOfClass:[NSNumber class]] || CFGetTypeID((__bridge CFTypeRef)available) != CFBooleanGetTypeID()) {
+    state->fail(@"Native Metal capability reply is invalid.");return false;
+  }
+  if (abi != 1) {state->fail(@"Native Metal ABI is unsupported.", "unsupported");return false;}
+  if (![available boolValue]) {state->fail(@"native-skia-metal is disabled.", "featureDisabled");return false;}
+  if (!device) {state->fail(@"A Metal device is unavailable.", "backendUnavailable");return false;}
+  if (!queue) {state->fail(@"Metal command queue allocation failed.", "resourceError");return false;}
+  return true;
+}
+
+uint64_t CreateMetalPresenter(const std::shared_ptr<State>& state, const std::shared_ptr<NativeApi>& api,
+                              id<MTLDevice> device, id<MTLCommandQueue> queue) {
+  NSDictionary* created = api->read(api->create((__bridge const void*)device,
+      (__bridge const void*)queue, state->generation, nullptr, 0));
+  if (![created[@"ok"] boolValue]) {
+    NSString* message = [created[@"error"] isKindOfClass:[NSString class]] ? created[@"error"] : @"Native Metal presenter creation failed.";
+    NSString* code = [created[@"code"] isKindOfClass:[NSString class]] ? created[@"code"] : @"nativeTextureError";
+    state->fail(message, code.UTF8String ?: "nativeTextureError");return 0;
+  }
+  uint64_t presenter = 0;
+  if (!Unsigned(created[@"presenter"], presenter, INT64_MAX) || !presenter)
+    state->fail(@"Native Metal presenter identity is invalid.");
+  return presenter;
+}
 
 void RunCacheTrim(const std::shared_ptr<State>& state, const std::shared_ptr<NativeApi>& api,
                   uint64_t presenter, const rhwp::cache::TrimReceipt& trim) {
@@ -306,17 +339,11 @@ void RunProducer(const std::shared_ptr<State>& state) {
     id<MTLCommandQueue> queue = [device newCommandQueue];
     CVMetalTextureCacheRef cache = nullptr;
     uint64_t presenter = 0;
-    if (api && device && queue) {
-      NSDictionary* capabilities = api->read(api->capabilities());
-      if ([capabilities[@"ok"] boolValue] && [capabilities[@"available"] boolValue] &&
-          [capabilities[@"abiVersion"] unsignedLongLongValue] == 1 &&
-          CVMetalTextureCacheCreate(kCFAllocatorDefault, nullptr, device, nullptr, &cache) == kCVReturnSuccess) {
-        NSDictionary* created = api->read(api->create((__bridge const void*)device,
-            (__bridge const void*)queue, state->generation, nullptr, 0));
-        if ([created[@"ok"] boolValue]) presenter = [created[@"presenter"] unsignedLongLongValue];
-      }
+    if (MetalBackendReady(state, api, device, queue)) {
+      if (CVMetalTextureCacheCreate(kCFAllocatorDefault, nullptr, device, nullptr, &cache) == kCVReturnSuccess)
+        presenter = CreateMetalPresenter(state, api, device, queue);
+      else state->fail(@"CVMetalTextureCache allocation failed.", "resourceError");
     }
-    if (!presenter) state->fail(@"Metal feature/device/presenter is unavailable; use the CPU reference path.");
     {
       std::lock_guard<std::mutex> lock(state->mutex);
       state->api = api;
@@ -373,6 +400,7 @@ void RunProducer(const std::shared_ptr<State>& state) {
               job->credit->retain_until_process_exit(pixels);
               state->current = std::move(frame);
               state->error.clear();
+              state->errorCode.clear();
             }
             // Stale, never-exposed successful targets can safely return credit.
           }
@@ -536,6 +564,7 @@ NSDictionary* CVLimits(bool negotiated) {
 NSDictionary* CVStatus(uint64_t textureId, const std::shared_ptr<State>& state, bool registered) {
   std::lock_guard<std::mutex> lock(state->mutex);
   NSString* error = [[NSString alloc] initWithBytes:state->error.data() length:state->error.size() encoding:NSUTF8StringEncoding];
+  NSString* code = state->error.empty() ? @"" : [[NSString alloc] initWithBytes:state->errorCode.data() length:state->errorCode.size() encoding:NSUTF8StringEncoding];
   NSMutableArray* ids = [NSMutableArray arrayWithCapacity:state->acceptedSnapshots.size()];
   for (const auto snapshot : state->acceptedSnapshots) [ids addObject:@(snapshot)];
   return @{@"textureId":@(textureId),@"deviceGeneration":@(state->generation),
@@ -543,7 +572,7 @@ NSDictionary* CVStatus(uint64_t textureId, const std::shared_ptr<State>& state, 
     @"ready":@(state->ready),@"closed":@(state->closed),@"ownerFinished":@(state->finished),
     @"pending":@(state->pending!=nullptr),@"inFlight":@(state->inFlight),@"hasFrame":@(state->current!=nullptr),
     @"staleFramesDropped":@(state->staleDrops),@"textureUnregisteredNotification":@(state->unregistered),
-    @"error":error?:@"",@"acceptedStamp":StampValue(state->acceptedStamp),@"acceptedSnapshots":ids,
+    @"error":error?:@"",@"errorCode":code?:@"",@"acceptedStamp":StampValue(state->acceptedStamp),@"acceptedSnapshots":ids,
     @"producerDiagnostics":state->current ? (MetalCacheMetricsValue(state->current->cacheMetrics, state->current->job->stamp) ?: (id)[NSNull null]) : (id)[NSNull null],
     @"limits":CVLimits(state->closeAckRequired)};
 }

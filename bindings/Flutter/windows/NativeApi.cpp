@@ -7,11 +7,15 @@
 
 namespace rhwp::d3d {
 namespace {
-template <typename Function> void load(HMODULE library, const char* name, Function& output) {
+template <typename Function> void load(HMODULE library, const char* name, Function& output, bool gpu_export = false) {
   auto address = GetProcAddress(library, name);
   static_assert(sizeof(address) == sizeof(output), "unsupported Windows loader ABI");
   std::memcpy(&output, &address, sizeof(output));
-  if (!output) throw std::runtime_error(std::string("native symbol unavailable: ") + name);
+  if (!output) {
+    const auto message = std::string("native symbol unavailable: ") + name;
+    if (gpu_export) throw GpuAbiUnavailable(message);
+    throw std::runtime_error(message);
+  }
 }
 }
 std::string NativeApi::read(char* raw) const {
@@ -52,13 +56,15 @@ std::shared_ptr<NativeApi> load_api(const std::string& input) {
   if (!library) throw std::runtime_error("native DLL could not be loaded");
   try {
     auto api = std::make_shared<NativeApi>(); api->library = library;
-    load(library, "rhwp_d3d_capabilities", api->capabilities);
-    load(library, "rhwp_d3d_presenter_create", api->create);
-    load(library, "rhwp_d3d_presenter_render", api->render);
-    load(library, "rhwp_d3d_presenter_request", api->request);
-    load(library, "rhwp_d3d_frame_check", api->check);
+    // Missing core ownership/string exports are errors, even if the DLL also
+    // lacks D3D. Only a missing optional GPU ABI selects CPU fallback.
     load(library, "rhwp_presentation_request", api->presentation);
     load(library, "rhwp_string_free", api->free_string);
+    load(library, "rhwp_d3d_capabilities", api->capabilities, true);
+    load(library, "rhwp_d3d_presenter_create", api->create, true);
+    load(library, "rhwp_d3d_presenter_render", api->render, true);
+    load(library, "rhwp_d3d_presenter_request", api->request, true);
+    load(library, "rhwp_d3d_frame_check", api->check, true);
     *pinned_path = std::move(path); *pinned = api; return api;
   } catch (...) { FreeLibrary(library); throw; }
 }

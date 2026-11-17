@@ -115,16 +115,8 @@ void RunMetalView(const std::shared_ptr<MetalViewState>& view) {
     id<MTLDevice> device = MTLCreateSystemDefaultDevice();
     id<MTLCommandQueue> queue = [device newCommandQueue];
     uint64_t presenter = 0;
-    if (api && device && queue) {
-      NSDictionary* caps = api->read(api->capabilities());
-      if ([caps[@"ok"] boolValue] && [caps[@"available"] boolValue] &&
-          [caps[@"abiVersion"] unsignedLongLongValue] == 1) {
-        NSDictionary* created = api->read(api->create((__bridge const void*)device,
-            (__bridge const void*)queue, state->generation, nullptr, 0));
-        if ([created[@"ok"] boolValue]) presenter = [created[@"presenter"] unsignedLongLongValue];
-      }
-    }
-    if (!presenter) state->fail(@"Native Metal feature/device/queue is unavailable; use the CPU reference path.");
+    if (MetalBackendReady(state, api, device, queue))
+      presenter = CreateMetalPresenter(state, api, device, queue);
     {
       std::lock_guard<std::mutex> lock(state->mutex);
       state->api = api;
@@ -239,6 +231,7 @@ void RunMetalView(const std::shared_ptr<MetalViewState>& view) {
             view->cacheMetrics = measured;
             published = true;
             state->error.clear();
+            state->errorCode.clear();
           } else {
             view->flow.discard_completed(job->sequence);
           }
@@ -426,6 +419,7 @@ NSDictionary* MetalViewStatusLocked(const std::shared_ptr<MetalViewState>& view,
   NSMutableArray* ids=[NSMutableArray arrayWithCapacity:owner->acceptedSnapshots.size()];
   for(const auto id:owner->acceptedSnapshots)[ids addObject:@(id)];
   NSString* error=[[NSString alloc] initWithBytes:owner->error.data() length:owner->error.size() encoding:NSUTF8StringEncoding];
+  NSString* code=owner->error.empty()?@"":[[NSString alloc] initWithBytes:owner->errorCode.data() length:owner->errorCode.size() encoding:NSUTF8StringEncoding];
   return @{@"ready":@(owner->ready&&view->layerReady),@"apiReady":@(owner->ready),@"closed":@(owner->closed),@"ownerFinished":@(owner->finished),
     @"registered":@(registered),@"pending":@(owner->pending!=nullptr),@"inFlight":@(owner->inFlight),
     @"hasFrame":@(hasFrame),@"renderedStamp":hasFrame?StampValue(view->renderedStamp):@{},
@@ -440,7 +434,7 @@ NSDictionary* MetalViewStatusLocked(const std::shared_ptr<MetalViewState>& view,
     @"frames":@(view->flow.scheduled()),@"discardedFrames":@(view->flow.discarded()),
     @"quarantined":@(view->flow.quarantined()),@"drawableTimeouts":@(view->drawableTimeouts),
     @"sizeMismatches":@(view->sizeMismatches),@"staleFramesDropped":@(owner->staleDrops),
-    @"wholeFrameReadbacks":@0,@"error":error?:@"",@"limits":MetalViewLimits()};
+    @"wholeFrameReadbacks":@0,@"error":error?:@"",@"errorCode":code?:@"",@"limits":MetalViewLimits()};
 }
 bool MetalViewCurrentLocked(const std::shared_ptr<MetalViewState>& view) {
   auto owner = view->owner;

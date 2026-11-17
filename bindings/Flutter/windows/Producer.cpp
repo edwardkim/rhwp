@@ -21,6 +21,13 @@ struct NativeFailure : std::runtime_error {
   NativeFailure(std::string code, const std::string& message) : std::runtime_error(message), code(std::move(code)) {}
 };
 void checked(HRESULT result, const char* message) { if (FAILED(result)) throw std::runtime_error(message); }
+void checked_device(HRESULT result, const char* message) {
+  // Only an explicit unsupported device/interface is an availability failure.
+  // Allocation, driver and contract errors remain visible diagnostics.
+  if (result == DXGI_ERROR_UNSUPPORTED || result == E_NOINTERFACE)
+    throw NativeFailure("backendUnavailable", message);
+  checked(result, message);
+}
 bool same_luid(const LUID& left, const LUID& right) { return left.HighPart == right.HighPart && left.LowPart == right.LowPart; }
 void mark_frame(const std::shared_ptr<State>& state) {
   // Registrar access is serialized with plugin destruction. This public call
@@ -69,16 +76,16 @@ struct Device {
   PrivateTargetPool<PrivatePixels> private_pool;
   explicit Device(IDXGIAdapter1* adapter) {
     DXGI_ADAPTER_DESC1 expected{}; checked(adapter->GetDesc1(&expected), "engine adapter description failed");
-    checked(D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device12)), "D3D12 device unavailable");
+    checked_device(D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device12)), "D3D12 device unavailable");
     if (!same_luid(expected.AdapterLuid, device12->GetAdapterLuid()) || device12->GetNodeCount() != 1)
       throw std::runtime_error("D3D12 device adapter LUID/node mismatch");
     D3D12_COMMAND_QUEUE_DESC queue{}; queue.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
     checked(device12->CreateCommandQueue(&queue, IID_PPV_ARGS(&queue12)), "D3D12 direct queue unavailable");
     ComPtr<ID3D11Device> base11;
     const D3D_FEATURE_LEVEL levels[] = {D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0};
-    checked(D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_UNKNOWN, nullptr, D3D11_CREATE_DEVICE_BGRA_SUPPORT,
+    checked_device(D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_UNKNOWN, nullptr, D3D11_CREATE_DEVICE_BGRA_SUPPORT,
         levels, 2, D3D11_SDK_VERSION, &base11, nullptr, &context11), "D3D11 bridge device unavailable");
-    checked(base11.As(&device11), "D3D11.1 OpenSharedResource1 unavailable");
+    checked_device(base11.As(&device11), "D3D11.1 OpenSharedResource1 unavailable");
     ComPtr<IDXGIDevice> dxgi; ComPtr<IDXGIAdapter> actual;
     checked(device11.As(&dxgi), "D3D11 DXGI device unavailable");
     checked(dxgi->GetAdapter(&actual), "D3D11 adapter query failed");
@@ -276,13 +283,18 @@ void run_producer(const std::shared_ptr<State>& state) noexcept {
     api = load_api(state->path);
     const auto capabilities = api->read(api->capabilities());
     NativeReply caps(capabilities);
-    if (!caps.field("ok").boolean() || !caps.field("available").boolean() || caps.field("abiVersion").integer() != 1)
-      throw std::runtime_error("native-skia-d3d is unavailable; select the CPU reference renderer");
+    if (!caps.field("ok").boolean())
+      throw NativeFailure(caps.field("code").text(), caps.field("error").text());
+    if (caps.field("abiVersion").integer() != 1)
+      throw NativeFailure("unsupported", "native D3D ABI is unsupported; select the CPU reference renderer");
+    if (!caps.field("available").boolean())
+      throw NativeFailure("featureDisabled", "native-skia-d3d is unavailable; select the CPU reference renderer");
     Device device(state->adapter.Get());
     const auto created = api->read(api->create(state->adapter.Get(), device.device12.Get(), device.queue12.Get(),
         state->generation, nullptr, 0));
     NativeReply creation(created);
-    if (!creation.field("ok").boolean()) throw std::runtime_error("native D3D presenter creation failed");
+    if (!creation.field("ok").boolean())
+      throw NativeFailure(creation.field("code").text(), creation.field("error").text());
     presenter = creation.field("presenter").integer();
     if (!presenter) throw std::runtime_error("native D3D presenter handle is zero");
     {
@@ -370,7 +382,9 @@ void run_producer(const std::shared_ptr<State>& state) noexcept {
       }
       if (published && state->producer_ready) state->producer_ready(job->serial, job->stamp);
     }
-  } catch (const std::exception& error) { try { state->fail(error.what()); } catch (...) {} }
+  } catch (const GpuAbiUnavailable& error) { try { state->fail(error.what(), "unsupported"); } catch (...) {} }
+  catch (const NativeFailure& error) { try { state->fail(error.what(), error.code); } catch (...) {} }
+  catch (const std::exception& error) { try { state->fail(error.what()); } catch (...) {} }
   try {
     if (api && presenter) {
       const std::string release = "{\"op\":\"release\"}";

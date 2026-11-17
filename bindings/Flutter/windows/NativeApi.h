@@ -3,9 +3,13 @@
 #include "rhwp_native_ffi.h"
 #include <windows.h>
 #include <memory>
+#include <stdexcept>
 #include <string>
 
 namespace rhwp::d3d {
+struct GpuAbiUnavailable final : std::runtime_error {
+  using std::runtime_error::runtime_error;
+};
 struct NativeApi {
   HMODULE library = nullptr;
   decltype(&rhwp_d3d_capabilities) capabilities = nullptr;
