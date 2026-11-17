@@ -1,0 +1,7 @@
+{
+  "validatedCodeHead": "fcf2e11b1727297743343446333132e1409737f1",
+  "base": "22da83586aab1baf960f2159abda347062ecf7ed",
+  "nonMydocsTreeSha256": "728e294c8d6f9e0035e1c48d0d935835131c3e85c33eb0ace7a9586ed1b240be",
+  "method": "git ls-tree -rz --full-tree <commit>; exclude paths beginning mydocs/; SHA-256 over remaining NUL-separated records",
+  "submissionStrategy": "검증한 코드 head를 조상으로 보존하고 mydocs 증적만 별도 커밋한다."
+}

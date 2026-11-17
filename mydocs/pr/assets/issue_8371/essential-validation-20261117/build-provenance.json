@@ -1,0 +1,109 @@
+{
+  "source": "fcf2e11b1727297743343446333132e1409737f1",
+  "base": "22da83586aab1baf960f2159abda347062ecf7ed",
+  "wasm": {
+    "source": "fcf2e11b1727297743343446333132e1409737f1",
+    "accepted": true,
+    "status": "passed",
+    "command": [
+      "powershell.exe",
+      "-NoProfile",
+      "-ExecutionPolicy",
+      "Bypass",
+      "-File",
+      "$WORKSPACE\\scripts\\wasm-pack-locked.ps1",
+      "$WORKSPACE",
+      "--target",
+      "web",
+      "--mode",
+      "no-install",
+      "--out-dir",
+      "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\pkg-candidate-fresh",
+      "--release"
+    ],
+    "package": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\pkg-candidate-fresh",
+    "startedAt": 1794925804.4255362,
+    "sourceLibSha256": "02049d37656973486cfee45609728847ef415c9836bac1afdf29d6e4c222d737",
+    "exitCode": 0,
+    "completedAt": 1794927819.1988235,
+    "wasmSha256": "312c607caf29e485d147f5e301b082b953e3a6dd75a00c0fc0434041bc5f6730",
+    "jsSha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365"
+  },
+  "windowsNative": {
+    "source": "fcf2e11b1727297743343446333132e1409737f1",
+    "profile": "dev",
+    "purpose": "Supplemental Windows DWrite actual-paint check; official release-test Native suites run separately on Ubuntu.",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "dev",
+      "--features",
+      "native-skia",
+      "--bin",
+      "rhwp",
+      "--target-dir",
+      "$WORKSPACE\\target\\pr-review"
+    ],
+    "status": "passed",
+    "startedAt": 1794927831.4057615,
+    "exitCode": 0,
+    "completedAt": 1794928633.30099,
+    "binary": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\rhwp-candidate-native.exe",
+    "binarySha256": "d5a3eb8b3df80c52415e85922fc89933b50b252ee8013e1ce406476d8bbacc3e"
+  },
+  "rejectedCachedPackage": {
+    "accepted": false,
+    "base_sha256": "e80247cd870e90e44e29159fbfb1e46f1b59edaec3910f77ba1111f4b820969c",
+    "candidate_sha256": "e80247cd870e90e44e29159fbfb1e46f1b59edaec3910f77ba1111f4b820969c",
+    "same_bytes": true,
+    "reason": "No candidate root recompilation after changing worktree; force source lib rebuild before use."
+  },
+  "nativeBase": {
+    "label": "base-native-build",
+    "source": "22da83586aab1baf960f2159abda347062ecf7ed",
+    "command": [
+      "/home/tsjang/.cargo/bin/cargo",
+      "build",
+      "-v",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--bin",
+      "rhwp",
+      "--target-dir",
+      "$REMOTE_WORKSPACE/target/pr-review"
+    ],
+    "startedAt": 1794920523.5590782,
+    "exitCode": 0,
+    "completedAt": 1794921220.8471575,
+    "binary": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/rhwp-base-native",
+    "binarySha256": "97c1b137e0d8e0a7bb521222bace443246e7dbdee28e6fb0b2261e8fc783ea98"
+  },
+  "nativeCandidate": {
+    "label": "candidate-native-build",
+    "source": "fcf2e11b1727297743343446333132e1409737f1",
+    "command": [
+      "/home/tsjang/.cargo/bin/cargo",
+      "build",
+      "-v",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--bin",
+      "rhwp",
+      "--target-dir",
+      "$REMOTE_WORKSPACE/target/pr-review"
+    ],
+    "startedAt": 1794921938.7158647,
+    "exitCode": 0,
+    "completedAt": 1794922462.217543,
+    "binary": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/rhwp-candidate-native",
+    "binarySha256": "b12e910574af8361a9c8695053d035cb5691de3bef5bc8dabea1c5006f2a2636"
+  }
+}
