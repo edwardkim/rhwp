@@ -3086,7 +3086,9 @@ impl DocumentCore {
         )?;
 
         for &page_num in &pages {
-            let tree = self.build_page_tree(page_num)?;
+            // 본문 칸이다. 같은 문단·컨트롤 번호의 머리말·꼬리말 표 칸을 잡지 않는다.
+            let mut tree = self.build_page_tree(page_num)?;
+            tree.root.remove_page_areas();
             if let Some(hit) = super::transformed_text::cursor(
                 &tree.root,
                 section_idx,
@@ -3136,7 +3138,8 @@ impl DocumentCore {
             .first()
             .copied()
             .unwrap_or(pages[0]);
-        let tree = self.build_page_tree(first_page)?;
+        let mut tree = self.build_page_tree(first_page)?;
+        tree.root.remove_page_areas();
         let first_page_cell_bounds =
             find_table_cell_bounds_in_node(&tree.root, parent_para_idx, control_idx, cell_idx);
 
@@ -3898,7 +3901,11 @@ impl DocumentCore {
                 Some((is_header, apply_to)) => {
                     Ok(self.header_footer_page_tree(page_num, section_idx, is_header, apply_to))
                 }
-                None => self.build_page_tree_cached(page_num).map(Some),
+                // 본문 칸은 같은 문단·컨트롤 번호의 머리말·꼬리말 표 칸을 잡지 않는다.
+                None => self.build_page_tree_cached(page_num).map(|mut tree| {
+                    tree.root.remove_page_areas();
+                    Some(tree)
+                }),
             }
         };
         fn search_root(
@@ -4386,7 +4393,9 @@ impl DocumentCore {
             // Studio에서 보이거나 prefetch된 페이지는 이미 cache에 있다. 객체 선택
             // 때마다 같은 페이지를 다시 조판하면 keydown을 수백 ms 막으므로, 문서
             // mutation 시 함께 무효화되는 표준 page-tree cache를 재사용한다 (#4252).
-            let tree = self.build_page_tree_cached(page_num as u32)?;
+            // 본문 표다. 같은 문단·컨트롤 번호의 머리말·꼬리말 표 칸을 잡지 않는다.
+            let mut tree = self.build_page_tree_cached(page_num as u32)?;
+            tree.root.remove_page_areas();
             if find_nested_table_cells(&tree.root, parent_para_idx, &path, page_num, &mut cells) {
                 found = true;
             } else if found {
