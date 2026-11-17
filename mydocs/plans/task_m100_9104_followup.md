@@ -41,7 +41,7 @@
 - 최소 공개 글꼴 환경에서 원본/선언 대체/명시 공급 우선, 등록·미등록 요청의 오프라인 CJK,
   보통/굵게·부분 glyph fallback·미지원·관측 상한·다쪽 재사용을 실제 제품 경로로 확인한다.
 - 진단 활성/비활성 PNG는 바이트 단위로 같아야 한다. 네트워크 실패 기록은 실제 관측과 구분한다.
-- Native 중첩 표 전17쪽·두 형식 편람 전383쪽의 실제 Native/fresh WASM을 먼저 비교한다.
+- Native 중첩 표 전 17쪽·두 형식 편람 전 383쪽의 실제 Native/fresh WASM을 먼저 비교한다.
   60·63쪽 독립 입력란과 10쪽 본문 원점을 확대 판독한 뒤 기존 4개 관계형 회귀를 이식한다.
 - 원본·독립 Hancom Print·실제 공급 조건·compat·DPI·전쪽 TSV·PNG·producer SHA를 고정한다.
   잘못된 중간 출력이나 페이지별 최댓값을 합치지 않으며 보호 하한·허용치를 낮추지 않는다.
@@ -58,3 +58,10 @@
 사용자 글꼴·Studio 배포 JS/WASM은 보존한다. 공유 target은 기본 작업공간의 target/pr-review,
 중간 산출물은 기본 작업공간 output/issue9104 아래에 둔다. 오늘할일·PR 번호 기반 review는
 실제 PR 채번과 code head CI 성공 뒤 정본 절차에 따라 기록한다.
+
+## 로컬 구현·검증 결과
+
+승인한 두 범위의 구현과 필수 Rust·Native·fresh WASM·전쪽 비교를 완료했다.
+[결과 보고](../report/task_m100_9104_report.md)와 [최종 증거](../working/assets/issue9104/final/README.md)에
+실제 source·범위·결과를 기록했다. 원 PR의 중복 수용과 원격 처리는 수행하지 않았다.
+보호 상승분 갱신·최종 무결성 확인 후 새 원격 처리 승인을 확인한다.

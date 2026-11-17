@@ -1,0 +1,12 @@
+{
+  "scope": "incoming",
+  "backend": "wasm",
+  "base_source": "4f44355f5ff234abd1289d340cb4a3fe13297982",
+  "product_source": "1da7afbd64bbc59d9338a187ebcd21860ddc0842",
+  "compared_at": "2026-11-17T02:30:33.030996+00:00",
+  "pages": 74,
+  "same_png": 74,
+  "improved_pages": [],
+  "declines": [],
+  "minimum_raw": "93.42996"
+}

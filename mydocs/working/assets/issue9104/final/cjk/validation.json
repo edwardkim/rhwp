@@ -1,0 +1,120 @@
+{
+  "checked_at": "2026-11-17T01:06:02.380801+00:00",
+  "artifact": {
+    "source": "1da7afbd64bbc59d9338a187ebcd21860ddc0842",
+    "path": "/home/edward/mygithub/rhwp/output/issue9104/rhwp-candidate-native",
+    "sha256": "47567f03d7cfb9fdc2b7ae9dcb6a08c0b4f2d339f5a0eeb1526890bed09dbbf0"
+  },
+  "input": "mydocs/working/assets/issue9104/inputs/offline-font-families.hwpx",
+  "input_sha256": "ad4a3660999e616731cd55d0135c6d06119eda8c8041c9e7a3e9f38713eab044",
+  "cases": [
+    {
+      "key": "render",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/issue9104/rhwp-candidate-native",
+        "export-png",
+        "mydocs/working/assets/issue9104/inputs/offline-font-families.hwpx",
+        "--json",
+        "--profile",
+        "print",
+        "-o",
+        "/home/edward/mygithub/rhwp/output/issue9104/cjk/render"
+      ],
+      "exit": 0,
+      "seconds": 0.421,
+      "rendered_pages": 1,
+      "state": "complete",
+      "records": [
+        {
+          "bold": false,
+          "italic": false,
+          "requested": "HY견고딕",
+          "resolved": "Noto Sans CJK KR",
+          "source": "system"
+        },
+        {
+          "bold": false,
+          "italic": false,
+          "requested": "HY신명조",
+          "resolved": "Noto Serif CJK KR",
+          "source": "system"
+        },
+        {
+          "bold": false,
+          "italic": false,
+          "requested": "HY중고딕",
+          "resolved": "Noto Sans CJK KR",
+          "source": "system"
+        },
+        {
+          "bold": false,
+          "italic": false,
+          "requested": "HY헤드라인M",
+          "resolved": "Noto Sans CJK KR",
+          "source": "system"
+        },
+        {
+          "bold": false,
+          "italic": false,
+          "requested": "맑은 고딕",
+          "resolved": "Noto Sans CJK KR",
+          "source": "system"
+        },
+        {
+          "bold": false,
+          "italic": false,
+          "requested": "신명 태고딕",
+          "resolved": "Noto Sans CJK KR",
+          "source": "system"
+        },
+        {
+          "bold": false,
+          "italic": false,
+          "requested": "함초롬돋움",
+          "resolved": "Noto Sans CJK KR",
+          "source": "system"
+        },
+        {
+          "bold": false,
+          "italic": false,
+          "requested": "함초롬바탕",
+          "resolved": "Noto Serif CJK KR",
+          "source": "system"
+        }
+      ],
+      "missing_requests": [],
+      "genericFallbacks": [
+        "HY견고딕",
+        "HY신명조",
+        "HY중고딕",
+        "HY헤드라인M",
+        "맑은 고딕",
+        "신명 태고딕",
+        "함초롬돋움",
+        "함초롬바탕"
+      ]
+    },
+    {
+      "key": "metadata-only",
+      "command": [
+        "/home/edward/mygithub/rhwp/output/issue9104/rhwp-candidate-native",
+        "export-png",
+        "mydocs/working/assets/issue9104/inputs/offline-font-families.hwpx",
+        "--json",
+        "--profile",
+        "print",
+        "-o",
+        "/home/edward/mygithub/rhwp/output/issue9104/cjk/metadata-only",
+        "--metadata-only"
+      ],
+      "exit": 0,
+      "seconds": 0.25,
+      "rendered_pages": 0,
+      "state": "notRendered",
+      "records": [],
+      "missing_requests": [],
+      "genericFallbacks": []
+    }
+  ],
+  "all_passed": true
+}

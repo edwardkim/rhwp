@@ -1,0 +1,25 @@
+{
+  "checked_at": "2026-11-17T01:47:45.599648+00:00",
+  "base_artifact": {
+    "source": "4f44355f5ff234abd1289d340cb4a3fe13297982",
+    "path": "/home/edward/mygithub/rhwp/output/issue9104/rhwp-base-native",
+    "sha256": "1798d536c6fae6b80fb03684c39d018420d580f6fd5127dd912bf75aef86c09d"
+  },
+  "command": [
+    "/home/edward/mygithub/rhwp/output/issue9104/rhwp-base-native",
+    "export-png",
+    "mydocs/working/assets/issue9104/inputs/offline-font-families.hwpx",
+    "--json",
+    "--profile",
+    "print",
+    "-o",
+    "/home/edward/mygithub/rhwp/output/issue9104/cjk/base-render"
+  ],
+  "png_sha256": "cf4753497fccd2281ea33010cf5015504877f68c58035ffa0d49ff9939e0976a",
+  "same_png_bytes": true,
+  "base_still_has_all_ten_lines": true,
+  "missing_diagnostic_is_detected_in_base": true,
+  "base_local_fallbacks_present": false,
+  "base_generic_fallbacks": [],
+  "candidate_observed_local_fallbacks": 8
+}

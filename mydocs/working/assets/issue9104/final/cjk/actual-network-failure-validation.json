@@ -1,0 +1,23 @@
+{
+  "source": "1da7afbd64bbc59d9338a187ebcd21860ddc0842",
+  "command": [
+    "/home/edward/mygithub/rhwp/output/issue9104/rhwp-candidate-native",
+    "export-png",
+    "mydocs/working/assets/issue9104/inputs/offline-font-families.hwpx",
+    "--json",
+    "--profile",
+    "print",
+    "-o",
+    "/home/edward/mygithub/rhwp/output/issue9104/cjk/actual-network-failure"
+  ],
+  "exit_code": 0,
+  "seconds": 1.13,
+  "network_namespace": "unshare-net",
+  "offline_environment_flag_set": false,
+  "webfont_cache_initially_empty": true,
+  "actual_download_failures_observed": true,
+  "local_fallback_records": 8,
+  "missing_requests": [],
+  "png_identical_to_explicit_offline_mode": true,
+  "png_sha256": "cf4753497fccd2281ea33010cf5015504877f68c58035ffa0d49ff9939e0976a"
+}

@@ -1,0 +1,207 @@
+{
+  "product_source": "1da7afbd64bbc59d9338a187ebcd21860ddc0842",
+  "test_head": "13bb8191967f7e2efc9c182deaf0e7e075576205",
+  "full_default_tests_passed": 13710,
+  "native_official_passed": 4073,
+  "native_observation_focused_passed": 12,
+  "no_runtime_changes_after_producer": true,
+  "checks": [
+    {
+      "name": "prepare",
+      "source": "13bb8191967f7e2efc9c182deaf0e7e075576205",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "seconds": 2.877,
+      "log": "/home/edward/mygithub/rhwp/output/issue9104/final-prepare.log",
+      "completed_at": "2026-11-17T02:25:59.667880+00:00",
+      "log_sha256": "5b0119496d27a8264012681759c6ae65f4f5b1902083ac21bae337be7b792384",
+      "summary_lines": []
+    },
+    {
+      "name": "fmt",
+      "source": "13bb8191967f7e2efc9c182deaf0e7e075576205",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 39.516,
+      "log": "/home/edward/mygithub/rhwp/output/issue9104/final-fmt.log",
+      "completed_at": "2026-11-17T02:26:39.186362+00:00",
+      "log_sha256": "6c1ea865bfe516895deee2a2d5dd298b3f59314f30b6ef05c56b47e7bf40e45e",
+      "summary_lines": []
+    },
+    {
+      "name": "full-nextest",
+      "source": "13bb8191967f7e2efc9c182deaf0e7e075576205",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--tests",
+        "--test-threads",
+        "6",
+        "--no-fail-fast"
+      ],
+      "exit_code": 0,
+      "seconds": 1913.034,
+      "log": "/home/edward/mygithub/rhwp/output/issue9104/final-full-nextest.log",
+      "completed_at": "2026-11-17T02:58:32.226974+00:00",
+      "log_sha256": "53363c9bec5ca596c1adde0baec6f690c344fce05c7788c355da1e117d89c3b5",
+      "summary_lines": [
+        "        PASS [   0.005s] (13700/13710) rhwp-ooxml-chart renderer::tests::test_stock_axis_unconditional_headroom",
+        "        PASS [   0.006s] (13701/13710) rhwp-ooxml-chart renderer::tests::test_stock_close_marker_only",
+        "        PASS [   0.006s] (13702/13710) rhwp-ooxml-chart renderer::tests::test_stock_hilow_lines_per_category",
+        "        PASS [   0.006s] (13703/13710) rhwp-ooxml-chart renderer::tests::test_stock_ohlc_candles",
+        "        PASS [   0.005s] (13704/13710) rhwp-password-crypto tests::hwp5_decrypt_matches_external_vector",
+        "        PASS [   0.005s] (13705/13710) rhwp-ooxml-chart renderer::tests::test_stock_series_count_and_line_are_independent",
+        "        PASS [   0.005s] (13706/13710) rhwp-password-crypto tests::hwp5_stream_roundtrip_preserves_partial_block",
+        "        PASS [   1.294s] (13707/13710) rhwp::regression_suite_028 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_8",
+        "        PASS [   2.762s] (13708/13710) rhwp::regression_suite_028 verified_september_2023_note_print_origins::completed_september_2023_hwp_note_starts_keep_print_coordinates_and_owned_equations",
+        "        PASS [   5.850s] (13709/13710) rhwp::regression_suite_028 verified_september_2023_note_print_origins::completed_september_2023_hwpx_note_starts_keep_print_coordinates_and_owned_equations",
+        "        PASS [ 250.283s] (13710/13710) rhwp::regression_suite_023 issue_2063::huge_cellbreak_table_paginates_without_quadratic_blowup",
+        "     Summary [ 741.883s] 13710 tests run: 13710 passed (2 slow), 45 skipped"
+      ]
+    },
+    {
+      "name": "clippy-native",
+      "source": "13bb8191967f7e2efc9c182deaf0e7e075576205",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--all-targets",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 152.645,
+      "log": "/home/edward/mygithub/rhwp/output/issue9104/final-clippy-native.log",
+      "completed_at": "2026-11-17T03:01:04.940068+00:00",
+      "log_sha256": "0e2d1d97e8f62b1e12ed8d2122b6fcbb365444add193e6afbc53487b0b658b0d",
+      "summary_lines": [
+        "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2m 32s"
+      ]
+    },
+    {
+      "name": "clippy-wasm",
+      "source": "13bb8191967f7e2efc9c182deaf0e7e075576205",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 109.687,
+      "log": "/home/edward/mygithub/rhwp/output/issue9104/final-clippy-wasm.log",
+      "completed_at": "2026-11-17T03:02:54.630419+00:00",
+      "log_sha256": "7d57fe4113df2588c24411cf0fff8a3bcac1170447a4ba1d48a31103fc472898",
+      "summary_lines": [
+        "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1m 49s"
+      ]
+    },
+    {
+      "name": "workspace-build",
+      "source": "13bb8191967f7e2efc9c182deaf0e7e075576205",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review"
+      ],
+      "exit_code": 0,
+      "seconds": 164.902,
+      "log": "/home/edward/mygithub/rhwp/output/issue9104/final-workspace-build.log",
+      "completed_at": "2026-11-17T03:05:39.534877+00:00",
+      "log_sha256": "76690e426c00e14d606989e87a329e3f26b3960dcf8de01dbe09d863ecb731dd",
+      "summary_lines": [
+        "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2m 37s"
+      ]
+    },
+    {
+      "name": "clippy-workspace",
+      "source": "13bb8191967f7e2efc9c182deaf0e7e075576205",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 152.997,
+      "log": "/home/edward/mygithub/rhwp/output/issue9104/final-clippy-workspace.log",
+      "completed_at": "2026-11-17T03:08:12.535748+00:00",
+      "log_sha256": "4df42469fe18383951c257895629ba75301c6621288d442112edca555805173e",
+      "summary_lines": [
+        "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2m 32s"
+      ]
+    },
+    {
+      "name": "suite-policy",
+      "source": "13bb8191967f7e2efc9c182deaf0e7e075576205",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "4f44355f5ff234abd1289d340cb4a3fe13297982"
+      ],
+      "exit_code": 0,
+      "seconds": 0.965,
+      "log": "/home/edward/mygithub/rhwp/output/issue9104/final-suite-policy.log",
+      "completed_at": "2026-11-17T03:08:13.502982+00:00",
+      "log_sha256": "6d7bd59cbec3c14d9eeabbf3abdf1031ba4f328f6c6835ca683ab6b6645ea0a2",
+      "summary_lines": []
+    },
+    {
+      "name": "unit-tier-policy",
+      "source": "13bb8191967f7e2efc9c182deaf0e7e075576205",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "4f44355f5ff234abd1289d340cb4a3fe13297982"
+      ],
+      "exit_code": 0,
+      "seconds": 11.109,
+      "log": "/home/edward/mygithub/rhwp/output/issue9104/final-unit-tier-policy.log",
+      "completed_at": "2026-11-17T03:08:24.615227+00:00",
+      "log_sha256": "13c6ef79025c5feff40497d4f4cc3efa0e650c4bcacb16750adad076989d82d1",
+      "summary_lines": []
+    }
+  ]
+}
