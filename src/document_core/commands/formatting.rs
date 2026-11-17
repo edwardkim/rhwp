@@ -2757,6 +2757,227 @@ impl DocumentCore {
         Ok("{\"ok\":true,\"exists\":false}".to_string())
     }
 
+    /// 문서 전체 쪽 번호의 쪽에 적용되는 감추기 조판 부호를 문서 순서로 돌려준다(마지막 것이 그 쪽을
+    /// 정한다). 본문 문단 시작 쪽이 아니라 조판처럼 조판 부호가 놓인 줄의 쪽을 따르므로 앞 쪽에서
+    /// 이어지는 문단 가운데와 표 셀 안의 것도 찾는다.
+    pub fn get_page_hides_on_page_native(
+        &self,
+        page: u32,
+    ) -> Result<String, crate::error::HwpError> {
+        use crate::model::control::Control;
+        let (section_idx, sources) = self.page_hide_sources_on_page(page)?;
+        let mut items = Vec::with_capacity(sources.len());
+        for source in &sources {
+            let para = self.page_hide_source_paragraph(section_idx, source)?;
+            let Some(Control::PageHide(ph)) = para.controls.get(source.control) else {
+                continue;
+            };
+            let path: Vec<String> = source
+                .path
+                .iter()
+                .map(|(ci, cell, cpi)| {
+                    format!(
+                        "{{\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}}}",
+                        ci, cell, cpi
+                    )
+                })
+                .collect();
+            items.push(format!(
+                "{{\"para\":{},\"cellPath\":[{}],\"controlIdx\":{},\"hideHeader\":{},\"hideFooter\":{},\"hideMasterPage\":{},\"hideBorder\":{},\"hideFill\":{},\"hidePageNum\":{}}}",
+                source.para,
+                path.join(","),
+                source.control,
+                ph.hide_header,
+                ph.hide_footer,
+                ph.hide_master_page,
+                ph.hide_border,
+                ph.hide_fill,
+                ph.hide_page_num
+            ));
+        }
+        Ok(format!(
+            "{{\"ok\":true,\"section\":{},\"hides\":[{}]}}",
+            section_idx,
+            items.join(",")
+        ))
+    }
+
+    /// 한/글 12.30 쪽 > 감추기처럼 쪽의 감추기를 정한다. 그 쪽의 감추기 조판 부호를 모두 지우고, 하나라도
+    /// 켜면 캐럿 자리(본문 문단 또는 `cell_path` 의 셀 문단의 `char_offset`, 글자 기준)에 새로 넣는다.
+    /// 한/글도 거듭 설정하면 앞 부호를 캐럿 자리로 옮겨 그 쪽에 하나만 남긴다.
+    pub fn set_page_hide_on_page_native(
+        &mut self,
+        page: u32,
+        para_idx: usize,
+        cell_path: &[(usize, usize, usize)],
+        char_offset: usize,
+        ph: crate::model::control::PageHide,
+    ) -> Result<String, crate::error::HwpError> {
+        use crate::error::HwpError;
+        use crate::model::control::Control;
+        let (section_idx, mut sources) = self.page_hide_sources_on_page(page)?;
+        if para_idx >= self.document.sections[section_idx].paragraphs.len() {
+            return Err(HwpError::RenderError("문단 범위 초과".to_string()));
+        }
+        let mut cell_path = cell_path.to_vec();
+        // 한 문단 안에서 뒤 조판 부호부터 지워야 앞 컨트롤 번호가 그대로 남는다.
+        sources.sort_by_key(|source| {
+            let mut key = vec![source.para];
+            key.extend(
+                source
+                    .path
+                    .iter()
+                    .flat_map(|&(ci, cell, cpi)| [ci, cell, cpi]),
+            );
+            key.push(source.control);
+            std::cmp::Reverse(key)
+        });
+        let mut reflow: Vec<(usize, Vec<(usize, usize, usize)>)> = Vec::new();
+        for source in &sources {
+            self.page_hide_source_paragraph_mut(section_idx, source)?
+                .remove_control(source.control);
+            // 캐럿 셀 경로가 지난 문단에서 앞 컨트롤이 빠지면 경로의 표 번호를 당긴다.
+            if source.para == para_idx {
+                for k in 0..cell_path.len() {
+                    if source.path[..] == cell_path[..k] && source.control < cell_path[k].0 {
+                        cell_path[k].0 -= 1;
+                    }
+                }
+            }
+            reflow.push((source.para, source.path.clone()));
+        }
+        let any = ph.hide_header
+            || ph.hide_footer
+            || ph.hide_master_page
+            || ph.hide_border
+            || ph.hide_fill
+            || ph.hide_page_num;
+        if any {
+            let paragraph = if cell_path.is_empty() {
+                &mut self.document.sections[section_idx].paragraphs[para_idx]
+            } else {
+                self.get_cell_paragraph_mut_by_path(section_idx, para_idx, &cell_path)?
+            };
+            let insert_idx = crate::document_core::helpers::find_control_text_positions(paragraph)
+                .iter()
+                .position(|&pos| pos > char_offset)
+                .unwrap_or(paragraph.controls.len());
+            paragraph.align_ctrl_data_records();
+            paragraph.controls.insert(insert_idx, Control::PageHide(ph));
+            paragraph.ctrl_data_records.insert(insert_idx, None);
+            paragraph.shift_for_inline_control_insert(insert_idx, char_offset);
+            paragraph.char_count += 8;
+            paragraph.control_mask |= 1u32 << 0x0015;
+            paragraph.has_para_text = true;
+            if cell_path.is_empty() {
+                self.shift_active_field_for_control_insert(section_idx, para_idx, insert_idx);
+            }
+            reflow.push((para_idx, cell_path));
+        }
+        reflow.sort();
+        reflow.dedup();
+        self.document.sections[section_idx].raw_stream = None;
+        for (para, path) in reflow {
+            match path.last() {
+                None => self.reflow_paragraph(section_idx, para),
+                Some(&(_, _, cell_para)) => {
+                    self.reflow_cell_paragraph_by_path(section_idx, para, &path, cell_para)
+                }
+            }
+        }
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+        self.invalidate_page_tree_cache();
+        Ok(crate::document_core::helpers::json_ok())
+    }
+
+    fn page_hide_sources_on_page(
+        &self,
+        page: u32,
+    ) -> Result<(usize, Vec<crate::renderer::page_number::PageHideSource>), crate::error::HwpError>
+    {
+        let mut offset = 0usize;
+        for (section_idx, pr) in self.pagination.iter().enumerate() {
+            let local = (page as usize).wrapping_sub(offset);
+            if local < pr.pages.len() {
+                let mut sources = crate::renderer::page_number::page_hide_sources(
+                    &pr.pages,
+                    &self.document.sections[section_idx].paragraphs,
+                );
+                // 한/글 12.30은 표 셀 안 감추기를 표가 처음 놓인 쪽에 적용하지만(조판), 감추기 창은
+                // 조판 부호가 실제로 놓인 쪽에서 읽고 고친다. 나뉜 표의 둘째 쪽 셀에 넣은 것은 그 쪽에서 보인다.
+                // ponytail: 중첩 표 안의 것은 바깥 표의 첫 쪽으로 찾는다.
+                for source in &mut sources {
+                    let &[(ci, cell, cpi)] = source.path.as_slice() else {
+                        continue;
+                    };
+                    let para = self.page_hide_source_paragraph(section_idx, source)?;
+                    let Some(&at) =
+                        crate::document_core::helpers::find_control_text_positions(para)
+                            .get(source.control)
+                    else {
+                        continue;
+                    };
+                    if let Some(&placed) = self
+                        .find_pages_for_cell_position(
+                            section_idx,
+                            source.para,
+                            ci,
+                            cell,
+                            Some((cpi, at)),
+                        )?
+                        .first()
+                    {
+                        source.page = (placed as usize).wrapping_sub(offset);
+                    }
+                }
+                sources.retain(|source| source.page == local);
+                return Ok((section_idx, sources));
+            }
+            offset += pr.pages.len();
+        }
+        Err(crate::error::HwpError::PageOutOfRange(page))
+    }
+
+    fn page_hide_source_paragraph(
+        &self,
+        section_idx: usize,
+        source: &crate::renderer::page_number::PageHideSource,
+    ) -> Result<&crate::model::paragraph::Paragraph, crate::error::HwpError> {
+        use crate::model::control::Control;
+        let missing =
+            || crate::error::HwpError::RenderError("감추기 자리를 찾을 수 없습니다".to_string());
+        let mut para = self.document.sections[section_idx]
+            .paragraphs
+            .get(source.para)
+            .ok_or_else(missing)?;
+        for &(ci, cell, cpi) in &source.path {
+            let Some(Control::Table(table)) = para.controls.get(ci) else {
+                return Err(missing());
+            };
+            para = table
+                .cells
+                .get(cell)
+                .and_then(|cell| cell.paragraphs.get(cpi))
+                .ok_or_else(missing)?;
+        }
+        Ok(para)
+    }
+
+    fn page_hide_source_paragraph_mut(
+        &mut self,
+        section_idx: usize,
+        source: &crate::renderer::page_number::PageHideSource,
+    ) -> Result<&mut crate::model::paragraph::Paragraph, crate::error::HwpError> {
+        if source.path.is_empty() {
+            return self.document.sections[section_idx]
+                .paragraphs
+                .get_mut(source.para)
+                .ok_or_else(|| crate::error::HwpError::RenderError("문단 범위 초과".to_string()));
+        }
+        self.get_cell_paragraph_mut_by_path(section_idx, source.para, &source.path)
+    }
+
     /// 구역의 쪽 번호 매기기(`pgnp`)를 읽는다 (#7635).
     ///
     /// 한/글 쪽 번호 매기기 창처럼 구역 본문 문단의 마지막 쪽 번호 위치를 돌려준다.
