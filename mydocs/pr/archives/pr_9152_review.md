@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**머지 보류 — 최종 통합 검증 진행 중.** Native 독립 Print 비교를 완료했으며 fresh WASM 및 나머지 필수 검증 후 판정을 갱신한다.
+**머지 보류 — 최종 통합 검증 진행 중.** Native/fresh WASM 독립 Print 비교를 완료했으며 나머지 필수 검증 후 판정을 갱신한다.
 
 ## 변경과 검토 범위
 
@@ -51,3 +51,16 @@ lint/build·Native Skia 3종, 정본 보호 전쪽 Native/fresh WASM, 기여자 
 통합 병합 뒤 원 기여의 성과와 메인터너의 PDF 재산출·필요한 보정 범위를 분리해 설명한다.
 웹한글기안기 PDF를 판정에서 제외한 사실과 실제 데스크톱 제품·Print 경로를 코멘트에도 적는다.
 해당 PR의 같은 쪽 raw·PDF·review·overlay를 merge SHA 고정 이미지로 직접 표시한다.
+
+## fresh WASM 및 보호 Native 추가 확인
+
+같은 source `2c5e3fe387`의 locked wrapper `--target web --out-dir pkg --no-opt`
+Mac 로컬 대체 빌드로 원본 1쪽을 다시 측정했고 raw **100.00%**다. Docker 최적화 통과로
+표현하지 않는다. root pkg·Studio public·검증 package의 JS/WASM 해시가 각각 같다.
+[WASM TSV](../assets/open_prs_20261117/cases/tab/wasm/candidate/silhouette.tsv),
+[review](../assets/open_prs_20261117/cases/tab/wasm/candidate/review-001.png)·
+[overlay](../assets/open_prs_20261117/cases/tab/wasm/candidate/overlay-001.png)를 직접 판독했다.
+
+정본 보호 Native 18종·1,771쪽은 하락·상승 0쪽으로 완료했다.
+[전쪽 집계](../assets/open_prs_20261117/protected-native-validation.json)를 따른다.
+보호 WASM, 최종 회귀와 실제 Studio 소비는 별도 진행 중이다.

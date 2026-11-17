@@ -1,0 +1,54 @@
+{
+  "exit_code": 0,
+  "seconds": 28.62,
+  "plans": [
+    {
+      "caseName": "issue_9142_hwp_used_skip_synthetic",
+      "target": "regression_suite_005",
+      "grouped": true
+    },
+    {
+      "caseName": "hwp_topbottom_line_band_anchor_flow",
+      "target": "regression_suite_013",
+      "grouped": true
+    },
+    {
+      "caseName": "tab_stop_beyond_line_wraps",
+      "target": "regression_suite_019",
+      "grouped": true
+    }
+  ],
+  "command": [
+    "sandbox-exec",
+    "-f",
+    "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/minimal-font/profile.sb",
+    "cargo",
+    "nextest",
+    "run",
+    "--locked",
+    "--cargo-profile",
+    "release-test",
+    "--test",
+    "regression_suite_005",
+    "--test",
+    "regression_suite_013",
+    "--test",
+    "regression_suite_019",
+    "--test-threads",
+    "8",
+    "--no-fail-fast",
+    "-E",
+    "test(issue_9142_hwp_used_skip_synthetic::) | test(hwp_topbottom_line_band_anchor_flow::) | test(tab_stop_beyond_line_wraps::)"
+  ],
+  "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/logs/focused-nextest-final-v3.log",
+  "case_hashes": {
+    "issue_9142_hwp_used_skip_synthetic": "6a222376b07df9895975b3b79abe9cf772bafcbb9b19af177d81adced5d87f78",
+    "hwp_topbottom_line_band_anchor_flow": "6827034416a5f9f1bf9bb3486a6172e6f5476b3c936b102f58ae49a6656e2f95",
+    "tab_stop_beyond_line_wraps": "e20a611418ea358600e159645bab182bc88a9302b0d2c703a81e36029a1fe018"
+  },
+  "tests_run": 7,
+  "passed": 7,
+  "outside_selection": 995,
+  "profile_sha256": "319017f5f7bc30fe183e595060181da907c6bee67a80354da304e3adcf82b0f4",
+  "note": "Earlier 0-test and 2-test selections are invalid for complete coverage; suites were re-prepared after rustfmt and each generated module was verified. This record is the actual seven-test execution."
+}
