@@ -18,8 +18,14 @@ fn observed_native_exporter(
         rhwp::paint::RenderProfile::Print,
         PngExportOptions {
             max_dimension: Some(400),
-            font_paths: vec![std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join("ttfs/opensource/NotoSansKR-Regular.ttf")],
+            font_paths: ["NotoSansKR-Regular.ttf", "NotoSansKR-ExtraLight.ttf"]
+                .iter()
+                .map(|name| {
+                    std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                        .join("ttfs/opensource")
+                        .join(name)
+                })
+                .collect(),
             ..Default::default()
         },
     )
@@ -44,11 +50,16 @@ fn actual_native_fallback_observation_preserves_png_and_deduplicates_cached_repl
     let before = observed.font_fallback_report().unwrap();
     assert_eq!(before.state, "complete");
     assert!(before.missing_requests.is_empty());
-    assert!(before.records.iter().any(|record| {
-        record.requested == requested
-            && record.resolved == "Noto Sans KR"
-            && record.source == "custom"
-    }));
+    assert!(
+        before.records.iter().any(|record| {
+            record.requested == requested
+            // 기존 일반 고딕 chain은 Regular 앞의 ExtraLight를 우선한다.
+            // 양쪽 프로그램을 명시 공급해 설치 환경에 의존하지 않는다.
+            && record.resolved == "Noto Sans KR ExtraLight"
+                && record.source == "custom"
+        }),
+        "Actual bounded observation: {before:?}"
+    );
     assert_eq!(observed.render_page(&core, 0).unwrap(), observed_png);
     let after = observed.font_fallback_report().unwrap();
     assert_eq!(
