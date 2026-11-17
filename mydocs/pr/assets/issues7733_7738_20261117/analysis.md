@@ -2,8 +2,9 @@
 
 ## 현재 상태
 
-검토 브랜치는 `task/7733-chemical-spec-outline-decree`, 고정 base는
-`22da83586aab1baf960f2159abda347062ecf7ed`다. 다섯 이슈는 모두 열린 상태로 확인했다.
+검토 브랜치는 `task/7733-chemical-spec-outline-decree`, 최초 검증 base는
+`22da83586aab1baf960f2159abda347062ecf7ed`이며 현재 리베이스 base는
+`fbf8081db57c0c6abc9bad418290c5018193e24f`다. 다섯 이슈는 모두 열린 상태로 확인했다.
 원본·기준의 신원·과거 해결 경로 분석과 Native 기준 전 252쪽 산출을 마쳤다. 사용자 목표는 다섯 문서 모든 페이지의 Native/fresh WASM 각각 98% 이상, 가급적 100%다.
 아래 과거 수치를 현재 결과나 해결 완료로 사용하지 않는다. 공통 쪽번호 상속 보정을 커밋했고, 회귀 검사 보강과 최종 전쪽 재검증은 진행 중이다.
 
@@ -286,3 +287,17 @@ hmtx를 확인하고, 원본 슬롯 선언을 바꾸지 않고 공급·전진을
 같은 쪽의 [review](merged-empty-row-frame/after-native-review-085.png)·
 [overlay](merged-empty-row-frame/after-native-overlay-085.png)를 직접 확인했다.
 최신 fresh WASM 전쪽·전체 회귀·보호 문서·실제 소비 경로는 아직 완료하지 않았다.
+
+## 최신 리베이스와 휴먼모음T 검증 환경 정합
+
+최신 devel의 #9155·#9160을 충돌 없이 반영했다.
+[동일성 감사](moeum-original-font/rebase-code-equivalence.json)에서 원래 21개 패치와
+제품·검사·글꼴 자산 tree가 같았고, [신규 CI 정책 검사 35건](moeum-original-font/incoming-policy-tests.txt)도 PASS다.
+
+같은 코드의 fresh WASM 전 252쪽에서 98% 미만은 화학 23쪽 97.57430% 한 장이었다.
+독립 PDF는 휴먼모음T를 쓰지만 Mac에서는 원본이 없어 NotoSansKR가 선택됐다.
+[원본 글리프 대조와 사용자 등록](moeum-original-font/cause.md) 뒤 같은 쪽을 다시 측정해
+Native 98.53555→100.00000%, fresh WASM 97.57430→100.00000%를 확인했다.
+[같은 쪽 review](moeum-original-font/after-wasm-review-023.png)·
+[overlay](moeum-original-font/after-wasm-overlay-023.png)를 직접 확인했다.
+새 글꼴 조건의 전 252쪽 완료로 바꾸어 쓰지 않는다. private TTC는 Git에 포함하지 않는다.

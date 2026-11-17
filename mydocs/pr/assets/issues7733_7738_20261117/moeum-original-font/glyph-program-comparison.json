@@ -1,0 +1,289 @@
+{
+  "font_sha256": "be52401ea71e34d7c52bffacf25f95e3cc0bfdadc8a2a1f377d458f22484f7b7",
+  "pdf_xref": 244,
+  "source_face": 0,
+  "pdf_family": "MoeumTR-HM",
+  "upem": [
+    512,
+    512
+  ],
+  "rows": [
+    {
+      "char": "제",
+      "codepoint": "0xc81c",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "제",
+      "codepoint": "0xc81c",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "1",
+      "codepoint": "0x31",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "1",
+      "codepoint": "0x31",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "장",
+      "codepoint": "0xc7a5",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "장",
+      "codepoint": "0xc7a5",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "제",
+      "codepoint": "0xc81c",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "제",
+      "codepoint": "0xc81c",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "2",
+      "codepoint": "0x32",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "2",
+      "codepoint": "0x32",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "장",
+      "codepoint": "0xc7a5",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "장",
+      "codepoint": "0xc7a5",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "제",
+      "codepoint": "0xc81c",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "제",
+      "codepoint": "0xc81c",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "3",
+      "codepoint": "0x33",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "3",
+      "codepoint": "0x33",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "장",
+      "codepoint": "0xc7a5",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "장",
+      "codepoint": "0xc7a5",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "제",
+      "codepoint": "0xc81c",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "제",
+      "codepoint": "0xc81c",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "4",
+      "codepoint": "0x34",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "4",
+      "codepoint": "0x34",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "장",
+      "codepoint": "0xc7a5",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "장",
+      "codepoint": "0xc7a5",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "제",
+      "codepoint": "0xc81c",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "제",
+      "codepoint": "0xc81c",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "5",
+      "codepoint": "0x35",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "5",
+      "codepoint": "0x35",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "장",
+      "codepoint": "0xc7a5",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "장",
+      "codepoint": "0xc7a5",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "참",
+      "codepoint": "0xcc38",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "고",
+      "codepoint": "0xace0",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "문",
+      "codepoint": "0xbb38",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "헌",
+      "codepoint": "0xd5cc",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "참",
+      "codepoint": "0xcc38",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "고",
+      "codepoint": "0xace0",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "문",
+      "codepoint": "0xbb38",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "헌",
+      "codepoint": "0xd5cc",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "부",
+      "codepoint": "0xbd80",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": " ",
+      "codepoint": "0x20",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": " ",
+      "codepoint": "0x20",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "부",
+      "codepoint": "0xbd80",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": " ",
+      "codepoint": "0x20",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": " ",
+      "codepoint": "0x20",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "록",
+      "codepoint": "0xb85d",
+      "outline_equal": true,
+      "advance_equal": true
+    },
+    {
+      "char": "록",
+      "codepoint": "0xb85d",
+      "outline_equal": true,
+      "advance_equal": true
+    }
+  ],
+  "all_equal": true
+}
