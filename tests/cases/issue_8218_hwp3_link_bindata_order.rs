@@ -1,10 +1,14 @@
-//! 검사 유형: 관계형·고정형.
-//! 2026-10-28 측정 raw(96dpi, PDFium): hwp3-sample4.hwp 1쪽 Native 64.32418% / fresh WASM 64.81033%,
-//! 21쪽 Native·fresh WASM 각 100.00000%; 전36쪽 최저 64.32418% / 64.81033%.
-//! 1쪽은 90% 미만이므로 관계 검사만 사용한다. 독립 Print의 21쪽 내장 그림 좌표를 고정 검사한다.
-//! 연결 그림 두 개를 삽입한 비시각 합성 입력은 별도이며 원본의 측정값으로 대체하지 않는다.
-//! 근거: mydocs/pr/assets/issue8219/sample4/evidence.json.
-
+//! 검사 유형: 관계형·고정형. 그림의 소속·순서·내용 보존을 검사한다.
+//! 주석 갱신: 2026-11-17T18:51:52+09:00; 직전 변경: 062e7a4db540861e4d0eebea16d714465484528a 2026-11-17T13:50:54+09:00.
+//! 독립 측정 이력: 2026-11-17, source a27afaf7c9d7e2444b2ad1b14550da4ab5ab7202, hft2ttf 공급 조건.
+//! samples/hwp3-sample4.hwp 및 독립 한컴 2020 Print pdf/hwp3-sample4-2020.pdf 각 36쪽.
+//! 96 DPI, 색상 경계 보정 전 2px raw: Native 전쪽 최저 99.32%, fresh WASM 99.33%.
+//! 전쪽 TSV: mydocs/pr/assets/issue_8371/sample4-source-layout-20261117/native-hft2ttf.tsv, wasm-hft2ttf.tsv.
+//! 위 값은 과거 실행의 출처이며 현재 정리 head의 재실행 결과로 표시하지 않는다.
+//! 현재 검증과 커밋 선별 근거는 같은 경로의 validation.md를 따른다.
+//! 기존 21쪽 좌표의 독립 출처: mydocs/pr/assets/issue8219/sample4/evidence.json.
+//! NASM 그림은 독립 Print의 26쪽 소속과 그림→설명→본문 관계로 검사한다.
+//! 외부 연결 그림을 삽입한 메모리 합성 입력은 별도의 비시각 저장 계약이다.
 #![cfg(not(target_arch = "wasm32"))]
 
 //! [#8218] HWP3의 그림 BinData는 실행마다 같은 순서로, binDataId 위치에 놓인다.
@@ -200,4 +204,58 @@ fn sample4_page21_embedded_picture_matches_independent_print() {
             "21쪽 그림 {name}: {actual:.2}px, Print {print:.2}px"
         );
     }
+}
+
+fn sample4_nodes(node: &RenderNode) -> Vec<&RenderNode> {
+    let mut result = vec![node];
+    for child in &node.children {
+        result.extend(sample4_nodes(child));
+    }
+    result
+}
+
+#[test]
+fn sample4_nasm_picture_and_following_text_keep_their_source_page() {
+    let core = DocumentCore::from_bytes(&read_fixture()).unwrap();
+    let trees: Vec<_> = (0..core.page_count())
+        .map(|p| core.build_page_render_tree(p).unwrap())
+        .collect();
+    let mut owners = Vec::new();
+    for (page, tree) in trees.iter().enumerate() {
+        for node in sample4_nodes(&tree.root) {
+            if matches!(&node.node_type, RenderNodeType::Image(image) if image.para_index == Some(853))
+            {
+                owners.push((page, node));
+            }
+        }
+    }
+    assert_eq!(owners.len(), 1, "NASM 그림 누락·중복");
+    let (page, image) = owners[0];
+    assert_eq!(page, 25, "독립 Print의 26쪽에서만 그림을 소유한다");
+    let text_at = |page: usize, pi: usize| {
+        sample4_nodes(&trees[page].root).into_iter().filter(|node| {
+            matches!(&node.node_type, RenderNodeType::TextRun(run) if run.para_index == Some(pi) && !run.text.is_empty())
+        }).collect::<Vec<_>>()
+    };
+    let caption = text_at(page, 857);
+    let body = text_at(page, 859);
+    assert!(
+        !caption.is_empty() && !body.is_empty(),
+        "그림 설명·다음 본문 보존"
+    );
+    assert!(caption
+        .iter()
+        .all(|n| image.bbox.y + image.bbox.height <= n.bbox.y));
+    let caption_bottom = caption
+        .iter()
+        .map(|n| n.bbox.y + n.bbox.height)
+        .fold(f64::NEG_INFINITY, f64::max);
+    assert!(
+        body.iter().all(|n| caption_bottom <= n.bbox.y),
+        "그림→설명→본문 순서"
+    );
+    assert!(
+        !text_at(24, 852).is_empty(),
+        "앞 쪽 제목도 자기 쪽에 보존한다"
+    );
 }

@@ -207,6 +207,30 @@ impl TypesetEngine {
                         continue;
                     }
                     if !has_table {
+                        // 원본 HWP3의 호스트는 앞 쪽에 남아도 그림 틀이 넘치고
+                        // 다음 쪽 저장 줄이 그 밴드를 예약했다면 그림만 이월한다.
+                        if st.col_count == 1
+                            && self.profile.get().hwp3_native_layout()
+                            && !self.profile.get().session_edited()
+                            && (st.pages.len(), st.current_column)
+                                == (picture_host_origin.0, picture_host_origin.1)
+                        {
+                            if let Some(placement) = crate::renderer::float_placement::hwp3_square_picture_before_page_break_placement(
+                                para, &paragraphs[para_idx + 1..],
+                                st.vpos_page_base.unwrap_or(0), picture_host_origin.2,
+                                st.available_height(), self.dpi,
+                            ) {
+                                st.defer_stored_frame(crate::renderer::typeset::DeferredStoredFrameControl {
+                                    target_page: None,
+                                    following_body_para_index: None,
+                                    kind: crate::renderer::typeset::DeferredStoredFrameKind::Picture,
+                                    para_index: para_idx,
+                                    control_index: ctrl_idx,
+                                    placement,
+                                });
+                                continue;
+                            }
+                        }
                         // 다음 본문이 그림 전체 높이에서 시작하는 저장 이월은 호스트와
                         // 개체의 쪽 소유를 분리한다. 현재 쪽 하단을 clamp해 그림을 끼우지 않는다.
                         if st.col_count == 1
