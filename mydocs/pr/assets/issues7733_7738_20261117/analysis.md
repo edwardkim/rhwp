@@ -328,3 +328,13 @@ Native 98.53555→100.00000%, fresh WASM 97.57430→100.00000%를 확인했다.
 [review](hft-original-bar-advance/after-native-review-092.png)와
 [overlay](hft-original-bar-advance/after-native-overlay-092.png)를 함께 보존했다.
 최신 fresh WASM·전체 회귀·보호 검증을 완료한 결과로 대신하지 않는다.
+
+## 바탕 U+2027 공급자와 뒤 본문 위치
+
+[원인과 결과](batang-hyphenation-supplier/cause.md): #8419에서 미확인으로 남긴 U+2027을
+같은 원 프로그램의 cmap 결측·독립 Print의 Haansoft Batang 공급 근거로 보완했다.
+관련 최소 글꼴 185 PASS, Native 전 252쪽은 모두 98% 이상이다. 화학 27쪽은
+99.25221→99.85809%이며, 9쪽 상승·두 정밀 미세 하락의 같은 미일치 수와 union도 기록했다.
+[review](batang-hyphenation-supplier/after-native-review-027.png) ·
+[overlay](batang-hyphenation-supplier/after-native-overlay-027.png).
+새 소스의 fresh WASM 전쪽·전체 회귀·정본 보호 완료를 뜻하지 않는다.

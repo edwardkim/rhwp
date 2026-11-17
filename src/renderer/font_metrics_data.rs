@@ -222,8 +222,9 @@ pub(crate) fn verified_missing_glyph_supplier(
         ("GulimChe", 1024, false, false, '\u{2024}') => Some("Haansoft Batang"),
         // [#8419] batang.ttc(SHA 51d9a8d4…c9d8)의 Batang cmap에도 U+2024가 없다.
         // 10645 운영지침의 독립 한컴2022 Print는 바탕 사이의 `․`만 Haansoft Batang
-        // CID 글꼴로 출력한다. U+2027과 다른 weight/style은 확인하지 않아 바꾸지 않는다.
-        ("Batang", 1024, false, false, '\u{2024}') => Some("Haansoft Batang"),
+        // CID 글꼴로 출력한다. U+2027도 화학 원본의 독립2020 Print에서 같은
+        // 공급자와 178/1024em 전진을 확인했다. 다른 weight/style은 추정하지 않는다.
+        ("Batang", 1024, false, false, '\u{2024}' | '\u{2027}') => Some("Haansoft Batang"),
         // 법원 서식 Print의 Haansoft Dotum CID 3과 HDOTUM hmtx의 대응.
         ("Gulim", 1024, false, false, '\u{2024}' | '\u{2027}') => Some("Haansoft Dotum"),
         // [#8619] gulim.ttc(SHA 05a38ff2…ee12)의 Dotum cmap에도 U+2024가 없다.

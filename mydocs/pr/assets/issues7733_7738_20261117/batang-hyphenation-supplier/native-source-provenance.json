@@ -1,0 +1,13 @@
+{
+  "parent": "058acd32a1141b8971700eff3ed78b09bd00f8bc",
+  "captured_at": "2026-11-18T07:05:32.988204+09:00",
+  "sources": {
+    "src/renderer/font_metrics_data.rs": "a4ffb78c05bd704dc840d60620d4829c52d8381898f417dbc7db420b28d18e4b",
+    "src/renderer/font_metrics_technical_symbols.rs": "f538f6c54aeed51b56da41ef325d7fb1e49ce5c49cd3e155456097ab757033a9",
+    "tests/cases/issue_7733_batang_hyphenation_supplier.rs": "6476c2dc4c685414db61e24ce0927334d4a7c5f26abcba676ed111a68bde9777",
+    "tests/cases/issue_7733_batang_point_origin.rs": "d837c30c07469b9ad1e8c72e8f90c208e8e63ea0eb80c512391be142ff0dbea2"
+  },
+  "source_diff_sha256": "af2c23433b94012056c297fa0624045c03849ab4c9c27d79dadec6caecea8be9",
+  "cargo_lock_sha256": "972bdb0994b216f0cef357b856ce0807ce3d437af6791377446b62f2e26c05a1",
+  "font_environment_sha256": "39ec77d269dcd5e687ecd68cd3c5ffb2d19f91a5d9580b2e11c0c4db8a9cb4b0"
+}

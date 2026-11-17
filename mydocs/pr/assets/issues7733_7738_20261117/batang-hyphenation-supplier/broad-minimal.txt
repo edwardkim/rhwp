@@ -1,0 +1,192 @@
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 3m 39s
+────────────
+ Nextest run ID ae563d29-ec80-41c1-931f-f8e196d7de1c with nextest profile: default
+    Starting 185 tests across 26 binaries (8929 tests skipped)
+        PASS [   0.105s] (  1/185) rhwp::regression_suite_002 issue_7620_rowbreak_float_bottom_margin_budget::issue_7620_rowbreak_without_first_row_moves_table_and_keeps_text
+        PASS [   0.110s] (  2/185) rhwp::regression_suite_002 issue_7620_rowbreak_float_bottom_margin_budget::issue_7620_rowbreak_moved_table_reserves_box_on_next_page
+        PASS [   0.114s] (  3/185) rhwp::regression_suite_002 issue_7620_rowbreak_float_bottom_margin_budget::issue_7620_rowbreak_splits_when_rows_fit_with_bottom_margin
+        PASS [   0.114s] (  4/185) rhwp::regression_suite_002 display_alias_declared_glyph_fallback::display_alias_preserves_the_documents_missing_glyph_supplier_advance
+        PASS [   0.077s] (  5/185) rhwp::regression_suite_003 issue_7870_tac_nested_table_atomic::split_reflow_row_first_fragment_takes_declared_row_height
+        PASS [   0.183s] (  6/185) rhwp::regression_suite_003 issue_7870_tac_nested_table_atomic::floating_nested_table_still_splits_between_rows
+        PASS [   0.073s] (  7/185) rhwp::regression_suite_003 issue_7870_tac_nested_table_atomic::tac_nested_table_moves_whole_line_to_next_page
+        PASS [   0.032s] (  8/185) rhwp::regression_suite_005 issue_7733_compatibility_form_advance::missing_wide_compatibility_forms_keep_a_full_character_cell
+        PASS [   0.036s] (  9/185) rhwp::regression_suite_005 issue_7733_compatibility_form_advance::genuinely_halfwidth_forms_keep_half_a_character_cell
+        PASS [   0.233s] ( 10/185) rhwp::regression_suite_003 issue_7733_box_drawing_marker_origin::inherited_marker_keeps_the_paragraph_end_size_and_its_body_distance
+        PASS [   0.245s] ( 11/185) rhwp::regression_suite_003 issue_7735_block_opening_frame::accepted_opening_box_reaches_the_painted_cells_without_losing_continuation_text
+        PASS [   0.061s] ( 12/185) rhwp::regression_suite_006 issue_7018_tac_host_line_baseline::stored_ladder_axis_matches_char_offsets
+        PASS [   0.181s] ( 13/185) rhwp::regression_suite_005 issue_6124_rowspan_neighbor_row_height::issue_6124_merged_cell_keeps_its_last_line_inside_the_cell
+        PASS [   0.115s] ( 14/185) rhwp::regression_suite_005 issue_7203_float_table_top_uses_stored_anchor::saved_outer_box_anchor_keeps_following_tables_inside_the_body
+        PASS [   0.206s] ( 15/185) rhwp::regression_suite_004 issue_6181_inline_tac_table_line_advance::issue_6181_inline_tac_table_line_uses_stored_advance
+        PASS [   0.104s] ( 16/185) rhwp::regression_suite_006 issue_7018_tac_host_line_baseline::page_count_matches_the_oracle
+        PASS [   0.090s] ( 17/185) rhwp::regression_suite_006 issue_7018_tac_host_line_baseline::tac_host_text_baseline_matches_the_hangul_oracle
+        PASS [   0.115s] ( 18/185) rhwp::regression_suite_006 issue_7018_tac_host_line_baseline::every_run_on_the_host_line_uses_that_lines_baseline
+        PASS [   0.041s] ( 19/185) rhwp::regression_suite_006 issue_7018_tac_host_line_baseline::the_table_placement_is_unchanged
+        PASS [   0.049s] ( 20/185) rhwp::regression_suite_006 issue_7018_tac_host_line_baseline::tac_host_text_uses_its_own_stored_line_baseline
+        PASS [   0.045s] ( 21/185) rhwp::regression_suite_006 issue_7049_inline_tac_table_baseline::inline_tac_tables_sit_on_the_line_baseline
+        PASS [   0.351s] ( 22/185) rhwp::regression_suite_003 issue_7733_box_drawing_marker_origin::right_bar_supplier_preserves_the_print_origin_and_following_text
+        PASS [   0.059s] ( 23/185) rhwp::regression_suite_006 issue_7049_inline_tac_table_baseline::sibling_samples_close_the_same_gap
+        PASS [   0.060s] ( 24/185) rhwp::regression_suite_006 issue_7049_inline_tac_table_baseline::table_exclusive_line_keeps_the_band_anchor
+        PASS [   0.048s] ( 25/185) rhwp::regression_suite_008 coanchored_float_outer_frame::native_hwp_sibling_tables_preserve_source_order_content_and_outer_gaps
+        PASS [   0.084s] ( 26/185) rhwp::regression_suite_008 coanchored_float_outer_frame::hwp_origin_hwpx_completed_second_page_keeps_independent_print_boundary_coordinates
+        PASS [   0.086s] ( 27/185) rhwp::regression_suite_008 coanchored_float_outer_frame::hwp_origin_hwpx_sibling_tables_preserve_source_order_content_and_outer_gaps
+        PASS [   0.079s] ( 28/185) rhwp::regression_suite_008 coanchored_float_outer_frame::native_hwp_completed_second_page_keeps_independent_print_boundary_coordinates
+        PASS [   0.045s] ( 29/185) rhwp::regression_suite_008 coanchored_float_outer_frame::source_outer_bottom_alone_is_consumed_once_between_sibling_tables
+        PASS [   0.033s] ( 30/185) rhwp::regression_suite_008 coanchored_float_outer_frame::source_outer_top_alone_is_consumed_once_between_sibling_tables
+        PASS [   0.036s] ( 31/185) rhwp::regression_suite_008 coanchored_float_outer_frame::zero_outer_margins_do_not_invent_a_gap_between_sibling_tables
+        PASS [   0.036s] ( 32/185) rhwp::regression_suite_009 issue_7737_missing_math_symbol_supplier::explicit_hft_does_not_borrow_a_truetype_programs_missing_glyph_contract
+        PASS [   0.035s] ( 33/185) rhwp::regression_suite_009 issue_7737_missing_math_symbol_supplier::missing_malgun_spot_uses_the_same_advance_as_the_independent_print_supplier
+        PASS [   0.110s] ( 34/185) rhwp::regression_suite_009 issue_7312_tac_stored_band_no_wrap::stored_outer_band_keeps_the_tac_table_on_its_host_line
+        PASS [   0.053s] ( 35/185) rhwp::regression_suite_009 issue_8468_equation_tail_frame_ownership::implicit_font_keeps_continuous_advances_and_separate_italic_shear
+        PASS [   0.228s] ( 36/185) rhwp::regression_suite_006 issue_7733_batang_point_origin::body_after_two_missing_batang_points_keeps_the_print_origin
+        PASS [   0.173s] ( 37/185) rhwp::regression_suite_010 issue_8105_fragment_outer_top_and_restart_trim::consumed_offset_does_not_reopen_an_already_opened_margin
+        PASS [   0.284s] ( 38/185) rhwp::regression_suite_010 issue_7733_square_picture_margin::full_width_source_lines_do_not_add_the_paragraph_margin_twice
+        PASS [   0.515s] ( 39/185) rhwp::regression_suite_009 issue_8468_equation_tail_frame_ownership::implicit_equation_ink_stays_in_its_recomposed_cell_frame
+        PASS [   0.582s] ( 40/185) rhwp::regression_suite_009 issue_8468_equation_tail_frame_ownership::recomposed_equation_tail_preserves_following_tables_and_notes_on_their_pages
+        PASS [   0.374s] ( 41/185) rhwp::regression_suite_011 issue_1133_native_rowbreak_outer_margin::hwpx_captionless_rowbreak_keeps_independent_frame_origins
+        PASS [   0.260s] ( 42/185) rhwp::regression_suite_011 issue_1133_native_rowbreak_outer_margin::native_captionless_rowbreak_keeps_independent_frame_origins
+        PASS [   0.228s] ( 43/185) rhwp::regression_suite_011 issue_8419_batang_one_dot_leader_supplier::batang_symbol_slot_one_dot_leader_uses_haansoft_batang_advance
+        PASS [   0.106s] ( 44/185) rhwp::regression_suite_011 issue_8472_cell_picture_anchor::chart_cell_height_follows_stored_ladder
+        PASS [   0.366s] ( 45/185) rhwp::regression_suite_011 issue_7733_merged_empty_row_frame::merged_spans_that_already_fit_do_not_insert_an_empty_opening_band
+        PASS [   0.058s] ( 46/185) rhwp::regression_suite_011 issue_8472_cell_picture_anchor::continuation_picture_bounds_match_independent_print_on_completed_page
+        PASS [   0.046s] ( 47/185) rhwp::regression_suite_011 issue_8472_cell_picture_anchor::continuation_pictures_center_their_owned_content_without_readding_anchor_lines
+        PASS [   0.059s] ( 48/185) rhwp::regression_suite_011 issue_8472_cell_picture_anchor::opening_picture_row_frame_preserves_its_declared_cell_height
+        PASS [   0.063s] ( 49/185) rhwp::regression_suite_011 issue_8472_cell_picture_anchor::picture_stays_with_its_anchor_paragraph_across_page_split
+        PASS [   1.526s] ( 50/185) rhwp::regression_suite_009 issue_7737_missing_math_symbol_supplier::actual_source_spots_keep_the_declared_slot_and_use_the_verified_missing_glyph_supplier
+        PASS [   0.119s] ( 51/185) rhwp::regression_suite_011 issue_8472_cell_picture_anchor::whole_picture_cells_center_their_own_saved_content_frame
+        PASS [   0.526s] ( 52/185) rhwp::regression_suite_012 issue_7620_rowbreak_float_table_outer_margins::issue_7620_rowbreak_float_table_keeps_outer_margins
+        PASS [   2.335s] ( 53/185) rhwp::regression_suite_010 issue_8105_fragment_outer_top_and_restart_trim::own_before_restart_keeps_the_closing_line_on_the_page
+        PASS [   2.495s] ( 54/185) rhwp::regression_suite_010 issue_8105_fragment_outer_top_and_restart_trim::continued_offset_table_reopens_its_outer_top_margin
+        PASS [   2.918s] ( 55/185) rhwp::regression_suite_009 issue_7737_missing_math_symbol_supplier::explicit_glyph_supplier_keeps_priority_over_the_generated_fallback_chain
+        PASS [   0.199s] ( 56/185) rhwp::regression_suite_012 issue_7735_empty_textbox_outline_origin::empty_outline_head_reserves_its_print_body_distance_inside_the_textbox
+        PASS [   0.635s] ( 57/185) rhwp::regression_suite_012 issue_7733_offset_fragment_outer_margin::changing_the_top_margin_of_an_offset_fragment_advances_it_only_once
+        PASS [   0.606s] ( 58/185) rhwp::regression_suite_012 issue_7733_offset_fragment_outer_margin::positive_paragraph_offset_does_not_reopen_an_already_owned_top_margin
+        PASS [   0.064s] ( 59/185) rhwp::regression_suite_013 issue_7733_batang_hyphenation_supplier::batang_missing_hyphenation_point_uses_the_independent_supplier_advance
+        PASS [   0.058s] ( 60/185) rhwp::regression_suite_013 issue_7733_batang_hyphenation_supplier::hft_source_does_not_borrow_the_ttf_programs_gap
+        PASS [   0.055s] ( 61/185) rhwp::regression_suite_013 issue_7733_batang_hyphenation_supplier::paint_uses_the_same_supplier_as_measurement
+        PASS [   0.035s] ( 62/185) rhwp::regression_suite_013 issue_7733_monospace_double_quotes::proportional_quotes_are_not_promoted_to_full_character_cells
+        PASS [   0.029s] ( 63/185) rhwp::regression_suite_013 issue_7733_monospace_double_quotes::untyped_monospace_double_quotes_keep_their_full_character_cell
+        PASS [   0.026s] ( 64/185) rhwp::regression_suite_013 rowspan_declared_overflow_shrink::damaged_span_declaration_is_ignored
+        PASS [   0.882s] ( 65/185) rhwp::regression_suite_012 list_marker_stored_indent_ownership::outline_dot_marker_keeps_the_source_column_with_auto_indent
+        PASS [   0.793s] ( 66/185) rhwp::regression_suite_012 list_marker_stored_indent_ownership::outline_paren_marker_keeps_the_source_column_with_auto_indent
+        PASS [   0.015s] ( 67/185) rhwp::regression_suite_013 rowspan_declared_overflow_shrink::shrink_requires_declared_table_height_corroboration
+        PASS [   0.061s] ( 68/185) rhwp::regression_suite_013 square_stored_line_start::hwp3_square_line_box_matches_the_hancom_conversion
+        PASS [   0.639s] ( 69/185) rhwp::regression_suite_013 square_stored_line_start::left_picture_lines_start_at_their_stored_positions
+        PASS [   0.190s] ( 70/185) rhwp::regression_suite_013 square_stored_line_start::paper_picture_lane_preserves_hwp5_mount_command_line_partition
+        PASS [   0.341s] ( 71/185) rhwp::regression_suite_013 square_stored_line_start::paper_picture_lane_preserves_short_successor_paragraphs_and_every_source_row
+        PASS [   5.585s] ( 72/185) rhwp::regression_suite_006 issue_7737_mixed_row_declared_frame::mixed_row_first_frame_keeps_its_page_limit_when_the_table_origin_moves
+        PASS [   1.560s] ( 73/185) rhwp::regression_suite_013 rowspan_declared_overflow_shrink::kps_ai_page_count_matches_hangul_master
+        PASS [   1.887s] ( 74/185) rhwp::regression_suite_013 rowspan_declared_overflow_shrink::kps_ai_keeps_rowspan_block_on_declared_page
+        PASS [   0.087s] ( 75/185) rhwp::regression_suite_013 square_stored_line_start::right_picture_keeps_the_left_edge_and_stored_line_end
+        PASS [   0.393s] ( 76/185) rhwp::regression_suite_013 square_stored_line_start::paragraph_picture_on_another_vertical_band_does_not_own_successor_rows
+        PASS [   0.331s] ( 77/185) rhwp::regression_suite_013 square_stored_line_start::paragraph_picture_outside_the_column_does_not_own_successor_rows
+        PASS [   0.347s] ( 78/185) rhwp::regression_suite_013 square_stored_line_start::paragraph_picture_preserves_successor_source_rows_and_avoids_its_caption_band
+        PASS [   0.100s] ( 79/185) rhwp::regression_suite_014 issue_8468_footnote_line_reserve::page_tail_paragraph_keeps_its_note_without_safety_margin
+        PASS [   0.113s] ( 80/185) rhwp::regression_suite_014 issue_8468_footnote_line_reserve::earlier_line_note_reserves_space_before_later_lines
+        PASS [   0.292s] ( 81/185) rhwp::regression_suite_013 square_stored_line_start::uniform_and_mixed_successor_rows_keep_their_source_picture_lane
+        PASS [   0.041s] ( 82/185) rhwp::regression_suite_014 issue_8468_footnote_line_reserve::partial_note_prefix_with_block_table_counts_table_height
+        PASS [   0.067s] ( 83/185) rhwp::regression_suite_014 issue_8468_footnote_line_reserve::partial_note_with_unsplittable_table_keeps_later_lines_above_its_prefix
+        PASS [   0.122s] ( 84/185) rhwp::regression_suite_015 issue_8653_tac_companion_box_on_owner_baseline::companion_tac_table_sits_on_line_owner_baseline
+        PASS [   2.987s] ( 85/185) rhwp::regression_suite_016 issue_6776_unstored_cell_before_ownership::following_title_preserves_the_independent_print_baseline_after_an_atomic_tac_table
+        PASS [   3.922s] ( 86/185) rhwp::regression_suite_016 issue_6776_unstored_cell_before_ownership::a_single_column_definition_does_not_replace_text_before_space
+        PASS [   0.200s] ( 87/185) rhwp::regression_suite_016 issue_7735_bullet_marker_cell::nominal_bullet_keeps_the_independent_print_body_origin
+        PASS [   4.120s] ( 88/185) rhwp::regression_suite_016 issue_6776_unstored_cell_before_ownership::atomic_tac_host_keeps_its_source_line_spacing_in_the_following_flow
+        PASS [   0.236s] ( 89/185) rhwp::regression_suite_017 issue_7733_inline_picture_opening_frame::first_picture_ink_closes_the_original_opening_box_before_the_next_frame
+        PASS [   8.896s] ( 90/185) rhwp::regression_suite_012 issue_7731_source_table_frames::empty_square_host_uses_its_source_opening_and_closing_frames
+        PASS [   0.374s] ( 91/185) rhwp::regression_suite_017 issue_7733_inline_picture_opening_frame::local_zero_restart_without_a_matching_common_box_keeps_the_line_advance
+        PASS [   0.164s] ( 92/185) rhwp::regression_suite_018 issue_7092_monospace_quote_width::monospace_quotes_advance_full_width
+        PASS [   0.061s] ( 93/185) rhwp::regression_suite_018 issue_7092_monospace_quote_width::proportional_truetype_quotes_follow_the_hancom_advance
+        PASS [   0.062s] ( 94/185) rhwp::regression_suite_018 issue_7702_curly_quote_latin_slot::curly_quotes_advance_by_latin_slot_glyph_like_hangul
+        PASS [   8.985s] ( 95/185) rhwp::regression_suite_012 issue_7731_source_table_frames::first_continuation_table_keeps_its_independent_print_frame
+        PASS [   8.560s] ( 96/185) rhwp::regression_suite_012 issue_7731_source_table_frames::independent_tac_tail_preserves_the_following_table_frame
+        PASS [   0.341s] ( 97/185) rhwp::regression_suite_018 issue_8060_stored_block_opening_frame::closing_title_centers_inside_the_selected_first_frame
+        PASS [   0.308s] ( 98/185) rhwp::regression_suite_018 issue_8060_stored_block_opening_frame::first_fragment_paints_the_same_source_frame_it_reserves
+        PASS [   0.335s] ( 99/185) rhwp::regression_suite_018 issue_8060_stored_block_opening_frame::completed_block_prefix_does_not_open_a_blank_continuation_row
+        PASS [   0.325s] (100/185) rhwp::regression_suite_018 issue_8060_stored_block_opening_frame::source_closing_and_continuing_title_text_is_owned_once
+        PASS [   0.347s] (101/185) rhwp::regression_suite_018 issue_8060_stored_block_opening_frame::opening_and_continuing_titles_match_independent_print
+        PASS [   0.102s] (102/185) rhwp::regression_suite_018 issue_8149_empty_host_float_page_bottom::headerrow_split_keeps_header_only_fragment_and_moves_unfit_table
+        PASS [   0.099s] (103/185) rhwp::regression_suite_018 issue_8149_empty_host_float_page_bottom::rowfit_first_fragment_leaves_outer_bottom_and_bottom_caption
+        PASS [   4.998s] (104/185) rhwp::regression_suite_016 issue_6776_unstored_cell_before_ownership::continued_parent_closes_after_the_child_and_its_owned_bottom_margins
+        PASS [   0.185s] (105/185) rhwp::regression_suite_018 issue_8149_empty_host_float_page_bottom::reservefit_first_fragment_reserve_follows_outer_bottom_margin
+        PASS [   0.225s] (106/185) rhwp::regression_suite_018 issue_8149_empty_host_float_page_bottom::spec_coanchored_following_table_stays_at_print_origin
+        PASS [   0.373s] (107/185) rhwp::regression_suite_018 issue_8149_empty_host_float_page_bottom::hwpspec_second_coanchored_table_keeps_print_origin
+        PASS [   0.249s] (108/185) rhwp::regression_suite_018 issue_8149_empty_host_float_page_bottom::spec_table_at_page_start_keeps_printed_top_margin
+        PASS [   0.062s] (109/185) rhwp::regression_suite_019 issue_8877_tac_tables_shared_baseline::header_tac_tables_match_hancom_print_rules
+        PASS [   0.313s] (110/185) rhwp::regression_suite_018 issue_8149_empty_host_float_page_bottom::spec_table_caption_preserves_its_printed_number
+        PASS [   0.075s] (111/185) rhwp::regression_suite_019 issue_8877_tac_tables_shared_baseline::shorter_tac_table_sits_on_shared_baseline_not_line_top
+        PASS [   0.061s] (112/185) rhwp::regression_suite_019 symbol_slot_math_symbol_advance::math_symbol_block_uses_symbol_slot_face_and_advance
+        PASS [   0.185s] (113/185) rhwp::regression_suite_019 issue_7733_table_terminal_outer_margin::terminal_fragment_preserves_the_stored_successor_origin_and_outer_bottom_gap
+        PASS [  11.490s] (114/185) rhwp::regression_suite_006 issue_7737_mixed_row_declared_frame::center_label_uses_its_selected_prefix_while_top_label_keeps_its_origin
+        PASS [   0.455s] (115/185) rhwp::regression_suite_019 issue_7733_table_terminal_outer_margin::existing_terminal_host_flow_consumes_a_changed_outer_margin_only_once
+        PASS [   0.042s] (116/185) rhwp::regression_suite_021 hft_mapped_symbol_program_tracking::bmp_and_plane15_source_rule_share_the_same_symbol_program
+        PASS [   0.047s] (117/185) rhwp::regression_suite_021 hft_mapped_symbol_program_tracking::implicit_double_rule_does_not_inherit_the_body_hft_bold_tracking
+        PASS [   0.027s] (118/185) rhwp::regression_suite_021 hft_mapped_symbol_program_tracking::literal_unicode_rule_keeps_its_own_program_contract
+        PASS [   0.687s] (119/185) rhwp::regression_suite_018 issue_8149_empty_host_float_page_bottom::successor_keeps_spacing_when_its_stored_line_says_so
+        PASS [   0.066s] (120/185) rhwp::regression_suite_021 issue_5729_stacked_tac_band_om_top::issue_5729_stacked_tac_tables_keep_outer_margin_top
+        PASS [   0.898s] (121/185) rhwp::regression_suite_018 issue_8149_empty_host_float_page_bottom::spec_header_only_split_follows_declared_first_fragment
+        PASS [   0.017s] (122/185) rhwp::regression_suite_022 issue_7733_box_drawing_glyph_supplier::another_hft_source_does_not_inherit_the_hanyang_right_bar_contract
+        PASS [   0.088s] (123/185) rhwp::regression_suite_022 issue_6078_inline_table_seg_lookup::issue_6078_caption_table_and_paper_spec_keep_reading_order
+        PASS [   0.025s] (124/185) rhwp::regression_suite_022 issue_7733_box_drawing_glyph_supplier::directly_supplied_program_hit_precedes_the_reference_programs_missing_glyph
+        PASS [   0.025s] (125/185) rhwp::regression_suite_022 issue_7733_box_drawing_glyph_supplier::missing_batangche_right_bar_uses_the_independent_supplier_advance
+        PASS [   0.026s] (126/185) rhwp::regression_suite_022 issue_7733_box_drawing_glyph_supplier::explicit_hft_and_existing_supplier_keep_their_own_programs
+        PASS [   0.041s] (127/185) rhwp::regression_suite_022 issue_7733_box_drawing_glyph_supplier::print_uses_the_same_program_that_supplied_the_measured_glyph
+        PASS [   0.043s] (128/185) rhwp::regression_suite_022 issue_7733_box_drawing_glyph_supplier::original_hanyang_hft_right_bar_keeps_its_independent_full_em_advance
+        PASS [   0.016s] (129/185) rhwp::regression_suite_022 issue_7733_box_drawing_glyph_supplier::supplier_program_has_its_verified_full_em_advance
+        PASS [   0.298s] (130/185) rhwp::regression_suite_022 issue_7735_implicit_square_marker::literal_unicode_square_keeps_its_declared_font_contract
+        PASS [   0.019s] (131/185) rhwp::regression_suite_022 issue_7735_implicit_square_marker::square_and_circle_paint_distinct_shapes_with_the_same_program_box
+        PASS [   0.543s] (132/185) rhwp::regression_suite_022 issue_7735_implicit_square_marker::original_square_and_circle_keep_their_shared_program_advance
+        PASS [   0.299s] (133/185) rhwp::regression_suite_022 issue_7735_implicit_square_marker::square_marker_keeps_its_original_program_address_and_advance
+        PASS [   0.991s] (134/185) rhwp::regression_suite_021 hft_mapped_symbol_program_tracking::source_page474_keeps_the_independent_print_last_symbol_origin
+        PASS [   0.223s] (135/185) rhwp::regression_suite_022 issue_8619_dotum_one_dot_leader_supplier::dotum_missing_one_dot_leader_uses_haansoft_dotum_for_measure_and_paint
+        PASS [   0.185s] (136/185) rhwp::regression_suite_022 issue_8619_dotum_one_dot_leader_supplier::dotum_supplier_keeps_the_dotumche_contract
+        PASS [   0.086s] (137/185) rhwp::regression_suite_022 issue_8619_dotum_one_dot_leader_supplier::hft_declared_source_does_not_borrow_the_dotum_program_gap
+        PASS [   0.284s] (138/185) rhwp::regression_suite_023 implicit_wingdings_marker_source::implicit_wingdings_keeps_source_identity_and_a_separate_advance
+        PASS [   0.392s] (139/185) rhwp::regression_suite_023 implicit_wingdings_marker_source::normal_unicode_bullet_keeps_its_own_font_contract
+        PASS [   0.528s] (140/185) rhwp::regression_suite_023 implicit_wingdings_marker_source::declared_display_fallback_does_not_replace_implicit_program_metrics
+        PASS [   4.588s] (141/185) rhwp::regression_suite_016 issue_6776_unstored_cell_before_ownership::source_unstored_cell_keeps_its_declared_before_space
+        PASS [   0.666s] (142/185) rhwp::regression_suite_024 issue_7733_inline_table_list_marker::table_owned_line_keeps_its_natural_prefix_and_does_not_distribute_the_object_width
+        PASS [   0.762s] (143/185) rhwp::regression_suite_024 issue_7733_inline_table_list_marker::inline_table_list_uses_the_same_body_and_hanging_origin_as_its_plain_peer
+        PASS [   0.439s] (144/185) rhwp::regression_suite_024 issue_7733_inline_table_list_marker::text_only_continuation_after_inline_table_fills_its_own_stored_line_region
+        PASS [   0.997s] (145/185) rhwp::regression_suite_024 issue_7733_inline_table_list_marker::text_only_opening_before_inline_table_fills_its_own_stored_line_region
+        PASS [   1.159s] (146/185) rhwp::regression_suite_025 issue_7733_delayed_page_number_position::first_pages_inherit_number_position_before_the_sections_own_declaration
+        PASS [   0.171s] (147/185) rhwp::regression_suite_025 issue_8641_shared_baseline_rowspan::rowspan_overflow_does_not_grow_a_row_pinned_by_a_single_row_cell
+        PASS [   0.079s] (148/185) rhwp::regression_suite_025 issue_8641_shared_baseline_rowspan::same_line_tables_share_the_owner_baseline
+        PASS [   0.030s] (149/185) rhwp::regression_suite_025 numbering_char_shape::fixed_number_char_shape_keeps_its_size_and_detaching_restores_body_shape
+        PASS [   0.030s] (150/185) rhwp::regression_suite_025 numbering_char_shape::follow_body_size_number_draws_at_each_paragraph_end_size_and_survives_save
+        PASS [   0.032s] (151/185) rhwp::regression_suite_025 numbering_char_shape::follow_body_size_number_uses_paragraph_end_not_first_character
+        PASS [   0.037s] (152/185) rhwp::regression_suite_025 numbering_char_shape::hancom_follow_body_size_numbers_draw_at_the_paragraph_end_size
+        PASS [   0.026s] (153/185) rhwp::regression_suite_025 numbering_char_shape::number_char_shape_reaches_hwpx_numbering_kept_from_source
+        PASS [   0.020s] (154/185) rhwp::regression_suite_025 numbering_char_shape::number_char_shape_rejects_missing_numbering_and_level
+        PASS [   1.765s] (155/185) rhwp::regression_suite_024 issue_8105_first_fragment_outer_top::page_top_rowbreak_first_fragment_opens_the_outer_top
+        PASS [   0.075s] (156/185) rhwp::regression_suite_026 issue_7150_tac_line_owner_anchor::issue_7150_body_rows_are_untouched
+        PASS [   0.078s] (157/185) rhwp::regression_suite_026 issue_7150_tac_line_owner_anchor::issue_7150_bottom_gap_keeps_the_issue_7049_contract
+        PASS [   0.023s] (158/185) rhwp::regression_suite_026 issue_7150_tac_line_owner_anchor::issue_7150_line_companion_follows_the_owner_anchor
+        PASS [   0.023s] (159/185) rhwp::regression_suite_026 issue_7150_tac_line_owner_anchor::issue_7150_line_owner_sits_at_its_outer_margin
+        PASS [   0.037s] (160/185) rhwp::regression_suite_026 issue_7150_tac_line_owner_anchor::previous_line_table_margin_does_not_move_the_next_line_table
+        PASS [   0.040s] (161/185) rhwp::regression_suite_026 rowspan_staggered_content_heights::staggered_span_cells_keep_their_own_heights
+        PASS [   0.032s] (162/185) rhwp::regression_suite_026 rowspan_staggered_content_heights::staggered_table_preserves_following_content_and_paragraph_continuation
+        PASS [   0.035s] (163/185) rhwp::regression_suite_026 verified_point_glyph_supplier::verified_arial_missing_points_keep_print_supplier_and_following_glyphs
+        PASS [   0.023s] (164/185) rhwp::regression_suite_026 verified_point_glyph_supplier::verified_gulim_missing_points_keep_print_supplier_and_following_glyphs
+        PASS [   0.023s] (165/185) rhwp::regression_suite_027 canvas_explicit_glyph_fallback_order::explicit_glyph_supplier_precedes_unselected_os_aliases
+        PASS [   0.018s] (166/185) rhwp::regression_suite_027 canvas_explicit_glyph_fallback_order::explicit_supplier_does_not_replace_the_verified_primary_ttf
+        PASS [   0.053s] (167/185) rhwp::regression_suite_026 verified_point_glyph_supplier::verified_hcr_owned_points_keep_their_original_font_program
+        PASS [   0.020s] (168/185) rhwp::regression_suite_027 canvas_explicit_glyph_fallback_order::ordinary_selection_preserves_installed_alias_priority
+        PASS [   0.055s] (169/185) rhwp::regression_suite_027 issue_7514_cell_list_marker_caret::body_list_selection_inside_first_line_follows_text_not_marker
+        PASS [   0.025s] (170/185) rhwp::regression_suite_027 issue_7514_cell_list_marker_caret::cell_list_caret_and_selection_follow_text_not_marker
+        PASS [   0.182s] (171/185) rhwp::regression_suite_027 issue_7733_dotum_small_square_advance::actual_source_dotum_slot_uses_the_verified_glyph_without_trusting_the_whole_table
+        PASS [   0.397s] (172/185) rhwp::regression_suite_027 issue_7445_missing_glyph_advance::missing_hyphenation_point_keeps_its_supplier_advance_and_source_order
+        PASS [   0.025s] (173/185) rhwp::regression_suite_027 issue_7733_dotum_small_square_advance::explicit_hft_program_keeps_its_existing_compatibility_cell
+        PASS [   0.024s] (174/185) rhwp::regression_suite_027 issue_7733_dotum_small_square_advance::verified_dotum_small_square_preserves_its_original_three_eighths_cell
+        PASS [   0.144s] (175/185) rhwp::regression_suite_028 issue_7344_field_marker_stored_tac_lines::broken_cell_ladder_centers_the_stacked_lines
+        PASS [   0.055s] (176/185) rhwp::regression_suite_028 issue_7344_field_marker_stored_tac_lines::cell_first_paragraph_without_stored_lines_keeps_spacing_before
+        PASS [   0.023s] (177/185) rhwp::regression_suite_028 issue_7344_field_marker_stored_tac_lines::centered_inline_table_after_tabs_uses_stored_tab_widths
+        PASS [   0.020s] (178/185) rhwp::regression_suite_028 issue_7344_field_marker_stored_tac_lines::field_begin_marker_keeps_the_stored_tac_line_origins
+        PASS [   0.519s] (179/185) rhwp::regression_suite_027 issue_7733_dotum_small_square_advance::document_font_alias_keeps_the_verified_small_square_source_advance
+        PASS [   5.392s] (180/185) rhwp::regression_suite_020 issue_7203_float_table_stored_anchor_top::stored_anchor_after_a_taller_float_consumes_its_span_once
+        PASS [   5.440s] (181/185) rhwp::regression_suite_020 issue_7203_float_table_stored_anchor_top::an_offset_anchored_float_table_keeps_flow_placement
+        PASS [   5.393s] (182/185) rhwp::regression_suite_020 issue_8755_rowspan_earliest_boundary::rows_covered_only_by_span_cells_take_no_extra_height
+        PASS [   5.435s] (183/185) rhwp::regression_suite_020 issue_8755_rowspan_earliest_boundary::cell_table_pushing_its_own_anchor_line_sits_at_paragraph_start
+        PASS [   4.518s] (184/185) rhwp::regression_suite_025 issue_7737_inline_picture_following_frame::picture_host_following_spacing_advances_the_owned_frame_and_paint_once
+        PASS [  14.768s] (185/185) rhwp::regression_suite_024 computed_table_outer_box_successor_contract::completed_outer_box_pages_preserve_successor_ownership_and_print_origins
+────────────
+     Summary [  28.215s] 185 tests run: 185 passed, 8929 skipped

@@ -1,0 +1,11 @@
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 12.78s
+────────────
+ Nextest run ID 3d6bbf57-7f26-420a-b0f0-a24867086f28 with nextest profile: default
+    Starting 4 tests across 2 binaries (696 tests skipped)
+        PASS [   0.011s] (1/4) rhwp::regression_suite_013 issue_7733_batang_hyphenation_supplier::batang_missing_hyphenation_point_uses_the_independent_supplier_advance
+        PASS [   0.012s] (2/4) rhwp::regression_suite_013 issue_7733_batang_hyphenation_supplier::paint_uses_the_same_supplier_as_measurement
+        PASS [   0.012s] (3/4) rhwp::regression_suite_013 issue_7733_batang_hyphenation_supplier::hft_source_does_not_borrow_the_ttf_programs_gap
+        PASS [   0.150s] (4/4) rhwp::regression_suite_006 issue_7733_batang_point_origin::body_after_two_missing_batang_points_keeps_the_print_origin
+────────────
+     Summary [   0.153s] 4 tests run: 4 passed, 696 skipped
