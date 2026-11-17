@@ -1,0 +1,37 @@
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 18.05s
+────────────
+ Nextest run ID 3ba2e376-010e-40f6-9ebd-7bc9e0ceeeb0 with nextest profile: default
+    Starting 10 tests across 2 binaries (665 tests skipped)
+        PASS [   0.029s] ( 1/10) rhwp::regression_suite_002 title_flow_photo_row_height::split_table_keeps_all_photo_rows_on_first_page
+        PASS [   0.029s] ( 2/10) rhwp::regression_suite_002 title_flow_photo_row_height::exact_declared_title_photo_cell_keeps_declared_height
+        PASS [   0.029s] ( 3/10) rhwp::regression_suite_002 title_flow_photo_row_height::low_declared_title_photo_cell_grows_without_anchor_line
+        PASS [   0.033s] ( 4/10) rhwp::regression_suite_026 approval_cell_stamp_row_height::floating_photo_in_empty_paragraph_centers_with_title
+        PASS [   0.033s] ( 5/10) rhwp::regression_suite_026 approval_cell_stamp_row_height::square_stamp_on_third_paragraph_grows_row
+        PASS [   0.033s] ( 6/10) rhwp::regression_suite_026 approval_cell_stamp_row_height::roomy_square_picture_keeps_object_extent_alignment
+        PASS [   0.035s] ( 7/10) rhwp::regression_suite_026 approval_cell_stamp_row_height::inline_photo_under_title_centers_with_title
+        PASS [   0.018s] ( 8/10) rhwp::regression_suite_026 approval_cell_stamp_row_height::tac_stamp_row_in_page_split_table_keeps_alignment
+        PASS [   0.018s] ( 9/10) rhwp::regression_suite_026 approval_cell_stamp_row_height::tac_stamp_in_fourth_paragraph_grows_row
+        FAIL [   0.673s] (10/10) rhwp::regression_suite_002 issue_7737_picture_anchor_before_frame::empty_picture_anchor_before_space_does_not_lengthen_the_table
+  stdout ───
+
+    running 1 test
+    test issue_7737_picture_anchor_before_frame::empty_picture_anchor_before_space_does_not_lengthen_the_table ... FAILED
+
+    failures:
+
+    failures:
+        issue_7737_picture_anchor_before_frame::empty_picture_anchor_before_space_does_not_lengthen_the_table
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 317 filtered out; finished in 0.66s
+
+  stderr ───
+
+    thread 'issue_7737_picture_anchor_before_frame::empty_picture_anchor_before_space_does_not_lengthen_the_table' (267914747) panicked at tests/generated/../cases/issue_7737_picture_anchor_before_frame.rs:49:5:
+    그림이 흡수한 호스트 앞 간격을 표 아래에 중복 계상하지 않는다: 874.3199999999999
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.678s] 10 tests run: 9 passed, 1 failed, 665 skipped
+        FAIL [   0.673s] (10/10) rhwp::regression_suite_002 issue_7737_picture_anchor_before_frame::empty_picture_anchor_before_space_does_not_lengthen_the_table
+error: test run failed

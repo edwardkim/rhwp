@@ -338,3 +338,13 @@ Native 98.53555→100.00000%, fresh WASM 97.57430→100.00000%를 확인했다.
 [review](batang-hyphenation-supplier/after-native-review-027.png) ·
 [overlay](batang-hyphenation-supplier/after-native-overlay-027.png).
 새 소스의 fresh WASM 전쪽·전체 회귀·정본 보호 완료를 뜻하지 않는다.
+
+## 그림 호스트의 앞 간격과 표 하단
+
+[독립 Print 대조와 공통 원인](picture-anchor-before-frame/cause.md): 저장 줄 없는 문단 기준
+그림의 앞 간격이 실제 그림 원점에는 없는데 표 높이에 남았다. 한컴 Print의 200→0 HU
+대조군은 위치·PNG가 동일하다. 기존 #8427의 흡수 계약을 같은 원인에 적용해
+시행령 70쪽 Native 98.75022→100.00000%, 나머지 251쪽 동일·하락 0쪽을 확인했다.
+최소 글꼴 집중 199 PASS이며 최신 fresh WASM·전체 검증을 대신하지 않는다.
+[review](picture-anchor-before-frame/after-native-review-070.png) ·
+[overlay](picture-anchor-before-frame/after-native-overlay-070.png).

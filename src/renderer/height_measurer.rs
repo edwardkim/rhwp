@@ -4860,33 +4860,6 @@ let body_height=match nested_body_heights
                             })
                         })
                         .map(|(pi, pp)| {
-                            // 저장 줄이 없는 문단은 위 `text_height` 가 합성한 자리 줄을
-                            // 실었다. 같은 줄이므로 그때 실은 값을 그대로 뺀다(#7685) — 저장
-                            // 줄만 빼면 자리 줄이 개체 아래에 남는다(issue7182 그림 칸 +5.3px).
-                            // 그 줄은 글자 모양이 있으면 400HU 가 아니라 글자 크기(em)로
-                            // 합성되므로 고정 400HU 를 빼면 차이가 개체 아래에 남는다
-                            // (#8971: 10pt 빈 문단의 그림 칸이 13.3 − 5.3 = 8.0px 늘어남).
-                            // 마지막 빈 문단의 몫만 뺀다. 칸 전체 `text_height`를 빼면
-                            // 앞 제목 줄까지 없어져 낮은 선언의 사진 행이 그림보다 짧아진다.
-                            // 문단 앞 간격은 종전처럼 남긴다.
-                            if crate::renderer::para_has_no_stored_line_segs(pp) {
-                                let before =
-                                    crate::renderer::cell_paragraph_spacing::paragraph_before(
-                                        pp,
-                                        pi,
-                                        styles
-                                            .para_styles
-                                            .get(pp.para_shape_id as usize)
-                                            .map_or(0.0, |s| s.spacing_before),
-                                        self.dpi,
-                                    )
-                                    .occupied_before();
-                                return (para_flow_heights[pi] - before).max(0.0);
-                            }
-                            // [#8427] 개체가 이 문단 기준(vert=문단)이면 한/글은 개체를 문단
-                            // 앞 간격 **전** 원점에 놓는다(30396 18쪽: 문단 앞 간격 500HU 인
-                            // 빈 셀 문단의 그림이 셀 내용 상단에 놓이고 행은 그림 흐름 높이만
-                            // 차지). 그 간격도 개체 자리에 흡수되므로 줄과 함께 뺀다.
                             let para_relative_object = pp.controls.iter().any(|c| match c {
                                 Control::Picture(pic) => {
                                     !pic.common.treat_as_char
@@ -4904,6 +4877,38 @@ let body_height=match nested_body_heights
                                 }
                                 _ => false,
                             });
+                            // 저장 줄이 없는 문단은 위 `text_height` 가 합성한 자리 줄을
+                            // 실었다. 같은 줄이므로 그때 실은 값을 그대로 뺀다(#7685) — 저장
+                            // 줄만 빼면 자리 줄이 개체 아래에 남는다(issue7182 그림 칸 +5.3px).
+                            // 그 줄은 글자 모양이 있으면 400HU 가 아니라 글자 크기(em)로
+                            // 합성되므로 고정 400HU 를 빼면 차이가 개체 아래에 남는다
+                            // (#8971: 10pt 빈 문단의 그림 칸이 13.3 − 5.3 = 8.0px 늘어남).
+                            // 마지막 빈 문단의 몫만 뺀다. 칸 전체 `text_height`를 빼면
+                            // 앞 제목 줄까지 없어져 낮은 선언의 사진 행이 그림보다 짧아진다.
+                            // 문단 기준 개체는 저장 줄 유무와 관계없이 앞 간격 전 원점을
+                            // 쓴다. 독립 Print의 200→0 HU 대조군도 그림·표 하단이 같다.
+                            // 이 앞 간격까지 그림 자리에 흡수하며 앞 제목 문단은 보존한다.
+                            if crate::renderer::para_has_no_stored_line_segs(pp) {
+                                let before = if para_relative_object {
+                                    0.0
+                                } else {
+                                    crate::renderer::cell_paragraph_spacing::paragraph_before(
+                                        pp,
+                                        pi,
+                                        styles
+                                            .para_styles
+                                            .get(pp.para_shape_id as usize)
+                                            .map_or(0.0, |s| s.spacing_before),
+                                        self.dpi,
+                                    )
+                                    .occupied_before()
+                                };
+                                return (para_flow_heights[pi] - before).max(0.0);
+                            }
+                            // [#8427] 개체가 이 문단 기준(vert=문단)이면 한/글은 개체를 문단
+                            // 앞 간격 **전** 원점에 놓는다(30396 18쪽: 문단 앞 간격 500HU 인
+                            // 빈 셀 문단의 그림이 셀 내용 상단에 놓이고 행은 그림 흐름 높이만
+                            // 차지). 그 간격도 개체 자리에 흡수되므로 줄과 함께 뺀다.
                             let absorbed_spacing_before = if para_relative_object {
                                 styles
                                     .para_styles

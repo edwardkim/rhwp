@@ -1,0 +1,53 @@
+[
+  {
+    "pdf": "pdf/78494-virtual-convergence-industry-decree-2020.pdf",
+    "pages": 74,
+    "table_horizontals_pt": [
+      278.69501,
+      297.27502,
+      653.04602
+    ],
+    "images_pt": [
+      [
+        261.3389892578125,
+        298.7129821777344,
+        532.6329956054688,
+        651.7269897460938
+      ]
+    ]
+  },
+  {
+    "pdf": "output/pr-review/issues-7733-7738-20261117/decree70-before-controls/decree70-before200-2020.pdf",
+    "pages": 74,
+    "table_horizontals_pt": [
+      278.69501,
+      297.27502,
+      653.04602
+    ],
+    "images_pt": [
+      [
+        261.3389892578125,
+        298.7129821777344,
+        532.6329956054688,
+        651.7269897460938
+      ]
+    ]
+  },
+  {
+    "pdf": "output/pr-review/issues-7733-7738-20261117/decree70-before-controls/decree70-before0-2020.pdf",
+    "pages": 74,
+    "table_horizontals_pt": [
+      278.69501,
+      297.27502,
+      653.04602
+    ],
+    "images_pt": [
+      [
+        261.3389892578125,
+        298.7129821777344,
+        532.6329956054688,
+        651.7269897460938
+      ]
+    ]
+  }
+]
