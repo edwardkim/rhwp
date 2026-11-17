@@ -103,12 +103,12 @@ fn actual_native_missing_glyph_is_reported_without_retaining_the_character() {
 
 #[cfg(feature = "native-skia")]
 #[test]
-fn actual_native_multpage_fallback_report_stays_bounded_and_marks_partial_results() {
+fn actual_native_multipage_fallback_report_stays_bounded_and_marks_partial_results() {
     let mut core = DocumentCore::new_empty();
     core.create_blank_document_native().unwrap();
-    for index in 0..270u32 {
+    for index in 0..270usize {
         if index > 0 {
-            core.split_paragraph_native(0, index - 1, 3).unwrap();
+            core.split_paragraph_native(0, index - 1, 3, None).unwrap();
         }
         core.insert_text_native(0, index, 0, "ABC").unwrap();
         let id = core.find_or_create_font_id_native(&format!("RHWP Missing Face 9104 {index}"));
