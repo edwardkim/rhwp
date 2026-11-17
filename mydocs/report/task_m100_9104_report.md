@@ -65,5 +65,13 @@ metadata-only는 notRendered, 상한 초과 또는 페이지 실패는 partial�
 [Python 계약 267건](../working/assets/issue9104/final/baseline-python-contracts.json)이 모두 PASS다.
 consumer는 표 해시 연결만 바뀌며 제품·Rust 검사 source는 같다.
 
-정확한 제출 후보·최신 devel·본인 열린 PR·병합 시뮬레이션을 확인해 원격 처리안을 제시한다.
-현재 remote push·새 PR·공개 댓글·merge·#9104 close는 수행하지 않았다.
+## 원격 코드 검증 완료
+
+사용자의 원격 처리 승인 뒤 후보 `6f99912b5013b3a82da9869f536e1488859d4f83`를 push하고
+devel 대상 [Open PR #9147](https://github.com/edwardkim/rhwp/pull/9147)을 생성했습니다.
+동일 code head의 Full CI·CodeQL·Render Diff·Adapter·Proptest·최종 정책 감사가 모두 성공했습니다.
+원격 A–E 실제 로그는 13,516 PASS·0 FAIL·45 skip이며 로컬 결과와 구분합니다.
+[CI 영수증](../pr/assets/pr9147/code-ci.json)과 [self-review](../pr/archives/pr_9147_review.md)를 남깁니다.
+
+이 문서 전용 기록 head의 검사·최신 병합 시뮬레이션을 확인한 뒤 승인된 merge·#9104 완료
+댓글/close·devel 동기화·종료 정리를 진행합니다. 실행 전인 후속 조치는 완료로 기록하지 않습니다.

@@ -3,7 +3,9 @@
 제품 source는 `1da7afbd64bbc59d9338a187ebcd21860ddc0842`, 최종 Rust 검사 head는
 `13bb8191967f7e2efc9c182deaf0e7e075576205`, 기준 devel은
 `4f44355f5ff234abd1289d340cb4a3fe13297982`다. 검사 뒤 제품·Rust 검사 source는 바꾸지 않았다.
-원격 PR·CI·머지는 아직 수행하지 않았다.
+이 원장은 로컬 검증 완료 시점의 증거다. 이후 원격 코드 CI는
+[PR #9147 검토 기록](../../../../pr/archives/pr_9147_review.md)과
+[CI 영수증](../../../../pr/assets/pr9147/code-ci.json)에서 구분한다.
 
 ## 결과
 
