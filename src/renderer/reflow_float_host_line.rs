@@ -75,7 +75,7 @@ pub(crate) fn neutral_anchor_metrics(
 /// 웹한글기안기 인쇄(`samples/issue8582/hwp_band.hwpx`, 높이 120 HU 직선, 줄 피치 1100 HU):
 /// 세로 오프셋 600·0 은 밀림 없음, 2374 는 셋째 줄(2200~3300)이 띠(2374~2494)에 걸려 +294 HU.
 /// 개체 항목이 흐름에 더하는 개체 높이(종전 계약)는 앵커 줄 전진에서 뺀다.
-fn hwp_topbottom_band_host_metrics(
+pub(crate) fn hwp_topbottom_band_host_metrics(
     para: &Paragraph,
     styles: &ResolvedStyleSet,
     para_style: Option<&ResolvedParaStyle>,

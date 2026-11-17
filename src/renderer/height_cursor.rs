@@ -946,6 +946,22 @@ impl HeightCursor {
         // result 산출 후 방향으로 한다 (함수 끝 합성 전방 차단).
         let synthetic_prev_seg =
             seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0;
+        // 저장 줄 없는 직선 띠의 앵커·충돌 전진은 공통 재조판 결과가 소유한다.
+        // 그 전진을 반영하기 전의 합성 vpos로 되감으면, 뒤 띠마다 앞에서 확보한
+        // 공간이 사라진다. 실제 저장 사다리의 재동기화 계약은 그대로 둔다.
+        if synthetic_prev_seg
+            && paragraphs.get(item_para).is_some_and(|current| {
+                super::reflow_float_host_line::hwp_topbottom_band_host_metrics(
+                    current,
+                    styles,
+                    styles.para_styles.get(current.para_shape_id as usize),
+                    self.dpi,
+                )
+                .is_some()
+            })
+        {
+            return y_offset;
+        }
         // 분할 표 뒤 빈 줄의 저장 위치는 이전 본문 프레임 밖에 남을 수 있다.
         // 그 줄의 높이·간격은 이미 소비했으므로, 다음 본문이 원래 프레임 안으로
         // 돌아오면 옛 빈 줄 위치로 지연 기준을 역산하지 않는다. 현재 원본 위치와
