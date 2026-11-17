@@ -721,6 +721,7 @@ fn test_layout_with_composed_styles() {
     let styles = ResolvedStyleSet {
         section_tab_width_bits: Default::default(),
         source_hwp3_native: false,
+        word_compat_target: false,
         source_program_projection_slots: Default::default(),
         unsubstituted_font_slots: Default::default(),
         isolated_jamo_font: None,
@@ -886,6 +887,7 @@ fn test_layout_multi_run_x_position() {
     let styles = ResolvedStyleSet {
         section_tab_width_bits: Default::default(),
         source_hwp3_native: false,
+        word_compat_target: false,
         source_program_projection_slots: Default::default(),
         unsubstituted_font_slots: Default::default(),
         isolated_jamo_font: None,
@@ -1001,6 +1003,7 @@ fn test_resolved_to_text_style() {
     let styles = ResolvedStyleSet {
         section_tab_width_bits: Default::default(),
         source_hwp3_native: false,
+        word_compat_target: false,
         source_program_projection_slots: Default::default(),
         unsubstituted_font_slots: Default::default(),
         isolated_jamo_font: None,
@@ -1053,6 +1056,7 @@ fn test_resolved_to_text_style_with_ratio() {
     let styles = ResolvedStyleSet {
         section_tab_width_bits: Default::default(),
         source_hwp3_native: false,
+        word_compat_target: false,
         source_program_projection_slots: Default::default(),
         unsubstituted_font_slots: Default::default(),
         isolated_jamo_font: None,

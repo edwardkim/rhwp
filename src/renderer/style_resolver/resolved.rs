@@ -574,6 +574,9 @@ pub struct ResolvedStyleSet {
     pub(crate) section_tab_width_bits: std::sync::Arc<std::sync::atomic::AtomicU64>,
     /// 원본 HWP3 또는 그 HWPX 변환의 글꼴 꾸밈 출처.
     pub(crate) source_hwp3_native: bool,
+    /// 문서의 호환 대상이 MS 워드인가(HWP5 `HWPTAG_COMPATIBLE_DOCUMENT` 값 2, HWPX
+    /// `targetProgram="MS_WORD"`). 한/글 문서와 다른 흐름 규칙을 고른다.
+    pub(crate) word_compat_target: bool,
     /// 문서 지정 대체가 있어도 현재 선택은 자기 메트릭을 가진 원본 TTF인 슬롯.
     /// 값은 문서가 선언한 대체 프로그램의 해소 결과다. 저장 줄 전체가 이 대체
     /// 프로그램의 채움과 일치하고 현재 원본 프로그램과 다른 경우에만 사용한다.
@@ -785,6 +788,6 @@ crate::storage::clone_fields!(ResolvedParaStyle, {alignment, vertical_alignment,
 
 crate::storage::clone_fields!(ResolvedBorderStyle, {borders, fill_color, pattern, gradient, image_fill, diagonal_attr, break_cell_separate_line, diagonal, center_line});
 
-crate::storage::clone_fields!(ResolvedStyleSet, {section_tab_width_bits, script_metrics, source_hwp3_native, source_program_projection_slots, native_pua_fonts, display_only_otf_slots, inferred_ttf_requires_selection, unsubstituted_font_slots, char_overlap_size_bounds, source_char_shapes, resolved_dpi, isolated_jamo_font, page_number_char_style_id, page_number_font_is_hft, supplemental_metrics, style_char_shapes, char_styles, para_styles, border_styles, numberings, bullets, hwp3_variant, hft_ascii_halfwidth, kerning_measurement_context, horizontal_shaping_context});
+crate::storage::clone_fields!(ResolvedStyleSet, {section_tab_width_bits, script_metrics, source_hwp3_native, word_compat_target, source_program_projection_slots, native_pua_fonts, display_only_otf_slots, inferred_ttf_requires_selection, unsubstituted_font_slots, char_overlap_size_bounds, source_char_shapes, resolved_dpi, isolated_jamo_font, page_number_char_style_id, page_number_font_is_hft, supplemental_metrics, style_char_shapes, char_styles, para_styles, border_styles, numberings, bullets, hwp3_variant, hft_ascii_halfwidth, kerning_measurement_context, horizontal_shaping_context});
 
 crate::storage::clone_fields!(ResolvedImageFill, {bin_data_id, fill_mode, brightness, contrast, effect});
