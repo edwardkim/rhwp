@@ -3,6 +3,7 @@ use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, OnceLock};
 
 use skia_safe::{FontMgr, FontStyle, Typeface};
+use unicode_properties::{GeneralCategory, UnicodeGeneralCategory};
 
 use super::font_catalog::TypefaceCatalog;
 use crate::renderer::{
@@ -369,6 +370,37 @@ pub(super) fn select_typeface_for_character<'a>(
             && candidate.typeface.unichar_to_glyph(codepoint) != 0
             && !has_empty_symbol_glyph(&candidate.typeface, character)
     })
+}
+
+/// Keep the declared/supplied ladder first, then ask the platform for a real
+/// glyph rather than dropping text when a subset does not contain it. The
+/// Korean language preference matches the existing generic CJK ladder.
+pub(super) fn resolve_typeface_for_character<'a>(
+    chain: &'a [TypefaceCandidate],
+    character: char,
+    font_mgr: &FontMgr,
+    style: FontStyle,
+) -> Option<std::borrow::Cow<'a, TypefaceCandidate>> {
+    if let Some(candidate) = select_typeface_for_character(chain, character) {
+        return Some(std::borrow::Cow::Borrowed(candidate));
+    }
+    // Private-use glyphs require the declared program's meaning. An unrelated
+    // installed font cannot establish that meaning by sharing its codepoint.
+    if crate::renderer::text_glyph_visibility::is_nonprinting_character(character)
+        || character.general_category() == GeneralCategory::PrivateUse
+    {
+        return None;
+    }
+    let candidate = TypefaceCandidate {
+        typeface: font_mgr.match_family_style_character("", style, &["ko"], character as i32)?,
+        source: "system",
+        declared: false,
+        family_order: usize::MAX,
+    };
+    // Reuse the same missing/LastResort/empty-symbol checks as the named ladder.
+    select_typeface_for_character(std::slice::from_ref(&candidate), character)
+        .is_some()
+        .then_some(std::borrow::Cow::Owned(candidate))
 }
 
 fn has_empty_symbol_glyph(typeface: &Typeface, character: char) -> bool {
