@@ -1,0 +1,228 @@
+{
+  "actualJsResponses": [
+    {
+      "url": "http://127.0.0.1:7793/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+      "status": 200,
+      "received_sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+      "source_file": "/Users/tsjang/rhwp/pkg/rhwp.js",
+      "source_sha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "note": "Vite transforms the initialization module; received bytes and the mapped build source are distinguished."
+    },
+    {
+      "url": "http://127.0.0.1:7793/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+      "status": 304,
+      "received_sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+      "source_file": "/Users/tsjang/rhwp/pkg/rhwp.js",
+      "source_sha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "note": "Vite transforms the initialization module; received bytes and the mapped build source are distinguished."
+    },
+    {
+      "url": "http://127.0.0.1:7793/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+      "status": 304,
+      "received_sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+      "source_file": "/Users/tsjang/rhwp/pkg/rhwp.js",
+      "source_sha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "note": "Vite transforms the initialization module; received bytes and the mapped build source are distinguished."
+    },
+    {
+      "url": "http://127.0.0.1:7793/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+      "status": 304,
+      "received_sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+      "source_file": "/Users/tsjang/rhwp/pkg/rhwp.js",
+      "source_sha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "note": "Vite transforms the initialization module; received bytes and the mapped build source are distinguished."
+    },
+    {
+      "url": "http://127.0.0.1:7793/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+      "status": 304,
+      "received_sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+      "source_file": "/Users/tsjang/rhwp/pkg/rhwp.js",
+      "source_sha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "note": "Vite transforms the initialization module; received bytes and the mapped build source are distinguished."
+    },
+    {
+      "url": "http://127.0.0.1:7793/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+      "status": 304,
+      "received_sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+      "source_file": "/Users/tsjang/rhwp/pkg/rhwp.js",
+      "source_sha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "note": "Vite transforms the initialization module; received bytes and the mapped build source are distinguished."
+    }
+  ],
+  "localFontCatalogEvidence": [
+    {
+      "url": "http://127.0.0.1:7793/?renderer=canvas2d&renderProfile=print",
+      "source": "Supported rhwpStudio.fonts.setProvider API, original installed font bytes; no browser API mock",
+      "originalPath": "/Users/tsjang/Library/Fonts/HANBatang.ttf",
+      "state": {
+        "active": true,
+        "generation": 1,
+        "count": 1,
+        "lastError": null
+      },
+      "sha256": "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+      "face": {
+        "id": "original-HCRBatang",
+        "family": "HCR Batang",
+        "fullName": "HCR Batang",
+        "postscriptName": "HCRBatang",
+        "style": "Regular",
+        "weight": 400,
+        "slant": "normal",
+        "aliases": [
+          "함초롬바탕",
+          "HCRBatang"
+        ]
+      }
+    },
+    {
+      "input": "issue8582/hwp_band.hwpx",
+      "uiAction": "Closed optional browser local-font query dialog using its real close button; original host program already supplied through public API"
+    },
+    {
+      "url": "http://127.0.0.1:7793/?renderer=canvaskit&canvaskitMode=compat&renderProfile=print&canvaskitSurface=software",
+      "source": "Supported rhwpStudio.fonts.setProvider API, original installed font bytes; no browser API mock",
+      "originalPath": "/Users/tsjang/Library/Fonts/HANBatang.ttf",
+      "state": {
+        "active": true,
+        "generation": 1,
+        "count": 1,
+        "lastError": null
+      },
+      "sha256": "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+      "face": {
+        "id": "original-HCRBatang",
+        "family": "HCR Batang",
+        "fullName": "HCR Batang",
+        "postscriptName": "HCRBatang",
+        "style": "Regular",
+        "weight": 400,
+        "slant": "normal",
+        "aliases": [
+          "함초롬바탕",
+          "HCRBatang"
+        ]
+      }
+    },
+    {
+      "input": "issue8582/hwp_band.hwpx",
+      "uiAction": "Closed optional browser local-font query dialog using its real close button; original host program already supplied through public API"
+    },
+    {
+      "url": "http://127.0.0.1:7793/?renderer=canvaskit&canvaskitMode=default&renderProfile=print&canvaskitSurface=software",
+      "source": "Supported rhwpStudio.fonts.setProvider API, original installed font bytes; no browser API mock",
+      "originalPath": "/Users/tsjang/Library/Fonts/HANBatang.ttf",
+      "state": {
+        "active": true,
+        "generation": 1,
+        "count": 1,
+        "lastError": null
+      },
+      "sha256": "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+      "face": {
+        "id": "original-HCRBatang",
+        "family": "HCR Batang",
+        "fullName": "HCR Batang",
+        "postscriptName": "HCRBatang",
+        "style": "Regular",
+        "weight": 400,
+        "slant": "normal",
+        "aliases": [
+          "함초롬바탕",
+          "HCRBatang"
+        ]
+      }
+    },
+    {
+      "input": "issue8582/hwp_band.hwpx",
+      "uiAction": "Closed optional browser local-font query dialog using its real close button; original host program already supplied through public API"
+    },
+    {
+      "url": "http://127.0.0.1:7793/?renderer=canvas2d&renderProfile=print",
+      "source": "Supported rhwpStudio.fonts.setProvider API, original installed font bytes; no browser API mock",
+      "originalPath": "/Users/tsjang/Library/Fonts/HANBatang.ttf",
+      "state": {
+        "active": true,
+        "generation": 1,
+        "count": 1,
+        "lastError": null
+      },
+      "sha256": "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+      "face": {
+        "id": "original-HCRBatang",
+        "family": "HCR Batang",
+        "fullName": "HCR Batang",
+        "postscriptName": "HCRBatang",
+        "style": "Regular",
+        "weight": 400,
+        "slant": "normal",
+        "aliases": [
+          "함초롬바탕",
+          "HCRBatang"
+        ]
+      }
+    },
+    {
+      "input": "tab_overflow/tab_stop_beyond_line.hwpx",
+      "uiAction": "Closed optional browser local-font query dialog using its real close button; original host program already supplied through public API"
+    },
+    {
+      "url": "http://127.0.0.1:7793/?renderer=canvaskit&canvaskitMode=compat&renderProfile=print&canvaskitSurface=software",
+      "source": "Supported rhwpStudio.fonts.setProvider API, original installed font bytes; no browser API mock",
+      "originalPath": "/Users/tsjang/Library/Fonts/HANBatang.ttf",
+      "state": {
+        "active": true,
+        "generation": 1,
+        "count": 1,
+        "lastError": null
+      },
+      "sha256": "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+      "face": {
+        "id": "original-HCRBatang",
+        "family": "HCR Batang",
+        "fullName": "HCR Batang",
+        "postscriptName": "HCRBatang",
+        "style": "Regular",
+        "weight": 400,
+        "slant": "normal",
+        "aliases": [
+          "함초롬바탕",
+          "HCRBatang"
+        ]
+      }
+    },
+    {
+      "input": "tab_overflow/tab_stop_beyond_line.hwpx",
+      "uiAction": "Closed optional browser local-font query dialog using its real close button; original host program already supplied through public API"
+    },
+    {
+      "url": "http://127.0.0.1:7793/?renderer=canvaskit&canvaskitMode=default&renderProfile=print&canvaskitSurface=software",
+      "source": "Supported rhwpStudio.fonts.setProvider API, original installed font bytes; no browser API mock",
+      "originalPath": "/Users/tsjang/Library/Fonts/HANBatang.ttf",
+      "state": {
+        "active": true,
+        "generation": 1,
+        "count": 1,
+        "lastError": null
+      },
+      "sha256": "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+      "face": {
+        "id": "original-HCRBatang",
+        "family": "HCR Batang",
+        "fullName": "HCR Batang",
+        "postscriptName": "HCRBatang",
+        "style": "Regular",
+        "weight": 400,
+        "slant": "normal",
+        "aliases": [
+          "함초롬바탕",
+          "HCRBatang"
+        ]
+      }
+    },
+    {
+      "input": "tab_overflow/tab_stop_beyond_line.hwpx",
+      "uiAction": "Closed optional browser local-font query dialog using its real close button; original host program already supplied through public API"
+    }
+  ]
+}

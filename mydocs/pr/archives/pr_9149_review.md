@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**머지 보류 — 최종 통합 검증 진행 중.** Native/fresh WASM 독립 Print 비교를 완료했으며 나머지 필수 검증 후 판정을 갱신한다.
+**로컬 검토 충족 — 최신 통합 PR CI·후속 기록 확인 후 병합 가능.** 원 기여와 필요한 메인터너 보정을 구분해 검증했다.
 
 ## 변경과 검토 범위
 
@@ -40,12 +40,20 @@ base **36.37%** → 원 기여 **58.23%** → 보정 후보 **100.00%**다.
 원 SHA를 기록하며 체리픽했고 개별·쌍별·누적 시뮬레이션 9건은 충돌 없이 종료했다.
 원 fork에는 push하지 않았다. [선행 분석](../assets/open_prs_20261117/intake-analysis.md)을 따른다.
 
-## 남은 필수 검증
+## 최종 로컬 검증과 후속 조건
 
-현재 문서는 검토 진행 기록이다. 새 source의 최소 글꼴 환경 focused·전체 nextest,
-lint/build·Native Skia 3종, 정본 보호 전쪽 Native/fresh WASM, 기여자 공통 보호·편람 gate,
-실제 backend 소비 및 최종 CI·병합·후속 처리는 진행 중이며 완료로 인용하지 않는다.
-기준 PDF·원본·raw 지표·임계값을 낮추어 통과시키지 않는다.
+[통합 검증 정본](../assets/open_prs_20261117/README.md)과 각 원본 TSV·PNG를 확인했다.
+최소 글꼴 환경 focused 7건과 전체 nextest **13,708 PASS / 0 FAIL / 45 skip**,
+fmt·Native/WASM/all-target Clippy·workspace build·manifest/unit-tier, Native Skia **2·2·36건**을 통과했다.
+원본 글꼴 일반 환경의 정본 보호 18종·1,771쪽은 Native/fresh WASM 모두 하락·상승 0쪽이다.
+명시적 편람 Native 383쪽(최저 99.97%)과 기여자 공통 보호 8건도 통과했다.
+[회귀 집계](../assets/open_prs_20261117/rust-validation.json),
+[보호 Native](../assets/open_prs_20261117/protected-native-validation.json)·
+[보호 WASM](../assets/open_prs_20261117/protected-wasm-validation.json),
+[실제 소비 경로](../assets/open_prs_20261117/consumer-validation.json)를 따른다.
+
+최종 통합 PR의 code CI·오늘할일 trailing head CI·병합과 원 PR/실제 해결 이슈 close는 아직 확정하지 않는다.
+원 fork를 수정하지 않으며, 통합 병합 뒤 검토 결과와 확정 SHA를 원 PR에 안내한다.
 
 ## 후속 코멘트 계획
 
@@ -53,15 +61,14 @@ lint/build·Native Skia 3종, 정본 보호 전쪽 Native/fresh WASM, 기여자 
 웹한글기안기 PDF를 판정에서 제외한 사실과 실제 데스크톱 제품·Print 경로를 코멘트에도 적는다.
 해당 PR의 같은 쪽 raw·PDF·review·overlay를 merge SHA 고정 이미지로 직접 표시한다.
 
-## fresh WASM 및 보호 Native 추가 확인
+## 최종 실제 출력과 회귀 보강
 
-같은 source `2c5e3fe387`의 locked wrapper `--target web --out-dir pkg --no-opt`
-Mac 로컬 대체 빌드로 원본 1쪽을 다시 측정했고 raw **100.00%**다. Docker 최적화 통과로
-표현하지 않는다. root pkg·Studio public·검증 package의 JS/WASM 해시가 각각 같다.
-[WASM TSV](../assets/open_prs_20261117/cases/band/wasm/candidate/silhouette.tsv),
-[review](../assets/open_prs_20261117/cases/band/wasm/candidate/review-001.png)·
-[overlay](../assets/open_prs_20261117/cases/band/wasm/candidate/overlay-001.png)를 직접 판독했다.
+원본 1쪽의 Native/fresh WASM과 실제 Studio Canvas2D·CanvasKit compat/default,
+Native SVG·WASM SVG가 독립 Print 대비 각각 **100.00%**다.
+같은 원문·쪽의 review·overlay를 직접 판독했으며 허용 반경 내 안티앨리어싱·획 차이는
+RGB 완전 동일성을 뜻하지 않는다. 실제 Studio는 원본 함초롬바탕 TTF를 공식 host-font API로 공급했다.
+CanvasKit software 실제 backend·typeface 준비·fallback 없음과 초기화 JS/WASM 응답 해시를 확인했다.
+[소비 경로 TSV·raw/PDF/review/overlay](../assets/open_prs_20261117/consumer-validation.json)를 따른다.
 
-정본 보호 Native 18종·1,771쪽은 하락·상승 0쪽으로 완료했다.
-[전쪽 집계](../assets/open_prs_20261117/protected-native-validation.json)를 따른다.
-보호 WASM, 최종 회귀와 실제 Studio 소비는 별도 진행 중이다.
+새 원본 HWPX 회귀는 독립 PDF 좌표 ±2px와 라벨 누락·중복·순서를 함께 검사한다.
+[동일 검사 실제 RED/GREEN 및 공유 target 재사용 오류 제외](../assets/open_prs_20261117/band-red-green-validation.json)를 확인했다.

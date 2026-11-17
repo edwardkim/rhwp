@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**머지 보류 — 최종 통합 검증 진행 중.** 실제 CLI 진단 개선을 확인했으며 전체 필수 검증 후 판정을 갱신한다.
+**로컬 검토 충족 — 최신 통합 PR CI·후속 기록 확인 후 병합 가능.** 원 기여와 필요한 메인터너 보정을 구분해 검증했다.
 
 ## 변경과 검토 범위
 
@@ -30,12 +30,20 @@
 원 SHA를 기록하며 체리픽했고 개별·쌍별·누적 시뮬레이션 9건은 충돌 없이 종료했다.
 원 fork에는 push하지 않았다. [선행 분석](../assets/open_prs_20261117/intake-analysis.md)을 따른다.
 
-## 남은 필수 검증
+## 최종 로컬 검증과 후속 조건
 
-현재 문서는 검토 진행 기록이다. 새 source의 최소 글꼴 환경 focused·전체 nextest,
-lint/build·Native Skia 3종, 정본 보호 전쪽 Native/fresh WASM, 기여자 공통 보호·편람 gate,
-실제 backend 소비 및 최종 CI·병합·후속 처리는 진행 중이며 완료로 인용하지 않는다.
-기준 PDF·원본·raw 지표·임계값을 낮추어 통과시키지 않는다.
+[통합 검증 정본](../assets/open_prs_20261117/README.md)과 각 원본 TSV·PNG를 확인했다.
+최소 글꼴 환경 focused 7건과 전체 nextest **13,708 PASS / 0 FAIL / 45 skip**,
+fmt·Native/WASM/all-target Clippy·workspace build·manifest/unit-tier, Native Skia **2·2·36건**을 통과했다.
+원본 글꼴 일반 환경의 정본 보호 18종·1,771쪽은 Native/fresh WASM 모두 하락·상승 0쪽이다.
+명시적 편람 Native 383쪽(최저 99.97%)과 기여자 공통 보호 8건도 통과했다.
+[회귀 집계](../assets/open_prs_20261117/rust-validation.json),
+[보호 Native](../assets/open_prs_20261117/protected-native-validation.json)·
+[보호 WASM](../assets/open_prs_20261117/protected-wasm-validation.json),
+[실제 소비 경로](../assets/open_prs_20261117/consumer-validation.json)를 따른다.
+
+최종 통합 PR의 code CI·오늘할일 trailing head CI·병합과 원 PR/실제 해결 이슈 close는 아직 확정하지 않는다.
+원 fork를 수정하지 않으며, 통합 병합 뒤 검토 결과와 확정 SHA를 원 PR에 안내한다.
 
 ## 후속 코멘트 계획
 

@@ -1,0 +1,62 @@
+{
+  "before": {
+    "source": "5264d6f1e9fc7435e8f401a5101f881c9e9c93a6",
+    "exit_code": 101,
+    "intended_failure": true,
+    "command": [
+      "sandbox-exec",
+      "-f",
+      "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/minimal-font/profile-v2.sb",
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--test",
+      "audit_band_before",
+      "raw_hwpx_band_labels_keep_independent_print_flow_positions",
+      "-j",
+      "8",
+      "--",
+      "--test-threads",
+      "8",
+      "--nocapture"
+    ],
+    "seconds": 239.042,
+    "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/logs/band-before-actual-test.log",
+    "log_sha256": "6c223adf722aa6361f71114d2fa2d81cfb33f428abb6ab48d992958a894ca6b7"
+  },
+  "after_invalid_cache_reuse": {
+    "product_source": "2c5e3fe38726d23bec1c970ba3f92a49e15cae34",
+    "test_source": "c2ec0621772bf802bc573dab7bdb1bf82a2e21e3",
+    "exit_code": 100,
+    "command": [
+      "sandbox-exec",
+      "-f",
+      "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/minimal-font/profile-v2.sb",
+      "node",
+      "scripts/run-rust-test.mjs",
+      "hwp_topbottom_line_band_anchor_flow",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "seconds": 17.205,
+    "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/logs/band-after-actual-test.log"
+  },
+  "after": {
+    "product_source": "2c5e3fe38726d23bec1c970ba3f92a49e15cae34",
+    "test_source": "c2ec0621772bf802bc573dab7bdb1bf82a2e21e3",
+    "exit_code": 0,
+    "run": 2,
+    "passed": 2,
+    "failed": 0,
+    "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/logs/band-after-fresh-source-test.log",
+    "log_sha256": "ecdbd7594a2d04856587b98e73ab41ac39134c2b1dfc11126f709a06347b6e5f",
+    "fresh_compile": "Touched source mtimes only after the isolated before-source Cargo build; actual root source recompiled in 3m16s, test phase0.027s. No content or expectation change."
+  },
+  "cache_audit": "Initial after run reproduced before AFTER600314.9333px vs independent Print318.7940px. Shared target crossed archived source; no root product content changes. Forced current-source rebuild passed. Initial after failure is excluded from acceptance."
+}

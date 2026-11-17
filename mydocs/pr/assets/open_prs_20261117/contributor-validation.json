@@ -1,0 +1,471 @@
+{
+  "status": "passed",
+  "baseline": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
+  "baseline_sha256": "7eb001e3e30d6892d8bc03ba3e16456a4dd758cccb0e9aba073671366a9a5a1b",
+  "results": [
+    {
+      "document_id": "52ee61fe7201e36b",
+      "input": "samples/re-03-latin-only-hancom.hwp",
+      "backend": "native",
+      "status": "passed",
+      "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/52ee61fe7201e36b/native.log",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "/Users/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--resume",
+        "--hwp",
+        "samples/re-03-latin-only-hancom.hwp",
+        "--pdf",
+        "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+        "--key",
+        "document",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/rhwp-candidate-native-repair1",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "8",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/52ee61fe7201e36b/native"
+      ],
+      "exit_code": 0,
+      "minimum": "100.0",
+      "regressions": [],
+      "manifest": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/52ee61fe7201e36b/native/document/silhouette_manifest.json",
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/52ee61fe7201e36b/native/document/silhouette.tsv",
+      "images": {
+        "page": 1,
+        "review": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/52ee61fe7201e36b/native/review/review_001.png",
+        "overlay": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/52ee61fe7201e36b/native/overlay/overlay_001.png"
+      },
+      "committed_table": {
+        "path": "mydocs/pr/assets/open_prs_20261117/common-protection/52ee61fe7201e36b/native.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "bytes": 132
+      },
+      "committed_review": {
+        "path": "mydocs/pr/assets/open_prs_20261117/common-protection/52ee61fe7201e36b/native/review-001.png",
+        "sha256": "5881cf19f9f338bc640a799341c47ea472c65c5c8ffb1d5b684c76c13e3e1fdc",
+        "bytes": 96383
+      },
+      "committed_overlay": {
+        "path": "mydocs/pr/assets/open_prs_20261117/common-protection/52ee61fe7201e36b/native/overlay-001.png",
+        "sha256": "5d71693b65adc4f8da4603be47b5779fc75f956f33a3110661dfda481342528e",
+        "bytes": 44954
+      }
+    },
+    {
+      "document_id": "52ee61fe7201e36b",
+      "input": "samples/re-03-latin-only-hancom.hwp",
+      "backend": "wasm",
+      "status": "passed",
+      "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/52ee61fe7201e36b/wasm.log",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "/Users/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--resume",
+        "--hwp",
+        "samples/re-03-latin-only-hancom.hwp",
+        "--pdf",
+        "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+        "--key",
+        "document",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/rhwp-candidate-native-repair1",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "8",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/52ee61fe7201e36b/wasm",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/candidate-pkg"
+      ],
+      "exit_code": 0,
+      "minimum": "100.0",
+      "regressions": [],
+      "manifest": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/52ee61fe7201e36b/wasm/document/silhouette_manifest.json",
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/52ee61fe7201e36b/wasm/document/silhouette.tsv",
+      "images": {
+        "page": 1,
+        "review": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/52ee61fe7201e36b/wasm/review/review_001.png",
+        "overlay": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/52ee61fe7201e36b/wasm/overlay/overlay_001.png"
+      },
+      "committed_table": {
+        "path": "mydocs/pr/assets/open_prs_20261117/common-protection/52ee61fe7201e36b/wasm.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "bytes": 132
+      },
+      "committed_review": {
+        "path": "mydocs/pr/assets/open_prs_20261117/common-protection/52ee61fe7201e36b/wasm/review-001.png",
+        "sha256": "10fd1852de090f9deed07f3d00f07cfc573581dcac90ee05adcceb8386686aad",
+        "bytes": 93977
+      },
+      "committed_overlay": {
+        "path": "mydocs/pr/assets/open_prs_20261117/common-protection/52ee61fe7201e36b/wasm/overlay-001.png",
+        "sha256": "6112c22b8007f586ff5f6a853989c2e354c2987e740f9d07d330978dcb901c08",
+        "bytes": 43391
+      }
+    },
+    {
+      "document_id": "59f6ab1155623bda",
+      "input": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "backend": "native",
+      "status": "passed",
+      "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/59f6ab1155623bda/native.log",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "/Users/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--resume",
+        "--hwp",
+        "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+        "--pdf",
+        "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+        "--key",
+        "document",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/rhwp-candidate-native-repair1",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "8",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/59f6ab1155623bda/native"
+      ],
+      "exit_code": 0,
+      "minimum": "100.0",
+      "regressions": [],
+      "manifest": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/59f6ab1155623bda/native/document/silhouette_manifest.json",
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/59f6ab1155623bda/native/document/silhouette.tsv",
+      "images": {
+        "page": 1,
+        "review": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/59f6ab1155623bda/native/review/review_001.png",
+        "overlay": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/59f6ab1155623bda/native/overlay/overlay_001.png"
+      },
+      "committed_table": {
+        "path": "mydocs/pr/assets/open_prs_20261117/common-protection/59f6ab1155623bda/native.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "bytes": 132
+      },
+      "committed_review": {
+        "path": "mydocs/pr/assets/open_prs_20261117/common-protection/59f6ab1155623bda/native/review-001.png",
+        "sha256": "fc569a1f551b40e749c536a9fa8167b2d8ba43e3f497c541a7933af7630f1127",
+        "bytes": 35625
+      },
+      "committed_overlay": {
+        "path": "mydocs/pr/assets/open_prs_20261117/common-protection/59f6ab1155623bda/native/overlay-001.png",
+        "sha256": "bad2076ac3b2cd803de4a804441f38e2a5f3639ea4c11bcd4d2580476ab314c7",
+        "bytes": 24058
+      }
+    },
+    {
+      "document_id": "59f6ab1155623bda",
+      "input": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "backend": "wasm",
+      "status": "passed",
+      "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/59f6ab1155623bda/wasm.log",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "/Users/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--resume",
+        "--hwp",
+        "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+        "--pdf",
+        "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+        "--key",
+        "document",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/rhwp-candidate-native-repair1",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "8",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/59f6ab1155623bda/wasm",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/candidate-pkg"
+      ],
+      "exit_code": 0,
+      "minimum": "100.0",
+      "regressions": [],
+      "manifest": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/59f6ab1155623bda/wasm/document/silhouette_manifest.json",
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/59f6ab1155623bda/wasm/document/silhouette.tsv",
+      "images": {
+        "page": 1,
+        "review": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/59f6ab1155623bda/wasm/review/review_001.png",
+        "overlay": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/59f6ab1155623bda/wasm/overlay/overlay_001.png"
+      },
+      "committed_table": {
+        "path": "mydocs/pr/assets/open_prs_20261117/common-protection/59f6ab1155623bda/wasm.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "bytes": 132
+      },
+      "committed_review": {
+        "path": "mydocs/pr/assets/open_prs_20261117/common-protection/59f6ab1155623bda/wasm/review-001.png",
+        "sha256": "66b0f584991aff6c49f676b95febb56c527238b4fdd2c557f3202837c0bfb022",
+        "bytes": 35697
+      },
+      "committed_overlay": {
+        "path": "mydocs/pr/assets/open_prs_20261117/common-protection/59f6ab1155623bda/wasm/overlay-001.png",
+        "sha256": "f005a352a1010f14d075fa08c798890b23a3d773b92422dc4ed0414656fc0b45",
+        "bytes": 24127
+      }
+    },
+    {
+      "document_id": "cdacd874b6e6ac66",
+      "input": "samples/pic-crop-01.hwp",
+      "backend": "native",
+      "status": "passed",
+      "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/cdacd874b6e6ac66/native.log",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "/Users/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--resume",
+        "--hwp",
+        "samples/pic-crop-01.hwp",
+        "--pdf",
+        "pdf/pic-crop-01-2022.pdf",
+        "--key",
+        "document",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/rhwp-candidate-native-repair1",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "8",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/cdacd874b6e6ac66/native"
+      ],
+      "exit_code": 0,
+      "minimum": "99.99756",
+      "regressions": [],
+      "manifest": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/cdacd874b6e6ac66/native/document/silhouette_manifest.json",
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/cdacd874b6e6ac66/native/document/silhouette.tsv",
+      "images": {
+        "page": 1,
+        "review": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/cdacd874b6e6ac66/native/review/review_001.png",
+        "overlay": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/cdacd874b6e6ac66/native/overlay/overlay_001.png"
+      },
+      "committed_table": {
+        "path": "mydocs/pr/assets/open_prs_20261117/common-protection/cdacd874b6e6ac66/native.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "bytes": 132
+      },
+      "committed_review": {
+        "path": "mydocs/pr/assets/open_prs_20261117/common-protection/cdacd874b6e6ac66/native/review-001.png",
+        "sha256": "df5248c3837863609c3385b59f23898d97bbd36b96f40df59d1cfde882cf273c",
+        "bytes": 206989
+      },
+      "committed_overlay": {
+        "path": "mydocs/pr/assets/open_prs_20261117/common-protection/cdacd874b6e6ac66/native/overlay-001.png",
+        "sha256": "66403aaaffe871648bd66be9607c3b2fac5a884adfc8d55e4232de50bb841c62",
+        "bytes": 64579
+      }
+    },
+    {
+      "document_id": "cdacd874b6e6ac66",
+      "input": "samples/pic-crop-01.hwp",
+      "backend": "wasm",
+      "status": "passed",
+      "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/cdacd874b6e6ac66/wasm.log",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "/Users/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--resume",
+        "--hwp",
+        "samples/pic-crop-01.hwp",
+        "--pdf",
+        "pdf/pic-crop-01-2022.pdf",
+        "--key",
+        "document",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/rhwp-candidate-native-repair1",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "8",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/cdacd874b6e6ac66/wasm",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/candidate-pkg"
+      ],
+      "exit_code": 0,
+      "minimum": "99.99756",
+      "regressions": [],
+      "manifest": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/cdacd874b6e6ac66/wasm/document/silhouette_manifest.json",
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/cdacd874b6e6ac66/wasm/document/silhouette.tsv",
+      "images": {
+        "page": 1,
+        "review": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/cdacd874b6e6ac66/wasm/review/review_001.png",
+        "overlay": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/cdacd874b6e6ac66/wasm/overlay/overlay_001.png"
+      },
+      "committed_table": {
+        "path": "mydocs/pr/assets/open_prs_20261117/common-protection/cdacd874b6e6ac66/wasm.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "bytes": 132
+      },
+      "committed_review": {
+        "path": "mydocs/pr/assets/open_prs_20261117/common-protection/cdacd874b6e6ac66/wasm/review-001.png",
+        "sha256": "37764373d56f44033d9442d1a9a63acd9a06a5b39c3b69e3e27ced8e05f5dd2b",
+        "bytes": 206744
+      },
+      "committed_overlay": {
+        "path": "mydocs/pr/assets/open_prs_20261117/common-protection/cdacd874b6e6ac66/wasm/overlay-001.png",
+        "sha256": "a9a1430d6fbe87d8eaf3d6f9db75c7d1e442c0071d9ce4ce7261df386be967de",
+        "bytes": 64328
+      }
+    },
+    {
+      "document_id": "d03a9dde3d5dc7ac",
+      "input": "samples/shape-group-02.hwp",
+      "backend": "native",
+      "status": "passed",
+      "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/d03a9dde3d5dc7ac/native.log",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "/Users/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--resume",
+        "--hwp",
+        "samples/shape-group-02.hwp",
+        "--pdf",
+        "pdf/shape-group-02-hwp-2020.pdf",
+        "--key",
+        "document",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/rhwp-candidate-native-repair1",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "8",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/d03a9dde3d5dc7ac/native"
+      ],
+      "exit_code": 0,
+      "minimum": "100.0",
+      "regressions": [],
+      "manifest": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/d03a9dde3d5dc7ac/native/document/silhouette_manifest.json",
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/d03a9dde3d5dc7ac/native/document/silhouette.tsv",
+      "images": {
+        "page": 1,
+        "review": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/d03a9dde3d5dc7ac/native/review/review_001.png",
+        "overlay": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/d03a9dde3d5dc7ac/native/overlay/overlay_001.png"
+      },
+      "committed_table": {
+        "path": "mydocs/pr/assets/open_prs_20261117/common-protection/d03a9dde3d5dc7ac/native.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "bytes": 132
+      },
+      "committed_review": {
+        "path": "mydocs/pr/assets/open_prs_20261117/common-protection/d03a9dde3d5dc7ac/native/review-001.png",
+        "sha256": "b81b21b068d8c1817f14108e9aa84ea1ece53136458f1877ba401bd553a28be9",
+        "bytes": 108937
+      },
+      "committed_overlay": {
+        "path": "mydocs/pr/assets/open_prs_20261117/common-protection/d03a9dde3d5dc7ac/native/overlay-001.png",
+        "sha256": "e36839b6320e613821d513bbf2fbe9384010671e926b07a2f7f8d3c49676f6f3",
+        "bytes": 46647
+      }
+    },
+    {
+      "document_id": "d03a9dde3d5dc7ac",
+      "input": "samples/shape-group-02.hwp",
+      "backend": "wasm",
+      "status": "passed",
+      "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/d03a9dde3d5dc7ac/wasm.log",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "/Users/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--resume",
+        "--hwp",
+        "samples/shape-group-02.hwp",
+        "--pdf",
+        "pdf/shape-group-02-hwp-2020.pdf",
+        "--key",
+        "document",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/rhwp-candidate-native-repair1",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "8",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/d03a9dde3d5dc7ac/wasm",
+        "--wasm-pkg",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/candidate-pkg"
+      ],
+      "exit_code": 0,
+      "minimum": "100.0",
+      "regressions": [],
+      "manifest": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/d03a9dde3d5dc7ac/wasm/document/silhouette_manifest.json",
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/d03a9dde3d5dc7ac/wasm/document/silhouette.tsv",
+      "images": {
+        "page": 1,
+        "review": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/d03a9dde3d5dc7ac/wasm/review/review_001.png",
+        "overlay": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/contributor-gate/d03a9dde3d5dc7ac/wasm/overlay/overlay_001.png"
+      },
+      "committed_table": {
+        "path": "mydocs/pr/assets/open_prs_20261117/common-protection/d03a9dde3d5dc7ac/wasm.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "bytes": 132
+      },
+      "committed_review": {
+        "path": "mydocs/pr/assets/open_prs_20261117/common-protection/d03a9dde3d5dc7ac/wasm/review-001.png",
+        "sha256": "9f18890b2567cb7e19db0f23ef926a54201303a987fa70d62ef626af844febe2",
+        "bytes": 109016
+      },
+      "committed_overlay": {
+        "path": "mydocs/pr/assets/open_prs_20261117/common-protection/d03a9dde3d5dc7ac/wasm/overlay-001.png",
+        "sha256": "7690fc866c0466d82a2e0f9e5c04e1b17afbfe1107c8b3556c7585137d37ab97",
+        "bytes": 46506
+      }
+    }
+  ],
+  "catalog_sha256": "d131c5486044cfd1a4e8fd2e976ef1d182f86c885490ab101641ba6e5803b7ca",
+  "script_sha256": "4988748fa9706e9817d843d421eebbeb934c81b89aa2e0391b89698ccc7f407a",
+  "binary": {
+    "configured": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/rhwp-candidate-native-repair1",
+    "path": "output/pr-review/all-open-pr-integration-20261117/rhwp-candidate-native-repair1",
+    "sha256": "37a6638edbb720bca2bb8fba591d141c26cc380c502a22e82e160ebd44f5cb0d"
+  },
+  "wasm": {
+    "files": [
+      {
+        "path": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/candidate-pkg/rhwp.js",
+        "sha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365"
+      },
+      {
+        "path": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/candidate-pkg/rhwp_bg.wasm",
+        "sha256": "280057fd4e2257a45a3aa5911e81cae7b1cfb1a2d3d3026ae070736f8fc77796"
+      }
+    ],
+    "exporter_sha256": "480f5d7c8b8463058e12958fed013ad2c011ea59f41f0b0706ee4bc0c3f2c218",
+    "font_registration_sha256": null,
+    "comparison_profile": "print",
+    "font_policy": "same-input native export-svg --font-style --profile print; font-face CSS only",
+    "render_tree": "WASM getPageRenderTree"
+  }
+}

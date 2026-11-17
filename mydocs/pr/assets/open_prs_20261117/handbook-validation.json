@@ -1,0 +1,18 @@
+{
+  "status": "passed",
+  "baseline": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
+  "baseline_sha256": "7eb001e3e30d6892d8bc03ba3e16456a4dd758cccb0e9aba073671366a9a5a1b",
+  "metric": "silhouette_raw_match_percent",
+  "backend": "native-skia",
+  "precision": "0.01 percentage points",
+  "pages": 383,
+  "regressions": [],
+  "webfont_fallback": [],
+  "manifest": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/required-handbook/required-handbook-8153-native/silhouette_manifest.json",
+  "elapsed_seconds": 367.115,
+  "committed_table": {
+    "path": "mydocs/pr/assets/open_prs_20261117/protected/native/handbook-hwpx.tsv",
+    "sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590",
+    "note": "Explicit handbook gate produced the same whole-page TSV as the committed protection result."
+  }
+}
