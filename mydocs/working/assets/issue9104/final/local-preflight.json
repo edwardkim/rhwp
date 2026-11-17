@@ -1,0 +1,22 @@
+{
+  "checked_at": "2026-11-17T03:19:47.640510+00:00",
+  "runtime_producer": "1da7afbd64bbc59d9338a187ebcd21860ddc0842",
+  "rust_test_head": "13bb8191967f7e2efc9c182deaf0e7e075576205",
+  "evidence_commit": "5d8f64bf042d197851467f2a107de7871ee6e1e7",
+  "changed_baseline_rows": 2,
+  "unchanged_baseline_rows": 3540,
+  "unchanged_dataset_provenance": 34,
+  "changed_dataset_evidence_commits_verified": true,
+  "markdown_link_command": [
+    "python3",
+    "scripts/check_markdown_links.py",
+    "--changed-from",
+    "4f44355f5ff234abd1289d340cb4a3fe13297982",
+    "--forbid-redirect-references",
+    "explicit changed Markdown paths"
+  ],
+  "markdown_link_exit_code": 0,
+  "markdown_link_log_sha256": "9504f5bf8a5c28dc1d85458d8c5d6e440de3e6c50d76516f26f8c9d3c1adb2e0",
+  "diff_check_exit_code": 0,
+  "font_program_files_distributed": 0
+}

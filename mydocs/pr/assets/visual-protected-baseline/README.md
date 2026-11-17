@@ -12,7 +12,7 @@
 
 - [final.tsv](final.tsv): 입력·기준 PDF·backend·페이지별 공식 두 자리 raw 보호값.
 - [manifest.json](manifest.json): 입력/PDF SHA-256·크기·측정 조건·전쪽 수·출처 commit/TSV/열/해시와 중복 제거 내역.
-- TSV SHA-256: `2280e97844b2cb262ea73e9c49f09f56c434097fed49af75fd9a7f6198d43da7`.
+- TSV SHA-256: `7eb001e3e30d6892d8bc03ba3e16456a4dd758cccb0e9aba073671366a9a5a1b`.
 - 입력 18개, Native/fresh WASM 각 18개 데이터셋·1,771쪽, 총 36개 데이터셋·3,542행.
 - 최초 통합 당시 수용 자료 56개 데이터셋 중 중복 20개를 정리했다. 이전 자료보다 공식 표시값이 낮아진 페이지는 0쪽이다.
 
@@ -27,7 +27,7 @@ HWP와 HWPX는 같은 제목이어도 별도 입력이다. 아래 최저값은 �
 | [jongbu_law.hwpx](<../legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx>) | 6 | 98.86% | 98.86% |
 | [2025 행정업무운영 편람(최종).hwp](<../../../../samples/2025 행정업무운영 편람(최종).hwp>) | 383 | 99.97% | 99.96% |
 | [2025 행정업무운영 편람(최종).hwpx](<../../../../samples/2025 행정업무운영 편람(최종).hwpx>) | 383 | 99.97% | 99.96% |
-| [issue2007_nested_cell_pagination_42065.hwp](<../../../../samples/basic/issue2007_nested_cell_pagination_42065.hwp>) | 17 | 99.86% | 99.86% |
+| [issue2007_nested_cell_pagination_42065.hwp](<../../../../samples/basic/issue2007_nested_cell_pagination_42065.hwp>) | 17 | 99.98% | 99.98% |
 | [hwp3-sample10.hwp](<../../../../samples/hwp3-sample10.hwp>) | 763 | 99.57% | 99.57% |
 | [hwp3-sample16-hwp5-2022.hwp](<../../../../samples/hwp3-sample16-hwp5-2022.hwp>) | 64 | 100.00% | 100.00% |
 | [hwp3-sample16-hwp5-2024.hwp](<../../../../samples/hwp3-sample16-hwp5-2024.hwp>) | 64 | 99.99% | 99.99% |
@@ -109,3 +109,14 @@ HWP와 HWPX는 같은 제목이어도 별도 입력이다. 아래 최저값은 �
 중첩 표 Native/fresh WASM 각 전17쪽 TSV만 수용하여 14행을 상향했고, 다른 34개 데이터셋의
 출처는 유지했습니다. [갱신 영수증](updates/issue7732-20261116.json)에 이전/새 해시와 생산 소스,
 전쪽 증거 및 상승값을 기록했습니다. 페이지별 최댓값을 조합하지 않았습니다.
+
+## 2026-11-17 #9104 후속의 말미 공백 보완
+
+최종 제품 `1da7afbd64bbc59d9338a187ebcd21860ddc0842`의 Native/fresh WASM 각 1,771쪽,
+총 3,542행과 정확한 devel 전쪽을 대조했다. 하락·누락은 0행이며 중첩 표 10쪽은 양쪽 모두
+100.00%다. 같은 전 17쪽 생산본의 상승 2행만 하한에 반영하고 다른 34개 데이터셋 출처와
+모든 편람 행은 유지했다. [전쪽 검증](../../../working/assets/issue9104/final/visual-validation.json)과
+[갱신 영수증](updates/issue9104-20261117.json)에 source·고정 증거 commit·이전/새 해시를 남긴다.
+페이지별 최댓값을 조합하거나 별도 수용 예외를 적용하지 않았다. 편람/기여자 gate는 고정
+표 해시 연결만 갱신하며 비교 규칙·대상·한도는 같다. 로컬 검증의 수용 기록이고 원격 CI·병합
+완료를 뜻하지 않는다.

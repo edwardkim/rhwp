@@ -35,7 +35,9 @@ metadata-only는 notRendered, 상한 초과 또는 페이지 실패는 partial�
 - Native/fresh WASM 각 **1,771쪽**, 보호 **3,542행 하락·누락 0**.
 - 정확한 devel과의 전쪽 비교도 하락 0이며 **3,536쌍 PNG 동일**. 변경 6쌍은 중첩 표
   10쪽과 두 형식 편람 60쪽의 실제 출력이며 확대 대조했다. 중첩 표 10쪽은 양쪽 raw 100.00%다.
-- 새 devel 7개 PR의 66개 문서·74쪽은 양쪽 backend 각각 **전쪽 PNG 동일**.
+- 새 devel의 #9022·#9105·#9107·#9109·#9127·#9137·#9141은 66개 문서·74쪽에서
+  양쪽 backend 각각 **전쪽 PNG 동일**이며 관련 동작 검사 38건도 최종 source에서 통과했다.
+  [기능 보존 표](../working/assets/issue9104/final/incoming-feature-preservation.json)를 남긴다.
 - 실제 편람 Native HWPX **383쪽 gate PASS**, 새 입력 보안 3종 clean.
 - 오프라인 및 실제 다운로드 실패에서 **10문단 표시·8개 실제 대체 기록**. 일반/굵게/기울임
   요청과 진단 on/off PNG 동일, metadata-only 미출력·캐시 재생·상한·미지원도 확인했다.
@@ -56,6 +58,12 @@ metadata-only는 notRendered, 상한 초과 또는 페이지 실패는 partial�
 
 ## 다음 단계
 
-최종 전쪽 결과의 상승 2행을 보호 하한에 반영하고 gate의 표 해시 연결을 재검증한다.
-이후 정확한 제출 후보·최신 devel·본인 열린 PR·병합 시뮬레이션을 확인해 원격 처리안을 제시한다.
+중첩 표 10쪽의 Native/WASM 두 행을 99.86%에서 100.00%로 상향했다. 다른 3,540행과
+34개 데이터셋의 출처는 유지했다. [갱신 영수증](../working/assets/issue9104/final/floor-update.json),
+[새 정본과 실제 전쪽 동일](../working/assets/issue9104/final/updated-baseline-matches-actual.json),
+[consumer·실제 편람 gate](../working/assets/issue9104/final/final-baseline-consumer-validation.json),
+[Python 계약 267건](../working/assets/issue9104/final/baseline-python-contracts.json)이 모두 PASS다.
+consumer는 표 해시 연결만 바뀌며 제품·Rust 검사 source는 같다.
+
+정확한 제출 후보·최신 devel·본인 열린 PR·병합 시뮬레이션을 확인해 원격 처리안을 제시한다.
 현재 remote push·새 PR·공개 댓글·merge·#9104 close는 수행하지 않았다.

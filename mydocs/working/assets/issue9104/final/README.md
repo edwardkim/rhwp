@@ -68,4 +68,13 @@ FontTools의 시각 갱신을 끄고 원래 테이블 순서를 보존하여 바
 SVG의 내장 글꼴 프로그램은 배포하지 않고 실제 출력의 manifest·해시만 보존했다.
 
 보호 하한과 consumer 해시의 후속 갱신은 [보호 정본](../../../../pr/assets/visual-protected-baseline/README.md)과
-이 폴더의 `floor-update.json`에 연결한다. 원격 CI와 병합 상태는 로컬 실행 결과와 구분한다.
+[상승 2행 영수증](floor-update.json)에 연결한다. 원격 CI와 병합 상태는 로컬 실행 결과와 구분한다.
+
+[하한 갱신 후 연결 검사](final-baseline-consumer-validation.json)에서 consumer는 표 해시만
+바뀌고 Rust source·검사는 같음을 확인했다. 실제 완료된 편람 383쪽의 canonical compare도
+새 해시에서 PASS다. [관련 Python 계약 267건](baseline-python-contracts.json)과
+[새 정본/실제 측정 3,542행 동일](updated-baseline-matches-actual.json)을 확인했다.
+
+#9143에 수용된 #9022·#9105·#9107·#9109·#9127·#9137·#9141의
+[기능 보존](incoming-feature-preservation.json)은 같은 최신 base/후보 출력과 최종 source의
+실제 동작 검사 38건으로 확인했다. 과거 생산자의 검사 결과를 현재 실행으로 대체하지 않았다.
