@@ -410,6 +410,19 @@ pub(super) fn place_split_paragraph_with_storage<S: crate::storage::Storage>(
             end_line,
             cumulative,
         } = boundary;
+        // 본문 항목이 아직 없는 쪽을 앞 쪽에서 이어받은 각주가 채웠고, 그 각주만 없으면
+        // 이 조각이 들어갈 자리라면 본문은 다음 쪽에서 시작한다(한/글 2020 Print #9014 2쪽).
+        // 쪽마다 이어받은 각주 줄이 한 줄 이상 소비되므로 이월은 끝난다.
+        let carried_notes_hold_body = st.current_items.is_empty()
+            && st.current_footnote_height > 0.0
+            && cumulative
+                <= (st.base_available_height()
+                    - reserve
+                    - st.current_height
+                    - st.current_zone_y_offset
+                    - st.current_bottom_fixed_exclusion
+                    - sp_b)
+                    + 0.5;
 
         let Some(fragment) = placement::plan_fragment(
             fmt,
@@ -425,6 +438,7 @@ pub(super) fn place_split_paragraph_with_storage<S: crate::storage::Storage>(
             used_saved_tail_vpos_fit,
             require_full_advance,
             &st.current_items,
+            carried_notes_hold_body,
         ) else {
             st.advance_column_or_new_page_with_storage(storage)?;
             if cursor_line == 0
@@ -564,6 +578,7 @@ pub(super) fn plan_stored_float_text_prefix(
         false,
         false,
         &[],
+        false,
     )
 }
 
