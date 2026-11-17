@@ -4475,13 +4475,16 @@ impl LayoutEngine {
                                 // fragment에 걸쳐 내부 문단을 이어 그릴 수 있다. Picture의
                                 // entry-only owner 규칙을 Shape에 적용하면 뒤 fragment의
                                 // 잔여 TextBox가 통째로 사라진다(rowbreak p17).
+                                // 종이·쪽 기준 개체도 흐름을 전진시키지 않는 겹침 개체다.
                                 let owns_overlay_anchor = start_line == 0
                                     && end_line > start_line
-                                    && matches!(
+                                    && (matches!(
                                         shape.common().text_wrap,
                                         crate::model::shape::TextWrap::InFrontOfText
                                             | crate::model::shape::TextWrap::BehindText
-                                    );
+                                    ) || crate::renderer::float_placement::cell_object_detached_from_cell_flow(
+                                        shape.common(),
+                                    ));
                                 // 흐름을 전진시키지 않는 겹침 개체는 첫 원본 줄에 속한다.
                                 // 존재하지 않는 높이 예약에 속한 것으로 처리하지 않는다.
                                 if !shape.common().treat_as_char
@@ -4575,9 +4578,19 @@ impl LayoutEngine {
                                             shape_for_layout.common_mut().vertical_offset = 0;
                                         }
                                     }
+                                    // 종이·쪽 기준 개체는 칸 clip 밖 표 노드에 싣는다(온전한 칸과 같다).
+                                    let detached = crate::renderer::float_placement::cell_object_detached_from_cell_flow(
+                                        shape.common(),
+                                    );
+                                    let shape_parent = if detached {
+                                        &mut *table_node
+                                    } else {
+                                        &mut cell_node
+                                    };
+                                    let first_new_child = shape_parent.children.len();
                                     self.layout_cell_shape(
                                         tree,
-                                        &mut cell_node,
+                                        shape_parent,
                                         &shape_for_layout,
                                         &inner_area,
                                         shape_anchor_y,
@@ -4588,6 +4601,11 @@ impl LayoutEngine {
                                         clamp_header_negative_para_offset,
                                         table_cell_ctx,
                                     );
+                                    if detached {
+                                        for child in &shape_parent.children[first_new_child..] {
+                                            tree.mark_cell_overlay_node(child.id);
+                                        }
+                                    }
                                     let is_top_and_bottom_shape = matches!(
                                         shape.common().text_wrap,
                                         crate::model::shape::TextWrap::TopAndBottom
@@ -8003,6 +8021,7 @@ impl LayoutEngine {
             fold_last_row,
             &mut fold_slack,
         );
+        tree.move_cell_overlay_nodes_last(&mut table_node);
 
         // [#6976] 접기 적용 — 자르는 양은 두 상한의 작은 쪽이다.
         //

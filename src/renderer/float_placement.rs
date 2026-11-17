@@ -2676,6 +2676,15 @@ fn detached_from_anchor_line(common: &crate::model::shape::CommonObjAttr) -> boo
     !common.treat_as_char && matches!(common.vert_rel_to, VertRelTo::Paper | VertRelTo::Page)
 }
 
+/// 칸 안 문단에 매였지만 세로 기준이 종이·쪽인 떠 있는 개체(어울림·글 앞·글 뒤)는 칸의
+/// 흐름에 들지 않는다. 개체는 쪽 좌표에 놓이고, 칸 높이·세로 정렬 높이·행 나눔 유닛은
+/// 이 개체를 세지 않는다. 웹한글기안기는 이런 사각형(종이 기준 237px, 높이 154px)을 쪽
+/// 좌표에 그리고 칸은 저장 높이(100px) 그대로 둔다. 자리차지(`TopAndBottom`)는 이 규칙
+/// 밖이다(칸 안 사례 없음, 종전 회계 유지).
+pub(crate) fn cell_object_detached_from_cell_flow(common: &CommonObjAttr) -> bool {
+    detached_from_anchor_line(common) && !matches!(common.text_wrap, TextWrap::TopAndBottom)
+}
+
 /// 자리차지하지 않는 표 하나만 든 폭0 저장 줄은 그 개체의 앵커다.
 /// 이 문단의 줄 간격을 개체의 캡션 간격으로 사용하지 않는다.
 pub(crate) fn object_only_saved_table_anchor(para: &Paragraph, table: &Table) -> bool {

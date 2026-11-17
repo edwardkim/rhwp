@@ -3362,7 +3362,8 @@ impl LayoutEngine {
         if !matches!(
             common.text_wrap,
             TextWrap::Square | TextWrap::Tight | TextWrap::Through
-        ) {
+        ) || crate::renderer::float_placement::cell_object_detached_from_cell_flow(common)
+        {
             return 0.0;
         }
 
@@ -3544,8 +3545,13 @@ impl LayoutEngine {
     ///
     /// `TopAndBottom` 은 여기서 제외한 채로 둔다. 그 개체는 줄을 실제로 밀어 한컴이
     /// 저장 vpos 에 흡수하므로(#1486 악보 셀), 여기서 다시 세면 이중 계상이 된다.
+    ///
+    /// 세로 기준이 종이·쪽인 개체는 칸이 아니라 쪽 좌표에 놓이므로 세지 않는다
+    /// ([`crate::renderer::float_placement::cell_object_detached_from_cell_flow`]).
     fn cell_wrap_object_visual_bottom(&self, common: &CommonObjAttr) -> f64 {
-        if common.treat_as_char {
+        if common.treat_as_char
+            || crate::renderer::float_placement::cell_object_detached_from_cell_flow(common)
+        {
             return 0.0;
         }
         if !matches!(
@@ -5019,6 +5025,7 @@ impl LayoutEngine {
                 ),
             &cellzone_diagonal_origin_covered,
         );
+        tree.move_cell_overlay_nodes_last(&mut table_node);
 
         if !cellzone_diagonal_nodes.is_empty() {
             table_node.children.extend(cellzone_diagonal_nodes);
@@ -9644,12 +9651,15 @@ impl LayoutEngine {
                         // Shape/TextBox는 control entry 뒤의 physical fragment에서도
                         // 잔여 내부 문단을 계속 렌더한다. entry-only 판정은 원자적으로
                         // 소유하는 Picture에만 적용한다.
+                        // 종이·쪽 기준 개체도 흐름을 전진시키지 않는 겹침 개체다.
                         let owns_overlay_anchor = start_line == 0
                             && end_line > start_line
-                            && matches!(
+                            && (matches!(
                                 shape.common().text_wrap,
                                 TextWrap::InFrontOfText | TextWrap::BehindText
-                            );
+                            ) || crate::renderer::float_placement::cell_object_detached_from_cell_flow(
+                                shape.common(),
+                            ));
                         // Keep zero-flow overlays with their first source line;
                         // continuation-only text must not repeat the object.
                         if !shape.common().treat_as_char
@@ -9950,9 +9960,21 @@ impl LayoutEngine {
                             {
                                 shape_for_layout.common_mut().vertical_offset = 0;
                             }
+                            // 종이·쪽 기준 개체는 칸 흐름 밖이라 칸 높이가 담지 않는다. 칸 clip 에
+                            // 잘리지 않도록 표 노드에 싣는다(칸 밖 부동 그림과 같은 자리).
+                            let detached =
+                                crate::renderer::float_placement::cell_object_detached_from_cell_flow(
+                                    shape.common(),
+                                );
+                            let shape_parent = if detached {
+                                &mut *table_node
+                            } else {
+                                &mut *cell_node
+                            };
+                            let first_new_child = shape_parent.children.len();
                             self.layout_cell_shape(
                                 tree,
-                                cell_node,
+                                shape_parent,
                                 &shape_for_layout,
                                 &inner_area,
                                 shape_anchor_y,
@@ -9963,6 +9985,11 @@ impl LayoutEngine {
                                 clamp_header_negative_para_offset,
                                 table_cell_ctx,
                             );
+                            if detached {
+                                for child in &shape_parent.children[first_new_child..] {
+                                    tree.mark_cell_overlay_node(child.id);
+                                }
+                            }
                             if matches!(shape.common().text_wrap, TextWrap::TopAndBottom) {
                                 rendered_top_and_bottom_non_inline = true;
                             }

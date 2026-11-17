@@ -2171,6 +2171,8 @@ pub struct PageLayoutContext {
     horizontal_shaping_sidecars: HorizontalShapingPageSidecars,
     /// Q4-D2 bounded HWP5 vertical table-cell owners. Paint publication is D3-only.
     vertical_shaping_sidecars: VerticalShapingPageSidecars,
+    /// 칸 clip 밖 표 노드에 실은 종이·쪽 기준 칸 개체 노드. 표의 칸을 다 그린 뒤로 옮긴다.
+    cell_overlay_nodes: std::collections::HashSet<NodeId>,
 }
 
 impl PageLayoutContext {
@@ -2183,7 +2185,32 @@ impl PageLayoutContext {
             page_bbox: BoundingBox::new(0.0, 0.0, width, height),
             horizontal_shaping_sidecars: HorizontalShapingPageSidecars::default(),
             vertical_shaping_sidecars: VerticalShapingPageSidecars::default(),
+            cell_overlay_nodes: std::collections::HashSet::new(),
         }
+    }
+
+    /// 칸 clip 밖 표 노드에 실은 칸 개체 노드를 적는다.
+    pub(crate) fn mark_cell_overlay_node(&mut self, id: NodeId) {
+        self.cell_overlay_nodes.insert(id);
+    }
+
+    /// 표 노드의 직속 자식 중 칸 개체 노드를 칸들 뒤로 옮긴다(순서는 유지). 뒤 칸의 배경·
+    /// 내용이 앞 칸에 매인 종이·쪽 기준 개체를 덮지 않는다.
+    pub(crate) fn move_cell_overlay_nodes_last(&self, table_node: &mut RenderNode) {
+        if self.cell_overlay_nodes.is_empty()
+            || !table_node
+                .children
+                .iter()
+                .any(|child| self.cell_overlay_nodes.contains(&child.id))
+        {
+            return;
+        }
+        let (overlays, rest): (Vec<RenderNode>, Vec<RenderNode>) =
+            std::mem::take(&mut table_node.children)
+                .into_iter()
+                .partition(|child| self.cell_overlay_nodes.contains(&child.id));
+        table_node.children = rest;
+        table_node.children.extend(overlays);
     }
 
     /// 페이지 인덱스

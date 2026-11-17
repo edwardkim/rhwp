@@ -3529,6 +3529,9 @@ impl LayoutEngine {
                 inner_area.height,
             ),
         );
+        // 글상자 안 종이 기준 개체는 글상자 밖 종이 좌표에 놓인다. 글상자 clip·내용 높이에
+        // 들지 않도록 따로 모아 글상자 노드 뒤에 싣는다.
+        let mut paper_children: Vec<RenderNode> = Vec::new();
 
         if let Some(paths) = &text_box.paint_clip {
             let scale = self.dpi / 7200.0;
@@ -4582,12 +4585,32 @@ impl LayoutEngine {
                         let child_w = hwpunit_to_px(child_common.width as i32, self.dpi);
                         let child_h = hwpunit_to_px(child_common.height as i32, self.dpi);
 
+                        // 웹한글기안기는 글상자 안 종이 기준 사각형(세로 597px)을 글상자 위끝이
+                        // 아니라 종이 위끝에서 잰 자리에 그린다.
+                        let paper_anchored = !child_common.treat_as_char
+                            && matches!(
+                                child_common.vert_rel_to,
+                                crate::model::shape::VertRelTo::Paper
+                            );
                         let (child_x, child_y) = if child_common.treat_as_char {
                             // 인라인 도형: 텍스트 내 삽입 위치까지의 advance를 반영하여 배치
                             advance_to_control(&mut inline_x);
                             let x = inline_x;
                             inline_x += child_w;
                             (x, inline_obj_y)
+                        } else if paper_anchored {
+                            let x = if matches!(
+                                child_common.horz_rel_to,
+                                crate::model::shape::HorzRelTo::Paper
+                            ) {
+                                0.0
+                            } else {
+                                base_x
+                            };
+                            (
+                                x + hwpunit_to_px(child_common.horizontal_offset as i32, self.dpi),
+                                hwpunit_to_px(child_common.vertical_offset as i32, self.dpi),
+                            )
                         } else {
                             // 절대 위치 도형 — 세로 기준이 Para(앵커 문단)이면 글상자
                             // 상단이 아니라 앵커 문단의 시작 y 에서 오프셋을 적용한다.
@@ -4631,6 +4654,7 @@ impl LayoutEngine {
                             text_direction: 0,
                         });
                         let empty_map = std::collections::HashMap::new();
+                        let first_new_child = textbox_node.children.len();
                         self.layout_shape_object(
                             tree,
                             &mut textbox_node,
@@ -4649,6 +4673,9 @@ impl LayoutEngine {
                             None, // [Task #1138] TODO: layout_textbox_content 에 cell ctx propagate (별도 후속)
                             false,
                         );
+                        if paper_anchored {
+                            paper_children.extend(textbox_node.children.drain(first_new_child..));
+                        }
                     }
                     Control::Picture(pic) => {
                         // [Task #1171] 글상자 내부 picture — cellPath sentinel(cell_index=0)을
@@ -5042,6 +5069,7 @@ impl LayoutEngine {
             }
             shape_node.children.push(textbox_node);
         }
+        shape_node.children.extend(paper_children);
     }
 
     /// 글상자 세로쓰기 레이아웃
