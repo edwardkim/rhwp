@@ -5,6 +5,12 @@ between its 32..64 publications. This exercises the real Flutter system channel,
 the mounted NativeGpuLifecycle observer, the existing controller, and the native
 trim method. The default remains zero cycles and preserves the existing probe.
 
+The [combined Linux SDK runner](LINUX_QUALIFICATION.md#sdkgl-feature표시의-순차-실행)
+also accepts --memory-pressure-cycles 2 during full consumer capture. It forwards
+the option to the single 32-frame and two-tile three-stage collectors and checks
+their individual memory receipts. Its combined range is 0..2; compile-only and
+build-only reject positive cycles because those modes do not sample consumers.
+
 Build the current committed probe and its matching Native GPU library with the
 existing platform procedure, then add --memory-pressure-cycles 2 to its capture
 command. One complete Linux capture example, from bindings/Flutter:

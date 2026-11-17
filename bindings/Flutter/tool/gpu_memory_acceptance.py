@@ -27,7 +27,7 @@ def memory_pressure_schedule(frames, cycles, publication_profile="continuous32To
         raise ValueError("unknown memory-pressure publication profile")
     maximum = 2 if publication_profile == "linuxThreeStageTileGroup" else 4
     if cycles > maximum:
-        raise ValueError("memory-pressure cycles must be 0..4")
+        raise ValueError(f"memory-pressure cycles must be 0..{maximum}")
     if not cycles:
         return []
     if publication_profile == "linuxThreeStageTileGroup":
