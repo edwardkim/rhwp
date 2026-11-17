@@ -57,7 +57,7 @@ class _NativeEditorViewState extends State<NativeEditorView>
   NativePageSize? _page;
   NativePageViewport? _geometry;
   Object? _error;
-  int _binding = 0;
+  int _binding = 0, _caretNotification = 0;
   int? _boundDocument;
   Size _size = Size.zero;
   Object? _dragTicket;
@@ -126,15 +126,34 @@ class _NativeEditorViewState extends State<NativeEditorView>
     if (editor?.ready == true) {
       _openInput();
       if (editor!.pending == 0) _connection?.setEditingState(editor.value);
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          if (editor.pending == 0) widget.onCaretChanged?.call(editor.caret);
-          _inputGeometry();
-        }
-      });
     } else {
       _closeInput();
     }
+    // Native selection geometry remains valid without a paragraph IME context.
+    // Only the latest settled owner may deliver it after this frame's layout.
+    final binding = _binding, notification = ++_caretNotification;
+    final document = widget.document, info = document.info;
+    if (editor == null || info == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final current = document.info;
+      if (!mounted ||
+          binding != _binding ||
+          notification != _caretNotification ||
+          !identical(document, widget.document) ||
+          !identical(editor, _editor) ||
+          document.isDisposed ||
+          document.editorGeneration != editor.editorGeneration ||
+          current == null ||
+          current.documentId != editor.documentId ||
+          current.documentId != info.documentId ||
+          current.revision != info.revision ||
+          current.fontGeneration != info.fontGeneration ||
+          editor.pending != 0) {
+        return;
+      }
+      widget.onCaretChanged?.call(editor.caret);
+      _inputGeometry();
+    });
   }
 
   void _perform(Future<void> Function() action) {
