@@ -2846,6 +2846,7 @@ impl DocumentCore {
             }
             reflow.push((source.para, source.path.clone()));
         }
+        let mut inserted = None;
         let any = ph.hide_header
             || ph.hide_footer
             || ph.hide_master_page
@@ -2872,7 +2873,8 @@ impl DocumentCore {
             if cell_path.is_empty() {
                 self.shift_active_field_for_control_insert(section_idx, para_idx, insert_idx);
             }
-            reflow.push((para_idx, cell_path));
+            inserted = Some(insert_idx);
+            reflow.push((para_idx, cell_path.clone()));
         }
         reflow.sort();
         reflow.dedup();
@@ -2882,6 +2884,21 @@ impl DocumentCore {
                 None => self.reflow_paragraph(section_idx, para),
                 Some(&(_, _, cell_para)) => {
                     self.reflow_cell_paragraph_by_path(section_idx, para, &path, cell_para)
+                }
+            }
+        }
+        if let Some(control) = inserted {
+            let paragraph = if cell_path.is_empty() {
+                &mut self.document.sections[section_idx].paragraphs[para_idx]
+            } else {
+                self.get_cell_paragraph_mut_by_path(section_idx, para_idx, &cell_path)?
+            };
+            // 폭 없는 조판 부호가 줄 끝에 붙으면 앞 줄(앞 쪽)에 매핑된다. 캐럿이 놓인 다음 줄 첫머리에 둔다.
+            if let Some(&at) = paragraph.control_utf16_positions().get(control) {
+                for seg in paragraph.line_segs.iter_mut().skip(1) {
+                    if seg.text_start == at + 8 {
+                        seg.text_start = at;
+                    }
                 }
             }
         }
@@ -2906,15 +2923,20 @@ impl DocumentCore {
                 );
                 // 한/글 12.30은 표 셀 안 감추기를 표가 처음 놓인 쪽에 적용하지만(조판), 감추기 창은
                 // 조판 부호가 실제로 놓인 쪽에서 읽고 고친다. 나뉜 표의 둘째 쪽 셀에 넣은 것은 그 쪽에서 보인다.
-                // ponytail: 중첩 표 안의 것은 바깥 표의 첫 쪽으로 찾는다.
+                // 중첩 표 안의 것은 그 중첩 표가 놓인 바깥 셀 자리로 찾는다(중첩 표는 쪽을 나누지 않는다).
                 for source in &mut sources {
-                    let &[(ci, cell, cpi)] = source.path.as_slice() else {
+                    let Some(&(ci, cell, cpi)) = source.path.first() else {
                         continue;
                     };
-                    let para = self.page_hide_source_paragraph(section_idx, source)?;
+                    let outer = crate::renderer::page_number::PageHideSource {
+                        path: source.path[..1].to_vec(),
+                        control: source.path.get(1).map_or(source.control, |step| step.0),
+                        ..source.clone()
+                    };
+                    let para = self.page_hide_source_paragraph(section_idx, &outer)?;
                     let Some(&at) =
                         crate::document_core::helpers::find_control_text_positions(para)
-                            .get(source.control)
+                            .get(outer.control)
                     else {
                         continue;
                     };

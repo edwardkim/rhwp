@@ -154,16 +154,72 @@ fn cell_page_hide_on_a_split_table_hides_the_table_start_page() {
     assert!(page > 0, "{rect}");
     doc.set_page_hide_on_page_native(page, para, &[(ctrl, last, 0)], 2, HIDE)
         .unwrap();
+    // 둘째 쪽 칸 안의 중첩 표 칸에서 고친 감추기도 그 쪽에서 찾는다.
+    let nested: serde_json::Value = serde_json::from_str(
+        &doc.create_table_in_cell_by_path_native(
+            0,
+            para,
+            &[(ctrl, last - 1, 0)],
+            0,
+            1,
+            1,
+            None,
+            None,
+            false,
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    let path: Vec<(usize, usize, usize)> = nested["cellPath"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|step| {
+            let n = |k: &str| step[k].as_u64().unwrap() as usize;
+            (n("controlIndex"), n("cellIndex"), n("cellParaIndex"))
+        })
+        .collect();
+    assert_eq!(path.len(), 2, "{nested}");
+    doc.set_page_hide_on_page_native(page, para, &path, 0, HIDE)
+        .unwrap();
+    let found = hides(&doc, page);
+    assert_eq!(found["hides"].as_array().unwrap().len(), 1, "{found}");
+    assert_eq!(found["hides"][0]["cellPath"].as_array().unwrap().len(), 2);
     let mut docs = reopened(&doc);
     docs.push(doc);
     for again in &docs {
         let found = hides(again, page);
         assert_eq!(
-            found["hides"][0]["cellPath"][0]["cellIndex"], last,
+            found["hides"][0]["cellPath"][0]["cellIndex"],
+            last - 1,
             "{found}"
         );
         assert_eq!(hides(again, 0)["hides"].as_array().unwrap().len(), 0);
         assert!(!header_drawn(again, 0), "표 첫 쪽을 감춘다");
         assert!(header_drawn(again, page));
+    }
+}
+
+#[test]
+fn page_hide_at_the_first_character_of_a_page_stays_on_that_page() {
+    let mut doc = blank_with_header();
+    let text = "long body text. ".repeat(600);
+    doc.insert_text_native(0, 0, 0, &text).unwrap();
+    let page_of = |doc: &HwpDocument, offset: usize| {
+        let rect: serde_json::Value =
+            serde_json::from_str(&doc.get_cursor_rect_native(0, 0, offset).unwrap()).unwrap();
+        rect["pageIndex"].as_u64().unwrap() as u32
+    };
+    // 둘째 쪽 첫 글자 자리: 캐럿이 둘째 쪽 첫 줄 첫머리에 있다.
+    let first = (0..text.len()).find(|&o| page_of(&doc, o) == 1).unwrap();
+    doc.set_page_hide_on_page_native(1, 0, &[], first, HIDE)
+        .unwrap();
+    assert_eq!(hides(&doc, 1)["hides"].as_array().unwrap().len(), 1);
+    assert_eq!(hides(&doc, 0)["hides"].as_array().unwrap().len(), 0);
+    assert!(header_drawn(&doc, 0));
+    assert!(!header_drawn(&doc, 1));
+    for again in reopened(&doc) {
+        assert_eq!(hides(&again, 1)["hides"].as_array().unwrap().len(), 1);
+        assert!(header_drawn(&again, 0));
     }
 }
