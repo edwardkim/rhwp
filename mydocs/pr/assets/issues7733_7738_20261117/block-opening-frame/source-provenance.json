@@ -1,0 +1,10 @@
+{
+  "parent": "9dbe6eb9defe8936ede039760b2e46093ae87167",
+  "captured_at": "2026-11-17T23:32:57.996052+09:00",
+  "sources": {
+    "src/renderer/layout/paragraph_layout.rs": "d9a24f2f5fd62b6da232e9cc6bd3c4a229f23dfcb56db96e1a97fd47f0d918fb",
+    "src/renderer/layout/paragraph_layout/list_marker_geometry.rs": "529801424b8a9d47d8b2ab916d5a3ad00964960954b52913221529bf8eab193d",
+    "src/renderer/typeset/table/continuation/fragment/emit.rs": "85b195254be7d09185fd67e3c00fd2fc70a1e6890a36835206f3e76c8cffe729"
+  },
+  "source_diff_sha256": "0f49bd3f4836a3ee73405d1eaf0e9613e5b4ca4494fd17b76599df537b33f58d"
+}

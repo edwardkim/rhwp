@@ -1194,6 +1194,20 @@ fn viewtext_table_suffix_label_right(
 /// 줄의 확정 좌표다. 다만 cs+sw가 단 너비와 같은 일반 줄에만 적용한다. 그림 어울림,
 /// 표 셀, 합성 LineSeg는 각각 별도 좌표계를 사용하므로 caller가 `eligible=false`로
 /// 제외해 column_start가 이중 적용되지 않게 한다.
+fn stored_line_reaches_column_end(
+    column_start: i32,
+    segment_width: i32,
+    column_width_hu: i32,
+) -> bool {
+    column_start > 0
+        && segment_width > 0
+        && column_start
+            .saturating_add(segment_width)
+            .saturating_sub(column_width_hu)
+            .abs()
+            <= 200
+}
+
 fn authoritative_stored_line_start_px(
     styled_margin_left: f64,
     line_seg: Option<&LineSeg>,
@@ -1204,14 +1218,11 @@ fn authoritative_stored_line_start_px(
     let Some(line_seg) = line_seg else {
         return styled_margin_left;
     };
-    let full_width_line = line_seg.column_start > 0
-        && line_seg.segment_width > 0
-        && line_seg
-            .column_start
-            .saturating_add(line_seg.segment_width)
-            .saturating_sub(column_width_hu)
-            .abs()
-            <= 200;
+    let full_width_line = stored_line_reaches_column_end(
+        line_seg.column_start,
+        line_seg.segment_width,
+        column_width_hu,
+    );
     let authoritative = line_seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0;
     if !eligible || !authoritative || !full_width_line {
         return styled_margin_left;
@@ -7190,11 +7201,24 @@ impl LayoutEngine {
                 && (!self.profile.get().hwp3_native_layout()
                     || comp_line.segment_width <= col_area_w_hu)
                 && stored_textbox_frame::owns_frame(para, composed, line_idx);
+            // 문단 여백에서 단 오른끝까지인 저장 줄은 어울림으로 깎인 상자가 아니다.
+            // 같은 문단에 Square 그림이 있어도 이 줄의 cs/sw가 문단 여백·전폭을
+            // 정확히 설명하면 일반 문단 상자를 쓴다. 그림의 존재만으로 cs를 단 원점에
+            // 더하면 문단 여백을 다시 적용해 본문·글머리표·탭이 함께 오른쪽으로 밀린다.
+            // 실제 배제 lane은 아래의 세로 band/저장 조각 근거로 계속 보존한다.
+            let stored_row_is_own_margin_to_column_end = cell_ctx.is_none()
+                && comp_line.column_start.abs_diff(own_margin_hu) <= 1
+                && stored_line_reaches_column_end(
+                    comp_line.column_start,
+                    comp_line.segment_width,
+                    col_area_w_hu,
+                );
             let uses_stored_segment_geometry = physical_frame_rows
                 || stored_textbox_line
                 || synthetic_band_carved_row
                 || (stored_geometry_source
-                    && (has_picture_shape_square_wrap
+                    && ((has_picture_shape_square_wrap
+                        && !stored_row_is_own_margin_to_column_end)
                         || (line_has_inline_tac_table && !inline_tac_segment_is_paragraph_width)
                         || precomputed_body_wrap_line
                         || empty_stored_wrap_line
