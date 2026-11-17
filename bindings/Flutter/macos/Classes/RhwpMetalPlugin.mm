@@ -5,6 +5,7 @@
 #import <Metal/Metal.h>
 
 #include "MetalFrameLifetime.hpp"
+#include "MetalNativeApi.hpp"
 #include "TextureCloseRouting.hpp"
 #include "RhwpProducerReadyEvents.hpp"
 #include "../../common/gpu_cache_metrics.h"
@@ -13,7 +14,6 @@
 #include <condition_variable>
 #include <cstdio>
 #include <cstring>
-#include <dlfcn.h>
 #include <functional>
 #include <exception>
 #include <map>
@@ -39,21 +39,7 @@ std::atomic<uint64_t> nextDeviceGeneration{1};
 NSDictionary* StampValue(const Stamp& stamp);
 bool Unsigned(id value, uint64_t& output, uint64_t maximum);
 
-struct NativeApi {
-  using Capabilities = char* (*)();
-  using Create = char* (*)(const void*, const void*, uint64_t, const uint8_t*, size_t);
-  using Render = char* (*)(uint64_t, const void*, const uint8_t*, size_t);
-  using Request = char* (*)(uint64_t, const uint8_t*, size_t);
-  using Presentation = char* (*)(const uint8_t*, size_t);
-  using Free = void (*)(char*);
-  Capabilities capabilities = nullptr;
-  Create create = nullptr;
-  Render render = nullptr;
-  Request request = nullptr;
-  Presentation presentation = nullptr;
-  Presentation checkFrame = nullptr;
-  Free freeString = nullptr;
-
+struct NativeApi : rhwp::metal::MetalApiSymbols {
   NSDictionary* read(char* response) const {
     if (!response) return nil;
     const size_t size = strnlen(response, 64 * 1024 + 1);
@@ -67,37 +53,6 @@ struct NativeApi {
     return result;
   }
 };
-
-template <class T> bool LoadSymbol(void* library, const char* name, T& output) {
-  void* address = dlsym(library, name);
-  static_assert(sizeof(address) == sizeof(output), "unsupported loader ABI");
-  std::memcpy(&output, &address, sizeof(output));
-  return output != nullptr;
-}
-
-std::shared_ptr<NativeApi> LoadApi(const std::string& path) {
-  // Only producer threads load code. The same canonical dylib is used by the
-  // legacy owner dispatcher; P89 snapshot IDs must not cross library copies.
-  static std::mutex mutex;
-  static std::string pinnedPath;
-  static std::shared_ptr<NativeApi> pinned;
-  std::lock_guard<std::mutex> lock(mutex);
-  if (pinned) return pinnedPath == path ? pinned : nullptr;
-  void* library = dlopen(path.c_str(), RTLD_NOW | RTLD_LOCAL);
-  if (!library) return {};
-  auto api = std::make_shared<NativeApi>();
-  const bool loaded = LoadSymbol(library, "rhwp_metal_capabilities", api->capabilities) &&
-      LoadSymbol(library, "rhwp_metal_presenter_create", api->create) &&
-      LoadSymbol(library, "rhwp_metal_presenter_render", api->render) &&
-      LoadSymbol(library, "rhwp_metal_presenter_request", api->request) &&
-      LoadSymbol(library, "rhwp_metal_frame_check", api->checkFrame) &&
-      LoadSymbol(library, "rhwp_presentation_request", api->presentation) &&
-      LoadSymbol(library, "rhwp_string_free", api->freeString);
-  if (!loaded) { dlclose(library); return {}; }
-  pinnedPath = path;
-  pinned = api;  // Deliberately never dlclose a live native/TLS module.
-  return api;
-}
 
 struct SnapshotLease {
   uint64_t id;
@@ -248,9 +203,13 @@ struct State {
   }
 };
 
-bool MetalBackendReady(const std::shared_ptr<State>& state, const std::shared_ptr<NativeApi>& api,
+bool MetalBackendReady(const std::shared_ptr<State>& state, const rhwp::metal::MetalApiLoad<NativeApi>& loaded,
                        id<MTLDevice> device, id<MTLCommandQueue> queue) {
-  if (!api) {state->fail(@"Native Metal ABI is unavailable.", "unsupported");return false;}
+  const auto& api = loaded.api;
+  if (!api) {
+    state->fail([NSString stringWithUTF8String:loaded.message], loaded.code);
+    return false;
+  }
   NSDictionary* caps = api->read(api->capabilities());
   uint64_t abi = 0;
   id available = caps[@"available"];
@@ -334,12 +293,13 @@ std::shared_ptr<PixelResources> CreatePixels(id<MTLDevice> device, CVMetalTextur
 
 void RunProducer(const std::shared_ptr<State>& state) {
   @autoreleasepool {
-    auto api = LoadApi(state->path);
+    const auto loaded = rhwp::metal::LoadMetalApi<NativeApi>(state->path);
+    const auto& api = loaded.api;
     id<MTLDevice> device = MTLCreateSystemDefaultDevice();
     id<MTLCommandQueue> queue = [device newCommandQueue];
     CVMetalTextureCacheRef cache = nullptr;
     uint64_t presenter = 0;
-    if (MetalBackendReady(state, api, device, queue)) {
+    if (MetalBackendReady(state, loaded, device, queue)) {
       if (CVMetalTextureCacheCreate(kCFAllocatorDefault, nullptr, device, nullptr, &cache) == kCVReturnSuccess)
         presenter = CreateMetalPresenter(state, api, device, queue);
       else state->fail(@"CVMetalTextureCache allocation failed.", "resourceError");
