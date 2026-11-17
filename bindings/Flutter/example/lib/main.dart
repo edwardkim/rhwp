@@ -117,8 +117,10 @@ class _NativeReferenceAppState extends State<NativeReferenceApp> {
         document: owner,
         files: NativeFileStore(owner),
         settleInput: () async {
-          FocusManager.instance.primaryFocus?.unfocus();
           final editor = _editor;
+          final focus = FocusManager.instance;
+          focus.primaryFocus?.unfocus();
+          focus.applyFocusChangesIfNeeded();
           if (editor != null) await editor.focusLost();
         },
         confirmUnsaved: (_) => _unsavedDecision(),

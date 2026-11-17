@@ -92,7 +92,10 @@ Flutter DeltaTextInputClient의 UTF-16 문맥은 Native `imeEditContext`/`applyI
 전체 bounded context와 revision/font/selection/composition을 검증하며 surrogate 중간,
 16 KiB·4096 scalar 초과, 오래된 oldText, 근거 없는 조합 범위 이동은 거절하고 Native 상태로
 다시 동기화한다. 한글 preview 갱신은 같은 composition을 유지하고, 확정+새 조합은 취소 baseline을
-분리한다. focus loss/Escape는 현재 조합을 취소한다. 조합 중 Undo는 조합만 취소한다.
+분리한다. 일반 focus loss와 저장 전 입력 정리는 현재 Native 조합을 확정하고 완료를 기다린다.
+참조앱은 저장 전에 focus 변경을 적용해 플랫폼 입력 연결부터 닫고, 이미 수락한 입력의 확정을 기다린다.
+닫힌 입력 연결에서 늦게 전달된 editing value·delta·action은 새 편집으로 수락하지 않는다.
+Escape는 현재 조합을 취소한다. 조합 중 Undo도 조합만 취소한다.
 
 키 이동·grapheme 삭제·문단 분리·undo/redo·plain-text clipboard는 Native 명령을 사용한다.
 AltGr를 Ctrl 단축키로 취급하지 않는다. 드래그 hit-test는 하나만 진행하고 다음 위치를 합친다.

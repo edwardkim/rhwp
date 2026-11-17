@@ -297,8 +297,10 @@ class NativeEditorController extends ChangeNotifier {
     }
   }
 
-  Future<void> focusLost() => _run(() async {
-    await _settleComposition(cancel: true);
+  /// Settle accepted input before taking a save checkpoint.
+  /// Ordinary focus loss commits the native preedit; Escape explicitly cancels.
+  Future<void> focusLost({bool cancel = false}) => _run(() async {
+    await _settleComposition(cancel: cancel);
     await _synchronize();
   });
 
