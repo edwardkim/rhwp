@@ -469,7 +469,8 @@ impl TypesetEngine {
         }
         // 마지막 본문 뒤의 저장 각주 suffix도 버리지 않는다. 실제 다음 쪽을
         // 열면 전환 command가 큐를 인출하고 기존 각주 lane에 높이를 예약한다.
-        if st.has_deferred_body_footnotes() {
+        // 쪽보다 긴 각주는 쪽마다 들어가는 줄까지만 인출되므로 큐가 빌 때까지 연다.
+        while st.has_deferred_body_footnotes() {
             st.push_new_page_with_storage(storage)?;
         }
         st.ensure_page_with_storage(storage)?;
