@@ -9484,6 +9484,16 @@ pub(crate) fn is_para_topbottom_float(common: &CommonObjAttr) -> bool {
         && matches!(common.vert_rel_to, VertRelTo::Para)
 }
 
+/// 문단 기준 자리차지 표의 마지막 조각 뒤 흐름이 소유하는 바깥 아래 여백.
+/// 표 선·내용 높이와 구분해 조판과 paint에서 같은 전진량을 소비한다.
+pub(crate) fn terminal_table_outer_bottom_flow_px(table: &Table, dpi: f64) -> f64 {
+    if is_para_topbottom_float(&table.common) {
+        hwpunit_to_px(table.outer_margin_bottom as i32, dpi)
+    } else {
+        0.0
+    }
+}
+
 /// [#8836] 비공백 글이 있는 host 의 쪽·용지 기준 자리차지 표 — 띠가 같은 문단의 첫 글줄을
 /// 밀어 내리는 형상이다. 문단 기준 표와 같은 `#7330` 앞 간격 규칙을 따른다.
 ///

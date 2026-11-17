@@ -301,11 +301,8 @@ pub(super) fn resolve(
         // 전체 표와 같은 바깥여백을 마지막 조각 뒤 흐름에 한 번 전달한다.
         // 호스트 줄간격은 첫 조각의 계약이므로 여기서 반복하지 않는다.
         spacing_after_only: sa,
-        terminal_outer_bottom_flow: if is_para_topbottom_float(&table.common) && !is_tac {
-            outer_bottom
-        } else {
-            0.0
-        },
+        terminal_outer_bottom_flow:
+            crate::renderer::float_placement::terminal_table_outer_bottom_flow_px(table, dpi),
         after_for_fit: after - outer_bottom_flow_only,
     };
 

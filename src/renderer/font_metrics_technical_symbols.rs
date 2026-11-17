@@ -149,7 +149,20 @@ fn verified_technical_symbol_width(metric: &FontMetric, ch: char) -> Option<u16>
 }
 
 // HFT 보정이 섞인 기존 표와 별개인 원 프로그램의 실제 hmtx.
+// 문서의 유형이 미상이어도 독립 Print와 원 프로그램에서 확인한 부분 glyph다.
+// 호출자가 명시적 HFT 슬롯은 제외하며 전체 메트릭 표의 신뢰도를 승격하지 않는다.
+pub(crate) fn verified_non_hft_glyph_width(metric: &FontMetric, ch: char) -> Option<u16> {
+    match (metric.name, metric.em_size, metric.bold, metric.italic, ch) {
+        // 두 gulim TTC의 Dotum face에서 H18543의 hmtx는 384/1024다.
+        ("Dotum", 1024, false, false, '\u{25AA}') => Some(384),
+        _ => None,
+    }
+}
+
 pub(crate) fn verified_program_punctuation_width(metric: &FontMetric, ch: char) -> Option<u16> {
+    if let Some(width) = verified_non_hft_glyph_width(metric, ch) {
+        return Some(width);
+    }
     match (
         metric.name,
         metric.em_size,

@@ -48,6 +48,7 @@ mod trailing_space_fit;
 use leading_spaces::{natural_leading_positions, LeadingSpaces};
 
 mod list_marker_geometry;
+mod list_marker_paint;
 mod picture_bullet;
 pub(crate) use list_marker_geometry::ListMarkerGeometry;
 use list_marker_geometry::{
@@ -3304,6 +3305,58 @@ impl LayoutEngine {
             .is_some_and(|caption| Self::tac_band_covers_height(para, tbl, declared + caption))
     }
 
+    /// 인라인 표 발행기는 자기 컨트롤의 줄 원점까지 알고 있다. 다중 줄에서
+    /// 문단 첫머리를 줄 원점으로 재사용하지 않고 검증된 저장 전진을 더한다.
+    /// 다른 호출자의 한 줄 계약은 위 공통 판정에 그대로 남긴다.
+    fn inline_table_stored_owned_top(
+        &self,
+        para: &Paragraph,
+        table: &Table,
+        control_index: usize,
+        measured_height_px: f64,
+        origins: (f64, f64),
+    ) -> Option<f64> {
+        let (paragraph_y, current_y) = origins;
+        if let Some(top) =
+            self.tac_table_stored_outer_band_top(para, table, measured_height_px, current_y)
+        {
+            return Some(top);
+        }
+        if para.line_segs.len() <= 1
+            || !table.common.treat_as_char
+            || table.caption.is_some()
+            || para.stored_text_partition_is_dirty()
+            || para.cell_format_vpos_dirty
+            || table.outer_margin_top < 0
+            || table.outer_margin_bottom < 0
+            || i32::from(table.outer_margin_top) + i32::from(table.outer_margin_bottom) == 0
+            || !matches!(para.controls.get(control_index),
+                Some(Control::Table(source)) if std::ptr::eq(source.as_ref(), table))
+        {
+            return None;
+        }
+        let index = super::control_line_seg_index(para, control_index)?;
+        let line = para.line_segs.get(index)?;
+        if line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0 {
+            return None;
+        }
+        let margins = i64::from(table.outer_margin_top) + i64::from(table.outer_margin_bottom);
+        let declared = i64::from(table.common.height);
+        let measured = i64::from(px_to_hwpunit(measured_height_px, self.dpi));
+        // 기존 한 줄 바깥 상자의 8HU 저장 양자화 허용폭과 동일한 계약이다.
+        if (i64::from(line.line_height) - declared - margins).abs() > 8
+            || (i64::from(line.line_height) - measured - margins).abs() > 8
+        {
+            return None;
+        }
+        let delta = if index == 0 {
+            0.0
+        } else {
+            inline_table_stored_line_top_offset_px(para, index, self.dpi)?
+        };
+        Some(paragraph_y + delta + hwpunit_to_px(i32::from(table.outer_margin_top), self.dpi))
+    }
+
     fn tac_band_covers_height(
         para: &Paragraph,
         tbl: &crate::model::table::Table,
@@ -4234,8 +4287,10 @@ impl LayoutEngine {
                 available_width,
                 self.dpi,
             );
-        let first_line_left = col_area.x + margin_left + first_line_indent;
-        let first_line_width = available_width - first_line_indent;
+        let marker_geometry = list_marker_geometry(para, styles);
+        let first_marker = marker_geometry.map_or(0.0, |geometry| geometry.first_line_px);
+        let first_line_left = col_area.x + margin_left + first_line_indent + first_marker;
+        let first_line_width = available_width - first_line_indent - first_marker;
         let start_x = match alignment {
             Alignment::Center | Alignment::Distribute => {
                 first_line_left + (first_line_width - total_width).max(0.0) / 2.0
@@ -4359,6 +4414,53 @@ impl LayoutEngine {
         // 7. 가로 배치: 텍스트 세그먼트와 표를 순차 배치
         let right_margin = col_area.x + col_area.width - margin_right;
         let line_start_x = col_area.x + margin_left;
+        let continuation_indent = marker_geometry.map_or(0.0, |geometry| {
+            crate::renderer::equation_tac_flow::paragraph_line_indent_for_source(
+                para_style.map_or(0.0, |style| style.indent),
+                1,
+                Some(para),
+                composed.map_or(para.line_segs.len(), |comp| comp.lines.len()),
+                !self.profile.get().legacy_hwp3_stored_geometry(),
+                available_width,
+                self.dpi,
+            ) + geometry.rest_line_px
+        });
+        let continuation_line_start_x = line_start_x + continuation_indent;
+        if let (Some(geometry), Some((text, head))) = (
+            marker_geometry.filter(|geometry| geometry.marker_visible),
+            composed.and_then(|comp| comp.numbering_text.as_ref()),
+        ) {
+            let style = marker_char_style(
+                styles,
+                *head,
+                text,
+                paragraph_end_char_shape_id(para).unwrap_or(char_style_id),
+            )
+            .unwrap_or_else(|| marker_text_style(styles, char_style_id, text));
+            let height = para.line_segs.first().map_or(para_max_font_size, |line| {
+                hwpunit_to_px(line.line_height, self.dpi)
+            });
+            let baseline = stored_line_baseline_at(0).unwrap_or(text_line_baseline);
+            if let Some(node) = list_marker_paint::node(
+                tree,
+                styles,
+                Some(bin_data_content),
+                list_marker_paint::MarkerPaint {
+                    text,
+                    style,
+                    para_style_id: para_style_id as u16,
+                    source: (section_index, para_index),
+                    cell_context: None,
+                    x: start_x + geometry.marker_dx_px,
+                    text_y: y,
+                    line_height: height,
+                    baseline,
+                    picture_line_bottom: y + height,
+                },
+            ) {
+                col_node.children.push(node);
+            }
+        }
         // 텍스트 줄바꿈 시 줄 높이: line_seg[0]은 표 높이를 포함하므로
         // line_seg[1]이 있으면 사용 (텍스트 줄 높이), 없으면 baseline_dist 기반
         let line_step = if let Some(ls) = text_seg {
@@ -4672,7 +4774,7 @@ impl LayoutEngine {
                             } else {
                                 current_y += line_step;
                             }
-                            inline_x = line_start_x;
+                            inline_x = continuation_line_start_x;
                             line_run_x = inline_x;
                         }
 
@@ -4774,16 +4876,19 @@ impl LayoutEngine {
                 //   표 좌단   종전  79.4 (줄 시작으로 되돌림)  수정 373.4  정본 373.9
                 //   그 문단 뒤 본문 전체가 181.4px 내려가 있었다(`pi=11` 1050.3 → 868.9,
                 //   정본 869.6).
+                let stored_outer_top =
+                    self.inline_table_stored_owned_top(para, tbl, *ctrl_idx, tbl_h, (y, current_y));
                 let table_wrapped = should_wrap_middle_anchored_table(
                     control_positions.get(*ctrl_idx).copied(),
                     text_chars.len(),
                     inline_x - line_start_x,
                     table_footprint,
                     right_margin - line_start_x,
-                ) && !Self::tac_stored_band_is_outer_box(para, tbl);
+                ) && !Self::tac_stored_band_is_outer_box(para, tbl)
+                    && stored_outer_top.is_none();
                 if table_wrapped {
                     current_y += line_step;
-                    inline_x = line_start_x;
+                    inline_x = continuation_line_start_x;
                 }
                 let (om_left, om_right) = table_om_px[table_idx];
                 let om_bottom = hwpunit_to_px(tbl.outer_margin_bottom as i32, self.dpi);
@@ -4795,8 +4900,7 @@ impl LayoutEngine {
                 let line_owner = (!table_wrapped)
                     .then(|| self.tac_line_owner_frame(para, &inline_tables, *ctrl_idx))
                     .flatten();
-                let tbl_y = self
-                    .tac_table_stored_outer_band_top(para, tbl, tbl_h, current_y)
+                let tbl_y = stored_outer_top
                     .or_else(|| {
                         line_owner.map(|(owner_h, owner_om_top)| {
                             super::stored_tac_frame::companion_table_top(
@@ -4829,7 +4933,7 @@ impl LayoutEngine {
                 // 표 폭을 합산하면 가운데 정렬 표가 왼쪽으로 붕괴한다.
                 let table_pen_x = if table_seg_index > 0
                     && current_y > y + 0.5
-                    && (inline_x - line_start_x).abs() < 0.5
+                    && (inline_x - continuation_line_start_x).abs() < 0.5
                 {
                     let indent = para_style.map_or(0.0, |style| style.indent);
                     let line_indent =
@@ -4842,8 +4946,10 @@ impl LayoutEngine {
                             available_width,
                             self.dpi,
                         );
-                    let left = line_start_x + line_indent;
-                    let width = (available_width - line_indent).max(0.0);
+                    let marker =
+                        marker_geometry.map_or(0.0, |geometry| geometry.line_px(table_seg_index));
+                    let left = line_start_x + line_indent + marker;
+                    let width = (available_width - line_indent - marker).max(0.0);
                     let footprint = table_declared_widths[table_idx] + om_left + om_right;
                     match alignment {
                         Alignment::Center | Alignment::Distribute => {
@@ -4894,7 +5000,7 @@ impl LayoutEngine {
                     } else {
                         table_bottom
                     };
-                    inline_x = line_start_x;
+                    inline_x = continuation_line_start_x;
                     wrapped_below_table = true;
                 } else {
                     inline_x = table_pen_x + tw + om_left + om_right;
@@ -4918,7 +5024,7 @@ impl LayoutEngine {
             let om_bottom = hwpunit_to_px(tbl.outer_margin_bottom as i32, self.dpi);
             // [#8653] 위 중간 표와 같은 줄 소유자 기준선 규칙.
             let tbl_y = self
-                .tac_table_stored_outer_band_top(para, tbl, tbl_h, current_y)
+                .inline_table_stored_owned_top(para, tbl, *ctrl_idx, tbl_h, (y, current_y))
                 .or_else(|| {
                     self.tac_line_owner_frame(para, &inline_tables, *ctrl_idx)
                         .map(|(owner_h, owner_om_top)| {
@@ -8327,64 +8433,24 @@ impl LayoutEngine {
                     .unwrap_or_else(|| {
                         numbering_marker_text_style(styles, para, comp_line.runs.first(), num_text)
                     });
-                    let num_width = marker_text_width(num_text, &num_style);
-                    // Paragraph numbering precedes the first inline reference.
-                    // The reference advances body text, not the paragraph head.
-                    let marker_x = x - endnote_marker_x_advance + geometry.marker_dx_px;
-                    let num_id = tree.next_id();
-                    let num_node = if let Some(image) = picture_bullet::image(
+                    // 본문과 인라인 표 문단은 동일한 마커 발행 계약을 사용한다.
+                    let num_node = list_marker_paint::node(
+                        tree,
                         styles,
-                        composed.para_style_id as usize,
                         bin_data_content,
-                        section_index,
-                        para_index,
-                        cell_ctx.as_ref(),
-                    ) {
-                        Some(RenderNode::new(
-                            num_id,
-                            RenderNodeType::Image(image),
-                            BoundingBox::new(
-                                marker_x,
-                                y + hwpunit_to_px(comp_line.line_height, self.dpi)
-                                    - num_style.font_size,
-                                num_style.font_size,
-                                num_style.font_size,
-                            ),
-                        ))
-                    } else if picture_bullet::image_reference(
-                        styles,
-                        composed.para_style_id as usize,
-                    )
-                    .is_some()
-                    {
-                        // 외부 Link의 빈 슬롯은 참조를 보존하되 그림·문자 마커를 출력하지 않는다.
-                        None
-                    } else {
-                        Some(RenderNode::new(
-                            num_id,
-                            RenderNodeType::TextRun(TextRunNode {
-                                text: num_text.clone(),
-                                style: num_style,
-                                char_shape_id: None,
-                                para_shape_id: Some(composed.para_style_id),
-                                section_index: Some(section_index),
-                                para_index: Some(para_index),
-                                char_start: None, // 문서 좌표에 포함되지 않음
-                                cell_context: cell_ctx.clone(),
-                                is_para_end: false,
-                                is_line_break_end: false,
-                                rotation: 0.0,
-                                is_vertical: false,
-                                char_overlap: None,
-                                border_fill_id: 0,
-                                baseline,
-                                field_marker: FieldMarkerType::None,
-                                layout_positions: None,
-                                display_text: None,
-                            }),
-                            BoundingBox::new(marker_x, text_y, num_width, line_height),
-                        ))
-                    };
+                        list_marker_paint::MarkerPaint {
+                            text: num_text,
+                            style: num_style,
+                            para_style_id: composed.para_style_id,
+                            source: (section_index, para_index),
+                            cell_context: cell_ctx.clone(),
+                            x: x - endnote_marker_x_advance + geometry.marker_dx_px,
+                            text_y,
+                            line_height,
+                            baseline,
+                            picture_line_bottom: y + hwpunit_to_px(comp_line.line_height, self.dpi),
+                        },
+                    );
                     if let Some(num_node) = num_node {
                         line_node.children.push(num_node);
                     }

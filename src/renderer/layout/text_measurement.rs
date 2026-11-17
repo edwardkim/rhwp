@@ -1882,7 +1882,11 @@ fn measure_char_width_embedded_decision_for_font<'a>(
             (mm.metric.em_size / 2, "metricHalfSpace")
         }
     } else {
-        let Some(glyph_w) = mm.metric.get_width(c) else {
+        // 원 프로그램에서 확인한 글리프는 예전 부분 폭 표의 결측으로 버리지 않는다.
+        let verified_true_type_width = font_metric_trusted
+            .then(|| font_metrics_data::verified_program_punctuation_width(mm.metric, c))
+            .flatten();
+        let Some(glyph_w) = verified_true_type_width.or_else(|| mm.metric.get_width(c)) else {
             return EmbeddedWidthDecision {
                 width_px: None,
                 em_fraction: None,
@@ -1901,9 +1905,6 @@ fn measure_char_width_embedded_decision_for_font<'a>(
         // 확인된 TrueType 프로그램의 cmap/hmtx는 표 모양으로 추측한 결측보다 우선한다.
         // 실제 글리프가 1em이어도 Latin-1 표가 0/1em으로만 구성될 수 있다.
         // 검증된 face·문자만 lookup에 있으며 HFT·치환·불명 face의 호환 폭은 유지한다.
-        let verified_true_type_width = font_metric_trusted
-            .then(|| font_metrics_data::verified_program_punctuation_width(mm.metric, c))
-            .flatten();
         // [#7051] HWP3 변환본의 HFT 한글 전용 face 는 ASCII 를 반각(`em/2`)으로 전진시킨다.
         //
         // HWP3 시절 HFT 글꼴(`명조`·`신명 세명조`·`한양신명조` 등)은 한글 전용이고 ASCII
@@ -2244,26 +2245,35 @@ fn char_width_decision_with_hft_tracking<'a>(
         let source_ttf = latin.map_or(style.source_font_is_ttf, |slot| slot.source_font_is_ttf);
         let regular_bold_advance = !source_hft && (source_ttf || original_glyph_face.is_none());
         let implicit_symbol_em = font_metrics_data::implicit_symbol_advance_em(chars[i]);
-        let original_glyph_em = implicit_symbol_em.or_else(|| {
-            original_glyph_face.and_then(|face| {
-                // 표시용 Unicode로 바꾸기 전의 원본 프로그램 hit를 먼저 소비한다.
-                // source 결측일 때만 기존 표시 글리프의 확인된 폭으로 내려간다.
-                font_metrics_data::declared_original_glyph_advance_em(
-                    face,
-                    style.bold,
-                    style.italic,
-                    chars[i],
-                )
-                .or_else(|| {
+        let verified_non_hft_em = (!source_hft)
+            .then(|| font_metrics_data::find_metric(measured_family, measured_bold, style.italic))
+            .flatten()
+            .and_then(|found| {
+                font_metrics_data::verified_non_hft_glyph_width(found.metric, metric_character)
+                    .map(|width| f64::from(width) / f64::from(found.metric.em_size))
+            });
+        let original_glyph_em = implicit_symbol_em
+            .or_else(|| {
+                original_glyph_face.and_then(|face| {
+                    // 표시용 Unicode로 바꾸기 전의 원본 프로그램 hit를 먼저 소비한다.
+                    // source 결측일 때만 기존 표시 글리프의 확인된 폭으로 내려간다.
                     font_metrics_data::declared_original_glyph_advance_em(
                         face,
                         style.bold,
                         style.italic,
-                        c,
+                        chars[i],
                     )
+                    .or_else(|| {
+                        font_metrics_data::declared_original_glyph_advance_em(
+                            face,
+                            style.bold,
+                            style.italic,
+                            c,
+                        )
+                    })
                 })
             })
-        });
+            .or(verified_non_hft_em);
         let mut embedded = if let Some(em) = original_glyph_em {
             EmbeddedWidthDecision {
                 width_px: Some(quantize_hwp_px(font_size * em)),
@@ -2568,7 +2578,10 @@ fn char_width_decision_with_hft_tracking<'a>(
             // 독립 Print의 Haansoft Batang U+3001·3004·3008 등은 1em이며,
             // Unicode 폭 2인 문자만 받으므로 결합 부호와 중립 폭 U+303F는 제외한다.
             // 위에서 찾은 실제 글꼴 메트릭과 반각 형식의 전진은 그대로 우선한다.
-            || (('\u{3001}'..='\u{303F}').contains(&c)
+            || ((('\u{3001}'..='\u{303F}').contains(&c)
+                // 세로 호환기호도 원본 폭을 못 찾았다는 이유로 반각이 되지 않는다.
+                // 독립 Print의 U+FE40과 대체 원 프로그램은 같은 1em을 소비한다.
+                || ('\u{FE30}'..='\u{FE4F}').contains(&c))
                 && unicode_width::UnicodeWidthChar::width(c) == Some(2))
             || is_cjk_char(c)
             || is_fullwidth_symbol(c)

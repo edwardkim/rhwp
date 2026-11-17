@@ -1,0 +1,18 @@
+[
+  {
+    "path": "/Users/tsjang/Library/Fonts/H2GTRM.TTF",
+    "sha256": "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5",
+    "upem": 1024,
+    "has_fe40": false,
+    "glyph": null,
+    "advance": null
+  },
+  {
+    "path": "/Users/tsjang/Library/Fonts/HBATANG.TTF",
+    "sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+    "upem": 1024,
+    "has_fe40": true,
+    "glyph": "uniFE40",
+    "advance": 1024
+  }
+]
