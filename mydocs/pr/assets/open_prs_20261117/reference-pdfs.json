@@ -1,0 +1,105 @@
+{
+  "status": "official_desktop_print_references_acquired",
+  "source_head": "5264d6f1e9fc7435e8f401a5101f881c9e9c93a6",
+  "input_policy": "Same original input. Windows desktop Hancom 2024 Hancom PDF Print. WebHWP and Microsoft Print to PDF are excluded from official comparisons.",
+  "records": [
+    {
+      "input": "samples/issue8582/hwp_band.hwpx",
+      "input_sha256": "48f0330396fbfeb7610515fc8cbcceeeab4b2d5f64af766fc59a4b72682865b2",
+      "engine": "2024",
+      "job_id": "0b14d21c-1daf-4186-a47e-8edc82cf1596",
+      "filename": "hwp_band-2024.pdf",
+      "status": "downloaded",
+      "pdf": "pdf/pr-review-open-prs-20261117/hwp_band-2024.pdf",
+      "pdf_sha256": "c4d1c9bb280032271a8acd48aeb5914b9f8d10751a5642cb7b2032c632cf9b98",
+      "pdf_bytes": 12041,
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2024",
+        "version": "13.0.0.3622"
+      },
+      "format": "hwpx",
+      "print_result": {
+        "job_id": "0b14d21c-1daf-4186-a47e-8edc82cf1596",
+        "status": "success",
+        "engine": "2024",
+        "engine_profile": "2024",
+        "hancom_version": "13.0.0.3901",
+        "backend": "hwp-managed-direct-dll-host",
+        "input_format": "hwpx",
+        "format": "pdf",
+        "bytes": 12041,
+        "pdf_page_count": 1,
+        "logical_page_count": null,
+        "elapsed_ms": 126840,
+        "worker_elapsed_ms": 104250,
+        "worker_bits": 32,
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "input_preprocess": "none",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up"
+      },
+      "source_pr": 9149,
+      "excluded_reference": "pdf/issue8582/hwp_band-webhwp-print.pdf"
+    },
+    {
+      "input": "samples/tab_overflow/tab_stop_beyond_line.hwpx",
+      "input_sha256": "cc61958e1fda95d76417600fe640a1acf32c489ddc1b904ddb4e80d0c94471e8",
+      "engine": "2024",
+      "job_id": "db9217d4-d4af-4cea-8a94-00ab05315256",
+      "filename": "tab_stop_beyond_line-2024.pdf",
+      "status": "downloaded",
+      "pdf": "pdf/pr-review-open-prs-20261117/tab_stop_beyond_line-2024.pdf",
+      "pdf_sha256": "c4d2a09fea409b88f80eb3d95b90d5097098c4cdfced1e2c9d35339277c029cc",
+      "pdf_bytes": 12217,
+      "lastSavedWith": {
+        "confidence": "metadata",
+        "product": "hancom-office-2024",
+        "version": "13.0.0.3622"
+      },
+      "format": "hwpx",
+      "print_result": {
+        "job_id": "db9217d4-d4af-4cea-8a94-00ab05315256",
+        "status": "success",
+        "engine": "2024",
+        "engine_profile": "2024",
+        "hancom_version": "13.0.0.3901",
+        "backend": "hwp-managed-direct-dll-host",
+        "input_format": "hwpx",
+        "format": "pdf",
+        "bytes": 12217,
+        "pdf_page_count": 1,
+        "logical_page_count": null,
+        "elapsed_ms": 23736,
+        "worker_elapsed_ms": 18061,
+        "worker_bits": 32,
+        "font_scope": {
+          "mode": "session0",
+          "status": "verified",
+          "profile_source": "protected_config",
+          "session_id": 0,
+          "mapped_font_count": 2,
+          "registered_font_count": 2,
+          "failed_font_count": 0,
+          "parent_visibility": "verified",
+          "child_visibility": "verified"
+        },
+        "input_preprocess": "none",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up"
+      },
+      "source_pr": 9152,
+      "excluded_reference": "pdf/tab_overflow/tab_stop_beyond_line-webhwp-print.pdf"
+    }
+  ]
+}
