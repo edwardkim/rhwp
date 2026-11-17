@@ -1,0 +1,13 @@
+{
+  "parent": "826502204aabd477c2d5de1b63ee1d8ede6f1d4a",
+  "captured_at": "2026-11-18T03:03:14.892144+09:00",
+  "sources": {
+    "src/renderer/font_metrics_technical_symbols.rs": "b5963fd3d6299c1a75f2ea226c933678f4ed57b6e749eaa98ebe6967cfadbb22",
+    "src/renderer/layout/text_measurement.rs": "cf421a015692d6b6b5bf0a0cef3abdb8f5fffd90d4437c540b7463754dc0c68c",
+    "src/renderer/measured_glyph_supplier.rs": "06e8eec2e5b1c52e8f442d3cfba94247caae016252fed4ca32dc18d199f9da97",
+    "tests/cases/issue_7737_missing_math_symbol_supplier.rs": "d7a2db166d810f80c63b10d03dadde6f7ccaa51af3187704d3712ce80c0f9632"
+  },
+  "source_diff_sha256": "f0e357f99109df4ea24f5e9ecad743721c6382bcd1dd29315169c757208d4f7c",
+  "cargo_lock_sha256": "972bdb0994b216f0cef357b856ce0807ce3d437af6791377446b62f2e26c05a1",
+  "font_environment_sha256": "39ec77d269dcd5e687ecd68cd3c5ffb2d19f91a5d9580b2e11c0c4db8a9cb4b0"
+}

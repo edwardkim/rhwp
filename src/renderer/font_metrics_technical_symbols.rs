@@ -107,6 +107,17 @@ fn verified_technical_symbol_entry(metric: &FontMetric, ch: char) -> Option<(boo
 }
 
 pub(crate) fn verified_program_has_glyph(metric: &FontMetric, ch: char) -> Option<bool> {
+    // malgun.ttf 7a183cf1…192f / malgunbd.ttf e8cbc0b2…9082의 실제 cmap에는
+    // U+2981이 없다. 설치한 다른 맑은 고딕 TTF 3종도 같은 결측이다.
+    // 독립 시행령 Print는 HCRDotum의 동일 윤곽·970/1000em을 사용한다.
+    // 공급자는 기존 선언 체인이 고르며 다른 글자·기울임의 결측은 추정하지 않는다.
+    if ch == '\u{2981}'
+        && metric.name == "Malgun Gothic"
+        && metric.em_size == 2048
+        && !metric.italic
+    {
+        return Some(false);
+    }
     // 같은 등록 프로그램의 cmap 결측이다. 폭 표에 없다는 사실만으로
     // 결측을 추정하지 않으며, 다른 weight/style 프로그램에는 적용하지 않는다.
     // U+2027도 같은 원 프로그램에서 결측이고 Haansoft Batang이 공급한다.

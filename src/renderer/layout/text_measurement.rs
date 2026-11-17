@@ -2386,7 +2386,8 @@ fn char_width_decision_with_hft_tracking<'a>(
         // 호환 전진폭의 신뢰도와 실제 프로그램의 cmap 유무는 다른 정보다.
         // 폭 계약 전체를 TrueType으로 바꾸지 않고, paint와 같은 primary의
         // 확인된 결측만 다음 선언 face로 보낸다. HFT 명시 규칙은 아래에서 보호한다.
-        let verified_primary_missing = metric_family == display_family
+        let verified_primary_missing = !style.source_font_is_hft
+            && metric_family == display_family
             && embedded.metric.is_some_and(|found| {
                 (found.metric.bold == style.bold || found.bold_fallback)
                     && found.metric.italic == style.italic

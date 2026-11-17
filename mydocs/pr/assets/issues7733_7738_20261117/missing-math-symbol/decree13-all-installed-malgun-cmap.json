@@ -1,0 +1,50 @@
+[
+  {
+    "path": "MALGUNSL.TTF",
+    "sha256": "c0ca810a242c4482594182db40f0f9d35a3d51bb2eeac750e6e867b2110eb00e",
+    "family": "Malgun Gothic Semilight",
+    "subfamily": "Regular",
+    "glyph": null,
+    "hmtx": null
+  },
+  {
+    "path": "MALGUNBD.TTF",
+    "sha256": "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082",
+    "family": "Malgun Gothic",
+    "subfamily": "Bold",
+    "glyph": null,
+    "hmtx": null
+  },
+  {
+    "path": "MALGUN.TTF",
+    "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+    "family": "Malgun Gothic",
+    "subfamily": "Regular",
+    "glyph": null,
+    "hmtx": null
+  },
+  {
+    "path": "0086c19e81d2-MalgunGothic.ttf",
+    "sha256": "0086c19e81d293a542e7d75564c645fb58070cc850aefebf8fa1c397858e510c",
+    "family": "Malgun Gothic",
+    "subfamily": "Regular",
+    "glyph": null,
+    "hmtx": null
+  },
+  {
+    "path": "a541834fb9cd-MalgunGothicBold.ttf",
+    "sha256": "a541834fb9cdde9bd6d2c3ff1565cb0bb5ccf7a15e4e9daf2cb58d9b1cf282aa",
+    "family": "Malgun Gothic",
+    "subfamily": "Bold",
+    "glyph": null,
+    "hmtx": null
+  },
+  {
+    "path": "malgun.ttf",
+    "sha256": "6706a05313c7fafb3fd8fda9538c9ecabac7cede30076b3ea85be7716f356702",
+    "family": "Malgun Gothic",
+    "subfamily": "Regular",
+    "glyph": null,
+    "hmtx": null
+  }
+]
