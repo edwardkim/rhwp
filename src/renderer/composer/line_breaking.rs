@@ -2050,6 +2050,9 @@ struct TabFill<'a> {
     /// 첫 줄·다음 줄의 줄 상자 시작 (단 시작 기준 px) — 문단 왼쪽 여백 + 그 줄의 들여쓰기.
     line_origin_px: [f64; 2],
     available_width_px: f64,
+    /// 다음 명시 정지가 줄 오른쪽 끝 밖이면 탭 앞뒤 글을 다른 줄로 나누는가(한/글 문서 규칙).
+    /// 워드 호환 문서는 줄 나눔이 달라 끈다.
+    stop_overflow_wraps: bool,
 }
 
 impl<'a> TabFill<'a> {
@@ -2060,6 +2063,7 @@ impl<'a> TabFill<'a> {
             auto_tab_right: false,
             line_origin_px: [0.0, 0.0],
             available_width_px: 0.0,
+            stop_overflow_wraps: false,
         }
     }
 
@@ -2080,7 +2084,14 @@ impl<'a> TabFill<'a> {
                 style.margin_left + (-indent_px).max(0.0),
             ],
             available_width_px,
+            stop_overflow_wraps: false,
         }
+    }
+
+    /// 한/글 문서(워드 호환 아님)에서만 줄 밖 명시 정지 줄 나눔을 켠다.
+    fn with_stop_overflow_wraps(mut self, styles: &ResolvedStyleSet) -> Self {
+        self.stop_overflow_wraps = !styles.word_compat_target;
+        self
     }
 
     fn default_width(&self) -> f64 {
@@ -2108,6 +2119,27 @@ impl<'a> TabFill<'a> {
             0 | 3 => to_hwp(position - origin).max(lw_hwp),
             _ => to_hwp(((lw_px / self.default_width()).floor() + 1.0) * self.default_width()),
         }
+    }
+
+    /// 줄 안 위치 `lw_hwp` 다음의 명시적 왼쪽·가운데·소수점 정지가 줄 오른쪽 끝(`line_width_hwp`)
+    /// 밖에 있는가. 정지 좌표는 단 시작 기준이고 줄 오른쪽 끝은 줄 상자 시작 + 줄 폭이다.
+    fn explicit_stop_beyond_line(
+        &self,
+        lw_hwp: i32,
+        first_line: bool,
+        origin_override: Option<f64>,
+        line_width_hwp: i32,
+    ) -> bool {
+        if !self.stop_overflow_wraps {
+            return false;
+        }
+        let origin = origin_override.unwrap_or(self.line_origin_px[usize::from(!first_line)]);
+        let x = origin + lw_hwp as f64 / 75.0;
+        let right_edge = origin + line_width_hwp as f64 / 75.0;
+        self.stops
+            .iter()
+            .find(|stop| stop.position > x + 0.5)
+            .is_some_and(|stop| stop.tab_type != 1 && stop.position > right_edge + 0.5)
     }
 }
 
@@ -2379,6 +2411,47 @@ fn fill_one_interval(
                     });
                 if *max_font_size > cursor.line_max_fs {
                     cursor.line_max_fs = *max_font_size;
+                }
+
+                // 다음 명시적 왼쪽·가운데 정지가 줄 오른쪽 끝 밖이고 탭 뒤에 글이 이어지면, 한컴은
+                // 탭 앞의 글과 탭 뒤의 글을 같은 줄에 두지 않는다(웹한글기안기 인쇄: 줄 폭 5500 HU 에
+                // 정지 8840 HU, `가`+탭+`X` 는 `가` / 탭 / `X` 세 줄이고 `X` 는 줄 처음). 탭 앞에 글이
+                // 있으면 탭을 다음 줄로 보내고, 줄 처음의 탭이면 탭 뒤에서 줄을 끝낸다. 탭만 있는
+                // 문단·문단 끝 탭은 그대로 둔다. 워드 호환 문서는 줄 나눔이 달라 대상에서 뺀다
+                // (`TabFill::stop_overflow_wraps`).
+                if auto_left_target.is_none()
+                    && tokens.len() > ti + 1
+                    && tabs.explicit_stop_beyond_line(
+                        cursor.lw,
+                        cursor.is_first_line,
+                        origin_override,
+                        eff_w(cursor.is_first_line),
+                    )
+                {
+                    let tab_leads_line = cursor.line_start_idx == *idx;
+                    let end_idx = if tab_leads_line { *idx + 1 } else { *idx };
+                    let result = LineBreakResult {
+                        start_idx: cursor.line_start_idx,
+                        end_idx,
+                        max_font_size: cursor.line_max_fs,
+                        has_line_break: false,
+                    };
+                    cursor.line_start_idx = end_idx;
+                    cursor.lw = 0;
+                    cursor.line_space_savings = 0;
+                    cursor.line_max_fs = 0.0;
+                    cursor.is_first_line = false;
+                    cursor.last_break_token_idx = None;
+                    if tab_leads_line {
+                        // 탭은 이 줄에 남는다. 탭 앞에 글이 있던 경우는 탭을 다음 줄 처음에서
+                        // 다시 읽어 위 규칙(줄 처음의 탭)으로 끝낸다.
+                        cursor.token_index += 1;
+                    }
+                    cursor.emitted_any = true;
+                    return Some(FilledInterval {
+                        line: result,
+                        termination: FillTermination::IntervalFull,
+                    });
                 }
 
                 if next_tab_hwp > eff_w(cursor.is_first_line) && cursor.line_start_idx < *idx {
@@ -4750,6 +4823,7 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
         ),
     );
     tab_fill.default_width_px = styles.default_tab_width(tab_fill.default_width_px);
+    tab_fill.stop_overflow_wraps = !styles.word_compat_target;
     let english_break_unit = para_style
         .map(|style| style.english_break_unit)
         .unwrap_or(0);
@@ -6653,7 +6727,8 @@ fn try_reflow_line_segs_impl<S: Storage>(
         &text_chars,
         available_width_px,
         indent_px,
-        TabFill::for_paragraph(para_style, indent_px, available_width_px),
+        TabFill::for_paragraph(para_style, indent_px, available_width_px)
+            .with_stop_overflow_wraps(styles),
         korean_break_unit,
         condense_min_space,
         &try_resolved_paragraph_letter_spacing(
@@ -6684,7 +6759,8 @@ fn try_reflow_line_segs_impl<S: Storage>(
             &text_chars,
             available_width_px,
             indent_px,
-            TabFill::for_paragraph(para_style, indent_px, available_width_px),
+            TabFill::for_paragraph(para_style, indent_px, available_width_px)
+                .with_stop_overflow_wraps(styles),
             korean_break_unit,
             condense_min_space,
             &try_resolved_paragraph_letter_spacing(

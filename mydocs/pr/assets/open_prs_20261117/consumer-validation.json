@@ -1,0 +1,454 @@
+{
+  "status": "passed",
+  "product_source": "2c5e3fe38726d23bec1c970ba3f92a49e15cae34",
+  "profile": "print / 96DPI / canonical 2px raw",
+  "cases": [
+    {
+      "kind": "studio",
+      "backend": "canvas2d",
+      "key": "band",
+      "page": 1,
+      "raw_percent": 100.0,
+      "out": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/consumer-metrics/studio/canvas2d/band",
+      "raw_sha256": "9ed6b8197e447f6f32a24b61601388e68e9c97861271619e05ff00c7806e45f6",
+      "pdf_sha256": "1558768d2fdf632222b338ad769e9b4959d348113d61d851abd04550dc2c9fa1",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "review": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/consumer-metrics/studio/canvas2d/band/review/review_001.png",
+      "overlay": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/consumer-metrics/studio/canvas2d/band/overlay/overlay_001.png",
+      "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/logs/consumer-metrics-studio-canvas2d-band.log",
+      "committed_artifacts": {
+        "raw-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/studio/canvas2d/band/raw-001.png",
+          "sha256": "9ed6b8197e447f6f32a24b61601388e68e9c97861271619e05ff00c7806e45f6",
+          "bytes": 16570
+        },
+        "pdf-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/studio/canvas2d/band/pdf-001.png",
+          "sha256": "1558768d2fdf632222b338ad769e9b4959d348113d61d851abd04550dc2c9fa1",
+          "bytes": 18603
+        },
+        "review-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/studio/canvas2d/band/review-001.png",
+          "sha256": "45ef079beee01bf48c4047bd3f4b8cec575f2c7aa444d7fc75301e1c480bae4d",
+          "bytes": 64347
+        },
+        "overlay-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/studio/canvas2d/band/overlay-001.png",
+          "sha256": "bff9072da526c9d05956bb5f43ce127f3a904bea7e984e3daac2694c4375afe3",
+          "bytes": 32991
+        },
+        "silhouette.tsv": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/studio/canvas2d/band/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "bytes": 132
+        }
+      }
+    },
+    {
+      "kind": "studio",
+      "backend": "canvaskit-compat",
+      "key": "band",
+      "page": 1,
+      "raw_percent": 100.0,
+      "out": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/consumer-metrics/studio/canvaskit-compat/band",
+      "raw_sha256": "3f34ed2d0653d14cf66b80050de8466dfdd8172a55aafa05a93b33e1d2d6110f",
+      "pdf_sha256": "1558768d2fdf632222b338ad769e9b4959d348113d61d851abd04550dc2c9fa1",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "review": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/consumer-metrics/studio/canvaskit-compat/band/review/review_001.png",
+      "overlay": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/consumer-metrics/studio/canvaskit-compat/band/overlay/overlay_001.png",
+      "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/logs/consumer-metrics-studio-canvaskit-compat-band.log",
+      "committed_artifacts": {
+        "raw-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/studio/canvaskit-compat/band/raw-001.png",
+          "sha256": "3f34ed2d0653d14cf66b80050de8466dfdd8172a55aafa05a93b33e1d2d6110f",
+          "bytes": 14805
+        },
+        "pdf-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/studio/canvaskit-compat/band/pdf-001.png",
+          "sha256": "1558768d2fdf632222b338ad769e9b4959d348113d61d851abd04550dc2c9fa1",
+          "bytes": 18603
+        },
+        "review-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/studio/canvaskit-compat/band/review-001.png",
+          "sha256": "7c1d99af6637243ce3260e9a607dff11c0a829885a1c63b314419419b8619b11",
+          "bytes": 62289
+        },
+        "overlay-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/studio/canvaskit-compat/band/overlay-001.png",
+          "sha256": "701dafe392a3dfb1bd320707f39bbaf4e36cca1ce84676e7a442a229dcdff2cb",
+          "bytes": 32069
+        },
+        "silhouette.tsv": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/studio/canvaskit-compat/band/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "bytes": 132
+        }
+      }
+    },
+    {
+      "kind": "studio",
+      "backend": "canvaskit-default",
+      "key": "band",
+      "page": 1,
+      "raw_percent": 100.0,
+      "out": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/consumer-metrics/studio/canvaskit-default/band",
+      "raw_sha256": "3f34ed2d0653d14cf66b80050de8466dfdd8172a55aafa05a93b33e1d2d6110f",
+      "pdf_sha256": "1558768d2fdf632222b338ad769e9b4959d348113d61d851abd04550dc2c9fa1",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "review": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/consumer-metrics/studio/canvaskit-default/band/review/review_001.png",
+      "overlay": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/consumer-metrics/studio/canvaskit-default/band/overlay/overlay_001.png",
+      "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/logs/consumer-metrics-studio-canvaskit-default-band.log",
+      "committed_artifacts": {
+        "raw-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/studio/canvaskit-default/band/raw-001.png",
+          "sha256": "3f34ed2d0653d14cf66b80050de8466dfdd8172a55aafa05a93b33e1d2d6110f",
+          "bytes": 14805
+        },
+        "pdf-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/studio/canvaskit-default/band/pdf-001.png",
+          "sha256": "1558768d2fdf632222b338ad769e9b4959d348113d61d851abd04550dc2c9fa1",
+          "bytes": 18603
+        },
+        "review-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/studio/canvaskit-default/band/review-001.png",
+          "sha256": "d1d56686cd6844e7dfbf1c639c16615cd61a87c1aedf4cbf0d78a97aaee94aa6",
+          "bytes": 62303
+        },
+        "overlay-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/studio/canvaskit-default/band/overlay-001.png",
+          "sha256": "09c3de911a9a7b771ec693ea08cf138c34995ca39251ad1300d0ede854b56d06",
+          "bytes": 32163
+        },
+        "silhouette.tsv": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/studio/canvaskit-default/band/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "bytes": 132
+        }
+      }
+    },
+    {
+      "kind": "studio",
+      "backend": "canvas2d",
+      "key": "tab",
+      "page": 1,
+      "raw_percent": 100.0,
+      "out": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/consumer-metrics/studio/canvas2d/tab",
+      "raw_sha256": "ab09103c8d7451a532bf62bf0d597ee8f5ba9696eba1bf09f244d19e0081d5e2",
+      "pdf_sha256": "4eecd0ff8474f98453c896a89511ff5ee0d84274c2a9f0783fae8a9263e4ddfe",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "review": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/consumer-metrics/studio/canvas2d/tab/review/review_001.png",
+      "overlay": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/consumer-metrics/studio/canvas2d/tab/overlay/overlay_001.png",
+      "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/logs/consumer-metrics-studio-canvas2d-tab.log",
+      "committed_artifacts": {
+        "raw-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/studio/canvas2d/tab/raw-001.png",
+          "sha256": "ab09103c8d7451a532bf62bf0d597ee8f5ba9696eba1bf09f244d19e0081d5e2",
+          "bytes": 18836
+        },
+        "pdf-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/studio/canvas2d/tab/pdf-001.png",
+          "sha256": "4eecd0ff8474f98453c896a89511ff5ee0d84274c2a9f0783fae8a9263e4ddfe",
+          "bytes": 20999
+        },
+        "review-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/studio/canvas2d/tab/review-001.png",
+          "sha256": "62c50c01f92e565f2e9dd5de0261bb4268b2bb80b1875bd36df65abcde4003c0",
+          "bytes": 71525
+        },
+        "overlay-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/studio/canvas2d/tab/overlay-001.png",
+          "sha256": "fe3edb2729ab2ebdfcee069dd60c3acae1f150392017e63016c216877aea88a9",
+          "bytes": 34827
+        },
+        "silhouette.tsv": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/studio/canvas2d/tab/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "bytes": 132
+        }
+      }
+    },
+    {
+      "kind": "studio",
+      "backend": "canvaskit-compat",
+      "key": "tab",
+      "page": 1,
+      "raw_percent": 100.0,
+      "out": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/consumer-metrics/studio/canvaskit-compat/tab",
+      "raw_sha256": "fec477dfb9bc08dc64ab2a83e0bbe4eb910d5f0eeea091362ea2901c25855f18",
+      "pdf_sha256": "4eecd0ff8474f98453c896a89511ff5ee0d84274c2a9f0783fae8a9263e4ddfe",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "review": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/consumer-metrics/studio/canvaskit-compat/tab/review/review_001.png",
+      "overlay": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/consumer-metrics/studio/canvaskit-compat/tab/overlay/overlay_001.png",
+      "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/logs/consumer-metrics-studio-canvaskit-compat-tab.log",
+      "committed_artifacts": {
+        "raw-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/studio/canvaskit-compat/tab/raw-001.png",
+          "sha256": "fec477dfb9bc08dc64ab2a83e0bbe4eb910d5f0eeea091362ea2901c25855f18",
+          "bytes": 16312
+        },
+        "pdf-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/studio/canvaskit-compat/tab/pdf-001.png",
+          "sha256": "4eecd0ff8474f98453c896a89511ff5ee0d84274c2a9f0783fae8a9263e4ddfe",
+          "bytes": 20999
+        },
+        "review-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/studio/canvaskit-compat/tab/review-001.png",
+          "sha256": "b1dfd2882f058bb5bf2ff44918544f29c7a0bd4b221b8ff821bfd5bded532aa1",
+          "bytes": 67140
+        },
+        "overlay-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/studio/canvaskit-compat/tab/overlay-001.png",
+          "sha256": "f213f60b1785b22a282be668f02a8d643e78243080d7510abb00be09bf4b98ab",
+          "bytes": 34145
+        },
+        "silhouette.tsv": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/studio/canvaskit-compat/tab/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "bytes": 132
+        }
+      }
+    },
+    {
+      "kind": "studio",
+      "backend": "canvaskit-default",
+      "key": "tab",
+      "page": 1,
+      "raw_percent": 100.0,
+      "out": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/consumer-metrics/studio/canvaskit-default/tab",
+      "raw_sha256": "fec477dfb9bc08dc64ab2a83e0bbe4eb910d5f0eeea091362ea2901c25855f18",
+      "pdf_sha256": "4eecd0ff8474f98453c896a89511ff5ee0d84274c2a9f0783fae8a9263e4ddfe",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "review": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/consumer-metrics/studio/canvaskit-default/tab/review/review_001.png",
+      "overlay": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/consumer-metrics/studio/canvaskit-default/tab/overlay/overlay_001.png",
+      "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/logs/consumer-metrics-studio-canvaskit-default-tab.log",
+      "committed_artifacts": {
+        "raw-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/studio/canvaskit-default/tab/raw-001.png",
+          "sha256": "fec477dfb9bc08dc64ab2a83e0bbe4eb910d5f0eeea091362ea2901c25855f18",
+          "bytes": 16312
+        },
+        "pdf-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/studio/canvaskit-default/tab/pdf-001.png",
+          "sha256": "4eecd0ff8474f98453c896a89511ff5ee0d84274c2a9f0783fae8a9263e4ddfe",
+          "bytes": 20999
+        },
+        "review-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/studio/canvaskit-default/tab/review-001.png",
+          "sha256": "8d0488d3aefec57db5a0f25728cb0cde7775589c2ebef31dd492580bb04952f6",
+          "bytes": 67178
+        },
+        "overlay-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/studio/canvaskit-default/tab/overlay-001.png",
+          "sha256": "9b02e46558ec13b9430772de7c393480938ccb04ff0819417d79d99d91fb0ad5",
+          "bytes": 34200
+        },
+        "silhouette.tsv": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/studio/canvaskit-default/tab/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "bytes": 132
+        }
+      }
+    },
+    {
+      "kind": "svg",
+      "backend": "native",
+      "key": "band",
+      "page": 1,
+      "raw_percent": 100.0,
+      "out": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/consumer-metrics/svg/native/band",
+      "raw_sha256": "4330d4881ef498a5b1c29989387c8ef99a6f22abbe421412175900b5b5e06fba",
+      "pdf_sha256": "1558768d2fdf632222b338ad769e9b4959d348113d61d851abd04550dc2c9fa1",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "review": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/consumer-metrics/svg/native/band/review/review_001.png",
+      "overlay": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/consumer-metrics/svg/native/band/overlay/overlay_001.png",
+      "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/logs/consumer-metrics-svg-native-band.log",
+      "committed_artifacts": {
+        "raw-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/svg/native/band/raw-001.png",
+          "sha256": "4330d4881ef498a5b1c29989387c8ef99a6f22abbe421412175900b5b5e06fba",
+          "bytes": 16519
+        },
+        "pdf-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/svg/native/band/pdf-001.png",
+          "sha256": "1558768d2fdf632222b338ad769e9b4959d348113d61d851abd04550dc2c9fa1",
+          "bytes": 18603
+        },
+        "review-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/svg/native/band/review-001.png",
+          "sha256": "ede160cdff40bee9dbe2cd07894d4fa1b87ad385e6242ce67b1ca20b05aa578e",
+          "bytes": 64197
+        },
+        "overlay-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/svg/native/band/overlay-001.png",
+          "sha256": "057ac16463469868c76adeb745bf1e0614db225d4739394389e1554326d1cad3",
+          "bytes": 32852
+        },
+        "silhouette.tsv": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/svg/native/band/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "bytes": 132
+        }
+      }
+    },
+    {
+      "kind": "svg",
+      "backend": "native",
+      "key": "tab",
+      "page": 1,
+      "raw_percent": 100.0,
+      "out": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/consumer-metrics/svg/native/tab",
+      "raw_sha256": "7dca75b65164f068e9a9c235eddb9a2f9b0c351a25301a1c40a5b1454d32f920",
+      "pdf_sha256": "4eecd0ff8474f98453c896a89511ff5ee0d84274c2a9f0783fae8a9263e4ddfe",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "review": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/consumer-metrics/svg/native/tab/review/review_001.png",
+      "overlay": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/consumer-metrics/svg/native/tab/overlay/overlay_001.png",
+      "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/logs/consumer-metrics-svg-native-tab.log",
+      "committed_artifacts": {
+        "raw-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/svg/native/tab/raw-001.png",
+          "sha256": "7dca75b65164f068e9a9c235eddb9a2f9b0c351a25301a1c40a5b1454d32f920",
+          "bytes": 18915
+        },
+        "pdf-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/svg/native/tab/pdf-001.png",
+          "sha256": "4eecd0ff8474f98453c896a89511ff5ee0d84274c2a9f0783fae8a9263e4ddfe",
+          "bytes": 20999
+        },
+        "review-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/svg/native/tab/review-001.png",
+          "sha256": "5caf9fc853f145763d14be5cd5137a2d7299712f87e2687e76eb502fc904ac46",
+          "bytes": 71597
+        },
+        "overlay-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/svg/native/tab/overlay-001.png",
+          "sha256": "a578662471bce26064f612cf973d6b2f0ade3104ae0f79b2f5176cb31a795407",
+          "bytes": 34645
+        },
+        "silhouette.tsv": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/svg/native/tab/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "bytes": 132
+        }
+      }
+    },
+    {
+      "kind": "svg",
+      "backend": "wasm",
+      "key": "band",
+      "page": 1,
+      "raw_percent": 100.0,
+      "out": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/consumer-metrics/svg/wasm/band",
+      "raw_sha256": "4330d4881ef498a5b1c29989387c8ef99a6f22abbe421412175900b5b5e06fba",
+      "pdf_sha256": "1558768d2fdf632222b338ad769e9b4959d348113d61d851abd04550dc2c9fa1",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "review": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/consumer-metrics/svg/wasm/band/review/review_001.png",
+      "overlay": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/consumer-metrics/svg/wasm/band/overlay/overlay_001.png",
+      "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/logs/consumer-metrics-svg-wasm-band.log",
+      "committed_artifacts": {
+        "raw-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/svg/wasm/band/raw-001.png",
+          "sha256": "4330d4881ef498a5b1c29989387c8ef99a6f22abbe421412175900b5b5e06fba",
+          "bytes": 16519
+        },
+        "pdf-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/svg/wasm/band/pdf-001.png",
+          "sha256": "1558768d2fdf632222b338ad769e9b4959d348113d61d851abd04550dc2c9fa1",
+          "bytes": 18603
+        },
+        "review-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/svg/wasm/band/review-001.png",
+          "sha256": "359d9194c2c8f9816d397e9f410fc7a6d7c8c9f2952b4a61d30903c92385aeff",
+          "bytes": 64099
+        },
+        "overlay-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/svg/wasm/band/overlay-001.png",
+          "sha256": "34d81ab2bbe5721072fbc3b6bba4fd2779acf8808a4765c28e6a44b4db9ebc2d",
+          "bytes": 33070
+        },
+        "silhouette.tsv": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/svg/wasm/band/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "bytes": 132
+        }
+      }
+    },
+    {
+      "kind": "svg",
+      "backend": "wasm",
+      "key": "tab",
+      "page": 1,
+      "raw_percent": 100.0,
+      "out": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/consumer-metrics/svg/wasm/tab",
+      "raw_sha256": "7dca75b65164f068e9a9c235eddb9a2f9b0c351a25301a1c40a5b1454d32f920",
+      "pdf_sha256": "4eecd0ff8474f98453c896a89511ff5ee0d84274c2a9f0783fae8a9263e4ddfe",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "review": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/consumer-metrics/svg/wasm/tab/review/review_001.png",
+      "overlay": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/consumer-metrics/svg/wasm/tab/overlay/overlay_001.png",
+      "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/logs/consumer-metrics-svg-wasm-tab.log",
+      "committed_artifacts": {
+        "raw-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/svg/wasm/tab/raw-001.png",
+          "sha256": "7dca75b65164f068e9a9c235eddb9a2f9b0c351a25301a1c40a5b1454d32f920",
+          "bytes": 18915
+        },
+        "pdf-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/svg/wasm/tab/pdf-001.png",
+          "sha256": "4eecd0ff8474f98453c896a89511ff5ee0d84274c2a9f0783fae8a9263e4ddfe",
+          "bytes": 20999
+        },
+        "review-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/svg/wasm/tab/review-001.png",
+          "sha256": "b04dfb063f9616db7b77f8858e11a295d520127e2c0e256e29b1ab2a123a0e76",
+          "bytes": 71434
+        },
+        "overlay-001.png": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/svg/wasm/tab/overlay-001.png",
+          "sha256": "3216361b5bb19360371e8c73d1512a5bd253b1f6689e4cc139f83f5967ef74e4",
+          "bytes": 34788
+        },
+        "silhouette.tsv": {
+          "path": "mydocs/pr/assets/open_prs_20261117/consumers/svg/wasm/tab/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "bytes": 132
+        }
+      }
+    }
+  ],
+  "actual_wasm_initialization_receipts": [
+    {
+      "path": "mydocs/pr/assets/open_prs_20261117/consumers/initialization-wasm/01.json",
+      "sha256": "f94999fe2dfaa17cb1582a37a886790b70ab5913fdf030b37d2b6ec2be7928b0",
+      "bytes": 548
+    },
+    {
+      "path": "mydocs/pr/assets/open_prs_20261117/consumers/initialization-wasm/02.json",
+      "sha256": "4e737ecea39d5b3953ae8f97723d8b5feec0ec7c77e3a5c216f434281b8187da",
+      "bytes": 596
+    },
+    {
+      "path": "mydocs/pr/assets/open_prs_20261117/consumers/initialization-wasm/03.json",
+      "sha256": "2e3ec045de12af2579f5afa76ceac7a14de2efedc30fa2c0253b340f56d6c2d2",
+      "bytes": 597
+    },
+    {
+      "path": "mydocs/pr/assets/open_prs_20261117/consumers/initialization-wasm/04.json",
+      "sha256": "f94999fe2dfaa17cb1582a37a886790b70ab5913fdf030b37d2b6ec2be7928b0",
+      "bytes": 548
+    },
+    {
+      "path": "mydocs/pr/assets/open_prs_20261117/consumers/initialization-wasm/05.json",
+      "sha256": "4e737ecea39d5b3953ae8f97723d8b5feec0ec7c77e3a5c216f434281b8187da",
+      "bytes": 596
+    },
+    {
+      "path": "mydocs/pr/assets/open_prs_20261117/consumers/initialization-wasm/06.json",
+      "sha256": "2e3ec045de12af2579f5afa76ceac7a14de2efedc30fa2c0253b340f56d6c2d2",
+      "bytes": 597
+    }
+  ],
+  "font_supply": "Actual file input and normal initializeDocument. Public rhwpStudio.fonts.setProvider API supplied the original installed HCRBatang TTF, layout opt-in. Closed optional browser detection dialog using its real close button. No queryLocalFonts mock or readiness/preflight guard override. Headless browser local-font permission remained denied, so no browser-local-detection PASS claim.",
+  "direct_reading": "Opened Native/WASM SVG review+overlay and Studio Canvas2D/CanvasKit default review+overlay for both pages. CanvasKit compat and default PNG SHA-256 are identical per page. Label ownership, following paragraphs, three tab lines and no missing/duplicate content confirmed. Minor antialias/stroke fringes remain within 2px; not RGB identity.",
+  "runtime": "All 4 CanvasKit captures complete with original localTypefaceCount=1, no pending/failures/unregistered fallbacks/hidden Canvas2D overlay, passesRuntimeReadinessGate=true; replay hard-gate violations 0. Explicit software CanvasKit mode, not a hardware surface test.",
+  "script_sha256": "8859d16722ed9b047cac5d22ead1638df75aab84440ad320f72320e8d5cc2925",
+  "log_sha256": "abb2298781e8ae134f32666015e08ba8a8c32a5b34e1d399f4132644f947a80c"
+}

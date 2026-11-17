@@ -1,0 +1,100 @@
+{
+  "base": {
+    "pageCount": 1,
+    "hwpUsedHeight": 42.666666666666664,
+    "usedDiff": 20.400000000000006,
+    "column_keys": [
+      "hwpUsedHeight",
+      "index",
+      "itemCount",
+      "items",
+      "usedDiff",
+      "usedHeight",
+      "zoneYOffset"
+    ]
+  },
+  "candidate": {
+    "pageCount": 1,
+    "hwpUsedHeight": null,
+    "usedDiff": null,
+    "column_keys": [
+      "hwpUsedHeight",
+      "index",
+      "itemCount",
+      "items",
+      "usedDiff",
+      "usedHeight",
+      "zoneYOffset"
+    ]
+  },
+  "saved_input_sha256": "64c1f2cf0e2c4adf49cfe51c330c876e1a931816b6f8e038e20ac07d1989f965",
+  "input": "samples/issue9142/inserted-table.hwp",
+  "input_origin": "candidate CLI edit insert-table from samples/hwpx/hancom-hwp/blank_hwpx.hwp, rows=2 cols=2, saved then reopened; diagnostic contract only",
+  "base_source": "1e2488ebd432deb7c326be532f8a91945f260231",
+  "candidate_product_source": "5264d6f1e9fc7435e8f401a5101f881c9e9c93a6",
+  "final_source": "2c5e3fe38726d23bec1c970ba3f92a49e15cae34",
+  "final_controls": {
+    "base": {
+      "stored": {
+        "pageCount": 1,
+        "hwpUsedHeight": 21.333333333333332,
+        "usedDiff": 3.552713678800501e-15
+      },
+      "synthetic": {
+        "pageCount": 1,
+        "hwpUsedHeight": 42.666666666666664,
+        "usedDiff": 20.400000000000006
+      }
+    },
+    "candidate": {
+      "stored": {
+        "pageCount": 1,
+        "hwpUsedHeight": 21.333333333333332,
+        "usedDiff": 3.552713678800501e-15
+      },
+      "synthetic": {
+        "pageCount": 1,
+        "hwpUsedHeight": null,
+        "usedDiff": null
+      }
+    }
+  },
+  "producers": [
+    {
+      "source": "base",
+      "kind": "stored",
+      "input": "samples/hwpx/hancom-hwp/blank_hwpx.hwp",
+      "input_sha256": "297a9b5f80e6ea590f1364d81fee287c781de49e4a656e16fef86f39c6756837",
+      "binary_sha256": "2c0ccefee86fb3d3dbe004b39e43697cb258d2fc6297bed983f87ab12abd71e7",
+      "exit_code": 0,
+      "output": "output/pr-review/all-open-pr-integration-20261117/diagnostics9144/final-base-stored.json"
+    },
+    {
+      "source": "base",
+      "kind": "synthetic",
+      "input": "samples/issue9142/inserted-table.hwp",
+      "input_sha256": "64c1f2cf0e2c4adf49cfe51c330c876e1a931816b6f8e038e20ac07d1989f965",
+      "binary_sha256": "2c0ccefee86fb3d3dbe004b39e43697cb258d2fc6297bed983f87ab12abd71e7",
+      "exit_code": 0,
+      "output": "output/pr-review/all-open-pr-integration-20261117/diagnostics9144/final-base-synthetic.json"
+    },
+    {
+      "source": "candidate",
+      "kind": "stored",
+      "input": "samples/hwpx/hancom-hwp/blank_hwpx.hwp",
+      "input_sha256": "297a9b5f80e6ea590f1364d81fee287c781de49e4a656e16fef86f39c6756837",
+      "binary_sha256": "37a6638edbb720bca2bb8fba591d141c26cc380c502a22e82e160ebd44f5cb0d",
+      "exit_code": 0,
+      "output": "output/pr-review/all-open-pr-integration-20261117/diagnostics9144/final-candidate-stored.json"
+    },
+    {
+      "source": "candidate",
+      "kind": "synthetic",
+      "input": "samples/issue9142/inserted-table.hwp",
+      "input_sha256": "64c1f2cf0e2c4adf49cfe51c330c876e1a931816b6f8e038e20ac07d1989f965",
+      "binary_sha256": "37a6638edbb720bca2bb8fba591d141c26cc380c502a22e82e160ebd44f5cb0d",
+      "exit_code": 0,
+      "output": "output/pr-review/all-open-pr-integration-20261117/diagnostics9144/final-candidate-synthetic.json"
+    }
+  ]
+}

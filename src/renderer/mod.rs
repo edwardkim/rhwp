@@ -4616,7 +4616,12 @@ pub(crate) fn topbottom_float_displaced_below_following_flow(
         return false;
     }
     // 밴드 상단 = 앵커 문단의 첫 줄 + 세로 오프셋. 저장 사다리와 같은 좌표계다.
-    let Some(anchor_vpos) = para.line_segs.first().map(|seg| seg.vertical_pos) else {
+    let Some(anchor_vpos) = para
+        .line_segs
+        .first()
+        .filter(|seg| seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+        .map(|seg| seg.vertical_pos)
+    else {
         return false;
     };
     let band_top = anchor_vpos.saturating_add(crate::renderer::float_placement::signed_hwpunit(
@@ -4625,6 +4630,7 @@ pub(crate) fn topbottom_float_displaced_below_following_flow(
 
     next_para
         .and_then(|next| next.line_segs.last())
+        .filter(|seg| seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
         .is_some_and(|next_last| {
             // 다음 문단이 사다리에서 차지하는 바닥. 밴드가 **그 아래에서** 시작하면
             // 사이에 들어갈 콘텐츠가 밀릴 이유가 없다. "틈이 없다"보다 강한 조건이다 —

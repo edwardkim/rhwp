@@ -1,0 +1,94 @@
+{
+  "method": "new independent PDF assertion evaluated against preserved actual pre/post render trees; not a pre-fix Cargo test execution",
+  "tolerance_px": 2,
+  "checks": {
+    "candidate-native": [
+      {
+        "label": "BAND2374",
+        "render_tree_y": 153.6,
+        "independent_pdf_y": 153.69443333333334,
+        "absolute_delta_px": 0.0944333333333418,
+        "passes_2px_assertion": true
+      },
+      {
+        "label": "AFTER2374",
+        "render_tree_y": 229.3,
+        "independent_pdf_y": 230.89006933333334,
+        "absolute_delta_px": 1.5900693333333322,
+        "passes_2px_assertion": true
+      },
+      {
+        "label": "BAND600",
+        "render_tree_y": 243.9,
+        "independent_pdf_y": 245.594,
+        "absolute_delta_px": 1.6939999999999884,
+        "passes_2px_assertion": true
+      },
+      {
+        "label": "AFTER600",
+        "render_tree_y": 314.9,
+        "independent_pdf_y": 318.7940026666667,
+        "absolute_delta_px": 3.8940026666667222,
+        "passes_2px_assertion": false
+      },
+      {
+        "label": "BAND0",
+        "render_tree_y": 329.6,
+        "independent_pdf_y": 333.4979333333333,
+        "absolute_delta_px": 3.897933333333299,
+        "passes_2px_assertion": false
+      },
+      {
+        "label": "AFTER0",
+        "render_tree_y": 402.9,
+        "independent_pdf_y": 406.697936,
+        "absolute_delta_px": 3.7979360000000497,
+        "passes_2px_assertion": false
+      }
+    ],
+    "repair1-native": [
+      {
+        "label": "BAND2374",
+        "render_tree_y": 153.6,
+        "independent_pdf_y": 153.69443333333334,
+        "absolute_delta_px": 0.0944333333333418,
+        "passes_2px_assertion": true
+      },
+      {
+        "label": "AFTER2374",
+        "render_tree_y": 230.9,
+        "independent_pdf_y": 230.89006933333334,
+        "absolute_delta_px": 0.009930666666662091,
+        "passes_2px_assertion": true
+      },
+      {
+        "label": "BAND600",
+        "render_tree_y": 245.5,
+        "independent_pdf_y": 245.594,
+        "absolute_delta_px": 0.09399999999999409,
+        "passes_2px_assertion": true
+      },
+      {
+        "label": "AFTER600",
+        "render_tree_y": 318.9,
+        "independent_pdf_y": 318.7940026666667,
+        "absolute_delta_px": 0.10599733333327777,
+        "passes_2px_assertion": true
+      },
+      {
+        "label": "BAND0",
+        "render_tree_y": 333.5,
+        "independent_pdf_y": 333.4979333333333,
+        "absolute_delta_px": 0.0020666666666784295,
+        "passes_2px_assertion": true
+      },
+      {
+        "label": "AFTER0",
+        "render_tree_y": 406.9,
+        "independent_pdf_y": 406.697936,
+        "absolute_delta_px": 0.20206399999995028,
+        "passes_2px_assertion": true
+      }
+    ]
+  }
+}

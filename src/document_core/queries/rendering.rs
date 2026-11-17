@@ -9372,6 +9372,7 @@ fn table_summary_json(
 /// 2. reset 발견: reset 직전 줄의 vpos + line_height (HWP 가 단을 끊은 위치)
 /// 3. reset 미발견: 단의 마지막 처리 줄 (FullParagraph: 마지막, PartialParagraph: end_line-1)
 /// 4. Table/Shape 만 있는 항목은 추정 불가 (None)
+/// 5. 단이 rhwp 임시 줄(bit 31, `TAG_IMPLEMENTATION_PROPERTY`)을 읽으면 한컴 근거가 아니므로 None
 fn compute_hwp_used_height(
     cc: &crate::renderer::pagination::ColumnContent,
     paragraphs: &[Paragraph],
@@ -9379,6 +9380,13 @@ fn compute_hwp_used_height(
 ) -> Option<f64> {
     use crate::renderer::hwpunit_to_px;
     use crate::renderer::pagination::PageItem;
+
+    // [Task #9142] rhwp 가 계산해 넣은 임시 줄(bit 31)은 한컴이 저장한 값이 아니다. 그런 줄을 근거로
+    // 추정하면 조판이 맞아도 가짜 diff 가 나오므로, 이 단은 추정 불가로 둔다.
+    // #8939 이후 IR 의 bit 31 은 rhwp 합성 표지만 뜻한다(한/글 저장 비트는 파서가 지움).
+    if column_reads_synthetic_lines(cc, paragraphs) {
+        return None;
+    }
 
     // [Task #1612] vpos 는 다페이지에서 누적값(예: page2 vpos≈66568~127587 HU)이므로, per-page
     // `used_height` 와 비교하려면 이 페이지 시작 오프셋을 빼야 한다. 차감하지 않으면 페이지마다
@@ -9477,6 +9485,35 @@ fn compute_hwp_used_height(
     let seg = p.line_segs.get(line_idx)?;
     let bottom_hwpu = seg.vertical_pos + seg.line_height + seg.line_spacing;
     Some(hwpunit_to_px((bottom_hwpu - base_top).max(0), dpi))
+}
+
+/// 단이 읽는 줄 가운데 rhwp 임시 줄(bit 31)이 하나라도 있는지.
+fn column_reads_synthetic_lines(
+    cc: &crate::renderer::pagination::ColumnContent,
+    paragraphs: &[Paragraph],
+) -> bool {
+    use crate::model::paragraph::LineSeg;
+    use crate::renderer::pagination::PageItem;
+
+    cc.items.iter().any(|item| {
+        let (para_index, lines) = match item {
+            PageItem::FullParagraph { para_index } => (*para_index, 0..usize::MAX),
+            PageItem::PartialParagraph {
+                para_index,
+                start_line,
+                end_line,
+            } => (*para_index, *start_line..*end_line),
+            PageItem::Table { para_index, .. } | PageItem::PartialTable { para_index, .. } => {
+                (*para_index, 0..1)
+            }
+            _ => return false,
+        };
+        paragraphs.get(para_index).is_some_and(|p| {
+            p.line_segs.iter().enumerate().any(|(i, seg)| {
+                lines.contains(&i) && seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+            })
+        })
+    })
 }
 
 /// [#3697] vpos 범위 분석 결과 — 텍스트(`format_vpos_range`)/JSON(`vpos_range_json`)

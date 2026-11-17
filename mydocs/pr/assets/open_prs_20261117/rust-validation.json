@@ -1,0 +1,302 @@
+{
+  "status": "passed",
+  "production_source": "2c5e3fe38726d23bec1c970ba3f92a49e15cae34",
+  "test_source": "c2ec0621772bf802bc573dab7bdb1bf82a2e21e3",
+  "source_lint_build": [
+    {
+      "stage": "fmt",
+      "source": "2c5e3fe38726d23bec1c970ba3f92a49e15cae34",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 57.366,
+      "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/logs/source-gate-fmt.log"
+    },
+    {
+      "stage": "native-clippy",
+      "source": "2c5e3fe38726d23bec1c970ba3f92a49e15cae34",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 162.825,
+      "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/logs/source-gate-native-clippy.log"
+    },
+    {
+      "stage": "wasm-clippy",
+      "source": "2c5e3fe38726d23bec1c970ba3f92a49e15cae34",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 128.477,
+      "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/logs/source-gate-wasm-clippy.log"
+    },
+    {
+      "stage": "workspace-build",
+      "source": "2c5e3fe38726d23bec1c970ba3f92a49e15cae34",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "-j",
+        "8"
+      ],
+      "exit_code": 0,
+      "seconds": 278.431,
+      "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/logs/source-gate-workspace-build.log"
+    }
+  ],
+  "final_gates": [
+    {
+      "stage": "fmt",
+      "source": "c2ec0621772bf802bc573dab7bdb1bf82a2e21e3",
+      "base": "1e2488ebd432deb7c326be532f8a91945f260231",
+      "exit_code": 0,
+      "seconds": 18.537,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/minimal-font/profile-v2.sb",
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/logs/final-v2-fmt.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "summary": []
+    },
+    {
+      "stage": "all-target-clippy",
+      "source": "c2ec0621772bf802bc573dab7bdb1bf82a2e21e3",
+      "base": "1e2488ebd432deb7c326be532f8a91945f260231",
+      "exit_code": 0,
+      "seconds": 15.783,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/minimal-font/profile-v2.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/logs/final-v2-all-target-clippy.log",
+      "log_sha256": "9cead10054466c4855859113ea7de75e699ed0ffe2fbd34090578a5876a86e80",
+      "summary": []
+    },
+    {
+      "stage": "suite-manifest",
+      "source": "c2ec0621772bf802bc573dab7bdb1bf82a2e21e3",
+      "base": "1e2488ebd432deb7c326be532f8a91945f260231",
+      "exit_code": 0,
+      "seconds": 1.382,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/minimal-font/profile-v2.sb",
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "1e2488ebd432deb7c326be532f8a91945f260231"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/logs/final-v2-suite-manifest.log",
+      "log_sha256": "2ef967306e2419213841e944ddf983913ef61bb8728ce2f00c0314570ae89435",
+      "summary": []
+    },
+    {
+      "stage": "unit-tier",
+      "source": "c2ec0621772bf802bc573dab7bdb1bf82a2e21e3",
+      "base": "1e2488ebd432deb7c326be532f8a91945f260231",
+      "exit_code": 0,
+      "seconds": 17.281,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/minimal-font/profile-v2.sb",
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "1e2488ebd432deb7c326be532f8a91945f260231"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/logs/final-v2-unit-tier.log",
+      "log_sha256": "b0d22c7e9e78b2de09250df5931d136093b5d2ad3c7474ab5c37aa9c3dc75ad0",
+      "summary": []
+    },
+    {
+      "stage": "full-nextest",
+      "source": "c2ec0621772bf802bc573dab7bdb1bf82a2e21e3",
+      "base": "1e2488ebd432deb7c326be532f8a91945f260231",
+      "exit_code": 0,
+      "seconds": 2012.131,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/minimal-font/profile-v2.sb",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--tests",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/logs/final-v2-full-nextest.log",
+      "log_sha256": "ebcf29cd8bd742b8f132c05c9be0116546312fa9e19285ee641f90b0d9a05a89",
+      "summary": [
+        "Summary [1567.219s] 13708 tests run: 13708 passed (33 slow), 45 skipped"
+      ]
+    },
+    {
+      "stage": "native-skia-lib",
+      "source": "c2ec0621772bf802bc573dab7bdb1bf82a2e21e3",
+      "base": "1e2488ebd432deb7c326be532f8a91945f260231",
+      "exit_code": 0,
+      "seconds": 547.529,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/minimal-font/profile-v2.sb",
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--lib",
+        "-j",
+        "8",
+        "--",
+        "--test-threads",
+        "8"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/logs/final-v2-native-skia-lib.log",
+      "log_sha256": "0b642091f8ff4fc3974a9865c2351481030e5774cd913a7c54647a46bd60aab5",
+      "summary": [
+        "test result: ok. 3852 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 12.92s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ]
+    },
+    {
+      "stage": "native-skia-placeholder",
+      "source": "c2ec0621772bf802bc573dab7bdb1bf82a2e21e3",
+      "base": "1e2488ebd432deb7c326be532f8a91945f260231",
+      "exit_code": 0,
+      "seconds": 370.383,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/minimal-font/profile-v2.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/logs/final-v2-native-skia-placeholder.log",
+      "log_sha256": "e904f093dbf0888d2d443d16016cb2f9680276373e52b3adbc739d8ea02adef8",
+      "summary": [
+        "Summary [  10.050s] 2 tests run: 2 passed, 359 skipped"
+      ]
+    },
+    {
+      "stage": "native-skia-direct-pdf",
+      "source": "c2ec0621772bf802bc573dab7bdb1bf82a2e21e3",
+      "base": "1e2488ebd432deb7c326be532f8a91945f260231",
+      "exit_code": 0,
+      "seconds": 55.617,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/minimal-font/profile-v2.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/logs/final-v2-native-skia-direct-pdf.log",
+      "log_sha256": "a5558464911091d5aeb638e1cefa23672deafac79bd2c5aa86c43b1842128611",
+      "summary": [
+        "Summary [   3.889s] 36 tests run: 36 passed, 333 skipped"
+      ]
+    }
+  ],
+  "minimum_font_isolation": {
+    "file_count": 237,
+    "non_os_paths": [],
+    "profile_sha256": "fb5f245b9197b5e048ec9d0e8ba3c4409b36c30276bdd6acd372da8ae437d613",
+    "public_fixture_exception": "ttfs/redistributable, tracked source fixtures including HappinessSansVF include_bytes; not registered as installed system/user fonts",
+    "profiler_sha256": "c1a9b90e45ab346f9ae4a35fb6277dc0e18116b7bb2f3903556224854a1af40b"
+  },
+  "environment": "macOS sandbox-exec process isolation, personal/shared fonts denied; tracked public font fixture remains readable; system font inventory excludes non-OS font paths",
+  "full_nextest": {
+    "run": 13708,
+    "passed": 13708,
+    "failed": 0,
+    "skipped": 45,
+    "seconds": 1567.219
+  },
+  "native_skia": {
+    "lib_root_passed": 3852,
+    "lib_root_ignored": 12,
+    "lib_workspace_member_passed": 182,
+    "lib_workspace_total_passed": 4034,
+    "placeholder": 2,
+    "direct_pdf": 36,
+    "failed": 0,
+    "note": "Root lib and all workspace lib summaries are counted separately; the final 2-test summary is password-crypto, not the full lib result."
+  },
+  "history_note": "Initial profile incorrectly denied a tracked public font fixture; corrected isolation profile and repeated all-target Clippy successfully. Zero-test and partial focused attempts are excluded from final seven-test proof."
+}

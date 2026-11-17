@@ -1,0 +1,53 @@
+[
+  {
+    "label": "base",
+    "source": "1e2488ebd432deb7c326be532f8a91945f260231",
+    "command": [
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "pkg",
+      "--no-opt"
+    ],
+    "exit_code": 0,
+    "seconds": 5.485,
+    "mode": "Mac local locked wrapper no-opt; not Docker optimized",
+    "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/logs/base-fresh-wasm-resume1.log",
+    "package": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/base-pkg",
+    "artifacts": {
+      "rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "rhwp_bg.wasm": "de70fd447b5fd3e23023727203b7719292082bc9272d7082a781a8da987f4596",
+      "rhwp.d.ts": "d2d9be4be0fdebfdd0f203b797ee99247c92fd0d3dba6143e9431e9ea78e9441",
+      "rhwp_bg.wasm.d.ts": "f8c2a955e57a9a5d5c1c02c5147abf8cf033cae56e139bc8c9b28adf3bc093bd"
+    },
+    "initial_compile_log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/logs/base-fresh-wasm.log",
+    "packaging_note": "Initial base compilation succeeded in 7m49s; wrapper copy failed because archived build-only source lacked Studio/public. Created that temporary directory and reran the same locked wrapper, reusing the compiled WASM; no source or build option changed.",
+    "log_sha256": "36919432d1923f8f5ed5d9753652befdfbdeaeae1ec9ff46d265b4cb515d7369",
+    "initial_compile_log_sha256": "770e98e51992dea779bccf4539c271c262062693f682c43cd9c73e4effd26f07"
+  },
+  {
+    "label": "candidate",
+    "source": "2c5e3fe38726d23bec1c970ba3f92a49e15cae34",
+    "command": [
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "pkg",
+      "--no-opt"
+    ],
+    "exit_code": 0,
+    "seconds": 483.104,
+    "mode": "Mac local locked wrapper no-opt; not Docker optimized",
+    "log": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/logs/candidate-fresh-wasm-resume1.log",
+    "package": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/candidate-pkg",
+    "artifacts": {
+      "rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "rhwp_bg.wasm": "280057fd4e2257a45a3aa5911e81cae7b1cfb1a2d3d3026ae070736f8fc77796",
+      "rhwp.d.ts": "d2d9be4be0fdebfdd0f203b797ee99247c92fd0d3dba6143e9431e9ea78e9441",
+      "rhwp_bg.wasm.d.ts": "f8c2a955e57a9a5d5c1c02c5147abf8cf033cae56e139bc8c9b28adf3bc093bd"
+    },
+    "log_sha256": "c3981f4a5d578bc69245fe54a523e2b481c1e8d2e503f2cba22d067cdb5171d3"
+  }
+]

@@ -1,0 +1,25 @@
+{
+  "status": "passed",
+  "source": "2c5e3fe38726d23bec1c970ba3f92a49e15cae34",
+  "binary_sha256": "37a6638edbb720bca2bb8fba591d141c26cc380c502a22e82e160ebd44f5cb0d",
+  "records": [
+    {
+      "key": "band",
+      "input": "samples/issue8582/hwp_band.hwpx",
+      "input_sha256": "48f0330396fbfeb7610515fc8cbcceeeab4b2d5f64af766fc59a4b72682865b2",
+      "render_tree_artifacts": {
+        "render_tree_001.json": "0c4c5aaccdcdaff3cfb16edff3251357c59da54c2573573e7946e121e2fe757a"
+      },
+      "repeat_exact_bytes_equal": true
+    },
+    {
+      "key": "tab",
+      "input": "samples/tab_overflow/tab_stop_beyond_line.hwpx",
+      "input_sha256": "cc61958e1fda95d76417600fe640a1acf32c489ddc1b904ddb4e80d0c94471e8",
+      "render_tree_artifacts": {
+        "render_tree_001.json": "0f39ca47fbc247d994ac56a18c71c6290c8eeb95daf06866594729941f403113"
+      },
+      "repeat_exact_bytes_equal": true
+    }
+  ]
+}
