@@ -1,0 +1,106 @@
+{
+  "programs": [
+    {
+      "xref": 18,
+      "base_font": "INPILL+PalatinoLinotype-Roman",
+      "type": "Type0",
+      "encoding": "Identity-H",
+      "embedded_bytes": 15588,
+      "embedded_sha256": "d82da3c3cf37751317ad6a0b57ba46b5f3ff8cb33b717b1e035aa45b1f68b8ca",
+      "units_per_em": 2048,
+      "has_cmap": false,
+      "glyphs": 26,
+      "b7_comparison": {
+        "pdf_gid": 16,
+        "pdf_advance_units": 512,
+        "local_path": "/Users/tsjang/Library/Fonts/pala.ttf",
+        "local_sha256": "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+        "local_advance_units": 512,
+        "local_units_per_em": 2048,
+        "outline_equal": true
+      }
+    },
+    {
+      "xref": 28,
+      "base_font": "INPILL+PalatinoLinotype-Bold",
+      "type": "Type0",
+      "encoding": "Identity-H",
+      "embedded_bytes": 14580,
+      "embedded_sha256": "aa36499b2df605a8cbd9a4ffde5a1c4c8f1361737561f38e4e6191815c252cb8",
+      "units_per_em": 2048,
+      "has_cmap": false,
+      "glyphs": 29,
+      "b7_comparison": {
+        "pdf_gid": 20,
+        "pdf_advance_units": 512,
+        "local_path": "/Users/tsjang/Library/Fonts/palab.ttf",
+        "local_sha256": "8e14668bbae03f78ed668dbe3261218881960dcd9fb80ad6c1d1dfb4226a57c3",
+        "local_advance_units": 512,
+        "local_units_per_em": 2048,
+        "outline_equal": true
+      }
+    }
+  ],
+  "b7_trace": [
+    {
+      "font": "PalatinoLinotype-Bold",
+      "size": 15.0,
+      "glyph_id": 20,
+      "origin": [
+        532.9199829101562,
+        148.8000030517578
+      ],
+      "bbox": [
+        532.9199829101562,
+        137.99705505371094,
+        536.6699829101562,
+        152.99705505371094
+      ]
+    },
+    {
+      "font": "PalatinoLinotype-Roman",
+      "size": 15.0,
+      "glyph_id": 16,
+      "origin": [
+        126.7199935913086,
+        230.39999389648438
+      ],
+      "bbox": [
+        126.7199935913086,
+        219.5970458984375,
+        130.47000122070312,
+        234.5970458984375
+      ]
+    },
+    {
+      "font": "PalatinoLinotype-Bold",
+      "size": 15.0,
+      "glyph_id": 20,
+      "origin": [
+        237.72000122070312,
+        278.3999938964844
+      ],
+      "bbox": [
+        237.72000122070312,
+        267.5970458984375,
+        241.47000122070312,
+        282.5970458984375
+      ]
+    },
+    {
+      "font": "PalatinoLinotype-Roman",
+      "size": 15.0,
+      "glyph_id": 16,
+      "origin": [
+        166.8000030517578,
+        448.1999816894531
+      ],
+      "bbox": [
+        166.8000030517578,
+        437.39703369140625,
+        170.5500030517578,
+        452.39703369140625
+      ]
+    }
+  ]
+}

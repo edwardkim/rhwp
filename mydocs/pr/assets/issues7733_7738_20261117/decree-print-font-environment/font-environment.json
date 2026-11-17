@@ -1,0 +1,13 @@
+{
+  "id": "decree-independent-palatino-print",
+  "substitutions": {
+    "HCI Poppy": "Palatino Linotype"
+  },
+  "trueTypeFaces": [
+    "Palatino Linotype"
+  ],
+  "preserveSourceMetrics": true,
+  "replaceSourceMetricsFor": [
+    "HCI Poppy"
+  ]
+}

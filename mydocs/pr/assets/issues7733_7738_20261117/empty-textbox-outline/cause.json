@@ -38,5 +38,21 @@
     }
   ],
   "fresh_wasm": "pending",
-  "whole_spec": "running"
+  "whole_spec": {
+    "pages": 71,
+    "improved_pages": [
+      8
+    ],
+    "decreased_pages": [],
+    "below98": [
+      [
+        31,
+        97.51239
+      ],
+      [
+        67,
+        97.2833
+      ]
+    ]
+  }
 }
