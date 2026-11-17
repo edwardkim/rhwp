@@ -27,6 +27,7 @@ mod overlap;
 
 pub(super) struct SkiaTextReplay<'a> {
     pub(super) canvas: &'a Canvas,
+    pub(super) font_fallback_observer: Option<&'a super::font_observation::FontFallbackObserver>,
     pub(super) raster_target: bool,
     pub(super) geometric_text: bool,
     pub(super) hft_outline_enabled: bool,
@@ -152,6 +153,7 @@ impl SkiaTextReplay<'_> {
                             style,
                             self.font_mgr,
                             self.geometric_text,
+                            self.font_fallback_observer,
                         );
                     }
                     if crate::renderer::pua_glyph::candidate(sample).is_some() {
@@ -165,6 +167,7 @@ impl SkiaTextReplay<'_> {
                                     style,
                                     self.font_mgr,
                                     self.geometric_text,
+                                    self.font_fallback_observer,
                                 );
                             }
                         }
@@ -176,6 +179,7 @@ impl SkiaTextReplay<'_> {
                         style,
                         self.font_mgr,
                         self.geometric_text,
+                        self.font_fallback_observer,
                     )
                 };
                 let baseline_y = if baseline > 0.0 {
@@ -1034,6 +1038,7 @@ impl SkiaTextReplay<'_> {
                         &mark_style,
                         self.font_mgr,
                         self.geometric_text,
+                        self.font_fallback_observer,
                     ) {
                         font.set_scale_x(geometry.ratio as f32);
                         font.set_skew_x((geometry.skew_x * geometry.ratio) as f32);

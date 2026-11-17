@@ -1,6 +1,5 @@
 //! 관계형: 공개 웹폰트 변환과 Native 로컬 우선 공급 계약을 검사한다.
-//! 주석 갱신: 2026-11-15T09:57:56+09:00; 직전 파일 커밋: 2026-11-09T21:27:50+09:00 (65573d0e53a806fdfa22e50eb7a0ca74621d6490)
-//! 직전 파일 변경: 5551091085418c17d8321c0fee2626365911481b (2026-11-04 12:13:59 +09:00).
+//! 주석 갱신: 2026-11-17T09:40:53+09:00; 직전 파일 변경: d7dff4f8f3bb15ae431f98205b9d73f5ac471021 (2026-11-15T09:58:22+09:00).
 //! 합성 글꼴 입력 검사이며 실물 페이지의 일치율이나 고정 px를 주장하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -8,6 +7,140 @@ use rhwp::renderer::native_webfonts::{
     decode_font, prepare, NativeWebfontStyle, NativeWebfontSupply,
 };
 use rhwp::DocumentCore;
+
+#[cfg(feature = "native-skia")]
+fn observed_native_exporter(
+    enabled: bool,
+) -> rhwp::document_core::queries::png_export::NativePngExporter {
+    use rhwp::document_core::queries::png_export::NativePngExporter;
+    use rhwp::document_core::queries::rendering::PngExportOptions;
+    NativePngExporter::new(
+        rhwp::paint::RenderProfile::Print,
+        PngExportOptions {
+            max_dimension: Some(400),
+            font_paths: vec![std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("ttfs/opensource/NotoSansKR-Regular.ttf")],
+            ..Default::default()
+        },
+    )
+    .with_font_fallback_reporting(enabled)
+}
+
+#[cfg(feature = "native-skia")]
+#[test]
+fn actual_native_fallback_observation_preserves_png_and_deduplicates_cached_replay() {
+    let requested = "RHWP Missing Native Font 9104";
+    let mut core = document_with_face(requested);
+    core.insert_text_native(0, 0, 0, "가나다 ABC 123").unwrap();
+    let plain = observed_native_exporter(false);
+    plain.prepare_document(&mut core).unwrap();
+    let plain_png = plain.render_page(&core, 0).unwrap();
+    assert!(plain.font_fallback_report().is_none());
+
+    let observed = observed_native_exporter(true);
+    observed.prepare_document(&mut core).unwrap();
+    let observed_png = observed.render_page(&core, 0).unwrap();
+    assert_eq!(plain_png, observed_png, "진단은 실제 PNG를 바꾸지 않음");
+    let before = observed.font_fallback_report().unwrap();
+    assert_eq!(before.state, "complete");
+    assert!(before.missing_requests.is_empty());
+    assert!(before.records.iter().any(|record| {
+        record.requested == requested
+            && record.resolved == "Noto Sans KR"
+            && record.source == "custom"
+    }));
+    assert_eq!(observed.render_page(&core, 0).unwrap(), observed_png);
+    let after = observed.font_fallback_report().unwrap();
+    assert_eq!(
+        before.records, after.records,
+        "cache 재생은 중복을 늘리지 않음"
+    );
+    assert!(
+        observed_native_exporter(true)
+            .font_fallback_report()
+            .unwrap()
+            .records
+            .is_empty(),
+        "새 내보내기는 이전 문서의 선택을 보유하지 않음"
+    );
+}
+
+#[cfg(feature = "native-skia")]
+#[test]
+fn actual_native_original_family_is_not_reported_as_a_generic_fallback() {
+    let mut core = document_with_face("Noto Sans KR");
+    core.insert_text_native(0, 0, 0, "가나다 ABC 123").unwrap();
+    let exporter = observed_native_exporter(true);
+    exporter.prepare_document(&mut core).unwrap();
+    exporter.render_page(&core, 0).unwrap();
+    let report = exporter.font_fallback_report().unwrap();
+    assert_eq!(report.state, "complete");
+    assert!(
+        report.records.is_empty(),
+        "명시 공급 원본은 일반 대체가 아님"
+    );
+    assert!(report.missing_requests.is_empty());
+}
+
+#[cfg(feature = "native-skia")]
+#[test]
+fn actual_native_missing_glyph_is_reported_without_retaining_the_character() {
+    let requested = "RHWP Missing Glyph Face 9104";
+    let mut core = document_with_face(requested);
+    core.insert_text_native(0, 0, 0, "ABC \u{10ffff}").unwrap();
+    let exporter = observed_native_exporter(true);
+    exporter.prepare_document(&mut core).unwrap();
+    exporter.render_page(&core, 0).unwrap();
+    let report = exporter.font_fallback_report().unwrap();
+    assert!(report.missing_requests.iter().any(|name| name == requested));
+    assert!(
+        !serde_json::to_string(&report)
+            .unwrap()
+            .contains('\u{10ffff}'),
+        "보고서에 원문 문자·본문을 저장하지 않음"
+    );
+}
+
+#[cfg(feature = "native-skia")]
+#[test]
+fn actual_native_multpage_fallback_report_stays_bounded_and_marks_partial_results() {
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    for index in 0..270u32 {
+        if index > 0 {
+            core.split_paragraph_native(0, index - 1, 3).unwrap();
+        }
+        core.insert_text_native(0, index, 0, "ABC").unwrap();
+        let id = core.find_or_create_font_id_native(&format!("RHWP Missing Face 9104 {index}"));
+        core.apply_char_format_native(
+            0,
+            index,
+            0,
+            3,
+            &serde_json::json!({"fontId":id}).to_string(),
+        )
+        .unwrap();
+    }
+    let exporter = observed_native_exporter(true);
+    exporter.prepare_document(&mut core).unwrap();
+    assert!(core.page_count() > 1);
+    for page in 0..core.page_count() as u32 {
+        exporter.render_page(&core, page).unwrap();
+    }
+    let report = exporter.font_fallback_report().unwrap();
+    assert_eq!(
+        report.state, "partial",
+        "보고 상한 초과를 완전 관측으로 표시하지 않음"
+    );
+    assert!(report.dropped_observations > 0);
+    assert!(report.records.len() + report.missing_requests.len() <= report.record_limit);
+    let bytes: usize = report
+        .records
+        .iter()
+        .map(|record| record.requested.len() + record.resolved.len())
+        .sum();
+    assert!(bytes <= report.name_byte_limit);
+}
 
 fn document_with_face(name: &str) -> DocumentCore {
     let mut core = DocumentCore::new_empty();

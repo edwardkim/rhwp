@@ -17,6 +17,16 @@ pub struct NativePngExporter {
 }
 
 impl NativePngExporter {
+    /// Collect bounded actual face observations in the same font snapshot.
+    pub fn with_font_fallback_reporting(mut self, enabled: bool) -> Self {
+        self.renderer = self.renderer.with_font_fallback_reporting(enabled);
+        self
+    }
+
+    pub fn font_fallback_report(&self) -> Option<crate::renderer::skia::NativeFontFallbackReport> {
+        self.renderer.font_fallback_report()
+    }
+
     /// 페이지 수·대상 쪽을 열거하기 전에 현재 renderer의 실제 글꼴 공급을 반영한다.
     pub fn prepare_document(&self, document: &mut DocumentCore) -> Result<bool, HwpError> {
         let fallback_changed = self.renderer.prepare_declared_font_fallbacks(document)?;

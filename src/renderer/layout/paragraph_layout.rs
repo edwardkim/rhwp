@@ -2103,6 +2103,7 @@ fn right_tab_block_width_with_tac(
 /// advance 끝을 넘어간다. 이 두 값을 서로 다른 단계에서 따로 제외하면
 /// 원래 폭에 들어가는 줄까지 압축된다. 장식 공백의 점유는 그대로 남긴다.
 struct VisibleTextLineMeasure {
+    inherited_decoration_tail: bool,
     runs: Vec<(String, TextStyle)>,
     char_count: usize,
 }
@@ -2127,6 +2128,23 @@ impl VisibleTextLineMeasure {
                 )
             })
             .collect();
+        // 같은 해소 글자 모양에서 이어진 공백만 본문의 말미다. 밑줄이
+        // 같아도 글꼴·크기·자간 등이 다른 입력란은 독립 점유를 가진다.
+        // 원본 ID가 달라도 동일한 글자 모양으로 나눈 run은 같은 소유다.
+        let visible_style = line
+            .runs
+            .iter()
+            .all(|run| !run.inserted_control_text && run.display_text.is_none())
+            .then(|| {
+                line.runs
+                    .iter()
+                    .rev()
+                    .find(|run| run.text.chars().any(|ch| !ch.is_whitespace()))
+                    .and_then(|run| styles.char_styles.get(run.char_style_id as usize))
+            })
+            .flatten();
+        let mut inherited_decoration_tail = false;
+        let mut coherent_tail_style = true;
         for (run, (text, style)) in line.runs.iter().zip(&mut runs).rev() {
             let painted_border = styles
                 .char_styles
@@ -2143,14 +2161,26 @@ impl VisibleTextLineMeasure {
                             .iter()
                             .any(|edge| edge.line_type != crate::model::style::BorderLineType::None)
                 });
-            if style.underline != crate::renderer::UnderlineType::None
-                || style.strikethrough
+            let continuing_style = visible_style
+                .zip(styles.char_styles.get(run.char_style_id as usize))
+                .is_some_and(|(visible, current)| visible == current);
+            let independent_decoration = (style.underline != crate::renderer::UnderlineType::None
+                || style.strikethrough)
+                && !continuing_style;
+            if independent_decoration
                 || crate::model::color::char_shade(style.shade_color).is_some()
                 || painted_border
             {
+                coherent_tail_style = false;
                 break;
             }
             let end = text.trim_end_matches(' ').len();
+            if end != text.len() && !continuing_style {
+                coherent_tail_style = false;
+            }
+            inherited_decoration_tail |= end != text.len()
+                && continuing_style
+                && (style.underline != crate::renderer::UnderlineType::None || style.strikethrough);
             text.truncate(end);
             if !text.is_empty() {
                 break;
@@ -2165,7 +2195,11 @@ impl VisibleTextLineMeasure {
                     .chars()
                     .any(|character| character != ' ')
             })
-            .then_some(Self { runs, char_count })
+            .then_some(Self {
+                runs,
+                char_count,
+                inherited_decoration_tail: inherited_decoration_tail && coherent_tail_style,
+            })
     }
 
     fn width(&self, extra_char_spacing: f64) -> f64 {
@@ -2193,6 +2227,79 @@ impl VisibleTextLineMeasure {
             }
         }
         width
+    }
+}
+
+/// 가시 글줄 뒤의 장식 공백은 본문을 누르지 않고 남은 줄 폭을 소비한다.
+///
+/// 공백과 장식은 원문에 남긴다. 음영/테두리·별도 글자모양·공백 전용 줄은
+/// VisibleTextLineMeasure가 제외하며, 여기서는 확정된 같은 문자 경계의 공백
+/// 전진만 배분한다. Paint와 각 backend는 이 공통 위치를 그대로 재생한다.
+fn fit_inherited_decoration_tail(line: &mut RenderNode) {
+    let right = line.bbox.x + line.bbox.width;
+    let mut tail = Vec::new();
+    let mut space_start = None;
+    for (index, child) in line.children.iter().enumerate().rev() {
+        let RenderNodeType::TextRun(run) = &child.node_type else {
+            return;
+        };
+        if run.display_text.is_some()
+            || run.char_overlap.is_some()
+            || run.is_vertical
+            || run.rotation != 0.0
+        {
+            return;
+        }
+        let visible = run.text.trim_end_matches(' ');
+        let prefix = visible.chars().count();
+        let positions = crate::renderer::replay_positions_or_compute(
+            &run.text,
+            &run.style,
+            run.layout_positions.as_deref(),
+        )
+        .into_owned();
+        if positions.len() != run.text.chars().count() + 1 {
+            return;
+        }
+        if visible.chars().any(|ch| !ch.is_whitespace()) {
+            space_start = Some(child.bbox.x + positions[prefix]);
+            if prefix < run.text.chars().count() {
+                tail.push((index, prefix, positions));
+            }
+            break;
+        }
+        tail.push((index, prefix, positions));
+    }
+    let Some(start) = space_start else { return };
+    let Some((last_index, _, last_positions)) = tail.first() else {
+        return;
+    };
+    let end = line.children[*last_index].bbox.x + last_positions.last().copied().unwrap_or(0.0);
+    if !start.is_finite()
+        || !end.is_finite()
+        || !right.is_finite()
+        || start >= right
+        || end <= right
+    {
+        return;
+    }
+    let scale = (right - start) / (end - start);
+    for (index, prefix, mut positions) in tail {
+        let child = &mut line.children[index];
+        let original_x = child.bbox.x;
+        let x = if prefix == 0 {
+            start + (original_x - start) * scale
+        } else {
+            original_x
+        };
+        for position in &mut positions[prefix..] {
+            *position = start + (original_x + *position - start) * scale - x;
+        }
+        child.bbox.x = x;
+        child.bbox.width = positions.last().copied().unwrap_or(0.0);
+        if let RenderNodeType::TextRun(run) = &mut child.node_type {
+            run.layout_positions = Some(positions);
+        }
     }
 }
 
@@ -2465,7 +2572,6 @@ fn compute_line_extra_spacing_with_dash_plan(
             Some(last_run) if trailing_spaces > 0 && has_visible => {
                 let mut ts = last_run.text_style(styles);
                 ts.default_tab_width = tab_width;
-                // 밑줄·취소선 친 공백은 보이는 내용이라 줄 맞춤 계약을 유지한다.
                 if ts.underline != crate::renderer::UnderlineType::None || ts.strikethrough {
                     (0.0, 0)
                 } else {
@@ -8619,6 +8725,17 @@ impl LayoutEngine {
                             })
                     })
                 });
+            // 본문 fit에서 제외한 동일 모양의 말미 공백도 원문 장식을 소유한다.
+            // 남은 줄 폭은 공백 전진이 소비하고 가시 글자의 원점은 유지한다.
+            // 원고지에는 별도의 격자 전진 계약이 있으므로 그 경로에 섞지 않는다.
+            if para.is_none_or(|p| p.layout_cell_grid.is_none())
+                && visible_line_measure
+                    .as_ref()
+                    .is_some_and(|measure| measure.inherited_decoration_tail)
+            {
+                fit_inherited_decoration_tail(&mut line_node);
+            }
+
             // 원고지 구역: 글자를 칸에 놓는다. 첫 줄은 들여쓰기만큼 칸을 비운다.
             if let Some(grid) = para.and_then(|p| p.layout_cell_grid) {
                 let cell_px = crate::renderer::hwpunit_to_px(grid.cell, self.dpi);
