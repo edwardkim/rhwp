@@ -2245,8 +2245,14 @@ fn char_width_decision_with_hft_tracking<'a>(
         let source_ttf = latin.map_or(style.source_font_is_ttf, |slot| slot.source_font_is_ttf);
         let regular_bold_advance = !source_hft && (source_ttf || original_glyph_face.is_none());
         let implicit_symbol_em = font_metrics_data::implicit_symbol_advance_em(chars[i]);
-        let verified_non_hft_em = (!source_hft)
-            .then(|| font_metrics_data::find_metric(measured_family, measured_bold, style.italic))
+        let verified_non_hft_em = (!source_hft && metric_character == '\u{25AA}')
+            .then(|| {
+                font_metrics_data::find_metric(
+                    css_primary_face(measured_family),
+                    measured_bold,
+                    style.italic,
+                )
+            })
             .flatten()
             .and_then(|found| {
                 font_metrics_data::verified_non_hft_glyph_width(found.metric, metric_character)

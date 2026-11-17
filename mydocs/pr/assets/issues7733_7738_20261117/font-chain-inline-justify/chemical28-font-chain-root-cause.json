@@ -1,0 +1,147 @@
+{
+  "source_head": "11221e7710",
+  "status": "reproduced_before_fix",
+  "test_result": {
+    "run": 4,
+    "passed": 3,
+    "failed": 1,
+    "source_log": "logs/stored-square-alias-before-v2-minimal.log"
+  },
+  "record": {
+    "document": {
+      "altType": 1,
+      "embedded": false,
+      "face": "돋움",
+      "inheritedLanguageSlot": null,
+      "languageSlot": 5,
+      "substFont": null
+    },
+    "layoutMetric": {
+      "aliasResolvedFace": "Dotum",
+      "baseAdvanceHwpunit": 1100,
+      "characterMatch": "miss",
+      "finalAdvanceHwpunit": 1044,
+      "matchKind": "exact",
+      "metricEntry": 584,
+      "requestedFace": "Dotum",
+      "transforms": [
+        {
+          "input": "-0.7333333333333333",
+          "kind": "letterSpacing",
+          "output": null,
+          "reason": "layoutSpacingAdjustment"
+        }
+      ],
+      "widthSource": "heuristicFullwidth"
+    },
+    "layoutName": {
+      "cssFamilyChain": [
+        "Dotum",
+        "Haansoft Dotum"
+      ],
+      "normalizedFace": "Dotum",
+      "requestedFace": "돋움",
+      "steps": [
+        {
+          "input": "돋움",
+          "kind": "fontEnvironment",
+          "output": "Dotum",
+          "reason": "dotum-source-alias"
+        }
+      ]
+    },
+    "oracle": {
+      "knownLimitations": [
+        "Caller-declared environment; backend font availability and PDF equivalence are not verified."
+      ],
+      "profileId": "dotum-source-alias",
+      "status": "declared"
+    },
+    "paint": {
+      "canvas2d": {
+        "candidates": [],
+        "capabilities": [],
+        "certainty": "unsupported",
+        "failures": [
+          "studioSnapshotRequired"
+        ],
+        "requested": "Dotum,Haansoft Dotum",
+        "resolved": null,
+        "source": null,
+        "status": "unsupported"
+      },
+      "canvaskit": {
+        "candidates": [],
+        "capabilities": [],
+        "certainty": "unsupported",
+        "failures": [
+          "studioSnapshotRequired"
+        ],
+        "requested": "Dotum,Haansoft Dotum",
+        "resolved": null,
+        "source": null,
+        "status": "unsupported"
+      },
+      "native": {
+        "candidates": [],
+        "capabilities": [],
+        "certainty": "unsupported",
+        "failures": [
+          "nativeRendererSnapshotRequired"
+        ],
+        "requested": "Dotum,Haansoft Dotum",
+        "resolved": null,
+        "source": null,
+        "status": "unsupported"
+      }
+    },
+    "provenance": [
+      {
+        "candidateId": "candidate.28970f1984ed0e4ce06d",
+        "evidenceAnchor": "mydocs/tech/investigations/issue-4939/font_rule_candidates.json#candidate.28970f1984ed0e4ce06d",
+        "evidenceStatus": "inferred",
+        "knownLimitations": [
+          "The predicate selects advances; it does not prove glyph identity.",
+          "W1 source digest predates the Stage 2 trace-only refactor; rerun the collector before promoting evidence status."
+        ],
+        "reason": "ledgerSourceDrift",
+        "relationType": "unknown",
+        "ruleId": "rule.rust-measurement.28970f1984ed0e4ce06d",
+        "sourceOwner": "rust-measurement"
+      },
+      {
+        "candidateId": "candidate.79aeaf8970e5453c1169",
+        "evidenceAnchor": "mydocs/tech/investigations/issue-4939/font_rule_candidates.json#candidate.79aeaf8970e5453c1169",
+        "evidenceStatus": "verified-by-test",
+        "knownLimitations": [
+          "W1 source digest predates the Stage 2 trace-only refactor; rerun the collector before promoting evidence status."
+        ],
+        "reason": "ledgerSourceDrift",
+        "relationType": "metric-entry",
+        "ruleId": "rule.rust-metric.79aeaf8970e5453c1169",
+        "sourceOwner": "rust-metric"
+      }
+    ],
+    "recordId": "page:27:run:37:char:0",
+    "source": {
+      "charOffset": 0,
+      "charShapeId": 102,
+      "character": "▪",
+      "codePoint": 9642,
+      "nestedPath": [
+        0,
+        5,
+        0
+      ],
+      "paragraphIndex": 55,
+      "runIndex": 37,
+      "sectionIndex": 1,
+      "status": "complete"
+    }
+  },
+  "expected_base_advance_hu": 412.5,
+  "actual_base_advance_hu": 1100,
+  "cause": "단일 이름 lookup에 CSS family chain을 전달해 부분 glyph 조회를 놓침",
+  "source_type_note": "원본 altType=1과 해소 TextStyle 플래그를 구별한다. 기존 플래그 false만으로 원본 유형 미상이라고 단정하지 않는다.",
+  "remaining_validation": "보정 후 집중 검사와 실제 Native/fresh WASM 출력은 별도 검증"
+}

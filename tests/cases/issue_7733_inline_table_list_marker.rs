@@ -1,10 +1,12 @@
 //! 검사 유형: 관계형 — 같은 문단 모양의 일반 목록과 인라인 표 목록을 대조한다.
-//! 주석 갱신: 2026-11-18 00:25 KST.
+//! 주석 갱신: 2026-11-18 02:06 KST.
 //! 화학 95쪽 Native 94.95486%, 이전 10270c15 소스 fresh WASM 94.94197%다.
 //! PDF 절대 좌표를 고정하지 않는다. 원본 Section4 문단 259·260은 같은 ParaShape 149다.
 //! 표가 든 문단도 같은 글머리표 앞 영역과 후속 줄 내어쓰기를 소비해야 한다.
 //! 표의 원본 줄이 바깥 상자를 정확히 담으면 그 줄의 상단·위 여백에서 표가 시작한다.
 //! 원본의 첫 본문 괄호와 후속 줄의 원점을 비교하며 개인 글꼴 설치는 요구하지 않는다.
+//! 11221e7710 뒤 Native 집중 출력에서 텍스트 줄의 정렬은 복구됐지만, TAC 줄까지
+//! 배분한 중간 후보는 97.36%로 후퇴했다. 실제 컨트롤의 저장 줄 소속을 별도로 보호한다.
 
 use rhwp::model::control::Control;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
@@ -102,4 +104,91 @@ fn inline_table_list_uses_the_same_body_and_hanging_origin_as_its_plain_peer() {
             .count();
         assert_eq!(markers, 1, "문단 {pi} 글머리표의 누락·중복 방지");
     }
+}
+
+#[test]
+fn text_only_continuation_after_inline_table_fills_its_own_stored_line_region() {
+    let mut core = DocumentCore::from_bytes(include_bytes!(
+        "../../samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp"
+    ))
+    .unwrap();
+    core.set_hangul2024_compat(false);
+    let source = &core.document().sections[4].paragraphs[260];
+    let stored = &source.line_segs[2];
+    assert!(
+        source.line_segs.len() > 3,
+        "검사 줄은 문단의 마지막 줄이 아니다"
+    );
+    let right_offset = f64::from(stored.column_start + stored.segment_width) * 96.0 / 7200.0;
+    let tree = core.build_page_render_tree(94).unwrap();
+    let mut nodes = Vec::new();
+    runs(&tree.root, &mut nodes);
+    let column = nodes
+        .iter()
+        .find(|node| matches!(node.node_type, RenderNodeType::Column(_)))
+        .unwrap();
+    let first = nodes
+        .iter()
+        .find(|node| {
+            matches!(&node.node_type, RenderNodeType::TextRun(run)
+        if run.para_index == Some(260) && run.text.starts_with("제품이"))
+        })
+        .expect("표 다음 설명 줄");
+    let last = nodes.iter().rev().find(|node| matches!(&node.node_type, RenderNodeType::TextRun(run)
+        if run.para_index == Some(260) && (node.bbox.y - first.bbox.y).abs() < 1e-6 && !run.text.trim_end_matches(' ').is_empty()))
+        .unwrap();
+    let RenderNodeType::TextRun(run) = &last.node_type else {
+        unreachable!()
+    };
+    let visible = run.text.trim_end_matches(' ').chars().count();
+    let positions = run
+        .layout_positions
+        .as_ref()
+        .expect("인라인 본문 문자별 전진");
+    let actual = last.bbox.x + positions[visible];
+    let expected = column.bbox.x + right_offset;
+    assert!(
+        (actual - expected).abs() <= 96.0 / 7200.0,
+        "표가 없는 중간 줄은 자신의 저장 우단까지 공백을 배분한다: {actual} vs {expected}"
+    );
+}
+
+#[test]
+fn table_owned_line_keeps_its_natural_prefix_and_does_not_distribute_the_object_width() {
+    use rhwp::renderer::layout::{EmbeddedTextMeasurer, TextMeasurer};
+    let mut core = DocumentCore::from_bytes(include_bytes!(
+        "../../samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp"
+    ))
+    .unwrap();
+    core.set_hangul2024_compat(false);
+    let source = &core.document().sections[4].paragraphs[260];
+    let Control::Table(table) = &source.controls[0] else {
+        panic!("원본 인라인 표")
+    };
+    let left_margin = f64::from(table.outer_margin_left) * 96.0 / 7200.0;
+    let tree = core.build_page_render_tree(94).unwrap();
+    let mut nodes = Vec::new();
+    runs(&tree.root, &mut nodes);
+    let arrow = nodes
+        .iter()
+        .find(|node| {
+            matches!(&node.node_type, RenderNodeType::TextRun(run)
+        if run.para_index == Some(260) && run.text == "→ ")
+        })
+        .expect("표 바로 앞 원본 화살표");
+    let RenderNodeType::TextRun(run) = &arrow.node_type else {
+        unreachable!()
+    };
+    let natural = EmbeddedTextMeasurer.estimate_text_width(&run.text, &run.style);
+    let table = nodes
+        .iter()
+        .find(|node| {
+            matches!(&node.node_type, RenderNodeType::Table(meta)
+        if meta.para_index == Some(260) && meta.control_index == Some(0))
+        })
+        .unwrap();
+    assert!(
+        (table.bbox.x - arrow.bbox.x - natural - left_margin).abs() <= 96.0 / 7200.0,
+        "TAC 줄의 실제 표 폭을 텍스트 여유로 중복 배분하지 않는다"
+    );
 }

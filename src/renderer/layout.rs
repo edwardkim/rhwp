@@ -17511,6 +17511,9 @@ impl LayoutEngine {
                 && !repeat_fragment_outer_margin
                 && !resolved_fragment_flow_end_consumed
                 && source_terminal_gap.is_none()
+                && !self.profile.get().session_edited()
+                && !para.stored_text_partition_is_dirty()
+                && !para.cell_format_vpos_dirty
             {
                 if let Some(Control::Table(table)) = para.controls.get(control_index) {
                     if end_row >= table.row_count as usize {

@@ -1,0 +1,15 @@
+{
+  "parent": "11221e7710457d5f8cf76a5c21893f599df147d9",
+  "captured_at": "2026-11-18T02:12:03.594104+09:00",
+  "sources": {
+    "src/renderer/layout.rs": "440f370929b414342091de50e0cb74690dda97b78dfabc3b0b4c82ac43ea3432",
+    "src/renderer/layout/paragraph_layout.rs": "0b5d000f7185e108872c9ebeacb1c13ac1eec978170fe42020c36f4efd61477f",
+    "src/renderer/layout/paragraph_layout/inline_text_advance.rs": "971784c5e52e63cc9fa9af7acd171abe3c75c855bc06e7a01c6dc1c0b2d0007d",
+    "src/renderer/layout/text_measurement.rs": "0884e9a11b3cb310ee3dc9cceef21e0e091c7cbfd010a9f4652f26d3a1d743d1",
+    "tests/cases/issue_7733_dotum_small_square_advance.rs": "76330bd96bbd41d32ec207c0bd900d5364befa08e87728fd810ee34ee4eaf6bd",
+    "tests/cases/issue_7733_inline_table_list_marker.rs": "4e4123aa786962cb1c15e837b7549980a55065084882ec803e75ef4481b9c289"
+  },
+  "source_diff_sha256": "a7890492265d663d2b1ad47319f306f58f49b56ab32bbbced9c06007e7b1e3d5",
+  "cargo_lock_sha256": "972bdb0994b216f0cef357b856ce0807ce3d437af6791377446b62f2e26c05a1",
+  "font_environment_sha256": "39ec77d269dcd5e687ecd68cd3c5ffb2d19f91a5d9580b2e11c0c4db8a9cb4b0"
+}

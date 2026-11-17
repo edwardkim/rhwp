@@ -4196,7 +4196,7 @@ impl LayoutEngine {
             .map(|cs| cs.char_shape_id as u32)
             .unwrap_or(0);
 
-        let text_advance = inline_text_advance::InlineTextAdvance::new(
+        let mut text_advance = inline_text_advance::InlineTextAdvance::new(
             &text_chars,
             &segments,
             |ch_idx, language| {
@@ -4426,6 +4426,33 @@ impl LayoutEngine {
             ) + geometry.rest_line_px
         });
         let continuation_line_start_x = line_start_x + continuation_indent;
+        text_advance.justify_stored_lines(
+            &text_chars,
+            para,
+            composed,
+            styles,
+            inline_text_advance::StoredLineFrame {
+                column_x: col_area.x,
+                first_x: start_x,
+                continuation_x: continuation_line_start_x,
+                dpi: self.dpi,
+            },
+            |index, language| {
+                let utf16_pos = offsets[index];
+                let style_id = para
+                    .char_shapes
+                    .iter()
+                    .rev()
+                    .find(|shape| shape.start_pos <= utf16_pos)
+                    .map_or(char_style_id, |shape| shape.char_shape_id as u32);
+                with_stored_tabs(metric_scope.style(styles, style_id, language, index), index)
+            },
+        );
+        let text_metrics = inline_table_geometry::InlineTableTextMetrics::new(
+            &text_chars,
+            &segments,
+            |index, _language| text_advance.advance(index),
+        );
         if let (Some(geometry), Some((text, head))) = (
             marker_geometry.filter(|geometry| geometry.marker_visible),
             composed.and_then(|comp| comp.numbering_text.as_ref()),
