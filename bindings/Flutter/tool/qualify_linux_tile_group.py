@@ -13,6 +13,7 @@ import subprocess
 import time
 import uuid
 
+from build_linux_probe import sdk_supervises_children
 from check_macos_metal_sdk import stop_process_tree
 from qualify_desktop_texture import (MAX_BUILD_RECEIPT_BYTES, compare_pixels,
     read_json, verify_runtime_artifacts, verify_runtime_bundle, write_json)
@@ -121,6 +122,7 @@ def main():
     parser.add_argument("--timeout", type=float, default=240)
     args = parser.parse_args()
     require_linux()
+    supervised = sdk_supervises_children()
     require(30 <= args.timeout <= 300, "bounded qualification duration")
     files = {key: getattr(args, key).resolve(strict=True) for key in ("runner", "native", "dispatcher", "fixture")}
     build = read_json(args.build_receipt, limit=MAX_BUILD_RECEIPT_BYTES)
@@ -143,7 +145,7 @@ def main():
             log_path.chmod(0o600)
             process = subprocess.Popen([str(files["runner"])], cwd=files["runner"].parent, env=env,
                 stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT,
-                start_new_session=True, preexec_fn=lambda: os.umask(0o077))
+                start_new_session=not supervised, preexec_fn=lambda: os.umask(0o077))
             state["pid"] = process.pid
             compositor = X11Compositor(process.pid)
             deadline = time.monotonic() + args.timeout
@@ -181,7 +183,7 @@ def main():
             state.update(qualification="linux-two-tile-consumer-passed", exitCode=code, result=result)
     except BaseException as error:
         state.update(qualification="failed", error=f"{type(error).__name__}: {error}")
-        if process is not None and process.poll() is None:
+        if not supervised and process is not None and process.poll() is None:
             stop_process_tree(process)
         if process is not None:
             state["exitCode"] = process.returncode
