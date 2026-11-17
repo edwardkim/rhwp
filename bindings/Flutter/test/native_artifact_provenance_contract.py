@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import shutil
 import stat
+import struct
 import subprocess
 import sys
 import tempfile
@@ -63,7 +64,8 @@ class NativeArtifactContracts(unittest.TestCase):
 
     def configure(self, platform):
         self.platform = platform
-        self.name = "rhwp_native_ffi.dll" if platform == "windows" else "librhwp_native_ffi.dylib"
+        self.name = {"windows": "rhwp_native_ffi.dll", "macos": "librhwp_native_ffi.dylib",
+                     "linux": "librhwp_native_ffi.so"}[platform]
         self.native = self.archive / "native-target" / self.name
         self.native.parent.mkdir(exist_ok=True)
         self.native.write_bytes(b"portable artifact identity, never executable")
@@ -78,6 +80,21 @@ class NativeArtifactContracts(unittest.TestCase):
                                     {"command": ["python", "consumer.py"], "exitCode": 1}]}
             self.save("native-build-receipt.json", self.inner)
             self.save("windows-sdk-receipt.json", self.outer)
+        elif platform == "linux":
+            header = bytearray(64); header[:7] = b'\x7fELF\x02\x01\x01'
+            struct.pack_into('<HH', header, 16, 3, 62)
+            self.native.write_bytes(header)  # Nonexecuting ELF identity fixture.
+            self.fingerprint = hashlib.sha256(header).hexdigest()
+            self.inner = {"platform": "linux", "source_head": self.old, "build": "passed",
+                          "target": "x86_64-unknown-linux-gnu", "features": ["native-skia-gl"],
+                          "artifacts": {self.name: self.fingerprint}}
+            self.outer = {"platform": "linux", "source_head": self.old, "build": "failed",
+                          "steps": [{"command": ["rustup", "run", "1.93.1", "cargo", "build", "--locked",
+                                                  "--manifest-path", "/old-ci/source/bindings/Native/Cargo.toml",
+                                                  "--features", "native-skia-gl", "--target", "x86_64-unknown-linux-gnu"],
+                                     "exitCode": 0}]}
+            self.save("native-build-receipt.json", self.inner)
+            self.save("linux-sdk-receipt.json", self.outer)
         else:
             self.outer = {"platform": platform, "source_head": self.old, "build": "passed",
                           "targetSdkCompileLinkVerified": True, "metalProducerReadbackVerified": True,
@@ -105,6 +122,64 @@ class NativeArtifactContracts(unittest.TestCase):
         self.assertEqual(value["proof"]["currentSourceHead"], self.old)
         self.assertEqual(value["proof"]["sourceManifestSha256"], value["proof"]["currentSourceManifestSha256"])
         json.dumps(value["proof"])
+
+    def test_linux_gl_build_provenance_is_not_consumer_success(self):
+        shutil.rmtree(self.archive); self.archive.mkdir(); self.configure("linux")
+        value = self.load()
+        self.assertEqual(value["proof"]["nativeTarget"], "x86_64-unknown-linux-gnu")
+        self.assertTrue(value["proof"]["nativeBuildPassed"])
+        self.assertEqual(value["proof"]["originalSdkBuild"], "failed")
+        self.assertFalse(value["proof"]["nativeRebuilt"])
+
+    def test_linux_cpu_feature_wrong_target_or_failed_native_step_is_not_gl(self):
+        shutil.rmtree(self.archive); self.archive.mkdir(); self.configure("linux")
+        original_inner, original_outer = copy.deepcopy(self.inner), copy.deepcopy(self.outer)
+        for change in ("feature", "target", "failed", "command"):
+            with self.subTest(change=change):
+                inner, outer = copy.deepcopy(original_inner), copy.deepcopy(original_outer)
+                if change == "feature": inner["features"] = ["native-skia"]
+                if change == "target": inner["target"] = "aarch64-unknown-linux-gnu"
+                if change == "failed": outer["steps"][0]["exitCode"] = 1
+                if change == "command":
+                    command = outer["steps"][0]["command"]
+                    command[command.index("--features") + 1] = "native-skia"
+                self.save("native-build-receipt.json", inner)
+                self.save("linux-sdk-receipt.json", outer)
+                with self.assertRaises(ValueError): self.load()
+
+    def test_linux_host_default_cdylib_needs_independent_host_and_elf_identity(self):
+        shutil.rmtree(self.archive); self.archive.mkdir(); self.configure("linux")
+        self.outer.update(rustcHost="x86_64-unknown-linux-gnu",
+                          rustcVersion="rustc 1.93.1 (portable)\nhost: x86_64-unknown-linux-gnu\n")
+        self.outer["steps"] = [
+            {"command": ["rustup", "run", "1.93.1", "rustc", "--version", "--verbose"], "exitCode": 0},
+            {"command": ["cargo", "+1.93.1", "rustc", "--locked", "-p", "rhwp-native-ffi",
+                         "--features", "native-skia-gl", "--lib", "--crate-type", "cdylib"], "exitCode": 0}]
+        self.save("linux-sdk-receipt.json", self.outer)
+        self.assertTrue(self.load()["proof"]["nativeBuildPassed"])
+        good = copy.deepcopy(self.outer)
+        for change in ("host", "stdout", "hostStep", "nativeStep", "override"):
+            with self.subTest(change=change):
+                value = copy.deepcopy(good)
+                if change == "host": value["rustcHost"] = "aarch64-unknown-linux-gnu"
+                if change == "stdout": value["rustcVersion"] = "rustc 1.93.1 (portable)\nhost: aarch64-unknown-linux-gnu\n"
+                if change == "hostStep": value["steps"][0]["exitCode"] = 1
+                if change == "nativeStep": value["steps"][1]["exitCode"] = 1
+                if change == "override": value["steps"][1]["command"].append("--target=aarch64-unknown-linux-gnu")
+                self.save("linux-sdk-receipt.json", value)
+                with self.assertRaises(ValueError): self.load()
+        self.save("linux-sdk-receipt.json", good)
+        header = bytearray(self.native.read_bytes()); struct.pack_into('<H', header, 18, 183)
+        self.native.write_bytes(header)
+        self.inner["artifacts"][self.name] = hashlib.sha256(header).hexdigest()
+        self.save("native-build-receipt.json", self.inner)
+        with self.assertRaisesRegex(ValueError, "ELF machine/type"): self.load()
+
+    def test_linux_reuse_rejects_changed_native_source(self):
+        shutil.rmtree(self.archive); self.archive.mkdir(); self.configure("linux")
+        self.write(self.repo / "src/lib.rs", "changed Native build input")
+        self.commit()
+        with self.assertRaisesRegex(ValueError, "Native build inputs differ"): self.load()
 
     def test_macos_requires_apple_sdk_and_the_same_native_producer(self):
         shutil.rmtree(self.archive)

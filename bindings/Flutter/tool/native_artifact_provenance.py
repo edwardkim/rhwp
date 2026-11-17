@@ -336,7 +336,8 @@ def _native_step(value, feature, target):
         native_manifest = (len(manifests) == 1 and
                            (manifests[0] == "bindings/Native/Cargo.toml" or
                             manifests[0].endswith("/bindings/Native/Cargo.toml")))
-        source = package if feature == "native-skia-d3d" else native_manifest
+        source = (package if feature == "native-skia-d3d" else
+                  native_manifest or (feature == "native-skia-gl" and package))
         if cargo and source and option("--features", feature) and option("--target", target):
             matches.append(step)
     if len(matches) != 1 or type(matches[0].get("exitCode")) is not int or matches[0]["exitCode"] != 0:
@@ -361,6 +362,56 @@ def _artifact_hash(receipt, key, name, size):
     return _sha(value, 64, "Native SHA-256")
 
 
+def _linux_native_step(value, target):
+    try:
+        return _native_step(value, "native-skia-gl", target)
+    except ValueError:
+        pass
+    steps = value.get("steps")
+    if not isinstance(steps, list) or len(steps) > 256 or any(not isinstance(step, dict) for step in steps):
+        raise ValueError("bounded Linux Native build steps are required")
+    matches = []
+    for step in steps:
+        command = step.get("command") if isinstance(step, dict) else None
+        if (not isinstance(command, list) or not 1 <= len(command) <= 256 or
+                any(not isinstance(part, str) or not part or len(part) > 8192 for part in command)):
+            raise ValueError("invalid Linux Native command")
+        executable = lambda part: part.replace("\\", "/").rsplit("/", 1)[-1]
+        offset = 3 if len(command) > 4 and executable(command[0]) == "rustup" and command[1:3] == ["run", "1.93.1"] else 0
+        if executable(command[offset]) != "cargo": continue
+        subcommand = offset + 1
+        pinned = offset == 3
+        if len(command) > subcommand and command[subcommand] == "+1.93.1":
+            pinned = True; subcommand += 1
+        if len(command) <= subcommand or command[subcommand] != "rustc": continue
+        def option(name, expected):
+            indices = [index for index, part in enumerate(command) if part == name]
+            return len(indices) == 1 and indices[0] + 1 < len(command) and command[indices[0] + 1] == expected
+        manifests = [command[index + 1].replace("\\", "/") for index, part in enumerate(command[:-1]) if part == "--manifest-path"]
+        source = (option("-p", "rhwp-native-ffi") or option("--package", "rhwp-native-ffi") or
+                  len(manifests) == 1 and (manifests[0] == "bindings/Native/Cargo.toml" or manifests[0].endswith("/bindings/Native/Cargo.toml")))
+        if not (source and option("--features", "native-skia-gl") and option("--crate-type", "cdylib") and
+                command.count("--lib") == 1 and command.count("--locked") == 1 and "--" not in command): continue
+        if any(part.startswith("--target=") or part == "--config" or part.startswith("--config=") for part in command): continue
+        if "--target" in command:
+            if not option("--target", target): continue
+        else:
+            # Host-default acceptance is Linux-only and additionally bound to a
+            # real rustc-host receipt, independently inspected ELF, then the
+            # caller's actual child capability probe. A feature flag is not proof.
+            version = value.get("rustcVersion")
+            host_steps = [candidate for candidate in steps if candidate.get("command") in (
+                ["rustup", "run", "1.93.1", "rustc", "--version", "--verbose"],
+                ["rustc", "+1.93.1", "--version", "--verbose"]) and type(candidate.get("exitCode")) is int and candidate["exitCode"] == 0]
+            if (not pinned or value.get("rustcHost") != target or not isinstance(version, str) or len(version) > 16384 or
+                    not version.startswith("rustc 1.93.1 ") or re.findall(r"^host: (.+)$", version, re.MULTILINE) != [target] or len(host_steps) != 1):
+                continue
+        matches.append(step)
+    if len(matches) != 1 or type(matches[0].get("exitCode")) is not int or matches[0]["exitCode"] != 0:
+        raise ValueError("one successful Linux GL cdylib build with target/host proof is required")
+    return matches[0]["command"]
+
+
 def load_native_artifact(artifact_root, repository, platform, expected_source):
     """Return verified local paths and a serializable source-equivalence proof.
 
@@ -368,10 +419,11 @@ def load_native_artifact(artifact_root, repository, platform, expected_source):
     proves neither a new Rust build nor consumer/GUI/hardware qualification.
     """
     expected_source = _sha(expected_source, 40, "expected Native source")
-    if platform not in ("windows", "macos"):
-        raise ValueError("Native artifact target must be windows or macos")
+    if platform not in ("windows", "macos", "linux"):
+        raise ValueError("Native artifact target must be windows, macos or linux")
     root, entries = _scan(artifact_root)
-    name = "rhwp_native_ffi.dll" if platform == "windows" else "librhwp_native_ffi.dylib"
+    name = {"windows": "rhwp_native_ffi.dll", "macos": "librhwp_native_ffi.dylib",
+            "linux": "librhwp_native_ffi.so"}[platform]
     native = _unique(root, entries, name)
     native_hash = _read(root, entries, native, MAX_NATIVE_BYTES, hashed=True)
     if platform == "windows":
@@ -387,6 +439,24 @@ def load_native_artifact(artifact_root, repository, platform, expected_source):
         fingerprint = _artifact_hash(receipt, name, name, native.stat().st_size)
         command = _native_step(outer, "native-skia-d3d", "x86_64-pc-windows-msvc")
         target = "x86_64-pc-windows-msvc"
+        sdk_receipt_path = outer_path
+        sdk_build = outer.get("build")
+        producer_hash = None
+    elif platform == "linux":
+        receipt_path = _unique(root, entries, "native-build-receipt.json")
+        outer_path = _unique(root, entries, "linux-sdk-receipt.json")
+        receipt, outer = (_receipt(root, entries, path) for path in (receipt_path, outer_path))
+        _identity(receipt, expected_source, "linux")
+        _identity(outer, expected_source, "linux")
+        target = "x86_64-unknown-linux-gnu"
+        if (receipt.get("build") != "passed" or receipt.get("target") != target or
+                receipt.get("features") != ["native-skia-gl"]):
+            raise ValueError("enabled Linux GL Native feature/target build did not pass")
+        fingerprint = _artifact_hash(receipt, name, name, native.stat().st_size)
+        command = _linux_native_step(outer, target)
+        from runtime_bundle import binary_identity
+        if binary_identity(native, shared=True) != ("linux", {"x86_64"}):
+            raise ValueError("Linux Native ELF machine/type does not match its build receipt")
         sdk_receipt_path = outer_path
         sdk_build = outer.get("build")
         producer_hash = None
