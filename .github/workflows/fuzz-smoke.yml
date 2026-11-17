@@ -85,12 +85,16 @@ jobs:
       - name: Install cargo-fuzz
         run: cargo install cargo-fuzz
 
+      # 기본 단일 codegen unit의 실측 peak는 16.6 GiB였다 (#9154).
+      # build/run이 같은 분할을 사용하며 ASan·coverage·overflow 검사는 유지한다.
       - name: Build sanitizer target ${{ matrix.target }}
         env:
           TARGET: ${{ matrix.target }}
         run: |
           set -euo pipefail
-          cargo +nightly fuzz build "${TARGET}"
+          free -m
+          nproc
+          /usr/bin/time -v cargo +nightly fuzz build --codegen-units 16 "${TARGET}"
 
       - name: Smoke-run ${{ matrix.target }} (60s)
         env:
@@ -98,7 +102,7 @@ jobs:
           MAX_TOTAL_TIME: ${{ github.event_name == 'workflow_dispatch' && inputs.max_total_time || '60' }}
         run: |
           set -euo pipefail
-          cargo +nightly fuzz run "${TARGET}" -- \
+          cargo +nightly fuzz run --codegen-units 16 "${TARGET}" -- \
             -max_total_time="${MAX_TOTAL_TIME}" \
             -rss_limit_mb=2048 \
             -timeout=30 \

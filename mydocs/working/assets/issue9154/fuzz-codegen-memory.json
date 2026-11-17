@@ -1,0 +1,321 @@
+{
+  "source": "b931460f9cb2478aaae745371f4c49794d5ff8c7",
+  "measuredAt": "2026-11-17T15:17:44.780867+00:00",
+  "compiler": "rustc 1.102.0-nightly (5df8c02af 2026-11-16)\nbinary: rustc\ncommit-hash: 5df8c02afdf6b882bc301442cea70f026e3d3974\ncommit-date: 2026-11-16\nhost: x86_64-unknown-linux-gnu\nrelease: 1.102.0-nightly\nLLVM version: 23.1.5\n",
+  "cargoFuzz": "cargo-fuzz 0.13.2",
+  "hostLogicalCpus": 16,
+  "hostOs": "Ubuntu24.04.5",
+  "sharedTarget": "/home/edward/mygithub/rhwp/target/pr-review",
+  "sameFuzzLockSha256": "1e61c363a4e4ad38078fbef90215afc4c6b816c6a7b957fd085fd414ba8ce153",
+  "baselineColdBuild": {
+    "command": [
+      "cargo",
+      "+nightly-2026-11-17",
+      "fuzz",
+      "build",
+      "--fuzz-dir",
+      "/home/edward/mygithub/rhwp-worktrees/task-9154-ubuntu-runner-baseline/fuzz",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--verbose",
+      "parse_hwp3"
+    ],
+    "seconds": 1454.507,
+    "maximumResidentSetKiB": 17445660,
+    "maximumResidentSetGiB": 16.637,
+    "exitCode": 0
+  },
+  "codegen16TargetRebuild": {
+    "command": [
+      "cargo",
+      "+nightly-2026-11-17",
+      "fuzz",
+      "build",
+      "--fuzz-dir",
+      "/home/edward/mygithub/rhwp-worktrees/task-9154-ubuntu-runner-baseline/fuzz",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--codegen-units",
+      "16",
+      "--verbose",
+      "parse_hwp3"
+    ],
+    "seconds": 526.719,
+    "maximumResidentSetKiB": 13818380,
+    "exitCode": 0,
+    "localResourceGuardTriggered": false
+  },
+  "measuredPeakReductionPercent": 20.79,
+  "preservedObservedCompilerFlags": {
+    "codegen16": true,
+    "asan": true,
+    "coverageLevel4": true,
+    "traceCompares": true,
+    "fuzzingCfg": true,
+    "debugAssertions": true,
+    "optimization3": true
+  },
+  "phases": [
+    {
+      "phase": "run-cgu1-hwp3",
+      "command": [
+        "cargo",
+        "+nightly-2026-11-17",
+        "fuzz",
+        "run",
+        "--fuzz-dir",
+        "/home/edward/mygithub/rhwp-worktrees/task-9154-ubuntu-runner-baseline/fuzz",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "parse_hwp3",
+        "--",
+        "-max_total_time=60",
+        "-rss_limit_mb=2048",
+        "-timeout=30",
+        "-print_final_stats=1"
+      ],
+      "exitCode": 0,
+      "seconds": 64.272,
+      "maximumResidentSetKiB": 448708,
+      "stats": {
+        "number_of_executed_units": 6936,
+        "average_exec_per_sec": 110,
+        "new_units_added": 616,
+        "slowest_unit_time_sec": 25,
+        "peak_rss_mb": 438
+      },
+      "localResourceGuardTriggered": false,
+      "fuzzLockUnchanged": true
+    },
+    {
+      "phase": "build-cgu1-hwp",
+      "command": [
+        "cargo",
+        "+nightly-2026-11-17",
+        "fuzz",
+        "build",
+        "--fuzz-dir",
+        "/home/edward/mygithub/rhwp-worktrees/task-9154-ubuntu-runner-baseline/fuzz",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--verbose",
+        "parse_hwp"
+      ],
+      "exitCode": 0,
+      "seconds": 2.008,
+      "maximumResidentSetKiB": 1840928,
+      "stats": {},
+      "localResourceGuardTriggered": false,
+      "fuzzLockUnchanged": true
+    },
+    {
+      "phase": "run-cgu1-hwp",
+      "command": [
+        "cargo",
+        "+nightly-2026-11-17",
+        "fuzz",
+        "run",
+        "--fuzz-dir",
+        "/home/edward/mygithub/rhwp-worktrees/task-9154-ubuntu-runner-baseline/fuzz",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "parse_hwp",
+        "--",
+        "-max_total_time=60",
+        "-rss_limit_mb=2048",
+        "-timeout=30",
+        "-print_final_stats=1"
+      ],
+      "exitCode": 0,
+      "seconds": 61.622,
+      "maximumResidentSetKiB": 514768,
+      "stats": {
+        "number_of_executed_units": 105226,
+        "average_exec_per_sec": 1725,
+        "new_units_added": 1901,
+        "slowest_unit_time_sec": 0,
+        "peak_rss_mb": 502
+      },
+      "localResourceGuardTriggered": false,
+      "fuzzLockUnchanged": true
+    },
+    {
+      "phase": "build-cgu16-hwp3",
+      "command": [
+        "cargo",
+        "+nightly-2026-11-17",
+        "fuzz",
+        "build",
+        "--fuzz-dir",
+        "/home/edward/mygithub/rhwp-worktrees/task-9154-ubuntu-runner-baseline/fuzz",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--codegen-units",
+        "16",
+        "--verbose",
+        "parse_hwp3"
+      ],
+      "exitCode": 0,
+      "seconds": 526.719,
+      "maximumResidentSetKiB": 13818380,
+      "stats": {},
+      "localResourceGuardTriggered": false,
+      "fuzzLockUnchanged": true
+    },
+    {
+      "phase": "run-cgu16-hwp3",
+      "command": [
+        "cargo",
+        "+nightly-2026-11-17",
+        "fuzz",
+        "run",
+        "--fuzz-dir",
+        "/home/edward/mygithub/rhwp-worktrees/task-9154-ubuntu-runner-baseline/fuzz",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--codegen-units",
+        "16",
+        "parse_hwp3",
+        "--",
+        "-max_total_time=60",
+        "-rss_limit_mb=2048",
+        "-timeout=30",
+        "-print_final_stats=1"
+      ],
+      "exitCode": 0,
+      "seconds": 61.685,
+      "maximumResidentSetKiB": 420156,
+      "stats": {
+        "number_of_executed_units": 2723,
+        "average_exec_per_sec": 44,
+        "new_units_added": 115,
+        "slowest_unit_time_sec": 26,
+        "peak_rss_mb": 410
+      },
+      "localResourceGuardTriggered": false,
+      "fuzzLockUnchanged": true
+    },
+    {
+      "phase": "build-cgu16-hwp",
+      "command": [
+        "cargo",
+        "+nightly-2026-11-17",
+        "fuzz",
+        "build",
+        "--fuzz-dir",
+        "/home/edward/mygithub/rhwp-worktrees/task-9154-ubuntu-runner-baseline/fuzz",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--codegen-units",
+        "16",
+        "--verbose",
+        "parse_hwp"
+      ],
+      "exitCode": 0,
+      "seconds": 1.722,
+      "maximumResidentSetKiB": 2151504,
+      "stats": {},
+      "localResourceGuardTriggered": false,
+      "fuzzLockUnchanged": true
+    },
+    {
+      "phase": "run-cgu16-hwp",
+      "command": [
+        "cargo",
+        "+nightly-2026-11-17",
+        "fuzz",
+        "run",
+        "--fuzz-dir",
+        "/home/edward/mygithub/rhwp-worktrees/task-9154-ubuntu-runner-baseline/fuzz",
+        "--target-dir",
+        "/home/edward/mygithub/rhwp/target/pr-review",
+        "--codegen-units",
+        "16",
+        "parse_hwp",
+        "--",
+        "-max_total_time=60",
+        "-rss_limit_mb=2048",
+        "-timeout=30",
+        "-print_final_stats=1"
+      ],
+      "exitCode": 0,
+      "seconds": 61.6,
+      "maximumResidentSetKiB": 509212,
+      "stats": {
+        "number_of_executed_units": 74311,
+        "average_exec_per_sec": 1218,
+        "new_units_added": 495,
+        "slowest_unit_time_sec": 0,
+        "peak_rss_mb": 497
+      },
+      "localResourceGuardTriggered": false,
+      "fuzzLockUnchanged": true
+    }
+  ],
+  "slowInputReplay": {
+    "inputFile": "fuzz-generated-slow-unit.bin",
+    "bytes": 123239,
+    "sha256": "34d7b95480f323d31109021a2b240f1150988fb2521dfe0c596eea88c9f65b5d",
+    "origin": "cargo-fuzz-generated mutation of this commit publictracked seed corpus; no external/private corpus supplied",
+    "results": [
+      {
+        "profile": "cgu1",
+        "exitCode": 0,
+        "seconds": 25.567,
+        "binarySha256": "25d38e2f59b6d3b107bad7db7766a9f21af4ca2d9eddd438d249f30e26dcf804"
+      },
+      {
+        "profile": "cgu16",
+        "exitCode": 0,
+        "seconds": 26.257,
+        "binarySha256": "7ccb8f57b22d570de033dcb8842f2ea392130a570cd349dd46809890ee7c05f5"
+      }
+    ],
+    "actualCommands": [
+      {
+        "profile": "cgu1",
+        "command": [
+          "timeout",
+          "--signal=TERM",
+          "45s",
+          "/home/edward/mygithub/rhwp/output/ubuntu-runner-baseline/cgu1-parse-hwp3",
+          "-runs=1",
+          "-timeout=30",
+          "-rss_limit_mb=2048",
+          "-print_final_stats=1",
+          "-artifact_prefix=/home/edward/mygithub/rhwp/output/ubuntu-runner-baseline/slow-unit-replay-artifacts/",
+          "/home/edward/mygithub/rhwp-worktrees/task-9154-ubuntu-runner-baseline/fuzz/artifacts/parse_hwp3/slow-unit-7ae2658ace0a34189170605d0cf68c8045ed0f1a"
+        ]
+      },
+      {
+        "profile": "cgu16",
+        "command": [
+          "timeout",
+          "--signal=TERM",
+          "45s",
+          "/home/edward/mygithub/rhwp/target/pr-review/x86_64-unknown-linux-gnu/release/parse_hwp3",
+          "-runs=1",
+          "-timeout=30",
+          "-rss_limit_mb=2048",
+          "-print_final_stats=1",
+          "-artifact_prefix=/home/edward/mygithub/rhwp/output/ubuntu-runner-baseline/slow-unit-replay-artifacts/",
+          "/home/edward/mygithub/rhwp-worktrees/task-9154-ubuntu-runner-baseline/fuzz/artifacts/parse_hwp3/slow-unit-7ae2658ace0a34189170605d0cf68c8045ed0f1a"
+        ]
+      }
+    ],
+    "reproduceWithCommittedInput": "After building parse_hwp3 with the selected codegen count, replay fuzz-generated-slow-unit.bin with -runs=1 -timeout=30 -rss_limit_mb=2048; outer45s timeout protects the local diagnostic only."
+  },
+  "limits": [
+    "ASan+coverage+debug/overflow configuration retained",
+    "6 remote targets unchanged",
+    "60minjob/60sfuzzer/30sperinput/RSS2048MB retained"
+  ],
+  "limitations": [
+    "GNUtime maxRSS is compiler/build-process observation; not direct proof of remote OOM or origin of SIGTERM",
+    "localhost16logicalCPUs differs from4CPUstandardGitHubrunner; do not promise remote time",
+    "codegen16 target artifacts rebuilt withchangedRUSTFLAGS; host/proc-macro cache reused",
+    "runtimecorpus grows and fuzzingisrandom; count/throughput differences are not a controlledperformancecomparison",
+    "remote fuzz Cargo.lock was not preserved;261 observed compiledpackage versions were coveredlocally"
+  ],
+  "runtimeCorpusNote": "141 tracked public seed files retained; generated mutations moved to ignored output after execution; do not compare randomfuzz counts as equal-input benchmarks."
+}

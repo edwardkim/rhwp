@@ -361,14 +361,20 @@ class LinuxRunnerBaselineWorkflowTests(unittest.TestCase):
             "      - name: Smoke-run ", 1)[0]
         smoke = source.split("      - name: Smoke-run ", 1)[1].split(
             "      - name: Upload crash artifacts", 1)[0]
-        self.assertIn('cargo +nightly fuzz build "${TARGET}"', build)
+        self.assertIn('/usr/bin/time -v cargo +nightly fuzz build --codegen-units 16 "${TARGET}"', build)
+        self.assertIn('free -m', build)
+        self.assertIn('nproc', build)
         self.assertNotIn("continue-on-error:", build)
         self.assertNotIn("if: always()", build + smoke)
-        self.assertIn('cargo +nightly fuzz run "${TARGET}" --', smoke)
+        self.assertIn('cargo +nightly fuzz run --codegen-units 16 "${TARGET}" --', smoke)
         self.assertIn('-max_total_time="${MAX_TOTAL_TIME}"', smoke)
         self.assertIn("-rss_limit_mb=2048", smoke)
         self.assertIn("-timeout=30", smoke)
         self.assertNotIn("timeout-minutes:", smoke)
+        for weakening_flag in ("--dev", "--release", "--no-default-features",
+                               "--no-trace-compares", "--no-cfg-fuzzing",
+                               "--sanitizer none"):
+            self.assertNotIn(weakening_flag, build + smoke)
 
     def test_actual_runner_validation_rejects_unknown_mismatch_and_shell_input(self):
         for name in ("fuzz-smoke.yml", "full-renderer-sweep.yml"):

@@ -734,6 +734,15 @@ Fuzz smoke와 Full Renderer Sweep은 schedule·기본 수동 실행에서 24.04�
 허용값 밖의 입력이나 선택 불일치는 checkout 전에 실패하며 자동 26.04 job은 추가하지 않는다.
 새 OS의 runner 가용성은 live 실행으로 확인한다. GitHub workflow 실행은 승인 뒤 수행한다.
 
+Fuzz의 sanitizer build와 run은 모두 `--codegen-units 16`을 사용한다. 같은 source·nightly의
+로컬 대조에서 기본 단일 단위의 peak RSS는 16.64 GiB, 분할은 13.18 GiB였다. 이는
+[표준 runner의 16 GB RAM](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)에
+맞추기 위한 빌드 자원 보완이며, 원격 exit 143의 OOM 원인을 확정하는 근거는 아니다.
+ASan·coverage·debug/overflow 검사, 기본 60초·입력별 30초·RSS 2 GiB는 유지한다.
+RSS 2 GiB는 퍼징 프로세스의 제한이며 컴파일러 메모리 한도가 아니다. 빌드 단계에서
+`free -m`·`nproc`와 GNU time의 실제 peak RSS를 남긴다. cache 상태·host/proc-macro
+재사용·CPU 차이를 기록하고 로컬 시간만으로 원격 완료나 같은 퍼징 throughput을 단정하지 않는다.
+
 네이티브 build cache의 key와 restore prefix에는 `ubuntu-24.04` 또는 선택한 OS를 넣는다.
 일반 `Linux-` prefix로 이전 OS의 산출물을 복원하지 않는다. 기존 cache를 삭제할 필요는 없으며,
 새 namespace의 첫 실행은 cold build와 cache 생성 비용을 관찰한다.
