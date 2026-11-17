@@ -1,0 +1,40 @@
+{
+  "source": "699c0afbbc86db1252128b8dcc09630038a8d971",
+  "status": "passed",
+  "probes": [
+    {
+      "label": "native-ci-existing-consumer",
+      "files": [
+        "$CANDIDATE/ttfs/opensource/NotoSansKR-Regular.ttf",
+        "$CANDIDATE/ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+        "$CANDIDATE/ttfs/opensource/RHWPPublicBatang-Regular.ttf",
+        "$CANDIDATE/ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+        "$CANDIDATE/ttfs/opensource/RHWPOldHangul-Regular.otf"
+      ],
+      "sha256": "374e1a02c6773835a186f48e6364b47931b165a4e1a333370dafe31fc1cd609a"
+    },
+    {
+      "label": "focused-native-registration",
+      "files": [
+        "$CANDIDATE/ttfs/opensource/NotoSansKR-Regular.ttf",
+        "$CANDIDATE/ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+        "$CANDIDATE/ttfs/opensource/RHWPPublicBatang-Regular.ttf",
+        "$CANDIDATE/ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+        "$CANDIDATE/ttfs/opensource/RHWPOldHangul-Regular.otf"
+      ],
+      "sha256": "374e1a02c6773835a186f48e6364b47931b165a4e1a333370dafe31fc1cd609a"
+    },
+    {
+      "label": "full-regression",
+      "files": [
+        "$CANDIDATE/ttfs/opensource/NotoSansKR-Regular.ttf",
+        "$CANDIDATE/ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+        "$CANDIDATE/ttfs/opensource/RHWPPublicBatang-Regular.ttf",
+        "$CANDIDATE/ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+        "$CANDIDATE/ttfs/opensource/RHWPOldHangul-Regular.otf"
+      ],
+      "sha256": "374e1a02c6773835a186f48e6364b47931b165a4e1a333370dafe31fc1cd609a"
+    }
+  ],
+  "policy": "fontconfig only the explicitly allowed OSS directory; /opt/hnc, user .fonts and user local fonts absent inside bubblewrap; licensed fixture programs supplied explicitly by tests"
+}

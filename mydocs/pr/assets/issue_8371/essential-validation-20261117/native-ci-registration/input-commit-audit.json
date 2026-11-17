@@ -1,0 +1,134 @@
+{
+  "status": "passed",
+  "source": "fcf2e11b1727297743343446333132e1409737f1",
+  "records": [
+    {
+      "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+      "bytes": 10328,
+      "sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+      "committedIn": "95a7fb1e8bb72b27ed522f73bb66c9df709c1ea3",
+      "role": "independent-print"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "bytes": 6848,
+      "sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+      "committedIn": "95a7fb1e8bb72b27ed522f73bb66c9df709c1ea3",
+      "role": "input"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8371/sample4-source-layout-20261117/handbook-preserved-substitute-environment.json",
+      "bytes": 798,
+      "sha256": "ff4b9ce0b3a5d369e772254c1c94ca265bea673c58090b21998b052ffd5e1cba",
+      "committedIn": "95a7fb1e8bb72b27ed522f73bb66c9df709c1ea3",
+      "role": "font-environment"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8371/sample4-source-layout-20261117/sample4-font-environment-hft2ttf.json",
+      "bytes": 1607,
+      "sha256": "461c500aa45c233a6e6ced7f22686ff5b0ddaebc9776a0e6e523090dca3f4e8a",
+      "committedIn": "95a7fb1e8bb72b27ed522f73bb66c9df709c1ea3",
+      "role": "font-environment"
+    },
+    {
+      "path": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+      "bytes": 4692840,
+      "sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+      "committedIn": "95a7fb1e8bb72b27ed522f73bb66c9df709c1ea3",
+      "role": "independent-print"
+    },
+    {
+      "path": "pdf/hwp3-sample4-2020.pdf",
+      "bytes": 1029723,
+      "sha256": "61d63da58638b4a28900a15694779b35766f4ff5b3e0ed41d959a97f2599bb60",
+      "committedIn": "95a7fb1e8bb72b27ed522f73bb66c9df709c1ea3",
+      "role": "independent-print"
+    },
+    {
+      "path": "pdf/pic-crop-01-2022.pdf",
+      "bytes": 19211,
+      "sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+      "committedIn": "95a7fb1e8bb72b27ed522f73bb66c9df709c1ea3",
+      "role": "independent-print"
+    },
+    {
+      "path": "pdf/pr-review-open-prs-20261117/hwp_band-2024.pdf",
+      "bytes": 12041,
+      "sha256": "c4d1c9bb280032271a8acd48aeb5914b9f8d10751a5642cb7b2032c632cf9b98",
+      "committedIn": "95a7fb1e8bb72b27ed522f73bb66c9df709c1ea3",
+      "role": "independent-print"
+    },
+    {
+      "path": "pdf/pr-review-open-prs-20261117/tab_stop_beyond_line-2024.pdf",
+      "bytes": 12217,
+      "sha256": "c4d2a09fea409b88f80eb3d95b90d5097098c4cdfced1e2c9d35339277c029cc",
+      "committedIn": "95a7fb1e8bb72b27ed522f73bb66c9df709c1ea3",
+      "role": "independent-print"
+    },
+    {
+      "path": "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+      "bytes": 11752,
+      "sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+      "committedIn": "95a7fb1e8bb72b27ed522f73bb66c9df709c1ea3",
+      "role": "independent-print"
+    },
+    {
+      "path": "pdf/shape-group-02-hwp-2020.pdf",
+      "bytes": 89651,
+      "sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+      "committedIn": "95a7fb1e8bb72b27ed522f73bb66c9df709c1ea3",
+      "role": "independent-print"
+    },
+    {
+      "path": "samples/2025 행정업무운영 편람(최종).hwpx",
+      "bytes": 13639865,
+      "sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+      "committedIn": "95a7fb1e8bb72b27ed522f73bb66c9df709c1ea3",
+      "role": "input"
+    },
+    {
+      "path": "samples/hwp3-sample4.hwp",
+      "bytes": 635108,
+      "sha256": "f25a3ec30f54e045a492e9a9c97efaac8628e3b5fde024418bee743e6fdcebc4",
+      "committedIn": "95a7fb1e8bb72b27ed522f73bb66c9df709c1ea3",
+      "role": "input"
+    },
+    {
+      "path": "samples/issue8582/hwp_band.hwpx",
+      "bytes": 10457,
+      "sha256": "48f0330396fbfeb7610515fc8cbcceeeab4b2d5f64af766fc59a4b72682865b2",
+      "committedIn": "95a7fb1e8bb72b27ed522f73bb66c9df709c1ea3",
+      "role": "input"
+    },
+    {
+      "path": "samples/pic-crop-01.hwp",
+      "bytes": 131072,
+      "sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+      "committedIn": "95a7fb1e8bb72b27ed522f73bb66c9df709c1ea3",
+      "role": "input"
+    },
+    {
+      "path": "samples/re-03-latin-only-hancom.hwp",
+      "bytes": 9216,
+      "sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+      "committedIn": "95a7fb1e8bb72b27ed522f73bb66c9df709c1ea3",
+      "role": "input"
+    },
+    {
+      "path": "samples/shape-group-02.hwp",
+      "bytes": 16384,
+      "sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+      "committedIn": "95a7fb1e8bb72b27ed522f73bb66c9df709c1ea3",
+      "role": "input"
+    },
+    {
+      "path": "samples/tab_overflow/tab_stop_beyond_line.hwpx",
+      "bytes": 9921,
+      "sha256": "cc61958e1fda95d76417600fe640a1acf32c489ddc1b904ddb4e80d0c94471e8",
+      "committedIn": "95a7fb1e8bb72b27ed522f73bb66c9df709c1ea3",
+      "role": "input"
+    }
+  ],
+  "submissionHead": "95a7fb1e8bb72b27ed522f73bb66c9df709c1ea3",
+  "unchangedAtTestHead": "699c0afbbc86db1252128b8dcc09630038a8d971"
+}

@@ -1,5 +1,6 @@
 {
   "validatedCodeHead": "fcf2e11b1727297743343446333132e1409737f1",
+  "validatedTestHead": "699c0afbbc86db1252128b8dcc09630038a8d971",
   "base": "22da83586aab1baf960f2159abda347062ecf7ed",
   "files": [
     {
@@ -468,9 +469,54 @@
       "bytes": 443026
     },
     {
+      "path": "native-ci-registration/base-advance.json",
+      "sha256": "f83863c8f30644666efe23f26202376741da9a36c7b509f4760dc623d732a5ba",
+      "bytes": 4731
+    },
+    {
+      "path": "native-ci-registration/fixture-identity.json",
+      "sha256": "c9b62f1f2205e74528b3d3811a75aa68e6adae5437ae5a4ee74735311e6051d4",
+      "bytes": 591
+    },
+    {
+      "path": "native-ci-registration/input-commit-audit.json",
+      "sha256": "23a5327c91d63315f58e0a643f5a74272916c4ed662f7d12021098d6e65a24c7",
+      "bytes": 5365
+    },
+    {
+      "path": "native-ci-registration/minimum-font-runtime-probes.json",
+      "sha256": "d5b8d23cf4667aa89a1313cf302e1de709f9f39afb80c77e4dda18a4c8fdb505",
+      "bytes": 1790
+    },
+    {
+      "path": "native-ci-registration/previous-head-ci.json",
+      "sha256": "508d2fc6bf8e8c40ea315f3c7cbffd464b2d539a2755f259e8fe5d5d94277a35",
+      "bytes": 579
+    },
+    {
+      "path": "native-ci-registration/protected-font-qualification.json",
+      "sha256": "e4dffbcf0c3a0cf8260226aa438572fa3d6e6b037ac1f53bb1a3059c672f3dfd",
+      "bytes": 14026
+    },
+    {
+      "path": "native-ci-registration/routing-and-equivalence.json",
+      "sha256": "4805abb7526ba9f7cb6a1b6de9e53b6f83839ce00fd0324cfb9f5ee936959ae3",
+      "bytes": 1612
+    },
+    {
+      "path": "native-ci-registration/tests.json",
+      "sha256": "702b94bb066ce31b6b9c7bf38c5e847eadb87b25c08d27d0455292cfd4fbc398",
+      "bytes": 6257
+    },
+    {
+      "path": "native-ci-registration/windows-lint.json",
+      "sha256": "aa83bb83485f1f016c031312c384a7eb641ffb0aa6cb80d5b96245c7935c5ffa",
+      "bytes": 3574
+    },
+    {
       "path": "README.md",
-      "sha256": "378682eb30d619c26cfda7599b3199119b63922fca213404968bba19aaf5c53b",
-      "bytes": 7692
+      "sha256": "5691a36ffff9e93f438e974a62609967f53bde2e96e41161d949bb2dd3f11d2c",
+      "bytes": 9854
     },
     {
       "path": "rust-validation.json",

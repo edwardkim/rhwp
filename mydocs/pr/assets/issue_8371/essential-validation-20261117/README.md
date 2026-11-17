@@ -8,7 +8,7 @@ last_verified: 2026-11-18
 # HWP3 그림 소속과 Native 글꼴 선택의 최종 검증
 
 코드 producer는 `fcf2e11b1727297743343446333132e1409737f1`, rebase 기준은 `22da83586aab1baf960f2159abda347062ecf7ed`다. 세 보정 커밋을 유지하고 제출 증적만 별도 커밋한다.
-[제품·테스트·빌드 입력의 동일성](source-identity.json), [빌드 신원](build-provenance.json),
+[초기 제출 95a7fb1e8b의 제품·테스트·빌드 입력 동일성](source-identity.json), [빌드 신원](build-provenance.json),
 [직접 판독](direct-inspection.json)을 함께 확인한다. 이슈 #8371·#8218은 기존 조사와 입력의 맥락이며 새 종료 대상으로 지정하지 않는다.
 
 ## 수정과 소비 경로
@@ -84,3 +84,22 @@ pic-crop의 두 자리 표시 100.00%는 반올림 전 완전 일치라는 뜻�
 그 source의 전체 회귀·18종 결과를 이 후보의 실행으로 바꾸어 표시하지 않았다. 이번 후보의 추가 3보정에 필요한 검증을 별도로 실행했고 18종 전체 sweep은 반복하지 않았다.
 [고정 참조 정보](base-pr9156.json), [글꼴 바이트 공급 식별](font-supply.json)을 함께 남겼다.
 공유 cache가 base WASM을 즉시 재사용한 첫 후보 패키지는 제출 근거에서 제외하고 실제 재컴파일한 `312c607c...` 패키지만 사용했다.
+
+## Native 검사 자동 실행 경로 보완
+
+제품 producer는 계속 `fcf2e11b1727297743343446333132e1409737f1`이다. 테스트 head
+`699c0afbbc86db1252128b8dcc09630038a8d971`에서 원본 TTF/TTC 검사 2개를
+`installed_font_program_order.rs`에서 기존 Native CI 호출 대상 `skia_native_glyph_replay.rs`로 이관했다.
+[본문·helper 동일성과 기존 CI 호출](native-ci-registration/routing-and-equivalence.json)을 확인했고 workflow·분류 정책은 변경하지 않았다.
+
+- [현재 테스트 head 실제 실행](native-ci-registration/tests.json): 기존 Native CI 명령 24 PASS(이관한 2개 포함), 집중 33 PASS, 전체 nextest 13,718 PASS / 0 FAIL / 45 skip. 전체 실행은 890.457초, 4 slow다.
+- [현재 head lint](native-ci-registration/windows-lint.json): fmt, root/Native/WASM Clippy, Native all-targets, workspace build/all-target Clippy, suite 정책 PASS.
+- [실제 최소 글꼴 노출](native-ci-registration/minimum-font-runtime-probes.json)과 [합성 자원 신원](native-ci-registration/fixture-identity.json)을 기록했다.
+- [검증 입력 커밋 확인](native-ci-registration/input-commit-audit.json): 원본·독립 Print·환경 파일 18개의 실행 바이트와 초기 제출 commit이 같고, 테스트 이관에서도 변경되지 않았다.
+- [새 base의 CI 운영 변경과 clean merge](native-ci-registration/base-advance.json)를 확인했다. 제품·WASM 소비 증적은 동일한 제품 입력으로 검증한 위 producer 결과다.
+
+이전 게시 head의 [Proptest checkout 취소](native-ci-registration/previous-head-ci.json)는 테스트 실행 성공으로 세지 않는다. 새 제출 head의 GitHub CI를 별도로 확인한다.
+
+정본 보호 18종은 **현재 후보의 통합 담당자 검증이 미완료**다.
+[원본 글꼴 공급 확인 상태](native-ci-registration/protected-font-qualification.json)를 남기며, 동일 공급 조건의 전쪽 검증을 완료하기 전까지 병합을 보류한다.
+위 4종 공통 보호·편람 gate·sample4 검증을 이 18종 전체 검증으로 확장해 표시하지 않는다.

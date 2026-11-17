@@ -1,0 +1,17 @@
+{
+  "source": "699c0afbbc86db1252128b8dcc09630038a8d971",
+  "programs": [
+    {
+      "path": "tests/fixtures/fonts/RHWPNativeContainer.ttf",
+      "bytes": 1852,
+      "sha256": "a83760f59c9621a92ea17d86869cf8433030612e03d119a33efdc8347ae65bd1"
+    },
+    {
+      "path": "tests/fixtures/fonts/RHWPNativeContainer.ttc",
+      "bytes": 2888,
+      "sha256": "9d7f153357374b2c855cf1de114b0c36a3c2249e6fb28a14e7337700b5129530"
+    }
+  ],
+  "license": "tests/fixtures/fonts/RHWPNativeContainer.LICENSE.md",
+  "generator": "scripts/generate-native-container-font-fixtures.py"
+}
