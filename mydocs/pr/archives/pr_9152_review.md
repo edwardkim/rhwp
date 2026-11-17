@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**로컬 검토 충족 — 최신 통합 PR CI·후속 기록 확인 후 병합 가능.** 원 기여와 필요한 메인터너 보정을 구분해 검증했다.
+**검토 및 code CI 충족 — 문서 trailing 최신 head 검사 확인 후 병합 가능.** 원 기여와 필요한 메인터너 보정을 구분해 검증했다.
 
 ## 변경과 검토 범위
 
@@ -43,7 +43,7 @@ base **55.75%** → 원 기여 **100.00%** → 보정 후보 **100.00%**다.
 
 [통합 검증 정본](../assets/open_prs_20261117/README.md)과 각 원본 TSV·PNG를 확인했다.
 최소 글꼴 환경 focused 7건과 전체 nextest **13,708 PASS / 0 FAIL / 45 skip**,
-fmt·Native/WASM/all-target Clippy·workspace build·manifest/unit-tier, Native Skia **2·2·36건**을 통과했다.
+fmt·Native/WASM/all-target Clippy·workspace build·manifest/unit-tier, Native Skia **본체 lib 3,852 PASS·12 ignored, workspace 멤버 182 PASS·별도 2·36 PASS**을 통과했다.
 원본 글꼴 일반 환경의 정본 보호 18종·1,771쪽은 Native/fresh WASM 모두 하락·상승 0쪽이다.
 명시적 편람 Native 383쪽(최저 99.97%)과 기여자 공통 보호 8건도 통과했다.
 [회귀 집계](../assets/open_prs_20261117/rust-validation.json),
@@ -51,7 +51,12 @@ fmt·Native/WASM/all-target Clippy·workspace build·manifest/unit-tier, Native 
 [보호 WASM](../assets/open_prs_20261117/protected-wasm-validation.json),
 [실제 소비 경로](../assets/open_prs_20261117/consumer-validation.json)를 따른다.
 
-최종 통합 PR의 code CI·오늘할일 trailing head CI·병합과 원 PR/실제 해결 이슈 close는 아직 확정하지 않는다.
+[통합 PR #9156](https://github.com/edwardkim/rhwp/pull/9156)의 code head `69f0deaa468f0914c29afa0e9697424a75fb10ae`에서
+[Full CI](https://github.com/edwardkim/rhwp/actions/runs/44079335323)·CodeQL·Render Diff·Adapter·Proptest와 최종 정책이 성공했다.
+[실제 head·job 영수증](../assets/open_prs_20261117/code-ci.json)의 조건부 생략은 실행 통과와 구분한다.
+오늘할일·검토 보완만 같은 PR의 문서 전용 trailing으로 반영한다. Native Skia 본체/멤버의 집계 표기 오류도
+원 실행 로그에 따라 정정했으며 제품·테스트·기준 자료는 바뀌지 않았다.
+trailing 최신 head 검사·병합과 원 PR/실제 해결 이슈 close는 아직 실행 전이다.
 원 fork를 수정하지 않으며, 통합 병합 뒤 검토 결과와 확정 SHA를 원 PR에 안내한다.
 
 ## 후속 코멘트 계획
@@ -70,3 +75,21 @@ CanvasKit software 실제 backend·typeface 준비·fallback 없음과 초기화
 [소비 경로 TSV·raw/PDF/review/overlay](../assets/open_prs_20261117/consumer-validation.json)를 따른다.
 
 독립 Print의 `가`/`X` 좌표 ±2px, 정상 문단 피치와 세 줄 소속·워드 호환 제외 관계를 함께 검사한다.
+
+## 조판 원칙 준수 검토
+
+| 검토 항목 | 실제 확인 근거 | 판정 |
+| --- | --- | --- |
+| 제출 전 로컬 검증과 PR 상태 | 고정 base1e2488eb·제품2c5e3fe3·회귀c2ec0621, 필수 로컬 gate·Open 통합 PR을 확인했다. 원격 CI·후속 기록은 별도 병합 조건으로 관리한다. | 충족 |
+| 기존 이슈·해결 PR 선행 분석 | 원 이슈#9150 → 원 PR#9152의 고정 head·11개 누적 적용 → 독립 Print·현재 원본 출력을 [선행 분석](../assets/open_prs_20261117/intake-analysis.md)과 대조했다. | 충족 |
+| 구현 근거와 일반성 | 단 시작 기준 명시 정지와 줄 상자 오른쪽 끝을 같은 좌표계로 비교한다. left/center/decimal·뒤 글 존재·비 Word 조건을 사용하며 기본/오른쪽 탭·내어쓰기 자동 탭·끝 탭은 원래 경로를 보존한다. 독립 desktop Print가 세 줄 소속을 입증했다. | 충족 |
+| 측정·배치 일관성 | `TabFill::explicit_stop_beyond_line` → `fill_one_interval`의 LineBreakResult와 공용 inline 조판을 대조했다. 반환한 같은 줄 구성을 Native/Canvas/SVG가 소비함을 실제 출력으로 확인했다. | 충족 |
+| 리베이스 반영 PR의 기능 보존 | 최신1e2488eb에서 시작했으며 이후 fetch도 같은 head다. base의 #9147 실제 대체 관측·말미 SP 계약을 기존 회귀와 원본 보호18종 양쪽1,771쪽 무하락으로 확인했다. 현재 batch에서 재차 리베이스한 이력은 없다. | 충족 |
+| 최종 출력 소비 계약 | 원본 1쪽 Native/fresh WASM PNG와 실제 Studio Canvas2D·CanvasKit software 두 경로 및 양쪽 SVG가 각각 100%다. 초기화 JS/WASM 실제 응답·원본 typeface·runtime readiness·fallback0을 확인했다. | 충족 |
+| 분할·이어받기 계약 | 표/셀 조각의 컷·continuation·행 높이 배분 로직을 변경하지 않는다. 공용 문단 흐름과 줄 소속은 아래 및 전쪽 보호로 별도 확인했다. | 비해당 |
+| 줄 소속과 점유 높이 | NoLS 공용 줄 채우기만 적용하며 저장 줄 경로는 보존한다. 가/탭/X 세 줄·후속 라벨과 정상/Word 대조의 소속·피치를 확인했다. | 충족 |
+| 사례와 증거의 독립성 | 현재 고정 base의 실제 Native/fresh WASM 원본 출력은 55.75/55.42%, 최종은100/100%다. 원 기여의 RED/GREEN은 선행 기록으로 구분하고 독립 Print와 현재 집중·전체 회귀, Word/정상 문단 대조를 확인했다. | 충족 |
+| 기준값 변경 | 기존 WebHWP 29.4px 대신 독립 Print 29.248036px·좌표 ±2px를 사용했다. 세 줄 소속·같은 시작점·워드 대조를 함께 검사하며 보호 floor·90%·측정 임계값 변경은 없다. | 충족 |
+| 회귀 추가·변경의 선행 조건 | 관련 원본 전체 1쪽의 Native/fresh WASM100/100% 및 직접 판독 후 회귀를 보강했다. 해당 페이지 양쪽98% 이상으로 독립 좌표 ±2px를 허용하며 소속 관계도 함께 보호한다. | 충족 |
+| 90% 통과 후 확대 판독 | 같은 쪽 review·overlay에서 가/X 시작점·빈 탭 줄·정상 문단과 후속 END를 대조했다. 작은 안티앨리어싱/획 차이는 RGB 동일성으로 주장하지 않는다. 수식 변경 주장은 없다. | 충족 |
+| 주장과 검증 범위 | source/producer/input/PDF/hash·쪽수·실제 CLI/소비 경로·최종 회귀를 개별 증적에 연결했다. 원 기여·메인터너 보정·원격 대기와 실패/무효 실행 이력을 구분한다. | 충족 |

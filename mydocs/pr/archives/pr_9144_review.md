@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**로컬 검토 충족 — 최신 통합 PR CI·후속 기록 확인 후 병합 가능.** 원 기여와 필요한 메인터너 보정을 구분해 검증했다.
+**검토 및 code CI 충족 — 문서 trailing 최신 head 검사 확인 후 병합 가능.** 원 기여와 필요한 메인터너 보정을 구분해 검증했다.
 
 ## 변경과 검토 범위
 
@@ -34,7 +34,7 @@
 
 [통합 검증 정본](../assets/open_prs_20261117/README.md)과 각 원본 TSV·PNG를 확인했다.
 최소 글꼴 환경 focused 7건과 전체 nextest **13,708 PASS / 0 FAIL / 45 skip**,
-fmt·Native/WASM/all-target Clippy·workspace build·manifest/unit-tier, Native Skia **2·2·36건**을 통과했다.
+fmt·Native/WASM/all-target Clippy·workspace build·manifest/unit-tier, Native Skia **본체 lib 3,852 PASS·12 ignored, workspace 멤버 182 PASS·별도 2·36 PASS**을 통과했다.
 원본 글꼴 일반 환경의 정본 보호 18종·1,771쪽은 Native/fresh WASM 모두 하락·상승 0쪽이다.
 명시적 편람 Native 383쪽(최저 99.97%)과 기여자 공통 보호 8건도 통과했다.
 [회귀 집계](../assets/open_prs_20261117/rust-validation.json),
@@ -42,10 +42,25 @@ fmt·Native/WASM/all-target Clippy·workspace build·manifest/unit-tier, Native 
 [보호 WASM](../assets/open_prs_20261117/protected-wasm-validation.json),
 [실제 소비 경로](../assets/open_prs_20261117/consumer-validation.json)를 따른다.
 
-최종 통합 PR의 code CI·오늘할일 trailing head CI·병합과 원 PR/실제 해결 이슈 close는 아직 확정하지 않는다.
+[통합 PR #9156](https://github.com/edwardkim/rhwp/pull/9156)의 code head `69f0deaa468f0914c29afa0e9697424a75fb10ae`에서
+[Full CI](https://github.com/edwardkim/rhwp/actions/runs/44079335323)·CodeQL·Render Diff·Adapter·Proptest와 최종 정책이 성공했다.
+[실제 head·job 영수증](../assets/open_prs_20261117/code-ci.json)의 조건부 생략은 실행 통과와 구분한다.
+오늘할일·검토 보완만 같은 PR의 문서 전용 trailing으로 반영한다. Native Skia 본체/멤버의 집계 표기 오류도
+원 실행 로그에 따라 정정했으며 제품·테스트·기준 자료는 바뀌지 않았다.
+trailing 최신 head 검사·병합과 원 PR/실제 해결 이슈 close는 아직 실행 전이다.
 원 fork를 수정하지 않으며, 통합 병합 뒤 검토 결과와 확정 SHA를 원 PR에 안내한다.
 
 ## 후속 코멘트 계획
 
 통합 병합과 CI 확인 후 첫 기여에 감사·환영을 전하고, 합성 줄 진단 수정과 확인한 실제 호출을
 한국어 존댓말로 설명한다. 관련 없는 다른 PR의 시각 그림을 이 PR 증거로 사용하지 않는다.
+
+## 조판 원칙 적용 여부
+
+**비해당.** 이 원 PR은 `src/document_core/queries/rendering.rs`의 `compute_hwp_used_height`가
+`column_reads_synthetic_lines`로 실제 읽는 줄 범위의 bit31을 질의하는 진단 변경이다.
+측정·줄바꿈·페이지 할당·paint의 입력을 바꾸지 않는다. nullable 진단과 실제 저장 줄 대조,
+부분 문단/표 host 질의 범위는 집중 회귀·실제 CLI와 호출처를 대조했다.
+동반 조판 PR의 별도 시각 그림을 이 진단 PR의 증거로 대신하지 않는다.
+제출 입력 포함·로컬 검증은 [감사](../assets/open_prs_20261117/submission-audit.json)와
+[회귀](../assets/open_prs_20261117/rust-validation.json)로 확인했으며 원격 code CI는 위 영수증으로 충족했고 문서 trailing 최신 검사·병합은 별도 조건이다.

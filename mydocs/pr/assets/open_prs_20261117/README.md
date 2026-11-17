@@ -41,7 +41,7 @@ CanvasKit은 명시적 software 경로로 실행했으며 실제 backend·원본
 - #9149의 원 기여 HWP5 변환 검사는 통과했지만 원본 HWPX는 58.23%였다. [합성 사다리의 흐름 되감기 원인](band-cause.md)을 공통 provenance 규칙으로 보정했다. 문서명·쪽별 예외는 없다.
 - 새 HWPX 좌표 회귀는 [보정 전 실제 FAIL → 보정 후 실제 PASS](band-red-green-validation.json)로 결함 검출을 확인했다. 원본 HWPX의 100%를 HWP5 변환본의 별도 픽셀 점수로 재사용하지 않는다.
 - #9152는 원 기여가 줄 소속을 복원했다. 웹한글기안기 피치 대신 독립 Print 좌표와 정상 문단 피치·워드 호환 대조를 함께 검사한다.
-- [최종 집중 7건](focused-regression-validation.json), [최소 글꼴 환경 전체 회귀·lint/build·Native Skia](rust-validation.json)를 완료했다. 전체 nextest는 **13,708 PASS / 0 FAIL / 45 skip**, Native Skia는 **2·2·36 PASS**다.
+- [최종 집중 7건](focused-regression-validation.json), [최소 글꼴 환경 전체 회귀·lint/build·Native Skia](rust-validation.json)를 완료했다. 전체 nextest는 **13,708 PASS / 0 FAIL / 45 skip**, Native Skia는 **본체 lib 3,852 PASS·12 ignored, workspace 멤버 182 PASS / 별도 2·36 PASS**다.
 
 공유 target에서 보정 전 source archive를 빌드한 직후의 첫 after 호출은 보정 전 좌표를 재사용했다.
 이를 수용 결과에서 제외하고 파일 내용은 그대로 둔 채 최신 제품 source를 확실히 재컴파일해 2건 PASS를
@@ -59,4 +59,9 @@ CanvasKit은 명시적 software 경로로 실행했으며 실제 backend·원본
 
 [입력·제출 범위 감사](submission-audit.json)와 [렌더 트리 반복 결정성](snapshot-determinism.json)을 확인했다.
 
-로컬 검토를 완료했으며 통합 PR 최신 head CI·오늘할일 trailing 기록·병합과 원 PR/이슈 후속 처리는 별도 원격 단계에서 확인한다.
+[통합 PR #9156](https://github.com/edwardkim/rhwp/pull/9156)의 code head `69f0deaa468f0914c29afa0e9697424a75fb10ae`에서
+[Full CI](https://github.com/edwardkim/rhwp/actions/runs/44079335323)·CodeQL·Render Diff·Adapter·Proptest·최종 정책이 성공했다.
+[실제 head·job 기록](code-ci.json)과 [제출 raw URL 71개 바이트 검증](submission-raw-link-verification.json)을 보존한다.
+Native Skia 본체 lib와 workspace 멤버의 집계 표기만 원 로그에 따라 정정했다.
+CI 변경이 없어 같은 PR에 오늘할일·검토 보완의 문서 전용 trailing을 잇고, 최신 검사 뒤 병합·원 PR/이슈 후속 처리를 진행한다.
+아직 실행 전인 후속 처리를 완료로 적지 않는다.

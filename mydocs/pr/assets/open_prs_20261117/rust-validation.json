@@ -289,10 +289,14 @@
     "seconds": 1567.219
   },
   "native_skia": {
-    "lib": 2,
+    "lib_root_passed": 3852,
+    "lib_root_ignored": 12,
+    "lib_workspace_member_passed": 182,
+    "lib_workspace_total_passed": 4034,
     "placeholder": 2,
     "direct_pdf": 36,
-    "failed": 0
+    "failed": 0,
+    "note": "Root lib and all workspace lib summaries are counted separately; the final 2-test summary is password-crypto, not the full lib result."
   },
   "history_note": "Initial profile incorrectly denied a tracked public font fixture; corrected isolation profile and repeated all-target Clippy successfully. Zero-test and partial focused attempts are excluded from final seven-test proof."
 }
