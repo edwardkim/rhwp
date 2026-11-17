@@ -348,7 +348,10 @@ fn typeface_candidates_for_families_for_source(
         (
             candidate.family_order,
             super::font_catalog::supplied_style_rank(style, candidate.typeface.font_style()),
-            typeface_program_order(&candidate.typeface),
+            custom_typefaces
+                .program_order(&candidate.typeface)
+                .or_else(|| bundled_typefaces.program_order(&candidate.typeface))
+                .unwrap_or_else(|| typeface_program_order(&candidate.typeface)),
         )
     });
     chain
@@ -427,18 +430,20 @@ fn recover_installed_system_typeface(
 ) -> Option<Typeface> {
     SYSTEM_PROGRAM_DATABASE.with(|database| {
         let mut database = database.borrow_mut();
-        let database = database.get_or_insert_with(|| {
-            let mut database = usvg::fontdb::Database::new();
-            for directory in crate::renderer::font_paths::system_font_dirs() {
-                if directory.exists() {
-                    database.load_fonts_dir(directory);
-                }
-            }
-            crate::renderer::font_paths::retain_fontdb_family_aliases(&mut database);
-            database
-        });
+        let database = database.get_or_insert_with(load_system_program_database);
         query_database_typeface(database, font_mgr, family, style)
     })
+}
+
+fn load_system_program_database() -> usvg::fontdb::Database {
+    let mut database = usvg::fontdb::Database::new();
+    for directory in crate::renderer::font_paths::system_font_dirs() {
+        if directory.exists() {
+            database.load_fonts_dir(directory);
+        }
+    }
+    crate::renderer::font_paths::retain_fontdb_family_aliases(&mut database);
+    database
 }
 
 /// custom·bundled·설치 프로그램 복구가 같은 CSS 스타일 선택을 사용한다.
@@ -510,6 +515,8 @@ thread_local! {
         RefCell::new(HashMap::new());
     static SYSTEM_PROGRAM_DATABASE: RefCell<Option<usvg::fontdb::Database>> =
         const { RefCell::new(None) };
+    static SYSTEM_PROGRAM_ORDER: RefCell<HashMap<u32, u8>> =
+        RefCell::new(HashMap::new());
     static SYSTEM_TYPEFACE_CACHE: RefCell<HashMap<FontLookupKey, Option<Typeface>>> =
         RefCell::new(HashMap::new());
     static SYSTEM_PROGRAM_CANDIDATES: RefCell<HashMap<FontLookupKey, Vec<Typeface>>> =
@@ -541,15 +548,39 @@ fn typeface_is_truetype(typeface: &Typeface) -> bool {
 
 /// 파일 확장자 대신 실제 SFNT/collection의 선택 face를 확인한다.
 fn typeface_program_order(face: &Typeface) -> u8 {
-    if typeface_is_truetype(face) {
-        face.to_existing_font_data().map_or(0, |(bytes, _)| {
-            u8::from(bytes.as_bytes().get(..4) == Some(b"ttcf"))
-        })
-    } else if typeface_is_cff(face) {
-        2
-    } else {
-        3
-    }
+    SYSTEM_PROGRAM_ORDER.with(|cache| {
+        if let Some(order) = cache.borrow().get(&face.unique_id()).copied() {
+            return order;
+        }
+        let order = if let Some(order) = super::font_program::original_program_order(face) {
+            order
+        } else {
+            // Table reconstruction loses the original container. Only the exact
+            // installed program may restore that information; family names and
+            // file extensions are insufficient.
+            let installed = face.post_script_name().and_then(|name| {
+                SYSTEM_PROGRAM_DATABASE.with(|database| {
+                    let mut database = database.borrow_mut();
+                    let database = database.get_or_insert_with(load_system_program_database);
+                    database
+                        .faces()
+                        .filter(|info| info.post_script_name == name)
+                        .filter_map(|info| {
+                            database
+                                .with_face_data(info.id, |bytes, index| {
+                                    super::font_program::same_program_tables(face, bytes, index)
+                                        .then(|| super::font_program::program_order(bytes, index))
+                                })
+                                .flatten()
+                        })
+                        .min()
+                })
+            });
+            installed.unwrap_or_else(|| if typeface_is_cff(face) { 2 } else { 3 })
+        };
+        cache.borrow_mut().insert(face.unique_id(), order);
+        order
+    })
 }
 
 fn matching_system_programs(font_mgr: &FontMgr, family: &str, style: FontStyle) -> Vec<Typeface> {

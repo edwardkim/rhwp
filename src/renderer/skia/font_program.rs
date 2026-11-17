@@ -2,6 +2,44 @@
 
 use skia_safe::Typeface;
 
+pub(super) fn original_program_order(typeface: &Typeface) -> Option<u8> {
+    #[cfg(target_os = "macos")]
+    if let Some((bytes, index)) = coretext::original_program(typeface) {
+        return Some(program_order(&bytes, index));
+    }
+    typeface
+        .to_existing_font_data()
+        .map(|(bytes, index)| program_order(bytes.as_bytes(), index))
+}
+
+/// Rank the original container, before an OS font manager repacks a TTC face.
+pub(super) fn program_order(bytes: &[u8], index: u32) -> u8 {
+    if ttf_parser::Face::parse(bytes, index).is_ok_and(|face| face.tables().glyf.is_some()) {
+        u8::from(bytes.get(..4) == Some(b"ttcf"))
+    } else if crate::renderer::native_pua_fonts::is_cff_program(bytes, index) {
+        2
+    } else {
+        3
+    }
+}
+
+/// A matching name alone does not establish the identity of an installed face.
+pub(super) fn same_program_tables(typeface: &Typeface, bytes: &[u8], index: u32) -> bool {
+    let Ok(face) = ttf_parser::Face::parse(bytes, index) else {
+        return false;
+    };
+    let Some(tags) = typeface.read_table_tags() else {
+        return false;
+    };
+    let source = face.raw_face();
+    source.table_records.len() as usize == tags.len()
+        && tags.iter().all(|tag| {
+            typeface.copy_table_data(*tag).is_some_and(|actual| {
+                source.table(ttf_parser::Tag(*tag)) == Some(actual.as_bytes())
+            })
+        })
+}
+
 pub(super) fn typeface_program_bytes(typeface: &Typeface) -> Option<(Vec<u8>, u32)> {
     // CoreText의 stream은 같은 테이블을 다른 SFNT 컨테이너로 재포장할 수 있다.
     // 이름만으로 원본을 고르지 않고 모든 테이블이 같은 로컬 파일만 원본으로 인정한다.
@@ -117,22 +155,8 @@ mod coretext {
         if count == 0 || count > MAX_FACES {
             return None;
         }
-        let tags = typeface.read_table_tags()?;
         for index in 0..count {
-            let Ok(face) = ttf_parser::Face::parse(&bytes, index) else {
-                continue;
-            };
-            let source = face.raw_face();
-            if source.table_records.len() as usize != tags.len() {
-                continue;
-            }
-            let same = tags.iter().all(|tag| {
-                let Some(actual) = typeface.copy_table_data(*tag) else {
-                    return false;
-                };
-                source.table(ttf_parser::Tag(*tag)) == Some(actual.as_bytes())
-            });
-            if same {
+            if super::same_program_tables(typeface, &bytes, index) {
                 return Some((bytes, index));
             }
         }
