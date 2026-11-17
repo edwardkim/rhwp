@@ -1,0 +1,12 @@
+[
+  {
+    "workflow": "layout-anomaly-advisory",
+    "summaryBytes": 189,
+    "unchanged": true
+  },
+  {
+    "workflow": "oracle-public-advisory",
+    "summaryBytes": 196,
+    "unchanged": true
+  }
+]

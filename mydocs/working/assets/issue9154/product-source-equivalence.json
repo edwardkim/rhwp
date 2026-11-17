@@ -1,0 +1,21 @@
+{
+  "base": "1e2488ebd432deb7c326be532f8a91945f260231",
+  "unchangedProductPaths": [
+    "src",
+    "crates",
+    "vendor",
+    "Cargo.toml",
+    "Cargo.lock",
+    "rust-toolchain.toml",
+    "build.rs",
+    "bindings/Native/examples/native_host.py",
+    "scripts/package-native-host.py",
+    "bindings/Native/src",
+    "bindings/Native/Cargo.toml",
+    ".cargo"
+  ],
+  "rustProductChanged": false,
+  "packagerChanged": false,
+  "implementationCommit": "9815b65c3606f42ae57b68df66293f921a1db254",
+  "checkedAt": "2026-11-17T19:57:40+09:00"
+}

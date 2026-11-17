@@ -1,0 +1,621 @@
+{
+  "observedAt": "2026-11-17T16:37:27.289517+00:00",
+  "source": "d9868f4ef1e506918bb3eceece5453333b047e64",
+  "runs": [
+    {
+      "id": 44117430108,
+      "name": "CI",
+      "head": "d9868f4ef1e506918bb3eceece5453333b047e64",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/44117430108"
+    },
+    {
+      "id": 44117430197,
+      "name": "CodeQL",
+      "head": "d9868f4ef1e506918bb3eceece5453333b047e64",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/44117430197"
+    },
+    {
+      "id": 44117430218,
+      "name": "Render Diff",
+      "head": "d9868f4ef1e506918bb3eceece5453333b047e64",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/44117430218"
+    },
+    {
+      "id": 44117430287,
+      "name": "Adapter inter-diff",
+      "head": "d9868f4ef1e506918bb3eceece5453333b047e64",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/44117430287"
+    },
+    {
+      "id": 44117430117,
+      "name": "Proptest roundtrip",
+      "head": "d9868f4ef1e506918bb3eceece5453333b047e64",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/44117430117"
+    },
+    {
+      "id": 44117952664,
+      "name": "Fuzz smoke",
+      "head": "d9868f4ef1e506918bb3eceece5453333b047e64",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/44117952664"
+    },
+    {
+      "id": 44118744018,
+      "name": "Fuzz smoke",
+      "head": "d9868f4ef1e506918bb3eceece5453333b047e64",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/44118744018"
+    }
+  ],
+  "archives": [
+    {
+      "job": "test-archive-b-shard-1 / Default-feature tests (Archive B)",
+      "run": 44117430108,
+      "jobId": 134169134477,
+      "passed": 2017,
+      "skipped": 18,
+      "summary": "Summary [ 186.286s] 2017 tests run: 2017 passed (1 slow), 18 skipped"
+    },
+    {
+      "job": "test-archive-a-shard-1 / Default-feature tests (Archive A)",
+      "run": 44117430108,
+      "jobId": 134169285733,
+      "passed": 3796,
+      "skipped": 12,
+      "summary": "Summary [  30.561s] 3796 tests run: 3796 passed, 12 skipped"
+    },
+    {
+      "job": "test-archive-d-shard-1 / Default-feature tests (Archive D)",
+      "run": 44117430108,
+      "jobId": 134170002238,
+      "passed": 2191,
+      "skipped": 7,
+      "summary": "Summary [ 164.100s] 2191 tests run: 2191 passed, 7 skipped"
+    },
+    {
+      "job": "test-archive-e-shard-1 / Default-feature tests (Archive E)",
+      "run": 44117430108,
+      "jobId": 134173319300,
+      "passed": 2500,
+      "skipped": 7,
+      "summary": "Summary [ 208.018s] 2500 tests run: 2500 passed, 7 skipped"
+    },
+    {
+      "job": "test-archive-c-shard-1 / Default-feature tests (Archive C)",
+      "run": 44117430108,
+      "jobId": 134174455018,
+      "passed": 3019,
+      "skipped": 1,
+      "summary": "Summary [ 219.561s] 3019 tests run: 3019 passed, 1 skipped"
+    }
+  ],
+  "archivePassed": 13523,
+  "archiveSkipped": 45,
+  "selectedNativePassed": 245,
+  "selectedNativeScope": "CI selected lane, not the complete Native official three-suite gate",
+  "studio": {
+    "passed": 2805,
+    "skipped": 2,
+    "failed": 0,
+    "jobId": 134159444139
+  },
+  "fuzz": [
+    {
+      "run": 44117952664,
+      "id": 134162225319,
+      "job": "fuzz parse_hwp3",
+      "startedAt": "2026-11-17T15:47:05Z",
+      "completedAt": "2026-11-17T16:07:48Z",
+      "buildPeakRssKiB": 8148840,
+      "hostMemTotalMiB": 15701,
+      "hostMemAvailableBeforeBuildMiB": 14543,
+      "fuzzStats": {
+        "number_of_executed_units": 9474,
+        "average_exec_per_sec": 155,
+        "new_units_added": 754,
+        "slowest_unit_time_sec": 0,
+        "peak_rss_mb": 438
+      },
+      "steps": [
+        {
+          "name": "Build sanitizer target parse_hwp3",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-17T15:52:38Z",
+          "completed_at": "2026-11-17T16:06:36Z"
+        },
+        {
+          "name": "Smoke-run parse_hwp3 (60s)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-17T16:06:36Z",
+          "completed_at": "2026-11-17T16:07:38Z"
+        }
+      ],
+      "cacheBudgetReadOnly": true,
+      "imageLines": [
+        "2026-11-17T15:47:06.3887449Z Version: 20261103.629",
+        "2026-11-17T15:47:06.3893805Z Image: ubuntu-24.04",
+        "2026-11-17T15:47:06.3894205Z Version: 20261111.127.1"
+      ]
+    },
+    {
+      "run": 44117952664,
+      "id": 134162225839,
+      "job": "fuzz parse_hml",
+      "startedAt": "2026-11-17T15:47:04Z",
+      "completedAt": "2026-11-17T16:09:10Z",
+      "buildPeakRssKiB": 8485556,
+      "hostMemTotalMiB": 15983,
+      "hostMemAvailableBeforeBuildMiB": 14854,
+      "fuzzStats": {
+        "number_of_executed_units": 257746,
+        "average_exec_per_sec": 4225,
+        "new_units_added": 3651,
+        "slowest_unit_time_sec": 0,
+        "peak_rss_mb": 505
+      },
+      "steps": [
+        {
+          "name": "Build sanitizer target parse_hml",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-17T15:53:18Z",
+          "completed_at": "2026-11-17T16:07:56Z"
+        },
+        {
+          "name": "Smoke-run parse_hml (60s)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-17T16:07:56Z",
+          "completed_at": "2026-11-17T16:08:58Z"
+        }
+      ],
+      "cacheBudgetReadOnly": true,
+      "imageLines": [
+        "2026-11-17T15:47:05.5271564Z Version: 20261103.629",
+        "2026-11-17T15:47:05.5279556Z Image: ubuntu-24.04",
+        "2026-11-17T15:47:05.5280076Z Version: 20261111.370.1"
+      ]
+    },
+    {
+      "run": 44117952664,
+      "id": 134162226015,
+      "job": "fuzz parse_ooxml_chart",
+      "startedAt": "2026-11-17T15:47:05Z",
+      "completedAt": "2026-11-17T16:10:03Z",
+      "buildPeakRssKiB": 8404168,
+      "hostMemTotalMiB": 15983,
+      "hostMemAvailableBeforeBuildMiB": 14869,
+      "fuzzStats": {
+        "number_of_executed_units": 479798,
+        "average_exec_per_sec": 7865,
+        "new_units_added": 8232,
+        "slowest_unit_time_sec": 0,
+        "peak_rss_mb": 474
+      },
+      "steps": [
+        {
+          "name": "Build sanitizer target parse_ooxml_chart",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-17T15:53:06Z",
+          "completed_at": "2026-11-17T16:08:47Z"
+        },
+        {
+          "name": "Smoke-run parse_ooxml_chart (60s)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-17T16:08:47Z",
+          "completed_at": "2026-11-17T16:09:49Z"
+        }
+      ],
+      "cacheBudgetReadOnly": true,
+      "imageLines": [
+        "2026-11-17T15:47:06.1850886Z Version: 20261103.629",
+        "2026-11-17T15:47:06.1859146Z Image: ubuntu-24.04",
+        "2026-11-17T15:47:06.1859659Z Version: 20261111.370.1"
+      ]
+    },
+    {
+      "run": 44117952664,
+      "id": 134162226249,
+      "job": "fuzz parse_wmf",
+      "startedAt": "2026-11-17T15:47:05Z",
+      "completedAt": "2026-11-17T16:08:14Z",
+      "buildPeakRssKiB": 8055916,
+      "hostMemTotalMiB": 15701,
+      "hostMemAvailableBeforeBuildMiB": 14483,
+      "fuzzStats": {
+        "number_of_executed_units": 64170,
+        "average_exec_per_sec": 1051,
+        "new_units_added": 1474,
+        "slowest_unit_time_sec": 0,
+        "peak_rss_mb": 681
+      },
+      "steps": [
+        {
+          "name": "Build sanitizer target parse_wmf",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-17T15:52:40Z",
+          "completed_at": "2026-11-17T16:07:00Z"
+        },
+        {
+          "name": "Smoke-run parse_wmf (60s)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-17T16:07:00Z",
+          "completed_at": "2026-11-17T16:08:02Z"
+        }
+      ],
+      "cacheBudgetReadOnly": true,
+      "imageLines": [
+        "2026-11-17T15:47:06.5440528Z Version: 20261103.629",
+        "2026-11-17T15:47:06.5447036Z Image: ubuntu-24.04",
+        "2026-11-17T15:47:06.5447432Z Version: 20261111.127.1"
+      ]
+    },
+    {
+      "run": 44117952664,
+      "id": 134162226321,
+      "job": "fuzz parse_hwpx",
+      "startedAt": "2026-11-17T15:47:05Z",
+      "completedAt": "2026-11-17T16:07:27Z",
+      "buildPeakRssKiB": 8182048,
+      "hostMemTotalMiB": 15701,
+      "hostMemAvailableBeforeBuildMiB": 14651,
+      "fuzzStats": {
+        "number_of_executed_units": 39423,
+        "average_exec_per_sec": 646,
+        "new_units_added": 915,
+        "slowest_unit_time_sec": 0,
+        "peak_rss_mb": 509
+      },
+      "steps": [
+        {
+          "name": "Build sanitizer target parse_hwpx",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-17T15:51:58Z",
+          "completed_at": "2026-11-17T16:06:17Z"
+        },
+        {
+          "name": "Smoke-run parse_hwpx (60s)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-17T16:06:17Z",
+          "completed_at": "2026-11-17T16:07:19Z"
+        }
+      ],
+      "cacheBudgetReadOnly": true,
+      "imageLines": [
+        "2026-11-17T15:47:05.5399852Z Version: 20261103.629",
+        "2026-11-17T15:47:05.5406857Z Image: ubuntu-24.04",
+        "2026-11-17T15:47:05.5407295Z Version: 20261111.127.1"
+      ]
+    },
+    {
+      "run": 44117952664,
+      "id": 134162226497,
+      "job": "fuzz parse_hwp",
+      "startedAt": "2026-11-17T15:47:05Z",
+      "completedAt": "2026-11-17T16:06:57Z",
+      "buildPeakRssKiB": 8097732,
+      "hostMemTotalMiB": 15701,
+      "hostMemAvailableBeforeBuildMiB": 14597,
+      "fuzzStats": {
+        "number_of_executed_units": 130633,
+        "average_exec_per_sec": 2141,
+        "new_units_added": 1986,
+        "slowest_unit_time_sec": 0,
+        "peak_rss_mb": 564
+      },
+      "steps": [
+        {
+          "name": "Build sanitizer target parse_hwp",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-17T15:51:50Z",
+          "completed_at": "2026-11-17T16:05:47Z"
+        },
+        {
+          "name": "Smoke-run parse_hwp (60s)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-17T16:05:47Z",
+          "completed_at": "2026-11-17T16:06:49Z"
+        }
+      ],
+      "cacheBudgetReadOnly": true,
+      "imageLines": [
+        "2026-11-17T15:47:05.6899745Z Version: 20261103.629",
+        "2026-11-17T15:47:05.6908696Z Image: ubuntu-24.04",
+        "2026-11-17T15:47:05.6909601Z Version: 20261111.127.1"
+      ]
+    },
+    {
+      "run": 44118744018,
+      "id": 134177810694,
+      "job": "fuzz parse_hwp3",
+      "startedAt": "2026-11-17T16:10:06Z",
+      "completedAt": "2026-11-17T16:32:20Z",
+      "buildPeakRssKiB": 8410632,
+      "hostMemTotalMiB": 15983,
+      "hostMemAvailableBeforeBuildMiB": 14889,
+      "fuzzStats": {
+        "number_of_executed_units": 3686,
+        "average_exec_per_sec": 46,
+        "new_units_added": 393,
+        "slowest_unit_time_sec": 19,
+        "peak_rss_mb": 418
+      },
+      "steps": [
+        {
+          "name": "Build sanitizer target parse_hwp3",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-17T16:15:22Z",
+          "completed_at": "2026-11-17T16:30:48Z"
+        },
+        {
+          "name": "Smoke-run parse_hwp3 (60s)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-17T16:30:48Z",
+          "completed_at": "2026-11-17T16:32:09Z"
+        }
+      ],
+      "cacheBudgetReadOnly": true,
+      "imageLines": [
+        "2026-11-17T16:10:07.5069413Z Version: 20261103.629",
+        "2026-11-17T16:10:07.5081565Z Image: ubuntu-26.04",
+        "2026-11-17T16:10:07.5082450Z Version: 20261111.196.1"
+      ]
+    },
+    {
+      "run": 44118744018,
+      "id": 134177811227,
+      "job": "fuzz parse_hml",
+      "startedAt": "2026-11-17T16:10:07Z",
+      "completedAt": "2026-11-17T16:35:36Z",
+      "buildPeakRssKiB": 8391148,
+      "hostMemTotalMiB": 15983,
+      "hostMemAvailableBeforeBuildMiB": 14855,
+      "fuzzStats": {
+        "number_of_executed_units": 156908,
+        "average_exec_per_sec": 2572,
+        "new_units_added": 2783,
+        "slowest_unit_time_sec": 0,
+        "peak_rss_mb": 490
+      },
+      "steps": [
+        {
+          "name": "Build sanitizer target parse_hml",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-17T16:15:23Z",
+          "completed_at": "2026-11-17T16:34:22Z"
+        },
+        {
+          "name": "Smoke-run parse_hml (60s)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-17T16:34:22Z",
+          "completed_at": "2026-11-17T16:35:24Z"
+        }
+      ],
+      "cacheBudgetReadOnly": true,
+      "imageLines": [
+        "2026-11-17T16:10:07.8435113Z Version: 20261103.629",
+        "2026-11-17T16:10:07.8445427Z Image: ubuntu-26.04",
+        "2026-11-17T16:10:07.8445997Z Version: 20261111.196.1"
+      ]
+    },
+    {
+      "run": 44118744018,
+      "id": 134177811277,
+      "job": "fuzz parse_wmf",
+      "startedAt": "2026-11-17T16:10:07Z",
+      "completedAt": "2026-11-17T16:35:10Z",
+      "buildPeakRssKiB": 8457468,
+      "hostMemTotalMiB": 15983,
+      "hostMemAvailableBeforeBuildMiB": 14918,
+      "fuzzStats": {
+        "number_of_executed_units": 55561,
+        "average_exec_per_sec": 910,
+        "new_units_added": 1383,
+        "slowest_unit_time_sec": 0,
+        "peak_rss_mb": 581
+      },
+      "steps": [
+        {
+          "name": "Build sanitizer target parse_wmf",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-17T16:15:27Z",
+          "completed_at": "2026-11-17T16:33:54Z"
+        },
+        {
+          "name": "Smoke-run parse_wmf (60s)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-17T16:33:54Z",
+          "completed_at": "2026-11-17T16:34:56Z"
+        }
+      ],
+      "cacheBudgetReadOnly": true,
+      "imageLines": [
+        "2026-11-17T16:10:08.4772496Z Version: 20261103.629",
+        "2026-11-17T16:10:08.4789186Z Image: ubuntu-26.04",
+        "2026-11-17T16:10:08.4790300Z Version: 20261111.196.1"
+      ]
+    },
+    {
+      "run": 44118744018,
+      "id": 134177811292,
+      "job": "fuzz parse_ooxml_chart",
+      "startedAt": "2026-11-17T16:10:07Z",
+      "completedAt": "2026-11-17T16:34:22Z",
+      "buildPeakRssKiB": 8432352,
+      "hostMemTotalMiB": 15983,
+      "hostMemAvailableBeforeBuildMiB": 14914,
+      "fuzzStats": {
+        "number_of_executed_units": 344623,
+        "average_exec_per_sec": 5649,
+        "new_units_added": 6597,
+        "slowest_unit_time_sec": 0,
+        "peak_rss_mb": 457
+      },
+      "steps": [
+        {
+          "name": "Build sanitizer target parse_ooxml_chart",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-17T16:15:37Z",
+          "completed_at": "2026-11-17T16:33:08Z"
+        },
+        {
+          "name": "Smoke-run parse_ooxml_chart (60s)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-17T16:33:08Z",
+          "completed_at": "2026-11-17T16:34:10Z"
+        }
+      ],
+      "cacheBudgetReadOnly": true,
+      "imageLines": [
+        "2026-11-17T16:10:08.1380431Z Version: 20261103.629",
+        "2026-11-17T16:10:08.1390236Z Image: ubuntu-26.04",
+        "2026-11-17T16:10:08.1390903Z Version: 20261111.196.1"
+      ]
+    },
+    {
+      "run": 44118744018,
+      "id": 134177811408,
+      "job": "fuzz parse_hwpx",
+      "startedAt": "2026-11-17T16:10:07Z",
+      "completedAt": "2026-11-17T16:35:59Z",
+      "buildPeakRssKiB": 8384136,
+      "hostMemTotalMiB": 15983,
+      "hostMemAvailableBeforeBuildMiB": 14848,
+      "fuzzStats": {
+        "number_of_executed_units": 21111,
+        "average_exec_per_sec": 346,
+        "new_units_added": 639,
+        "slowest_unit_time_sec": 0,
+        "peak_rss_mb": 496
+      },
+      "steps": [
+        {
+          "name": "Build sanitizer target parse_hwpx",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-17T16:16:11Z",
+          "completed_at": "2026-11-17T16:34:43Z"
+        },
+        {
+          "name": "Smoke-run parse_hwpx (60s)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-17T16:34:43Z",
+          "completed_at": "2026-11-17T16:35:45Z"
+        }
+      ],
+      "cacheBudgetReadOnly": true,
+      "imageLines": [
+        "2026-11-17T16:10:08.4731561Z Version: 20261103.629",
+        "2026-11-17T16:10:08.4741328Z Image: ubuntu-26.04",
+        "2026-11-17T16:10:08.4741892Z Version: 20261111.196.1"
+      ]
+    },
+    {
+      "run": 44118744018,
+      "id": 134177811445,
+      "job": "fuzz parse_hwp",
+      "startedAt": "2026-11-17T16:10:07Z",
+      "completedAt": "2026-11-17T16:30:37Z",
+      "buildPeakRssKiB": 8435568,
+      "hostMemTotalMiB": 15983,
+      "hostMemAvailableBeforeBuildMiB": 14751,
+      "fuzzStats": {
+        "number_of_executed_units": 130114,
+        "average_exec_per_sec": 2133,
+        "new_units_added": 2002,
+        "slowest_unit_time_sec": 0,
+        "peak_rss_mb": 491
+      },
+      "steps": [
+        {
+          "name": "Build sanitizer target parse_hwp",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-17T16:15:50Z",
+          "completed_at": "2026-11-17T16:29:25Z"
+        },
+        {
+          "name": "Smoke-run parse_hwp (60s)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-17T16:29:25Z",
+          "completed_at": "2026-11-17T16:30:27Z"
+        }
+      ],
+      "cacheBudgetReadOnly": true,
+      "imageLines": [
+        "2026-11-17T16:10:07.7034247Z Version: 20261103.629",
+        "2026-11-17T16:10:07.7040344Z Image: ubuntu-26.04",
+        "2026-11-17T16:10:07.7040782Z Version: 20261111.196.1"
+      ]
+    }
+  ],
+  "limits": {
+    "jobMinutes": 60,
+    "fuzzDefaultSeconds": 60,
+    "inputTimeoutSeconds": 30,
+    "rssLimitMiB": 2048,
+    "codegenUnits": 16,
+    "sanitizer": "address",
+    "coverage": "unchanged"
+  },
+  "cache": "Configured budget read-only warning retained; no cache deletion, budget or billing mutation",
+  "mainApplied": false,
+  "issue9154": "OPEN",
+  "parent536": "OPEN"
+}

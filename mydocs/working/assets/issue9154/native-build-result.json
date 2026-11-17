@@ -1,0 +1,27 @@
+{
+  "started_at": "2026-11-17T10:38:38.534614+00:00",
+  "source": "ae1d714bd56bb275ad01d107f7f87a456451fe80",
+  "base": "1e2488ebd432deb7c326be532f8a91945f260231",
+  "target_dir": "/home/edward/mygithub/rhwp/target/pr-review",
+  "toolchain": "1.93.1",
+  "product_paths_unchanged": true,
+  "host": "Ubuntu 24.04.5 LTS",
+  "command": [
+    "cargo",
+    "+1.93.1",
+    "build",
+    "--locked",
+    "--release",
+    "-p",
+    "rhwp-native-ffi",
+    "--features",
+    "native-skia",
+    "--target",
+    "x86_64-unknown-linux-gnu",
+    "--target-dir",
+    "/home/edward/mygithub/rhwp/target/pr-review"
+  ],
+  "exit_code": 0,
+  "completed_at": "2026-11-17T10:57:32.708812+00:00",
+  "jobs": 8
+}

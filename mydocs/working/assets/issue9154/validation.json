@@ -1,0 +1,51 @@
+{
+  "issue": 9154,
+  "source": "9815b65c3606f42ae57b68df66293f921a1db254",
+  "validatedAt": "2026-11-17T10:59:46.515935+00:00",
+  "base": "1e2488ebd432deb7c326be532f8a91945f260231",
+  "main": "7213ed1f96266b95e22cd5645a07851c9c18298e",
+  "checks": [
+    {
+      "name": "workflow contracts",
+      "command": "python3 -m unittest discover -s scripts/tests -p test_*workflow.py",
+      "passed": true,
+      "count": 262,
+      "stdoutSha256": "2da45367a894466ee503f5f39f671d1a578f0fa4269d99c34825f0772fb0af33",
+      "summary": "......................................................................................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 262 tests in 11.248s\n\nOK\n"
+    },
+    {
+      "name": "CI impact / policy / reuse",
+      "command": "node --test scripts/tests/{ci-impact-classifier.test.cjs,ci-impact-policy.test.cjs,verify-trusted-postmerge-ci-reuse.test.mjs,verify-trusted-postmerge-ci-reuse-squash.test.mjs}",
+      "passed": true,
+      "count": 339,
+      "stdoutSha256": "4ab877394d8914cf6dac8b1380ee5d8b449d90f46809a3b4eaf03a629a2a46a5",
+      "summary": "ccess (0.121236ms)\n✔ merge 이후 최신 rerun을 이전 성공으로 우회하지 않는다: failure (0.060265ms)\n✔ merge 이후 최신 rerun을 이전 성공으로 우회하지 않는다: cancelled (0.063893ms)\n✔ merge 이후 최신 rerun을 이전 성공으로 우회하지 않는다: null (0.092716ms)\n✔ duration 신뢰 helper 변경은 enforcement fast-pass 대상이 아니다 (0.075785ms)\n✔ fork 코드 후보의 tree 또는 identity 증명이 없거나 변조되면 거부한다 (0.17354ms)\n✔ fork 코드 후보의 tree 또는 identity 증명이 없거나 변조되면 거부한다 (0.152275ms)\n✔ fork 코드 후보의 tree 또는 identity 증명이 없거나 변조되면 거부한다 (0.15671ms)\n✔ fork 코드 후보의 tree 또는 identity 증명이 없거나 변조되면 거부한다 (0.150865ms)\n✔ fork 코드 후보의 tree 또는 identity 증명이 없거나 변조되면 거부한다 (0.205587ms)\n✔ fork 코드 후보의 tree 또는 identity 증명이 없거나 변조되면 거부한다 (0.14764ms)\n✔ 실제 Git tree 대조는 fork의 문서 trailing만 허용하고 source 변경과 base 이동은 거부한다 (154.063243ms)\n✔ worker evidence is mandatory even when workflow status is green (0.190439ms)\nℹ tests 339\nℹ suites 0\nℹ pass 339\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 6298.792665\n"
+    },
+    {
+      "name": "Native package contracts",
+      "command": "python3 bindings/Native/tests/package_native_host_contract.py",
+      "passed": true,
+      "count": 14,
+      "stdoutSha256": "7596b1e701abc355a1f6366d58e202e073687760eafd53bee388f7a237b1ce40",
+      "summary": "..............\n----------------------------------------------------------------------\nRan 14 tests in 1.011s\n\nOK\n"
+    },
+    {
+      "name": "actionlint 1.7.12",
+      "command": "docker run --rm --network none -v WORKTREE:/repo:ro -w /repo rhysd/actionlint:1.7.12 -color <14 changed workflow paths>",
+      "passed": true,
+      "count": null,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "summary": ""
+    }
+  ],
+  "librarySha256": "1cd1e0bfc769cdb6666c5b8706907a69c0350e60ba6594f25d930c7f21fbd125",
+  "actualRuntimeVersions": {
+    "24.04": "glibc 2.39",
+    "26.04": "glibc 2.43"
+  },
+  "actualAbiControl": "GLIBC_2.43 artifact is rejected both by the 2.39 gate and independently by the Ubuntu 24.04 loader",
+  "gitHubProductCiRun": false,
+  "gitHubDispatchRun": false,
+  "mainApplied": false,
+  "rustProductChanged": false
+}

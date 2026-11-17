@@ -1,0 +1,42 @@
+{
+  "id": 5942556696,
+  "node_id": "PRR_kwDORyECHM8AAAABYjQ4GA",
+  "user": {
+    "login": "edwardkim",
+    "id": 3311384,
+    "node_id": "MDQ6VXNlcjMzMTEzODQ=",
+    "avatar_url": "https://avatars.githubusercontent.com/u/3311384?u=f71b8314f89f5343b73678d5ba9b4a7ce011b447&v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/edwardkim",
+    "html_url": "https://github.com/edwardkim",
+    "followers_url": "https://api.github.com/users/edwardkim/followers",
+    "following_url": "https://api.github.com/users/edwardkim/following{/other_user}",
+    "gists_url": "https://api.github.com/users/edwardkim/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/edwardkim/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/edwardkim/subscriptions",
+    "organizations_url": "https://api.github.com/users/edwardkim/orgs",
+    "repos_url": "https://api.github.com/users/edwardkim/repos",
+    "events_url": "https://api.github.com/users/edwardkim/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/edwardkim/received_events",
+    "type": "User",
+    "user_view_type": "public",
+    "site_admin": false
+  },
+  "body": "Self-review 완료 — 승인 범위 충족을 확인했습니다.\n\n검토 head: `d9868f4ef1e506918bb3eceece5453333b047e64`. 실제 CI merge-ref는 최신 devel `22da83586aab1baf960f2159abda347062ecf7ed`와의 병합 결과이며 로컬 tree `7e4504f32b4f4140a63565f8ba0c7153f14977be`와 같습니다. 해당 devel의 새 기능 7개 회귀도 최소 글꼴 환경에서 통과했습니다. 병합 직전에 head·base·checks를 다시 확인합니다.\n\n- 실행 기준·ABI: 실제 제품 job과 archive를 Ubuntu 24.04로 고정하고 OS cache namespace를 분리했습니다. 실제 ELF version needs만 검사하며 GLIBC 2.39 초과·알 수 없는 결과·readelf 진단을 거절합니다. 실제 loader·capability 검증은 별도로 수행했습니다.\n- Fuzz 메모리: 같은 build/run의 `--codegen-units 16`으로 분할했습니다. 로컬 같은 SDK/source/lockfile의 compiler peak는 16.64→13.18GiB였고, 양 구성의 HWP/HWP3 실제 퍼징과 동일한 느린 입력 재실행이 통과했습니다. 캐시·CPU 차이가 있어 시간비를 일반화하지 않습니다. ASan·coverage·debug/overflow·6개 타깃·60분/60초/입력별 30초/RSS 2GiB는 유지했습니다.\n- 최신 head의 [CI](https://github.com/edwardkim/rhwp/actions/runs/44117430108)·[CodeQL](https://github.com/edwardkim/rhwp/actions/runs/44117430197)·[Render Diff](https://github.com/edwardkim/rhwp/actions/runs/44117430218)·[Adapter](https://github.com/edwardkim/rhwp/actions/runs/44117430287)·[Proptest](https://github.com/edwardkim/rhwp/actions/runs/44117430117)·[최종 정책 감사](https://github.com/edwardkim/rhwp/actions/runs/44123809110)가 모두 성공했습니다. Archive A–E 13,523 PASS·45 skip, 선택 Native lane 245 PASS, Studio 2,805 PASS·2 skip입니다. 선택 Native를 공식 3종 전체 검사로 표현하지 않습니다. PR merge ref의 OPEN code alert는 0건을 확인했습니다.\n- [Fuzz 24.04](https://github.com/edwardkim/rhwp/actions/runs/44117952664)·[Fuzz 26.04](https://github.com/edwardkim/rhwp/actions/runs/44118744018)의 12개 실제 sanitizer build와 퍼징이 모두 성공했습니다. 최신 compiler peak의 최댓값은 8.092GiB입니다. 기존 runner shutdown/exit 143이 원격 OOM이었다고 확정하지 않으며 Atomic API 사용 중단 경고와도 구분했습니다.\n- 사용자 승인에 따라 [Native 3플랫폼](https://github.com/edwardkim/rhwp/actions/runs/44072214045)과 [Renderer 24.04](https://github.com/edwardkim/rhwp/actions/runs/44072271463)·[26.04](https://github.com/edwardkim/rhwp/actions/runs/44072292744)의 기존 컴포넌트 증거를 유지했습니다. producer source는 `de94e7cc23`이고 task branch의 관련 정의·제품·도구가 같습니다. 실제 GitHub Linux artifact의 ZIP digest·ELF를 확인하고 동일 패키지의 Docker 24.04/26.04 capability·IME·Undo/Redo·저장 재열기·재렌더를 검증했습니다. manifest의 caller-declared source를 검증된 binary provenance로 승격하지 않습니다.\n- Renderer의 browser PNG 378개·SVG 105개는 OS 간 바이트가 같지만 Native 34개 PNG는 실제 픽셀 차이가 있습니다. Native/CanvasKit parity는 report-only 72개 중 22개 통과·50개 차이입니다. 이를 Native 전체 동일성이나 독립 한컴 조판 정확도 개선으로 주장하지 않습니다. 제품 Rust/JS/Cargo·IR·조판/저장 코드 변경이 없으므로 CI-only 검증 범위를 적용했습니다.\n- configured cache budget/read-only 경고를 그대로 남기며 새 key 저장·warm hit를 성공했다고 주장하지 않습니다. cache 삭제·예산·과금·보호 설정·게시 동작을 변경하지 않았습니다.\n\n작업지시자가 승인한 일반 merge 경로를 적용하며 admin 우회는 사용하지 않습니다. CI 변경의 옵션 2에 따라 merge 후 별도 기록 PR로 실제 source·CI·merge SHA를 보존하고 동기화·종료 정리를 진행합니다. main·tag·publish는 제외하며 #9154와 부모 #536은 OPEN을 유지합니다.\n",
+  "state": "COMMENTED",
+  "html_url": "https://github.com/edwardkim/rhwp/pull/9155#pullrequestreview-5942556696",
+  "pull_request_url": "https://api.github.com/repos/edwardkim/rhwp/pulls/9155",
+  "author_association": "OWNER",
+  "is_copilot_code_review": false,
+  "copilot_code_review_effort": null,
+  "_links": {
+    "html": {
+      "href": "https://github.com/edwardkim/rhwp/pull/9155#pullrequestreview-5942556696"
+    },
+    "pull_request": {
+      "href": "https://api.github.com/repos/edwardkim/rhwp/pulls/9155"
+    }
+  },
+  "submitted_at": "2026-11-17T16:37:41Z",
+  "commit_id": "d9868f4ef1e506918bb3eceece5453333b047e64"
+}

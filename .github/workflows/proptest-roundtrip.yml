@@ -438,7 +438,7 @@ jobs:
 
   proptest-roundtrip:
     name: prop roundtrip
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # [#8548] 실측 checkout 약 18분 뒤 property build·실행까지 포함하는 유한 상한이다.
     timeout-minutes: 45
     needs: preflight
@@ -454,7 +454,7 @@ jobs:
       - name: Rust build cache
         uses: Swatinem/rust-cache@eedcf2fb1c22f010a0eb66b92f378c110977f266 # v2.9.3 이후 workspace root key 보정
         with:
-          shared-key: proptest-roundtrip
+          shared-key: ubuntu-24.04-proptest-roundtrip
           save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
 
       - name: Check property runner contract

@@ -1,0 +1,271 @@
+{
+  "at": "2026-11-17T16:38:20.431770+00:00",
+  "head": "d9868f4ef1e506918bb3eceece5453333b047e64",
+  "base": "22da83586aab1baf960f2159abda347062ecf7ed",
+  "mergeRef": "abe881565082d737440568a3056c10c7ac947c7c",
+  "mergeTree": "7e4504f32b4f4140a63565f8ba0c7153f14977be",
+  "checks": [
+    {
+      "name": "Build & Test",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "fuzz parse_hwp",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "fuzz parse_hwpx",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "fuzz parse_ooxml_chart",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "fuzz parse_wmf",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "fuzz parse_hml",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "fuzz parse_hwp3",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "test-archive-c-shard-1 / Default-feature tests (Archive C)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "test-archive-e-shard-1 / Default-feature tests (Archive E)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "test-archive-d-shard-1 / Default-feature tests (Archive D)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "test-archive-a-shard-1 / Default-feature tests (Archive A)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "test-archive-b-shard-1 / Default-feature tests (Archive B)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "CodeQL",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "fuzz parse_hwp",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "fuzz parse_hwpx",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "fuzz parse_wmf",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "fuzz parse_ooxml_chart",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "fuzz parse_hml",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "fuzz parse_hwp3",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Analyze (rust)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Analyze (javascript-typescript)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Analyze (python)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Analyze (actions)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Canvas visual diff",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "build-test-archive-c / Build test archive (c)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "build-test-archive-e / Build test archive (e)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "build-test-archive-d / Build test archive (d)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "build-test-archive-b / Build test archive (b)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "prop roundtrip",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "release-operations-contracts",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "name": "Workflow promotion preflight",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "name": "Frontend unit gates",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "name": "native-host-package",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "name": "Lint (fmt, clippy, WASM check)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "build-test-archive-a / Build test archive (a)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Frontend package gates",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Resolve nextest target duration policy",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Native Skia tests",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "adapter inter-diff",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "CodeQL preflight",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "adapter inter-diff preflight",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Proptest preflight",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "cancel-stale-runs",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "name": "CI preflight",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Render Diff preflight",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "WASM Build",
+      "status": "completed",
+      "conclusion": "skipped"
+    },
+    {
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "cancel-stale-runs",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Evaluate trusted CI impact policy",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "status": "success",
+  "adminBypass": false
+}

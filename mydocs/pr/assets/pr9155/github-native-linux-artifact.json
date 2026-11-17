@@ -1,0 +1,20 @@
+{
+  "id": 14324237355,
+  "node_id": "MDg6QXJ0aWZhY3QxNDMyNDIzNzM1NQ==",
+  "name": "rhwp-native-host-linux-x86_64",
+  "size_in_bytes": 28974641,
+  "url": "https://api.github.com/repos/edwardkim/rhwp/actions/artifacts/14324237355",
+  "archive_download_url": "https://api.github.com/repos/edwardkim/rhwp/actions/artifacts/14324237355/zip",
+  "expired": false,
+  "digest": "sha256:5bfeba25876d0d8d8a195c7138f66394ff21d9d6ce3729d226a54625146e303b",
+  "created_at": "2026-11-17T11:33:52Z",
+  "updated_at": "2026-11-17T11:33:52Z",
+  "expires_at": "2026-11-24T11:33:50Z",
+  "workflow_run": {
+    "id": 44072214045,
+    "repository_id": 1193345564,
+    "head_repository_id": 1193345564,
+    "head_branch": "task/9154-ubuntu-runner-baseline",
+    "head_sha": "de94e7cc23dcbea3fe857a726646a872399f8f9c"
+  }
+}

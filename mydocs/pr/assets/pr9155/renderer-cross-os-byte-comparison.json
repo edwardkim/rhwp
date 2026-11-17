@@ -1,0 +1,71 @@
+{
+  "source": "de94e7cc23dcbea3fe857a726646a872399f8f9c",
+  "sameFileSet": true,
+  "comparisons": [
+    {
+      "extension": ".png",
+      "total": 462,
+      "byteIdentical": 428,
+      "different": [
+        "output/renderer-baseline/workflow-dispatch/endnote/native-skia-fast-preview/endnote-01.png",
+        "output/renderer-baseline/workflow-dispatch/endnote/native-skia-high-quality/endnote-01.png",
+        "output/renderer-baseline/workflow-dispatch/endnote/native-skia-screen/endnote-01.png",
+        "output/renderer-baseline/workflow-dispatch/equation-inline/native-skia-fast-preview/eq-01.png",
+        "output/renderer-baseline/workflow-dispatch/equation-inline/native-skia-high-quality/eq-01.png",
+        "output/renderer-baseline/workflow-dispatch/equation-inline/native-skia-print/eq-01.png",
+        "output/renderer-baseline/workflow-dispatch/equation-inline/native-skia-screen/eq-01.png",
+        "output/renderer-baseline/workflow-dispatch/footnote/native-skia-fast-preview/footnote-01.png",
+        "output/renderer-baseline/workflow-dispatch/footnote/native-skia-high-quality/footnote-01.png",
+        "output/renderer-baseline/workflow-dispatch/footnote/native-skia-screen/footnote-01.png",
+        "output/renderer-baseline/workflow-dispatch/image-start/native-skia-fast-preview/img-start-001.png",
+        "output/renderer-baseline/workflow-dispatch/image-start/native-skia-high-quality/img-start-001.png",
+        "output/renderer-baseline/workflow-dispatch/image-start/native-skia-screen/img-start-001.png",
+        "output/renderer-baseline/workflow-dispatch/legacy-doc-2010/native-skia-fast-preview/2010-01-06.png",
+        "output/renderer-baseline/workflow-dispatch/legacy-doc-2010/native-skia-high-quality/2010-01-06.png",
+        "output/renderer-baseline/workflow-dispatch/legacy-doc-2010/native-skia-screen/2010-01-06.png",
+        "output/renderer-baseline/workflow-dispatch/paragraph-basic/native-skia-fast-preview/lseg-05-tab.png",
+        "output/renderer-baseline/workflow-dispatch/paragraph-basic/native-skia-high-quality/lseg-05-tab.png",
+        "output/renderer-baseline/workflow-dispatch/paragraph-basic/native-skia-screen/lseg-05-tab.png",
+        "output/renderer-baseline/workflow-dispatch/paragraph-line-basic/native-skia-fast-preview/lseg-01-basic.png",
+        "output/renderer-baseline/workflow-dispatch/paragraph-line-basic/native-skia-high-quality/lseg-01-basic.png",
+        "output/renderer-baseline/workflow-dispatch/paragraph-line-basic/native-skia-screen/lseg-01-basic.png",
+        "output/renderer-baseline/workflow-dispatch/paragraph-text-marks/native-skia-fast-preview/lseg-05-tab.png",
+        "output/renderer-baseline/workflow-dispatch/paragraph-text-marks/native-skia-high-quality/lseg-05-tab.png",
+        "output/renderer-baseline/workflow-dispatch/paragraph-text-marks/native-skia-screen/lseg-05-tab.png",
+        "output/renderer-baseline/workflow-dispatch/table-border-style/native-skia-fast-preview/table-004.png",
+        "output/renderer-baseline/workflow-dispatch/table-border-style/native-skia-high-quality/table-004.png",
+        "output/renderer-baseline/workflow-dispatch/table-border-style/native-skia-screen/table-004.png",
+        "output/renderer-baseline/workflow-dispatch/table-core/native-skia-fast-preview/hwp_table_test.png",
+        "output/renderer-baseline/workflow-dispatch/table-core/native-skia-high-quality/hwp_table_test.png",
+        "output/renderer-baseline/workflow-dispatch/table-core/native-skia-screen/hwp_table_test.png",
+        "output/renderer-baseline/workflow-dispatch/table-in-textbox/native-skia-fast-preview/table-in-tbox.png",
+        "output/renderer-baseline/workflow-dispatch/table-in-textbox/native-skia-high-quality/table-in-tbox.png",
+        "output/renderer-baseline/workflow-dispatch/table-in-textbox/native-skia-screen/table-in-tbox.png"
+      ]
+    },
+    {
+      "extension": ".svg",
+      "total": 105,
+      "byteIdentical": 105,
+      "different": []
+    },
+    {
+      "extension": ".pdf",
+      "total": 21,
+      "byteIdentical": 10,
+      "different": [
+        "output/renderer-baseline/workflow-dispatch/endnote/pdf-print/endnote-page-0.pdf",
+        "output/renderer-baseline/workflow-dispatch/equation-inline/pdf-print/equation-inline-page-0.pdf",
+        "output/renderer-baseline/workflow-dispatch/footnote/pdf-print/footnote-page-0.pdf",
+        "output/renderer-baseline/workflow-dispatch/image-start/pdf-print/image-start-page-0.pdf",
+        "output/renderer-baseline/workflow-dispatch/legacy-doc-2010/pdf-print/legacy-doc-2010-page-0.pdf",
+        "output/renderer-baseline/workflow-dispatch/paragraph-basic/pdf-print/paragraph-basic-page-0.pdf",
+        "output/renderer-baseline/workflow-dispatch/paragraph-line-basic/pdf-print/paragraph-line-basic-page-0.pdf",
+        "output/renderer-baseline/workflow-dispatch/paragraph-text-marks/pdf-print/paragraph-text-marks-page-0.pdf",
+        "output/renderer-baseline/workflow-dispatch/pua-special-glyphs/pdf-print/pua-special-glyphs-page-0.pdf",
+        "output/renderer-baseline/workflow-dispatch/table-border-style/pdf-print/table-border-style-page-0.pdf",
+        "output/renderer-baseline/workflow-dispatch/table-in-textbox/pdf-print/table-in-textbox-page-0.pdf"
+      ]
+    }
+  ]
+}

@@ -435,7 +435,7 @@ jobs:
 
   adapter-diff:
     name: adapter inter-diff
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     needs: adapter-impact
     if: ${{ always() && needs.adapter-impact.result == 'success' && needs.adapter-impact.outputs.adapter_required == 'true' }}
@@ -450,7 +450,7 @@ jobs:
       - name: Rust build cache
         uses: Swatinem/rust-cache@eedcf2fb1c22f010a0eb66b92f378c110977f266 # v2.9.3 이후 workspace root key 보정
         with:
-          shared-key: adapter-diff
+          shared-key: ubuntu-24.04-adapter-diff
           save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
 
       - name: Check adapter-diff runner contract

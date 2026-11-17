@@ -1,0 +1,25 @@
+[
+  {
+    "id": 44090557667,
+    "head_sha": "b931460f9cb2478aaae745371f4c49794d5ff8c7",
+    "status": "in_progress",
+    "conclusion": null,
+    "run_attempt": 2,
+    "observedAt": "2026-11-17T15:46:44.048747+00:00",
+    "reason": "user-approved source transition to codegen16; not a product failure",
+    "cancelRequestedAt": "2026-11-17T15:46:44.048818+00:00",
+    "cancelExitCode": 0,
+    "cancelStdout": "{}",
+    "cancelStderr": ""
+  },
+  {
+    "id": 44090613811,
+    "head_sha": "b931460f9cb2478aaae745371f4c49794d5ff8c7",
+    "status": "completed",
+    "conclusion": "cancelled",
+    "run_attempt": 2,
+    "observedAt": "2026-11-17T15:46:45.227676+00:00",
+    "reason": "user-approved source transition to codegen16; not a product failure",
+    "action": "already-completed; no cancel request"
+  }
+]
