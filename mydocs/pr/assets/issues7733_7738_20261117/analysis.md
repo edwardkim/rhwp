@@ -301,3 +301,13 @@ Native 98.53555→100.00000%, fresh WASM 97.57430→100.00000%를 확인했다.
 [같은 쪽 review](moeum-original-font/after-wasm-review-023.png)·
 [overlay](moeum-original-font/after-wasm-overlay-023.png)를 직접 확인했다.
 새 글꼴 조건의 전 252쪽 완료로 바꾸어 쓰지 않는다. private TTC는 Git에 포함하지 않는다.
+
+## U+257A의 실제 공급과 원 프로그램 hit 보존
+
+[독립 글리프·관계/고정 검사·전쪽 비교](box-drawing-marker/cause.md)를 보존했다.
+실제 제공 프로그램의 hit를 정적 기준 파일 결측보다 우선하며, 결측인 경우만 같은 측정·paint
+공급자를 사용한다. 보정 전 6건 중 3 FAIL에서 보정 후 6 PASS, 관련 최소 글꼴 검사
+167 PASS다. 새 글꼴 조건의 Native 전 252쪽은 모두 98% 이상·하락 0쪽이다.
+휴먼모음T 설치를 포함한 58쪽 상승과 같은 글꼴 조건의 코드 집중 대조를 구분했다.
+92쪽은 98.55232%이며 아래 Type3 표식과 기타 미세 차이는 아직 보정 중이다.
+최신 fresh WASM 전쪽·전체 회귀·보호 gate는 미완료다.

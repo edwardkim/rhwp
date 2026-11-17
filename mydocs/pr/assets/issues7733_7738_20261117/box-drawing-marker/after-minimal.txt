@@ -1,0 +1,13 @@
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 3m 31s
+────────────
+ Nextest run ID 8fe37169-10dd-48f7-83b1-6cd1db8874cd with nextest profile: default
+    Starting 6 tests across 2 binaries (739 tests skipped)
+        PASS [   0.018s] (1/6) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::missing_batangche_right_bar_uses_the_independent_supplier_advance
+        PASS [   0.018s] (2/6) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::explicit_hft_and_existing_supplier_keep_their_own_programs
+        PASS [   0.018s] (3/6) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::directly_supplied_program_hit_precedes_the_reference_programs_missing_glyph
+        PASS [   0.018s] (4/6) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::supplier_program_has_its_verified_full_em_advance
+        PASS [   0.019s] (5/6) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::print_uses_the_same_program_that_supplied_the_measured_glyph
+        PASS [   0.186s] (6/6) rhwp::regression_suite_016 issue_7733_box_drawing_marker_origin::right_bar_supplier_preserves_the_print_origin_and_following_text
+────────────
+     Summary [   0.190s] 6 tests run: 6 passed, 739 skipped

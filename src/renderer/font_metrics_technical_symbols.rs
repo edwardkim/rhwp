@@ -90,6 +90,14 @@ fn verified_technical_symbol_entry(metric: &FontMetric, ch: char) -> Option<(boo
     {
         return Some((true, 911));
     }
+    // 현재 HBATANG bef63718…의 U+257A는 1024/1024em이다. 독립 화학 원본
+    // Print의 Haansoft Batang(xref 28, glyph 6)도 같은 전진·사각 잉크를 쓴다.
+    // BatangChe에 없는 표식을 다른 반각 글꼴의 잉크로 그리지 않게 공급을 인증한다.
+    if (metric.name, metric.em_size, metric.bold, metric.italic, ch)
+        == ("Haansoft Batang", 1024, false, false, '\u{257A}')
+    {
+        return Some((true, 1024));
+    }
     if !(0x2300..=0x23FF).contains(&(ch as u32)) {
         return None;
     }
@@ -107,6 +115,14 @@ fn verified_technical_symbol_entry(metric: &FontMetric, ch: char) -> Option<(boo
 }
 
 pub(crate) fn verified_program_has_glyph(metric: &FontMetric, ch: char) -> Option<bool> {
+    // batang.TTC 0ea38ac5… 및 84b0ba79…의 BatangChe regular cmap 결측이다.
+    // 독립 Print는 같은 선언 체인의 Haansoft Batang으로 U+257A를 그린다.
+    // 실제 제공 프로그램의 hit와 명시적 HFT 계약은 호출자의 우선순위를 유지한다.
+    if (metric.name, metric.em_size, metric.bold, metric.italic, ch)
+        == ("BatangChe", 1024, false, false, '\u{257A}')
+    {
+        return Some(false);
+    }
     // malgun.ttf 7a183cf1…192f / malgunbd.ttf e8cbc0b2…9082의 실제 cmap에는
     // U+2981이 없다. 설치한 다른 맑은 고딕 TTF 3종도 같은 결측이다.
     // 독립 시행령 Print는 HCRDotum의 동일 윤곽·970/1000em을 사용한다.

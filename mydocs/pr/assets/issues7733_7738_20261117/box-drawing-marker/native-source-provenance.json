@@ -1,0 +1,19 @@
+{
+  "parent": "29c61e43abb8891e2286592d834ba46f94fd567c",
+  "captured_at": "2026-11-18T05:35:34.141395+09:00",
+  "sources": {
+    "src/renderer/font_metrics_technical_symbols.rs": "616c04bea43ed74aeee6f4db8b456615e6b35dd0ca0185a854efa1993f8f6ee9",
+    "src/renderer/layout/text_measurement.rs": "f30168124dbb07aa48d5cbc4e7e2ad9384908934e636861b3492516ef235f145",
+    "src/renderer/measured_glyph_supplier.rs": "05f70c6d1ba3871554d5b7ca13bb196010c2e60dacdaafd792160ee3ad5c0a2c",
+    "src/renderer/native_pua_fonts.rs": "3927945123bc3d6d057918d7ec899923f35123377c90108700e313d71783e04f",
+    "tests/cases/issue_7733_box_drawing_glyph_supplier.rs": "5375c90ff12c2e886a2294d9872b292027c31ab820c38d0a712dc4939be469e1",
+    "tests/cases/issue_7733_box_drawing_marker_origin.rs": "738c799a83b52686632bbaeb82f5ae9f4d6eb9cc70bbcb8ab9999b0867177893",
+    "tests/fixtures/issue7733_box_marker/LICENSE.txt": "edc77b8a42160fa01dd5c22f9790a131183daa683fe98ed89c77febed9eb786b",
+    "tests/fixtures/issue7733_box_marker/README.md": "7236e9def273c286c66926d43671b4a72b38f627ac6c27092f2e51f5fae0fb52",
+    "tests/fixtures/issue7733_box_marker/generate.py": "e2686b9d9e444b5dd6ff6f42e892d5411b4c1cf02f72d40cde9da53e400d1877",
+    "tests/fixtures/issue7733_box_marker/program-present.ttf": "559240c406224560a9745405453ce8d8418e1e96a46c7e0de17fb10ffd788726"
+  },
+  "source_diff_sha256": "f6119f482bc400563c306b02eb680bd273d94a4e2f4e42077494d3743ab808b5",
+  "cargo_lock_sha256": "972bdb0994b216f0cef357b856ce0807ce3d437af6791377446b62f2e26c05a1",
+  "font_environment_sha256": "39ec77d269dcd5e687ecd68cd3c5ffb2d19f91a5d9580b2e11c0c4db8a9cb4b0"
+}

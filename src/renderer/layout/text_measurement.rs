@@ -2314,11 +2314,22 @@ fn char_width_decision_with_hft_tracking<'a>(
             embedded.em_fraction = Some(em);
             embedded.width_source = "sourceContextualMetric";
         }
+        // 기준 파일의 결측은 같은 이름의 현재 프로그램 결측을 뜻하지 않는다.
+        // 실제 주 프로그램의 hit를 확인한 경우 뒤 후보의 cmap이나 정적 결측으로
+        // 공급자를 바꾸지 않는다. 기존 원본 폭·HFT 전진 계약은 그대로 소비한다.
+        let supplied_primary_hit = measured_family
+            == latin.map_or(&style.font_family, |slot| &slot.font_family)
+            && latin
+                .map_or(style.native_otf_metrics.as_ref(), |slot| {
+                    slot.native_otf_metrics.as_ref()
+                })
+                .is_some_and(|font| font.primary_has_glyph(c) == Some(true));
         // 표시용 family로 내려가기 전에 원본 결측 기호의 검증된 공급 계약을
         // 해소한다. 표시 치환이 원본의 독립 Print 전진을 전각 추정으로 바꾸지 않는다.
         // HFT 원본은 대체 메트릭이 가리키는 TTF 프로그램을 쓰지 않으므로 그 cmap 결측이
         // 공급 근거가 아니다(#8619: `#세고딕` 기호 슬롯은 독립 Print 가 HFT 전각 점을 그린다).
         if embedded.width_px.is_none()
+            && !supplied_primary_hit
             && latin.is_none()
             && !style.hft_hangul_face
             && !style.hft_fullwidth_dot
@@ -2387,6 +2398,7 @@ fn char_width_decision_with_hft_tracking<'a>(
         // 폭 계약 전체를 TrueType으로 바꾸지 않고, paint와 같은 primary의
         // 확인된 결측만 다음 선언 face로 보낸다. HFT 명시 규칙은 아래에서 보호한다.
         let verified_primary_missing = !style.source_font_is_hft
+            && !supplied_primary_hit
             && metric_family == display_family
             && embedded.metric.is_some_and(|found| {
                 (found.metric.bold == style.bold || found.bold_fallback)
@@ -2397,6 +2409,7 @@ fn char_width_decision_with_hft_tracking<'a>(
         // KoPub처럼 별도 부분 표를 쓰는 face도 실제 프로그램의 결측을 조회하되,
         // HFT 원본이나 다른 측정 face의 계약을 표시 TTF의 cmap으로 대체하지 않는다.
         let verified_named_primary_missing = !style.source_font_is_hft
+            && !supplied_primary_hit
             && measured_family == display_family
             && font_metrics_data::verified_named_program_has_glyph(
                 measured_family,

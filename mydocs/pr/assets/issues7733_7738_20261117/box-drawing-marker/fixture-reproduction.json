@@ -1,0 +1,7 @@
+{
+  "generator": "tests/fixtures/issue7733_box_marker/generate.py",
+  "bytes": 1132,
+  "sha256": "559240c406224560a9745405453ce8d8418e1e96a46c7e0de17fb10ffd788726",
+  "reproduced_byte_identical": true,
+  "license": "repository MIT; own synthetic rectangle; no private font outlines"
+}

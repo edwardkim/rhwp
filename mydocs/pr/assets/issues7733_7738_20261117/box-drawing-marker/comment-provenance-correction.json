@@ -1,0 +1,11 @@
+{
+  "kind": "comment_only_provenance_correction",
+  "file": "src/renderer/font_metrics_technical_symbols.rs",
+  "before_sha256": "616c04bea43ed74aeee6f4db8b456615e6b35dd0ca0185a854efa1993f8f6ee9",
+  "after_sha256": "fb397aa3c49f7df2383192e70f1f3128cd193e278ffa56dc8824135cf0a7a769",
+  "old_comment": "HBATANG 35f84328…의 U+257A",
+  "new_comment": "현재 HBATANG bef63718…의 U+257A",
+  "reason": "현재 사용자 글꼴의 실제 SHA를 대조했다. 파일 상단의 기존 기술 기호 표 출처 35f84328은 변경하지 않는다.",
+  "captured_producer": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/box-marker-source-provenance.json",
+  "executable_source_changed": false
+}
