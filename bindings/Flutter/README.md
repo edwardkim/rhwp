@@ -314,3 +314,8 @@ python3 tool/qualify_linux_tile_group.py \
 snapshot의 별도 CPU strip·2배 source replay로 양쪽과 seam을 검사한다. 각 CPU 요청은 기존 한도
 안에 남는다. 실제 두 registration 종료와 Native 아홉 자원 counter의 0을 확인한다. Xvfb/Mesa 결과는
 소프트웨어 실행 증거이며 Windows/macOS SDK·실물 GPU·한컴 독립 출력 qualification을 대신하지 않는다.
+
+기존 32..64회 연속 desktop probe의 선택적 메모리 압박·idle·종료 검증은
+[GPU memory acceptance 가이드](GPU_MEMORY_ACCEPTANCE.md)를 따른다.
+실제 binding→Native trim 영수증·process RSS·후속 compositor 표시를 함께 기록하며,
+회수량 0은 observedNoop으로 남기고 physical VRAM과 consumer GPU 완료는 추정하지 않는다.
