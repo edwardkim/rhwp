@@ -1437,9 +1437,20 @@ impl TypesetEngine {
                     // 이월 사실만으로 셀의 전체 측정 상자가 흐름을 소비한다고 가정하지 않는다.
                     // 선언 프레임이 실제 행 점유를 덮는 경우에만 공통 새 쪽 원점을 연다.
                     // 선언 높이가 첫 물리 조각만 나타내는 표는 기존 저장 프레임 경로를 따른다.
-                    && mt.row_heights.iter().sum::<f64>()
+                    // [#9060] 다만 위 캡션을 가진 표가 새 쪽 본문에도 다 들어가지 않으면 거기서
+                    // 다시 나뉘므로 흐름 점유는 선언 상자가 아니라 행 컷이 정한다. 이때 선언
+                    // 상자와 측정 상자의 차이는 점유에 남지 않으므로 같은 새 쪽 원점(문단 거리
+                    // 소진)을 캡션 프레임(`query_captioned_rowbreak_frame`)과 함께 쓴다.
+                    // 한/글 2020·2022 Print: ODA 보고서(2구역 문단 76) 148쪽 표 위 괘선이 본문
+                    // 위끝 + 바깥 위 여백 + 위 캡션(164px)이다. 캡션 없는 같은 형상은 한/글
+                    // 2020 Print 가 오프셋을 그대로 쓰므로(156555538 13쪽 문단 18, 오프셋 156HU)
+                    // 이 완화에 넣지 않는다.
+                    && (mt.row_heights.iter().sum::<f64>()
                         + cs * row_count.saturating_sub(1) as f64
                         <= (declared_object_total - host_spacing_total).max(0.0) + 0.5
+                        || (caption_is_top
+                            && ft.caption_height > 0.0
+                            && all_rows_h + first_frag_overhead > base_available))
                     && !table.common.allow_overlap
                     && (table.common.vertical_offset as i32) > 0;
                     st.advance_column_or_new_page();
@@ -1594,6 +1605,7 @@ impl TypesetEngine {
             table,
             ft.host_spacing.before,
             ft.effective_height,
+            first_anchor_offset_consumed,
         );
         let stored_whole_flow_anchor = self.query_stored_whole_flow_anchor(
             st,

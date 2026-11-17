@@ -368,6 +368,7 @@ impl TypesetEngine {
         table: &crate::model::table::Table,
         host_before: f64,
         table_and_caption_height: f64,
+        anchor_offset_consumed: bool,
     ) -> Option<crate::renderer::float_placement::ParagraphFloatPlacement> {
         // This plan opens a column from its flow origin. Within a populated
         // column the saved paragraph anchor owns the table and caption; the
@@ -382,6 +383,7 @@ impl TypesetEngine {
             host_before,
             table_and_caption_height,
             None,
+            anchor_offset_consumed,
         )
     }
 
@@ -396,6 +398,7 @@ impl TypesetEngine {
         host_before: f64,
         table_and_caption_height: f64,
         resolved_origin: Option<crate::renderer::float_placement::ParagraphFloatPlacement>,
+        anchor_offset_consumed: bool,
     ) -> Option<crate::renderer::float_placement::ParagraphFloatPlacement> {
         use crate::renderer::float_placement as placement;
         let opens = placement::stored_hwpx_cut_owns_outer_frame(
@@ -439,14 +442,19 @@ impl TypesetEngine {
         {
             return None;
         }
-        let offset_consumed = st.current_items.is_empty()
-            && st.current_height < 1.0
-            && placement::para_offset_consumed_by_page_break(
-                para,
-                table,
-                st.base_available_height(),
-                self.dpi,
-            );
+        // [#9060] 앞 쪽에서 첫 유닛을 받지 못해 이월한 표는 그 쪽의 앵커에서 이미 문단
+        // 거리를 썼다. 새 쪽에서는 본문 위끝 + 바깥 위 여백 + 위 캡션에서 연다(한/글
+        // 2020·2024 Print 합성 M2_full 3쪽 164px, ODA 보고서 148쪽 164px). 앵커가 실제로
+        // 이 쪽 위끝에 놓인 표(쪽 나눔·흐름으로 넘어온 문단)는 거리를 그대로 쓴다.
+        let offset_consumed = anchor_offset_consumed
+            || st.current_items.is_empty()
+                && st.current_height < 1.0
+                && placement::para_offset_consumed_by_page_break(
+                    para,
+                    table,
+                    st.base_available_height(),
+                    self.dpi,
+                );
         let top = st.current_height
             + host_before
             + if offset_consumed {
