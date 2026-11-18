@@ -1,0 +1,27 @@
+CONTAINER insert index=0 id=1 name=Some("RHWPNativeContainerProbe-TTF") style=FontStyle { weight: Weight(400), width: Width(5), slant: Upright } order=0
+CONTAINER candidate id=1 name=Some("RHWPNativeContainerProbe-TTF") order=Some(0)
+CONTAINER prepared name=Some("RHWPNativeContainerProbe-TTF") index=0 advance=Some(608)
+CONTAINER candidate id=1 name=Some("RHWPNativeContainerProbe-TTF") order=Some(0)
+CONTAINER insert index=0 id=4 name=Some("RHWPNativeContainerProbeControl-Control") style=FontStyle { weight: Weight(400), width: Width(5), slant: Upright } order=1
+CONTAINER insert index=1 id=5 name=Some("RHWPNativeContainerProbe-TTC") style=FontStyle { weight: Weight(400), width: Width(5), slant: Upright } order=1
+CONTAINER candidate id=5 name=Some("RHWPNativeContainerProbe-TTC") order=Some(1)
+CONTAINER prepared name=Some("RHWPNativeContainerProbe-TTC") index=0 advance=Some(304)
+CONTAINER candidate id=5 name=Some("RHWPNativeContainerProbe-TTC") order=Some(1)
+CONTAINER insert index=0 id=6 name=Some("RHWPNativeContainerProbeControl-Control") style=FontStyle { weight: Weight(400), width: Width(5), slant: Upright } order=1
+CONTAINER insert index=1 id=7 name=Some("RHWPNativeContainerProbe-TTC") style=FontStyle { weight: Weight(400), width: Width(5), slant: Upright } order=1
+CONTAINER insert index=0 id=8 name=Some("RHWPNativeContainerProbe-TTF") style=FontStyle { weight: Weight(400), width: Width(5), slant: Upright } order=0
+CONTAINER candidate id=8 name=Some("RHWPNativeContainerProbe-TTF") order=Some(0)
+CONTAINER candidate id=7 name=Some("RHWPNativeContainerProbe-TTC") order=Some(1)
+CONTAINER prepared name=Some("RHWPNativeContainerProbe-TTF") index=0 advance=Some(608)
+CONTAINER prepared name=Some("RHWPNativeContainerProbe-TTC") index=0 advance=Some(304)
+CONTAINER candidate id=8 name=Some("RHWPNativeContainerProbe-TTF") order=Some(0)
+CONTAINER candidate id=7 name=Some("RHWPNativeContainerProbe-TTC") order=Some(1)
+CONTAINER insert index=0 id=9 name=Some("RHWPNativeContainerProbe-TTF") style=FontStyle { weight: Weight(58), width: Width(5), slant: Upright } order=0
+CONTAINER insert index=0 id=10 name=Some("RHWPNativeContainerProbeControl-Control") style=FontStyle { weight: Weight(400), width: Width(5), slant: Upright } order=1
+CONTAINER insert index=1 id=11 name=Some("RHWPNativeContainerProbe-TTC") style=FontStyle { weight: Weight(400), width: Width(5), slant: Upright } order=1
+CONTAINER candidate id=11 name=Some("RHWPNativeContainerProbe-TTC") order=Some(1)
+CONTAINER candidate id=9 name=Some("RHWPNativeContainerProbe-TTF") order=Some(0)
+CONTAINER prepared name=Some("RHWPNativeContainerProbe-TTC") index=0 advance=Some(304)
+CONTAINER prepared name=Some("RHWPNativeContainerProbe-TTF") index=0 advance=Some(608)
+CONTAINER candidate id=11 name=Some("RHWPNativeContainerProbe-TTC") order=Some(1)
+CONTAINER candidate id=9 name=Some("RHWPNativeContainerProbe-TTF") order=Some(0)
