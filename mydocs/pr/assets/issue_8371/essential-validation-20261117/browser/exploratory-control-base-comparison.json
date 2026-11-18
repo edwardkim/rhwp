@@ -1,0 +1,51 @@
+{
+  "base": "22da83586aab1baf960f2159abda347062ecf7ed",
+  "candidate": "fcf2e11b1727297743343446333132e1409737f1",
+  "identicalExploratoryControlFailures": [
+    {
+      "sample": "sample4-p021",
+      "backend": "canvaskit-compat",
+      "error": "CanvasKit font family가 준비되지 않았습니다: 한양신명조",
+      "unsupported": [
+        "renderPage"
+      ]
+    },
+    {
+      "sample": "sample4-p021",
+      "backend": "canvaskit-default",
+      "error": "CanvasKit font family가 준비되지 않았습니다: 한양신명조",
+      "unsupported": [
+        "renderPage"
+      ]
+    },
+    {
+      "sample": "sample4-p025",
+      "backend": "canvaskit-compat",
+      "error": null,
+      "unsupported": [
+        "textRun:glyphMapping"
+      ]
+    },
+    {
+      "sample": "sample4-p025",
+      "backend": "canvaskit-default",
+      "error": null,
+      "unsupported": [
+        "textRun:glyphMapping"
+      ]
+    },
+    {
+      "sample": "sample4-p026",
+      "backend": "canvaskit-compat",
+      "error": null,
+      "unsupported": []
+    },
+    {
+      "sample": "sample4-p026",
+      "backend": "canvaskit-default",
+      "error": null,
+      "unsupported": []
+    }
+  ],
+  "scope": "Additional three-page substituted-font exploration; original-font product routes and targeted changed-picture CanvasKit control are verified separately."
+}

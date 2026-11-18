@@ -96,6 +96,9 @@ pub(super) struct TypefaceCatalog {
     families: HashMap<String, Vec<Typeface>>,
     // name ID 6은 특정 face의 식별자이며 family 별칭으로 등록하지 않는다.
     postscript_faces: HashMap<String, Typeface>,
+    // DWrite exposes table copies, and CoreText may repack a TTC as standalone
+    // SFNT. Preserve the source kind while the original bytes are available.
+    program_orders: HashMap<u32, u8>,
 }
 
 impl TypefaceCatalog {
@@ -215,11 +218,23 @@ impl TypefaceCatalog {
             for (name, face) in source_catalog.postscript_faces {
                 catalog.postscript_faces.entry(name).or_insert(face);
             }
+            for (id, order) in source_catalog.program_orders {
+                catalog
+                    .program_orders
+                    .entry(id)
+                    .and_modify(|existing| *existing = (*existing).min(order))
+                    .or_insert(order);
+            }
         }
         catalog
     }
 
     fn insert_face(&mut self, data: &[u8], face_index: u32, face: Typeface) {
+        let order = super::font_program::program_order(data, face_index);
+        self.program_orders
+            .entry(face.unique_id())
+            .and_modify(|existing| *existing = (*existing).min(order))
+            .or_insert(order);
         if let Some(name) = face.post_script_name() {
             self.postscript_faces.entry(name).or_insert(face.clone());
         }
@@ -261,7 +276,12 @@ impl TypefaceCatalog {
             if let Some(faces) = self.families.get(&family.to_lowercase()) {
                 let mut faces = faces.clone();
                 // Stable sorting keeps the first supplied program on a tie.
-                faces.sort_by_key(|face| supplied_style_rank(style, face.font_style()));
+                faces.sort_by_key(|face| {
+                    (
+                        supplied_style_rank(style, face.font_style()),
+                        self.program_order(face),
+                    )
+                });
                 result.extend(faces);
             } else if let Some(face) = self.postscript_faces.get(family) {
                 // 명시적 face 요청에는 다른 굵기의 같은 family를 대입하지 않는다.
@@ -269,6 +289,10 @@ impl TypefaceCatalog {
             }
         }
         result
+    }
+
+    pub fn program_order(&self, face: &Typeface) -> Option<u8> {
+        self.program_orders.get(&face.unique_id()).copied()
     }
 }
 

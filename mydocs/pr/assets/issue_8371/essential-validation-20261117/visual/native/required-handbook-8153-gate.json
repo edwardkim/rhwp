@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "baseline": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
+  "baseline_sha256": "7eb001e3e30d6892d8bc03ba3e16456a4dd758cccb0e9aba073671366a9a5a1b",
+  "metric": "silhouette_raw_match_percent",
+  "backend": "native-skia",
+  "precision": "0.01 percentage points",
+  "pages": 383,
+  "regressions": [],
+  "webfont_fallback": [],
+  "manifest": "/home/tsjang/rhwp/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-native-handbook/required-handbook-8153-native/silhouette_manifest.json",
+  "elapsed_seconds": 1805.539
+}

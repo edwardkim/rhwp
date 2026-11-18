@@ -1,0 +1,13 @@
+{
+  "head": "95a7fb1e8bb72b27ed522f73bb66c9df709c1ea3",
+  "status": "not-a-green-full-ci-candidate",
+  "runId": 44125602889,
+  "jobId": 134188998839,
+  "url": "https://github.com/edwardkim/rhwp/actions/runs/44125602889/job/134188998839",
+  "conclusion": "cancelled",
+  "stage": "actions/checkout git fetch; no Rust build or property test started",
+  "startedAt": "2026-11-17T16:26:26Z",
+  "completedAt": "2026-11-17T17:11:28Z",
+  "configuredJobTimeoutMinutes": 45,
+  "action": "The new test head must pass its own CI; this cancelled run is not reused as success."
+}

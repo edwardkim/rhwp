@@ -2,6 +2,9 @@
 //! 주석 갱신: 2026-11-16 20:04:56 KST. 관계형이며 설치된 사설 글꼴에 의존하지 않는다.
 //! 설치 글꼴이나 사설 바이너리 없이 원본 이름·형식·프로그램 신원의 소유를 확인한다.
 //! 한양중고딕의 H2GTRM 설치 이름도 같은 원본 후보로 조회하며, 파일이 없으면 다음 형식을 선택한다.
+//! Native 컨테이너의 합성 RGBA 검사는 skia_native_glyph_replay.rs로 이관해 Native CI에서 실행한다.
+//! 추가 주석 갱신: 2026-11-17 15:06:06 대한민국 표준시. 직전 변경: 2bb86f50d385ddef49433721c3f54da6c901ac7d,
+//! 2026-11-16T22:13:09+09:00. 라이선스·합성 차이: fixtures/fonts/RHWPNativeContainer.LICENSE.md.
 use rhwp::{renderer::font_environment::FontEnvironment, DocumentCore};
 use serde_json::{json, Value};
 

@@ -1,0 +1,110 @@
+{
+  "backend": "canvas2d",
+  "captures": [
+    {
+      "state": {
+        "name": "initial",
+        "width": 1400,
+        "height": 1700,
+        "deviceScaleFactor": 1,
+        "zoom": 1
+      },
+      "details": {
+        "pageCount": 36,
+        "page": 26,
+        "activeBackend": "canvas2d",
+        "zoom": 1,
+        "dpr": 1,
+        "clip": {
+          "x": 313.15625,
+          "y": 199.5,
+          "width": 793.6875,
+          "height": 1122.5
+        },
+        "viewport": {
+          "width": 1400,
+          "height": 1700
+        },
+        "documentScroll": {
+          "x": 0,
+          "y": 0
+        },
+        "modalCount": 0,
+        "visibleDomImages": [],
+        "canvaskit": null
+      },
+      "filename": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-public-targeted-consumers\\natural-p026-canvas2d-initial.png",
+      "sha256": "02496602b8e1d4dfd1b97bd3563fa828307dfbfc4f5fe2a837cc9c0f1b8b63c9"
+    },
+    {
+      "state": {
+        "name": "zoom-dpr-resize",
+        "width": 1600,
+        "height": 1900,
+        "deviceScaleFactor": 2,
+        "zoom": 1.25
+      },
+      "details": {
+        "pageCount": 36,
+        "page": 26,
+        "activeBackend": "canvas2d",
+        "zoom": 1.25,
+        "dpr": 2,
+        "clip": {
+          "x": 313.9375,
+          "y": 200.125,
+          "width": 992.125,
+          "height": 1403.125
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 1900
+        },
+        "documentScroll": {
+          "x": 0,
+          "y": 0
+        },
+        "modalCount": 0,
+        "visibleDomImages": [],
+        "canvaskit": null
+      },
+      "filename": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-public-targeted-consumers\\natural-p026-canvas2d-zoom-dpr-resize.png",
+      "sha256": "68384e3bdd5526837e1b26dd176fba42b49c7d16eb3cfe69fe7231d277291302"
+    },
+    {
+      "state": {
+        "name": "restored",
+        "width": 1400,
+        "height": 1700,
+        "deviceScaleFactor": 1,
+        "zoom": 1
+      },
+      "details": {
+        "pageCount": 36,
+        "page": 26,
+        "activeBackend": "canvas2d",
+        "zoom": 1,
+        "dpr": 1,
+        "clip": {
+          "x": 313.15625,
+          "y": 199.5,
+          "width": 793.6875,
+          "height": 1122.5
+        },
+        "viewport": {
+          "width": 1400,
+          "height": 1700
+        },
+        "documentScroll": {
+          "x": 0,
+          "y": 0
+        },
+        "modalCount": 0,
+        "visibleDomImages": [],
+        "canvaskit": null
+      },
+      "filename": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-public-targeted-consumers\\natural-p026-canvas2d-restored.png",
+      "sha256": "02496602b8e1d4dfd1b97bd3563fa828307dfbfc4f5fe2a837cc9c0f1b8b63c9"
+    }
+  ]
+}

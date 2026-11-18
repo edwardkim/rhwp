@@ -1,0 +1,1307 @@
+{
+  "source": "fcf2e11b1727297743343446333132e1409737f1",
+  "originalFontResults": [
+    {
+      "page": 21,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "picture": {
+        "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p021\\canvas2d-print.png",
+        "sha256": "f190ed48bd25b9c58cf36c13ff8b9f6b2c3c91f979915318aaad5e3220a40bee",
+        "pixelSize": [
+          794,
+          1122
+        ],
+        "blueBox": [
+          262,
+          961,
+          492,
+          998
+        ],
+        "referenceBox": [
+          261,
+          960,
+          493,
+          998
+        ],
+        "normalizedBox": [
+          262.0,
+          961.0,
+          492.0,
+          998.0
+        ],
+        "maximumDeltaPx": 1.0
+      }
+    },
+    {
+      "page": 21,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "picture": {
+        "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p021\\canvaskit-compat-print-software.png",
+        "sha256": "f190ed48bd25b9c58cf36c13ff8b9f6b2c3c91f979915318aaad5e3220a40bee",
+        "pixelSize": [
+          794,
+          1122
+        ],
+        "blueBox": [
+          262,
+          961,
+          492,
+          998
+        ],
+        "referenceBox": [
+          261,
+          960,
+          493,
+          998
+        ],
+        "normalizedBox": [
+          262.0,
+          961.0,
+          492.0,
+          998.0
+        ],
+        "maximumDeltaPx": 1.0
+      }
+    },
+    {
+      "page": 21,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "picture": {
+        "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p021\\canvaskit-default-print-software.png",
+        "sha256": "f190ed48bd25b9c58cf36c13ff8b9f6b2c3c91f979915318aaad5e3220a40bee",
+        "pixelSize": [
+          794,
+          1122
+        ],
+        "blueBox": [
+          262,
+          961,
+          492,
+          998
+        ],
+        "referenceBox": [
+          261,
+          960,
+          493,
+          998
+        ],
+        "normalizedBox": [
+          262.0,
+          961.0,
+          492.0,
+          998.0
+        ],
+        "maximumDeltaPx": 1.0
+      }
+    },
+    {
+      "page": 25,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "picture": {
+        "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p025\\canvas2d-print.png",
+        "sha256": "80d1cea637d0b2b768e7096b00b28aadb0aedc04ce80bf08ea03c8626f1fe280",
+        "pixelSize": [
+          794,
+          1122
+        ],
+        "blueBox": null,
+        "referenceBox": null,
+        "normalizedBox": null,
+        "maximumDeltaPx": 0
+      }
+    },
+    {
+      "page": 25,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "picture": {
+        "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p025\\canvaskit-compat-print-software.png",
+        "sha256": "80d1cea637d0b2b768e7096b00b28aadb0aedc04ce80bf08ea03c8626f1fe280",
+        "pixelSize": [
+          794,
+          1122
+        ],
+        "blueBox": null,
+        "referenceBox": null,
+        "normalizedBox": null,
+        "maximumDeltaPx": 0
+      }
+    },
+    {
+      "page": 25,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "picture": {
+        "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p025\\canvaskit-default-print-software.png",
+        "sha256": "80d1cea637d0b2b768e7096b00b28aadb0aedc04ce80bf08ea03c8626f1fe280",
+        "pixelSize": [
+          794,
+          1122
+        ],
+        "blueBox": null,
+        "referenceBox": null,
+        "normalizedBox": null,
+        "maximumDeltaPx": 0
+      }
+    },
+    {
+      "page": 26,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "picture": {
+        "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p026\\canvas2d-print.png",
+        "sha256": "608f20fcd593d0a2b5a8ecdc55a75264359b1322c17ca7c28d4756de2284f6e7",
+        "pixelSize": [
+          794,
+          1122
+        ],
+        "blueBox": [
+          219,
+          133,
+          499,
+          172
+        ],
+        "referenceBox": [
+          219,
+          133,
+          499,
+          172
+        ],
+        "normalizedBox": [
+          219.0,
+          133.0,
+          499.0,
+          172.0
+        ],
+        "maximumDeltaPx": 0.0
+      }
+    },
+    {
+      "page": 26,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "picture": {
+        "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p026\\canvaskit-compat-print-software.png",
+        "sha256": "608f20fcd593d0a2b5a8ecdc55a75264359b1322c17ca7c28d4756de2284f6e7",
+        "pixelSize": [
+          794,
+          1122
+        ],
+        "blueBox": [
+          219,
+          133,
+          499,
+          172
+        ],
+        "referenceBox": [
+          219,
+          133,
+          499,
+          172
+        ],
+        "normalizedBox": [
+          219.0,
+          133.0,
+          499.0,
+          172.0
+        ],
+        "maximumDeltaPx": 0.0
+      }
+    },
+    {
+      "page": 26,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "picture": {
+        "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p026\\canvaskit-default-print-software.png",
+        "sha256": "608f20fcd593d0a2b5a8ecdc55a75264359b1322c17ca7c28d4756de2284f6e7",
+        "pixelSize": [
+          794,
+          1122
+        ],
+        "blueBox": [
+          219,
+          133,
+          499,
+          172
+        ],
+        "referenceBox": [
+          219,
+          133,
+          499,
+          172
+        ],
+        "normalizedBox": [
+          219.0,
+          133.0,
+          499.0,
+          172.0
+        ],
+        "maximumDeltaPx": 0.0
+      }
+    }
+  ],
+  "supportedTtfControl": [
+    {
+      "page": 26,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "picture": {
+        "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-public-targeted-consumers\\sample4-p026\\canvas2d-print.png",
+        "sha256": "608f20fcd593d0a2b5a8ecdc55a75264359b1322c17ca7c28d4756de2284f6e7",
+        "pixelSize": [
+          794,
+          1122
+        ],
+        "blueBox": [
+          219,
+          133,
+          499,
+          172
+        ],
+        "referenceBox": [
+          219,
+          133,
+          499,
+          172
+        ],
+        "normalizedBox": [
+          219.0,
+          133.0,
+          499.0,
+          172.0
+        ],
+        "maximumDeltaPx": 0.0
+      }
+    },
+    {
+      "page": 26,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "picture": {
+        "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-public-targeted-consumers\\sample4-p026\\canvaskit-compat-print-software.png",
+        "sha256": "a3563ce96686705a989d06a738304a4ad4a1a30419de2b750757122cee9232ab",
+        "pixelSize": [
+          794,
+          1122
+        ],
+        "blueBox": [
+          219,
+          133,
+          499,
+          172
+        ],
+        "referenceBox": [
+          219,
+          133,
+          499,
+          172
+        ],
+        "normalizedBox": [
+          219.0,
+          133.0,
+          499.0,
+          172.0
+        ],
+        "maximumDeltaPx": 0.0
+      }
+    },
+    {
+      "page": 26,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "picture": {
+        "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-public-targeted-consumers\\sample4-p026\\canvaskit-default-print-software.png",
+        "sha256": "a3563ce96686705a989d06a738304a4ad4a1a30419de2b750757122cee9232ab",
+        "pixelSize": [
+          794,
+          1122
+        ],
+        "blueBox": [
+          219,
+          133,
+          499,
+          172
+        ],
+        "referenceBox": [
+          219,
+          133,
+          499,
+          172
+        ],
+        "normalizedBox": [
+          219.0,
+          133.0,
+          499.0,
+          172.0
+        ],
+        "maximumDeltaPx": 0.0
+      }
+    }
+  ],
+  "naturalView": [
+    {
+      "backend": "canvas2d",
+      "state": {
+        "name": "initial",
+        "width": 1400,
+        "height": 1700,
+        "deviceScaleFactor": 1,
+        "zoom": 1
+      },
+      "picture": {
+        "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-public-targeted-consumers\\natural-p026-canvas2d-initial.png",
+        "sha256": "02496602b8e1d4dfd1b97bd3563fa828307dfbfc4f5fe2a837cc9c0f1b8b63c9",
+        "pixelSize": [
+          794,
+          1122
+        ],
+        "blueBox": [
+          219,
+          133,
+          499,
+          172
+        ],
+        "referenceBox": [
+          219,
+          133,
+          499,
+          172
+        ],
+        "normalizedBox": [
+          219.0,
+          133.0,
+          499.0,
+          172.0
+        ],
+        "maximumDeltaPx": 0.0
+      },
+      "details": {
+        "pageCount": 36,
+        "page": 26,
+        "activeBackend": "canvas2d",
+        "zoom": 1,
+        "dpr": 1,
+        "clip": {
+          "x": 313.15625,
+          "y": 199.5,
+          "width": 793.6875,
+          "height": 1122.5
+        },
+        "viewport": {
+          "width": 1400,
+          "height": 1700
+        },
+        "documentScroll": {
+          "x": 0,
+          "y": 0
+        },
+        "modalCount": 0,
+        "visibleDomImages": [],
+        "canvaskit": null
+      }
+    },
+    {
+      "backend": "canvas2d",
+      "state": {
+        "name": "zoom-dpr-resize",
+        "width": 1600,
+        "height": 1900,
+        "deviceScaleFactor": 2,
+        "zoom": 1.25
+      },
+      "picture": {
+        "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-public-targeted-consumers\\natural-p026-canvas2d-zoom-dpr-resize.png",
+        "sha256": "68384e3bdd5526837e1b26dd176fba42b49c7d16eb3cfe69fe7231d277291302",
+        "pixelSize": [
+          1984,
+          2806
+        ],
+        "blueBox": [
+          548,
+          331,
+          1246,
+          429
+        ],
+        "referenceBox": [
+          219,
+          133,
+          499,
+          172
+        ],
+        "normalizedBox": [
+          219.31048387096774,
+          132.3528153955809,
+          498.65120967741933,
+          171.53884533143264
+        ],
+        "maximumDeltaPx": 0.6471846044190954
+      },
+      "details": {
+        "pageCount": 36,
+        "page": 26,
+        "activeBackend": "canvas2d",
+        "zoom": 1.25,
+        "dpr": 2,
+        "clip": {
+          "x": 313.9375,
+          "y": 200.125,
+          "width": 992.125,
+          "height": 1403.125
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 1900
+        },
+        "documentScroll": {
+          "x": 0,
+          "y": 0
+        },
+        "modalCount": 0,
+        "visibleDomImages": [],
+        "canvaskit": null
+      }
+    },
+    {
+      "backend": "canvas2d",
+      "state": {
+        "name": "restored",
+        "width": 1400,
+        "height": 1700,
+        "deviceScaleFactor": 1,
+        "zoom": 1
+      },
+      "picture": {
+        "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-public-targeted-consumers\\natural-p026-canvas2d-restored.png",
+        "sha256": "02496602b8e1d4dfd1b97bd3563fa828307dfbfc4f5fe2a837cc9c0f1b8b63c9",
+        "pixelSize": [
+          794,
+          1122
+        ],
+        "blueBox": [
+          219,
+          133,
+          499,
+          172
+        ],
+        "referenceBox": [
+          219,
+          133,
+          499,
+          172
+        ],
+        "normalizedBox": [
+          219.0,
+          133.0,
+          499.0,
+          172.0
+        ],
+        "maximumDeltaPx": 0.0
+      },
+      "details": {
+        "pageCount": 36,
+        "page": 26,
+        "activeBackend": "canvas2d",
+        "zoom": 1,
+        "dpr": 1,
+        "clip": {
+          "x": 313.15625,
+          "y": 199.5,
+          "width": 793.6875,
+          "height": 1122.5
+        },
+        "viewport": {
+          "width": 1400,
+          "height": 1700
+        },
+        "documentScroll": {
+          "x": 0,
+          "y": 0
+        },
+        "modalCount": 0,
+        "visibleDomImages": [],
+        "canvaskit": null
+      }
+    },
+    {
+      "backend": "canvaskit-compat",
+      "state": {
+        "name": "initial",
+        "width": 1400,
+        "height": 1700,
+        "deviceScaleFactor": 1,
+        "zoom": 1
+      },
+      "picture": {
+        "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-public-targeted-consumers\\natural-p026-canvaskit-compat-initial.png",
+        "sha256": "2de16a0b7a74a5687290a81069f79694c752e6fca7e20bf59d565fc9f7132123",
+        "pixelSize": [
+          794,
+          1122
+        ],
+        "blueBox": [
+          219,
+          133,
+          499,
+          172
+        ],
+        "referenceBox": [
+          219,
+          133,
+          499,
+          172
+        ],
+        "normalizedBox": [
+          219.0,
+          133.0,
+          499.0,
+          172.0
+        ],
+        "maximumDeltaPx": 0.0
+      },
+      "details": {
+        "pageCount": 36,
+        "page": 26,
+        "activeBackend": "canvaskit",
+        "zoom": 1,
+        "dpr": 1,
+        "clip": {
+          "x": 313.15625,
+          "y": 199.5,
+          "width": 793.6875,
+          "height": 1122.5
+        },
+        "viewport": {
+          "width": 1400,
+          "height": 1700
+        },
+        "documentScroll": {
+          "x": 0,
+          "y": 0
+        },
+        "modalCount": 0,
+        "visibleDomImages": [],
+        "canvaskit": {
+          "surfaceCreated": 6,
+          "surfaceReused": 1,
+          "staticPictureCacheEntries": 29,
+          "staticPictureCacheBytes": 20564,
+          "staticPictureCacheHits": 0,
+          "staticPictureCacheMisses": 29,
+          "staticPictureCacheEvictions": 0,
+          "textBlobCacheEntries": 694,
+          "textBlobCacheBytes": 262980,
+          "textBlobCacheHits": 114,
+          "textBlobCacheMisses": 694,
+          "fallbackFamilyCacheEntries": 24,
+          "paragraphFontEntries": 3,
+          "paragraphFontBytes": 14392672,
+          "paragraphProviderBuilds": 0,
+          "paragraphFontRejections": 0,
+          "pendingImageLoads": 0,
+          "mode": "compat",
+          "surfacePreference": "software",
+          "surfaceBackend": "software",
+          "surfaceFallbackReason": null,
+          "lastRenderCompleted": true,
+          "lastUnsupportedOps": [],
+          "lastExpectedUnsupportedOps": [],
+          "lastUnexpectedUnsupportedOps": [],
+          "lastRenderError": null,
+          "passesRuntimeReadinessGate": true,
+          "readinessBlockers": [],
+          "hiddenCanvas2dOverlayUsed": false,
+          "lastRenderDurationMs": 623.2000002861023,
+          "renderCount": 4,
+          "imageCacheEntries": 0,
+          "imageCacheLimit": 128,
+          "imageCachePixels": 0,
+          "imageCachePixelLimit": 67108864,
+          "imageCacheHits": 0,
+          "imageCacheMisses": 0,
+          "imageCacheEvictions": 0,
+          "mipmapCacheEntries": 0,
+          "mipmapCacheBytes": 0,
+          "mipmapCacheHits": 0,
+          "mipmapCacheMisses": 0,
+          "imageFailureCacheHits": 0,
+          "imageFailures": [],
+          "localTypefaceCount": 3,
+          "localTypefaceLoadFailureCount": 0,
+          "localTypefacePendingCount": 0,
+          "bundledTypefaceCount": 2,
+          "bundledTypefaceLoadFailureCount": 0,
+          "glyphRunFontBlobCount": 0,
+          "glyphRunFontBlobBytes": 0,
+          "glyphRunTypefaceCount": 0,
+          "glyphRunFontCount": 0,
+          "fontSubstitutionLimit": 4096,
+          "unregisteredFontFallbacks": 0,
+          "fontSubstitutions": [],
+          "replayFeatureCounts": {
+            "dashedStrokes": 0,
+            "glyphRuns": 0,
+            "tabLeaders": 0,
+            "charOverlaps": 0,
+            "verticalPresentationPunctuation": 0,
+            "verticalTextRuns": 0
+          },
+          "textVariantDiagnosticGroups": 0,
+          "textVariantDiagnosticParts": 0,
+          "replayDiagnosticsDropped": 0
+        }
+      }
+    },
+    {
+      "backend": "canvaskit-compat",
+      "state": {
+        "name": "zoom-dpr-resize",
+        "width": 1600,
+        "height": 1900,
+        "deviceScaleFactor": 2,
+        "zoom": 1.25
+      },
+      "picture": {
+        "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-public-targeted-consumers\\natural-p026-canvaskit-compat-zoom-dpr-resize.png",
+        "sha256": "55e96817ebf59c5ac36694c609b1700807b9364b061862d858a9bfd86c721840",
+        "pixelSize": [
+          1984,
+          2806
+        ],
+        "blueBox": [
+          548,
+          331,
+          1246,
+          429
+        ],
+        "referenceBox": [
+          219,
+          133,
+          499,
+          172
+        ],
+        "normalizedBox": [
+          219.31048387096774,
+          132.3528153955809,
+          498.65120967741933,
+          171.53884533143264
+        ],
+        "maximumDeltaPx": 0.6471846044190954
+      },
+      "details": {
+        "pageCount": 36,
+        "page": 26,
+        "activeBackend": "canvaskit",
+        "zoom": 1.25,
+        "dpr": 2,
+        "clip": {
+          "x": 313.9375,
+          "y": 200.125,
+          "width": 992.125,
+          "height": 1403.125
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 1900
+        },
+        "documentScroll": {
+          "x": 0,
+          "y": 0
+        },
+        "modalCount": 0,
+        "visibleDomImages": [],
+        "canvaskit": {
+          "surfaceCreated": 11,
+          "surfaceReused": 1,
+          "staticPictureCacheEntries": 32,
+          "staticPictureCacheBytes": 22664,
+          "staticPictureCacheHits": 0,
+          "staticPictureCacheMisses": 69,
+          "staticPictureCacheEvictions": 37,
+          "textBlobCacheEntries": 1554,
+          "textBlobCacheBytes": 607592,
+          "textBlobCacheHits": 560,
+          "textBlobCacheMisses": 1554,
+          "fallbackFamilyCacheEntries": 24,
+          "paragraphFontEntries": 3,
+          "paragraphFontBytes": 14392672,
+          "paragraphProviderBuilds": 0,
+          "paragraphFontRejections": 0,
+          "pendingImageLoads": 0,
+          "mode": "compat",
+          "surfacePreference": "software",
+          "surfaceBackend": "software",
+          "surfaceFallbackReason": null,
+          "lastRenderCompleted": true,
+          "lastUnsupportedOps": [],
+          "lastExpectedUnsupportedOps": [],
+          "lastUnexpectedUnsupportedOps": [],
+          "lastRenderError": null,
+          "passesRuntimeReadinessGate": true,
+          "readinessBlockers": [],
+          "hiddenCanvas2dOverlayUsed": false,
+          "lastRenderDurationMs": 462.2999997138977,
+          "renderCount": 9,
+          "imageCacheEntries": 0,
+          "imageCacheLimit": 128,
+          "imageCachePixels": 0,
+          "imageCachePixelLimit": 67108864,
+          "imageCacheHits": 0,
+          "imageCacheMisses": 0,
+          "imageCacheEvictions": 0,
+          "mipmapCacheEntries": 0,
+          "mipmapCacheBytes": 0,
+          "mipmapCacheHits": 0,
+          "mipmapCacheMisses": 0,
+          "imageFailureCacheHits": 0,
+          "imageFailures": [],
+          "localTypefaceCount": 3,
+          "localTypefaceLoadFailureCount": 0,
+          "localTypefacePendingCount": 0,
+          "bundledTypefaceCount": 2,
+          "bundledTypefaceLoadFailureCount": 0,
+          "glyphRunFontBlobCount": 0,
+          "glyphRunFontBlobBytes": 0,
+          "glyphRunTypefaceCount": 0,
+          "glyphRunFontCount": 0,
+          "fontSubstitutionLimit": 4096,
+          "unregisteredFontFallbacks": 0,
+          "fontSubstitutions": [],
+          "replayFeatureCounts": {
+            "dashedStrokes": 0,
+            "glyphRuns": 0,
+            "tabLeaders": 0,
+            "charOverlaps": 0,
+            "verticalPresentationPunctuation": 0,
+            "verticalTextRuns": 0
+          },
+          "textVariantDiagnosticGroups": 0,
+          "textVariantDiagnosticParts": 0,
+          "replayDiagnosticsDropped": 0
+        }
+      }
+    },
+    {
+      "backend": "canvaskit-compat",
+      "state": {
+        "name": "restored",
+        "width": 1400,
+        "height": 1700,
+        "deviceScaleFactor": 1,
+        "zoom": 1
+      },
+      "picture": {
+        "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-public-targeted-consumers\\natural-p026-canvaskit-compat-restored.png",
+        "sha256": "2de16a0b7a74a5687290a81069f79694c752e6fca7e20bf59d565fc9f7132123",
+        "pixelSize": [
+          794,
+          1122
+        ],
+        "blueBox": [
+          219,
+          133,
+          499,
+          172
+        ],
+        "referenceBox": [
+          219,
+          133,
+          499,
+          172
+        ],
+        "normalizedBox": [
+          219.0,
+          133.0,
+          499.0,
+          172.0
+        ],
+        "maximumDeltaPx": 0.0
+      },
+      "details": {
+        "pageCount": 36,
+        "page": 26,
+        "activeBackend": "canvaskit",
+        "zoom": 1,
+        "dpr": 1,
+        "clip": {
+          "x": 313.15625,
+          "y": 199.5,
+          "width": 793.6875,
+          "height": 1122.5
+        },
+        "viewport": {
+          "width": 1400,
+          "height": 1700
+        },
+        "documentScroll": {
+          "x": 0,
+          "y": 0
+        },
+        "modalCount": 0,
+        "visibleDomImages": [],
+        "canvaskit": {
+          "surfaceCreated": 16,
+          "surfaceReused": 1,
+          "staticPictureCacheEntries": 32,
+          "staticPictureCacheBytes": 22664,
+          "staticPictureCacheHits": 0,
+          "staticPictureCacheMisses": 109,
+          "staticPictureCacheEvictions": 77,
+          "textBlobCacheEntries": 1554,
+          "textBlobCacheBytes": 607592,
+          "textBlobCacheHits": 1866,
+          "textBlobCacheMisses": 1554,
+          "fallbackFamilyCacheEntries": 24,
+          "paragraphFontEntries": 3,
+          "paragraphFontBytes": 14392672,
+          "paragraphProviderBuilds": 0,
+          "paragraphFontRejections": 0,
+          "pendingImageLoads": 0,
+          "mode": "compat",
+          "surfacePreference": "software",
+          "surfaceBackend": "software",
+          "surfaceFallbackReason": null,
+          "lastRenderCompleted": true,
+          "lastUnsupportedOps": [],
+          "lastExpectedUnsupportedOps": [],
+          "lastUnexpectedUnsupportedOps": [],
+          "lastRenderError": null,
+          "passesRuntimeReadinessGate": true,
+          "readinessBlockers": [],
+          "hiddenCanvas2dOverlayUsed": false,
+          "lastRenderDurationMs": 338.90000009536743,
+          "renderCount": 14,
+          "imageCacheEntries": 0,
+          "imageCacheLimit": 128,
+          "imageCachePixels": 0,
+          "imageCachePixelLimit": 67108864,
+          "imageCacheHits": 0,
+          "imageCacheMisses": 0,
+          "imageCacheEvictions": 0,
+          "mipmapCacheEntries": 0,
+          "mipmapCacheBytes": 0,
+          "mipmapCacheHits": 0,
+          "mipmapCacheMisses": 0,
+          "imageFailureCacheHits": 0,
+          "imageFailures": [],
+          "localTypefaceCount": 3,
+          "localTypefaceLoadFailureCount": 0,
+          "localTypefacePendingCount": 0,
+          "bundledTypefaceCount": 2,
+          "bundledTypefaceLoadFailureCount": 0,
+          "glyphRunFontBlobCount": 0,
+          "glyphRunFontBlobBytes": 0,
+          "glyphRunTypefaceCount": 0,
+          "glyphRunFontCount": 0,
+          "fontSubstitutionLimit": 4096,
+          "unregisteredFontFallbacks": 0,
+          "fontSubstitutions": [],
+          "replayFeatureCounts": {
+            "dashedStrokes": 0,
+            "glyphRuns": 0,
+            "tabLeaders": 0,
+            "charOverlaps": 0,
+            "verticalPresentationPunctuation": 0,
+            "verticalTextRuns": 0
+          },
+          "textVariantDiagnosticGroups": 0,
+          "textVariantDiagnosticParts": 0,
+          "replayDiagnosticsDropped": 0
+        }
+      }
+    },
+    {
+      "backend": "canvaskit-default",
+      "state": {
+        "name": "initial",
+        "width": 1400,
+        "height": 1700,
+        "deviceScaleFactor": 1,
+        "zoom": 1
+      },
+      "picture": {
+        "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-public-targeted-consumers\\natural-p026-canvaskit-default-initial.png",
+        "sha256": "2de16a0b7a74a5687290a81069f79694c752e6fca7e20bf59d565fc9f7132123",
+        "pixelSize": [
+          794,
+          1122
+        ],
+        "blueBox": [
+          219,
+          133,
+          499,
+          172
+        ],
+        "referenceBox": [
+          219,
+          133,
+          499,
+          172
+        ],
+        "normalizedBox": [
+          219.0,
+          133.0,
+          499.0,
+          172.0
+        ],
+        "maximumDeltaPx": 0.0
+      },
+      "details": {
+        "pageCount": 36,
+        "page": 26,
+        "activeBackend": "canvaskit",
+        "zoom": 1,
+        "dpr": 1,
+        "clip": {
+          "x": 313.15625,
+          "y": 199.5,
+          "width": 793.6875,
+          "height": 1122.5
+        },
+        "viewport": {
+          "width": 1400,
+          "height": 1700
+        },
+        "documentScroll": {
+          "x": 0,
+          "y": 0
+        },
+        "modalCount": 0,
+        "visibleDomImages": [],
+        "canvaskit": {
+          "surfaceCreated": 5,
+          "surfaceReused": 1,
+          "staticPictureCacheEntries": 24,
+          "staticPictureCacheBytes": 17064,
+          "staticPictureCacheHits": 0,
+          "staticPictureCacheMisses": 24,
+          "staticPictureCacheEvictions": 0,
+          "textBlobCacheEntries": 471,
+          "textBlobCacheBytes": 177616,
+          "textBlobCacheHits": 63,
+          "textBlobCacheMisses": 471,
+          "fallbackFamilyCacheEntries": 23,
+          "paragraphFontEntries": 3,
+          "paragraphFontBytes": 14392672,
+          "paragraphProviderBuilds": 0,
+          "paragraphFontRejections": 0,
+          "pendingImageLoads": 0,
+          "mode": "default",
+          "surfacePreference": "software",
+          "surfaceBackend": "software",
+          "surfaceFallbackReason": null,
+          "lastRenderCompleted": true,
+          "lastUnsupportedOps": [],
+          "lastExpectedUnsupportedOps": [],
+          "lastUnexpectedUnsupportedOps": [],
+          "lastRenderError": null,
+          "passesRuntimeReadinessGate": true,
+          "readinessBlockers": [],
+          "hiddenCanvas2dOverlayUsed": false,
+          "lastRenderDurationMs": 406.90000009536743,
+          "renderCount": 3,
+          "imageCacheEntries": 0,
+          "imageCacheLimit": 128,
+          "imageCachePixels": 0,
+          "imageCachePixelLimit": 67108864,
+          "imageCacheHits": 0,
+          "imageCacheMisses": 0,
+          "imageCacheEvictions": 0,
+          "mipmapCacheEntries": 0,
+          "mipmapCacheBytes": 0,
+          "mipmapCacheHits": 0,
+          "mipmapCacheMisses": 0,
+          "imageFailureCacheHits": 0,
+          "imageFailures": [],
+          "localTypefaceCount": 3,
+          "localTypefaceLoadFailureCount": 0,
+          "localTypefacePendingCount": 0,
+          "bundledTypefaceCount": 2,
+          "bundledTypefaceLoadFailureCount": 0,
+          "glyphRunFontBlobCount": 0,
+          "glyphRunFontBlobBytes": 0,
+          "glyphRunTypefaceCount": 0,
+          "glyphRunFontCount": 0,
+          "fontSubstitutionLimit": 4096,
+          "unregisteredFontFallbacks": 0,
+          "fontSubstitutions": [],
+          "replayFeatureCounts": {
+            "dashedStrokes": 0,
+            "glyphRuns": 0,
+            "tabLeaders": 0,
+            "charOverlaps": 0,
+            "verticalPresentationPunctuation": 0,
+            "verticalTextRuns": 0
+          },
+          "textVariantDiagnosticGroups": 0,
+          "textVariantDiagnosticParts": 0,
+          "replayDiagnosticsDropped": 0
+        }
+      }
+    },
+    {
+      "backend": "canvaskit-default",
+      "state": {
+        "name": "zoom-dpr-resize",
+        "width": 1600,
+        "height": 1900,
+        "deviceScaleFactor": 2,
+        "zoom": 1.25
+      },
+      "picture": {
+        "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-public-targeted-consumers\\natural-p026-canvaskit-default-zoom-dpr-resize.png",
+        "sha256": "55e96817ebf59c5ac36694c609b1700807b9364b061862d858a9bfd86c721840",
+        "pixelSize": [
+          1984,
+          2806
+        ],
+        "blueBox": [
+          548,
+          331,
+          1246,
+          429
+        ],
+        "referenceBox": [
+          219,
+          133,
+          499,
+          172
+        ],
+        "normalizedBox": [
+          219.31048387096774,
+          132.3528153955809,
+          498.65120967741933,
+          171.53884533143264
+        ],
+        "maximumDeltaPx": 0.6471846044190954
+      },
+      "details": {
+        "pageCount": 36,
+        "page": 26,
+        "activeBackend": "canvaskit",
+        "zoom": 1.25,
+        "dpr": 2,
+        "clip": {
+          "x": 313.9375,
+          "y": 200.125,
+          "width": 992.125,
+          "height": 1403.125
+        },
+        "viewport": {
+          "width": 1600,
+          "height": 1900
+        },
+        "documentScroll": {
+          "x": 0,
+          "y": 0
+        },
+        "modalCount": 0,
+        "visibleDomImages": [],
+        "canvaskit": {
+          "surfaceCreated": 10,
+          "surfaceReused": 1,
+          "staticPictureCacheEntries": 32,
+          "staticPictureCacheBytes": 22664,
+          "staticPictureCacheHits": 0,
+          "staticPictureCacheMisses": 64,
+          "staticPictureCacheEvictions": 32,
+          "textBlobCacheEntries": 1338,
+          "textBlobCacheBytes": 524520,
+          "textBlobCacheHits": 502,
+          "textBlobCacheMisses": 1338,
+          "fallbackFamilyCacheEntries": 23,
+          "paragraphFontEntries": 3,
+          "paragraphFontBytes": 14392672,
+          "paragraphProviderBuilds": 0,
+          "paragraphFontRejections": 0,
+          "pendingImageLoads": 0,
+          "mode": "default",
+          "surfacePreference": "software",
+          "surfaceBackend": "software",
+          "surfaceFallbackReason": null,
+          "lastRenderCompleted": true,
+          "lastUnsupportedOps": [],
+          "lastExpectedUnsupportedOps": [],
+          "lastUnexpectedUnsupportedOps": [],
+          "lastRenderError": null,
+          "passesRuntimeReadinessGate": true,
+          "readinessBlockers": [],
+          "hiddenCanvas2dOverlayUsed": false,
+          "lastRenderDurationMs": 492.5,
+          "renderCount": 8,
+          "imageCacheEntries": 0,
+          "imageCacheLimit": 128,
+          "imageCachePixels": 0,
+          "imageCachePixelLimit": 67108864,
+          "imageCacheHits": 0,
+          "imageCacheMisses": 0,
+          "imageCacheEvictions": 0,
+          "mipmapCacheEntries": 0,
+          "mipmapCacheBytes": 0,
+          "mipmapCacheHits": 0,
+          "mipmapCacheMisses": 0,
+          "imageFailureCacheHits": 0,
+          "imageFailures": [],
+          "localTypefaceCount": 3,
+          "localTypefaceLoadFailureCount": 0,
+          "localTypefacePendingCount": 0,
+          "bundledTypefaceCount": 2,
+          "bundledTypefaceLoadFailureCount": 0,
+          "glyphRunFontBlobCount": 0,
+          "glyphRunFontBlobBytes": 0,
+          "glyphRunTypefaceCount": 0,
+          "glyphRunFontCount": 0,
+          "fontSubstitutionLimit": 4096,
+          "unregisteredFontFallbacks": 0,
+          "fontSubstitutions": [],
+          "replayFeatureCounts": {
+            "dashedStrokes": 0,
+            "glyphRuns": 0,
+            "tabLeaders": 0,
+            "charOverlaps": 0,
+            "verticalPresentationPunctuation": 0,
+            "verticalTextRuns": 0
+          },
+          "textVariantDiagnosticGroups": 0,
+          "textVariantDiagnosticParts": 0,
+          "replayDiagnosticsDropped": 0
+        }
+      }
+    },
+    {
+      "backend": "canvaskit-default",
+      "state": {
+        "name": "restored",
+        "width": 1400,
+        "height": 1700,
+        "deviceScaleFactor": 1,
+        "zoom": 1
+      },
+      "picture": {
+        "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-public-targeted-consumers\\natural-p026-canvaskit-default-restored.png",
+        "sha256": "2de16a0b7a74a5687290a81069f79694c752e6fca7e20bf59d565fc9f7132123",
+        "pixelSize": [
+          794,
+          1122
+        ],
+        "blueBox": [
+          219,
+          133,
+          499,
+          172
+        ],
+        "referenceBox": [
+          219,
+          133,
+          499,
+          172
+        ],
+        "normalizedBox": [
+          219.0,
+          133.0,
+          499.0,
+          172.0
+        ],
+        "maximumDeltaPx": 0.0
+      },
+      "details": {
+        "pageCount": 36,
+        "page": 26,
+        "activeBackend": "canvaskit",
+        "zoom": 1,
+        "dpr": 1,
+        "clip": {
+          "x": 313.15625,
+          "y": 199.5,
+          "width": 793.6875,
+          "height": 1122.5
+        },
+        "viewport": {
+          "width": 1400,
+          "height": 1700
+        },
+        "documentScroll": {
+          "x": 0,
+          "y": 0
+        },
+        "modalCount": 0,
+        "visibleDomImages": [],
+        "canvaskit": {
+          "surfaceCreated": 14,
+          "surfaceReused": 1,
+          "staticPictureCacheEntries": 32,
+          "staticPictureCacheBytes": 22796,
+          "staticPictureCacheHits": 0,
+          "staticPictureCacheMisses": 96,
+          "staticPictureCacheEvictions": 64,
+          "textBlobCacheEntries": 1338,
+          "textBlobCacheBytes": 524520,
+          "textBlobCacheHits": 1608,
+          "textBlobCacheMisses": 1338,
+          "fallbackFamilyCacheEntries": 23,
+          "paragraphFontEntries": 3,
+          "paragraphFontBytes": 14392672,
+          "paragraphProviderBuilds": 0,
+          "paragraphFontRejections": 0,
+          "pendingImageLoads": 0,
+          "mode": "default",
+          "surfacePreference": "software",
+          "surfaceBackend": "software",
+          "surfaceFallbackReason": null,
+          "lastRenderCompleted": true,
+          "lastUnsupportedOps": [],
+          "lastExpectedUnsupportedOps": [],
+          "lastUnexpectedUnsupportedOps": [],
+          "lastRenderError": null,
+          "passesRuntimeReadinessGate": true,
+          "readinessBlockers": [],
+          "hiddenCanvas2dOverlayUsed": false,
+          "lastRenderDurationMs": 553.6000003814697,
+          "renderCount": 12,
+          "imageCacheEntries": 0,
+          "imageCacheLimit": 128,
+          "imageCachePixels": 0,
+          "imageCachePixelLimit": 67108864,
+          "imageCacheHits": 0,
+          "imageCacheMisses": 0,
+          "imageCacheEvictions": 0,
+          "mipmapCacheEntries": 0,
+          "mipmapCacheBytes": 0,
+          "mipmapCacheHits": 0,
+          "mipmapCacheMisses": 0,
+          "imageFailureCacheHits": 0,
+          "imageFailures": [],
+          "localTypefaceCount": 3,
+          "localTypefaceLoadFailureCount": 0,
+          "localTypefacePendingCount": 0,
+          "bundledTypefaceCount": 2,
+          "bundledTypefaceLoadFailureCount": 0,
+          "glyphRunFontBlobCount": 0,
+          "glyphRunFontBlobBytes": 0,
+          "glyphRunTypefaceCount": 0,
+          "glyphRunFontCount": 0,
+          "fontSubstitutionLimit": 4096,
+          "unregisteredFontFallbacks": 0,
+          "fontSubstitutions": [],
+          "replayFeatureCounts": {
+            "dashedStrokes": 0,
+            "glyphRuns": 0,
+            "tabLeaders": 0,
+            "charOverlaps": 0,
+            "verticalPresentationPunctuation": 0,
+            "verticalTextRuns": 0
+          },
+          "textVariantDiagnosticGroups": 0,
+          "textVariantDiagnosticParts": 0,
+          "replayDiagnosticsDropped": 0
+        }
+      }
+    }
+  ],
+  "originalFontMinimum": 99.37309,
+  "status": "passed"
+}

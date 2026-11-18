@@ -1,0 +1,40 @@
+{
+  "status": "passed",
+  "before": "95a7fb1e8bb72b27ed522f73bb66c9df709c1ea3",
+  "head": "699c0afbbc86db1252128b8dcc09630038a8d971",
+  "changed": [
+    "tests/cases/installed_font_program_order.rs",
+    "tests/cases/skia_native_glyph_replay.rs"
+  ],
+  "original": "tests/cases/installed_font_program_order.rs::native_containers",
+  "destination": "tests/cases/skia_native_glyph_replay.rs::native_containers",
+  "tests": [
+    "native_supplied_bytes_prefer_ttf_over_nonzero_ttc_face_in_both_orders",
+    "native_directory_order_does_not_promote_ttc_over_ttf"
+  ],
+  "assertionAndHelperBodiesIdentical": true,
+  "importChange": "super::DocumentCore to rhwp::DocumentCore",
+  "existingCiCalls": [
+    {
+      "line": 1463,
+      "text": "node scripts/run-rust-test.mjs --cargo-test skia_native_glyph_replay -- --profile release-test --features native-skia --verbose"
+    },
+    {
+      "line": 1488,
+      "text": "node scripts/run-rust-test.mjs --cargo-test skia_native_glyph_replay -- --release --features native-skia --verbose"
+    }
+  ],
+  "ciDefinitionChanges": [],
+  "productTreeExcludingMydocsAndTestsSha256": "a038a241c5937c6f296b090a47eb04890f7fa1fa252b92f7b5098908f231f0ad",
+  "acceptedWasmSha256": "312c607caf29e485d147f5e301b082b953e3a6dd75a00c0fc0434041bc5f6730",
+  "runtime": {
+    "source": "699c0afbbc86db1252128b8dcc09630038a8d971",
+    "consumer": "native-ci-existing-consumer",
+    "tests": 24,
+    "movedTestsExecuted": 2,
+    "focused": 33,
+    "full": 13718,
+    "fullSkipped": 45
+  },
+  "productProducer": "fcf2e11b1727297743343446333132e1409737f1"
+}
