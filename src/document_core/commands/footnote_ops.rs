@@ -183,6 +183,13 @@ impl DocumentCore {
             if control_idx < para.ctrl_data_records.len() {
                 para.ctrl_data_records.remove(control_idx);
             }
+            // 뒤 컨트롤 번호가 하나씩 당겨진다. 누름틀 범위가 옛 번호에 남으면 다음 컨트롤을
+            // 가리켜, 각주 뒤 누름틀이 조회와 저장에서 사라진다.
+            for range in &mut para.field_ranges {
+                if range.control_idx > control_idx {
+                    range.control_idx -= 1;
+                }
+            }
             if para.char_count >= 8 {
                 para.char_count -= 8;
             }
@@ -199,6 +206,16 @@ impl DocumentCore {
             section.raw_stream = None;
         }
 
+        Self::remap_active_field_root_control(
+            &mut self.active_field,
+            section_idx,
+            para_idx,
+            |index| match index.cmp(&control_idx) {
+                std::cmp::Ordering::Less => Some(index),
+                std::cmp::Ordering::Equal => None,
+                std::cmp::Ordering::Greater => Some(index - 1),
+            },
+        );
         self.renumber_footnotes_in_section(section_idx);
         // 미주 번호는 구역마다 미주 모양의 번호 매기기를 따른다(뒤 구역까지).
         self.refresh_endnote_numbers(section_idx);

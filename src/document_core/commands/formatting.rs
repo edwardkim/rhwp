@@ -2699,6 +2699,12 @@ impl DocumentCore {
                 if idx < para.ctrl_data_records.len() {
                     para.ctrl_data_records.remove(idx);
                 }
+                // 뒤 누름틀의 컨트롤 번호도 하나 당긴다.
+                for range in &mut para.field_ranges {
+                    if range.control_idx > idx {
+                        range.control_idx -= 1;
+                    }
+                }
                 para.forget_para_text_if_emptied();
             }
         } else {
@@ -2717,6 +2723,10 @@ impl DocumentCore {
                 // 새 컨트롤 삽입 (문단 맨 앞)
                 para.controls.insert(0, Control::PageHide(ph));
                 para.ctrl_data_records.insert(0, None);
+                // 문단 맨 앞에 끼우므로 누름틀의 컨트롤 번호가 모두 하나 밀린다.
+                for range in &mut para.field_ranges {
+                    range.control_idx += 1;
+                }
             }
         }
 
