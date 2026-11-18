@@ -431,7 +431,11 @@ export class CanvasView {
   }
 
   private async refreshInvalidatedPageForMutation(payload: unknown): Promise<void> {
-    const selected = await this.selectMutationRevision();
+    // A superseded render may still owe font discovery for a different page.
+    const editedPage = !this.rendererSelectionPending && typeof payload === 'object'
+      && payload !== null && 'reason' in payload && payload.reason === 'text-edit'
+      ? this.pageIndexFromPayload(payload) : null;
+    const selected = await this.selectMutationRevision(editedPage);
     if (!selected || !this.rendererSession.isCurrent(selected.selection)) return;
     if (selected.backendChanged) {
       this.refreshPages();
@@ -440,7 +444,7 @@ export class CanvasView {
     this.refreshInvalidatedPage(payload);
   }
 
-  private async selectMutationRevision(): Promise<{
+  private async selectMutationRevision(editedPage: number | null = null): Promise<{
     selection: RendererSessionSelection;
     backendChanged: boolean;
   } | null> {
@@ -449,10 +453,10 @@ export class CanvasView {
     this.cancelAutoRendererReselection();
     this.rendererSelectionPending = true;
     const pinned = this.rendererSession.pinAutoMutationRevision();
-    if (!pinned) return this.selectNextDocumentRevision();
+    if (!pinned) return this.selectNextDocumentRevision(true, editedPage);
 
     const epoch = ++this.rendererSelectionEpoch;
-    const selected = await this.prepareRendererRevision(epoch, () => Promise.resolve(pinned));
+    const selected = await this.prepareRendererRevision(epoch, () => Promise.resolve(pinned), editedPage);
     if (!selected) return null;
     this.scheduleAutoRendererReselection();
     return selected;
@@ -478,7 +482,7 @@ export class CanvasView {
     this.autoRendererReselectionTimer = null;
   }
 
-  private async selectNextDocumentRevision(resetResources = true): Promise<{
+  private async selectNextDocumentRevision(resetResources = true, editedPage: number | null = null): Promise<{
     selection: RendererSessionSelection;
     backendChanged: boolean;
   } | null> {
@@ -490,13 +494,14 @@ export class CanvasView {
       await Promise.resolve();
       if (this.disposed || epoch !== this.rendererSelectionEpoch) return null;
       return this.rendererSession.resolve(this.wasm);
-    });
+    }, editedPage);
   }
 
   /** 성공·실패 모두 현재 revision만 준비 상태를 확정한다. */
   private async prepareRendererRevision(
     epoch: number,
     resolve: () => Promise<RendererSessionSelection | null>,
+    editedPage: number | null = null,
   ): Promise<{ selection: RendererSessionSelection; backendChanged: boolean } | null> {
     this.rendererSelectionPending = true;
     const current = () => !this.disposed && epoch === this.rendererSelectionEpoch;
@@ -507,7 +512,7 @@ export class CanvasView {
       if (!selection || !current() || !this.rendererSession.isCurrent(selection)) return null;
       const preparedSelection = selection;
       metricsChanged = await this.wasm.prepareCanvasMetrics(selection.backend,
-        () => current() && this.rendererSession.isCurrent(preparedSelection));
+        () => current() && this.rendererSession.isCurrent(preparedSelection), editedPage);
       if (!current() || !this.rendererSession.isCurrent(selection)) return null;
     } catch (error) {
       if (!current()) return null;
