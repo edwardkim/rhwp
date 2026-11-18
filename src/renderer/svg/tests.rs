@@ -59,13 +59,7 @@ fn legacy_hanyang_faces_have_portable_local_aliases() {
     // 한컴 버전만으로 원본 프로그램을 HCR로 덮어쓰지 않는다.
     assert_eq!(
         font_local_aliases("한양중고딕"),
-        vec![
-            "한양중고딕",
-            "HY중고딕",
-            "HYGothic-Medium",
-            "HCR Dotum",
-            "함초롬돋움",
-        ]
+        vec!["한양중고딕", "HY Junggothic"]
     );
     assert_eq!(
         font_local_aliases("휴먼명조"),
@@ -96,12 +90,12 @@ fn legacy_hanyang_faces_have_portable_local_aliases() {
     );
     assert_eq!(
         font_local_aliases("한양신명조"),
-        vec!["한양신명조", "HY신명조", "HYSinMyeongJo-Medium"],
-        "정상 outline인 HY신명조는 원 face를 먼저 유지해야 함"
+        vec!["한양신명조", "HY Sinmyeongjo"],
+        "한양신명조 원본과 별도 HY신명조를 local 별칭으로 합치지 않는다"
     );
     assert_eq!(
         known_font_filenames("한양중고딕").first(),
-        Some(&"H2GTRM.TTF"),
+        Some(&"HJJGT.otf"),
         "Full embed도 같은 원본 outline 프로그램을 먼저 찾아야 함"
     );
     assert_eq!(
@@ -111,35 +105,33 @@ fn legacy_hanyang_faces_have_portable_local_aliases() {
     );
     assert_eq!(
         known_font_filenames("한양신명조").first(),
-        Some(&"H2MJSM.TTF"),
-        "Windows 설치본의 실제 한양신명조 파일을 먼저 찾아야 함"
+        Some(&"HGSMJ.otf"),
+        "한양신명조 HFT 원본 파일을 찾는다"
     );
-    // [#6171] 견고딕/견명조도 형제 항목과 같은 `H2*` 파일명이다(Windows 글꼴 실측).
-    // 종전의 `HYGTRE.TTF`·`HYMJRE.TTF` 는 설치본에 없어 full embed 가 매번 실패했다.
+    // 한양 HFT 원본과 Windows의 별도 HY 계열 H2* TTF를 구분한다.
     assert_eq!(
         known_font_filenames("한양견고딕").first(),
-        Some(&"H2GTRE.TTF"),
-        "Windows 설치본의 실제 한양견고딕 파일(H2GTRE.TTF)을 먼저 찾아야 함"
+        Some(&"HGGGT.otf"),
+        "한양견고딕 HFT 원본과 HY견고딕 파일을 구분한다"
     );
     assert_eq!(
         known_font_filenames("한양견명조").first(),
-        Some(&"H2MJRE.TTF"),
-        "Windows 설치본의 실제 한양견명조 파일(H2MJRE.TTF)을 먼저 찾아야 함"
+        Some(&"HGGMJ.otf"),
+        "한양견명조 HFT 원본과 HY견명조 파일을 구분한다"
     );
     assert_eq!(
         font_local_aliases("한양견고딕"),
-        vec!["한양견고딕", "HY견고딕", "HYGothic-Extra"],
-        "정상 outline인 HY견고딕은 원 face를 먼저 유지해야 함"
+        vec!["한양견고딕", "HY Gyeongothic"],
+        "한양견고딕의 실제 SFNT 이름만 local 별칭으로 연결한다"
     );
     assert_eq!(
         font_local_bold_aliases("휴먼명조").first(),
         Some(&"HCR Batang Bold"),
         "휴먼명조의 Bold는 browser synthetic bold가 아니라 한컴 HCR Bold face여야 함"
     );
-    assert_eq!(
-        known_bold_font_filenames("한양중고딕").first(),
-        Some(&"HANDotumB.ttf"),
-        "한양중고딕의 Bold full embed는 한컴 HCR Dotum Bold 파일을 먼저 찾아야 함"
+    assert!(
+        known_bold_font_filenames("한양중고딕").is_empty(),
+        "한양 원본의 합성 굵기를 별도 HCR Bold 프로그램으로 재등록하지 않는다"
     );
 }
 
@@ -271,13 +263,10 @@ fn style_font_face_css_orders_broken_bitmap_faces_after_outline_fallbacks() {
         .find(|line| line.contains("font-family: \"한양중고딕\""))
         .expect("한양중고딕 style rule");
     assert!(
-        hanyang_jung
-            .find("local(\"HY중고딕\")")
-            .expect("원본 outline 별칭")
-            < hanyang_jung
-                .find("local(\"HCR Dotum\")")
-                .expect("대체 outline 폴백"),
-        "실제 CSS에서도 정상 원본 outline이 대체 고딕보다 앞서야 함"
+        hanyang_jung.contains("local(\"한양중고딕\"), local(\"HY Junggothic\")")
+            && !hanyang_jung.contains("local(\"HY중고딕\")")
+            && !hanyang_jung.contains("local(\"HCR Dotum\")"),
+        "한양 원본 CSS에는 같은 파일의 이름만 등록한다"
     );
     let human_gothic = css
         .lines()
@@ -297,10 +286,9 @@ fn style_font_face_css_orders_broken_bitmap_faces_after_outline_fallbacks() {
         .find(|line| line.contains("font-family: \"한양신명조\""))
         .expect("한양신명조 style rule");
     assert!(
-        hanyang.contains(
-            "local(\"한양신명조\"), local(\"HY신명조\"), local(\"HYSinMyeongJo-Medium\")"
-        ),
-        "정상 outline 한양신명조의 local 우선순위를 보존해야 함"
+        hanyang.contains("local(\"한양신명조\"), local(\"HY Sinmyeongjo\")")
+            && !hanyang.contains("local(\"HY신명조\")"),
+        "한양신명조도 다른 HY 원본을 local 별칭으로 등록하지 않는다"
     );
     let human_myeongjo_bold = css
         .lines()
@@ -312,15 +300,11 @@ fn style_font_face_css_orders_broken_bitmap_faces_after_outline_fallbacks() {
         human_myeongjo_bold.contains("local(\"HCR Batang Bold\")"),
         "휴먼명조 bold는 HCR Batang Bold를 명시해 synthetic bold를 피해야 함"
     );
-    let hanyang_jung_bold = css
-        .lines()
-        .find(|line| {
-            line.contains("font-family: \"한양중고딕\"") && line.contains("font-weight: bold")
-        })
-        .expect("한양중고딕 bold style rule");
     assert!(
-        hanyang_jung_bold.contains("local(\"HCR Dotum Bold\")"),
-        "한양중고딕 bold는 HCR Dotum Bold를 명시해 synthetic bold를 피해야 함"
+        !css.lines()
+            .any(|line| line.contains("font-family: \"한양중고딕\"")
+                && line.contains("font-weight: bold")),
+        "한양 원본의 합성 굵기를 HCR Bold 프로그램으로 덮어쓰지 않는다"
     );
 }
 

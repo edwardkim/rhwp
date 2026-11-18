@@ -1339,7 +1339,10 @@ function setupEventListeners(): void {
   });
 
   eventBus.on('local-fonts-changed', (payload) => {
-    if ((payload as { source?: string } | undefined)?.source === 'options-dialog-clear') {
+    const source = (payload as { source?: string } | undefined)?.source;
+    if (source === 'options-dialog-clear' || source === 'options-dialog') {
+      // 명시 재감지는 실제 파일 목록을 새로 수집한다. 이전 감지에서 등록한
+      // HY/한양 CSS 별칭·프로그램 바이트가 새 목록과 섞이지 않게 함께 해제한다.
       clearDeclaredLocalPrograms();
     }
     if (!canvasView || wasm.pageCount === 0) return;

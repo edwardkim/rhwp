@@ -672,14 +672,28 @@ function isFamilyLikelyAvailable(
   return false;
 }
 
-function probeCandidateFamilies(candidateFamilies: readonly string[]): string[] {
+async function probeCandidateFamilies(candidateFamilies: readonly string[]): Promise<string[]> {
   const context = createProbeContext();
   if (!context) return [];
-  return normalizeFamilies(candidateFamilies)
-    .filter(family => !GENERIC_FONTS.has(family))
-    // 웹폰트 카탈로그 등록은 시스템 설치 증거가 아니다. 문서의 exact face는
-    // CDN 대체를 결정하기 전에 로컬 presence probe로 별도 확인한다.
-    .filter(family => isFamilyLikelyAvailable(context, family));
+  const found: string[] = [];
+  for (const family of normalizeFamilies(candidateFamilies)) {
+    if (GENERIC_FONTS.has(family)) continue;
+    if (typeof FontFace !== 'undefined') {
+      // 문서 CSS의 한양→HY 대체나 웹폰트는 로컬 설치 증거가 아니다.
+      // 같은 이름의 local()만 확인하고 이 face를 document.fonts에 등록하지 않는다.
+      // 기호 전용 프로그램은 probe 문자열의 폭이 같아도 로컬에 존재할 수 있다.
+      // 이 결과는 존재 확인이며 실제 프로그램 바이트·다른 이름의 별칭 인증은 아니다.
+      try {
+        const face = new FontFace(family, `local(${cssQuoteFontFamily(family)})`);
+        await face.load();
+        if (face.status === 'loaded') found.push(family);
+      } catch { /* 없는 원본을 표시용 대체 face로 수집하지 않는다. */ }
+    } else if (isFamilyLikelyAvailable(context, family)) {
+      // FontFace API가 없는 환경의 기존 제한적 존재 검사다.
+      found.push(family);
+    }
+  }
+  return found;
 }
 
 function unresolvedCandidateFamilies(
@@ -951,7 +965,7 @@ export async function detectLocalFonts(options: DetectLocalFontsOptions = {}): P
     const enumeratedRecords = await collectLocalFontRecords(fontDataList);
     const probeCandidates = unresolvedCandidateFamilies(enumeratedRecords, checkedFamilies);
     const probedFamilies = isFontPresenceProbeSupported()
-      ? probeCandidateFamilies(probeCandidates)
+      ? await probeCandidateFamilies(probeCandidates)
       : [];
     const records = [
       ...enumeratedRecords,
@@ -963,7 +977,7 @@ export async function detectLocalFonts(options: DetectLocalFontsOptions = {}): P
       unresolvedFamilies: unresolvedCandidateFamilies(records, checkedFamilies),
     });
   } else if (isFontPresenceProbeSupported() && checkedFamilies.length > 0) {
-    const families = probeCandidateFamilies(checkedFamilies);
+    const families = await probeCandidateFamilies(checkedFamilies);
     const records = recordsFromFamilies(families, 'font-presence-probe');
     snapshot = makeSnapshot(records, 'font-presence-probe', {
       checkedFamilies,

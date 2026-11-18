@@ -1,6 +1,6 @@
 // 관계형: 로컬 face 식별·SFNT 이름/형식·복수 프로그램·초기화와 승인 상태를 검사한다.
 // Native/fresh WASM 일치율: 비해당. 설치 글꼴이나 문서의 px 배치를 고정하지 않는다.
-// 주석 갱신: 2026-11-07 20:13 KST.
+// 주석 갱신: 2026-11-18 21:18:50 KST. HY·한양의 재감지 신원과 CSS 대체 오인도 검사한다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -33,6 +33,71 @@ import {
 } from '../src/core/canvas-font-raw.ts';
 
 const STORAGE_KEY = 'rhwp-local-fonts';
+
+test('재감지는 HY와 한양 여섯 계열을 실제 SFNT 이름별로 따로 수집한다', async () => {
+  const g = globalThis as TestGlobals;
+  const originals = { browser: g.browser, chrome: g.chrome, document: g.document,
+    localStorage: g.localStorage, queryLocalFonts: g.queryLocalFonts };
+  const pairs = ['중고딕', '신명조', '견고딕', '견명조', '그래픽', '궁서'];
+  const names = pairs.flatMap(suffix => [`HY${suffix}`, `한양${suffix}`]);
+  let available = names;
+  resetLocalFontsForTests();
+  g.browser = undefined; g.chrome = undefined; g.document = undefined; g.localStorage = createStorage();
+  g.queryLocalFonts = async () => available.map(family => ({ family, fullName: family,
+    postscriptName: `${family}-Original`, style: 'Regular',
+    blob: async () => new Blob([createSfntWithNameRecords([
+      { nameId: 1, value: family }, { nameId: 2, value: 'Regular' },
+      { nameId: 4, value: family }, { nameId: 6, value: `${family}-Original` },
+    ])]),
+  }));
+  try {
+    await detectLocalFonts({ force: true, candidateFamilies: names, includeRegistered: true });
+    assert.equal(getLocalFontRecords({ includeRegistered: true }).length, 12);
+    for (const name of names) {
+      assert.deepEqual(resolveLocalFontProgramCandidates(name).map(record => record.postscriptName),
+        [`${name}-Original`], '다른 이름의 원본을 같은 family로 합치지 않는다');
+    }
+    available = pairs.map(suffix => `HY${suffix}`);
+    await detectLocalFonts({ force: true, candidateFamilies: names, includeRegistered: true });
+    for (const suffix of pairs) {
+      assert.equal(resolveLocalFontProgramCandidates(`한양${suffix}`).length, 0,
+        '재감지 때 사라진 한양 원본을 남은 HY 글꼴로 되살리지 않는다');
+      assert.equal(resolveLocalFontProgramCandidates(`HY${suffix}`).length, 1);
+    }
+  } finally {
+    await clearStoredLocalFonts(); resetLocalFontsForTests(); restoreGlobals(originals);
+  }
+});
+
+test('재감지에서 CSS 대체로 보이는 한양 이름을 HY 로컬 설치의 별칭으로 수집하지 않는다', async () => {
+  const g = globalThis as TestGlobals;
+  const originals = { browser: g.browser, chrome: g.chrome, document: g.document,
+    localStorage: g.localStorage, queryLocalFonts: g.queryLocalFonts };
+  const previousFontFace = Object.getOwnPropertyDescriptor(globalThis, 'FontFace');
+  const queried: string[] = [];
+  resetLocalFontsForTests();
+  g.browser = undefined; g.chrome = undefined; g.localStorage = createStorage();
+  // 문서의 웹폰트/CSS 대체 때문에 Canvas 폭은 달라도 원본 local()는 존재하지 않는다.
+  g.document = createProbeDocument(['한양중고딕']);
+  g.queryLocalFonts = async () => [{ family: 'HY중고딕', fullName: 'HY중고딕',
+    postscriptName: 'H2gtrM', style: 'Regular' }];
+  Object.defineProperty(globalThis, 'FontFace', { configurable: true, value: class {
+    status = 'unloaded';
+    constructor(_family: string, source: string) { queried.push(source); }
+    async load(): Promise<never> { throw new Error('원본 local face 부재'); }
+  } });
+  try {
+    await detectLocalFonts({ force: true, candidateFamilies: ['한양중고딕', 'HY중고딕'], includeRegistered: true });
+    assert.equal(getLocalFontRecords({ includeRegistered: true }).some(record => record.family === '한양중고딕'), false,
+      'CSS 표시·웹폰트 로드는 한양 원본의 로컬 설치 증거가 아니다');
+    assert.equal(resolveLocalFontProgramCandidates('HY중고딕')[0]?.postscriptName, 'H2gtrM');
+    assert.ok(queried.some(source => source.includes('local("한양중고딕")')));
+  } finally {
+    if (previousFontFace) Object.defineProperty(globalThis, 'FontFace', previousFontFace);
+    else Reflect.deleteProperty(globalThis, 'FontFace');
+    await clearStoredLocalFonts(); resetLocalFontsForTests(); restoreGlobals(originals);
+  }
+});
 
 test('변경된 face 이름을 문서 글꼴과 대조해 무관한 재감지를 구분한다', () => {
   const font = (family: string, aliases: string[]) => ({

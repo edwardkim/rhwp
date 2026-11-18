@@ -4738,16 +4738,9 @@ fn font_local_aliases(font_family: &str) -> Vec<&'static str> {
         "바탕체" => vec!["바탕체", "BatangChe"],
         "궁서" => vec!["궁서", "Gungsuh"],
         "궁서체" => vec!["궁서체", "GungsuhChe"],
-        // 원본 한양중고딕의 outline 프로그램을 먼저 공급한다. 한컴 버전만으로
-        // HCR 대체를 가정하면 HFT 선언과 Type3 출력의 획·폭을 바꾸게 된다.
-        // 명시 대체는 FontEnvironment가 결정하며 HCR은 원 face 부재 시 폴백이다.
-        "한양중고딕" => vec![
-            "한양중고딕",
-            "HY중고딕",
-            "HYGothic-Medium",
-            "HCR Dotum",
-            "함초롬돋움",
-        ],
+        // local()는 같은 프로그램의 실제 이름만 연결한다. 별도 HY TTF·HCR을
+        // 한양 원본의 CSS family로 재등록하면 재감지와 원본 선택까지 오염된다.
+        "한양중고딕" => vec!["한양중고딕", "HY Junggothic"],
         "HY중고딕" => vec!["HY중고딕", "HYGothic-Medium"],
         // HMKMM.TTF 같은 legacy 휴먼명조 배포본은 EBDT bitmap strike를 포함하며,
         // Blink/Chrome이 local face를 선택하고도 표준 한글을 .notdef(□)로 그릴 수 있다.
@@ -4777,19 +4770,14 @@ fn font_local_aliases(font_family: &str) -> Vec<&'static str> {
             "Pretendard",
             "휴먼고딕",
         ],
-        // H2MJSM.TTF의 실제 family/full name은 아래 두 이름이며 정상 outline이다.
-        // 휴먼명조의 EBDT 문제를 이 face까지 확대해 원 글꼴 fidelity를 잃지 않는다.
-        "한양신명조" => vec!["한양신명조", "HY신명조", "HYSinMyeongJo-Medium"],
+        "한양신명조" => vec!["한양신명조", "HY Sinmyeongjo"],
         "HY신명조" => vec!["HY신명조", "HYSinMyeongJo-Medium"],
-        // [#6171] H2GTRE.TTF / H2MJRE.TTF 도 한양신명조와 같은 정상 outline 배포본이라
-        // 원 face 를 먼저 쓴다. arm 이 없어 `vec![]` 를 돌려주던 탓에 `@font-face` src 가
-        // `local("한양견고딕")` 한 줄이 되어, 레지스트리에 `HY견고딕`으로 등록된 설치본을
-        // 찾지 못했다. family/full name 은 Windows 글꼴 실측(H2GTRE.TTF=`HYGothic-Extra`,
-        // H2MJRE.TTF=`HYMyeongJo-Extra`).
-        "한양견고딕" => vec!["한양견고딕", "HY견고딕", "HYGothic-Extra"],
+        "한양견고딕" => vec!["한양견고딕", "HY Gyeongothic"],
         "HY견고딕" => vec!["HY견고딕", "HYGothic-Extra"],
-        "한양견명조" => vec!["한양견명조", "HY견명조", "HYMyeongJo-Extra"],
+        "한양견명조" => vec!["한양견명조", "HY Gyeonmyeongjo"],
         "HY견명조" => vec!["HY견명조", "HYMyeongJo-Extra"],
+        "한양그래픽" => vec!["한양그래픽", "HY Graphic"],
+        "한양궁서" => vec!["한양궁서", "HY Gungseo"],
         _ => vec![],
     }
 }
@@ -4806,8 +4794,7 @@ fn font_local_bold_aliases(font_family: &str) -> Vec<&'static str> {
         "함초롬바탕" | "함초롱바탕" | "휴먼명조" => {
             vec!["HCR Batang Bold", "함초롬바탕 Bold"]
         }
-        "함초롬돋움" | "함초롱돋움" | "한컴돋움" | "한양중고딕" | "HY중고딕" =>
-        {
+        "함초롬돋움" | "함초롱돋움" | "한컴돋움" | "HY중고딕" => {
             vec!["HCR Dotum Bold", "함초롬돋움 Bold"]
         }
         "한컴 고딕" | "Hancom Gothic" => vec!["Hancom Gothic Bold", "한컴 고딕 Bold"],
@@ -4892,26 +4879,29 @@ fn known_font_filenames(font_name: &str) -> Vec<&'static str> {
             vec!["hamchod-r.ttf", "HDOTUM.TTF"]
         }
         "HY헤드라인M" | "HYHeadLine M" => vec!["H2HDRM.TTF"],
-        "HY중고딕" | "HYGothic-Medium" => vec!["H2GTRM.TTF"],
+        "HY중고딕" | "HYGothic" | "HYGothic-Medium" => vec!["H2GTRM.TTF"],
         // 한컴 Windows 설치본의 이름 테이블은 한글 face와 아래 파일명을
         // 연결한다. 실제 face를 공급해도 영문 파일명 때문에 대체 글꼴을 고르면 안 된다.
         "한컴 윤고딕 230" | "Haan YGodic 230" => vec!["HANYGO230.ttf"],
         "한컴 윤고딕 240" | "Haan YGodic 240" => vec!["HANYGO240.ttf"],
         "한컴 윤고딕 250" | "Haan YGodic 250" => vec!["HANYGO250.ttf"],
-        // local()와 Full embed는 같은 원본 프로그램 우선순위를 사용한다.
-        "한양중고딕" => vec!["H2GTRM.TTF", "HANDotum.ttf", "HDOTUM.TTF"],
+        // 한양 HFT 분할 원본과 별도 HY TrueType의 파일 후보를 합치지 않는다.
+        "한양중고딕" => vec!["HJJGT.otf", "ENJGT.otf", "SPJGT.otf"],
+        "한양신명조" => vec!["HGSMJ.otf", "ENSMJ.otf", "SPSMJ.otf"],
+        "한양견고딕" => vec!["HGGGT.otf", "ENGGT.otf"],
+        "한양견명조" => vec!["HGGMJ.otf", "ENGMJ.otf"],
+        "한양그래픽" => vec!["HGGRP.otf", "ENGRP.otf"],
+        "한양궁서" => vec!["HGGS.otf", "ENGS.otf"],
         // [#6171] 한컴 Windows 설치본의 실제 파일명은 형제 항목(H2GTRM/H2MJSM)과 같은
         // `H2*` 계열이다 — Windows 글꼴 레지스트리 실측:
         //   HY견고딕 → H2GTRE.TTF(family `HYGothic-Extra`)
         //   HY견명조 → H2MJRE.TTF(family `HYMyeongJo-Extra`)
         // 종전의 `HYGTRE.TTF`·`HYMJRE.TTF` 는 이 PC 에 존재하지 않아 full embed 가
         // 매번 실패했다. 다른 배포본에 그 이름이 있을 수 있으므로 뒤 후보로 남긴다.
-        "HY견고딕" | "HYGothic-Extra" | "한양견고딕" => vec!["H2GTRE.TTF", "HYGTRE.TTF"],
+        "HY견고딕" | "HYGothic-Extra" => vec!["H2GTRE.TTF", "HYGTRE.TTF"],
         "HY그래픽" | "HYGraphic-Medium" => vec!["HYGPRM.TTF"],
-        "HY견명조" | "HYMyeongJo-Extra" | "한양견명조" => vec!["H2MJRE.TTF", "HYMJRE.TTF"],
-        // [#2430] 한양신명조: 종전 HY신명조 치환과 동일 임베드 유지.
-        // (휴먼명조는 아래 기존 전용 arm 이 담당)
-        "HY신명조" | "한양신명조" => {
+        "HY견명조" | "HYMyeongJo-Extra" => vec!["H2MJRE.TTF", "HYMJRE.TTF"],
+        "HY신명조" => {
             vec!["H2MJSM.TTF", "HYSNMJ.TTF", "hamchob-r.ttf"]
         }
         "HyhwpEQ" | "HYhwpEQ" => vec!["HYHWPEQ.TTF", "hyhwpeq.ttf"],
@@ -4986,8 +4976,7 @@ fn known_bold_font_filenames(font_name: &str) -> Vec<&'static str> {
         "함초롬바탕" | "함초롱바탕" | "휴먼명조" => {
             vec!["HANBatangB.ttf", "HBATANGB.TTF"]
         }
-        "함초롬돋움" | "함초롱돋움" | "한컴돋움" | "한양중고딕" | "HY중고딕" =>
-        {
+        "함초롬돋움" | "함초롱돋움" | "한컴돋움" | "HY중고딕" => {
             vec!["HANDotumB.ttf", "HDOTUMB.TTF", "H2GTRB.TTF"]
         }
         "Palatino Linotype" => vec!["palab.ttf"],

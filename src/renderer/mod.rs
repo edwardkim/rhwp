@@ -3606,16 +3606,8 @@ pub fn base_family_without_weight_suffix(font_family: &str) -> Option<String> {
     (tokens.len() < original_len).then(|| tokens.join(" "))
 }
 
-/// 현재 설치된 글꼴로 보완 가능한 legacy face 의 대체명.
-///
-/// HWPX 는 `한양중고딕`이라는 legacy name을 보존하지만 실제 한양 face의 family는
-/// `HY중고딕`(fontconfig full name: `HYGothic-Medium`)이다. 두 이름을 모두
-/// 체인에 넣어 원 font가 설치된 호스트에서는 해당 glyph를 먼저 선택한다.
-/// 원 font가 없는 호스트에서는 `Malgun Gothic`이 종전과 같은 마지막 대체다.
-///
-/// 다만 이름을 그대로 넣는 것만으로는 Windows(DirectWrite/Chrome)에서 안 잡히는
-/// face 가 있다. 아래 중고딕 arm 의 주석을 볼 것.
-/// 확인한 원본 글꼴의 설치 이름을 제공한다. 별도 글꼴의 호환 대체·generic·successor는 제외한다.
+/// 같은 원본 SFNT에서 확인한 설치 이름만 제공한다.
+/// 한양 계열 HFT와 HY 계열 TrueType은 별도 프로그램이며, 표시용 대체 체인과 구분한다.
 fn installed_font_program_aliases(name: &str) -> &'static [&'static str] {
     match name {
         // 같은 SFNT의 name 1/4에는 굵기가 붙지만 fontdb는 name 16의
@@ -3669,10 +3661,14 @@ fn installed_font_program_aliases(name: &str) -> &'static [&'static str] {
         "궁서" => &["Gungsuh"],
         "궁서체" => &["GungsuhChe"],
         "HY신명조" => &["HYSinMyeongJo", "HYSinMyeongJo-Medium"],
-        // 한양중고딕의 TTF 설치본 H2GTRM은 HY중고딕/HYGothic-Medium으로 등록된다.
-        // 원본 이름에서 이 후보를 누락하면 TTF가 있어도 HFT 변환 CFF만 선택한다.
-        // 형식 우선순위는 호출자의 공통 TTF → TTC → OpenType 선택에 맡긴다.
-        "한양중고딕" => &["HY중고딕", "HYGothic", "HYGothic-Medium", "HY Junggothic"],
+        // 원본 HFT 분할 프로그램의 name 1/4에 있는 같은 파일의 영문 이름이다.
+        // H2GTRM 등 별도 HY TTF를 원본의 설치 별칭으로 인증하지 않는다.
+        "한양중고딕" => &["HY Junggothic"],
+        "한양신명조" => &["HY Sinmyeongjo"],
+        "한양견고딕" => &["HY Gyeongothic"],
+        "한양견명조" => &["HY Gyeonmyeongjo"],
+        "한양그래픽" => &["HY Graphic"],
+        "한양궁서" => &["HY Gungseo"],
         "HY중고딕" => &["HYGothic", "HYGothic-Medium"],
         "HY견고딕" => &["HYGothic-Extra"],
         "HY견명조" => &["HYMyeongJo-Extra"],
@@ -3722,6 +3718,7 @@ pub(crate) fn installed_render_font_aliases(font_family: &str) -> &'static [&'st
         // 떨어져 뒤 글자와의 틈이 8.88pt 가 된다 — 한글 오라클 2.50pt, rhwp PDF 2.38pt.
         // (체인에서 이 이름만 뺀 통제 렌더로 잰 값. 이 arm 을 넣으면 2.25pt.)
         "한양중고딕" => &[
+            "HY Junggothic",
             "HY중고딕",
             "HYGothic",
             "HYGothic-Medium",
@@ -3735,25 +3732,45 @@ pub(crate) fn installed_render_font_aliases(font_family: &str) -> &'static [&'st
             "함초롬돋움",
             "Malgun Gothic",
         ],
-        // [#6171] 견고딕/견명조도 같은 legacy ↔ 설치 face 짝이다. 이 arm 이 없으면
+        // [#6171] 원본 HFT가 없을 때 HY 견고딕/견명조를 표시용 대체로 사용한다.
+        // 서로 다른 원본을 같은 설치 face로 인증하는 별칭은 아니다. 이 arm이 없으면
         // 체인이 `'한양견고딕'` 하나 뒤에 바로 generic(=Malgun Gothic)으로 떨어져,
         // `HY견고딕`이 설치된 호스트에서도 Malgun Regular 로 그려진다 — 3146683 1쪽
         // `『별표 7』`의 `별표` 획이 견고딕(Extra)보다 가늘어지는 원인.
         // Windows 글꼴 레지스트리 실측: `HY견고딕`=H2GTRE.TTF(family `HYGothic-Extra`),
         // `HY견명조`=H2MJRE.TTF(family `HYMyeongJo-Extra`).
-        "한양견고딕" => &["HY견고딕", "HYGothic-Extra", "HCR Dotum", "함초롬돋움"],
-        "한양견명조" => &["HY견명조", "HYMyeongJo-Extra", "HCR Batang", "함초롬바탕"],
-        // 신명조도 같은 짝인데 이 arm 만 빠져 있었다. `svg.rs` 의 local()·embed 두 표는
-        // 이미 `한양신명조 → HY신명조 / HYSinMyeongJo-Medium / H2MJSM.TTF` 를 알고 있는데,
-        // 정작 체인을 만드는 여기가 몰라서 `'한양신명조','Batang',…` 로 바로 떨어졌다.
-        // 156573118 8쪽 실측: 그 쪽 텍스트 런 600개가 이 체인을 쓰고, `HY신명조`가 설치된
-        // 호스트에서도 Batang 으로 그려졌다(형제 `한양중고딕` 은 `'한양중고딕','HY중고딕',…`).
-        // 이름 순서가 중요하다. `H2MJSM.TTF` 의 name 테이블은 family(ko) `HY신명조`,
+        // 첫 영문 이름만 원본 HFT의 이름이다. 그 뒤 HY·HCR은 결측 표시용
+        // 대체 후보이며 installed_font_program_aliases의 원본 신원에 포함하지 않는다.
+        "한양견고딕" => &[
+            "HY Gyeongothic",
+            "HY견고딕",
+            "HYGothic-Extra",
+            "HCR Dotum",
+            "함초롬돋움",
+        ],
+        "한양견명조" => &[
+            "HY Gyeonmyeongjo",
+            "HY견명조",
+            "HYMyeongJo-Extra",
+            "HCR Batang",
+            "함초롬바탕",
+        ],
+        // 원본 HFT의 영문 이름은 `HY Sinmyeongjo`다. 뒤의 HY 계열은 원본 부재 시
+        // 표시용 대체이며, 원본 local()/embed의 같은 파일 이름으로 등록하지 않는다.
+        // [#6263] H2MJSM.TTF 대체가 필요한 경우 이름 순서도 중요하다.
+        // 이 파일의 name 테이블은 family(ko) `HY신명조`,
         // family(en) `HYSinMyeongJo-Medium` 인데, headless Chrome 실측으로는 **둘 다
         // 매칭되지 않고** 스타일 접미사를 뗀 `HYSinMyeongJo` 만 잡힌다(각각 serif 로
         // 떨어지는 것을 통제 SVG 로 확인). 그래서 실제로 해석되는 이름을 앞에 둔다.
         // 형제 항목과 다른 점이라 주의 — `HY견고딕`·`HYGothic-Extra` 는 둘 다 잡힌다.
-        "한양신명조" => &["HYSinMyeongJo", "HY신명조", "HYSinMyeongJo-Medium"],
+        "한양신명조" => &[
+            "HY Sinmyeongjo",
+            "HYSinMyeongJo",
+            "HY신명조",
+            "HYSinMyeongJo-Medium",
+        ],
+        "한양그래픽" => &["HY Graphic"],
+        "한양궁서" => &["HY Gungseo"],
         // [#6263] 같은 접미사 절단 규칙의 나머지 한컴 face 다. 문서가 한국어 이름을
         // 그대로 들고 있는데 Windows 는 그 이름으로 face 를 못 찾는다. 위 `한양신명조`
         // arm 은 legacy 이름으로 들어오는 경우고, 이 셋은 문서가 `HY…` 이름을 직접
@@ -5270,7 +5287,7 @@ mod tests {
         assert_eq!(
             render_font_family_chain("한양중고딕"),
             format!(
-                "'한양중고딕','HY중고딕','HYGothic','HYGothic-Medium','HCR Dotum','함초롬돋움',{}",
+                "'한양중고딕','HY Junggothic','HY중고딕','HYGothic','HYGothic-Medium','HCR Dotum','함초롬돋움',{}",
                 generic_fallback("한양중고딕")
             )
         );
@@ -5288,14 +5305,14 @@ mod tests {
         assert_eq!(
             render_font_family_chain("한양견고딕"),
             format!(
-                "'한양견고딕','HY견고딕','HYGothic-Extra','HCR Dotum','함초롬돋움',{}",
+                "'한양견고딕','HY Gyeongothic','HY견고딕','HYGothic-Extra','HCR Dotum','함초롬돋움',{}",
                 generic_fallback("한양견고딕")
             )
         );
         assert_eq!(
             render_font_family_chain("한양견명조"),
             format!(
-                "'한양견명조','HY견명조','HYMyeongJo-Extra','HCR Batang','함초롬바탕',{}",
+                "'한양견명조','HY Gyeonmyeongjo','HY견명조','HYMyeongJo-Extra','HCR Batang','함초롬바탕',{}",
                 generic_fallback("한양견명조")
             )
         );
@@ -5310,7 +5327,7 @@ mod tests {
         assert_eq!(
             render_font_family_chain("한양신명조"),
             format!(
-                "'한양신명조','HYSinMyeongJo','HY신명조','HYSinMyeongJo-Medium',{}",
+                "'한양신명조','HY Sinmyeongjo','HYSinMyeongJo','HY신명조','HYSinMyeongJo-Medium',{}",
                 generic_fallback("한양신명조")
             )
         );

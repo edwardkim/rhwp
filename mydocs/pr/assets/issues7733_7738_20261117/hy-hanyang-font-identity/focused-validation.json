@@ -1,0 +1,39 @@
+{
+  "status": "passed_focused_pending_current_source_visual_and_full_rust_gates",
+  "source_parent": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+  "private_fonts_required_by_regressions": false,
+  "rust_focused": {
+    "run_id": "8672032a-e81d-4641-8117-80281def9fce",
+    "tests": 5,
+    "pass": 5,
+    "fail": 0,
+    "skip_outside_filter": 302,
+    "seconds": 0.378
+  },
+  "local_font_node": {
+    "pass": 27,
+    "fail": 0
+  },
+  "studio_all": {
+    "run": 2816,
+    "pass": 2814,
+    "fail": 0,
+    "skip": 2,
+    "seconds": 153.887495041
+  },
+  "typescript": {
+    "exit_code": 0
+  },
+  "browser_e2e": {
+    "assertions_passed": 4,
+    "fail": 0,
+    "korean_hy_and_hanyang_separate_faces": 12,
+    "cleared_old_css_face": true,
+    "wasm_package_scope": "existing efe954 WASM, current Studio source; not current Rust/WASM visual acceptance"
+  },
+  "valid_before_product_failures": [
+    "identity-before.log",
+    "redetection-before-valid.log"
+  ],
+  "excluded_test_construction_failures": "Local invalid-test-attempts.json lists invalid draft attempts; not product before evidence."
+}
