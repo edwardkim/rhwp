@@ -131,8 +131,10 @@ export function collectHostFontRequests(tree: PageLayerTree): LocalFontRecord[] 
     if (textFamilies.has(key)) return;
     textFamilies.add(key);
     for (const candidate of ordinaryTextFontFamilies(family)) {
-      const record = resolveRendererLocalFont(candidate, hostFontStyle(style));
-      if (record?.hostReference) selected.set(localFontFaceKey(record), record);
+      // 같은 family/style의 한글·영문 분할 프로그램을 임의의 한 face로 확정하지 않는다.
+      for (const record of resolveRendererLocalFontCandidates(candidate, hostFontStyle(style))) {
+        if (record.hostReference) selected.set(localFontFaceKey(record), record);
+      }
     }
   };
   const stack: LayerNode[] = [tree.root];
