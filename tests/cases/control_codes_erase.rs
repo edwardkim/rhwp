@@ -223,6 +223,16 @@ fn erasing_fields_keeps_their_text_like_hancom() {
         let reopened = DocumentCore::from_bytes(&bytes).unwrap();
         assert_eq!(texts(&reopened), ERASED_TEXT);
         assert!(!has_fields_or_marks(&reopened));
+        // 같은 형식으로 다시 저장해 열어도 그대로다.
+        let resaved = if bytes.starts_with(b"PK") {
+            reopened.export_hwpx_native()
+        } else {
+            reopened.export_hwp_native()
+        }
+        .unwrap();
+        let again = DocumentCore::from_bytes(&resaved).unwrap();
+        assert_eq!(texts(&again), ERASED_TEXT);
+        assert!(!has_fields_or_marks(&again));
     }
 }
 
