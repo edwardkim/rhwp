@@ -1,0 +1,12 @@
+[RustTestSuite] issue_7737_decree_superscript_flow -> regression_suite_006::issue_7737_decree_superscript_flow
+[RustTestSuite] cargo nextest run --locked --test regression_suite_006 -E test(/(^|::)issue_7737_decree_superscript_flow::/) --cargo-profile release-test --target-dir target/pr-review --features native-skia --build-jobs 8 --test-threads 8 --no-fail-fast
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 3m 06s
+────────────
+ Nextest run ID ad289684-7698-4a41-9ef3-1ab2a1b5a1f6 with nextest profile: default
+    Starting 3 tests across 1 binary (342 tests skipped)
+        PASS [   0.011s] (1/3) rhwp::regression_suite_006 issue_7737_decree_superscript_flow::desktop_script_spaces_keep_body_half_space_and_explicit_glyph_space_separate
+        PASS [   0.099s] (2/3) rhwp::regression_suite_006 issue_7737_decree_superscript_flow::hwp3_layout_retains_its_distinct_legacy_script_contract
+        PASS [   1.363s] (3/3) rhwp::regression_suite_006 issue_7737_decree_superscript_flow::desktop_print_superscript_keeps_the_following_word_on_its_source_line
+────────────
+     Summary [   1.364s] 3 tests run: 3 passed, 342 skipped

@@ -1,0 +1,41 @@
+{
+  "status": "success",
+  "job_id": "f3de7d1a-7695-463f-8521-ec8434a11be2",
+  "output_path": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/decree-script-space-controls/script-space-2020-controls.pdf",
+  "output_filename": "script-space-2020-controls.pdf",
+  "size": 23843,
+  "sha256": "3c03618ffad71b34f6b66337bcca4ea446e1d31685119af9e3b9e31f50444800",
+  "server": {
+    "job_id": "f3de7d1a-7695-463f-8521-ec8434a11be2",
+    "status": "success",
+    "target": "pdf",
+    "input_filename": "script-space-2020-controls.hwpx",
+    "output_filename": "script-space-2020-controls.pdf",
+    "size": 23843,
+    "sha256": "3c03618ffad71b34f6b66337bcca4ea446e1d31685119af9e3b9e31f50444800",
+    "mime_type": "application/pdf",
+    "engine": "2020",
+    "engine_profile": "2020",
+    "hancom_version": "11.0.0.9136",
+    "backend": "hwp-managed-direct-dll-host",
+    "pdf_page_count": 1,
+    "logical_page_count": null,
+    "pdf_print_method": 0,
+    "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+    "font_scope": {
+      "mode": "session0",
+      "status": "verified",
+      "profile_source": "protected_config",
+      "session_id": 0,
+      "mapped_font_count": 2,
+      "registered_font_count": 2,
+      "failed_font_count": 0,
+      "parent_visibility": "verified",
+      "child_visibility": "verified"
+    },
+    "elapsed_ms": 12857,
+    "worker_elapsed_ms": 11627,
+    "worker_bits": 32,
+    "input_preprocess": "none"
+  }
+}

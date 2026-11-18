@@ -137,6 +137,22 @@ fn reflow_space_font_size(style: &TextStyle) -> f64 {
     size
 }
 
+/// 데스크톱 Print의 일반 첨자 공백은 본문 em을 유지한다. useFontSpace로
+/// 명시한 실제 글꼴 공백만 첨자 글리프와 함께 축소한다. 독립 2020·2024
+/// Print의 3글꼴×3크기×두 공백 속성 대조를 근거로 저장/재조판이 같은
+/// 공백 결정을 소비한다. 상속한 반각 em은 명시적 글꼴 공백과 구별한다.
+fn space_metric_font_size(style: &TextStyle, glyph_size: f64, regenerated: bool) -> f64 {
+    let desktop_script = (style.superscript || style.subscript)
+        && style.script_metrics == super::super::script_metrics::ScriptMetricsContract::Hangul2024;
+    if desktop_script && style.font_space_em.is_some() && !style.inherited_half_space_em {
+        glyph_size
+    } else if regenerated || desktop_script {
+        reflow_space_font_size(style)
+    } else {
+        glyph_size
+    }
+}
+
 /// inline_tabs ext[2] 에서 탭 종류를 추출.
 ///
 /// HWP `tab_extended` 포맷 (PR #292 / Task #290 실증):
@@ -2055,8 +2071,8 @@ fn char_width_decision_with_hft_tracking<'a>(
     } else {
         super::super::composer::single_scalar_display_char(chars[i])
     };
-    let font_size = if style.layout_half_space && matches!(c, ' ' | '\u{00A0}') {
-        reflow_space_font_size(style)
+    let font_size = if matches!(c, ' ' | '\u{00A0}') {
+        space_metric_font_size(style, font_size, style.layout_half_space)
     } else {
         font_size
     };
@@ -2999,8 +3015,8 @@ pub(crate) fn estimate_text_width_unrounded_with_storage<S: crate::storage::Stor
 /// 저장 metric과 재조판 metric이 같은 style에는 `None`을 반환해 별도 보정이 없도록
 /// 한다. 따라서 글꼴명이나 고정 글자 크기에 의존하지 않는다.
 pub(crate) fn hancom_regenerated_space_width(style: &TextStyle) -> Option<f64> {
-    let (_, ratio, _) = style_params(style);
-    let font_size = reflow_space_font_size(style);
+    let (glyph_size, ratio, _) = style_params(style);
+    let font_size = space_metric_font_size(style, glyph_size, true);
     // [#7387] `use_font_space` run 은 반각이 아니라 영문 슬롯 글꼴의 공백폭이 기준이다.
     // 이 값을 그대로 두면 아래 `stored_width` 비교가 늘 참이 되어, 고친 공백폭을
     // 다시 반각으로 되돌린다.

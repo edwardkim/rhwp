@@ -1,0 +1,205 @@
+{
+  "purpose": "독립 한컴 2020 첨자 크기·baseline 대조. 기준 PDF 대체 아님",
+  "source": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/decree-parser-inspection.hwpx",
+  "input_sha256": "f670104c0e5c8c4e58862a486e8a847ea92d952b7b4e5576eb231262a3d1d440",
+  "rows": [
+    {
+      "label": "F0S900U0",
+      "family": "맑은 고딕",
+      "height_hu": 900,
+      "use_font_space": 0,
+      "style_ids": [
+        306,
+        307,
+        308
+      ]
+    },
+    {
+      "label": "F0S900U1",
+      "family": "맑은 고딕",
+      "height_hu": 900,
+      "use_font_space": 1,
+      "style_ids": [
+        309,
+        310,
+        311
+      ]
+    },
+    {
+      "label": "F0S1100U0",
+      "family": "맑은 고딕",
+      "height_hu": 1100,
+      "use_font_space": 0,
+      "style_ids": [
+        312,
+        313,
+        314
+      ]
+    },
+    {
+      "label": "F0S1100U1",
+      "family": "맑은 고딕",
+      "height_hu": 1100,
+      "use_font_space": 1,
+      "style_ids": [
+        315,
+        316,
+        317
+      ]
+    },
+    {
+      "label": "F0S1800U0",
+      "family": "맑은 고딕",
+      "height_hu": 1800,
+      "use_font_space": 0,
+      "style_ids": [
+        318,
+        319,
+        320
+      ]
+    },
+    {
+      "label": "F0S1800U1",
+      "family": "맑은 고딕",
+      "height_hu": 1800,
+      "use_font_space": 1,
+      "style_ids": [
+        321,
+        322,
+        323
+      ]
+    },
+    {
+      "label": "F1S900U0",
+      "family": "한컴바탕",
+      "height_hu": 900,
+      "use_font_space": 0,
+      "style_ids": [
+        324,
+        325,
+        326
+      ]
+    },
+    {
+      "label": "F1S900U1",
+      "family": "한컴바탕",
+      "height_hu": 900,
+      "use_font_space": 1,
+      "style_ids": [
+        327,
+        328,
+        329
+      ]
+    },
+    {
+      "label": "F1S1100U0",
+      "family": "한컴바탕",
+      "height_hu": 1100,
+      "use_font_space": 0,
+      "style_ids": [
+        330,
+        331,
+        332
+      ]
+    },
+    {
+      "label": "F1S1100U1",
+      "family": "한컴바탕",
+      "height_hu": 1100,
+      "use_font_space": 1,
+      "style_ids": [
+        333,
+        334,
+        335
+      ]
+    },
+    {
+      "label": "F1S1800U0",
+      "family": "한컴바탕",
+      "height_hu": 1800,
+      "use_font_space": 0,
+      "style_ids": [
+        336,
+        337,
+        338
+      ]
+    },
+    {
+      "label": "F1S1800U1",
+      "family": "한컴바탕",
+      "height_hu": 1800,
+      "use_font_space": 1,
+      "style_ids": [
+        339,
+        340,
+        341
+      ]
+    },
+    {
+      "label": "F2S900U0",
+      "family": "굴림",
+      "height_hu": 900,
+      "use_font_space": 0,
+      "style_ids": [
+        342,
+        343,
+        344
+      ]
+    },
+    {
+      "label": "F2S900U1",
+      "family": "굴림",
+      "height_hu": 900,
+      "use_font_space": 1,
+      "style_ids": [
+        345,
+        346,
+        347
+      ]
+    },
+    {
+      "label": "F2S1100U0",
+      "family": "굴림",
+      "height_hu": 1100,
+      "use_font_space": 0,
+      "style_ids": [
+        348,
+        349,
+        350
+      ]
+    },
+    {
+      "label": "F2S1100U1",
+      "family": "굴림",
+      "height_hu": 1100,
+      "use_font_space": 1,
+      "style_ids": [
+        351,
+        352,
+        353
+      ]
+    },
+    {
+      "label": "F2S1800U0",
+      "family": "굴림",
+      "height_hu": 1800,
+      "use_font_space": 0,
+      "style_ids": [
+        354,
+        355,
+        356
+      ]
+    },
+    {
+      "label": "F2S1800U1",
+      "family": "굴림",
+      "height_hu": 1800,
+      "use_font_space": 1,
+      "style_ids": [
+        357,
+        358,
+        359
+      ]
+    }
+  ]
+}

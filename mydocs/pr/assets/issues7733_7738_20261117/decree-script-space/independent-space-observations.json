@@ -1,0 +1,340 @@
+[
+  {
+    "engine": "2020",
+    "pages": 1,
+    "pdf_sha256": "3c03618ffad71b34f6b66337bcca4ea446e1d31685119af9e3b9e31f50444800",
+    "rows": [
+      {
+        "label": "F0S900U0",
+        "font": "MalgunGothic",
+        "body_font_size_pt": 8.992650032043457,
+        "script_font_size_pt": 5.755295753479004,
+        "super_space_advance_css_px": 6.076456705729167,
+        "sub_space_advance_css_px": 6.076456705729167,
+        "space_em": 0.5067852649728082
+      },
+      {
+        "label": "F0S900U1",
+        "font": "MalgunGothic",
+        "body_font_size_pt": 8.992650032043457,
+        "script_font_size_pt": 5.755295753479004,
+        "super_space_advance_css_px": 2.7182718912760415,
+        "sub_space_advance_css_px": 2.71826171875,
+        "space_em": 0.22670780150373132
+      },
+      {
+        "label": "F0S1100U0",
+        "font": "MalgunGothic",
+        "body_font_size_pt": 11.030982971191406,
+        "script_font_size_pt": 7.074217319488525,
+        "super_space_advance_css_px": 7.196380615234375,
+        "sub_space_advance_css_px": 7.355753580729167,
+        "space_em": 0.48928418034198495
+      },
+      {
+        "label": "F0S1100U1",
+        "font": "MalgunGothic",
+        "body_font_size_pt": 11.030982971191406,
+        "script_font_size_pt": 7.074217319488525,
+        "super_space_advance_css_px": 3.3584493001302085,
+        "sub_space_advance_css_px": 3.35791015625,
+        "space_em": 0.22834202370503778
+      },
+      {
+        "label": "F0S1800U0",
+        "font": "MalgunGothic",
+        "body_font_size_pt": 17.985300064086914,
+        "script_font_size_pt": 11.510591506958008,
+        "super_space_advance_css_px": 11.993245442708334,
+        "sub_space_advance_css_px": 11.99322509765625,
+        "space_em": 0.5001269953784288
+      },
+      {
+        "label": "F0S1800U1",
+        "font": "MalgunGothic",
+        "body_font_size_pt": 17.985300064086914,
+        "script_font_size_pt": 11.510591506958008,
+        "super_space_advance_css_px": 5.436543782552083,
+        "sub_space_advance_css_px": 5.276875813802083,
+        "space_em": 0.22670780150373132
+      },
+      {
+        "label": "F1S900U0",
+        "font": "Haansoft Batang",
+        "body_font_size_pt": 8.992650032043457,
+        "script_font_size_pt": 5.755295753479004,
+        "super_space_advance_css_px": 6.076711018880208,
+        "sub_space_advance_css_px": 6.07696533203125,
+        "space_em": 0.5068064750568881
+      },
+      {
+        "label": "F1S900U1",
+        "font": "Haansoft Batang",
+        "body_font_size_pt": 8.992650032043457,
+        "script_font_size_pt": 5.755295753479004,
+        "super_space_advance_css_px": 2.5586140950520835,
+        "sub_space_advance_css_px": 2.5588582356770835,
+        "space_em": 0.2133921107183357
+      },
+      {
+        "label": "F1S1100U0",
+        "font": "Haansoft Batang",
+        "body_font_size_pt": 11.030982971191406,
+        "script_font_size_pt": 7.074217319488525,
+        "super_space_advance_css_px": 7.356241861979167,
+        "sub_space_advance_css_px": 7.1962890625,
+        "space_em": 0.5001531967634331
+      },
+      {
+        "label": "F1S1100U1",
+        "font": "Haansoft Batang",
+        "body_font_size_pt": 11.030982971191406,
+        "script_font_size_pt": 7.074217319488525,
+        "super_space_advance_css_px": 3.1985066731770835,
+        "sub_space_advance_css_px": 3.0385538736979165,
+        "space_em": 0.21746747421764176
+      },
+      {
+        "label": "F1S1800U0",
+        "font": "Haansoft Batang",
+        "body_font_size_pt": 17.985300064086914,
+        "script_font_size_pt": 11.510591506958008,
+        "super_space_advance_css_px": 11.993509928385416,
+        "sub_space_advance_css_px": 11.993998209635416,
+        "space_em": 0.5001380246221503
+      },
+      {
+        "label": "F1S1800U1",
+        "font": "Haansoft Batang",
+        "body_font_size_pt": 17.985300064086914,
+        "script_font_size_pt": 11.510591506958008,
+        "super_space_advance_css_px": 5.117207845052083,
+        "sub_space_advance_css_px": 5.11773681640625,
+        "space_em": 0.21339126231497252
+      },
+      {
+        "label": "F2S900U0",
+        "font": "Gulim",
+        "body_font_size_pt": 8.992650032043457,
+        "script_font_size_pt": 5.755295753479004,
+        "super_space_advance_css_px": 5.916798909505208,
+        "sub_space_advance_css_px": 5.91705322265625,
+        "space_em": 0.4934695741874125
+      },
+      {
+        "label": "F2S900U1",
+        "font": "Gulim",
+        "body_font_size_pt": 8.992650032043457,
+        "script_font_size_pt": 5.755295753479004,
+        "super_space_advance_css_px": 2.5586140950520835,
+        "sub_space_advance_css_px": 2.5588785807291665,
+        "space_em": 0.2133921107183357
+      },
+      {
+        "label": "F2S1100U0",
+        "font": "Gulim",
+        "body_font_size_pt": 11.030982971191406,
+        "script_font_size_pt": 7.074217319488525,
+        "super_space_advance_css_px": 7.356241861979167,
+        "sub_space_advance_css_px": 7.355733235677083,
+        "space_em": 0.5001531967634331
+      },
+      {
+        "label": "F2S1100U1",
+        "font": "Gulim",
+        "body_font_size_pt": 11.030982971191406,
+        "script_font_size_pt": 7.074217319488525,
+        "super_space_advance_css_px": 3.198486328125,
+        "sub_space_advance_css_px": 3.1979777018229165,
+        "space_em": 0.2174660909511548
+      },
+      {
+        "label": "F2S1800U0",
+        "font": "Gulim",
+        "body_font_size_pt": 17.985300064086914,
+        "script_font_size_pt": 11.510591506958008,
+        "super_space_advance_css_px": 11.993509928385416,
+        "sub_space_advance_css_px": 11.993754069010416,
+        "space_em": 0.5001380246221503
+      },
+      {
+        "label": "F2S1800U1",
+        "font": "Gulim",
+        "body_font_size_pt": 17.985300064086914,
+        "script_font_size_pt": 11.510591506958008,
+        "super_space_advance_css_px": 5.117207845052083,
+        "sub_space_advance_css_px": 5.117472330729167,
+        "space_em": 0.21339126231497252
+      }
+    ]
+  },
+  {
+    "engine": "2024",
+    "pages": 1,
+    "pdf_sha256": "373eba01ffa7ac646f1503e05427ed73986df861893f14022c4da3a0a353acbe",
+    "rows": [
+      {
+        "label": "F0S900U0",
+        "font": "MalgunGothic",
+        "body_font_size_pt": 8.992650032043457,
+        "script_font_size_pt": 5.755295753479004,
+        "super_space_advance_css_px": 6.076456705729167,
+        "sub_space_advance_css_px": 6.076456705729167,
+        "space_em": 0.5067852649728082
+      },
+      {
+        "label": "F0S900U1",
+        "font": "MalgunGothic",
+        "body_font_size_pt": 8.992650032043457,
+        "script_font_size_pt": 5.755295753479004,
+        "super_space_advance_css_px": 2.7182718912760415,
+        "sub_space_advance_css_px": 2.71826171875,
+        "space_em": 0.22670780150373132
+      },
+      {
+        "label": "F0S1100U0",
+        "font": "MalgunGothic",
+        "body_font_size_pt": 11.030982971191406,
+        "script_font_size_pt": 7.074217319488525,
+        "super_space_advance_css_px": 7.196380615234375,
+        "sub_space_advance_css_px": 7.355753580729167,
+        "space_em": 0.48928418034198495
+      },
+      {
+        "label": "F0S1100U1",
+        "font": "MalgunGothic",
+        "body_font_size_pt": 11.030982971191406,
+        "script_font_size_pt": 7.074217319488525,
+        "super_space_advance_css_px": 3.3584493001302085,
+        "sub_space_advance_css_px": 3.35791015625,
+        "space_em": 0.22834202370503778
+      },
+      {
+        "label": "F0S1800U0",
+        "font": "MalgunGothic",
+        "body_font_size_pt": 17.985300064086914,
+        "script_font_size_pt": 11.510591506958008,
+        "super_space_advance_css_px": 11.993245442708334,
+        "sub_space_advance_css_px": 11.99322509765625,
+        "space_em": 0.5001269953784288
+      },
+      {
+        "label": "F0S1800U1",
+        "font": "MalgunGothic",
+        "body_font_size_pt": 17.985300064086914,
+        "script_font_size_pt": 11.510591506958008,
+        "super_space_advance_css_px": 5.436543782552083,
+        "sub_space_advance_css_px": 5.276875813802083,
+        "space_em": 0.22670780150373132
+      },
+      {
+        "label": "F1S900U0",
+        "font": "Haansoft Batang",
+        "body_font_size_pt": 8.992650032043457,
+        "script_font_size_pt": 5.755295753479004,
+        "super_space_advance_css_px": 6.076711018880208,
+        "sub_space_advance_css_px": 6.07696533203125,
+        "space_em": 0.5068064750568881
+      },
+      {
+        "label": "F1S900U1",
+        "font": "Haansoft Batang",
+        "body_font_size_pt": 8.992650032043457,
+        "script_font_size_pt": 5.755295753479004,
+        "super_space_advance_css_px": 2.5586140950520835,
+        "sub_space_advance_css_px": 2.5588582356770835,
+        "space_em": 0.2133921107183357
+      },
+      {
+        "label": "F1S1100U0",
+        "font": "Haansoft Batang",
+        "body_font_size_pt": 11.030982971191406,
+        "script_font_size_pt": 7.074217319488525,
+        "super_space_advance_css_px": 7.356241861979167,
+        "sub_space_advance_css_px": 7.1962890625,
+        "space_em": 0.5001531967634331
+      },
+      {
+        "label": "F1S1100U1",
+        "font": "Haansoft Batang",
+        "body_font_size_pt": 11.030982971191406,
+        "script_font_size_pt": 7.074217319488525,
+        "super_space_advance_css_px": 3.1985066731770835,
+        "sub_space_advance_css_px": 3.0385538736979165,
+        "space_em": 0.21746747421764176
+      },
+      {
+        "label": "F1S1800U0",
+        "font": "Haansoft Batang",
+        "body_font_size_pt": 17.985300064086914,
+        "script_font_size_pt": 11.510591506958008,
+        "super_space_advance_css_px": 11.993509928385416,
+        "sub_space_advance_css_px": 11.993998209635416,
+        "space_em": 0.5001380246221503
+      },
+      {
+        "label": "F1S1800U1",
+        "font": "Haansoft Batang",
+        "body_font_size_pt": 17.985300064086914,
+        "script_font_size_pt": 11.510591506958008,
+        "super_space_advance_css_px": 5.117207845052083,
+        "sub_space_advance_css_px": 5.11773681640625,
+        "space_em": 0.21339126231497252
+      },
+      {
+        "label": "F2S900U0",
+        "font": "Gulim",
+        "body_font_size_pt": 8.992650032043457,
+        "script_font_size_pt": 5.755295753479004,
+        "super_space_advance_css_px": 5.916798909505208,
+        "sub_space_advance_css_px": 5.91705322265625,
+        "space_em": 0.4934695741874125
+      },
+      {
+        "label": "F2S900U1",
+        "font": "Gulim",
+        "body_font_size_pt": 8.992650032043457,
+        "script_font_size_pt": 5.755295753479004,
+        "super_space_advance_css_px": 2.5586140950520835,
+        "sub_space_advance_css_px": 2.5588785807291665,
+        "space_em": 0.2133921107183357
+      },
+      {
+        "label": "F2S1100U0",
+        "font": "Gulim",
+        "body_font_size_pt": 11.030982971191406,
+        "script_font_size_pt": 7.074217319488525,
+        "super_space_advance_css_px": 7.356241861979167,
+        "sub_space_advance_css_px": 7.355733235677083,
+        "space_em": 0.5001531967634331
+      },
+      {
+        "label": "F2S1100U1",
+        "font": "Gulim",
+        "body_font_size_pt": 11.030982971191406,
+        "script_font_size_pt": 7.074217319488525,
+        "super_space_advance_css_px": 3.198486328125,
+        "sub_space_advance_css_px": 3.1979777018229165,
+        "space_em": 0.2174660909511548
+      },
+      {
+        "label": "F2S1800U0",
+        "font": "Gulim",
+        "body_font_size_pt": 17.985300064086914,
+        "script_font_size_pt": 11.510591506958008,
+        "super_space_advance_css_px": 11.993509928385416,
+        "sub_space_advance_css_px": 11.993754069010416,
+        "space_em": 0.5001380246221503
+      },
+      {
+        "label": "F2S1800U1",
+        "font": "Gulim",
+        "body_font_size_pt": 17.985300064086914,
+        "script_font_size_pt": 11.510591506958008,
+        "super_space_advance_css_px": 5.117207845052083,
+        "sub_space_advance_css_px": 5.117472330729167,
+        "space_em": 0.21339126231497252
+      }
+    ]
+  }
+]
