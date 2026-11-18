@@ -141,9 +141,6 @@ const DEFERRED_BODY_OVERFLOW_FIXTURES: &[&str] = &[
     // #7445로 이관한 86712 원본의 정상 HWP에서 재생성한 HWPX다.
     // 이 입력의 본문 넘침 회귀만 이관하며 파싱·저장 및 다른 문서는 유지한다.
     "issue1891/86712_regulatory_analysis.hwpx",
-    // #6776: 74쪽 원문의 59·63쪽 표·참고 상자 피델리티가 각각 69.77/73.70%다.
-    // 기존 1건을 2건으로 완화하지 않고 이 원본의 본문 넘침 원장만 #7445로 이관한다.
-    "issue6776/78494-virtual-convergence-industry-decree.hwpx",
 ];
 
 fn collect_samples() -> Vec<(PathBuf, String)> {
