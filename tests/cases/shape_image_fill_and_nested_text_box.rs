@@ -109,13 +109,23 @@ fn shape_picture_fill_and_shadow_alpha_are_read_and_written() {
         doc.export_hwpx_native().unwrap(),
     ] {
         let reopened = DocumentCore::from_bytes(&bytes).unwrap();
-        let found = shapes(&reopened.document().sections[0].paragraphs);
-        assert_eq!(found.len(), 2);
-        for shape in found {
-            let d = shape.drawing().unwrap();
-            assert_eq!(d.fill.fill_type, FillType::Image);
-            assert_eq!(d.fill.image.as_ref().unwrap().bin_data_id, bin_id);
-            assert_eq!(d.shadow_alpha, 128);
+        // 같은 형식으로 다시 저장해 연 문서도 본다.
+        let resaved = if bytes.starts_with(b"PK") {
+            reopened.export_hwpx_native()
+        } else {
+            reopened.export_hwp_native()
+        }
+        .unwrap();
+        let again = DocumentCore::from_bytes(&resaved).unwrap();
+        for core in [&reopened, &again] {
+            let found = shapes(&core.document().sections[0].paragraphs);
+            assert_eq!(found.len(), 2);
+            for shape in found {
+                let d = shape.drawing().unwrap();
+                assert_eq!(d.fill.fill_type, FillType::Image);
+                assert_eq!(d.fill.image.as_ref().unwrap().bin_data_id, bin_id);
+                assert_eq!(d.shadow_alpha, 128);
+            }
         }
     }
 }
@@ -145,6 +155,15 @@ fn text_box_round_trip(doc: &HwpDocument, inner: impl Fn(&DocumentCore) -> Vec<&
         let found = inner(&reopened);
         assert_eq!(found.len(), 1);
         assert!(found[0].drawing().unwrap().text_box.is_some());
+        // 같은 형식으로 다시 저장해 열어도 글상자가 남는다.
+        let resaved = if bytes.starts_with(b"PK") {
+            reopened.export_hwpx_native()
+        } else {
+            reopened.export_hwp_native()
+        }
+        .unwrap();
+        let again = DocumentCore::from_bytes(&resaved).unwrap();
+        assert!(inner(&again)[0].drawing().unwrap().text_box.is_some());
     }
 }
 
