@@ -661,12 +661,16 @@ struct ByteBudget {
 
 impl ByteBudget {
     fn try_add(&self, amount: usize) -> bool {
-        self.used
-            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |used| {
+        rhwp_codec_resource::atomic::try_update_usize(
+            &self.used,
+            Ordering::AcqRel,
+            Ordering::Acquire,
+            |used| {
                 used.checked_add(amount)
                     .filter(|total| *total <= self.max_bytes)
-            })
-            .is_ok()
+            },
+        )
+        .is_ok()
     }
 
     fn reserve(self: &Arc<Self>, bytes: usize) -> Option<Arc<ByteReservation>> {
@@ -861,12 +865,13 @@ impl NativeRuntime {
         let Some(reservation) = self.shared.budget.reserve(reservation) else {
             return Err(reject(NativeRuntimeError::ByteCapacity, command));
         };
-        let Ok(id) = NEXT_REQUEST_ID
-            .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |value| {
-                value.checked_add(1)
-            })
-            .map(NativeRequestId)
-        else {
+        let Ok(id) = rhwp_codec_resource::atomic::try_update_u64(
+            &NEXT_REQUEST_ID,
+            Ordering::Relaxed,
+            Ordering::Relaxed,
+            |value| value.checked_add(1),
+        )
+        .map(NativeRequestId) else {
             return Err(reject(NativeRuntimeError::RequestIdExhausted, command));
         };
         let phase = Arc::new(AtomicU8::new(QUEUED));

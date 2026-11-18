@@ -1,0 +1,20 @@
+{
+  "base": "fbf8081db57c0c6abc9bad418290c5018193e24f",
+  "head": "efd401f2e665b12666017a885d32019b5ce5f17a",
+  "packageIdentitiesUnchanged": true,
+  "packageCount": 422,
+  "changedEdges": [
+    {
+      "package": "rhwp",
+      "addedDirectDependency": "rhwp-codec-resource",
+      "removedDependencies": []
+    },
+    {
+      "package": "rhwp-native-ffi",
+      "addedDirectDependency": "rhwp-codec-resource",
+      "removedDependencies": []
+    }
+  ],
+  "externalPackageVersionChanges": 0,
+  "newExternalPackages": 0
+}

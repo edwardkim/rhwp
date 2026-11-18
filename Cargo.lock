@@ -2231,6 +2231,7 @@ dependencies = [
  "rand_core",
  "read-fonts 0.47.0",
  "resvg 0.47.0",
+ "rhwp-codec-resource",
  "rhwp-contracts",
  "rhwp-jpeg-encoder",
  "rhwp-ooxml-chart",
@@ -2317,6 +2318,7 @@ name = "rhwp-native-ffi"
 version = "0.1.0"
 dependencies = [
  "rhwp",
+ "rhwp-codec-resource",
  "serde",
  "serde_json",
 ]

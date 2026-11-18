@@ -40,11 +40,13 @@ impl Admission {
     }
 
     pub fn reserve(&self) -> Option<Credit<'_>> {
-        self.state
-            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |state| {
-                (state % QUARANTINE_UNIT < MAX_PROCESS_PRESENTERS).then_some(state + 1)
-            })
-            .ok()?;
+        rhwp_codec_resource::atomic::try_update_usize(
+            &self.state,
+            Ordering::AcqRel,
+            Ordering::Acquire,
+            |state| (state % QUARANTINE_UNIT < MAX_PROCESS_PRESENTERS).then_some(state + 1),
+        )
+        .ok()?;
         Some(Credit {
             admission: self,
             state: CreditState::Reserved,

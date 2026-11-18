@@ -14,6 +14,7 @@ use super::render_snapshot::{NativeRenderSnapshot, NativeRenderSnapshotUsage};
 use super::runtime::{NativeRequestId, NativeRuntimeObserver, NativeRuntimeTarget};
 use super::NativeHostError;
 use crate::renderer::raster_pixels::RasterRegion;
+use rhwp_codec_resource::atomic::try_update_u64;
 
 const MAX_OBJECTS: usize = 64;
 const MAX_BYTES: usize = 128 * 1024 * 1024;
@@ -34,10 +35,11 @@ impl NativePresentationId {
 }
 
 fn next_id() -> Result<NativePresentationId, NativeHostError> {
-    NEXT_ID
-        .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
-        .map(NativePresentationId)
-        .map_err(|_| NativeHostError::LimitExceeded("presentation handle space exhausted".into()))
+    try_update_u64(&NEXT_ID, Ordering::Relaxed, Ordering::Relaxed, |id| {
+        id.checked_add(1)
+    })
+    .map(NativePresentationId)
+    .map_err(|_| NativeHostError::LimitExceeded("presentation handle space exhausted".into()))
 }
 
 fn invalid(message: &str) -> NativeHostError {

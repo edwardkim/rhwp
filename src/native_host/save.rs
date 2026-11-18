@@ -216,12 +216,14 @@ impl NativeDocumentSession {
                 .document()
                 .hwpx_aux_entry("settings.xml")
                 .is_some();
-        let token = NEXT_SAVE_TOKEN
-            .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |value| {
-                value.checked_add(1)
-            })
-            .map(NativeSaveToken)
-            .map_err(|_| NativeHostError::LimitExceeded("save token space exhausted".into()))?;
+        let token = rhwp_codec_resource::atomic::try_update_u64(
+            &NEXT_SAVE_TOKEN,
+            Ordering::Relaxed,
+            Ordering::Relaxed,
+            |value| value.checked_add(1),
+        )
+        .map(NativeSaveToken)
+        .map_err(|_| NativeHostError::LimitExceeded("save token space exhausted".into()))?;
         let revision = self.revision();
         self.pending_save = Some(PendingSaveCheckpoint { token, revision });
         Ok(PreparedSave {

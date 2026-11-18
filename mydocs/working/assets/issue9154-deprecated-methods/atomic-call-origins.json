@@ -1,0 +1,83 @@
+{
+  "base": "fbf8081db57c0c6abc9bad418290c5018193e24f",
+  "calls": [
+    {
+      "path": "bindings/Native/src/gpu_d3d.rs",
+      "line": 202,
+      "originCommit": "a92974dca48daad1d639d3d5f46267a5093ff2af",
+      "originSubject": "feat(native): integrate bounded Windows D3D12 texture bridge"
+    },
+    {
+      "path": "bindings/Native/src/gpu_gl.rs",
+      "line": 297,
+      "originCommit": "0e289ce4743d097d1a6fb345fdb5ce4659f1535a",
+      "originSubject": "feat(native): add owner-thread GL framebuffer presenter"
+    },
+    {
+      "path": "bindings/Native/src/gpu_metal.rs",
+      "line": 268,
+      "originCommit": "d9570e04cc5e520820026d5208e2a93edd5fd50b",
+      "originSubject": "feat(native): integrate bounded Metal Flutter texture bridge"
+    },
+    {
+      "path": "bindings/Native/src/gpu_metal/admission.rs",
+      "line": 44,
+      "originCommit": "c83c313b3ee28385f94b7cf8a7ad8c6856cdabb2",
+      "originSubject": "feat(native): bound Metal FFI context admission"
+    },
+    {
+      "path": "bindings/Native/src/session.rs",
+      "line": 710,
+      "originCommit": "19d2fb9b9bd5b00984022cdf627a699d84fa978d",
+      "originSubject": "feat: add persistent native document and RGBA sessions"
+    },
+    {
+      "path": "src/native_host/gpu_d3d.rs",
+      "line": 48,
+      "originCommit": "a92974dca48daad1d639d3d5f46267a5093ff2af",
+      "originSubject": "feat(native): integrate bounded Windows D3D12 texture bridge"
+    },
+    {
+      "path": "src/native_host/presentation.rs",
+      "line": 38,
+      "originCommit": "0ff54c35f391a2f11dbcd5950afa57b7e2cc49ad",
+      "originSubject": "feat(native): add cross-thread CPU presentation leases"
+    },
+    {
+      "path": "src/native_host/runtime.rs",
+      "line": 665,
+      "originCommit": "0ff54c35f391a2f11dbcd5950afa57b7e2cc49ad",
+      "originSubject": "feat(native): add cross-thread CPU presentation leases"
+    },
+    {
+      "path": "src/native_host/runtime.rs",
+      "line": 865,
+      "originCommit": "3c7a1405980fb2a5c6501d01cc0c56be5d84c49d",
+      "originSubject": "feat: add bounded native document worker runtime"
+    },
+    {
+      "path": "src/native_host/save.rs",
+      "line": 220,
+      "originCommit": "af33aa8504d3e472032aad146dfbfa0cc27f31eb",
+      "originSubject": "feat: add revision-bound native save checkpoints"
+    },
+    {
+      "path": "vendor/rhwp-codec-resource/src/lib.rs",
+      "line": 282,
+      "originCommit": "e7a0dec55c6c6c6365e4ff50babe7583e1cf1c70",
+      "originSubject": "feat(pdf): JBIG2·JPEG 2000 개별 opt-in과 요청 예산·사용 가이드 (#8190)"
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/import_limits.rs",
+      "line": 439,
+      "originCommit": "4662c069e557e928ed7968d061121fde90b1f027",
+      "originSubject": "feat(pdf): 선택적 PDF 가져오기 제품 경로와 HWP/HWPX 저장 연결 (#7913)"
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/import_limits.rs",
+      "line": 560,
+      "originCommit": "20c9678b01c5a564bb510c9fccd652cceafcd212",
+      "originSubject": "fix(pdf): 곡선 clipping·이미지 한도·암호 인증과 쪽별 진행률 지원 (#8420)"
+    }
+  ]
+}

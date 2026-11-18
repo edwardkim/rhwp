@@ -264,9 +264,13 @@ mod enabled {
                 Ok(())
             }
         })?;
-        let id = NEXT_ID
-            .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |v| v.checked_add(1))
-            .map_err(|_| NativeHostError::LimitExceeded("Metal handle space exhausted".into()))?;
+        let id = rhwp_codec_resource::atomic::try_update_u64(
+            &NEXT_ID,
+            Ordering::Relaxed,
+            Ordering::Relaxed,
+            |v| v.checked_add(1),
+        )
+        .map_err(|_| NativeHostError::LimitExceeded("Metal handle space exhausted".into()))?;
         let mut credit = admission::PROCESS_ADMISSION.reserve().ok_or_else(|| {
             NativeHostError::LimitExceeded(
                 "Metal process context/quarantine budget exhausted".into(),
