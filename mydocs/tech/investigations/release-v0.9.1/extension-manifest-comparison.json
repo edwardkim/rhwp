@@ -1,0 +1,25 @@
+{
+  "checkedAt": "2026-11-18T01:50:51.856854+00:00",
+  "baseline": "v0.9.0",
+  "manifestResults": [
+    {
+      "path": "rhwp-chrome/manifest.json",
+      "oldVersion": "0.9.0",
+      "newVersion": "0.9.1",
+      "allOtherManifestFieldsEqual": true
+    },
+    {
+      "path": "rhwp-firefox/manifest.json",
+      "oldVersion": "0.9.0",
+      "newVersion": "0.9.1",
+      "allOtherManifestFieldsEqual": true
+    },
+    {
+      "path": "rhwp-safari/src/manifest.json",
+      "oldVersion": "0.9.0",
+      "newVersion": "0.9.1",
+      "allOtherManifestFieldsEqual": true
+    }
+  ],
+  "status": "manifest permissions/hosts/CSP unchanged; packaged external endpoint/runtime verification pending"
+}

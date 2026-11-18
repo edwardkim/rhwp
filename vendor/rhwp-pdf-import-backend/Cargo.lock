@@ -3426,18 +3426,18 @@ checksum = "47b34b781b31e5d73e9fbc8689c70551fd1ade9a19e3e28cfec8580a79290cc4"
 
 [[package]]
 name = "rhwp-codec-resource"
-version = "0.1.0"
+version = "0.1.1"
 
 [[package]]
 name = "rhwp-hayro-ccitt"
-version = "0.3.0-rhwp.1"
+version = "0.3.0-rhwp.2"
 dependencies = [
  "rhwp-codec-resource",
 ]
 
 [[package]]
 name = "rhwp-hayro-jbig2"
-version = "0.3.0-rhwp.1"
+version = "0.3.0-rhwp.2"
 dependencies = [
  "rhwp-codec-resource",
  "rhwp-hayro-ccitt",
@@ -3445,7 +3445,7 @@ dependencies = [
 
 [[package]]
 name = "rhwp-hayro-jpeg2000"
-version = "0.4.0-rhwp.1"
+version = "0.4.0-rhwp.2"
 dependencies = [
  "rhwp-codec-resource",
 ]
@@ -3459,7 +3459,7 @@ dependencies = [
 
 [[package]]
 name = "rhwp-pdf-import-backend"
-version = "0.3.78-rhwp.1"
+version = "0.3.78-rhwp.2"
 dependencies = [
  "aes",
  "aws-lc-rs",
@@ -3556,7 +3556,7 @@ dependencies = [
 
 [[package]]
 name = "rhwp-qcms"
-version = "0.3.0-rhwp.1"
+version = "0.3.0-rhwp.2"
 dependencies = [
  "rhwp-codec-resource",
 ]

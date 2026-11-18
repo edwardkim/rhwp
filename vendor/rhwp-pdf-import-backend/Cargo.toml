@@ -14,7 +14,7 @@ publish = ["crates-io"]
 edition = "2021"
 rust-version = "1.93.1"
 name = "rhwp-pdf-import-backend"
-version = "0.3.78-rhwp.1"
+version = "0.3.78-rhwp.2"
 authors = ["Yury Fedoseev <yfedoseev@gmail.com>"]
 build = false
 include = [
@@ -376,7 +376,7 @@ optional = true
 [dependencies.hayro-jbig2]
 package = "rhwp-hayro-jbig2"
 path = "../rhwp-hayro-jbig2"
-version = "=0.3.0-rhwp.1"
+version = "=0.3.0-rhwp.2"
 features = ["rhwp-bounded"]
 optional = true
 default-features = false
@@ -384,7 +384,7 @@ default-features = false
 [dependencies.hayro-jpeg2000]
 package = "rhwp-hayro-jpeg2000"
 path = "../rhwp-hayro-jpeg2000"
-version = "=0.4.0-rhwp.1"
+version = "=0.4.0-rhwp.2"
 features = ["rhwp-bounded"]
 optional = true
 default-features = false
@@ -495,7 +495,7 @@ optional = true
 [dependencies.qcms]
 package = "rhwp-qcms"
 path = "../rhwp-qcms"
-version = "0.3.0-rhwp.1"
+version = "0.3.0-rhwp.2"
 optional = true
 
 [dependencies.qrcode]
@@ -696,5 +696,5 @@ path = "../rhwp-jpeg-decoder"
 
 [dependencies.rhwp-codec-resource]
 path = "../rhwp-codec-resource"
-version = "=0.1.0"
+version = "=0.1.1"
 features = ["scoped"]

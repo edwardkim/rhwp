@@ -1,6 +1,10 @@
 <p align="center">
+
   <img src="assets/logo/logo-256.png" alt="rhwp logo" width="128" />
 </p>
+
+> **0.9.1 release preparation:** see the [release notes](mydocs/release/release_notes_v0.9.1_EN.md) for changes, credits and support limits. Check each channel for publication status.
+
 
 <h1 align="center">rhwp</h1>
 

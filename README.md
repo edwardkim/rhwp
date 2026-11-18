@@ -1,6 +1,10 @@
 <p align="center">
+
   <img src="assets/logo/logo-256.png" alt="rhwp logo" width="128" />
 </p>
+
+> **0.9.1 배포 준비:** 최신 변경·기여자·지원 범위는 [릴리즈 노트](mydocs/release/release_notes_v0.9.1.md)를 참고하세요. 실제 설치 가능 버전은 해당 배포 채널에서 확인합니다.
+
 
 <h1 align="center">rhwp</h1>
 

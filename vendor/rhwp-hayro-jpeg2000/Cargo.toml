@@ -14,7 +14,7 @@ publish = ["crates-io"]
 edition = "2024"
 rust-version = "1.93.1"
 name = "rhwp-hayro-jpeg2000"
-version = "0.4.0-rhwp.1"
+version = "0.4.0-rhwp.2"
 authors = ["Laurenz Stampfl <laurenz.stampfl@gmail.com>"]
 build = false
 autolib = false
@@ -106,5 +106,5 @@ unused_qualifications = "warn"
 
 [dependencies.rhwp-codec-resource]
 path = "../rhwp-codec-resource"
-version = "=0.1.0"
+version = "=0.1.1"
 default-features = false

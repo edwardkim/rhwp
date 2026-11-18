@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "issue": 8174,
-  "status": "maintainer-approved-0.9.0-local-validation",
-  "product_release": "0.9.0",
+  "status": "maintainer-directed-0.9.1-local-preparation",
+  "product_release": "0.9.1",
   "packages": [
     {
       "source": "crates/rhwp-contracts",
@@ -20,7 +20,7 @@
     {
       "source": "crates/rhwp-ooxml-chart",
       "published_name": "rhwp-ooxml-chart",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "include": [
         "Cargo.toml",
         "src/**",
@@ -108,7 +108,7 @@
     {
       "source": "vendor/rhwp-codec-resource",
       "published_name": "rhwp-codec-resource",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "include": [
         "Cargo.toml",
         "src/**",
@@ -121,7 +121,7 @@
     {
       "source": "vendor/rhwp-hayro-ccitt",
       "published_name": "rhwp-hayro-ccitt",
-      "version": "0.3.0-rhwp.1",
+      "version": "0.3.0-rhwp.2",
       "include": [
         "Cargo.toml",
         "src/**",
@@ -140,7 +140,7 @@
     {
       "source": "vendor/rhwp-hayro-jbig2",
       "published_name": "rhwp-hayro-jbig2",
-      "version": "0.3.0-rhwp.1",
+      "version": "0.3.0-rhwp.2",
       "include": [
         "Cargo.toml",
         "src/**",
@@ -160,7 +160,7 @@
     {
       "source": "vendor/rhwp-hayro-jpeg2000",
       "published_name": "rhwp-hayro-jpeg2000",
-      "version": "0.4.0-rhwp.1",
+      "version": "0.4.0-rhwp.2",
       "include": [
         "Cargo.toml",
         "src/**",
@@ -180,7 +180,7 @@
     {
       "source": "vendor/rhwp-qcms",
       "published_name": "rhwp-qcms",
-      "version": "0.3.0-rhwp.1",
+      "version": "0.3.0-rhwp.2",
       "include": [
         "Cargo.toml",
         "src/**",
@@ -199,7 +199,7 @@
     {
       "source": "vendor/rhwp-pdf-import-backend",
       "published_name": "rhwp-pdf-import-backend",
-      "version": "0.3.78-rhwp.1",
+      "version": "0.3.78-rhwp.2",
       "include": [
         "Cargo.toml",
         "src/**",
@@ -226,7 +226,7 @@
     {
       "source": ".",
       "published_name": "rhwp",
-      "version": "0.9.0",
+      "version": "0.9.1",
       "include": [
         "Cargo.toml",
         "Cargo.lock",
@@ -265,7 +265,8 @@
         "rhwp-password-crypto",
         "rhwp-svg2pdf",
         "rhwp-pdf-import-backend",
-        "rhwp-zune-jpeg"
+        "rhwp-zune-jpeg",
+        "rhwp-codec-resource"
       ]
     }
   ]

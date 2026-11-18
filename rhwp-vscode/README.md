@@ -1,5 +1,7 @@
 # HWP Viewer for Visual Studio Code
 
+> **0.9.1 배포 준비:** 최신 변경·기여자·지원 범위는 [릴리즈 노트](../mydocs/release/release_notes_v0.9.1.md)를 참고하세요. 실제 설치 가능 버전은 해당 배포 채널에서 확인합니다.
+
 VSCode에서 HWP/HWPX 문서를 바로 열어볼 수 있는 확장 프로그램입니다.
 
 [rhwp](https://github.com/edwardkim/rhwp) 프로젝트의 WebAssembly 렌더링 엔진을 기반으로, 한컴오피스 한글 문서를 별도 프로그램 없이 VSCode 안에서 확인할 수 있습니다.

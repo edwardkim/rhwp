@@ -12,6 +12,10 @@ GitHub repository·Actions의 공통 권한, 승인, 적용 후 관찰과 rollba
 [GitHub 저장소 운영 매뉴얼](github_operations.md)을 먼저 적용하고, 이 문서는 release·package·스토어별
 배포 절차를 담당한다.
 
+현재 준비 버전은 **0.9.1**이다. [준비 계획](../plans/release_0_9_1_20261118.md)과
+[국문](../release/release_notes_v0.9.1.md)·[영문](../release/release_notes_v0.9.1_EN.md) 안내를 따른다.
+0.9.0의 실제 게시·복구 기록은 당시 증거로 보존하며 새 후보의 완료 증거로 사용하지 않는다.
+
 ---
 
 ## 배포 대상
@@ -357,8 +361,10 @@ npm/editor/package.json:  0.6.1 → 0.6.2  (다른 파일 변경 없음)
 ### Git 태그
 
 - 태그는 `v{MAJOR}.{MINOR}.{PATCH}` 형식 (예: `v0.6.0`)
-- Cargo.toml 기준 MINOR 릴리즈마다 태그를 생성한다
-- PATCH 전용 릴리즈(npm README 등)는 태그를 생성하지 않는다
+- Cargo.toml 기준 제품 전체 릴리즈는 MINOR·PATCH 모두 stable 태그를 생성한다.
+  제품 전체 0.9.1도 `v0.9.1` 태그와 정규 main 승격·배포 경로를 사용한다.
+- 제품 버전을 바꾸지 않는 단일 npm 패키지 전용 PATCH(해당 패키지 README 등)는
+  제품 전체 태그를 새로 만들지 않고 해당 채널의 승인된 절차를 따른다.
 
 ---
 
