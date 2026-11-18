@@ -1,6 +1,6 @@
 //! 검사 유형: 관계형·고정형.
-//! 주석 갱신: 2026-11-19 00:25:18 KST (Asia/Seoul).
-//! 직전 파일 변경: 63caae375a0562514fa66e9c99171ecf93e7f973 2026-11-18T09:59:17+09:00.
+//! 주석 갱신: 2026-11-19 08:07:10 KST (Asia/Seoul).
+//! 직전 파일 변경: f28dbe339ce74531e83e0a3242c283955a322b0c 2026-11-19T00:28:25+09:00.
 //!
 //! 입력 1: `samples/issue9060/m2-full-t2tall-para-offset-next-page.hwp`.
 //! 입력 1 SHA-256: e774998d8ceb0807f435c62f878c1cd7f91b2be758f572239ded1e735f3385f9.
@@ -29,17 +29,17 @@
 //! 같은 생성기의 T35(앵커 한 줄 아래)는 한/글이 셀 행 안을 자르는 형상이라 2쪽 raw 29.41% 로
 //! 회귀 추가 선행 조건(90%)을 충족하지 않아 쓰지 않는다(행 중간 분할은 #9060 범위 밖).
 //!
-//! 측정일: 2026-11-18. 소스 10dac056ac(코드), Native release-test native-skia
-//! SHA-256 3ab40bd8b1f763010187fe9583547cb127b18ac728e68e4c34efe9645fbcbe93,
-//! fresh WASM `rhwp_bg.wasm` SHA-256 803415333604c0f1a439d557fabe4c123c41bac92eeb0fb943802a1fd34f9081.
+//! 측정일: 2026-11-19. 소스 2c5461ff24(코드), Native release-test native-skia
+//! SHA-256 ae3fd109ac31a5e96144806eeebd3d62d96eee05689eb74452559f31e465216f,
+//! fresh WASM `rhwp_bg.wasm` SHA-256 dab60baecf026184632f99e840b963eb3894531825811143ed9f08db5d539b2c.
 //! 방법: `scripts/visual_sweep.py --silhouette-only --dpi 96`, 색상 경계 보정 전 2px raw.
-//! 입력 1(`--compat 2022`): Native 전 4쪽 100.00·100.00·100.00·100.00%, fresh WASM 전 4쪽 각각 100.00%.
-//! 입력 2(`--compat 2024`): Native 전 2쪽 100.00·100.00%, fresh WASM 전 2쪽 100.00·100.00%.
-//! 입력 3(`--compat 2024`): Native 전 2쪽 100.00·100.00%, fresh WASM 전 2쪽 100.00·100.00%.
-//! 두 경로 모두 세 입력의 전쪽 최저 100.00%, 쪽수는 독립 PDF와 같다(4·2·2).
+//! 글꼴: ODA 보고서 측정과 같은 `RHWP_FONT_PATH` 설치 글꼴 폴더(`direct-font-programs`). 회귀 실행에는 요구하지 않는다.
+//! 입력 1(`--compat 2022`): Native 전 4쪽 각각 100.00%, fresh WASM 전 4쪽 각각 100.00%.
+//! 입력 2(`--compat 2024`): Native 100.00·100.00%, fresh WASM 99.49·98.18%.
+//! 입력 3(`--compat 2024`): Native 100.00·100.00%, fresh WASM 99.33·100.00%.
+//! 전쪽 최저: Native 100.00%, fresh WASM 98.18%(입력 2 의 2쪽). 쪽수는 독립 PDF와 같다(4·2·2).
 //! 증거: `mydocs/pr/assets/issue_9060_oda/native/{m2,a1,t34}_silhouette.tsv`,
 //! `mydocs/pr/assets/issue_9060_oda/wasm/{m2,a1,t34}_silhouette.tsv`.
-//!
 //! 고정형은 세 독립 PDF의 전체 쪽수(4·2·2)다. 절대 px 좌표는 고정하지 않는다.
 //! 관계형은 표 첫 조각의 쪽 소유, 쪽 본문 위끝에서 표 위끝까지의 거리와 원본 문단 기준
 //! 세로 오프셋(`vertical_offset`)의 관계, 앞 글줄·뒤 문단과의 순서·겹침 없음이다.
