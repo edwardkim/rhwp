@@ -49,7 +49,7 @@ test('문서 열기는 파싱 전에 빈 쪽 상태로 만든다', () => {
 
   const blankIndex = loadBytes.indexOf('canvasView?.showBlankPage();');
   // PDF 선택/변환은 별도 대기 구간이며, 이 순서 계약은 일반 문서 파싱에 적용한다.
-  const parseIndex = loadBytes.indexOf('await loadDocumentForOpen(data, fileName);');
+  const parseIndex = loadBytes.indexOf('await loadDocumentForOpen(data, fileName, signal);');
 
   assert.ok(blankIndex >= 0, '일반 문서는 기존 빈 쪽 준비를 유지한다');
   assert.match(loadBytes, /if \(!pdf\) canvasView\?\.showBlankPage\(\);/, 'PDF 후보를 준비하는 동안 기존 화면을 보존한다');
