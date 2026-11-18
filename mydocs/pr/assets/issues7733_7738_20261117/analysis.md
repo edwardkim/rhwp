@@ -348,3 +348,10 @@ Native 98.53555→100.00000%, fresh WASM 97.57430→100.00000%를 확인했다.
 최소 글꼴 집중 199 PASS이며 최신 fresh WASM·전체 검증을 대신하지 않는다.
 [review](picture-anchor-before-frame/after-native-review-070.png) ·
 [overlay](picture-anchor-before-frame/after-native-overlay-070.png).
+
+
+## HY견고딕 결측점의 공통 공급자 보정
+
+소스 fb56eeee387915f209059901ff885853b1911415에서 화학 56쪽 U+2027의 추정 전진·HCR Dotum 표시를 독립 한컴 2020 Print의 Haansoft Batang 178/1024em 공급으로 연결했다. 새 관계형 3건·독립 원점 고정형 1건과 관련 최소 글꼴 59건 PASS, Native 56쪽 99.66074→100.00000%다. [원인·실제 결과](gothic-extra-point-supplier/cause.md)를 따른다. fresh WASM·전쪽·전체 필수 검증은 새 소스로 이어서 수행한다.
+
+시행령의 자동 환경 전체를 명시 매핑으로 바꾼 조건은 전쪽에서 원본 대체 정보를 덮어써 미달했다. [공급 조건 정정](decree-original-program-selection/cause.md#전쪽-검사-후-공급-조건-정정)에 원인과 독립 검증 범위를 기록했다.

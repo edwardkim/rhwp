@@ -1,0 +1,44 @@
+{
+  "source_commit_equivalence": "5e8ce183632d075b44405459a597bcce7b26b62c",
+  "actual_build": {
+    "build_parent": "025ac0e4ca97d113736e65f252866332208ea020",
+    "built_from_dirty_sources": true,
+    "source_diff_sha256": "6b197d7ccae2475307f620ae80503db96cc533f0be718f5861c42e6aa652e0f8",
+    "sources": {
+      "src/renderer/composer/line_breaking.rs": "bdcbc055233bd9b3c54915abd5b90a813f07e0ace8869805a5bd4a1b1d46a06a"
+    },
+    "binary": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/decree61-quote-controls/rhwp-after-native-test-profile",
+    "binary_sha256": "064328658c97ad7cca4a1f2a39e6808d0db20e5c7259b1b2641315f608fd4524",
+    "producer_command": [
+      "sandbox-exec",
+      "-f",
+      "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/minimal-font/profile.sb",
+      "env",
+      "-u",
+      "RHWP_FONT_PATH",
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--features",
+      "native-skia",
+      "--build-jobs",
+      "8",
+      "--test",
+      "regression_suite_024",
+      "-E",
+      "test(issue_7737_ascii_quote_line_owner::)",
+      "--test-threads",
+      "8",
+      "--no-fail-fast"
+    ],
+    "binary_mtime": "2026-11-18T10:58:53.645006+09:00",
+    "minimum_focused": "3 passed, 0 failed, 1.310s"
+  },
+  "binary": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/quote-final/rhwp-native",
+  "sha256": "064328658c97ad7cca4a1f2a39e6808d0db20e5c7259b1b2641315f608fd4524"
+}

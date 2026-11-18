@@ -1,0 +1,17 @@
+{
+  "after-native-focus.tsv": "737565ce921ba6989567e043e74b3f6adfe1f04645db12563659df1211c3e978",
+  "after-native-overlay-056.png": "b70b0cc85031df713e091781b54788bd906dca43a006f8cf9439b9e79f0cd398",
+  "after-native-pdf-056.png": "c6b7a3fa63a2c55d115ae544d778a6079d3bac3cf990c20b5d1130be6e462e43",
+  "after-native-raw-056.png": "daa590fe8ffb70b4989c0c6a91ca15d62b49baa3af613c2e96a6f942ea7d2904",
+  "after-native-review-056.png": "0eff06d67c068fbfdf2adb8eb3fdb20b87b8c8d5313ff055db75162f08ff5055",
+  "before-native-overlay-056.png": "48f4ab7b3625056ca585ec7598d5e57d28a656e6dfcebed9d2f27aa93068cd46",
+  "before-native-pdf-056.png": "c6b7a3fa63a2c55d115ae544d778a6079d3bac3cf990c20b5d1130be6e462e43",
+  "before-native-producer.json": "907cb038107de0cce28e46ac896a8af3f8b65baa5848c833d8a566b32a7bada5",
+  "before-native-raw-056.png": "3c44f1a48b9ba3be29920cc2e2f40f5777c9209f822ca57fbe58935ca708febc",
+  "before-native-review-056.png": "e621888dc5b2eea9155d5e031c173faa69cfca42c0f09e654c23114f02b06295",
+  "cause.md": "5f93ddd68c073141af995d8c788efa3b9f1a72cfbdd9a156c7838c696c51739a",
+  "direct-reading.json": "000e333a3359eec37125131511b3e42f15fe48411f2a9ce54a2624e02677785c",
+  "independent-program-proof.json": "ad0479ff72b099b0ddbcc1d176cffcd9cd9da493cd607afe04a710c225e6e8c0",
+  "native-producer.json": "a70a80eb0abd2aaab4e307ea19456d00446da48e7eddeacaaa0e2208c79ec595",
+  "test-results.json": "bef919cc2c84a6e61715e531cdb3fba8b960c9e562947f1254e12d935d8215ef"
+}
