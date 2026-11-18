@@ -22,13 +22,17 @@ fn levels(count: usize, level: impl Fn(usize) -> String) -> String {
     format!(r#"{{"levels":[{}]}}"#, levels.join(","))
 }
 
+/// 저장 → 다시 열기 → 다시 저장 → 다시 열기.
 fn reopen(doc: &HwpDocument, hwpx: bool) -> HwpDocument {
-    let bytes = if hwpx {
-        doc.export_hwpx_native().unwrap()
-    } else {
-        doc.export_hwp_native().unwrap()
+    let save = |doc: &HwpDocument| {
+        if hwpx {
+            doc.export_hwpx_native().unwrap()
+        } else {
+            doc.export_hwp_native().unwrap()
+        }
     };
-    HwpDocument::from_bytes(&bytes).unwrap()
+    let once = HwpDocument::from_bytes(&save(doc)).unwrap();
+    HwpDocument::from_bytes(&save(&once)).unwrap()
 }
 
 /// 1쪽의 문단 머리 run(원문 자리 없는 글).
