@@ -30,6 +30,12 @@ rhwp-svg2pdf는 공개 배포본과 source가 같아 기존 버전을 유지한�
 [source-policy.json](../../packaging/crates-io/source-policy.json)과 실제 포장 원장에서 확인한다.
 미게시 자식의 로컬 검증과 게시 뒤 공개 registry 소비는 구분한다.
 
+재사용 6개는 정본 policy의 `published_origin`에 원 source SHA와 공개 archive SHA-256을
+고정한다. 사전 점검은 그 원 archive의 VCS·크기·checksum을 확인하고 공개 registry에서
+소유자·동일 버전·비-yank·동일 checksum을 다시 확인한 경우에만 `already-present`로 수용한다.
+원장 자체가 재사용을 선언할 수 없으며, 버전이 없어졌으면 새 업로드로 전환하지 않고 실패한다.
+새로 게시할 8개는 현재 승인 source의 VCS SHA·clean 조건을 그대로 적용한다.
+
 아래 초회 게시 설명과 0.9.0 버전 표는 당시 최초 배포의 계약·기록이다. 새 게시에는 위 준비
 버전과 최종 승인 source SHA를 사용하며, 동일한 검증·불변성·실제 소비 조건을 적용한다.
 
