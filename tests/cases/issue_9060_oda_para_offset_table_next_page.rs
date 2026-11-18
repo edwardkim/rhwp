@@ -1,5 +1,6 @@
 //! 검사 유형: 관계형·고정형.
-//! 주석 갱신: (측정 후 기록).
+//! 주석 갱신: 2026-11-19 00:25:18 KST (Asia/Seoul).
+//! 직전 파일 변경: 63caae375a0562514fa66e9c99171ecf93e7f973 2026-11-18T09:59:17+09:00.
 //!
 //! 입력: `samples/issue9060/oda-1092000-201600017.hwp`(정책연구관리시스템 PRISM 공개 보고서,
 //! 국무조정실 「한국 ODA 조달시스템 평가 연구」, 한컴오피스 2010 8.5.8.1485 저장).
@@ -11,7 +12,19 @@
 //! (첫 job 32c1b42e 는 worker 비정상 종료로 실패해 같은 engine 으로 한 번 다시 실행했다).
 //! Creator Hwp 2020. 이슈 첨부 Hwp 2022 12.0.0.4547 Print(159쪽)와 148쪽 표 위 괘선이 같다.
 //!
-//! 측정일: (측정 후 기록).
+//! 측정일: 2026-11-18. 소스 10dac056ac(코드), Native release-test native-skia
+//! SHA-256 3ab40bd8b1f763010187fe9583547cb127b18ac728e68e4c34efe9645fbcbe93,
+//! fresh WASM `rhwp_bg.wasm` SHA-256 803415333604c0f1a439d557fabe4c123c41bac92eeb0fb943802a1fd34f9081.
+//! 방법: `scripts/visual_sweep.py --silhouette-only --compat 2022 --dpi 96`, 색상 경계 보정 전 2px raw.
+//! 전체 159쪽(독립 PDF·Native·WASM 같음). 대상 쪽 Native/fresh WASM: 147쪽 99.68/99.94%,
+//! 148쪽 99.46/99.91%, 149쪽 99.44/99.86%.
+//! 전쪽 최저: Native 61.24%(152쪽), fresh WASM 54.09%(152쪽). 90% 미만 쪽은 Native 23·70·79·141·152,
+//! WASM 23·79·141·152 로, 모두 글꼴 글리프 차이이며 수정 전부터 있었다. devel fbf8081db5 Native는
+//! 23·70·79·141쪽이 같은 값(81.45·89.76·64.08·87.18%)이고 160쪽이라 148쪽 이후가 밀렸다(148쪽
+//! 40.56%). 내용을 맞춘 devel 153쪽 대 PDF 152쪽도 57.48% 다.
+//! 증거: `mydocs/pr/assets/issue_9060_oda/native/oda_silhouette.tsv`, `.../wasm/oda_silhouette.tsv`,
+//! `.../native-base/oda_silhouette.tsv`, `.../native-base/oda_content_aligned_p150-158_silhouette.tsv`,
+//! 148쪽 review·overlay `.../{native,wasm}/oda_{review,overlay}_148.png`.
 //!
 //! 고정형은 독립 PDF의 전체 쪽수 159다.
 //! 관계형은 2구역 문단 76(빈 호스트, 위 캡션, 문단 기준 세로 오프셋 2668HU의 2×2 표)의 쪽
