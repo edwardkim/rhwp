@@ -544,13 +544,29 @@
     "chrome": {
       "submission": "complete",
       "observed_public_version": "0.9.0",
-      "source": "https://chromewebstore.google.com/detail/pgakpjflombjmehnebnbpnalhegaanag"
+      "source": "https://chromewebstore.google.com/detail/pgakpjflombjmehnebnbpnalhegaanag",
+      "maintainer_local_test": {
+        "version": "0.9.1",
+        "mode": "local",
+        "method": "manual",
+        "result": "pass",
+        "reported_by": "maintainer",
+        "reported_at": "2026-11-19T03:02:01+09:00"
+      }
     },
     "edge": {
       "submission": "complete",
       "observed_update_version": "0.9.0.0",
       "extension_id": "nfkdfobhmanddlhdbclkpoanbccpigcn",
-      "source": "https://edge.microsoft.com/extensionwebstorebase/v1/crx"
+      "source": "https://edge.microsoft.com/extensionwebstorebase/v1/crx",
+      "maintainer_local_test": {
+        "version": "0.9.1",
+        "mode": "local",
+        "method": "manual",
+        "result": "pass",
+        "reported_by": "maintainer",
+        "reported_at": "2026-11-19T03:02:01+09:00"
+      }
     },
     "firefox": {
       "submission": "complete",

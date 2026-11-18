@@ -51,8 +51,8 @@ v0.9.1의 공개 CLI, Studio, crates.io, npm, VS Code Marketplace와 Open VSX를
 
 | 대상 | 준비 및 검증 | 제출 안내 |
 | --- | --- | --- |
-| Chrome Web Store | 확장 로딩·다운로드 가로채기·수명주기 E2E 3개 통과 | [한국어](../feedback/chrome-0.9.1_kor.md) · [영어](../feedback/chrome-0.9.1_eng.md) |
-| Microsoft Edge Add-ons | Chrome에서 검증한 ZIP과 바이트 단위로 같은 패키지 | [Edge 심사 노트](../feedback/edge-0.9.1_reviewer_notes.md) |
+| Chrome Web Store | 확장 로딩·다운로드 가로채기·수명주기 E2E 3개 통과. 메인테이너 로컬 모드 수동 테스트 통과. | [한국어](../feedback/chrome-0.9.1_kor.md) · [영어](../feedback/chrome-0.9.1_eng.md) |
+| Microsoft Edge Add-ons | Chrome에서 검증한 ZIP과 바이트 단위로 같은 패키지. 메인테이너 로컬 모드 수동 테스트 통과. | [Edge 심사 노트](../feedback/edge-0.9.1_reviewer_notes.md) |
 | Firefox AMO | 제출용 source ZIP에서 WASM과 확장을 재빌드했다. 실제 Firefox에서 문서 열기·편집·저장과 저장본 재열기를 확인했다. | [AMO 심사 노트](../feedback/firefox-0.9.1_amo_notes.md) |
 
 Chrome·Firefox manifest는 v0.9.0 대비 버전만 달라졌다. ZIP별 SHA-256과 크기는
