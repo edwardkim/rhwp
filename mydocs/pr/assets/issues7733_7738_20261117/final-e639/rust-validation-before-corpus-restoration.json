@@ -1,0 +1,154 @@
+{
+  "producer_head": "e63992fb2f4fbedb9c58569232b176ae91b98331",
+  "fixed_base": "197ce19e99438c2cba452c654ae1af504dab85ec",
+  "validation_scope": "Current product source before the pending exact-five corpus restoration. This is not final PR/lifecycle completion.",
+  "regression_font_scope": "verified macOS minimum-font sandbox; personal fonts denied",
+  "full_nextest": {
+    "tests_run": 13774,
+    "passed": 13774,
+    "failed": 0,
+    "skipped": 45,
+    "nextest_seconds": 672.944,
+    "log_sha256": "75dde9d96109549504f13648404d83c95076ae127f924c3697c41797b63915ad"
+  },
+  "native_skia_lib": {
+    "root_passed": 3852,
+    "root_failed": 0,
+    "root_ignored": 12,
+    "companion_crates_passed": 182
+  },
+  "native_placeholder_passed": 2,
+  "native_pdf_passed": 36,
+  "suite_contracts_passed": 24,
+  "steps": [
+    {
+      "name": "suite-prepare",
+      "exit_code": 0,
+      "elapsed_seconds": 2.279,
+      "log_sha256": "b2771498834a12dc7186bf0306b7c2735062fbf549ae84ec0894715b98d8add8"
+    },
+    {
+      "name": "candidate-native-build",
+      "exit_code": 0,
+      "elapsed_seconds": 275.347,
+      "log_sha256": "1bb750f476571a7ab0a321afdf80fafa937538348cf4f1a45faf1c7709e3f091"
+    },
+    {
+      "name": "gray-tail-focus-native",
+      "exit_code": 0,
+      "elapsed_seconds": 20.044,
+      "log_sha256": null
+    },
+    {
+      "name": "fresh-wasm",
+      "exit_code": 0,
+      "elapsed_seconds": 424.959,
+      "log_sha256": "2f9221e002b306d634f5e16ae82fc5e1a82bf6ab6146e6b0c195e3605c8bbb45"
+    },
+    {
+      "name": "gray-tail-focus-wasm",
+      "exit_code": 0,
+      "elapsed_seconds": 38.871,
+      "log_sha256": null
+    },
+    {
+      "name": "gray-tail-issue_8218_hwp3_link_bindata_order",
+      "exit_code": 0,
+      "elapsed_seconds": 253.583,
+      "log_sha256": "fccf0e68af37814b3a2703cd10daba0c5c62b1e07fda88b68a7cb5504c086879"
+    },
+    {
+      "name": "gray-tail-issue_7888_para_border_group_bottom_no_default_inset",
+      "exit_code": 0,
+      "elapsed_seconds": 16.462,
+      "log_sha256": "7bb6006d730ea60d572fe14136926dc5ceb3975a2ecd050012fb356de5c2e4dc"
+    },
+    {
+      "name": "gray-tail-issue_5711_para_border_negative_spacing",
+      "exit_code": 0,
+      "elapsed_seconds": 11.918,
+      "log_sha256": "029354e70823ebf86239a3b8eff7fb4cdd1322ccaef4f067dbfb6f400dcd19ba"
+    },
+    {
+      "name": "fmt",
+      "exit_code": 0,
+      "elapsed_seconds": 14.83,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "suite-manifest",
+      "exit_code": 0,
+      "elapsed_seconds": 1.369,
+      "log_sha256": "509b8be4c87a28ff79a93046e5a5330465c0150595d898e62fedb61e06f60516"
+    },
+    {
+      "name": "full-nextest",
+      "exit_code": 0,
+      "elapsed_seconds": 1229.551,
+      "log_sha256": "75dde9d96109549504f13648404d83c95076ae127f924c3697c41797b63915ad"
+    },
+    {
+      "name": "native-clippy",
+      "exit_code": 0,
+      "elapsed_seconds": 44.654,
+      "log_sha256": "bf9d35ed11692c2cfc0b13abf0b54102dd827a27c461de40d2f9ccb38dad9633"
+    },
+    {
+      "name": "wasm-clippy",
+      "exit_code": 0,
+      "elapsed_seconds": 34.209,
+      "log_sha256": "4f58b218919f571949bcd4ff5b08e2c3b2d70c0ec096f8b49c434f4970390010"
+    },
+    {
+      "name": "workspace-build",
+      "exit_code": 0,
+      "elapsed_seconds": 63.705,
+      "log_sha256": "882463704aaba87f872c2420c42104f799b13988a3942bece43a8d2d8375c610"
+    },
+    {
+      "name": "all-targets-clippy",
+      "exit_code": 0,
+      "elapsed_seconds": 81.516,
+      "log_sha256": "cada276d159eb5c856f85b1d5eed0822cb044b16d1ccef4432acb7c4441fbeab"
+    },
+    {
+      "name": "native-feature-clippy",
+      "exit_code": 0,
+      "elapsed_seconds": 36.439,
+      "log_sha256": "3d27f9f43d69e02be592394d9e2afaa82cd4b28781c51b6a1593cb51dd59490f"
+    },
+    {
+      "name": "native-skia-lib",
+      "exit_code": 0,
+      "elapsed_seconds": 316.566,
+      "log_sha256": "92d2d3bb3ddcc3dc03b7d9871d3807888ec2dd2254fd9c3a7b38f719fa6883c2"
+    },
+    {
+      "name": "native-skia-placeholder",
+      "exit_code": 0,
+      "elapsed_seconds": 304.088,
+      "log_sha256": "ddc61b37231129502c927a77031c9c669c2d846891d24644063bb79270604467"
+    },
+    {
+      "name": "native-skia-pdf",
+      "exit_code": 0,
+      "elapsed_seconds": 25.373,
+      "log_sha256": "7c96a2c9acd52bc592d20b8738d11befdaba78e84f8ca558f31995cf9c48e405"
+    },
+    {
+      "name": "unit-tier",
+      "exit_code": 0,
+      "elapsed_seconds": 32.555,
+      "log_sha256": "b0d22c7e9e78b2de09250df5931d136093b5d2ad3c7474ab5c37aa9c3dc75ad0"
+    },
+    {
+      "name": "suite-contracts",
+      "exit_code": 0,
+      "elapsed_seconds": 6.088,
+      "log_sha256": "27860b80e4c1f8e5474e9a4993dda96d44b928d77e515bb8d7091356ca160714"
+    }
+  ],
+  "native_binary_sha256": "69883dbf754be9e02453c63ec88d49bdd1749b76123698e5a47d9a1a8c1ecbf4",
+  "fresh_wasm_sha256": "0e4000801e05b7dc377fa42573cc9b80b64593b98c04dc1f1feba2da65b7a8f2",
+  "wasm_build_mode": "Mac locked wrapper --target web --out-dir pkg --no-opt; local alternative, not Docker optimized"
+}

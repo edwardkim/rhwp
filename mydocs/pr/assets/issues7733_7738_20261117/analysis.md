@@ -5,8 +5,14 @@
 검토 브랜치는 `task/7733-chemical-spec-outline-decree`, 최초 검증 base는
 `22da83586aab1baf960f2159abda347062ecf7ed`이며 현재 리베이스 base는
 `197ce19e99438c2cba452c654ae1af504dab85ec`다. 다섯 이슈는 모두 열린 상태로 확인했다.
-원본·기준의 신원·과거 해결 경로 분석과 Native 기준 전 252쪽 산출을 마쳤다. 사용자 목표는 다섯 문서 모든 페이지의 Native/fresh WASM 각각 98% 이상, 가급적 100%다.
-아래 과거 수치를 현재 결과나 해결 완료로 사용하지 않는다. 공통 쪽번호 상속 보정을 커밋했고, 회귀 검사 보강과 최종 전쪽 재검증은 진행 중이다.
+사용자 목표는 다섯 문서 모든 페이지의 Native/fresh WASM 각각 98% 이상, 가급적 100%다. 현재 제품 소스는
+`e63992fb2f4fbedb9c58569232b176ae91b98331`이다. 이 소스의 최소 글꼴 전체 회귀는
+13,774 PASS·0 FAIL·45 skip이며 Native/WASM/all-target Clippy와 workspace build도 통과했다.
+Native Skia 및 최종 전쪽·보호·실제 소비 경로 검증은 진행 중이다. 다섯 원본의 과거 보류 수집을
+복원한 뒤 collection과 전체 회귀를 다시 확인해야 하므로 PR 준비 완료로 판정하지 않는다.
+
+아래 원인별 단계의 수치와 생산 커밋은 이력으로 보존한다. 현재 소스의 전쪽 완료나 이슈 해결로
+재명명하지 않는다. 원본·독립 PDF·판정 문턱은 유지한다.
 
 ## 원본과 기준 PDF
 
@@ -383,3 +389,19 @@ Studio만 바뀐 두 커밋 사이 Rust·crates·Cargo·build·assets·ttfs·scr
 
 
 최신 전체 회귀는 13,773건 중 13,770 PASS·3 FAIL·45 skip(558.449초)로 완료했다. 세 실패는 후행 배경 채움을 기존 본문 넘침 원장이 독립 Rect로 센 partition 2·4·5다. 같은 조건의 base/head 진단과 독립 PDF 벡터를 대조한 [원인 분석](overflow-fill-ownership/cause.md)을 보존했다. 기준 상향이나 회색 배경 복구 취소로 우회하지 않으며, 소유 글줄·선언 밴드와 실제 넘침을 구분하는 반례 검사를 보완한다. 최신 전체 회귀 통과·PR 준비 완료는 아니다.
+
+
+`e63992fb2f4fbedb9c58569232b176ae91b98331`에서 문단 배경의 원본 소유권과 선언 밴드를 진단까지 연결했다. 새로운 관계형 반례7건 및 기존 본문 넘침16분할·CLI/off-canvas/빈 글줄/glyph 계약을 포함한 집중66 PASS·0 FAIL이다. [실제 로그와 범위](overflow-fill-ownership/validation.json)를 따른다. 과거의 0건 실행은 invalid로 남기고 수용하지 않았다. 같은 원장·같은 허용 오차에서 실제 독립 도형·넘친 글줄·밴드 초과·용지 밖 채움은 계속 검출한다. 새 최종 검증 `gray-tail-owned-diagnostic-final`에서 Native/fresh WASM을 다시 생산하며, 고정 base 완료16개 scope와8개 우선 조건만 기존 SHA로 재사용한다. 후보의 전쪽·전체 회귀·보호·실제 소비자 검증 완료는 아직 아니다.
+
+
+## 2026-11-18 현재 소스의 전체 회귀 재검증
+
+`e63992fb2f4fbedb9c58569232b176ae91b98331`의 최소 글꼴 전체 nextest는 **13,774 PASS·0 FAIL·45 skip**, 672.944초로 완료됐다. 이전에 실패한 본문 넘침 partition 2·4·5도 같은 원장과 허용 오차에서 통과했다. 이 결과는 최신 소스의 전체 회귀이며, 이후 필수 lint·build·Native Skia·전쪽 보호·실제 소비 경로를 대신하지 않는다. 다섯 원본의 과거 보류 수집 복원은 전쪽 수용 뒤 적용하고 해당 collection과 전체 회귀를 다시 확인한다.
+
+
+최신 `e63992fb`의 실제 1쪽 수식 대조군도 새로 실행했다. Canvas2D 98.87848%, CanvasKit compat/default 각각 99.18925%이며 두 CK 요청 모두 실제 software CK로 실행되고 글꼴 fallback·미지원·숨은 overlay는 0이다. [현재 이미지와 직접 판독](final-e639/radical-controls/validation.json)을 보존했다. 실제 Vite 초기화 JS는 WASM URL 변환 때문에 원본 bindgen JS와 SHA가 다르다. inline source map이 그 URL 변환 한 곳을 제외하고 원본과 바이트가 같고, 초기화 WASM 응답은 새 frozen WASM과 SHA가 같음을 별도로 확인했다. 원본 197쪽의 guard와 다섯 문서 전쪽 검증은 별도 범위다.
+
+
+## 리베이스 전 완료 기록 보존
+
+`e63992fb`의 필수 Rust 21단계와 추가 Native 기능 모듈 27건이 통과했다. 주요 다섯 원본 전 252쪽은 Native·fresh WASM 모두 98% 이상이고 원본 #4138 WASM 197쪽은 최저 99.36%다. 실제 브라우저 15조건 중 9조건(27캡처)을 완료했다. 사용자의 리베이스·기존 산출물 재사용 지시에 따라 진행 감독 프로세스만 종료하고 완료 TSV·PNG·영수증을 보존했다. #4138 마지막 자식 실행은 종료 중 감독자가 일시 정지돼 종료 코드를 회수하지 못했으므로, canonical complete manifest·197행 TSV·최종 summary를 완료 근거로 구분한다. 보호 문서 전쪽·나머지 브라우저·보류 수집 복원 검증은 아직 미완료다.

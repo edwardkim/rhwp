@@ -1,0 +1,126 @@
+{
+  "producer_head": "e63992fb2f4fbedb9c58569232b176ae91b98331",
+  "wasm_sha256": "0e4000801e05b7dc377fa42573cc9b80b64593b98c04dc1f1feba2da65b7a8f2",
+  "build_mode": "Mac locked wrapper --no-opt local alternative; not Docker optimized",
+  "browser": "HeadlessChrome/146.0.7680.76",
+  "font_environment": "Normal original-font host provider; not a minimum-font visual run. No private font binaries included.",
+  "input": "tests/fixtures/issue7733_hft_radical/original-radical-controls-2024.hwpx",
+  "input_sha256": "675da9a508b2a33f7dc4944a1e353dd504a1eb38e308114138c4cc7dc085ab6b",
+  "reference_pdf": "pdf/issues7733_7738_20261117/hft-radical-controls-2024.pdf",
+  "reference_pdf_sha256": "c1a6495758b92a56f392d2d83686551059008940b42826f3c4c58c0d27cfd855",
+  "source_report_sha256": "bb1df322f97c209645497b8b79c98b825c098a652ccb3fafed6995c6527b5ece",
+  "reading_recorded_at": "2026-11-18T18:34:28.080702+09:00",
+  "direct_reading": "최신 Canvas2D·CanvasKit compat의 review/overlay를 직접 열었다. root bar, 뒤 E/Q의 소속과 대조 줄을 유지하며 미세 글리프 잉크·기준선 차이는 남는다. CanvasKit default의 raw/PDF는 직접 본 compat와 바이트가 같다. 2px 실루엣 수치를 픽셀 동일로 주장하지 않는다.",
+  "scope": "Supported one-page CanvasKit positive control only, not original197-page guard or whole-scope completion.",
+  "browser_initialization": {
+    "actual_js_response_sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+    "fresh_bindgen_js_sha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+    "verified_vite_rewrite_count": 1,
+    "after_reversing_only_the_verified_url_rewrite_original_bytes_equal": true,
+    "root_public_frozen_js_match": true,
+    "wasm_sha256": "0e4000801e05b7dc377fa42573cc9b80b64593b98c04dc1f1feba2da65b7a8f2",
+    "actual_wasm_response_matches": true
+  },
+  "results": [
+    {
+      "requested": "canvas2d",
+      "actual": "canvas2d",
+      "profile": "print",
+      "surface_backend": null,
+      "font_fallback": null,
+      "raw_match_percent": 98.87848,
+      "runtime_ready": null,
+      "replay_summary": {},
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-e639/radical-controls/canvas2d/raw-001.png",
+          "sha256": "7d6b53765c31580da6bfbb24b961f3aa575774d020d222f3c55eb6d3508cb003"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-e639/radical-controls/canvas2d/pdf-001.png",
+          "sha256": "31ae387ed4a9d43f76f8fdf8cd12feb55a83c05843ce137c5b4e60652df5b30c"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-e639/radical-controls/canvas2d/review-001.png",
+          "sha256": "b5380563eeb94b24121e7b310dfa0bc06e867ae000b00d1bca121fe3a15b0f98"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-e639/radical-controls/canvas2d/overlay-001.png",
+          "sha256": "8a865998641ac44dcc375ad7c6520a734bf32761773d9265f5773f19f32b1245"
+        }
+      }
+    },
+    {
+      "requested": "canvaskit-compat",
+      "actual": "canvaskit-compat",
+      "profile": "print",
+      "surface_backend": "software",
+      "font_fallback": null,
+      "raw_match_percent": 99.18925,
+      "runtime_ready": true,
+      "replay_summary": {
+        "totalItems": 94,
+        "directItems": 94,
+        "directRequiredItems": 0,
+        "compatOverlayItems": 0,
+        "textFallbackItems": 0,
+        "unsupportedItems": 0,
+        "hiddenOverlayViolations": 0
+      },
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-e639/radical-controls/canvaskit-compat/raw-001.png",
+          "sha256": "1770a3e45cb9109f23443f1acde650573a03e94311a8a6664c695181310dcd67"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-e639/radical-controls/canvaskit-compat/pdf-001.png",
+          "sha256": "31ae387ed4a9d43f76f8fdf8cd12feb55a83c05843ce137c5b4e60652df5b30c"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-e639/radical-controls/canvaskit-compat/review-001.png",
+          "sha256": "eded137d15a53ac724f47a7383c3ead84c9bab8b4cbad2219ea7ec03ec735860"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-e639/radical-controls/canvaskit-compat/overlay-001.png",
+          "sha256": "0b153557661a8b4bf41b7ac21449833ca8ffc31ca6675ddc06c4872c8365bb34"
+        }
+      }
+    },
+    {
+      "requested": "canvaskit-default",
+      "actual": "canvaskit-default",
+      "profile": "print",
+      "surface_backend": "software",
+      "font_fallback": null,
+      "raw_match_percent": 99.18925,
+      "runtime_ready": true,
+      "replay_summary": {
+        "totalItems": 94,
+        "directItems": 94,
+        "directRequiredItems": 0,
+        "compatOverlayItems": 0,
+        "textFallbackItems": 0,
+        "unsupportedItems": 0,
+        "hiddenOverlayViolations": 0
+      },
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-e639/radical-controls/canvaskit-default/raw-001.png",
+          "sha256": "1770a3e45cb9109f23443f1acde650573a03e94311a8a6664c695181310dcd67"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-e639/radical-controls/canvaskit-default/pdf-001.png",
+          "sha256": "31ae387ed4a9d43f76f8fdf8cd12feb55a83c05843ce137c5b4e60652df5b30c"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-e639/radical-controls/canvaskit-default/review-001.png",
+          "sha256": "a21922e76d5db9f29fb7a765aac4a0b27a7e17a4fe4000d5e44043ecc60a4237"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-e639/radical-controls/canvaskit-default/overlay-001.png",
+          "sha256": "806e493a5c06cb51dea5d7bb07190a303aa39eef6543b3066504bfd3be35833d"
+        }
+      }
+    }
+  ]
+}

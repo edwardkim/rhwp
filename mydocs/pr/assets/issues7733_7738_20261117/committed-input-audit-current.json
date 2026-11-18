@@ -1,7 +1,7 @@
 {
   "status": "passed_input_identity_only_not_visual_acceptance",
-  "source_head": "211253376d20aa40c4cf223fdaabd87467e88240",
-  "checked_at": "2026-11-18T17:06:47.387014+09:00",
+  "source_head": "e63992fb2f4fbedb9c58569232b176ae91b98331",
+  "checked_at": "2026-11-18T17:35:39.746903+09:00",
   "files": [
     {
       "path": "mydocs/pr/assets/issue7445/completed-20261009/regression-policy-20261015/issue4138-current-production/saved-split-1x2.hwp",
