@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-11-16
+last_verified: 2026-11-18
 ---
 
 # PDF/PNG visual sweep 가이드
@@ -409,10 +409,18 @@ CDP `SystemInfo.getInfo`의 `gpu.featureStatus`를 함께 기록한다. 최종 C
 
 ### 원본 글꼴 프로그램의 형식 순서와 명시적 환경 설정
 
-문서의 글꼴 이름·저장 형식과 실제 설치 프로그램의 이름·형식을 구분한다. 예를 들어
-문서가 요청하는 `한양중고딕`의 TTF 원본은 `H2GTRM.TTF`이며, 설치 이름은
-`HY중고딕`·`HYGothic-Medium`, PostScript 이름은 `H2gtrM`으로 표시될 수 있다.
-이 경우 검증된 원본 별칭으로 조회하며, 이름이 다르다는 이유로 일반 고딕 대체를 먼저 적용하지 않는다.
+문서의 글꼴 이름·저장 형식과 실제 설치 프로그램의 이름·형식을 구분한다.
+`H2GTRM.TTF`는 `HY중고딕`·`HYGothic-Medium`이며 PostScript 이름은 `H2gtrM`이다.
+HFT의 `한양중고딕`과는 별개 원본이다. 후자의 실제 영문 이름은 `HY Junggothic`이며,
+`SPJGT.otf` 같은 기호 분할 프로그램을 포함한다. 한양 원본의 이름 아래에 HY TTF를
+같은 파일의 별칭으로 등록하거나, 형식 순서만으로 서로 다른 글꼴을 교체하지 않는다.
+신명조·견고딕·견명조·그래픽·궁서도 실제 파일의 SFNT 이름과 글리프를 대조한다.
+반대로 한양해서·HYhaeseo처럼 같은 파일의 실제 이름은 보존한다. 접두어만으로 합치거나 나누지 않는다.
+
+로컬 재감지도 각 프로그램의 family·full name·PostScript 이름과 SFNT의 검증된 별칭을
+구분해 수집한다. 문서 CSS나 웹폰트 때문에 Canvas 폭이 달라졌다는 사실을 로컬 원본의
+설치 증거로 취급하지 않는다. 존재 확인용 `local()` 검사와 실제 프로그램 바이트의 신원도
+구분하며, 명시 재감지 후 이전 CSS face·프로그램 캐시가 새 목록에 섞이지 않는지 확인한다.
 
 자동 선택은 **같은 원본 글꼴과 검증된 별칭의 읽을 수 있는 프로그램** 안에서
 TTF → TTC의 해당 face → OpenType 프로그램 순서로 수행하고, 원본을 찾지 못하면 대체 글꼴로

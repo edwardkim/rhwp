@@ -1,4 +1,6 @@
-//! [#6171] 한양견고딕/한양견명조가 설치 face 를 건너뛰고 generic 으로 떨어지지 않게 잡는다.
+//! 관계형: [#6171] 한양 원본·검증된 실제 이름·별도 HY 대체·generic의 순서를 검사한다.
+//! Native/fresh WASM 일치율: 비해당. 사설 글꼴이나 실물 문서의 px 좌표를 요구하지 않는다.
+//! 주석 갱신: 2026-11-18 22:18:49 KST.
 //!
 //! 3146683 1쪽 `『별표 7』` 의 `별표` 획이 한글 2020 출력보다 가늘었던 원인은 조판이
 //! 아니라 face 선택이었다. SVG `font-family` 사슬을 실제로 만드는 것은
@@ -9,13 +11,14 @@
 //!
 //! `svg.rs` 의 `font_local_aliases`/`known_font_filenames` 는 그 모듈의 단위 테스트가
 //! 지키고, SVG golden 두 건(issue-617/issue-677)은 사슬 문자열 전체를 통째로 고정한다.
-//! 여기서는 golden 문서와 무관하게 (1) 사슬 앞머리와 (2) 배치 폭을 정하는 메트릭 별칭이
-//! 같은 face 계열로 이어지는지를 직접 고정한다.
+//! 여기서는 golden 문서와 무관하게 (1) 원본의 실제 이름을 먼저 보존하면서 HY 대체까지
+//! 이어지는 사슬과 (2) 호환 대체에 필요한 한글 음절 폭을 검사한다. 한양 HFT와 HY TTF는
+//! 별도 원본이다. 특정 음절의 폭이 같다는 사실을 파일·글리프 전체의 동일성으로 해석하지 않는다.
 
 use rhwp::renderer::font_metrics_data::find_metric;
 use rhwp::renderer::{render_font_family_chain, render_font_family_chain_for_weight};
 
-/// 원 face 바로 뒤에 설치 face 이름이 순서대로 와야 한다.
+/// 원본과 그 파일의 실제 영문 이름 다음에 별도 HY 대체가 와야 한다.
 ///
 /// generic 폴백은 계열마다 다르므로(고딕=`Malgun Gothic`…, 명조=`Batang`…) 사슬 전체가
 /// 아니라 앞머리만 계약으로 잡는다 — 설치 face 가 어떤 generic 보다도 앞선다는 뜻이다.
@@ -35,7 +38,7 @@ fn assert_chain_head(chain: &str, expected: &[&str]) {
 fn hanyang_gyeongothic_chain_reaches_installed_hy_face() {
     assert_chain_head(
         &render_font_family_chain("한양견고딕"),
-        &["한양견고딕", "HY견고딕", "HYGothic-Extra"],
+        &["한양견고딕", "HY Gyeongothic", "HY견고딕", "HYGothic-Extra"],
     );
 }
 
@@ -43,7 +46,12 @@ fn hanyang_gyeongothic_chain_reaches_installed_hy_face() {
 fn hanyang_gyeonmyeongjo_chain_reaches_installed_hy_face() {
     assert_chain_head(
         &render_font_family_chain("한양견명조"),
-        &["한양견명조", "HY견명조", "HYMyeongJo-Extra"],
+        &[
+            "한양견명조",
+            "HY Gyeonmyeongjo",
+            "HY견명조",
+            "HYMyeongJo-Extra",
+        ],
     );
 }
 
@@ -52,16 +60,14 @@ fn bold_chain_keeps_gyeongothic_alias() {
     // bold 경로는 ExtraLight 를 걸러내는 별도 함수라 별칭 삽입이 빠질 수 있다.
     assert_chain_head(
         &render_font_family_chain_for_weight("한양견고딕", true),
-        &["한양견고딕", "HY견고딕", "HYGothic-Extra"],
+        &["한양견고딕", "HY Gyeongothic", "HY견고딕", "HYGothic-Extra"],
     );
 }
 
 #[test]
 fn gyeongothic_metric_alias_stays_paired_with_render_face() {
-    // 사슬만 고치고 메트릭 별칭을 두면 화면 face 와 배치 폭이 어긋난다.
-    // legacy 한양* 이름은 [#2430] 한글 COM 실측 ASCII 를 덧씌운 overlay 를 쓰고,
-    // 한글 음절 폭은 설치 face(HY*)의 메트릭을 그대로 공유한다. 두 축이 갈라지면
-    // 이 테스트가 먼저 깨진다.
+    // [#2430] 한양 원본의 메트릭 overlay와 별도 HY 대체의 메트릭 이름을 각각 보존한다.
+    // 이 검사는 아래 음절의 호환 전진만 비교하며 두 글꼴을 같은 원본으로 인증하지 않는다.
     let pairs = [
         (
             "한양견고딕",
