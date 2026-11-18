@@ -409,6 +409,10 @@ export interface ParaProperties {
   indent?: number;           // px (96dpi, zoom=1 기준, ResolvedParaStyle)
   spacingBefore?: number;    // px (96dpi, zoom=1 기준)
   spacingAfter?: number;     // px (96dpi, zoom=1 기준)
+  spacingBeforePx?: number;  // Resolved layout distance, including CHAR units
+  spacingAfterPx?: number;
+  spacingBeforeRaw?: number; // Exact stored units for format copy
+  spacingAfterRaw?: number;
   paraShapeId?: number;
   // 확장 탭 속성
   headType?: string;         // 'None'|'Outline'|'Number'|'Bullet'

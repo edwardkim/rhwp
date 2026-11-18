@@ -267,12 +267,12 @@ function fitDroppedImageSizeRaw(
 }
 
 function normalizeFormatCopyParaProps(props: Partial<ParaProperties>): Partial<ParaProperties> {
-  const normalized = { ...props };
+  const normalized = pickDefined(props, FORMAT_COPY_PARA_KEYS);
   if (props.marginLeft !== undefined) normalized.marginLeft = pxToRaw2x(props.marginLeft);
   if (props.marginRight !== undefined) normalized.marginRight = pxToRaw2x(props.marginRight);
   if (props.indent !== undefined) normalized.indent = pxToRaw2x(props.indent);
-  if (props.spacingBefore !== undefined) normalized.spacingBefore = pxToRaw(props.spacingBefore);
-  if (props.spacingAfter !== undefined) normalized.spacingAfter = pxToRaw(props.spacingAfter);
+  if (props.spacingBefore !== undefined) normalized.spacingBefore = props.spacingBeforeRaw ?? pxToRaw(props.spacingBefore);
+  if (props.spacingAfter !== undefined) normalized.spacingAfter = props.spacingAfterRaw ?? pxToRaw(props.spacingAfter);
   return normalized;
 }
 
@@ -6009,9 +6009,7 @@ export class InputHandler {
         if (fontId >= 0) charProps.fontId = fontId;
       }
     }
-    const paraProps = normalizeFormatCopyParaProps(
-      pickDefined(this.getParaProperties(), FORMAT_COPY_PARA_KEYS) as Partial<ParaProperties>,
-    );
+    const paraProps = normalizeFormatCopyParaProps(this.getParaProperties());
     const pos = this.cursor.getPosition();
     const cellProps = pos.parentParaIndex !== undefined
       ? pickDefined(

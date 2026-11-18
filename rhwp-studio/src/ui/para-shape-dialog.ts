@@ -34,6 +34,7 @@ import {
 } from './para-shape-tab-builders';
 import { enableDialogDrag } from './dialog-drag';
 import { populateFillSelection, updateFillControls } from './fill-selection';
+import { paragraphSpacingFromPt } from '@/core/paragraph-spacing';
 import { tabUnitsToPt } from '@/core/tab-units';
 
 import { t as i18nText } from '../i18n/index.ts';
@@ -662,8 +663,8 @@ export class ParaShapeDialog {
     }
 
     // 문단 간격 (px → pt)
-    this.spacingBeforeInput.value = pxToPt(p.spacingBefore ?? 0).toFixed(1);
-    this.spacingAfterInput.value = pxToPt(p.spacingAfter ?? 0).toFixed(1);
+    this.spacingBeforeInput.value = pxToPt(p.spacingBeforePx ?? p.spacingBefore ?? 0).toFixed(1);
+    this.spacingAfterInput.value = pxToPt(p.spacingAfterPx ?? p.spacingAfter ?? 0).toFixed(1);
 
     // ── 확장 탭
     const ht = p.headType || 'None';
@@ -822,12 +823,17 @@ export class ParaShapeDialog {
       : pxToRaw(p.lineSpacing ?? 0);
     if (newLS !== origLS) mods.lineSpacing = newLS;
 
-    // 문단 간격 (비교: 원본 px → HWPUNIT 1x 변환 후 비교)
-    const newSB = ptToRaw(parseFloat(this.spacingBeforeInput.value) || 0);
-    if (newSB !== pxToRaw(p.spacingBefore ?? 0)) mods.spacingBefore = newSB;
-
-    const newSA = ptToRaw(parseFloat(this.spacingAfterInput.value) || 0);
-    if (newSA !== pxToRaw(p.spacingAfter ?? 0)) mods.spacingAfter = newSA;
+    // 표시 반올림이나 다른 속성 편집만으로 원래의 CHAR 단위를 잃지 않도록 한다.
+    for (const [key, input, resolvedPx] of [
+      ['spacingBefore', this.spacingBeforeInput, p.spacingBeforePx],
+      ['spacingAfter', this.spacingAfterInput, p.spacingAfterPx],
+    ] as const) {
+      const originalPt = Number(pxToPt(resolvedPx ?? p[key] ?? 0).toFixed(1));
+      const pt = parseFloat(input.value) || 0;
+      if (pt !== originalPt) {
+        mods[key] = resolvedPx === undefined ? ptToRaw(pt) : paragraphSpacingFromPt(pt);
+      }
+    }
 
     // ── 확장 탭
     const newHT = this.headTypeRadios.find(r => r.checked)?.value || 'None';
