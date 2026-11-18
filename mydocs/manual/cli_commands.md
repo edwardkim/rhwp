@@ -2087,6 +2087,9 @@ HWP5 → IR → HWP5 roundtrip 무손실 검증(#1552). 재조립 `.rt.hwp` 와 
   `stored-line-escape`(저장 줄을 재현한 줄의 글자가 **남의** 저장 줄 baseline 에 앉음 — 상자를
   넘거나 겹치지 않는 배치 이탈, #7061) ·
   `empty_page`(콘텐츠 없는 중간 쪽 — 항상 "가능성 신호").
+- 본문에 수용된 글줄이 소유한 문단 배경의 선언된 후행 밴드는 독립 콘텐츠의 `overflow`와
+  구분한다. 소유 글줄이 본문을 넘거나 채움이 선언 밴드를 초과하면 계속 검출한다.
+  같은 위치의 독립 도형과 실제 용지 밖 채움(`off-canvas`)도 기존대로 검사한다.
 - 기본 종료 코드는 0(판정=데이터, 도구 실패 아님). `--strict` 만 확정 신호
   (overflow·off-canvas·overlap·text-overlap·stored-line-escape)를 종료 코드 3으로 낸다 — `empty_page` 는 `--strict` 로도
   실패를 유발하지 않는다(의도된 빈 쪽과 기하만으로 구분 불가). `text-overlap` 을 확정에 넣는

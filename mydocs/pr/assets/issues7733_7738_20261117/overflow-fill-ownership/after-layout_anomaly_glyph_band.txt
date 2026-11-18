@@ -1,0 +1,21 @@
+[RustTestSuite] layout_anomaly_glyph_band -> regression_suite_019::layout_anomaly_glyph_band
+[RustTestSuite] cargo nextest run --locked --test regression_suite_019 -E test(/(^|::)layout_anomaly_glyph_band::/) --cargo-profile release-test --target-dir target/pr-review --build-jobs 8 --test-threads 8 --no-fail-fast
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 11.32s
+────────────
+ Nextest run ID 36e823cf-98d8-4ec8-974c-1eb01643988b with nextest profile: default
+    Starting 12 tests across 1 binary (323 tests skipped)
+        PASS [   0.019s] ( 1/12) rhwp::regression_suite_019 layout_anomaly_glyph_band::runless_line_is_not_a_candidate
+        PASS [   0.019s] ( 2/12) rhwp::regression_suite_019 layout_anomaly_glyph_band::oversized_font_never_grows_the_box
+        PASS [   0.019s] ( 3/12) rhwp::regression_suite_019 layout_anomaly_glyph_band::space_trimming_uses_visible_glyph_replay_positions
+        PASS [   0.020s] ( 4/12) rhwp::regression_suite_019 layout_anomaly_glyph_band::invalid_positions_and_changed_display_text_use_the_render_fallback
+        PASS [   0.020s] ( 5/12) rhwp::regression_suite_019 layout_anomaly_glyph_band::baseline_bands_detect_three_pairs_hidden_by_centering
+        PASS [   0.020s] ( 6/12) rhwp::regression_suite_019 layout_anomaly_glyph_band::leading_strip_changes_the_verdict
+        PASS [   0.021s] ( 7/12) rhwp::regression_suite_019 layout_anomaly_glyph_band::distributed_terminal_advance_is_not_visible_text
+        PASS [   0.021s] ( 8/12) rhwp::regression_suite_019 layout_anomaly_glyph_band::flow_extent_is_the_union_across_runs
+        PASS [   0.013s] ( 9/12) rhwp::regression_suite_019 layout_anomaly_glyph_band::table_uses_its_own_bbox
+        PASS [   0.013s] (10/12) rhwp::regression_suite_019 layout_anomaly_glyph_band::trailing_space_does_not_erase_the_last_visible_glyph
+        PASS [   0.013s] (11/12) rhwp::regression_suite_019 layout_anomaly_glyph_band::zero_font_size_keeps_the_box
+        PASS [   0.013s] (12/12) rhwp::regression_suite_019 layout_anomaly_glyph_band::text_overlap_uses_the_visible_intersection_of_nested_clips
+────────────
+     Summary [   0.034s] 12 tests run: 12 passed, 323 skipped

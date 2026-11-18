@@ -1,0 +1,59 @@
+{
+  "status": "focused_66_passed_full_gates_pending",
+  "tested_source_parent": "60237c72949546a63b58cff7a033142147218862",
+  "tested_working_diff_sha256": "3788c74b55cefe930b669a8956712193488efd9c0134a5e848c8592118c48a6c",
+  "red": {
+    "passed": 6,
+    "failed": 1,
+    "seconds": 0.17,
+    "log": "before-owner-diagnostic-test.txt"
+  },
+  "focused_passed": 66,
+  "focused_failed": 0,
+  "cases": [
+    {
+      "case": "issue_8218_hwp3_link_bindata_order",
+      "exit_code": 0,
+      "log": "after-issue_8218_hwp3_link_bindata_order.txt",
+      "sha256": "89bf426bd9273f35edff506c0d33d67819f793346b63a9b9e3ea5fe356f4e97e"
+    },
+    {
+      "case": "body_overflow_baseline",
+      "exit_code": 0,
+      "log": "after-body_overflow_baseline.txt",
+      "sha256": "3840e6a24c1425a7150310375aab70dd8a143b3957ee18de273f2695babbec5f"
+    },
+    {
+      "case": "layout_anomaly_contract",
+      "exit_code": 0,
+      "log": "after-layout_anomaly_contract.txt",
+      "sha256": "aad97b22a6c7f20f31df14477c91d0dc9d8c3f06b3ad35ff8767e7811e1bdde8"
+    },
+    {
+      "case": "layout_anomaly_off_canvas_contract",
+      "exit_code": 0,
+      "log": "after-layout_anomaly_off_canvas_contract.txt",
+      "sha256": "a84802525605e440018ac0239dc987ab87b11fa0f13880d60c6911464a8e44f8"
+    },
+    {
+      "case": "issue_6928_empty_carrier_overflow",
+      "exit_code": 0,
+      "log": "after-issue_6928_empty_carrier_overflow.txt",
+      "sha256": "b5392516974bd04582e47f06f345a06c499e91abbe7e3e4f7e30a199268b9af9"
+    },
+    {
+      "case": "layout_anomaly_glyph_band",
+      "exit_code": 0,
+      "log": "after-layout_anomaly_glyph_band.txt",
+      "sha256": "aba26222cd233ee42f1a367d8c01ca01e8cc57283ce0e62353aaa90b89cefc53"
+    }
+  ],
+  "invalid_zero_test_runs_not_used": true,
+  "body_overflow_baseline_and_tolerance_unchanged": true,
+  "private_font_binaries_added": false,
+  "pending": [
+    "committed final-source complete regression/lint/build",
+    "Native/fresh WASM whole scope and protected",
+    "actual consumers and PR lifecycle"
+  ]
+}

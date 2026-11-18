@@ -8078,12 +8078,19 @@ impl LayoutEngine {
                         if bottom <= top {
                             continue;
                         }
-                        background_nodes.extend(Self::border_fill_background_nodes(
+                        let mut band_nodes = Self::border_fill_background_nodes(
                             tree,
                             style,
                             BoundingBox::new(range.1, top, range.3, bottom - top),
                             bin_data_content,
-                        ));
+                        );
+                        if is_body_column {
+                            for node in &mut band_nodes {
+                                node.paragraph_fill_owner =
+                                    band.anchor.map(|(id, _)| (id, band.bottom));
+                            }
+                        }
+                        background_nodes.extend(band_nodes);
                     }
                 }
             }

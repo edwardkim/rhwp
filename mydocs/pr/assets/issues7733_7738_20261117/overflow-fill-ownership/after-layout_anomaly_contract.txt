@@ -1,0 +1,23 @@
+[RustTestSuite] layout_anomaly_contract -> regression_suite_015::layout_anomaly_contract
+[RustTestSuite] cargo nextest run --locked --test regression_suite_015 -E test(/(^|::)layout_anomaly_contract::/) --cargo-profile release-test --target-dir target/pr-review --build-jobs 8 --test-threads 8 --no-fail-fast
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 12.78s
+────────────
+ Nextest run ID cb880ed3-9e10-48d4-8e7a-87287539e196 with nextest profile: default
+    Starting 14 tests across 1 binary (339 tests skipped)
+        PASS [   1.440s] ( 1/14) rhwp::regression_suite_015 layout_anomaly_contract::help_mentions_batch_and_exit_contract
+        PASS [   1.469s] ( 2/14) rhwp::regression_suite_015 layout_anomaly_contract::layout_anomaly_batch_json_streams_ndjson_and_keeps_failed_loads
+        PASS [   1.470s] ( 3/14) rhwp::regression_suite_015 layout_anomaly_contract::layout_anomaly_default_exit_zero_even_with_signal
+        PASS [   1.472s] ( 4/14) rhwp::regression_suite_015 layout_anomaly_contract::layout_anomaly_batch_strict_without_load_fail_exits_three
+        PASS [   0.046s] ( 5/14) rhwp::regression_suite_015 layout_anomaly_contract::layout_anomaly_strict_signal_exits_three
+        PASS [   1.521s] ( 6/14) rhwp::regression_suite_015 layout_anomaly_contract::layout_anomaly_batch_json_stdout_carries_no_human_summary
+        PASS [   1.527s] ( 7/14) rhwp::regression_suite_015 layout_anomaly_contract::capabilities_declares_layout_anomaly_batch_and_types
+        PASS [   0.067s] ( 8/14) rhwp::regression_suite_015 layout_anomaly_contract::layout_anomaly_types_filter_changes_overflow_set
+        PASS [   0.027s] ( 9/14) rhwp::regression_suite_015 layout_anomaly_contract::mcp_extends_existing_layout_anomaly_tool
+        PASS [   0.043s] (10/14) rhwp::regression_suite_015 layout_anomaly_contract::layout_anomaly_usage_errors_are_exit_two_with_silent_stdout
+        PASS [   0.089s] (11/14) rhwp::regression_suite_015 layout_anomaly_contract::layout_anomaly_strict_clean_stays_zero
+        PASS [   1.586s] (12/14) rhwp::regression_suite_015 layout_anomaly_contract::layout_anomaly_batch_report_is_order_stable_and_recursive
+        PASS [   0.148s] (13/14) rhwp::regression_suite_015 layout_anomaly_contract::layout_anomaly_page_filter_scopes_counts_and_strict_exit
+        PASS [   1.858s] (14/14) rhwp::regression_suite_015 layout_anomaly_contract::layout_anomaly_declared_flags_are_actually_accepted
+────────────
+     Summary [   1.859s] 14 tests run: 14 passed, 339 skipped
