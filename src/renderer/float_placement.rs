@@ -5946,6 +5946,115 @@ pub(crate) fn stored_picture_empty_host_placement(
     })
 }
 
+/// HWP3 stores a Square-picture host in the leaving page, followed by an
+/// explicit page break. Its physical frame overflows that page and is owned
+/// by the next page, while the saved successor lines already reserve its band.
+pub(crate) fn hwp3_square_picture_before_page_break_placement(
+    para: &Paragraph,
+    following: &[Paragraph],
+    frame_vpos: i32,
+    actual_host_flow_y: f64,
+    available_height: f64,
+    dpi: f64,
+) -> Option<ParagraphFloatPlacement> {
+    use crate::model::paragraph::ColumnBreakType;
+    let [Control::Picture(picture)] = para.controls.as_slice() else {
+        return None;
+    };
+    let [host] = para.line_segs.as_slice() else {
+        return None;
+    };
+    let next = following.first()?;
+    let common = &picture.common;
+    if para.stored_text_partition_is_dirty()
+        || para.cell_format_vpos_dirty
+        || para.text.chars().any(|c| c > '\u{001f}' && c != '\u{fffc}')
+        || host.tag & 0x8000_0000 != 0
+        || host.line_height <= 0
+        || common.treat_as_char
+        || !common.flow_with_text
+        || common.text_wrap != TextWrap::Square
+        || common.vert_rel_to != VertRelTo::Para
+        || common.vert_align != VertAlign::Top
+        || picture.caption.is_some()
+        || next.column_type != ColumnBreakType::Page
+        || next.stored_text_partition_is_dirty()
+        || !next.controls.is_empty()
+        || !next.text.trim().is_empty()
+        || !matches!(next.line_segs.as_slice(), [line]
+            if line.vertical_pos == 0 && line.line_height > 0
+                && line.tag & 0x8000_0000 == 0)
+        || !dpi.is_finite()
+        || dpi <= 0.0
+        || !available_height.is_finite()
+        || !actual_host_flow_y.is_finite()
+    {
+        return None;
+    }
+    let host_y = hwpunit_to_px(host.vertical_pos.checked_sub(frame_vpos)?, dpi);
+    let offset = hwpunit_to_px(signed_hwpunit(common.vertical_offset), dpi);
+    let (_, height) = picture_flow_frame_size_hu(picture);
+    let frame_height = height
+        .checked_add(i32::from(common.margin.top))?
+        .checked_add(i32::from(common.margin.bottom))?;
+    let bottom = hwpunit_to_px(frame_height, dpi);
+    if host_y < 0.0
+        || offset < 0.0
+        || frame_height <= 0
+        || bottom > available_height
+        || (actual_host_flow_y - host_y).abs() > dpi / 7200.0
+        || host_y + offset + bottom <= available_height
+    {
+        return None;
+    }
+    // The saved blank-line ladder on the next page must already reserve the
+    // complete picture band before its first visible text. Otherwise adding
+    // zero flow here would merely move the overlap to the next page.
+    let mut previous_vpos = 0;
+    let mut reserved = false;
+    for (index, successor) in following.iter().enumerate() {
+        if !successor.controls.is_empty()
+            || successor.stored_text_partition_is_dirty()
+            || successor.cell_format_vpos_dirty
+            || (index > 0 && successor.column_type == ColumnBreakType::Page)
+        {
+            return None;
+        }
+        let first = successor.line_segs.first()?;
+        if first.vertical_pos < previous_vpos
+            || successor
+                .line_segs
+                .iter()
+                .any(|line| line.tag & 0x8000_0000 != 0)
+        {
+            return None;
+        }
+        if successor
+            .text
+            .chars()
+            .any(|c| c > '\u{001f}' && c != '\u{fffc}')
+        {
+            reserved = first.vertical_pos >= frame_height;
+            break;
+        }
+        previous_vpos = successor.line_segs.last()?.vertical_pos;
+    }
+    if !reserved {
+        return None;
+    }
+    Some(ParagraphFloatPlacement {
+        // The following saved empty lines and caption already consume the
+        // picture band. Do not add the picture height to them a second time.
+        flow: ParagraphFloatFlow::StoredPicture { next_flow_y: 0.0 },
+        anchor_y: -offset,
+        stored_host_origin: None,
+        stored_successor_line_origin: None,
+        table_left: None,
+        table_top: 0.0,
+        occupied_bottom: bottom,
+    })
+}
+
 /// 앞 쪽의 호스트는 남고 그림만 다음 쪽 상단을 소유하는 저장 경계.
 /// 현재 프레임의 물리 초과와 다음 본문 원점의 전체 그림 높이가 함께 이를 입증한다.
 pub(crate) fn stored_picture_next_page_placement(
@@ -6831,6 +6940,17 @@ impl ParagraphFloatPlacement {
                 + table_height
                 + hwpunit_to_px(i32::from(table.outer_margin_bottom), dpi),
         })
+    }
+
+    /// 뒤 본문이 단 원점에서 이어지는 저장 그림은 새 글줄 원점을 소유하지 않는다.
+    /// 이전 쪽 호스트의 저장 좌표·끝 줄간격을 현재 단에 다시 연결하지 않는다.
+    pub fn resumes_column_text_at_origin(self) -> bool {
+        matches!(
+            self.flow,
+            ParagraphFloatFlow::StoredPicture { next_flow_y }
+                | ParagraphFloatFlow::StoredPictureGroup { next_flow_y }
+                if next_flow_y == 0.0
+        )
     }
 
     /// Close a paragraph only after its text and logically trailing objects have

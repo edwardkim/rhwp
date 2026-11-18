@@ -8381,6 +8381,13 @@ impl LayoutEngine {
             PageItem::FullParagraph { para_index } => {
                 !self.hidden_empty_paras.borrow().contains(para_index)
             }
+            PageItem::Shape {
+                para_index,
+                control_index,
+            } => !col_content
+                .paragraph_float_placements
+                .get(&(*para_index, *control_index))
+                .is_some_and(|placement| placement.resumes_column_text_at_origin()),
             _ => true,
         });
         // 첫 문단과 표는 실제 수용에서 확정한 같은 측정 원점을 소비한다.
@@ -8728,6 +8735,18 @@ impl LayoutEngine {
         let mut prev_item_ink_bottom_y: Option<f64> = None;
         self.stored_textless_host_end.set(None);
         for (item_ordinal, item) in col_content.items.iter().enumerate() {
+            // 측정에서 전진량이 0인 이월 그림은 보이는 프레임만 그린다.
+            // 실제 뒤 글줄이 확정한 단 원점과 이전 문단 상태는 그대로 둔다.
+            let stored_picture_keeps_text_origin = match item {
+                PageItem::Shape {
+                    para_index,
+                    control_index,
+                } => col_content
+                    .paragraph_float_placements
+                    .get(&(*para_index, *control_index))
+                    .is_some_and(|placement| placement.resumes_column_text_at_origin()),
+                _ => false,
+            };
             if matches!(item, PageItem::Shape { para_index, control_index }
                 if col_content.paragraph_float_placements.get(&(*para_index, *control_index))
                     .is_some_and(|placement| placement.flow
@@ -9221,6 +9240,7 @@ impl LayoutEngine {
             }
             hcursor.stored_boundary_spacing_before = 0.0;
             if !shape_jumped
+                && !stored_picture_keeps_text_origin
                 && !session_fresh_partial_table
                 && !self.hidden_empty_paras.borrow().contains(&item_para)
                 && (!prev_tac_seg_applied
@@ -9842,7 +9862,9 @@ impl LayoutEngine {
                         }
                     }
                 }
-            } else if !self.hidden_empty_paras.borrow().contains(&item_para) {
+            } else if !stored_picture_keeps_text_origin
+                && !self.hidden_empty_paras.borrow().contains(&item_para)
+            {
                 hcursor.prev_layout_para = Some(item_para);
                 hcursor.prev_reissued_equation_rows =
                     composed.get(item_para).is_some_and(|actual| {
@@ -11308,7 +11330,8 @@ impl LayoutEngine {
                         Some(PageItem::Table { para_index: first, .. }),
                     ) if para_index == first
                 ));
-            if !heading_shape_keeps_page_base
+            if !stored_picture_keeps_text_origin
+                && !heading_shape_keeps_page_base
                 && !stored_overlay_host_keeps_page_base
                 && !shape_keeps_host_line_base
                 && !resolved_stored_wrap_fragment

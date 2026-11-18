@@ -7,6 +7,10 @@
 //! 엄격한 Native Skia 대안은 정확한 자원을 그리거나 원래 TextRun을 보존한다.
 //! #7640: 시스템 face의 조회·paint 프로그램 일치와 명시 공급 스타일의 윤곽 소유도 검사한다.
 
+//! 추가 주석 갱신: 2026-11-18T01:33:03+09:00; 직전 파일 변경: 050e78455ea22857665973be3cdb68981fd71cb0 2026-11-10T12:58:35+09:00.
+//! 원본 TTF/TTC 선택의 합성 RGBA 검사 2개를 기존 Native CI 실행 모듈로 이관했다.
+//! assertion·fixture·제품 바이트는 같으며 독립 한컴 페이지의 좌표 검사가 아니다.
+
 #![cfg(all(feature = "native-skia", not(target_arch = "wasm32")))]
 
 use std::io::Cursor;
@@ -1405,5 +1409,94 @@ fn issue_8856_legacy_native_exporter_prepares_the_actual_supplied_program() {
             run.style.continuous_shadow.is_some(),
             "실제 PNG 내보내기도 선택한 프로그램으로 계획을 만든다: current={current}"
         );
+    }
+}
+
+mod native_containers {
+    use rhwp::paint::RenderProfile;
+    use rhwp::renderer::{layer_renderer::RasterRenderOptions, skia::SkiaLayerRenderer};
+    use rhwp::DocumentCore;
+
+    const TTF: &[u8] = include_bytes!("../fixtures/fonts/RHWPNativeContainer.ttf");
+    const TTC: &[u8] = include_bytes!("../fixtures/fonts/RHWPNativeContainer.ttc");
+
+    fn paint(renderer: SkiaLayerRenderer) -> Vec<u8> {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        core.insert_text_native(0, 0, 0, "AAAA").unwrap();
+        let mut document = core.document().clone();
+        for fonts in &mut document.doc_info.font_faces {
+            fonts[0].name = "RHWP Native Container Probe".into();
+            fonts[0].alt_type = 1;
+        }
+        for style in &mut document.doc_info.char_shapes {
+            style.font_ids = [0; 7];
+            style.base_size = 4800;
+        }
+        core.set_document(document);
+        renderer.prepare_native_otf_fonts(&mut core).unwrap();
+        let tree = core
+            .build_page_layer_tree_with_profile(0, RenderProfile::Print)
+            .unwrap();
+        renderer
+            .render_pixels_with_options(&tree, RasterRenderOptions::default())
+            .unwrap()
+            .bytes
+    }
+
+    #[test]
+    fn native_supplied_bytes_prefer_ttf_over_nonzero_ttc_face_in_both_orders() {
+        let render = |sources: &[Vec<u8>]| {
+            paint(
+                SkiaLayerRenderer::new()
+                    .try_with_font_data(sources)
+                    .unwrap(),
+            )
+        };
+        let standalone = render(&[TTF.to_vec()]);
+        let collection = render(&[TTC.to_vec()]);
+        assert_ne!(
+            standalone, collection,
+            "서로 다른 A 윤곽이 실제로 그려지는 대조군"
+        );
+        for sources in [[TTC.to_vec(), TTF.to_vec()], [TTF.to_vec(), TTC.to_vec()]] {
+            assert_eq!(
+                render(&sources),
+                standalone,
+                "공급 순서와 무관하게 원본 TTF를 선택한다"
+            );
+        }
+    }
+
+    #[test]
+    fn native_directory_order_does_not_promote_ttc_over_ttf() {
+        let folder =
+            std::env::temp_dir().join(format!("rhwp-native-container-{}", std::process::id()));
+        std::fs::create_dir(&folder).unwrap();
+        struct Cleanup(std::path::PathBuf);
+        impl Drop for Cleanup {
+            fn drop(&mut self) {
+                let _ = std::fs::remove_dir_all(&self.0);
+            }
+        }
+        let _cleanup = Cleanup(folder.clone());
+        let standalone = paint(
+            SkiaLayerRenderer::new()
+                .try_with_font_data(&[TTF.to_vec()])
+                .unwrap(),
+        );
+        for ttc_first in [true, false] {
+            let ttc_path = folder.join(if ttc_first { "0.ttc" } else { "1.ttc" });
+            let ttf_path = folder.join(if ttc_first { "1.ttf" } else { "0.ttf" });
+            std::fs::write(&ttc_path, TTC).unwrap();
+            std::fs::write(&ttf_path, TTF).unwrap();
+            assert_eq!(
+                paint(SkiaLayerRenderer::new().with_font_paths(std::slice::from_ref(&folder))),
+                standalone,
+                "파일명 정렬과 무관하게 같은 family의 TTF를 선택한다"
+            );
+            std::fs::remove_file(ttc_path).unwrap();
+            std::fs::remove_file(ttf_path).unwrap();
+        }
     }
 }

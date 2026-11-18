@@ -1,0 +1,13 @@
+{
+  "status": "passed-actual-github-native-worker",
+  "head": "0b54ec2b3f4fcb416c215f3c152c37b299202443",
+  "runId": 44139541354,
+  "jobId": 134238966100,
+  "url": "https://github.com/edwardkim/rhwp/actions/runs/44139541354/job/134238966100",
+  "excerpt": [
+    "2026-11-17T18:09:24.3581922Z test skia_native_glyph_replay::native_containers::native_directory_order_does_not_promote_ttc_over_ttf ... ok",
+    "2026-11-17T18:09:24.3715264Z test skia_native_glyph_replay::native_containers::native_supplied_bytes_prefer_ttf_over_nonzero_ttc_face_in_both_orders ... ok",
+    "2026-11-17T18:09:24.8207151Z test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 312 filtered out; finished in 0.56s"
+  ],
+  "coverage": "Both moved Native TTF/TTC RGBA tests ran in the existing Native Skia CI selection. The 24-test group passed; 312 other tests were explicitly filtered."
+}

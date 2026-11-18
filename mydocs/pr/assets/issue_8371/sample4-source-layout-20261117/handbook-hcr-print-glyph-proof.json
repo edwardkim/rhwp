@@ -1,0 +1,42 @@
+{
+  "pdf": "C:\\Users\\admin\\rhwp\\pdf\\2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+  "pdfSha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+  "page": 200,
+  "codePoint": "U+26AB",
+  "matches": [
+    {
+      "path": "C:\\Windows\\Fonts\\HANBatang.ttf",
+      "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+      "glyph": "uni26AB",
+      "sameEm": true,
+      "sameOutlineCoordinatesEndpointsFlags": true
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\HANBatangB.ttf",
+      "sha256": "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5",
+      "glyph": "uni26AB",
+      "sameEm": true,
+      "sameOutlineCoordinatesEndpointsFlags": true
+    }
+  ],
+  "pdfFontResource": "/F9",
+  "pdfBaseFont": "/INPILL+HCRBatang",
+  "cid": 4,
+  "gid": 4,
+  "embeddedProgramSha256": "b4aab6d15819e7619b71da5175da63dae17bd62713ef1a2fb439902e5fe58f66",
+  "unitsPerEm": 1000,
+  "contours": 1,
+  "bbox": [
+    266,
+    126,
+    704,
+    564
+  ],
+  "outlineCoordinatesEndpointsFlagsSha256": "60bb1412705efbe02045d2fe9c66a00a5aeb2424e908e062f0d7b92ba43e87e8",
+  "primaryProgram": {
+    "path": "C:\\Windows\\Fonts\\KoPub Dotum Bold.ttf",
+    "sha256": "967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275",
+    "hasCmapForSymbol": false
+  },
+  "fontBinaryRedistributed": false
+}

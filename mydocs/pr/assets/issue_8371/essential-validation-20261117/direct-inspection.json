@@ -1,0 +1,2765 @@
+{
+  "status": "passed",
+  "source": "fcf2e11b1727297743343446333132e1409737f1",
+  "base": "22da83586aab1baf960f2159abda347062ecf7ed",
+  "recordedAt": "2026-11-17T16:21:43.909271+00:00",
+  "method": "Same input and independent Hancom Print; Native/fresh WASM full-page TSV plus direct enlarged comparison of affected regions.",
+  "observations": [
+    "sample4 p21 normal image, p25 title clear, p26 NASM image then caption then body. Native/fresh WASM source-layout enlarged panels inspected against Print and base.",
+    "sample4 p22/p26 code-background lower-band differences persist identically in base and candidate; no broad background change claimed.",
+    "Native/fresh WASM handbook p130/p200 and Windows actual DWrite p200 reviewed; three black circles and adjacent text present.",
+    "Contributor four inputs in both paths inspected, including Latin, rotation, picture crop and Korean shape; no missing or duplicated content in inspected regions.",
+    "Native SVG p21/p25/p26 browser raster inspected; original fonts and Print geometry retained.",
+    "Studio original-font Canvas2D p21/p25/p26 inspected. Unsupported-CFF fallback captures are reported as Canvas2D.",
+    "Actual software CanvasKit compat/default p26 supported-TTF paint controls inspected; source metrics preserved, font appearance fidelity not claimed for substitutions.",
+    "Natural CanvasView p26: all three backends, initial/zoom-DPR-resize/restored screenshots inspected; image/caption/body remain on the page, unobscured. Real file input and ordinary initialization, optional local-font prompt closed with its actual button."
+  ],
+  "harnessCorrections": [
+    "CanvasKit-only portable probe/warm replay restricted to actual CanvasKit backend to avoid contaminating fallback Canvas2D comparison.",
+    "Natural CanvasView uses a newly loaded document after the standalone baseline capture, isolating temporary PageRenderer DOM/cache state.",
+    "Readiness verifies the uploaded filename and 36-page document; no product code, baseline or threshold changed."
+  ],
+  "numericEvidence": {
+    "native": {
+      "source": "fcf2e11b1727297743343446333132e1409737f1",
+      "base": "22da83586aab1baf960f2159abda347062ecf7ed",
+      "backend": "native",
+      "sample4": {
+        "pages": 36,
+        "baseMinimum": 96.00615,
+        "candidateMinimum": 97.66586,
+        "changedPages": [
+          25,
+          26
+        ],
+        "pageDeltas": [
+          {
+            "page": 1,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 2,
+            "base": 99.99826,
+            "candidate": 99.99826
+          },
+          {
+            "page": 3,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 4,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 5,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 6,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 7,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 8,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 9,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 10,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 11,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 12,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 13,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 14,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 15,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 16,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 17,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 18,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 19,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 20,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 21,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 22,
+            "base": 97.66586,
+            "candidate": 97.66586
+          },
+          {
+            "page": 23,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 24,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 25,
+            "base": 96.00615,
+            "candidate": 100.0
+          },
+          {
+            "page": 26,
+            "base": 96.49808,
+            "candidate": 99.3685
+          },
+          {
+            "page": 27,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 28,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 29,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 30,
+            "base": 99.31551,
+            "candidate": 99.31551
+          },
+          {
+            "page": 31,
+            "base": 99.7104,
+            "candidate": 99.7104
+          },
+          {
+            "page": 32,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 33,
+            "base": 99.99766,
+            "candidate": 99.99766
+          },
+          {
+            "page": 34,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 35,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 36,
+            "base": 100.0,
+            "candidate": 100.0
+          }
+        ]
+      },
+      "reviews": [
+        {
+          "key": "sample4-candidate",
+          "page": 21,
+          "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/native/sample4-candidate/review/review_021.png",
+          "metrics": {
+            "page": 21,
+            "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-native-sample4/sample4/rhwp_png/rhwp_021.png",
+            "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-native-sample4/sample4/pdf_png/pdf-021.png",
+            "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/native/sample4-candidate/overlay/overlay_021.png",
+            "width": 794,
+            "height": 1122,
+            "pixel_diff_threshold": 32,
+            "overlay_color_legend": {
+              "rhwp_only": "blue",
+              "pdf_only": "red",
+              "both_different": "orange",
+              "matching": "gray"
+            },
+            "total_pixels": 890868,
+            "diff_pixels": 12359,
+            "diff_ratio": 0.01387299,
+            "pixel_match_percent": 98.6127,
+            "ink_union_pixels": 139664,
+            "ink_diff_pixels": 12359,
+            "ink_diff_ratio": 0.08849095,
+            "ink_match_percent": 91.15091,
+            "visual_accuracy_proxy_percent": 91.15091,
+            "tolerant_content_match_radius_px": 2,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 100.0,
+            "silhouette_raw_unmatched_pixels": 0,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 139664,
+            "tolerant_content_match_percent": 100.0,
+            "mean_abs_channel_delta": 1.255,
+            "max_channel_delta": 243,
+            "diff_bbox": [
+              113,
+              132,
+              679,
+              998
+            ]
+          }
+        },
+        {
+          "key": "sample4-candidate",
+          "page": 22,
+          "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/native/sample4-candidate/review/review_022.png",
+          "metrics": {
+            "page": 22,
+            "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-native-sample4/sample4/rhwp_png/rhwp_022.png",
+            "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-native-sample4/sample4/pdf_png/pdf-022.png",
+            "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/native/sample4-candidate/overlay/overlay_022.png",
+            "width": 794,
+            "height": 1122,
+            "pixel_diff_threshold": 32,
+            "overlay_color_legend": {
+              "rhwp_only": "blue",
+              "pdf_only": "red",
+              "both_different": "orange",
+              "matching": "gray"
+            },
+            "total_pixels": 890868,
+            "diff_pixels": 19501,
+            "diff_ratio": 0.02188989,
+            "pixel_match_percent": 97.81101,
+            "ink_union_pixels": 412957,
+            "ink_diff_pixels": 19501,
+            "ink_diff_ratio": 0.04722283,
+            "ink_match_percent": 95.27772,
+            "visual_accuracy_proxy_percent": 95.27772,
+            "tolerant_content_match_radius_px": 2,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 97.66586,
+            "silhouette_raw_unmatched_pixels": 9639,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 412957,
+            "tolerant_content_match_percent": 97.66586,
+            "mean_abs_channel_delta": 1.487,
+            "max_channel_delta": 155,
+            "diff_bbox": [
+              113,
+              132,
+              679,
+              998
+            ]
+          }
+        },
+        {
+          "key": "sample4-candidate",
+          "page": 25,
+          "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/native/sample4-candidate/review/review_025.png",
+          "metrics": {
+            "page": 25,
+            "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-native-sample4/sample4/rhwp_png/rhwp_025.png",
+            "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-native-sample4/sample4/pdf_png/pdf-025.png",
+            "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/native/sample4-candidate/overlay/overlay_025.png",
+            "width": 794,
+            "height": 1122,
+            "pixel_diff_threshold": 32,
+            "overlay_color_legend": {
+              "rhwp_only": "blue",
+              "pdf_only": "red",
+              "both_different": "orange",
+              "matching": "gray"
+            },
+            "total_pixels": 890868,
+            "diff_pixels": 14913,
+            "diff_ratio": 0.01673985,
+            "pixel_match_percent": 98.32601,
+            "ink_union_pixels": 222118,
+            "ink_diff_pixels": 14913,
+            "ink_diff_ratio": 0.06713999,
+            "ink_match_percent": 93.286,
+            "visual_accuracy_proxy_percent": 93.286,
+            "tolerant_content_match_radius_px": 2,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 100.0,
+            "silhouette_raw_unmatched_pixels": 0,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 222118,
+            "tolerant_content_match_percent": 100.0,
+            "mean_abs_channel_delta": 1.733,
+            "max_channel_delta": 255,
+            "diff_bbox": [
+              114,
+              132,
+              673,
+              982
+            ]
+          }
+        },
+        {
+          "key": "sample4-candidate",
+          "page": 26,
+          "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/native/sample4-candidate/review/review_026.png",
+          "metrics": {
+            "page": 26,
+            "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-native-sample4/sample4/rhwp_png/rhwp_026.png",
+            "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-native-sample4/sample4/pdf_png/pdf-026.png",
+            "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/native/sample4-candidate/overlay/overlay_026.png",
+            "width": 794,
+            "height": 1122,
+            "pixel_diff_threshold": 32,
+            "overlay_color_legend": {
+              "rhwp_only": "blue",
+              "pdf_only": "red",
+              "both_different": "orange",
+              "matching": "gray"
+            },
+            "total_pixels": 890868,
+            "diff_pixels": 13576,
+            "diff_ratio": 0.01523907,
+            "pixel_match_percent": 98.47609,
+            "ink_union_pixels": 359146,
+            "ink_diff_pixels": 13576,
+            "ink_diff_ratio": 0.03780078,
+            "ink_match_percent": 96.21992,
+            "visual_accuracy_proxy_percent": 96.21992,
+            "tolerant_content_match_radius_px": 2,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 99.3685,
+            "silhouette_raw_unmatched_pixels": 2268,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 359146,
+            "tolerant_content_match_percent": 99.3685,
+            "mean_abs_channel_delta": 1.276,
+            "max_channel_delta": 148,
+            "diff_bbox": [
+              113,
+              176,
+              679,
+              1014
+            ]
+          }
+        },
+        {
+          "key": "sample4-candidate",
+          "page": 30,
+          "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/native/sample4-candidate/review/review_030.png",
+          "metrics": {
+            "page": 30,
+            "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-native-sample4/sample4/rhwp_png/rhwp_030.png",
+            "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-native-sample4/sample4/pdf_png/pdf-030.png",
+            "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/native/sample4-candidate/overlay/overlay_030.png",
+            "width": 794,
+            "height": 1122,
+            "pixel_diff_threshold": 32,
+            "overlay_color_legend": {
+              "rhwp_only": "blue",
+              "pdf_only": "red",
+              "both_different": "orange",
+              "matching": "gray"
+            },
+            "total_pixels": 890868,
+            "diff_pixels": 22491,
+            "diff_ratio": 0.02524616,
+            "pixel_match_percent": 97.47538,
+            "ink_union_pixels": 232144,
+            "ink_diff_pixels": 22491,
+            "ink_diff_ratio": 0.09688383,
+            "ink_match_percent": 90.31162,
+            "visual_accuracy_proxy_percent": 90.31162,
+            "tolerant_content_match_radius_px": 2,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 99.31551,
+            "silhouette_raw_unmatched_pixels": 1589,
+            "silhouette_boundary_reconciled_pixels": 1,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 232144,
+            "tolerant_content_match_percent": 99.31594,
+            "mean_abs_channel_delta": 2.556,
+            "max_channel_delta": 255,
+            "diff_bbox": [
+              113,
+              134,
+              669,
+              997
+            ]
+          }
+        },
+        {
+          "key": "sample4-base",
+          "page": 25,
+          "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/native/sample4-base/review/review_025.png",
+          "metrics": {
+            "page": 25,
+            "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/base-native-sample4/sample4/rhwp_png/rhwp_025.png",
+            "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/base-native-sample4/sample4/pdf_png/pdf-025.png",
+            "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/native/sample4-base/overlay/overlay_025.png",
+            "width": 794,
+            "height": 1122,
+            "pixel_diff_threshold": 32,
+            "overlay_color_legend": {
+              "rhwp_only": "blue",
+              "pdf_only": "red",
+              "both_different": "orange",
+              "matching": "gray"
+            },
+            "total_pixels": 890868,
+            "diff_pixels": 24659,
+            "diff_ratio": 0.02767975,
+            "pixel_match_percent": 97.23203,
+            "ink_union_pixels": 231656,
+            "ink_diff_pixels": 24659,
+            "ink_diff_ratio": 0.10644663,
+            "ink_match_percent": 89.35534,
+            "visual_accuracy_proxy_percent": 89.35534,
+            "tolerant_content_match_radius_px": 2,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 96.00615,
+            "silhouette_raw_unmatched_pixels": 9252,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 231656,
+            "tolerant_content_match_percent": 96.00615,
+            "mean_abs_channel_delta": 3.661,
+            "max_channel_delta": 255,
+            "diff_bbox": [
+              114,
+              132,
+              673,
+              1008
+            ]
+          }
+        },
+        {
+          "key": "sample4-base",
+          "page": 26,
+          "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/native/sample4-base/review/review_026.png",
+          "metrics": {
+            "page": 26,
+            "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/base-native-sample4/sample4/rhwp_png/rhwp_026.png",
+            "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/base-native-sample4/sample4/pdf_png/pdf-026.png",
+            "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/native/sample4-base/overlay/overlay_026.png",
+            "width": 794,
+            "height": 1122,
+            "pixel_diff_threshold": 32,
+            "overlay_color_legend": {
+              "rhwp_only": "blue",
+              "pdf_only": "red",
+              "both_different": "orange",
+              "matching": "gray"
+            },
+            "total_pixels": 890868,
+            "diff_pixels": 23848,
+            "diff_ratio": 0.0267694,
+            "pixel_match_percent": 97.32306,
+            "ink_union_pixels": 359146,
+            "ink_diff_pixels": 23848,
+            "ink_diff_ratio": 0.06640196,
+            "ink_match_percent": 93.3598,
+            "visual_accuracy_proxy_percent": 93.3598,
+            "tolerant_content_match_radius_px": 2,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 96.49808,
+            "silhouette_raw_unmatched_pixels": 12577,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 359146,
+            "tolerant_content_match_percent": 96.49808,
+            "mean_abs_channel_delta": 3.296,
+            "max_channel_delta": 255,
+            "diff_bbox": [
+              113,
+              132,
+              679,
+              1014
+            ]
+          }
+        },
+        {
+          "key": "handbook",
+          "page": 130,
+          "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/native/handbook/review/review_130.png",
+          "metrics": {
+            "page": 130,
+            "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-native-handbook/required-handbook-8153-native/rhwp_png/rhwp_130.png",
+            "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-native-handbook/required-handbook-8153-native/pdf_png/pdf-130.png",
+            "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/native/handbook/overlay/overlay_130.png",
+            "width": 740,
+            "height": 1006,
+            "pixel_diff_threshold": 32,
+            "overlay_color_legend": {
+              "rhwp_only": "blue",
+              "pdf_only": "red",
+              "both_different": "orange",
+              "matching": "gray"
+            },
+            "total_pixels": 744440,
+            "diff_pixels": 24274,
+            "diff_ratio": 0.03260706,
+            "pixel_match_percent": 96.73929,
+            "ink_union_pixels": 65785,
+            "ink_diff_pixels": 24274,
+            "ink_diff_ratio": 0.36898989,
+            "ink_match_percent": 63.10101,
+            "visual_accuracy_proxy_percent": 63.10101,
+            "tolerant_content_match_radius_px": 2,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 99.96504,
+            "silhouette_raw_unmatched_pixels": 23,
+            "silhouette_boundary_reconciled_pixels": 5,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 65785,
+            "tolerant_content_match_percent": 99.97264,
+            "mean_abs_channel_delta": 3.198,
+            "max_channel_delta": 244,
+            "diff_bbox": [
+              92,
+              81,
+              739,
+              927
+            ]
+          }
+        },
+        {
+          "key": "handbook",
+          "page": 200,
+          "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/native/handbook/review/review_200.png",
+          "metrics": {
+            "page": 200,
+            "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-native-handbook/required-handbook-8153-native/rhwp_png/rhwp_200.png",
+            "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-native-handbook/required-handbook-8153-native/pdf_png/pdf-200.png",
+            "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/native/handbook/overlay/overlay_200.png",
+            "width": 740,
+            "height": 1006,
+            "pixel_diff_threshold": 32,
+            "overlay_color_legend": {
+              "rhwp_only": "blue",
+              "pdf_only": "red",
+              "both_different": "orange",
+              "matching": "gray"
+            },
+            "total_pixels": 744440,
+            "diff_pixels": 36651,
+            "diff_ratio": 0.04923298,
+            "pixel_match_percent": 95.0767,
+            "ink_union_pixels": 85587,
+            "ink_diff_pixels": 36651,
+            "ink_diff_ratio": 0.42823092,
+            "ink_match_percent": 57.17691,
+            "visual_accuracy_proxy_percent": 57.17691,
+            "tolerant_content_match_radius_px": 2,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 100.0,
+            "silhouette_raw_unmatched_pixels": 0,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 85587,
+            "tolerant_content_match_percent": 100.0,
+            "mean_abs_channel_delta": 4.275,
+            "max_channel_delta": 243,
+            "diff_bbox": [
+              92,
+              81,
+              739,
+              927
+            ]
+          }
+        },
+        {
+          "key": "band",
+          "page": 1,
+          "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/native/band/review/review_001.png",
+          "metrics": {
+            "page": 1,
+            "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-native-band/band/rhwp_png/rhwp_001.png",
+            "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-native-band/band/pdf_png/pdf-001.png",
+            "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/native/band/overlay/overlay_001.png",
+            "width": 794,
+            "height": 1122,
+            "pixel_diff_threshold": 32,
+            "overlay_color_legend": {
+              "rhwp_only": "blue",
+              "pdf_only": "red",
+              "both_different": "orange",
+              "matching": "gray"
+            },
+            "total_pixels": 890868,
+            "diff_pixels": 5159,
+            "diff_ratio": 0.00579098,
+            "pixel_match_percent": 99.4209,
+            "ink_union_pixels": 6837,
+            "ink_diff_pixels": 5159,
+            "ink_diff_ratio": 0.75457072,
+            "ink_match_percent": 24.54293,
+            "visual_accuracy_proxy_percent": 24.54293,
+            "tolerant_content_match_radius_px": 2,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 100.0,
+            "silhouette_raw_unmatched_pixels": 0,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 6837,
+            "tolerant_content_match_percent": 100.0,
+            "mean_abs_channel_delta": 0.587,
+            "max_channel_delta": 149,
+            "diff_bbox": [
+              113,
+              133,
+              680,
+              433
+            ]
+          }
+        },
+        {
+          "key": "tab",
+          "page": 1,
+          "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/native/tab/review/review_001.png",
+          "metrics": {
+            "page": 1,
+            "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-native-tab/tab/rhwp_png/rhwp_001.png",
+            "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-native-tab/tab/pdf_png/pdf-001.png",
+            "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/native/tab/overlay/overlay_001.png",
+            "width": 794,
+            "height": 1122,
+            "pixel_diff_threshold": 32,
+            "overlay_color_legend": {
+              "rhwp_only": "blue",
+              "pdf_only": "red",
+              "both_different": "orange",
+              "matching": "gray"
+            },
+            "total_pixels": 890868,
+            "diff_pixels": 2357,
+            "diff_ratio": 0.00264573,
+            "pixel_match_percent": 99.73543,
+            "ink_union_pixels": 4154,
+            "ink_diff_pixels": 2357,
+            "ink_diff_ratio": 0.56740491,
+            "ink_match_percent": 43.25951,
+            "visual_accuracy_proxy_percent": 43.25951,
+            "tolerant_content_match_radius_px": 2,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 100.0,
+            "silhouette_raw_unmatched_pixels": 0,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 4154,
+            "tolerant_content_match_percent": 100.0,
+            "mean_abs_channel_delta": 0.223,
+            "max_channel_delta": 192,
+            "diff_bbox": [
+              114,
+              133,
+              273,
+              327
+            ]
+          }
+        }
+      ],
+      "handbook": {
+        "pages": 383,
+        "minimum": 99.96504
+      },
+      "band": {
+        "base": {
+          "pages": 1,
+          "minimum": 100.0
+        },
+        "candidate": {
+          "pages": 1,
+          "minimum": 100.0
+        }
+      },
+      "tab": {
+        "base": {
+          "pages": 1,
+          "minimum": 100.0
+        },
+        "candidate": {
+          "pages": 1,
+          "minimum": 100.0
+        }
+      }
+    },
+    "wasm": {
+      "source": "fcf2e11b1727297743343446333132e1409737f1",
+      "base": "22da83586aab1baf960f2159abda347062ecf7ed",
+      "backend": "wasm",
+      "sample4": {
+        "pages": 36,
+        "baseMinimum": 96.00358,
+        "candidateMinimum": 97.66564,
+        "changedPages": [
+          25,
+          26
+        ],
+        "pageDeltas": [
+          {
+            "page": 1,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 2,
+            "base": 99.99826,
+            "candidate": 99.99826
+          },
+          {
+            "page": 3,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 4,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 5,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 6,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 7,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 8,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 9,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 10,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 11,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 12,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 13,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 14,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 15,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 16,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 17,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 18,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 19,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 20,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 21,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 22,
+            "base": 97.66564,
+            "candidate": 97.66564
+          },
+          {
+            "page": 23,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 24,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 25,
+            "base": 96.00358,
+            "candidate": 100.0
+          },
+          {
+            "page": 26,
+            "base": 96.49808,
+            "candidate": 99.3685
+          },
+          {
+            "page": 27,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 28,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 29,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 30,
+            "base": 99.32545,
+            "candidate": 99.32545
+          },
+          {
+            "page": 31,
+            "base": 99.7104,
+            "candidate": 99.7104
+          },
+          {
+            "page": 32,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 33,
+            "base": 99.99766,
+            "candidate": 99.99766
+          },
+          {
+            "page": 34,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 35,
+            "base": 100.0,
+            "candidate": 100.0
+          },
+          {
+            "page": 36,
+            "base": 100.0,
+            "candidate": 100.0
+          }
+        ]
+      },
+      "reviews": [
+        {
+          "key": "sample4-candidate",
+          "page": 21,
+          "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/sample4-candidate/review/review_021.png",
+          "metrics": {
+            "page": 21,
+            "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-sample4/sample4/rhwp_png/rhwp_021.png",
+            "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-sample4/sample4/pdf_png/pdf-021.png",
+            "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/sample4-candidate/overlay/overlay_021.png",
+            "width": 794,
+            "height": 1122,
+            "pixel_diff_threshold": 32,
+            "overlay_color_legend": {
+              "rhwp_only": "blue",
+              "pdf_only": "red",
+              "both_different": "orange",
+              "matching": "gray"
+            },
+            "total_pixels": 890868,
+            "diff_pixels": 12369,
+            "diff_ratio": 0.01388421,
+            "pixel_match_percent": 98.61158,
+            "ink_union_pixels": 139664,
+            "ink_diff_pixels": 12369,
+            "ink_diff_ratio": 0.08856255,
+            "ink_match_percent": 91.14374,
+            "visual_accuracy_proxy_percent": 91.14374,
+            "tolerant_content_match_radius_px": 2,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 100.0,
+            "silhouette_raw_unmatched_pixels": 0,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 139664,
+            "tolerant_content_match_percent": 100.0,
+            "mean_abs_channel_delta": 1.257,
+            "max_channel_delta": 243,
+            "diff_bbox": [
+              113,
+              132,
+              679,
+              998
+            ]
+          }
+        },
+        {
+          "key": "sample4-candidate",
+          "page": 22,
+          "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/sample4-candidate/review/review_022.png",
+          "metrics": {
+            "page": 22,
+            "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-sample4/sample4/rhwp_png/rhwp_022.png",
+            "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-sample4/sample4/pdf_png/pdf-022.png",
+            "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/sample4-candidate/overlay/overlay_022.png",
+            "width": 794,
+            "height": 1122,
+            "pixel_diff_threshold": 32,
+            "overlay_color_legend": {
+              "rhwp_only": "blue",
+              "pdf_only": "red",
+              "both_different": "orange",
+              "matching": "gray"
+            },
+            "total_pixels": 890868,
+            "diff_pixels": 19744,
+            "diff_ratio": 0.02216265,
+            "pixel_match_percent": 97.78373,
+            "ink_union_pixels": 412919,
+            "ink_diff_pixels": 19744,
+            "ink_diff_ratio": 0.04781567,
+            "ink_match_percent": 95.21843,
+            "visual_accuracy_proxy_percent": 95.21843,
+            "tolerant_content_match_radius_px": 2,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 97.66564,
+            "silhouette_raw_unmatched_pixels": 9639,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 412919,
+            "tolerant_content_match_percent": 97.66564,
+            "mean_abs_channel_delta": 1.505,
+            "max_channel_delta": 169,
+            "diff_bbox": [
+              113,
+              132,
+              679,
+              998
+            ]
+          }
+        },
+        {
+          "key": "sample4-candidate",
+          "page": 25,
+          "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/sample4-candidate/review/review_025.png",
+          "metrics": {
+            "page": 25,
+            "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-sample4/sample4/rhwp_png/rhwp_025.png",
+            "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-sample4/sample4/pdf_png/pdf-025.png",
+            "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/sample4-candidate/overlay/overlay_025.png",
+            "width": 794,
+            "height": 1122,
+            "pixel_diff_threshold": 32,
+            "overlay_color_legend": {
+              "rhwp_only": "blue",
+              "pdf_only": "red",
+              "both_different": "orange",
+              "matching": "gray"
+            },
+            "total_pixels": 890868,
+            "diff_pixels": 14777,
+            "diff_ratio": 0.01658719,
+            "pixel_match_percent": 98.34128,
+            "ink_union_pixels": 221947,
+            "ink_diff_pixels": 14777,
+            "ink_diff_ratio": 0.06657896,
+            "ink_match_percent": 93.3421,
+            "visual_accuracy_proxy_percent": 93.3421,
+            "tolerant_content_match_radius_px": 2,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 100.0,
+            "silhouette_raw_unmatched_pixels": 0,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 221947,
+            "tolerant_content_match_percent": 100.0,
+            "mean_abs_channel_delta": 1.66,
+            "max_channel_delta": 255,
+            "diff_bbox": [
+              114,
+              132,
+              673,
+              982
+            ]
+          }
+        },
+        {
+          "key": "sample4-candidate",
+          "page": 26,
+          "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/sample4-candidate/review/review_026.png",
+          "metrics": {
+            "page": 26,
+            "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-sample4/sample4/rhwp_png/rhwp_026.png",
+            "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-sample4/sample4/pdf_png/pdf-026.png",
+            "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/sample4-candidate/overlay/overlay_026.png",
+            "width": 794,
+            "height": 1122,
+            "pixel_diff_threshold": 32,
+            "overlay_color_legend": {
+              "rhwp_only": "blue",
+              "pdf_only": "red",
+              "both_different": "orange",
+              "matching": "gray"
+            },
+            "total_pixels": 890868,
+            "diff_pixels": 13684,
+            "diff_ratio": 0.0153603,
+            "pixel_match_percent": 98.46397,
+            "ink_union_pixels": 359146,
+            "ink_diff_pixels": 13684,
+            "ink_diff_ratio": 0.0381015,
+            "ink_match_percent": 96.18985,
+            "visual_accuracy_proxy_percent": 96.18985,
+            "tolerant_content_match_radius_px": 2,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 99.3685,
+            "silhouette_raw_unmatched_pixels": 2268,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 359146,
+            "tolerant_content_match_percent": 99.3685,
+            "mean_abs_channel_delta": 1.282,
+            "max_channel_delta": 161,
+            "diff_bbox": [
+              113,
+              176,
+              679,
+              1014
+            ]
+          }
+        },
+        {
+          "key": "sample4-candidate",
+          "page": 30,
+          "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/sample4-candidate/review/review_030.png",
+          "metrics": {
+            "page": 30,
+            "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-sample4/sample4/rhwp_png/rhwp_030.png",
+            "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-sample4/sample4/pdf_png/pdf-030.png",
+            "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/sample4-candidate/overlay/overlay_030.png",
+            "width": 794,
+            "height": 1122,
+            "pixel_diff_threshold": 32,
+            "overlay_color_legend": {
+              "rhwp_only": "blue",
+              "pdf_only": "red",
+              "both_different": "orange",
+              "matching": "gray"
+            },
+            "total_pixels": 890868,
+            "diff_pixels": 22614,
+            "diff_ratio": 0.02538423,
+            "pixel_match_percent": 97.46158,
+            "ink_union_pixels": 232156,
+            "ink_diff_pixels": 22614,
+            "ink_diff_ratio": 0.09740864,
+            "ink_match_percent": 90.25914,
+            "visual_accuracy_proxy_percent": 90.25914,
+            "tolerant_content_match_radius_px": 2,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 99.32545,
+            "silhouette_raw_unmatched_pixels": 1566,
+            "silhouette_boundary_reconciled_pixels": 1,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 232156,
+            "tolerant_content_match_percent": 99.32588,
+            "mean_abs_channel_delta": 2.534,
+            "max_channel_delta": 255,
+            "diff_bbox": [
+              113,
+              134,
+              669,
+              997
+            ]
+          }
+        },
+        {
+          "key": "sample4-base",
+          "page": 25,
+          "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/sample4-base/review/review_025.png",
+          "metrics": {
+            "page": 25,
+            "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/base-wasm-sample4/sample4/rhwp_png/rhwp_025.png",
+            "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/base-wasm-sample4/sample4/pdf_png/pdf-025.png",
+            "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/sample4-base/overlay/overlay_025.png",
+            "width": 794,
+            "height": 1122,
+            "pixel_diff_threshold": 32,
+            "overlay_color_legend": {
+              "rhwp_only": "blue",
+              "pdf_only": "red",
+              "both_different": "orange",
+              "matching": "gray"
+            },
+            "total_pixels": 890868,
+            "diff_pixels": 24509,
+            "diff_ratio": 0.02751137,
+            "pixel_match_percent": 97.24886,
+            "ink_union_pixels": 231507,
+            "ink_diff_pixels": 24509,
+            "ink_diff_ratio": 0.10586721,
+            "ink_match_percent": 89.41328,
+            "visual_accuracy_proxy_percent": 89.41328,
+            "tolerant_content_match_radius_px": 2,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 96.00358,
+            "silhouette_raw_unmatched_pixels": 9252,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 231507,
+            "tolerant_content_match_percent": 96.00358,
+            "mean_abs_channel_delta": 3.59,
+            "max_channel_delta": 255,
+            "diff_bbox": [
+              114,
+              132,
+              673,
+              1008
+            ]
+          }
+        },
+        {
+          "key": "sample4-base",
+          "page": 26,
+          "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/sample4-base/review/review_026.png",
+          "metrics": {
+            "page": 26,
+            "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/base-wasm-sample4/sample4/rhwp_png/rhwp_026.png",
+            "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/base-wasm-sample4/sample4/pdf_png/pdf-026.png",
+            "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/sample4-base/overlay/overlay_026.png",
+            "width": 794,
+            "height": 1122,
+            "pixel_diff_threshold": 32,
+            "overlay_color_legend": {
+              "rhwp_only": "blue",
+              "pdf_only": "red",
+              "both_different": "orange",
+              "matching": "gray"
+            },
+            "total_pixels": 890868,
+            "diff_pixels": 23956,
+            "diff_ratio": 0.02689063,
+            "pixel_match_percent": 97.31094,
+            "ink_union_pixels": 359146,
+            "ink_diff_pixels": 23956,
+            "ink_diff_ratio": 0.06670268,
+            "ink_match_percent": 93.32973,
+            "visual_accuracy_proxy_percent": 93.32973,
+            "tolerant_content_match_radius_px": 2,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 96.49808,
+            "silhouette_raw_unmatched_pixels": 12577,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 359146,
+            "tolerant_content_match_percent": 96.49808,
+            "mean_abs_channel_delta": 3.302,
+            "max_channel_delta": 255,
+            "diff_bbox": [
+              113,
+              132,
+              679,
+              1014
+            ]
+          }
+        },
+        {
+          "key": "handbook",
+          "page": 130,
+          "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/handbook/review/review_130.png",
+          "metrics": {
+            "page": 130,
+            "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-handbook/handbook/rhwp_png/rhwp_130.png",
+            "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-handbook/handbook/pdf_png/pdf-130.png",
+            "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/handbook/overlay/overlay_130.png",
+            "width": 740,
+            "height": 1006,
+            "pixel_diff_threshold": 32,
+            "overlay_color_legend": {
+              "rhwp_only": "blue",
+              "pdf_only": "red",
+              "both_different": "orange",
+              "matching": "gray"
+            },
+            "total_pixels": 744440,
+            "diff_pixels": 20352,
+            "diff_ratio": 0.02733867,
+            "pixel_match_percent": 97.26613,
+            "ink_union_pixels": 64760,
+            "ink_diff_pixels": 20352,
+            "ink_diff_ratio": 0.31426807,
+            "ink_match_percent": 68.57319,
+            "visual_accuracy_proxy_percent": 68.57319,
+            "tolerant_content_match_radius_px": 2,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 99.96448,
+            "silhouette_raw_unmatched_pixels": 23,
+            "silhouette_boundary_reconciled_pixels": 5,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 64760,
+            "tolerant_content_match_percent": 99.97221,
+            "mean_abs_channel_delta": 2.774,
+            "max_channel_delta": 244,
+            "diff_bbox": [
+              113,
+              81,
+              739,
+              927
+            ]
+          }
+        },
+        {
+          "key": "handbook",
+          "page": 200,
+          "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/handbook/review/review_200.png",
+          "metrics": {
+            "page": 200,
+            "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-handbook/handbook/rhwp_png/rhwp_200.png",
+            "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-handbook/handbook/pdf_png/pdf-200.png",
+            "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/handbook/overlay/overlay_200.png",
+            "width": 740,
+            "height": 1006,
+            "pixel_diff_threshold": 32,
+            "overlay_color_legend": {
+              "rhwp_only": "blue",
+              "pdf_only": "red",
+              "both_different": "orange",
+              "matching": "gray"
+            },
+            "total_pixels": 744440,
+            "diff_pixels": 27744,
+            "diff_ratio": 0.03726828,
+            "pixel_match_percent": 96.27317,
+            "ink_union_pixels": 84120,
+            "ink_diff_pixels": 27744,
+            "ink_diff_ratio": 0.32981455,
+            "ink_match_percent": 67.01854,
+            "visual_accuracy_proxy_percent": 67.01854,
+            "tolerant_content_match_radius_px": 2,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 100.0,
+            "silhouette_raw_unmatched_pixels": 0,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 84120,
+            "tolerant_content_match_percent": 100.0,
+            "mean_abs_channel_delta": 3.474,
+            "max_channel_delta": 255,
+            "diff_bbox": [
+              113,
+              81,
+              739,
+              927
+            ]
+          }
+        },
+        {
+          "key": "band",
+          "page": 1,
+          "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/band/review/review_001.png",
+          "metrics": {
+            "page": 1,
+            "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-band/band/rhwp_png/rhwp_001.png",
+            "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-band/band/pdf_png/pdf-001.png",
+            "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/band/overlay/overlay_001.png",
+            "width": 794,
+            "height": 1122,
+            "pixel_diff_threshold": 32,
+            "overlay_color_legend": {
+              "rhwp_only": "blue",
+              "pdf_only": "red",
+              "both_different": "orange",
+              "matching": "gray"
+            },
+            "total_pixels": 890868,
+            "diff_pixels": 5181,
+            "diff_ratio": 0.00581568,
+            "pixel_match_percent": 99.41843,
+            "ink_union_pixels": 6839,
+            "ink_diff_pixels": 5181,
+            "ink_diff_ratio": 0.7575669,
+            "ink_match_percent": 24.24331,
+            "visual_accuracy_proxy_percent": 24.24331,
+            "tolerant_content_match_radius_px": 2,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 100.0,
+            "silhouette_raw_unmatched_pixels": 0,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 6839,
+            "tolerant_content_match_percent": 100.0,
+            "mean_abs_channel_delta": 0.586,
+            "max_channel_delta": 149,
+            "diff_bbox": [
+              113,
+              133,
+              680,
+              433
+            ]
+          }
+        },
+        {
+          "key": "tab",
+          "page": 1,
+          "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/tab/review/review_001.png",
+          "metrics": {
+            "page": 1,
+            "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-tab/tab/rhwp_png/rhwp_001.png",
+            "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-tab/tab/pdf_png/pdf-001.png",
+            "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/tab/overlay/overlay_001.png",
+            "width": 794,
+            "height": 1122,
+            "pixel_diff_threshold": 32,
+            "overlay_color_legend": {
+              "rhwp_only": "blue",
+              "pdf_only": "red",
+              "both_different": "orange",
+              "matching": "gray"
+            },
+            "total_pixels": 890868,
+            "diff_pixels": 2342,
+            "diff_ratio": 0.0026289,
+            "pixel_match_percent": 99.73711,
+            "ink_union_pixels": 4161,
+            "ink_diff_pixels": 2342,
+            "ink_diff_ratio": 0.56284547,
+            "ink_match_percent": 43.71545,
+            "visual_accuracy_proxy_percent": 43.71545,
+            "tolerant_content_match_radius_px": 2,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 100.0,
+            "silhouette_raw_unmatched_pixels": 0,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 4161,
+            "tolerant_content_match_percent": 100.0,
+            "mean_abs_channel_delta": 0.221,
+            "max_channel_delta": 192,
+            "diff_bbox": [
+              114,
+              133,
+              274,
+              327
+            ]
+          }
+        }
+      ],
+      "handbook": {
+        "pages": 383,
+        "minimum": 99.96448
+      },
+      "band": {
+        "base": {
+          "pages": 1,
+          "minimum": 100.0
+        },
+        "candidate": {
+          "pages": 1,
+          "minimum": 100.0
+        }
+      },
+      "tab": {
+        "base": {
+          "pages": 1,
+          "minimum": 100.0
+        },
+        "candidate": {
+          "pages": 1,
+          "minimum": 100.0
+        }
+      }
+    }
+  },
+  "browserEvidence": {
+    "source": "fcf2e11b1727297743343446333132e1409737f1",
+    "originalFontResults": [
+      {
+        "page": 21,
+        "backend": "canvas2d",
+        "actualBackend": "canvas2d",
+        "picture": {
+          "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p021\\canvas2d-print.png",
+          "sha256": "f190ed48bd25b9c58cf36c13ff8b9f6b2c3c91f979915318aaad5e3220a40bee",
+          "pixelSize": [
+            794,
+            1122
+          ],
+          "blueBox": [
+            262,
+            961,
+            492,
+            998
+          ],
+          "referenceBox": [
+            261,
+            960,
+            493,
+            998
+          ],
+          "normalizedBox": [
+            262.0,
+            961.0,
+            492.0,
+            998.0
+          ],
+          "maximumDeltaPx": 1.0
+        }
+      },
+      {
+        "page": 21,
+        "backend": "canvaskit-compat",
+        "actualBackend": "canvas2d",
+        "picture": {
+          "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p021\\canvaskit-compat-print-software.png",
+          "sha256": "f190ed48bd25b9c58cf36c13ff8b9f6b2c3c91f979915318aaad5e3220a40bee",
+          "pixelSize": [
+            794,
+            1122
+          ],
+          "blueBox": [
+            262,
+            961,
+            492,
+            998
+          ],
+          "referenceBox": [
+            261,
+            960,
+            493,
+            998
+          ],
+          "normalizedBox": [
+            262.0,
+            961.0,
+            492.0,
+            998.0
+          ],
+          "maximumDeltaPx": 1.0
+        }
+      },
+      {
+        "page": 21,
+        "backend": "canvaskit-default",
+        "actualBackend": "canvas2d",
+        "picture": {
+          "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p021\\canvaskit-default-print-software.png",
+          "sha256": "f190ed48bd25b9c58cf36c13ff8b9f6b2c3c91f979915318aaad5e3220a40bee",
+          "pixelSize": [
+            794,
+            1122
+          ],
+          "blueBox": [
+            262,
+            961,
+            492,
+            998
+          ],
+          "referenceBox": [
+            261,
+            960,
+            493,
+            998
+          ],
+          "normalizedBox": [
+            262.0,
+            961.0,
+            492.0,
+            998.0
+          ],
+          "maximumDeltaPx": 1.0
+        }
+      },
+      {
+        "page": 25,
+        "backend": "canvas2d",
+        "actualBackend": "canvas2d",
+        "picture": {
+          "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p025\\canvas2d-print.png",
+          "sha256": "80d1cea637d0b2b768e7096b00b28aadb0aedc04ce80bf08ea03c8626f1fe280",
+          "pixelSize": [
+            794,
+            1122
+          ],
+          "blueBox": null,
+          "referenceBox": null,
+          "normalizedBox": null,
+          "maximumDeltaPx": 0
+        }
+      },
+      {
+        "page": 25,
+        "backend": "canvaskit-compat",
+        "actualBackend": "canvas2d",
+        "picture": {
+          "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p025\\canvaskit-compat-print-software.png",
+          "sha256": "80d1cea637d0b2b768e7096b00b28aadb0aedc04ce80bf08ea03c8626f1fe280",
+          "pixelSize": [
+            794,
+            1122
+          ],
+          "blueBox": null,
+          "referenceBox": null,
+          "normalizedBox": null,
+          "maximumDeltaPx": 0
+        }
+      },
+      {
+        "page": 25,
+        "backend": "canvaskit-default",
+        "actualBackend": "canvas2d",
+        "picture": {
+          "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p025\\canvaskit-default-print-software.png",
+          "sha256": "80d1cea637d0b2b768e7096b00b28aadb0aedc04ce80bf08ea03c8626f1fe280",
+          "pixelSize": [
+            794,
+            1122
+          ],
+          "blueBox": null,
+          "referenceBox": null,
+          "normalizedBox": null,
+          "maximumDeltaPx": 0
+        }
+      },
+      {
+        "page": 26,
+        "backend": "canvas2d",
+        "actualBackend": "canvas2d",
+        "picture": {
+          "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p026\\canvas2d-print.png",
+          "sha256": "608f20fcd593d0a2b5a8ecdc55a75264359b1322c17ca7c28d4756de2284f6e7",
+          "pixelSize": [
+            794,
+            1122
+          ],
+          "blueBox": [
+            219,
+            133,
+            499,
+            172
+          ],
+          "referenceBox": [
+            219,
+            133,
+            499,
+            172
+          ],
+          "normalizedBox": [
+            219.0,
+            133.0,
+            499.0,
+            172.0
+          ],
+          "maximumDeltaPx": 0.0
+        }
+      },
+      {
+        "page": 26,
+        "backend": "canvaskit-compat",
+        "actualBackend": "canvas2d",
+        "picture": {
+          "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p026\\canvaskit-compat-print-software.png",
+          "sha256": "608f20fcd593d0a2b5a8ecdc55a75264359b1322c17ca7c28d4756de2284f6e7",
+          "pixelSize": [
+            794,
+            1122
+          ],
+          "blueBox": [
+            219,
+            133,
+            499,
+            172
+          ],
+          "referenceBox": [
+            219,
+            133,
+            499,
+            172
+          ],
+          "normalizedBox": [
+            219.0,
+            133.0,
+            499.0,
+            172.0
+          ],
+          "maximumDeltaPx": 0.0
+        }
+      },
+      {
+        "page": 26,
+        "backend": "canvaskit-default",
+        "actualBackend": "canvas2d",
+        "picture": {
+          "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p026\\canvaskit-default-print-software.png",
+          "sha256": "608f20fcd593d0a2b5a8ecdc55a75264359b1322c17ca7c28d4756de2284f6e7",
+          "pixelSize": [
+            794,
+            1122
+          ],
+          "blueBox": [
+            219,
+            133,
+            499,
+            172
+          ],
+          "referenceBox": [
+            219,
+            133,
+            499,
+            172
+          ],
+          "normalizedBox": [
+            219.0,
+            133.0,
+            499.0,
+            172.0
+          ],
+          "maximumDeltaPx": 0.0
+        }
+      }
+    ],
+    "supportedTtfControl": [
+      {
+        "page": 26,
+        "backend": "canvas2d",
+        "actualBackend": "canvas2d",
+        "picture": {
+          "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-public-targeted-consumers\\sample4-p026\\canvas2d-print.png",
+          "sha256": "608f20fcd593d0a2b5a8ecdc55a75264359b1322c17ca7c28d4756de2284f6e7",
+          "pixelSize": [
+            794,
+            1122
+          ],
+          "blueBox": [
+            219,
+            133,
+            499,
+            172
+          ],
+          "referenceBox": [
+            219,
+            133,
+            499,
+            172
+          ],
+          "normalizedBox": [
+            219.0,
+            133.0,
+            499.0,
+            172.0
+          ],
+          "maximumDeltaPx": 0.0
+        }
+      },
+      {
+        "page": 26,
+        "backend": "canvaskit-compat",
+        "actualBackend": "canvaskit-compat",
+        "picture": {
+          "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-public-targeted-consumers\\sample4-p026\\canvaskit-compat-print-software.png",
+          "sha256": "a3563ce96686705a989d06a738304a4ad4a1a30419de2b750757122cee9232ab",
+          "pixelSize": [
+            794,
+            1122
+          ],
+          "blueBox": [
+            219,
+            133,
+            499,
+            172
+          ],
+          "referenceBox": [
+            219,
+            133,
+            499,
+            172
+          ],
+          "normalizedBox": [
+            219.0,
+            133.0,
+            499.0,
+            172.0
+          ],
+          "maximumDeltaPx": 0.0
+        }
+      },
+      {
+        "page": 26,
+        "backend": "canvaskit-default",
+        "actualBackend": "canvaskit-default",
+        "picture": {
+          "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-public-targeted-consumers\\sample4-p026\\canvaskit-default-print-software.png",
+          "sha256": "a3563ce96686705a989d06a738304a4ad4a1a30419de2b750757122cee9232ab",
+          "pixelSize": [
+            794,
+            1122
+          ],
+          "blueBox": [
+            219,
+            133,
+            499,
+            172
+          ],
+          "referenceBox": [
+            219,
+            133,
+            499,
+            172
+          ],
+          "normalizedBox": [
+            219.0,
+            133.0,
+            499.0,
+            172.0
+          ],
+          "maximumDeltaPx": 0.0
+        }
+      }
+    ],
+    "naturalView": [
+      {
+        "backend": "canvas2d",
+        "state": {
+          "name": "initial",
+          "width": 1400,
+          "height": 1700,
+          "deviceScaleFactor": 1,
+          "zoom": 1
+        },
+        "picture": {
+          "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-public-targeted-consumers\\natural-p026-canvas2d-initial.png",
+          "sha256": "02496602b8e1d4dfd1b97bd3563fa828307dfbfc4f5fe2a837cc9c0f1b8b63c9",
+          "pixelSize": [
+            794,
+            1122
+          ],
+          "blueBox": [
+            219,
+            133,
+            499,
+            172
+          ],
+          "referenceBox": [
+            219,
+            133,
+            499,
+            172
+          ],
+          "normalizedBox": [
+            219.0,
+            133.0,
+            499.0,
+            172.0
+          ],
+          "maximumDeltaPx": 0.0
+        },
+        "details": {
+          "pageCount": 36,
+          "page": 26,
+          "activeBackend": "canvas2d",
+          "zoom": 1,
+          "dpr": 1,
+          "clip": {
+            "x": 313.15625,
+            "y": 199.5,
+            "width": 793.6875,
+            "height": 1122.5
+          },
+          "viewport": {
+            "width": 1400,
+            "height": 1700
+          },
+          "documentScroll": {
+            "x": 0,
+            "y": 0
+          },
+          "modalCount": 0,
+          "visibleDomImages": [],
+          "canvaskit": null
+        }
+      },
+      {
+        "backend": "canvas2d",
+        "state": {
+          "name": "zoom-dpr-resize",
+          "width": 1600,
+          "height": 1900,
+          "deviceScaleFactor": 2,
+          "zoom": 1.25
+        },
+        "picture": {
+          "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-public-targeted-consumers\\natural-p026-canvas2d-zoom-dpr-resize.png",
+          "sha256": "68384e3bdd5526837e1b26dd176fba42b49c7d16eb3cfe69fe7231d277291302",
+          "pixelSize": [
+            1984,
+            2806
+          ],
+          "blueBox": [
+            548,
+            331,
+            1246,
+            429
+          ],
+          "referenceBox": [
+            219,
+            133,
+            499,
+            172
+          ],
+          "normalizedBox": [
+            219.31048387096774,
+            132.3528153955809,
+            498.65120967741933,
+            171.53884533143264
+          ],
+          "maximumDeltaPx": 0.6471846044190954
+        },
+        "details": {
+          "pageCount": 36,
+          "page": 26,
+          "activeBackend": "canvas2d",
+          "zoom": 1.25,
+          "dpr": 2,
+          "clip": {
+            "x": 313.9375,
+            "y": 200.125,
+            "width": 992.125,
+            "height": 1403.125
+          },
+          "viewport": {
+            "width": 1600,
+            "height": 1900
+          },
+          "documentScroll": {
+            "x": 0,
+            "y": 0
+          },
+          "modalCount": 0,
+          "visibleDomImages": [],
+          "canvaskit": null
+        }
+      },
+      {
+        "backend": "canvas2d",
+        "state": {
+          "name": "restored",
+          "width": 1400,
+          "height": 1700,
+          "deviceScaleFactor": 1,
+          "zoom": 1
+        },
+        "picture": {
+          "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-public-targeted-consumers\\natural-p026-canvas2d-restored.png",
+          "sha256": "02496602b8e1d4dfd1b97bd3563fa828307dfbfc4f5fe2a837cc9c0f1b8b63c9",
+          "pixelSize": [
+            794,
+            1122
+          ],
+          "blueBox": [
+            219,
+            133,
+            499,
+            172
+          ],
+          "referenceBox": [
+            219,
+            133,
+            499,
+            172
+          ],
+          "normalizedBox": [
+            219.0,
+            133.0,
+            499.0,
+            172.0
+          ],
+          "maximumDeltaPx": 0.0
+        },
+        "details": {
+          "pageCount": 36,
+          "page": 26,
+          "activeBackend": "canvas2d",
+          "zoom": 1,
+          "dpr": 1,
+          "clip": {
+            "x": 313.15625,
+            "y": 199.5,
+            "width": 793.6875,
+            "height": 1122.5
+          },
+          "viewport": {
+            "width": 1400,
+            "height": 1700
+          },
+          "documentScroll": {
+            "x": 0,
+            "y": 0
+          },
+          "modalCount": 0,
+          "visibleDomImages": [],
+          "canvaskit": null
+        }
+      },
+      {
+        "backend": "canvaskit-compat",
+        "state": {
+          "name": "initial",
+          "width": 1400,
+          "height": 1700,
+          "deviceScaleFactor": 1,
+          "zoom": 1
+        },
+        "picture": {
+          "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-public-targeted-consumers\\natural-p026-canvaskit-compat-initial.png",
+          "sha256": "2de16a0b7a74a5687290a81069f79694c752e6fca7e20bf59d565fc9f7132123",
+          "pixelSize": [
+            794,
+            1122
+          ],
+          "blueBox": [
+            219,
+            133,
+            499,
+            172
+          ],
+          "referenceBox": [
+            219,
+            133,
+            499,
+            172
+          ],
+          "normalizedBox": [
+            219.0,
+            133.0,
+            499.0,
+            172.0
+          ],
+          "maximumDeltaPx": 0.0
+        },
+        "details": {
+          "pageCount": 36,
+          "page": 26,
+          "activeBackend": "canvaskit",
+          "zoom": 1,
+          "dpr": 1,
+          "clip": {
+            "x": 313.15625,
+            "y": 199.5,
+            "width": 793.6875,
+            "height": 1122.5
+          },
+          "viewport": {
+            "width": 1400,
+            "height": 1700
+          },
+          "documentScroll": {
+            "x": 0,
+            "y": 0
+          },
+          "modalCount": 0,
+          "visibleDomImages": [],
+          "canvaskit": {
+            "surfaceCreated": 6,
+            "surfaceReused": 1,
+            "staticPictureCacheEntries": 29,
+            "staticPictureCacheBytes": 20564,
+            "staticPictureCacheHits": 0,
+            "staticPictureCacheMisses": 29,
+            "staticPictureCacheEvictions": 0,
+            "textBlobCacheEntries": 694,
+            "textBlobCacheBytes": 262980,
+            "textBlobCacheHits": 114,
+            "textBlobCacheMisses": 694,
+            "fallbackFamilyCacheEntries": 24,
+            "paragraphFontEntries": 3,
+            "paragraphFontBytes": 14392672,
+            "paragraphProviderBuilds": 0,
+            "paragraphFontRejections": 0,
+            "pendingImageLoads": 0,
+            "mode": "compat",
+            "surfacePreference": "software",
+            "surfaceBackend": "software",
+            "surfaceFallbackReason": null,
+            "lastRenderCompleted": true,
+            "lastUnsupportedOps": [],
+            "lastExpectedUnsupportedOps": [],
+            "lastUnexpectedUnsupportedOps": [],
+            "lastRenderError": null,
+            "passesRuntimeReadinessGate": true,
+            "readinessBlockers": [],
+            "hiddenCanvas2dOverlayUsed": false,
+            "lastRenderDurationMs": 623.2000002861023,
+            "renderCount": 4,
+            "imageCacheEntries": 0,
+            "imageCacheLimit": 128,
+            "imageCachePixels": 0,
+            "imageCachePixelLimit": 67108864,
+            "imageCacheHits": 0,
+            "imageCacheMisses": 0,
+            "imageCacheEvictions": 0,
+            "mipmapCacheEntries": 0,
+            "mipmapCacheBytes": 0,
+            "mipmapCacheHits": 0,
+            "mipmapCacheMisses": 0,
+            "imageFailureCacheHits": 0,
+            "imageFailures": [],
+            "localTypefaceCount": 3,
+            "localTypefaceLoadFailureCount": 0,
+            "localTypefacePendingCount": 0,
+            "bundledTypefaceCount": 2,
+            "bundledTypefaceLoadFailureCount": 0,
+            "glyphRunFontBlobCount": 0,
+            "glyphRunFontBlobBytes": 0,
+            "glyphRunTypefaceCount": 0,
+            "glyphRunFontCount": 0,
+            "fontSubstitutionLimit": 4096,
+            "unregisteredFontFallbacks": 0,
+            "fontSubstitutions": [],
+            "replayFeatureCounts": {
+              "dashedStrokes": 0,
+              "glyphRuns": 0,
+              "tabLeaders": 0,
+              "charOverlaps": 0,
+              "verticalPresentationPunctuation": 0,
+              "verticalTextRuns": 0
+            },
+            "textVariantDiagnosticGroups": 0,
+            "textVariantDiagnosticParts": 0,
+            "replayDiagnosticsDropped": 0
+          }
+        }
+      },
+      {
+        "backend": "canvaskit-compat",
+        "state": {
+          "name": "zoom-dpr-resize",
+          "width": 1600,
+          "height": 1900,
+          "deviceScaleFactor": 2,
+          "zoom": 1.25
+        },
+        "picture": {
+          "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-public-targeted-consumers\\natural-p026-canvaskit-compat-zoom-dpr-resize.png",
+          "sha256": "55e96817ebf59c5ac36694c609b1700807b9364b061862d858a9bfd86c721840",
+          "pixelSize": [
+            1984,
+            2806
+          ],
+          "blueBox": [
+            548,
+            331,
+            1246,
+            429
+          ],
+          "referenceBox": [
+            219,
+            133,
+            499,
+            172
+          ],
+          "normalizedBox": [
+            219.31048387096774,
+            132.3528153955809,
+            498.65120967741933,
+            171.53884533143264
+          ],
+          "maximumDeltaPx": 0.6471846044190954
+        },
+        "details": {
+          "pageCount": 36,
+          "page": 26,
+          "activeBackend": "canvaskit",
+          "zoom": 1.25,
+          "dpr": 2,
+          "clip": {
+            "x": 313.9375,
+            "y": 200.125,
+            "width": 992.125,
+            "height": 1403.125
+          },
+          "viewport": {
+            "width": 1600,
+            "height": 1900
+          },
+          "documentScroll": {
+            "x": 0,
+            "y": 0
+          },
+          "modalCount": 0,
+          "visibleDomImages": [],
+          "canvaskit": {
+            "surfaceCreated": 11,
+            "surfaceReused": 1,
+            "staticPictureCacheEntries": 32,
+            "staticPictureCacheBytes": 22664,
+            "staticPictureCacheHits": 0,
+            "staticPictureCacheMisses": 69,
+            "staticPictureCacheEvictions": 37,
+            "textBlobCacheEntries": 1554,
+            "textBlobCacheBytes": 607592,
+            "textBlobCacheHits": 560,
+            "textBlobCacheMisses": 1554,
+            "fallbackFamilyCacheEntries": 24,
+            "paragraphFontEntries": 3,
+            "paragraphFontBytes": 14392672,
+            "paragraphProviderBuilds": 0,
+            "paragraphFontRejections": 0,
+            "pendingImageLoads": 0,
+            "mode": "compat",
+            "surfacePreference": "software",
+            "surfaceBackend": "software",
+            "surfaceFallbackReason": null,
+            "lastRenderCompleted": true,
+            "lastUnsupportedOps": [],
+            "lastExpectedUnsupportedOps": [],
+            "lastUnexpectedUnsupportedOps": [],
+            "lastRenderError": null,
+            "passesRuntimeReadinessGate": true,
+            "readinessBlockers": [],
+            "hiddenCanvas2dOverlayUsed": false,
+            "lastRenderDurationMs": 462.2999997138977,
+            "renderCount": 9,
+            "imageCacheEntries": 0,
+            "imageCacheLimit": 128,
+            "imageCachePixels": 0,
+            "imageCachePixelLimit": 67108864,
+            "imageCacheHits": 0,
+            "imageCacheMisses": 0,
+            "imageCacheEvictions": 0,
+            "mipmapCacheEntries": 0,
+            "mipmapCacheBytes": 0,
+            "mipmapCacheHits": 0,
+            "mipmapCacheMisses": 0,
+            "imageFailureCacheHits": 0,
+            "imageFailures": [],
+            "localTypefaceCount": 3,
+            "localTypefaceLoadFailureCount": 0,
+            "localTypefacePendingCount": 0,
+            "bundledTypefaceCount": 2,
+            "bundledTypefaceLoadFailureCount": 0,
+            "glyphRunFontBlobCount": 0,
+            "glyphRunFontBlobBytes": 0,
+            "glyphRunTypefaceCount": 0,
+            "glyphRunFontCount": 0,
+            "fontSubstitutionLimit": 4096,
+            "unregisteredFontFallbacks": 0,
+            "fontSubstitutions": [],
+            "replayFeatureCounts": {
+              "dashedStrokes": 0,
+              "glyphRuns": 0,
+              "tabLeaders": 0,
+              "charOverlaps": 0,
+              "verticalPresentationPunctuation": 0,
+              "verticalTextRuns": 0
+            },
+            "textVariantDiagnosticGroups": 0,
+            "textVariantDiagnosticParts": 0,
+            "replayDiagnosticsDropped": 0
+          }
+        }
+      },
+      {
+        "backend": "canvaskit-compat",
+        "state": {
+          "name": "restored",
+          "width": 1400,
+          "height": 1700,
+          "deviceScaleFactor": 1,
+          "zoom": 1
+        },
+        "picture": {
+          "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-public-targeted-consumers\\natural-p026-canvaskit-compat-restored.png",
+          "sha256": "2de16a0b7a74a5687290a81069f79694c752e6fca7e20bf59d565fc9f7132123",
+          "pixelSize": [
+            794,
+            1122
+          ],
+          "blueBox": [
+            219,
+            133,
+            499,
+            172
+          ],
+          "referenceBox": [
+            219,
+            133,
+            499,
+            172
+          ],
+          "normalizedBox": [
+            219.0,
+            133.0,
+            499.0,
+            172.0
+          ],
+          "maximumDeltaPx": 0.0
+        },
+        "details": {
+          "pageCount": 36,
+          "page": 26,
+          "activeBackend": "canvaskit",
+          "zoom": 1,
+          "dpr": 1,
+          "clip": {
+            "x": 313.15625,
+            "y": 199.5,
+            "width": 793.6875,
+            "height": 1122.5
+          },
+          "viewport": {
+            "width": 1400,
+            "height": 1700
+          },
+          "documentScroll": {
+            "x": 0,
+            "y": 0
+          },
+          "modalCount": 0,
+          "visibleDomImages": [],
+          "canvaskit": {
+            "surfaceCreated": 16,
+            "surfaceReused": 1,
+            "staticPictureCacheEntries": 32,
+            "staticPictureCacheBytes": 22664,
+            "staticPictureCacheHits": 0,
+            "staticPictureCacheMisses": 109,
+            "staticPictureCacheEvictions": 77,
+            "textBlobCacheEntries": 1554,
+            "textBlobCacheBytes": 607592,
+            "textBlobCacheHits": 1866,
+            "textBlobCacheMisses": 1554,
+            "fallbackFamilyCacheEntries": 24,
+            "paragraphFontEntries": 3,
+            "paragraphFontBytes": 14392672,
+            "paragraphProviderBuilds": 0,
+            "paragraphFontRejections": 0,
+            "pendingImageLoads": 0,
+            "mode": "compat",
+            "surfacePreference": "software",
+            "surfaceBackend": "software",
+            "surfaceFallbackReason": null,
+            "lastRenderCompleted": true,
+            "lastUnsupportedOps": [],
+            "lastExpectedUnsupportedOps": [],
+            "lastUnexpectedUnsupportedOps": [],
+            "lastRenderError": null,
+            "passesRuntimeReadinessGate": true,
+            "readinessBlockers": [],
+            "hiddenCanvas2dOverlayUsed": false,
+            "lastRenderDurationMs": 338.90000009536743,
+            "renderCount": 14,
+            "imageCacheEntries": 0,
+            "imageCacheLimit": 128,
+            "imageCachePixels": 0,
+            "imageCachePixelLimit": 67108864,
+            "imageCacheHits": 0,
+            "imageCacheMisses": 0,
+            "imageCacheEvictions": 0,
+            "mipmapCacheEntries": 0,
+            "mipmapCacheBytes": 0,
+            "mipmapCacheHits": 0,
+            "mipmapCacheMisses": 0,
+            "imageFailureCacheHits": 0,
+            "imageFailures": [],
+            "localTypefaceCount": 3,
+            "localTypefaceLoadFailureCount": 0,
+            "localTypefacePendingCount": 0,
+            "bundledTypefaceCount": 2,
+            "bundledTypefaceLoadFailureCount": 0,
+            "glyphRunFontBlobCount": 0,
+            "glyphRunFontBlobBytes": 0,
+            "glyphRunTypefaceCount": 0,
+            "glyphRunFontCount": 0,
+            "fontSubstitutionLimit": 4096,
+            "unregisteredFontFallbacks": 0,
+            "fontSubstitutions": [],
+            "replayFeatureCounts": {
+              "dashedStrokes": 0,
+              "glyphRuns": 0,
+              "tabLeaders": 0,
+              "charOverlaps": 0,
+              "verticalPresentationPunctuation": 0,
+              "verticalTextRuns": 0
+            },
+            "textVariantDiagnosticGroups": 0,
+            "textVariantDiagnosticParts": 0,
+            "replayDiagnosticsDropped": 0
+          }
+        }
+      },
+      {
+        "backend": "canvaskit-default",
+        "state": {
+          "name": "initial",
+          "width": 1400,
+          "height": 1700,
+          "deviceScaleFactor": 1,
+          "zoom": 1
+        },
+        "picture": {
+          "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-public-targeted-consumers\\natural-p026-canvaskit-default-initial.png",
+          "sha256": "2de16a0b7a74a5687290a81069f79694c752e6fca7e20bf59d565fc9f7132123",
+          "pixelSize": [
+            794,
+            1122
+          ],
+          "blueBox": [
+            219,
+            133,
+            499,
+            172
+          ],
+          "referenceBox": [
+            219,
+            133,
+            499,
+            172
+          ],
+          "normalizedBox": [
+            219.0,
+            133.0,
+            499.0,
+            172.0
+          ],
+          "maximumDeltaPx": 0.0
+        },
+        "details": {
+          "pageCount": 36,
+          "page": 26,
+          "activeBackend": "canvaskit",
+          "zoom": 1,
+          "dpr": 1,
+          "clip": {
+            "x": 313.15625,
+            "y": 199.5,
+            "width": 793.6875,
+            "height": 1122.5
+          },
+          "viewport": {
+            "width": 1400,
+            "height": 1700
+          },
+          "documentScroll": {
+            "x": 0,
+            "y": 0
+          },
+          "modalCount": 0,
+          "visibleDomImages": [],
+          "canvaskit": {
+            "surfaceCreated": 5,
+            "surfaceReused": 1,
+            "staticPictureCacheEntries": 24,
+            "staticPictureCacheBytes": 17064,
+            "staticPictureCacheHits": 0,
+            "staticPictureCacheMisses": 24,
+            "staticPictureCacheEvictions": 0,
+            "textBlobCacheEntries": 471,
+            "textBlobCacheBytes": 177616,
+            "textBlobCacheHits": 63,
+            "textBlobCacheMisses": 471,
+            "fallbackFamilyCacheEntries": 23,
+            "paragraphFontEntries": 3,
+            "paragraphFontBytes": 14392672,
+            "paragraphProviderBuilds": 0,
+            "paragraphFontRejections": 0,
+            "pendingImageLoads": 0,
+            "mode": "default",
+            "surfacePreference": "software",
+            "surfaceBackend": "software",
+            "surfaceFallbackReason": null,
+            "lastRenderCompleted": true,
+            "lastUnsupportedOps": [],
+            "lastExpectedUnsupportedOps": [],
+            "lastUnexpectedUnsupportedOps": [],
+            "lastRenderError": null,
+            "passesRuntimeReadinessGate": true,
+            "readinessBlockers": [],
+            "hiddenCanvas2dOverlayUsed": false,
+            "lastRenderDurationMs": 406.90000009536743,
+            "renderCount": 3,
+            "imageCacheEntries": 0,
+            "imageCacheLimit": 128,
+            "imageCachePixels": 0,
+            "imageCachePixelLimit": 67108864,
+            "imageCacheHits": 0,
+            "imageCacheMisses": 0,
+            "imageCacheEvictions": 0,
+            "mipmapCacheEntries": 0,
+            "mipmapCacheBytes": 0,
+            "mipmapCacheHits": 0,
+            "mipmapCacheMisses": 0,
+            "imageFailureCacheHits": 0,
+            "imageFailures": [],
+            "localTypefaceCount": 3,
+            "localTypefaceLoadFailureCount": 0,
+            "localTypefacePendingCount": 0,
+            "bundledTypefaceCount": 2,
+            "bundledTypefaceLoadFailureCount": 0,
+            "glyphRunFontBlobCount": 0,
+            "glyphRunFontBlobBytes": 0,
+            "glyphRunTypefaceCount": 0,
+            "glyphRunFontCount": 0,
+            "fontSubstitutionLimit": 4096,
+            "unregisteredFontFallbacks": 0,
+            "fontSubstitutions": [],
+            "replayFeatureCounts": {
+              "dashedStrokes": 0,
+              "glyphRuns": 0,
+              "tabLeaders": 0,
+              "charOverlaps": 0,
+              "verticalPresentationPunctuation": 0,
+              "verticalTextRuns": 0
+            },
+            "textVariantDiagnosticGroups": 0,
+            "textVariantDiagnosticParts": 0,
+            "replayDiagnosticsDropped": 0
+          }
+        }
+      },
+      {
+        "backend": "canvaskit-default",
+        "state": {
+          "name": "zoom-dpr-resize",
+          "width": 1600,
+          "height": 1900,
+          "deviceScaleFactor": 2,
+          "zoom": 1.25
+        },
+        "picture": {
+          "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-public-targeted-consumers\\natural-p026-canvaskit-default-zoom-dpr-resize.png",
+          "sha256": "55e96817ebf59c5ac36694c609b1700807b9364b061862d858a9bfd86c721840",
+          "pixelSize": [
+            1984,
+            2806
+          ],
+          "blueBox": [
+            548,
+            331,
+            1246,
+            429
+          ],
+          "referenceBox": [
+            219,
+            133,
+            499,
+            172
+          ],
+          "normalizedBox": [
+            219.31048387096774,
+            132.3528153955809,
+            498.65120967741933,
+            171.53884533143264
+          ],
+          "maximumDeltaPx": 0.6471846044190954
+        },
+        "details": {
+          "pageCount": 36,
+          "page": 26,
+          "activeBackend": "canvaskit",
+          "zoom": 1.25,
+          "dpr": 2,
+          "clip": {
+            "x": 313.9375,
+            "y": 200.125,
+            "width": 992.125,
+            "height": 1403.125
+          },
+          "viewport": {
+            "width": 1600,
+            "height": 1900
+          },
+          "documentScroll": {
+            "x": 0,
+            "y": 0
+          },
+          "modalCount": 0,
+          "visibleDomImages": [],
+          "canvaskit": {
+            "surfaceCreated": 10,
+            "surfaceReused": 1,
+            "staticPictureCacheEntries": 32,
+            "staticPictureCacheBytes": 22664,
+            "staticPictureCacheHits": 0,
+            "staticPictureCacheMisses": 64,
+            "staticPictureCacheEvictions": 32,
+            "textBlobCacheEntries": 1338,
+            "textBlobCacheBytes": 524520,
+            "textBlobCacheHits": 502,
+            "textBlobCacheMisses": 1338,
+            "fallbackFamilyCacheEntries": 23,
+            "paragraphFontEntries": 3,
+            "paragraphFontBytes": 14392672,
+            "paragraphProviderBuilds": 0,
+            "paragraphFontRejections": 0,
+            "pendingImageLoads": 0,
+            "mode": "default",
+            "surfacePreference": "software",
+            "surfaceBackend": "software",
+            "surfaceFallbackReason": null,
+            "lastRenderCompleted": true,
+            "lastUnsupportedOps": [],
+            "lastExpectedUnsupportedOps": [],
+            "lastUnexpectedUnsupportedOps": [],
+            "lastRenderError": null,
+            "passesRuntimeReadinessGate": true,
+            "readinessBlockers": [],
+            "hiddenCanvas2dOverlayUsed": false,
+            "lastRenderDurationMs": 492.5,
+            "renderCount": 8,
+            "imageCacheEntries": 0,
+            "imageCacheLimit": 128,
+            "imageCachePixels": 0,
+            "imageCachePixelLimit": 67108864,
+            "imageCacheHits": 0,
+            "imageCacheMisses": 0,
+            "imageCacheEvictions": 0,
+            "mipmapCacheEntries": 0,
+            "mipmapCacheBytes": 0,
+            "mipmapCacheHits": 0,
+            "mipmapCacheMisses": 0,
+            "imageFailureCacheHits": 0,
+            "imageFailures": [],
+            "localTypefaceCount": 3,
+            "localTypefaceLoadFailureCount": 0,
+            "localTypefacePendingCount": 0,
+            "bundledTypefaceCount": 2,
+            "bundledTypefaceLoadFailureCount": 0,
+            "glyphRunFontBlobCount": 0,
+            "glyphRunFontBlobBytes": 0,
+            "glyphRunTypefaceCount": 0,
+            "glyphRunFontCount": 0,
+            "fontSubstitutionLimit": 4096,
+            "unregisteredFontFallbacks": 0,
+            "fontSubstitutions": [],
+            "replayFeatureCounts": {
+              "dashedStrokes": 0,
+              "glyphRuns": 0,
+              "tabLeaders": 0,
+              "charOverlaps": 0,
+              "verticalPresentationPunctuation": 0,
+              "verticalTextRuns": 0
+            },
+            "textVariantDiagnosticGroups": 0,
+            "textVariantDiagnosticParts": 0,
+            "replayDiagnosticsDropped": 0
+          }
+        }
+      },
+      {
+        "backend": "canvaskit-default",
+        "state": {
+          "name": "restored",
+          "width": 1400,
+          "height": 1700,
+          "deviceScaleFactor": 1,
+          "zoom": 1
+        },
+        "picture": {
+          "png": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-public-targeted-consumers\\natural-p026-canvaskit-default-restored.png",
+          "sha256": "2de16a0b7a74a5687290a81069f79694c752e6fca7e20bf59d565fc9f7132123",
+          "pixelSize": [
+            794,
+            1122
+          ],
+          "blueBox": [
+            219,
+            133,
+            499,
+            172
+          ],
+          "referenceBox": [
+            219,
+            133,
+            499,
+            172
+          ],
+          "normalizedBox": [
+            219.0,
+            133.0,
+            499.0,
+            172.0
+          ],
+          "maximumDeltaPx": 0.0
+        },
+        "details": {
+          "pageCount": 36,
+          "page": 26,
+          "activeBackend": "canvaskit",
+          "zoom": 1,
+          "dpr": 1,
+          "clip": {
+            "x": 313.15625,
+            "y": 199.5,
+            "width": 793.6875,
+            "height": 1122.5
+          },
+          "viewport": {
+            "width": 1400,
+            "height": 1700
+          },
+          "documentScroll": {
+            "x": 0,
+            "y": 0
+          },
+          "modalCount": 0,
+          "visibleDomImages": [],
+          "canvaskit": {
+            "surfaceCreated": 14,
+            "surfaceReused": 1,
+            "staticPictureCacheEntries": 32,
+            "staticPictureCacheBytes": 22796,
+            "staticPictureCacheHits": 0,
+            "staticPictureCacheMisses": 96,
+            "staticPictureCacheEvictions": 64,
+            "textBlobCacheEntries": 1338,
+            "textBlobCacheBytes": 524520,
+            "textBlobCacheHits": 1608,
+            "textBlobCacheMisses": 1338,
+            "fallbackFamilyCacheEntries": 23,
+            "paragraphFontEntries": 3,
+            "paragraphFontBytes": 14392672,
+            "paragraphProviderBuilds": 0,
+            "paragraphFontRejections": 0,
+            "pendingImageLoads": 0,
+            "mode": "default",
+            "surfacePreference": "software",
+            "surfaceBackend": "software",
+            "surfaceFallbackReason": null,
+            "lastRenderCompleted": true,
+            "lastUnsupportedOps": [],
+            "lastExpectedUnsupportedOps": [],
+            "lastUnexpectedUnsupportedOps": [],
+            "lastRenderError": null,
+            "passesRuntimeReadinessGate": true,
+            "readinessBlockers": [],
+            "hiddenCanvas2dOverlayUsed": false,
+            "lastRenderDurationMs": 553.6000003814697,
+            "renderCount": 12,
+            "imageCacheEntries": 0,
+            "imageCacheLimit": 128,
+            "imageCachePixels": 0,
+            "imageCachePixelLimit": 67108864,
+            "imageCacheHits": 0,
+            "imageCacheMisses": 0,
+            "imageCacheEvictions": 0,
+            "mipmapCacheEntries": 0,
+            "mipmapCacheBytes": 0,
+            "mipmapCacheHits": 0,
+            "mipmapCacheMisses": 0,
+            "imageFailureCacheHits": 0,
+            "imageFailures": [],
+            "localTypefaceCount": 3,
+            "localTypefaceLoadFailureCount": 0,
+            "localTypefacePendingCount": 0,
+            "bundledTypefaceCount": 2,
+            "bundledTypefaceLoadFailureCount": 0,
+            "glyphRunFontBlobCount": 0,
+            "glyphRunFontBlobBytes": 0,
+            "glyphRunTypefaceCount": 0,
+            "glyphRunFontCount": 0,
+            "fontSubstitutionLimit": 4096,
+            "unregisteredFontFallbacks": 0,
+            "fontSubstitutions": [],
+            "replayFeatureCounts": {
+              "dashedStrokes": 0,
+              "glyphRuns": 0,
+              "tabLeaders": 0,
+              "charOverlaps": 0,
+              "verticalPresentationPunctuation": 0,
+              "verticalTextRuns": 0
+            },
+            "textVariantDiagnosticGroups": 0,
+            "textVariantDiagnosticParts": 0,
+            "replayDiagnosticsDropped": 0
+          }
+        }
+      }
+    ],
+    "originalFontMinimum": 99.37309,
+    "status": "passed"
+  }
+}

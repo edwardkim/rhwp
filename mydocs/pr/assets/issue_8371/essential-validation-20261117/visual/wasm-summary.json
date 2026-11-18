@@ -1,0 +1,717 @@
+{
+  "source": "fcf2e11b1727297743343446333132e1409737f1",
+  "base": "22da83586aab1baf960f2159abda347062ecf7ed",
+  "backend": "wasm",
+  "sample4": {
+    "pages": 36,
+    "baseMinimum": 96.00358,
+    "candidateMinimum": 97.66564,
+    "changedPages": [
+      25,
+      26
+    ],
+    "pageDeltas": [
+      {
+        "page": 1,
+        "base": 100.0,
+        "candidate": 100.0
+      },
+      {
+        "page": 2,
+        "base": 99.99826,
+        "candidate": 99.99826
+      },
+      {
+        "page": 3,
+        "base": 100.0,
+        "candidate": 100.0
+      },
+      {
+        "page": 4,
+        "base": 100.0,
+        "candidate": 100.0
+      },
+      {
+        "page": 5,
+        "base": 100.0,
+        "candidate": 100.0
+      },
+      {
+        "page": 6,
+        "base": 100.0,
+        "candidate": 100.0
+      },
+      {
+        "page": 7,
+        "base": 100.0,
+        "candidate": 100.0
+      },
+      {
+        "page": 8,
+        "base": 100.0,
+        "candidate": 100.0
+      },
+      {
+        "page": 9,
+        "base": 100.0,
+        "candidate": 100.0
+      },
+      {
+        "page": 10,
+        "base": 100.0,
+        "candidate": 100.0
+      },
+      {
+        "page": 11,
+        "base": 100.0,
+        "candidate": 100.0
+      },
+      {
+        "page": 12,
+        "base": 100.0,
+        "candidate": 100.0
+      },
+      {
+        "page": 13,
+        "base": 100.0,
+        "candidate": 100.0
+      },
+      {
+        "page": 14,
+        "base": 100.0,
+        "candidate": 100.0
+      },
+      {
+        "page": 15,
+        "base": 100.0,
+        "candidate": 100.0
+      },
+      {
+        "page": 16,
+        "base": 100.0,
+        "candidate": 100.0
+      },
+      {
+        "page": 17,
+        "base": 100.0,
+        "candidate": 100.0
+      },
+      {
+        "page": 18,
+        "base": 100.0,
+        "candidate": 100.0
+      },
+      {
+        "page": 19,
+        "base": 100.0,
+        "candidate": 100.0
+      },
+      {
+        "page": 20,
+        "base": 100.0,
+        "candidate": 100.0
+      },
+      {
+        "page": 21,
+        "base": 100.0,
+        "candidate": 100.0
+      },
+      {
+        "page": 22,
+        "base": 97.66564,
+        "candidate": 97.66564
+      },
+      {
+        "page": 23,
+        "base": 100.0,
+        "candidate": 100.0
+      },
+      {
+        "page": 24,
+        "base": 100.0,
+        "candidate": 100.0
+      },
+      {
+        "page": 25,
+        "base": 96.00358,
+        "candidate": 100.0
+      },
+      {
+        "page": 26,
+        "base": 96.49808,
+        "candidate": 99.3685
+      },
+      {
+        "page": 27,
+        "base": 100.0,
+        "candidate": 100.0
+      },
+      {
+        "page": 28,
+        "base": 100.0,
+        "candidate": 100.0
+      },
+      {
+        "page": 29,
+        "base": 100.0,
+        "candidate": 100.0
+      },
+      {
+        "page": 30,
+        "base": 99.32545,
+        "candidate": 99.32545
+      },
+      {
+        "page": 31,
+        "base": 99.7104,
+        "candidate": 99.7104
+      },
+      {
+        "page": 32,
+        "base": 100.0,
+        "candidate": 100.0
+      },
+      {
+        "page": 33,
+        "base": 99.99766,
+        "candidate": 99.99766
+      },
+      {
+        "page": 34,
+        "base": 100.0,
+        "candidate": 100.0
+      },
+      {
+        "page": 35,
+        "base": 100.0,
+        "candidate": 100.0
+      },
+      {
+        "page": 36,
+        "base": 100.0,
+        "candidate": 100.0
+      }
+    ]
+  },
+  "reviews": [
+    {
+      "key": "sample4-candidate",
+      "page": 21,
+      "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/sample4-candidate/review/review_021.png",
+      "metrics": {
+        "page": 21,
+        "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-sample4/sample4/rhwp_png/rhwp_021.png",
+        "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-sample4/sample4/pdf_png/pdf-021.png",
+        "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/sample4-candidate/overlay/overlay_021.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 12369,
+        "diff_ratio": 0.01388421,
+        "pixel_match_percent": 98.61158,
+        "ink_union_pixels": 139664,
+        "ink_diff_pixels": 12369,
+        "ink_diff_ratio": 0.08856255,
+        "ink_match_percent": 91.14374,
+        "visual_accuracy_proxy_percent": 91.14374,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 139664,
+        "tolerant_content_match_percent": 100.0,
+        "mean_abs_channel_delta": 1.257,
+        "max_channel_delta": 243,
+        "diff_bbox": [
+          113,
+          132,
+          679,
+          998
+        ]
+      }
+    },
+    {
+      "key": "sample4-candidate",
+      "page": 22,
+      "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/sample4-candidate/review/review_022.png",
+      "metrics": {
+        "page": 22,
+        "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-sample4/sample4/rhwp_png/rhwp_022.png",
+        "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-sample4/sample4/pdf_png/pdf-022.png",
+        "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/sample4-candidate/overlay/overlay_022.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 19744,
+        "diff_ratio": 0.02216265,
+        "pixel_match_percent": 97.78373,
+        "ink_union_pixels": 412919,
+        "ink_diff_pixels": 19744,
+        "ink_diff_ratio": 0.04781567,
+        "ink_match_percent": 95.21843,
+        "visual_accuracy_proxy_percent": 95.21843,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 97.66564,
+        "silhouette_raw_unmatched_pixels": 9639,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 412919,
+        "tolerant_content_match_percent": 97.66564,
+        "mean_abs_channel_delta": 1.505,
+        "max_channel_delta": 169,
+        "diff_bbox": [
+          113,
+          132,
+          679,
+          998
+        ]
+      }
+    },
+    {
+      "key": "sample4-candidate",
+      "page": 25,
+      "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/sample4-candidate/review/review_025.png",
+      "metrics": {
+        "page": 25,
+        "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-sample4/sample4/rhwp_png/rhwp_025.png",
+        "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-sample4/sample4/pdf_png/pdf-025.png",
+        "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/sample4-candidate/overlay/overlay_025.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 14777,
+        "diff_ratio": 0.01658719,
+        "pixel_match_percent": 98.34128,
+        "ink_union_pixels": 221947,
+        "ink_diff_pixels": 14777,
+        "ink_diff_ratio": 0.06657896,
+        "ink_match_percent": 93.3421,
+        "visual_accuracy_proxy_percent": 93.3421,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 221947,
+        "tolerant_content_match_percent": 100.0,
+        "mean_abs_channel_delta": 1.66,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          114,
+          132,
+          673,
+          982
+        ]
+      }
+    },
+    {
+      "key": "sample4-candidate",
+      "page": 26,
+      "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/sample4-candidate/review/review_026.png",
+      "metrics": {
+        "page": 26,
+        "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-sample4/sample4/rhwp_png/rhwp_026.png",
+        "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-sample4/sample4/pdf_png/pdf-026.png",
+        "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/sample4-candidate/overlay/overlay_026.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 13684,
+        "diff_ratio": 0.0153603,
+        "pixel_match_percent": 98.46397,
+        "ink_union_pixels": 359146,
+        "ink_diff_pixels": 13684,
+        "ink_diff_ratio": 0.0381015,
+        "ink_match_percent": 96.18985,
+        "visual_accuracy_proxy_percent": 96.18985,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.3685,
+        "silhouette_raw_unmatched_pixels": 2268,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 359146,
+        "tolerant_content_match_percent": 99.3685,
+        "mean_abs_channel_delta": 1.282,
+        "max_channel_delta": 161,
+        "diff_bbox": [
+          113,
+          176,
+          679,
+          1014
+        ]
+      }
+    },
+    {
+      "key": "sample4-candidate",
+      "page": 30,
+      "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/sample4-candidate/review/review_030.png",
+      "metrics": {
+        "page": 30,
+        "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-sample4/sample4/rhwp_png/rhwp_030.png",
+        "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-sample4/sample4/pdf_png/pdf-030.png",
+        "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/sample4-candidate/overlay/overlay_030.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 22614,
+        "diff_ratio": 0.02538423,
+        "pixel_match_percent": 97.46158,
+        "ink_union_pixels": 232156,
+        "ink_diff_pixels": 22614,
+        "ink_diff_ratio": 0.09740864,
+        "ink_match_percent": 90.25914,
+        "visual_accuracy_proxy_percent": 90.25914,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.32545,
+        "silhouette_raw_unmatched_pixels": 1566,
+        "silhouette_boundary_reconciled_pixels": 1,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 232156,
+        "tolerant_content_match_percent": 99.32588,
+        "mean_abs_channel_delta": 2.534,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          113,
+          134,
+          669,
+          997
+        ]
+      }
+    },
+    {
+      "key": "sample4-base",
+      "page": 25,
+      "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/sample4-base/review/review_025.png",
+      "metrics": {
+        "page": 25,
+        "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/base-wasm-sample4/sample4/rhwp_png/rhwp_025.png",
+        "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/base-wasm-sample4/sample4/pdf_png/pdf-025.png",
+        "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/sample4-base/overlay/overlay_025.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 24509,
+        "diff_ratio": 0.02751137,
+        "pixel_match_percent": 97.24886,
+        "ink_union_pixels": 231507,
+        "ink_diff_pixels": 24509,
+        "ink_diff_ratio": 0.10586721,
+        "ink_match_percent": 89.41328,
+        "visual_accuracy_proxy_percent": 89.41328,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 96.00358,
+        "silhouette_raw_unmatched_pixels": 9252,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 231507,
+        "tolerant_content_match_percent": 96.00358,
+        "mean_abs_channel_delta": 3.59,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          114,
+          132,
+          673,
+          1008
+        ]
+      }
+    },
+    {
+      "key": "sample4-base",
+      "page": 26,
+      "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/sample4-base/review/review_026.png",
+      "metrics": {
+        "page": 26,
+        "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/base-wasm-sample4/sample4/rhwp_png/rhwp_026.png",
+        "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/base-wasm-sample4/sample4/pdf_png/pdf-026.png",
+        "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/sample4-base/overlay/overlay_026.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 23956,
+        "diff_ratio": 0.02689063,
+        "pixel_match_percent": 97.31094,
+        "ink_union_pixels": 359146,
+        "ink_diff_pixels": 23956,
+        "ink_diff_ratio": 0.06670268,
+        "ink_match_percent": 93.32973,
+        "visual_accuracy_proxy_percent": 93.32973,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 96.49808,
+        "silhouette_raw_unmatched_pixels": 12577,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 359146,
+        "tolerant_content_match_percent": 96.49808,
+        "mean_abs_channel_delta": 3.302,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          113,
+          132,
+          679,
+          1014
+        ]
+      }
+    },
+    {
+      "key": "handbook",
+      "page": 130,
+      "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/handbook/review/review_130.png",
+      "metrics": {
+        "page": 130,
+        "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-handbook/handbook/rhwp_png/rhwp_130.png",
+        "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-handbook/handbook/pdf_png/pdf-130.png",
+        "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/handbook/overlay/overlay_130.png",
+        "width": 740,
+        "height": 1006,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 744440,
+        "diff_pixels": 20352,
+        "diff_ratio": 0.02733867,
+        "pixel_match_percent": 97.26613,
+        "ink_union_pixels": 64760,
+        "ink_diff_pixels": 20352,
+        "ink_diff_ratio": 0.31426807,
+        "ink_match_percent": 68.57319,
+        "visual_accuracy_proxy_percent": 68.57319,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 99.96448,
+        "silhouette_raw_unmatched_pixels": 23,
+        "silhouette_boundary_reconciled_pixels": 5,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 64760,
+        "tolerant_content_match_percent": 99.97221,
+        "mean_abs_channel_delta": 2.774,
+        "max_channel_delta": 244,
+        "diff_bbox": [
+          113,
+          81,
+          739,
+          927
+        ]
+      }
+    },
+    {
+      "key": "handbook",
+      "page": 200,
+      "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/handbook/review/review_200.png",
+      "metrics": {
+        "page": 200,
+        "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-handbook/handbook/rhwp_png/rhwp_200.png",
+        "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-handbook/handbook/pdf_png/pdf-200.png",
+        "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/handbook/overlay/overlay_200.png",
+        "width": 740,
+        "height": 1006,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 744440,
+        "diff_pixels": 27744,
+        "diff_ratio": 0.03726828,
+        "pixel_match_percent": 96.27317,
+        "ink_union_pixels": 84120,
+        "ink_diff_pixels": 27744,
+        "ink_diff_ratio": 0.32981455,
+        "ink_match_percent": 67.01854,
+        "visual_accuracy_proxy_percent": 67.01854,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 84120,
+        "tolerant_content_match_percent": 100.0,
+        "mean_abs_channel_delta": 3.474,
+        "max_channel_delta": 255,
+        "diff_bbox": [
+          113,
+          81,
+          739,
+          927
+        ]
+      }
+    },
+    {
+      "key": "band",
+      "page": 1,
+      "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/band/review/review_001.png",
+      "metrics": {
+        "page": 1,
+        "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-band/band/rhwp_png/rhwp_001.png",
+        "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-band/band/pdf_png/pdf-001.png",
+        "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/band/overlay/overlay_001.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 5181,
+        "diff_ratio": 0.00581568,
+        "pixel_match_percent": 99.41843,
+        "ink_union_pixels": 6839,
+        "ink_diff_pixels": 5181,
+        "ink_diff_ratio": 0.7575669,
+        "ink_match_percent": 24.24331,
+        "visual_accuracy_proxy_percent": 24.24331,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 6839,
+        "tolerant_content_match_percent": 100.0,
+        "mean_abs_channel_delta": 0.586,
+        "max_channel_delta": 149,
+        "diff_bbox": [
+          113,
+          133,
+          680,
+          433
+        ]
+      }
+    },
+    {
+      "key": "tab",
+      "page": 1,
+      "review": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/tab/review/review_001.png",
+      "metrics": {
+        "page": 1,
+        "rhwp_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-tab/tab/rhwp_png/rhwp_001.png",
+        "pdf_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/candidate-wasm-tab/tab/pdf_png/pdf-001.png",
+        "overlay_png": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/qa/wasm/tab/overlay/overlay_001.png",
+        "width": 794,
+        "height": 1122,
+        "pixel_diff_threshold": 32,
+        "overlay_color_legend": {
+          "rhwp_only": "blue",
+          "pdf_only": "red",
+          "both_different": "orange",
+          "matching": "gray"
+        },
+        "total_pixels": 890868,
+        "diff_pixels": 2342,
+        "diff_ratio": 0.0026289,
+        "pixel_match_percent": 99.73711,
+        "ink_union_pixels": 4161,
+        "ink_diff_pixels": 2342,
+        "ink_diff_ratio": 0.56284547,
+        "ink_match_percent": 43.71545,
+        "visual_accuracy_proxy_percent": 43.71545,
+        "tolerant_content_match_radius_px": 2,
+        "silhouette_method": "threshold_boundary_color_support_v1",
+        "silhouette_raw_match_percent": 100.0,
+        "silhouette_raw_unmatched_pixels": 0,
+        "silhouette_boundary_reconciled_pixels": 0,
+        "silhouette_color_tolerance": 32,
+        "silhouette_content_union_pixels": 4161,
+        "tolerant_content_match_percent": 100.0,
+        "mean_abs_channel_delta": 0.221,
+        "max_channel_delta": 192,
+        "diff_bbox": [
+          114,
+          133,
+          274,
+          327
+        ]
+      }
+    }
+  ],
+  "handbook": {
+    "pages": 383,
+    "minimum": 99.96448
+  },
+  "band": {
+    "base": {
+      "pages": 1,
+      "minimum": 100.0
+    },
+    "candidate": {
+      "pages": 1,
+      "minimum": 100.0
+    }
+  },
+  "tab": {
+    "base": {
+      "pages": 1,
+      "minimum": 100.0
+    },
+    "candidate": {
+      "pages": 1,
+      "minimum": 100.0
+    }
+  }
+}

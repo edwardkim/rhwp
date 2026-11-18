@@ -1,0 +1,662 @@
+{
+  "validatedCodeHead": "fcf2e11b1727297743343446333132e1409737f1",
+  "validatedTestHead": "699c0afbbc86db1252128b8dcc09630038a8d971",
+  "base": "22da83586aab1baf960f2159abda347062ecf7ed",
+  "files": [
+    {
+      "path": "base-pr9156.json",
+      "sha256": "16a9fc07a299c3fd38f7e6815b6a65635ad7b2727027646ed1a375f18636bb81",
+      "bytes": 1015
+    },
+    {
+      "path": "browser/exploratory-control-base-comparison.json",
+      "sha256": "c5a8b627b30438ab18a061ff984ad396e7353c99769b627a1b90b1c6a2b8f4ed",
+      "bytes": 1414
+    },
+    {
+      "path": "browser/index.json",
+      "sha256": "1d50f898128b8e2f623e3801d1aab9fed6362f8764e69ca45ad069f8b1b8c769",
+      "bytes": 1802
+    },
+    {
+      "path": "browser/natural/canvas2d.json",
+      "sha256": "95b55f86733d93feb1995af4fc5769f6b27553a0d8a678fa822579df546a3647",
+      "bytes": 2950
+    },
+    {
+      "path": "browser/natural/canvaskit-compat.json",
+      "sha256": "1d56897b93c7d1eb27afc2241e54bad67076ca7f52c3a05ca7e12d2704b7001d",
+      "bytes": 10794
+    },
+    {
+      "path": "browser/natural/canvaskit-default.json",
+      "sha256": "5fa6aff08187434b608b9fc303f2725515bf673e7aa417d577c4e934d85fdbe4",
+      "bytes": 10787
+    },
+    {
+      "path": "browser/natural/natural-p026-canvas2d-initial.png",
+      "sha256": "02496602b8e1d4dfd1b97bd3563fa828307dfbfc4f5fe2a837cc9c0f1b8b63c9",
+      "bytes": 72063
+    },
+    {
+      "path": "browser/natural/natural-p026-canvas2d-restored.png",
+      "sha256": "02496602b8e1d4dfd1b97bd3563fa828307dfbfc4f5fe2a837cc9c0f1b8b63c9",
+      "bytes": 72063
+    },
+    {
+      "path": "browser/natural/natural-p026-canvas2d-zoom-dpr-resize.png",
+      "sha256": "68384e3bdd5526837e1b26dd176fba42b49c7d16eb3cfe69fe7231d277291302",
+      "bytes": 511634
+    },
+    {
+      "path": "browser/natural/natural-p026-canvaskit-compat-initial.png",
+      "sha256": "2de16a0b7a74a5687290a81069f79694c752e6fca7e20bf59d565fc9f7132123",
+      "bytes": 126751
+    },
+    {
+      "path": "browser/natural/natural-p026-canvaskit-compat-restored.png",
+      "sha256": "2de16a0b7a74a5687290a81069f79694c752e6fca7e20bf59d565fc9f7132123",
+      "bytes": 126751
+    },
+    {
+      "path": "browser/natural/natural-p026-canvaskit-compat-zoom-dpr-resize.png",
+      "sha256": "55e96817ebf59c5ac36694c609b1700807b9364b061862d858a9bfd86c721840",
+      "bytes": 464648
+    },
+    {
+      "path": "browser/natural/natural-p026-canvaskit-default-initial.png",
+      "sha256": "2de16a0b7a74a5687290a81069f79694c752e6fca7e20bf59d565fc9f7132123",
+      "bytes": 126751
+    },
+    {
+      "path": "browser/natural/natural-p026-canvaskit-default-restored.png",
+      "sha256": "2de16a0b7a74a5687290a81069f79694c752e6fca7e20bf59d565fc9f7132123",
+      "bytes": 126751
+    },
+    {
+      "path": "browser/natural/natural-p026-canvaskit-default-zoom-dpr-resize.png",
+      "sha256": "55e96817ebf59c5ac36694c609b1700807b9364b061862d858a9bfd86c721840",
+      "bytes": 464648
+    },
+    {
+      "path": "browser/original-fonts/overlay-021.png",
+      "sha256": "6324b1a8cf2680e38ad01bc2384589e8f96382e5c1d374ba6a1c7cffbbd1406f",
+      "bytes": 110403
+    },
+    {
+      "path": "browser/original-fonts/overlay-025.png",
+      "sha256": "7184d901d5f475ba7aa1db6714cc715457484a0fe0c3e7e323e52385278cbc5e",
+      "bytes": 133793
+    },
+    {
+      "path": "browser/original-fonts/overlay-026.png",
+      "sha256": "19c121542a7a0e2bc77f65da2281e311b366d8ace48dcb8575b049ef2899e16e",
+      "bytes": 122417
+    },
+    {
+      "path": "browser/original-fonts/report.json",
+      "sha256": "e0c4591adc54d85b7792122726b25134b3c18c37ea67c3a57f9eb7e417ba581d",
+      "bytes": 45752
+    },
+    {
+      "path": "browser/original-fonts/review-021.png",
+      "sha256": "eb63bf5d6ecdcc8006e64049c78c5fa1d277f114b741b24ce83821d92ded2ed6",
+      "bytes": 341437
+    },
+    {
+      "path": "browser/original-fonts/review-025.png",
+      "sha256": "527a755252c2ad16fd261f432f9be06575d14fd8d1d04c8371642e5a6315d1cc",
+      "bytes": 416560
+    },
+    {
+      "path": "browser/original-fonts/review-026.png",
+      "sha256": "a69bd8775b48c1e9a8bcf63e1386c3a77db609ce53f2b9f16de30d7cbf3fc6f3",
+      "bytes": 349263
+    },
+    {
+      "path": "browser/original-fonts/sample4-p021/canvas2d-print.png",
+      "sha256": "f190ed48bd25b9c58cf36c13ff8b9f6b2c3c91f979915318aaad5e3220a40bee",
+      "bytes": 46602
+    },
+    {
+      "path": "browser/original-fonts/sample4-p025/canvas2d-print.png",
+      "sha256": "80d1cea637d0b2b768e7096b00b28aadb0aedc04ce80bf08ea03c8626f1fe280",
+      "bytes": 56702
+    },
+    {
+      "path": "browser/original-fonts/sample4-p026/canvas2d-print.png",
+      "sha256": "608f20fcd593d0a2b5a8ecdc55a75264359b1322c17ca7c28d4756de2284f6e7",
+      "bytes": 71360
+    },
+    {
+      "path": "browser/original-fonts/silhouette.tsv",
+      "sha256": "e739a9f25c56d094d9361a32d249141e5dd333e2cf5cc3ad1c4cddd7f0b73be4",
+      "bytes": 175
+    },
+    {
+      "path": "browser/summary.json",
+      "sha256": "402e753087f22f89c684405ed31465890225d8d1731dd7d84cd4ed5f3ed9e15a",
+      "bytes": 37827
+    },
+    {
+      "path": "browser/supported-ttf-paint-control/report.json",
+      "sha256": "68484b7caa6b5ce0aa3b639d60139cb29d76c34b194c3461a9c72f16bd0b46f7",
+      "bytes": 31774
+    },
+    {
+      "path": "browser/supported-ttf-paint-control/sample4-p026/canvas2d-print.png",
+      "sha256": "608f20fcd593d0a2b5a8ecdc55a75264359b1322c17ca7c28d4756de2284f6e7",
+      "bytes": 71360
+    },
+    {
+      "path": "browser/supported-ttf-paint-control/sample4-p026/canvaskit-compat-print-software.png",
+      "sha256": "a3563ce96686705a989d06a738304a4ad4a1a30419de2b750757122cee9232ab",
+      "bytes": 126687
+    },
+    {
+      "path": "browser/supported-ttf-paint-control/sample4-p026/canvaskit-default-print-software.png",
+      "sha256": "a3563ce96686705a989d06a738304a4ad4a1a30419de2b750757122cee9232ab",
+      "bytes": 126687
+    },
+    {
+      "path": "build-provenance.json",
+      "sha256": "83d428e85913004c75e1c96ebdd66ec846092fea2df76540e759e1f000598f6a",
+      "bytes": 3743
+    },
+    {
+      "path": "contributor/52ee61fe7201e36b/native/overlay.png",
+      "sha256": "edbaf409f2c99bd3b0c32e3156467b87fe7c4d6b4554c08319912c2a94a381a4",
+      "bytes": 47936
+    },
+    {
+      "path": "contributor/52ee61fe7201e36b/native/review.png",
+      "sha256": "3ae24eb564b77cff3620bb29707921c56a5a3fde14bbef5015432cf0daea371f",
+      "bytes": 98787
+    },
+    {
+      "path": "contributor/52ee61fe7201e36b/native/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "path": "contributor/52ee61fe7201e36b/wasm/overlay.png",
+      "sha256": "04eb25a56c258c780560002f32202ca30882f17a962f27f24d3a61494a635577",
+      "bytes": 46255
+    },
+    {
+      "path": "contributor/52ee61fe7201e36b/wasm/review.png",
+      "sha256": "004cec931d601c6a0fb411bddb527a82e2a394ed8ac691b2dd06a774f38d14f2",
+      "bytes": 94846
+    },
+    {
+      "path": "contributor/52ee61fe7201e36b/wasm/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "path": "contributor/59f6ab1155623bda/native/overlay.png",
+      "sha256": "6768269185d4f90bd8a891598a77e90bd027cdd40bb09ff99c575185a6c4f63d",
+      "bytes": 26827
+    },
+    {
+      "path": "contributor/59f6ab1155623bda/native/review.png",
+      "sha256": "9021bb5e84d0fdafb32ccafaeb2ecf5e5da0ebc1ff5fbe1d6562de81f7040754",
+      "bytes": 38590
+    },
+    {
+      "path": "contributor/59f6ab1155623bda/native/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "path": "contributor/59f6ab1155623bda/wasm/overlay.png",
+      "sha256": "9b173d496a168679f302d9513fc3439ad9355c1af08c81d69c221e0f9e90b308",
+      "bytes": 26793
+    },
+    {
+      "path": "contributor/59f6ab1155623bda/wasm/review.png",
+      "sha256": "1113190329c81e3b511d9b897b669ccb53168620168bb622e25d44a69ebd1ae0",
+      "bytes": 38539
+    },
+    {
+      "path": "contributor/59f6ab1155623bda/wasm/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "path": "contributor/cdacd874b6e6ac66/native/overlay.png",
+      "sha256": "e492665747dd06f00373e8a93934f59652f6eda4af703575e77bd2ec71d8fb34",
+      "bytes": 69208
+    },
+    {
+      "path": "contributor/cdacd874b6e6ac66/native/review.png",
+      "sha256": "8ae93a85525666d5df563119a25f43aac3705f9bd003c0aad2da71eb8474ec38",
+      "bytes": 206625
+    },
+    {
+      "path": "contributor/cdacd874b6e6ac66/native/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "path": "contributor/cdacd874b6e6ac66/wasm/overlay.png",
+      "sha256": "35a911ebe2d4755ac652a082beed6921272ebb49e6e6605dda0a3b91b0db5626",
+      "bytes": 69134
+    },
+    {
+      "path": "contributor/cdacd874b6e6ac66/wasm/review.png",
+      "sha256": "8abc67a85b0bab59101a3db8d71ad5f101790ac3fd73149e21915408bccbffbe",
+      "bytes": 206984
+    },
+    {
+      "path": "contributor/cdacd874b6e6ac66/wasm/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "path": "contributor/d03a9dde3d5dc7ac/native/overlay.png",
+      "sha256": "13aa1d8844d06bd3593d96bcdb19fa5a29e28beebfa28e78dbaf7ea4dcd4de2d",
+      "bytes": 49504
+    },
+    {
+      "path": "contributor/d03a9dde3d5dc7ac/native/review.png",
+      "sha256": "2aa82e664eba1bf96b69864941d873d9f0962caa0b800417f91e5dc741611ee5",
+      "bytes": 112948
+    },
+    {
+      "path": "contributor/d03a9dde3d5dc7ac/native/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "path": "contributor/d03a9dde3d5dc7ac/wasm/overlay.png",
+      "sha256": "eda0ab33f824f0baf982af9ce058789cb72828b57b66359374735c2eccbf49fc",
+      "bytes": 49373
+    },
+    {
+      "path": "contributor/d03a9dde3d5dc7ac/wasm/review.png",
+      "sha256": "60aab5e68772376dd2a2148c6319829729548195a4a0c88a431cbfc4385de467",
+      "bytes": 112825
+    },
+    {
+      "path": "contributor/d03a9dde3d5dc7ac/wasm/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "path": "contributor/summary.json",
+      "sha256": "306b6265e9a8deaf97ce08d7271af564abaab32617615451a6048d5aeeef1814",
+      "bytes": 15530
+    },
+    {
+      "path": "direct-inspection.json",
+      "sha256": "ad6e90d294ff33a92b9fe050299f18055b635a19c79fea8c8d7e53d3328cfa9e",
+      "bytes": 98121
+    },
+    {
+      "path": "font-supply.json",
+      "sha256": "3c92742556802fdf419880a39d1ef5aaca71de6fc25150d6578add00457d67a7",
+      "bytes": 14066
+    },
+    {
+      "path": "images/native/band-review.png",
+      "sha256": "00cc21dc68ae156a6d20fa5be160d780d0a0bb170d73b69a9a23b5634dafca58",
+      "bytes": 67946
+    },
+    {
+      "path": "images/native/handbook-review-130.png",
+      "sha256": "2bc01cfca1c096694523b6180449db1469cc6c00653ded0e6fd034ff877a4288",
+      "bytes": 466332
+    },
+    {
+      "path": "images/native/handbook-review-200.png",
+      "sha256": "a52692909d4e006133220158afa336643054878f11bbe1a2a49b46d1d0d5a571",
+      "bytes": 458530
+    },
+    {
+      "path": "images/native/sample4-overlay-021.png",
+      "sha256": "401fe2ec6b58c5b2b1287b0ab3658c650d1077b80bf1951e3b3a6402a0db02db",
+      "bytes": 193134
+    },
+    {
+      "path": "images/native/sample4-overlay-022.png",
+      "sha256": "5f3b0067c18159dc0fa191e9d50cd1a088782004ae8c5c5d6d07edafb27ef1ad",
+      "bytes": 119872
+    },
+    {
+      "path": "images/native/sample4-overlay-025.png",
+      "sha256": "3ad248b53f1adf04a6a9a72fa63102723ca7b9a7bb9a0650dc839caef0762ec9",
+      "bytes": 237522
+    },
+    {
+      "path": "images/native/sample4-overlay-026.png",
+      "sha256": "f946336dd9abaa3e192676164d6eca74b6ba8999810c5a8111b8b5e2b2672af4",
+      "bytes": 194862
+    },
+    {
+      "path": "images/native/sample4-overlay-030.png",
+      "sha256": "6a5cef54d77c390dccb20df5eda158d577458e9d9899a2e1592df13cd067f8d1",
+      "bytes": 188816
+    },
+    {
+      "path": "images/native/sample4-review-021.png",
+      "sha256": "5d17d6ac26f3eae1411529b9332214d6b300d610bcc1aa3b2caa1083b4bc22e1",
+      "bytes": 529351
+    },
+    {
+      "path": "images/native/sample4-review-022.png",
+      "sha256": "a44a7357294880c1c82beae6192e5cbe71bfe313542dc34261797449767cdbc6",
+      "bytes": 308584
+    },
+    {
+      "path": "images/native/sample4-review-025.png",
+      "sha256": "af5f91889a13143bfa880b8b2a865b824403d2edebcc6081a73b494746b35c7b",
+      "bytes": 649473
+    },
+    {
+      "path": "images/native/sample4-review-026.png",
+      "sha256": "6582c18117f0539117175c98ea78eb1c2a49ce4b464155cc05e637112ff8873e",
+      "bytes": 513344
+    },
+    {
+      "path": "images/native/sample4-review-030.png",
+      "sha256": "7435a7fc93e01f5d0d66ffa199fec92ced0df73ecd128c58362a7f806fb8b0b0",
+      "bytes": 567767
+    },
+    {
+      "path": "images/native/source-layout-enlarged.png",
+      "sha256": "8bef0e37a329c744290667c32dfae470ce29d31c891955fe3e5d1dbaea808ffe",
+      "bytes": 981232
+    },
+    {
+      "path": "images/native/tab-review.png",
+      "sha256": "122b9237901e038d727c28d49854263fd24d990c23dcf9fe50ca6f8a7a908959",
+      "bytes": 75020
+    },
+    {
+      "path": "images/svg/review-021.png",
+      "sha256": "d32227a65021b5f1fc58cd71e99bf5a5ae4d8c3eaf39103d0794d60d21b1f7cc",
+      "bytes": 484302
+    },
+    {
+      "path": "images/svg/review-025.png",
+      "sha256": "d85b886efa6e0a9b2fe4f7014b94cc35c1898060466fdb4fc763ba61ac254619",
+      "bytes": 586353
+    },
+    {
+      "path": "images/svg/review-026.png",
+      "sha256": "0fe37d5e4d24d4225a3f0d13d8c17a3c7c75ac14461f84d8b3dac534803ce6ff",
+      "bytes": 488112
+    },
+    {
+      "path": "images/wasm/band-review.png",
+      "sha256": "56279f8f4b4bf1c5eb6cdcccc84bd3457aac3405c1b7d71ba7003c052eeb2d7b",
+      "bytes": 67337
+    },
+    {
+      "path": "images/wasm/handbook-review-130.png",
+      "sha256": "de0cb1a9710ef91106611635a3a0b6ddc42f2e8fe7f8ccee8fdf334226f8dc65",
+      "bytes": 465952
+    },
+    {
+      "path": "images/wasm/handbook-review-200.png",
+      "sha256": "8687582af708ac371e2c37c5b0a419015a49702873921eafc78a27843fb5c7b2",
+      "bytes": 458396
+    },
+    {
+      "path": "images/wasm/sample4-overlay-021.png",
+      "sha256": "60653ab8aa87405eb9e2683350a86a4b181dd8564268132b5589bbcf786435f0",
+      "bytes": 193243
+    },
+    {
+      "path": "images/wasm/sample4-overlay-022.png",
+      "sha256": "4c871a507c0df378eec1e3eee1ca7fe9ce4a5e0c2e499c9df4bee7a25f7a1f4f",
+      "bytes": 118811
+    },
+    {
+      "path": "images/wasm/sample4-overlay-025.png",
+      "sha256": "fc576467908d654615fc60f122ed10ddb5b652c01485c10a38eedb1b89b23734",
+      "bytes": 236939
+    },
+    {
+      "path": "images/wasm/sample4-overlay-026.png",
+      "sha256": "9d532dacd61b4c886ff8594552b5c712db671984d0a98a368f194943a5f01a30",
+      "bytes": 194552
+    },
+    {
+      "path": "images/wasm/sample4-overlay-030.png",
+      "sha256": "b7b86acc4ade55d52d06e610dae4b2aec86c13b8ed5c640f42b1c214c25a0a99",
+      "bytes": 188413
+    },
+    {
+      "path": "images/wasm/sample4-review-021.png",
+      "sha256": "1cbfffd14c155ff481e2b3271f862e2ecfc1c6d6d31f4409266a52e140d15043",
+      "bytes": 529128
+    },
+    {
+      "path": "images/wasm/sample4-review-022.png",
+      "sha256": "6609355aca1b511db53c30b4b2e57e070a3bcbb47457856fdd1f3f9e074ce635",
+      "bytes": 306442
+    },
+    {
+      "path": "images/wasm/sample4-review-025.png",
+      "sha256": "e1e8bc20918a9f85e7dfbbc43f32e20476556a3a192495f9bedd720cb3a4a1d1",
+      "bytes": 646649
+    },
+    {
+      "path": "images/wasm/sample4-review-026.png",
+      "sha256": "eaac064cbcb2a5e99af05e519241b70e9682cb13a5bd2ed36c8e9e1b00dad867",
+      "bytes": 513056
+    },
+    {
+      "path": "images/wasm/sample4-review-030.png",
+      "sha256": "db019690ab14b702e74abe20bb2e8a8e7f74add7a9f5d31519015487242f1d04",
+      "bytes": 567446
+    },
+    {
+      "path": "images/wasm/source-layout-enlarged.png",
+      "sha256": "a3bb374e117b018fa0423191af8679ebc6f544cfcd772a3191825b8624c65174",
+      "bytes": 979555
+    },
+    {
+      "path": "images/wasm/tab-review.png",
+      "sha256": "76b761cf79768da496862f37ba8be1c48618a4b2a11d83e1ef51dd67fa412ae4",
+      "bytes": 74775
+    },
+    {
+      "path": "images/windows/symbol200-review.png",
+      "sha256": "340ef9ac1d633ed0a32b62eaece2043d1a2777308078d4d705aba7fafd973d64",
+      "bytes": 443026
+    },
+    {
+      "path": "merge-followup-20261118/receipt.json",
+      "sha256": "d78b512a5dfb9672f1a1af960f1d7d983c324dd1e5c66c3342bc23d1f649e4ab",
+      "bytes": 56390
+    },
+    {
+      "path": "native-ci-registration/base-advance.json",
+      "sha256": "f83863c8f30644666efe23f26202376741da9a36c7b509f4760dc623d732a5ba",
+      "bytes": 4731
+    },
+    {
+      "path": "native-ci-registration/code-ci-0b54.json",
+      "sha256": "c934c141bd701e2b0a6a2fb158aa2a9f00f0c5559b31ee64530495154fe8ce38",
+      "bytes": 103403
+    },
+    {
+      "path": "native-ci-registration/fixture-identity.json",
+      "sha256": "c9b62f1f2205e74528b3d3811a75aa68e6adae5437ae5a4ee74735311e6051d4",
+      "bytes": 591
+    },
+    {
+      "path": "native-ci-registration/github-current-merge-proof.json",
+      "sha256": "e66b460ec39c2409cfd47f5940da4f322ed368dd1eaea59fba975cebd8d68859",
+      "bytes": 12377
+    },
+    {
+      "path": "native-ci-registration/input-commit-audit.json",
+      "sha256": "23a5327c91d63315f58e0a643f5a74272916c4ed662f7d12021098d6e65a24c7",
+      "bytes": 5365
+    },
+    {
+      "path": "native-ci-registration/minimum-font-runtime-probes.json",
+      "sha256": "d5b8d23cf4667aa89a1313cf302e1de709f9f39afb80c77e4dda18a4c8fdb505",
+      "bytes": 1790
+    },
+    {
+      "path": "native-ci-registration/native-ci-job-excerpt.json",
+      "sha256": "7f886e68f300d9f5e5083540b6796d96a71863ca3fad6151543f3bda0997632d",
+      "bytes": 873
+    },
+    {
+      "path": "native-ci-registration/previous-head-ci.json",
+      "sha256": "508d2fc6bf8e8c40ea315f3c7cbffd464b2d539a2755f259e8fe5d5d94277a35",
+      "bytes": 579
+    },
+    {
+      "path": "native-ci-registration/protected-font-qualification.json",
+      "sha256": "db7ef88faa3afae5fbd29fc9dc4bc28b9d7b57a667bc271d7e0d0eecec63b151",
+      "bytes": 12491
+    },
+    {
+      "path": "native-ci-registration/routing-and-equivalence.json",
+      "sha256": "4805abb7526ba9f7cb6a1b6de9e53b6f83839ce00fd0324cfb9f5ee936959ae3",
+      "bytes": 1612
+    },
+    {
+      "path": "native-ci-registration/tests.json",
+      "sha256": "702b94bb066ce31b6b9c7bf38c5e847eadb87b25c08d27d0455292cfd4fbc398",
+      "bytes": 6257
+    },
+    {
+      "path": "native-ci-registration/windows-lint.json",
+      "sha256": "aa83bb83485f1f016c031312c384a7eb641ffb0aa6cb80d5b96245c7935c5ffa",
+      "bytes": 3574
+    },
+    {
+      "path": "README.md",
+      "sha256": "032f1a677134987df2dc2cb41a9ef33a0173e81d1aee3607db3cc07fd5ab3ca7",
+      "bytes": 11624
+    },
+    {
+      "path": "rust-validation.json",
+      "sha256": "e2372474e339140c1da51b4ec5d817fd142584c8bfda5c7dba4d79f3cdfb98d4",
+      "bytes": 12443
+    },
+    {
+      "path": "source-identity.json",
+      "sha256": "7ec60165d211dc3e9f352675422e46ce55e467921518ce3b2cbee00d57931420",
+      "bytes": 471
+    },
+    {
+      "path": "svg-validation.json",
+      "sha256": "bc32164107aea99583ead45c97379eed7dee2cb6689e8d80842d08c6a0ac4f9b",
+      "bytes": 2081
+    },
+    {
+      "path": "visual/index.json",
+      "sha256": "4b05bdcd6d89fe5cdf7332b7ea8b4ef38734cde083cdc25b71ec7982ebdd047e",
+      "bytes": 1729
+    },
+    {
+      "path": "visual/native/base/band.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "path": "visual/native/base/sample4.tsv",
+      "sha256": "a120c9e6b84343de9ced2a3efdcba62d1b35226b4a5953da0c843c7fcd134f4b",
+      "bytes": 849
+    },
+    {
+      "path": "visual/native/base/tab.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "path": "visual/native/candidate/band.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "path": "visual/native/candidate/handbook.tsv",
+      "sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590",
+      "bytes": 8428
+    },
+    {
+      "path": "visual/native/candidate/sample4.tsv",
+      "sha256": "2364d24d487d04cf7ab2222c19ccb1eae6460f34627c86e94ca07d3b4f03529e",
+      "bytes": 851
+    },
+    {
+      "path": "visual/native/candidate/tab.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "path": "visual/native/required-handbook-8153-gate.json",
+      "sha256": "ec1426f3f095b4d44bb27c34ffd3c302fe71400ebce5ef58cefa47f4708f1e50",
+      "bytes": 563
+    },
+    {
+      "path": "visual/native-summary.json",
+      "sha256": "b264f4f7600d91175de138f1da9241f8fe59bb4a7ce653af74db01704350ecc8",
+      "bytes": 24985
+    },
+    {
+      "path": "visual/wasm/base/band.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "path": "visual/wasm/base/sample4.tsv",
+      "sha256": "469881f2e5fd5819c8cb65a38a2fb40611977554f5fe70697fe22996a021cb55",
+      "bytes": 849
+    },
+    {
+      "path": "visual/wasm/base/tab.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "path": "visual/wasm/candidate/band.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "path": "visual/wasm/candidate/handbook.tsv",
+      "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+      "bytes": 8428
+    },
+    {
+      "path": "visual/wasm/candidate/sample4.tsv",
+      "sha256": "4c6153f036fdbbc013194e21fed93f032a423cd4ee0f7c937115285d04352d0d",
+      "bytes": 851
+    },
+    {
+      "path": "visual/wasm/candidate/tab.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "bytes": 132
+    },
+    {
+      "path": "visual/wasm-summary.json",
+      "sha256": "3c5edb9a9f79eab1f24affc8840d0993878a6a08c0f5639a42836836a71d06d3",
+      "bytes": 24815
+    },
+    {
+      "path": "visual/windows/symbol200.tsv",
+      "sha256": "1705bb5c4e5794bb53bea64f2ad3604c7dfa4989c477e5502db92894c9244f88",
+      "bytes": 136
+    },
+    {
+      "path": "windows-lint.json",
+      "sha256": "6ea48ddca2ce68c7c88a83451d9c6c38d334ae838d7af0c121b389b5c71fa1f3",
+      "bytes": 3685
+    },
+    {
+      "path": "windows-symbol200.json",
+      "sha256": "869f8f55f6716a0deff260265d5e4224f10622a23aadf8ea2dcc3111f6afb2e6",
+      "bytes": 6401
+    }
+  ]
+}
