@@ -1,0 +1,91 @@
+{
+  "scope": "독립 한컴 2020 Hancom PDF Print 9조건; 본문/첨자 크기는 600DPI 장치 격자로 양자화됨. 좌표 추정으로 공식 사양 수치를 발명하지 않음",
+  "rows": [
+    {
+      "label": "F0S900",
+      "font": "MalgunGothic",
+      "body_size_pt": 8.992650032043457,
+      "super_size_pt": 5.755295753479004,
+      "size_ratio": 0.6399999703058823,
+      "super_rise_em": 0.4398784789442723,
+      "sub_drop_em": 0.11996678076631398
+    },
+    {
+      "label": "F0S1100",
+      "font": "MalgunGothic",
+      "body_size_pt": 11.030982971191406,
+      "super_size_pt": 7.074217319488525,
+      "size_ratio": 0.6413043459466488,
+      "super_rise_em": 0.4346631365705919,
+      "sub_drop_em": 0.11953220693943299
+    },
+    {
+      "label": "F0S1800",
+      "font": "MalgunGothic",
+      "body_size_pt": 17.985300064086914,
+      "super_size_pt": 11.510591506958008,
+      "size_ratio": 0.6399999703058823,
+      "super_rise_em": 0.4398789031459539,
+      "sub_drop_em": 0.11996678076631398
+    },
+    {
+      "label": "F1S900",
+      "font": "Haansoft Batang",
+      "body_size_pt": 8.992650032043457,
+      "super_size_pt": 5.755295753479004,
+      "size_ratio": 0.6399999703058823,
+      "super_rise_em": 0.4398784789442723,
+      "sub_drop_em": 0.11996762916967717
+    },
+    {
+      "label": "F1S1100",
+      "font": "Haansoft Batang",
+      "body_size_pt": 11.030982971191406,
+      "super_size_pt": 7.074217319488525,
+      "size_ratio": 0.6413043459466488,
+      "super_rise_em": 0.44552938645906603,
+      "sub_drop_em": 0.11953220693943299
+    },
+    {
+      "label": "F1S1800",
+      "font": "Haansoft Batang",
+      "body_size_pt": 17.985300064086914,
+      "super_size_pt": 11.510591506958008,
+      "size_ratio": 0.6399999703058823,
+      "super_rise_em": 0.4398793273476355,
+      "sub_drop_em": 0.11996678076631398
+    },
+    {
+      "label": "F2S900",
+      "font": "Gulim",
+      "body_size_pt": 8.992650032043457,
+      "super_size_pt": 5.755295753479004,
+      "size_ratio": 0.6399999703058823,
+      "super_rise_em": 0.4398784789442723,
+      "sub_drop_em": 0.11996762916967717
+    },
+    {
+      "label": "F2S1100",
+      "font": "Gulim",
+      "body_size_pt": 11.030982971191406,
+      "super_size_pt": 7.074217319488525,
+      "size_ratio": 0.6413043459466488,
+      "super_rise_em": 0.4346624449373484,
+      "sub_drop_em": 0.11953359020591997
+    },
+    {
+      "label": "F2S1800",
+      "font": "Gulim",
+      "body_size_pt": 17.985300064086914,
+      "super_size_pt": 11.510591506958008,
+      "size_ratio": 0.6399999703058823,
+      "super_rise_em": 0.4398784789442723,
+      "sub_drop_em": 0.11996678076631398
+    }
+  ],
+  "source_head": "95720075204c25961b938cf077a83365974acae3",
+  "product_source": "c89572f72a8cdbd7c4f14262dae44eee9938fa2a",
+  "original_pdf_changed": false,
+  "control_pdf_sha256": "945d04819aeea92816541be34912a5a1ed810522bb79e11bc42d32ba0d9da7d3",
+  "job_id": "23d549f1-44d2-4b3f-a5da-8d0109c5a6e5"
+}

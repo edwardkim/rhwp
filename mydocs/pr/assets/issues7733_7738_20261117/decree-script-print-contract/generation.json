@@ -1,0 +1,97 @@
+{
+  "purpose": "독립 한컴 2020 첨자 크기·baseline 대조. 기준 PDF 대체 아님",
+  "source": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/decree-parser-inspection.hwpx",
+  "input_sha256": "9fa20006fe87fd04cc390e92d90421bc4d6f0d61df24659d32bc17494a2a9750",
+  "rows": [
+    {
+      "label": "F0S900",
+      "family": "맑은 고딕",
+      "height_hu": 900,
+      "style_ids": [
+        306,
+        307,
+        308
+      ]
+    },
+    {
+      "label": "F0S1100",
+      "family": "맑은 고딕",
+      "height_hu": 1100,
+      "style_ids": [
+        309,
+        310,
+        311
+      ]
+    },
+    {
+      "label": "F0S1800",
+      "family": "맑은 고딕",
+      "height_hu": 1800,
+      "style_ids": [
+        312,
+        313,
+        314
+      ]
+    },
+    {
+      "label": "F1S900",
+      "family": "한컴바탕",
+      "height_hu": 900,
+      "style_ids": [
+        315,
+        316,
+        317
+      ]
+    },
+    {
+      "label": "F1S1100",
+      "family": "한컴바탕",
+      "height_hu": 1100,
+      "style_ids": [
+        318,
+        319,
+        320
+      ]
+    },
+    {
+      "label": "F1S1800",
+      "family": "한컴바탕",
+      "height_hu": 1800,
+      "style_ids": [
+        321,
+        322,
+        323
+      ]
+    },
+    {
+      "label": "F2S900",
+      "family": "굴림",
+      "height_hu": 900,
+      "style_ids": [
+        324,
+        325,
+        326
+      ]
+    },
+    {
+      "label": "F2S1100",
+      "family": "굴림",
+      "height_hu": 1100,
+      "style_ids": [
+        327,
+        328,
+        329
+      ]
+    },
+    {
+      "label": "F2S1800",
+      "family": "굴림",
+      "height_hu": 1800,
+      "style_ids": [
+        330,
+        331,
+        332
+      ]
+    }
+  ]
+}
