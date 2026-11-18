@@ -2522,6 +2522,7 @@ where
         .map_err(xml_error)?;
     orphan_emitted.resize(para.orphan_field_ends.len(), false);
     let text_char_count = para.text.chars().count();
+    let control_positions = para.control_text_positions();
 
     // 빈 문단(text == "")의 0-length 필드: 메인 루프가 실행되지 않아
     // pre-char 검사를 통과하지 못한다. 따라서 슬롯마다 `inner_slot_count`를
@@ -2622,7 +2623,11 @@ where
             // (실측: 19쪽 35,205자 → 2쪽 7,838자, 개체 45→1. 고아를 짝 뒤로 옮기거나
             // 지우면 100% 복원되고, beginIDRef 값만 고치는 것으로는 복원되지 않는다).
             // #1948 이 막으려던 것은 **표 등 다른 슬롯**이 갭을 가로채는 경우다.
-            let field_begin_owns_gap = matches!(slots[slot_idx], Control::Field(_));
+            // 그 fieldBegin 이 정말 이 갭(이 글자 앞)에 놓인 것일 때만이다. 뒤 글자 앞의
+            // fieldBegin 이 앞 갭의 고아 end 를 앞지르면 두 문단에 걸친 필드의 짝이 뒤바뀐다
+            // (블록 책갈피를 그 안에서 나눈 문단: `라마<end>바<begin>사`).
+            let field_begin_owns_gap = matches!(slots[slot_idx], Control::Field(_))
+                && control_positions.get(slot_ctrl_indices[slot_idx]) == Some(&idx);
             if let Some(oi) = para
                 .orphan_field_ends
                 .iter()
