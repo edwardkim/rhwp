@@ -6382,11 +6382,22 @@ impl DocumentCore {
         for (i, &(ctrl_idx, cell_idx, cell_para_idx)) in path.iter().enumerate() {
             let is_last = i == path.len() - 1;
             let paragraphs = match para.controls.get_mut(ctrl_idx) {
+                // 셀 65534는 그 표의 캡션이다(본문 셀 번호 API와 같은 꼴).
                 Some(Control::Table(t)) => {
-                    let cell = t.cells.get_mut(cell_idx).ok_or_else(|| {
-                        HwpError::RenderError(format!("경로[{}]: 셀 {} 범위 초과", i, cell_idx))
-                    })?;
-                    &mut cell.paragraphs
+                    if cell_idx == super::super::TABLE_CAPTION_CELL_SENTINEL {
+                        &mut t
+                            .caption
+                            .as_mut()
+                            .ok_or_else(|| {
+                                HwpError::RenderError(format!("경로[{}]: 표에 캡션이 없습니다", i))
+                            })?
+                            .paragraphs
+                    } else {
+                        let cell = t.cells.get_mut(cell_idx).ok_or_else(|| {
+                            HwpError::RenderError(format!("경로[{}]: 셀 {} 범위 초과", i, cell_idx))
+                        })?;
+                        &mut cell.paragraphs
+                    }
                 }
                 Some(Control::Shape(shape)) => {
                     let text_box = super::super::helpers::get_textbox_at_mut(shape, cell_idx)
