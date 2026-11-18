@@ -81,6 +81,7 @@ pub(crate) use square_lane::{
     square_successor_starts_beside_table, stored_line_lane_probe, StoredLineLaneProbe,
 };
 mod stored_text_page_frame;
+mod unstored_float_stack;
 pub(crate) use stored_text_page_frame::{stored_text_page_frame, StoredTextPageFrame};
 
 use std::ops::Range;
@@ -906,6 +907,9 @@ fn reflow_picture_paragraph_frame(
     dpi: f64,
 ) -> Option<ReflowPictureParagraphFrame> {
     use super::layout_frame::ParagraphBox;
+    if let Some(frame) = unstored_float_stack::paragraph_frame(para, inner_width, styles, dpi) {
+        return Some(frame);
+    }
     if !para.text.is_empty() || !crate::renderer::para_has_no_stored_line_segs(para) {
         return None;
     }
