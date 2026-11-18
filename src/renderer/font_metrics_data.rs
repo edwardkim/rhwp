@@ -225,6 +225,10 @@ pub(crate) fn verified_missing_glyph_supplier(
         // CID 글꼴로 출력한다. U+2027도 화학 원본의 독립2020 Print에서 같은
         // 공급자와 178/1024em 전진을 확인했다. 다른 weight/style은 추정하지 않는다.
         ("Batang", 1024, false, false, '\u{2024}' | '\u{2027}') => Some("Haansoft Batang"),
+        // H2GTRE.TTF(ca822120…5c234)에는 U+2027이 없다. 화학 원본의
+        // 독립 한컴2020 Print는 견고딕 제목 사이의 이 문자만 HBATANG
+        // glyph7(178/1024em)로 출력한다. HFT·다른 스타일은 별개다.
+        ("HYGothic-Extra", 1024, false, false, '\u{2027}') => Some("Haansoft Batang"),
         // 법원 서식 Print의 Haansoft Dotum CID 3과 HDOTUM hmtx의 대응.
         ("Gulim", 1024, false, false, '\u{2024}' | '\u{2027}') => Some("Haansoft Dotum"),
         // [#8619] gulim.ttc(SHA 05a38ff2…ee12)의 Dotum cmap에도 U+2024가 없다.

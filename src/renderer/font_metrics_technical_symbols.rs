@@ -152,6 +152,11 @@ pub(crate) fn verified_program_has_glyph(metric: &FontMetric, ch: char) -> Optio
             // Batang regular cmap에 U+2024·U+2027이 모두 없다. 후자의 공급자도
             // 화학 원본 27쪽의 독립 Print xref28·glyph7(178/1024em)로 확인했다.
             ("Batang", 1024, false, false) => return Some(false),
+            // H2GTRE.TTF ca822120…5c234의 실제 cmap 결측이다.
+            // 독립 Print에서 HBATANG 공급을 확인한 U+2027만 해소한다.
+            ("HYGothic-Extra", 1024, false, false) if ch == '\u{2027}' => {
+                return Some(false)
+            }
             // gulim.TTC ed750275…776c의 GulimChe regular cmap 결측.
             // 독립2020 Print에서 공급자를 확인한 U+2024만 해소한다.
             ("GulimChe", 1024, false, false) if ch == '\u{2024}' => return Some(false),
