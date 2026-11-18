@@ -6423,6 +6423,16 @@ impl DocumentCore {
                     ctrl.header_footer_paragraphs_mut()
                         .expect("머리말·꼬리말 컨트롤")
                 }
+                // 숨은 설명도 셀 0이다. 캐럿은 두지 않지만 책갈피 이름 바꾸기·지우기가 지난다.
+                Some(Control::HiddenComment(comment)) => {
+                    if cell_idx != 0 {
+                        return Err(HwpError::RenderError(format!(
+                            "경로[{}]: 숨은 설명의 cell_index는 0이어야 합니다 ({})",
+                            i, cell_idx
+                        )));
+                    }
+                    &mut comment.paragraphs
+                }
                 _ => {
                     return Err(HwpError::RenderError(format!(
                         "경로[{}]: controls[{}]가 표/글상자/그림 캡션이 아닙니다",

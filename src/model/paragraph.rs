@@ -560,8 +560,12 @@ pub const TAB_EXT_PLACEHOLDER: [u16; 7] = [0, 0, 0, 0, 0, 0, 0x0009];
 /// 한/글은 날짜·파일 경로 코드의 글을 문서를 열 때와 다른 이름으로 저장할 때 다시 쓴다.
 /// 코드 경계에서 친 글이 코드 안에 들어가면 그때 사라진다.
 fn keeps_boundary_text_outside(control: Option<&Control>) -> bool {
+    // 블록 책갈피도 한컴 12.30처럼 시작·끝 경계에서 친 글을 범위 밖에 둔다.
     matches!(control, Some(Control::Field(field))
-        if matches!(field.field_type, FieldType::Hyperlink | FieldType::Date | FieldType::Path))
+    if matches!(
+        field.field_type,
+        FieldType::Hyperlink | FieldType::Date | FieldType::Path | FieldType::Bookmark
+    ))
 }
 
 impl Paragraph {
@@ -1428,6 +1432,98 @@ impl Paragraph {
         self.remove_stream_slot(gap_start, true);
     }
 
+    /// 필드의 BEGIN·END 자리만 걷어내고 그 사이 글은 남긴다(한컴 조판 부호 지우기의 필드).
+    ///
+    /// 자리는 저장기가 쓰는 좌표로 찾는다. 짝 범위나 자리를 찾지 못하면 아무것도 바꾸지 않고
+    /// `false` 를 돌려준다.
+    pub(crate) fn unwrap_field_control(&mut self, control_idx: usize) -> bool {
+        let Some(range_idx) = self
+            .field_ranges
+            .iter()
+            .position(|range| range.control_idx == control_idx)
+        else {
+            return false;
+        };
+        let begin = crate::serializer::body_text::control_stream_slots(self)
+            .get(control_idx)
+            .copied()
+            .flatten()
+            .map(|(start, _)| start);
+        let end = crate::serializer::body_text::field_stream_ends(self)
+            .get(range_idx)
+            .copied()
+            .flatten();
+        let (Some(begin), Some(end)) = (begin, end) else {
+            return false;
+        };
+        self.field_ranges.remove(range_idx);
+        // 뒤 자리부터 걷어내야 앞 자리 좌표가 그대로다.
+        for slot in [begin.max(end), begin.min(end)] {
+            self.remove_stream_slot(slot, true);
+        }
+        self.char_count = self.char_count.saturating_sub(CTRL_CHAR_CODE_UNITS);
+        self.remove_control_entry(control_idx);
+        self.invalidate_layout_inputs();
+        true
+    }
+
+    /// 다른 문단에서 끝나는 필드(고아 끝 표지 짝)의 BEGIN 자리만 걷어내고 뒤 글은 남긴다.
+    ///
+    /// 같은 문단에서 닫히는 필드는 [`Self::unwrap_field_control`]을 쓴다. 자리를 찾지 못하면
+    /// 아무것도 바꾸지 않고 `false` 를 돌려준다.
+    pub(crate) fn remove_unclosed_field_begin(&mut self, control_idx: usize) -> bool {
+        if !matches!(self.controls.get(control_idx), Some(Control::Field(_)))
+            || self
+                .field_ranges
+                .iter()
+                .any(|range| range.control_idx == control_idx)
+        {
+            return false;
+        }
+        let Some((begin, _)) = crate::serializer::body_text::control_stream_slots(self)
+            .get(control_idx)
+            .copied()
+            .flatten()
+        else {
+            return false;
+        };
+        self.remove_stream_slot(begin, true);
+        // 컨트롤 항목을 빼며 그 8유닛도 char_count 에서 뺀다.
+        self.remove_control_entry(control_idx);
+        self.invalidate_layout_inputs();
+        true
+    }
+
+    /// 여러 문단에 걸친 필드의 고아 끝 표지 하나를 그 8유닛 자리와 함께 걷어낸다.
+    pub(crate) fn remove_orphan_field_end(&mut self, index: usize) {
+        if index >= self.orphan_field_ends.len() {
+            return;
+        }
+        let char_idx = self.orphan_field_ends.remove(index).char_idx;
+        self.remove_leading_gap_slot(char_idx);
+    }
+
+    /// `char_idx` 글자 앞 갭의 첫 8유닛을 걷어낸다. 글자 끝 갭(`char_idx` 가 글자 수)도 받는다.
+    ///
+    /// 고아 필드 끝·제목 차례 표시처럼 컨트롤 목록에 없는 표지에 쓴다. 갭 안의 차례는 축에
+    /// 영향이 없으므로 갭의 첫 슬롯을 걷는다.
+    fn remove_leading_gap_slot(&mut self, char_idx: usize) {
+        let gap_start = match char_idx.checked_sub(1) {
+            Some(prev) => self.char_offsets.get(prev).map(|offset| {
+                offset + self.text.chars().nth(prev).map_or(1, Self::char_stream_len)
+            }),
+            None => Some(0),
+        };
+        if let Some(start) = gap_start {
+            self.remove_stream_slot(start, true);
+            self.char_count = self.char_count.saturating_sub(CTRL_CHAR_CODE_UNITS);
+        }
+        self.control_mask =
+            Self::compute_control_mask_for(&self.text, &self.controls, &self.field_ranges);
+        self.forget_para_text_if_emptied();
+        self.invalidate_layout_inputs();
+    }
+
     /// `controls[control_idx]` 를 빼고 그 8유닛 자리를 걷어낸다.
     ///
     /// 그림·도형·수식·표 삭제 경로가 함께 쓴다. 자리 뒤의 글자·글자모양·영역 태그·줄 시작·
@@ -1726,7 +1822,27 @@ impl Paragraph {
             } else {
                 0
             };
-            char_end(self.char_offsets.len() - 1) + trailing_ctrl_count * 8
+            // 문단 끝에서 끝나는 블록 책갈피의 끝 표지(같은 문단 FIELD_END 또는 다른 문단에서 열린
+            // 필드의 고아 끝) 뒤에 넣는다. 그 앞에 넣으면 원시 스트림에서 글이 블록 안에 든다.
+            let outside_ends = self
+                .field_ranges
+                .iter()
+                .filter(|range| {
+                    range.start_char_idx < range.end_char_idx
+                        && range.end_char_idx == text_len
+                        && matches!(self.controls.get(range.control_idx),
+                            Some(Control::Field(field)) if field.field_type == FieldType::Bookmark)
+                })
+                .count() as u32
+                + self
+                    .orphan_field_ends
+                    .iter()
+                    .filter(|end| {
+                        end.char_idx == text_len
+                            && end.begin_ctrl_id == crate::parser::tags::FIELD_BOOKMARK
+                    })
+                    .count() as u32;
+            char_end(self.char_offsets.len() - 1) + (trailing_ctrl_count + outside_ends) * 8
         } else {
             // 텍스트가 비어있을 때: 기존 컨트롤 뒤에 삽입 (각 컨트롤 = 8 code units)
             (self.controls.len() as u32) * 8
@@ -1736,7 +1852,7 @@ impl Paragraph {
         // 서식 run을 뒤로 밀고, 끝 경계에서는 복원된 일반 서식 run을 유지한다.
         // 날짜·파일 경로 코드의 글은 한/글이 문서를 열거나 다른 이름으로 저장할 때
         // 다시 쓰므로 경계에 친 글자를 품지 않는다(서식은 일반 글처럼 앞 글자를 잇는다).
-        let outside_starts = self
+        let outside_starts = (self
             .field_ranges
             .iter()
             .filter(|range| {
@@ -1744,7 +1860,18 @@ impl Paragraph {
                     && range.start_char_idx == char_offset
                     && keeps_boundary_text_outside(self.controls.get(range.control_idx))
             })
-            .count() as u32;
+            .count()
+            // 다른 문단에서 닫히는 블록 책갈피의 시작도 경계 글을 밖(시작 앞)에 둔다.
+            + self
+                .controls
+                .iter()
+                .enumerate()
+                .filter(|&(ci, control)| {
+                    control_positions.get(ci) == Some(&char_offset)
+                        && self.spanning_field_id(ci).is_some()
+                        && !self.field_ranges.iter().any(|range| range.control_idx == ci)
+                })
+                .count()) as u32;
         let at_hyperlink_start = self.field_ranges.iter().any(|range| {
             range.start_char_idx < range.end_char_idx
                 && range.start_char_idx == char_offset
@@ -1766,9 +1893,52 @@ impl Paragraph {
         } else {
             self.char_offsets[char_offset - 1] + Self::char_stream_len(text_chars[char_offset - 1])
         };
-        let begin_units = outside_starts * 8;
+        // 글을 모두 지운 블록 책갈피(아래 5-1에서 친 글을 품는 빈 범위)는 원시 스트림에서도 끝 슬롯 앞에
+        // 넣는다. 끝 슬롯 뒤에 넣으면 범위와 원시 슬롯이 어긋나 같은 갭의 뒤 컨트롤(다른 블록 시작 따위)
+        // 자리를 잘못 센다. 누름틀 같은 다른 필드는 기존 원시 입력점의 서식을 잇도록 그대로 둔다.
+        let absorbing_ends = self
+            .field_ranges
+            .iter()
+            .filter(|range| {
+                range.start_char_idx == char_offset
+                    && range.end_char_idx == char_offset
+                    && matches!(self.controls.get(range.control_idx),
+                        Some(Control::Field(field)) if field.field_type == FieldType::Bookmark)
+            })
+            .count() as u32;
+        let utf16_insert_pos = if absorbing_ends > 0
+            && char_offset == text_len
+            && !self.char_offsets.is_empty()
+            && !inserts_before_inline_control
+        {
+            // 문단 끝 빈 범위: 끝 갭의 모든 슬롯 뒤에서 그 범위 끝 슬롯만큼 앞이다.
+            let trailing_slots = control_positions
+                .iter()
+                .enumerate()
+                .filter(|&(ci, &pos)| pos >= text_len && Some(ci) != trailing_number)
+                .count()
+                + self
+                    .field_ranges
+                    .iter()
+                    .filter(|range| range.end_char_idx >= text_len)
+                    .count()
+                + self
+                    .orphan_field_ends
+                    .iter()
+                    .filter(|end| end.char_idx >= text_len)
+                    .count()
+                + self
+                    .title_marks
+                    .iter()
+                    .filter(|mark| mark.char_idx >= text_len)
+                    .count();
+            char_end(self.char_offsets.len() - 1) + trailing_slots as u32 * 8
+        } else {
+            utf16_insert_pos
+        };
+        let begin_units = (outside_starts + absorbing_ends) * 8;
         let utf16_insert_pos =
-            if outside_starts > 0 && utf16_insert_pos >= preceding_text_end + begin_units {
+            if begin_units > 0 && utf16_insert_pos >= preceding_text_end + begin_units {
                 utf16_insert_pos - begin_units
             } else {
                 utf16_insert_pos
@@ -1894,6 +2064,14 @@ impl Paragraph {
                 || (fr.end_char_idx == char_offset && !outside && !is_caret_memo)
             {
                 fr.end_char_idx += inserted_len;
+            }
+        }
+
+        // 5-2. 다른 문단의 필드를 닫는 고아 끝도 뒤 글자와 함께 민다. 같은 자리의 끝은
+        //      그대로 둔다 — 글은 끝 슬롯 뒤(범위 밖)에 들어간다.
+        for end in &mut self.orphan_field_ends {
+            if end.char_idx > char_offset {
+                end.char_idx += inserted_len;
             }
         }
 
@@ -2075,6 +2253,14 @@ impl Paragraph {
         // IME 조합 중 delete→insert 사이클에서 필드가 일시적으로 비워질 수 있음.
         self.field_ranges
             .retain(|fr| fr.start_char_idx <= fr.end_char_idx);
+        // 다른 문단의 필드를 닫는 고아 끝도 같은 규칙으로 당긴다.
+        for end in &mut self.orphan_field_ends {
+            if end.char_idx >= del_end {
+                end.char_idx -= actual_count;
+            } else if end.char_idx > char_offset {
+                end.char_idx = char_offset;
+            }
+        }
 
         // 6. char_count 갱신
         self.char_count -= utf16_delta;
@@ -2144,6 +2330,19 @@ impl Paragraph {
             .then(|| self.trailing_auto_number(&text_positions))
             .flatten();
 
+        // 글을 모두 지운 블록 책갈피가 나누는 자리에 있으면 한컴 12.30처럼 시작은 앞 문단 끝에 남고
+        // 끝 표지만 새 문단 맨 앞으로 가 블록이 문단 나누기를 품는다.
+        let empty_blocks: Vec<usize> = self
+            .field_ranges
+            .iter()
+            .filter(|fr| {
+                fr.start_char_idx == split_pos
+                    && fr.end_char_idx == split_pos
+                    && self.spanning_field_id(fr.control_idx).is_some()
+            })
+            .map(|fr| fr.control_idx)
+            .collect();
+
         // 새 문단으로 옮길 컨트롤.
         //
         // TAC 그림/표/수식 등은 본문에서 한 글자처럼 취급되므로 문단 분할 시
@@ -2164,7 +2363,15 @@ impl Paragraph {
                     || self
                         .field_ranges
                         .iter()
-                        .any(|fr| fr.control_idx == ci && fr.start_char_idx >= split_pos))
+                        .any(|fr| {
+                            fr.control_idx == ci
+                                && fr.start_char_idx >= split_pos
+                                && !empty_blocks.contains(&ci)
+                        })
+                    // 다른 문단에서 끝나는 블록 책갈피의 시작은 놓인 글자 자리를 따라간다.
+                    || (self.spanning_field_id(ci).is_some()
+                        && !self.field_ranges.iter().any(|fr| fr.control_idx == ci)
+                        && text_positions.get(ci).is_some_and(|&at| at >= split_pos)))
                     && Some(ci) != kept_number
             })
             .collect();
@@ -2192,7 +2399,9 @@ impl Paragraph {
                 .iter()
                 .filter(|m| m.char_idx == split_pos)
                 .count();
-            self.char_offsets[split_pos] - 8 * (moved_controls + moved_marks).min(gap_slots) as u32
+            // 빈 블록의 끝 표지는 그 갭 맨 뒤 슬롯이며 새 문단 맨 앞으로 간다.
+            self.char_offsets[split_pos]
+                - 8 * (moved_controls + moved_marks + empty_blocks.len()).min(gap_slots) as u32
         } else if !self.char_offsets.is_empty() {
             self.char_stream_end(&text_chars, self.char_offsets.len() - 1, kept_number)
         } else {
@@ -2379,8 +2588,30 @@ impl Paragraph {
             std::collections::HashMap::new();
         // 걸친 필드의 끝 표지가 있던 새 문단 글자 번호. 그 표지는 앞 문단 끝으로 간다.
         let mut cut_field_ends: Vec<usize> = Vec::new();
+        // 다른 문단의 필드를 닫는 고아 끝 가운데 나눈 자리 뒤의 것은 새 문단으로 간다.
+        let mut new_orphan_ends: Vec<OrphanFieldEnd> = Vec::new();
+        for end in std::mem::take(&mut self.orphan_field_ends) {
+            if end.char_idx > split_pos {
+                new_orphan_ends.push(OrphanFieldEnd {
+                    char_idx: end.char_idx - split_pos,
+                    ..end
+                });
+            } else {
+                self.orphan_field_ends.push(end);
+            }
+        }
         for fr in &self.field_ranges {
-            if fr.start_char_idx >= split_pos {
+            if empty_blocks.contains(&fr.control_idx) {
+                if let Some(field_id) = self.spanning_field_id(fr.control_idx) {
+                    new_orphan_ends.push(OrphanFieldEnd {
+                        char_idx: 0,
+                        begin_id_ref: field_id,
+                        field_id: fr.end_field_id,
+                        begin_ctrl_id: crate::parser::tags::FIELD_BOOKMARK,
+                        ..Default::default()
+                    });
+                }
+            } else if fr.start_char_idx >= split_pos {
                 // 완전히 새 문단 쪽 → 인덱스 조정 후 이관 (control_idx는 5-2에서 리매핑)
                 new_field_ranges.push(FieldRange {
                     start_char_idx: fr.start_char_idx - split_pos,
@@ -2392,6 +2623,16 @@ impl Paragraph {
             } else if fr.end_char_idx <= split_pos {
                 // 완전히 원래 문단 쪽
                 kept_field_ranges.push(fr.clone());
+            } else if let Some(field_id) = self.spanning_field_id(fr.control_idx) {
+                // 블록 책갈피는 한컴처럼 두 문단에 걸친다. 시작은 이 문단에 남고 끝 표지는
+                // 새 문단의 고아 끝이 된다(끝 슬롯은 자리 그대로 새 문단에 있다).
+                new_orphan_ends.push(OrphanFieldEnd {
+                    char_idx: fr.end_char_idx - split_pos,
+                    begin_id_ref: field_id,
+                    field_id: fr.end_field_id,
+                    begin_ctrl_id: crate::parser::tags::FIELD_BOOKMARK,
+                    ..Default::default()
+                });
             } else {
                 // 경계에 걸친 필드: 원래 문단에서 종료
                 if fr.end_char_idx < text_chars.len() {
@@ -2469,11 +2710,14 @@ impl Paragraph {
         //    양쪽 문단에 남은 controls와 누름틀 끝 표지는 각각 8 code unit을 차지하므로 반영 필요
         let kept_text_code_units: u32 = self.text.chars().map(Self::char_stream_len).sum();
         let new_text_code_units: u32 = new_text.chars().map(Self::char_stream_len).sum();
-        let ctrl_code_units: u32 = (self.controls.len() + self.field_ranges.len()) as u32 * 8;
+        let ctrl_code_units: u32 =
+            (self.controls.len() + self.field_ranges.len() + self.orphan_field_ends.len()) as u32
+                * 8;
         self.char_count = kept_text_code_units + ctrl_code_units + 1; // +1 for paragraph end marker
-        let new_char_count =
-            new_text_code_units + (new_controls.len() + new_field_ranges.len()) as u32 * 8 + 1
-                - u32::from(moved_number_placeholder);
+        let new_char_count = new_text_code_units
+            + (new_controls.len() + new_field_ranges.len() + new_orphan_ends.len()) as u32 * 8
+            + 1
+            - u32::from(moved_number_placeholder);
 
         // 7. has_para_text: 빈 문단(텍스트 없고 컨트롤 없음)이면 PARA_TEXT 불필요
         //    HWP 프로그램은 cc=1(빈 문단)에 PARA_TEXT가 있으면 파일 손상으로 판단
@@ -2519,7 +2763,7 @@ impl Paragraph {
             hwpx_axis_shift: 0,
             range_tags: new_range_tags,
             field_ranges: new_field_ranges, // 새 문단으로 이관된 필드 범위
-            orphan_field_ends: Vec::new(),
+            orphan_field_ends: new_orphan_ends,
             char_count: new_char_count,
             para_shape_id: self.para_shape_id,
             style_id: self.style_id,
@@ -2551,6 +2795,21 @@ impl Paragraph {
         new_para
     }
 
+    /// 문단을 나눠도 두 문단에 걸쳐 남는 필드(블록 책갈피 `%bmk`)면 그 인스턴스 ID.
+    ///
+    /// 고아 끝 표지는 이 ID로 짝을 찾으므로 ID가 없는 필드는 걸치게 두지 않는다. 누름틀·
+    /// 하이퍼링크 같은 다른 필드는 지금처럼 나눈 자리에서 끝낸다.
+    fn spanning_field_id(&self, control_idx: usize) -> Option<u32> {
+        match self.controls.get(control_idx) {
+            Some(Control::Field(field))
+                if field.field_type == FieldType::Bookmark && field.field_id != 0 =>
+            {
+                Some(field.field_id)
+            }
+            _ => None,
+        }
+    }
+
     /// 다른 문단의 텍스트와 메타데이터를 현재 문단 끝에 결합한다.
     ///
     /// 병합 후 other 문단의 내용은 현재 문단에 포함된다.
@@ -2568,7 +2827,8 @@ impl Paragraph {
         storage: &S,
     ) -> Result<usize, S::Error> {
         // 텍스트 없이 컨트롤만 있는 문단(예: 그림 복사 클립보드)도 병합 대상 (#1323)
-        if other.text.is_empty() && other.controls.is_empty() {
+        if other.text.is_empty() && other.controls.is_empty() && other.orphan_field_ends.is_empty()
+        {
             return Ok(self.text.chars().count());
         }
         let self_text_len = self.text.chars().count();
@@ -2597,6 +2857,11 @@ impl Paragraph {
                 .field_ranges
                 .iter()
                 .filter(|range| range.end_char_idx >= self_text_len)
+                .count()
+            + self
+                .orphan_field_ends
+                .iter()
+                .filter(|end| end.char_idx >= self_text_len)
                 .count();
         let trailing_ctrl_units = trailing_slots as u32 * 8;
         let utf16_end: u32 = if !self.char_offsets.is_empty() {
@@ -2738,6 +3003,54 @@ impl Paragraph {
             )?;
         }
 
+        // 5-1b. 고아 끝 결합. 짝 시작이 이 문단에서 열린 채면 같은 문단 필드 범위로 닫는다.
+        for end in &other.orphan_field_ends {
+            let char_idx = end.char_idx + self_text_len;
+            let opener = (end.begin_id_ref != 0)
+                .then(|| {
+                    self.controls.iter().enumerate().position(|(ci, control)| {
+                        matches!(control, Control::Field(field) if field.field_id == end.begin_id_ref)
+                            && !self.field_ranges.iter().any(|range| range.control_idx == ci)
+                    })
+                })
+                .flatten();
+            match opener {
+                Some(ci) => {
+                    let start = control_positions.get(ci).copied().unwrap_or(self_text_len);
+                    // 시작과 끝 사이에 든 조판 부호 수(파서와 같은 계약). 끝 자리의 부호는 밖이다.
+                    let inner_slot_count = control_positions
+                        .iter()
+                        .enumerate()
+                        .filter(|&(other_ci, &at)| other_ci > ci && at < char_idx)
+                        .count()
+                        + other
+                            .try_control_text_positions(storage)?
+                            .iter()
+                            .filter(|&&at| at + self_text_len < char_idx)
+                            .count();
+                    storage.push(
+                        &mut self.field_ranges,
+                        FieldRange {
+                            start_char_idx: start,
+                            end_char_idx: char_idx,
+                            control_idx: ci,
+                            end_field_id: end.field_id,
+                            inner_slot_count,
+                        },
+                    )?;
+                }
+                None => storage.push(
+                    &mut self.orphan_field_ends,
+                    OrphanFieldEnd {
+                        char_idx,
+                        ..end.clone()
+                    },
+                )?,
+            }
+        }
+        self.field_ranges
+            .sort_by_key(|range| (range.start_char_idx, range.control_idx));
+
         // 5-2. controls / ctrl_data_records / control_mask 병합 (#1323)
         //      ctrl_data_records[i]는 controls[i] 대응이므로 self 쪽을 None 패딩 후 이어붙인다.
         if !other.controls.is_empty() {
@@ -2769,7 +3082,8 @@ impl Paragraph {
         //    split_at의 ctrl_code_units 계산과 정합. HWPX 직렬화가 char_count에서
         //    컨트롤 수를 역산하므로 컨트롤 유닛 포함 필수.
         self.char_count = self.text.chars().map(Self::char_stream_len).sum::<u32>()
-            + (self.controls.len() + self.field_ranges.len()) as u32 * 8
+            + (self.controls.len() + self.field_ranges.len() + self.orphan_field_ends.len()) as u32
+                * 8
             + 1;
 
         // 7. has_para_text: 병합 후 텍스트/컨트롤이 있으면 PARA_TEXT 필요

@@ -919,4 +919,28 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
          호출하지 않아 관측된 유실이 없다. 구역 전체 재직렬화(FIX-4 계열) 위험이 있어 \
          추정으로 고치지 않고 지속성 계약 확정까지 보류한다.",
     ),
+    (
+        "queries/bookmark_query.rs",
+        "add_bookmark_at_native",
+        Exempt::DelegatesTo("bookmark_edited"),
+        "보통 책갈피를 넣은 뒤 주소 공통 후처리에 맡긴다. 그 helper가 구역 raw_stream을 비우고 다시 조판한다(바탕쪽은 구역 정의도 옮긴다).",
+    ),
+    (
+        "queries/bookmark_query.rs",
+        "add_block_bookmark_native",
+        Exempt::DelegatesTo("bookmark_edited"),
+        "블록 책갈피를 넣은 뒤 주소 공통 후처리에 맡긴다. 그 helper가 구역 raw_stream을 비우고 다시 조판한다(바탕쪽은 구역 정의도 옮긴다).",
+    ),
+    (
+        "queries/bookmark_query.rs",
+        "rename_bookmark_at_native",
+        Exempt::DelegatesTo("bookmark_edited"),
+        "책갈피 이름을 바꾼 뒤 주소 공통 후처리에 맡긴다. 그 helper가 구역 raw_stream을 비우고 다시 조판한다(바탕쪽은 구역 정의도 옮긴다).",
+    ),
+    (
+        "queries/bookmark_query.rs",
+        "delete_bookmark_at_native",
+        Exempt::DelegatesTo("bookmark_edited"),
+        "책갈피를 지운 뒤 주소 공통 후처리에 맡긴다. 그 helper가 구역 raw_stream을 비우고 다시 조판한다(바탕쪽은 구역 정의도 옮긴다).",
+    ),
 ];
