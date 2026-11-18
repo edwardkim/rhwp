@@ -7903,6 +7903,24 @@ impl LayoutEngine {
             // 텍스트 자체의 overflow 처리는 별도 이슈.
             let col_top = col_area.y;
             let col_bot = col_area.y + col_area.height;
+            let is_body_column = matches!(col_node.node_type, RenderNodeType::Column(_));
+            let accepted_line_boxes: std::collections::HashMap<_, _> = col_node
+                .children
+                .iter()
+                .filter(|node| {
+                    is_body_column && matches!(node.node_type, RenderNodeType::TextLine(_))
+                })
+                .map(|node| (node.id, node.bbox))
+                .collect();
+            // 수용한 본문 글줄은 생산된 후행 채움 밴드도 소유한다. 흐름 예산에서
+            // 마지막 줄간격을 회수해도 그 밴드를 자르지 않는다. 외곽 테두리는 아래의
+            // 물리 단 경계를 유지하며, 넘친 글줄·셀·머리말·앵커 없는 채움도 계속 자른다.
+            let fill_paint_bottom = |band: &fill_background::ParagraphFillBand| {
+                band.anchor
+                    .and_then(|(id, _)| accepted_line_boxes.get(&id))
+                    .filter(|line| line.y >= col_top && line.y + line.height <= col_bot)
+                    .map_or(col_bot, |_| col_bot.max(band.bottom))
+            };
             for g in groups.iter_mut() {
                 if g.2 < col_top {
                     g.2 = col_top;
@@ -8051,7 +8069,7 @@ impl LayoutEngine {
                         } else {
                             band.top.max(col_top)
                         };
-                        let bottom = band.bottom.min(range.4).min(col_bot)
+                        let bottom = band.bottom.min(range.4).min(fill_paint_bottom(band))
                             + if range_order + 1 == range_count && last_band {
                                 effective_bot_pad
                             } else {

@@ -1,5 +1,5 @@
 //! 검사 유형: 관계형·고정형. 그림의 소속·순서·내용 보존을 검사한다.
-//! 주석 갱신: 2026-11-17T18:51:52+09:00; 직전 변경: 062e7a4db540861e4d0eebea16d714465484528a 2026-11-17T13:50:54+09:00.
+//! 주석 갱신: 2026-11-18T16:37:34+09:00; 직전 파일 변경: 4901eeec9a11fccbe0bbd3d6e2f463fa66d3846b 2026-11-17T21:52:27+09:00.
 //! 독립 측정 이력: 2026-11-17, source a27afaf7c9d7e2444b2ad1b14550da4ab5ab7202, hft2ttf 공급 조건.
 //! samples/hwp3-sample4.hwp 및 독립 한컴 2020 Print pdf/hwp3-sample4-2020.pdf 각 36쪽.
 //! 96 DPI, 색상 경계 보정 전 2px raw: Native 전쪽 최저 99.32%, fresh WASM 99.33%.
@@ -9,6 +9,9 @@
 //! 기존 21쪽 좌표의 독립 출처: mydocs/pr/assets/issue8219/sample4/evidence.json.
 //! NASM 그림은 독립 Print의 26쪽 소속과 그림→설명→본문 관계로 검사한다.
 //! 외부 연결 그림을 삽입한 메모리 합성 입력은 별도의 비시각 저장 계약이다.
+//! 2026-11-18 추가: 마지막 수용 글줄의 채움은 원본 줄 높이+줄간격의 포함 관계로 검사한다.
+//! 보정 전 현재 Native/fresh WASM 26쪽은 각각 99.37%; 전 36쪽 최저는 각각 97.67%다.
+//! 과거 hft2ttf 수치와 구분하며 절대 px 경계를 기대값으로 고정하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
 //! [#8218] HWP3의 그림 BinData는 실행마다 같은 순서로, binDataId 위치에 놓인다.
@@ -257,5 +260,72 @@ fn sample4_nasm_picture_and_following_text_keep_their_source_page() {
     assert!(
         !text_at(24, 852).is_empty(),
         "앞 쪽 제목도 자기 쪽에 보존한다"
+    );
+}
+
+#[test]
+fn sample4_accepted_last_line_keeps_its_declared_background_band() {
+    let core = DocumentCore::from_bytes(&read_fixture()).expect("sample4 원본");
+    let tree = core.build_page_render_tree(25).expect("26쪽 원본 배치");
+    let nodes = sample4_nodes(&tree.root);
+    let column = nodes
+        .iter()
+        .find(|node| matches!(node.node_type, RenderNodeType::Column(_)))
+        .expect("본문 단");
+    let column_bottom = column.bbox.y + column.bbox.height;
+    let unit = 96.0 / 7200.0;
+    for pi in [889, 890] {
+        let line_index = nodes
+            .iter()
+            .position(|node| {
+                matches!(&node.node_type,
+                RenderNodeType::TextLine(line) if line.para_index == Some(pi))
+            })
+            .expect("원본 마지막 두 글줄");
+        let line = nodes[line_index];
+        assert!(
+            line.bbox.y + line.bbox.height <= column_bottom + unit,
+            "본문에 수용된 글줄의 후행 채움만 검사한다"
+        );
+        let source = &core.document().sections[0].paragraphs[pi];
+        let shape = &core.document().doc_info.para_shapes[source.para_shape_id as usize];
+        let fill = &core.document().doc_info.border_fills[usize::from(shape.border_fill_id) - 1];
+        let color = fill
+            .fill
+            .solid
+            .as_ref()
+            .expect("원본 회색 채움")
+            .background_color;
+        let saved = source.line_segs.first().expect("원본 저장 줄");
+        let declared_bottom =
+            line.bbox.y + f64::from(saved.line_height + saved.line_spacing.max(0)) * unit;
+        assert_eq!(
+            declared_bottom > column_bottom + unit,
+            pi == 890,
+            "단 중간 정상 대조와 단 마지막 반례의 소속을 구분한다"
+        );
+        assert!(
+            nodes.iter().take(line_index).any(|node| {
+                matches!(&node.node_type, RenderNodeType::Rectangle(rect)
+                if rect.style.fill_color == Some(color) && rect.style.opacity > 0.0)
+                    && node.bbox.x <= line.bbox.x + unit
+                    && node.bbox.x + node.bbox.width + unit >= line.bbox.x + line.bbox.width
+                    && node.bbox.y <= line.bbox.y + unit
+                    && node.bbox.y + node.bbox.height + unit >= declared_bottom
+            }),
+            "문단 {pi}: 원본 글줄이 소유한 후행 배경 밴드가 단 바닥에서 잘렸다"
+        );
+    }
+    let next = core.build_page_render_tree(26).expect("다음 쪽");
+    let following = sample4_nodes(&next.root);
+    assert!(
+        !following.iter().any(|node| matches!(&node.node_type,
+        RenderNodeType::TextLine(line) if line.para_index == Some(890))),
+        "앞 쪽 줄 중복 방지"
+    );
+    assert!(
+        following.iter().any(|node| matches!(&node.node_type,
+        RenderNodeType::TextLine(line) if line.para_index == Some(891))),
+        "다음 쪽 원문 줄 보존"
     );
 }
