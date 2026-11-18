@@ -4,18 +4,29 @@
 //! 입력 1: `samples/issue9060/m2-full-t2tall-para-offset-next-page.hwp`.
 //! 입력 1 SHA-256: e774998d8ceb0807f435c62f878c1cd7f91b2be758f572239ded1e735f3385f9.
 //! 생성: 합성 HWPX(`gen_m2.py` `M2_full_t2tall`)를 한/글 2020 이 HWP 로 다시 저장한 원본.
+//! 저장 제품: 한컴오피스 2020 11.0.0.9136(`rhwp info` lastSavedWith).
 //! 독립 Print: `pdf/issue9060/m2-full-t2tall-para-offset-next-page-2020.pdf`, 4쪽.
-//! PDF SHA-256: 26117e3067e446c256d1f0fa6706b08c71c23779e00234c4c30134f884103b61.
+//! PDF SHA-256: 95979023e1e60854e2e6183301034ca5fa671f3c3857c5824eb52f9037620949.
+//! PDF 출처: MCP engine 2020(HOffice110 11.0.0.9136) Print, `pdf_print_method` 0,
+//! `hancom2020_pdf_driver_one_up`, job a67a8eb1-3c14-452f-80fb-4b743d22b180. Creator Hwp 2020.
 //!
 //! 입력 2(반례, 앵커가 쪽 위끝에 놓인 표): `samples/issue9060/a1-small-top-para-offset.hwpx`.
 //! 입력 2 SHA-256: 83b6a5577e3541c3c49c10609b6881878dc38e76091c59b092f0c11c67e9d524.
+//! 저장 제품: 한컴오피스 2024 13.0.0.3622.
 //! 독립 Print: `pdf/issue9060/a1-small-top-para-offset-2024.pdf`, 2쪽.
 //! PDF SHA-256: 12c88cc4100a91788bbaed4e85dead2696186f01b6b99ad47a6a3e8ea6b580f3.
+//! PDF 출처: MCP engine 2024(HOffice130 13.0.0.3901) Print, `pdf_print_method` 0,
+//! `frame_print_to_pdf_ex_one_up`, job 40da0591-1fe2-45e2-8905-e84c5fc6d85d.
 //!
-//! 입력 3(반례, 오프셋 자리에서 그대로 나뉘는 표): `samples/issue9060/t35-rows4000-para-offset-split.hwpx`.
-//! 입력 3 SHA-256: f1f69772aba2aad60180ce5b1d6b7c028dfa71765e2447ea9350c438ab57c409.
-//! 독립 Print: `pdf/issue9060/t35-rows4000-para-offset-split-2020.pdf`, 2쪽.
-//! PDF SHA-256: a872246ad9496a1e5de9299654de9f5c4b0e467e884f4343d357650c4cd06cc7.
+//! 입력 3(반례, 오프셋 자리에서 그대로 나뉘는 표): `samples/issue9060/t34-rows4000-para-offset-split.hwpx`.
+//! 입력 3 SHA-256: e3a546b5b49a7d1bd34cb7532ebd5cbc6d25b7894eab9754133a0b4f9c113e16.
+//! 저장 제품: 한컴오피스 2024 13.0.0.3622.
+//! 독립 Print: `pdf/issue9060/t34-rows4000-para-offset-split-2024.pdf`, 2쪽.
+//! PDF SHA-256: d584d2d4a71f4f98efb3eb5ba1248b6dfcaa64fb7c7dcf4c530b11820523e10f.
+//! PDF 출처: MCP engine 2024(HOffice130 13.0.0.3901) Print, `pdf_print_method` 0,
+//! `frame_print_to_pdf_ex_one_up`, job e968af42-d75b-458e-aa30-5045db4bb3ea.
+//! 같은 생성기의 T35(앵커 한 줄 아래)는 한/글이 셀 행 안을 자르는 형상이라 2쪽 raw 29.41% 로
+//! 회귀 추가 선행 조건(90%)을 충족하지 않아 쓰지 않는다(행 중간 분할은 #9060 범위 밖).
 //!
 //! 측정일: (측정 후 기록). 소스: (측정 후 기록).
 //! 방법: (측정 후 기록).
@@ -41,7 +52,7 @@ use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const MOVED: &str = "samples/issue9060/m2-full-t2tall-para-offset-next-page.hwp";
 const PAGE_TOP: &str = "samples/issue9060/a1-small-top-para-offset.hwpx";
-const SPLIT_HERE: &str = "samples/issue9060/t35-rows4000-para-offset-split.hwpx";
+const SPLIT_HERE: &str = "samples/issue9060/t34-rows4000-para-offset-split.hwpx";
 
 /// 이월 대상 표의 문단(빈 앵커)과 그 앞 표의 문단.
 const MOVED_PARA: usize = 2;
@@ -49,7 +60,7 @@ const PREVIOUS_TABLE_PARA: usize = 1;
 const MOVED_FOLLOWING_PARA: usize = 3;
 /// 반례 입력의 표 문단.
 const PAGE_TOP_PARA: usize = 4;
-const SPLIT_PARA: usize = 36;
+const SPLIT_PARA: usize = 35;
 
 fn document(sample: &str) -> DocumentCore {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(sample);
