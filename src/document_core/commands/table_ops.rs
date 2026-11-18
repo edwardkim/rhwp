@@ -1535,9 +1535,14 @@ impl DocumentCore {
                 }
                 cell.border_fill_id = v;
             }
-            let wrap_changed = line_wrap.is_some_and(|value| value != cell.line_wrap);
-            if let Some(value) = line_wrap {
+            let new_wrap = line_wrap.filter(|value| *value != cell.line_wrap);
+            let wrap_changed = new_wrap.is_some();
+            if let Some(value) = new_wrap {
                 cell.line_wrap = value;
+                // 셀의 줄바꿈 방식은 각 문단의 줄 분할과 글자 배치를 함께 바꾼다.
+                for paragraph in &mut cell.paragraphs {
+                    paragraph.invalidate_layout_inputs();
+                }
             }
             if size_changed {
                 table.update_ctrl_dimensions();
