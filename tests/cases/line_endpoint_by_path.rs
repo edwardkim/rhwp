@@ -107,11 +107,21 @@ fn line_endpoints_move_in_a_header() {
         doc.export_hwp_native().unwrap(),
         doc.export_hwpx_native().unwrap(),
     ] {
-        let reopened = header_line(&DocumentCore::from_bytes(&bytes).unwrap());
+        let core = DocumentCore::from_bytes(&bytes).unwrap();
+        let reopened = header_line(&core);
         assert_eq!(
             (reopened.common.width, reopened.common.height),
             (7000, 4000)
         );
+        // 같은 형식으로 다시 저장해 열어도 그대로다.
+        let resaved = if bytes.starts_with(b"PK") {
+            core.export_hwpx_native()
+        } else {
+            core.export_hwp_native()
+        }
+        .unwrap();
+        let again = header_line(&DocumentCore::from_bytes(&resaved).unwrap());
+        assert_eq!((again.common.width, again.common.height), (7000, 4000));
     }
     // 본문 경로가 아닌 개체는 직선이어야 한다.
     assert!(doc
