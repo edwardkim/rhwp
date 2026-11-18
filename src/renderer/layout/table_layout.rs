@@ -5165,25 +5165,28 @@ impl LayoutEngine {
                         (cx, cw, cy)
                     }
                 };
-                let cap_cell_ctx = table_meta
-                    .map(|(pi, ci)| CellContext {
-                        in_textbox: false,
-                        parent_para_index: pi,
-                        path: vec![CellPathEntry {
-                            control_index: ci,
-                            cell_index: 65534, // 캡션 식별 센티널
-                            cell_para_index: 0,
-                            text_direction: 0,
-                        }],
+                // 칸 안 표는 칸 글처럼 바깥 경로(enclosing)를 먼저 쓴다. table_meta는 그 표가 든 칸
+                // 문단 번호라, 그것만 쓰면 캡션 글이 같은 번호의 본문 표 캡션 주소를 갖는다.
+                let cap_cell_ctx = enclosing_cell_ctx
+                    .as_ref()
+                    .map(|ctx| {
+                        let mut cc = ctx.clone();
+                        if let Some(last) = cc.path.last_mut() {
+                            last.cell_index = 65534;
+                            last.cell_para_index = 0;
+                        }
+                        cc
                     })
                     .or_else(|| {
-                        enclosing_cell_ctx.as_ref().map(|ctx| {
-                            let mut cc = ctx.clone();
-                            if let Some(last) = cc.path.last_mut() {
-                                last.cell_index = 65534;
-                                last.cell_para_index = 0;
-                            }
-                            cc
+                        table_meta.map(|(pi, ci)| CellContext {
+                            in_textbox: false,
+                            parent_para_index: pi,
+                            path: vec![CellPathEntry {
+                                control_index: ci,
+                                cell_index: 65534, // 캡션 식별 센티널
+                                cell_para_index: 0,
+                                text_direction: 0,
+                            }],
                         })
                     });
                 self.layout_caption(
