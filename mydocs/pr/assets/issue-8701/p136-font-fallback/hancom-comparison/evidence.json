@@ -1,0 +1,68 @@
+{
+  "reviewedCodeHead": "739f9589c74d4b65013b5284c50676c7c913c17c",
+  "input": {
+    "path": "samples/issue8554/2913671-appendix1-family-register.hwp",
+    "sha256": "7f62b9fea6135cbf87192fc152674986c6a5eb4bdc73f216f32925e853dc077b",
+    "pages": 2
+  },
+  "hancomPrint": {
+    "path": "pdf/issue8554/2913671-appendix1-family-register-2022.pdf",
+    "sha256": "bfaf077f4e01e5397cbc34831a564fd88760c78c31aff1800ad13e52c5e69067",
+    "creator": "Hwp 2022 12.0.0.4547",
+    "producer": "Hancom PDF 1.3.0.547",
+    "pages": 2
+  },
+  "nativeBase": {
+    "sourceHead": "22da83586aab1baf960f2159abda347062ecf7ed",
+    "sha256": "da62a46d293a5e716939cc90428dbd9a460da5a9a1c50a94a6a6a309b4d49cd3"
+  },
+  "nativeFixed": {
+    "sourceHead": "2c04978e957aeddb6030a16e9f1a11ffec3b6c08",
+    "sha256": "34e091e3d66272c2c77a6c29912d0583c30a0193117884b006c334754822d7d8"
+  },
+  "equalNativeRenderTreeSha256": [
+    "6dce4eb91b0fe3b8f57d7e50058a68bf9325c8a81a64de08c21e9c6549f4c813",
+    "e363bf3c8db28f116d0dbcbbd66e8aafeeb12b1509ea7cb72685d0f0c440eed3"
+  ],
+  "freshWasm": {
+    "sourceHead": "739f9589c74d4b65013b5284c50676c7c913c17c",
+    "rust": "1.93.1",
+    "optimizer": "wasm-opt version 125 (version_125)",
+    "sha256": "1c65ec4e09189d13582bf9c89084694eaa84ef4dbe8c0e89bf770aef1377992d",
+    "jsSha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+    "backend": "wasm-canvas2d",
+    "browser": "Google Chrome for Testing 153.0.8010.12"
+  },
+  "comparison": {
+    "compat": "2022",
+    "profile": "print",
+    "dpi": 96,
+    "referenceRasterizer": "PDFium",
+    "rawSilhouettePercent": {
+      "native-base.tsv": [
+        95.49,
+        100.0
+      ],
+      "native-fixed.tsv": [
+        98.15,
+        100.0
+      ],
+      "wasm.tsv": [
+        97.99,
+        100.0
+      ]
+    },
+    "fontFileSha256": "a04178ec485dffdff7cc0c0c20e1fce9202d7e2160d805e8e44a4c8841c58481",
+    "pageCountsMatch": true,
+    "exitCode": 0
+  },
+  "assets": {
+    "native-base.tsv": "f187039d48363b025f0a28aa154fc7de4cd9a2fd9b384ab456f7886e7a43b81c",
+    "native-fixed.tsv": "f45fef54c42ae733bd3923557d8c2a3fd11195f58727bce8e71a811508e70e73",
+    "wasm.tsv": "e7521f4fab129d8dae029cff4bc47d097bca942b5553a7672be19bf5837e059e",
+    "native-p001-overlay.png": "65e6a31a01af1037eb066eee9e1d28997d776c9e7a1fb72a691b146cb3063e50",
+    "native-p001-review.png": "7c904d1f988a7abd8467ffa02b374eac5f1eeea05b7050e8ce54aa5197770df1",
+    "wasm-p001-overlay.png": "97bcc163ddc37726de43f8fa4d367a56fa3f7fed3c1ebe4b09970053defefd2c",
+    "wasm-p001-review.png": "86b70db647c43e2225a152415007c297662a94d31c4aa82ff0876e6de0c07751"
+  }
+}
