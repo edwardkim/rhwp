@@ -1468,7 +1468,6 @@ struct RunEmitVars<'a> {
     text_start_offset: f64,
     end: usize,
     extra_char_sp: f64,
-    squeeze_cell_advances: bool,
     extra_dash_sp: f64,
     dash_extra_by_run: Option<&'a [f64]>,
     extra_word_sp: f64,
@@ -2275,15 +2274,10 @@ impl VisibleTextLineMeasure {
     }
 
     fn width(&self, extra_char_spacing: f64) -> f64 {
-        self.width_with_cell_squeeze(extra_char_spacing, false)
-    }
-
-    fn width_with_cell_squeeze(&self, extra_char_spacing: f64, squeeze_cell_advances: bool) -> f64 {
         let mut width = 0.0;
         for (text, style) in &self.runs {
             let mut measured_style = style.clone();
             measured_style.extra_char_spacing = extra_char_spacing;
-            measured_style.squeeze_cell_advances = squeeze_cell_advances;
             width += estimate_text_width_exact(text, &measured_style);
         }
         // 마지막 가시 글자 뒤에는 자간을 소비할 다음 글자가 없다.
@@ -2297,7 +2291,6 @@ impl VisibleTextLineMeasure {
                 let glyph = character.to_string();
                 let mut measured_style = style.clone();
                 measured_style.extra_char_spacing = extra_char_spacing;
-                measured_style.squeeze_cell_advances = squeeze_cell_advances;
                 let advance = estimate_text_width_exact(&glyph, &measured_style);
                 measured_style.letter_spacing = 0.0;
                 measured_style.extra_char_spacing = 0.0;
@@ -2305,6 +2298,69 @@ impl VisibleTextLineMeasure {
             }
         }
         width
+    }
+}
+
+/// 한 줄 셀의 자연 글자 원점을 안쪽 폭에 비례 배치한다. 글리프의 폭은 보존하고
+/// 원래 양수였던 전진은 양수로 남겨, 서로 다른 문자 경계가 같은 캐럿으로 붕괴하지 않는다.
+fn fit_cell_text_advances(line: &mut RenderNode, origin: f64, width: f64) {
+    if width <= 0.0 {
+        return;
+    }
+    let mut scale = 1.0_f64;
+    for child in &line.children {
+        let RenderNodeType::TextRun(run) = &child.node_type else {
+            continue;
+        };
+        if run.char_start.is_none() {
+            continue;
+        }
+        let offset = child.bbox.x - origin;
+        let text = run.metric_or_display_text();
+        let positions = run.replay_positions_for(text);
+        if let Some(end) = positions
+            .last()
+            .map(|end| offset + end)
+            .filter(|end| *end > width)
+        {
+            scale = scale.min(width / end);
+        }
+        // 자간은 글리프 윤곽을 줄이지 않는다. 각 가시 글자의 자연 폭도 함께 확보한다.
+        for (ch, pair) in text.chars().zip(positions.windows(2)) {
+            let start = offset + pair[0];
+            let advance = pair[1] - pair[0];
+            if !ch.is_whitespace() && start > 0.0 && advance < width {
+                scale = scale.min((width - advance) / start);
+            }
+        }
+    }
+    if scale >= 1.0 {
+        return;
+    }
+    let map_x = |x: f64| origin + (x - origin) * scale;
+    for child in &mut line.children {
+        match &mut child.node_type {
+            RenderNodeType::TextRun(run) if run.char_start.is_some() => {
+                if let Some(positions) = &mut run.layout_positions {
+                    for x in positions {
+                        *x *= scale;
+                    }
+                }
+                run.style.cell_advance_scale = Some(scale);
+                for leader in &mut run.style.tab_leaders {
+                    leader.start_x *= scale;
+                    leader.end_x *= scale;
+                }
+            }
+            RenderNodeType::Rectangle(_) => {}
+            RenderNodeType::Line(stroke) => {
+                stroke.x1 = map_x(stroke.x1);
+                stroke.x2 = map_x(stroke.x2);
+            }
+            _ => continue,
+        }
+        child.bbox.x = map_x(child.bbox.x);
+        child.bbox.width *= scale;
     }
 }
 
@@ -2395,22 +2451,15 @@ fn converge_cell_overflow_char_spacing(
     total_char_count: usize,
     total_text_width: f64,
     available_width: f64,
-    explicit_squeeze: bool,
 ) -> f64 {
     let spacing_count = total_char_count - line_plan.leading_spaces;
     debug_assert!(spacing_count > 0);
     let body_width = total_text_width - line_plan.natural_width(styles, tab_width);
     let avg_char_w = body_width / spacing_count as f64;
-    // 일반 저장 줄의 자동 축소 하한은 유지한다. 명시적으로 한 줄을 요청한 셀은
-    // 각 글리프의 전진폭 하한을 적용한 실제 측정값으로 축소량을 정한다.
-    let min_sp = if explicit_squeeze {
-        f64::NEG_INFINITY
-    } else {
-        -avg_char_w * 0.5
-    };
+    let min_sp = -avg_char_w * 0.5;
     let mut extra = ((available_width - total_text_width) / spacing_count as f64).max(min_sp);
-    let measure_width = |extra| {
-        visible_line_measure.map_or_else(
+    for _ in 0..4 {
+        let measured = visible_line_measure.map_or_else(
             || {
                 line_plan
                     .line
@@ -2421,43 +2470,17 @@ fn converge_cell_overflow_char_spacing(
                         let mut ts = run.text_style(styles);
                         ts.default_tab_width = tab_width;
                         ts.extra_char_spacing = line_plan.spacing(index, extra);
-                        ts.squeeze_cell_advances = explicit_squeeze;
                         estimate_text_width(&run.text, &ts)
                     })
                     .sum()
             },
-            |measure| measure.width_with_cell_squeeze(extra, explicit_squeeze),
-        )
-    };
-    for _ in 0..4 {
-        let measured = measure_width(extra);
+            |measure| measure.width(extra),
+        );
         let delta = available_width - measured;
         if delta >= -0.05 && delta.abs() < 0.25 {
             break;
         }
         extra = (extra + delta / spacing_count as f64).max(min_sp);
-    }
-    if explicit_squeeze && measure_width(extra) > available_width {
-        // 좁은 글리프가 먼저 0 전진에 도달하면 단순히 글자 수로 나눈 자간은
-        // 남은 폭을 모두 소비하지 못한다. 실제 배치가 사용하는 폭 함수의 경계를 찾는다.
-        let mut fit = -total_text_width;
-        let mut over = extra;
-        for _ in 0..f64::MANTISSA_DIGITS {
-            let mid = (fit + over) / 2.0;
-            if mid == fit || mid == over {
-                break;
-            }
-            let measured = measure_width(mid);
-            if measured > available_width {
-                over = mid;
-            } else {
-                fit = mid;
-                if available_width - measured <= 0.05 {
-                    break;
-                }
-            }
-        }
-        return fit;
     }
     extra.min(0.0)
 }
@@ -3004,7 +3027,6 @@ fn compute_line_extra_spacing_with_dash_plan(
                         distributed_char_count,
                         total_text_width,
                         available_width,
-                        false,
                     ),
                     0.0,
                 )
@@ -3128,7 +3150,6 @@ fn compute_line_extra_spacing_with_dash_plan(
                     fit_char_count + trailing_fit_count,
                     fit_width + trailing_fit_width,
                     available_width,
-                    false,
                 ),
                 0.0,
             )
@@ -8210,79 +8231,64 @@ impl LayoutEngine {
                         && line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
                 })
                 .map(|(_, (_, correction))| hwpunit_to_px(i32::from(*correction) * 4, self.dpi));
-            let squeeze_cell_advances = squeeze_reflowed_cell
-                && compression.is_none()
+            // 실제 탭 정지와 선행 공백까지 배치한 뒤 같은 문자 경계를 paint와 커서에 전달한다.
+            let fit_cell_text = squeeze_reflowed_cell
                 && total_text_width > available_width
-                && total_char_count > leading_space_plan.leading_spaces
-                && !has_tabs
-                && line_tac_offsets_for_width.is_empty();
-            let (mut extra_word_sp, extra_char_sp, extra_dash_sp) = if compression.is_some() {
-                (0.0, 0.0, 0.0)
-            } else if squeeze_cell_advances {
-                (
-                    0.0,
-                    converge_cell_overflow_char_spacing(
+                && line_tac_offsets_for_width.is_empty()
+                && note_line.positions.is_empty();
+            let (mut extra_word_sp, extra_char_sp, extra_dash_sp) =
+                if compression.is_some() || fit_cell_text {
+                    (0.0, 0.0, 0.0)
+                } else if is_hancom_company_pua_logo_line {
+                    // 이 줄의 trailing space는 뒤의 treat-as-char logo 그림 앞 공백이다.
+                    // 회사명 자체에는 자간을 추가하지 않고 이 공백 하나가 남는 폭을 전부
+                    // 흡수하게 해야 Hancom PDF의 좌측 회사명·우측 logo 배치가 유지된다.
+                    ((available_width - total_text_width).max(0.0), 0.0, 0.0)
+                } else if runs_all_whitespace
+                    && !is_last_line_of_para
+                    && !has_forced_break
+                    && line_tac_offsets_for_width.is_empty()
+                    && !needs_justify
+                    && !needs_distribute
+                {
+                    // Soft wrapping can consume a row of separator spaces beyond
+                    // the frame. Keep their decoration advances instead of fitting
+                    // them like glyphs. Paragraph-end/forced-break spaces remain
+                    // authored content and retain the normal line-fit contract.
+                    (0.0, 0.0, 0.0)
+                } else {
+                    compute_line_extra_spacing_with_dash_plan(
+                        comp_line,
+                        leading_space_plan.leading_spaces,
+                        line_tac_offsets_for_width
+                            .iter()
+                            .filter(|(_, width, _)| *width > 0.0)
+                            .count(),
+                        trailing_space_limit,
                         &leading_space_plan,
+                        soft_wrap_separator_width,
+                        terminal_tracking_for_fit,
+                        &unjustified_leading_spaces,
                         styles,
                         visible_line_measure.as_ref(),
-                        tab_width,
+                        alignment,
+                        cell_ctx.is_some(),
+                        needs_justify_spacing,
+                        false,
+                        needs_distribute,
+                        has_tabs,
+                        renders_synthetic_wrap_trailing_space,
+                        suppress_cell_overflow_spacing,
+                        converge_auto_shrink_cell,
                         total_char_count,
                         total_text_width,
                         available_width,
-                        true,
-                    ),
-                    0.0,
-                )
-            } else if is_hancom_company_pua_logo_line {
-                // 이 줄의 trailing space는 뒤의 treat-as-char logo 그림 앞 공백이다.
-                // 회사명 자체에는 자간을 추가하지 않고 이 공백 하나가 남는 폭을 전부
-                // 흡수하게 해야 Hancom PDF의 좌측 회사명·우측 logo 배치가 유지된다.
-                ((available_width - total_text_width).max(0.0), 0.0, 0.0)
-            } else if runs_all_whitespace
-                && !is_last_line_of_para
-                && !has_forced_break
-                && line_tac_offsets_for_width.is_empty()
-                && !needs_justify
-                && !needs_distribute
-            {
-                // Soft wrapping can consume a row of separator spaces beyond
-                // the frame. Keep their decoration advances instead of fitting
-                // them like glyphs. Paragraph-end/forced-break spaces remain
-                // authored content and retain the normal line-fit contract.
-                (0.0, 0.0, 0.0)
-            } else {
-                compute_line_extra_spacing_with_dash_plan(
-                    comp_line,
-                    leading_space_plan.leading_spaces,
-                    line_tac_offsets_for_width
-                        .iter()
-                        .filter(|(_, width, _)| *width > 0.0)
-                        .count(),
-                    trailing_space_limit,
-                    &leading_space_plan,
-                    soft_wrap_separator_width,
-                    terminal_tracking_for_fit,
-                    &unjustified_leading_spaces,
-                    styles,
-                    visible_line_measure.as_ref(),
-                    alignment,
-                    cell_ctx.is_some(),
-                    needs_justify_spacing,
-                    false,
-                    needs_distribute,
-                    has_tabs,
-                    renders_synthetic_wrap_trailing_space,
-                    suppress_cell_overflow_spacing,
-                    converge_auto_shrink_cell,
-                    total_char_count,
-                    total_text_width,
-                    available_width,
-                    tab_width,
-                    condense,
-                    &mut dash_extra_by_run,
-                    note_line.trailing_slots,
-                )
-            };
+                        tab_width,
+                        condense,
+                        &mut dash_extra_by_run,
+                        note_line.trailing_slots,
+                    )
+                };
             if compression.is_none() && !is_hancom_company_pua_logo_line {
                 if let Some(correction) = hwp3_saved_space {
                     // 저장 보정은 당시 글꼴 메트릭으로 계산한 값이다. 현재 줄 구성의
@@ -8334,7 +8340,6 @@ impl LayoutEngine {
                         ts.text_start_offset = text_start_offset;
                         ts.inline_tabs = composed.tab_extended.clone();
                         ts.extra_char_spacing = extra_char_sp;
-                        ts.squeeze_cell_advances = squeeze_cell_advances;
                         if let Some(overlap) = &r.char_overlap {
                             crate::renderer::char_overlap::advance(&r.text, overlap, &ts)
                         } else {
@@ -8454,21 +8459,18 @@ impl LayoutEngine {
                 } else {
                     0.0
                 };
-            let fallback_alignment_width =
-                effective_text_width - trailing_ws_width - terminal_tracking_width;
-            let visible_alignment_width = || {
-                visible_line_measure
-                    .as_ref()
-                    .map_or(fallback_alignment_width, |measure| {
-                        measure.width_with_cell_squeeze(extra_char_sp, squeeze_cell_advances)
-                    })
-            };
             let x_start = match alignment {
                 Alignment::Center => {
                     let align_offset = if center_packed_cell_label_as_right {
                         (available_width - effective_text_width).max(0.0)
                     } else {
-                        (available_width - visible_alignment_width()).max(0.0) / 2.0
+                        (available_width
+                            - visible_line_measure.as_ref().map_or(
+                                effective_text_width - trailing_ws_width - terminal_tracking_width,
+                                |measure| measure.width(extra_char_sp),
+                            ))
+                        .max(0.0)
+                            / 2.0
                     };
                     x_base + inline_offset + num_x_offset + align_offset
                 }
@@ -8481,12 +8483,12 @@ impl LayoutEngine {
                     x_base + inline_offset + num_x_offset + align_offset
                 }
                 Alignment::Right => {
-                    let width = if squeeze_cell_advances {
-                        visible_alignment_width()
-                    } else {
-                        fallback_alignment_width
-                    };
-                    x_base + inline_offset + num_x_offset + (available_width - width).max(0.0)
+                    x_base
+                        + inline_offset
+                        + num_x_offset
+                        + (available_width
+                            - (effective_text_width - trailing_ws_width - terminal_tracking_width))
+                            .max(0.0)
                 }
                 _ => x_base + inline_offset + num_x_offset, // Left, Justify, Split, Distribute(분배중)
             };
@@ -8636,7 +8638,6 @@ impl LayoutEngine {
                     text_start_offset,
                     end,
                     extra_char_sp,
-                    squeeze_cell_advances,
                     extra_dash_sp,
                     dash_extra_by_run: dash_extra_by_run.as_deref(),
                     extra_word_sp,
@@ -8978,6 +8979,10 @@ impl LayoutEngine {
                     .is_some_and(|measure| measure.inherited_decoration_tail)
             {
                 fit_inherited_decoration_tail(&mut line_node);
+            }
+
+            if fit_cell_text {
+                fit_cell_text_advances(&mut line_node, x_start, available_width);
             }
 
             // 원고지 구역: 글자를 칸에 놓는다. 첫 줄은 들여쓰기만큼 칸을 비운다.
@@ -9473,7 +9478,6 @@ impl LayoutEngine {
             text_start_offset,
             end,
             extra_char_sp,
-            squeeze_cell_advances,
             extra_dash_sp,
             dash_extra_by_run,
             extra_word_sp,
@@ -9794,7 +9798,6 @@ impl LayoutEngine {
             let fixed_spacing = run_idx < natural_prefix_runs || body_field;
             text_style.extra_word_spacing = if fixed_spacing { 0.0 } else { extra_word_sp };
             text_style.extra_char_spacing = if fixed_spacing { 0.0 } else { extra_char_sp };
-            text_style.squeeze_cell_advances = !fixed_spacing && squeeze_cell_advances;
             text_style.space_compression = space_compressions
                 .and_then(|runs| runs.get(run_idx))
                 .and_then(Clone::clone);

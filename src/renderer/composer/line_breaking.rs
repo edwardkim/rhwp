@@ -6264,19 +6264,34 @@ fn reflow_line_segs_impl(
     split_stale_cell_reflow: bool,
     object_line_font_basis: bool,
 ) -> bool {
-    match try_reflow_line_segs_impl(
+    // 한 줄 셀을 편집하면 기존 줄의 소유권도 끝난다. 재생성된 줄은
+    // 저장 후에도 원본 한컴 줄에만 적용하는 자간 판정으로 돌아가지 않는다.
+    let edited_squeeze = paragraph_box.is_usable()
+        && paragraph_box.line_wrap_squeeze()
+        && (preserve_prefix_for_edit.is_some() || para.stored_text_partition_is_dirty());
+    let preserved = match try_reflow_line_segs_impl(
         para,
         paragraph_box,
         styles,
         dpi,
-        preserve_prefix_for_edit,
+        if edited_squeeze {
+            None
+        } else {
+            preserve_prefix_for_edit
+        },
         split_stale_cell_reflow,
         object_line_font_basis,
         &Unbounded,
     ) {
         Ok(result) => result,
         Err(never) => match never {},
+    };
+    if edited_squeeze {
+        for line in &mut para.line_segs {
+            line.tag |= LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+        }
     }
+    preserved
 }
 
 pub(crate) fn try_reflow_line_segs<S: Storage>(

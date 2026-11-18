@@ -1043,6 +1043,10 @@ impl DocumentCore {
                                                 .para_styles
                                                 .get(cell_para.para_shape_id as usize),
                                             dpi,
+                                        )
+                                        .with_line_wrap_squeeze(
+                                            cell.line_wrap
+                                                == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
                                         ),
                                         styles,
                                         dpi,
@@ -2284,6 +2288,9 @@ impl DocumentCore {
                                 inner_width,
                                 styles.para_styles.get(child_para.para_shape_id as usize),
                                 dpi,
+                            )
+                            .with_line_wrap_squeeze(
+                                cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
                             ),
                             styles,
                             dpi,
@@ -2627,6 +2634,10 @@ impl DocumentCore {
                                                 .para_styles
                                                 .get(cell_para.para_shape_id as usize),
                                             dpi,
+                                        )
+                                        .with_line_wrap_squeeze(
+                                            cell.line_wrap
+                                                == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
                                         ),
                                         &styles,
                                         dpi,
