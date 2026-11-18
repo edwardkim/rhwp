@@ -1,0 +1,42 @@
+{
+  "producer_head": "e63992fb2f4fbedb9c58569232b176ae91b98331",
+  "wasm_sha256": "0e4000801e05b7dc377fa42573cc9b80b64593b98c04dc1f1feba2da65b7a8f2",
+  "actual_canvas2d": {
+    "page": 12,
+    "profile": "print",
+    "raw_match_percent": 99.99644,
+    "files": {
+      "raw": {
+        "path": "mydocs/pr/assets/issues7733_7738_20261117/final-e639/original4138/raw-012.png",
+        "sha256": "28a5e0e13b7f224fbabf71f66089c7d7e62139d074675e2ba533479e57ba9b35"
+      },
+      "pdf": {
+        "path": "mydocs/pr/assets/issues7733_7738_20261117/final-e639/original4138/pdf-012.png",
+        "sha256": "ead6f5dfa27141f1cb955c06727169d51867a53b6bc452ba3dcea0aa99126ae7"
+      },
+      "review": {
+        "path": "mydocs/pr/assets/issues7733_7738_20261117/final-e639/original4138/review-012.png",
+        "sha256": "665aad5d966b4fc47ba192586cd7358966642e2774ac6ee409cc0ae47ea97dde"
+      },
+      "overlay": {
+        "path": "mydocs/pr/assets/issues7733_7738_20261117/final-e639/original4138/overlay-012.png",
+        "sha256": "98bd89390df3819f0d3074a0fba20b6720907655d9154c54f323fe148f397af2"
+      }
+    }
+  },
+  "requested_canvaskit": {
+    "passed": 0,
+    "guard_rejections": 2,
+    "capture_exit_code": 1,
+    "hard_gate_violations_preserved": 4,
+    "reason": "canvaskitResourcePreparationFailed",
+    "selection_error": "CanvasKit 문서 글꼴 요구 목록이 완전하지 않습니다",
+    "actual_backend_for_both_requests": "canvas2d",
+    "before_after_same_guard": true,
+    "original_report_sha256": "b664cc79101e28d11b61335553cef7f7579498f5a575e6e7e66954fe60eb0a75"
+  },
+  "supported_actual_canvaskit_positive_control": "../radical-controls/validation.json",
+  "direct_reading_recorded_at": "2026-11-18T18:40:13.480379+09:00",
+  "direct_reading": "실제 Canvas2D 12쪽 review/overlay를 열어 root bar와 뒤 E, 계수·첨자, 수식 아래 설명·앞뒤 문단의 소속을 대조했다. 눈에 띄는 겹침·누락은 없고 미세 잉크 차이는 남는다. CK 요청의 동일 이미지 두 개를 CK 출력으로 세지 않는다.",
+  "scope": "Actual C2D one-page boundary and unchanged unsupported CK guard only. Whole Native/fresh WASM results and the five issue completion remain separate."
+}

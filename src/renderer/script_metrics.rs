@@ -10,7 +10,7 @@ use crate::model::provenance::LayoutCompatibilityProfile;
 pub enum ScriptMetricsContract {
     #[default]
     Legacy,
-    /// 실제 한컴 2024 저장·Print 18조건과 원본 두 편람의 대조 결과.
+    /// 한컴 2020·2024 Print의 공통 계약. 최초 2024 검증 때의 variant 이름을 유지한다.
     Hangul2024,
     /// Note auto-number codes share the reference marker's measured metrics.
     NoteReference,
@@ -19,7 +19,14 @@ crate::storage::clone_copy!(ScriptMetricsContract);
 
 impl ScriptMetricsContract {
     pub(crate) fn for_profile(profile: LayoutCompatibilityProfile) -> Self {
-        if profile.hangul2024_layout() && !profile.hwp3_layout() {
+        // 2024 전용 조판 옵션으로 첨자 계약까지 제한하면 한컴 2020/2022의
+        // HWP5·HWPX도 0.7배로 재어 경계의 본문 글자를 다음 줄로 밀게 된다.
+        // 독립 2020 Print 3글꼴×3크기와 2024 18조건은 같은 크기·기준선
+        // 계약을 확인한다. HWP3 원본/호환 계보와 다른 입력의 기존 계약은 보존한다.
+        if !profile.hwp3_layout()
+            && !profile.hwp3_native_layout()
+            && (profile.hangul2024_layout() || profile.hwp5_container() || profile.hwpx_container())
+        {
             Self::Hangul2024
         } else {
             Self::Legacy

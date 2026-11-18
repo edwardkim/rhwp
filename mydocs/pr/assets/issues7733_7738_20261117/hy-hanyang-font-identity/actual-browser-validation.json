@@ -1,0 +1,2210 @@
+{
+  "status": "current_captures_with_pixel_identical_prior_direct_reading",
+  "capture_count": 45,
+  "product_source_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+  "wasm_producer_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+  "wasm_sha256": "8875f1b150a102a36d8ca8c2c571f720bddeeeb76f3262e620a86c6faeb335ba",
+  "original_direct_reading": {
+    "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumer-direct-reading.json",
+    "sha256": "2cba8003db32f39aecef9780398951ac921e7424a9d52f31ab0fe1622aff1737"
+  },
+  "unique_review_overlay_pairs_read": 17,
+  "actual_backend_counts": {
+    "canvas2d": 41,
+    "canvaskit-compat": 2,
+    "canvaskit-default": 2
+  },
+  "canvaskit_fallback_count": 26,
+  "minimum_raw_percent": 98.63244,
+  "browser_e2e": [
+    {
+      "case": "initial-page-render-issue9164",
+      "exit_code": 0,
+      "elapsed_seconds": 14.593
+    },
+    {
+      "case": "host-font-input-issue9165",
+      "exit_code": 0,
+      "elapsed_seconds": 14.06
+    },
+    {
+      "case": "local-font-refresh-issue8371",
+      "exit_code": 0,
+      "elapsed_seconds": 4.416
+    }
+  ],
+  "browser_batches": [
+    {
+      "sample": "chemical-p023",
+      "report_sha256": "56ed8bac443f48329a12cd8673467665209431a66eb3d93b38863b9c700dcb5f",
+      "receipt_sha256": "7b63daf4fd8b06a0dec6b38d487db138422f068540dbe8706428cefad36e6f00",
+      "browser_responses": {
+        "rhwp.js": [
+          {
+            "sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+            "bytes": 3288478
+          }
+        ],
+        "rhwp_bg.wasm": [
+          {
+            "sha256": "8875f1b150a102a36d8ca8c2c571f720bddeeeb76f3262e620a86c6faeb335ba",
+            "bytes": 32221707
+          }
+        ]
+      }
+    },
+    {
+      "sample": "chemical-p027",
+      "report_sha256": "c5a77f81e4a652ee8542885bc7390154e897c9887275282d213d9e595d8b896c",
+      "receipt_sha256": "ca28f5eeb0c256872bfec6eb282f690f982f560abb07fca6ca0c9af6e7cbc412",
+      "browser_responses": {
+        "rhwp.js": [
+          {
+            "sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+            "bytes": 3288478
+          }
+        ],
+        "rhwp_bg.wasm": [
+          {
+            "sha256": "8875f1b150a102a36d8ca8c2c571f720bddeeeb76f3262e620a86c6faeb335ba",
+            "bytes": 32221707
+          }
+        ]
+      }
+    },
+    {
+      "sample": "chemical-p079",
+      "report_sha256": "107c0ab52a61e88f0ce6c61508a77414ce547c5617020f2061487456be679a18",
+      "receipt_sha256": "4c9486fb53d241f93a90b9c57433df3ce70ce2d5d0d2798f3429f66f8dcb839e",
+      "browser_responses": {
+        "rhwp.js": [
+          {
+            "sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+            "bytes": 3288478
+          }
+        ],
+        "rhwp_bg.wasm": [
+          {
+            "sha256": "8875f1b150a102a36d8ca8c2c571f720bddeeeb76f3262e620a86c6faeb335ba",
+            "bytes": 32221707
+          }
+        ]
+      }
+    },
+    {
+      "sample": "chemical-p085",
+      "report_sha256": "531e6072cbc1b9df264343d7df139cb36c632043252072932d80a4c1fcd23cca",
+      "receipt_sha256": "f90e013328f019d7f902db0c3f4813f03865aacdd452f09fb1c1f304293fce90",
+      "browser_responses": {
+        "rhwp.js": [
+          {
+            "sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+            "bytes": 3288478
+          }
+        ],
+        "rhwp_bg.wasm": [
+          {
+            "sha256": "8875f1b150a102a36d8ca8c2c571f720bddeeeb76f3262e620a86c6faeb335ba",
+            "bytes": 32221707
+          }
+        ]
+      }
+    },
+    {
+      "sample": "chemical-p092",
+      "report_sha256": "0585ac3e814ab66337835b407e1dcbd6c38e61b4808c932890cfe3907e0f747f",
+      "receipt_sha256": "88adebc941d2999104e0eee4b07b8e83bebedcafbde00b7e3a61ccad97656511",
+      "browser_responses": {
+        "rhwp.js": [
+          {
+            "sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+            "bytes": 3288478
+          }
+        ],
+        "rhwp_bg.wasm": [
+          {
+            "sha256": "8875f1b150a102a36d8ca8c2c571f720bddeeeb76f3262e620a86c6faeb335ba",
+            "bytes": 32221707
+          }
+        ]
+      }
+    },
+    {
+      "sample": "spec13-p070",
+      "report_sha256": "e953f39e670764e3c3c173f7c50ea9ec27081b4c6da90eae103b3decbdddf5e9",
+      "receipt_sha256": "92187842423f870b8b30b00cb6750ef39fc7235e20ed7d44ce215393c6b1c650",
+      "browser_responses": {
+        "rhwp.js": [
+          {
+            "sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+            "bytes": 3288478
+          }
+        ],
+        "rhwp_bg.wasm": [
+          {
+            "sha256": "8875f1b150a102a36d8ca8c2c571f720bddeeeb76f3262e620a86c6faeb335ba",
+            "bytes": 32221707
+          }
+        ]
+      }
+    },
+    {
+      "sample": "decree-p013",
+      "report_sha256": "e10ddc3bc8bfe9df7c9b1237fe8e315ea345aceafbcc0e891fdbf915f7c71185",
+      "receipt_sha256": "d22f7f2cca48567b7c36fb93296bd833c27876782e6077c37b1972544a7f7713",
+      "browser_responses": {
+        "rhwp.js": [
+          {
+            "sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+            "bytes": 3288478
+          }
+        ],
+        "rhwp_bg.wasm": [
+          {
+            "sha256": "8875f1b150a102a36d8ca8c2c571f720bddeeeb76f3262e620a86c6faeb335ba",
+            "bytes": 32221707
+          }
+        ]
+      }
+    },
+    {
+      "sample": "decree-p019",
+      "report_sha256": "7fb70441249c22c68a8fd1d578d01c86fefdf80deaf439b56ddf0c60a10844f1",
+      "receipt_sha256": "87cac93aa2bfd16397b269288d90c0f4fbd0385b09a3ca8391a4bd708e6112f5",
+      "browser_responses": {
+        "rhwp.js": [
+          {
+            "sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+            "bytes": 3288478
+          }
+        ],
+        "rhwp_bg.wasm": [
+          {
+            "sha256": "8875f1b150a102a36d8ca8c2c571f720bddeeeb76f3262e620a86c6faeb335ba",
+            "bytes": 32221707
+          }
+        ]
+      }
+    },
+    {
+      "sample": "decree-p036",
+      "report_sha256": "cff18599772d7897c1becb353635ba67d4ebb4dd731284de642b55b2cd06bafd",
+      "receipt_sha256": "980aba424029bd0413e3a230dc4266bd6353a0b3c16ff27214462c30e70f133b",
+      "browser_responses": {
+        "rhwp.js": [
+          {
+            "sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+            "bytes": 3288478
+          }
+        ],
+        "rhwp_bg.wasm": [
+          {
+            "sha256": "8875f1b150a102a36d8ca8c2c571f720bddeeeb76f3262e620a86c6faeb335ba",
+            "bytes": 32221707
+          }
+        ]
+      }
+    },
+    {
+      "sample": "decree-p070",
+      "report_sha256": "5385fd0203b59774d14e172742acda94118939a909052512af86338549d83336",
+      "receipt_sha256": "566246a126e7ea957c50fb6326f3358fae4d21bff20cbc67bb46c64f3a2a5ddc",
+      "browser_responses": {
+        "rhwp.js": [
+          {
+            "sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+            "bytes": 3288478
+          }
+        ],
+        "rhwp_bg.wasm": [
+          {
+            "sha256": "8875f1b150a102a36d8ca8c2c571f720bddeeeb76f3262e620a86c6faeb335ba",
+            "bytes": 32221707
+          }
+        ]
+      }
+    },
+    {
+      "sample": "outline-demo-p003",
+      "report_sha256": "0aba7837d3d992971bc951413e11d21bffb424d9266ead21f78d6138f59e1656",
+      "receipt_sha256": "6ad7b329e3bdccfea4e1455023071eb1d494e0e1dc5e75a4fc1bd795d2698f29",
+      "browser_responses": {
+        "rhwp.js": [
+          {
+            "sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+            "bytes": 3288478
+          }
+        ],
+        "rhwp_bg.wasm": [
+          {
+            "sha256": "8875f1b150a102a36d8ca8c2c571f720bddeeeb76f3262e620a86c6faeb335ba",
+            "bytes": 32221707
+          }
+        ]
+      }
+    },
+    {
+      "sample": "outline-minimal-p001",
+      "report_sha256": "b2e03beb25c87f21c47304bb087ec19071f8c77b0e371ca2f1ded6246a43b99d",
+      "receipt_sha256": "3e35474f820063f26f19f2d41b8c2255e180ad27fa5ed15db2a671eb2a1052fb",
+      "browser_responses": {
+        "rhwp.js": [
+          {
+            "sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+            "bytes": 3288478
+          }
+        ],
+        "rhwp_bg.wasm": [
+          {
+            "sha256": "8875f1b150a102a36d8ca8c2c571f720bddeeeb76f3262e620a86c6faeb335ba",
+            "bytes": 32221707
+          }
+        ]
+      }
+    },
+    {
+      "sample": "chemical-p056",
+      "report_sha256": "9736b02c8a17ceb5987a8619be3cc1853ac3636a7125545d2ab155c9509422a5",
+      "receipt_sha256": "5ec191e560db5fd8c7b36dfbc3ca8d09ba4e46d6c0a516b1536e002bcd0e057e",
+      "browser_responses": {
+        "rhwp.js": [
+          {
+            "sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+            "bytes": 3288478
+          }
+        ],
+        "rhwp_bg.wasm": [
+          {
+            "sha256": "8875f1b150a102a36d8ca8c2c571f720bddeeeb76f3262e620a86c6faeb335ba",
+            "bytes": 32221707
+          }
+        ]
+      }
+    },
+    {
+      "sample": "decree-p018",
+      "report_sha256": "b2cec0ce005893afa5cc6793c00d302bd78472b2fc2f7c16b282aaff83c196e7",
+      "receipt_sha256": "c73a0dbe50278b35126d9dd6f4829ec3578ee140bcd56f03d32bb8085f2cfc5e",
+      "browser_responses": {
+        "rhwp.js": [
+          {
+            "sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+            "bytes": 3288478
+          }
+        ],
+        "rhwp_bg.wasm": [
+          {
+            "sha256": "8875f1b150a102a36d8ca8c2c571f720bddeeeb76f3262e620a86c6faeb335ba",
+            "bytes": 32221707
+          }
+        ]
+      }
+    },
+    {
+      "sample": "decree-p061",
+      "report_sha256": "c6ce34a00216c948548b3ea4ccb81af68b85101a7c17e29d8148026e44ccd87f",
+      "receipt_sha256": "9b21c9cb254b42efc4df40782f522c94e2d13cefab5aa68c68568bd767344ef4",
+      "browser_responses": {
+        "rhwp.js": [
+          {
+            "sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+            "bytes": 3288478
+          }
+        ],
+        "rhwp_bg.wasm": [
+          {
+            "sha256": "8875f1b150a102a36d8ca8c2c571f720bddeeeb76f3262e620a86c6faeb335ba",
+            "bytes": 32221707
+          }
+        ]
+      }
+    }
+  ],
+  "reading_findings": [
+    "전 15쪽의 제목·번호·본문·표·그림 소속과 순서에 누락·중복을 확인하지 않았다.",
+    "화학 79쪽 캡션의 글리프·폭 차이와 시행령 13쪽 글머리표 점 크기 차이를 보존한다.",
+    "시행령 18·61·70쪽의 중첩 표와 설명·번호를 대조했다.",
+    "개요 두 원본의 Canvas2D 및 실제 CanvasKit 출력에서 표 뒤 개요와 셀 번호 소속을 확인했다.",
+    "실루엣 100%는 픽셀 완전 동일을 의미하지 않는다. CanvasKit 준비 실패로 Canvas2D로 대체된 26건은 CanvasKit 통과로 세지 않는다."
+  ],
+  "records": [
+    {
+      "key": "chemical",
+      "page": 23,
+      "requested_backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "2bde31fc7ac734a6a93584c666f17153445780866ec9b2c8899e44eec7e5c99b",
+      "captured_png_sha256": "82ad93bcf3c9736f5ee5b957b38e55c2997af4965251c6fd4fc08026aa77f69f",
+      "previous_png_sha256": "57c5f86675fa79489cfe4a17e663b500f521b5ae7eef34d3e4d751ce418dad8d",
+      "decoded_rgb_sha256": "73f9184540c9fef9ead788801e681adc77e36076be4aad5baea18db7b6bda7ae",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 99.9711,
+      "font_fallback": null,
+      "required_readiness": false,
+      "document_digest": "sha256:4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p023/canvas2d/raw.png",
+          "sha256": "57c5f86675fa79489cfe4a17e663b500f521b5ae7eef34d3e4d751ce418dad8d"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p023/canvas2d/pdf.png",
+          "sha256": "2bde31fc7ac734a6a93584c666f17153445780866ec9b2c8899e44eec7e5c99b"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p023/canvas2d/review.png",
+          "sha256": "1e4cfeb60cab6e338c66849c6becb9a6c61ac31bcd2a3fd2649a393effbc0fcf"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p023/canvas2d/overlay.png",
+          "sha256": "d4e1484b0a91d1024afc0a08ddc3dcdfb4e6fccc395693cbebf580ae30341ef8"
+        }
+      }
+    },
+    {
+      "key": "chemical",
+      "page": 23,
+      "requested_backend": "canvaskit-compat",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "2bde31fc7ac734a6a93584c666f17153445780866ec9b2c8899e44eec7e5c99b",
+      "captured_png_sha256": "82ad93bcf3c9736f5ee5b957b38e55c2997af4965251c6fd4fc08026aa77f69f",
+      "previous_png_sha256": "57c5f86675fa79489cfe4a17e663b500f521b5ae7eef34d3e4d751ce418dad8d",
+      "decoded_rgb_sha256": "73f9184540c9fef9ead788801e681adc77e36076be4aad5baea18db7b6bda7ae",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 99.9711,
+      "font_fallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "휴먼모음T"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "required_readiness": false,
+      "document_digest": "sha256:4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p023/canvas2d/raw.png",
+          "sha256": "57c5f86675fa79489cfe4a17e663b500f521b5ae7eef34d3e4d751ce418dad8d"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p023/canvas2d/pdf.png",
+          "sha256": "2bde31fc7ac734a6a93584c666f17153445780866ec9b2c8899e44eec7e5c99b"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p023/canvas2d/review.png",
+          "sha256": "1e4cfeb60cab6e338c66849c6becb9a6c61ac31bcd2a3fd2649a393effbc0fcf"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p023/canvas2d/overlay.png",
+          "sha256": "d4e1484b0a91d1024afc0a08ddc3dcdfb4e6fccc395693cbebf580ae30341ef8"
+        }
+      }
+    },
+    {
+      "key": "chemical",
+      "page": 23,
+      "requested_backend": "canvaskit-default",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "2bde31fc7ac734a6a93584c666f17153445780866ec9b2c8899e44eec7e5c99b",
+      "captured_png_sha256": "82ad93bcf3c9736f5ee5b957b38e55c2997af4965251c6fd4fc08026aa77f69f",
+      "previous_png_sha256": "57c5f86675fa79489cfe4a17e663b500f521b5ae7eef34d3e4d751ce418dad8d",
+      "decoded_rgb_sha256": "73f9184540c9fef9ead788801e681adc77e36076be4aad5baea18db7b6bda7ae",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 99.9711,
+      "font_fallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "휴먼모음T"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "required_readiness": false,
+      "document_digest": "sha256:4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p023/canvas2d/raw.png",
+          "sha256": "57c5f86675fa79489cfe4a17e663b500f521b5ae7eef34d3e4d751ce418dad8d"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p023/canvas2d/pdf.png",
+          "sha256": "2bde31fc7ac734a6a93584c666f17153445780866ec9b2c8899e44eec7e5c99b"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p023/canvas2d/review.png",
+          "sha256": "1e4cfeb60cab6e338c66849c6becb9a6c61ac31bcd2a3fd2649a393effbc0fcf"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p023/canvas2d/overlay.png",
+          "sha256": "d4e1484b0a91d1024afc0a08ddc3dcdfb4e6fccc395693cbebf580ae30341ef8"
+        }
+      }
+    },
+    {
+      "key": "chemical",
+      "page": 27,
+      "requested_backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "f18544caac806cbbd2b34f1d830c41898c5f12a1264dbeec5ae66d38b205abd1",
+      "captured_png_sha256": "1676aab24145adab4bb5e9393894d5234a7dd3bb3842995382607e27d1076341",
+      "previous_png_sha256": "1cfb34ba7744ecec6e26d942b58c8f72f2f49aece02db9c57a7e92c7968cad1e",
+      "decoded_rgb_sha256": "42449da3f57c9547783a807ea36e9077f5c350f828379c9ee7fc0d73094eaa21",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 99.97891,
+      "font_fallback": null,
+      "required_readiness": false,
+      "document_digest": "sha256:4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p027/canvas2d/raw.png",
+          "sha256": "1cfb34ba7744ecec6e26d942b58c8f72f2f49aece02db9c57a7e92c7968cad1e"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p027/canvas2d/pdf.png",
+          "sha256": "f18544caac806cbbd2b34f1d830c41898c5f12a1264dbeec5ae66d38b205abd1"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p027/canvas2d/review.png",
+          "sha256": "b52ebe337633cc830f335978f8b3b7e2a74a3b767cc138776e79035056f77d52"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p027/canvas2d/overlay.png",
+          "sha256": "6bdfa9237b2d0e87d8955009950836f7c4d270c630f2d5636cc9bbfa7d5df7c1"
+        }
+      }
+    },
+    {
+      "key": "chemical",
+      "page": 27,
+      "requested_backend": "canvaskit-compat",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "f18544caac806cbbd2b34f1d830c41898c5f12a1264dbeec5ae66d38b205abd1",
+      "captured_png_sha256": "1676aab24145adab4bb5e9393894d5234a7dd3bb3842995382607e27d1076341",
+      "previous_png_sha256": "1cfb34ba7744ecec6e26d942b58c8f72f2f49aece02db9c57a7e92c7968cad1e",
+      "decoded_rgb_sha256": "42449da3f57c9547783a807ea36e9077f5c350f828379c9ee7fc0d73094eaa21",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 99.97891,
+      "font_fallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "휴먼모음T"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "required_readiness": false,
+      "document_digest": "sha256:4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p027/canvas2d/raw.png",
+          "sha256": "1cfb34ba7744ecec6e26d942b58c8f72f2f49aece02db9c57a7e92c7968cad1e"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p027/canvas2d/pdf.png",
+          "sha256": "f18544caac806cbbd2b34f1d830c41898c5f12a1264dbeec5ae66d38b205abd1"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p027/canvas2d/review.png",
+          "sha256": "b52ebe337633cc830f335978f8b3b7e2a74a3b767cc138776e79035056f77d52"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p027/canvas2d/overlay.png",
+          "sha256": "6bdfa9237b2d0e87d8955009950836f7c4d270c630f2d5636cc9bbfa7d5df7c1"
+        }
+      }
+    },
+    {
+      "key": "chemical",
+      "page": 27,
+      "requested_backend": "canvaskit-default",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "f18544caac806cbbd2b34f1d830c41898c5f12a1264dbeec5ae66d38b205abd1",
+      "captured_png_sha256": "1676aab24145adab4bb5e9393894d5234a7dd3bb3842995382607e27d1076341",
+      "previous_png_sha256": "1cfb34ba7744ecec6e26d942b58c8f72f2f49aece02db9c57a7e92c7968cad1e",
+      "decoded_rgb_sha256": "42449da3f57c9547783a807ea36e9077f5c350f828379c9ee7fc0d73094eaa21",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 99.97891,
+      "font_fallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "휴먼모음T"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "required_readiness": false,
+      "document_digest": "sha256:4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p027/canvas2d/raw.png",
+          "sha256": "1cfb34ba7744ecec6e26d942b58c8f72f2f49aece02db9c57a7e92c7968cad1e"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p027/canvas2d/pdf.png",
+          "sha256": "f18544caac806cbbd2b34f1d830c41898c5f12a1264dbeec5ae66d38b205abd1"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p027/canvas2d/review.png",
+          "sha256": "b52ebe337633cc830f335978f8b3b7e2a74a3b767cc138776e79035056f77d52"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p027/canvas2d/overlay.png",
+          "sha256": "6bdfa9237b2d0e87d8955009950836f7c4d270c630f2d5636cc9bbfa7d5df7c1"
+        }
+      }
+    },
+    {
+      "key": "chemical",
+      "page": 79,
+      "requested_backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "9ed5e0a8146a2e24880e5c2658ae9bb1e2c0f55d170675989365a102970c8945",
+      "captured_png_sha256": "5da9cf0d8dd5c419ca2a7956afb4e4ac3ef898890f3c15f7cbd15a3d0a59f569",
+      "previous_png_sha256": "5e7404dcf70c92710818484d125e056945f85d257fda6d1ee046e7e6e1506a4e",
+      "decoded_rgb_sha256": "7d68777de703202582bf7e3c4fed6c562fa486c1f4ca2c238da24e16dc2b75c4",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 98.63244,
+      "font_fallback": null,
+      "required_readiness": false,
+      "document_digest": "sha256:4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p079/canvas2d/raw.png",
+          "sha256": "5e7404dcf70c92710818484d125e056945f85d257fda6d1ee046e7e6e1506a4e"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p079/canvas2d/pdf.png",
+          "sha256": "9ed5e0a8146a2e24880e5c2658ae9bb1e2c0f55d170675989365a102970c8945"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p079/canvas2d/review.png",
+          "sha256": "d10b963d35b5e569a829503965e4ce7cc358277221ddc9b3de1f83cf3d54dde3"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p079/canvas2d/overlay.png",
+          "sha256": "4b53bf3a51fe3e6c8cd4a2d2a079814c61afcf7cb907cdfad976c119c9deed43"
+        }
+      }
+    },
+    {
+      "key": "chemical",
+      "page": 79,
+      "requested_backend": "canvaskit-compat",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "9ed5e0a8146a2e24880e5c2658ae9bb1e2c0f55d170675989365a102970c8945",
+      "captured_png_sha256": "5da9cf0d8dd5c419ca2a7956afb4e4ac3ef898890f3c15f7cbd15a3d0a59f569",
+      "previous_png_sha256": "5e7404dcf70c92710818484d125e056945f85d257fda6d1ee046e7e6e1506a4e",
+      "decoded_rgb_sha256": "7d68777de703202582bf7e3c4fed6c562fa486c1f4ca2c238da24e16dc2b75c4",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 98.63244,
+      "font_fallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "휴먼모음T"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "required_readiness": false,
+      "document_digest": "sha256:4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p079/canvas2d/raw.png",
+          "sha256": "5e7404dcf70c92710818484d125e056945f85d257fda6d1ee046e7e6e1506a4e"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p079/canvas2d/pdf.png",
+          "sha256": "9ed5e0a8146a2e24880e5c2658ae9bb1e2c0f55d170675989365a102970c8945"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p079/canvas2d/review.png",
+          "sha256": "d10b963d35b5e569a829503965e4ce7cc358277221ddc9b3de1f83cf3d54dde3"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p079/canvas2d/overlay.png",
+          "sha256": "4b53bf3a51fe3e6c8cd4a2d2a079814c61afcf7cb907cdfad976c119c9deed43"
+        }
+      }
+    },
+    {
+      "key": "chemical",
+      "page": 79,
+      "requested_backend": "canvaskit-default",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "9ed5e0a8146a2e24880e5c2658ae9bb1e2c0f55d170675989365a102970c8945",
+      "captured_png_sha256": "5da9cf0d8dd5c419ca2a7956afb4e4ac3ef898890f3c15f7cbd15a3d0a59f569",
+      "previous_png_sha256": "5e7404dcf70c92710818484d125e056945f85d257fda6d1ee046e7e6e1506a4e",
+      "decoded_rgb_sha256": "7d68777de703202582bf7e3c4fed6c562fa486c1f4ca2c238da24e16dc2b75c4",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 98.63244,
+      "font_fallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "휴먼모음T"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "required_readiness": false,
+      "document_digest": "sha256:4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p079/canvas2d/raw.png",
+          "sha256": "5e7404dcf70c92710818484d125e056945f85d257fda6d1ee046e7e6e1506a4e"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p079/canvas2d/pdf.png",
+          "sha256": "9ed5e0a8146a2e24880e5c2658ae9bb1e2c0f55d170675989365a102970c8945"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p079/canvas2d/review.png",
+          "sha256": "d10b963d35b5e569a829503965e4ce7cc358277221ddc9b3de1f83cf3d54dde3"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p079/canvas2d/overlay.png",
+          "sha256": "4b53bf3a51fe3e6c8cd4a2d2a079814c61afcf7cb907cdfad976c119c9deed43"
+        }
+      }
+    },
+    {
+      "key": "chemical",
+      "page": 85,
+      "requested_backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "00fb711445ef9f1e8e31cdbd985e7553d741fe97b821cdd8ff5f94814ca95884",
+      "captured_png_sha256": "60294b24c2df62fee522567564373afea10f1a9282b4a2518782a1f3299c2378",
+      "previous_png_sha256": "fefc27f0b8196820b408d75ad69d2f29b93095952a512de8fa2c616faa8791ca",
+      "decoded_rgb_sha256": "1bdaf6f4f1a658513823b8c0ef7ab1f10a00ea64970400970573c192ac238f63",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 99.94142,
+      "font_fallback": null,
+      "required_readiness": false,
+      "document_digest": "sha256:4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p085/canvas2d/raw.png",
+          "sha256": "fefc27f0b8196820b408d75ad69d2f29b93095952a512de8fa2c616faa8791ca"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p085/canvas2d/pdf.png",
+          "sha256": "00fb711445ef9f1e8e31cdbd985e7553d741fe97b821cdd8ff5f94814ca95884"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p085/canvas2d/review.png",
+          "sha256": "2a1d4f2c4a6322b649e43c98ccafb1c8b84aa73327c86945fcf2af081a3c75ae"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p085/canvas2d/overlay.png",
+          "sha256": "6574d420c716c51c8f4d443659b3e8f2e5f49742469d625049242a08ce01f295"
+        }
+      }
+    },
+    {
+      "key": "chemical",
+      "page": 85,
+      "requested_backend": "canvaskit-compat",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "00fb711445ef9f1e8e31cdbd985e7553d741fe97b821cdd8ff5f94814ca95884",
+      "captured_png_sha256": "60294b24c2df62fee522567564373afea10f1a9282b4a2518782a1f3299c2378",
+      "previous_png_sha256": "fefc27f0b8196820b408d75ad69d2f29b93095952a512de8fa2c616faa8791ca",
+      "decoded_rgb_sha256": "1bdaf6f4f1a658513823b8c0ef7ab1f10a00ea64970400970573c192ac238f63",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 99.94142,
+      "font_fallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "휴먼모음T"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "required_readiness": false,
+      "document_digest": "sha256:4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p085/canvas2d/raw.png",
+          "sha256": "fefc27f0b8196820b408d75ad69d2f29b93095952a512de8fa2c616faa8791ca"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p085/canvas2d/pdf.png",
+          "sha256": "00fb711445ef9f1e8e31cdbd985e7553d741fe97b821cdd8ff5f94814ca95884"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p085/canvas2d/review.png",
+          "sha256": "2a1d4f2c4a6322b649e43c98ccafb1c8b84aa73327c86945fcf2af081a3c75ae"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p085/canvas2d/overlay.png",
+          "sha256": "6574d420c716c51c8f4d443659b3e8f2e5f49742469d625049242a08ce01f295"
+        }
+      }
+    },
+    {
+      "key": "chemical",
+      "page": 85,
+      "requested_backend": "canvaskit-default",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "00fb711445ef9f1e8e31cdbd985e7553d741fe97b821cdd8ff5f94814ca95884",
+      "captured_png_sha256": "60294b24c2df62fee522567564373afea10f1a9282b4a2518782a1f3299c2378",
+      "previous_png_sha256": "fefc27f0b8196820b408d75ad69d2f29b93095952a512de8fa2c616faa8791ca",
+      "decoded_rgb_sha256": "1bdaf6f4f1a658513823b8c0ef7ab1f10a00ea64970400970573c192ac238f63",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 99.94142,
+      "font_fallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "휴먼모음T"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "required_readiness": false,
+      "document_digest": "sha256:4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p085/canvas2d/raw.png",
+          "sha256": "fefc27f0b8196820b408d75ad69d2f29b93095952a512de8fa2c616faa8791ca"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p085/canvas2d/pdf.png",
+          "sha256": "00fb711445ef9f1e8e31cdbd985e7553d741fe97b821cdd8ff5f94814ca95884"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p085/canvas2d/review.png",
+          "sha256": "2a1d4f2c4a6322b649e43c98ccafb1c8b84aa73327c86945fcf2af081a3c75ae"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p085/canvas2d/overlay.png",
+          "sha256": "6574d420c716c51c8f4d443659b3e8f2e5f49742469d625049242a08ce01f295"
+        }
+      }
+    },
+    {
+      "key": "chemical",
+      "page": 92,
+      "requested_backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "5d4bade7bf4ab2bc4f2c40b511f690fe6dfb1d10cf3f23f5269a69cd259608a7",
+      "captured_png_sha256": "4556a49296ff0db43b9a35f2d1ad2f3b0edd619b1ea31c93de9f67f926dbdbad",
+      "previous_png_sha256": "f5adf6571fcdf44a68fe874097f30cd2830fb337e7d32219ea5a415e33f651de",
+      "decoded_rgb_sha256": "954b6d9dca7b503c9a0eb3b318d5e42db5b76ed0fde6eca07a4497424f719e07",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 98.94814,
+      "font_fallback": null,
+      "required_readiness": false,
+      "document_digest": "sha256:4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p092/canvas2d/raw.png",
+          "sha256": "f5adf6571fcdf44a68fe874097f30cd2830fb337e7d32219ea5a415e33f651de"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p092/canvas2d/pdf.png",
+          "sha256": "5d4bade7bf4ab2bc4f2c40b511f690fe6dfb1d10cf3f23f5269a69cd259608a7"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p092/canvas2d/review.png",
+          "sha256": "9bf3e04738de49ffb5015a8a0121c09907e2be5db51ff8790c171624fe4c174f"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p092/canvas2d/overlay.png",
+          "sha256": "a4da76759cc1df3eab8e9645f6dbe14322fa8ec3bfd00661a5bed9a6f5c2013e"
+        }
+      }
+    },
+    {
+      "key": "chemical",
+      "page": 92,
+      "requested_backend": "canvaskit-compat",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "5d4bade7bf4ab2bc4f2c40b511f690fe6dfb1d10cf3f23f5269a69cd259608a7",
+      "captured_png_sha256": "4556a49296ff0db43b9a35f2d1ad2f3b0edd619b1ea31c93de9f67f926dbdbad",
+      "previous_png_sha256": "f5adf6571fcdf44a68fe874097f30cd2830fb337e7d32219ea5a415e33f651de",
+      "decoded_rgb_sha256": "954b6d9dca7b503c9a0eb3b318d5e42db5b76ed0fde6eca07a4497424f719e07",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 98.94814,
+      "font_fallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "휴먼모음T"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "required_readiness": false,
+      "document_digest": "sha256:4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p092/canvas2d/raw.png",
+          "sha256": "f5adf6571fcdf44a68fe874097f30cd2830fb337e7d32219ea5a415e33f651de"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p092/canvas2d/pdf.png",
+          "sha256": "5d4bade7bf4ab2bc4f2c40b511f690fe6dfb1d10cf3f23f5269a69cd259608a7"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p092/canvas2d/review.png",
+          "sha256": "9bf3e04738de49ffb5015a8a0121c09907e2be5db51ff8790c171624fe4c174f"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p092/canvas2d/overlay.png",
+          "sha256": "a4da76759cc1df3eab8e9645f6dbe14322fa8ec3bfd00661a5bed9a6f5c2013e"
+        }
+      }
+    },
+    {
+      "key": "chemical",
+      "page": 92,
+      "requested_backend": "canvaskit-default",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "5d4bade7bf4ab2bc4f2c40b511f690fe6dfb1d10cf3f23f5269a69cd259608a7",
+      "captured_png_sha256": "4556a49296ff0db43b9a35f2d1ad2f3b0edd619b1ea31c93de9f67f926dbdbad",
+      "previous_png_sha256": "f5adf6571fcdf44a68fe874097f30cd2830fb337e7d32219ea5a415e33f651de",
+      "decoded_rgb_sha256": "954b6d9dca7b503c9a0eb3b318d5e42db5b76ed0fde6eca07a4497424f719e07",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 98.94814,
+      "font_fallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "휴먼모음T"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "required_readiness": false,
+      "document_digest": "sha256:4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p092/canvas2d/raw.png",
+          "sha256": "f5adf6571fcdf44a68fe874097f30cd2830fb337e7d32219ea5a415e33f651de"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p092/canvas2d/pdf.png",
+          "sha256": "5d4bade7bf4ab2bc4f2c40b511f690fe6dfb1d10cf3f23f5269a69cd259608a7"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p092/canvas2d/review.png",
+          "sha256": "9bf3e04738de49ffb5015a8a0121c09907e2be5db51ff8790c171624fe4c174f"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p092/canvas2d/overlay.png",
+          "sha256": "a4da76759cc1df3eab8e9645f6dbe14322fa8ec3bfd00661a5bed9a6f5c2013e"
+        }
+      }
+    },
+    {
+      "key": "spec13",
+      "page": 70,
+      "requested_backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "25a30a88dc51f0eb49ecb51248e1ebedc5ee186c1aa0ab9d7c0d250f395ebae1",
+      "captured_png_sha256": "eaff3009f2910fcb40504c993dfe0e9e0ef20d0d657554d08d385711b10a226e",
+      "previous_png_sha256": "742b4cd605031e93cfa44cac19de23b8ab4ba2fa66b6b1a39f5ea7721283117e",
+      "decoded_rgb_sha256": "fef1d66140ccfc622461ec1cc60b50d0e5ec0c090f890972bf0a4522ee53103d",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 100.0,
+      "font_fallback": null,
+      "required_readiness": false,
+      "document_digest": "sha256:f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/spec13-p070/canvas2d/raw.png",
+          "sha256": "742b4cd605031e93cfa44cac19de23b8ab4ba2fa66b6b1a39f5ea7721283117e"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/spec13-p070/canvas2d/pdf.png",
+          "sha256": "25a30a88dc51f0eb49ecb51248e1ebedc5ee186c1aa0ab9d7c0d250f395ebae1"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/spec13-p070/canvas2d/review.png",
+          "sha256": "bf214d8762d4f818091a725b5df696ac998d57f739b5c1dbb8923f542058e3b2"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/spec13-p070/canvas2d/overlay.png",
+          "sha256": "31f23cceecca7e6461a9441202a8c004920b00cdfc68f0c860da30589a83b717"
+        }
+      }
+    },
+    {
+      "key": "spec13",
+      "page": 70,
+      "requested_backend": "canvaskit-compat",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "25a30a88dc51f0eb49ecb51248e1ebedc5ee186c1aa0ab9d7c0d250f395ebae1",
+      "captured_png_sha256": "eaff3009f2910fcb40504c993dfe0e9e0ef20d0d657554d08d385711b10a226e",
+      "previous_png_sha256": "742b4cd605031e93cfa44cac19de23b8ab4ba2fa66b6b1a39f5ea7721283117e",
+      "decoded_rgb_sha256": "fef1d66140ccfc622461ec1cc60b50d0e5ec0c090f890972bf0a4522ee53103d",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 100.0,
+      "font_fallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "Hancom Sans SemiBold"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "required_readiness": false,
+      "document_digest": "sha256:f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/spec13-p070/canvas2d/raw.png",
+          "sha256": "742b4cd605031e93cfa44cac19de23b8ab4ba2fa66b6b1a39f5ea7721283117e"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/spec13-p070/canvas2d/pdf.png",
+          "sha256": "25a30a88dc51f0eb49ecb51248e1ebedc5ee186c1aa0ab9d7c0d250f395ebae1"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/spec13-p070/canvas2d/review.png",
+          "sha256": "bf214d8762d4f818091a725b5df696ac998d57f739b5c1dbb8923f542058e3b2"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/spec13-p070/canvas2d/overlay.png",
+          "sha256": "31f23cceecca7e6461a9441202a8c004920b00cdfc68f0c860da30589a83b717"
+        }
+      }
+    },
+    {
+      "key": "spec13",
+      "page": 70,
+      "requested_backend": "canvaskit-default",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "25a30a88dc51f0eb49ecb51248e1ebedc5ee186c1aa0ab9d7c0d250f395ebae1",
+      "captured_png_sha256": "eaff3009f2910fcb40504c993dfe0e9e0ef20d0d657554d08d385711b10a226e",
+      "previous_png_sha256": "742b4cd605031e93cfa44cac19de23b8ab4ba2fa66b6b1a39f5ea7721283117e",
+      "decoded_rgb_sha256": "fef1d66140ccfc622461ec1cc60b50d0e5ec0c090f890972bf0a4522ee53103d",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 100.0,
+      "font_fallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "Hancom Sans SemiBold"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "required_readiness": false,
+      "document_digest": "sha256:f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/spec13-p070/canvas2d/raw.png",
+          "sha256": "742b4cd605031e93cfa44cac19de23b8ab4ba2fa66b6b1a39f5ea7721283117e"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/spec13-p070/canvas2d/pdf.png",
+          "sha256": "25a30a88dc51f0eb49ecb51248e1ebedc5ee186c1aa0ab9d7c0d250f395ebae1"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/spec13-p070/canvas2d/review.png",
+          "sha256": "bf214d8762d4f818091a725b5df696ac998d57f739b5c1dbb8923f542058e3b2"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/spec13-p070/canvas2d/overlay.png",
+          "sha256": "31f23cceecca7e6461a9441202a8c004920b00cdfc68f0c860da30589a83b717"
+        }
+      }
+    },
+    {
+      "key": "decree",
+      "page": 13,
+      "requested_backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "1e9ef3376addc05fed4b9bf12e1bb0e153e61896c177f3bfad27c621cbe30a8f",
+      "captured_png_sha256": "4d45756600d1c31b241b008021547aa7d9923932ee9eabdf8ab6b37b2e2e202d",
+      "previous_png_sha256": "b9e11c4da308136cdd14151196673e604414383245527d71bb8c92b1bd5ab93d",
+      "decoded_rgb_sha256": "6d0ebe45fba54bb3658fdeca61b8ebdcc977ce487badaeb96fcb9def96701672",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 99.90175,
+      "font_fallback": null,
+      "required_readiness": false,
+      "document_digest": "sha256:5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p013/canvas2d/raw.png",
+          "sha256": "b9e11c4da308136cdd14151196673e604414383245527d71bb8c92b1bd5ab93d"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p013/canvas2d/pdf.png",
+          "sha256": "1e9ef3376addc05fed4b9bf12e1bb0e153e61896c177f3bfad27c621cbe30a8f"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p013/canvas2d/review.png",
+          "sha256": "c707f47580451106e17ccf477ff1e0338726aa57488fa040893cfeed9362a8a8"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p013/canvas2d/overlay.png",
+          "sha256": "fbc0908c8c8cde15883371db1664462bb50dc4bad45d980448cd44d2bb7a1dce"
+        }
+      }
+    },
+    {
+      "key": "decree",
+      "page": 13,
+      "requested_backend": "canvaskit-compat",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "1e9ef3376addc05fed4b9bf12e1bb0e153e61896c177f3bfad27c621cbe30a8f",
+      "captured_png_sha256": "4d45756600d1c31b241b008021547aa7d9923932ee9eabdf8ab6b37b2e2e202d",
+      "previous_png_sha256": "b9e11c4da308136cdd14151196673e604414383245527d71bb8c92b1bd5ab93d",
+      "decoded_rgb_sha256": "6d0ebe45fba54bb3658fdeca61b8ebdcc977ce487badaeb96fcb9def96701672",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 99.90175,
+      "font_fallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "나눔바른고딕",
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "required_readiness": false,
+      "document_digest": "sha256:5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p013/canvas2d/raw.png",
+          "sha256": "b9e11c4da308136cdd14151196673e604414383245527d71bb8c92b1bd5ab93d"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p013/canvas2d/pdf.png",
+          "sha256": "1e9ef3376addc05fed4b9bf12e1bb0e153e61896c177f3bfad27c621cbe30a8f"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p013/canvas2d/review.png",
+          "sha256": "c707f47580451106e17ccf477ff1e0338726aa57488fa040893cfeed9362a8a8"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p013/canvas2d/overlay.png",
+          "sha256": "fbc0908c8c8cde15883371db1664462bb50dc4bad45d980448cd44d2bb7a1dce"
+        }
+      }
+    },
+    {
+      "key": "decree",
+      "page": 13,
+      "requested_backend": "canvaskit-default",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "1e9ef3376addc05fed4b9bf12e1bb0e153e61896c177f3bfad27c621cbe30a8f",
+      "captured_png_sha256": "4d45756600d1c31b241b008021547aa7d9923932ee9eabdf8ab6b37b2e2e202d",
+      "previous_png_sha256": "b9e11c4da308136cdd14151196673e604414383245527d71bb8c92b1bd5ab93d",
+      "decoded_rgb_sha256": "6d0ebe45fba54bb3658fdeca61b8ebdcc977ce487badaeb96fcb9def96701672",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 99.90175,
+      "font_fallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "나눔바른고딕",
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "required_readiness": false,
+      "document_digest": "sha256:5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p013/canvas2d/raw.png",
+          "sha256": "b9e11c4da308136cdd14151196673e604414383245527d71bb8c92b1bd5ab93d"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p013/canvas2d/pdf.png",
+          "sha256": "1e9ef3376addc05fed4b9bf12e1bb0e153e61896c177f3bfad27c621cbe30a8f"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p013/canvas2d/review.png",
+          "sha256": "c707f47580451106e17ccf477ff1e0338726aa57488fa040893cfeed9362a8a8"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p013/canvas2d/overlay.png",
+          "sha256": "fbc0908c8c8cde15883371db1664462bb50dc4bad45d980448cd44d2bb7a1dce"
+        }
+      }
+    },
+    {
+      "key": "decree",
+      "page": 19,
+      "requested_backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "deb3f96f1198b67acbd6109d0a5fa94577fcecc28f8eda3b9f5ad38816c67aee",
+      "captured_png_sha256": "14d1d712be191be1937575b57efd35d5a1dd6083359eb284be23fa131f39c7ca",
+      "previous_png_sha256": "1885f43050c5140b2d36902c7ecfd52762279b0b6ba734d5de0f7617825cd00c",
+      "decoded_rgb_sha256": "e9e26da1a0c07e476a86a9c0378ef704c580804af6c192da79d0667bc0d50bba",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 99.73602,
+      "font_fallback": null,
+      "required_readiness": false,
+      "document_digest": "sha256:5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p019/canvas2d/raw.png",
+          "sha256": "1885f43050c5140b2d36902c7ecfd52762279b0b6ba734d5de0f7617825cd00c"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p019/canvas2d/pdf.png",
+          "sha256": "deb3f96f1198b67acbd6109d0a5fa94577fcecc28f8eda3b9f5ad38816c67aee"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p019/canvas2d/review.png",
+          "sha256": "4cf23ee012bd00fbf5c999832d784ca18ba11ab237b3c9459355ab96c2d36b3d"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p019/canvas2d/overlay.png",
+          "sha256": "c083f14b8f8028f6844853a8b3867adbe1aec564c7ae82d112e8f49b57119b94"
+        }
+      }
+    },
+    {
+      "key": "decree",
+      "page": 19,
+      "requested_backend": "canvaskit-compat",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "deb3f96f1198b67acbd6109d0a5fa94577fcecc28f8eda3b9f5ad38816c67aee",
+      "captured_png_sha256": "14d1d712be191be1937575b57efd35d5a1dd6083359eb284be23fa131f39c7ca",
+      "previous_png_sha256": "1885f43050c5140b2d36902c7ecfd52762279b0b6ba734d5de0f7617825cd00c",
+      "decoded_rgb_sha256": "e9e26da1a0c07e476a86a9c0378ef704c580804af6c192da79d0667bc0d50bba",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 99.73602,
+      "font_fallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "나눔바른고딕",
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "required_readiness": false,
+      "document_digest": "sha256:5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p019/canvas2d/raw.png",
+          "sha256": "1885f43050c5140b2d36902c7ecfd52762279b0b6ba734d5de0f7617825cd00c"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p019/canvas2d/pdf.png",
+          "sha256": "deb3f96f1198b67acbd6109d0a5fa94577fcecc28f8eda3b9f5ad38816c67aee"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p019/canvas2d/review.png",
+          "sha256": "4cf23ee012bd00fbf5c999832d784ca18ba11ab237b3c9459355ab96c2d36b3d"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p019/canvas2d/overlay.png",
+          "sha256": "c083f14b8f8028f6844853a8b3867adbe1aec564c7ae82d112e8f49b57119b94"
+        }
+      }
+    },
+    {
+      "key": "decree",
+      "page": 19,
+      "requested_backend": "canvaskit-default",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "deb3f96f1198b67acbd6109d0a5fa94577fcecc28f8eda3b9f5ad38816c67aee",
+      "captured_png_sha256": "14d1d712be191be1937575b57efd35d5a1dd6083359eb284be23fa131f39c7ca",
+      "previous_png_sha256": "1885f43050c5140b2d36902c7ecfd52762279b0b6ba734d5de0f7617825cd00c",
+      "decoded_rgb_sha256": "e9e26da1a0c07e476a86a9c0378ef704c580804af6c192da79d0667bc0d50bba",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 99.73602,
+      "font_fallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "나눔바른고딕",
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "required_readiness": false,
+      "document_digest": "sha256:5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p019/canvas2d/raw.png",
+          "sha256": "1885f43050c5140b2d36902c7ecfd52762279b0b6ba734d5de0f7617825cd00c"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p019/canvas2d/pdf.png",
+          "sha256": "deb3f96f1198b67acbd6109d0a5fa94577fcecc28f8eda3b9f5ad38816c67aee"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p019/canvas2d/review.png",
+          "sha256": "4cf23ee012bd00fbf5c999832d784ca18ba11ab237b3c9459355ab96c2d36b3d"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p019/canvas2d/overlay.png",
+          "sha256": "c083f14b8f8028f6844853a8b3867adbe1aec564c7ae82d112e8f49b57119b94"
+        }
+      }
+    },
+    {
+      "key": "decree",
+      "page": 36,
+      "requested_backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "a8e245f15414461772d86b62f07e8f4d6700e5a5eea1f9258afb84c940e2e3fe",
+      "captured_png_sha256": "54bf42ad0db370af3b39c9a93b8a4c3993667f3c2a3f1e0faf9ae39f20540190",
+      "previous_png_sha256": "9e68db50e05ac21b1957a94b87028dedc4787ee77592d252fa85e94dadaf5f0a",
+      "decoded_rgb_sha256": "b51395f588d7613a1a817aca561712d7af0dfff923d04e7c29a65ff82f51065a",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 100.0,
+      "font_fallback": null,
+      "required_readiness": false,
+      "document_digest": "sha256:5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p036/canvas2d/raw.png",
+          "sha256": "9e68db50e05ac21b1957a94b87028dedc4787ee77592d252fa85e94dadaf5f0a"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p036/canvas2d/pdf.png",
+          "sha256": "a8e245f15414461772d86b62f07e8f4d6700e5a5eea1f9258afb84c940e2e3fe"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p036/canvas2d/review.png",
+          "sha256": "a954a988f133268cf72ea7841f5b4e02d7e75e09ec309ef90addf75f43199f05"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p036/canvas2d/overlay.png",
+          "sha256": "ff2033b528abbed088062bf6565c3aa4e4063d679625887f8222b84d1766b3fd"
+        }
+      }
+    },
+    {
+      "key": "decree",
+      "page": 36,
+      "requested_backend": "canvaskit-compat",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "a8e245f15414461772d86b62f07e8f4d6700e5a5eea1f9258afb84c940e2e3fe",
+      "captured_png_sha256": "54bf42ad0db370af3b39c9a93b8a4c3993667f3c2a3f1e0faf9ae39f20540190",
+      "previous_png_sha256": "9e68db50e05ac21b1957a94b87028dedc4787ee77592d252fa85e94dadaf5f0a",
+      "decoded_rgb_sha256": "b51395f588d7613a1a817aca561712d7af0dfff923d04e7c29a65ff82f51065a",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 100.0,
+      "font_fallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "나눔바른고딕",
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "required_readiness": false,
+      "document_digest": "sha256:5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p036/canvas2d/raw.png",
+          "sha256": "9e68db50e05ac21b1957a94b87028dedc4787ee77592d252fa85e94dadaf5f0a"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p036/canvas2d/pdf.png",
+          "sha256": "a8e245f15414461772d86b62f07e8f4d6700e5a5eea1f9258afb84c940e2e3fe"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p036/canvas2d/review.png",
+          "sha256": "a954a988f133268cf72ea7841f5b4e02d7e75e09ec309ef90addf75f43199f05"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p036/canvas2d/overlay.png",
+          "sha256": "ff2033b528abbed088062bf6565c3aa4e4063d679625887f8222b84d1766b3fd"
+        }
+      }
+    },
+    {
+      "key": "decree",
+      "page": 36,
+      "requested_backend": "canvaskit-default",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "a8e245f15414461772d86b62f07e8f4d6700e5a5eea1f9258afb84c940e2e3fe",
+      "captured_png_sha256": "54bf42ad0db370af3b39c9a93b8a4c3993667f3c2a3f1e0faf9ae39f20540190",
+      "previous_png_sha256": "9e68db50e05ac21b1957a94b87028dedc4787ee77592d252fa85e94dadaf5f0a",
+      "decoded_rgb_sha256": "b51395f588d7613a1a817aca561712d7af0dfff923d04e7c29a65ff82f51065a",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 100.0,
+      "font_fallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "나눔바른고딕",
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "required_readiness": false,
+      "document_digest": "sha256:5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p036/canvas2d/raw.png",
+          "sha256": "9e68db50e05ac21b1957a94b87028dedc4787ee77592d252fa85e94dadaf5f0a"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p036/canvas2d/pdf.png",
+          "sha256": "a8e245f15414461772d86b62f07e8f4d6700e5a5eea1f9258afb84c940e2e3fe"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p036/canvas2d/review.png",
+          "sha256": "a954a988f133268cf72ea7841f5b4e02d7e75e09ec309ef90addf75f43199f05"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p036/canvas2d/overlay.png",
+          "sha256": "ff2033b528abbed088062bf6565c3aa4e4063d679625887f8222b84d1766b3fd"
+        }
+      }
+    },
+    {
+      "key": "decree",
+      "page": 70,
+      "requested_backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "b39672cfa6a6c525d1657af3560629e06dbf46557671adf1d60b2ef32f44cf57",
+      "captured_png_sha256": "80bd0e6c0069d890e05931a838764d2d67dfce8a343e00b2c9c59bcb44c49836",
+      "previous_png_sha256": "fa29f566d15a70e69d03897ab15c33ceb6f6eb2d843a0e559dac04a920a33521",
+      "decoded_rgb_sha256": "be17101a289aed79cd88500b75638e618ef7b78ea54dc167918a46db02d46a88",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 100.0,
+      "font_fallback": null,
+      "required_readiness": false,
+      "document_digest": "sha256:5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p070/canvas2d/raw.png",
+          "sha256": "fa29f566d15a70e69d03897ab15c33ceb6f6eb2d843a0e559dac04a920a33521"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p070/canvas2d/pdf.png",
+          "sha256": "b39672cfa6a6c525d1657af3560629e06dbf46557671adf1d60b2ef32f44cf57"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p070/canvas2d/review.png",
+          "sha256": "540bfbb3a0f3cab22303c485a455ad2ea244005a6770e8b340cd4aa5a5ceb9fb"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p070/canvas2d/overlay.png",
+          "sha256": "1c1b8ed89f8e5bf8b9cce3687a8394c7e0580bafa872accb4885bdbc21322f36"
+        }
+      }
+    },
+    {
+      "key": "decree",
+      "page": 70,
+      "requested_backend": "canvaskit-compat",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "b39672cfa6a6c525d1657af3560629e06dbf46557671adf1d60b2ef32f44cf57",
+      "captured_png_sha256": "80bd0e6c0069d890e05931a838764d2d67dfce8a343e00b2c9c59bcb44c49836",
+      "previous_png_sha256": "fa29f566d15a70e69d03897ab15c33ceb6f6eb2d843a0e559dac04a920a33521",
+      "decoded_rgb_sha256": "be17101a289aed79cd88500b75638e618ef7b78ea54dc167918a46db02d46a88",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 100.0,
+      "font_fallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "나눔바른고딕",
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "required_readiness": false,
+      "document_digest": "sha256:5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p070/canvas2d/raw.png",
+          "sha256": "fa29f566d15a70e69d03897ab15c33ceb6f6eb2d843a0e559dac04a920a33521"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p070/canvas2d/pdf.png",
+          "sha256": "b39672cfa6a6c525d1657af3560629e06dbf46557671adf1d60b2ef32f44cf57"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p070/canvas2d/review.png",
+          "sha256": "540bfbb3a0f3cab22303c485a455ad2ea244005a6770e8b340cd4aa5a5ceb9fb"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p070/canvas2d/overlay.png",
+          "sha256": "1c1b8ed89f8e5bf8b9cce3687a8394c7e0580bafa872accb4885bdbc21322f36"
+        }
+      }
+    },
+    {
+      "key": "decree",
+      "page": 70,
+      "requested_backend": "canvaskit-default",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "b39672cfa6a6c525d1657af3560629e06dbf46557671adf1d60b2ef32f44cf57",
+      "captured_png_sha256": "80bd0e6c0069d890e05931a838764d2d67dfce8a343e00b2c9c59bcb44c49836",
+      "previous_png_sha256": "fa29f566d15a70e69d03897ab15c33ceb6f6eb2d843a0e559dac04a920a33521",
+      "decoded_rgb_sha256": "be17101a289aed79cd88500b75638e618ef7b78ea54dc167918a46db02d46a88",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 100.0,
+      "font_fallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "나눔바른고딕",
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "required_readiness": false,
+      "document_digest": "sha256:5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p070/canvas2d/raw.png",
+          "sha256": "fa29f566d15a70e69d03897ab15c33ceb6f6eb2d843a0e559dac04a920a33521"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p070/canvas2d/pdf.png",
+          "sha256": "b39672cfa6a6c525d1657af3560629e06dbf46557671adf1d60b2ef32f44cf57"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p070/canvas2d/review.png",
+          "sha256": "540bfbb3a0f3cab22303c485a455ad2ea244005a6770e8b340cd4aa5a5ceb9fb"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p070/canvas2d/overlay.png",
+          "sha256": "1c1b8ed89f8e5bf8b9cce3687a8394c7e0580bafa872accb4885bdbc21322f36"
+        }
+      }
+    },
+    {
+      "key": "outline-demo",
+      "page": 3,
+      "requested_backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "e2da2b1ac64361d5cadd9e6b4a2fab3fbb66a57fcf364b405cbea3d35b9a2bb5",
+      "captured_png_sha256": "765429a1332e17324e2c878fe301ca400204703461a644d41270d3798b5b9261",
+      "previous_png_sha256": "1b75418ee5110fe06629d4599c08741512e640936d5fa3311a90b25de1f81f82",
+      "decoded_rgb_sha256": "c5bc0f31fd1779d234b0fa8a388565670dc42a7a8978aa0b19b7abb9e94ca877",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 100.0,
+      "font_fallback": null,
+      "required_readiness": false,
+      "document_digest": "sha256:90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/outline-demo-p003/canvas2d/raw.png",
+          "sha256": "1b75418ee5110fe06629d4599c08741512e640936d5fa3311a90b25de1f81f82"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/outline-demo-p003/canvas2d/pdf.png",
+          "sha256": "e2da2b1ac64361d5cadd9e6b4a2fab3fbb66a57fcf364b405cbea3d35b9a2bb5"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/outline-demo-p003/canvas2d/review.png",
+          "sha256": "31881b3251b4c97b231df15b41cf004c2b4f6544f03962d05bf7ff821598b02f"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/outline-demo-p003/canvas2d/overlay.png",
+          "sha256": "8c736ba8b4756c5fa705dcfdc256afabf35a98498bb950e7b9040bb782a8b28e"
+        }
+      }
+    },
+    {
+      "key": "outline-demo",
+      "page": 3,
+      "requested_backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "e2da2b1ac64361d5cadd9e6b4a2fab3fbb66a57fcf364b405cbea3d35b9a2bb5",
+      "captured_png_sha256": "0f5c16249be5edef36da65c4654ec2bbc1651b79fce44a18c50cb893eedf7aee",
+      "previous_png_sha256": "821d4f1f25f54754d782f8ccf00d4eb29ebdd55600a545804394f1fbdb967081",
+      "decoded_rgb_sha256": "aa6e3970017fe94b851afcedbfe3b87bdf0564c3eef2511f3c09ec41c63ee806",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 99.9958,
+      "font_fallback": null,
+      "required_readiness": false,
+      "document_digest": "sha256:90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/outline-demo-p003/canvaskit-compat/raw.png",
+          "sha256": "821d4f1f25f54754d782f8ccf00d4eb29ebdd55600a545804394f1fbdb967081"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/outline-demo-p003/canvaskit-compat/pdf.png",
+          "sha256": "e2da2b1ac64361d5cadd9e6b4a2fab3fbb66a57fcf364b405cbea3d35b9a2bb5"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/outline-demo-p003/canvaskit-compat/review.png",
+          "sha256": "1f983d3c86309dd7276e940aa67faaf8a6f1dab9bf8aa234e721b810141df85a"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/outline-demo-p003/canvaskit-compat/overlay.png",
+          "sha256": "d1cd295d8c1ca1a64b60fa267499b2f91462afee047b3661802be8a8e7297aaa"
+        }
+      }
+    },
+    {
+      "key": "outline-demo",
+      "page": 3,
+      "requested_backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "e2da2b1ac64361d5cadd9e6b4a2fab3fbb66a57fcf364b405cbea3d35b9a2bb5",
+      "captured_png_sha256": "0f5c16249be5edef36da65c4654ec2bbc1651b79fce44a18c50cb893eedf7aee",
+      "previous_png_sha256": "821d4f1f25f54754d782f8ccf00d4eb29ebdd55600a545804394f1fbdb967081",
+      "decoded_rgb_sha256": "aa6e3970017fe94b851afcedbfe3b87bdf0564c3eef2511f3c09ec41c63ee806",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 99.9958,
+      "font_fallback": null,
+      "required_readiness": false,
+      "document_digest": "sha256:90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/outline-demo-p003/canvaskit-compat/raw.png",
+          "sha256": "821d4f1f25f54754d782f8ccf00d4eb29ebdd55600a545804394f1fbdb967081"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/outline-demo-p003/canvaskit-compat/pdf.png",
+          "sha256": "e2da2b1ac64361d5cadd9e6b4a2fab3fbb66a57fcf364b405cbea3d35b9a2bb5"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/outline-demo-p003/canvaskit-compat/review.png",
+          "sha256": "1f983d3c86309dd7276e940aa67faaf8a6f1dab9bf8aa234e721b810141df85a"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/outline-demo-p003/canvaskit-compat/overlay.png",
+          "sha256": "d1cd295d8c1ca1a64b60fa267499b2f91462afee047b3661802be8a8e7297aaa"
+        }
+      }
+    },
+    {
+      "key": "outline-minimal",
+      "page": 1,
+      "requested_backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "503a195603c468fb58897aa1c96d39236861d87076cef62f93ae668ec85e1e3e",
+      "captured_png_sha256": "6d583dc4fa0c83baef1d36ef13bb27088c0c490ae547712b3f1af2901ee7674d",
+      "previous_png_sha256": "bf056a078b3fa80488ffb38d030e2b2112667055376e16aacdaf8bec4b8ac802",
+      "decoded_rgb_sha256": "b3fa919abd40acdbb592db42426a0e2749bb6c68b993419a314caacdbb6488ca",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 100.0,
+      "font_fallback": null,
+      "required_readiness": false,
+      "document_digest": "sha256:a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/outline-minimal-p001/canvas2d/raw.png",
+          "sha256": "bf056a078b3fa80488ffb38d030e2b2112667055376e16aacdaf8bec4b8ac802"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/outline-minimal-p001/canvas2d/pdf.png",
+          "sha256": "503a195603c468fb58897aa1c96d39236861d87076cef62f93ae668ec85e1e3e"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/outline-minimal-p001/canvas2d/review.png",
+          "sha256": "e2f2351b79bf9ed29ed9eeba1b3ed0514fda28afad3240f88a4de22e6e91dec1"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/outline-minimal-p001/canvas2d/overlay.png",
+          "sha256": "0688f0adc57ccd8bb14cf82d29db0a7df0bb635386ba6ba22a3cc37e8a82a340"
+        }
+      }
+    },
+    {
+      "key": "outline-minimal",
+      "page": 1,
+      "requested_backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "503a195603c468fb58897aa1c96d39236861d87076cef62f93ae668ec85e1e3e",
+      "captured_png_sha256": "f8e838bfcf9de73e3da8a0cabde90dc49cca710f395658b7277d6615cd377f34",
+      "previous_png_sha256": "0f4c557d4226bc23f3b5d883e929880ce9b79ee39e7f415c8217b4dd9f804867",
+      "decoded_rgb_sha256": "0991023a6a37b0ba6dc0e1a957e77603ee6c69d7b631695a77344dfaf1a8af85",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 100.0,
+      "font_fallback": null,
+      "required_readiness": false,
+      "document_digest": "sha256:a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/outline-minimal-p001/canvaskit-compat/raw.png",
+          "sha256": "0f4c557d4226bc23f3b5d883e929880ce9b79ee39e7f415c8217b4dd9f804867"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/outline-minimal-p001/canvaskit-compat/pdf.png",
+          "sha256": "503a195603c468fb58897aa1c96d39236861d87076cef62f93ae668ec85e1e3e"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/outline-minimal-p001/canvaskit-compat/review.png",
+          "sha256": "4efab5bde25cf28fbadf321b4dc70faef5cc0287c215be79291cb70ff62f4158"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/outline-minimal-p001/canvaskit-compat/overlay.png",
+          "sha256": "41291ac76779da025c2449656d64801f6d79dbf754163d97a4d5cb8752c1a2aa"
+        }
+      }
+    },
+    {
+      "key": "outline-minimal",
+      "page": 1,
+      "requested_backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "503a195603c468fb58897aa1c96d39236861d87076cef62f93ae668ec85e1e3e",
+      "captured_png_sha256": "f8e838bfcf9de73e3da8a0cabde90dc49cca710f395658b7277d6615cd377f34",
+      "previous_png_sha256": "0f4c557d4226bc23f3b5d883e929880ce9b79ee39e7f415c8217b4dd9f804867",
+      "decoded_rgb_sha256": "0991023a6a37b0ba6dc0e1a957e77603ee6c69d7b631695a77344dfaf1a8af85",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 100.0,
+      "font_fallback": null,
+      "required_readiness": false,
+      "document_digest": "sha256:a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/outline-minimal-p001/canvaskit-compat/raw.png",
+          "sha256": "0f4c557d4226bc23f3b5d883e929880ce9b79ee39e7f415c8217b4dd9f804867"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/outline-minimal-p001/canvaskit-compat/pdf.png",
+          "sha256": "503a195603c468fb58897aa1c96d39236861d87076cef62f93ae668ec85e1e3e"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/outline-minimal-p001/canvaskit-compat/review.png",
+          "sha256": "4efab5bde25cf28fbadf321b4dc70faef5cc0287c215be79291cb70ff62f4158"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/outline-minimal-p001/canvaskit-compat/overlay.png",
+          "sha256": "41291ac76779da025c2449656d64801f6d79dbf754163d97a4d5cb8752c1a2aa"
+        }
+      }
+    },
+    {
+      "key": "chemical",
+      "page": 56,
+      "requested_backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "c6b7a3fa63a2c55d115ae544d778a6079d3bac3cf990c20b5d1130be6e462e43",
+      "captured_png_sha256": "516ad6b77e07b836e7a7802f76d845d88cb51af7db0f6bb383177a460b94210c",
+      "previous_png_sha256": "dcafc71b616168792528544c3cbf5ba31246e9dea314291cf491487c7f6eea21",
+      "decoded_rgb_sha256": "f77a8da27a4a2772a4c1a59a4149b662db829dd78aee65197bad07421559057e",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 99.98107,
+      "font_fallback": null,
+      "required_readiness": false,
+      "document_digest": "sha256:4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p056/canvas2d/raw.png",
+          "sha256": "dcafc71b616168792528544c3cbf5ba31246e9dea314291cf491487c7f6eea21"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p056/canvas2d/pdf.png",
+          "sha256": "c6b7a3fa63a2c55d115ae544d778a6079d3bac3cf990c20b5d1130be6e462e43"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p056/canvas2d/review.png",
+          "sha256": "fef433e0073ae373ff8c5d77ba83a563e7aaae4a6bcbd2e5d9928a0e2cccc664"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p056/canvas2d/overlay.png",
+          "sha256": "4a3d3356a9658fb242b1d0f2e48190e7202a3a7cf0a98ecd7a5ac33f37abb9d6"
+        }
+      }
+    },
+    {
+      "key": "chemical",
+      "page": 56,
+      "requested_backend": "canvaskit-compat",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "c6b7a3fa63a2c55d115ae544d778a6079d3bac3cf990c20b5d1130be6e462e43",
+      "captured_png_sha256": "516ad6b77e07b836e7a7802f76d845d88cb51af7db0f6bb383177a460b94210c",
+      "previous_png_sha256": "dcafc71b616168792528544c3cbf5ba31246e9dea314291cf491487c7f6eea21",
+      "decoded_rgb_sha256": "f77a8da27a4a2772a4c1a59a4149b662db829dd78aee65197bad07421559057e",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 99.98107,
+      "font_fallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "휴먼모음T"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "required_readiness": false,
+      "document_digest": "sha256:4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p056/canvas2d/raw.png",
+          "sha256": "dcafc71b616168792528544c3cbf5ba31246e9dea314291cf491487c7f6eea21"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p056/canvas2d/pdf.png",
+          "sha256": "c6b7a3fa63a2c55d115ae544d778a6079d3bac3cf990c20b5d1130be6e462e43"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p056/canvas2d/review.png",
+          "sha256": "fef433e0073ae373ff8c5d77ba83a563e7aaae4a6bcbd2e5d9928a0e2cccc664"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p056/canvas2d/overlay.png",
+          "sha256": "4a3d3356a9658fb242b1d0f2e48190e7202a3a7cf0a98ecd7a5ac33f37abb9d6"
+        }
+      }
+    },
+    {
+      "key": "chemical",
+      "page": 56,
+      "requested_backend": "canvaskit-default",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "c6b7a3fa63a2c55d115ae544d778a6079d3bac3cf990c20b5d1130be6e462e43",
+      "captured_png_sha256": "516ad6b77e07b836e7a7802f76d845d88cb51af7db0f6bb383177a460b94210c",
+      "previous_png_sha256": "dcafc71b616168792528544c3cbf5ba31246e9dea314291cf491487c7f6eea21",
+      "decoded_rgb_sha256": "f77a8da27a4a2772a4c1a59a4149b662db829dd78aee65197bad07421559057e",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 99.98107,
+      "font_fallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "휴먼모음T"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "required_readiness": false,
+      "document_digest": "sha256:4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p056/canvas2d/raw.png",
+          "sha256": "dcafc71b616168792528544c3cbf5ba31246e9dea314291cf491487c7f6eea21"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p056/canvas2d/pdf.png",
+          "sha256": "c6b7a3fa63a2c55d115ae544d778a6079d3bac3cf990c20b5d1130be6e462e43"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p056/canvas2d/review.png",
+          "sha256": "fef433e0073ae373ff8c5d77ba83a563e7aaae4a6bcbd2e5d9928a0e2cccc664"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/chemical-p056/canvas2d/overlay.png",
+          "sha256": "4a3d3356a9658fb242b1d0f2e48190e7202a3a7cf0a98ecd7a5ac33f37abb9d6"
+        }
+      }
+    },
+    {
+      "key": "decree",
+      "page": 18,
+      "requested_backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "928918e0ae78266d4b6d37c79a8dc535944197721cd0a9d43f19c64f03428511",
+      "captured_png_sha256": "6310f3e0acdb625b6d1dd5412daa491ec748a57faf5257b06058ea328893e392",
+      "previous_png_sha256": "5b849b30f5d3bddc74b34cee9f7ed43b8ada6c9776fb907d007ac7a11e3abb2d",
+      "decoded_rgb_sha256": "6b2b5c040387784eeb67c804a7dae9ce495bab4e69c08fa6f33c6515417e7e19",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 99.9823,
+      "font_fallback": null,
+      "required_readiness": false,
+      "document_digest": "sha256:5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p018/canvas2d/raw.png",
+          "sha256": "5b849b30f5d3bddc74b34cee9f7ed43b8ada6c9776fb907d007ac7a11e3abb2d"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p018/canvas2d/pdf.png",
+          "sha256": "928918e0ae78266d4b6d37c79a8dc535944197721cd0a9d43f19c64f03428511"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p018/canvas2d/review.png",
+          "sha256": "a72fd05a2ddcde9fe219f01c6706734833cf98a54f544d63953bc0832f782252"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p018/canvas2d/overlay.png",
+          "sha256": "49b657c82a204e0ff365a836c3c6047107718831997b509891fd17d82047e2b6"
+        }
+      }
+    },
+    {
+      "key": "decree",
+      "page": 18,
+      "requested_backend": "canvaskit-compat",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "928918e0ae78266d4b6d37c79a8dc535944197721cd0a9d43f19c64f03428511",
+      "captured_png_sha256": "6310f3e0acdb625b6d1dd5412daa491ec748a57faf5257b06058ea328893e392",
+      "previous_png_sha256": "5b849b30f5d3bddc74b34cee9f7ed43b8ada6c9776fb907d007ac7a11e3abb2d",
+      "decoded_rgb_sha256": "6b2b5c040387784eeb67c804a7dae9ce495bab4e69c08fa6f33c6515417e7e19",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 99.9823,
+      "font_fallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "나눔바른고딕",
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "required_readiness": false,
+      "document_digest": "sha256:5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p018/canvas2d/raw.png",
+          "sha256": "5b849b30f5d3bddc74b34cee9f7ed43b8ada6c9776fb907d007ac7a11e3abb2d"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p018/canvas2d/pdf.png",
+          "sha256": "928918e0ae78266d4b6d37c79a8dc535944197721cd0a9d43f19c64f03428511"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p018/canvas2d/review.png",
+          "sha256": "a72fd05a2ddcde9fe219f01c6706734833cf98a54f544d63953bc0832f782252"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p018/canvas2d/overlay.png",
+          "sha256": "49b657c82a204e0ff365a836c3c6047107718831997b509891fd17d82047e2b6"
+        }
+      }
+    },
+    {
+      "key": "decree",
+      "page": 18,
+      "requested_backend": "canvaskit-default",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "928918e0ae78266d4b6d37c79a8dc535944197721cd0a9d43f19c64f03428511",
+      "captured_png_sha256": "6310f3e0acdb625b6d1dd5412daa491ec748a57faf5257b06058ea328893e392",
+      "previous_png_sha256": "5b849b30f5d3bddc74b34cee9f7ed43b8ada6c9776fb907d007ac7a11e3abb2d",
+      "decoded_rgb_sha256": "6b2b5c040387784eeb67c804a7dae9ce495bab4e69c08fa6f33c6515417e7e19",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 99.9823,
+      "font_fallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "나눔바른고딕",
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "required_readiness": false,
+      "document_digest": "sha256:5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p018/canvas2d/raw.png",
+          "sha256": "5b849b30f5d3bddc74b34cee9f7ed43b8ada6c9776fb907d007ac7a11e3abb2d"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p018/canvas2d/pdf.png",
+          "sha256": "928918e0ae78266d4b6d37c79a8dc535944197721cd0a9d43f19c64f03428511"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p018/canvas2d/review.png",
+          "sha256": "a72fd05a2ddcde9fe219f01c6706734833cf98a54f544d63953bc0832f782252"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p018/canvas2d/overlay.png",
+          "sha256": "49b657c82a204e0ff365a836c3c6047107718831997b509891fd17d82047e2b6"
+        }
+      }
+    },
+    {
+      "key": "decree",
+      "page": 61,
+      "requested_backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "78c612091551ed060a63b3c453e0a80f4c3c52b357a6f9d5ef4faa756d492baa",
+      "captured_png_sha256": "fbe06511805530833bca147c0dd6a83c5f1b9d784cbaf225fa1f1b96cd63b15f",
+      "previous_png_sha256": "ccdc3a526779fb430f63b6712f6b17c8d6aa83b8c8a74c04ffd3ebb0560f2c44",
+      "decoded_rgb_sha256": "b154abfc4b548deaadb93958f075d2c04a93ff366ea55a2e5d52706ca61fd70d",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 100.0,
+      "font_fallback": null,
+      "required_readiness": false,
+      "document_digest": "sha256:5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p061/canvas2d/raw.png",
+          "sha256": "ccdc3a526779fb430f63b6712f6b17c8d6aa83b8c8a74c04ffd3ebb0560f2c44"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p061/canvas2d/pdf.png",
+          "sha256": "78c612091551ed060a63b3c453e0a80f4c3c52b357a6f9d5ef4faa756d492baa"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p061/canvas2d/review.png",
+          "sha256": "776fecb888035909ce6b8e97a8cdb6197f44d00131afa3ccee5dd6170b2a2434"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p061/canvas2d/overlay.png",
+          "sha256": "f010da700aa8e50d6a3bbab6290cb8307a6e0394f638674c31a761bb1b4a925e"
+        }
+      }
+    },
+    {
+      "key": "decree",
+      "page": 61,
+      "requested_backend": "canvaskit-compat",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "78c612091551ed060a63b3c453e0a80f4c3c52b357a6f9d5ef4faa756d492baa",
+      "captured_png_sha256": "fbe06511805530833bca147c0dd6a83c5f1b9d784cbaf225fa1f1b96cd63b15f",
+      "previous_png_sha256": "ccdc3a526779fb430f63b6712f6b17c8d6aa83b8c8a74c04ffd3ebb0560f2c44",
+      "decoded_rgb_sha256": "b154abfc4b548deaadb93958f075d2c04a93ff366ea55a2e5d52706ca61fd70d",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 100.0,
+      "font_fallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "나눔바른고딕",
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "required_readiness": false,
+      "document_digest": "sha256:5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p061/canvas2d/raw.png",
+          "sha256": "ccdc3a526779fb430f63b6712f6b17c8d6aa83b8c8a74c04ffd3ebb0560f2c44"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p061/canvas2d/pdf.png",
+          "sha256": "78c612091551ed060a63b3c453e0a80f4c3c52b357a6f9d5ef4faa756d492baa"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p061/canvas2d/review.png",
+          "sha256": "776fecb888035909ce6b8e97a8cdb6197f44d00131afa3ccee5dd6170b2a2434"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p061/canvas2d/overlay.png",
+          "sha256": "f010da700aa8e50d6a3bbab6290cb8307a6e0394f638674c31a761bb1b4a925e"
+        }
+      }
+    },
+    {
+      "key": "decree",
+      "page": 61,
+      "requested_backend": "canvaskit-default",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "actual_profile": "print",
+      "reference_pdf_png_sha256": "78c612091551ed060a63b3c453e0a80f4c3c52b357a6f9d5ef4faa756d492baa",
+      "captured_png_sha256": "fbe06511805530833bca147c0dd6a83c5f1b9d784cbaf225fa1f1b96cd63b15f",
+      "previous_png_sha256": "ccdc3a526779fb430f63b6712f6b17c8d6aa83b8c8a74c04ffd3ebb0560f2c44",
+      "decoded_rgb_sha256": "b154abfc4b548deaadb93958f075d2c04a93ff366ea55a2e5d52706ca61fd70d",
+      "dimensions": [
+        794,
+        1122
+      ],
+      "raw_silhouette_percent": 100.0,
+      "font_fallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "나눔바른고딕",
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "required_readiness": false,
+      "document_digest": "sha256:5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "direct_reading_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p061/canvas2d/raw.png",
+          "sha256": "ccdc3a526779fb430f63b6712f6b17c8d6aa83b8c8a74c04ffd3ebb0560f2c44"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p061/canvas2d/pdf.png",
+          "sha256": "78c612091551ed060a63b3c453e0a80f4c3c52b357a6f9d5ef4faa756d492baa"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p061/canvas2d/review.png",
+          "sha256": "776fecb888035909ce6b8e97a8cdb6197f44d00131afa3ccee5dd6170b2a2434"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-consumers/decree-p061/canvas2d/overlay.png",
+          "sha256": "f010da700aa8e50d6a3bbab6290cb8307a6e0394f638674c31a761bb1b4a925e"
+        }
+      }
+    }
+  ]
+}

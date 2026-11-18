@@ -1,0 +1,44 @@
+{
+  "diagnostic_only": true,
+  "canonical_pdf_unchanged": true,
+  "controlled_change": "only row7 col0 vertical alignment of independent Hancom HWPX resave",
+  "records": [
+    {
+      "alignment": "center",
+      "file": "pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
+      "sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+      "page_count": 103,
+      "small_table_top_css_px": 904.1306966145834
+    },
+    {
+      "alignment": "top",
+      "file": "output/pr-review/issues-7733-7738-20261117/chemical85-independent-resave/chemical85-top-diagnostic-2020.pdf",
+      "sha256": "53a6fc79e25e622d89d25012a7e0a7936836e927c0c3b40def1ff0b47b61af43",
+      "page_count": 103,
+      "small_table_top_css_px": 863.0559895833334,
+      "job_id": "5d76a1d8-7c5a-45cf-ab34-c55153f9b9b7",
+      "result": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      }
+    },
+    {
+      "alignment": "bottom",
+      "file": "output/pr-review/issues-7733-7738-20261117/chemical85-independent-resave/chemical85-bottom-diagnostic-2020.pdf",
+      "sha256": "ab5aca03001cdf8377e09f5b7f3db531720e530dbf1948443f8ca539ffacd61d",
+      "page_count": 103,
+      "small_table_top_css_px": 945.205322265625,
+      "job_id": "4ccad38c-0619-4a86-b0f3-b01fce18d79b",
+      "result": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      }
+    }
+  ],
+  "center_midpoint_difference": 4.0690104128771054e-05,
+  "conclusion": "independent TOP locates row7 origin near row6 origin; a baseline-only offset cannot explain TOP and CENTER together"
+}

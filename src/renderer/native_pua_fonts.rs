@@ -129,6 +129,17 @@ impl PartialEq for NativeOtfMetrics {
 }
 
 impl NativeOtfMetrics {
+    /// 뒤 대체 후보가 아닌 실제 주 프로그램의 cmap을 확인한다.
+    /// 같은 family의 기준 파일 결측보다 현재 공급한 프로그램의 hit가 우선한다.
+    pub(crate) fn primary_has_glyph(&self, character: char) -> Option<bool> {
+        let program = self.programs.first()?;
+        let face = ttf_parser::Face::parse(&program.bytes, program.face_index).ok()?;
+        Some(
+            face.glyph_index(character)
+                .is_some_and(|glyph| glyph.0 != 0),
+        )
+    }
+
     /// 실제 공급자의 윤곽 형식은 cmap/hmtx 축약 전에 확인한다.
     /// 원본 유형·폭 표의 신뢰나 뒤 후보의 형식으로 주 프로그램을 추정하지 않는다.
     pub(crate) fn has_static_truetype_paint_programs(&self) -> bool {

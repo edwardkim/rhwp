@@ -1,0 +1,22 @@
+{
+  "errorCode": 0,
+  "faces": [
+    {
+      "actualPostScript": "MoeumTR-HM",
+      "family": "MoeumT R",
+      "requestedPostScript": "MoeumTR-HM",
+      "user_font_url_verified": true
+    },
+    {
+      "actualPostScript": "ExpoM-HM",
+      "family": "Expo M",
+      "requestedPostScript": "ExpoM-HM",
+      "user_font_url_verified": true
+    }
+  ],
+  "registrationReturned": true,
+  "scope": "user",
+  "font_file": "HMFMMUEX.TTC",
+  "source_sha256": "be52401ea71e34d7c52bffacf25f95e3cc0bfdadc8a2a1f377d458f22484f7b7",
+  "bytes": 2978176
+}

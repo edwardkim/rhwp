@@ -112,11 +112,10 @@ pub(super) fn marker_text_width(text: &str, style: &TextStyle) -> f64 {
 
 /// 상대 크기는 glyph에 적용한다. '%' 거리의 기준은 참조 글자모양의 기본 크기다.
 /// 명시된 머리 글자모양과 본문 상속 경로가 같은 선택 규칙을 사용한다. 본문 글자 크기를 따르는
-/// 머리 글자모양은 번호를 그리는 크기인 문단 끝 글자모양 `end_id` 의 크기를 기준으로 한다.
+/// 머리 글자모양과 별도 모양 없는 기본 머리는 문단 끝 `end_id` 의 크기를 기준으로 한다.
 pub(super) fn nominal_marker_size(
     styles: &ResolvedStyleSet,
     head: MarkerHead,
-    fallback_id: u32,
     end_id: u32,
     fallback_size: f64,
 ) -> f64 {
@@ -129,7 +128,7 @@ pub(super) fn nominal_marker_size(
             head.char_shape_id
         }
     } else {
-        fallback_id
+        end_id
     };
     styles
         .char_styles
@@ -146,12 +145,25 @@ pub(super) fn list_marker_geometry_for(
     bullet: bool,
 ) -> ListMarkerGeometry {
     let hu = |v: i16| hwpunit_to_px(v as i32, crate::renderer::DEFAULT_DPI);
-    // 한/글은 ASCII 가 아닌 글머리표 글자를 글자 크기 1em 칸으로 잰다 — 글꼴에 없는 `❍`
-    // (맑은 고딕 10pt, 대체 글꼴 폭 0.97em → 한/글 1000), Wingdings `U+F09F`(글리프 폭
-    // 0.46em → 12pt 에서 한/글 영역 792 = 1200 − 1000 + 600, `chemical-labeling` 54쪽).
-    // ASCII 글머리표(`-`)는 글자 폭 그대로다(`footnote-01` 14pt 반각 706).
-    let glyph_px = if bullet && !text.is_ascii() {
-        style.font_size * text.chars().count() as f64
+    // 표40 bit2가 꺼진 글머리표는 실제 glyph 폭 대신 문자 칸을 예약한다.
+    // 독립 한컴 Print의 ·/-/○ × bit2 대조에서 라틴 칸은 반각, 기호 칸은 전각이며,
+    // bit2를 켜면 같은 glyph의 자연 폭을 소비한다. 문자 칸과 glyph 공급을 섞지 않는다.
+    // 기존 Wingdings PUA와 전각 기호의 전각 예약은 유지한다.
+    let nominal_bullet = bullet && head.attr & (1 << 2) == 0;
+    let glyph_px = if nominal_bullet {
+        style.font_size
+            * text
+                .chars()
+                .map(|ch| {
+                    if ch.is_ascii()
+                        || crate::renderer::style_resolver::detect_lang_category(ch) == 1
+                    {
+                        0.5
+                    } else {
+                        1.0
+                    }
+                })
+                .sum::<f64>()
     } else {
         marker_text_width(text, style)
     };

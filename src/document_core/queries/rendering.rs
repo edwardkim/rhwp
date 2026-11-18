@@ -5936,13 +5936,16 @@ impl DocumentCore {
                 storage,
             )?;
 
-            // 구역 간 page_number_pos 상속: 이 구역에 PageNumberPos가 없으면 이전 구역 값 사용
-            let section_has_own_pnp = result.pages.iter().any(|p| p.page_number_pos.is_some());
-            if !section_has_own_pnp {
-                if let Some(ref prev_pnp) = carry_page_number_pos {
-                    for page in &mut result.pages {
-                        page.page_number_pos = Some(crate::storage::try_clone(prev_pnp, storage)?);
-                    }
+            // 새 구역의 첫 위치 선언이 실제로 적용되기 전까지는 앞 구역 설정을 잇는다.
+            // 구역 뒤쪽에 선언이 있다는 이유로 그 앞 쪽들의 쪽번호를 지우지 않는다.
+            // 명시적인 위치 0도 Some이므로, 첫 선언 이후의 표시/감추기는 그대로 보존한다.
+            if let Some(ref prev_pnp) = carry_page_number_pos {
+                for page in result
+                    .pages
+                    .iter_mut()
+                    .take_while(|page| page.page_number_pos.is_none())
+                {
+                    page.page_number_pos = Some(crate::storage::try_clone(prev_pnp, storage)?);
                 }
             }
 

@@ -1,0 +1,20 @@
+{
+  "parent": "9889f966ec747223024ae5bd3b319c8a27b646cf",
+  "captured_at": "2026-11-18T01:37:58.698104+09:00",
+  "sources": {
+    "src/renderer/float_placement.rs": "cf79bea5d3c66ffbacb687fce776e93daaa3e40a64ca6271c7080c7ae0ac4729",
+    "src/renderer/font_metrics_technical_symbols.rs": "aec3a0c11ea22097726b03f49ca0578a71dc49738bbc92fac81f94efd36b5984",
+    "src/renderer/layout.rs": "e964dd97e500bc996f6e763ba8e73dc4d7ef02c9e59570220c66d31675fec637",
+    "src/renderer/layout/paragraph_layout.rs": "3af2272e90141f9715b9a6703bcff84177b5b3cf908b6358ae30dd0b69bbe435",
+    "src/renderer/layout/paragraph_layout/list_marker_paint.rs": "298cfd9f98f29636b413a7d3e23d5d5b45c22d3ba3b546e58512df3375ab4726",
+    "src/renderer/layout/text_measurement.rs": "cf20167771ce8c52d1bafc367138ef55fbf21f9c85fc7cf38741072f1bfb780e",
+    "src/renderer/typeset/table/host_spacing.rs": "28c116a8e55f4e32c6814fd6b0bab1adc2867d72f231eeb59a37beecc0edc03a",
+    "tests/cases/issue_7733_compatibility_form_advance.rs": "6524c2776f60f79367c092b9d32ce735313d00c4a6d2666986e4bbdba6a61c69",
+    "tests/cases/issue_7733_dotum_small_square_advance.rs": "2ecdd044527e91739f3ce6ba2f29d39e95b1e68773e64022fe2952123414c89e",
+    "tests/cases/issue_7733_inline_table_list_marker.rs": "6f95452c8c77a584b1011d4a0260047f10ece3aa2463df886db38d44228228aa",
+    "tests/cases/issue_7733_table_terminal_outer_margin.rs": "d007942029ff1155f9ce9f1fde54c7f5455363397cb23ad18875ccaa8fc2318b"
+  },
+  "source_diff_sha256": "f54b3eeccd3aa38e7c067bf5f07c5c43868a6c3f92455dec94c97829da9a4906",
+  "cargo_lock_sha256": "972bdb0994b216f0cef357b856ce0807ce3d437af6791377446b62f2e26c05a1",
+  "font_environment_sha256": "39ec77d269dcd5e687ecd68cd3c5ffb2d19f91a5d9580b2e11c0c4db8a9cb4b0"
+}

@@ -1,0 +1,27 @@
+{
+  "producer": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+  "qualified_for": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+  "source_objects": {
+    "src": "892b62181a25208c6032b224b86c9082ab4ea293",
+    "crates": "86983f61c55f558e113e4728e150f1ef5820fbfe",
+    "Cargo.toml": "67c6d8ce55d9af3701aafb9906623346e9e2f690",
+    "Cargo.lock": "8febd98f5276adec5cdba874c2518374313c1604",
+    "build.rs": "a3103a33faf38a899edb68f64fd0739dd4950787",
+    "ttfs": "790e77203ea8f9950c4a24c04c870c3c0234880b",
+    "assets/fonts": "f65b0b28e788e2e52972ed13b4082827b81b5d1e",
+    "rhwp-studio/src": "768f1a272b59a1d65ea4a3db638dc87d93f0688c",
+    "tests/fixtures": "09b3138e4a558ee4f25fdac945ae126b46bbc44d"
+  },
+  "changed_paths": [
+    "mydocs/manual/verification/visual_sweep_guide.md",
+    "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/test-expectation-review.md",
+    "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/test-expectation-validation.json",
+    "tests/cases/issue_6171_hanyang_gyeongothic_alias.rs"
+  ],
+  "frozen_artifacts": {
+    "rhwp-native": "50ed1f014b8d1ec949f411855384e26260d3695ef348eb4732d52dece1a65db0",
+    "latest-pkg/rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+    "latest-pkg/rhwp_bg.wasm": "8875f1b150a102a36d8ca8c2c571f720bddeeeb76f3262e620a86c6faeb335ba"
+  },
+  "scope": "동일 제품 소스를 사용하는 Native·WASM 산출물과 완료된 시각 판독의 재사용. 변경한 Rust 검사 결과는 별도 실행으로 확인한다."
+}

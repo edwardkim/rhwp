@@ -1,0 +1,106 @@
+[
+  {
+    "path": "/Users/tsjang/Library/Fonts/SPJGT.otf",
+    "bytes": 99208,
+    "sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480",
+    "names": {
+      "1": [
+        "HY Junggothic",
+        "한양중고딕"
+      ],
+      "2": [
+        "Regular"
+      ],
+      "4": [
+        "HY Junggothic",
+        "한양중고딕"
+      ],
+      "6": [
+        "HYJunggothic-SPJGT"
+      ]
+    },
+    "outline": "CFF",
+    "upem": 1000,
+    "glyph_count": 1025,
+    "cmap_count": 536,
+    "sample_glyphs": {
+      "가": null,
+      "A": null,
+      "═": {
+        "name": "hft37ED",
+        "advance": 1000,
+        "advance_em": 1.0,
+        "bounds": [
+          0,
+          254,
+          1000,
+          446
+        ]
+      },
+      "※": null,
+      "•": null
+    }
+  },
+  {
+    "path": "/Users/tsjang/Library/Fonts/H2GTRM.TTF",
+    "bytes": 3274536,
+    "sha256": "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5",
+    "names": {
+      "1": [
+        "HYGothic-Medium",
+        "HY중고딕"
+      ],
+      "2": [
+        "Regular"
+      ],
+      "4": [
+        "HYGothic-Medium",
+        "HY중고딕"
+      ],
+      "6": [
+        "H2gtrM"
+      ]
+    },
+    "outline": "glyf",
+    "upem": 1024,
+    "glyph_count": 20430,
+    "cmap_count": 17368,
+    "sample_glyphs": {
+      "가": {
+        "name": "uniAC00",
+        "advance": 1024,
+        "advance_em": 1.0,
+        "bounds": [
+          73,
+          -81,
+          984,
+          815
+        ]
+      },
+      "A": {
+        "name": "A",
+        "advance": 682,
+        "advance_em": 0.666015625,
+        "bounds": [
+          10,
+          1,
+          650,
+          736
+        ]
+      },
+      "═": null,
+      "※": {
+        "name": "uni203B",
+        "advance": 1024,
+        "advance_em": 1.0,
+        "bounds": [
+          177,
+          39,
+          846,
+          703
+        ]
+      },
+      "•": null
+    }
+  }
+]

@@ -201,6 +201,9 @@ pub struct RenderNode {
     /// 표/셀의 BorderFill이 직접 생성한 배경. 셀 본문의 독립 도형과 구분한다.
     #[serde(skip)]
     pub(crate) table_background_paint: bool,
+    /// 본문 문단의 후행 채움 소유 글줄과 원본 밴드 끝. 독립 도형의 넘침과 구분한다.
+    #[serde(skip)]
+    pub(crate) paragraph_fill_owner: Option<(NodeId, f64)>,
     /// Source text clipping in absolute page pixels; not a layout height/cut.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub paint_clip: Option<Vec<crate::model::text_clip::TextClipPath>>,
@@ -257,6 +260,7 @@ impl RenderNode {
             print_table_column_axes: None,
             source_inline_picture: false,
             table_background_paint: false,
+            paragraph_fill_owner: None,
             id,
             node_type,
             bbox,

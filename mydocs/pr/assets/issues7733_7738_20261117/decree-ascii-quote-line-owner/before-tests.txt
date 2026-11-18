@@ -1,0 +1,51 @@
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 13.57s
+────────────
+ Nextest run ID 59ee531a-31f6-490f-ad89-7454d9972d9c with nextest profile: default
+    Starting 3 tests across 1 binary (332 tests skipped)
+        PASS [   0.033s] (1/3) rhwp::regression_suite_024 issue_7737_ascii_quote_line_owner::directional_openers_and_existing_closing_prime_keep_their_owners
+        FAIL [   0.033s] (2/3) rhwp::regression_suite_024 issue_7737_ascii_quote_line_owner::independent_ascii_quotes_can_finish_the_line_before_hangul
+  stdout ───
+
+    running 1 test
+    test issue_7737_ascii_quote_line_owner::independent_ascii_quotes_can_finish_the_line_before_hangul ... FAILED
+
+    failures:
+
+    failures:
+        issue_7737_ascii_quote_line_owner::independent_ascii_quotes_can_finish_the_line_before_hangul
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 334 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'issue_7737_ascii_quote_line_owner::independent_ascii_quotes_can_finish_the_line_before_hangul' (269660210) panicked at tests/generated/../cases/issue_7737_ascii_quote_line_owner.rs:136:13:
+    assertion `left == right` failed
+      left: "가가가가가가 "
+     right: "가가가가가가 '"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   1.311s] (3/3) rhwp::regression_suite_024 issue_7737_ascii_quote_line_owner::ascii_apostrophe_keeps_the_independent_print_line_and_following_text_owner
+  stdout ───
+
+    running 1 test
+    test issue_7737_ascii_quote_line_owner::ascii_apostrophe_keeps_the_independent_print_line_and_following_text_owner ... FAILED
+
+    failures:
+
+    failures:
+        issue_7737_ascii_quote_line_owner::ascii_apostrophe_keeps_the_independent_print_line_and_following_text_owner
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 334 filtered out; finished in 1.30s
+
+  stderr ───
+
+    thread 'issue_7737_ascii_quote_line_owner::ascii_apostrophe_keeps_the_independent_print_line_and_following_text_owner' (269660208) panicked at tests/generated/../cases/issue_7737_ascii_quote_line_owner.rs:71:5:
+    독립 Print의 ASCII 작은따옴표를 다음 줄로 밀면 양쪽 정렬 간격도 달라진다: ICT·SW 진흥기관으로, 현재 과기정통부로부터 예산을 지원받아
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   1.314s] 3 tests run: 1 passed, 2 failed, 332 skipped
+        FAIL [   0.033s] (2/3) rhwp::regression_suite_024 issue_7737_ascii_quote_line_owner::independent_ascii_quotes_can_finish_the_line_before_hangul
+        FAIL [   1.311s] (3/3) rhwp::regression_suite_024 issue_7737_ascii_quote_line_owner::ascii_apostrophe_keeps_the_independent_print_line_and_following_text_owner
+error: test run failed

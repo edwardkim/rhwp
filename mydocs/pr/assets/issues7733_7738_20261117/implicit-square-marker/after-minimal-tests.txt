@@ -1,0 +1,25 @@
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 12.83s
+────────────
+ Nextest run ID 352b3dcf-595e-4a57-ab9c-7498366a1815 with nextest profile: default
+    Starting 18 tests across 4 binaries (1382 tests skipped)
+        PASS [   0.015s] ( 1/18) rhwp::regression_suite_010 issue_7735_implicit_square_marker::square_and_circle_paint_distinct_shapes_with_the_same_program_box
+        PASS [   0.068s] ( 2/18) rhwp::regression_suite_016 verified_point_glyph_supplier::verified_gulim_missing_points_keep_print_supplier_and_following_glyphs
+        PASS [   0.068s] ( 3/18) rhwp::regression_suite_016 verified_point_glyph_supplier::verified_arial_missing_points_keep_print_supplier_and_following_glyphs
+        PASS [   0.067s] ( 4/18) rhwp::regression_suite_016 verified_point_glyph_supplier::verified_hcr_owned_points_keep_their_original_font_program
+        PASS [   0.142s] ( 5/18) rhwp::regression_suite_024 implicit_wingdings_marker_source::implicit_wingdings_keeps_source_identity_and_a_separate_advance
+        PASS [   0.016s] ( 6/18) rhwp::regression_suite_024 issue_7733_dotum_small_square_advance::explicit_hft_program_keeps_its_existing_compatibility_cell
+        PASS [   0.016s] ( 7/18) rhwp::regression_suite_024 issue_7733_dotum_small_square_advance::verified_dotum_small_square_preserves_its_original_three_eighths_cell
+        PASS [   0.137s] ( 8/18) rhwp::regression_suite_024 issue_7733_dotum_small_square_advance::actual_source_dotum_slot_uses_the_verified_glyph_without_trusting_the_whole_table
+        PASS [   0.022s] ( 9/18) rhwp::regression_suite_026 hft_mapped_symbol_program_tracking::bmp_and_plane15_source_rule_share_the_same_symbol_program
+        PASS [   0.020s] (10/18) rhwp::regression_suite_026 hft_mapped_symbol_program_tracking::implicit_double_rule_does_not_inherit_the_body_hft_bold_tracking
+        PASS [   0.018s] (11/18) rhwp::regression_suite_026 hft_mapped_symbol_program_tracking::literal_unicode_rule_keeps_its_own_program_contract
+        PASS [   0.255s] (12/18) rhwp::regression_suite_010 issue_7735_implicit_square_marker::square_marker_keeps_its_original_program_address_and_advance
+        PASS [   0.272s] (13/18) rhwp::regression_suite_010 issue_7735_implicit_square_marker::literal_unicode_square_keeps_its_declared_font_contract
+        PASS [   0.206s] (14/18) rhwp::regression_suite_024 implicit_wingdings_marker_source::normal_unicode_bullet_keeps_its_own_font_contract
+        PASS [   0.327s] (15/18) rhwp::regression_suite_024 implicit_wingdings_marker_source::declared_display_fallback_does_not_replace_implicit_program_metrics
+        PASS [   0.359s] (16/18) rhwp::regression_suite_024 issue_7733_dotum_small_square_advance::document_font_alias_keeps_the_verified_small_square_source_advance
+        PASS [   0.449s] (17/18) rhwp::regression_suite_010 issue_7735_implicit_square_marker::original_square_and_circle_keep_their_shared_program_advance
+        PASS [   0.607s] (18/18) rhwp::regression_suite_026 hft_mapped_symbol_program_tracking::source_page474_keeps_the_independent_print_last_symbol_origin
+────────────
+     Summary [   0.836s] 18 tests run: 18 passed, 1382 skipped

@@ -1,0 +1,233 @@
+{
+  "status": "completed_visual_and_focused_native_not_final_acceptance",
+  "source_head": "5498d80a8e7e0b94c668a2aea48c20bb3bd214a5",
+  "started_at": "2026-11-18T09:22:46.384368+09:00",
+  "capture_workers_total": 8,
+  "visual_font_scope": "normal installed original fonts",
+  "cargo_font_scope": "minimum-font sandbox",
+  "steps": [
+    {
+      "name": "focused-native-skia",
+      "exit_code": 0,
+      "elapsed_seconds": 216.274,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/logs/focused-native-skia.log"
+    },
+    {
+      "name": "focus-native-decree",
+      "exit_code": 0,
+      "elapsed_seconds": 14.847,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/logs/focus-native-decree.log"
+    },
+    {
+      "name": "whole-native-chemical",
+      "exit_code": 0,
+      "elapsed_seconds": 40.568,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/logs/whole-native-chemical.log"
+    },
+    {
+      "name": "whole-native-spec13",
+      "exit_code": 0,
+      "elapsed_seconds": 23.184,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/logs/whole-native-spec13.log"
+    },
+    {
+      "name": "whole-native-outline-demo",
+      "exit_code": 0,
+      "elapsed_seconds": 5.987,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/logs/whole-native-outline-demo.log"
+    },
+    {
+      "name": "whole-native-decree",
+      "exit_code": 0,
+      "elapsed_seconds": 39.858,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/logs/whole-native-decree.log"
+    },
+    {
+      "name": "whole-native-outline-minimal",
+      "exit_code": 0,
+      "elapsed_seconds": 3.387,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/logs/whole-native-outline-minimal.log"
+    },
+    {
+      "name": "fresh-wasm",
+      "exit_code": 0,
+      "elapsed_seconds": 336.325,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/logs/fresh-wasm.log"
+    },
+    {
+      "name": "focus-wasm-decree",
+      "exit_code": 0,
+      "elapsed_seconds": 22.324,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/logs/focus-wasm-decree.log"
+    },
+    {
+      "name": "whole-wasm-chemical",
+      "exit_code": 0,
+      "elapsed_seconds": 93.492,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/logs/whole-wasm-chemical.log"
+    },
+    {
+      "name": "whole-wasm-spec13",
+      "exit_code": 0,
+      "elapsed_seconds": 77.403,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/logs/whole-wasm-spec13.log"
+    },
+    {
+      "name": "whole-wasm-outline-demo",
+      "exit_code": 0,
+      "elapsed_seconds": 18.428,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/logs/whole-wasm-outline-demo.log"
+    },
+    {
+      "name": "whole-wasm-decree",
+      "exit_code": 0,
+      "elapsed_seconds": 108.08,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/logs/whole-wasm-decree.log"
+    },
+    {
+      "name": "whole-wasm-outline-minimal",
+      "exit_code": 0,
+      "elapsed_seconds": 12.566,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/logs/whole-wasm-outline-minimal.log"
+    }
+  ],
+  "visual": [
+    {
+      "key": "decree",
+      "backend": "native",
+      "focus": true,
+      "pages": 1,
+      "minimum": 100.0,
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/focus-native/decree/silhouette.tsv",
+      "sha256": "6e45ed42c5b7fe47c1b70856ee00ff4d830475ef902242a3492aed212c3991c4"
+    },
+    {
+      "key": "chemical",
+      "backend": "native",
+      "focus": false,
+      "pages": 103,
+      "minimum": 99.38,
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/whole-native/chemical/silhouette.tsv",
+      "sha256": "1a253507c47b02ca2d55705d5337049ae7dbf7e46ae1e2a9fae88011c95adbc4"
+    },
+    {
+      "key": "spec13",
+      "backend": "native",
+      "focus": false,
+      "pages": 71,
+      "minimum": 99.69,
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/whole-native/spec13/silhouette.tsv",
+      "sha256": "1740db49214ba69905b9030002a2bc90897ca3fc6c623a305a91e5ed956dbcc2"
+    },
+    {
+      "key": "outline-demo",
+      "backend": "native",
+      "focus": false,
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/whole-native/outline-demo/silhouette.tsv",
+      "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af"
+    },
+    {
+      "key": "decree",
+      "backend": "native",
+      "focus": false,
+      "pages": 74,
+      "minimum": 99.56,
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/whole-native/decree/silhouette.tsv",
+      "sha256": "70f2aedf10775615798b7264da95b67166c79b34ee54dd7af009ea4121857c8a"
+    },
+    {
+      "key": "outline-minimal",
+      "backend": "native",
+      "focus": false,
+      "pages": 1,
+      "minimum": 100.0,
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/whole-native/outline-minimal/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    },
+    {
+      "key": "decree",
+      "backend": "wasm",
+      "focus": true,
+      "pages": 1,
+      "minimum": 100.0,
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/focus-wasm/decree/silhouette.tsv",
+      "sha256": "6e45ed42c5b7fe47c1b70856ee00ff4d830475ef902242a3492aed212c3991c4"
+    },
+    {
+      "key": "chemical",
+      "backend": "wasm",
+      "focus": false,
+      "pages": 103,
+      "minimum": 99.43,
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/whole-wasm/chemical/silhouette.tsv",
+      "sha256": "2ad14625968e42a48fb5b300bdb34cbbd2058b226056acc31dd2eca19e0716fa"
+    },
+    {
+      "key": "spec13",
+      "backend": "wasm",
+      "focus": false,
+      "pages": 71,
+      "minimum": 99.67,
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/whole-wasm/spec13/silhouette.tsv",
+      "sha256": "b620227f2a2aac18809adb5258d89dd84f25206c0db156e07861e257887a7a3a"
+    },
+    {
+      "key": "outline-demo",
+      "backend": "wasm",
+      "focus": false,
+      "pages": 3,
+      "minimum": 100.0,
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/whole-wasm/outline-demo/silhouette.tsv",
+      "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af"
+    },
+    {
+      "key": "decree",
+      "backend": "wasm",
+      "focus": false,
+      "pages": 74,
+      "minimum": 99.55,
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/whole-wasm/decree/silhouette.tsv",
+      "sha256": "7bfc3ac35b8ab59c3c4a6e3eacffb9083d062c91311e4aae1f95e550570700d5"
+    },
+    {
+      "key": "outline-minimal",
+      "backend": "wasm",
+      "focus": false,
+      "pages": 1,
+      "minimum": 100.0,
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/whole-wasm/outline-minimal/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    }
+  ],
+  "active": null,
+  "command": [
+    "/Users/tsjang/rhwp/venv/bin/python",
+    "/Users/tsjang/rhwp/scripts/visual_sweep.py",
+    "--silhouette-only",
+    "--hwp",
+    "/Users/tsjang/rhwp/samples/pr4093/outline_navigation_table_cell_number.hwpx",
+    "--pdf",
+    "/Users/tsjang/rhwp/pdf/issue7382-regression-review/outline_navigation_table_cell_number-2020.pdf",
+    "--key",
+    "outline-minimal",
+    "--rhwp-bin",
+    "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/rhwp-native",
+    "--compat",
+    "2022",
+    "--dpi",
+    "96",
+    "--page-workers",
+    "8",
+    "--embed-fonts",
+    "full",
+    "--font-path",
+    "/Users/tsjang/Library/Fonts",
+    "--out",
+    "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/whole-wasm",
+    "--wasm-pkg",
+    "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/pkg"
+  ],
+  "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/logs/whole-wasm-outline-minimal.log"
+}

@@ -1,0 +1,15 @@
+{
+  "status": "passed_full_nextest_other_gates_pending",
+  "source_head": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+  "fixed_base": "08b38c12a75fa5cabfe5fbbfde9388aceb3fcca3",
+  "font_scope": "macOS minimum-font sandbox; personal fonts denied",
+  "tests_run": 13780,
+  "passed": 13780,
+  "failed": 0,
+  "skipped": 45,
+  "test_seconds": 823.941,
+  "supervised_command_seconds": 1842.635,
+  "exit_code": 0,
+  "actual_log_sha256": "53cde103b777422d46df2c65008af31dedd1fda44d7f8f713f84f993bb85599b",
+  "summary": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/rust-gates/full-nextest-summary.txt"
+}

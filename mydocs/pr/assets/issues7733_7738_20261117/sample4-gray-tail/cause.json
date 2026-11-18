@@ -1,0 +1,41 @@
+{
+  "reference_pdf": "pdf/hwp3-sample4-2020.pdf",
+  "page": 26,
+  "pdf_page_points": [
+    0.0,
+    0.0,
+    595.0,
+    841.0
+  ],
+  "rendered_native_gray_bottom_pixel": 1008,
+  "rendered_pdf_gray_bottom_pixel": 1014,
+  "source_column_bottom_96dpi": 1009.1,
+  "source_last_line_top_96dpi": 995.6,
+  "source_last_line_height_96dpi": 13.3,
+  "source_fill_band_height_96dpi": 20.0,
+  "cause": "Last accepted line fits in the body, but the full declared paint band is clipped at the body-column bottom. Independent PDF extends gray background through the trailing line band.",
+  "independent_last_gray_pdf_rectangle": {
+    "rect_points": [
+      85.03399658203125,
+      745.9439697265625,
+      509.9649963378906,
+      760.927978515625
+    ],
+    "rect_96dpi": [
+      113.378662109375,
+      994.5919596354166,
+      679.9533284505209,
+      1014.5706380208334
+    ],
+    "fill": [
+      0.7999237179756165,
+      0.800030529499054,
+      0.7998932003974915
+    ],
+    "type": "f"
+  },
+  "pdf_sha256": "61d63da58638b4a28900a15694779b35766f4ff5b3e0ed41d959a97f2599bb60",
+  "input_sha256": "f25a3ec30f54e045a492e9a9c97efaac8628e3b5fde024418bee743e6fdcebc4",
+  "pre_repair_producer_head": "2a820cc137ce04720bbdc5d79815a3b2e875c8c5",
+  "status": "confirmed_pre_repair_cause"
+}

@@ -1,0 +1,259 @@
+{
+  "input": "tests/fixtures/issue7735/bullet-width-control.hwpx",
+  "input_sha256": "410a0a7c28e3fce05729502b2ba29c76983a16f4db544cfff1440c3bc9bc956f",
+  "pdf": "pdf/issues7733_7738/bullet-width-control-2024.pdf",
+  "pdf_sha256": "952b5190c3c2f960aae3272f1ad42dc0a12cf342042f2e708fabe5a6ec689f03",
+  "creator": "maintainer-authored six paragraph control derived from the public pr8558 character bullet fixture; source shapes appended with contiguous IDs",
+  "source_changes": "bullet ·/-/○ and useInstWidth 0/1, fixed 50% body distance; no stored LineSeg; source input not substituted for original specification document",
+  "job_id": "95a4353e-1b39-48be-ac7c-8be7afeb9902",
+  "status": {
+    "job_id": "95a4353e-1b39-48be-ac7c-8be7afeb9902",
+    "status": "succeeded",
+    "phase": "completed",
+    "stage": "waiting_for_output",
+    "progress_percent": 100,
+    "progress_kind": "completed",
+    "progress_current_page": 1,
+    "progress_total_pages": 1,
+    "progress_observed_at": "2026-11-17T13:54:09.159Z",
+    "target": "pdf",
+    "engine": "2024",
+    "created_at": "2026-11-17T13:53:57.069Z",
+    "started_at": "2026-11-17T13:53:57.071Z",
+    "completed_at": "2026-11-17T13:54:09.159Z",
+    "expired_at": null,
+    "elapsed_seconds": 12,
+    "queue_position": null,
+    "output_bytes": 10746,
+    "delivery": {
+      "status": "not_requested",
+      "attempts": 0,
+      "output_path": null,
+      "saved_at": null,
+      "error": null
+    },
+    "result": {
+      "job_id": "95a4353e-1b39-48be-ac7c-8be7afeb9902",
+      "status": "success",
+      "engine": "2024",
+      "engine_profile": "2024",
+      "hancom_version": "13.0.0.3901",
+      "backend": "hwp-managed-direct-dll-host",
+      "input_format": "hwpx",
+      "format": "pdf",
+      "bytes": 10746,
+      "pdf_page_count": 1,
+      "logical_page_count": null,
+      "elapsed_ms": 12085,
+      "worker_elapsed_ms": 11217,
+      "worker_bits": 32,
+      "font_scope": {
+        "mode": "session0",
+        "status": "verified",
+        "profile_source": "protected_config",
+        "session_id": 0,
+        "mapped_font_count": 2,
+        "registered_font_count": 2,
+        "failed_font_count": 0,
+        "parent_visibility": "verified",
+        "child_visibility": "verified"
+      },
+      "input_preprocess": "none",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "frame_print_to_pdf_ex_one_up"
+    },
+    "error": null,
+    "terminal": true
+  },
+  "pdf_observations": [
+    [
+      {
+        "text": "·",
+        "font": "HCRBatang",
+        "size_css": 13.269154866536459,
+        "x": 113.37855021158855,
+        "y": 143.52315266927084
+      },
+      {
+        "text": " ",
+        "font": "HCRBatang",
+        "size_css": 13.269154866536459,
+        "x": 117.62584431966145,
+        "y": 143.52315266927084
+      },
+      {
+        "text": "CONTROL_1_INSTANCE_0",
+        "font": "HCRBatang",
+        "size_css": 13.269154866536459,
+        "x": 126.65135701497395,
+        "y": 143.52315266927084
+      }
+    ],
+    [
+      {
+        "text": "·",
+        "font": "HCRBatang",
+        "size_css": 13.269154866536459,
+        "x": 113.37855021158855,
+        "y": 164.77991739908853
+      },
+      {
+        "text": " ",
+        "font": "HCRBatang",
+        "size_css": 13.269154866536459,
+        "x": 117.62584431966145,
+        "y": 164.77991739908853
+      },
+      {
+        "text": "CONTROL_2_INSTANCE_1",
+        "font": "HCRBatang",
+        "size_css": 13.269154866536459,
+        "x": 124.25265502929688,
+        "y": 164.77991739908853
+      }
+    ],
+    [
+      {
+        "text": "-",
+        "font": "HCRBatang",
+        "size_css": 13.269154866536459,
+        "x": 113.37855021158855,
+        "y": 186.1965128580729
+      },
+      {
+        "text": " ",
+        "font": "HCRBatang",
+        "size_css": 13.269154866536459,
+        "x": 120.67859903971355,
+        "y": 186.1965128580729
+      },
+      {
+        "text": "CONTROL_3_INSTANCE_0",
+        "font": "HCRBatang",
+        "size_css": 13.269154866536459,
+        "x": 126.65135701497395,
+        "y": 186.1965128580729
+      }
+    ],
+    [
+      {
+        "text": "-",
+        "font": "HCRBatang",
+        "size_css": 13.269154866536459,
+        "x": 113.37855021158855,
+        "y": 207.45328776041666
+      },
+      {
+        "text": " ",
+        "font": "HCRBatang",
+        "size_css": 13.269154866536459,
+        "x": 120.67859903971355,
+        "y": 207.45328776041666
+      },
+      {
+        "text": "CONTROL_4_INSTANCE_1",
+        "font": "HCRBatang",
+        "size_css": 13.269154866536459,
+        "x": 127.450927734375,
+        "y": 207.45328776041666
+      }
+    ],
+    [
+      {
+        "text": "○CONTROL_5_INSTANCE_0",
+        "font": "HCRBatang",
+        "size_css": 13.269154866536459,
+        "x": 113.37855021158855,
+        "y": 228.7100626627604
+      }
+    ],
+    [
+      {
+        "text": "○CONTROL_6_INSTANCE_1",
+        "font": "HCRBatang",
+        "size_css": 13.269154866536459,
+        "x": 113.37855021158855,
+        "y": 250.12664794921875
+      }
+    ]
+  ],
+  "qualification": "control Print complete; Native/fresh WASM comparison pending",
+  "canonical_compat": "2024",
+  "native_before_metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 94.23336,
+      "silhouette_raw_unmatched_pixels": 343,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 5948,
+      "tolerant_content_match_percent": 94.23336
+    }
+  ],
+  "native_after_metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 5118,
+      "tolerant_content_match_percent": 100.0
+    }
+  ],
+  "fresh_wasm_after_metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 4995,
+      "tolerant_content_match_percent": 100.0
+    }
+  ],
+  "native_producer": {
+    "parent": "9dbe6eb9defe8936ede039760b2e46093ae87167",
+    "captured_at": "2026-11-17T23:32:57.996052+09:00",
+    "sources": {
+      "src/renderer/layout/paragraph_layout.rs": "d9a24f2f5fd62b6da232e9cc6bd3c4a229f23dfcb56db96e1a97fd47f0d918fb",
+      "src/renderer/layout/paragraph_layout/list_marker_geometry.rs": "529801424b8a9d47d8b2ab916d5a3ad00964960954b52913221529bf8eab193d",
+      "src/renderer/typeset/table/continuation/fragment/emit.rs": "85b195254be7d09185fd67e3c00fd2fc70a1e6890a36835206f3e76c8cffe729"
+    },
+    "source_diff_sha256": "0f49bd3f4836a3ee73405d1eaf0e9613e5b4ca4494fd17b76599df537b33f58d"
+  },
+  "fresh_wasm_producer": {
+    "status": "passed",
+    "source": "d98252a476a8d2803491127a5b89559af9e0eb92",
+    "command": [
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "pkg",
+      "--no-opt"
+    ],
+    "mode": "Mac local wrapper no-opt, not Docker optimized",
+    "source_provenance": {
+      "parent": "9dbe6eb9defe8936ede039760b2e46093ae87167",
+      "captured_at": "2026-11-17T23:32:57.996052+09:00",
+      "sources": {
+        "src/renderer/layout/paragraph_layout.rs": "d9a24f2f5fd62b6da232e9cc6bd3c4a229f23dfcb56db96e1a97fd47f0d918fb",
+        "src/renderer/layout/paragraph_layout/list_marker_geometry.rs": "529801424b8a9d47d8b2ab916d5a3ad00964960954b52913221529bf8eab193d",
+        "src/renderer/typeset/table/continuation/fragment/emit.rs": "85b195254be7d09185fd67e3c00fd2fc70a1e6890a36835206f3e76c8cffe729"
+      },
+      "source_diff_sha256": "0f49bd3f4836a3ee73405d1eaf0e9613e5b4ca4494fd17b76599df537b33f58d"
+    },
+    "started_at": "2026-11-17T23:39:33.793168+09:00",
+    "exit_code": 0,
+    "files": {
+      "/Users/tsjang/rhwp/pkg/rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "/Users/tsjang/rhwp/pkg/rhwp_bg.wasm": "2cb28dccdb70b58d139b7ea8a5cb17d58db6af411e4a2bf77a8a82d2a598b432",
+      "/Users/tsjang/rhwp/rhwp-studio/public/rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "/Users/tsjang/rhwp/rhwp-studio/public/rhwp_bg.wasm": "2cb28dccdb70b58d139b7ea8a5cb17d58db6af411e4a2bf77a8a82d2a598b432"
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "status": "reused_exact_unchanged_bindgen_js_response_proof",
+  "current_source_head": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+  "current_files": {
+    "pkg/rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+    "rhwp-studio/public/rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+    "output/pr-review/issues-7733-7738-20261117/post-rebase-08b38-corpus-final/latest-pkg/rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365"
+  },
+  "prior_actual_response_and_vite_rewrite_proof": {
+    "recorded_at": "2026-11-18T18:33:52.166456+09:00",
+    "source_head": "e63992fb2f4fbedb9c58569232b176ae91b98331",
+    "mode": "identity audit only; runtime response and measured PNGs not changed",
+    "actual_js_response_sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+    "actual_js_response_bytes": 3288478,
+    "source_map_content_sha256": "59734a71da6ed6c581c7fe366ecf864577c616d96e976cad0ccb6486bff6a24b",
+    "fresh_bindgen_js_sha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+    "verified_vite_rewrite_count": 1,
+    "verified_rewrite": {
+      "original": "new URL('rhwp_bg.wasm', import.meta.url)",
+      "vite_rewrite": "new URL(\"/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm\", '' + import.meta.url)"
+    },
+    "after_reversing_only_the_verified_url_rewrite_original_bytes_equal": true,
+    "root_public_frozen_js_match": true,
+    "wasm_sha256": "0e4000801e05b7dc377fa42573cc9b80b64593b98c04dc1f1feba2da65b7a8f2",
+    "actual_wasm_response_matches": true,
+    "correction": "Raw runtime JS is Vite-transformed; its SHA is recorded separately rather than falsely requiring equality with the untransformed wasm-bindgen JS. The inline source map differs only by the verified WASM URL rewrite."
+  },
+  "current_wasm_initialization_evidence": "fresh-browser-wasm-consumption.json",
+  "new_js_capture_claimed": false
+}

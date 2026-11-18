@@ -1,0 +1,23 @@
+    Finished `release-test` profile [optimized] target(s) in 1.98s
+────────────
+ Nextest run ID 721c150e-29b3-4d0b-a0be-4085e1dda3dc with nextest profile: default
+    Starting 17 tests across 55 binaries (13785 tests skipped)
+        PASS [   0.021s] ( 1/17) rhwp::regression_suite_020 issue_6679_pdf_font_fallback_cache::character_limit_discards_the_partial_index_and_uses_stock_fallback
+        PASS [   0.059s] ( 2/17) rhwp::regression_suite_005 security_svg_font_boundary::normal_font_face_and_local_lookup_are_preserved
+        PASS [   0.059s] ( 3/17) rhwp::regression_suite_005 security_svg_font_boundary::embedded_font_names_cannot_close_svg_style_in_screen_or_print
+        PASS [   0.065s] ( 4/17) rhwp::regression_suite_005 security_svg_font_boundary::valid_hwpx_font_metadata_reaches_the_same_safe_export_boundary
+        PASS [   0.012s] ( 5/17) rhwp::regression_suite_020 issue_6679_pdf_font_fallback_cache::fontdb_change_disables_the_index_and_uses_stock_fallback
+        PASS [   0.013s] ( 6/17) rhwp::regression_suite_020 issue_6679_pdf_font_fallback_cache::face_slot_limit_discards_the_partial_index_and_uses_stock_fallback
+        PASS [   0.011s] ( 7/17) rhwp::regression_suite_020 issue_6679_pdf_font_fallback_cache::indexed_selector_preserves_stock_order_and_used_face_exclusion
+        PASS [   0.010s] ( 8/17) rhwp::regression_suite_020 issue_6679_pdf_font_fallback_cache::indexed_selector_preserves_usvg_style_weight_stretch_condition
+        PASS [   0.022s] ( 9/17) rhwp::regression_suite_020 issue_6679_pdf_font_fallback_cache::indexed_selector_keeps_stock_pdf_bytes_for_a_controlled_fontdb
+        PASS [   0.010s] (10/17) rhwp::regression_suite_020 issue_6679_pdf_font_fallback_cache::repeated_character_reuses_coverage_without_remapping_the_file
+        PASS [   0.010s] (11/17) rhwp::regression_suite_020 issue_6679_pdf_font_fallback_cache::repeated_character_reuses_negative_coverage_without_remapping_the_file
+        PASS [   0.110s] (12/17) rhwp::regression_suite_005 security_svg_font_boundary::css_string_delimiters_are_encoded_in_every_embedding_mode
+        PASS [   0.111s] (13/17) rhwp::regression_suite_004 issue_4138_original_equation_print_paper::svg_embeds_the_supplied_family_even_when_its_filename_is_unrelated
+        PASS [   0.112s] (14/17) rhwp::regression_suite_005 security_svg_font_boundary::actual_font_file_embedding_preserves_css_string_boundaries
+        PASS [   0.112s] (15/17) rhwp::regression_suite_005 security_svg_font_boundary::exported_svg_cannot_embed_font_files_outside_the_configured_search_root
+        PASS [   0.118s] (16/17) rhwp::regression_suite_020 issue_6679_pdf_font_fallback_cache::compatibility_pdf_keeps_the_fallback_text_surface
+        PASS [   0.069s] (17/17) rhwp::regression_suite_025 issue_4645_font_lookup_boundary::public_svg_embedding_rejects_nested_document_font_candidate_but_embeds_direct_child
+────────────
+     Summary [   0.171s] 17 tests run: 17 passed, 13785 skipped

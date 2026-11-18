@@ -1,0 +1,31 @@
+{
+  "status": "passed",
+  "baseline": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
+  "baseline_sha256": "295f7774a65d722e1fcc965910628dad3e43c9620a3d0181f7388cec111d6f9a",
+  "metric": "silhouette_raw_match_percent",
+  "backend": "native-skia",
+  "precision": "0.01 percentage points",
+  "pages": 383,
+  "regressions": [],
+  "webfont_fallback": [],
+  "elapsed_seconds": 225.849,
+  "source_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+  "capture_head": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+  "renderer_sha256": "50ed1f014b8d1ec949f411855384e26260d3695ef348eb4732d52dece1a65db0",
+  "input": {
+    "path": "samples/2025 행정업무운영 편람(최종).hwpx",
+    "sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6"
+  },
+  "reference_pdf": {
+    "path": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+    "sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e"
+  },
+  "font_environment_sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25",
+  "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/required-handbook/silhouette.tsv",
+  "tsv_sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590",
+  "source_gate_sha256": "2cabecaf80ddf189fade2152556a4c92ee32a15ce23ffe1c393364fc3e87b927",
+  "capture_manifest_sha256": "695a44b680c2f00902466aed019ebb1ed3f396812bf8232991aab9e511792235",
+  "raw_minimum": 99.96503,
+  "radius_px": 2,
+  "dpi": 96
+}

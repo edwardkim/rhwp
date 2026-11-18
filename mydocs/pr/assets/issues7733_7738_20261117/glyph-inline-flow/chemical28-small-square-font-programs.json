@@ -1,0 +1,18 @@
+[
+  {
+    "path": "/Users/tsjang/Library/Fonts/gulim.TTC",
+    "sha256": "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c",
+    "family": "Dotum",
+    "upem": 1024,
+    "glyph": "H18543",
+    "advance": 384
+  },
+  {
+    "path": "/Users/tsjang/Library/Fonts/issue8160/original-windows-gulim/gulim.ttc",
+    "sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+    "family": "Dotum",
+    "upem": 1024,
+    "glyph": "H18543",
+    "advance": 384
+  }
+]

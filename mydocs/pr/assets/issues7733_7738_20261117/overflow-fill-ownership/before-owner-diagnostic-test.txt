@@ -1,0 +1,36 @@
+[RustTestSuite] issue_8218_hwp3_link_bindata_order -> regression_suite_027::issue_8218_hwp3_link_bindata_order
+[RustTestSuite] cargo nextest run --locked --test regression_suite_027 -E test(/(^|::)issue_8218_hwp3_link_bindata_order::/) --cargo-profile release-test --target-dir target/pr-review --build-jobs 8 --test-threads 8 --no-fail-fast
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 16.67s
+────────────
+ Nextest run ID df1877b4-a4a3-4121-acdf-df07aa41b069 with nextest profile: default
+    Starting 7 tests across 1 binary (341 tests skipped)
+        FAIL [   0.112s] (1/7) rhwp::regression_suite_027 issue_8218_hwp3_link_bindata_order::sample4_background_diagnostic_keeps_owner_and_independent_overflow_separate
+  stdout ───
+
+    running 1 test
+    test issue_8218_hwp3_link_bindata_order::sample4_background_diagnostic_keeps_owner_and_independent_overflow_separate ... FAILED
+
+    failures:
+
+    failures:
+        issue_8218_hwp3_link_bindata_order::sample4_background_diagnostic_keeps_owner_and_independent_overflow_separate
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 347 filtered out; finished in 0.10s
+
+  stderr ───
+
+    thread 'issue_8218_hwp3_link_bindata_order::sample4_background_diagnostic_keeps_owner_and_independent_overflow_separate' (272777910) panicked at tests/generated/../cases/issue_8218_hwp3_link_bindata_order.rs:363:5:
+    독립 Print가 그리는 수용 글줄의 선언된 후행 채움은 별도 본문 콘텐츠가 아니다
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        PASS [   0.112s] (2/7) rhwp::regression_suite_027 issue_8218_hwp3_link_bindata_order::sample4_accepted_last_line_keeps_its_declared_background_band
+        PASS [   0.125s] (3/7) rhwp::regression_suite_027 issue_8218_hwp3_link_bindata_order::sample4_page21_embedded_picture_matches_independent_print
+        PASS [   0.156s] (4/7) rhwp::regression_suite_027 issue_8218_hwp3_link_bindata_order::sample4_embedded_pictures_keep_ids_and_contents_after_hwp5_save
+        PASS [   0.161s] (5/7) rhwp::regression_suite_027 issue_8218_hwp3_link_bindata_order::sample4_nasm_picture_and_following_text_keep_their_source_page
+        PASS [   0.168s] (6/7) rhwp::regression_suite_027 issue_8218_hwp3_link_bindata_order::link_bin_data_is_ordered_by_id_every_parse
+        PASS [   0.169s] (7/7) rhwp::regression_suite_027 issue_8218_hwp3_link_bindata_order::saved_hwp5_keeps_each_picture_external_path
+────────────
+     Summary [   0.170s] 7 tests run: 6 passed, 1 failed, 341 skipped
+        FAIL [   0.112s] (1/7) rhwp::regression_suite_027 issue_8218_hwp3_link_bindata_order::sample4_background_diagnostic_keeps_owner_and_independent_overflow_separate
+error: test run failed

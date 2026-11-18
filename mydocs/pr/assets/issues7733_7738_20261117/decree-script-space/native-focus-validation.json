@@ -1,0 +1,62 @@
+[
+  {
+    "page": 13,
+    "details": {
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 78199,
+      "tolerant_content_match_percent": 100.0
+    },
+    "input_identity": {
+      "rhwp_sha256": "79ea7d9303c9dca79ad4b1ca4c9932931a846cf61137da787bd8b21db35cf24c",
+      "pdf_sha256": "1e9ef3376addc05fed4b9bf12e1bb0e153e61896c177f3bfad27c621cbe30a8f",
+      "excluded": [],
+      "method": "threshold_boundary_color_support_v1",
+      "producer": {
+        "sweep": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "image_helpers": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6",
+        "exclusion_evidence": null,
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        }
+      }
+    },
+    "reading": "reused identical raw and PDF PNG from directly read 5498 Native page13",
+    "reading_note": "13쪽 신고/의무 면제 줄 소속 보존",
+    "read_at": "2026-11-18T09:55:27.299126+09:00"
+  },
+  {
+    "page": 18,
+    "details": {
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99005,
+      "silhouette_raw_unmatched_pixels": 6,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 60327,
+      "tolerant_content_match_percent": 99.99005
+    },
+    "input_identity": {
+      "rhwp_sha256": "f056ac4ca5e538151f097a42c455458e2d9a1719485688acc7b57b308fac652f",
+      "pdf_sha256": "928918e0ae78266d4b6d37c79a8dc535944197721cd0a9d43f19c64f03428511",
+      "excluded": [],
+      "method": "threshold_boundary_color_support_v1",
+      "producer": {
+        "sweep": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "image_helpers": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6",
+        "exclusion_evidence": null,
+        "image_decoding": {
+          "alpha_background": "#ffffff",
+          "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+        }
+      }
+    },
+    "reading": "read",
+    "reading_note": "18쪽 첨자 뒤 날짜 시작이 PDF와 정합. 표와 후속 본문의 소속 보존. 일반 본문 선두 두 줄의 작은 획 차이 등 미대응 6픽셀은 남아 있으며 그림 차이로 부르지 않음.",
+    "read_at": "2026-11-18T09:55:27.301759+09:00"
+  }
+]

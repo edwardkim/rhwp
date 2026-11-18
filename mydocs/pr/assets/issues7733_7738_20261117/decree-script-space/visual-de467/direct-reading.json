@@ -1,0 +1,19 @@
+{
+  "read_at": "2026-11-18T10:22:37.440060+09:00",
+  "source_head": "de46777ed8b8bf536cde5caefdafae16b59c4076",
+  "wasm18": {
+    "review": "mydocs/pr/assets/issues7733_7738_20261117/decree-script-space/visual-de467/wasm/decree-018/review.png",
+    "overlay": "mydocs/pr/assets/issues7733_7738_20261117/decree-script-space/visual-de467/wasm/decree-018/overlay.png",
+    "directly_read": true,
+    "observation": "첨자 뒤 공백과 날짜가 독립 Print에 정합하고 표·본문의 소속과 수량을 보존한다. 6픽셀 미대응을 남기며 100%로 보고하지 않는다."
+  },
+  "status": "whole N252 W252 >=98; Rust full/protected/current consumer gates pending",
+  "wasm13": {
+    "identical_to_previously_read_5498": {
+      "raw": true,
+      "pdf": true
+    },
+    "raw_and_pdf_byte_identical": true,
+    "observation": "앞서 직접 판독한 5498의 같은 13쪽 raw와 PDF가 각각 바이트 동일하여 해당 판독을 재사용한다."
+  }
+}

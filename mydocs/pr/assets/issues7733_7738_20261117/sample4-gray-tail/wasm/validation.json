@@ -1,0 +1,45 @@
+{
+  "producer_head": "211253376d20aa40c4cf223fdaabd87467e88240",
+  "mode": "Mac locked wrapper --no-opt local alternative; not Docker optimized",
+  "wasm_sha256": "b56068366c955889c6bd1d9d4ad250276924054c6087ff6fd33f19f373c83f24",
+  "before_p26_raw_percent": 99.37,
+  "after_p26_raw_percent": 100.0,
+  "unchanged_p25_raw_percent": 100.0,
+  "criterion": "96 DPI, original fonts, canonical raw silhouette 2px tolerance; no threshold/reference change",
+  "direct_reading_at": "2026-11-18T16:53:32.648140+09:00",
+  "reading": "하단의 약 6px PDF 전용 빨간 띠가 해소됐다. 코드 배경과 NASM 로고·캡션·본문 소속을 유지한다. 약 1px 경계 차이와 글자 농도 차이는 남으며 픽셀 동일로 주장하지 않는다.",
+  "files": [
+    {
+      "path": "mydocs/pr/assets/issues7733_7738_20261117/sample4-gray-tail/wasm/raw-025.png",
+      "sha256": "6cb7780dfe2c09a4f08ffd9d47e60a57875ee2ef9e0522bfa26ff70041566f0f"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7733_7738_20261117/sample4-gray-tail/wasm/pdf-025.png",
+      "sha256": "a65d2a4aefad9cf466c51bc4c4871d620ec14c741b9c9b98c89525b20b1ab8c9"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7733_7738_20261117/sample4-gray-tail/wasm/review-025.png",
+      "sha256": "ac81ac29868d2ffa8cb57d784692688abdfdb7211e223e3b9e1461763b1f57ff"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7733_7738_20261117/sample4-gray-tail/wasm/overlay-025.png",
+      "sha256": "b6592a8454780e2425de2e4cd3a91df1832915f1351a48b0ab847296bf47ad67"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7733_7738_20261117/sample4-gray-tail/wasm/raw-026.png",
+      "sha256": "12ee0cf25f5f1922d20c9c18eeb398439d581e6ce95440b6ae6fefd7d806f646"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7733_7738_20261117/sample4-gray-tail/wasm/pdf-026.png",
+      "sha256": "7a99e3eeeacca83ed2ba963a76916486a6467c8b9c0f4ceeca44bb6af8ce3a87"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7733_7738_20261117/sample4-gray-tail/wasm/review-026.png",
+      "sha256": "49f138d198ca1923bb0df68e92b41c933043de1ae253f0c701f768a7f3971ec3"
+    },
+    {
+      "path": "mydocs/pr/assets/issues7733_7738_20261117/sample4-gray-tail/wasm/overlay-026.png",
+      "sha256": "d13ba8a079b034ca6b16b8188baf719a8125c0cab4dc1ad9a93b4e23ad09c171"
+    }
+  ]
+}

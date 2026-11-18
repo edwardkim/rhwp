@@ -1,0 +1,30 @@
+{
+  "status": "completed",
+  "metrics": [
+    {
+      "label": "before-native",
+      "page": 61,
+      "raw": 99.55732,
+      "unmatched": 480
+    },
+    {
+      "label": "after-native",
+      "page": 13,
+      "raw": 100.0,
+      "unmatched": 0
+    },
+    {
+      "label": "after-native",
+      "page": 18,
+      "raw": 100.0,
+      "unmatched": 0
+    },
+    {
+      "label": "after-native",
+      "page": 61,
+      "raw": 100.0,
+      "unmatched": 0
+    }
+  ],
+  "capture_workers_total": 8
+}

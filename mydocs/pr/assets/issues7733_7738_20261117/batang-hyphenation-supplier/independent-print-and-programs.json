@@ -1,0 +1,132 @@
+{
+  "source_commit": "058acd32a1141b8971700eff3ed78b09bd00f8bc",
+  "prior_fix": {
+    "commit": "6d81fb84ed",
+    "pr": 8419,
+    "contract": "Batang regular U+2024 -> Haansoft Batang; U+2027 previously unverified and intentionally unchanged"
+  },
+  "source": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+  "page": 27,
+  "reference_pdf": "pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
+  "fonts": [
+    {
+      "file": "/Users/tsjang/Library/Fonts/batang.TTC",
+      "sha256": "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+      "index": 0,
+      "family": "Batang",
+      "upem": 1024,
+      "u2027_glyph": null,
+      "hmtx": null
+    },
+    {
+      "file": "/Users/tsjang/Library/Fonts/HBATANG.TTF",
+      "sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+      "index": 0,
+      "family": "Haansoft Batang",
+      "upem": 1024,
+      "u2027_glyph": "uni2027",
+      "hmtx": [
+        178,
+        26
+      ]
+    }
+  ],
+  "source_char_shape": {
+    "id": 86,
+    "size_hu": "1200",
+    "font_refs": {
+      "hangul": "3",
+      "latin": "3",
+      "hanja": "3",
+      "japanese": "3",
+      "other": "3",
+      "symbol": "3",
+      "user": "3"
+    },
+    "faces": {
+      "HANGUL": {
+        "id": "3",
+        "face": "바탕",
+        "type": "TTF",
+        "isEmbedded": "0"
+      },
+      "LATIN": {
+        "id": "3",
+        "face": "바탕",
+        "type": "TTF",
+        "isEmbedded": "0"
+      },
+      "HANJA": {
+        "id": "3",
+        "face": "바탕",
+        "type": "TTF",
+        "isEmbedded": "0"
+      },
+      "JAPANESE": {
+        "id": "3",
+        "face": "바탕",
+        "type": "TTF",
+        "isEmbedded": "0"
+      },
+      "OTHER": {
+        "id": "3",
+        "face": "바탕",
+        "type": "TTF",
+        "isEmbedded": "0"
+      },
+      "SYMBOL": {
+        "id": "3",
+        "face": "바탕",
+        "type": "TTF",
+        "isEmbedded": "0"
+      },
+      "USER": {
+        "id": "3",
+        "face": "바탕",
+        "type": "TTF",
+        "isEmbedded": "0"
+      }
+    }
+  },
+  "source_paragraph_text": " 표기 문자‧위치, 활자 크기‧색깔 등 세부적 표시방법 제시",
+  "independent_print": [
+    {
+      "font": "Haansoft Batang",
+      "size_pt": 12.0,
+      "glyph_id": 7,
+      "origin_css96": [
+        224.0,
+        657.9200032552084
+      ]
+    },
+    {
+      "font": "Haansoft Batang",
+      "size_pt": 12.0,
+      "glyph_id": 7,
+      "origin_css96": [
+        343.5199788411458,
+        657.9200032552084
+      ]
+    }
+  ],
+  "reference_pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+  "source_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+  "pdf_program_comparison": [
+    {
+      "xref": 28,
+      "pdf_family": "INPILL+Haansoft Batang",
+      "gid": 7,
+      "glyph": "glyph00007",
+      "upem": 1024,
+      "hmtx": [
+        178,
+        26
+      ],
+      "local_hmtx": [
+        178,
+        26
+      ],
+      "recording_pen_same": false
+    }
+  ]
+}

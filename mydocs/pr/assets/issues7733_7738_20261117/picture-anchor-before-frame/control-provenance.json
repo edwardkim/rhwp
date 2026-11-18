@@ -1,0 +1,25 @@
+{
+  "diagnostic_only": true,
+  "table_id": "1657072579",
+  "paragraph_id": "2348",
+  "original_para_style_id": "157",
+  "zero_before_style_id": "253",
+  "source_before_hu": 200,
+  "picture_height_hu": 35336,
+  "header_height_hu": 1865,
+  "vertical_inner_padding_hu": 282,
+  "table_declared_height_hu": 37483,
+  "sum_picture_header_padding_hu": 37483,
+  "native_table_frame_css96": {
+    "y": 371.9,
+    "height": 502.4
+  },
+  "independent_pdf_table_frame_css96": {
+    "top": 371.5933430989583,
+    "bottom": 870.72802734375
+  },
+  "files": {
+    "decree70-before200.hwpx": "89f445a84ac6dd8e8fafe136ce0f0bdb6d0ff90f7f5a5537da5cc4ff5340f903",
+    "decree70-before0.hwpx": "9e0bc6cc87b3a2d0825fe60d2969ca2fc434fb4d65c91180842816b56d088f68"
+  }
+}

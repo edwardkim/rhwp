@@ -1,0 +1,17 @@
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 3m 11s
+────────────
+ Nextest run ID 2e8b00b6-3242-4707-ab21-79230d31e1b2 with nextest profile: default
+    Starting 10 tests across 2 binaries (665 tests skipped)
+        PASS [   0.033s] ( 1/10) rhwp::regression_suite_002 title_flow_photo_row_height::low_declared_title_photo_cell_grows_without_anchor_line
+        PASS [   0.032s] ( 2/10) rhwp::regression_suite_002 title_flow_photo_row_height::split_table_keeps_all_photo_rows_on_first_page
+        PASS [   0.033s] ( 3/10) rhwp::regression_suite_002 title_flow_photo_row_height::exact_declared_title_photo_cell_keeps_declared_height
+        PASS [   0.035s] ( 4/10) rhwp::regression_suite_026 approval_cell_stamp_row_height::floating_photo_in_empty_paragraph_centers_with_title
+        PASS [   0.036s] ( 5/10) rhwp::regression_suite_026 approval_cell_stamp_row_height::roomy_square_picture_keeps_object_extent_alignment
+        PASS [   0.035s] ( 6/10) rhwp::regression_suite_026 approval_cell_stamp_row_height::inline_photo_under_title_centers_with_title
+        PASS [   0.035s] ( 7/10) rhwp::regression_suite_026 approval_cell_stamp_row_height::square_stamp_on_third_paragraph_grows_row
+        PASS [   0.018s] ( 8/10) rhwp::regression_suite_026 approval_cell_stamp_row_height::tac_stamp_row_in_page_split_table_keeps_alignment
+        PASS [   0.018s] ( 9/10) rhwp::regression_suite_026 approval_cell_stamp_row_height::tac_stamp_in_fourth_paragraph_grows_row
+        PASS [   0.673s] (10/10) rhwp::regression_suite_002 issue_7737_picture_anchor_before_frame::empty_picture_anchor_before_space_does_not_lengthen_the_table
+────────────
+     Summary [   0.675s] 10 tests run: 10 passed, 665 skipped

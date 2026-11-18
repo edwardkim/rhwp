@@ -1,0 +1,44 @@
+{
+  "source_head": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+  "renderer_producer_head": "e63992fb2f4fbedb9c58569232b176ae91b98331",
+  "renderer_sha256": "69883dbf754be9e02453c63ec88d49bdd1749b76123698e5a47d9a1a8c1ecbf4",
+  "regenerator_sha256": "0e811956af5b5566e9b79ad0b56e88f673957fe0e8c9222538f4de0f365f9894",
+  "original_counts": {
+    "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx": [
+      74,
+      74
+    ],
+    "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp": [
+      103,
+      103
+    ],
+    "samples/pr4093/outline_navigation_panel_demo.hwpx": [
+      3,
+      3
+    ],
+    "samples/pr4093/outline_navigation_table_cell_number.hwpx": [
+      1,
+      1
+    ],
+    "samples/한글문서파일형식_5.0_revision1.3.hwp": [
+      71,
+      71
+    ]
+  },
+  "originals_and_byte_identical_aliases": [
+    "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+    "samples/한글문서파일형식_5.0_revision1.3.hwp",
+    "samples/pr4093/outline_navigation_panel_demo.hwpx",
+    "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+    "samples/pr4093/outline_navigation_table_cell_number.hwpx",
+    "mydocs/pr/assets/issue7445/1480000-201900042-chemical-labeling-standards.hwp",
+    "mydocs/pr/assets/issue7445/한글문서파일형식_5.0_revision1.3.hwp",
+    "mydocs/pr/assets/issue7445/outline_navigation_panel_demo.hwpx",
+    "mydocs/pr/assets/issue7445/78494-virtual-convergence-industry-decree.hwpx",
+    "mydocs/pr/assets/issue7445/outline_navigation_table_cell_number.hwpx"
+  ],
+  "pdf_regenerated": false,
+  "baseline_overwritten": false,
+  "scope": "actual committed generator, real Git PDF bytes, exact restored five inputs only",
+  "checked_at": "2026-11-18T19:24:28.716603+09:00"
+}

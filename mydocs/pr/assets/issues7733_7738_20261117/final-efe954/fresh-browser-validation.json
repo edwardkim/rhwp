@@ -1,0 +1,24 @@
+{
+  "status": "passed_fresh_browser_and_wasm_identity",
+  "head": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+  "steps": [
+    {
+      "case": "initial-page-render-issue9164",
+      "exit_code": 0,
+      "elapsed_seconds": 15.92,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/post-rebase-08b38-corpus-final/logs/fresh-browser-initial-page-render-issue9164.log",
+      "log_sha256": "a5b24e09cbd040027bc4abf2761f30a034b6c28ecb98be57b5163cc618a4119e",
+      "actual_wasm_response_hash_matched": true
+    },
+    {
+      "case": "host-font-input-issue9165",
+      "exit_code": 0,
+      "elapsed_seconds": 13.997,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/post-rebase-08b38-corpus-final/logs/fresh-browser-host-font-input-issue9165.log",
+      "log_sha256": "ebbb9fb6a55d72d1996efb90b0a4aa8f915b8035ce4c8203907f879d1d6e6dc1",
+      "actual_wasm_response_hash_matched": true
+    }
+  ],
+  "wasm_sha256": "b3fec19b68f976ab3b9d4aa4c0be11d1ddd44725543faf248bc15d961424dc52",
+  "active": null
+}

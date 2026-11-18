@@ -1,0 +1,43 @@
+[
+  {
+    "key": "chemical",
+    "pages": 103,
+    "rises": [
+      {
+        "page": 95,
+        "before": 99.12075,
+        "after": 99.68878
+      }
+    ],
+    "drops": [],
+    "minimum": 98.46202
+  },
+  {
+    "key": "spec13",
+    "pages": 71,
+    "rises": [],
+    "drops": [],
+    "minimum": 99.33397
+  },
+  {
+    "key": "outline-demo",
+    "pages": 3,
+    "rises": [],
+    "drops": [],
+    "minimum": 100.0
+  },
+  {
+    "key": "decree",
+    "pages": 74,
+    "rises": [],
+    "drops": [],
+    "minimum": 95.47612
+  },
+  {
+    "key": "outline-minimal",
+    "pages": 1,
+    "rises": [],
+    "drops": [],
+    "minimum": 100.0
+  }
+]

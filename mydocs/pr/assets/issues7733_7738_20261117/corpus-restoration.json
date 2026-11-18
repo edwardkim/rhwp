@@ -1,0 +1,50 @@
+{
+  "head_before_restoration": "3a76041d1fe3a30abdc9ab605fbc9dbe125f96b3",
+  "files": [
+    {
+      "path": "tests/fixtures/deferred_visual_regression_inputs.tsv",
+      "sha256": "244f5d81a481d8d1bcd3e875370cd24168ba649584ebd290cf15de8ca53cd11f"
+    },
+    {
+      "path": "tests/cases/text_overlap_baseline.rs",
+      "sha256": "5d13d015f444f3d048359fc1ae3cca82f5125f64c39c2f1091c92c02c3197c30"
+    },
+    {
+      "path": "tests/cases/body_overflow_baseline.rs",
+      "sha256": "e65e057efc7bfec5182fcfcc92dda761be91794e5cbddb060a66de944e69022d"
+    },
+    {
+      "path": "tests/fixtures/body_overflow_baseline.tsv",
+      "sha256": "b70a70a55f074bcf14b81bd48b3dbb0a3efc0b96b31d60ca7898d2878e2ca3e1"
+    },
+    {
+      "path": "tests/fixtures/off_canvas_baseline.tsv",
+      "sha256": "0596d88c64b3c7d34452ac11061b8f9653836a489ced48df0141eba5754453c2"
+    },
+    {
+      "path": "tests/fixtures/oracle_page_count_baseline.tsv",
+      "sha256": "d0b2df509d569a42f043be910558c2b3bd93dc05393967d3499f112c31d30395"
+    },
+    {
+      "path": "tools/oracle_page_count/regenerate.py",
+      "sha256": "0e811956af5b5566e9b79ad0b56e88f673957fe0e8c9222538f4de0f365f9894"
+    },
+    {
+      "path": "tests/fixtures/oracle_page_count_verified_references.json",
+      "sha256": "60fd6ef3bd690f0768bc1f3c87fa36d8c64f1ddcbec6f13e9dbf0b72c2c19c9a"
+    },
+    {
+      "path": "tools/test_oracle_pdf_selection.py",
+      "sha256": "c055a9c0e785cddbd80d1d4470cdce2c3a520757bf255fab752190a17d3104c5"
+    }
+  ],
+  "source_logic_changed": false,
+  "pdf_regenerated": false,
+  "python_tests": {
+    "passed": 14,
+    "failed": 0
+  },
+  "reason": "전쪽 Native/fresh WASM 98% 이상을 확인한 다섯 원본과 보존 사본을 공용 회귀 corpus에 복원한다. 기존 제외된 별도 원본은 유지한다.",
+  "oracle_generation": "등록한 정확한 원본·PDF SHA와 출처·쪽수만 보존해 다음 재생성에서도 복원 행이 빠지지 않게 한다. PDF·판정 기준은 변경하지 않는다.",
+  "final_minimum_font_regression": "pending after commit"
+}

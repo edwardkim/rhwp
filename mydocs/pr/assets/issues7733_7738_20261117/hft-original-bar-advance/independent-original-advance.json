@@ -1,0 +1,39 @@
+{
+  "kind": "independent_original_hft_advance_and_final_ink_fit",
+  "reference_pdf": "pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
+  "reference_pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+  "page": 92,
+  "original_source_face": "한양신명조 HFT",
+  "character": "U+257A",
+  "pdf_type": "Type3",
+  "pdf_resource": "T11",
+  "pdf_glyph_id": 7,
+  "pdf_width": 1000,
+  "pdf_font_matrix_scale": 0.001,
+  "pdf_font_size_pt": 18.959999084472656,
+  "natural_advance_em": 1.0,
+  "ink_bbox_em": [
+    0.5,
+    0.306,
+    1.0,
+    0.394
+  ],
+  "old_source_size_css96": 25.333333333333332,
+  "old_heuristic_advance_em": 0.5,
+  "old_native_threshold128_ink_bbox_pixels": [
+    126,
+    964,
+    134,
+    965
+  ],
+  "independent_pdf_threshold128_ink_bbox_pixels": [
+    133,
+    965,
+    144,
+    966
+  ],
+  "bbox_pixel_probe_is_diagnostic_only": true,
+  "rejected_ink_only_experiment": "output/pr-review/issues-7733-7738-20261117/hft-ink-only-experiment/result.json",
+  "root_cause": "halfwidth heuristic drives glyph-fit compression despite a full-em original Type3 advance",
+  "fix_layer": "declared_original_glyph_advance_em for verified source HFT; keep display font fallback and original source identity"
+}

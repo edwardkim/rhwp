@@ -1,0 +1,26 @@
+{
+  "status": "passed",
+  "old_rows_byte_identical": 3542,
+  "added_rows": 504,
+  "documents": 23,
+  "datasets": 46,
+  "rows": 4046,
+  "unique_keys": 4046,
+  "new_inputs_and_pdfs_sha_verified": true,
+  "new_rows_exactly_match_whole_tsv": true,
+  "table_sha256": "295f7774a65d722e1fcc965910628dad3e43c9620a3d0181f7388cec111d6f9a",
+  "contract_test_count": 30,
+  "contract_test_exit_code": 0,
+  "contract_test_command": "PYTHONPATH=scripts/tests:. venv/bin/python -m unittest scripts.tests.test_visual_sweep_handbook scripts.tests.test_visual_sweep_contributor",
+  "contract_log_sha256": "a6101ff692fc17207b3daca7764e28dcc0a62a46cffec27247982e15298eda3e",
+  "markdown_link_check": {
+    "documents": 44,
+    "errors": 0,
+    "base": "08b38c12a75fa5cabfe5fbbfde9388aceb3fcca3",
+    "log_sha256": "bad7c4df182a637efe5418b4d0fb85eb29e2368f100524462236e71cfff08608"
+  },
+  "git_diff_check": "passed",
+  "git_evidence_commit_pending": true,
+  "actual_browser_evidence": "actual-consumer-direct-reading.json",
+  "actual_browser_font_catalog_equivalence": "actual-catalog-equivalence.json"
+}

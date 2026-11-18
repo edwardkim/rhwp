@@ -1,0 +1,109 @@
+{
+  "claim": "문단 끝의 빈 run 글자 모양만 바꾸면 기본 글머리표만 해당 크기로 바뀐다. 본문과 마커의 기준선은 유지한다.",
+  "records": [
+    {
+      "key": "end19",
+      "file": "output/pr-review/issues-7733-7738-20261117/chemical85-independent-resave/chemical85-top-diagnostic-2020.pdf",
+      "pages": 103,
+      "markers": [
+        {
+          "font": "Haansoft Batang",
+          "size_pt": 12.0,
+          "origin": [
+            90.0,
+            114.47999572753906
+          ]
+        },
+        {
+          "font": "Haansoft Batang",
+          "size_pt": 12.0,
+          "origin": [
+            90.0,
+            490.44000244140625
+          ]
+        },
+        {
+          "font": "Haansoft Batang",
+          "size_pt": 18.959999084472656,
+          "origin": [
+            90.0,
+            731.1599731445312
+          ]
+        }
+      ],
+      "pdf_sha256": "53a6fc79e25e622d89d25012a7e0a7936836e927c0c3b40def1ff0b47b61af43"
+    },
+    {
+      "key": "end12",
+      "file": "output/pr-review/issues-7733-7738-20261117/right-bar-hft-control/right-bar-end-body-style-diagnostic-2020.pdf",
+      "pages": 103,
+      "markers": [
+        {
+          "font": "Haansoft Batang",
+          "size_pt": 12.0,
+          "origin": [
+            90.0,
+            114.47999572753906
+          ]
+        },
+        {
+          "font": "Haansoft Batang",
+          "size_pt": 12.0,
+          "origin": [
+            90.0,
+            490.44000244140625
+          ]
+        },
+        {
+          "font": "Haansoft Batang",
+          "size_pt": 12.0,
+          "origin": [
+            90.0,
+            731.1599731445312
+          ]
+        }
+      ],
+      "pdf_sha256": "901991ed4256e90865e6415d3e656bb46177156e4ac4f5e2cda6c16a9f21c13b"
+    }
+  ],
+  "source_change": {
+    "source": "output/pr-review/issues-7733-7738-20261117/chemical85-independent-resave/chemical85-top.hwpx",
+    "control": "output/pr-review/issues-7733-7738-20261117/right-bar-hft-end-control.hwpx",
+    "source_sha256": "b121d9f4f4e899254bb034e30d11bd82f7c92df86d56bec7387a3afd5a0ee447",
+    "control_sha256": "628e86cb235fe937bda2094fa371bbc48219b18426c53e1730f02edc7adcbd84",
+    "changed_part": "Contents/section4.xml",
+    "paragraph": 232,
+    "only_model_change": "empty final run charPrIDRef59→18; body text and first run unchanged",
+    "scope": "diagnostic only, canonical HWP/PDF preserved"
+  },
+  "print_execution": {
+    "job_id": "d4e63ab2-26c2-4894-b2dc-a830b9086ec7",
+    "status": "success",
+    "engine": "2020",
+    "engine_profile": "2020",
+    "hancom_version": "11.0.0.9136",
+    "backend": "hwp-managed-direct-dll-host",
+    "input_format": "hwpx",
+    "format": "pdf",
+    "bytes": 1224731,
+    "pdf_page_count": 103,
+    "logical_page_count": null,
+    "elapsed_ms": 43845,
+    "worker_elapsed_ms": 41558,
+    "worker_bits": 32,
+    "font_scope": {
+      "mode": "session0",
+      "status": "verified",
+      "profile_source": "protected_config",
+      "session_id": 0,
+      "mapped_font_count": 2,
+      "registered_font_count": 2,
+      "failed_font_count": 0,
+      "parent_visibility": "verified",
+      "child_visibility": "verified"
+    },
+    "input_preprocess": "none",
+    "pdf_print_method": 0,
+    "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+  }
+}

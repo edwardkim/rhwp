@@ -1,0 +1,12 @@
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 16.05s
+────────────
+ Nextest run ID 43c19145-d8e0-4de3-9d26-c8c11938f4ac with nextest profile: default
+    Starting 5 tests across 3 binaries (1036 tests skipped)
+        PASS [   0.023s] (1/5) rhwp::regression_suite_026 issue_7737_decree_superscript_flow::desktop_script_spaces_keep_body_half_space_and_explicit_glyph_space_separate
+        PASS [   0.057s] (2/5) rhwp::regression_suite_004 verified_superscript_cell_advance::print_verified_superscript_advance_preserves_cell_ownership_content_and_non_overlap
+        PASS [   0.137s] (3/5) rhwp::regression_suite_026 issue_7737_decree_superscript_flow::hwp3_layout_retains_its_distinct_legacy_script_contract
+        PASS [   0.747s] (4/5) rhwp::regression_suite_022 issue_7737_picture_anchor_before_frame::empty_picture_anchor_before_space_does_not_lengthen_the_table
+        PASS [   1.415s] (5/5) rhwp::regression_suite_026 issue_7737_decree_superscript_flow::desktop_print_superscript_keeps_the_following_word_on_its_source_line
+────────────
+     Summary [   1.418s] 5 tests run: 5 passed, 1036 skipped

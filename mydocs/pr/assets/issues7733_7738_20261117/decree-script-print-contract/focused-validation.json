@@ -1,0 +1,23 @@
+{
+  "before": {
+    "run": 2,
+    "pass": 1,
+    "fail": 1,
+    "seconds": 1.323
+  },
+  "after": {
+    "run": 2,
+    "pass": 2,
+    "fail": 0,
+    "seconds": 1.298
+  },
+  "uncollected_after_run": {
+    "run": 0,
+    "accepted": false,
+    "reason": "suite mapping changed after formatting; regenerated then reran"
+  },
+  "source_parent": "95720075204c25961b938cf077a83365974acae3",
+  "source_patch_sha256": "367877d4f45313bd88618c959cb2c45a861835428718a47559853afc6155add0",
+  "full_regression_on_this_patch": "not run yet",
+  "visual_on_this_patch": "not run yet"
+}

@@ -1,0 +1,25 @@
+[RustTestSuite] body_overflow_baseline -> regression_suite_009::body_overflow_baseline
+[RustTestSuite] cargo nextest run --locked --test regression_suite_009 -E test(/(^|::)body_overflow_baseline::/) --cargo-profile release-test --target-dir target/pr-review --build-jobs 8 --test-threads 8 --no-fail-fast
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 9.38s
+────────────
+ Nextest run ID f2ceb3fe-29ef-47a1-aaba-532f4a835692 with nextest profile: default
+    Starting 16 tests across 1 binary (350 tests skipped)
+        PASS [   3.528s] ( 1/16) rhwp::regression_suite_009 body_overflow_baseline::body_overflow_does_not_grow_partition_12
+        PASS [   3.629s] ( 2/16) rhwp::regression_suite_009 body_overflow_baseline::body_overflow_does_not_grow_partition_1
+        PASS [   3.743s] ( 3/16) rhwp::regression_suite_009 body_overflow_baseline::body_overflow_does_not_grow_partition_14
+        PASS [   3.774s] ( 4/16) rhwp::regression_suite_009 body_overflow_baseline::body_overflow_does_not_grow_partition_13
+        PASS [   5.397s] ( 5/16) rhwp::regression_suite_009 body_overflow_baseline::body_overflow_does_not_grow_partition_15
+        PASS [   2.886s] ( 6/16) rhwp::regression_suite_009 body_overflow_baseline::body_overflow_does_not_grow_partition_3
+        PASS [   2.797s] ( 7/16) rhwp::regression_suite_009 body_overflow_baseline::body_overflow_does_not_grow_partition_4
+        PASS [   6.666s] ( 8/16) rhwp::regression_suite_009 body_overflow_baseline::body_overflow_does_not_grow_partition_0
+        PASS [   5.012s] ( 9/16) rhwp::regression_suite_009 body_overflow_baseline::body_overflow_does_not_grow_partition_2
+        PASS [   5.105s] (10/16) rhwp::regression_suite_009 body_overflow_baseline::body_overflow_does_not_grow_partition_5
+        PASS [   2.539s] (11/16) rhwp::regression_suite_009 body_overflow_baseline::body_overflow_does_not_grow_partition_8
+        PASS [   3.915s] (12/16) rhwp::regression_suite_009 body_overflow_baseline::body_overflow_does_not_grow_partition_6
+        PASS [   2.715s] (13/16) rhwp::regression_suite_009 body_overflow_baseline::body_overflow_does_not_grow_partition_9
+        PASS [   3.331s] (14/16) rhwp::regression_suite_009 body_overflow_baseline::body_overflow_does_not_grow_partition_7
+        PASS [   9.923s] (15/16) rhwp::regression_suite_009 body_overflow_baseline::body_overflow_does_not_grow_partition_10
+        PASS [  17.568s] (16/16) rhwp::regression_suite_009 body_overflow_baseline::body_overflow_does_not_grow_partition_11
+────────────
+     Summary [  17.569s] 16 tests run: 16 passed, 350 skipped

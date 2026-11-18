@@ -1,0 +1,126 @@
+{
+  "input_sha256": "2d928466802ee7710f108760f31edb5875d1610e1a794797d76dd944b37a2184",
+  "rows": [
+    {
+      "label": "F0-ascii-single",
+      "family": "굴림",
+      "kind": "ascii-single",
+      "text": "가가가가가가 '나나다라",
+      "style_id": 306,
+      "paragraph_style_id": 253,
+      "line_width_hu": 6300,
+      "font_size_hu": 900
+    },
+    {
+      "label": "F0-ascii-double",
+      "family": "굴림",
+      "kind": "ascii-double",
+      "text": "가가가가가가 \"나나다라",
+      "style_id": 306,
+      "paragraph_style_id": 253,
+      "line_width_hu": 6300,
+      "font_size_hu": 900
+    },
+    {
+      "label": "F0-directional-single",
+      "family": "굴림",
+      "kind": "directional-single",
+      "text": "가가가가가가 ‘나나다라",
+      "style_id": 306,
+      "paragraph_style_id": 253,
+      "line_width_hu": 6300,
+      "font_size_hu": 900
+    },
+    {
+      "label": "F0-directional-double",
+      "family": "굴림",
+      "kind": "directional-double",
+      "text": "가가가가가가 “나나다라",
+      "style_id": 306,
+      "paragraph_style_id": 253,
+      "line_width_hu": 6300,
+      "font_size_hu": 900
+    },
+    {
+      "label": "F0-parenthesis",
+      "family": "굴림",
+      "kind": "parenthesis",
+      "text": "가가가가가가 (나나다라",
+      "style_id": 306,
+      "paragraph_style_id": 253,
+      "line_width_hu": 6300,
+      "font_size_hu": 900
+    },
+    {
+      "label": "F0-closing-prime",
+      "family": "굴림",
+      "kind": "closing-prime",
+      "text": "AAAAAA'가나다라",
+      "style_id": 306,
+      "paragraph_style_id": 253,
+      "line_width_hu": 6300,
+      "font_size_hu": 900
+    },
+    {
+      "label": "F1-ascii-single",
+      "family": "한컴바탕",
+      "kind": "ascii-single",
+      "text": "가가가가가가 '나나다라",
+      "style_id": 307,
+      "paragraph_style_id": 253,
+      "line_width_hu": 6300,
+      "font_size_hu": 900
+    },
+    {
+      "label": "F1-ascii-double",
+      "family": "한컴바탕",
+      "kind": "ascii-double",
+      "text": "가가가가가가 \"나나다라",
+      "style_id": 307,
+      "paragraph_style_id": 253,
+      "line_width_hu": 6300,
+      "font_size_hu": 900
+    },
+    {
+      "label": "F1-directional-single",
+      "family": "한컴바탕",
+      "kind": "directional-single",
+      "text": "가가가가가가 ‘나나다라",
+      "style_id": 307,
+      "paragraph_style_id": 253,
+      "line_width_hu": 6300,
+      "font_size_hu": 900
+    },
+    {
+      "label": "F1-directional-double",
+      "family": "한컴바탕",
+      "kind": "directional-double",
+      "text": "가가가가가가 “나나다라",
+      "style_id": 307,
+      "paragraph_style_id": 253,
+      "line_width_hu": 6300,
+      "font_size_hu": 900
+    },
+    {
+      "label": "F1-parenthesis",
+      "family": "한컴바탕",
+      "kind": "parenthesis",
+      "text": "가가가가가가 (나나다라",
+      "style_id": 307,
+      "paragraph_style_id": 253,
+      "line_width_hu": 6300,
+      "font_size_hu": 900
+    },
+    {
+      "label": "F1-closing-prime",
+      "family": "한컴바탕",
+      "kind": "closing-prime",
+      "text": "AAAAAA'가나다라",
+      "style_id": 307,
+      "paragraph_style_id": 253,
+      "line_width_hu": 6300,
+      "font_size_hu": 900
+    }
+  ],
+  "scope": "independent line ownership control; not replacing target PDF"
+}

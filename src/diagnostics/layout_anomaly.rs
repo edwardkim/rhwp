@@ -803,6 +803,7 @@ fn walk(
     column: Option<u16>,
     suppress: bool,
     off_canvas_suppress: bool,
+    declared_fill_bottom: Option<f64>,
     boundary: &BoundingBox,
     page: &BoundingBox,
     inherited_text_clip: BoundingBox,
@@ -869,7 +870,13 @@ fn walk(
         }
         if !suppress && type_allowed(label, opts) {
             if !is_empty_text_carrier(node) {
-                check_overflow(&node.bbox, &path, label, boundary, opts, overflow_out);
+                // 수용 글줄의 원본 후행 채움만 본문 바닥을 넘을 수 있다. 도형·글자와
+                // 용지 밖 검사는 실제 상자를 유지하며, 선언 밴드 초과도 허용하지 않는다.
+                let mut fill_boundary = *boundary;
+                if let Some(bottom) = declared_fill_bottom {
+                    fill_boundary.height = fill_boundary.height.max(bottom - fill_boundary.y);
+                }
+                check_overflow(&node.bbox, &path, label, &fill_boundary, opts, overflow_out);
             }
             if is_overlap_candidate(node) {
                 flow_out.push(FlowCandidate {
@@ -887,12 +894,33 @@ fn walk(
 
     for (i, child) in node.children.iter().enumerate() {
         let child_path = format!("{path}/{}{i}", node_type_label(&child.node_type));
+        let declared_fill_bottom = child.paragraph_fill_owner.and_then(|(owner_id, bottom)| {
+            if !matches!(node.node_type, RenderNodeType::Column(_))
+                || !bottom.is_finite()
+                || child.bbox.y + child.bbox.height > bottom
+            {
+                return None;
+            }
+            node.children
+                .iter()
+                .find(|line| {
+                    line.id == owner_id
+                        && line.visible
+                        && !line.editor_only
+                        && matches!(line.node_type, RenderNodeType::TextLine(_))
+                        && line.bbox.y >= boundary.y
+                        && line.bbox.y + line.bbox.height <= boundary.y + boundary.height
+                        && child.bbox.y <= line.bbox.y + line.bbox.height
+                })
+                .map(|_| bottom)
+        });
         walk(
             child,
             child_path,
             column,
             next_suppress,
             next_off_canvas_suppress,
+            declared_fill_bottom,
             boundary,
             page,
             current_text_clip,
@@ -1306,6 +1334,7 @@ pub fn scan_page_with_source(
             None,
             false,
             false,
+            None,
             &boundary,
             &page_boundary,
             page_boundary,

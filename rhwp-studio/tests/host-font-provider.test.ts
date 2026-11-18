@@ -422,3 +422,35 @@ test('declared host programs keep file identity and reject results from a replac
     else Reflect.deleteProperty(globalThis, 'FontFace');
   }
 });
+
+// 관계형: OS 글꼴·고정 좌표 없이 실제 family/style 후보의 준비 소유와 중복 제거를 보호한다.
+test('같은 family/style 분할 프로그램은 단일 선택을 강제하지 않고 모두 준비한다', async () => {
+  let reads = 0;
+  const faces: HostFontSnapshot['faces'] = [
+    { id: 'latin', family: 'Original Split', fullName: 'Original Split Latin',
+      postscriptName: 'OriginalSplit-Latin', style: 'Regular', weight: 400, slant: 'normal', aliases: ['원본나눔'] },
+    { id: 'hangul', family: 'Original Split', fullName: 'Original Split Hangul',
+      postscriptName: 'OriginalSplit-Hangul', style: 'Regular', weight: 400, slant: 'normal', aliases: ['원본나눔'] },
+    { id: 'bold', family: 'Original Split', fullName: 'Original Split Bold',
+      postscriptName: 'OriginalSplit-Bold', style: 'Bold', weight: 700, slant: 'normal', aliases: ['원본나눔'] },
+  ];
+  const provider: HostFontProvider = {
+    getSnapshot: async () => ({ revision: 'split-1', faces }),
+    readFace: async () => { reads++; return null; },
+    subscribe: () => () => {},
+  };
+  const bounds = { x: 0, y: 0, width: 200, height: 50 };
+  const run = (bold: boolean) => ({ type: 'textRun' as const, bbox: bounds, text: '한A', baseline: 12,
+    style: { fontFamily: '"원본나눔"', fontSize: 12, color: '#000000', bold } });
+  const tree: PageLayerTree = { pageWidth: 200, pageHeight: 100,
+    root: { kind: 'leaf', bounds, ops: [run(false), run(false), run(true)] } };
+  try {
+    await setHostFontProvider(provider);
+    assert.equal(resolveRendererLocalFont('원본나눔', { weight: 400, slant: 'normal' }), null,
+      '분할 프로그램 중 임의의 한 개를 고르지 않는다');
+    const ids = collectHostFontRequests(tree).map(record => record.hostReference?.face.id);
+    assert.deepEqual(ids, ['latin', 'hangul', 'bold'],
+      '같은 style의 원본 두 프로그램과 실제 굵은 슬롯을 함께 준비한다');
+    assert.equal(reads, 0, '준비 목록 수집은 실제 글꼴 바이트를 읽지 않는다');
+  } finally { await setHostFontProvider(null); }
+});

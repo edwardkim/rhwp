@@ -1,0 +1,39 @@
+{
+  "diagnostic_only": false,
+  "source_character": "U+257A",
+  "source_origin_x": 120,
+  "independent_pdf_origin_x": 120,
+  "independent_pdf_family": "Haansoft Batang",
+  "pdf_xref": 28,
+  "pdf_glyph_id": 6,
+  "supplier_file": "/Users/tsjang/Library/Fonts/HBATANG.TTF",
+  "supplier_sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+  "upem": 1024,
+  "supplier_hmtx": [
+    1024,
+    466
+  ],
+  "pdf_hmtx": [
+    1024,
+    466
+  ],
+  "single_glyph_outline_equal": false,
+  "missing_primary_programs": [
+    {
+      "file": "/Users/tsjang/Library/Fonts/batang.TTC",
+      "sha256": "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+      "face_index": 1,
+      "family": "BatangChe",
+      "has_u257a": false
+    },
+    {
+      "file": "/Users/tsjang/Library/Fonts/rhwp-protected-originals/84b0ba79a5d1-Batang.ttc",
+      "sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+      "face_index": 1,
+      "family": "BatangChe",
+      "has_u257a": false
+    }
+  ],
+  "zero_length_line_difference_only": true,
+  "geometric_outline_equal_after_removing_zero_length_lines": true
+}

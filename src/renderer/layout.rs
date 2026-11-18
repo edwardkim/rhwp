@@ -7903,6 +7903,24 @@ impl LayoutEngine {
             // 텍스트 자체의 overflow 처리는 별도 이슈.
             let col_top = col_area.y;
             let col_bot = col_area.y + col_area.height;
+            let is_body_column = matches!(col_node.node_type, RenderNodeType::Column(_));
+            let accepted_line_boxes: std::collections::HashMap<_, _> = col_node
+                .children
+                .iter()
+                .filter(|node| {
+                    is_body_column && matches!(node.node_type, RenderNodeType::TextLine(_))
+                })
+                .map(|node| (node.id, node.bbox))
+                .collect();
+            // 수용한 본문 글줄은 생산된 후행 채움 밴드도 소유한다. 흐름 예산에서
+            // 마지막 줄간격을 회수해도 그 밴드를 자르지 않는다. 외곽 테두리는 아래의
+            // 물리 단 경계를 유지하며, 넘친 글줄·셀·머리말·앵커 없는 채움도 계속 자른다.
+            let fill_paint_bottom = |band: &fill_background::ParagraphFillBand| {
+                band.anchor
+                    .and_then(|(id, _)| accepted_line_boxes.get(&id))
+                    .filter(|line| line.y >= col_top && line.y + line.height <= col_bot)
+                    .map_or(col_bot, |_| col_bot.max(band.bottom))
+            };
             for g in groups.iter_mut() {
                 if g.2 < col_top {
                     g.2 = col_top;
@@ -8051,7 +8069,7 @@ impl LayoutEngine {
                         } else {
                             band.top.max(col_top)
                         };
-                        let bottom = band.bottom.min(range.4).min(col_bot)
+                        let bottom = band.bottom.min(range.4).min(fill_paint_bottom(band))
                             + if range_order + 1 == range_count && last_band {
                                 effective_bot_pad
                             } else {
@@ -8060,12 +8078,19 @@ impl LayoutEngine {
                         if bottom <= top {
                             continue;
                         }
-                        background_nodes.extend(Self::border_fill_background_nodes(
+                        let mut band_nodes = Self::border_fill_background_nodes(
                             tree,
                             style,
                             BoundingBox::new(range.1, top, range.3, bottom - top),
                             bin_data_content,
-                        ));
+                        );
+                        if is_body_column {
+                            for node in &mut band_nodes {
+                                node.paragraph_fill_owner =
+                                    band.anchor.map(|(id, _)| (id, band.bottom));
+                            }
+                        }
+                        background_nodes.extend(band_nodes);
                     }
                 }
             }
@@ -12343,12 +12368,13 @@ impl LayoutEngine {
                     });
                     if has_inline_tables && !has_other_inline_ctrls && !has_composed_tac_rows {
                         // 인라인 표 문단도 번호 카운터 전진 필요
-                        self.apply_paragraph_numbering(
+                        let numbered_comp = self.apply_paragraph_numbering(
                             composed.get(*para_index),
                             para,
                             styles,
                             outline_numbering_id,
                         );
+                        let final_comp = numbered_comp.as_ref().or(composed.get(*para_index));
                         para_start_y.insert(*para_index, y_offset);
                         let para_flow_start = y_offset;
                         // [#4610 · #4599 ④] 공백-전용 TAC 캐리어 문단의 페인트 변위 —
@@ -12356,7 +12382,7 @@ impl LayoutEngine {
                         let paint_y = whitespace_tac_carrier_stored_paint_y(
                             self.profile.get().hwpx_stored_layout(),
                             para,
-                            composed.get(*para_index),
+                            final_comp,
                             col_area.y,
                             y_offset,
                             self.dpi,
@@ -12366,7 +12392,7 @@ impl LayoutEngine {
                             tree,
                             col_node,
                             para,
-                            composed.get(*para_index),
+                            final_comp,
                             styles,
                             col_area,
                             paint_y,
@@ -17346,6 +17372,7 @@ impl LayoutEngine {
         // 페이지 바닥의 후행 간격을 콘텐츠 초과로 오판하지 않도록 한다.
         self.last_item_content_bottom.set(y_offset);
         let mut computed_fragment_flow_end_consumed = false;
+        let mut resolved_fragment_flow_end_consumed = false;
         if let Some(para) = paragraphs.get(para_index) {
             if let Some(Control::Table(table)) = para.controls.get(control_index) {
                 let opens =
@@ -17380,6 +17407,7 @@ impl LayoutEngine {
                         // 종료 여백은 표 내용이 아닌 뒤 흐름에 속한다.
                         y_offset = col_area.y + placement.occupied_bottom;
                         computed_fragment_flow_end_consumed = computed_fragment_frame;
+                        resolved_fragment_flow_end_consumed = true;
                     }
                 }
             }
@@ -17495,6 +17523,65 @@ impl LayoutEngine {
             {
                 if let Some(Control::Table(table)) = para.controls.get(control_index) {
                     y_offset += hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi);
+                }
+            }
+
+            // 마지막 조각의 종료 여백은 조판이 이미 흐름으로 예약했다.
+            // 반복 여백·확정 placement·저장 후속 원점이 소비한 경우는 제외하고,
+            // 일반 자리차지 표의 끝에서도 같은 여백을 딱 한 번 전달한다.
+            // 표 선과 overflow 판정에 쓰는 내용 하단은 늘리지 않는다.
+            if is_continuation
+                && end_cut.is_empty()
+                && !host_line_owns_trailing_flow
+                && !repeat_fragment_outer_margin
+                && !resolved_fragment_flow_end_consumed
+                && source_terminal_gap.is_none()
+                && !self.profile.get().session_edited()
+                && !para.stored_text_partition_is_dirty()
+                && !para.cell_format_vpos_dirty
+            {
+                if let Some(Control::Table(table)) = para.controls.get(control_index) {
+                    if end_row >= table.row_count as usize {
+                        let margin =
+                            crate::renderer::float_placement::terminal_table_outer_bottom_flow_px(
+                                table, self.dpi,
+                            );
+                        // 종료 경로가 이미 소비한 여백은 다시 더하지 않는다.
+                        // 실제 뒤 저장 줄이 같은 단 축에서 정확히 남은 여백을
+                        // 증명할 때만 누락된 전진을 복원한다.
+                        let stored_successor = paragraphs
+                            .get(para_index + 1)
+                            .filter(|next| {
+                                !next.stored_text_partition_is_dirty()
+                                    && !next.cell_format_vpos_dirty
+                            })
+                            .and_then(|next| {
+                                let line = next.line_segs.first()?;
+                                if line.tag
+                                    & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                    != 0
+                                    || line.vertical_pos < 0
+                                    || line.line_height <= 0
+                                {
+                                    return None;
+                                }
+                                let before = styles
+                                    .para_styles
+                                    .get(next.para_shape_id as usize)?
+                                    .spacing_before;
+                                Some(
+                                    col_area.y + hwpunit_to_px(line.vertical_pos, self.dpi)
+                                        - before,
+                                )
+                            });
+                        if margin > 0.0
+                            && stored_successor.is_some_and(|target| {
+                                (target - y_offset - margin).abs() <= hwpunit_to_px(1, self.dpi)
+                            })
+                        {
+                            y_offset += margin;
+                        }
+                    }
                 }
             }
 

@@ -1,0 +1,10 @@
+{
+  "source_head": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+  "mode": "Node binding of the same fresh release WASM compiler artifact; no second Cargo build",
+  "raw_compiler_artifact_sha256": "4552fe88889ff46b7eae44a056d409e9c0829070d908996f0d4cacd88f8b59e7",
+  "wasm_bindgen_version": "0.2.127",
+  "files": {
+    "pkg-node/rhwp.js": "c798a4aad480549ffed7988215a1dc0d93d8de78d23964a851e878f8094817de",
+    "pkg-node/rhwp_bg.wasm": "b3fec19b68f976ab3b9d4aa4c0be11d1ddd44725543faf248bc15d961424dc52"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "source_head": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+  "mode": "Mac locked wrapper --no-opt local alternative; not Docker optimized",
+  "files": {
+    "pkg/rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+    "pkg/rhwp_bg.wasm": "b3fec19b68f976ab3b9d4aa4c0be11d1ddd44725543faf248bc15d961424dc52",
+    "rhwp-studio/public/rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+    "rhwp-studio/public/rhwp_bg.wasm": "b3fec19b68f976ab3b9d4aa4c0be11d1ddd44725543faf248bc15d961424dc52"
+  },
+  "actual_command": {
+    "name": "fresh-wasm",
+    "exit_code": 0,
+    "elapsed_seconds": 1076.841,
+    "started_at": "2026-11-18T19:57:14.524050+09:00",
+    "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/post-rebase-08b38-corpus-final/logs/fresh-wasm.log"
+  },
+  "artifact_identity_recorded": true
+}

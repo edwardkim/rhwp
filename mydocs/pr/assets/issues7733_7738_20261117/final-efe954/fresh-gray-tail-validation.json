@@ -1,0 +1,116 @@
+{
+  "status": "passed_and_direct_reading_reused_by_exact_raw_pdf_bytes",
+  "source_head": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+  "previous_image_producer_head": "e63992fb2f4fbedb9c58569232b176ae91b98331",
+  "reading_source": "mydocs/pr/assets/issues7733_7738_20261117/sample4-gray-tail/validation.json",
+  "records": [
+    {
+      "backend": "native",
+      "page": 25,
+      "raw_percent": 100.0,
+      "raw_pdf_bytes_equal_previously_read_source": {
+        "raw": true,
+        "pdf": true
+      },
+      "images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-gray-tail/native/raw-025.png",
+          "sha256": "aac8563dfe116dd858c4da244fc9ede14a82d178f7d359dae85a182025914f80"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-gray-tail/native/pdf-025.png",
+          "sha256": "a65d2a4aefad9cf466c51bc4c4871d620ec14c741b9c9b98c89525b20b1ab8c9"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-gray-tail/native/review-025.png",
+          "sha256": "b5cda1bdc0b9428c818829ce7fc71562b3f45734df1c248f6fa154568b34a352"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-gray-tail/native/overlay-025.png",
+          "sha256": "a40ddde1c3bfbbb7bf062d5513cad53276422d1caa0ad18917cb91ba26dee1c6"
+        }
+      }
+    },
+    {
+      "backend": "native",
+      "page": 26,
+      "raw_percent": 100.0,
+      "raw_pdf_bytes_equal_previously_read_source": {
+        "raw": true,
+        "pdf": true
+      },
+      "images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-gray-tail/native/raw-026.png",
+          "sha256": "44e90c0ce010123151ceaf30072dc92b7b0987575cf9f57bd7e28f04997530dd"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-gray-tail/native/pdf-026.png",
+          "sha256": "7a99e3eeeacca83ed2ba963a76916486a6467c8b9c0f4ceeca44bb6af8ce3a87"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-gray-tail/native/review-026.png",
+          "sha256": "7552c93d4af065ab9774cb64e6d659cf073753a418297414665ed2398304f9c2"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-gray-tail/native/overlay-026.png",
+          "sha256": "af2e4d2c9f5930347fb5d9652a194f84f19a344e75aaff85429a3309b4b59149"
+        }
+      }
+    },
+    {
+      "backend": "wasm",
+      "page": 25,
+      "raw_percent": 100.0,
+      "raw_pdf_bytes_equal_previously_read_source": {
+        "raw": true,
+        "pdf": true
+      },
+      "images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-gray-tail/wasm/raw-025.png",
+          "sha256": "6cb7780dfe2c09a4f08ffd9d47e60a57875ee2ef9e0522bfa26ff70041566f0f"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-gray-tail/wasm/pdf-025.png",
+          "sha256": "a65d2a4aefad9cf466c51bc4c4871d620ec14c741b9c9b98c89525b20b1ab8c9"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-gray-tail/wasm/review-025.png",
+          "sha256": "ac81ac29868d2ffa8cb57d784692688abdfdb7211e223e3b9e1461763b1f57ff"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-gray-tail/wasm/overlay-025.png",
+          "sha256": "b6592a8454780e2425de2e4cd3a91df1832915f1351a48b0ab847296bf47ad67"
+        }
+      }
+    },
+    {
+      "backend": "wasm",
+      "page": 26,
+      "raw_percent": 100.0,
+      "raw_pdf_bytes_equal_previously_read_source": {
+        "raw": true,
+        "pdf": true
+      },
+      "images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-gray-tail/wasm/raw-026.png",
+          "sha256": "12ee0cf25f5f1922d20c9c18eeb398439d581e6ce95440b6ae6fefd7d806f646"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-gray-tail/wasm/pdf-026.png",
+          "sha256": "7a99e3eeeacca83ed2ba963a76916486a6467c8b9c0f4ceeca44bb6af8ce3a87"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-gray-tail/wasm/review-026.png",
+          "sha256": "49f138d198ca1923bb0df68e92b41c933043de1ae253f0c701f768a7f3971ec3"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-gray-tail/wasm/overlay-026.png",
+          "sha256": "d13ba8a079b034ca6b16b8188baf719a8125c0cab4dc1ad9a93b4e23ad09c171"
+        }
+      }
+    }
+  ]
+}

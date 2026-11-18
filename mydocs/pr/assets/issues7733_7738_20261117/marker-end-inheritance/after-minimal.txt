@@ -1,0 +1,14 @@
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 3m 25s
+────────────
+ Nextest run ID 7623608c-e22c-492c-93c2-616ffc9153f5 with nextest profile: default
+    Starting 7 tests across 2 binaries (739 tests skipped)
+        PASS [   0.017s] (1/7) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::missing_batangche_right_bar_uses_the_independent_supplier_advance
+        PASS [   0.018s] (2/7) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::supplier_program_has_its_verified_full_em_advance
+        PASS [   0.017s] (3/7) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::print_uses_the_same_program_that_supplied_the_measured_glyph
+        PASS [   0.018s] (4/7) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::explicit_hft_and_existing_supplier_keep_their_own_programs
+        PASS [   0.017s] (5/7) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::directly_supplied_program_hit_precedes_the_reference_programs_missing_glyph
+        PASS [   0.122s] (6/7) rhwp::regression_suite_016 issue_7733_box_drawing_marker_origin::inherited_marker_keeps_the_paragraph_end_size_and_its_body_distance
+        PASS [   0.193s] (7/7) rhwp::regression_suite_016 issue_7733_box_drawing_marker_origin::right_bar_supplier_preserves_the_print_origin_and_following_text
+────────────
+     Summary [   0.196s] 7 tests run: 7 passed, 739 skipped

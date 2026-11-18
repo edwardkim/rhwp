@@ -1,0 +1,10 @@
+{
+  "actual_source_head": "025ac0e4ca",
+  "production_source_equivalent": "120483b82f",
+  "producer_command": "recorded before-opening-space Native nextest build; development dependency feature unification preserved for paired candidate",
+  "binary": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/decree61-quote-controls/rhwp-before-native-test-profile",
+  "sha256": "40fbc4ed1824573696357954ee74fb26637a3ba0ac0ebd79b29f7f99b3ee2b90",
+  "binary_mtime": "2026-11-18T10:51:06.284244+09:00",
+  "next_production_edit_mtime": "2026-11-18T10:55:39.130749+09:00",
+  "note": "frozen before pending candidate binary link; matched before test command and production edit ordering"
+}

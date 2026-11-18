@@ -1,0 +1,19 @@
+{
+  "original_producer_head": "2a820cc137ce04720bbdc5d79815a3b2e875c8c5",
+  "fixed_base": "197ce19e99438c2cba452c654ae1af504dab85ec",
+  "reading_at": "2026-11-18T16:22:03.422373+09:00",
+  "scope": "Native/fresh WASM sample4 36 pages each; direct review of PR claim NASM p25/26, ordinary ink differences retained. Unchanged canonical dependencies are proven separately. New Studio E2E is pending after host consumer repair.",
+  "native_and_wasm_tsv_declines": 0,
+  "pages": {
+    "25": {
+      "raw": 100.0,
+      "reading": "코드 배경·본문·NASM 제목의 줄 소속과 순서를 유지한다. 글자 잉크 농도 차이는 남아 있어 픽셀 동일로 주장하지 않는다."
+    },
+    "26": {
+      "raw": 99.37,
+      "reading": "NASM 로고·캡션·본문·코드 상자의 위치와 소속을 유지한다. 회색 상자 하단에 미세 차이가 남으며 같은 base/head에서 동일해 새 회귀로 판정하지 않는다."
+    }
+  },
+  "status": "pre_gray_tail_repair_evidence_not_final_acceptance",
+  "user_reported_followup": "sample4-gray-tail/cause.md"
+}

@@ -1,0 +1,9 @@
+{
+  "page": 56,
+  "backend": "native-skia",
+  "read": [
+    "after-native-review-056.png",
+    "after-native-overlay-056.png"
+  ],
+  "finding": "U+2027 and following heading origin align; title/body order, chapter labels and footer preserved; raw 2px 100%, not byte identity"
+}

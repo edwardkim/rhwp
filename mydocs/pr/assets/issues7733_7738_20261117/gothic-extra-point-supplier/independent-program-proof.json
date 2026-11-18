@@ -1,0 +1,32 @@
+{
+  "original_program": {
+    "sha256": "ca822120ef31767c5e3dd78d59f3a1b00c59c82a6e8d31715ac2258152c5c234",
+    "upem": 1024,
+    "has_2027": false,
+    "file": "H2GTRE.TTF"
+  },
+  "supplier": {
+    "sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+    "upem": 1024,
+    "advance_2027": 178,
+    "file": "HBATANG.TTF"
+  },
+  "pdf": {
+    "page": 56,
+    "xref": 28,
+    "name": "INPILL+Haansoft Batang",
+    "glyph7_advance": 178,
+    "upem": 1024,
+    "next_body_origin_px": 281.76
+  },
+  "before_native": {
+    "silhouette_raw_match_percent": 99.66074,
+    "silhouette_raw_unmatched_pixels": 135
+  },
+  "before_wasm": {
+    "silhouette_raw_match_percent": 99.70125,
+    "silhouette_raw_unmatched_pixels": 122
+  },
+  "input_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+  "pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047"
+}

@@ -1,0 +1,12 @@
+{
+  "status": "passed_equivalent_383_page_baseline_reuse",
+  "actual_gate_baseline_sha256": "7eb001e3e30d6892d8bc03ba3e16456a4dd758cccb0e9aba073671366a9a5a1b",
+  "current_baseline_sha256": "295f7774a65d722e1fcc965910628dad3e43c9620a3d0181f7388cec111d6f9a",
+  "selected_old_and_new_383_rows_equal": true,
+  "run_source": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+  "binary_producer": "e63992fb2f4fbedb9c58569232b176ae91b98331",
+  "new_five_documents_do_not_change_handbook_rows": true,
+  "gate_sha256": "9922231035fd5947affbc0215e8944ff847f007929c0ca1d5d3528b92119dcde",
+  "tsv_sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590",
+  "not_new_current_table_execution": true
+}

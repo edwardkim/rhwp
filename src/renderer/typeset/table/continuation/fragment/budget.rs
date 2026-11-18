@@ -716,8 +716,12 @@ impl TypesetEngine {
                 // 아니다. 그 커서와 비교하면 기존 위 여백을 미소비로 오인하여 첫 조각을
                 // 내리고, 들어갈 저장 글줄도 다음 쪽으로 보낸다.
                 let margin = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
-                let opened_by_flow = (p.table_top - (p.anchor_y + host_before_overhead)).abs()
-                    <= 0.01
+                // 문단 기준 양수 오프셋도 계획이 이미 소비한 거리다. 그 거리를
+                // 여백 미소비로 오인하면 위 여백만큼 첫 조각을 다시 내린다.
+                // 앵커 자체가 오프셋을 소유한 기존 형태도 그대로 인정한다.
+                let host_origin = p.anchor_y + host_before_overhead;
+                let opened_by_flow = ((p.table_top - host_origin).abs() <= 0.01
+                    || (p.table_top - host_origin - vert_offset_overhead).abs() <= 0.01)
                     && host_before_overhead + 0.01 >= margin;
                 if !opened_by_flow {
                     p.table_top += margin;

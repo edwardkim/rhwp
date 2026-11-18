@@ -1,0 +1,272 @@
+{
+  "status": "passed_and_direct_read",
+  "source_head": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+  "native_sha256": "bd15811cac3ca34bba967cdc6c2d7a427018e03350fe1849f7b063fd54495291",
+  "wasm_sha256": "b3fec19b68f976ab3b9d4aa4c0be11d1ddd44725543faf248bc15d961424dc52",
+  "baseline_sha256": "295f7774a65d722e1fcc965910628dad3e43c9620a3d0181f7388cec111d6f9a",
+  "run_count": 8,
+  "records": [
+    {
+      "document_id": "52ee61fe7201e36b",
+      "input": "samples/re-03-latin-only-hancom.hwp",
+      "backend": "native",
+      "status": "passed",
+      "exit_code": 0,
+      "minimum": "100.0",
+      "regressions": [],
+      "direct_review_and_overlay_read": true,
+      "evidence": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/52ee61fe7201e36b/native/raw.png",
+          "sha256": "dda627d1e61fec54b31abeab531d6040a5803083deccadca097745ef6397a939"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/52ee61fe7201e36b/native/pdf.png",
+          "sha256": "0484984565f05f6fec9931a654f0c4d03162494b79357e669ab11d1e83c29b18"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/52ee61fe7201e36b/native/review.png",
+          "sha256": "5881cf19f9f338bc640a799341c47ea472c65c5c8ffb1d5b684c76c13e3e1fdc"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/52ee61fe7201e36b/native/overlay.png",
+          "sha256": "5d71693b65adc4f8da4603be47b5779fc75f956f33a3110661dfda481342528e"
+        },
+        "silhouette": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/52ee61fe7201e36b/native/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        }
+      }
+    },
+    {
+      "document_id": "52ee61fe7201e36b",
+      "input": "samples/re-03-latin-only-hancom.hwp",
+      "backend": "wasm",
+      "status": "passed",
+      "exit_code": 0,
+      "minimum": "100.0",
+      "regressions": [],
+      "direct_review_and_overlay_read": true,
+      "evidence": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/52ee61fe7201e36b/wasm/raw.png",
+          "sha256": "26500f988818109a14f3b57fa37df36487f2f3975504d94bceab5ff87c3d0b84"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/52ee61fe7201e36b/wasm/pdf.png",
+          "sha256": "0484984565f05f6fec9931a654f0c4d03162494b79357e669ab11d1e83c29b18"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/52ee61fe7201e36b/wasm/review.png",
+          "sha256": "10fd1852de090f9deed07f3d00f07cfc573581dcac90ee05adcceb8386686aad"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/52ee61fe7201e36b/wasm/overlay.png",
+          "sha256": "6112c22b8007f586ff5f6a853989c2e354c2987e740f9d07d330978dcb901c08"
+        },
+        "silhouette": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/52ee61fe7201e36b/wasm/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        }
+      }
+    },
+    {
+      "document_id": "59f6ab1155623bda",
+      "input": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "backend": "native",
+      "status": "passed",
+      "exit_code": 0,
+      "minimum": "100.0",
+      "regressions": [],
+      "direct_review_and_overlay_read": true,
+      "evidence": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/59f6ab1155623bda/native/raw.png",
+          "sha256": "193a8956459ba0111dfe5e0b05791c6b8d85e5d5f1f2e04df42772d287904366"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/59f6ab1155623bda/native/pdf.png",
+          "sha256": "0ae88b7f24731245932eb3a7688a494ae25b0fb0f9b5c652ce2509ba247fc2c3"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/59f6ab1155623bda/native/review.png",
+          "sha256": "fc569a1f551b40e749c536a9fa8167b2d8ba43e3f497c541a7933af7630f1127"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/59f6ab1155623bda/native/overlay.png",
+          "sha256": "bad2076ac3b2cd803de4a804441f38e2a5f3639ea4c11bcd4d2580476ab314c7"
+        },
+        "silhouette": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/59f6ab1155623bda/native/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        }
+      }
+    },
+    {
+      "document_id": "59f6ab1155623bda",
+      "input": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "backend": "wasm",
+      "status": "passed",
+      "exit_code": 0,
+      "minimum": "100.0",
+      "regressions": [],
+      "direct_review_and_overlay_read": true,
+      "evidence": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/59f6ab1155623bda/wasm/raw.png",
+          "sha256": "8b29fa5c09118ac9571cd7da9af44fb5f1847f3144863506a71c4a77876e96f7"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/59f6ab1155623bda/wasm/pdf.png",
+          "sha256": "0ae88b7f24731245932eb3a7688a494ae25b0fb0f9b5c652ce2509ba247fc2c3"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/59f6ab1155623bda/wasm/review.png",
+          "sha256": "66b0f584991aff6c49f676b95febb56c527238b4fdd2c557f3202837c0bfb022"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/59f6ab1155623bda/wasm/overlay.png",
+          "sha256": "f005a352a1010f14d075fa08c798890b23a3d773b92422dc4ed0414656fc0b45"
+        },
+        "silhouette": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/59f6ab1155623bda/wasm/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        }
+      }
+    },
+    {
+      "document_id": "cdacd874b6e6ac66",
+      "input": "samples/pic-crop-01.hwp",
+      "backend": "native",
+      "status": "passed",
+      "exit_code": 0,
+      "minimum": "99.99756",
+      "regressions": [],
+      "direct_review_and_overlay_read": true,
+      "evidence": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/cdacd874b6e6ac66/native/raw.png",
+          "sha256": "e5e6a4200d8ed21af5afe56acf00db910f1c20c1906847c14242ee0acec1ab53"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/cdacd874b6e6ac66/native/pdf.png",
+          "sha256": "2772ea412033a38c80fde729906374a90de94c0d7c5f33c2ede1e5071ac25ac8"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/cdacd874b6e6ac66/native/review.png",
+          "sha256": "df5248c3837863609c3385b59f23898d97bbd36b96f40df59d1cfde882cf273c"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/cdacd874b6e6ac66/native/overlay.png",
+          "sha256": "66403aaaffe871648bd66be9607c3b2fac5a884adfc8d55e4232de50bb841c62"
+        },
+        "silhouette": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/cdacd874b6e6ac66/native/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        }
+      }
+    },
+    {
+      "document_id": "cdacd874b6e6ac66",
+      "input": "samples/pic-crop-01.hwp",
+      "backend": "wasm",
+      "status": "passed",
+      "exit_code": 0,
+      "minimum": "99.99756",
+      "regressions": [],
+      "direct_review_and_overlay_read": true,
+      "evidence": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/cdacd874b6e6ac66/wasm/raw.png",
+          "sha256": "f45977a678f0865026633270593afbb13c193ed68c50d681d0a4708dc59da690"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/cdacd874b6e6ac66/wasm/pdf.png",
+          "sha256": "2772ea412033a38c80fde729906374a90de94c0d7c5f33c2ede1e5071ac25ac8"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/cdacd874b6e6ac66/wasm/review.png",
+          "sha256": "37764373d56f44033d9442d1a9a63acd9a06a5b39c3b69e3e27ced8e05f5dd2b"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/cdacd874b6e6ac66/wasm/overlay.png",
+          "sha256": "a9a1430d6fbe87d8eaf3d6f9db75c7d1e442c0071d9ce4ce7261df386be967de"
+        },
+        "silhouette": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/cdacd874b6e6ac66/wasm/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        }
+      }
+    },
+    {
+      "document_id": "d03a9dde3d5dc7ac",
+      "input": "samples/shape-group-02.hwp",
+      "backend": "native",
+      "status": "passed",
+      "exit_code": 0,
+      "minimum": "100.0",
+      "regressions": [],
+      "direct_review_and_overlay_read": true,
+      "evidence": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/d03a9dde3d5dc7ac/native/raw.png",
+          "sha256": "7f4061326e61afc0d52cecf46af2f6af98ed61d978217e164f78316d7e43c00f"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/d03a9dde3d5dc7ac/native/pdf.png",
+          "sha256": "b62d8f17bc72a37824dbbf37f9aa81a8b872bbd19f6b1d170a940edb951a6f85"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/d03a9dde3d5dc7ac/native/review.png",
+          "sha256": "b81b21b068d8c1817f14108e9aa84ea1ece53136458f1877ba401bd553a28be9"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/d03a9dde3d5dc7ac/native/overlay.png",
+          "sha256": "e36839b6320e613821d513bbf2fbe9384010671e926b07a2f7f8d3c49676f6f3"
+        },
+        "silhouette": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/d03a9dde3d5dc7ac/native/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        }
+      }
+    },
+    {
+      "document_id": "d03a9dde3d5dc7ac",
+      "input": "samples/shape-group-02.hwp",
+      "backend": "wasm",
+      "status": "passed",
+      "exit_code": 0,
+      "minimum": "100.0",
+      "regressions": [],
+      "direct_review_and_overlay_read": true,
+      "evidence": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/d03a9dde3d5dc7ac/wasm/raw.png",
+          "sha256": "deeef7d29ac39d0d6c8dc37e83d0447552cc5d29fd0313bb93810d817cdee24f"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/d03a9dde3d5dc7ac/wasm/pdf.png",
+          "sha256": "b62d8f17bc72a37824dbbf37f9aa81a8b872bbd19f6b1d170a940edb951a6f85"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/d03a9dde3d5dc7ac/wasm/review.png",
+          "sha256": "9f18890b2567cb7e19db0f23ef926a54201303a987fa70d62ef626af844febe2"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/d03a9dde3d5dc7ac/wasm/overlay.png",
+          "sha256": "7690fc866c0466d82a2e0f9e5c04e1b17afbfe1107c8b3556c7585137d37ab97"
+        },
+        "silhouette": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/fresh-public/d03a9dde3d5dc7ac/wasm/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        }
+      }
+    }
+  ],
+  "findings": [
+    "라틴 3줄의 줄 소속·순서를 양 경로에서 확인했다.",
+    "좁은 꺾쇠 문단의 개정·연도·닫는 괄호 네 줄과 넘침을 대조했다.",
+    "그림 crop 두 밴드의 배치·로고·가시 영역을 대조했고 얇은 가장자리·그림 잉크 차이는 보존한다.",
+    "그룹 지도 윤곽·섬·그림자·그라데이션을 대조했다. 2px 실루엣 100%를 픽셀 완전 동일로 해석하지 않는다."
+  ]
+}

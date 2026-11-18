@@ -1,0 +1,35 @@
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 3m 11s
+────────────
+ Nextest run ID 8d0d289b-d1c3-4fc6-ac6e-ceb4ba9f548f with nextest profile: default
+    Starting 6 tests across 2 binaries (739 tests skipped)
+        PASS [   0.016s] (1/6) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::explicit_hft_and_existing_supplier_keep_their_own_programs
+        PASS [   0.016s] (2/6) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::print_uses_the_same_program_that_supplied_the_measured_glyph
+        PASS [   0.016s] (3/6) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::supplier_program_has_its_verified_full_em_advance
+        PASS [   0.016s] (4/6) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::missing_batangche_right_bar_uses_the_independent_supplier_advance
+        FAIL [   0.016s] (5/6) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::directly_supplied_program_hit_precedes_the_reference_programs_missing_glyph
+  stdout ───
+
+    running 1 test
+    test issue_7733_box_drawing_glyph_supplier::directly_supplied_program_hit_precedes_the_reference_programs_missing_glyph ... FAILED
+
+    failures:
+
+    failures:
+        issue_7733_box_drawing_glyph_supplier::directly_supplied_program_hit_precedes_the_reference_programs_missing_glyph
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'issue_7733_box_drawing_glyph_supplier::directly_supplied_program_hit_precedes_the_reference_programs_missing_glyph' (267119416) panicked at tests/generated/../cases/issue_7733_box_drawing_glyph_supplier.rs:93:5:
+    assertion `left == right` failed: 실제 제공 프로그램의 hit를 같은 이름의 기준 TTC 결측으로 대체하지 않는다
+      left: "Haansoft Batang"
+     right: "BatangChe"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        PASS [   0.184s] (6/6) rhwp::regression_suite_016 issue_7733_box_drawing_marker_origin::right_bar_supplier_preserves_the_print_origin_and_following_text
+────────────
+     Summary [   0.185s] 6 tests run: 5 passed, 1 failed, 739 skipped
+        FAIL [   0.016s] (5/6) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::directly_supplied_program_hit_precedes_the_reference_programs_missing_glyph
+error: test run failed

@@ -1,0 +1,71 @@
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 19.65s
+────────────
+ Nextest run ID ba1e5720-38bc-41e0-99c8-8db4c6756913 with nextest profile: default
+    Starting 4 tests across 2 binaries (696 tests skipped)
+        PASS [   0.017s] (1/4) rhwp::regression_suite_013 issue_7733_batang_hyphenation_supplier::hft_source_does_not_borrow_the_ttf_programs_gap
+        FAIL [   0.017s] (2/4) rhwp::regression_suite_013 issue_7733_batang_hyphenation_supplier::paint_uses_the_same_supplier_as_measurement
+  stdout ───
+
+    running 1 test
+    test issue_7733_batang_hyphenation_supplier::paint_uses_the_same_supplier_as_measurement ... FAILED
+
+    failures:
+
+    failures:
+        issue_7733_batang_hyphenation_supplier::paint_uses_the_same_supplier_as_measurement
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 353 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'issue_7733_batang_hyphenation_supplier::paint_uses_the_same_supplier_as_measurement' (267793703) panicked at tests/generated/../cases/issue_7733_batang_hyphenation_supplier.rs:31:5:
+    assertion `left == right` failed
+      left: "Batang"
+     right: "Haansoft Batang"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.017s] (3/4) rhwp::regression_suite_013 issue_7733_batang_hyphenation_supplier::batang_missing_hyphenation_point_uses_the_independent_supplier_advance
+  stdout ───
+
+    running 1 test
+    test issue_7733_batang_hyphenation_supplier::batang_missing_hyphenation_point_uses_the_independent_supplier_advance ... FAILED
+
+    failures:
+
+    failures:
+        issue_7733_batang_hyphenation_supplier::batang_missing_hyphenation_point_uses_the_independent_supplier_advance
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 353 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'issue_7733_batang_hyphenation_supplier::batang_missing_hyphenation_point_uses_the_independent_supplier_advance' (267793706) panicked at tests/generated/../cases/issue_7733_batang_hyphenation_supplier.rs:26:9:
+    독립 공급자 전진: 바탕, 10
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.116s] (4/4) rhwp::regression_suite_006 issue_7733_batang_point_origin::body_after_two_missing_batang_points_keeps_the_print_origin
+  stdout ───
+
+    running 1 test
+    test issue_7733_batang_point_origin::body_after_two_missing_batang_points_keeps_the_print_origin ... FAILED
+
+    failures:
+
+    failures:
+        issue_7733_batang_point_origin::body_after_two_missing_batang_points_keeps_the_print_origin
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 345 filtered out; finished in 0.10s
+
+  stderr ───
+
+    thread 'issue_7733_batang_point_origin::body_after_two_missing_batang_points_keeps_the_print_origin' (267793704) panicked at tests/generated/../cases/issue_7733_batang_point_origin.rs:29:5:
+    독립 Print의 뒤 본문 원점: 350.2533333333334
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.120s] 4 tests run: 1 passed, 3 failed, 696 skipped
+        FAIL [   0.017s] (2/4) rhwp::regression_suite_013 issue_7733_batang_hyphenation_supplier::paint_uses_the_same_supplier_as_measurement
+        FAIL [   0.017s] (3/4) rhwp::regression_suite_013 issue_7733_batang_hyphenation_supplier::batang_missing_hyphenation_point_uses_the_independent_supplier_advance
+        FAIL [   0.116s] (4/4) rhwp::regression_suite_006 issue_7733_batang_point_origin::body_after_two_missing_batang_points_keeps_the_print_origin
+error: test run failed

@@ -20,6 +20,8 @@ CI 와 회귀 시험은 만들어진 TSV 만 읽는다 — Rust 쪽에 PDF 파�
 제품에 맞는 한컴 엔진 연도가 확인된 정답지만 고른다. 저장 제품 메타데이터가 없으면
 2020 엔진을 쓴다. 형식 미표기·상대 형식·kopub/no-ttf 는 한 허용 집합에 섞지
 않으며, 엔진 연도가 여럿이라고 가장 최근 연도를 추측해 고르지 않는다.
+이미 독립 출력으로 검증한 과거 경로는 원본·PDF SHA-256, 출처와 쪽수를 등록한
+`oracle_page_count_verified_references.json`의 정확한 짝만 재사용한다.
 
 ## 모아 찍기 제외
 
@@ -31,6 +33,8 @@ CI 와 회귀 시험은 만들어진 TSV 만 읽는다 — Rust 쪽에 PDF 파�
 import argparse
 import collections
 import io
+import hashlib
+from pathlib import Path
 import json
 import os
 import re
@@ -268,11 +272,52 @@ def rhwp_info(rhwp, path):
 ROW_NOTES = {}
 
 
+VERIFIED_REFERENCES = 'tests/fixtures/oracle_page_count_verified_references.json'
+
+
+def load_verified_references(root=None):
+    """검증한 과거 원본/PDF의 정확한 경로·바이트·쪽수만 재생성에 등록한다.
+
+    이름이 비슷한 PDF를 자동 대체하는 fallback이 아니다. 본문·원본 형식·출력 출처를
+    이미 교차 확인한 소수 입력이며, 다른 원본은 기존 canonical 선택을 그대로 사용한다.
+    """
+    root = Path.cwd() if root is None else Path(root)
+    root = root.resolve()
+    data = json.loads((root / VERIFIED_REFERENCES).read_text(encoding='utf-8'))
+    if data.get('schema_version') != 1 or not isinstance(data.get('references'), list):
+        raise ValueError('검증 PDF 등록 목록의 스키마가 잘못됐다')
+    refs = {}
+    for entry in data['references']:
+        sample = entry['sample']
+        if sample in refs:
+            raise ValueError(f'원본 등록 중복: {sample}')
+        if type(entry.get('pages')) is not int or entry['pages'] <= 0:
+            raise ValueError(f'독립 PDF 쪽수가 잘못됐다: {sample}')
+        if entry.get('provenance') not in ('desktop_hancom_print', 'official_hancom_specification'):
+            raise ValueError(f'독립 PDF 출처가 확인되지 않았다: {sample}')
+        for field, hash_field, prefix in [('sample', 'source_sha256', 'samples/'),
+                                         ('pdf', 'pdf_sha256', 'pdf/')]:
+            relative = entry[field]
+            path = (root / relative).resolve()
+            digest = entry[hash_field]
+            if not relative.startswith(prefix) or not path.is_relative_to(root):
+                raise ValueError(f'저장소 밖 또는 잘못된 등록 경로: {relative}')
+            if not isinstance(digest, str) or not re.fullmatch(r'[0-9a-f]{64}', digest):
+                raise ValueError(f'SHA-256 형식 오류: {relative}')
+            if hashlib.sha256(path.read_bytes()).hexdigest() != digest:
+                raise ValueError(f'등록된 바이트와 다르다: {relative}')
+        refs[sample] = entry
+    return refs
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--rhwp', default='target/release-test/rhwp.exe')
     args = ap.parse_args()
 
+    verified = load_verified_references()
+    registered_pdfs = {entry['pdf'] for entry in verified.values()}
+    pdf_hashes = {}
     pmap = {}
     for p in git_pdf_paths():
         pmap.setdefault(stem(p), []).append(p)
@@ -298,7 +343,8 @@ def main():
     skipped_coverage = []
     for sample in samples:
         key = stem(sample)
-        if key not in pmap:
+        registration = verified.get(sample)
+        if key not in pmap and registration is None:
             continue
         got, nup, product = rhwp_info(args.rhwp, sample)
         if got is None:
@@ -306,7 +352,8 @@ def main():
         if nup:
             skipped_nup.append(sample)
             continue
-        picked = pick_oracles(sample, pmap[key], product)
+        picked = ([registration['pdf']] if registration is not None
+                  else pick_oracles(sample, pmap[key], product))
         if not picked:
             skipped_canonical.append((sample, product))
             continue
@@ -316,7 +363,13 @@ def main():
         for pdf in picked:
             if pdf not in cache:
                 cache[pdf] = oracle_pages_and_text(pdf, tmp)
+                if pdf in registered_pdfs and cache[pdf][0]:
+                    # 쪽수가 같은 다른 PDF를 Git HEAD에서 읽은 경우에도 수용하지 않는다.
+                    pdf_hashes[pdf] = hashlib.sha256(Path(tmp).read_bytes()).hexdigest()
             pages, opages = cache[pdf]
+            if registration is not None and (pages != registration['pages']
+                    or pdf_hashes.get(pdf) != registration['pdf_sha256']):
+                raise ValueError(f'등록한 독립 PDF와 Git PDF가 일치하지 않는다: {pdf}')
             if not pages:
                 continue
             otext = ''.join(opages)
@@ -369,11 +422,15 @@ def main():
         '# 한글 정답지 PDF 대비 rhwp pageCount 기준선.',
         '# 생성: python tools/oracle_page_count/regenerate.py',
         '# 열: 상대경로 <TAB> 정답지쪽수(쉼표구분) <TAB> 이 기준선의 rhwp쪽수',
-        '# 정답지쪽수는 원본 형식·rhwp info --json 저장 제품 엔진이 일치하는 canonical PDF만 쓴다.',
+        '# 정답지는 형식·저장 제품 엔진이 일치하는 canonical PDF 또는 SHA로 검증한 등록 PDF다.',
         '# 형식 미표기·kopub/no-ttf 쪽수는 섞지 않는다. rhwp가 다르면 미해결 격차다.',
         '# 모아 찍기(print_method 4·5) 문서는 장 수가 애초에 달라 제외한다.',
+        '# 검증한 과거 경로는 oracle_page_count_verified_references.json의 원본/PDF SHA·출처·쪽수를 확인한다.',
     ]
     for sample, counts, got in rows:
+        if sample in verified:
+            lines.append('# 검증한 과거 경로: %s (%s), 원본·PDF SHA와 쪽수 고정.'
+                         % (verified[sample]['pdf'], verified[sample]['provenance']))
         lines.extend(ROW_NOTES.get(sample, ()))
         lines.append('%s\t%s\t%d' % (sample, ','.join(str(c) for c in counts), got))
     with open(FIXTURE, 'w', encoding='utf-8', newline='\n') as fh:

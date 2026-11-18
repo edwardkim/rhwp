@@ -1,0 +1,6 @@
+{
+  "source_head": "120483b82f4ceb2c77aff6727c1a52d34413551a",
+  "binary": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/chemical72-bullet-repair/rhwp-native",
+  "binary_sha256": "6ef699a104b1d60ddaf841f19e520fe5af5b0dee51d13b38612fc5263e33a94c",
+  "cargo_lock_sha256": "972bdb0994b216f0cef357b856ce0807ce3d437af6791377446b62f2e26c05a1"
+}

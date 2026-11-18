@@ -1,0 +1,73 @@
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 23.56s
+────────────
+ Nextest run ID 2e4f9689-2a16-45c0-bc44-d11f0884900c with nextest profile: default
+    Starting 6 tests across 2 binaries (739 tests skipped)
+        PASS [   0.019s] (1/6) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::directly_supplied_program_hit_precedes_the_reference_programs_missing_glyph
+        PASS [   0.019s] (2/6) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::explicit_hft_and_existing_supplier_keep_their_own_programs
+        FAIL [   0.019s] (3/6) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::supplier_program_has_its_verified_full_em_advance
+  stdout ───
+
+    running 1 test
+    test issue_7733_box_drawing_glyph_supplier::supplier_program_has_its_verified_full_em_advance ... FAILED
+
+    failures:
+
+    failures:
+        issue_7733_box_drawing_glyph_supplier::supplier_program_has_its_verified_full_em_advance
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'issue_7733_box_drawing_glyph_supplier::supplier_program_has_its_verified_full_em_advance' (267091759) panicked at tests/generated/../cases/issue_7733_box_drawing_glyph_supplier.rs:56:5:
+    실제 cmap/hmtx가 확인한 공급자의 원폭: 16
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.019s] (4/6) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::missing_batangche_right_bar_uses_the_independent_supplier_advance
+  stdout ───
+
+    running 1 test
+    test issue_7733_box_drawing_glyph_supplier::missing_batangche_right_bar_uses_the_independent_supplier_advance ... FAILED
+
+    failures:
+
+    failures:
+        issue_7733_box_drawing_glyph_supplier::missing_batangche_right_bar_uses_the_independent_supplier_advance
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'issue_7733_box_drawing_glyph_supplier::missing_batangche_right_bar_uses_the_independent_supplier_advance' (267091755) panicked at tests/generated/../cases/issue_7733_box_drawing_glyph_supplier.rs:45:9:
+    원 프로그램의 결측은 독립 Print 공급자의 한 em을 쓴다: 바탕체, 16
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.019s] (5/6) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::print_uses_the_same_program_that_supplied_the_measured_glyph
+  stdout ───
+
+    running 1 test
+    test issue_7733_box_drawing_glyph_supplier::print_uses_the_same_program_that_supplied_the_measured_glyph ... FAILED
+
+    failures:
+
+    failures:
+        issue_7733_box_drawing_glyph_supplier::print_uses_the_same_program_that_supplied_the_measured_glyph
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 379 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'issue_7733_box_drawing_glyph_supplier::print_uses_the_same_program_that_supplied_the_measured_glyph' (267091754) panicked at tests/generated/../cases/issue_7733_box_drawing_glyph_supplier.rs:64:5:
+    assertion `left == right` failed
+      left: "BatangChe"
+     right: "Haansoft Batang"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        PASS [   0.183s] (6/6) rhwp::regression_suite_016 issue_7733_box_drawing_marker_origin::right_bar_supplier_preserves_the_print_origin_and_following_text
+────────────
+     Summary [   0.186s] 6 tests run: 3 passed, 3 failed, 739 skipped
+        FAIL [   0.019s] (3/6) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::supplier_program_has_its_verified_full_em_advance
+        FAIL [   0.019s] (4/6) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::missing_batangche_right_bar_uses_the_independent_supplier_advance
+        FAIL [   0.019s] (5/6) rhwp::regression_suite_020 issue_7733_box_drawing_glyph_supplier::print_uses_the_same_program_that_supplied_the_measured_glyph
+error: test run failed

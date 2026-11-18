@@ -1,0 +1,84 @@
+{
+  "status": "passed_focused_native_protected_floors_and_direct_reading",
+  "source_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+  "native_sha256": "50ed1f014b8d1ec949f411855384e26260d3695ef348eb4732d52dece1a65db0",
+  "automatic_native": [
+    {
+      "page": "2",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "474",
+      "tolerant_content_match_percent": "99.96",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "99.96",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "690",
+      "tolerant_content_match_percent": "99.94",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "99.94",
+      "silhouette_boundary_reconciled_pixels": "0"
+    }
+  ],
+  "independent_hancom_font_condition_native": [
+    {
+      "page": "2",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "474",
+      "tolerant_content_match_percent": "100.00",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "100.00",
+      "silhouette_boundary_reconciled_pixels": "0"
+    },
+    {
+      "page": "690",
+      "tolerant_content_match_percent": "99.94",
+      "below_90": "0",
+      "silhouette_raw_match_percent": "99.94",
+      "silhouette_boundary_reconciled_pixels": "0"
+    }
+  ],
+  "font_condition": "Same independently qualified HFT/HNC glyph program environment as fixed-base comparison. Reference PDF unchanged.",
+  "direct_reading": [
+    "p2 original long double-line extent restored",
+    "p474 original HNC symbol underline end preserved",
+    "p690 minor underline extent differences remain at protected 99.94; not 100%"
+  ],
+  "images": [
+    {
+      "path": "native/review-002.png",
+      "sha256": "d7a3231b50dc31462f76f67f60ce4dfcaea743f26e2b2c7a170606cae18dbb92"
+    },
+    {
+      "path": "native/overlay-002.png",
+      "sha256": "4236244d0b9c2401d05d0e75a4c1fc4db63ba17f5174ab11607987cc8e28aa13"
+    },
+    {
+      "path": "native/review-474.png",
+      "sha256": "d6d4116dbc26ba684483ffed1190e5f34a512edd256e2a46389868cb0f0d3533"
+    },
+    {
+      "path": "native/overlay-474.png",
+      "sha256": "9489220a4ad8ce8704b90164854b6f7343031315834336a2e945cfb5edce9915"
+    },
+    {
+      "path": "native/review-690.png",
+      "sha256": "05818d15403b24e797dc0dad282973f6651eea03ed090c0a758ef7b2cf8e9b47"
+    },
+    {
+      "path": "native/overlay-690.png",
+      "sha256": "1be135cadfef843061ff37a27e82901e8de294d219f5d3e72a256aeafad5616a"
+    }
+  ],
+  "scope": "3 Native pages only; current source fresh WASM, whole corpus and full gates remain required."
+}

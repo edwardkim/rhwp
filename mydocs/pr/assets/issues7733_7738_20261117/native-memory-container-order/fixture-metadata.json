@@ -1,0 +1,35 @@
+[
+  {
+    "file": "RHWPNativeContainer.ttf",
+    "sha256": "a83760f59c9621a92ea17d86869cf8433030612e03d119a33efdc8347ae65bd1",
+    "face": 0,
+    "family": "RHWP Native Container Probe",
+    "postscript": "RHWPNativeContainerProbe-TTF",
+    "weight_class": 400,
+    "width_class": 5,
+    "upem": 1000,
+    "A_advance": 608
+  },
+  {
+    "file": "RHWPNativeContainer.ttc",
+    "sha256": "9d7f153357374b2c855cf1de114b0c36a3c2249e6fb28a14e7337700b5129530",
+    "face": 0,
+    "family": "RHWP Native Container Probe Control",
+    "postscript": "RHWPNativeContainerProbeControl-Control",
+    "weight_class": 400,
+    "width_class": 5,
+    "upem": 1000,
+    "A_advance": 608
+  },
+  {
+    "file": "RHWPNativeContainer.ttc",
+    "sha256": "9d7f153357374b2c855cf1de114b0c36a3c2249e6fb28a14e7337700b5129530",
+    "face": 1,
+    "family": "RHWP Native Container Probe",
+    "postscript": "RHWPNativeContainerProbe-TTC",
+    "weight_class": 400,
+    "width_class": 5,
+    "upem": 1000,
+    "A_advance": 304
+  }
+]

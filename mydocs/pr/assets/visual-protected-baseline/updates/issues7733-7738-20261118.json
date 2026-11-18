@@ -1,0 +1,298 @@
+{
+  "status": "recorded_final_native_wasm_protected_comparison",
+  "registered_at": "2026-11-18T19:43:59.925295+09:00",
+  "old_table_sha256": "7eb001e3e30d6892d8bc03ba3e16456a4dd758cccb0e9aba073671366a9a5a1b",
+  "table_sha256": "295f7774a65d722e1fcc965910628dad3e43c9620a3d0181f7388cec111d6f9a",
+  "old_rows_unchanged": 3542,
+  "added_rows": 504,
+  "row_count": 4046,
+  "document_count": 23,
+  "dataset_count": 46,
+  "documents": [
+    {
+      "document_id": "870eabd0a7d9534c",
+      "key": "chemical",
+      "backend": "native",
+      "pages": 103,
+      "minimum": "99.75"
+    },
+    {
+      "document_id": "870eabd0a7d9534c",
+      "key": "chemical",
+      "backend": "wasm",
+      "pages": 103,
+      "minimum": "99.71"
+    },
+    {
+      "document_id": "3298ed895b9a645c",
+      "key": "spec13",
+      "backend": "native",
+      "pages": 71,
+      "minimum": "99.69"
+    },
+    {
+      "document_id": "3298ed895b9a645c",
+      "key": "spec13",
+      "backend": "wasm",
+      "pages": 71,
+      "minimum": "99.67"
+    },
+    {
+      "document_id": "6456507d769ec90b",
+      "key": "outline-demo",
+      "backend": "native",
+      "pages": 3,
+      "minimum": "100.00"
+    },
+    {
+      "document_id": "6456507d769ec90b",
+      "key": "outline-demo",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": "100.00"
+    },
+    {
+      "document_id": "61c6ae96913006c5",
+      "key": "decree",
+      "backend": "native",
+      "pages": 74,
+      "minimum": "99.74"
+    },
+    {
+      "document_id": "61c6ae96913006c5",
+      "key": "decree",
+      "backend": "wasm",
+      "pages": 74,
+      "minimum": "99.73"
+    },
+    {
+      "document_id": "12ba0f8dcb5ba0f5",
+      "key": "outline-minimal",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00"
+    },
+    {
+      "document_id": "12ba0f8dcb5ba0f5",
+      "key": "outline-minimal",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00"
+    }
+  ],
+  "actual_image_producer_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+  "qualified_rendering_head": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+  "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
+  "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
+  "evidence_commit": "dd9019b03986e85ee53eb6ac059e7368a1bffd2f",
+  "measurement_rules_unchanged": true,
+  "private_font_binaries_added": false,
+  "automatic_visual_sweep_scope_expanded": false,
+  "compared_protection_rows": 4046,
+  "final_registration_sources": [
+    {
+      "document_id": "870eabd0a7d9534c",
+      "key": "chemical",
+      "backend": "native",
+      "pages": 103,
+      "source": {
+        "pr": null,
+        "evidence_commit": "dd9019b03986e85ee53eb6ac059e7368a1bffd2f",
+        "code_commit": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "qualified_rendering_commit": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/native/head/chemical.tsv",
+        "sha256": "9111800060d296754f077d6fb6d0313f4f0300ab5c5d216c166aa3481e292dd5",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
+        "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      }
+    },
+    {
+      "document_id": "870eabd0a7d9534c",
+      "key": "chemical",
+      "backend": "wasm",
+      "pages": 103,
+      "source": {
+        "pr": null,
+        "evidence_commit": "dd9019b03986e85ee53eb6ac059e7368a1bffd2f",
+        "code_commit": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "qualified_rendering_commit": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/head/chemical.tsv",
+        "sha256": "fb7e4309c10b07948c4bef2fbeab9c34b1e497d278dab86c5deb36b824d3ef0d",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
+        "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      }
+    },
+    {
+      "document_id": "3298ed895b9a645c",
+      "key": "spec13",
+      "backend": "native",
+      "pages": 71,
+      "source": {
+        "pr": null,
+        "evidence_commit": "dd9019b03986e85ee53eb6ac059e7368a1bffd2f",
+        "code_commit": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "qualified_rendering_commit": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/native/head/spec13.tsv",
+        "sha256": "1740db49214ba69905b9030002a2bc90897ca3fc6c623a305a91e5ed956dbcc2",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
+        "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      }
+    },
+    {
+      "document_id": "3298ed895b9a645c",
+      "key": "spec13",
+      "backend": "wasm",
+      "pages": 71,
+      "source": {
+        "pr": null,
+        "evidence_commit": "dd9019b03986e85ee53eb6ac059e7368a1bffd2f",
+        "code_commit": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "qualified_rendering_commit": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/head/spec13.tsv",
+        "sha256": "b620227f2a2aac18809adb5258d89dd84f25206c0db156e07861e257887a7a3a",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
+        "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      }
+    },
+    {
+      "document_id": "6456507d769ec90b",
+      "key": "outline-demo",
+      "backend": "native",
+      "pages": 3,
+      "source": {
+        "pr": null,
+        "evidence_commit": "dd9019b03986e85ee53eb6ac059e7368a1bffd2f",
+        "code_commit": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "qualified_rendering_commit": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/native/head/outline-demo.tsv",
+        "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
+        "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      }
+    },
+    {
+      "document_id": "6456507d769ec90b",
+      "key": "outline-demo",
+      "backend": "wasm",
+      "pages": 3,
+      "source": {
+        "pr": null,
+        "evidence_commit": "dd9019b03986e85ee53eb6ac059e7368a1bffd2f",
+        "code_commit": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "qualified_rendering_commit": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/head/outline-demo.tsv",
+        "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
+        "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      }
+    },
+    {
+      "document_id": "61c6ae96913006c5",
+      "key": "decree",
+      "backend": "native",
+      "pages": 74,
+      "source": {
+        "pr": null,
+        "evidence_commit": "dd9019b03986e85ee53eb6ac059e7368a1bffd2f",
+        "code_commit": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "qualified_rendering_commit": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/native/head/decree.tsv",
+        "sha256": "74ac79a552433fd3c66db702a1f4dbda5cc8529a17548ea1025f7c3219222a03",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
+        "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      }
+    },
+    {
+      "document_id": "61c6ae96913006c5",
+      "key": "decree",
+      "backend": "wasm",
+      "pages": 74,
+      "source": {
+        "pr": null,
+        "evidence_commit": "dd9019b03986e85ee53eb6ac059e7368a1bffd2f",
+        "code_commit": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "qualified_rendering_commit": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/head/decree.tsv",
+        "sha256": "be1f5166b7048d0f1f687f71ced888896bd190d9633f2a78f64e9a7e5693ffbf",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
+        "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      }
+    },
+    {
+      "document_id": "12ba0f8dcb5ba0f5",
+      "key": "outline-minimal",
+      "backend": "native",
+      "pages": 1,
+      "source": {
+        "pr": null,
+        "evidence_commit": "dd9019b03986e85ee53eb6ac059e7368a1bffd2f",
+        "code_commit": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "qualified_rendering_commit": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/native/head/outline-minimal.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
+        "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      }
+    },
+    {
+      "document_id": "12ba0f8dcb5ba0f5",
+      "key": "outline-minimal",
+      "backend": "wasm",
+      "pages": 1,
+      "source": {
+        "pr": null,
+        "evidence_commit": "dd9019b03986e85ee53eb6ac059e7368a1bffd2f",
+        "code_commit": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "qualified_rendering_commit": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/head/outline-minimal.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
+        "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      }
+    }
+  ],
+  "updated_existing_or_new_floors": [],
+  "increases": [],
+  "declines": [],
+  "interim_registered_table_sha256": "295f7774a65d722e1fcc965910628dad3e43c9620a3d0181f7388cec111d6f9a"
+}

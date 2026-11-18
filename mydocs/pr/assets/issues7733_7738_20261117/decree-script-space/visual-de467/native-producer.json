@@ -1,0 +1,21 @@
+{
+  "source_commit_equivalence": "de46777ed8b8bf536cde5caefdafae16b59c4076",
+  "actual_build": {
+    "build_parent": "5498d80a8e7e0b94c668a2aea48c20bb3bd214a5",
+    "built_from_dirty_sources": true,
+    "sources": {
+      "src/renderer/layout/text_measurement.rs": "96699d18e852a51a736f581b23c26c2fdaec8263dfebd4e045294d0f9fb05c26",
+      "src/renderer/script_metrics.rs": "83db61dead551b278773668e16dd051e50328b92e041181bb3363313044193dc",
+      "tests/cases/issue_7737_decree_superscript_flow.rs": "6a452ddfc3ba372b4946c2eaf2eab586950539b9803dcc7a961ed99c20d8fd1f"
+    },
+    "source_diff_sha256": "bd6a84c25fd9f168329a0aa370c9f5f382892befa639f2998249c44b04e0e498",
+    "binary": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-space-focus-native/rhwp-native",
+    "binary_sha256": "958f99d543165f4f241f55cb964a83f6b777289aaba3af05e500ffdf3fd929e6",
+    "cargo_lock_sha256": "972bdb0994b216f0cef357b856ce0807ce3d437af6791377446b62f2e26c05a1",
+    "native_focused_tests": "3 passed, 0 failed, 1.289s",
+    "created_at": "2026-11-18T09:50:11.076327+09:00"
+  },
+  "current_binary": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/space-final/rhwp-native",
+  "sha256": "958f99d543165f4f241f55cb964a83f6b777289aaba3af05e500ffdf3fd929e6",
+  "note": "Built at recorded parent+dirty bytes; matching committed source verified, execution HEAD not relabelled"
+}

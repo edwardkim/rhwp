@@ -3,10 +3,10 @@
   "created_at": "2026-11-08T22:37:56.286882+09:00",
   "baseline_kind": "수용된 최종 전쪽 검증의 상승분을 반영한 보호 하한. CI·병합 상태는 별도 기록한다.",
   "table": "final.tsv",
-  "table_sha256": "7eb001e3e30d6892d8bc03ba3e16456a4dd758cccb0e9aba073671366a9a5a1b",
-  "row_count": 3542,
-  "document_count": 18,
-  "dataset_count": 36,
+  "table_sha256": "295f7774a65d722e1fcc965910628dad3e43c9620a3d0181f7388cec111d6f9a",
+  "row_count": 4046,
+  "document_count": 23,
+  "dataset_count": 46,
   "source_dataset_count": 56,
   "removed_duplicate_datasets": 20,
   "older_source_declines": [],
@@ -3865,6 +3865,426 @@
           "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
+    },
+    {
+      "document_id": "870eabd0a7d9534c",
+      "logical_key": "chemical",
+      "backend": "native",
+      "input": {
+        "path": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+        "sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+        "bytes": 193536
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
+        "sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+        "bytes": 1245068
+      },
+      "identity": {
+        "input_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+        "reference_pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 103,
+      "accepted_at": "2026-11-19T01:21:37.125726+09:00",
+      "source": {
+        "pr": null,
+        "evidence_commit": "dd9019b03986e85ee53eb6ac059e7368a1bffd2f",
+        "code_commit": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "qualified_rendering_commit": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/native/head/chemical.tsv",
+        "sha256": "9111800060d296754f077d6fb6d0313f4f0300ab5c5d216c166aa3481e292dd5",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
+        "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "99.75",
+      "source_history": []
+    },
+    {
+      "document_id": "870eabd0a7d9534c",
+      "logical_key": "chemical",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+        "sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+        "bytes": 193536
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
+        "sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+        "bytes": 1245068
+      },
+      "identity": {
+        "input_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+        "reference_pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 103,
+      "accepted_at": "2026-11-19T01:21:37.125726+09:00",
+      "source": {
+        "pr": null,
+        "evidence_commit": "dd9019b03986e85ee53eb6ac059e7368a1bffd2f",
+        "code_commit": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "qualified_rendering_commit": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/head/chemical.tsv",
+        "sha256": "fb7e4309c10b07948c4bef2fbeab9c34b1e497d278dab86c5deb36b824d3ef0d",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
+        "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "99.71",
+      "source_history": []
+    },
+    {
+      "document_id": "3298ed895b9a645c",
+      "logical_key": "spec13",
+      "backend": "native",
+      "input": {
+        "path": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+        "sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+        "bytes": 342528
+      },
+      "reference_pdf": {
+        "path": "pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf",
+        "sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782",
+        "bytes": 830986
+      },
+      "identity": {
+        "input_sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+        "reference_pdf_sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 71,
+      "accepted_at": "2026-11-19T01:21:37.125726+09:00",
+      "source": {
+        "pr": null,
+        "evidence_commit": "dd9019b03986e85ee53eb6ac059e7368a1bffd2f",
+        "code_commit": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "qualified_rendering_commit": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/native/head/spec13.tsv",
+        "sha256": "1740db49214ba69905b9030002a2bc90897ca3fc6c623a305a91e5ed956dbcc2",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
+        "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "99.69",
+      "source_history": []
+    },
+    {
+      "document_id": "3298ed895b9a645c",
+      "logical_key": "spec13",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+        "sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+        "bytes": 342528
+      },
+      "reference_pdf": {
+        "path": "pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf",
+        "sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782",
+        "bytes": 830986
+      },
+      "identity": {
+        "input_sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+        "reference_pdf_sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 71,
+      "accepted_at": "2026-11-19T01:21:37.125726+09:00",
+      "source": {
+        "pr": null,
+        "evidence_commit": "dd9019b03986e85ee53eb6ac059e7368a1bffd2f",
+        "code_commit": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "qualified_rendering_commit": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/head/spec13.tsv",
+        "sha256": "b620227f2a2aac18809adb5258d89dd84f25206c0db156e07861e257887a7a3a",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
+        "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "99.67",
+      "source_history": []
+    },
+    {
+      "document_id": "6456507d769ec90b",
+      "logical_key": "outline-demo",
+      "backend": "native",
+      "input": {
+        "path": "samples/pr4093/outline_navigation_panel_demo.hwpx",
+        "sha256": "90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4",
+        "bytes": 8468
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7382-regression-review/outline_navigation_panel_demo-2020.pdf",
+        "sha256": "c24e248c56bad280219bbd32f59fc6f07a3895fb5146b225c9ae4f9e4ac662be",
+        "bytes": 31954
+      },
+      "identity": {
+        "input_sha256": "90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4",
+        "reference_pdf_sha256": "c24e248c56bad280219bbd32f59fc6f07a3895fb5146b225c9ae4f9e4ac662be",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 3,
+      "accepted_at": "2026-11-19T01:21:37.125726+09:00",
+      "source": {
+        "pr": null,
+        "evidence_commit": "dd9019b03986e85ee53eb6ac059e7368a1bffd2f",
+        "code_commit": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "qualified_rendering_commit": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/native/head/outline-demo.tsv",
+        "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
+        "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "100.00",
+      "source_history": []
+    },
+    {
+      "document_id": "6456507d769ec90b",
+      "logical_key": "outline-demo",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/pr4093/outline_navigation_panel_demo.hwpx",
+        "sha256": "90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4",
+        "bytes": 8468
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7382-regression-review/outline_navigation_panel_demo-2020.pdf",
+        "sha256": "c24e248c56bad280219bbd32f59fc6f07a3895fb5146b225c9ae4f9e4ac662be",
+        "bytes": 31954
+      },
+      "identity": {
+        "input_sha256": "90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4",
+        "reference_pdf_sha256": "c24e248c56bad280219bbd32f59fc6f07a3895fb5146b225c9ae4f9e4ac662be",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 3,
+      "accepted_at": "2026-11-19T01:21:37.125726+09:00",
+      "source": {
+        "pr": null,
+        "evidence_commit": "dd9019b03986e85ee53eb6ac059e7368a1bffd2f",
+        "code_commit": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "qualified_rendering_commit": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/head/outline-demo.tsv",
+        "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
+        "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "100.00",
+      "source_history": []
+    },
+    {
+      "document_id": "61c6ae96913006c5",
+      "logical_key": "decree",
+      "backend": "native",
+      "input": {
+        "path": "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+        "sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+        "bytes": 576512
+      },
+      "reference_pdf": {
+        "path": "pdf/78494-virtual-convergence-industry-decree-2020.pdf",
+        "sha256": "367fb3749f571521eef2036fe4327ce5b9cf6b7728966257328c1144f08ff8c9",
+        "bytes": 745736
+      },
+      "identity": {
+        "input_sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+        "reference_pdf_sha256": "367fb3749f571521eef2036fe4327ce5b9cf6b7728966257328c1144f08ff8c9",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 74,
+      "accepted_at": "2026-11-19T01:21:37.125726+09:00",
+      "source": {
+        "pr": null,
+        "evidence_commit": "dd9019b03986e85ee53eb6ac059e7368a1bffd2f",
+        "code_commit": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "qualified_rendering_commit": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/native/head/decree.tsv",
+        "sha256": "74ac79a552433fd3c66db702a1f4dbda5cc8529a17548ea1025f7c3219222a03",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
+        "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "99.74",
+      "source_history": []
+    },
+    {
+      "document_id": "61c6ae96913006c5",
+      "logical_key": "decree",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+        "sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+        "bytes": 576512
+      },
+      "reference_pdf": {
+        "path": "pdf/78494-virtual-convergence-industry-decree-2020.pdf",
+        "sha256": "367fb3749f571521eef2036fe4327ce5b9cf6b7728966257328c1144f08ff8c9",
+        "bytes": 745736
+      },
+      "identity": {
+        "input_sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+        "reference_pdf_sha256": "367fb3749f571521eef2036fe4327ce5b9cf6b7728966257328c1144f08ff8c9",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 74,
+      "accepted_at": "2026-11-19T01:21:37.125726+09:00",
+      "source": {
+        "pr": null,
+        "evidence_commit": "dd9019b03986e85ee53eb6ac059e7368a1bffd2f",
+        "code_commit": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "qualified_rendering_commit": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/head/decree.tsv",
+        "sha256": "be1f5166b7048d0f1f687f71ced888896bd190d9633f2a78f64e9a7e5693ffbf",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
+        "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "99.73",
+      "source_history": []
+    },
+    {
+      "document_id": "12ba0f8dcb5ba0f5",
+      "logical_key": "outline-minimal",
+      "backend": "native",
+      "input": {
+        "path": "samples/pr4093/outline_navigation_table_cell_number.hwpx",
+        "sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c",
+        "bytes": 7755
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7382-regression-review/outline_navigation_table_cell_number-2020.pdf",
+        "sha256": "7e92550f0724026b7c88d1f843411b7ace744cce273f614e338cbd55d40eba81",
+        "bytes": 14962
+      },
+      "identity": {
+        "input_sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c",
+        "reference_pdf_sha256": "7e92550f0724026b7c88d1f843411b7ace744cce273f614e338cbd55d40eba81",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 1,
+      "accepted_at": "2026-11-19T01:21:37.125726+09:00",
+      "source": {
+        "pr": null,
+        "evidence_commit": "dd9019b03986e85ee53eb6ac059e7368a1bffd2f",
+        "code_commit": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "qualified_rendering_commit": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/native/head/outline-minimal.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
+        "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "100.00",
+      "source_history": []
+    },
+    {
+      "document_id": "12ba0f8dcb5ba0f5",
+      "logical_key": "outline-minimal",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/pr4093/outline_navigation_table_cell_number.hwpx",
+        "sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c",
+        "bytes": 7755
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7382-regression-review/outline_navigation_table_cell_number-2020.pdf",
+        "sha256": "7e92550f0724026b7c88d1f843411b7ace744cce273f614e338cbd55d40eba81",
+        "bytes": 14962
+      },
+      "identity": {
+        "input_sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c",
+        "reference_pdf_sha256": "7e92550f0724026b7c88d1f843411b7ace744cce273f614e338cbd55d40eba81",
+        "compat": "2022",
+        "dpi": 96,
+        "profile": "print",
+        "metric": "silhouette_raw_match_percent",
+        "radius_px": 2
+      },
+      "page_count": 1,
+      "accepted_at": "2026-11-19T01:21:37.125726+09:00",
+      "source": {
+        "pr": null,
+        "evidence_commit": "dd9019b03986e85ee53eb6ac059e7368a1bffd2f",
+        "code_commit": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "qualified_rendering_commit": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/head/outline-minimal.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
+        "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "100.00",
+      "source_history": []
     }
   ],
   "deduplicated_sources": [
@@ -4543,9 +4963,25 @@
       "condition_evidence_sha256": "c113ecfdb5b49d1040b2f35fc966cd3fd69986404f89ed3d76b07eeec2a8c394",
       "acceptance_basis": "최종 Native/fresh WASM 각 1771쪽, 총 3542행과 정확한 최신 devel 전쪽 비교 통과. 하락·누락 0, 중첩 표 10쪽 상승 2행. 변경 dataset은 같은 전 17쪽 생산본을 사용하며 나머지 34개 dataset 출처는 유지. 수용 예외 없음.",
       "integration_ci_merge": "not executed; remote approval pending"
+    },
+    {
+      "pr": null,
+      "evidence_commit": "dd9019b03986e85ee53eb6ac059e7368a1bffd2f",
+      "code_commit": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+      "qualified_rendering_commit": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+      "accepted_at": "2026-11-19T01:21:37.125726+09:00",
+      "acceptance_basis": "대상 다섯 원본의 Native/fresh WASM 504행을 추가하고 최종 전쪽에서 확인한 상승분을 반영한다.",
+      "integration_ci_merge": "로컬 필수 검증 완료. 원격 CI 및 병합은 별도 PR 기록에 남긴다.",
+      "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
+      "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
+      "registration_receipt": "mydocs/pr/assets/visual-protected-baseline/updates/issues7733-7738-20261118.json",
+      "added_dataset_count": 10,
+      "added_row_count": 504,
+      "increased_row_count": 0,
+      "evaluated_row_count": 4046
     }
   ],
-  "updated_at": "2026-11-17T03:12:46.469171+00:00",
-  "previous_table_sha256": "2280e97844b2cb262ea73e9c49f09f56c434097fed49af75fd9a7f6198d43da7",
-  "deduplication_scope": "source_dataset_count·removed_duplicate_datasets·deduplicated_sources는 최초 통합의 이력이다. 현재 하한은 동일한 최종 source 8ad1c5c08a의 전 36개 데이터셋에서 선택했다."
+  "updated_at": "2026-11-19T01:21:37.125726+09:00",
+  "previous_table_sha256": "7eb001e3e30d6892d8bc03ba3e16456a4dd758cccb0e9aba073671366a9a5a1b",
+  "deduplication_scope": "source_dataset_count·removed_duplicate_datasets·deduplicated_sources는 최초 통합의 이력이다. 현행 46개 데이터셋은 기존 18문서·36개 데이터셋의 수용 출처와 후속 상승 기록을 보존하고, 2026-11-18의 동일 최종 전쪽 실행에서 다섯 원본·10개 데이터셋을 추가한 결과다. 각 데이터셋의 source와 source_history를 따른다."
 }

@@ -1,0 +1,2 @@
+    Starting 24 tests across 1 binary (325 tests skipped)
+     Summary [   1.391s] 24 tests run: 24 passed, 325 skipped

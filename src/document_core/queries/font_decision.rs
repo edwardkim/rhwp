@@ -887,11 +887,8 @@ impl DocumentCore {
         options_json: &str,
         native_observer: Option<
             &dyn Fn(
-                &str,
+                &crate::renderer::TextStyle,
                 char,
-                bool,
-                bool,
-                bool,
             ) -> crate::renderer::font_decision::BackendDecision,
         >,
         native_unavailable_reason: &'static str,
@@ -916,11 +913,8 @@ impl DocumentCore {
         requested_limits: TraceLimits,
         native_observer: Option<
             &dyn Fn(
-                &str,
+                &crate::renderer::TextStyle,
                 char,
-                bool,
-                bool,
-                bool,
             ) -> crate::renderer::font_decision::BackendDecision,
         >,
         native_unavailable_reason: &'static str,
@@ -1152,13 +1146,7 @@ impl DocumentCore {
                     paint: PaintDecision::stage3(
                         Some(run.style.font_family.clone()),
                         native_observer.map(|observe| {
-                            observe(
-                                &crate::renderer::native_font_family_for_style(&run.style),
-                                ch,
-                                run.style.bold,
-                                run.style.italic,
-                                run.style.source_font_is_ttf,
-                            )
+                            observe(&run.style, ch)
                         }),
                         native_unavailable_reason,
                     ),

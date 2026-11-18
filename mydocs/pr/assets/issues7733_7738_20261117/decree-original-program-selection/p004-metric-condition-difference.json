@@ -1,0 +1,289 @@
+{
+  "한양신명조": {
+    "count": 28,
+    "examples": [
+      {
+        "char": " ",
+        "broad": {
+          "requestedFace": "HY신명조",
+          "aliasResolvedFace": "HYSinMyeongJo-Medium",
+          "matchKind": "exact",
+          "metricEntry": 276,
+          "characterMatch": "hit",
+          "widthSource": "metricHalfSpace",
+          "baseAdvanceHwpunit": 700,
+          "transforms": [
+            {
+              "kind": "extraWordSpacing",
+              "input": "1.8799999999999955",
+              "output": null,
+              "reason": "layoutSpacingAdjustment"
+            }
+          ],
+          "finalAdvanceHwpunit": 840
+        },
+        "verified": {
+          "requestedFace": "HY신명조",
+          "aliasResolvedFace": "HYSinMyeongJo-Medium",
+          "matchKind": "exact",
+          "metricEntry": 276,
+          "characterMatch": "hit",
+          "widthSource": "metricHalfSpace",
+          "baseAdvanceHwpunit": 700,
+          "transforms": [
+            {
+              "kind": "extraWordSpacing",
+              "input": "6.546666666666681",
+              "output": null,
+              "reason": "layoutSpacingAdjustment"
+            }
+          ],
+          "finalAdvanceHwpunit": 1191
+        },
+        "names": [
+          {
+            "requestedFace": "한양신명조",
+            "normalizedFace": "HY Sinmyeongjo",
+            "cssFamilyChain": [
+              "한양신명조",
+              "HY Sinmyeongjo",
+              "HY신명조"
+            ],
+            "steps": [
+              {
+                "kind": "fontEnvironment",
+                "input": "한양신명조",
+                "output": "HY Sinmyeongjo",
+                "reason": "decree-original-ttf-with-independent-palatino-print"
+              }
+            ]
+          },
+          {
+            "requestedFace": "한양신명조",
+            "normalizedFace": "한양신명조",
+            "cssFamilyChain": [
+              "한양신명조",
+              "HY신명조"
+            ],
+            "steps": [
+              {
+                "kind": "documentSubstFont",
+                "input": "한양신명조",
+                "output": "HY신명조",
+                "reason": "nonEmbeddedDocumentSubstitute"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "char": " ",
+        "broad": {
+          "requestedFace": "HY신명조",
+          "aliasResolvedFace": "HYSinMyeongJo-Medium",
+          "matchKind": "exact",
+          "metricEntry": 276,
+          "characterMatch": "hit",
+          "widthSource": "metricHalfSpace",
+          "baseAdvanceHwpunit": 700,
+          "transforms": [
+            {
+              "kind": "extraWordSpacing",
+              "input": "1.8799999999999955",
+              "output": null,
+              "reason": "layoutSpacingAdjustment"
+            }
+          ],
+          "finalAdvanceHwpunit": 840
+        },
+        "verified": {
+          "requestedFace": "HY신명조",
+          "aliasResolvedFace": "HYSinMyeongJo-Medium",
+          "matchKind": "exact",
+          "metricEntry": 276,
+          "characterMatch": "hit",
+          "widthSource": "metricHalfSpace",
+          "baseAdvanceHwpunit": 700,
+          "transforms": [
+            {
+              "kind": "extraWordSpacing",
+              "input": "6.546666666666681",
+              "output": null,
+              "reason": "layoutSpacingAdjustment"
+            }
+          ],
+          "finalAdvanceHwpunit": 1191
+        },
+        "names": [
+          {
+            "requestedFace": "한양신명조",
+            "normalizedFace": "HY Sinmyeongjo",
+            "cssFamilyChain": [
+              "한양신명조",
+              "HY Sinmyeongjo",
+              "HY신명조"
+            ],
+            "steps": [
+              {
+                "kind": "fontEnvironment",
+                "input": "한양신명조",
+                "output": "HY Sinmyeongjo",
+                "reason": "decree-original-ttf-with-independent-palatino-print"
+              }
+            ]
+          },
+          {
+            "requestedFace": "한양신명조",
+            "normalizedFace": "한양신명조",
+            "cssFamilyChain": [
+              "한양신명조",
+              "HY신명조"
+            ],
+            "steps": [
+              {
+                "kind": "documentSubstFont",
+                "input": "한양신명조",
+                "output": "HY신명조",
+                "reason": "nonEmbeddedDocumentSubstitute"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "char": "“",
+        "broad": {
+          "requestedFace": "HY신명조",
+          "aliasResolvedFace": "HYSinMyeongJo-Medium",
+          "matchKind": "exact",
+          "metricEntry": 276,
+          "characterMatch": "hit",
+          "widthSource": "metricHalfwidthPunctuationOverlay",
+          "baseAdvanceHwpunit": 700,
+          "transforms": [],
+          "finalAdvanceHwpunit": 700
+        },
+        "verified": {
+          "requestedFace": "HY신명조",
+          "aliasResolvedFace": "HYSinMyeongJo-Medium",
+          "matchKind": "exact",
+          "metricEntry": 276,
+          "characterMatch": "hit",
+          "widthSource": "embeddedMetric",
+          "baseAdvanceHwpunit": 1400,
+          "transforms": [],
+          "finalAdvanceHwpunit": 1400
+        },
+        "names": [
+          {
+            "requestedFace": "한양신명조",
+            "normalizedFace": "HY Sinmyeongjo",
+            "cssFamilyChain": [
+              "한양신명조",
+              "HY Sinmyeongjo",
+              "HY신명조"
+            ],
+            "steps": [
+              {
+                "kind": "fontEnvironment",
+                "input": "한양신명조",
+                "output": "HY Sinmyeongjo",
+                "reason": "decree-original-ttf-with-independent-palatino-print"
+              }
+            ]
+          },
+          {
+            "requestedFace": "한양신명조",
+            "normalizedFace": "한양신명조",
+            "cssFamilyChain": [
+              "한양신명조",
+              "HY신명조"
+            ],
+            "steps": [
+              {
+                "kind": "documentSubstFont",
+                "input": "한양신명조",
+                "output": "HY신명조",
+                "reason": "nonEmbeddedDocumentSubstitute"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "char": " ",
+        "broad": {
+          "requestedFace": "HY신명조",
+          "aliasResolvedFace": "HYSinMyeongJo-Medium",
+          "matchKind": "exact",
+          "metricEntry": 276,
+          "characterMatch": "hit",
+          "widthSource": "metricHalfSpace",
+          "baseAdvanceHwpunit": 700,
+          "transforms": [
+            {
+              "kind": "extraWordSpacing",
+              "input": "1.8799999999999955",
+              "output": null,
+              "reason": "layoutSpacingAdjustment"
+            }
+          ],
+          "finalAdvanceHwpunit": 840
+        },
+        "verified": {
+          "requestedFace": "HY신명조",
+          "aliasResolvedFace": "HYSinMyeongJo-Medium",
+          "matchKind": "exact",
+          "metricEntry": 276,
+          "characterMatch": "hit",
+          "widthSource": "metricHalfSpace",
+          "baseAdvanceHwpunit": 700,
+          "transforms": [
+            {
+              "kind": "extraWordSpacing",
+              "input": "-0.21999999999999886",
+              "output": null,
+              "reason": "layoutSpacingAdjustment"
+            }
+          ],
+          "finalAdvanceHwpunit": 683
+        },
+        "names": [
+          {
+            "requestedFace": "한양신명조",
+            "normalizedFace": "HY Sinmyeongjo",
+            "cssFamilyChain": [
+              "한양신명조",
+              "HY Sinmyeongjo",
+              "HY신명조"
+            ],
+            "steps": [
+              {
+                "kind": "fontEnvironment",
+                "input": "한양신명조",
+                "output": "HY Sinmyeongjo",
+                "reason": "decree-original-ttf-with-independent-palatino-print"
+              }
+            ]
+          },
+          {
+            "requestedFace": "한양신명조",
+            "normalizedFace": "한양신명조",
+            "cssFamilyChain": [
+              "한양신명조",
+              "HY신명조"
+            ],
+            "steps": [
+              {
+                "kind": "documentSubstFont",
+                "input": "한양신명조",
+                "output": "HY신명조",
+                "reason": "nonEmbeddedDocumentSubstitute"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

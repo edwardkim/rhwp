@@ -1,0 +1,47 @@
+{
+  "base_source_head": "2a820cc137ce04720bbdc5d79815a3b2e875c8c5",
+  "changed_source": [
+    "rhwp-studio/src/core/host-font-requests.ts",
+    "rhwp-studio/tests/host-font-provider.test.ts"
+  ],
+  "focused_before": {
+    "passed": 0,
+    "failed": 1,
+    "log": "before.log"
+  },
+  "focused_after": {
+    "passed": 26,
+    "failed": 0,
+    "log": "after-focused.log"
+  },
+  "frontend_production_build_exit_code": 0,
+  "raw_wasm_node_validation": true,
+  "rust_and_canonical_sweep_dependencies_changed": false,
+  "rust_unchanged_git_diff": true,
+  "status": "frontend_validation_passed_actual_studio_validation_pending",
+  "frontend_all_tests": {
+    "passed": 2809,
+    "failed": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "duration_ms": 103432.00075
+  },
+  "log_evidence": [
+    {
+      "name": "before.log",
+      "sha256": "01f072fc0155b48a0e753174abe2f1629f6f803c6c7e784a2b2b256919f22852"
+    },
+    {
+      "name": "after-focused.log",
+      "sha256": "c4afe300d6e993243c69a72d970b70a9ceb460c4ce2a27894e3579aec7e43b94"
+    },
+    {
+      "name": "frontend-build.log",
+      "sha256": "3fa26f0629025d24a56c910e5be7cabb0c96c90d41046fbbf64e01d4fda5c732"
+    },
+    {
+      "name": "frontend-all-tests.log",
+      "sha256": "4338073e879d21b383aade83d010810fa1662ddfeaf1255c527024d29d251500"
+    }
+  ]
+}
