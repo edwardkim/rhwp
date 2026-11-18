@@ -1468,6 +1468,7 @@ struct RunEmitVars<'a> {
     text_start_offset: f64,
     end: usize,
     extra_char_sp: f64,
+    squeeze_cell_advances: bool,
     extra_dash_sp: f64,
     dash_extra_by_run: Option<&'a [f64]>,
     extra_word_sp: f64,
@@ -2274,10 +2275,15 @@ impl VisibleTextLineMeasure {
     }
 
     fn width(&self, extra_char_spacing: f64) -> f64 {
+        self.width_with_cell_squeeze(extra_char_spacing, false)
+    }
+
+    fn width_with_cell_squeeze(&self, extra_char_spacing: f64, squeeze_cell_advances: bool) -> f64 {
         let mut width = 0.0;
         for (text, style) in &self.runs {
             let mut measured_style = style.clone();
             measured_style.extra_char_spacing = extra_char_spacing;
+            measured_style.squeeze_cell_advances = squeeze_cell_advances;
             width += estimate_text_width_exact(text, &measured_style);
         }
         // 마지막 가시 글자 뒤에는 자간을 소비할 다음 글자가 없다.
@@ -2291,6 +2297,7 @@ impl VisibleTextLineMeasure {
                 let glyph = character.to_string();
                 let mut measured_style = style.clone();
                 measured_style.extra_char_spacing = extra_char_spacing;
+                measured_style.squeeze_cell_advances = squeeze_cell_advances;
                 let advance = estimate_text_width_exact(&glyph, &measured_style);
                 measured_style.letter_spacing = 0.0;
                 measured_style.extra_char_spacing = 0.0;
@@ -2402,8 +2409,8 @@ fn converge_cell_overflow_char_spacing(
         -avg_char_w * 0.5
     };
     let mut extra = ((available_width - total_text_width) / spacing_count as f64).max(min_sp);
-    for _ in 0..4 {
-        let measured = visible_line_measure.map_or_else(
+    let measure_width = |extra| {
+        visible_line_measure.map_or_else(
             || {
                 line_plan
                     .line
@@ -2414,17 +2421,43 @@ fn converge_cell_overflow_char_spacing(
                         let mut ts = run.text_style(styles);
                         ts.default_tab_width = tab_width;
                         ts.extra_char_spacing = line_plan.spacing(index, extra);
+                        ts.squeeze_cell_advances = explicit_squeeze;
                         estimate_text_width(&run.text, &ts)
                     })
                     .sum()
             },
-            |measure| measure.width(extra),
-        );
+            |measure| measure.width_with_cell_squeeze(extra, explicit_squeeze),
+        )
+    };
+    for _ in 0..4 {
+        let measured = measure_width(extra);
         let delta = available_width - measured;
         if delta >= -0.05 && delta.abs() < 0.25 {
             break;
         }
         extra = (extra + delta / spacing_count as f64).max(min_sp);
+    }
+    if explicit_squeeze && measure_width(extra) > available_width {
+        // 좁은 글리프가 먼저 0 전진에 도달하면 단순히 글자 수로 나눈 자간은
+        // 남은 폭을 모두 소비하지 못한다. 실제 배치가 사용하는 폭 함수의 경계를 찾는다.
+        let mut fit = -total_text_width;
+        let mut over = extra;
+        for _ in 0..f64::MANTISSA_DIGITS {
+            let mid = (fit + over) / 2.0;
+            if mid == fit || mid == over {
+                break;
+            }
+            let measured = measure_width(mid);
+            if measured > available_width {
+                over = mid;
+            } else {
+                fit = mid;
+                if available_width - measured <= 0.05 {
+                    break;
+                }
+            }
+        }
+        return fit;
     }
     extra.min(0.0)
 }
@@ -8177,14 +8210,15 @@ impl LayoutEngine {
                         && line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
                 })
                 .map(|(_, (_, correction))| hwpunit_to_px(i32::from(*correction) * 4, self.dpi));
-            let (mut extra_word_sp, extra_char_sp, extra_dash_sp) = if compression.is_some() {
-                (0.0, 0.0, 0.0)
-            } else if squeeze_reflowed_cell
+            let squeeze_cell_advances = squeeze_reflowed_cell
+                && compression.is_none()
                 && total_text_width > available_width
                 && total_char_count > leading_space_plan.leading_spaces
                 && !has_tabs
-                && line_tac_offsets_for_width.is_empty()
-            {
+                && line_tac_offsets_for_width.is_empty();
+            let (mut extra_word_sp, extra_char_sp, extra_dash_sp) = if compression.is_some() {
+                (0.0, 0.0, 0.0)
+            } else if squeeze_cell_advances {
                 (
                     0.0,
                     converge_cell_overflow_char_spacing(
@@ -8300,6 +8334,7 @@ impl LayoutEngine {
                         ts.text_start_offset = text_start_offset;
                         ts.inline_tabs = composed.tab_extended.clone();
                         ts.extra_char_spacing = extra_char_sp;
+                        ts.squeeze_cell_advances = squeeze_cell_advances;
                         if let Some(overlap) = &r.char_overlap {
                             crate::renderer::char_overlap::advance(&r.text, overlap, &ts)
                         } else {
@@ -8419,18 +8454,21 @@ impl LayoutEngine {
                 } else {
                     0.0
                 };
+            let fallback_alignment_width =
+                effective_text_width - trailing_ws_width - terminal_tracking_width;
+            let visible_alignment_width = || {
+                visible_line_measure
+                    .as_ref()
+                    .map_or(fallback_alignment_width, |measure| {
+                        measure.width_with_cell_squeeze(extra_char_sp, squeeze_cell_advances)
+                    })
+            };
             let x_start = match alignment {
                 Alignment::Center => {
                     let align_offset = if center_packed_cell_label_as_right {
                         (available_width - effective_text_width).max(0.0)
                     } else {
-                        (available_width
-                            - visible_line_measure.as_ref().map_or(
-                                effective_text_width - trailing_ws_width - terminal_tracking_width,
-                                |measure| measure.width(extra_char_sp),
-                            ))
-                        .max(0.0)
-                            / 2.0
+                        (available_width - visible_alignment_width()).max(0.0) / 2.0
                     };
                     x_base + inline_offset + num_x_offset + align_offset
                 }
@@ -8443,12 +8481,12 @@ impl LayoutEngine {
                     x_base + inline_offset + num_x_offset + align_offset
                 }
                 Alignment::Right => {
-                    x_base
-                        + inline_offset
-                        + num_x_offset
-                        + (available_width
-                            - (effective_text_width - trailing_ws_width - terminal_tracking_width))
-                            .max(0.0)
+                    let width = if squeeze_cell_advances {
+                        visible_alignment_width()
+                    } else {
+                        fallback_alignment_width
+                    };
+                    x_base + inline_offset + num_x_offset + (available_width - width).max(0.0)
                 }
                 _ => x_base + inline_offset + num_x_offset, // Left, Justify, Split, Distribute(분배중)
             };
@@ -8598,6 +8636,7 @@ impl LayoutEngine {
                     text_start_offset,
                     end,
                     extra_char_sp,
+                    squeeze_cell_advances,
                     extra_dash_sp,
                     dash_extra_by_run: dash_extra_by_run.as_deref(),
                     extra_word_sp,
@@ -9434,6 +9473,7 @@ impl LayoutEngine {
             text_start_offset,
             end,
             extra_char_sp,
+            squeeze_cell_advances,
             extra_dash_sp,
             dash_extra_by_run,
             extra_word_sp,
@@ -9754,6 +9794,7 @@ impl LayoutEngine {
             let fixed_spacing = run_idx < natural_prefix_runs || body_field;
             text_style.extra_word_spacing = if fixed_spacing { 0.0 } else { extra_word_sp };
             text_style.extra_char_spacing = if fixed_spacing { 0.0 } else { extra_char_sp };
+            text_style.squeeze_cell_advances = !fixed_spacing && squeeze_cell_advances;
             text_style.space_compression = space_compressions
                 .and_then(|runs| runs.get(run_idx))
                 .and_then(Clone::clone);
