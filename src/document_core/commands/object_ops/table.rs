@@ -84,7 +84,7 @@ impl DocumentCore {
     /// [Task #1151 v7] cell_path JSON → Vec<(controlIdx, cellIdx, cellParaIdx)>.
     /// 4 개 by_path setter/getter (cell picture/shape × set/get) 의 공통 파싱.
     /// 빈 path 면 Err 반환.
-    fn parse_cell_path_json(json: &str) -> Result<Vec<(usize, usize, usize)>, HwpError> {
+    pub(crate) fn parse_cell_path_json(json: &str) -> Result<Vec<(usize, usize, usize)>, HwpError> {
         let path: Vec<(usize, usize, usize)> = serde_json::from_str::<Vec<serde_json::Value>>(json)
             .map_err(|e| HwpError::RenderError(format!("cell_path JSON 파싱 실패: {}", e)))?
             .iter()
