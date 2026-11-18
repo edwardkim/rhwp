@@ -6124,6 +6124,10 @@ impl LayoutEngine {
         stored_cell_content_origin: Option<f64>,
         cell_line_wrap_squeeze: bool,
     ) -> f64 {
+        // 원본이 저장한 줄은 기존 저장 줄 배치 규칙을 따른다. 편집으로 생성한
+        // 줄과 HWPX로 저장하면서 줄 정보가 생략된 문단은 같은 셀 정책으로 맞춘다.
+        let squeeze_reflowed_cell = cell_line_wrap_squeeze
+            && para.is_some_and(crate::renderer::para_has_no_stored_line_segs);
         // 저장 vpos가 없는 것은 첫 문단의 앞 간격이 0이라는 증거가 아니다.
         // 실제 셀의 순수 재조판 텍스트는 측정/컷 원장과 같은 flow-before를 쓴다.
         // 원본 저장 줄·개체 호스트와 호출자가 확정한 부분 프레임은 그대로 둔다.
@@ -7971,9 +7975,9 @@ impl LayoutEngine {
                 });
             // 문단 「한 줄로 입력」은 줄을 나누지 않고 자간을 좁혀 한 줄에 담는다.
             // 한 줄로 조합된 이 문단의 넘침은 잘라낼 내용이 아니라 좁힐 대상이다.
-            let line_wrap_squeeze = cell_line_wrap_squeeze
+            let line_wrap_squeeze = squeeze_reflowed_cell
                 || composed.lines.len() == 1
-                && para_style.is_some_and(|style| style.line_wrap_squeeze);
+                    && para_style.is_some_and(|style| style.line_wrap_squeeze);
             let suppress_cell_overflow_spacing = cell_ctx.is_some()
                 && !line_wrap_squeeze
                 && total_text_width > available_width * 1.15
@@ -8175,7 +8179,7 @@ impl LayoutEngine {
                 .map(|(_, (_, correction))| hwpunit_to_px(i32::from(*correction) * 4, self.dpi));
             let (mut extra_word_sp, extra_char_sp, extra_dash_sp) = if compression.is_some() {
                 (0.0, 0.0, 0.0)
-            } else if cell_line_wrap_squeeze
+            } else if squeeze_reflowed_cell
                 && total_text_width > available_width
                 && total_char_count > leading_space_plan.leading_spaces
                 && !has_tabs
