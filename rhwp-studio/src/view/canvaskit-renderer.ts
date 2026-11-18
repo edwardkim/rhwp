@@ -4652,12 +4652,28 @@ export class CanvasKitLayerRenderer {
     const candidates = [primary];
     const seen = new Set<Typeface | null>([primary.typeface]);
     for (const family of ordinaryTextFontFamilies(fontFamily ?? '')) {
-      const candidate = this.findPreparedTypeface(family, style);
-      if (!candidate?.typeface || seen.has(candidate.typeface)) continue;
-      seen.add(candidate.typeface);
-      candidates.push(candidate);
+      for (const candidate of [...this.preparedLocalTypefaces(family, style), this.findPreparedTypeface(family, style)]) {
+        if (!candidate?.typeface || seen.has(candidate.typeface)) continue;
+        seen.add(candidate.typeface);
+        candidates.push(candidate);
+      }
     }
     return candidates;
+  }
+
+  /** 원본 family/style 분할 후보 중 실제 준비를 마친 프로그램만 같은 순서로 소비한다. */
+  private preparedLocalTypefaces(family: string, style?: LayerTextStyle): CanvasKitLocalTypeface[] {
+    return resolveRendererLocalFontCandidates(family, hostFontStyle(style)).flatMap(record => {
+      const prepared = this.localTypefaces.get(localFontFaceKey(record));
+      return prepared ? [prepared] : [];
+    });
+  }
+
+  private preparedLocalFamily(family: string, style?: LayerTextStyle): CanvasKitLocalTypeface | null {
+    const candidates = this.preparedLocalTypefaces(family, style);
+    if (candidates.length === 0) return null;
+    return candidates.length === 1 ? candidates[0] : { ...candidates[0],
+      paragraphTypefaces: candidates.map(candidate => candidate.typeface) };
   }
 
   private resolvePreparedTypeface(fontFamily: string | undefined, style?: LayerTextStyle): CanvasKitLocalTypeface | null {
@@ -4666,8 +4682,7 @@ export class CanvasKitLayerRenderer {
       // A document substitute is an actual font candidate. Do not truncate it
       // before local/host preparation and silently choose a bundled primary alias.
       for (const family of families) {
-        const record = resolveRendererLocalFont(family, hostFontStyle(style));
-        const prepared = record ? this.localTypefaces.get(localFontFaceKey(record)) : null;
+        const prepared = this.preparedLocalFamily(family, style);
         if (prepared) return prepared;
       }
       for (const family of families) {
@@ -4678,8 +4693,7 @@ export class CanvasKitLayerRenderer {
     }
     const key = normalizedFontFamily(fontFamily);
     if (!key) return null;
-    const record = resolveRendererLocalFont(primaryFontFamily(fontFamily), hostFontStyle(style));
-    let local = record ? this.localTypefaces.get(localFontFaceKey(record)) ?? null : null;
+    let local = this.preparedLocalFamily(primaryFontFamily(fontFamily), style);
     if (!hasHostFontProvider()) {
       local = closestLocalFontStyle(local,
         [...this.localTypefaces.values()].filter(candidate =>
@@ -4708,11 +4722,14 @@ export class CanvasKitLayerRenderer {
   private findPreparedFamilyFallbacks(fontFamily: string | undefined, style?: LayerTextStyle): CanvasKitLocalTypeface[] {
     const selected: CanvasKitLocalTypeface[] = [];
     const visited = new Set<Typeface>();
-    for (const family of parseCssFontFamilyList(fontFamily ?? '').slice(1)) {
-      const prepared = this.findPreparedTypeface(family, style);
-      if (!prepared?.typeface || visited.has(prepared.typeface)) continue;
-      visited.add(prepared.typeface);
-      selected.push(prepared);
+    const primary = this.findPreparedTypeface(fontFamily, style)?.typeface;
+    if (primary) visited.add(primary);
+    for (const family of parseCssFontFamilyList(fontFamily ?? '')) {
+      for (const prepared of [...this.preparedLocalTypefaces(family, style), this.findPreparedTypeface(family, style)]) {
+        if (!prepared?.typeface || visited.has(prepared.typeface)) continue;
+        visited.add(prepared.typeface);
+        selected.push(prepared);
+      }
     }
     return selected;
   }

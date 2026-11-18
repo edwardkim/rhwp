@@ -4,7 +4,7 @@
 
 검토 브랜치는 `task/7733-chemical-spec-outline-decree`, 최초 검증 base는
 `22da83586aab1baf960f2159abda347062ecf7ed`이며 현재 리베이스 base는
-`fbf8081db57c0c6abc9bad418290c5018193e24f`다. 다섯 이슈는 모두 열린 상태로 확인했다.
+`197ce19e99438c2cba452c654ae1af504dab85ec`다. 다섯 이슈는 모두 열린 상태로 확인했다.
 원본·기준의 신원·과거 해결 경로 분석과 Native 기준 전 252쪽 산출을 마쳤다. 사용자 목표는 다섯 문서 모든 페이지의 Native/fresh WASM 각각 98% 이상, 가급적 100%다.
 아래 과거 수치를 현재 결과나 해결 완료로 사용하지 않는다. 공통 쪽번호 상속 보정을 커밋했고, 회귀 검사 보강과 최종 전쪽 재검증은 진행 중이다.
 
@@ -355,3 +355,14 @@ Native 98.53555→100.00000%, fresh WASM 97.57430→100.00000%를 확인했다.
 소스 fb56eeee387915f209059901ff885853b1911415에서 화학 56쪽 U+2027의 추정 전진·HCR Dotum 표시를 독립 한컴 2020 Print의 Haansoft Batang 178/1024em 공급으로 연결했다. 새 관계형 3건·독립 원점 고정형 1건과 관련 최소 글꼴 59건 PASS, Native 56쪽 99.66074→100.00000%다. [원인·실제 결과](gothic-extra-point-supplier/cause.md)를 따른다. fresh WASM·전쪽·전체 필수 검증은 새 소스로 이어서 수행한다.
 
 시행령의 자동 환경 전체를 명시 매핑으로 바꾼 조건은 전쪽에서 원본 대체 정보를 덮어써 미달했다. [공급 조건 정정](decree-original-program-selection/cause.md#전쪽-검사-후-공급-조건-정정)에 원인과 독립 검증 범위를 기록했다.
+
+
+## 2026-11-18 최종 검증과 Studio 분할 글꼴 준비
+
+최종 Rust 생산 커밋 `2a820cc137ce04720bbdc5d79815a3b2e875c8c5`에서 전체 nextest 13,772 PASS·0 FAIL·45 skip, Native Skia 라이브러리 3,852 PASS·12 ignore 및 동반 crate 182 PASS, Native placeholder 2 PASS·PDF 36 PASS와 필수 lint·build·suite 검사를 완료했다. 실제 Native PNG 전 252쪽은 화학 최저 99.74736%, 공식 형식문서 99.68651%, 시행령 99.73508%, 두 개요 문서는 전쪽 100%다. 이 수치는 Native 완료 범위이며 최종 fresh WASM·보호 문서 전체 통과를 의미하지 않는다.
+
+실제 Studio 수식 대조군에서 한글·영문 분할 프로그램이 같은 family/style로 설치된 경우 준비 목록에서 regular 프로그램들이 빠지는 반례를 확인했다. `0ce5ba3f157f66fb82f715ead36fd43dfeee213e`는 ordinary text의 수집에 기존 복수 후보 resolver를 연결했다. 임의 단일 face 선택·윤곽·글꼴 대체 정책·renderer guard는 바꾸지 않는다. 관계형 반례는 변경 전 실제 1 FAIL, 변경 후 집중 26 PASS이며 최소 글꼴 환경의 전체 Studio 검사는 2,809 PASS·0 FAIL이다. TypeScript·Vite build도 통과했다. [원인과 검증](split-host-font-preparation/cause.md)을 함께 보존한다.
+
+Studio만 바뀐 두 커밋 사이 Rust·crates·Cargo·build·assets·ttfs·scripts·tests·rhwp-shared Git 객체가 동일함을 확인했다. 새 커밋에서 locked wrapper로 fresh WASM을 다시 빌드한 결과도 기존 생산본과 byte SHA가 같다. 기존 Rust·정본 Visual Sweep 결과는 생산 커밋을 유지해 재사용하며, 변경된 Studio 소비자는 별도 폴더에 새로 실행한다. 첫 새 캡처의 탐색 컨텍스트 소멸과 앞선 WASM streaming compile 실패는 각각 실패 기록으로 분리했고 완료 결과로 수용하지 않았다.
+
+현재 전쪽 fresh WASM·편람 gate·정본 보호 문서와 실제 Studio 재검증은 진행 중이다. 검사 완료와 대표 raw/review/overlay 판독 전에는 이슈 해결·PR 준비 완료로 판정하지 않는다.
