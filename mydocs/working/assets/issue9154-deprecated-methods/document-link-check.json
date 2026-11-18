@@ -1,0 +1,12 @@
+{
+  "command": [
+    "python3",
+    "scripts/check_markdown_links.py",
+    "mydocs/plans/task_m100_9154_deprecated_methods.md",
+    "mydocs/report/task_m100_9154_deprecated_methods_report.md"
+  ],
+  "exitCode": 0,
+  "stdout": "검사 문서: 2개\n내부 Markdown 상대 링크: 이상 없음\n",
+  "stderr": "",
+  "checkedAt": "2026-11-17T18:11:03.239088+00:00"
+}

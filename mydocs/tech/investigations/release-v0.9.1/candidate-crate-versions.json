@@ -1,0 +1,10 @@
+{
+  "rhwp": "0.9.1",
+  "rhwp-codec-resource": "0.1.1",
+  "rhwp-ooxml-chart": "0.1.1",
+  "rhwp-hayro-ccitt": "0.3.0-rhwp.2",
+  "rhwp-hayro-jbig2": "0.3.0-rhwp.2",
+  "rhwp-hayro-jpeg2000": "0.4.0-rhwp.2",
+  "rhwp-qcms": "0.3.0-rhwp.2",
+  "rhwp-pdf-import-backend": "0.3.78-rhwp.2"
+}

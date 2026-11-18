@@ -1,6 +1,7 @@
 //! Request-scoped limits for the rhwp import path. Not a process-wide heap limit.
 
 use crate::error::{Error, Result};
+use rhwp_codec_resource::atomic::{try_update_u64, try_update_usize};
 use std::io::{Read, Write};
 use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
 use std::sync::Arc;
@@ -435,19 +436,18 @@ impl ImportBudget {
         reason: &'static str,
     ) -> Result<()> {
         self.check()?;
-        counter
-            .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |used| {
-                used.checked_add(amount).filter(|&next| next <= cap)
+        try_update_usize(counter, Ordering::Relaxed, Ordering::Relaxed, |used| {
+            used.checked_add(amount).filter(|&next| next <= cap)
+        })
+        .map(|_| ())
+        .map_err(|used| {
+            self.reject_reservation(ImportLimitFailure {
+                reason,
+                used: Some(used as u64),
+                requested: Some(amount as u64),
+                limit: Some(cap as u64),
             })
-            .map(|_| ())
-            .map_err(|used| {
-                self.reject_reservation(ImportLimitFailure {
-                    reason,
-                    used: Some(used as u64),
-                    requested: Some(amount as u64),
-                    limit: Some(cap as u64),
-                })
-            })
+        })
     }
 
     /// Observe this request after an extraction step. Concurrent codec work can
@@ -556,19 +556,18 @@ impl ImportBudget {
     pub fn charge_decoded(&self, amount: usize) -> Result<()> {
         self.check()?;
         let cap = self.decoded_limit.load(Ordering::Relaxed);
-        self.decoded
-            .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |used| {
-                used.checked_add(amount as u64).filter(|&next| next <= cap)
+        try_update_u64(&self.decoded, Ordering::Relaxed, Ordering::Relaxed, |used| {
+            used.checked_add(amount as u64).filter(|&next| next <= cap)
+        })
+        .map(|_| ())
+        .map_err(|used| {
+            self.reject_reservation(ImportLimitFailure {
+                reason: "document decoded bytes",
+                used: Some(used),
+                requested: Some(amount as u64),
+                limit: Some(cap),
             })
-            .map(|_| ())
-            .map_err(|used| {
-                self.reject_reservation(ImportLimitFailure {
-                    reason: "document decoded bytes",
-                    used: Some(used),
-                    requested: Some(amount as u64),
-                    limit: Some(cap),
-                })
-            })
+        })
     }
 
     /// Charge the requested flat and owned payload bytes before a cache copy.

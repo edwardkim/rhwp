@@ -1,0 +1,14 @@
+{
+  "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+  "rawReleaseWasmSha256": "92409d660da26f6874be435264efed1ca90e512c0d74c25ff61f5c2a943b156b",
+  "command": [
+    "/home/edward/.cache/.wasm-pack/wasm-bindgen-834c8396d913406b/wasm-bindgen",
+    "--target",
+    "nodejs",
+    "--out-dir",
+    "/home/edward/mygithub/rhwp/output/release-v0.9.1/pkg-node",
+    "--typescript",
+    "/home/edward/mygithub/rhwp/target/pr-review/wasm32-unknown-unknown/release/rhwp.wasm"
+  ],
+  "exitCode": 0
+}

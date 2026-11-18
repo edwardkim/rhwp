@@ -2,10 +2,44 @@
 kind: guide
 status: active
 canonical: mydocs/manual/publish_guide.md
-last_verified: 2026-11-08
+last_verified: 2026-11-18
 ---
 
 # crates.io 소비 계약과 초회 수동 게시
+
+## 0.9.1 준비
+
+현재 제품 후보는 **0.9.1**이며 MSRV는 **1.93.1**을 유지한다. 이전 0.9.0의 14개 게시 결과는
+[배포 기록](../report/release_0_9_0_execution_report.md)에 보존한다. 새 후보는 아직 미게시다.
+공개 archive·checksum·실제 source를 대조해 변경된 8개만 새 버전으로 준비하며 기존 6개는
+그대로 재사용한다. 같은 이름·버전의 내용이나 checksum을 덮어쓰지 않는다.
+
+| 패키지 | 준비 버전 | 이유 |
+| --- | --- | --- |
+| rhwp-codec-resource | 0.1.1 | MSRV 호환 Atomic helper 추가 |
+| rhwp-ooxml-chart | 0.1.1 | 기존 devel의 차트 보정 |
+| rhwp-hayro-ccitt | 0.3.0-rhwp.2 | 새 codec-resource 의존성 |
+| rhwp-hayro-jbig2 | 0.3.0-rhwp.2 | 새 codec-resource·CCITT 의존성 |
+| rhwp-hayro-jpeg2000 | 0.4.0-rhwp.2 | 새 codec-resource 의존성 |
+| rhwp-qcms | 0.3.0-rhwp.2 | 보안 테스트 보정·codec-resource 의존성 |
+| rhwp-pdf-import-backend | 0.3.78-rhwp.2 | PDF 파싱·진단·Atomic·자식 의존성 보정 |
+| rhwp | 0.9.1 | 제품 전체 릴리즈 |
+
+rhwp-contracts·rhwp-password-crypto·rhwp-jpeg-encoder·rhwp-jpeg-decoder·rhwp-zune-jpeg·
+rhwp-svg2pdf는 공개 배포본과 source가 같아 기존 버전을 유지한다. 최종 의존 순서는
+[source-policy.json](../../packaging/crates-io/source-policy.json)과 실제 포장 원장에서 확인한다.
+미게시 자식의 로컬 검증과 게시 뒤 공개 registry 소비는 구분한다.
+
+재사용 6개는 정본 policy의 `published_origin`에 원 source SHA와 공개 archive SHA-256을
+고정한다. 사전 점검은 그 원 archive의 VCS·크기·checksum을 확인하고 공개 registry에서
+소유자·동일 버전·비-yank·동일 checksum을 다시 확인한 경우에만 `already-present`로 수용한다.
+원장 자체가 재사용을 선언할 수 없으며, 버전이 없어졌으면 새 업로드로 전환하지 않고 실패한다.
+새로 게시할 8개는 현재 승인 source의 VCS SHA·clean 조건을 그대로 적용한다.
+
+아래 초회 게시 설명과 0.9.0 버전 표는 당시 최초 배포의 계약·기록이다. 새 게시에는 위 준비
+버전과 최종 승인 source SHA를 사용하며, 동일한 검증·불변성·실제 소비 조건을 적용한다.
+
+## 0.9.0 초회 게시 계약
 
 이 문서는 #8174의 확정된 MD01–MD09를 실행 가능한 계약으로 정리한다.
 본체의 준비 버전은 **0.9.0**, 최소 Rust는 **1.93.1**이다. 2026-11-08 메인테이너는

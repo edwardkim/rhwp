@@ -1,0 +1,7 @@
+{
+  "source": "c0f9ea46f4a5693323e51c6be2cd9a9368f3311d",
+  "binarySha256": "bd5d5dd949f5764907d5c16e3425f78371438834b4a799efcfb35f9f008319e0",
+  "maximumGlibc": "2.39",
+  "platform": "linux-x86_64",
+  "packagedAndPublished": false
+}

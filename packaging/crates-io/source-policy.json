@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "issue": 8174,
-  "status": "maintainer-approved-0.9.0-local-validation",
-  "product_release": "0.9.0",
+  "status": "maintainer-directed-0.9.1-local-preparation",
+  "product_release": "0.9.1",
   "packages": [
     {
       "source": "crates/rhwp-contracts",
@@ -15,12 +15,16 @@
         "README.md"
       ],
       "extra_repository_files": {},
-      "local_dependencies": []
+      "local_dependencies": [],
+      "published_origin": {
+        "source_sha": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+        "archive_sha256": "562667a1d3cd9fe4e24f7845211024fe098f327d8db925fcb9be91945c823362"
+      }
     },
     {
       "source": "crates/rhwp-ooxml-chart",
       "published_name": "rhwp-ooxml-chart",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "include": [
         "Cargo.toml",
         "src/**",
@@ -41,7 +45,11 @@
         "README.md"
       ],
       "extra_repository_files": {},
-      "local_dependencies": []
+      "local_dependencies": [],
+      "published_origin": {
+        "source_sha": "4a765822988575099104c30081516b2bb7c4ddb5",
+        "archive_sha256": "c83ab2ebe4fb177da61ebd73ce1c36ff226e244417ed80b3e78341fe3c63c676"
+      }
     },
     {
       "source": "vendor/rhwp-jpeg-encoder",
@@ -57,7 +65,11 @@
         "upstream/Cargo.toml.orig"
       ],
       "extra_repository_files": {},
-      "local_dependencies": []
+      "local_dependencies": [],
+      "published_origin": {
+        "source_sha": "4a765822988575099104c30081516b2bb7c4ddb5",
+        "archive_sha256": "509f50d0ff86268e903fb0d1c076fed846565c294406071456fde1cf9b57e64a"
+      }
     },
     {
       "source": "vendor/rhwp-jpeg-decoder",
@@ -72,7 +84,11 @@
         "LICENSE-*"
       ],
       "extra_repository_files": {},
-      "local_dependencies": []
+      "local_dependencies": [],
+      "published_origin": {
+        "source_sha": "4a765822988575099104c30081516b2bb7c4ddb5",
+        "archive_sha256": "1f2bd23d396ee20440f3909fe3248dc749272f0952b7387b11eababecf9ec9af"
+      }
     },
     {
       "source": "vendor/rhwp-zune-jpeg",
@@ -88,7 +104,11 @@
         "LICENSE-*"
       ],
       "extra_repository_files": {},
-      "local_dependencies": []
+      "local_dependencies": [],
+      "published_origin": {
+        "source_sha": "4a765822988575099104c30081516b2bb7c4ddb5",
+        "archive_sha256": "81405ea92f5547ef9568bd5970ef4e033a1e0a99462c4873b9adcce0880eba43"
+      }
     },
     {
       "source": "vendor/svg2pdf",
@@ -103,12 +123,16 @@
         "NOTICE"
       ],
       "extra_repository_files": {},
-      "local_dependencies": []
+      "local_dependencies": [],
+      "published_origin": {
+        "source_sha": "4a765822988575099104c30081516b2bb7c4ddb5",
+        "archive_sha256": "74e743c35b8291f385f83f29b8f86ab37b3c289e1e5d165702b76751cec12a00"
+      }
     },
     {
       "source": "vendor/rhwp-codec-resource",
       "published_name": "rhwp-codec-resource",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "include": [
         "Cargo.toml",
         "src/**",
@@ -121,7 +145,7 @@
     {
       "source": "vendor/rhwp-hayro-ccitt",
       "published_name": "rhwp-hayro-ccitt",
-      "version": "0.3.0-rhwp.1",
+      "version": "0.3.0-rhwp.2",
       "include": [
         "Cargo.toml",
         "src/**",
@@ -140,7 +164,7 @@
     {
       "source": "vendor/rhwp-hayro-jbig2",
       "published_name": "rhwp-hayro-jbig2",
-      "version": "0.3.0-rhwp.1",
+      "version": "0.3.0-rhwp.2",
       "include": [
         "Cargo.toml",
         "src/**",
@@ -160,7 +184,7 @@
     {
       "source": "vendor/rhwp-hayro-jpeg2000",
       "published_name": "rhwp-hayro-jpeg2000",
-      "version": "0.4.0-rhwp.1",
+      "version": "0.4.0-rhwp.2",
       "include": [
         "Cargo.toml",
         "src/**",
@@ -180,7 +204,7 @@
     {
       "source": "vendor/rhwp-qcms",
       "published_name": "rhwp-qcms",
-      "version": "0.3.0-rhwp.1",
+      "version": "0.3.0-rhwp.2",
       "include": [
         "Cargo.toml",
         "src/**",
@@ -199,7 +223,7 @@
     {
       "source": "vendor/rhwp-pdf-import-backend",
       "published_name": "rhwp-pdf-import-backend",
-      "version": "0.3.78-rhwp.1",
+      "version": "0.3.78-rhwp.2",
       "include": [
         "Cargo.toml",
         "src/**",
@@ -226,7 +250,7 @@
     {
       "source": ".",
       "published_name": "rhwp",
-      "version": "0.9.0",
+      "version": "0.9.1",
       "include": [
         "Cargo.toml",
         "Cargo.lock",
@@ -265,7 +289,8 @@
         "rhwp-password-crypto",
         "rhwp-svg2pdf",
         "rhwp-pdf-import-backend",
-        "rhwp-zune-jpeg"
+        "rhwp-zune-jpeg",
+        "rhwp-codec-resource"
       ]
     }
   ]

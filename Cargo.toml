@@ -2,7 +2,7 @@
 rust-version = "1.93.1"
 publish = ["crates-io"]
 name = "rhwp"
-version = "0.9.0"
+version = "0.9.1"
 edition = "2021"
 description = "HWP/HWPX document engine for Rust applications, WebAssembly, and CLI automation"
 license = "MIT"
@@ -273,10 +273,11 @@ path = "tests/overflow_cell_baseline.rs"
 
 [dependencies]
 chrono = "0.4"
+rhwp-codec-resource = { path = "vendor/rhwp-codec-resource", version = "=0.1.1" }
 rhwp-contracts = { path = "crates/rhwp-contracts", version = "0.1.0" }
-rhwp-ooxml-chart = { path = "crates/rhwp-ooxml-chart", version = "0.1.0" }
+rhwp-ooxml-chart = { path = "crates/rhwp-ooxml-chart", version = "0.1.1" }
 rhwp-password-crypto = { path = "crates/rhwp-password-crypto", version = "0.1.0" }
-pdf_oxide = { package = "rhwp-pdf-import-backend", path = "vendor/rhwp-pdf-import-backend", version = "=0.3.78-rhwp.1", default-features = false, optional = true }
+pdf_oxide = { package = "rhwp-pdf-import-backend", path = "vendor/rhwp-pdf-import-backend", version = "=0.3.78-rhwp.2", default-features = false, optional = true }
 # pdf_oxide 0.3.78's DocumentIR initializer is incompatible with office_oxide 0.1.13.
 # Keep the compatibility constraint for library consumers that do not use our lockfile.
 office_oxide = { version = "=0.1.9", default-features = false, optional = true }

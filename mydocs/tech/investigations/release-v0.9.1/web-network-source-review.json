@@ -1,0 +1,19 @@
+{
+  "baseline": "v0.9.0",
+  "candidate": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+  "scope": [
+    "rhwp-studio/src",
+    "rhwp-shared",
+    "rhwp-chrome/background.js",
+    "rhwp-chrome/content-script.js",
+    "rhwp-chrome/dev-tools-inject.js",
+    "rhwp-chrome/options.js",
+    "rhwp-firefox/background.js",
+    "rhwp-firefox/content-script.js",
+    "rhwp-firefox/dev-tools-inject.js",
+    "rhwp-firefox/options.js"
+  ],
+  "addedLinesContainingNetworkOperationsOrHttpLiterals": [],
+  "runtimeCheck": "Strict Chrome smoke/download/lifecycle request/proxy guards passed",
+  "limitation": "Static review and tested journeys do not cover every possible user flow."
+}

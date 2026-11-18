@@ -1,0 +1,66 @@
+{
+  "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+  "archive": "/home/edward/mygithub/rhwp/output/release-v0.9.1/packages/rhwp-source-0.9.1-amo.zip",
+  "bytes": 52935796,
+  "sha256": "22410c6ae05d2f008c9d70c319279e2b14e694d10d08162cf63e7e490337d7dd",
+  "commands": [
+    {
+      "name": "amo-npm-studio",
+      "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+      "command": [
+        "npm",
+        "ci",
+        "--no-fund",
+        "--no-audit"
+      ],
+      "exitCode": 0,
+      "seconds": 9.909
+    },
+    {
+      "name": "amo-npm-firefox",
+      "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+      "command": [
+        "npm",
+        "ci",
+        "--no-fund",
+        "--no-audit"
+      ],
+      "exitCode": 0,
+      "seconds": 1.128
+    },
+    {
+      "name": "amo-wasm",
+      "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+      "command": [
+        "sh",
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--release"
+      ],
+      "exitCode": 0,
+      "seconds": 1279.093
+    },
+    {
+      "name": "amo-firefox",
+      "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+      "command": [
+        "npm",
+        "--prefix",
+        "rhwp-firefox",
+        "run",
+        "build"
+      ],
+      "exitCode": 0,
+      "seconds": 2.282
+    }
+  ],
+  "isolatedFromGitCheckout": true,
+  "localSourceCompileVerified": true,
+  "localSourceCompileSource": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+  "localSourceCompileMode": "cold-recompile",
+  "verifiedSourceFiles": 4888,
+  "firefoxVersion": "0.9.1",
+  "status": "source-zip-standard-wasm-and-firefox-rebuild-passed",
+  "submissionPerformed": false
+}

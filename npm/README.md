@@ -1,5 +1,7 @@
 # @rhwp/core
 
+> **0.9.1 배포 준비:** 최신 변경·기여자·지원 범위는 [릴리즈 노트](https://github.com/edwardkim/rhwp/blob/main/mydocs/release/release_notes_v0.9.1.md)를 참고하세요. 실제 설치 가능 버전은 해당 배포 채널에서 확인합니다.
+
 **알(R), 모두의 한글** — 브라우저에서 HWP/HWPX 파일을 열어보세요
 
 [![npm](https://img.shields.io/npm/v/@rhwp/core)](https://www.npmjs.com/package/@rhwp/core)
@@ -16,12 +18,12 @@ HWP/HWPX 파일을 파싱하고 SVG로 렌더링하는 저수준 API를 제공�
 | **@rhwp/core** (이 패키지) | WASM 파서/렌더러 — 직접 API 호출 |
 | **@rhwp/editor** | 완전한 에디터 UI — iframe 임베드 |
 
-## v0.9.0 (배포 준비)
+## v0.9.1 (배포 준비)
 
 PDF 가져오기·JBIG2·JPEG 2000·ICC 색 변환이 기본 포함됩니다. 암호 PDF 인증,
 선택 쪽·편집 배치·자원 프로필과 쪽별 Worker 진행률을 제공합니다.
-[PDF 개발자 시작 안내](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/pdf_developer_onboarding.md) ·
-[English quick start](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/pdf_developer_onboarding_EN.md).
+[PDF 개발자 시작 안내](https://github.com/edwardkim/rhwp/blob/main/mydocs/manual/pdf_developer_onboarding.md) ·
+[English quick start](https://github.com/edwardkim/rhwp/blob/main/mydocs/manual/pdf_developer_onboarding_EN.md).
 
 ## v0.8.7
 
@@ -143,11 +145,11 @@ const resp = await fetch('/sample.hwp');
 const doc = new HwpDocument(new Uint8Array(await resp.arrayBuffer()));
 ```
 
-### PDF 가져오기 (0.9.0 기본 포함)
+### PDF 가져오기 (0.9.0부터 기본 포함)
 
 일반 빌드는 PDF·JBIG2·JPEG 2000·ICC와 예산 있는 xref 복구를 포함합니다.
 초기화 뒤 `JSON.parse(HwpDocument.getPdfImportSupport())`로 실제 지원을 확인합니다.
-출시 전에는 같은 checkout의 `pkg/`를 사용하며 0.9.0 게시를 완료했다는 뜻은 아닙니다.
+0.9.1 게시 전에는 같은 checkout의 `pkg/`를 사용합니다. JS와 WASM의 버전을 맞춥니다.
 
 ```javascript
 const doc = HwpDocument.importPdf(pdfBytes, {
@@ -171,10 +173,10 @@ try {
 
 이 API는 동기 호출입니다. 대형 입력은 Worker에서 처리하고 호스트가 종료·재생성해야 취소할 수
 있습니다. 저장소 `rhwp-shared/pdf/`의 공용 Worker는 **이 npm 패키지에 포함되지 않습니다**.
-[Worker·Studio 통합 예제](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/pdf_developer_onboarding.md)
+[Worker·Studio 통합 예제](https://github.com/edwardkim/rhwp/blob/main/mydocs/manual/pdf_developer_onboarding.md)
 에서 배치 경로와 진행률을 확인하세요. 전체 parser 할당 상한은 미입증입니다
 (`parserAllocationBoundsProven=false`). 스캔 문자는 OCR하지 않으며 글꼴·정밀 paint·표 추론은
-[지원 경계](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/security_feature_limits.md)를 따릅니다.
+[지원 경계](https://github.com/edwardkim/rhwp/blob/main/mydocs/manual/security_feature_limits.md)를 따릅니다.
 
 ### SVG 렌더링
 

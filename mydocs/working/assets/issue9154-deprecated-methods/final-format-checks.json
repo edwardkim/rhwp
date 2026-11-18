@@ -1,0 +1,46 @@
+{
+  "source": "efd401f2e665b12666017a885d32019b5ce5f17a",
+  "checkedAt": "2026-11-17T18:09:00.733119+00:00",
+  "checks": [
+    {
+      "command": [
+        "cargo",
+        "+1.93.1",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "rustfmt",
+        "+1.93.1",
+        "--edition",
+        "2021",
+        "--check",
+        "--config",
+        "skip_children=true",
+        "vendor/rhwp-codec-resource/src/atomic.rs",
+        "vendor/rhwp-codec-resource/src/lib.rs",
+        "vendor/rhwp-pdf-import-backend/src/import_limits.rs"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ]
+}

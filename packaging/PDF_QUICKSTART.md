@@ -1,4 +1,4 @@
-# rhwp 0.9.0 — PDF 시작 안내
+# rhwp 0.9.1 — PDF 시작 안내
 
 이 안내는 공식 CLI 배포 압축 파일에 포함됩니다. [English](PDF_QUICKSTART_EN.md).
 압축을 푼 디렉터리에서 실행하거나 `rhwp`를 PATH에 추가하세요.
@@ -37,12 +37,12 @@ Studio를 사용하거나 PowerShell에서 표준 입력을 안전하게 공급�
 - 스캔 PDF의 글자를 OCR하지 않습니다. 복잡한 마스크·회전·표 추론 결과와 저장 후 모양은 원본 및 대상 편집기에서 확인하세요.
 
 Rust·npm/WASM API, Worker 배치·취소·쪽별 진행률, Studio 임베딩은
-[PDF 개발자 시작 안내](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/pdf_developer_onboarding.md)를 참고하세요.
+[PDF 개발자 시작 안내](https://github.com/edwardkim/rhwp/blob/main/mydocs/manual/pdf_developer_onboarding.md)를 참고하세요.
 JS·WASM·Worker·Studio는 같은 릴리즈로 맞춥니다. `@rhwp/core`에는 저장소 Worker 모듈이
 자동 포함되지 않으며 `@rhwp/editor`에는 호스팅할 Studio가 별도로 필요합니다.
 
-[CLI 전체 명령](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/cli_commands.md) ·
-[보안과 지원 경계](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/security_feature_limits.md) ·
-[릴리즈·기여자](https://github.com/edwardkim/rhwp/releases/tag/v0.9.0)
+[CLI 전체 명령](https://github.com/edwardkim/rhwp/blob/main/mydocs/manual/cli_commands.md) ·
+[보안과 지원 경계](https://github.com/edwardkim/rhwp/blob/main/mydocs/manual/security_feature_limits.md) ·
+[릴리즈·기여자](https://github.com/edwardkim/rhwp/releases/tag/v0.9.1)
 
 서드파티 고지는 `notices/THIRD_PARTY_LICENSES.md`와 `notices/` 아래 원문 파일에서 확인합니다.

@@ -1,5 +1,7 @@
 # @rhwp/editor
 
+> **0.9.1 배포 준비:** 최신 변경·기여자·지원 범위는 [릴리즈 노트](https://github.com/edwardkim/rhwp/blob/main/mydocs/release/release_notes_v0.9.1.md)를 참고하세요. 실제 설치 가능 버전은 해당 배포 채널에서 확인합니다.
+
 **알(R), 모두의 한글** — 3줄로 HWP 에디터를 웹 페이지에 임베드
 
 [![npm](https://img.shields.io/npm/v/@rhwp/editor)](https://www.npmjs.com/package/@rhwp/editor)
@@ -107,15 +109,15 @@ studio.destroy();
 cd rhwp-studio && npm run gate:bridge
 ```
 
-## PDF 가져오기 (0.9.0)
+## PDF 가져오기 (0.9.1)
 
-0.9.0 Studio를 `viewerUrl`에 호스팅한 뒤 `loadFile(pdfBytes, 'input.pdf',
+0.9.1 Studio를 `viewerUrl`에 호스팅한 뒤 `loadFile(pdfBytes, 'input.pdf',
 { suppressDialogs: false })`로 엽니다. PDF 설정·필요한 암호·쪽별 진행률과 취소는 Studio에서
 처리합니다. 사용자 응답을 기다리므로 필요하면 `createEditor`의 `requestTimeoutMs`를 늘립니다.
 이 값과 PDF Worker 시간 제한은 별개이며 `suppressDialogs`가 PDF 선택창을 없애지는 않습니다.
 이 패키지는 iframe wrapper이므로 패키지 업데이트와 호스팅 Studio 업데이트를 함께 진행합니다.
-[CLI·Rust·WASM·Worker 시작 예제](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/pdf_developer_onboarding.md)
-와 [English guide](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/pdf_developer_onboarding_EN.md)를 참고하세요.
+[CLI·Rust·WASM·Worker 시작 예제](https://github.com/edwardkim/rhwp/blob/main/mydocs/manual/pdf_developer_onboarding.md)
+와 [English guide](https://github.com/edwardkim/rhwp/blob/main/mydocs/manual/pdf_developer_onboarding_EN.md)를 참고하세요.
 
 ## HWP 파일 로드
 
@@ -228,7 +230,7 @@ off();
 v1 target은 control·field·혼합 글자 서식이 없는 본문 문단 전체(최대 4,000 Unicode code point)로
 제한됩니다. apply 뒤 다른 편집이 있으면 agent revert는 실패합니다. `TRANSACTION_FAILED`와
 `RENDER_FAILED`에는 snapshot 복구 여부인 `error.recovered`가 포함됩니다. SHA 정규형과 오류 계약은
-[`document_agent_command.md`](https://github.com/edwardkim/rhwp/blob/devel/mydocs/tech/wasm_agent_surface/document_agent_command.md)를
+[`document_agent_command.md`](https://github.com/edwardkim/rhwp/blob/main/mydocs/tech/wasm_agent_surface/document_agent_command.md)를
 참조하세요.
 
 ### 누름틀 진입·이탈 이벤트

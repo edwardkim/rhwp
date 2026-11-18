@@ -106,9 +106,12 @@
   `;
 
   // 사용자 설정 (Service Worker에서 로드)
-  let settings = { showBadges: true, hoverPreview: true };
+  let settings = { showBadges: false, hoverPreview: false };
 
   chrome.runtime.sendMessage({ type: 'get-settings' }, (result) => {
+    // A suspended worker can close this response channel. Keep optional UI off
+    // until settings are available; read lastError within its callback scope.
+    if (chrome.runtime.lastError) return;
     if (result) settings = result;
     // 설정 로드 후 초기 스캔
     if (settings.showBadges) {

@@ -71,11 +71,11 @@ checksum = "d55d956fa96f5ec02be2e13af0e20391a5aa83d6a074e3ad368959d0fab299ea"
 
 [[package]]
 name = "rhwp-codec-resource"
-version = "0.1.0"
+version = "0.1.1"
 
 [[package]]
 name = "rhwp-hayro-jpeg2000"
-version = "0.4.0-rhwp.1"
+version = "0.4.0-rhwp.2"
 dependencies = [
  "fearless_simd",
  "image",

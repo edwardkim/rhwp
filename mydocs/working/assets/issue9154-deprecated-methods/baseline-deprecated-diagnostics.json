@@ -1,0 +1,146 @@
+[
+  {
+    "message": "use of deprecated method `std::sync::atomic::Atomic::<usize>::fetch_update`: renamed to `try_update` for consistency",
+    "locations": [
+      {
+        "file": "vendor/rhwp-pdf-import-backend/src/import_limits.rs",
+        "line": 439
+      }
+    ]
+  },
+  {
+    "message": "use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency",
+    "locations": [
+      {
+        "file": "vendor/rhwp-pdf-import-backend/src/import_limits.rs",
+        "line": 560
+      }
+    ]
+  },
+  {
+    "message": "use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency",
+    "locations": [
+      {
+        "file": "src/native_host/presentation.rs",
+        "line": 38
+      }
+    ]
+  },
+  {
+    "message": "use of deprecated method `std::sync::atomic::Atomic::<usize>::fetch_update`: renamed to `try_update` for consistency",
+    "locations": [
+      {
+        "file": "src/native_host/runtime.rs",
+        "line": 665
+      }
+    ]
+  },
+  {
+    "message": "use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency",
+    "locations": [
+      {
+        "file": "src/native_host/runtime.rs",
+        "line": 865
+      }
+    ]
+  },
+  {
+    "message": "use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency",
+    "locations": [
+      {
+        "file": "src/native_host/save.rs",
+        "line": 220
+      }
+    ]
+  },
+  {
+    "message": "use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency",
+    "locations": [
+      {
+        "file": "src/native_host/presentation.rs",
+        "line": 38
+      }
+    ]
+  },
+  {
+    "message": "use of deprecated method `std::sync::atomic::Atomic::<usize>::fetch_update`: renamed to `try_update` for consistency",
+    "locations": [
+      {
+        "file": "src/native_host/runtime.rs",
+        "line": 665
+      }
+    ]
+  },
+  {
+    "message": "use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency",
+    "locations": [
+      {
+        "file": "src/native_host/runtime.rs",
+        "line": 865
+      }
+    ]
+  },
+  {
+    "message": "use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency",
+    "locations": [
+      {
+        "file": "src/native_host/save.rs",
+        "line": 220
+      }
+    ]
+  },
+  {
+    "message": "use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency",
+    "locations": [
+      {
+        "file": "bindings/Native/tests/../src/session.rs",
+        "line": 710
+      }
+    ]
+  },
+  {
+    "message": "use of deprecated method `std::sync::atomic::Atomic::<usize>::fetch_update`: renamed to `try_update` for consistency",
+    "locations": [
+      {
+        "file": "bindings/Native/tests/../src/gpu_metal/admission.rs",
+        "line": 44
+      }
+    ]
+  },
+  {
+    "message": "use of deprecated method `std::sync::atomic::Atomic::<usize>::fetch_update`: renamed to `try_update` for consistency",
+    "locations": [
+      {
+        "file": "bindings/Native/src/gpu_metal/admission.rs",
+        "line": 44
+      }
+    ]
+  },
+  {
+    "message": "use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency",
+    "locations": [
+      {
+        "file": "bindings/Native/src/session.rs",
+        "line": 710
+      }
+    ]
+  },
+  {
+    "message": "use of deprecated method `std::sync::atomic::Atomic::<usize>::fetch_update`: renamed to `try_update` for consistency",
+    "locations": [
+      {
+        "file": "bindings/Native/src/gpu_metal/admission.rs",
+        "line": 44
+      }
+    ]
+  },
+  {
+    "message": "use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency",
+    "locations": [
+      {
+        "file": "bindings/Native/src/session.rs",
+        "line": 710
+      }
+    ]
+  }
+]

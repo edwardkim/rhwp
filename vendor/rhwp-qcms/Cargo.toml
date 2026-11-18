@@ -2,7 +2,7 @@
 rust-version = "1.93.1"
 name = "rhwp-qcms"
 authors = ["Jeff Muizelaar", "Benoit Girard", "Andrew Osmond"]
-version = "0.3.0-rhwp.1"
+version = "0.3.0-rhwp.2"
 edition = "2018"
 publish = ["crates-io"]
 include = ["src/**/*", "COPYING", "LICENSE", "RHWP_PATCHES.md", "UPSTREAM_FILES.json", "upstream/**"]
@@ -27,4 +27,4 @@ cmyk = []
 [dependencies]
 libc = {version = "0.2", optional = true }
 
-rhwp-codec-resource = { path = "../rhwp-codec-resource", version = "0.1.0", features = ["scoped"] }
+rhwp-codec-resource = { path = "../rhwp-codec-resource", version = "0.1.1", features = ["scoped"] }

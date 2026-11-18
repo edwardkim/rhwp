@@ -16,6 +16,7 @@ native-skia-metal = ["native-skia", "rhwp_core/native-skia-metal"]
 native-skia-d3d = ["native-skia", "rhwp_core/native-skia-d3d"]
 
 [dependencies]
+rhwp-codec-resource = { path = "../../vendor/rhwp-codec-resource", version = "=0.1.1" }
 rhwp_core = { package = "rhwp", path = "../.." }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

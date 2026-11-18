@@ -3,9 +3,9 @@
 HWP/HWPX 문서의 파싱·편집·저장·렌더링을 Rust 애플리케이션과 자동화 작업에 연결합니다.
 주 사용자는 문서 처리 기능을 자신의 프로그램에 포함하는 Rust 개발자와 CLI 자동화 사용자입니다.
 
-**0.9.0부터 crates.io 배포를 제공합니다.** 아래 예제는 공개 registry에 게시된 0.9.0을
+**0.9.0부터 crates.io 배포를 제공합니다.** 아래 예제는 공개 registry에 0.9.1 후보를
 사용합니다. 해당 버전이 아직 조회되지 않는 배포 진행 중에는 같은 버전의 소스를 빌드할 수 있습니다.
-[게시 버전과 소스](https://github.com/edwardkim/rhwp/releases/tag/v0.9.0)를 확인하세요.
+[게시 버전과 소스](https://github.com/edwardkim/rhwp/releases/tag/v0.9.1)를 확인하세요.
 
 ## Rust에서 구조 읽기와 저장
 
@@ -13,7 +13,7 @@ HWP/HWPX 문서의 파싱·편집·저장·렌더링을 Rust 애플리케이션�
 
 ```toml
 [dependencies]
-rhwp = "0.9.0"
+rhwp = "0.9.1"
 ```
 
 구조만 필요하면 core 세션을 만들지 않고 parser가 반환한 공통 Document IR을 사용합니다.
@@ -94,7 +94,7 @@ core를 열면 스타일 해소·줄 구성·페이지 계산을 수행합니다
 게시 후 주 CLI만 설치하는 명령은 다음과 같습니다.
 
 ```sh
-cargo install rhwp --version 0.9.0 --locked --bin rhwp
+cargo install rhwp --version 0.9.1 --locked --bin rhwp
 rhwp info input.hwpx --json
 rhwp export-text input.hwpx --json
 rhwp import-pdf input.pdf output.hwpx --resource-profile constrained --json

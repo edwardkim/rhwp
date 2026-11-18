@@ -111,7 +111,19 @@ def audit_archives(ledger, policy, archive_dir):
                 f"description metadata missing: {name}")
         require(pkg.get("publish") == ["crates-io"], f"publication guard differs: {name}")
         require(pkg.get("rust-version") == "1.93.1", f"Rust support differs: {name}")
-        require(vcs["git"]["sha1"] == sha and not vcs["git"].get("dirty", False),
+        published_origin = specs[name].get("published_origin")
+        expected_source = sha
+        if published_origin is not None:
+            require(isinstance(published_origin, dict)
+                    and isinstance(published_origin.get("source_sha"), str)
+                    and isinstance(published_origin.get("archive_sha256"), str)
+                    and re.fullmatch(r"[0-9a-f]{40}", published_origin["source_sha"])
+                    and re.fullmatch(r"[0-9a-f]{64}", published_origin["archive_sha256"]),
+                    f"invalid published origin: {name}")
+            require(row["sha256"] == published_origin["archive_sha256"],
+                    f"published origin checksum differs: {name}")
+            expected_source = published_origin["source_sha"]
+        require(vcs["git"]["sha1"] == expected_source and not vcs["git"].get("dirty", False),
                 f"VCS source differs: {name}")
         require("patch" not in manifest and "workspace" not in manifest,
                 f"repository override remains: {name}")
@@ -162,6 +174,13 @@ def disposition(row, state, owner):
     return "already-present"
 
 
+def publication_action(row, state, owner, spec):
+    action = disposition(row, state, owner)
+    if spec.get("published_origin") is not None:
+        require(action == "already-present", f"published reuse version unavailable: {row['name']}")
+    return action
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--ledger", type=Path, required=True)
@@ -181,12 +200,13 @@ def main():
                 "worktree is dirty; commit before preflight")
         audited = audit_archives(ledger, policy, args.archive_dir)
         order = dependency_order(policy["packages"])
+        specs = {spec["published_name"]: spec for spec in policy["packages"]}
         rows = []
         for name in order:
             state = registry_state(name)
             rows.append({"name": name, "version": audited[name]["version"],
                          "archive_sha256": audited[name]["sha256"], "registry": state,
-                         "action": disposition(audited[name], state, "edwardkim")})
+                         "action": publication_action(audited[name], state, "edwardkim", specs[name])})
             time.sleep(0.25)
         report.update(status="local-preflight-passed", source_sha=head,
                       observed_at=datetime.now(timezone.utc).isoformat(),

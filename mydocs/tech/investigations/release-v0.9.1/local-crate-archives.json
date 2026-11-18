@@ -1,0 +1,119 @@
+{
+  "source_sha": "c0f9ea46f4a5693323e51c6be2cd9a9368f3311d",
+  "publication_authorized": false,
+  "registry": "http://127.0.0.1:42073",
+  "packages": [
+    {
+      "name": "rhwp-codec-resource",
+      "version": "0.1.1",
+      "sha256": "5de5f900809d652b6d304b8aff7eff1ecb440c6089c8b600ed9484f94aaee465",
+      "bytes": 5931,
+      "source": "c0f9ea46f4a5693323e51c6be2cd9a9368f3311d",
+      "kind": "new-local-crate"
+    },
+    {
+      "name": "rhwp-contracts",
+      "version": "0.1.0",
+      "sha256": "562667a1d3cd9fe4e24f7845211024fe098f327d8db925fcb9be91945c823362",
+      "bytes": 32411,
+      "source": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+      "kind": "unchanged-public-crate"
+    },
+    {
+      "name": "rhwp-jpeg-decoder",
+      "version": "0.3.2-rhwp.1",
+      "sha256": "1f2bd23d396ee20440f3909fe3248dc749272f0952b7387b11eababecf9ec9af",
+      "bytes": 53293,
+      "source": "4a765822988575099104c30081516b2bb7c4ddb5",
+      "kind": "unchanged-public-crate"
+    },
+    {
+      "name": "rhwp-jpeg-encoder",
+      "version": "0.7.1-rhwp.1",
+      "sha256": "509f50d0ff86268e903fb0d1c076fed846565c294406071456fde1cf9b57e64a",
+      "bytes": 44570,
+      "source": "4a765822988575099104c30081516b2bb7c4ddb5",
+      "kind": "unchanged-public-crate"
+    },
+    {
+      "name": "rhwp-ooxml-chart",
+      "version": "0.1.1",
+      "sha256": "4e1f23e4a73177b4a946016f6890e68e585fc34e5d154c70c1ec841fdfefbd05",
+      "bytes": 112933,
+      "source": "c0f9ea46f4a5693323e51c6be2cd9a9368f3311d",
+      "kind": "new-local-crate"
+    },
+    {
+      "name": "rhwp-password-crypto",
+      "version": "0.1.0",
+      "sha256": "c83ab2ebe4fb177da61ebd73ce1c36ff226e244417ed80b3e78341fe3c63c676",
+      "bytes": 16234,
+      "source": "4a765822988575099104c30081516b2bb7c4ddb5",
+      "kind": "unchanged-public-crate"
+    },
+    {
+      "name": "rhwp-svg2pdf",
+      "version": "0.13.0-rhwp.1",
+      "sha256": "74e743c35b8291f385f83f29b8f86ab37b3c289e1e5d165702b76751cec12a00",
+      "bytes": 59102,
+      "source": "4a765822988575099104c30081516b2bb7c4ddb5",
+      "kind": "unchanged-public-crate"
+    },
+    {
+      "name": "rhwp-zune-jpeg",
+      "version": "0.5.15-rhwp.1",
+      "sha256": "81405ea92f5547ef9568bd5970ef4e033a1e0a99462c4873b9adcce0880eba43",
+      "bytes": 103383,
+      "source": "4a765822988575099104c30081516b2bb7c4ddb5",
+      "kind": "unchanged-public-crate"
+    },
+    {
+      "name": "rhwp-hayro-ccitt",
+      "version": "0.3.0-rhwp.2",
+      "sha256": "7b493315875b80181d68a4206c114efc9481c51fe9861f0a28281712aa7806f3",
+      "bytes": 16772,
+      "source": "c0f9ea46f4a5693323e51c6be2cd9a9368f3311d",
+      "kind": "new-local-crate"
+    },
+    {
+      "name": "rhwp-hayro-jpeg2000",
+      "version": "0.4.0-rhwp.2",
+      "sha256": "f7105f026efe593aa3146def40cf03415faa0e2da077408061b729dcd9f4d73a",
+      "bytes": 96175,
+      "source": "c0f9ea46f4a5693323e51c6be2cd9a9368f3311d",
+      "kind": "new-local-crate"
+    },
+    {
+      "name": "rhwp-qcms",
+      "version": "0.3.0-rhwp.2",
+      "sha256": "441b4376da438d42d64fd7f10bc8612f62d4894ce54202235e0823ffb704ed6b",
+      "bytes": 58315,
+      "source": "c0f9ea46f4a5693323e51c6be2cd9a9368f3311d",
+      "kind": "new-local-crate"
+    },
+    {
+      "name": "rhwp-hayro-jbig2",
+      "version": "0.3.0-rhwp.2",
+      "sha256": "4f81f6b0c47166faf04b235e7b85ca7b79d03b7b62136ed419739d54725d3999",
+      "bytes": 70547,
+      "source": "c0f9ea46f4a5693323e51c6be2cd9a9368f3311d",
+      "kind": "new-local-crate"
+    },
+    {
+      "name": "rhwp-pdf-import-backend",
+      "version": "0.3.78-rhwp.2",
+      "sha256": "05e073f3d6da5ab17c33c738a13551a248fc300d0d91a9c38154d99781886696",
+      "bytes": 6984548,
+      "source": "c0f9ea46f4a5693323e51c6be2cd9a9368f3311d",
+      "kind": "new-local-crate"
+    },
+    {
+      "name": "rhwp",
+      "version": "0.9.1",
+      "sha256": "5f3f7a911c327693d5419f33ce6a8a3e370b63c98ea398c485c692ee0aeac009",
+      "bytes": 9797939,
+      "source": "c0f9ea46f4a5693323e51c6be2cd9a9368f3311d",
+      "kind": "new-local-crate"
+    }
+  ]
+}

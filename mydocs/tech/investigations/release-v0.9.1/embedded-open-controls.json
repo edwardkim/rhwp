@@ -1,0 +1,34 @@
+{
+  "historicalDiagnostic": {
+    "sourceBase": "c0f9ea46f4a5693323e51c6be2cd9a9368f3311d",
+    "trackedChangesNotYetCommitted": true,
+    "controls": [
+      {
+        "name": "first-page",
+        "exitCode": 0
+      },
+      {
+        "name": "pdf-busy",
+        "exitCode": 0
+      },
+      {
+        "name": "autosave-recovery",
+        "exitCode": 0
+      }
+    ]
+  },
+  "finalAutosaveRecovery": {
+    "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+    "command": [
+      "node",
+      "e2e/run-with-vite.mjs",
+      "--",
+      "node",
+      "e2e/autosave-recovery.test.mjs",
+      "--mode=headless"
+    ],
+    "exitCode": 0,
+    "recordOnlyDocumentsPendingCommit": true,
+    "wasmManifest": "fresh-wasm/build.json"
+  }
+}
