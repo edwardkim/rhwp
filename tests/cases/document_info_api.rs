@@ -37,6 +37,15 @@ fn summary_survives_hwp_and_hwpx_saves_from_either_source() {
         for bytes in [doc.export_hwp().unwrap(), doc.export_hwpx().unwrap()] {
             let reopened = HwpDocument::from_bytes(&bytes).unwrap();
             assert_eq!(reopened.document_summary(), patch(), "{name}");
+            // 같은 형식으로 다시 저장해 열어도 그대로다.
+            let resaved = if bytes.starts_with(b"PK") {
+                reopened.export_hwpx()
+            } else {
+                reopened.export_hwp()
+            }
+            .unwrap();
+            let again = HwpDocument::from_bytes(&resaved).unwrap();
+            assert_eq!(again.document_summary(), patch(), "{name}");
         }
     }
 }
