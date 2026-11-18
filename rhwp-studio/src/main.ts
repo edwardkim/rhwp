@@ -1,3 +1,4 @@
+import { DocumentOpenSession } from './core/document-open-session';
 import { setLinkHostHandler } from './core/link-navigation';
 import { RecoveryCipher, sameRecoveryDraft } from './recovery/recovery-crypto';
 import { setFormActionsEnabled } from './core/form-action-policy';
@@ -536,14 +537,12 @@ function waitForNextPaint(): Promise<void> {
 }
 
 const supersededOpen = new Error('새 문서 열기가 시작되었습니다.');
-let documentOpen: AbortController | undefined;
+const documentOpenSession = new DocumentOpenSession(supersededOpen);
 // 파싱된 문서와 편집 준비를 끝낸 문서는 다를 수 있다.
 let pendingInitialization: { generation: number; signal: AbortSignal } | null = null;
 
 function beginDocumentOpen(): AbortSignal {
-  documentOpen?.abort(supersededOpen);
-  documentOpen = new AbortController();
-  return documentOpen.signal;
+  return documentOpenSession.begin();
 }
 
 async function updateLoadProgress(percent: number, label: string, signal: AbortSignal, status: HTMLElement | null = sbMessage()): Promise<void> {
@@ -1753,7 +1752,7 @@ async function loadDocumentForOpen(data: Uint8Array, fileName: string, openSigna
  */
 function restoreViewAfterFailedOpen(): void {
   if (!canvasView || wasm.pageCount === 0) return;
-  const signal = documentOpen?.signal;
+  const signal = documentOpenSession.signal;
   const interrupted = pendingInitialization;
   if (signal && interrupted?.generation === wasm.documentGeneration && interrupted.signal.aborted) {
     pendingInitialization = { generation: interrupted.generation, signal };
@@ -1807,6 +1806,8 @@ async function loadFile(
     if (signal?.aborted) return false;
     showLoadErrorUnlessCancelled(error);
     return false;
+  } finally {
+    if (signal) documentOpenSession.finish(signal);
   }
 }
 
@@ -1824,79 +1825,83 @@ async function loadBytes(
 ): Promise<void> {
   // 바이트로 여는 모든 경로(파일 열기 · ?url= · 자동저장 복구 · 호스트 API)의 공통 깔때기다.
   const signal = options.signal ?? beginDocumentOpen();
-  signal.throwIfAborted();
-  const pdf = Boolean(options.pdfSource) || isPdfInput(data, fileName);
-  cancelPdfImport();
-  let imported: DocumentInfo | undefined;
-  if (pdf) {
-    // 선택·재시도 대기는 처리 중이 아니다. 변환 진행은 취소 가능한 PDF 대화창이
-    // 표시하며, 성공 뒤의 뷰 초기화부터 아래 busy 범위가 소유한다 (#8398).
-    sbMessage().textContent = 'PDF 가져오기';
-    await options.validateBeforeOpen?.();
+  try {
     signal.throwIfAborted();
-    imported = await loadDocumentForOpen(data, fileName, signal, options.pdfSource);
-    signal.throwIfAborted();
-  }
-  // 일반 문서의 파싱·쪽 계산과 성공한 PDF의 뷰 초기화 동안 대기 커서를 든다.
-  await withBusyCursor(document.documentElement, async () => {
-    // 파싱 전에 먼저 빈 쪽 상태로 만든다 — 이전 문서를 붙잡고 있다가 한 번에 갈아치우면
-    // 화면이 튀어 보인다. 파싱이 실패하면 아래 catch가 이전 문서 뷰를 되살린다.
-    if (!pdf) canvasView?.showBlankPage();
-    if (!pdf) {
-      if (!options.dataReadProgressShown) {
-        await updateLoadProgress(0, '문서 데이터 준비 중...', signal);
-      }
-      await updateLoadProgress(25, '문서 파싱 및 쪽 계산 중...', signal);
+    const pdf = Boolean(options.pdfSource) || isPdfInput(data, fileName);
+    cancelPdfImport();
+    let imported: DocumentInfo | undefined;
+    if (pdf) {
+      // 선택·재시도 대기는 처리 중이 아니다. 변환 진행은 취소 가능한 PDF 대화창이
+      // 표시하며, 성공 뒤의 뷰 초기화부터 아래 busy 범위가 소유한다 (#8398).
+      sbMessage().textContent = 'PDF 가져오기';
       await options.validateBeforeOpen?.();
+      signal.throwIfAborted();
+      imported = await loadDocumentForOpen(data, fileName, signal, options.pdfSource);
+      signal.throwIfAborted();
     }
-    signal.throwIfAborted();
-    const docInfo = imported ?? await loadDocumentForOpen(data, fileName, signal);
-    signal.throwIfAborted();
-    if (options.recoveryCipher) {
-      wasm.requiresPasswordForSave = true;
-      wasm.setRecoveryCipher(options.recoveryCipher);
-    }
-    prepareCanvasRendererDocument(signal);
-    // 문서가 갈렸다 — 빌린 핸들을 쥔 플러그인에 새 lease 를 준다. 알리지 않으면 그쪽만 옛
-    // 문서를 계속 만진다(세대 검사가 잡아 DOCUMENT_RELEASED 로 끊긴다).
-    plugins.notifyDocumentSwap();
-    // [#7194] 같은 사실을 앱 안쪽에도 알린다. 종전에는 문서 교체 신호가
-    // `open-document-bytes` 이벤트뿐이었는데, 그 이벤트를 거치는 열기 경로는 여섯 중
-    // 하나(`open-document-bytes` 핸들러)뿐이다 — 드롭·파일 input·`?url=`·자동저장 복구·
-    // 호스트 API 는 이 깔때기를 직접 부른다. 그래서 표 resize 런타임 캐시가 이전 문서의
-    // 칸 좌표를 그대로 들고 살아남았다(`cachedTableRef` 는 `{sec, ppi, ci}` 라 문서가
-    // 바뀌어도 신선도 검사를 통과한다 — 3184241).
-    eventBus.emit('document-swapped');
-    await updateLoadProgress(45, '자동 저장 준비 중...', signal);
-    forgetConvertedHmlSaveHandle(fileHandle);
-    forgetConvertedPdfSaveHandle(fileHandle);
-    // Imported PDF handles are retained for identity checks/recent files; resolveSaveTarget
-    // forces a different output until a converted HWP/HWPX handle has been published.
-    wasm.currentFileHandle = fileHandle;
+    // 일반 문서의 파싱·쪽 계산과 성공한 PDF의 뷰 초기화 동안 대기 커서를 든다.
+    await withBusyCursor(document.documentElement, async () => {
+      // 파싱 전에 먼저 빈 쪽 상태로 만든다 — 이전 문서를 붙잡고 있다가 한 번에 갈아치우면
+      // 화면이 튀어 보인다. 파싱이 실패하면 아래 catch가 이전 문서 뷰를 되살린다.
+      if (!pdf) canvasView?.showBlankPage();
+      if (!pdf) {
+        if (!options.dataReadProgressShown) {
+          await updateLoadProgress(0, '문서 데이터 준비 중...', signal);
+        }
+        await updateLoadProgress(25, '문서 파싱 및 쪽 계산 중...', signal);
+        await options.validateBeforeOpen?.();
+      }
+      signal.throwIfAborted();
+      const docInfo = imported ?? await loadDocumentForOpen(data, fileName, signal);
+      signal.throwIfAborted();
+      if (options.recoveryCipher) {
+        wasm.requiresPasswordForSave = true;
+        wasm.setRecoveryCipher(options.recoveryCipher);
+      }
+      prepareCanvasRendererDocument(signal);
+      // 문서가 갈렸다 — 빌린 핸들을 쥔 플러그인에 새 lease 를 준다. 알리지 않으면 그쪽만 옛
+      // 문서를 계속 만진다(세대 검사가 잡아 DOCUMENT_RELEASED 로 끊긴다).
+      plugins.notifyDocumentSwap();
+      // [#7194] 같은 사실을 앱 안쪽에도 알린다. 종전에는 문서 교체 신호가
+      // `open-document-bytes` 이벤트뿐이었는데, 그 이벤트를 거치는 열기 경로는 여섯 중
+      // 하나(`open-document-bytes` 핸들러)뿐이다 — 드롭·파일 input·`?url=`·자동저장 복구·
+      // 호스트 API 는 이 깔때기를 직접 부른다. 그래서 표 resize 런타임 캐시가 이전 문서의
+      // 칸 좌표를 그대로 들고 살아남았다(`cachedTableRef` 는 `{sec, ppi, ci}` 라 문서가
+      // 바뀌어도 신선도 검사를 통과한다 — 3184241).
+      eventBus.emit('document-swapped');
+      await updateLoadProgress(45, '자동 저장 준비 중...', signal);
+      forgetConvertedHmlSaveHandle(fileHandle);
+      forgetConvertedPdfSaveHandle(fileHandle);
+      // Imported PDF handles are retained for identity checks/recent files; resolveSaveTarget
+      // forces a different output until a converted HWP/HWPX handle has been published.
+      wasm.currentFileHandle = fileHandle;
 
-    // 최근 문서 기록 — 문서 로드 성공 직후, 폰트/모달 등 블로킹 UI 단계 이전에 기록한다.
-    // 핸들이 있으면 라이브 재열기용으로 함께 기록하고, 없으면(드롭/input/URL 로드)
-    // 메타-only 로 기록한다 — 목록에는 남기되 자동 재열기는 핸들 있는 항목만 가능하다.
-    // 자동저장 복구본은 options.skipRecent 로 제외.
-    if (!options.skipRecent) {
-      recentSubmenuExpanded = false;
-      void addRecentDoc({
-        fileName: wasm.fileName,
-        sourceFormat: wasm.getSourceFormat(),
-        handle: fileHandle,
-      }).catch((err) => console.warn('[recent] 최근 문서 기록 실패:', err));
-    }
+      // 최근 문서 기록 — 문서 로드 성공 직후, 폰트/모달 등 블로킹 UI 단계 이전에 기록한다.
+      // 핸들이 있으면 라이브 재열기용으로 함께 기록하고, 없으면(드롭/input/URL 로드)
+      // 메타-only 로 기록한다 — 목록에는 남기되 자동 재열기는 핸들 있는 항목만 가능하다.
+      // 자동저장 복구본은 options.skipRecent 로 제외.
+      if (!options.skipRecent) {
+        recentSubmenuExpanded = false;
+        void addRecentDoc({
+          fileName: wasm.fileName,
+          sourceFormat: wasm.getSourceFormat(),
+          handle: fileHandle,
+        }).catch((err) => console.warn('[recent] 최근 문서 기록 실패:', err));
+      }
 
-    await autosaveManager.beginDocument(
-      { fileName: wasm.fileName, sourceFormat: wasm.getSourceFormat() },
-      { discardPreviousDraft: true },
-    );
-    await updateLoadProgress(50, '문서 초기화 중...', signal);
-    const elapsed = performance.now() - startTime;
-    await initializeDocument(docInfo, t('ui.sbMessage.filePagesTimed', { p1: fileName, p2: docInfo.pageCount, p3: elapsed.toFixed(1) }), signal, {
-      suppressDialogs: options.suppressDialogs,
+      await autosaveManager.beginDocument(
+        { fileName: wasm.fileName, sourceFormat: wasm.getSourceFormat() },
+        { discardPreviousDraft: true },
+      );
+      await updateLoadProgress(50, '문서 초기화 중...', signal);
+      const elapsed = performance.now() - startTime;
+      await initializeDocument(docInfo, t('ui.sbMessage.filePagesTimed', { p1: fileName, p2: docInfo.pageCount, p3: elapsed.toFixed(1) }), signal, {
+        suppressDialogs: options.suppressDialogs,
+      });
     });
-  });
+  } finally {
+    if (!options.signal) documentOpenSession.finish(signal);
+  }
 }
 
 const RECENT_SUBMENU_COLLAPSED_LIMIT = 8;
@@ -1997,14 +2002,17 @@ function shouldSkipInitialAutosaveRecovery(): boolean {
 
 async function offerAutosaveRecoveryIfIdle(): Promise<void> {
   if (shouldSkipInitialAutosaveRecovery()) return;
+  if (documentOpenSession.pending) return;
 
   try {
     const drafts = (await listAutosaveDrafts()).filter((draft) => draft.data.byteLength > 0);
     if (drafts.length === 0) return;
+    if (documentOpenSession.pending) return;
     if (wasm.pageCount > 0 || documentState.isDirty()) return;
 
     const choice = await showAutosaveRecoveryDialog(drafts);
     if (choice.action === 'later') return;
+    if (documentOpenSession.pending || wasm.pageCount > 0 || documentState.isDirty()) return;
     if (choice.action === 'delete-all') {
       await clearAutosaveDrafts();
       showToast({ message: '복구 후보를 삭제했습니다.', durationMs: 2200 });
@@ -2083,6 +2091,8 @@ async function createNewDocument(): Promise<void> {
     if (signal.aborted) return;
     msg.textContent = `새 문서 생성 실패: ${error}`;
     console.error('[main] 새 문서 생성 실패:', error);
+  } finally {
+    documentOpenSession.finish(signal);
   }
 }
 
@@ -2094,6 +2104,7 @@ async function createNewDocument(): Promise<void> {
  */
 async function openBlankDocumentIfIdle(): Promise<void> {
   if (chromeMode === 'embed') return;
+  if (documentOpenSession.pending) return;
   if (wasm.pageCount > 0 || documentState.isDirty()) return;
   await createNewDocument();
 }

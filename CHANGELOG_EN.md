@@ -24,6 +24,8 @@ This candidate improves table, paragraph, font and round-trip fidelity, clipboar
 - Preserve HWP3 picture ownership across saved page breaks and recover native font programs while preserving the original TTF/TTC preference ([#9157](https://github.com/edwardkim/rhwp/pull/9157)). Its full 18-document protected verification remains pending and must complete before release promotion.
 - Handle Chrome settings-channel closure during worker suspension without enabling badges or preview before settings are available.
 
+- Track pending document opens through completion, failure and replacement so startup blank/recovery work cannot supersede an immediate SDK load. Preserve first-page completion and cancellation behavior.
+
 ### PDF, CLI, Native hosts and release tooling
 
 - Parse PDF ToUnicode range tokens and comments correctly. Existing PDF onboarding covers passwords, page selection, resource policies and Worker ownership ([#8922](https://github.com/edwardkim/rhwp/pull/8922)).
