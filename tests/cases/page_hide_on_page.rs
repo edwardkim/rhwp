@@ -54,14 +54,11 @@ fn page_hide_count(paragraphs: &[Paragraph]) -> usize {
         .sum()
 }
 
+/// HWP·HWPX 각각 저장 → 다시 열기 → 다시 저장 → 다시 열기.
 fn reopened(doc: &HwpDocument) -> Vec<HwpDocument> {
-    [
-        doc.export_hwp_native().unwrap(),
-        doc.export_hwpx_native().unwrap(),
-    ]
-    .iter()
-    .map(|bytes| HwpDocument::from_bytes(bytes).unwrap())
-    .collect()
+    let hwp = |d: &HwpDocument| HwpDocument::from_bytes(&d.export_hwp_native().unwrap()).unwrap();
+    let hwpx = |d: &HwpDocument| HwpDocument::from_bytes(&d.export_hwpx_native().unwrap()).unwrap();
+    vec![hwp(&hwp(doc)), hwpx(&hwpx(doc))]
 }
 
 #[test]
