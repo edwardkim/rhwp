@@ -10,6 +10,7 @@
 //! 추가 주석 갱신: 2026-11-18T01:33:03+09:00; 직전 파일 변경: 050e78455ea22857665973be3cdb68981fd71cb0 2026-11-10T12:58:35+09:00.
 //! 원본 TTF/TTC 선택의 합성 RGBA 검사 2개를 기존 Native CI 실행 모듈로 이관했다.
 //! assertion·fixture·제품 바이트는 같으며 독립 한컴 페이지의 좌표 검사가 아니다.
+//! 추가 주석 갱신: 2026-11-18T14:04:04+09:00; RGBA 동등성은 유지하고 실패 출력만 요약한다.
 
 #![cfg(all(feature = "native-skia", not(target_arch = "wasm32")))]
 
@@ -1455,15 +1456,20 @@ mod native_containers {
         };
         let standalone = render(&[TTF.to_vec()]);
         let collection = render(&[TTC.to_vec()]);
-        assert_ne!(
-            standalone, collection,
+        assert!(
+            standalone != collection,
             "서로 다른 A 윤곽이 실제로 그려지는 대조군"
         );
-        for sources in [[TTC.to_vec(), TTF.to_vec()], [TTF.to_vec(), TTC.to_vec()]] {
-            assert_eq!(
-                render(&sources),
-                standalone,
-                "공급 순서와 무관하게 원본 TTF를 선택한다"
+        for (order, sources) in [[TTC.to_vec(), TTF.to_vec()], [TTF.to_vec(), TTC.to_vec()]]
+            .into_iter()
+            .enumerate()
+        {
+            let actual = render(&sources);
+            assert!(
+                actual == standalone,
+                "공급 순서와 무관하게 원본 TTF를 선택한다: order={order}, bytes={}/{}, first_difference={:?}",
+                actual.len(), standalone.len(),
+                actual.iter().zip(&standalone).position(|(actual, expected)| actual != expected)
             );
         }
     }
@@ -1490,10 +1496,13 @@ mod native_containers {
             let ttf_path = folder.join(if ttc_first { "1.ttf" } else { "0.ttf" });
             std::fs::write(&ttc_path, TTC).unwrap();
             std::fs::write(&ttf_path, TTF).unwrap();
-            assert_eq!(
-                paint(SkiaLayerRenderer::new().with_font_paths(std::slice::from_ref(&folder))),
-                standalone,
-                "파일명 정렬과 무관하게 같은 family의 TTF를 선택한다"
+            let actual =
+                paint(SkiaLayerRenderer::new().with_font_paths(std::slice::from_ref(&folder)));
+            assert!(
+                actual == standalone,
+                "파일명 정렬과 무관하게 같은 family의 TTF를 선택한다: ttc_first={ttc_first}, bytes={}/{}, first_difference={:?}",
+                actual.len(), standalone.len(),
+                actual.iter().zip(&standalone).position(|(actual, expected)| actual != expected)
             );
             std::fs::remove_file(ttc_path).unwrap();
             std::fs::remove_file(ttf_path).unwrap();

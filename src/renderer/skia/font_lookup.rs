@@ -400,7 +400,13 @@ fn typeface_candidates_for_families_for_source(
     chain.sort_by_key(|candidate| {
         (
             candidate.family_order,
-            super::font_catalog::supplied_style_rank(style, candidate.typeface.font_style()),
+            super::font_catalog::supplied_style_rank(
+                style,
+                custom_typefaces
+                    .program_style(&candidate.typeface)
+                    .or_else(|| bundled_typefaces.program_style(&candidate.typeface))
+                    .unwrap_or_else(|| candidate.typeface.font_style()),
+            ),
             custom_typefaces
                 .program_order(&candidate.typeface)
                 .or_else(|| bundled_typefaces.program_order(&candidate.typeface))
