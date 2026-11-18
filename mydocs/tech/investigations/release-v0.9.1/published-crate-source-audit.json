@@ -1,6 +1,6 @@
 {
-  "checkedAt": "2026-11-18T01:42:55.934508+00:00",
-  "candidate": "8373d0291c3a5a4643aa52687277af3f4f25a1c3",
+  "checkedAt": "2026-11-18T04:48:13.488499+00:00",
+  "candidate": "c0f9ea46f4a5693323e51c6be2cd9a9368f3311d",
   "publicationAuthorized": false,
   "packages": [
     {
@@ -27,6 +27,7 @@
       "publishedSource": "4a765822988575099104c30081516b2bb7c4ddb5",
       "yanked": false,
       "changed": [
+        "Cargo.toml",
         "src/renderer.rs",
         "src/renderer/cartesian_layout.rs"
       ],
@@ -114,6 +115,7 @@
       "publishedSource": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
       "yanked": false,
       "changed": [
+        "Cargo.toml",
         "src/lib.rs"
       ],
       "added": [
@@ -131,10 +133,12 @@
       "archiveBytes": 16768,
       "publishedSource": "4a765822988575099104c30081516b2bb7c4ddb5",
       "yanked": false,
-      "changed": [],
+      "changed": [
+        "Cargo.toml"
+      ],
       "added": [],
       "removed": [],
-      "needsNewVersion": false
+      "needsNewVersion": true
     },
     {
       "name": "rhwp-hayro-jbig2",
@@ -145,10 +149,12 @@
       "archiveBytes": 70543,
       "publishedSource": "4a765822988575099104c30081516b2bb7c4ddb5",
       "yanked": false,
-      "changed": [],
+      "changed": [
+        "Cargo.toml"
+      ],
       "added": [],
       "removed": [],
-      "needsNewVersion": false
+      "needsNewVersion": true
     },
     {
       "name": "rhwp-hayro-jpeg2000",
@@ -159,10 +165,12 @@
       "archiveBytes": 96179,
       "publishedSource": "4a765822988575099104c30081516b2bb7c4ddb5",
       "yanked": false,
-      "changed": [],
+      "changed": [
+        "Cargo.toml"
+      ],
       "added": [],
       "removed": [],
-      "needsNewVersion": false
+      "needsNewVersion": true
     },
     {
       "name": "rhwp-qcms",
@@ -174,6 +182,7 @@
       "publishedSource": "4a765822988575099104c30081516b2bb7c4ddb5",
       "yanked": false,
       "changed": [
+        "Cargo.toml",
         "RHWP_PATCHES.md",
         "src/c_bindings.rs",
         "src/gtest.rs"
@@ -192,6 +201,7 @@
       "publishedSource": "4a765822988575099104c30081516b2bb7c4ddb5",
       "yanked": false,
       "changed": [
+        "Cargo.toml",
         "RHWP_PATCHES.md",
         "src/document.rs",
         "src/fonts/cmap.rs",
@@ -213,10 +223,13 @@
       "changed": [
         "Cargo.lock",
         "Cargo.toml",
+        "README.md",
+        "README_EN.md",
         "THIRD_PARTY_LICENSES.md",
         "assets/font-rules/font_rule_registry_v2.json",
         "assets/fonts/licenses/font-notices.json",
         "mydocs/manual/agent_knowledge_map.md",
+        "packaging/crates-io/README_PACKAGE.md",
         "src/agent_profiles.rs",
         "src/cli/commands/conversion.rs",
         "src/cli/commands/edit/header_footer_properties.rs",

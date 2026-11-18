@@ -1,10 +1,10 @@
 {
-  "validationSource": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
-  "status": "all-listed-gates-passed",
+  "validationSource": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+  "status": "passed",
   "rows": [
     {
       "job": "release-contracts",
-      "source": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
+      "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
       "command": [
         "python3",
         "-m",
@@ -19,24 +19,26 @@
       ],
       "cwd": "/home/edward/mygithub/rhwp-worktrees/release-0.9.1-preparation",
       "exitCode": 0,
-      "seconds": 1.065,
-      "completedAt": "2026-11-18T03:18:39.933101+00:00"
+      "seconds": 1.241,
+      "completedAt": "2026-11-18T06:42:57.258198+00:00"
     },
     {
-      "source": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
+      "job": "studio-tests",
+      "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
       "command": [
         "npm",
         "--prefix",
         "rhwp-studio",
         "test"
       ],
+      "cwd": "/home/edward/mygithub/rhwp-worktrees/release-0.9.1-preparation",
       "exitCode": 0,
-      "seconds": 20.8162756380043,
-      "nodeBindings": "same raw release WASM, wasm-bindgen nodejs target"
+      "seconds": 32.957,
+      "completedAt": "2026-11-18T06:43:30.214993+00:00"
     },
     {
       "job": "editor-tests",
-      "source": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
+      "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
       "command": [
         "npm",
         "--prefix",
@@ -45,12 +47,12 @@
       ],
       "cwd": "/home/edward/mygithub/rhwp-worktrees/release-0.9.1-preparation",
       "exitCode": 0,
-      "seconds": 0.336,
-      "completedAt": "2026-11-18T03:19:01.378227+00:00"
+      "seconds": 0.353,
+      "completedAt": "2026-11-18T06:43:30.568192+00:00"
     },
     {
       "job": "editor-contracts",
-      "source": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
+      "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
       "command": [
         "node",
         "--test",
@@ -59,12 +61,12 @@
       ],
       "cwd": "/home/edward/mygithub/rhwp-worktrees/release-0.9.1-preparation",
       "exitCode": 0,
-      "seconds": 0.153,
-      "completedAt": "2026-11-18T03:19:01.531389+00:00"
+      "seconds": 0.159,
+      "completedAt": "2026-11-18T06:43:30.727194+00:00"
     },
     {
       "job": "typescript",
-      "source": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
+      "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
       "command": [
         "npx",
         "tsc",
@@ -72,12 +74,12 @@
       ],
       "cwd": "/home/edward/mygithub/rhwp-worktrees/release-0.9.1-preparation/rhwp-studio",
       "exitCode": 0,
-      "seconds": 1.242,
-      "completedAt": "2026-11-18T03:19:02.773519+00:00"
+      "seconds": 1.248,
+      "completedAt": "2026-11-18T06:43:31.975380+00:00"
     },
     {
       "job": "editor-types",
-      "source": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
+      "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
       "command": [
         "npx",
         "tsc",
@@ -88,8 +90,8 @@
       ],
       "cwd": "/home/edward/mygithub/rhwp-worktrees/release-0.9.1-preparation/rhwp-studio",
       "exitCode": 0,
-      "seconds": 0.321,
-      "completedAt": "2026-11-18T03:19:03.094991+00:00"
+      "seconds": 0.382,
+      "completedAt": "2026-11-18T06:43:32.357913+00:00"
     },
     {
       "name": "studio-build",
@@ -101,9 +103,48 @@
         "build"
       ],
       "cwd": "/home/edward/mygithub/rhwp-worktrees/release-0.9.1-preparation",
-      "source": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
+      "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
       "exitCode": 0,
-      "seconds": 4.851
+      "seconds": 5.881
+    },
+    {
+      "name": "prepare-npm",
+      "command": [
+        "bash",
+        "scripts/prepare-npm.sh"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp-worktrees/release-0.9.1-preparation",
+      "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+      "exitCode": 0,
+      "seconds": 0.105
+    },
+    {
+      "name": "npm-core-pack",
+      "command": [
+        "npm",
+        "pack",
+        "--pack-destination",
+        "/home/edward/mygithub/rhwp/output/release-v0.9.1/packages",
+        "--json"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp-worktrees/release-0.9.1-preparation/pkg",
+      "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+      "exitCode": 0,
+      "seconds": 1.986
+    },
+    {
+      "name": "npm-editor-pack",
+      "command": [
+        "npm",
+        "pack",
+        "--pack-destination",
+        "/home/edward/mygithub/rhwp/output/release-v0.9.1/packages",
+        "--json"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp-worktrees/release-0.9.1-preparation/npm/editor",
+      "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+      "exitCode": 0,
+      "seconds": 0.308
     },
     {
       "name": "vsix",
@@ -116,9 +157,9 @@
         "/home/edward/mygithub/rhwp/output/release-v0.9.1/packages/rhwp-vscode-0.9.1.vsix"
       ],
       "cwd": "/home/edward/mygithub/rhwp-worktrees/release-0.9.1-preparation/rhwp-vscode",
-      "source": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
+      "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
       "exitCode": 0,
-      "seconds": 13.319
+      "seconds": 15.971
     },
     {
       "name": "chrome-build",
@@ -130,9 +171,9 @@
         "build"
       ],
       "cwd": "/home/edward/mygithub/rhwp-worktrees/release-0.9.1-preparation",
-      "source": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
+      "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
       "exitCode": 0,
-      "seconds": 1.953
+      "seconds": 2.037
     },
     {
       "name": "firefox-build",
@@ -144,9 +185,9 @@
         "build"
       ],
       "cwd": "/home/edward/mygithub/rhwp-worktrees/release-0.9.1-preparation",
-      "source": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
+      "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
       "exitCode": 0,
-      "seconds": 1.916
+      "seconds": 1.922
     },
     {
       "name": "firefox-extension-e2e",
@@ -155,9 +196,9 @@
         "e2e/download-save.test.mjs"
       ],
       "cwd": "/home/edward/mygithub/rhwp-worktrees/release-0.9.1-preparation/rhwp-firefox",
-      "source": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
+      "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
       "exitCode": 0,
-      "seconds": 9.906
+      "seconds": 9.977
     },
     {
       "name": "chrome-extension-e2e",
@@ -167,12 +208,12 @@
         "--dist",
         "/home/edward/mygithub/rhwp-worktrees/release-0.9.1-preparation/rhwp-chrome/dist",
         "--output",
-        "/home/edward/mygithub/rhwp/output/release-v0.9.1/chrome-extension-e2e"
+        "/home/edward/mygithub/rhwp/output/release-v0.9.1/chrome-extension-e2e-final-5167f6"
       ],
       "cwd": "/home/edward/mygithub/rhwp-worktrees/release-0.9.1-preparation/rhwp-chrome",
-      "source": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
+      "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
       "exitCode": 0,
-      "seconds": 58.229
+      "seconds": 53.943
     },
     {
       "name": "browser-render-diff",
@@ -182,9 +223,9 @@
         "e2e:render-diff:ci"
       ],
       "cwd": "/home/edward/mygithub/rhwp-worktrees/release-0.9.1-preparation/rhwp-studio",
-      "source": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
+      "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
       "exitCode": 0,
-      "seconds": 65.065
+      "seconds": 49.038
     },
     {
       "name": "browser-embed",
@@ -197,9 +238,9 @@
         "--mode=headless"
       ],
       "cwd": "/home/edward/mygithub/rhwp-worktrees/release-0.9.1-preparation/rhwp-studio",
-      "source": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
+      "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
       "exitCode": 0,
-      "seconds": 9.907
+      "seconds": 10.65
     },
     {
       "name": "about-dialog",
@@ -212,9 +253,9 @@
         "--mode=headless"
       ],
       "cwd": "/home/edward/mygithub/rhwp-worktrees/release-0.9.1-preparation/rhwp-studio",
-      "source": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
+      "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
       "exitCode": 0,
-      "seconds": 5.01
+      "seconds": 5.69
     },
     {
       "name": "dialog-viewport",
@@ -227,9 +268,9 @@
         "--mode=headless"
       ],
       "cwd": "/home/edward/mygithub/rhwp-worktrees/release-0.9.1-preparation/rhwp-studio",
-      "source": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
+      "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
       "exitCode": 0,
-      "seconds": 17.635
+      "seconds": 18.445
     },
     {
       "name": "pdf-busy-ui",
@@ -242,9 +283,9 @@
         "--mode=headless"
       ],
       "cwd": "/home/edward/mygithub/rhwp-worktrees/release-0.9.1-preparation/rhwp-studio",
-      "source": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
+      "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
       "exitCode": 0,
-      "seconds": 7.401
+      "seconds": 8.511
     },
     {
       "name": "host-font-input",
@@ -257,9 +298,24 @@
         "--mode=headless"
       ],
       "cwd": "/home/edward/mygithub/rhwp-worktrees/release-0.9.1-preparation/rhwp-studio",
-      "source": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
+      "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
       "exitCode": 0,
-      "seconds": 18.123
+      "seconds": 22.913
+    },
+    {
+      "name": "initial-page-render",
+      "command": [
+        "node",
+        "e2e/run-with-vite.mjs",
+        "--",
+        "node",
+        "e2e/initial-page-render-issue9164.test.mjs",
+        "--mode=headless"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp-worktrees/release-0.9.1-preparation/rhwp-studio",
+      "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+      "exitCode": 0,
+      "seconds": 12.277
     },
     {
       "name": "npm-package-consumption",
@@ -268,9 +324,9 @@
         "/home/edward/mygithub/rhwp/output/release-v0.9.1/npm-package-consumer.py"
       ],
       "cwd": "/home/edward/mygithub/rhwp-worktrees/release-0.9.1-preparation",
-      "source": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
+      "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
       "exitCode": 0,
-      "seconds": 4.259
+      "seconds": 3.596
     },
     {
       "name": "verify-wasm-consumed",
@@ -286,9 +342,21 @@
         "--require-consumption"
       ],
       "cwd": "/home/edward/mygithub/rhwp-worktrees/release-0.9.1-preparation",
-      "source": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
+      "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
       "exitCode": 0,
-      "seconds": 0.237
+      "seconds": 0.255
+    },
+    {
+      "name": "native-notices",
+      "command": [
+        "python3",
+        "scripts/prepare_release_notices.py",
+        "/home/edward/mygithub/rhwp/output/release-v0.9.1/native-stage/rhwp/notices"
+      ],
+      "cwd": "/home/edward/mygithub/rhwp-worktrees/release-0.9.1-preparation",
+      "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+      "exitCode": 0,
+      "seconds": 0.099
     },
     {
       "name": "native-package",
@@ -301,168 +369,77 @@
         "samples/issue2527_empty_linesegs.hwpx"
       ],
       "cwd": "/home/edward/mygithub/rhwp-worktrees/release-0.9.1-preparation",
-      "source": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
+      "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
       "exitCode": 0,
-      "seconds": 2.04
-    },
-    {
-      "name": "consumer-minimal",
-      "command": [
-        "cargo",
-        "+1.93.1",
-        "run",
-        "--profile",
-        "release-test",
-        "--manifest-path",
-        "/home/edward/mygithub/rhwp/output/release-v0.9.1/loopback/consumer/Cargo.toml",
-        "--bin",
-        "rhwp-091-release-consumer",
-        "--config",
-        "source.crates-io.replace-with=\"rhwp-release-verification\"",
-        "--config",
-        "source.rhwp-release-verification.registry=\"sparse+http://127.0.0.1:42725/\"",
-        "--",
-        "/home/edward/mygithub/rhwp/output/release-v0.9.1/loopback/consumer/input.hwp"
-      ],
-      "cwd": "/home/edward/mygithub/rhwp/output/release-v0.9.1/loopback/consumer",
-      "exitCode": 0,
-      "seconds": 313.67
-    },
-    {
-      "name": "consumer-default",
-      "command": [
-        "cargo",
-        "+1.93.1",
-        "run",
-        "--profile",
-        "release-test",
-        "--manifest-path",
-        "/home/edward/mygithub/rhwp/output/release-v0.9.1/loopback/consumer/Cargo.toml",
-        "--bin",
-        "rhwp-091-release-consumer",
-        "--config",
-        "source.crates-io.replace-with=\"rhwp-release-verification\"",
-        "--config",
-        "source.rhwp-release-verification.registry=\"sparse+http://127.0.0.1:42725/\"",
-        "--features",
-        "rhwp-default",
-        "--",
-        "/home/edward/mygithub/rhwp/output/release-v0.9.1/loopback/consumer/input.hwp"
-      ],
-      "cwd": "/home/edward/mygithub/rhwp/output/release-v0.9.1/loopback/consumer",
-      "exitCode": 0,
-      "seconds": 334.353
-    },
-    {
-      "name": "consumer-pdf",
-      "command": [
-        "cargo",
-        "+1.93.1",
-        "run",
-        "--profile",
-        "release-test",
-        "--manifest-path",
-        "/home/edward/mygithub/rhwp/output/release-v0.9.1/loopback/consumer/Cargo.toml",
-        "--bin",
-        "rhwp-091-release-consumer",
-        "--config",
-        "source.crates-io.replace-with=\"rhwp-release-verification\"",
-        "--config",
-        "source.rhwp-release-verification.registry=\"sparse+http://127.0.0.1:42725/\"",
-        "--features",
-        "pdf-only",
-        "--",
-        "/home/edward/mygithub/rhwp/output/release-v0.9.1/loopback/consumer/input.hwp"
-      ],
-      "cwd": "/home/edward/mygithub/rhwp/output/release-v0.9.1/loopback/consumer",
-      "exitCode": 0,
-      "seconds": 268.84
-    },
-    {
-      "name": "consumer-pdf-default",
-      "command": [
-        "cargo",
-        "+1.93.1",
-        "run",
-        "--profile",
-        "release-test",
-        "--manifest-path",
-        "/home/edward/mygithub/rhwp/output/release-v0.9.1/loopback/consumer/Cargo.toml",
-        "--bin",
-        "pdf",
-        "--features",
-        "rhwp-default,pdf-import",
-        "--config",
-        "source.crates-io.replace-with=\"rhwp-release-verification\"",
-        "--config",
-        "source.rhwp-release-verification.registry=\"sparse+http://127.0.0.1:42725/\"",
-        "--",
-        "/home/edward/mygithub/rhwp/output/release-v0.9.1/loopback/consumer/fixtures",
-        "/home/edward/mygithub/rhwp/output/release-v0.9.1/loopback/pdf-output"
-      ],
-      "cwd": "/home/edward/mygithub/rhwp/output/release-v0.9.1/loopback/consumer",
-      "exitCode": 0,
-      "seconds": 1.954
-    },
-    {
-      "name": "consumer-pdf-excluded-codecs",
-      "command": [
-        "cargo",
-        "+1.93.1",
-        "run",
-        "--profile",
-        "release-test",
-        "--manifest-path",
-        "/home/edward/mygithub/rhwp/output/release-v0.9.1/loopback/consumer/Cargo.toml",
-        "--bin",
-        "pdf",
-        "--features",
-        "pdf-only,pdf-import",
-        "--config",
-        "source.crates-io.replace-with=\"rhwp-release-verification\"",
-        "--config",
-        "source.rhwp-release-verification.registry=\"sparse+http://127.0.0.1:42725/\"",
-        "--"
-      ],
-      "cwd": "/home/edward/mygithub/rhwp/output/release-v0.9.1/loopback/consumer",
-      "exitCode": 0,
-      "seconds": 1.032
-    },
-    {
-      "name": "consumer-guide",
-      "command": [
-        "cargo",
-        "+1.93.1",
-        "run",
-        "--profile",
-        "release-test",
-        "--manifest-path",
-        "/home/edward/mygithub/rhwp/output/release-v0.9.1/loopback/consumer/Cargo.toml",
-        "--bin",
-        "guide",
-        "--features",
-        "pdf-only,pdf-import",
-        "--config",
-        "source.crates-io.replace-with=\"rhwp-release-verification\"",
-        "--config",
-        "source.rhwp-release-verification.registry=\"sparse+http://127.0.0.1:42725/\"",
-        "--",
-        "/home/edward/mygithub/rhwp/output/release-v0.9.1/loopback/consumer/input.hwp",
-        "/home/edward/mygithub/rhwp/output/release-v0.9.1/loopback/consumer/fixtures/pdf/issue8174/features/recovery-incremental.pdf"
-      ],
-      "cwd": "/home/edward/mygithub/rhwp/output/release-v0.9.1/loopback/consumer",
-      "exitCode": 0,
-      "seconds": 1.753
+      "seconds": 1.808
     }
   ],
-  "studio": {
-    "passed": 2808,
-    "failed": 0,
-    "skipped": 0
+  "amoSourceRebuild": {
+    "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+    "archive": "/home/edward/mygithub/rhwp/output/release-v0.9.1/packages/rhwp-source-0.9.1-amo.zip",
+    "bytes": 52935796,
+    "sha256": "22410c6ae05d2f008c9d70c319279e2b14e694d10d08162cf63e7e490337d7dd",
+    "commands": [
+      {
+        "name": "amo-npm-studio",
+        "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+        "command": [
+          "npm",
+          "ci",
+          "--no-fund",
+          "--no-audit"
+        ],
+        "exitCode": 0,
+        "seconds": 9.909
+      },
+      {
+        "name": "amo-npm-firefox",
+        "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+        "command": [
+          "npm",
+          "ci",
+          "--no-fund",
+          "--no-audit"
+        ],
+        "exitCode": 0,
+        "seconds": 1.128
+      },
+      {
+        "name": "amo-wasm",
+        "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+        "command": [
+          "sh",
+          "scripts/wasm-pack-locked.sh",
+          "--target",
+          "web",
+          "--release"
+        ],
+        "exitCode": 0,
+        "seconds": 1279.093
+      },
+      {
+        "name": "amo-firefox",
+        "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+        "command": [
+          "npm",
+          "--prefix",
+          "rhwp-firefox",
+          "run",
+          "build"
+        ],
+        "exitCode": 0,
+        "seconds": 2.282
+      }
+    ],
+    "isolatedFromGitCheckout": true,
+    "localSourceCompileVerified": true,
+    "localSourceCompileSource": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+    "localSourceCompileMode": "cold-recompile",
+    "verifiedSourceFiles": 4888,
+    "firefoxVersion": "0.9.1",
+    "status": "source-zip-standard-wasm-and-firefox-rebuild-passed",
+    "submissionPerformed": false
   },
-  "initialHarnessFailuresResolved": {
-    "puppeteer": "Use installed puppeteer-core public entry instead of an internal module path",
-    "pdfExample": "Enable the consumer-local pdf-import feature required by the bin"
-  },
-  "amoSourceRebuild": "pending-separate-receipt"
+  "initialHarnessFailuresResolved": true,
+  "chromeProductionFailureFixed": true
 }

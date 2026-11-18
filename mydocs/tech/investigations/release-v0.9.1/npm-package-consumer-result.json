@@ -1,5 +1,5 @@
 {
-  "source": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
+  "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
   "exitCode": 0,
   "result": {
     "core": {
@@ -27,7 +27,7 @@
     "packageSource": "local npm tgz; no registry publication"
   },
   "packages": {
-    "rhwp-core-0.9.1.tgz": "5b912c51f362dac6431ff5a83e8ab3dd3c1f1036e3dedcba764e3e4ebab9647c",
+    "rhwp-core-0.9.1.tgz": "f3171161e053da57ebda8b22763a2ae4233d421a2c99a0bf8f3db44c43c92798",
     "rhwp-editor-0.9.1.tgz": "27bd37112c7a12b99d068e360fb7ea8ffc08da875f38c25b9ce97459ae596b24"
   },
   "published": false

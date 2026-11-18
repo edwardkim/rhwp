@@ -1,0 +1,11 @@
+{
+  "files": [
+    "mydocs/manual/crates_io_guide.md",
+    "mydocs/manual/pdf_developer_onboarding.md",
+    "mydocs/manual/pdf_developer_onboarding_EN.md",
+    "mydocs/manual/publish_guide.md",
+    "mydocs/tech/investigations/release-v0.9.1/README.md"
+  ],
+  "errors": [],
+  "status": "passed"
+}

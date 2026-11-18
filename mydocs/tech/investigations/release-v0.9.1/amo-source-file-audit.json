@@ -1,0 +1,9 @@
+{
+  "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+  "archiveSha256": "22410c6ae05d2f008c9d70c319279e2b14e694d10d08162cf63e7e490337d7dd",
+  "filesContentVerified": 4888,
+  "filesRetimestamped": 4888,
+  "registryCacheAllowed": true,
+  "localSourceCompileRequired": true,
+  "identicalRustInputProofSource": null
+}

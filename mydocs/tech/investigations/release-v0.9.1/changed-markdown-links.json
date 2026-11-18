@@ -1,0 +1,33 @@
+{
+  "files": [
+    "CHANGELOG.md",
+    "CHANGELOG_EN.md",
+    "README.md",
+    "README_EN.md",
+    "mydocs/feedback/chrome-0.9.1_eng.md",
+    "mydocs/feedback/chrome-0.9.1_kor.md",
+    "mydocs/feedback/edge-0.9.1_reviewer_notes.md",
+    "mydocs/feedback/firefox-0.9.1_amo_notes.md",
+    "mydocs/manual/crates_io_guide.md",
+    "mydocs/manual/pdf_developer_onboarding.md",
+    "mydocs/manual/pdf_developer_onboarding_EN.md",
+    "mydocs/manual/publish_guide.md",
+    "mydocs/plans/release_0_9_1_20261118.md",
+    "mydocs/plans/task_m100_9154_deprecated_methods.md",
+    "mydocs/release/release_notes_v0.9.1.md",
+    "mydocs/release/release_notes_v0.9.1_EN.md",
+    "mydocs/report/release_0_9_1_preparation_report.md",
+    "mydocs/report/task_m100_9154_deprecated_methods_report.md",
+    "mydocs/tech/investigations/release-v0.9.1/README.md",
+    "npm/README.md",
+    "npm/editor/README.md",
+    "packaging/PDF_QUICKSTART.md",
+    "packaging/PDF_QUICKSTART_EN.md",
+    "packaging/crates-io/README_PACKAGE.md",
+    "rhwp-chrome/README.md",
+    "rhwp-firefox/README.md",
+    "rhwp-vscode/CHANGELOG.md",
+    "rhwp-vscode/README.md"
+  ],
+  "exitCode": 0
+}

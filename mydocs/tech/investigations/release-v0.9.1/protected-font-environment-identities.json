@@ -1,0 +1,56 @@
+[
+  {
+    "key": "yeongwol",
+    "used_path": "/home/edward/mygithub/rhwp-worktrees/pr-9105-hwpx-parahead/mydocs/pr/assets/jinho-von-choi-20261114/font-supply/yeongwol-qualified-environment.json",
+    "sha256": "fa15a5cc106788922437324b4f501e124fc3043eec8756f1e1ba8faaed890a9d",
+    "bytes": 227,
+    "committed_path": "mydocs/pr/assets/jinho-von-choi-20261114/font-supply/yeongwol-qualified-environment.json",
+    "verified_commit": "1da7afbd64bbc59d9338a187ebcd21860ddc0842"
+  },
+  {
+    "key": "handbook-hwp",
+    "used_path": "/home/edward/mygithub/rhwp-worktrees/pr-9105-hwpx-parahead/mydocs/pr/assets/planet6897_integration_final/pr8389_8397/handbook-font-environment.json",
+    "sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25",
+    "bytes": 655,
+    "committed_path": "mydocs/pr/assets/planet6897_integration_final/pr8389_8397/handbook-font-environment.json",
+    "verified_commit": "1da7afbd64bbc59d9338a187ebcd21860ddc0842"
+  },
+  {
+    "key": "sample16-hwpx",
+    "used_path": "/home/edward/mygithub/rhwp-worktrees/pr-9105-hwpx-parahead/mydocs/pr/assets/pr8896/font-supply/sample16-hwpx-font-environment.json",
+    "sha256": "300d7233a5527172ad4df993214d791fe214a69cf6e36017a637ca7cb928d183",
+    "bytes": 481,
+    "committed_path": "mydocs/pr/assets/pr8896/font-supply/sample16-hwpx-font-environment.json",
+    "verified_commit": "1da7afbd64bbc59d9338a187ebcd21860ddc0842"
+  },
+  {
+    "key": "sample16-hwp2022",
+    "used_path": "/home/edward/mygithub/rhwp-worktrees/pr-9105-hwpx-parahead/mydocs/pr/assets/pr8896/font-supply/sample16-hwp2022-font-environment.json",
+    "sha256": "e64dc04a55787efcbd55dcddd9f7a9fc8454a1df06a20c4cd9e99c9dd88de36b",
+    "bytes": 463,
+    "committed_path": "mydocs/pr/assets/pr8896/font-supply/sample16-hwp2022-font-environment.json",
+    "verified_commit": "1da7afbd64bbc59d9338a187ebcd21860ddc0842"
+  },
+  {
+    "key": "nested",
+    "used_path": "/home/edward/mygithub/rhwp/output/pr-review/donggyun112-20261116/final/nested-ttf-independent-missing-glyphs.json",
+    "sha256": "93f9b17725871ff485807485ac848a4abc193ba79f88cf3076441966a1ed9965",
+    "bytes": 4204
+  },
+  {
+    "key": "sample16-hwp2024",
+    "used_path": "/home/edward/mygithub/rhwp-worktrees/pr-9105-hwpx-parahead/mydocs/pr/assets/pr8896/font-supply/sample16-hwp2024-font-environment.json",
+    "sha256": "4fb70119f4959fb6461ed304d4b166c499b58caab0cc428f9fbab5fb2ef79b8b",
+    "bytes": 484,
+    "committed_path": "mydocs/pr/assets/pr8896/font-supply/sample16-hwp2024-font-environment.json",
+    "verified_commit": "1da7afbd64bbc59d9338a187ebcd21860ddc0842"
+  },
+  {
+    "key": "handbook-hwpx",
+    "used_path": "/home/edward/mygithub/rhwp-worktrees/pr-9105-hwpx-parahead/mydocs/pr/assets/planet6897_integration_final/pr8389_8397/handbook-font-environment.json",
+    "sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25",
+    "bytes": 655,
+    "committed_path": "mydocs/pr/assets/planet6897_integration_final/pr8389_8397/handbook-font-environment.json",
+    "verified_commit": "1da7afbd64bbc59d9338a187ebcd21860ddc0842"
+  }
+]

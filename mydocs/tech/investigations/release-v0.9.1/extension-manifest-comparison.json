@@ -1,38 +1,24 @@
 {
-  "checkedAt": "2026-11-18T01:50:51.856854+00:00",
   "baseline": "v0.9.0",
-  "manifestResults": [
+  "candidate": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+  "manifests": [
     {
-      "path": "rhwp-chrome/manifest.json",
-      "oldVersion": "0.9.0",
-      "newVersion": "0.9.1",
-      "allOtherManifestFieldsEqual": true,
-      "packagedManifestMatchesSource": true
+      "file": "rhwp-chrome/manifest.json",
+      "previousVersion": "0.9.0",
+      "candidateVersion": "0.9.1",
+      "allFieldsExceptVersionIdentical": true
     },
     {
-      "path": "rhwp-firefox/manifest.json",
-      "oldVersion": "0.9.0",
-      "newVersion": "0.9.1",
-      "allOtherManifestFieldsEqual": true,
-      "packagedManifestMatchesSource": true
+      "file": "rhwp-firefox/manifest.json",
+      "previousVersion": "0.9.0",
+      "candidateVersion": "0.9.1",
+      "allFieldsExceptVersionIdentical": true
     },
     {
-      "path": "rhwp-safari/src/manifest.json",
-      "oldVersion": "0.9.0",
-      "newVersion": "0.9.1",
-      "allOtherManifestFieldsEqual": true,
-      "packagedManifestMatchesSource": null
+      "file": "rhwp-safari/src/manifest.json",
+      "previousVersion": "0.9.0",
+      "candidateVersion": "0.9.1",
+      "allFieldsExceptVersionIdentical": true
     }
-  ],
-  "status": "source and packaged manifests checked; Chrome/Firefox runtime gates passed; Safari source manifest only",
-  "runtime": {
-    "chromeSuites": [
-      "extension-smoke",
-      "download-interceptor",
-      "extension-lifecycle"
-    ],
-    "chromeStatus": "pass",
-    "firefoxStatus": "download/edit/save passed",
-    "safariRuntime": "not part of this release-channel validation"
-  }
+  ]
 }

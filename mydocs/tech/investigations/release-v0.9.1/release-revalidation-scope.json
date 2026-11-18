@@ -1,0 +1,19 @@
+{
+  "source": "c0f9ea46f4a5693323e51c6be2cd9a9368f3311d",
+  "newAcceptedBase": "197ce19e99438c2cba452c654ae1af504dab85ec",
+  "regressions": {
+    "passed": 13724,
+    "failed": 0,
+    "existingSkipped": 45
+  },
+  "newBaseNativeFocusedTarget": "skia_native_glyph_replay",
+  "incomingProtected18Status": "incomplete-user-directed-merge",
+  "promotionMustCompleteProtected18": true,
+  "releaseExceptionGranted": false,
+  "featureBase": "197ce19e99438c2cba452c654ae1af504dab85ec",
+  "featureFreezeApproved": true,
+  "laterFeaturePRsDeferred": true,
+  "releaseProtected18Status": "passed",
+  "completedProtectedPages": 3542,
+  "protectedDeclines": 0
+}

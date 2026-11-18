@@ -15,7 +15,7 @@ This candidate improves table, paragraph, font and round-trip fidelity, clipboar
 
 - Report automatic HWP download opening as complete after the initial page is painted, including font-preparation races ([#9170](https://github.com/edwardkim/rhwp/pull/9170)).
 
-- Preserve HWP3 picture ownership across saved page breaks and recover native font programs while preserving the original TTF/TTC preference ([#9157](https://github.com/edwardkim/rhwp/pull/9157)). Its full 18-document protected verification remains pending and must complete before release promotion.
+- Preserve HWP3 picture ownership across saved page breaks and recover native font programs while preserving the original TTF/TTC preference ([#9157](https://github.com/edwardkim/rhwp/pull/9157)). Release preparation completed the full 18-document Native/fresh WASM protected verification.
 - Handle Chrome settings-channel closure during worker suspension without enabling badges or preview before settings are available.
 
 - Track pending document opens through completion, failure and replacement so startup blank/recovery work cannot supersede an immediate SDK load. Preserve first-page completion and cancellation behavior.

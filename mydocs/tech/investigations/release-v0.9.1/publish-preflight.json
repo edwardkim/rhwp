@@ -2,8 +2,8 @@
   "status": "local-preflight-passed",
   "upload_performed": false,
   "permission_changes": false,
-  "source_sha": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
-  "observed_at": "2026-11-18T03:38:11.299864+00:00",
+  "source_sha": "c0f9ea46f4a5693323e51c6be2cd9a9368f3311d",
+  "observed_at": "2026-11-18T06:27:52.921554+00:00",
   "owner": "edwardkim",
   "dependency_order": [
     "rhwp-codec-resource",
@@ -25,7 +25,7 @@
     {
       "name": "rhwp-codec-resource",
       "version": "0.1.1",
-      "archive_sha256": "1dc2e77aa3a3e35bff097fd5451e81defc176deede3d674bce209872b64ca18c",
+      "archive_sha256": "5de5f900809d652b6d304b8aff7eff1ecb440c6089c8b600ed9484f94aaee465",
       "registry": {
         "status": "exists",
         "owners": [
@@ -101,7 +101,7 @@
     {
       "name": "rhwp-ooxml-chart",
       "version": "0.1.1",
-      "archive_sha256": "bd07960233defdd6ee52f078fc248aad28e168ece06dfc966fb5ac6d82d25540",
+      "archive_sha256": "4e1f23e4a73177b4a946016f6890e68e585fc34e5d154c70c1ec841fdfefbd05",
       "registry": {
         "status": "exists",
         "owners": [
@@ -177,7 +177,7 @@
     {
       "name": "rhwp-hayro-ccitt",
       "version": "0.3.0-rhwp.2",
-      "archive_sha256": "ed12c894ac38daf62a25c3c5fe9fd1ba1c465de60fc6c7f342ea5c29aa029657",
+      "archive_sha256": "7b493315875b80181d68a4206c114efc9481c51fe9861f0a28281712aa7806f3",
       "registry": {
         "status": "exists",
         "owners": [
@@ -196,7 +196,7 @@
     {
       "name": "rhwp-hayro-jpeg2000",
       "version": "0.4.0-rhwp.2",
-      "archive_sha256": "08aa6342faf29535e2c542306661f16bc38f8544d27ddeb8760114b52b83bebc",
+      "archive_sha256": "f7105f026efe593aa3146def40cf03415faa0e2da077408061b729dcd9f4d73a",
       "registry": {
         "status": "exists",
         "owners": [
@@ -215,7 +215,7 @@
     {
       "name": "rhwp-qcms",
       "version": "0.3.0-rhwp.2",
-      "archive_sha256": "f682eba5c4e9a0e7689f8343589f3c913c387b1f1234f66471cc2034bea6c35d",
+      "archive_sha256": "441b4376da438d42d64fd7f10bc8612f62d4894ce54202235e0823ffb704ed6b",
       "registry": {
         "status": "exists",
         "owners": [
@@ -234,7 +234,7 @@
     {
       "name": "rhwp-hayro-jbig2",
       "version": "0.3.0-rhwp.2",
-      "archive_sha256": "c549d26f8dfc066f321ee191688dbd3106bb1f076d72d2c1294c9f61488bf246",
+      "archive_sha256": "4f81f6b0c47166faf04b235e7b85ca7b79d03b7b62136ed419739d54725d3999",
       "registry": {
         "status": "exists",
         "owners": [
@@ -253,7 +253,7 @@
     {
       "name": "rhwp-pdf-import-backend",
       "version": "0.3.78-rhwp.2",
-      "archive_sha256": "1ed840b560bc0cdbfdce09882719305334eb094d06dbb0f0071416255d9137ca",
+      "archive_sha256": "05e073f3d6da5ab17c33c738a13551a248fc300d0d91a9c38154d99781886696",
       "registry": {
         "status": "exists",
         "owners": [
@@ -272,7 +272,7 @@
     {
       "name": "rhwp",
       "version": "0.9.1",
-      "archive_sha256": "81a3eaefc98d5c7c245b0f00a65876e4fd535832a23a546aecb1e8ecab0a1295",
+      "archive_sha256": "5f3f7a911c327693d5419f33ce6a8a3e370b63c98ea398c485c692ee0aeac009",
       "registry": {
         "status": "exists",
         "owners": [

@@ -1,5 +1,5 @@
 {
-  "source_sha": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
+  "source_sha": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
   "source_dirty": false,
   "profile": "release",
   "build_configuration": {
@@ -35,20 +35,20 @@
   "cargo_build_jobs": "8",
   "timing_method": "log receipt boundaries; includes setup/finalization, not isolated process timings",
   "success": true,
-  "wall_seconds": 1118.051,
+  "wall_seconds": 412.555,
   "returncode": 0,
   "events_seconds": {
-    "cargo_start": 0.4191590980044566,
-    "bindgen_start": 723.1700114199775,
-    "opt_start": 730.5058032060042,
-    "package_done": 1118.0268725419883
+    "cargo_start": 5.391334656975232,
+    "bindgen_start": 8.88761350599816,
+    "opt_start": 16.2883578609908,
+    "package_done": 412.51812325499486
   },
   "phase_seconds_approx": {
-    "preparation": 0.419,
-    "cargo": 722.751,
-    "bindgen_setup_and_run": 7.336,
-    "wasm_opt_and_finalize": 387.521,
-    "after_package": 0.024
+    "preparation": 5.391,
+    "cargo": 3.496,
+    "bindgen_setup_and_run": 7.401,
+    "wasm_opt_and_finalize": 396.23,
+    "after_package": 0.037
   },
   "tool_commands": {
     "wasm-bindgen": [
@@ -84,8 +84,8 @@
       "bytes": 587539
     },
     "rhwp_bg.wasm": {
-      "sha256": "fa5876a81198b028f218f45c3f00903c10370263fde515e1fc9180ab2976b27e",
-      "bytes": 27880725
+      "sha256": "4708ca98a0683c3e95a79c6ff33c847de062100ae2c15b4fbf268c90b2ce5cce",
+      "bytes": 27883024
     }
   }
 }

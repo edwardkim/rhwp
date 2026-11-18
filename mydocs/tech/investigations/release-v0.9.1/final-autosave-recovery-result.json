@@ -1,0 +1,14 @@
+{
+  "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+  "command": [
+    "node",
+    "e2e/run-with-vite.mjs",
+    "--",
+    "node",
+    "e2e/autosave-recovery.test.mjs",
+    "--mode=headless"
+  ],
+  "exitCode": 0,
+  "recordOnlyDocumentsPendingCommit": true,
+  "wasmManifest": "fresh-wasm/build.json"
+}

@@ -1,0 +1,8 @@
+{
+  "url": "https://github.com/rust-skia/skia-binaries/releases/download/0.157.0/skia-binaries-30669978c3f39a73e8a7-x86_64-unknown-linux-gnu-jpegd-jpege-pdf-textlayout.tar.gz",
+  "releaseDigest": "sha256:17edb23dba94638e21de6f9cf9144b14c3da58b57d9e284c45b5c0f344cfd160",
+  "sha256": "17edb23dba94638e21de6f9cf9144b14c3da58b57d9e284c45b5c0f344cfd160",
+  "bytes": 18637121,
+  "reason": "WSL resolver symlink target was hidden by font sandbox",
+  "sourceOrThresholdChanged": false
+}

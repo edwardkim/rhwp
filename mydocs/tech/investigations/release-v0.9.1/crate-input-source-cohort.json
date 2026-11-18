@@ -1,0 +1,67 @@
+{
+  "packagingSource": "c0f9ea46f4a5693323e51c6be2cd9a9368f3311d",
+  "frontendSource": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+  "allNewArchiveSourceInputsUnchanged": true,
+  "changedGitPaths": [
+    "CHANGELOG.md",
+    "CHANGELOG_EN.md",
+    "mydocs/plans/release_0_9_1_20261118.md",
+    "mydocs/release/release_notes_v0.9.1.md",
+    "mydocs/release/release_notes_v0.9.1_EN.md",
+    "rhwp-studio/src/core/document-open-session.ts",
+    "rhwp-studio/src/main.ts",
+    "rhwp-studio/tests/document-open-session.test.ts"
+  ],
+  "archives": [
+    {
+      "name": "rhwp-codec-resource",
+      "version": "0.1.1",
+      "packagedFiles": 8,
+      "modifiedSourceInputs": []
+    },
+    {
+      "name": "rhwp-ooxml-chart",
+      "version": "0.1.1",
+      "packagedFiles": 18,
+      "modifiedSourceInputs": []
+    },
+    {
+      "name": "rhwp-hayro-ccitt",
+      "version": "0.3.0-rhwp.2",
+      "packagedFiles": 15,
+      "modifiedSourceInputs": []
+    },
+    {
+      "name": "rhwp-hayro-jpeg2000",
+      "version": "0.4.0-rhwp.2",
+      "packagedFiles": 42,
+      "modifiedSourceInputs": []
+    },
+    {
+      "name": "rhwp-qcms",
+      "version": "0.3.0-rhwp.2",
+      "packagedFiles": 22,
+      "modifiedSourceInputs": []
+    },
+    {
+      "name": "rhwp-hayro-jbig2",
+      "version": "0.3.0-rhwp.2",
+      "packagedFiles": 34,
+      "modifiedSourceInputs": []
+    },
+    {
+      "name": "rhwp-pdf-import-backend",
+      "version": "0.3.78-rhwp.2",
+      "packagedFiles": 434,
+      "modifiedSourceInputs": []
+    },
+    {
+      "name": "rhwp",
+      "version": "0.9.1",
+      "packagedFiles": 2121,
+      "modifiedSourceInputs": []
+    }
+  ],
+  "vcsSourceMetadataRemainsPackagingSource": true,
+  "publicationPerformed": false
+}

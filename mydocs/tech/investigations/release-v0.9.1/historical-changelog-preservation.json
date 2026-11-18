@@ -1,0 +1,16 @@
+{
+  "baseline": "v0.9.0",
+  "candidate": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+  "files": [
+    {
+      "file": "CHANGELOG.md",
+      "suffixSha256": "a65e662d8d225e1cb39890eba01dd0a4c37bd7132a20a0ec61bb24b650b6baa8",
+      "unchanged": true
+    },
+    {
+      "file": "CHANGELOG_EN.md",
+      "suffixSha256": "6026051fef3b465e15e864b6cf60fca00fbcbcd9f47957065d7131dd80d17191",
+      "unchanged": true
+    }
+  ]
+}

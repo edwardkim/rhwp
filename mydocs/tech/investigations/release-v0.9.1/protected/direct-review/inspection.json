@@ -1,0 +1,35 @@
+{
+  "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+  "inspectedAt": "2026-11-18T07:01:12.059898+00:00",
+  "scope": [
+    {
+      "document": "nested",
+      "pages": [
+        1,
+        10,
+        17
+      ],
+      "paths": [
+        "nested-1.png",
+        "nested-10.png",
+        "nested-10-zoom.png",
+        "nested-17.png"
+      ],
+      "observations": "Independent PDF and Native/fresh WASM show the same table start and continuation, circled numbers and mixed Han glyphs, underline positions, following text, and terminal page content. Raster stroke coverage differs between PDF/Native/WASM, without a new missing glyph or changed line ownership in these inspected areas."
+    },
+    {
+      "document": "handbook-hwpx",
+      "pages": [
+        130,
+        200
+      ],
+      "paths": [
+        "handbook-130.png",
+        "handbook-200.png"
+      ],
+      "observations": "Independent PDF and Native/fresh WASM show the same diagram/table boundaries, all three black bullet marks, neighboring paragraphs, line breaks, and following boxed text. Native raster coverage differences are distinguished from missing content."
+    }
+  ],
+  "allPagesManuallyInspected": false,
+  "numericCoverage": "Full 17-page Native and fresh WASM TSVs; all protected documents are independently covered by the full protected run."
+}
