@@ -225,3 +225,108 @@ fn table_continuation_and_following_paragraphs_keep_page_ownership() {
         "문단 76 표는 150쪽까지 이어지지 않는다"
     );
 }
+
+/// [#9060] 빈 호스트 표(2구역 문단 80)의 첫 유닛이 위 캡션까지 150쪽에 들어가지 않으면 표만
+/// 151쪽에서 열리고, 저장 줄이 150쪽 좌표에 있는 빈 호스트 글줄과 뒤 빈 문단 81 은 150쪽에
+/// 남는다. 152쪽에서는 문단 82 가 표 끝 조각 바로 아래(바깥 아래 여백 뒤)에서 시작한다.
+#[test]
+fn empty_host_successor_stays_with_the_host_and_next_paragraph_follows_the_table_end() {
+    const HOST: usize = 80;
+    const EMPTY_SUCCESSOR: usize = 81;
+    const RESTART: usize = 82;
+    let core = document();
+    let host = &core.document().sections[SECTION].paragraphs[HOST];
+    let [Control::Table(table)] = host.controls.as_slice() else {
+        panic!("문단 80 컨트롤: {}", host.controls.len());
+    };
+    assert!(host.text.is_empty() && table.caption.is_some());
+    // 저장 사다리: 문단 81 은 호스트 뒤 같은 쪽 좌표, 문단 82 는 새 쪽으로 되감긴다.
+    let vpos =
+        |para: usize| core.document().sections[SECTION].paragraphs[para].line_segs[0].vertical_pos;
+    assert!(vpos(EMPTY_SUCCESSOR) > vpos(HOST) && vpos(RESTART) < vpos(HOST));
+    let outer_bottom = f64::from(table.outer_margin_bottom) * 96.0 / 7200.0;
+
+    let host_page = Page::of(&core, 149);
+    assert!(host_page.table(HOST).is_none(), "150쪽에는 표 조각이 없다");
+    let (_, body_bottom) = host_page.body.expect("150쪽 본문 영역");
+    let host_line = host_page
+        .lines
+        .iter()
+        .find(|(p, _, _)| *p == HOST)
+        .expect("150쪽에 빈 호스트 글줄이 있다");
+    let successor = host_page
+        .lines
+        .iter()
+        .find(|(p, _, _)| *p == EMPTY_SUCCESSOR)
+        .expect("150쪽에 빈 문단 81 글줄이 있다");
+    assert!(
+        host_line.2 <= successor.1 + 0.5,
+        "호스트 글줄 뒤에 문단 81 이 온다"
+    );
+    assert!(
+        successor.2 <= body_bottom + 0.5,
+        "문단 81 글줄은 150쪽 본문 안이다"
+    );
+
+    assert!(
+        Page::of(&core, 150).table(HOST).is_some(),
+        "표는 151쪽에서 시작한다"
+    );
+    let end_page = Page::of(&core, 151);
+    let (_, table_bottom) = end_page.table(HOST).expect("152쪽에 표 끝 조각이 있다");
+    assert!(
+        !end_page.has_line(EMPTY_SUCCESSOR),
+        "문단 81 은 152쪽 표 뒤를 점유하지 않는다"
+    );
+    let restart_top = end_page
+        .lines
+        .iter()
+        .filter(|(p, _, _)| *p == RESTART)
+        .map(|(_, top, _)| *top)
+        .reduce(f64::min)
+        .expect("152쪽에 문단 82 가 있다");
+    assert!(
+        (restart_top - table_bottom - outer_bottom).abs() <= 1.0,
+        "문단 82 글줄은 표 끝 조각 + 바깥 아래 여백({outer_bottom:.2}px)에서 시작한다: {:.2}px",
+        restart_top - table_bottom
+    );
+}
+
+/// [#9060] 쪽을 채우는 글자처럼 취급한 표(1구역 문단 808 <표 3-23>)도 단 맨 위에서 저장 첫 줄의
+/// 앞 간격(vpos)만큼 내려 시작한다. 다음 문단은 새 쪽 첫머리에서 같은 「쪽 위끝 + 앞 간격」
+/// 인코딩으로 다시 시작해 그 원점이 쪽 기준임을 입증한다.
+#[test]
+fn page_filling_inline_table_keeps_its_stored_page_top_margin() {
+    const TAC_PARA: usize = 808;
+    let core = document();
+    let para = &core.document().sections[0].paragraphs[TAC_PARA];
+    let [Control::Table(table)] = para.controls.as_slice() else {
+        panic!("문단 808 컨트롤: {}", para.controls.len());
+    };
+    assert!(table.common.treat_as_char && table.caption.is_some());
+    let stored_top = f64::from(para.line_segs[0].vertical_pos) * 96.0 / 7200.0;
+    assert!(
+        stored_top > 0.0,
+        "저장 첫 줄은 쪽 위끝에서 앞 간격만큼 아래다"
+    );
+    let page = Page::of(&core, 78);
+    let (body_top, body_bottom) = page.body.expect("79쪽 본문 영역");
+    let (top, bottom) = page.table(TAC_PARA).expect("79쪽에 <표 3-23> 이 있다");
+    let caption_top = page
+        .lines
+        .iter()
+        .filter(|(_, line_top, _)| *line_top < top)
+        .map(|(_, line_top, _)| *line_top)
+        .reduce(f64::min)
+        .expect("표 위에 위 캡션 글줄이 있다");
+    assert!(
+        (caption_top - body_top - stored_top).abs() <= 0.5,
+        "캡션·표 묶음은 본문 위끝 + 저장 앞 간격({stored_top:.2}px)에서 시작한다: {:.2}px",
+        caption_top - body_top
+    );
+    assert!(bottom <= body_bottom + 0.5, "표는 79쪽 본문 안에서 끝난다");
+    assert!(
+        Page::of(&core, 79).table(TAC_PARA).is_none(),
+        "<표 3-23> 은 80쪽으로 이어지지 않는다"
+    );
+}

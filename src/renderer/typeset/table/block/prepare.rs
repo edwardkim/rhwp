@@ -897,9 +897,27 @@ impl TypesetEngine {
                 .iter()
                 .any(|item| item.para_index() == para_idx),
         );
+        // [#9060] 위 캡션은 표 첫 조각과 같은 상자로 그 위에 놓인다. 저장 원점 상자(`p`)
+        // 경로처럼 원점 없는 첫 조각 수용 판정도 그 캡션 블록을 뺀 공간에서 첫 유닛을 잰다.
+        // 빼지 않으면 캡션까지 들어가지 않는 쪽 바닥에 첫 행을 둔다고 판정해, 실제 분할
+        // 예산(캡션 포함)으로는 담을 수 없는 조각을 그 쪽에 낸다(ODA 보고서 150쪽 문단 80:
+        // 남은 23.0px 에 캡션 24.7px 가 들어가지 않아 한/글은 표를 151쪽에서 연다).
+        let first_fragment_top_caption = table
+            .caption
+            .as_ref()
+            .filter(|cap| matches!(cap.direction, CaptionDirection::Top) && ft.caption_height > 0.0)
+            .map_or(0.0, |cap| {
+                ft.caption_height + hwpunit_to_px(cap.spacing as i32, self.dpi)
+            });
         let remaining_with = |released: f64| {
             fragment_host_placement.map_or_else(
-                || (table_available + released - first_frag_origin - first_frag_overhead).max(0.0),
+                || {
+                    (table_available + released
+                        - first_frag_origin
+                        - first_frag_overhead
+                        - first_fragment_top_caption)
+                        .max(0.0)
+                },
                 |p| {
                     (table_available + released
                         - p.table_top

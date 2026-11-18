@@ -6853,8 +6853,7 @@ impl TypesetEngine {
         if st.col_count != 1 || st.current_items.is_empty() {
             return;
         }
-        if !para_has_visible_text(para)
-            || !crate::renderer::float_placement::is_para_topbottom_float(&table.common)
+        if !crate::renderer::float_placement::is_para_topbottom_float(&table.common)
             || !matches!(
                 table.layout_page_break(),
                 crate::model::table::TablePageBreak::RowBreak
@@ -6864,6 +6863,30 @@ impl TypesetEngine {
         }
         let Some(host_seg) = para.line_segs.iter().find(|ls| !is_synthetic_line_seg(ls)) else {
             return;
+        };
+        // [#9060] 빈 호스트도 저장 줄이 쪽 안 좌표로 이 쪽에 있으면 그 글줄과 저장 사다리가
+        // 같은 쪽으로 이은 뒤 문단은 이 쪽에 남는다. 글자 유무는 줄 상자의 점유와 무관하다.
+        // 한/글 2020 Print·저장 vpos: ODA 보고서 문단 80(빈 호스트, vpos 62324)·81(빈 문단,
+        // 64544)은 150쪽 바닥에 남고 표만 151쪽에서 시작하며, 다음 문단 82 가 152쪽 표 끝
+        // 조각 아래에서 vpos 30448 로 다시 시작한다. 저장 사다리가 없는 빈 호스트는
+        // `prefill_computed_deferred_float` 가 따로 맡는다.
+        // 호스트 줄 하나가 이 표 하나만 소유할 때로 한정한다. 같은 문단의 다른 표가 앞서 이어진
+        // 경우 호스트 글줄과 뒤 문단은 이미 그 표의 흐름에서 놓였다.
+        let empty_stored_host = !para_has_visible_text(para)
+            && matches!(para.controls.as_slice(), [Control::Table(_)])
+            && (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
+            && !st.profile.session_edited()
+            && !para.stored_text_partition_is_dirty()
+            && para.line_segs.iter().all(|ls| !is_synthetic_line_seg(ls));
+        if !para_has_visible_text(para) && !empty_stored_host {
+            return;
+        }
+        let pre_emit_host = |engine: &Self, st: &mut TypesetState| {
+            if empty_stored_host {
+                engine.pre_emit_deferred_host_lines(st, para_idx, para, composed_all, styles)
+            } else {
+                engine.pre_emit_visible_rowbreak_host_text(st, para_idx, para, composed_all, styles)
+            }
         };
         let host_vpos = host_seg.vertical_pos;
         let body_h_hu = crate::renderer::px_to_hwpunit(st.layout.body_area.height, self.dpi);
@@ -6889,17 +6912,13 @@ impl TypesetEngine {
         // 저장 vpos 가드보다 먼저 수행한다. 쪽 내부 vpos 를 가진 HWP/HWP3/일반 HWPX
         // 경로는 기존처럼 같은 쪽 저장 flow 확인 뒤에만 pre-emit 한다.
         let pre_emit_before_vpos_check = st.profile.hwpx_stored_layout() && host_vpos > body_h_hu;
-        if pre_emit_before_vpos_check
-            && !self.pre_emit_visible_rowbreak_host_text(st, para_idx, para, composed_all, styles)
-        {
+        if pre_emit_before_vpos_check && !pre_emit_host(self, st) {
             return;
         }
         if host_vpos < 0 || host_vpos > body_h_hu {
             return; // 누적좌표 등 — 저장 flow 로 같은 쪽 여부를 알 수 없음
         }
-        if !pre_emit_before_vpos_check
-            && !self.pre_emit_visible_rowbreak_host_text(st, para_idx, para, composed_all, styles)
-        {
+        if !pre_emit_before_vpos_check && !pre_emit_host(self, st) {
             return;
         }
         let end = paragraphs_all.len().min(para_idx + 1 + MAX_PREFILL);
@@ -6926,6 +6945,11 @@ impl TypesetEngine {
             ) {
                 break;
             }
+        }
+        // 빈 호스트 글줄은 이 쪽에 남고 표는 호출자가 곧 다음 쪽으로 넘긴다. 그 쪽의 표 원점·
+        // 오프셋 소진 판정은 호스트 글줄이 그 쪽에 없다는 사실을 그대로 쓴다.
+        if empty_stored_host {
+            st.forget_pre_emitted_host_height(para_idx);
         }
     }
 

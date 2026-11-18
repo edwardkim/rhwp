@@ -358,6 +358,13 @@ impl TypesetState {
         self.data.pre_emitted_host_heights.remove(&index);
         self.data.pre_emitted_host_content_heights.remove(&index);
     }
+    /// [#9060] 호스트 글줄은 앞 쪽에 남고 표만 다음 쪽으로 넘어갈 때, 그 글줄 높이는 표 쪽의
+    /// 오프셋 감액(#2015)·쪽 경계 오프셋 소진(#6143) 판정 근거가 아니다. 선방출 표시는 남겨
+    /// 같은 글줄을 다시 내지 않게 하고 높이 기록만 지운다.
+    pub(in crate::renderer::typeset) fn forget_pre_emitted_host_height(&mut self, index: usize) {
+        self.data.pre_emitted_host_heights.remove(&index);
+        self.data.pre_emitted_host_content_heights.remove(&index);
+    }
     pub(in crate::renderer::typeset) fn request_block_table_restart(&mut self, index: usize) {
         self.data.restart_block_table_para = Some(index);
     }
