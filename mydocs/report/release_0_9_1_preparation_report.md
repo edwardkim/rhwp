@@ -85,6 +85,12 @@ Native sandbox의 WSL DNS 연결 파일 누락은 해당 파일만 읽기 전용
 
 [#9173의 첫 lint](https://github.com/edwardkim/rhwp/actions/runs/44259474754/job/134649184729)에서 라이선스 고지의 프로젝트 버전과 VS Code 변경 이력의 제목 형식이 기존 릴리스 계약에 맞지 않아 실패했다. 최초 로컬 실행의 검사 목록에 이 계약 모듈이 빠져 있었다. 두 문서의 표기를 맞추고 라이선스 고지에 실린 내부 코덱 버전을 Cargo의 실제 버전과 일치시켰다. 동일한 CI 단계의 workflow 계약 643건, 고지 파일 84개 생성, 두 문서의 링크 검사가 통과했다. 제품 코드·빌드 입력 의존성·검사 기준은 그대로이며 앞선 영수증은 실제 실행 소스를 보존한다.
 
+## devel 통합과 main 계보 동기화
+
+[#9173](https://github.com/edwardkim/rhwp/pull/9173)은 리뷰와 해당 SHA의 필수 CI 확인 후 devel `d50dacc348d9533661378f40339b62381f0dd354`에 병합됐다. main에 별도로 병합된 0.9.0 릴리즈와 [#8884 보안 백포트](https://github.com/edwardkim/rhwp/pull/8884)의 계보는 병합 전에 devel에 합쳐지지 않았다. 승격 게이트는 main이 후보 devel의 조상이어야 하므로 승격 실행 전에 양쪽 계보를 합친다.
+
+main 보안 코드 `7bbe651832`와 devel의 선행 보정 `913713dbfd`는 stable patch ID가 같다. 네 충돌에서는 최신 devel의 qcms NEON 테스트 조건·PDF ToUnicode 패치 설명·최종 보안 검토 기록을 보존했다. main에만 존재하던 기존 검증 문서 여섯 개를 가져왔으며 `mydocs/` 밖의 파일은 #9173 병합본과 바이트가 같다. 이후 12개 승격 검증의 대상은 이 동기화가 통합된 devel SHA다.
+
 ## 다음 원격 단계
 
 1. 구체적인 후보와 PR 본문·원격 실행안에 대해 승인받은 뒤 devel Open PR·해당 head CI·self-review·merge를 진행한다.
