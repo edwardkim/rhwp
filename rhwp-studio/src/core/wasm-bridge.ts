@@ -278,6 +278,13 @@ export class WasmBridge {
   private readonly nativePuaFonts = new NativePuaFontSession();
   private readonly metafileFonts = new MetafileFontSession();
   private canvasFontGeneration = 0;
+  private pageHostFontRequests?: {
+    document: number;
+    provider: number;
+    fonts: number;
+    canvasMetrics: boolean;
+    pages: LocalFontRecord[][];
+  };
 
   private canvasMetricDocument(): CanvasMetricDocument | null {
     const doc = this.doc as unknown as Partial<CanvasMetricDocument> | null;
@@ -299,11 +306,15 @@ export class WasmBridge {
 
   /** Discard suspect measurements without manufacturing an external font change. */
   invalidateCanvasMetrics(): void {
+    this.pageHostFontRequests = undefined;
     this.canvasMetrics.invalidate();
     this.canvasMetricDocument()?.selectCanvasMetrics(false);
   }
 
-  async prepareCanvasMetrics(backend: string, isCurrent: () => boolean = () => true): Promise<boolean> {
+  async prepareCanvasMetrics(
+    backend: string, isCurrent: () => boolean = () => true, editedPage: number | null = null,
+  ): Promise<boolean> {
+    if (editedPage === null || backend !== 'canvas2d') this.pageHostFontRequests = undefined;
     const doc = this.doc;
     const documentGeneration = this._documentGeneration;
     const current = () => this.doc === doc && this._documentGeneration === documentGeneration && isCurrent();
@@ -317,19 +328,10 @@ export class WasmBridge {
     if (backend === 'canvas2d' && hasHostFontProvider()) {
       const generation = getHostFontState().generation;
       await prepareHostFontCatalog();
-      if (!current() || generation !== getHostFontState().generation) return false;
-      const records = this.withPortableMetrics(() => {
-        const selected = new Map<string, LocalFontRecord>();
-        for (let page = 0; page < this.pageCount; page++) {
-          for (const record of collectHostFontRequests(this.getPageLayerTreeObject(page))) {
-            selected.set(localFontFaceKey(record), record);
-          }
-        }
-        for (const record of this.nativePuaFonts.records(doc as unknown as NativePuaFontDocument | null)) {
-          selected.set(localFontFaceKey(record), record);
-        }
-        return [...selected.values()];
-      });
+      const catalog = getHostFontState();
+      if (!current() || generation !== catalog.generation) return false;
+      const records = catalog.count === 0 ? [] : this.collectDocumentHostFontRequests(
+        doc, generation, editedPage);
       await this.hostCanvasFonts.prepare(records, doc, current, hostFontLayoutEnabled());
       if (!current() || generation !== getHostFontState().generation) return false;
       const puaFontGeneration = this.canvasFontGeneration;
@@ -349,12 +351,49 @@ export class WasmBridge {
     }
     const metricDoc = this.canvasMetricDocument();
     if (!metricDoc || !current()) return false;
-    return this.canvasMetrics.prepare(metricDoc,
+    const changed = await this.canvasMetrics.prepare(metricDoc,
       { document: this._documentGeneration, fonts: this.canvasFontGeneration }, backend,
       current, () => document.fonts.ready, () => {
         const context = document.createElement('canvas').getContext('2d');
         return context ? this.hostCanvasFonts.measurementContext(context) : null;
       });
+    if (changed) this.pageHostFontRequests = undefined;
+    return changed;
+  }
+
+  private collectDocumentHostFontRequests(
+    doc: HwpDocument | null, provider: number, editedPage: number | null,
+  ): LocalFontRecord[] {
+    // Full preparation starts from portable layout. A page-local edit refers to the
+    // current screen layout, whose cuts can differ when supplemental metrics are on.
+    const collectRequests = () => {
+      const canvasMetrics = this.canvasMetricDocument()?.canvasMetricsActive() ?? false;
+      const count = this.pageCount;
+      const cached = this.pageHostFontRequests;
+      const collect = (index: number) => collectHostFontRequests(this.getPageLayerTreeObject(index));
+      let pages: LocalFontRecord[][];
+      if (editedPage !== null && Number.isInteger(editedPage) && editedPage >= 0 && editedPage < count
+        && cached?.document === this._documentGeneration && cached.provider === provider
+        && cached.fonts === this.canvasFontGeneration && cached.canvasMetrics === canvasMetrics
+        && cached.pages.length === count) {
+        pages = cached.pages;
+        pages[editedPage] = collect(editedPage);
+      } else {
+        pages = Array.from({ length: count }, (_, index) => collect(index));
+      }
+      this.pageHostFontRequests = {
+        document: this._documentGeneration, provider, fonts: this.canvasFontGeneration, canvasMetrics, pages,
+      };
+      const selected = new Map<string, LocalFontRecord>();
+      for (const requests of pages) {
+        for (const record of requests) selected.set(localFontFaceKey(record), record);
+      }
+      for (const record of this.nativePuaFonts.records(doc as unknown as NativePuaFontDocument | null)) {
+        selected.set(localFontFaceKey(record), record);
+      }
+      return [...selected.values()];
+    };
+    return editedPage === null ? this.withPortableMetrics(collectRequests) : collectRequests();
   }
 
   releaseCanvasFontResources(): void {
@@ -1136,7 +1175,7 @@ export class WasmBridge {
 
   private withHostPageFonts<T>(pageNum: number, operation: () => T, previewTree?: PageLayerTree): T {
     const paint = () => withCanvasFontResolution(this.hostCanvasFonts, operation);
-    if (!this.doc || !hostFontLayoutEnabled()) return paint();
+    if (!this.doc || !hostFontLayoutEnabled() || !getHostFontState().count) return paint();
     return this.hostCanvasFonts.withPageOutlines(
       collectHostFontRequests(previewTree ?? this.getPageLayerTreeObject(pageNum)), this.doc, paint);
   }

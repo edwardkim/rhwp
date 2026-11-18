@@ -123,7 +123,13 @@ function hancomEquationFamilies(root: LayerEquationLayoutBox | undefined): Set<s
 /** 실제 text/수식 face 소비자를 준비한다. glyph ID나 자원 내용은 다시 쓰지 않는다. */
 export function collectHostFontRequests(tree: PageLayerTree): LocalFontRecord[] {
   const selected = new Map<string, LocalFontRecord>();
+  const textFamilies = new Set<string>();
+  const equationFamilies = new Set<string>();
+  let checkedEnclosedFace = false;
   const selectTextFaces = (family: string, style?: LayerTextStyle) => {
+    const key = JSON.stringify([family, !!style?.bold, !!style?.italic]);
+    if (textFamilies.has(key)) return;
+    textFamilies.add(key);
     for (const candidate of ordinaryTextFontFamilies(family)) {
       const record = resolveRendererLocalFont(candidate, hostFontStyle(style));
       if (record?.hostReference) selected.set(localFontFaceKey(record), record);
@@ -137,6 +143,8 @@ export function collectHostFontRequests(tree: PageLayerTree): LocalFontRecord[] 
     else for (const op of node.ops) {
       if (op.type === 'equation') {
         for (const family of hancomEquationFamilies(op.layoutBox)) {
+          if (equationFamilies.has(family)) continue;
+          equationFamilies.add(family);
           for (const candidate of parseCssFontFamilyList(family)) {
             for (const record of resolveRendererLocalFontCandidates(candidate, { weight: 400, slant: 'normal' })) {
               if (record.hostReference) selected.set(localFontFaceKey(record), record);
@@ -161,10 +169,11 @@ export function collectHostFontRequests(tree: PageLayerTree): LocalFontRecord[] 
         if (!family) continue;
         selectTextFaces(family, style);
       }
-      if ([...op.text].some(character => {
+      if (!checkedEnclosedFace && [...op.text].some(character => {
         const glyph = enclosedPua(character.codePointAt(0) ?? 0);
         return glyph !== null && enclosedPuaHasMetrics(glyph);
       })) {
+        checkedEnclosedFace = true;
         const innerFace = resolveRendererLocalFont(enclosedPuaMetrics.innerFace,
           { weight: 400, slant: 'normal' });
         if (innerFace?.hostReference) selected.set(localFontFaceKey(innerFace), innerFace);
