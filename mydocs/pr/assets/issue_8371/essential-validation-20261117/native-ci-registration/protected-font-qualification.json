@@ -1,5 +1,5 @@
 {
-  "status": "incomplete-do-not-merge",
+  "status": "incomplete-user-directed-merge",
   "baseline": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
   "baselineSha256": "7eb001e3e30d6892d8bc03ba3e16456a4dd758cccb0e9aba073671366a9a5a1b",
   "conditionEvidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
@@ -425,5 +425,12 @@
   "note": "Read-only inventory of historical declared supply: 286 of 309 exact hashes located, 23 entries unmatched. This does not establish that every declared program is selected or required. #9156 passed its own 18-document Native/fresh-WASM 1771-page checks and remains valid accepted-base evidence. Current candidate whole-protection qualification is incomplete; no private font programs are published.",
   "conditionEvidenceCommit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
   "conditionEvidenceSha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
-  "capturedAt": "2026-11-17T18:38:51.968359+00:00"
+  "capturedAt": "2026-11-17T18:38:51.968359+00:00",
+  "mergeDirective": {
+    "date": "2026-11-18",
+    "scope": "all operating systems",
+    "merge": "af54158960ec91504d42faf842b0cb3229366236",
+    "protected18Verified": false,
+    "instruction": "작업지시자가 미완료 상태를 유지한 채 먼저 병합하고 후속 처리하도록 명시함. 일반 검증 정책과 보호 하한은 변경하지 않음."
+  }
 }

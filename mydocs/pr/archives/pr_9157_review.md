@@ -9,6 +9,33 @@ last_verified: 2026-11-18
 
 ## 최종 판정
 
+**병합 완료 — 작업지시자의 현재 상태 병합 지시에 따라 처리했습니다.**
+보호 문서 검증은 Mac에 한정하지 않고 모든 OS에 적용합니다. 현재 후보의 정본 보호 18종 전쪽 Native/fresh WASM 검증은 미완료이며, 통과로 변경하지 않았습니다.
+작업지시자가 이를 설명받은 뒤 “일단 머지 후 후속 처리”, “그냥 머지 후 후속처리해”라고 명시했습니다. 이 건의 병합 지시를 기록하며 일반 정책·보호 하한·기준값은 바꾸지 않았습니다.
+
+- [원 PR #9157](https://github.com/edwardkim/rhwp/pull/9157), 작성자 `jangster77`, 최종 head `56bd8652077b8d0a186e1e07b9adeea43c8fbc2f`.
+- 최신 base `8612752c0eb50ea74755906539e121aa9abd29d7` 반영 후 필수 check 성공과 mergeability를 확인하고 2026-11-18 13:11:43 KST에 merge했습니다. 확정 merge: `af54158960ec91504d42faf842b0cb3229366236`.
+- [최종 head CI](https://github.com/edwardkim/rhwp/actions/runs/44234549351)와 CodeQL·Render Diff·Proptest·Adapter는 성공했습니다. current-base merge 검증으로 기존 성공 결과를 재사용했으며 heavy worker skip을 새 검사 실행으로 세지 않습니다. [실제 실행한 trailing CI](https://github.com/edwardkim/rhwp/actions/runs/44150810947)는 Archive 13,524 PASS/45 skip, Native 247 PASS였습니다.
+- [병합 영수증·각 workflow·이미지 hash](../assets/issue_8371/essential-validation-20261117/merge-followup-20261118/receipt.json). [duration 작업](https://github.com/edwardkim/rhwp/actions/runs/44235622959)은 성공 종료했으나 검증된 실측값이 없어 갱신을 보류했습니다. 병합 뒤 검증 workflow를 재실행하지 않았습니다.
+- 새 base의 Studio 로컬 추가 확인: 단위 2,806 PASS/0 FAIL/2 skip, TypeScript PASS, #9165 E2E PASS. #9164 E2E는 base와 checkout에 모두 없는 로컬 webfont 때문에 완료하지 못했습니다. 임시 글꼴 재시도도 테스트 시작 전 준비에서 실패했으므로 PASS로 기록하지 않습니다. 제품·검사·글꼴 파일을 변경하지 않았습니다.
+- #8371/#8218은 기존 조사 맥락이며 이미 CLOSED였습니다. 이번 PR로 새로 해결·종료했다고 표시하지 않습니다.
+- 본 문서·증적·오늘할일의 확정값은 권한에 맞게 별도 후속 기록 PR로 반영합니다. 이후 devel 동기화, 원 PR 댓글, 작업 전용 branch/worktree 및 output/debug 정리로 종료합니다. 사용자 요청 백업과 다른 작업은 보존합니다.
+
+## Merge 후 contributor PR comment 계획
+
+원 PR의 merge `af54158960ec91504d42faf842b0cb3229366236`에 고정한 아래 PNG 5개의 HTTP 응답 형식·bytes·SHA-256을 저장소 원본과 대조했습니다. 후속 기록 PR 병합 뒤 원 PR에 한국어 존댓말로 실제 이미지를 포함해 게시하고 API 본문을 확인합니다.
+
+- 제품 producer `fcf2e11b1727297743343446333132e1409737f1`의 sample4 전체 36쪽 Native/fresh WASM 최소 raw 97.66586/97.66564%. 25·26쪽만 바뀌고 나머지 34쪽은 동일합니다. 변경 그림이 25쪽에서 26쪽으로 이어지는 소속과 설명·본문 보존을 직접 판독했습니다. 기존 코드 배경 하단 밴드 차이는 남습니다.
+- sample4 Native/WASM 각각 `source-layout-enlarged.png`와 `sample4-overlay-026.png`, Windows `symbol200-review.png`를 merge SHA raw URL로 포함합니다. Windows 편람 200쪽 raw 100%, 검은 기호 3개와 주변 본문을 직접 판독했습니다. 실제 경로는 위 영수증의 `mergeImages`에 명시했습니다.
+- 최종 head CI의 검증된 재사용과 실제 실행 producer를 구분하고, 보호 18종 미완료 및 전 OS 적용·사용자 병합 지시를 적습니다. 수치는 내용 픽셀 중심 자동 일치율 보조값이며 사람의 판정 정확도가 아님을 명시합니다.
+- [Visual Sweep 댓글 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)을 직접 링크합니다. #8371/#8218은 맥락으로만 연결하며 상태를 바꾸지 않습니다.
+
+## 병합 지시 이전의 검토 이력
+
+아래의 “현재”, “머지 보류”, 해제 조건은 2026-11-18 병합 지시 이전의 판단입니다. 현 상태는 위 최종 판정과 병합 영수증을 따릅니다. 당시 확인한 실행 결과와 미완료 사실은 그대로 보존합니다.
+
+### 당시 판정
+
 **머지 보류 — 현재 후보의 정본 보호 18종 동일 공급 조건 확인과 전쪽 검증이 남아 있다.**
 정확한 code head `0b54ec2b3f4fcb416c215f3c152c37b299202443`의 Full CI·CodeQL·Render Diff·Adapter·Proptest 성공 뒤 작성한 self-review다. 이후 문서 trailing head의 CI는 별도로 확인한다.
 원본 글꼴 공급 조건의 확인·전쪽 Native/fresh WASM 보호 검증을 마치기 전에는 승인·병합하지 않는다.
